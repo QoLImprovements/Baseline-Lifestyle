@@ -119,50 +119,34 @@ test('voice commands are state-scoped and Fail variants are reliable', async ({ 
   });
 });
 
-test('live recognition releases commands immediately but holds partial numbers', async ({ page }) => {
+test('persistent recognition accepts trigger phrases and canonicalises spoken numbers', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
-  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessLiveRecognition));
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessPersistentRecognition));
 
   const result=await page.evaluate(() => {
-    const live=globalThis.BASELINE_fitnessLiveRecognition;
+    const recognition=globalThis.BASELINE_fitnessPersistentRecognition;
     return {
-      build:live.BUILD,
-      go:live.isImmediateCommand('Go'),
-      fail:live.isImmediateCommand('I failed'),
-      success:live.isImmediateCommand('Success'),
-      next:live.isImmediateCommand('Next'),
-      partialNumber:live.isImmediateCommand('twenty'),
-      numberPhrase:live.isImmediateCommand('twenty-five seconds'),
-      unrelated:live.isImmediateCommand('ready')
+      build:recognition.BUILD,
+      go:recognition.commandFor('awaiting_go','please go now'),
+      fail:recognition.commandFor('exercise_active','I failed'),
+      success:recognition.commandFor('awaiting_result','that was successful'),
+      next:recognition.commandFor('resting','next please'),
+      three:recognition.parseNumber('I completed three sets'),
+      twentyFive:recognition.parseNumber('twenty-five seconds'),
+      nineNinetyNine:recognition.parseNumber('I achieved nine hundred and ninety-nine seconds'),
+      rejectsThousand:recognition.parseNumber('one thousand')
     };
   });
 
   expect(result).toEqual({
-    build:'BASELINE_FITNESS_LIVE_RECOGNITION_20260712_1',
-    go:true,
-    fail:true,
-    success:true,
-    next:true,
-    partialNumber:false,
-    numberPhrase:false,
-    unrelated:false
+    build:'BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_1',
+    go:'go',
+    fail:'fail',
+    success:'success',
+    next:'next',
+    three:3,
+    twentyFive:25,
+    nineNinetyNine:999,
+    rejectsThousand:null
   });
-});
-
-test('spoken-number parsing supports digits, words and short phrases', async ({ page }) => {
-  await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
-  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
-
-  const result=await page.evaluate(() => {
-    const parse=globalThis.BASELINE_fitnessVoice.debug.parseNumber;
-    return [
-      parse('3'),
-      parse('I completed three sets'),
-      parse('twenty-five seconds'),
-      parse('I achieved nine hundred and ninety-nine seconds'),
-      parse('one thousand')
-    ];
-  });
-
-  expect(result).toEqual([3,3,25,999,1]);
 });
