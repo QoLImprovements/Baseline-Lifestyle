@@ -63,7 +63,7 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG&&globalThis.BASELINE_fitnessVoice));
 
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_5');
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_6');
   await expect(page.locator('#voiceWorkoutTitle')).toHaveText('Voice workout');
   await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutTitle');
 
@@ -86,26 +86,36 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   expect(await page.evaluate(() => 6*7)).toBe(42);
 });
 
-test('voice triggers are state-scoped and repeated recognition fragments are treated as one utterance', async ({ page }) => {
+test('voice control accepts only four exact commands in every workout state', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
 
   const result=await page.evaluate(() => {
     const debug=globalThis.BASELINE_fitnessVoice.debug;
     return {
-      readyStarts:debug.intentFor('waiting_start','Ready'),
-      goStarts:debug.intentFor('waiting_start','Go'),
-      readyEndsRest:debug.intentFor('resting','Ready'),
-      sameReady:debug.sameUtterance('ready','I am ready'),
-      sameSuccess:debug.sameUtterance('succeed','succeeded')
+      goDuringIntroduction:debug.intentFor('introducing','Go'),
+      successDuringInstruction:debug.intentFor('waiting_start','Success'),
+      failDuringExercise:debug.intentFor('performing','Fail'),
+      nextDuringRest:debug.intentFor('resting','Next'),
+      rejectsStart:debug.intentFor('waiting_start','Start'),
+      rejectsReady:debug.intentFor('waiting_start','Ready'),
+      rejectsSucceeded:debug.intentFor('performing','Succeeded'),
+      rejectsFailure:debug.intentFor('performing','Failure'),
+      rejectsLongerPhrase:debug.intentFor('waiting_start','Go ahead'),
+      sameInterimAndFinal:debug.sameUtterance('success','Success')
     };
   });
 
   expect(result).toEqual({
-    readyStarts:'start',
-    goStarts:'start',
-    readyEndsRest:'ready',
-    sameReady:true,
-    sameSuccess:true
+    goDuringIntroduction:'go',
+    successDuringInstruction:'success',
+    failDuringExercise:'fail',
+    nextDuringRest:'next',
+    rejectsStart:null,
+    rejectsReady:null,
+    rejectsSucceeded:null,
+    rejectsFailure:null,
+    rejectsLongerPhrase:null,
+    sameInterimAndFinal:true
   });
 });
