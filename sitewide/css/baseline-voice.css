@@ -158,3 +158,9 @@
   .bl-voice-grid,.bl-voice-check-grid{grid-template-columns:1fr}
   #bl-voice-flyout .bl-voice-settings-card{max-height:calc(100svh - 20px)}
 }
+
+/* Fitness-only phase: do not expose Voice as a sitewide banner panel yet. */
+#bl-voice-toggle,
+#bl-voice-flyout{
+  display:none!important;
+}
