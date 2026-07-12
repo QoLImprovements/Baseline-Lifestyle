@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_9';
-const BL_FITNESS_RUNTIME_EPOCH = '20260712_9';
+const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_10';
+const BL_FITNESS_RUNTIME_EPOCH = '20260712_10';
 
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -12,7 +12,7 @@ header('X-LiteSpeed-Cache-Control: no-cache');
 header('Permissions-Policy: microphone=(self)');
 header('X-Baseline-Fitness-Runtime: ' . BL_FITNESS_VOICE_RUNTIME);
 
-// Clear any pre-coherence HTML/CSS/JS once, then remember the delivered epoch.
+// Clear prior Fitness HTML/CSS/JS once, then remember the delivered epoch.
 if((string)($_COOKIE['baseline_fitness_runtime_epoch'] ?? '') !== BL_FITNESS_RUNTIME_EPOCH){
     header('Clear-Site-Data: "cache"');
     $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ? '; Secure' : '';
@@ -69,7 +69,7 @@ $fitnessVoice = bl_inline_script(__DIR__ . '/js/baseline-fitness-voice.js');
 $visibilityGuard = <<<'JS'
 (function(){
   'use strict';
-  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_9';
+  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_10';
   document.documentElement.setAttribute('data-baseline-fitness-voice-delivery',BUILD);
   function removeSitewideVoice(){
     document.getElementById('bl-voice-toggle')?.remove();
