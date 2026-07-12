@@ -55,3 +55,33 @@ test('exercise information is optional, updates with the dropdown, and can stay 
   await page.locator('#sessions').click();
   await expect(info).toHaveAttribute('aria-expanded','false');
 });
+
+test('My Plan remains responsive after Fitness DOM updates', async ({ page }) => {
+  const pageErrors=[];
+  page.on('pageerror',error=>pageErrors.push(error.message));
+
+  await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG&&globalThis.BASELINE_fitnessVoice));
+
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_4');
+  await expect(page.locator('#voiceWorkoutTitle')).toHaveText('Voice workout');
+  await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutTitle');
+
+  await page.evaluate(() => {
+    for(let index=0;index<25;index+=1){
+      const probe=document.createElement('div');
+      probe.dataset.fitnessMutationProbe=String(index);
+      document.body.appendChild(probe);
+      probe.remove();
+    }
+  });
+
+  await page.getByRole('button',{name:'My Plan',exact:true}).click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-plan$/);
+  await expect(page.locator('#my-plan')).toHaveClass(/active/);
+  await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
+
+  await page.waitForTimeout(250);
+  expect(pageErrors).toEqual([]);
+  expect(await page.evaluate(() => 6*7)).toBe(42);
+});
