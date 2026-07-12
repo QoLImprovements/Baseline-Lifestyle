@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_4';
+  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_3';
   if(global.__BASELINE_FITNESS_COHERENCE__) return;
   global.__BASELINE_FITNESS_COHERENCE__=true;
   document.documentElement.setAttribute('data-baseline-fitness-coherence',BUILD);
@@ -110,21 +110,6 @@
     };
   }
 
-  // The Fitness voice adapter observes every child-list mutation. Its modal
-  // preparation previously replaced this title text from inside that observer,
-  // which queued the same observer again indefinitely as My Plan rendered.
-  // Prepare the accessible label once, under a stable final id, before the voice
-  // adapter starts so its observer cannot re-enter through this title node.
-  function stabiliseVoiceModalTitle(){
-    const modal=document.querySelector('#voiceWorkoutModal');
-    const title=document.querySelector('#voiceWorkoutTitle');
-    if(!modal||!title) return;
-    if(title.textContent!=='Voice workout') title.textContent='Voice workout';
-    title.classList.add('voice-visually-hidden');
-    title.id='voiceWorkoutDialogTitle';
-    modal.setAttribute('aria-labelledby','voiceWorkoutDialogTitle');
-  }
-
   function compactCurrentSteps(){
     const root=document.querySelector('#currentWorkoutOut');
     if(!root) return;
@@ -190,7 +175,6 @@
   let scheduled=false;
   function applyCoherence(){
     scheduled=false;
-    stabiliseVoiceModalTitle();
     compactCurrentSteps();
     compactPlanExercises();
     enforceSavedPlanView();
@@ -203,7 +187,6 @@
   }
 
   function init(){
-    stabiliseVoiceModalTitle();
     applyCoherence();
     new MutationObserver(scheduleCoherence).observe(document.body,{childList:true,subtree:true});
     document.addEventListener('baseline:fitness-workout-updated',scheduleCoherence);
