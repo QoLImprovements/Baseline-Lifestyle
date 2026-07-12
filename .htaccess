@@ -26,18 +26,10 @@ FileETag None
   RewriteCond %{REQUEST_URI} ^/(?:baseline-games-hub/games-hub(?:/.*)?|systems/baseline-games-hub/baseline-games-hub\.html)/?$ [NC]
   RewriteCond %{HTTP_COOKIE} !(^|;\s*)baseline_games_runtime_epoch=20260629_3(?:;|$) [NC]
   RewriteRule ^ - [E=baseline_games_cache_upgrade:1]
-
-  # One-time Fitness runtime cache upgrade. The public clean route previously
-  # resolved to the static HTML file, so browsers/host caches could keep serving
-  # the pre-voice page after the voice files were replaced.
-  RewriteCond %{REQUEST_URI} ^/(?:baseline-fitness(?:/(?:system|workout-routine|exercise-library|achievements|my-plan))?|systems/baseline-fitness/baseline-fitness(?:-runtime)?\.(?:html|php))/?$ [NC]
-  RewriteCond %{HTTP_COOKIE} !(^|;\s*)baseline_fitness_runtime_epoch=20260712_4(?:;|$) [NC]
-  RewriteRule ^ - [E=baseline_fitness_cache_upgrade:1]
 </IfModule>
 
 <IfModule mod_headers.c>
   Header unset ETag
-  Header always set Permissions-Policy "microphone=(self)"
   <FilesMatch "\.(html?|php)$">
     Header always unset ETag
     Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
@@ -58,11 +50,6 @@ FileETag None
   Header always set Clear-Site-Data "\"cache\"" env=REDIRECT_baseline_games_cache_upgrade
   Header always add Set-Cookie "baseline_games_runtime_epoch=20260629_3; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=baseline_games_cache_upgrade
   Header always add Set-Cookie "baseline_games_runtime_epoch=20260629_3; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=REDIRECT_baseline_games_cache_upgrade
-
-  Header always set Clear-Site-Data "\"cache\"" env=baseline_fitness_cache_upgrade
-  Header always set Clear-Site-Data "\"cache\"" env=REDIRECT_baseline_fitness_cache_upgrade
-  Header always add Set-Cookie "baseline_fitness_runtime_epoch=20260712_4; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=baseline_fitness_cache_upgrade
-  Header always add Set-Cookie "baseline_fitness_runtime_epoch=20260712_4; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=REDIRECT_baseline_fitness_cache_upgrade
 </IfModule>
 
 
@@ -278,12 +265,7 @@ Options -Indexes
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
-
-  # Baseline Fitness must execute the runtime page at the root rewrite layer.
-  # A nested systems/baseline-fitness/.htaccess cannot affect the original clean
-  # route reliably because this rule resolves it first.
-  RewriteRule ^baseline-fitness/(system|workout-routine|exercise-library|achievements|my-plan)/?$ systems/baseline-fitness/baseline-fitness-runtime.php [L,QSA]
-  RewriteRule ^systems/baseline-fitness/baseline-fitness\.html$ systems/baseline-fitness/baseline-fitness-runtime.php [L,QSA]
+  RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
   # Baseline Games Hub hierarchy.
   RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
