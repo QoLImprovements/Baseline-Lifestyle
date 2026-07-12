@@ -1,0 +1,14 @@
+@media (max-width:430px){
+  .mobile-game-key,
+  .game-panel .action,
+  .game-panel .game-toggle-btn,
+  .game-panel .tier-btn,
+  .game-panel .mobile-game-exit{min-height:44px!important}
+}
+@media (max-height:430px){
+  .mobile-game-key,
+  .game-panel .action,
+  .game-panel .game-toggle-btn,
+  .game-panel .tier-btn,
+  .game-panel .mobile-game-exit{min-height:44px!important}
+}

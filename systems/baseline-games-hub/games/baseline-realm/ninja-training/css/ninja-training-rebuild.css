@@ -1,0 +1,336 @@
+#ninjaPanel #realmSceneFrame[data-ninja-training-rebuild]{
+  --ninja-ground:clamp(54px,9vh,104px);
+  --ninja-runner-size:clamp(132px,16vw,210px);
+  --ninja-enemy-size:clamp(132px,15vw,202px);
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  aspect-ratio:16/9;
+  min-height:min(72vh,760px);
+  background:#07130f!important;
+  contain:layout paint style;
+}
+#ninjaPanel .ninja-scene[data-ninja-training-rebuild]{
+  position:absolute!important;
+  inset:0!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 52% 18%,rgba(164,201,150,.14),transparent 28%),
+    linear-gradient(180deg,#17352f 0%,#0c221b 55%,#08140f 100%)!important;
+  perspective:900px;
+}
+#ninjaPanel .ninja-forest-layer{
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  background-repeat:repeat-x!important;
+  background-position:0 50%!important;
+  transform:translateZ(0);
+  will-change:background-position;
+}
+#ninjaPanel .ninja-forest-layer--distant{
+  z-index:1!important;
+  opacity:.92;
+  background-image:url('../assets/forest-distant.svg')!important;
+  background-size:auto 100%!important;
+  animation:ninjaForestDistant 86s linear infinite!important;
+}
+#ninjaPanel .ninja-forest-layer--middle{
+  z-index:3!important;
+  opacity:.98;
+  background-image:url('../assets/forest-middle.svg')!important;
+  background-size:auto 100%!important;
+  animation:ninjaForestMiddle 42s linear infinite!important;
+}
+#ninjaPanel .ninja-forest-layer--foreground{
+  z-index:13!important;
+  opacity:.94;
+  background-image:url('../assets/forest-foreground.svg')!important;
+  background-size:auto 100%!important;
+  animation:ninjaForestForeground 20s linear infinite!important;
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,.36));
+}
+#ninjaPanel .ninja-forest-ground{
+  position:absolute!important;
+  z-index:5!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  height:32%!important;
+  border:0!important;
+  background:
+    linear-gradient(180deg,transparent 0 8%,rgba(6,18,12,.15) 8% 12%,transparent 12%),
+    radial-gradient(ellipse at 18% 18%,rgba(143,153,93,.20) 0 4%,transparent 5%),
+    radial-gradient(ellipse at 68% 24%,rgba(116,141,78,.18) 0 3%,transparent 4%),
+    repeating-linear-gradient(172deg,transparent 0 52px,rgba(38,63,35,.28) 53px 60px,transparent 61px 110px),
+    linear-gradient(180deg,rgba(46,71,39,.64),#162919 34%,#08110c 100%)!important;
+  box-shadow:inset 0 22px 45px rgba(0,0,0,.2)!important;
+}
+#ninjaPanel .ninja-forest-ground::before,
+#ninjaPanel .ninja-forest-ground::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-repeat:repeat-x;
+  pointer-events:none;
+}
+#ninjaPanel .ninja-forest-ground::before{
+  opacity:.55;
+  background-image:radial-gradient(ellipse at 20px 18px,rgba(104,129,70,.38) 0 7px,transparent 8px),radial-gradient(ellipse at 77px 12px,rgba(73,103,57,.46) 0 10px,transparent 11px);
+  background-size:130px 44px;
+  animation:ninjaGroundDrift 10s linear infinite;
+}
+#ninjaPanel .ninja-forest-ground::after{
+  top:auto;
+  height:34%;
+  bottom:0;
+  background:repeating-linear-gradient(168deg,transparent 0 36px,rgba(42,69,39,.52) 37px 41px,transparent 42px 82px);
+  filter:blur(.4px);
+}
+@keyframes ninjaForestDistant{to{background-position:-2048px 50%}}
+@keyframes ninjaForestMiddle{to{background-position:-2048px 50%}}
+@keyframes ninjaForestForeground{to{background-position:-2048px 50%}}
+@keyframes ninjaGroundDrift{to{background-position:-130px 0}}
+
+#ninjaPanel .ninja-scene__runner,
+#ninjaPanel .ninja-scene__enemy{
+  position:absolute!important;
+  z-index:9!important;
+  width:var(--ninja-runner-size)!important;
+  height:var(--ninja-runner-size)!important;
+  display:block!important;
+  transform-origin:50% 88%!important;
+  pointer-events:none!important;
+  will-change:transform,filter;
+}
+#ninjaPanel .ninja-scene__runner{
+  left:13%!important;
+  right:auto!important;
+  bottom:calc(var(--ninja-ground) - 8px)!important;
+}
+#ninjaPanel .ninja-scene__enemy{
+  left:auto!important;
+  right:14%!important;
+  bottom:calc(var(--ninja-ground) - 8px)!important;
+  width:var(--ninja-enemy-size)!important;
+  height:var(--ninja-enemy-size)!important;
+}
+#ninjaPanel .ninja-scene__runner>img,
+#ninjaPanel .ninja-scene__enemy>img{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+#ninjaPanel .ninja-scene__runner::before,
+#ninjaPanel .ninja-scene__enemy::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background-repeat:no-repeat;
+  background-position:0 0;
+  background-size:800% 100%;
+  filter:drop-shadow(0 12px 8px rgba(0,0,0,.48));
+  animation:ninjaRunnerFrames .72s steps(7,end) infinite;
+  transform:translateZ(0);
+}
+#ninjaPanel .ninja-scene__runner::before{
+  background-image:url('../assets/alder-veil-run.svg');
+}
+#ninjaPanel .ninja-scene__runner::after,
+#ninjaPanel .ninja-scene__enemy::after{
+  content:"";
+  position:absolute;
+  left:13%;
+  right:13%;
+  bottom:2%;
+  height:12%;
+  border-radius:50%;
+  background:rgba(0,0,0,.42);
+  filter:blur(5px);
+  transform:scaleX(1.1);
+  z-index:-1;
+}
+#ninjaPanel .ninja-scene__enemy::before{
+  background-size:600% 100%;
+  animation:ninjaEnemyFrames .9s steps(5,end) infinite;
+}
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="scout"]::before{background-image:url('../assets/mossblade-pursuer.svg')}
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="raider"]::before{background-image:url('../assets/gloam-rope-raider.svg');animation-duration:.82s}
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="boss"]{
+  --ninja-enemy-size:clamp(174px,20vw,270px);
+  right:10%!important;
+  bottom:calc(var(--ninja-ground) - 18px)!important;
+}
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="boss"]::before{
+  background-image:url('../assets/hollow-crown-warden.svg');
+  animation:ninjaBossFrames 1.15s steps(5,end) infinite,ninjaBossWeight 2.2s ease-in-out infinite;
+}
+@keyframes ninjaRunnerFrames{to{background-position:100% 0}}
+@keyframes ninjaEnemyFrames{to{background-position:100% 0}}
+@keyframes ninjaBossFrames{to{background-position:100% 0}}
+@keyframes ninjaBossWeight{0%,100%{transform:translateY(0) rotate(-.4deg)}50%{transform:translateY(4px) rotate(.5deg)}}
+
+#ninjaPanel .ninja-scene__runner.is-idle-attacking::before{
+  background-image:url('../assets/alder-veil-dash.svg');
+  animation:ninjaCombatFrames .50s steps(7,end) 1 both;
+}
+#ninjaPanel .ninja-scene__runner.is-idle-attacking{
+  animation:ninjaIdleAttackTravel .50s cubic-bezier(.2,.75,.22,1) 1 both;
+}
+#ninjaPanel .ninja-scene__runner.is-dash-cut::before{
+  background-image:url('../assets/alder-veil-dash.svg');
+  animation:ninjaCombatFrames .76s steps(7,end) 1 both;
+}
+#ninjaPanel .ninja-scene__runner.is-dash-cut{
+  z-index:12!important;
+  animation:ninjaDashTravel .76s cubic-bezier(.18,.82,.2,1) 1 both;
+}
+#ninjaPanel .ninja-scene__runner.is-dash-cut::after{
+  left:46%;
+  right:auto;
+  bottom:19%;
+  width:132%;
+  height:58%;
+  border-radius:48% 100% 56% 22%;
+  border-top:clamp(3px,.42vw,7px) solid rgba(226,247,230,.94);
+  border-right:clamp(2px,.28vw,5px) solid rgba(144,218,184,.75);
+  background:radial-gradient(ellipse at 66% 30%,rgba(214,255,230,.36),transparent 58%);
+  filter:drop-shadow(0 0 10px rgba(159,236,190,.82));
+  opacity:0;
+  transform-origin:0 80%;
+  animation:ninjaSlashArc .76s ease-out 1 both;
+  z-index:3;
+}
+#ninjaPanel .ninja-scene__runner.is-throwing::before{
+  background-image:url('../assets/alder-veil-throw.svg');
+  background-size:600% 100%;
+  animation:ninjaThrowFrames .60s steps(5,end) 1 both;
+}
+#ninjaPanel .ninja-scene__runner.is-throwing{
+  animation:ninjaThrowWeight .60s ease-out 1 both;
+}
+@keyframes ninjaCombatFrames{to{background-position:100% 0}}
+@keyframes ninjaThrowFrames{to{background-position:100% 0}}
+@keyframes ninjaIdleAttackTravel{0%{transform:translateX(0) scale(1)}28%{transform:translateX(-8%) scale(.98,1.02)}62%{transform:translateX(28%) scale(1.04,.98)}100%{transform:translateX(0) scale(1)}}
+@keyframes ninjaDashTravel{0%{transform:translateX(0) scale(1)}18%{transform:translateX(-12%) translateY(3%) scale(.96,1.04)}52%{transform:translateX(165%) translateY(-2%) scale(1.08,.94)}68%{transform:translateX(178%) translateY(0) scale(1)}100%{transform:translateX(0) scale(1)}}
+@keyframes ninjaSlashArc{0%,33%{opacity:0;transform:rotate(-48deg) scale(.35)}46%{opacity:1;transform:rotate(12deg) scale(1)}62%{opacity:.84;transform:rotate(42deg) scale(1.16)}80%,100%{opacity:0;transform:rotate(58deg) scale(1.28)}}
+@keyframes ninjaThrowWeight{0%,100%{transform:translateX(0) rotate(0)}30%{transform:translateX(-4%) rotate(-2deg)}62%{transform:translateX(6%) rotate(1.2deg)}}
+
+#ninjaPanel .ninja-scene__enemy.is-hit::before{
+  animation:ninjaEnemyFrames .9s steps(5,end) infinite,ninjaEnemyStagger .30s ease-out 1;
+  filter:brightness(1.85) saturate(.45) sepia(.18) drop-shadow(0 10px 9px rgba(0,0,0,.52));
+}
+#ninjaPanel .ninja-scene__enemy.is-heavy-hit::before{
+  animation:ninjaEnemyFrames .9s steps(5,end) infinite,ninjaEnemyHeavyStagger .38s cubic-bezier(.2,.85,.25,1) 1;
+  filter:brightness(2.2) saturate(.28) drop-shadow(0 0 18px rgba(232,255,236,.72));
+}
+#ninjaPanel .ninja-scene__enemy.is-defeated{
+  animation:ninjaEnemyDefeat .70s cubic-bezier(.2,.7,.25,1) 1 both;
+}
+#ninjaPanel .ninja-scene__enemy.is-defeated::after{animation:ninjaShadowDefeat .7s ease-out 1 both}
+@keyframes ninjaEnemyStagger{0%{transform:translateX(0) rotate(0)}35%{transform:translateX(10%) rotate(5deg) scale(.98,1.02)}100%{transform:translateX(0) rotate(0)}}
+@keyframes ninjaEnemyHeavyStagger{0%{transform:translateX(0) rotate(0)}35%{transform:translateX(18%) translateY(-3%) rotate(9deg) scale(.94,1.04)}70%{transform:translateX(8%) rotate(3deg)}100%{transform:translateX(0) rotate(0)}}
+@keyframes ninjaEnemyDefeat{0%{opacity:1;transform:translateY(0) rotate(0) scale(1)}42%{opacity:1;transform:translateY(-6%) rotate(8deg) scale(.96,1.04)}100%{opacity:0;transform:translateY(34%) rotate(18deg) scale(.72)}}
+@keyframes ninjaShadowDefeat{to{opacity:0;transform:scaleX(.45)}}
+
+#ninjaPanel .ninja-hit-flash{
+  z-index:10!important;
+  background:radial-gradient(ellipse at 73% 58%,rgba(238,255,239,.92) 0 2%,rgba(157,233,188,.54) 3% 9%,transparent 26%)!important;
+  mix-blend-mode:screen;
+  opacity:0;
+  transition:opacity .08s linear;
+  pointer-events:none;
+}
+#ninjaPanel .ninja-hit-flash.is-live{opacity:1!important;animation:ninjaHitFlash .27s ease-out 1}
+#ninjaPanel .ninja-scene.is-dash-hit-frame::after{
+  content:"";
+  position:absolute;
+  z-index:11;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(104deg,transparent 0 54%,rgba(229,255,236,.78) 55%,rgba(132,223,173,.35) 57%,transparent 61%);
+  animation:ninjaHitFrame .16s ease-out 1 both;
+}
+@keyframes ninjaHitFlash{0%{opacity:0}26%{opacity:1}100%{opacity:0}}
+@keyframes ninjaHitFrame{0%{opacity:0;transform:translateX(-8%)}30%{opacity:1}100%{opacity:0;transform:translateX(8%)}}
+
+#ninjaPanel .ninja-shuriken-layer{z-index:12!important}
+#ninjaPanel .ninja-shuriken-projectile[data-original-projectile="true"]{
+  left:calc(13% + (var(--ninja-runner-size) * .66))!important;
+  top:calc(58% + (var(--shuriken-lane) * 14px))!important;
+  width:clamp(25px,3vw,38px)!important;
+  height:clamp(25px,3vw,38px)!important;
+  background:conic-gradient(from 0deg,transparent 0 7%,#edf2e9 8% 15%,#3c4a46 16% 24%,transparent 25% 32%,#edf2e9 33% 40%,#3c4a46 41% 49%,transparent 50% 57%,#edf2e9 58% 65%,#3c4a46 66% 74%,transparent 75% 82%,#edf2e9 83% 90%,#3c4a46 91% 99%)!important;
+  filter:drop-shadow(0 0 5px rgba(184,240,206,.65)) drop-shadow(0 5px 4px rgba(0,0,0,.68))!important;
+  animation:ninjaOriginalShuriken .84s cubic-bezier(.17,.77,.2,1) forwards!important;
+}
+@keyframes ninjaOriginalShuriken{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.72)}10%{opacity:1}68%{opacity:1;transform:translate(48vw,calc(var(--shuriken-lane) * -5px)) rotate(var(--shuriken-spin)) scale(1)}83%{opacity:1;transform:translate(56vw,calc(var(--shuriken-lane) * -4px)) rotate(var(--shuriken-spin)) scale(.9)}100%{opacity:0;transform:translate(61vw,calc(var(--shuriken-lane) * -4px)) rotate(var(--shuriken-spin)) scale(.62)}}
+
+#ninjaPanel .ninja-scene.is-boss::before{
+  content:"";
+  position:absolute;
+  z-index:2;
+  inset:0;
+  pointer-events:none;
+  background:radial-gradient(circle at 78% 48%,rgba(177,77,65,.19),transparent 28%),linear-gradient(180deg,rgba(72,22,20,.12),transparent 45%);
+  animation:ninjaBossAtmosphere 3.4s ease-in-out infinite;
+}
+@keyframes ninjaBossAtmosphere{0%,100%{opacity:.62}50%{opacity:1}}
+#ninjaPanel .ninja-scene.is-paused *,
+#ninjaPanel .ninja-scene.is-paused *::before,
+#ninjaPanel .ninja-scene.is-paused *::after{animation-play-state:paused!important}
+
+#ninjaPanel #realmSceneFrame:fullscreen,
+#ninjaPanel #realmSceneFrame:-webkit-full-screen{
+  width:100vw!important;
+  height:100vh!important;
+  min-height:100vh!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  border-radius:0!important;
+}
+@media (max-width:960px) and (orientation:landscape){
+  #ninjaPanel #realmSceneFrame[data-ninja-training-rebuild]{
+    --ninja-ground:clamp(38px,8vh,70px);
+    --ninja-runner-size:clamp(108px,21vh,158px);
+    --ninja-enemy-size:clamp(108px,20vh,154px);
+    min-height:100svh!important;
+    height:100svh!important;
+    aspect-ratio:auto;
+  }
+  #ninjaPanel .ninja-scene__runner{left:10%!important}
+  #ninjaPanel .ninja-scene__enemy{right:10%!important}
+  #ninjaPanel .ninja-forest-layer--foreground{opacity:.82}
+}
+@media (max-width:720px){
+  #ninjaPanel #realmSceneFrame[data-ninja-training-rebuild]{min-height:58vw}
+  #ninjaPanel .ninja-scene__runner{left:6%!important}
+  #ninjaPanel .ninja-scene__enemy{right:6%!important}
+}
+@media (prefers-reduced-motion:reduce){
+  #ninjaPanel .ninja-forest-layer,
+  #ninjaPanel .ninja-forest-ground::before,
+  #ninjaPanel .ninja-scene__runner::before,
+  #ninjaPanel .ninja-scene__enemy::before,
+  #ninjaPanel .ninja-scene.is-boss::before{
+    animation:none!important;
+    background-position:0 0!important;
+  }
+  #ninjaPanel .ninja-scene__runner.is-dash-cut,
+  #ninjaPanel .ninja-scene__runner.is-idle-attacking,
+  #ninjaPanel .ninja-scene__runner.is-throwing,
+  #ninjaPanel .ninja-scene__enemy.is-hit,
+  #ninjaPanel .ninja-scene__enemy.is-heavy-hit,
+  #ninjaPanel .ninja-scene__enemy.is-defeated{
+    animation:none!important;
+  }
+  #ninjaPanel .ninja-scene__runner.is-dash-cut::before,
+  #ninjaPanel .ninja-scene__runner.is-idle-attacking::before,
+  #ninjaPanel .ninja-scene__runner.is-throwing::before{background-position:100% 0!important}
+  #ninjaPanel .ninja-scene__enemy.is-hit::before,
+  #ninjaPanel .ninja-scene__enemy.is-heavy-hit::before{filter:brightness(1.65) saturate(.55)!important}
+  #ninjaPanel .ninja-scene__enemy.is-defeated{opacity:.35!important}
+  #ninjaPanel .ninja-shuriken-projectile[data-original-projectile="true"]{animation-duration:.18s!important}
+}

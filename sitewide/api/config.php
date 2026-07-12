@@ -1,0 +1,480 @@
+<?php
+declare(strict_types=1);
+
+// BASELINE-JSON-HARDENING: API endpoints must return clean JSON only.
+// Hosting/PHP warnings before json_encode were causing the front-end "Bad Json" failure.
+@ini_set('display_errors', '0');
+@ini_set('html_errors', '0');
+@ini_set('log_errors', '1');
+if(!ob_get_level()){ @ob_start(); }
+
+register_shutdown_function(function(): void {
+  $err = error_get_last();
+  if(!$err) return;
+  $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
+  if(!in_array((int)($err['type'] ?? 0), $fatalTypes, true)) return;
+  if(headers_sent()) return;
+  while(ob_get_level() > 0){ @ob_end_clean(); }
+  http_response_code(500);
+  header('Content-Type: application/json; charset=utf-8');
+  header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+  echo json_encode(['ok'=>false,'error'=>'server_error'], JSON_UNESCAPED_SLASHES);
+});
+
+// Default local SQLite location. This file is runtime state and must not be committed.
+const BL_DB_PATH = __DIR__ . '/baseline.sqlite';
+const BL_DB_ENV_KEY = 'BASELINE_DB_PATH';
+const BL_MAX_NAME_LEN = 40;
+const BL_MAX_EMAIL_LEN = 254;
+const BL_MIN_PASSWORD_LEN = 8;
+const BL_RESET_TOKEN_TTL = 3600; // 1 hour
+
+function bl_env(string $key, string $default=''): string {
+  $value = getenv($key);
+  if($value === false || $value === null || $value === '') return $default;
+  return (string)$value;
+}
+
+function bl_db_path(): string {
+  return bl_env(BL_DB_ENV_KEY, BL_DB_PATH);
+}
+
+function bl_now(): int {
+  return time();
+}
+
+function bl_str_len(string $value): int {
+  return function_exists('mb_strlen') ? (int)mb_strlen($value) : strlen($value);
+}
+
+function bl_no_cache_headers(): void {
+  header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+  header('Pragma: no-cache');
+  header('Expires: 0');
+}
+
+function bl_json($data, int $status=200): void {
+  while(ob_get_level() > 0){ @ob_end_clean(); }
+  http_response_code($status);
+  header('Content-Type: application/json; charset=utf-8');
+  bl_no_cache_headers();
+  echo json_encode($data, JSON_UNESCAPED_SLASHES);
+  exit;
+}
+
+function bl_input_json(): array {
+  $raw = file_get_contents('php://input') ?: '';
+  $data = json_decode($raw, true);
+  return is_array($data) ? $data : [];
+}
+
+function bl_session_start(): void {
+  if(session_status() === PHP_SESSION_ACTIVE) return;
+
+  $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+  if(function_exists('session_name')){
+    @session_name('baseline_session');
+  }
+
+  @session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'secure' => $secure,
+    'httponly' => true,
+    'samesite' => 'Lax',
+  ]);
+
+  @ini_set('session.use_strict_mode', '1');
+  @ini_set('session.cookie_httponly', '1');
+  if($secure){
+    @ini_set('session.cookie_secure', '1');
+  }
+
+  @session_start();
+}
+
+function bl_set_auth_session(array $user): void {
+  bl_session_start();
+  @session_regenerate_id(true);
+  $_SESSION['bl_uid'] = (int)($user['id'] ?? 0);
+  $_SESSION['bl_name'] = (string)($user['name'] ?? '');
+  $_SESSION['bl_email'] = (string)($user['email'] ?? '');
+}
+
+function bl_clear_auth_session(): void {
+  bl_session_start();
+  $_SESSION = [];
+}
+
+function bl_authed_uid(): int {
+  return (int)($_SESSION['bl_uid'] ?? 0);
+}
+
+function bl_authed_name(): string {
+  return (string)($_SESSION['bl_name'] ?? '');
+}
+
+function bl_authed_email(): string {
+  return (string)($_SESSION['bl_email'] ?? '');
+}
+
+function bl_current_user(?PDO $db=null): ?array {
+  bl_session_start();
+  $uid = bl_authed_uid();
+  if($uid <= 0) return null;
+
+  $db = $db ?: bl_db();
+  $stmt = $db->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
+  $stmt->execute([':id' => $uid]);
+  $user = $stmt->fetch();
+  if(!$user){
+    bl_clear_auth_session();
+    return null;
+  }
+
+  $_SESSION['bl_name'] = (string)($user['name'] ?? '');
+  $_SESSION['bl_email'] = (string)($user['email'] ?? '');
+  return $user;
+}
+
+function bl_require_user(): array {
+  $user = bl_current_user();
+  if(!$user) bl_json(['ok'=>false,'error'=>'not_logged_in'], 401);
+  return $user;
+}
+
+function bl_require_user_id(): int {
+  $user = bl_require_user();
+  return (int)($user['id'] ?? 0);
+}
+
+function bl_normalize_email(string $email): string {
+  return strtolower(trim($email));
+}
+
+function bl_email_is_valid(string $email): bool {
+  if($email === '' || bl_str_len($email) > BL_MAX_EMAIL_LEN) return false;
+  return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function bl_password_is_valid(string $password): bool {
+  return strlen($password) >= BL_MIN_PASSWORD_LEN && strlen($password) <= 128;
+}
+
+function bl_user_public_payload(array $user): array {
+  return [
+    'id' => (int)($user['id'] ?? 0),
+    'name' => (string)($user['name'] ?? ''),
+    'email' => (string)($user['email'] ?? ''),
+    'provider' => (string)($user['auth_provider'] ?? 'password'),
+  ];
+}
+
+function bl_is_google_enabled(): bool {
+  return bl_env('BL_GOOGLE_CLIENT_ID') !== '' && bl_env('BL_GOOGLE_CLIENT_SECRET') !== '';
+}
+
+function bl_auth_providers_payload(): array {
+  return [
+    'password' => true,
+    'google' => bl_is_google_enabled(),
+  ];
+}
+
+function bl_mail_from_email(): string {
+  return bl_env('BL_MAIL_FROM_EMAIL', 'no-reply@baseline.local');
+}
+
+function bl_mail_from_name(): string {
+  return bl_env('BL_MAIL_FROM_NAME', 'Baseline Lifestyle');
+}
+
+function bl_send_text_mail(string $to, string $subject, string $body): bool {
+  if(!function_exists('mail')) return false;
+
+  $fromEmail = bl_mail_from_email();
+  $fromName = bl_mail_from_name();
+  $headers = [
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=UTF-8',
+    'From: ' . $fromName . ' <' . $fromEmail . '>',
+  ];
+
+  return @mail($to, $subject, $body, implode("\r\n", $headers));
+}
+
+function bl_request_origin(): string {
+  $configured = bl_env('BL_SITE_URL');
+  if($configured !== '') return rtrim($configured, '/');
+
+  $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+  $scheme = $https ? 'https' : 'http';
+  $host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
+  return $scheme . '://' . $host;
+}
+
+function bl_site_base_path(): string {
+  $scriptDir = str_replace('\\', '/', (string)dirname($_SERVER['SCRIPT_NAME'] ?? '/api'));
+  $scriptDir = rtrim($scriptDir, '/');
+  if($scriptDir === '' || $scriptDir === '.') return '';
+  if(preg_match('~/api$~', $scriptDir)){
+    $scriptDir = preg_replace('~/api$~', '', $scriptDir) ?: '';
+  }
+  return rtrim($scriptDir, '/');
+}
+
+function bl_site_url(string $page='index.html', array $params=[]): string {
+  $origin = bl_request_origin();
+  $basePath = bl_site_base_path();
+  $pagePath = '/' . ltrim($page, '/');
+  $url = $origin . $basePath . $pagePath;
+  if($params){
+    $url .= '?' . http_build_query($params);
+  }
+  return $url;
+}
+
+function bl_google_redirect_url(): string {
+  $configured = bl_env('BL_GOOGLE_REDIRECT_URI');
+  if($configured !== '') return $configured;
+  return bl_request_origin() . bl_site_base_path() . '/api/google_callback.php';
+}
+
+function bl_hash_verifier(string $verifier): string {
+  return hash('sha256', $verifier);
+}
+
+function bl_generate_selector(): string {
+  return bin2hex(random_bytes(8));
+}
+
+function bl_generate_verifier(): string {
+  return bin2hex(random_bytes(32));
+}
+
+function bl_find_user_by_identifier(PDO $db, string $identifier): ?array {
+  $identifier = trim($identifier);
+  if($identifier === '') return null;
+
+  if(str_contains($identifier, '@')){
+    $stmt = $db->prepare('SELECT * FROM users WHERE email_normalized = :email LIMIT 1');
+    $stmt->execute([':email' => bl_normalize_email($identifier)]);
+    $row = $stmt->fetch();
+    return $row ?: null;
+  }
+
+  $stmt = $db->prepare('SELECT * FROM users WHERE lower(name) = lower(:name) LIMIT 1');
+  $stmt->execute([':name' => $identifier]);
+  $row = $stmt->fetch();
+  return $row ?: null;
+}
+
+function bl_find_user_by_email(PDO $db, string $email): ?array {
+  $normalized = bl_normalize_email($email);
+  if($normalized === '') return null;
+  $stmt = $db->prepare('SELECT * FROM users WHERE email_normalized = :email LIMIT 1');
+  $stmt->execute([':email' => $normalized]);
+  $row = $stmt->fetch();
+  return $row ?: null;
+}
+
+function bl_issue_password_reset(PDO $db, array $user): array {
+  $selector = bl_generate_selector();
+  $verifier = bl_generate_verifier();
+  $token = $selector . '.' . $verifier;
+  $expires = bl_now() + BL_RESET_TOKEN_TTL;
+  $userId = (int)($user['id'] ?? 0);
+
+  $db->prepare('DELETE FROM password_reset_tokens WHERE user_id = :uid')->execute([':uid' => $userId]);
+  $db->prepare('INSERT INTO password_reset_tokens(user_id, selector, verifier_hash, expires_at, used_at, created_at, requested_ip, requested_ua) VALUES(:uid,:selector,:hash,:expires,NULL,:created,:ip,:ua)')
+    ->execute([
+      ':uid' => $userId,
+      ':selector' => $selector,
+      ':hash' => bl_hash_verifier($verifier),
+      ':expires' => $expires,
+      ':created' => bl_now(),
+      ':ip' => substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 64),
+      ':ua' => substr((string)($_SERVER['HTTP_USER_AGENT'] ?? ''), 0, 255),
+    ]);
+
+  return [
+    'token' => $token,
+    'url' => bl_site_url('index.html', ['bl-reset' => $token]),
+    'expires_at' => $expires,
+  ];
+}
+
+function bl_lookup_password_reset(PDO $db, string $token): ?array {
+  $parts = explode('.', trim($token), 2);
+  if(count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') return null;
+  [$selector, $verifier] = $parts;
+
+  $stmt = $db->prepare('
+    SELECT prt.*, u.id AS user_id, u.name, u.email, u.auth_provider
+    FROM password_reset_tokens prt
+    JOIN users u ON u.id = prt.user_id
+    WHERE prt.selector = :selector
+    LIMIT 1
+  ');
+  $stmt->execute([':selector' => $selector]);
+  $row = $stmt->fetch();
+  if(!$row) return null;
+  if(!hash_equals((string)$row['verifier_hash'], bl_hash_verifier($verifier))) return null;
+  if(!empty($row['used_at'])) return null;
+  if((int)$row['expires_at'] < bl_now()) return null;
+  return $row;
+}
+
+function bl_mask_email(string $email): string {
+  $email = trim($email);
+  if($email === '' || !str_contains($email, '@')) return '';
+  [$local, $domain] = explode('@', $email, 2);
+  $localMasked = strlen($local) <= 2 ? substr($local, 0, 1) . '…' : substr($local, 0, 2) . '…';
+  return $localMasked . '@' . $domain;
+}
+
+function bl_complete_password_reset(PDO $db, array $resetRow, string $newPassword): array {
+  $userId = (int)($resetRow['user_id'] ?? 0);
+  if($userId <= 0) throw new RuntimeException('invalid_user');
+
+  $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+  $now = bl_now();
+
+  $db->prepare('UPDATE users SET pass_hash = :hash, auth_provider = "password", updated_at = :updated WHERE id = :id')
+    ->execute([
+      ':hash' => $hash,
+      ':updated' => $now,
+      ':id' => $userId,
+    ]);
+
+  $db->prepare('UPDATE password_reset_tokens SET used_at = :used WHERE id = :id')
+    ->execute([
+      ':used' => $now,
+      ':id' => (int)$resetRow['id'],
+    ]);
+
+  $db->prepare('DELETE FROM password_reset_tokens WHERE user_id = :uid AND id != :id')
+    ->execute([
+      ':uid' => $userId,
+      ':id' => (int)$resetRow['id'],
+    ]);
+
+  $stmt = $db->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
+  $stmt->execute([':id' => $userId]);
+  $user = $stmt->fetch();
+  if(!$user) throw new RuntimeException('user_reload_failed');
+
+  return $user;
+}
+
+function bl_table_columns(PDO $db, string $table): array {
+  $out = [];
+  $rows = $db->query('PRAGMA table_info(' . $table . ')')->fetchAll() ?: [];
+  foreach($rows as $row){
+    $out[(string)$row['name']] = $row;
+  }
+  return $out;
+}
+
+function bl_column_exists(PDO $db, string $table, string $column): bool {
+  $cols = bl_table_columns($db, $table);
+  return array_key_exists($column, $cols);
+}
+
+function bl_ensure_schema(PDO $db): void {
+  $db->exec('CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    email TEXT NOT NULL DEFAULT "",
+    email_normalized TEXT NOT NULL DEFAULT "",
+    pass_hash TEXT NOT NULL DEFAULT "",
+    auth_provider TEXT NOT NULL DEFAULT "password",
+    google_sub TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL DEFAULT 0,
+    last_login_at INTEGER
+  )');
+
+  if(!bl_column_exists($db, 'users', 'email')){
+    $db->exec('ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ""');
+  }
+  if(!bl_column_exists($db, 'users', 'email_normalized')){
+    $db->exec('ALTER TABLE users ADD COLUMN email_normalized TEXT NOT NULL DEFAULT ""');
+  }
+  if(!bl_column_exists($db, 'users', 'auth_provider')){
+    $db->exec('ALTER TABLE users ADD COLUMN auth_provider TEXT NOT NULL DEFAULT "password"');
+  }
+  if(!bl_column_exists($db, 'users', 'google_sub')){
+    $db->exec('ALTER TABLE users ADD COLUMN google_sub TEXT');
+  }
+  if(!bl_column_exists($db, 'users', 'updated_at')){
+    $db->exec('ALTER TABLE users ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0');
+  }
+  if(!bl_column_exists($db, 'users', 'last_login_at')){
+    $db->exec('ALTER TABLE users ADD COLUMN last_login_at INTEGER');
+  }
+
+  $db->exec('UPDATE users SET email = COALESCE(email, ""), email_normalized = CASE WHEN trim(COALESCE(email, "")) = "" THEN "" ELSE lower(trim(email)) END');
+  $db->exec('UPDATE users SET auth_provider = CASE WHEN trim(COALESCE(auth_provider, "")) = "" THEN "password" ELSE auth_provider END');
+  $db->exec('UPDATE users SET updated_at = CASE WHEN COALESCE(updated_at, 0) <= 0 THEN created_at ELSE updated_at END');
+
+  $db->exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_normalized ON users(email_normalized) WHERE email_normalized <> ""');
+  $db->exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_users_google_sub ON users(google_sub) WHERE google_sub IS NOT NULL');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    selector TEXT NOT NULL UNIQUE,
+    verifier_hash TEXT NOT NULL,
+    expires_at INTEGER NOT NULL,
+    used_at INTEGER,
+    created_at INTEGER NOT NULL,
+    requested_ip TEXT,
+    requested_ua TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_password_reset_user ON password_reset_tokens(user_id)');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_password_reset_expires ON password_reset_tokens(expires_at)');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS favourites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    app TEXT NOT NULL,
+    recipe_id TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    UNIQUE(user_id, app, recipe_id),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_favourites_user_app ON favourites(user_id, app)');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS binaural_presets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    beat_hz REAL NOT NULL,
+    carrier_hz REAL NOT NULL,
+    bed_type TEXT NOT NULL,
+    beat_vol REAL NOT NULL,
+    bed_vol REAL NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    UNIQUE(user_id, name),
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_binaural_user ON binaural_presets(user_id)');
+}
+
+function bl_db(): PDO {
+  static $pdo = null;
+  if($pdo instanceof PDO) return $pdo;
+
+  $dbPath = bl_db_path();
+  $pdo = new PDO('sqlite:' . $dbPath, null, null, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+  ]);
+
+  bl_ensure_schema($pdo);
+
+  return $pdo;
+}

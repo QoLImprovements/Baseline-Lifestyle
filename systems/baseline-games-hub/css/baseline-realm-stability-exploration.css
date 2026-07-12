@@ -1,0 +1,40 @@
+#ninjaPanel #realmSceneFrame.is-basecamp-view .ninja-scene,
+#ninjaPanel #realmSceneFrame.is-exploration-view .ninja-scene{
+  visibility:hidden!important;
+  opacity:0!important;
+}
+#ninjaPanel #realmSceneFrame.is-exploration-view .realm-exploration-screen{
+  background:
+    radial-gradient(circle at 14% 18%,rgba(114,151,80,.42) 0 9%,transparent 10%),
+    radial-gradient(circle at 84% 19%,rgba(92,132,69,.38) 0 10%,transparent 11%),
+    radial-gradient(circle at 76% 82%,rgba(75,111,62,.34) 0 12%,transparent 13%),
+    linear-gradient(135deg,#1d3b22 0%,#466334 52%,#243b27 100%)!important;
+}
+#ninjaPanel .realm-exploration-map{
+  background:
+    repeating-linear-gradient(0deg,rgba(72,45,24,.035) 0 2px,transparent 2px 7px),
+    linear-gradient(135deg,rgba(244,224,181,.97),rgba(196,160,102,.95))!important;
+  border:2px solid #4b2c19!important;
+  box-shadow:0 20px 42px rgba(20,12,7,.34),inset 0 0 0 1px rgba(255,247,218,.36)!important;
+}
+#ninjaPanel .realm-exploration-progress{
+  background:#2a170e!important;
+  border-color:rgba(238,209,158,.26)!important;
+}
+#ninjaPanel .realm-exploration-progress__fill{
+  background:linear-gradient(90deg,#4b744a,#8eab65,#d1ae65)!important;
+}
+#ninjaPanel .realm-explore-node{
+  background:linear-gradient(180deg,#8a6137,#4c321e)!important;
+  border-color:#2d1b10!important;
+  box-shadow:0 8px 14px rgba(33,20,12,.28),inset 0 1px 0 rgba(255,255,255,.16)!important;
+}
+#ninjaPanel .realm-explore-node--boss{
+  background:linear-gradient(180deg,#9b4b3d,#57251f)!important;
+}
+#ninjaPanel .realm-exploration-copy,
+#ninjaPanel .realm-exploration-enemy{
+  background:linear-gradient(180deg,rgba(94,56,33,.94),rgba(42,24,15,.95))!important;
+  border-color:rgba(235,205,151,.28)!important;
+  color:var(--realm-ui-ink)!important;
+}

@@ -1,0 +1,273 @@
+# Baseline Lifestyle Apache/Hostinger cache policy
+# HTML/PHP never cache. JavaScript and CSS must revalidate because filenames are not content hashes.
+# Images and fonts may cache immutably because their URLs are versioned or content-stable.
+
+FileETag None
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xhtml+xml "access plus 0 seconds"
+  ExpiresByType application/x-httpd-php "access plus 0 seconds"
+  ExpiresByType text/css "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 0 seconds"
+  ExpiresByType text/javascript "access plus 0 seconds"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# One-time cache upgrade for every public Games Hub route and the physical fallback path.
+# The epoch cookie prevents Clear-Site-Data from running on every later visit.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} ^/(?:baseline-games-hub/games-hub(?:/.*)?|systems/baseline-games-hub/baseline-games-hub\.html)/?$ [NC]
+  RewriteCond %{HTTP_COOKIE} !(^|;\s*)baseline_games_runtime_epoch=20260629_3(?:;|$) [NC]
+  RewriteRule ^ - [E=baseline_games_cache_upgrade:1]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header unset ETag
+  <FilesMatch "\.(html?|php)$">
+    Header always unset ETag
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(css|js|mjs)$">
+    Header always unset ETag
+    Header always set Cache-Control "public, max-age=0, must-revalidate"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
+  <FilesMatch "\.(svg|png|jpe?g|webp|woff2?)$">
+    Header always unset ETag
+    Header always set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  Header always set Clear-Site-Data "\"cache\"" env=baseline_games_cache_upgrade
+  Header always set Clear-Site-Data "\"cache\"" env=REDIRECT_baseline_games_cache_upgrade
+  Header always add Set-Cookie "baseline_games_runtime_epoch=20260629_3; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=baseline_games_cache_upgrade
+  Header always add Set-Cookie "baseline_games_runtime_epoch=20260629_3; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=REDIRECT_baseline_games_cache_upgrade
+</IfModule>
+
+
+# CLEAN-DEPLOY-SAFETY-20260526cleanroot
+Options -Indexes
+<FilesMatch "\.(sqlite|db|env|ini|log|bak|old|zip)$">
+  Require all denied
+</FilesMatch>
+
+
+# BASELINE-RECIPE-PATH-URLS-20260527
+# Allows URLs such as /baseline-natural-skincare.html/anhydrous-massage-oil-blend
+# while still serving the underlying static HTML file.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  Options -MultiViews
+
+  # Assets requested relative to a path-style recipe URL should resolve to root assets.
+  RewriteRule ^baseline-(natural-skincare|food-approach)\.html/(css|js|game-art|api)/(.*)$ $2/$3 [L,QSA]
+
+  # Page links clicked from a path-style recipe URL should resolve to the real root page.
+  RewriteRule ^baseline-(natural-skincare|food-approach)\.html/(index\.html|baseline-[^/]+\.html)$ $2 [R=302,L]
+
+  # Recipe slug routes.
+  RewriteRule ^baseline-natural-skincare\.html/([^/]+)/?$ /baseline-natural-skincare/recipes/$1 [R=302,L]
+  RewriteRule ^baseline-food-approach\.html/([^/]+)/?$ /baseline-food-approach/recipes/$1 [R=302,L]
+</IfModule>
+
+# BASELINE-HOME-INDEX-CANONICAL-20260607
+# The public home URL is /home/1, not /index.html or /index.html#tab=system.
+# THE_REQUEST prevents internal /home/1 -> index.html rewrites from looping.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} \s/+index\.html[?\s] [NC]
+  RewriteRule ^index\.html$ /home/1 [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s+/[?\s] [NC]
+  RewriteRule ^$ /home/1 [R=302,L]
+</IfModule>
+
+# BASELINE-SYSTEMS-FOLDER-RESTRUCTURE-20260607
+# Section-owned folders now live under /systems/.
+# Public URLs remain unchanged: /baseline-food-approach/system, /baseline-games-hub/games-hub, etc.
+# Rewrite targets point to systems/<section>/...
+
+# BASELINE-STAGE-3-ASSET-ACCOUNTABILITY-20260607
+# Static assets now live with their accountable owner.
+# Root legacy /css, /js, /api, and /game-art requests are internally routed to the new structure.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  Options -MultiViews
+
+  # Legacy root CSS compatibility.
+  RewriteRule ^css/baseline-badminton-session\.css$ systems/baseline-badminton-session/css/baseline-badminton-session.css [L,QSA]
+  RewriteRule ^css/baseline-diet-log\.css$ systems/baseline-food-approach/css/baseline-diet-log.css [L,QSA]
+  RewriteRule ^css/baseline-games-hub\.css$ systems/baseline-games-hub/css/baseline-games-hub.css [L,QSA]
+  RewriteRule ^css/(.*)$ sitewide/css/$1 [L,QSA]
+
+  # Legacy root JS compatibility.
+  RewriteRule ^js/baseline-badminton-session\.js$ systems/baseline-badminton-session/js/baseline-badminton-session.js [L,QSA]
+  RewriteRule ^js/baseline-diet-food-library\.js$ systems/baseline-food-approach/js/baseline-diet-food-library.js [L,QSA]
+  RewriteRule ^js/baseline-diet-log\.js$ systems/baseline-food-approach/js/baseline-diet-log.js [L,QSA]
+  RewriteRule ^js/baseline-fitness-app\.js$ systems/baseline-fitness/js/baseline-fitness-app.js [L,QSA]
+  RewriteRule ^js/baseline-games-hub\.js$ systems/baseline-games-hub/js/baseline-games-hub.js [L,QSA]
+  RewriteRule ^js/(.*)$ sitewide/js/$1 [L,QSA]
+
+  # Legacy API and game-art compatibility.
+  # System-owned API compatibility.
+  # Fitness API compatibility.
+  RewriteRule ^api/achievements\.php$ systems/baseline-fitness/api/achievements.php [L,QSA]
+  RewriteRule ^sitewide/api/achievements\.php$ systems/baseline-fitness/api/achievements.php [L,QSA]
+  RewriteRule ^api/get_plan\.php$ systems/baseline-fitness/api/get_plan.php [L,QSA]
+  RewriteRule ^sitewide/api/get_plan\.php$ systems/baseline-fitness/api/get_plan.php [L,QSA]
+  RewriteRule ^api/list_profiles\.php$ systems/baseline-fitness/api/list_profiles.php [L,QSA]
+  RewriteRule ^sitewide/api/list_profiles\.php$ systems/baseline-fitness/api/list_profiles.php [L,QSA]
+  RewriteRule ^api/plan_update\.php$ systems/baseline-fitness/api/plan_update.php [L,QSA]
+  RewriteRule ^sitewide/api/plan_update\.php$ systems/baseline-fitness/api/plan_update.php [L,QSA]
+  RewriteRule ^api/save_plan\.php$ systems/baseline-fitness/api/save_plan.php [L,QSA]
+  RewriteRule ^sitewide/api/save_plan\.php$ systems/baseline-fitness/api/save_plan.php [L,QSA]
+  RewriteRule ^api/update_session\.php$ systems/baseline-fitness/api/update_session.php [L,QSA]
+  RewriteRule ^sitewide/api/update_session\.php$ systems/baseline-fitness/api/update_session.php [L,QSA]
+  RewriteRule ^api/badminton_logins\.php$ systems/baseline-badminton-session/api/badminton_logins.php [L,QSA]
+  RewriteRule ^api/badminton_session\.php$ systems/baseline-badminton-session/api/badminton_session.php [L,QSA]
+  RewriteRule ^api/games_profile\.php$ systems/baseline-games-hub/api/games_profile.php [L,QSA]
+  RewriteRule ^sitewide/api/badminton_logins\.php$ systems/baseline-badminton-session/api/badminton_logins.php [L,QSA]
+  RewriteRule ^sitewide/api/badminton_session\.php$ systems/baseline-badminton-session/api/badminton_session.php [L,QSA]
+  RewriteRule ^sitewide/api/games_profile\.php$ systems/baseline-games-hub/api/games_profile.php [L,QSA]
+  RewriteRule ^api/(.*)$ sitewide/api/$1 [L,QSA]
+  RewriteRule ^game-art/(.*)$ systems/baseline-games-hub/games/baseline-realm/game-art/$1 [L,QSA]
+</IfModule>
+
+# BASELINE-PHASE-2-REDIRECT-LOOP-FIX-20260607
+# Fixes ERR_TOO_MANY_REDIRECTS after moving main HTML files into section folders.
+# Cause: internal clean-route rewrites were being caught by the nested static-file recovery redirects.
+
+# BASELINE-PHASE-2-MOVED-MAIN-HTML-20260607
+# Main section HTML files now live inside accountable section folders.
+# Public URLs stay clean; old flat .html requests redirect to the clean section route.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} \s/+baseline-food-approach\.html[?\s] [NC]
+  RewriteRule ^baseline-food-approach\.html$ /baseline-food-approach/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-massage\.html[?\s] [NC]
+  RewriteRule ^baseline-massage\.html$ /baseline-massage/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-natural-skincare\.html[?\s] [NC]
+  RewriteRule ^baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-badminton-session\.html[?\s] [NC]
+  RewriteRule ^baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-fitness\.html[?\s] [NC]
+  RewriteRule ^baseline-fitness\.html$ /baseline-fitness/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-games-hub\.html[?\s] [NC]
+  RewriteRule ^baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
+</IfModule>
+
+# BASELINE-PHASE-4B-FOOD-RECIPE-FILES-20260607
+# Food recipe detail URLs now serve accountable per-recipe files.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} \s/+baseline-food-approach/recipes/([^?\s]+)\.html[?\s] [NC]
+  RewriteRule ^baseline-food-approach/recipes/([^/]+)\.html$ /baseline-food-approach/recipes/$1 [R=302,L]
+</IfModule>
+
+# BASELINE-MASSAGE-CANONICAL-ROUTES-20260711
+# Earlier builds exposed longer tab slugs. Redirect direct browser requests to
+# the current concise routes, while internal rewrites remain untouched.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} \s/+baseline-massage/types-of-massage(?:[/?\s]) [NC]
+  RewriteRule ^baseline-massage/types-of-massage/?$ /baseline-massage/library [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-massage/types(?:[/?\s]) [NC]
+  RewriteRule ^baseline-massage/types/?$ /baseline-massage/library [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-massage/massage-library(?:[/?\s]) [NC]
+  RewriteRule ^baseline-massage/massage-library/?$ /baseline-massage/library [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-massage/plan-my-massage(?:[/?\s]) [NC]
+  RewriteRule ^baseline-massage/plan-my-massage/?$ /baseline-massage/planner [R=302,L]
+</IfModule>
+
+# BASELINE-SAFE-NAMED-ROUTES-20260607
+# Clean route support. These routes serve the existing static HTML files;
+# files are not renamed, moved, or swapped.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  Options -MultiViews
+
+  # Clean Home routes.
+  RewriteRule ^home/?$ /home/1 [R=302,L]
+  RewriteRule ^home/1/?$ index.html [L,QSA]
+  RewriteRule ^home/2/?$ index.html [L,QSA]
+
+  # Page defaults.
+  RewriteRule ^baseline-food-approach/?$ /baseline-food-approach/system [R=302,L]
+  RewriteRule ^baseline-massage/?$ /baseline-massage/system [R=302,L]
+  RewriteRule ^baseline-natural-skincare/?$ /baseline-natural-skincare/system [R=302,L]
+  RewriteRule ^baseline-badminton-session/?$ /baseline-badminton-session/system [R=302,L]
+  RewriteRule ^baseline-fitness/?$ /baseline-fitness/system [R=302,L]
+  RewriteRule ^baseline-games-hub/?$ /baseline-games-hub/games-hub [R=302,L]
+
+  # If a browser ever creates a bad nested static-file URL, recover to the clean route.
+  # THE_REQUEST prevents internal Phase 2 rewrites from being redirected again.
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*index\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/index\.html$ /home/1 [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-food-approach\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-food-approach\.html$ /baseline-food-approach/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-massage\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-massage\.html$ /baseline-massage/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-natural-skincare\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-badminton-session\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-fitness\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-fitness\.html$ /baseline-fitness/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-games-hub\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
+
+  # Assets requested from clean-route folders resolve to the real root folders.
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/(css|js|game-art|api)/(.*)$ $1/$2 [L,QSA]
+
+  # BASELINE-CLEAN-CONTENT-RECORD-ROUTES-20260616
+  # Fine-detail Food and Skincare records now have file ownership.
+  RewriteRule ^baseline-food-approach/ingredients/mushrooms/?$ /baseline-food-approach/ingredient-library/white-mushroom [R=302,L]
+  RewriteRule ^baseline-food-approach/ingredients/([^/]+)/?$ /baseline-food-approach/ingredient-library/$1 [R=302,L]
+  RewriteRule ^baseline-food-approach/ingredient-library/([^/]+)/?$ systems/baseline-food-approach/ingredients/$1.html [L,QSA]
+  # Legacy skincare ingredient aliases now resolve to one canonical record each.
+  RewriteRule ^baseline-natural-skincare/ingredient-library/lavender-essential-oil/?$ /baseline-natural-skincare/ingredient-library/lavender [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/olive-oil/?$ /baseline-natural-skincare/ingredient-library/olive [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/rose-water/?$ /baseline-natural-skincare/ingredient-library/rosewater [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/safflower-oil/?$ /baseline-natural-skincare/ingredient-library/safflower [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/([^/]+)/?$ systems/baseline-natural-skincare/ingredients/$1.html [L,QSA]
+  RewriteRule ^baseline-food-approach/diet-log/([^/]+)/?$ "systems/baseline-food-approach/Diet Log/$1.html" [L,QSA]
+
+  # BASELINE-CLEAN-RECIPE-DETAIL-ROUTES-20260607
+  # Clean recipe detail URLs:
+  # /baseline-food-approach/recipes/a-recipe-name
+  # /baseline-natural-skincare/recipes/a-recipe-name
+  RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]
+  RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/recipes/$1.html [L,QSA]
+
+  # Standard page tab routes.
+  RewriteRule ^baseline-food-approach/(system|recipes|ingredient-library|diet-log)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
+
+  # Baseline Massage uses the concise public routes selected by its tabs.
+  # These are handled here at the site root because /baseline-massage/* is a
+  # virtual public path; the physical app lives under /systems/.
+  RewriteRule ^baseline-massage/(system|library|planner)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
+
+  RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
+  RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
+  RewriteRule ^baseline-fitness/(system|workout-routine|exercise-library|achievements|my-plan)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+
+  # Baseline Games Hub hierarchy.
+  RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
+  RewriteRule ^baseline-games-hub/games-hub/(games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
+</IfModule>

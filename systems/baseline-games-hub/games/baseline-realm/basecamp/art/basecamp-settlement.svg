@@ -1,0 +1,156 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Baseline Realm Basecamp settlement</title>
+  <desc id="desc">An original forest settlement at amber dusk with workshops, training grounds, merchant tents, expedition gates, party lodge and a central campfire.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#243a59"/>
+      <stop offset=".48" stop-color="#697f75"/>
+      <stop offset=".78" stop-color="#d1a76d"/>
+      <stop offset="1" stop-color="#806342"/>
+    </linearGradient>
+    <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#36583f"/>
+      <stop offset="1" stop-color="#172c24"/>
+    </linearGradient>
+    <linearGradient id="path" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c39a68"/>
+      <stop offset="1" stop-color="#76543b"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9f633e"/>
+      <stop offset="1" stop-color="#4f2d25"/>
+    </linearGradient>
+    <linearGradient id="timber" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#72503a"/>
+      <stop offset="1" stop-color="#39271f"/>
+    </linearGradient>
+    <radialGradient id="fire" cx="50%" cy="58%" r="50%">
+      <stop offset="0" stop-color="#fff4b0"/>
+      <stop offset=".35" stop-color="#f7b34f"/>
+      <stop offset=".72" stop-color="#d95f35"/>
+      <stop offset="1" stop-color="#7a3227" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="180%">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#0b1612" flood-opacity=".48"/>
+    </filter>
+    <pattern id="planks" width="22" height="22" patternUnits="userSpaceOnUse">
+      <rect width="22" height="22" fill="#61432f"/>
+      <path d="M0 21h22M8 0v22" stroke="#8f6847" stroke-width="2" opacity=".35"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <circle cx="1250" cy="145" r="74" fill="#f7d99c" opacity=".72"/>
+  <ellipse cx="1250" cy="145" rx="130" ry="96" fill="#f8dca2" opacity=".12" filter="url(#soft)"/>
+
+  <path d="M0 310L170 190l135 106 190-164 188 176 174-210 198 224 170-150 175 132 200-170 200 184v222H0z" fill="#314c50" opacity=".82"/>
+  <path d="M0 356L210 246l173 92 188-128 206 148 184-104 204 110 179-88 256 92v202H0z" fill="#29463a" opacity=".9"/>
+  <path d="M0 424c230-88 420-66 618-20 210 49 354-31 548-42 178-10 292 39 434 80v188H0z" fill="#3e6545"/>
+
+  <g opacity=".82">
+    <g fill="#193326"><path d="M40 92l62 182H-22z"/><path d="M155 52l78 248H77z"/><path d="M310 86l67 204H243z"/><path d="M1410 54l82 250h-164z"/><path d="M1532 74l72 226h-144z"/></g>
+    <g fill="#244934"><path d="M82 138l55 166H27z"/><path d="M248 120l60 184H188z"/><path d="M1322 119l62 188h-124z"/><path d="M1478 134l58 177h-116z"/></g>
+  </g>
+
+  <path d="M0 526c199-72 380-42 555 18 203 70 378-27 587-34 177-6 322 29 458 89v301H0z" fill="url(#ground)"/>
+  <path d="M784 900c-49-127-37-230-7-319 35-103 23-150-18-207l84-4c34 80 40 141 10 236-25 80-28 175 20 294z" fill="url(#path)" opacity=".94"/>
+  <path d="M818 610C650 603 506 625 363 700M829 616c190-11 338 16 492 96" fill="none" stroke="#a57b53" stroke-width="48" stroke-linecap="round" opacity=".58"/>
+  <path d="M817 602C653 600 510 628 370 696M835 611c180-6 329 20 477 97" fill="none" stroke="#d2ae78" stroke-width="10" stroke-linecap="round" opacity=".32"/>
+
+  <!-- Training pavilion -->
+  <g transform="translate(118 326)" filter="url(#shadow)">
+    <path d="M0 105L116 12l124 93z" fill="url(#roof)" stroke="#2c201b" stroke-width="9"/>
+    <rect x="24" y="101" width="192" height="116" rx="8" fill="url(#timber)" stroke="#2b211c" stroke-width="8"/>
+    <path d="M53 123h134v67H53z" fill="#1e2d28"/><path d="M77 120v76M163 120v76" stroke="#b18150" stroke-width="9"/>
+    <circle cx="120" cy="153" r="28" fill="none" stroke="#d2b06a" stroke-width="8"/><path d="M120 125v56M92 153h56" stroke="#d2b06a" stroke-width="5"/>
+  </g>
+
+  <!-- Workshop forge -->
+  <g transform="translate(455 330)" filter="url(#shadow)">
+    <path d="M0 104L96 18l126 86z" fill="#674039" stroke="#2b211c" stroke-width="8"/>
+    <rect x="22" y="99" width="184" height="122" rx="8" fill="url(#planks)" stroke="#2b211c" stroke-width="8"/>
+    <rect x="146" y="18" width="32" height="70" fill="#49332b"/><path d="M143 18h38l-7-19h-24z" fill="#32241f"/>
+    <rect x="51" y="135" width="56" height="52" rx="5" fill="#1c2825"/><path d="M63 168h31M79 145v43" stroke="#f2a34c" stroke-width="8"/>
+    <ellipse cx="148" cy="184" rx="28" ry="17" fill="#d16337"/><ellipse cx="148" cy="180" rx="18" ry="10" fill="#ffd67b"/>
+    <path d="M163 5c-17-20 14-34-1-58 34 19 5 44 23 60z" fill="#b7c5bd" opacity=".45"/>
+  </g>
+
+  <!-- Cooking lodge -->
+  <g transform="translate(690 358)" filter="url(#shadow)">
+    <path d="M0 91L104 8l113 83z" fill="#7e5038" stroke="#2a211d" stroke-width="8"/>
+    <rect x="22" y="86" width="175" height="112" rx="8" fill="#76523a" stroke="#2a211d" stroke-width="8"/>
+    <rect x="77" y="121" width="62" height="77" rx="4" fill="#30241f"/>
+    <path d="M47 122h25v42H47zM150 122h25v42h-25z" fill="#f2c87a" opacity=".7"/>
+    <path d="M108 117c-21-16-8-39 0-55 11 17 22 37 0 55z" fill="#f7bd56"/>
+  </g>
+
+  <!-- Merchant canopy -->
+  <g transform="translate(1027 344)" filter="url(#shadow)">
+    <path d="M0 82L36 17h183l37 65z" fill="#7d3f4e" stroke="#2b2022" stroke-width="8"/>
+    <path d="M14 79h227v49H14z" fill="#b46f55"/><path d="M14 79h227" stroke="#f1c27d" stroke-width="10" stroke-dasharray="22 18"/>
+    <path d="M31 128v105M224 128v105" stroke="#4c3328" stroke-width="12"/>
+    <rect x="45" y="137" width="165" height="67" rx="6" fill="#5d3c2e"/>
+    <circle cx="87" cy="163" r="13" fill="#d9aa5e"/><circle cx="128" cy="170" r="14" fill="#8fb36d"/><circle cx="171" cy="158" r="12" fill="#c26d4a"/>
+  </g>
+
+  <!-- Exploration gate -->
+  <g transform="translate(1410 343)" filter="url(#shadow)">
+    <path d="M14 20h32v213H14zM126 20h32v213h-32z" fill="#4f372b"/>
+    <path d="M0 40h172v38H0z" fill="#6e4932" stroke="#2a201a" stroke-width="7"/>
+    <path d="M17 47c34 12 103 10 137 0" fill="none" stroke="#d0aa68" stroke-width="6"/>
+    <path d="M44 82c22 36 18 88 18 151M128 82c-22 36-18 88-18 151" fill="none" stroke="#9a774b" stroke-width="7"/>
+  </g>
+
+  <!-- Calorie Escape start -->
+  <g transform="translate(18 574)" filter="url(#shadow)">
+    <path d="M0 71L76 2l103 69z" fill="#4c6040" stroke="#213024" stroke-width="8"/>
+    <rect x="20" y="68" width="142" height="106" rx="9" fill="#5c4431" stroke="#26201b" stroke-width="8"/>
+    <path d="M55 139c16-40 35-45 56-4 13-16 25-12 37 4" fill="none" stroke="#d5ba70" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="88" cy="105" r="18" fill="#d17a49"/>
+  </g>
+
+  <!-- Storehouse -->
+  <g transform="translate(266 568)" filter="url(#shadow)">
+    <path d="M0 72L91 0l107 72z" fill="#5f4634" stroke="#251d18" stroke-width="8"/>
+    <rect x="18" y="68" width="164" height="119" rx="7" fill="url(#planks)" stroke="#251d18" stroke-width="8"/>
+    <rect x="68" y="106" width="64" height="81" fill="#34251e"/>
+    <path d="M32 96h30v28H32zM139 96h29v28h-29z" fill="#d4ac67" opacity=".65"/>
+    <path d="M91 107v78M70 143h62" stroke="#805c3f" stroke-width="6"/>
+  </g>
+
+  <!-- Tactical board -->
+  <g transform="translate(929 572)" filter="url(#shadow)">
+    <path d="M0 65L103 0l112 65z" fill="#405047" stroke="#202823" stroke-width="8"/>
+    <rect x="19" y="61" width="178" height="119" rx="7" fill="#534034" stroke="#20201c" stroke-width="8"/>
+    <path d="M47 91h121v59H47z" fill="#27382f" stroke="#d2ad6d" stroke-width="5"/>
+    <path d="M66 125l24-17 26 22 32-25" fill="none" stroke="#d9c17d" stroke-width="5"/>
+    <circle cx="64" cy="99" r="6" fill="#d66c4c"/><circle cx="153" cy="137" r="6" fill="#7bb07b"/>
+  </g>
+
+  <!-- Party lodge -->
+  <g transform="translate(1240 574)" filter="url(#shadow)">
+    <path d="M0 72L104 0l114 72z" fill="#6d4c56" stroke="#281f24" stroke-width="8"/>
+    <rect x="20" y="68" width="178" height="116" rx="8" fill="#66483a" stroke="#281f24" stroke-width="8"/>
+    <path d="M46 98h127v45H46z" fill="#26372f"/>
+    <path d="M61 129l18-22 18 22 18-22 18 22 18-22 17 22" fill="none" stroke="#ddbd75" stroke-width="6"/>
+    <rect x="79" y="146" width="60" height="38" fill="#35271f"/>
+  </g>
+
+  <!-- Central campfire and benches -->
+  <ellipse cx="800" cy="786" rx="165" ry="62" fill="#f5a74c" opacity=".16" filter="url(#soft)"/>
+  <g filter="url(#shadow)">
+    <path d="M695 795l205 46M908 795l-211 46" stroke="#5d3b27" stroke-width="20" stroke-linecap="round"/>
+    <ellipse cx="800" cy="786" rx="72" ry="27" fill="#2a211c"/>
+    <circle cx="800" cy="770" r="79" fill="url(#fire)" opacity=".65"/>
+    <path d="M800 789c-36-35 6-59 2-105 33 37 57 69 13 105z" fill="#f0833d"/>
+    <path d="M804 783c-18-24 4-41 4-65 20 22 31 44 10 65z" fill="#ffe58b"/>
+  </g>
+
+  <g fill="#d9bd7e" opacity=".7">
+    <circle cx="610" cy="667" r="4"/><circle cx="655" cy="625" r="3"/><circle cx="1103" cy="646" r="4"/><circle cx="1165" cy="690" r="3"/><circle cx="421" cy="742" r="3"/><circle cx="1360" cy="754" r="4"/>
+  </g>
+  <rect width="1600" height="900" fill="none" stroke="#15231e" stroke-width="20" opacity=".45"/>
+</svg>

@@ -1,0 +1,15 @@
+#realmSceneFrame { position: relative; }
+.realm-loading-screen { position:absolute; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgba(24,20,17,.82); backdrop-filter:blur(8px); color:#fff8ec; }
+.realm-loading-screen[hidden] { display:none !important; }
+.realm-loading-card { width:min(440px,92%); display:grid; gap:12px; padding:22px; border-radius:22px; background:rgba(54,39,28,.96); border:1px solid rgba(255,244,222,.25); box-shadow:0 22px 60px rgba(0,0,0,.4); text-align:center; }
+.realm-loading-card strong { font-size:clamp(22px,4vw,34px); }
+.realm-loading-card progress { width:100%; height:14px; accent-color:#d69a50; }
+.realm-audio-controls { position:absolute; z-index:65; right:10px; bottom:10px; display:flex; align-items:center; gap:8px; padding:7px 9px; border-radius:999px; background:rgba(36,27,21,.84); color:#fff8ec; border:1px solid rgba(255,244,222,.2); font:700 12px/1 system-ui,sans-serif; }
+.realm-audio-controls button { min-height:32px; padding:6px 10px; border-radius:999px; border:1px solid rgba(255,244,222,.25); background:#f2d29f; color:#3b2616; font-weight:900; cursor:pointer; }
+.realm-audio-controls label { display:flex; align-items:center; gap:6px; }
+.realm-audio-controls input { width:88px; }
+html[data-realm-reduced-motion="true"] #realmSceneFrame *,
+html[data-realm-reduced-motion="true"] #realmSceneFrame *::before,
+html[data-realm-reduced-motion="true"] #realmSceneFrame *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+@media (max-width:900px) { .realm-audio-controls { right:6px; bottom:6px; padding:5px; } .realm-audio-controls label { font-size:0; } .realm-audio-controls input { width:68px; } }
+@media (prefers-reduced-motion: reduce) { .realm-loading-screen { backdrop-filter:none; } }

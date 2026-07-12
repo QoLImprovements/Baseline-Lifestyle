@@ -1,0 +1,167 @@
+/* Baseline Realm Stage 1: sole dominant mobile authority; portrait is gate-only. */
+@media (max-width:1024px), (pointer:coarse){
+  html,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"]{
+    width:100%!important;
+    height:100%!important;
+    margin:0!important;
+    padding:0!important;
+    overflow:hidden!important;
+    background:#172b1d!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .bl-homebar,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .hero,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #gamesOverviewCard,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel > .mobile-game-exit{display:none!important;}
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .bl-scroll,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] main,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #games,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel .realm-shell-card,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel .realm-shell,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel .realm-game-mount,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaGameCard,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmWindow,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmSceneFrame{
+    position:fixed!important;
+    top:0!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:0!important;
+    display:block!important;
+    width:var(--realm-mobile-width,100vw)!important;
+    height:var(--realm-mobile-height,100vh)!important;
+    min-width:var(--realm-mobile-width,100vw)!important;
+    min-height:var(--realm-mobile-height,100vh)!important;
+    max-width:var(--realm-mobile-width,100vw)!important;
+    max-height:var(--realm-mobile-height,100vh)!important;
+    margin:0!important;
+    padding:0!important;
+    border:0!important;
+    border-radius:0!important;
+    transform:none!important;
+    overflow:hidden!important;
+    aspect-ratio:auto!important;
+    background:#172b1d!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaPanel{z-index:2147483000!important;gap:0!important;}
+}
+
+@media (orientation:portrait) and (max-width:1024px){
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmSceneFrame > :not(.realm-orientation-gate){
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmSceneFrame > .realm-orientation-gate{
+    position:fixed!important;
+    top:0!important;
+    right:auto!important;
+    bottom:auto!important;
+    left:0!important;
+    z-index:2147483647!important;
+    display:grid!important;
+    place-items:center!important;
+    width:var(--realm-mobile-width,100vw)!important;
+    height:var(--realm-mobile-height,100vh)!important;
+    min-width:var(--realm-mobile-width,100vw)!important;
+    min-height:var(--realm-mobile-height,100vh)!important;
+    max-width:var(--realm-mobile-width,100vw)!important;
+    max-height:var(--realm-mobile-height,100vh)!important;
+    margin:0!important;
+    padding:24px!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    color:#fff0cf!important;
+    -webkit-text-fill-color:#fff0cf!important;
+  }
+}
+
+@media (orientation:landscape) and (max-width:1024px){
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmSceneFrame{--realm-banner-height:72px!important;}
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmSceneFrame > .realm-orientation-gate{display:none!important;}
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-command-banner{
+    position:absolute!important;
+    inset:0 0 auto 0!important;
+    z-index:50!important;
+    display:grid!important;
+    width:100%!important;
+    height:72px!important;
+    min-height:72px!important;
+    max-height:72px!important;
+    margin:0!important;
+    overflow:hidden!important;
+  }
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-basecamp-screen,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-exploration-screen{
+    position:absolute!important;
+    inset:72px 0 0!important;
+    display:block!important;
+    width:auto!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    visibility:visible!important;
+    overflow:hidden!important;
+  }
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-training-hud{
+    position:absolute!important;
+    inset:72px 0 0!important;
+    z-index:60!important;
+    display:block!important;
+    visibility:visible!important;
+    pointer-events:none!important;
+  }
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-action-dock{
+    position:absolute!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+    z-index:70!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:8px!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+  }
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-combat-btn,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaManualStrikeBtn,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] #ninjaShurikenBtn{
+    display:grid!important;
+    width:100%!important;
+    min-width:0!important;
+    min-height:48px!important;
+    visibility:visible!important;
+    opacity:1;
+    pointer-events:auto!important;
+  }
+
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene__runner,
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene__enemy{
+    position:absolute!important;
+    display:flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    top:auto!important;
+    bottom:64px!important;
+    z-index:20!important;
+    pointer-events:none!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene__runner{
+    left:6%!important;
+    width:min(18vw,132px)!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene__enemy{
+    right:6%!important;
+    width:min(18vw,132px)!important;
+  }
+  body.bl-mobile-game-mode[data-mobile-game="ninja"] .ninja-scene.is-boss .ninja-scene__enemy{
+    width:min(21vw,154px)!important;
+  }
+}

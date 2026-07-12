@@ -1,0 +1,22 @@
+Phase 2 validation
+
+Source ZIP: baseline-lifestyle-site-phase-1-accountable-structure.zip
+Original Phase 1 files checked: 386
+Main HTML files intentionally moved: 6
+Unexpected missing files: 0
+Unexpected changed files: 0
+Main HTML identity check: passed
+Game standalone HTML files created: 0
+Route target checks: passed
+Node syntax checks:
+- js/baseline-shared.js: passed
+- js/baseline-games-hub.js: passed
+- js/baseline-tabs.js: passed
+
+Moved files:
+- baseline-badminton-session.html -> baseline-badminton-session/baseline-badminton-session.html
+- baseline-fitness.html -> baseline-fitness/baseline-fitness.html
+- baseline-food-approach.html -> baseline-food-approach/baseline-food-approach.html
+- baseline-games-hub.html -> baseline-games-hub/baseline-games-hub.html
+- baseline-massage.html -> baseline-massage/baseline-massage.html
+- baseline-natural-skincare.html -> baseline-natural-skincare/baseline-natural-skincare.html

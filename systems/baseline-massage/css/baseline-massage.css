@@ -1,0 +1,1260 @@
+/* Baseline Massage canonical page styling. */
+
+*{box-sizing:border-box}
+html[data-app="massage"],
+body[data-app="massage"]{
+  --massage-deep:#6f4e36;
+  --massage-mid:#805d42;
+  --massage-soft:#916d4f;
+  --massage-centre:#a58363;
+  --massage-card:#c09570;
+  --massage-card-2:#aa7854;
+  --massage-panel:#c99a72;
+  --massage-panel-2:#b7855f;
+  --massage-control:#d2a078;
+  --massage-control-2:#b98159;
+  --massage-ink:#24140b;
+  --massage-muted:#472d1d;
+  --massage-border:rgba(38,20,10,.38);
+  --massage-border-strong:rgba(55,31,18,.48);
+  --massage-shadow:0 22px 52px -34px rgba(24,13,7,.62);
+
+  --page-bg:linear-gradient(90deg,
+    var(--massage-deep) 0%,
+    var(--massage-mid) 18%,
+    var(--massage-soft) 36%,
+    var(--massage-centre) 50%,
+    var(--massage-soft) 64%,
+    var(--massage-mid) 82%,
+    var(--massage-deep) 100%
+  );
+
+  --ink:var(--massage-ink);
+  --muted:var(--massage-muted);
+  --accent:var(--massage-mid);
+  --accent-2:#2f1a0e;
+  --border:var(--massage-border);
+  --border-2:var(--massage-border-strong);
+  --ring:rgba(80,46,24,.30);
+  --shadow:var(--massage-shadow);
+  --shadow-soft:var(--massage-shadow);
+  --radius-lg:22px;
+  --radius:16px;
+  --font:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+  --font-soft:ui-serif,Georgia,Cambria,"Times New Roman",Times,serif;
+  --card-bg:linear-gradient(180deg,var(--massage-card) 0%,var(--massage-card-2) 100%);
+  --filter-bg:linear-gradient(180deg,#93694a 0%,#785034 100%);
+  --showall-bg:linear-gradient(180deg,var(--massage-control) 0%,var(--massage-control-2) 100%);
+  --showall-border:rgba(38,20,10,.34);
+  --homebar-bg:var(--page-bg);
+  --homebar-border:#8b6548;
+  --banner-pill-bg:var(--page-bg);
+  --banner-pill-solid:#7a5235;
+  --banner-pill-ink:var(--massage-ink);
+  --banner-pill-border:#8b6548;
+  --auth-flyout-bg:var(--banner-pill-bg);
+  --scroll-track:#5f412d;
+  --scroll-thumb:#b78b66;
+  --scroll-thumb-hover:#d0a27a;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  min-height:100%;
+  background:var(--page-bg);
+  color:var(--ink);
+  font-family:var(--font);
+  scroll-behavior:auto;
+}
+body{
+  min-height:100svh;
+  background:var(--page-bg);
+  font-size:18px;
+  line-height:1.58;
+}
+html[data-app="massage"],
+body[data-app="massage"],
+body[data-app="massage"] .bl-scroll{
+  background:var(--page-bg)!important;
+  background-size:100% 100%!important;
+  background-attachment:fixed!important;
+}
+.bl-scroll{
+  background:var(--page-bg);
+  background-size:100% 100%;
+  background-attachment:fixed;
+}
+body[data-app="massage"] .hero,
+body[data-app="massage"] .bl-homebar,
+body[data-app="massage"] .bl-homebar::before,
+body[data-app="massage"] .bl-pages-menu{
+  background:var(--page-bg)!important;
+  background-size:100% 100%!important;
+}
+body[data-app="massage"] .hero .title{
+  color:#f1d7bd!important;
+  text-shadow:0 1px 1px rgba(30,14,6,.24)!important;
+}
+body[data-app="massage"] .hero .subtitle{
+  color:#e8c5a8!important;
+  max-width:none;
+  text-shadow:0 1px 1px rgba(30,14,6,.22)!important;
+}
+
+.section{display:none;animation:massageFade .22s ease}
+.section.active{display:block}
+@keyframes massageFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.tabs,
+.subtabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.tab,
+.subtab,
+.library-tab,
+.planner-btn{
+  appearance:none;
+  border:none;
+  cursor:pointer;
+  background:var(--showall-bg);
+  padding:10px 14px;
+  border-radius:999px;
+  font-size:16px;
+  font-weight:850;
+  color:#1f1007;
+  border:1px solid var(--showall-border);
+  box-shadow:0 10px 22px -18px rgba(22,12,7,.38);
+  white-space:nowrap;
+  text-decoration:none;
+}
+.tab:hover,
+.subtab:hover,
+.library-tab:hover,
+.planner-btn:hover{filter:brightness(1.035) saturate(1.02)}
+.tab[aria-selected="true"],
+.subtab[aria-selected="true"],
+.library-tab[aria-selected="true"],
+.planner-btn.primary{
+  background:linear-gradient(180deg,#dfb58b 0%,#c58d62 100%);
+  color:#1f1007;
+  border-color:rgba(38,20,10,.50);
+  box-shadow:0 16px 32px -24px rgba(38,20,10,.50);
+}
+
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+.grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.focus-stack{display:grid;gap:16px}
+.card{
+  background:var(--card-bg)!important;
+  border:1px solid var(--border-2)!important;
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow)!important;
+  padding:24px;
+  color:var(--massage-ink)!important;
+  overflow:hidden;
+}
+.card h1,
+.card h2,
+.card h3,
+.card h4{
+  margin:0 0 12px 0;
+  color:#271509!important;
+  font-family:var(--font-soft);
+  line-height:1.12;
+}
+.card h1{font-size:clamp(34px,5vw,62px)}
+.card h2{font-size:clamp(30px,4vw,44px)}
+.card h3{font-size:clamp(23px,3vw,31px)}
+.card h4{font-size:21px}
+.card p{margin:0 0 12px 0;color:#3f2819}
+.note{color:#3f2819!important;font-size:16px}
+.lead{
+  font-size:clamp(19px,2.1vw,24px);
+  line-height:1.45;
+  color:#321c10!important;
+  max-width:68ch;
+}
+.human-line{
+  font-family:var(--font-soft);
+  font-size:clamp(30px,4.6vw,58px);
+  line-height:1.05;
+  color:#271509;
+  margin:0 0 16px;
+}
+.kicker{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  padding:8px 12px;
+  border-radius:999px;
+  background:var(--showall-bg);
+  border:1px solid var(--showall-border);
+  box-shadow:0 10px 22px -18px rgba(22,12,7,.38);
+  font-weight:900;
+  color:#1f1007;
+  margin-bottom:12px;
+}
+.soft-card,
+.type-note,
+.library-card,
+.area-card,
+.time-panel,
+.conditional-panel{
+  display:grid;
+  gap:10px;
+  padding:18px;
+  border-radius:22px;
+  border:1px solid var(--massage-border);
+  background:linear-gradient(180deg,var(--massage-panel) 0%,var(--massage-panel-2) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,229,199,.12),0 16px 34px -28px rgba(24,13,7,.46);
+  color:var(--massage-ink);
+}
+.type-note strong,
+.soft-card strong,
+.area-card strong{
+  color:#271509;
+  font-family:var(--font-soft);
+  font-size:20px;
+}
+.type-card{
+  display:none;
+}
+.type-card.active{
+  display:block;
+}
+.type-card .type-copy{
+  max-width:76ch;
+}
+.type-card .rule-list{
+  margin-top:16px;
+}
+.rule-list{
+  display:grid;
+  gap:10px;
+  margin:0;
+  padding:0;
+  list-style:none;
+}
+.rule-list li{
+  padding:12px 14px;
+  border-radius:16px;
+  background:linear-gradient(180deg,var(--massage-panel) 0%,var(--massage-panel-2) 100%);
+  border:1px solid var(--massage-border);
+  color:#3f2819;
+  box-shadow:inset 0 1px 0 rgba(255,229,199,.12),0 16px 34px -28px rgba(24,13,7,.46);
+}
+.rule-list strong{color:#271509}
+
+.library-tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:12px 0 16px;
+  padding:12px;
+  border-radius:18px;
+  background:linear-gradient(180deg,rgba(147,105,74,.54),rgba(120,80,52,.40));
+  border:1px solid var(--massage-border);
+}
+.lib{
+  display:grid;
+  gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+}
+.library-card{
+  align-content:start;
+}
+.library-card[hidden]{display:none!important}
+.library-card h3{
+  margin:0 0 8px;
+  font-size:24px;
+}
+.library-card p{
+  margin:0;
+}
+.library-tag{
+  font-size:13px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  font-weight:900;
+  color:#4b2d1b;
+}
+.library-detail{
+  display:grid;
+  gap:8px;
+  margin-top:8px;
+}
+.library-detail[hidden]{display:none}
+.library-open{
+  justify-self:start;
+  min-height:38px;
+  padding:8px 12px;
+}
+
+.planner-subtabs{margin-bottom:16px}
+.planner-mode-panel{display:none}
+.planner-mode-panel.active{display:block}
+.planner-mode-card{display:grid;gap:18px}
+.broad-area-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.broad-area-option{display:flex;align-items:center;gap:9px;padding:12px 14px;border:1px solid var(--massage-border);border-radius:16px;background:linear-gradient(180deg,var(--massage-panel) 0%,var(--massage-panel-2) 100%);font-weight:800}
+.broad-area-option input{width:auto}
+@media(max-width:760px){.broad-area-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.broad-area-grid{grid-template-columns:1fr}}
+.planner-form{
+  display:grid;
+  gap:18px;
+}
+.planner-controls{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+.planner-row{
+  display:grid;
+  gap:8px;
+}
+.planner-row.full{grid-column:1 / -1}
+.planner-row[hidden]{display:none!important}
+.planner-row label{
+  font-weight:900;
+  color:#271509;
+}
+.planner-row select,
+.planner-row input,
+.planner-row textarea,
+.area-time{
+  width:100%;
+  min-width:0;
+  border-radius:18px;
+  border:1px solid rgba(38,20,10,.42);
+  background:#edc7a4;
+  color:#1b0d05;
+  -webkit-text-fill-color:#1b0d05;
+  padding:12px 14px;
+  font:inherit;
+  box-shadow:inset 0 1px 0 rgba(255,245,232,.52);
+}
+.planner-row textarea{
+  min-height:92px;
+  resize:vertical;
+}
+.planner-row input::placeholder,
+.planner-row textarea::placeholder{color:rgba(27,13,5,.68);opacity:1}
+.planner-row select:focus,
+.planner-row input:focus,
+.planner-row textarea:focus,
+.area-time:focus{
+  outline:none;
+  box-shadow:0 0 0 4px var(--ring);
+  border-color:rgba(38,20,10,.60);
+}
+.conditional-panel[hidden]{display:none!important}
+.area-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:16px;
+  align-items:start;
+}
+.area-column{
+  display:grid;
+  gap:16px;
+}
+.area-list{
+  display:grid;
+  gap:10px;
+}
+.area-item{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) minmax(92px,120px);
+  gap:10px;
+  align-items:center;
+  padding:12px;
+  border-radius:18px;
+  background:linear-gradient(180deg,var(--massage-panel) 0%,var(--massage-panel-2) 100%);
+  border:1px solid var(--massage-border);
+}
+.area-item input[type="checkbox"]{
+  inline-size:20px;
+  block-size:20px;
+  accent-color:#5f412d;
+}
+.area-item label{
+  font-weight:900;
+  color:#271509;
+}
+.area-item small{
+  display:block;
+  color:#4a2d1a;
+  font-weight:650;
+}
+.area-time{
+  padding:10px 11px;
+  font-weight:900;
+}
+.area-time:disabled{
+  opacity:1;
+  background:#e5bc96;
+  color:#1b0d05;
+  -webkit-text-fill-color:#1b0d05;
+}
+.agreement-card{
+  background:linear-gradient(180deg,#d1a176 0%,#bb855d 100%);
+}
+.time-panel{
+  gap:10px;
+}
+.time-bar{
+  height:18px;
+  border-radius:999px;
+  background:#70492d;
+  overflow:hidden;
+  border:1px solid rgba(38,20,10,.52);
+}
+.time-fill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,#dfb58b 0%,#7b5539 100%);
+  transition:width .16s ease;
+}
+.time-panel.is-over{
+  outline:2px solid rgba(69,21,29,.58);
+}
+.advisory-list{
+  margin:0;
+  padding-left:20px;
+}
+.advisory-list li{
+  margin:6px 0;
+  color:#3f2819;
+}
+.brief-output{
+  white-space:pre-wrap;
+  margin:0;
+  min-height:120px;
+  padding:18px;
+  border-radius:22px;
+  border:1px solid var(--massage-border);
+  background:#edc7a4;
+  color:#24140b;
+  font:inherit;
+}
+.button-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.planner-btn[disabled]{
+  opacity:.55;
+  cursor:not-allowed;
+  filter:none;
+}
+@media (max-width:900px){
+
+  .card{padding:18px;border-radius:22px}
+  body{font-size:17px}
+  .tabs,.subtabs,.library-tabs{
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .tab,.subtab,.library-tab{flex:0 0 auto}
+  .planner-controls,
+  .grid-two,
+  .area-layout{
+    grid-template-columns:1fr;
+  }
+}
+@media (max-width:560px){
+  .area-item{
+    grid-template-columns:auto minmax(0,1fr);
+  }
+  .area-time{
+    grid-column:1 / -1;
+  }
+}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+
+
+/* Plan My Massage is practical, not a hero/motto block. */
+body[data-app="massage"] #planner .planner-intro h2{
+  font-size:clamp(24px,2.4vw,32px)!important;
+  line-height:1.16!important;
+  margin-bottom:10px!important;
+}
+body[data-app="massage"] #planner .planner-intro .lead{
+  font-size:clamp(18px,1.6vw,22px)!important;
+  line-height:1.45!important;
+}
+
+/* Final dominant readable field rule. This is intentionally at the end of the CSS. */
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form :is(select,input,textarea,.area-time),
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form pre.brief-output{
+  background:#edc7a4!important;
+  background-image:none!important;
+  color:#1b0d05!important;
+  -webkit-text-fill-color:#1b0d05!important;
+  border-color:rgba(38,20,10,.48)!important;
+  box-shadow:inset 0 1px 0 rgba(255,245,232,.56)!important;
+  opacity:1!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form :is(input,textarea)::placeholder{
+  color:rgba(27,13,5,.66)!important;
+  -webkit-text-fill-color:rgba(27,13,5,.66)!important;
+  opacity:1!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form .area-time:disabled,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form input:disabled{
+  background:#e5bc96!important;
+  background-image:none!important;
+  color:#1b0d05!important;
+  -webkit-text-fill-color:#1b0d05!important;
+  opacity:1!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form :is(select,input,textarea,.area-time):focus{
+  background:#f1d1b0!important;
+  background-image:none!important;
+  color:#1b0d05!important;
+  -webkit-text-fill-color:#1b0d05!important;
+  border-color:rgba(31,16,7,.72)!important;
+  box-shadow:0 0 0 4px rgba(80,46,24,.22), inset 0 1px 0 rgba(255,245,232,.60)!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select option{
+  background:#edc7a4!important;
+  color:#1b0d05!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form input:-webkit-autofill,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form textarea:-webkit-autofill,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #edc7a4 inset!important;
+  -webkit-text-fill-color:#1b0d05!important;
+}
+
+
+/* Final proportion and touch-density correction. Headings are not motto-sized, and body-area choices sit together inside each card instead of becoming separate padded cards. */
+body[data-app="massage"] .card h2{
+  font-size:clamp(23px,2.4vw,32px)!important;
+  line-height:1.16!important;
+}
+body[data-app="massage"] .card h3{
+  font-size:clamp(20px,2vw,25px)!important;
+  line-height:1.18!important;
+}
+body[data-app="massage"] section#system .card h2{
+  font-family:var(--font)!important;
+  font-size:clamp(21px,1.8vw,26px)!important;
+  line-height:1.2!important;
+  margin-bottom:12px!important;
+}
+body[data-app="massage"] section#system .rule-list{
+  gap:7px!important;
+}
+body[data-app="massage"] section#system .rule-list li{
+  padding:10px 12px!important;
+  border-radius:12px!important;
+}
+body[data-app="massage"] #planner .planner-intro h2{
+  font-size:clamp(22px,2.2vw,30px)!important;
+  line-height:1.16!important;
+}
+body[data-app="massage"] #planner .planner-intro .lead{
+  font-size:clamp(17px,1.45vw,20px)!important;
+}
+body[data-app="massage"] #massagePlannerForm.planner-form{
+  gap:14px!important;
+}
+body[data-app="massage"] #massagePlannerForm .planner-controls{
+  gap:12px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-layout{
+  gap:10px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-column{
+  gap:10px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-card{
+  padding:12px!important;
+  gap:8px!important;
+  border-radius:14px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-card > strong{
+  font-family:var(--font)!important;
+  font-size:16px!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-card > span{
+  font-size:13px!important;
+  line-height:1.32!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-list{
+  gap:0!important;
+  border:1px solid rgba(38,20,10,.30)!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+  background:rgba(237,199,164,.22)!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-item{
+  grid-template-columns:24px minmax(0,1fr) 76px!important;
+  gap:8px!important;
+  align-items:center!important;
+  padding:7px 8px!important;
+  border:0!important;
+  border-radius:0!important;
+  border-bottom:1px solid rgba(38,20,10,.22)!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-item:last-child{
+  border-bottom:0!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-item input[type="checkbox"]{
+  inline-size:16px!important;
+  block-size:16px!important;
+  margin:0!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-item label{
+  font-size:14px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-item label small{
+  display:none!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form .area-time{
+  min-height:34px!important;
+  padding:7px 9px!important;
+  border-radius:10px!important;
+  text-align:left!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form :is(select,input,textarea):not(.area-time){
+  background:#f0cfad!important;
+  background-image:none!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form .area-time,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form .area-time:disabled{
+  background:#f1d0af!important;
+  background-image:none!important;
+}
+/* Match the original Advanced / Custom planner field backgrounds in the two simplified planner tabs. */
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row :is(select,input,textarea){
+  background:#f0cfad!important;
+  background-image:none!important;
+  color:#1b0d05!important;
+  -webkit-text-fill-color:#1b0d05!important;
+  border-color:rgba(38,20,10,.48)!important;
+  box-shadow:inset 0 1px 0 rgba(255,245,232,.56)!important;
+  opacity:1!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row :is(select,input,textarea):focus{
+  background:#f1d1b0!important;
+  background-image:none!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row select option{
+  background:#f0cfad!important;
+  color:#1b0d05!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row input:-webkit-autofill,
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row textarea:-webkit-autofill,
+html[data-app="massage"] body[data-app="massage"] section#planner .planner-mode-card .planner-row select:-webkit-autofill{
+  -webkit-box-shadow:0 0 0 1000px #f0cfad inset!important;
+  -webkit-text-fill-color:#1b0d05!important;
+}
+
+@media (max-width:560px){
+  body[data-app="massage"] #massagePlannerForm .area-item{
+    grid-template-columns:22px minmax(0,1fr) 68px!important;
+  }
+  body[data-app="massage"] #massagePlannerForm .area-time{
+    grid-column:auto!important;
+  }
+}
+
+
+/* Compact body-area grouping: one containing card, no dead two-column gap. */
+body[data-app="massage"] #massagePlannerForm .area-layout{
+  display:block!important;
+}
+body[data-app="massage"] #massagePlannerForm .body-area-card{
+  padding:12px!important;
+  gap:10px!important;
+}
+body[data-app="massage"] #massagePlannerForm .body-area-card > strong{
+  font-family:var(--font)!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-groups{
+  display:grid!important;
+  gap:10px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section{
+  padding:10px!important;
+  border:1px solid rgba(38,20,10,.32)!important;
+  border-radius:12px!important;
+  background:rgba(237,199,164,.20)!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section-head{
+  display:grid!important;
+  gap:2px!important;
+  margin-bottom:8px!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section-head > strong{
+  font-family:var(--font)!important;
+  font-size:15px!important;
+  line-height:1.2!important;
+  color:#271509!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section-head > span{
+  font-size:12px!important;
+  line-height:1.25!important;
+  color:#3f2819!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section .area-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:0!important;
+  border:1px solid rgba(38,20,10,.28)!important;
+  border-radius:10px!important;
+  overflow:hidden!important;
+  background:rgba(241,208,175,.28)!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section .area-item{
+  grid-template-columns:22px minmax(0,1fr) 70px!important;
+  gap:7px!important;
+  padding:6px 7px!important;
+  min-height:34px!important;
+  border:0!important;
+  border-right:1px solid rgba(38,20,10,.18)!important;
+  border-bottom:1px solid rgba(38,20,10,.18)!important;
+  background:transparent!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section .area-item:nth-child(2n){
+  border-right:0!important;
+}
+body[data-app="massage"] #massagePlannerForm .area-section .area-item label{
+  font-size:13px!important;
+  line-height:1.15!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form .area-section .area-time{
+  min-height:28px!important;
+  padding:4px 7px!important;
+  border-radius:8px!important;
+}
+
+/* Sensory options: useful preference capture without spreading the page out. */
+body[data-app="massage"] #massagePlannerForm .sensory-card{
+  display:grid!important;
+  gap:8px!important;
+  padding:12px!important;
+  border-radius:14px!important;
+  border:1px solid var(--massage-border)!important;
+  background:linear-gradient(180deg,var(--massage-panel) 0%,var(--massage-panel-2) 100%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,229,199,.12),0 16px 34px -28px rgba(24,13,7,.46)!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-card h3{
+  margin:0!important;
+  font-family:var(--font)!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-card .note{
+  margin:0!important;
+  font-size:13px!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-grid{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-grid .planner-row{
+  grid-column:1 / -1!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-option{
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  min-height:34px!important;
+  padding:7px 9px!important;
+  border:1px solid rgba(38,20,10,.28)!important;
+  border-radius:10px!important;
+  background:rgba(241,208,175,.30)!important;
+  color:#271509!important;
+  font-weight:850!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] #massagePlannerForm .sensory-option input[type="checkbox"]{
+  inline-size:16px!important;
+  block-size:16px!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  accent-color:#5f412d!important;
+}
+@media (max-width:760px){
+  body[data-app="massage"] #massagePlannerForm .area-section .area-list,
+  body[data-app="massage"] #massagePlannerForm .sensory-grid{
+    grid-template-columns:1fr!important;
+  }
+  body[data-app="massage"] #massagePlannerForm .area-section .area-item{
+    border-right:0!important;
+  }
+}
+
+
+/* Custom flow builder uses set fractions and set flow types instead of an open-ended custom text box. */
+body[data-app="massage"] #massagePlannerForm .custom-flow-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin-top:8px!important;
+}
+body[data-app="massage"] #massagePlannerForm .custom-flow-grid[hidden]{
+  display:none!important;
+}
+body[data-app="massage"] #massagePlannerForm #customFlowPanel h3{
+  margin:0!important;
+  font-family:var(--font)!important;
+  font-size:17px!important;
+  line-height:1.2!important;
+}
+@media (max-width:760px){
+  body[data-app="massage"] #massagePlannerForm .custom-flow-grid{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* Keep native dropdown selection colours inside the massage theme instead of default blue where the browser allows it. */
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select option:checked,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select option:hover,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select:focus option:checked{
+  background:#805d42!important;
+  background-color:#805d42!important;
+  color:#f1d7bd!important;
+  -webkit-text-fill-color:#f1d7bd!important;
+}
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form select::selection,
+html[data-app="massage"] body[data-app="massage"] section#planner #massagePlannerForm.planner-form option::selection{
+  background:#805d42!important;
+  color:#f1d7bd!important;
+}
+
+
+/* System page: coherent, close-held copy rather than separate padded point cards. */
+body[data-app="massage"] section#system .system-card{
+  padding:22px!important;
+}
+body[data-app="massage"] section#system .system-intro-copy{
+  max-width:none!important;
+  margin:0 0 16px 0!important;
+  font-size:clamp(17px,1.45vw,20px)!important;
+  line-height:1.45!important;
+  color:#321c10!important;
+}
+body[data-app="massage"] section#system .system-card h2{
+  font-family:var(--font)!important;
+  font-size:clamp(21px,1.8vw,26px)!important;
+  line-height:1.2!important;
+  margin:0 0 10px 0!important;
+}
+body[data-app="massage"] section#system .system-list{
+  display:grid!important;
+  gap:0!important;
+  margin:0!important;
+  padding:0!important;
+  list-style:none!important;
+  border:1px solid rgba(38,20,10,.32)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:rgba(237,199,164,.20)!important;
+}
+body[data-app="massage"] section#system .system-list li{
+  margin:0!important;
+  padding:11px 13px!important;
+  border:0!important;
+  border-bottom:1px solid rgba(38,20,10,.20)!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  color:#3f2819!important;
+  line-height:1.45!important;
+}
+body[data-app="massage"] section#system .system-list li:last-child{
+  border-bottom:0!important;
+}
+body[data-app="massage"] section#system .system-list strong,
+body[data-app="massage"] section#system .system-note-block strong{
+  color:#271509!important;
+}
+body[data-app="massage"] section#system .system-note-block{
+  display:grid!important;
+  gap:0!important;
+  margin-top:12px!important;
+  border:1px solid rgba(38,20,10,.30)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:rgba(241,208,175,.26)!important;
+}
+body[data-app="massage"] section#system .system-note-block p{
+  margin:0!important;
+  padding:11px 13px!important;
+  border-bottom:1px solid rgba(38,20,10,.18)!important;
+  color:#3f2819!important;
+  line-height:1.45!important;
+}
+body[data-app="massage"] section#system .system-note-block p:last-child{
+  border-bottom:0!important;
+}
+
+
+/* Coherent massage page refinement: tabs carry section names, page bodies carry content. */
+body[data-app="massage"] main .kicker{display:none!important;}
+
+body[data-app="massage"] .card{padding:22px!important;}
+body[data-app="massage"] .card h2{
+  font-family:var(--font)!important;
+  font-size:clamp(22px,2.05vw,30px)!important;
+  line-height:1.18!important;
+  margin:0 0 10px 0!important;
+}
+body[data-app="massage"] .card h3,
+body[data-app="massage"] #planner .sensory-card h3,
+body[data-app="massage"] #massagePlannerForm #customFlowPanel h3{
+  font-family:var(--font)!important;
+  font-size:clamp(18px,1.55vw,22px)!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] .lead{
+  font-size:clamp(17px,1.45vw,20px)!important;
+  line-height:1.48!important;
+}
+body[data-app="massage"] .note,
+body[data-app="massage"] .card p,
+body[data-app="massage"] .system-list li,
+body[data-app="massage"] .system-note-block p,
+body[data-app="massage"] .type-flow-block p{
+  font-size:clamp(16px,1.2vw,18px)!important;
+}
+
+/* Types of Massage: close-held explanatory blocks rather than separated cards. */
+body[data-app="massage"] .types-intro .subtabs{margin-top:12px!important;}
+body[data-app="massage"] .type-coherent{display:none;}
+body[data-app="massage"] .type-coherent.active{display:block;}
+body[data-app="massage"] .type-flow-block{
+  display:grid!important;
+  gap:0!important;
+  margin-top:14px!important;
+  border:1px solid rgba(38,20,10,.30)!important;
+  border-radius:16px!important;
+  overflow:hidden!important;
+  background:rgba(237,199,164,.22)!important;
+}
+body[data-app="massage"] .type-flow-block p{
+  margin:0!important;
+  padding:11px 13px!important;
+  border-bottom:1px solid rgba(38,20,10,.18)!important;
+  color:#3f2819!important;
+  line-height:1.46!important;
+}
+body[data-app="massage"] .type-flow-block p:last-child{border-bottom:0!important;}
+body[data-app="massage"] .type-flow-block strong{color:#271509!important;}
+body[data-app="massage"] .type-card .note{margin:10px 0 0 0!important;}
+
+/* Massage Library keeps cards because it is a learning tool, but the cards are calmer and more useful. */
+body[data-app="massage"] .library-shell .lead{max-width:92ch!important;}
+body[data-app="massage"] .library-technique-controls{
+  display:grid!important;
+  gap:8px!important;
+  margin:12px 0 14px 0!important;
+  padding:12px!important;
+  border-radius:16px!important;
+  border:1px solid rgba(38,20,10,.32)!important;
+  background:rgba(237,199,164,.24)!important;
+}
+body[data-app="massage"] .library-technique-controls[hidden]{display:none!important;}
+body[data-app="massage"] .library-technique-controls label{
+  font-weight:900!important;
+  color:#271509!important;
+}
+body[data-app="massage"] .library-technique-controls select{
+  width:100%!important;
+  border-radius:14px!important;
+  border:1px solid rgba(38,20,10,.42)!important;
+  background:#f0cfad!important;
+  color:#1b0d05!important;
+  -webkit-text-fill-color:#1b0d05!important;
+  padding:11px 12px!important;
+  font:inherit!important;
+  font-size:17px!important;
+}
+body[data-app="massage"] .lib{
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr))!important;
+  gap:12px!important;
+}
+body[data-app="massage"] .library-card{
+  padding:18px!important;
+  border-radius:18px!important;
+}
+body[data-app="massage"] .library-card h3{
+  font-family:var(--font-soft)!important;
+  font-size:clamp(24px,2.1vw,34px)!important;
+  line-height:1.08!important;
+  margin:4px 0 10px 0!important;
+}
+body[data-app="massage"] .library-card p{
+  font-size:17px!important;
+  line-height:1.45!important;
+}
+body[data-app="massage"] .library-detail{
+  margin-top:10px!important;
+  gap:0!important;
+  border:1px solid rgba(38,20,10,.24)!important;
+  border-radius:14px!important;
+  overflow:hidden!important;
+  background:rgba(241,208,175,.24)!important;
+}
+body[data-app="massage"] .library-detail p{
+  margin:0!important;
+  padding:10px 11px!important;
+  border-bottom:1px solid rgba(38,20,10,.16)!important;
+}
+body[data-app="massage"] .library-detail p:last-child{border-bottom:0!important;}
+body[data-app="massage"] .library-tag{
+  font-size:12px!important;
+  letter-spacing:.07em!important;
+}
+
+/* Native dropdown highlight is browser-controlled in places, but keep every stylable state inside the brown palette. */
+html[data-app="massage"] body[data-app="massage"] select option:checked,
+html[data-app="massage"] body[data-app="massage"] select:focus option:checked{
+  background:#805d42!important;
+  background-color:#805d42!important;
+  color:#f1d7bd!important;
+  -webkit-text-fill-color:#f1d7bd!important;
+}
+
+
+/* Massage Library warm connected layout: informative entries stay close instead of sitting as distant cards. */
+body[data-app="massage"] section#library .library-shell{
+  padding:22px!important;
+}
+body[data-app="massage"] section#library .library-shell > h2{
+  margin-bottom:8px!important;
+}
+body[data-app="massage"] section#library .library-tabs{
+  margin:12px 0 12px!important;
+  padding:9px!important;
+  gap:8px!important;
+  border-radius:16px!important;
+  background:rgba(237,199,164,.20)!important;
+}
+body[data-app="massage"] section#library .library-tab{
+  min-height:36px!important;
+  padding:8px 12px!important;
+  font-size:15px!important;
+}
+body[data-app="massage"] section#library .library-technique-controls{
+  display:grid!important;
+  grid-template-columns:minmax(170px,max-content) minmax(260px,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin:0 0 12px 0!important;
+  padding:11px 12px!important;
+  border-radius:16px!important;
+  border:1px solid rgba(38,20,10,.30)!important;
+  background:rgba(241,208,175,.28)!important;
+}
+body[data-app="massage"] section#library .library-technique-controls[hidden]{
+  display:none!important;
+}
+body[data-app="massage"] section#library .library-technique-controls label{
+  font-size:16px!important;
+  line-height:1.2!important;
+}
+body[data-app="massage"] section#library .library-technique-controls select{
+  min-height:42px!important;
+}
+body[data-app="massage"] section#library .lib{
+  display:block!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid rgba(38,20,10,.32)!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  background:rgba(237,199,164,.18)!important;
+}
+body[data-app="massage"] section#library .library-card{
+  display:block!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:0!important;
+  border-radius:0!important;
+  border-bottom:1px solid rgba(38,20,10,.20)!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+body[data-app="massage"] section#library .library-card:last-child{
+  border-bottom:0!important;
+}
+body[data-app="massage"] section#library .library-card[hidden]{
+  display:none!important;
+}
+body[data-app="massage"] section#library .library-card h3{
+  margin:3px 0 8px!important;
+  font-size:clamp(22px,1.9vw,30px)!important;
+}
+body[data-app="massage"] section#library .library-card p{
+  max-width:88ch!important;
+  font-size:clamp(16px,1.15vw,18px)!important;
+  line-height:1.5!important;
+}
+body[data-app="massage"] section#library .library-tag{
+  display:block!important;
+  margin-bottom:4px!important;
+  font-size:12px!important;
+  letter-spacing:.06em!important;
+}
+body[data-app="massage"] section#library .library-open{
+  margin-top:10px!important;
+  min-height:34px!important;
+  padding:7px 11px!important;
+  font-size:14px!important;
+}
+body[data-app="massage"] section#library .library-detail{
+  margin-top:12px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+}
+body[data-app="massage"] section#library .library-detail p{
+  padding:8px 0!important;
+  border-bottom:1px solid rgba(38,20,10,.14)!important;
+}
+body[data-app="massage"] section#library .library-detail p:last-child{
+  border-bottom:0!important;
+}
+@media (max-width:760px){
+  body[data-app="massage"] section#library .library-technique-controls{
+    grid-template-columns:1fr!important;
+  }
+}
+
+
+/* Final Massage Library correction: dropdown filters by technique family only; all information is visible without Open buttons. */
+body[data-app="massage"] section#library .library-technique-controls select option{
+  background:#f0cfad!important;
+  color:#1b0d05!important;
+}
+body[data-app="massage"] section#library .library-open{
+  display:none!important;
+}
+body[data-app="massage"] section#library .library-card{
+  padding:18px 20px!important;
+}
+body[data-app="massage"] section#library .library-summary{
+  margin:0 0 10px 0!important;
+  max-width:94ch!important;
+  font-size:clamp(17px,1.25vw,19px)!important;
+  line-height:1.48!important;
+  color:#321c10!important;
+}
+body[data-app="massage"] section#library .library-detail,
+body[data-app="massage"] section#library .library-detail[hidden]{
+  display:grid!important;
+  gap:0!important;
+  margin-top:10px!important;
+  border-top:1px solid rgba(38,20,10,.18)!important;
+  background:transparent!important;
+}
+body[data-app="massage"] section#library .library-detail p{
+  display:block!important;
+  margin:0!important;
+  padding:9px 0!important;
+  border-bottom:1px solid rgba(38,20,10,.14)!important;
+  max-width:96ch!important;
+  font-size:clamp(16px,1.15vw,18px)!important;
+  line-height:1.5!important;
+  color:#3f2819!important;
+}
+body[data-app="massage"] section#library .library-detail p:last-child{
+  border-bottom:0!important;
+}
+body[data-app="massage"] section#library .library-card h3{
+  margin:2px 0 8px 0!important;
+}
+body[data-app="massage"] section#library .library-card + .library-card{
+  border-top:0!important;
+}
+
+
+/* Final Library readability correction: informative paragraphs with bold subtitles, no harsh sentence divider lines. */
+body[data-app="massage"] section#library .lib{
+  border-radius:18px!important;
+  background:rgba(237,199,164,.20)!important;
+}
+body[data-app="massage"] section#library .library-card{
+  padding:20px 22px 22px!important;
+  border-bottom:1px solid rgba(38,20,10,.18)!important;
+}
+body[data-app="massage"] section#library .library-card h3{
+  margin:4px 0 10px 0!important;
+  font-size:clamp(25px,2vw,33px)!important;
+  line-height:1.08!important;
+}
+body[data-app="massage"] section#library .library-summary{
+  margin:0 0 12px 0!important;
+  max-width:100ch!important;
+  font-size:clamp(17px,1.22vw,19px)!important;
+  line-height:1.55!important;
+  color:#321c10!important;
+}
+body[data-app="massage"] section#library .library-summary strong,
+body[data-app="massage"] section#library .library-detail strong{
+  color:#24140b!important;
+  font-weight:950!important;
+}
+body[data-app="massage"] section#library .library-detail,
+body[data-app="massage"] section#library .library-detail[hidden]{
+  display:grid!important;
+  gap:9px!important;
+  margin-top:10px!important;
+  padding-top:0!important;
+  border:0!important;
+  border-top:0!important;
+  background:transparent!important;
+}
+body[data-app="massage"] section#library .library-detail p{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  max-width:104ch!important;
+  font-size:clamp(16px,1.15vw,18px)!important;
+  line-height:1.58!important;
+  color:#3f2819!important;
+}
+body[data-app="massage"] section#library .library-detail p + p{
+  margin-top:2px!important;
+}
+body[data-app="massage"] section#library .library-tag{
+  margin-bottom:5px!important;
+}
+
+/* Clear action is visually marked as a caution so it is harder to press accidentally. */
+body[data-app="massage"] #clearMassagePlanner{
+  color:#8f1f18!important;
+  -webkit-text-fill-color:#8f1f18!important;
+  border-color:rgba(143,31,24,.44)!important;
+  font-weight:950!important;
+}
+body[data-app="massage"] #clearMassagePlanner:hover,
+body[data-app="massage"] #clearMassagePlanner:focus-visible{
+  color:#6f1510!important;
+  -webkit-text-fill-color:#6f1510!important;
+  border-color:rgba(111,21,16,.60)!important;
+}

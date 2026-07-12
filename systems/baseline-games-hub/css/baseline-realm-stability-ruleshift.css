@@ -1,0 +1,25 @@
+body[data-app="games"] .ruleshift-choice-card{
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+}
+body[data-app="games"] .ruleshift-options-grid,
+body[data-app="games"] .is-mobile-game-root[data-game-play-root="ruleshift"] .ruleshift-options-grid{
+  height:auto!important;
+  min-height:0!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-template-rows:none!important;
+  grid-auto-rows:minmax(82px,1fr)!important;
+  align-items:stretch!important;
+}
+#realmSceneFrame:fullscreen,
+#realmSceneFrame:-webkit-full-screen{
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:100dvh!important;
+  aspect-ratio:auto!important;
+}
+

@@ -1,0 +1,14 @@
+Phase 2 redirect loop fix validation
+
+Cause fixed:
+- clean URL /baseline-food-approach/system internally rewrites to baseline-food-approach/baseline-food-approach.html
+- the old nested-file recovery rule also matched that internal target
+- it redirected back to /baseline-food-approach/system, causing ERR_TOO_MANY_REDIRECTS
+
+Fix:
+- added THE_REQUEST guards to nested-file recovery redirects
+- internal rewrites now pass through without being redirected again
+
+Changed files: .htaccess only
+Main HTML identity check: passed
+JS syntax checks: passed

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+
+<html data-app="home" lang="en">
+<head>
+<!-- HTML-OWN-FOLDER-RULES-REFERENCE-20260609
+Rules for this HTML file:
+index/rules/page-rules.md
+
+These Markdown rules are a human reference point, not live runtime config.
+-->
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta name="description" content="Baseline Lifestyle: structured systems for fitness, food, skincare, badminton sessions, and browser-based training games."/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<title>BaselineLifestyle</title>
+<link href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-home.css?v=EDIT_VERSION_20260607_SAFE_ROUTE_PATCH_CURRENT_ZIP_ONLY" rel="stylesheet"/>
+
+<script>/* BASELINE-HOME-INDEX-CANONICAL-FALLBACK-20260607 */
+(function(){
+  try{
+    if(!/^https?:$/i.test(location.protocol)) return;
+    var path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
+    var hash = String(location.hash || '').toLowerCase();
+    var isLegacyHome = /\/index\.html$/.test(path) || path === '' || path === '/';
+    if(!isLegacyHome) return;
+
+    var target = '/home/1';
+    if(hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1){
+      target = '/home/2';
+    }
+    if(location.pathname !== target || location.hash){
+      history.replaceState({ baselineHomeView: target === '/home/2' ? 'badminton' : 'systems' }, '', target);
+    }
+  }catch(_e){}
+})();
+</script>
+
+</head>
+<body data-app="home">
+<div class="bl-top-header" role="banner">
+  <div class="bl-top-header-title">
+    <div class="domain" id="domainText">Baseline Lifestyle</div>
+  </div>
+</div>
+
+<div class="bl-scroll" id="homeScroll"><div class="wrap">
+  <div class="home-panels">
+    <section aria-label="BaselineLifestyle sections" class="home-panel home-panel--systems is-active" id="systemsView">
+      <div class="home-panel__inner">
+        <section class="grid" id="grid"><a aria-label="Open Baseline Food Approach" class="card card--food" href="/baseline-food-approach/system">
+<div class="card-shell">
+<h2>Baseline Food Approach</h2>
+<p>Vegan &amp; gluten-free food system focused on health and cosmetic comfort.</p>
+</div>
+</a><a aria-label="Open Baseline Massage" class="card card--massage" href="/baseline-massage/system">
+<div class="card-shell">
+<h2>Baseline Massage</h2>
+<p>Grounded bodywork for pressure, recovery, comfort, and physical regulation.</p>
+</div>
+</a><a aria-label="Open Baseline Natural Skincare" class="card card--skin" href="/baseline-natural-skincare/system">
+<div class="card-shell">
+<h2>Baseline Natural Skincare</h2>
+<p>Barrier-first natural care, recipes, and ingredient information.</p>
+</div>
+</a></section>
+      </div>
+      <button aria-controls="badmintonView" aria-label="View play pages" class="view-arrow" id="toBadmintonView" type="button">
+        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 5v14m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"/>
+        </svg>
+      </button>
+    </section>
+
+    <section aria-label="Baseline play links" class="home-panel home-panel--play" id="badmintonView" aria-hidden="true">
+      <button aria-controls="systemsView" aria-label="Return to main home page" class="view-arrow view-arrow--up" id="toSystemsView" type="button">
+        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"/>
+        </svg>
+      </button>
+      <div class="play-lanes" aria-label="Baseline play page links">
+        <div class="play-lane play-lane--badminton">
+          <a aria-label="Open Baseline Badminton Session" class="card card--badminton" href="/baseline-badminton-session/system">
+            <div class="card-shell">
+              <h2>Baseline Badminton<br/>Session</h2>
+              <p>Live session for players, pairs, levelled playing field, and score tracking.</p>
+            </div>
+          </a>
+        </div>
+        <div class="play-lane play-lane--fitness">
+          <a aria-label="Open Baseline Fitness" class="card card--fitness" href="/baseline-fitness/system">
+            <div class="card-shell">
+              <h2>Baseline Fitness</h2>
+              <p>Training baseline, plan generator, visible progression.</p>
+            </div>
+          </a>
+        </div>
+        <div class="play-lane play-lane--games">
+          <a aria-label="Open Baseline Games Hub" class="card card--games" href="/baseline-games-hub/games-hub">
+            <div class="card-shell">
+              <h2>Baseline Games Hub</h2>
+              <p>Focused play space, account-bound progress, linked game progression.</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+  </div>
+</div></div>
+<!-- Offline-safe embedded viewer (used when opened via file/content URIs on mobile) -->
+<div aria-hidden="true" id="blEmbed">
+<iframe id="blEmbedFrame" title="BaselineLifestyle"></iframe>
+</div>
+<script>
+(function(){
+  'use strict';
+
+  // Offline mode (file://, content://): keep navigation inside an embedded iframe.
+  // IMPORTANT: We persist the embedded view + inner hash to the parent URL hash so
+  // browser refresh returns to the same screen rather than resetting to the index.
+
+  const offline = !/^https?:$/.test(location.protocol);
+  const OUTER_SNAPSHOT_PREFIX = '__baseline_outer_embed_snapshot_v2__::';
+
+  function outerSnapshotKey(){
+    try{ return OUTER_SNAPSHOT_PREFIX + String(location.pathname || '').toLowerCase(); }
+    catch(_e){ return OUTER_SNAPSHOT_PREFIX + 'page'; }
+  }
+
+  (function consumeForcedHomeFlag(){
+    try{
+      const url = new URL(window.location.href);
+      if(!url.searchParams.has('bl_home')) return;
+      const key = outerSnapshotKey();
+      try{ sessionStorage.removeItem(key); }catch(__e){}
+      try{ localStorage.removeItem(key); }catch(__e){}
+      try{ sessionStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(__e){}
+      try{ localStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(__e){}
+      url.searchParams.delete('bl_home');
+      url.hash = '';
+      history.replaceState(null, '', url.pathname + (url.search || ''));
+    }catch(_e){}
+  })();
+
+  if(!offline) return;
+
+  const embed = document.getElementById('blEmbed');
+  const frame = document.getElementById('blEmbedFrame');
+
+  let currentView = null; // 'food' | 'skin' | 'fitness' | 'badminton' | 'games'
+  let lastOuterHash = '';
+
+  function getNavigationType(){
+    try{
+      const entry = performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
+      if(entry && entry.type) return String(entry.type).toLowerCase();
+    }catch(_e){}
+    try{
+      if(performance && performance.navigation){
+        if(performance.navigation.type === 1) return 'reload';
+        if(performance.navigation.type === 2) return 'back_forward';
+      }
+    }catch(_e){}
+    return 'navigate';
+  }
+
+  function writeOuterSnapshot(view, innerHash){
+    const payload = JSON.stringify({
+      view: (view === 'skin') ? 'skin' : (view === 'fitness' ? 'fitness' : (view === 'badminton' ? 'badminton' : (view === 'games' ? 'games' : 'food'))), 
+      state: String(innerHash || '').replace(/^#/, ''),
+      ts: Date.now()
+    });
+    const key = outerSnapshotKey();
+    try{ sessionStorage.setItem(key, payload); }catch(_e){}
+    try{ localStorage.removeItem(key); }catch(_e){}
+  }
+
+  function readOuterSnapshot(){
+    const raw = (function(){
+      let value = '';
+      const key = outerSnapshotKey();
+      try{ value = sessionStorage.getItem(key) || ''; }catch(_e){}
+      try{ localStorage.removeItem(key); }catch(_e){}
+      return value || '';
+    })();
+    if(!raw) return null;
+    try{
+      const parsed = JSON.parse(raw);
+      const view = (parsed && parsed.view || '').toLowerCase();
+      if(view !== 'food' && view !== 'massage' && view !== 'skin' && view !== 'fitness' && view !== 'badminton' && view !== 'games') return null;
+      return { view, state: String((parsed && parsed.state) || '') };
+    }catch(_e){}
+    return null;
+  }
+
+  function clearOuterSnapshot(){
+    const key = outerSnapshotKey();
+    try{ sessionStorage.removeItem(key); }catch(_e){}
+    try{ localStorage.removeItem(key); }catch(_e){}
+    try{ sessionStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(_e){}
+    try{ localStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(_e){}
+  }
+
+  function buildInnerHashFromState(state){
+    if(!state || typeof state !== 'object') return '';
+    if(state.kind === 'recipe' && state.recipeId){
+      return '#recipe=' + encodeURIComponent(state.recipeId);
+    }
+    if(state.kind === 'support' && state.supportId){
+      return '#support=' + encodeURIComponent(state.supportId);
+    }
+    if(state.kind === 'ingredient' && state.ingredientId){
+      let hash = '#' + String(state.ingredientId || '');
+      if(state.recipeFilter){
+        hash += '&filter=' + encodeURIComponent(state.recipeFilter);
+      }
+      return hash;
+    }
+    if(state.kind === 'ingredients'){
+      let hash = '#tab=ingredients';
+      if(state.recipeFilter){
+        hash += '&filter=' + encodeURIComponent(state.recipeFilter);
+      }
+      return hash;
+    }
+    if(state.kind === 'tab' && state.tabId){
+      let hash = '#tab=' + encodeURIComponent(state.tabId);
+      if(state.tabId === 'ingredients' && state.recipeFilter){
+        hash += '&filter=' + encodeURIComponent(state.recipeFilter);
+      }
+      return hash;
+    }
+    return '';
+  }
+
+  function parseOuterHash(){
+    const raw = (location.hash || '').replace(/^#/, '');
+    if(!raw) return null;
+
+    // Format: #view=food&state=<encoded-inner-hash-without-leading-#>
+    const params = new URLSearchParams(raw);
+    const view = (params.get('view') || '').toLowerCase();
+    if(view !== 'food' && view !== 'massage' && view !== 'skin' && view !== 'fitness' && view !== 'badminton' && view !== 'games') return null;
+    const state = params.get('state') || '';
+    return { view, state };
+  }
+
+  function setOuterHash(view, innerHash, opts){
+    opts = opts || {};
+    const v = (view === 'skin') ? 'skin' : (view === 'massage' ? 'massage' : (view === 'fitness' ? 'fitness' : (view === 'badminton' ? 'badminton' : (view === 'games' ? 'games' : 'food')))); 
+    const state = (innerHash || '').replace(/^#/, '');
+
+    const params = new URLSearchParams();
+    params.set('view', v);
+    if(state) params.set('state', state);
+
+    const next = '#' + params.toString();
+    if(next === lastOuterHash){
+      try{ writeOuterSnapshot(v, innerHash); }catch(_e){}
+      return;
+    }
+    lastOuterHash = next;
+
+    try{
+      if(opts.push) history.pushState(null, '', next);
+      else history.replaceState(null, '', next);
+    }catch(_e){
+      // Fallback for restricted history APIs
+      location.hash = next;
+    }
+    try{ writeOuterSnapshot(v, innerHash); }catch(_e){}
+  }
+
+  function clearOuterHash(){
+    lastOuterHash = '';
+    clearOuterSnapshot();
+    try{ history.replaceState(null, '', location.pathname + location.search); }
+    catch(_e){ location.hash = ''; }
+  }
+
+  function open(which, innerState, opts){
+    opts = opts || {};
+    const wasOpen = embed.classList.contains('is-open');
+    const previousView = currentView;
+    currentView = (which === 'skin') ? 'skin' : (which === 'massage' ? 'massage' : (which === 'fitness' ? 'fitness' : (which === 'badminton' ? 'badminton' : (which === 'games' ? 'games' : 'food')))); 
+
+    embed.classList.add('is-open');
+    embed.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+
+    const srcBase = (currentView === 'skin')
+      ? 'baseline-natural-skincare.html'
+      : (currentView === 'massage' ? 'baseline-massage.html' : (currentView === 'fitness' ? 'baseline-fitness.html' : (currentView === 'badminton' ? 'baseline-badminton-session.html' : (currentView === 'games' ? 'baseline-games-hub.html' : 'baseline-food-approach.html')))); 
+    const hash = innerState ? ('#' + String(innerState).replace(/^#/, '')) : '';
+    try{ writeOuterSnapshot(currentView, hash); }catch(_e){}
+
+    frame.removeAttribute('srcdoc');
+    frame.src = srcBase + hash;
+
+    frame.onload = ()=>{
+      try{
+        const w = frame.contentWindow;
+        const d = frame.contentDocument;
+        if(!w || !d) return;
+
+        // Ensure the parent hash always mirrors the embedded view state.
+        // We read both the child URL hash and the shared history state because
+        // pushState / replaceState do not emit hashchange by themselves.
+        const sync = ()=>{
+          try{
+            let h = (w.location && w.location.hash) ? w.location.hash : '';
+            if(!h){
+              const st = w.history && w.history.state && w.history.state.__baseline_nav_v1__;
+              h = buildInnerHashFromState(st);
+            }
+            setOuterHash(currentView, h, { push:false });
+          }catch(_e){}
+        };
+
+        if(!w.__BL_PARENT_HISTORY_SYNC_PATCHED__){
+          w.__BL_PARENT_HISTORY_SYNC_PATCHED__ = true;
+          try{
+            const origPushState = w.history.pushState.bind(w.history);
+            w.history.pushState = function(){
+              const out = origPushState.apply(w.history, arguments);
+              sync();
+              return out;
+            };
+          }catch(_e){}
+          try{
+            const origReplaceState = w.history.replaceState.bind(w.history);
+            w.history.replaceState = function(){
+              const out = origReplaceState.apply(w.history, arguments);
+              sync();
+              return out;
+            };
+          }catch(_e){}
+        }
+
+        // Initial sync
+        sync();
+
+        // Sync on internal navigation
+        w.addEventListener('hashchange', sync);
+        w.addEventListener('popstate', sync);
+        w.addEventListener('baseline:navigation-state', sync);
+        w.addEventListener('pagehide', sync);
+        w.document.addEventListener('visibilitychange', sync);
+
+        // Wire banner and pages dropdown links inside the iframe using delegated
+        // capture so dynamically-created dropdown items keep working reliably.
+        if(!d.__BL_PARENT_SITE_NAV_BOUND__){
+          d.__BL_PARENT_SITE_NAV_BOUND__ = true;
+          d.addEventListener('click', (e)=>{
+            const a = e.target && e.target.closest
+              ? e.target.closest('.bl-brand[href], .bl-system-menu a[href], .bl-pages-menu a[href], .bl-topnav a[href]')
+              : null;
+            if(!a) return;
+            const href = (a.getAttribute('href') || '').toLowerCase();
+            if(!href) return;
+            const modified = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button === 1;
+            if(modified) return;
+            if(href.includes('baseline-food-approach.html')){
+              e.preventDefault();
+              open('food');
+            }else if(href.includes('baseline-massage.html')){
+              e.preventDefault();
+              open('massage');
+            }else if(href.includes('baseline-natural-skincare.html')){
+              e.preventDefault();
+              open('skin');
+            }else if(href.includes('baseline-fitness.html')){
+              e.preventDefault();
+              open('fitness');
+            }else if(href.includes('baseline-badminton-session.html')){
+              e.preventDefault();
+              open('badminton');
+            }else if(href.includes('baseline-games-hub.html')){
+              e.preventDefault();
+              open('games');
+            }else if(href.includes('home.html') || href.includes('index.html')){
+              e.preventDefault();
+              goHome();
+            }
+          }, true);
+        }
+      }catch(_e){}
+    };
+
+    // Persist parent URL immediately (even before iframe load completes)
+    if(!opts.fromHistory){
+      const shouldPush = (!wasOpen) || (!!previousView && previousView !== currentView);
+      setOuterHash(currentView, hash, { push: shouldPush });
+    }else{
+      lastOuterHash = location.hash || '';
+    }
+  }
+
+  function closeUI(){
+    embed.classList.remove('is-open');
+    embed.setAttribute('aria-hidden','true');
+    frame.removeAttribute('srcdoc');
+    frame.src = 'about:blank';
+    document.body.style.overflow='';
+    currentView = null;
+    clearOuterHash();
+  }
+
+  function goHome(){
+    try{ clearOuterHash(); }catch(_e){}
+    try{ clearOuterSnapshot(); }catch(_e){}
+    try{
+      const url = new URL('/home/1', window.location.href);
+      url.hash = '';
+      window.location.assign(url.href);
+    }catch(_e){
+      window.location.assign('/home/1');
+    }
+  }
+
+  function requestClose(){
+    // Prefer natural back behaviour when we created a history entry on open.
+    if(location.hash){
+      try{ history.back(); return; }catch(_e){}
+    }
+    closeUI();
+  }
+
+  function handleLinkClick(e){
+    const a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+    if(!a) return;
+
+    const href = (a.getAttribute('href') || '').toLowerCase();
+    if(!href) return;
+
+    const protocol = String(location.protocol || '').toLowerCase();
+    const useEmbeddedViewer = /^(file:|content:|blob:|data:)$/.test(protocol);
+    if(!useEmbeddedViewer) return;
+
+    // Only intercept Baseline page navigation for offline/content-based opens where
+    // direct navigation can fail or lose state. Normal browser loads should use the
+    // real HTML pages directly so mobile taps open the actual page.
+    if(href.includes('baseline-food-approach.html')){
+      e.preventDefault();
+      open('food');
+      return;
+    }
+    if(href.includes('baseline-massage.html')){
+      e.preventDefault();
+      open('massage');
+      return;
+    }
+    if(href.includes('baseline-natural-skincare.html')){
+      e.preventDefault();
+      open('skin');
+      return;
+    }
+    if(href.includes('baseline-fitness.html')){
+      e.preventDefault();
+      open('fitness');
+      return;
+    }
+    if(href.includes('baseline-badminton-session.html')){
+      e.preventDefault();
+      open('badminton');
+      return;
+    }
+    if(href.includes('baseline-games-hub.html')){
+      e.preventDefault();
+      open('games');
+      return;
+    }
+    if(href.includes('home.html') || href.includes('index.html')){
+      e.preventDefault();
+      goHome();
+      return;
+    }
+  }
+
+  document.addEventListener('click', handleLinkClick, true);
+
+  // Escape closes the embed (desktop keyboards).
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape' && embed.classList.contains('is-open')) requestClose();
+  });
+
+  // Keep UI in sync with browser back/forward.
+  window.addEventListener('popstate', ()=>{
+    const st = parseOuterHash();
+    if(st){
+      // Restore/open the correct embedded view without writing history.
+      open(st.view, st.state, { fromHistory:true });
+    }else{
+      if(embed.classList.contains('is-open')) closeUI();
+    }
+  });
+
+  // Restore embedded view only for the current tab session.
+  // Fresh opens of index.html must stay on the homepage; only reload/back-forward
+  // should re-open the last embedded page when the parent hash was lost.
+  (function restoreFromHash(){
+    const fromHash = parseOuterHash();
+    if(fromHash){
+      open(fromHash.view, fromHash.state, { fromHistory:true });
+      return;
+    }
+
+    const navType = getNavigationType();
+    const allowSnapshotRestore = navType === 'reload' || navType === 'back_forward';
+    if(!allowSnapshotRestore){
+      clearOuterSnapshot();
+      return;
+    }
+
+    const snapshot = readOuterSnapshot();
+    if(!snapshot) return;
+    open(snapshot.view, snapshot.state, { fromHistory:true });
+  })();
+})();
+</script>
+<script src="/sitewide/js/baseline-ingredient-profiles.js?v=20260527gradienttruth"></script>
+<script>
+(function(){
+  const header = document.querySelector('.bl-top-header');
+  const systemsView = document.getElementById('systemsView');
+  const badmintonView = document.getElementById('badmintonView');
+  const toBadminton = document.getElementById('toBadmintonView');
+  const toSystems = document.getElementById('toSystemsView');
+  const HOME_VIEW_KEY = 'baselineIndexActiveView';
+
+  function syncTopHeaderHeight(){
+    if(!header) return;
+    const h = Math.ceil(header.getBoundingClientRect().height || 0);
+    if(h > 0) document.documentElement.style.setProperty('--top-header-h', h + 'px');
+  }
+
+  function routeViewFromPath(){
+    const path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
+    const hash = String(location.hash || '').toLowerCase();
+    if(/\/home\/2$/.test(path)) return 'badminton';
+    if(hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1) return 'badminton';
+    return 'systems';
+  }
+
+  function cleanHomeUrl(which){
+    return which === 'badminton' ? '/home/2' : '/home/1';
+  }
+
+  function readInitialView(){
+    return routeViewFromPath();
+  }
+
+  function persistView(which){
+    try{
+      sessionStorage.setItem(HOME_VIEW_KEY, which === 'badminton' ? 'badminton' : 'systems');
+    }catch(_e){}
+  }
+
+  function showView(which, options){
+    const showBadminton = which === 'badminton';
+    if(systemsView){
+      systemsView.classList.toggle('is-active', !showBadminton);
+      systemsView.setAttribute('aria-hidden', String(showBadminton));
+    }
+    if(badmintonView){
+      badmintonView.classList.toggle('is-active', showBadminton);
+      badmintonView.setAttribute('aria-hidden', String(!showBadminton));
+    }
+    const activeView = showBadminton ? 'badminton' : 'systems';
+    if(!options || options.persist !== false){
+      persistView(activeView);
+    }
+    if(!options || options.history !== false){
+      const nextUrl = cleanHomeUrl(activeView);
+      try{
+        if(location.pathname !== nextUrl){
+          if(options && options.replace) history.replaceState({ baselineHomeView:activeView }, '', nextUrl);
+          else history.pushState({ baselineHomeView:activeView }, '', nextUrl);
+        }
+      }catch(_e){}
+    }
+  }
+
+  syncTopHeaderHeight();
+  showView(readInitialView(), { persist:false, history:false });
+  try{
+    const initialView = readInitialView();
+    if(/^https?:$/i.test(location.protocol) && (!/\/home\/[12]\/?$/i.test(location.pathname || '') || location.hash)){
+      history.replaceState({ baselineHomeView:initialView }, '', cleanHomeUrl(initialView));
+    }
+  }catch(_e){}
+  window.addEventListener('resize', syncTopHeaderHeight);
+  window.addEventListener('load', syncTopHeaderHeight);
+  window.addEventListener('popstate', function(event){
+    const view = event && event.state && event.state.baselineHomeView ? event.state.baselineHomeView : routeViewFromPath();
+    showView(view, { persist:false, history:false });
+  });
+
+  if(toBadminton){
+    toBadminton.addEventListener('click', function(){ showView('badminton', { history:true }); });
+  }
+  if(toSystems){
+    toSystems.addEventListener('click', function(){ showView('systems', { history:true }); });
+  }
+})();
+</script>
+<script src="/sitewide/js/baseline-shared.js?v=EDIT_VERSION_20260607_NO_VISIBLE_TAB_HASHES"></script>
+<script src="/sitewide/js/baseline-tabs.js?v=EDIT_VERSION_20260607_NO_VISIBLE_TAB_HASHES"></script>
+</body></html>

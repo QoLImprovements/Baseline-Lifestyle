@@ -1,0 +1,183 @@
+const BUILD='GAMES_SERVER_STORAGE_UI_20260710_3';
+// 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
+
+function storageState(){
+  const authority=globalThis.BaselineGameStorage;
+  return{
+    authenticated:Boolean(authority?.isAuthenticated?.()),
+    canPlay:authority?.canPlay?.()!==false,
+    canSave:Boolean(authority?.canSave?.()),
+    ready:Boolean(authority?.isReady?.()),
+    status:String(authority?.getStatus?.()||'loading'),
+    error:String(authority?.getLastError?.()||'')
+  };
+}
+function accountCard(){return document.getElementById('authStateNote')?.closest('.card')||null;}
+function accountCopy(state){
+  if(state.canSave)return{
+    html:'<strong>Account save is active.</strong><span class="inline-note">Game progress is stored on the server and linked to your Baseline Lifestyle login.</span>',
+    description:'Your game data follows your Baseline Lifestyle account and is loaded from the server.'
+  };
+  if(state.status==='signed-out')return{
+    html:'<strong>Temporary play is active.</strong><span class="inline-note">All games remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
+    description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
+  };
+  if(state.status==='migration-failed')return{
+    html:'<strong>Temporary play is active; saving is paused.</strong><span class="inline-note">Your existing browser save was left untouched because it could not be copied safely.</span>',
+    description:'Games remain playable. Temporary progress is not saved and does not overwrite account data.'
+  };
+  return{
+    html:'<strong>Temporary play is active; saving is unavailable.</strong><span class="inline-note">All games remain playable while the save service is unavailable.</span>',
+    description:'Temporary progress is kept only for this page session and does not overwrite account data.'
+  };
+}
+function enforceAccountCopy(){
+  const note=document.getElementById('authStateNote');if(!note)return;
+  const expected=accountCopy(storageState());
+  if(note.innerHTML!==expected.html)note.innerHTML=expected.html;
+  const description=accountCard()?.querySelector('.header-row .note');
+  if(description&&description.textContent!==expected.description)description.textContent=expected.description;
+}
+function saveStatusLabel(state){
+  return state.canSave
+    ? 'Game data will be saved to your account.'
+    : 'Sign in to save your game data. Progress from this session will otherwise be lost.';
+}
+function saveIconSvg(saved){
+  const cross=saved?'':'<path class="game-save-icon__cross" d="M7 7l10 10M17 7L7 17"/>';
+  return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="game-save-icon__disc-shell" d="M5 3.5h11l3.5 3.5V20.5H4.5V3.5H5z"/><path class="game-save-icon__disc-shutter" d="M8 4.9h6.8v5.2H8z"/><path class="game-save-icon__disc-label" d="M8 14.4h8.2v4.2H8z"/>'+cross+'</svg>';
+}
+function saveIconMarkup(state, realm=false){
+  const saved=Boolean(state.canSave);
+  const label=saveStatusLabel(state);
+  const cls=realm?'realm-save-status':'game-save-status';
+  return '<button class="'+cls+(saved?' is-saving':' is-unsaved')+'" type="button" aria-label="'+label+'" data-save-status-icon data-save-tooltip="'+label+'">'+saveIconSvg(saved)+'</button>';
+}
+function ensureSaveTooltip(){
+  let tip=document.getElementById('gamesSaveStatusTooltip');
+  if(tip) return tip;
+  tip=document.createElement('div');
+  tip.id='gamesSaveStatusTooltip';
+  tip.className='games-save-tooltip';
+  tip.hidden=true;
+  tip.setAttribute('role','tooltip');
+  document.body.appendChild(tip);
+  return tip;
+}
+function positionSaveTooltip(target, tip){
+  const rect=target.getBoundingClientRect();
+  tip.hidden=false;
+  tip.classList.remove('is-below');
+  const margin=14;
+  const width=tip.offsetWidth;
+  const height=tip.offsetHeight;
+  const viewportWidth=document.documentElement.clientWidth;
+  const viewportHeight=document.documentElement.clientHeight;
+  let left=Math.min(Math.max(rect.left + rect.width/2 - width*0.72, margin), viewportWidth - width - margin);
+  let top=rect.top - height - 16;
+  let below=false;
+  if(top < margin){
+    top=rect.bottom + 16;
+    below=true;
+    tip.classList.add('is-below');
+  }
+  if(top + height > viewportHeight - margin){
+    top=Math.max(margin, viewportHeight - height - margin);
+  }
+  const arrowLeft=Math.min(Math.max(rect.left + rect.width/2 - left, 30), width - 30);
+  tip.style.left=Math.round(left)+'px';
+  tip.style.top=Math.round(top)+'px';
+  tip.style.setProperty('--games-save-tooltip-arrow-left', Math.round(arrowLeft)+'px');
+  tip.dataset.position=below?'below':'above';
+}
+let activeSaveTooltipTarget=null;
+function showSaveTooltip(target){
+  if(!target) return;
+  const tip=ensureSaveTooltip();
+  const text=target.getAttribute('data-save-tooltip')||target.getAttribute('aria-label')||'';
+  if(!text) return;
+  activeSaveTooltipTarget=target;
+  tip.textContent=text;
+  positionSaveTooltip(target, tip);
+}
+function hideSaveTooltip(){
+  activeSaveTooltipTarget=null;
+  const tip=document.getElementById('gamesSaveStatusTooltip');
+  if(tip) tip.hidden=true;
+}
+function refreshActiveSaveTooltip(){
+  if(!activeSaveTooltipTarget) return;
+  const tip=document.getElementById('gamesSaveStatusTooltip');
+  if(!tip || tip.hidden) return;
+  if(!document.body.contains(activeSaveTooltipTarget)){ hideSaveTooltip(); return; }
+  tip.textContent=activeSaveTooltipTarget.getAttribute('data-save-tooltip')||activeSaveTooltipTarget.getAttribute('aria-label')||'';
+  positionSaveTooltip(activeSaveTooltipTarget, tip);
+}
+function placeSaveIcons(){
+  const state=storageState();
+  const expectedState=state.canSave?'saving':'unsaved';
+  document.getElementById('gamesServerLoginNotice')?.remove();
+  document.querySelectorAll('.game-panel .link-actions').forEach(actions=>{
+    const icon=actions.querySelector('[data-save-status-icon]');
+    if(!icon)actions.insertAdjacentHTML('afterbegin',saveIconMarkup(state,false));
+    else if(icon.dataset.saveState!==expectedState)icon.outerHTML=saveIconMarkup(state,false);
+    const current=actions.querySelector('[data-save-status-icon]');
+    if(current)current.dataset.saveState=expectedState;
+  });
+  const route=document.querySelector('#realmTrainingBar .realm-route-meta');
+  if(route){
+    const icon=route.querySelector('[data-save-status-icon]');
+    if(!icon)route.insertAdjacentHTML('beforeend',saveIconMarkup(state,true));
+    else if(icon.dataset.saveState!==expectedState)icon.outerHTML=saveIconMarkup(state,true);
+    const current=route.querySelector('[data-save-status-icon]');
+    if(current)current.dataset.saveState=expectedState;
+  }
+  refreshActiveSaveTooltip();
+}
+function showSaveNotice(){document.getElementById('gamesServerLoginNotice')?.remove();placeSaveIcons();}
+function update(){enforceAccountCopy();showSaveNotice();document.documentElement.toggleAttribute('data-games-save-unavailable',!storageState().canSave);}
+function installSaveTooltipEvents(){
+  document.addEventListener('mouseover',event=>{
+    const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
+    if(button) showSaveTooltip(button);
+  });
+  document.addEventListener('mouseout',event=>{
+    const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
+    if(!button) return;
+    const next=event.relatedTarget;
+    if(next instanceof Node && button.contains(next)) return;
+    hideSaveTooltip();
+  });
+  document.addEventListener('focusin',event=>{
+    const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
+    if(button) showSaveTooltip(button);
+  });
+  document.addEventListener('focusout',event=>{
+    const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
+    if(!button) return;
+    const next=event.relatedTarget;
+    if(next instanceof Node && button.contains(next)) return;
+    hideSaveTooltip();
+  });
+  document.addEventListener('click',event=>{
+    const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;
+    if(button){
+      event.preventDefault();
+      showSaveTooltip(button);
+      return;
+    }
+    const tip=document.getElementById('gamesSaveStatusTooltip');
+    if(tip && !(event.target instanceof Node && tip.contains(event.target))) hideSaveTooltip();
+  });
+  window.addEventListener('scroll',refreshActiveSaveTooltip,{passive:true});
+  window.addEventListener('resize',refreshActiveSaveTooltip,{passive:true});
+}
+function install(){
+  update();
+  installSaveTooltipEvents();
+  document.addEventListener('baseline:game-storage',update);
+  new MutationObserver(()=>placeSaveIcons()).observe(document.getElementById('games')||document.body,{childList:true,subtree:true});
+  document.documentElement.setAttribute('data-games-server-storage-ui',BUILD);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+export{storageState,accountCopy,enforceAccountCopy,showSaveNotice};

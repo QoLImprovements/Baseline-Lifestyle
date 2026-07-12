@@ -1,0 +1,155 @@
+@import url('./ninja-training-runtime-authority.css?v=GAMES_HUB_RUNTIME_REPAIR_20260707_1');
+
+#ninjaPanel .ninja-scene__runner,
+#ninjaPanel .ninja-scene__enemy{
+  z-index:20!important;
+}
+
+#ninjaPanel .ninja-forest-layer--foreground{
+  z-index:10!important;
+}
+
+#ninjaPanel .ninja-hit-flash,
+#ninjaPanel .ninja-shuriken-layer{
+  z-index:22!important;
+  pointer-events:none!important;
+}
+
+/* Large animated SVG backgrounds were repainting the entire game surface.
+   Keep the forest art but let only the small character sprites animate. */
+#ninjaPanel .ninja-forest-layer,
+#ninjaPanel .ninja-scene__layer,
+#ninjaPanel .ninja-forest-ground::before{
+  animation:none!important;
+  will-change:auto!important;
+}
+
+
+/* REALM_VISIBLE_ART_20260706
+   Direct character sprite elements and explicit forest fallbacks prevent the
+   training screen from opening as an empty green stage. */
+#ninjaPanel .ninja-scene__layer--a,
+#ninjaPanel .ninja-forest-layer--distant{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-distant.svg')!important;
+  background-size:cover!important;
+  background-position:center bottom!important;
+}
+#ninjaPanel .ninja-scene__layer--b,
+#ninjaPanel .ninja-forest-layer--middle{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-middle.svg')!important;
+  background-size:cover!important;
+  background-position:center bottom!important;
+}
+#ninjaPanel .ninja-forest-layer--foreground{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-foreground.svg')!important;
+  background-size:cover!important;
+  background-position:center bottom!important;
+}
+#ninjaPanel .ninja-scene.has-runtime-sprites .ninja-scene__runner::before,
+#ninjaPanel .ninja-scene.has-runtime-sprites .ninja-scene__enemy::before{display:none!important;}
+#ninjaPanel .ninja-runtime-sprite{
+  position:absolute!important;
+  inset:0!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  background-repeat:no-repeat!important;
+  background-position:0 0!important;
+  transform:translateZ(0)!important;
+  pointer-events:none!important;
+}
+#ninjaPanel .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-run.svg')!important;
+  background-size:800% 100%!important;
+  animation:ninjaRuntimeRunner .88s steps(8,end) infinite!important;
+}
+#ninjaPanel .ninja-runtime-sprite--enemy{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/mossblade-pursuer.svg')!important;
+  background-size:600% 100%!important;
+  animation:ninjaRuntimeEnemy 1.05s steps(6,end) infinite!important;
+}
+#ninjaPanel .ninja-runtime-sprite--enemy[data-enemy-kind="raider"]{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/gloam-rope-raider.svg')!important;
+}
+#ninjaPanel .ninja-runtime-sprite--enemy[data-enemy-kind="boss"]{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/hollow-crown-warden.svg')!important;
+}
+@media (prefers-reduced-motion:reduce){
+  #ninjaPanel .ninja-runtime-sprite{animation:none!important;}
+}
+
+
+/* GAMES_HUB_RUNTIME_REPAIR_20260707_1
+   The three forest layers occupy the same stage and the concrete actor art
+   remains visible even when older layout rules are cached. */
+#ninjaPanel .ninja-scene__layer--a,
+#ninjaPanel .ninja-scene__layer--b,
+#ninjaPanel .ninja-forest-layer{
+  inset:0!important;
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+  height:100%!important;
+  transform:none!important;
+  background-repeat:no-repeat!important;
+}
+#ninjaPanel .ninja-scene__layer--a{z-index:0!important;opacity:1!important;}
+#ninjaPanel .ninja-scene__layer--b{z-index:2!important;opacity:.86!important;}
+#ninjaPanel .ninja-forest-layer--foreground{inset:0!important;z-index:10!important;opacity:1!important;}
+#ninjaPanel .ninja-scene__lane{
+  z-index:5!important;
+  height:24%!important;
+  background:
+    linear-gradient(112deg,transparent 0 35%,rgba(194,166,103,.16) 44%,rgba(109,80,51,.30) 51%,rgba(194,166,103,.12) 58%,transparent 68%),
+    linear-gradient(180deg,rgba(11,47,38,.08),#08251f 42%,#041713 100%)!important;
+  box-shadow:inset 0 18px 28px -24px rgba(202,190,137,.28)!important;
+}
+#ninjaPanel .ninja-scene__runner,
+#ninjaPanel .ninja-scene__enemy{
+  bottom:clamp(72px,9.5%,118px)!important;
+  filter:drop-shadow(0 18px 12px rgba(0,10,8,.52))!important;
+}
+#ninjaPanel .ninja-runtime-sprite{z-index:1!important;}
+#ninjaPanel .ninja-runtime-sprite--enemy{
+  filter:drop-shadow(0 0 12px rgba(217,190,105,.10))!important;
+}
+#ninjaPanel .realm-loader-failure{
+  position:absolute!important;
+  z-index:60!important;
+  inset:112px 18px auto 18px!important;
+  background:#10251f!important;
+  color:#f3ead5!important;
+  border:1px solid rgba(220,188,119,.45)!important;
+}
+
+/* REALM_FOREGROUND_AND_EXTERNAL_SCENE_REPAIR_20260707_2 */
+#ninjaPanel .ninja-forest-layer--foreground{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:10!important;
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-foreground.svg')!important;
+  background-repeat:no-repeat!important;
+  background-position:center bottom!important;
+  background-size:100% 100%!important;
+  pointer-events:none!important;
+}
+#ninjaPanel #realmSceneFrame.is-external-realm-view > #ninjaScene,
+#ninjaPanel #realmSceneFrame.is-tactical-operations-view > #ninjaScene,
+#ninjaPanel #realmSceneFrame.is-calorie-escape-view > #ninjaScene{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+#ninjaPanel #realmSceneFrame.is-external-realm-view > .tactical-operations-screen,
+#ninjaPanel #realmSceneFrame.is-tactical-operations-view > .tactical-operations-screen,
+#ninjaPanel #realmSceneFrame.is-calorie-escape-view > .calorie-escape-screen{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}

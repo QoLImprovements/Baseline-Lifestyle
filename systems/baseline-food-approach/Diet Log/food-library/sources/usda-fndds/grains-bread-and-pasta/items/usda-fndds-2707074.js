@@ -1,0 +1,67 @@
+/* Isolated Diet Log food record. Source of truth for this food. */
+(function(){
+  "use strict";
+  var item={
+  "basis": "g",
+  "basisGrams": 100.0,
+  "basisLabel": "100 g",
+  "category": "Grains, Bread & Pasta",
+  "defaultMeasure": "quantity-not-specified",
+  "description": "Frankfurter sandwiches",
+  "id": "usda-fndds-2707074",
+  "measures": [
+    {
+      "gramsPerUnit": 1.0,
+      "key": "g",
+      "kind": "weight",
+      "label": "g"
+    },
+    {
+      "gramsPerUnit": 87.0,
+      "key": "quantity-not-specified",
+      "kind": "unit",
+      "label": "Quantity not specified"
+    },
+    {
+      "gramsPerUnit": 87.0,
+      "key": "1-sandwich-1-slice-bread",
+      "kind": "unit",
+      "label": "1 sandwich (1 slice bread)"
+    }
+  ],
+  "name": "Hot dog sandwich, reduced fat, on white bread",
+  "nutritionPerBasis": {
+    "calcium_mg": 83.0,
+    "carbs_g": 20.3,
+    "energy_kcal": 234.0,
+    "fat_g": 11.5,
+    "fibre_g": 0.8,
+    "folate_ug": 40.0,
+    "iron_mg": 1.92,
+    "magnesium_mg": 16.0,
+    "omega3_g": 0.001,
+    "phosphorus_mg": 114.0,
+    "potassium_mg": 173.0,
+    "protein_g": 12.3,
+    "salt_g": 1.395,
+    "sat_fat_g": 4.54,
+    "sodium_mg": 558.0,
+    "sugar_g": 1.84,
+    "vitamin_a_ug": 0.0,
+    "vitamin_c_mg": 0.1,
+    "vitamin_e_mg": 0.2,
+    "vitamin_k_ug": 0.3
+  },
+  "source": "USDA FNDDS 2021-2023",
+  "sourceId": "2707074",
+  "state": "Unspecified",
+  "subcategory": "Frankfurter sandwiches",
+  "tags": [
+    "frankfurter-sandwiches",
+    "grains-bread-and-pasta",
+    "unspecified"
+  ]
+};
+  var list=Array.isArray(window.BASELINE_DIET_FOOD_LIBRARY)?window.BASELINE_DIET_FOOD_LIBRARY:(window.BASELINE_DIET_FOOD_LIBRARY=[]);
+  if(!list.some(function(existing){return existing&&existing.id===item.id;})) list.push(item);
+})();

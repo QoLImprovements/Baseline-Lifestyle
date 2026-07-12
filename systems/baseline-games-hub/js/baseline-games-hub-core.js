@@ -1,0 +1,3845 @@
+(function(){
+  'use strict';
+
+const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
+  try{
+    window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
+    document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
+  }catch(_buildMarkerError){}
+
+  const API_PATH = '/systems/baseline-games-hub/api/games_profile.php';
+  const GAME_APPS = ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
+  const TRACKCOIN_STORAGE_KEY = '__bl_trackcoin_v1__';
+  const GUEST_PROFILES_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
+  const AUTO_NEXT_STORAGE_KEY = '__bl_games_auto_next_v1__';
+  const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift'];
+  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900 });
+  const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
+  const SITEWIDE_AUTONEXT_HOTKEY_LABEL = 'Alt+A';
+  const SITEWIDE_KEYBOARD_HOTKEY_LABEL = 'Alt+K';
+  const TRACKCOIN_BASE_SPEED_PERCENT = 100;
+  const TRACKCOIN_START_SPEED_SCALE = 0.60;
+  const TRACKCOIN_SPEED_STEP_PERCENT = 10;
+  const TRACKCOIN_FIRST_MILESTONE_PERCENT = 200;
+  const TRACKCOIN_MILESTONE_STEP_PERCENT = 50;
+  const TRACKCOIN_MIN_MOVES = 6;
+  const TRACKCOIN_SHUFFLE_MIN_MS = 6000;
+  const TRACKCOIN_SHUFFLE_MAX_MS = 8000;
+
+  const PAIRS_FACES = ['🍂','🪵','🌰','🦉','🍁','🪨','🌾','🧺','🪶','🍄','🌿','🏹','🥾','🕯️','🪙','📜','🧭','🐚','🛡️','⚒️','🪁','🪻','🌙','⭐'];
+  const PAIRS_TIERS = [
+    { id:'starter', name:'Starter', unlockLevel:1, cols:4, pairs:6, xpReward:22, bankReward:10, penalty:1 },
+    { id:'field', name:'Field', unlockLevel:4, cols:4, pairs:8, xpReward:30, bankReward:14, penalty:2 },
+    { id:'forge', name:'Forge', unlockLevel:10, cols:5, pairs:10, xpReward:42, bankReward:20, penalty:3 },
+    { id:'bastion', name:'Bastion', unlockLevel:18, cols:6, pairs:12, xpReward:58, bankReward:28, penalty:3 },
+    { id:'citadel', name:'Citadel', unlockLevel:30, cols:6, pairs:15, xpReward:78, bankReward:40, penalty:4 },
+    { id:'vault', name:'Vault', unlockLevel:46, cols:6, pairs:18, xpReward:104, bankReward:56, penalty:5 }
+  ];
+  const PAIRS_SKILLS = [
+    { id:'insight', name:'Insight', max:4, unlockLevel:6, description:'Gain one hint use per board per level. A hint now flashes one unmatched card only, not the whole pair.' },
+    { id:'flow', name:'Flow', max:5, unlockLevel:1, description:'Gain +8% XP reward per level when a board is cleared.' },
+    { id:'banker', name:'Banker', max:5, unlockLevel:1, description:'Gain +10% Bank reward per level when a board is cleared.' },
+    { id:'recall', name:'Recall', max:4, unlockLevel:1, description:'Reduce repeated-mismatch Bank loss by 1 per level.' },
+    { id:'tempo', name:'Tempo', max:4, unlockLevel:12, description:'Reduce mismatch recovery lock time by 90 ms per level.' }
+  ];
+
+  const MAKE24_TIERS = [
+    { id:'starter', name:'Starter', unlockLevel:1, maxNumber:5, xpReward:18, bankReward:10, penalty:1 },
+    { id:'field', name:'Field', unlockLevel:6, maxNumber:7, xpReward:26, bankReward:14, penalty:2 },
+    { id:'forge', name:'Forge', unlockLevel:14, maxNumber:9, xpReward:40, bankReward:22, penalty:3 },
+    { id:'citadel', name:'Citadel', unlockLevel:24, maxNumber:11, xpReward:56, bankReward:32, penalty:4 },
+    { id:'crown', name:'Crown', unlockLevel:36, maxNumber:13, xpReward:76, bankReward:44, penalty:5 }
+  ];
+  const MAKE24_SKILLS = [
+    { id:'clarity', name:'Clarity', max:4, unlockLevel:4, description:'Gain one guide use per puzzle per level. Each guide now gives only light tactical direction instead of exposing the answer.' },
+    { id:'flow', name:'Flow', max:5, unlockLevel:1, description:'Gain +8% XP reward per solve.' },
+    { id:'banker', name:'Banker', max:5, unlockLevel:1, description:'Gain +10% Bank reward per solve.' },
+    { id:'reserve', name:'Reserve', max:4, unlockLevel:8, description:'Gain one reroll per puzzle per level.' },
+    { id:'precision', name:'Precision', max:4, unlockLevel:1, description:'Reduce repeated wrong-answer Bank loss by 1 per level.' }
+  ];
+
+  const WORD_TIERS = [
+    { id:'tier3', name:'3 Letters', unlockLevel:1, letters:3, xpReward:16, bankReward:8 },
+    { id:'tier4', name:'4 Letters', unlockLevel:4, letters:4, xpReward:22, bankReward:10 },
+    { id:'tier5', name:'5 Letters', unlockLevel:10, letters:5, xpReward:32, bankReward:16 },
+    { id:'tier6', name:'6 Letters', unlockLevel:18, letters:6, xpReward:46, bankReward:24 },
+    { id:'tier7', name:'7 Letters', unlockLevel:30, letters:7, xpReward:62, bankReward:34 }
+  ];
+  const WORD_SKILLS = [
+    { id:'flow', name:'Flow', max:5, unlockLevel:1, description:'Gain +8% XP reward per solved word.' },
+    { id:'banker', name:'Banker', max:5, unlockLevel:1, description:'Gain +10% Bank reward per solved word.' },
+    { id:'reserve', name:'Reserve', max:4, unlockLevel:6, description:'Gain one extra guess slot per level.' },
+    { id:'focus', name:'Focus', max:4, unlockLevel:8, description:'Gain +4% reward pressure per active streak step, per level.' }
+  ];
+  const WORD_BANK = Object.freeze({
+    3:['ace','act','add','age','aim','air','ale','and','ant','ape','arc','ark','arm','art','ash','ask','awe','bad','bag','ban','bar','bat','bay','bee','bet','bib','bid','big','bin','bit','bob','bog','box','boy','bud','bug','bun','bus','cab','can','cap','car','cat','cob','cod','con','cop','cot','cow','coy','cup','cut','day','den','dew','dig','dim','dog','dry','ear','eel','egg','elm','end','era','eye','fan','far','fat','fee','fig','fin','fir','fog','for','fox','fun','gap','gem','gin','gum','ham','hay','hen','her','him','hop','hot','ice','ink','ivy','jam','jar','jaw','jet','job','joy','key','kin','kit','lap','law','lay','leg','lid','lip','log','man','map','mat','men','mud','mug','net','nod','oak','oar','odd','oil','one','orb','owl','pad','pan','pea','pen','pet','pie','pig','pin','pot','ram','ran','rat','raw','red','rib','rig','rim','rip','rod','row','rug','run','sap','saw','sea','set','sip','sit','sky','son','sun','tan','tap','tar','ten','tin','toe','top','toy','tub','urn','van','vat','wax','web','wet','win','wit','yes','yet','zip','zen'],
+    4:['able','ache','acid','acre','aged','also','arch','area','army','aunt','bake','balm','bank','barn','bark','bead','beam','bean','bear','bell','bend','bird','boat','bolt','bone','book','boot','born','brim','brow','bulb','calm','camp','cane','card','cart','cave','clay','coal','cold','coin','cozy','crab','crop','curl','damp','dawn','deer','desk','dice','dock','dove','dune','dusk','each','echo','edge','fern','fire','fish','flag','flax','flow','foam','fold','fork','form','frog','glow','gold','gown','grit','harp','haze','heat','herb','hill','home','horn','iris','iron','jade','knot','lace','lake','lamb','leaf','lime','lint','lion','lock','loom','maze','mint','moon','moss','navy','nest','note','opal','pace','path','pear','pine','pond','rain','rail','reed','rice','rift','ring','road','rock','rose','sage','sand','seed','silk','snow','soil','song','stem','tide','vale','vine','wave','wild','will','wind','wood','wool','yard','year'],
+    5:['amber','apple','arise','atlas','badge','baker','beach','blend','bloom','braid','briar','cabin','cable','camel','caper','cedar','charm','chase','cider','clasp','coast','crane','crown','dance','delta','drift','ember','fable','field','flame','flint','frame','frost','ghost','glade','grace','grain','grape','grove','guard','heart','honey','house','ivory','jewel','latch','lemon','linen','maple','merit','mirth','noble','ocean','olive','pearl','petal','pilot','plume','pride','quill','raven','ridge','river','roast','robin','sable','shale','shore','slate','spice','spire','sprig','stack','stone','storm','table','tease','thorn','trail','wheat','woven','world','zebra'],
+    6:['almond','anchor','animal','artist','autumn','beacon','branch','bridge','bronze','buffer','candle','canyon','carbon','carved','castle','cherry','cipher','circle','copper','cosmic','crater','desert','driven','empire','fabric','forest','garden','gentle','glider','golden','hammer','harbor','hollow','island','jungle','keeper','ladder','legend','little','meadow','memory','native','nickel','orange','orchid','planet','pocket','quartz','rabbit','rocket','sandal','shadow','silver','sleeve','smooth','spring','sprout','sturdy','summer','thrive','timber','travel','velvet','violet','walnut','winter','wonder','yellow'],
+    7:['apricot','balance','bargain','barrier','blossom','cabinet','captain','careful','carrier','central','chamber','charity','circuit','classic','collect','compass','courage','crimson','default','diamond','element','emerald','evening','factory','gallery','general','glimmer','granite','harvest','journey','kingdom','lantern','liberty','marshal','massive','measure','message','natural','orchard','passage','passion','pattern','prepare','profile','resolve','scholar','section','silence','special','station','support','tactile','teacher','texture','tracker','uniform','victory','village','warrior','weather','welcome','whisper']
+  });
+
+
+  const TRACKCOIN_TIERS = [
+    { id:'tier1', name:'Tier 1', unlockLevel:1, containers:3, minSwaps:2, maxSwaps:3, speed:740, xpReward:10, coinReward:5, perfectBonusXp:20, perfectBonusCoins:10, multiplier:1.0 },
+    { id:'tier2', name:'Tier 2', unlockLevel:3, containers:4, minSwaps:3, maxSwaps:4, speed:620, xpReward:12, coinReward:6, perfectBonusXp:20, perfectBonusCoins:10, multiplier:1.25 },
+    { id:'tier3', name:'Tier 3', unlockLevel:6, containers:5, minSwaps:4, maxSwaps:6, speed:510, xpReward:15, coinReward:8, perfectBonusXp:24, perfectBonusCoins:12, multiplier:1.5 },
+    { id:'tier4', name:'Tier 4', unlockLevel:10, containers:5, minSwaps:6, maxSwaps:8, speed:420, xpReward:18, coinReward:10, perfectBonusXp:28, perfectBonusCoins:14, multiplier:1.75, fakeRhythm:true },
+    { id:'tier5', name:'Tier 5', unlockLevel:15, containers:6, minSwaps:8, maxSwaps:10, speed:320, xpReward:22, coinReward:12, perfectBonusXp:32, perfectBonusCoins:16, multiplier:2.0, fakeRhythm:true }
+  ];
+  const TRACKCOIN_STREAK_BONUS = [
+    { streak:12, pct:50 },
+    { streak:8, pct:35 },
+    { streak:5, pct:20 },
+    { streak:3, pct:10 },
+    { streak:2, pct:5 }
+  ];
+  const TRACKCOIN_SKILLS = [
+    { id:'read', name:'Read', max:4, unlockLevel:1, description:'Gain +6% XP per level on a correct pick and strengthen passive focus for Ninja Training.' },
+    { id:'banker', name:'Banker', max:5, unlockLevel:1, description:'Gain +10% coin reward per level on a correct pick.' },
+    { id:'flow', name:'Flow', max:5, unlockLevel:1, description:'Gain +5% clean-win bonus efficiency per level.' },
+    { id:'discipline', name:'Discipline', max:4, unlockLevel:4, description:'Wrong rounds preserve more reward and recover streak control faster.' },
+    { id:'steal', name:'Pace Control', max:4, unlockLevel:8, description:'Improves rewards and Ninja Training attack tempo while the exact +10% cup-speed streak rule remains readable.' }
+  ];
+
+
+  const RULESHIFT_COLOURS = Object.freeze([
+    { id:'red', name:'Red' },
+    { id:'blue', name:'Blue' },
+    { id:'green', name:'Green' },
+    { id:'yellow', name:'Yellow' },
+    { id:'purple', name:'Purple' },
+    { id:'orange', name:'Orange' },
+    { id:'teal', name:'Teal' },
+    { id:'pink', name:'Pink' }
+  ]);
+  const RULESHIFT_SHAPES = Object.freeze([
+    { id:'circle', name:'Circle' },
+    { id:'square', name:'Square' },
+    { id:'triangle', name:'Triangle' },
+    { id:'diamond', name:'Diamond' },
+    { id:'pill', name:'Pill' },
+    { id:'hexagon', name:'Hexagon' },
+    { id:'star', name:'Star' },
+    { id:'cross', name:'Cross' }
+  ]);
+  const RULESHIFT_SIZES = Object.freeze([
+    { id:'small', name:'Small' },
+    { id:'large', name:'Large' }
+  ]);
+  const RULESHIFT_TIERS = [
+    { id:'starter', name:'Starter', unlockLevel:1, optionCount:6, rounds:8, timeLimitMs:5000, xpReward:18, bankReward:9, penalty:1, sizes:['large'], rules:['colour','shape'] },
+    { id:'switch', name:'Switching', unlockLevel:4, optionCount:8, rounds:10, timeLimitMs:5000, xpReward:26, bankReward:13, penalty:2, sizes:['large'], rules:['colour','shape','colourShape'] },
+    { id:'opposite', name:'Combinations', unlockLevel:9, optionCount:10, rounds:12, timeLimitMs:5000, xpReward:40, bankReward:21, penalty:3, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size'] },
+    { id:'mixed', name:'Mixed Rules', unlockLevel:16, optionCount:12, rounds:14, timeLimitMs:5000, xpReward:56, bankReward:30, penalty:4, sizes:['large','small'], rules:['colour','shape','size','colourShape','colourSize','shapeSize'] },
+    { id:'pressure', name:'Pressure', unlockLevel:26, optionCount:12, rounds:16, timeLimitMs:5000, xpReward:76, bankReward:44, penalty:5, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','colour','shape'] }
+  ];
+  const RULESHIFT_SKILLS = [
+    { id:'focus', name:'Focus', max:5, unlockLevel:1, description:'Gain +8% XP reward per completed run.' },
+    { id:'banker', name:'Banker', max:5, unlockLevel:1, description:'Gain +10% Bank reward per completed run.' },
+    { id:'recovery', name:'Recovery', max:4, unlockLevel:5, description:'Reduce the Bank loss from a wrong choice by 1 per level.' },
+    { id:'adapt', name:'Adapt', max:4, unlockLevel:10, description:'Gain extra round Bank when you answer correctly after a changed rule.' }
+  ];
+
+  const refs = {};
+  const guestProfiles = Object.create(null);
+  const profiles = Object.create(null);
+
+  function readGuestProfile(app){
+    try{
+      const raw = localStorage.getItem(GUEST_PROFILES_STORAGE_KEY);
+      const all = raw ? JSON.parse(raw) : {};
+      return all && typeof all === 'object' ? all[app] : null;
+    }catch(_e){
+      return null;
+    }
+  }
+
+  function writeGuestProfile(app, profile){
+    try{
+      const raw = localStorage.getItem(GUEST_PROFILES_STORAGE_KEY);
+      const all = raw ? JSON.parse(raw) : {};
+      all[app] = JSON.parse(JSON.stringify(profile));
+      localStorage.setItem(GUEST_PROFILES_STORAGE_KEY, JSON.stringify(all));
+    }catch(_e){}
+  }
+  const saveTimers = Object.create(null);
+  let authState = { authed:false, name:'', email:'' };
+  let selectedGame = '';
+  let currentTab = 'hub';
+  let pairsBoardState = null;
+  let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+  let make24State = null;
+  let make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+  let wordState = null;
+  let wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+  let ruleShiftState = null;
+  let ruleShiftTimer = 0;
+  let ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+  let trackCoinState = null;
+  let trackCoinAnimationFrame = 0;
+  let trackCoinShuffleTimer = 0;
+  let trackCoinOpenPanel = 'trackCoinGamePanel';
+  let ruleShiftOpenPanel = 'ruleShiftGameCard';
+  let pairsOpenPanel = 'pairsGameCard';
+  let wordOpenPanel = 'wordGameCard';
+  let make24OpenPanel = 'make24GameCard';
+  let ninjaOpenPanel = 'ninjaGameCard';
+  const openSummaryIds = new Set();
+  const wordRecentByLength = Object.create(null);
+  let suspendHashSync = false;
+  let autoNextSettings = readAutoNextSettings();
+  const autoNextTimers = Object.create(null);
+  let desktopKeypadOpenGame = '';
+  const GAME_IDS = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
+
+  const GAME_ID_TO_ROUTE_SLUG = Object.freeze({
+    pairs:'pairs',
+    detectword:'detect-the-word',
+    make24:'make-the-number',
+    trackcoin:'track-the-coin',
+    ruleshift:'rule-shift',
+    ninja:'baseline-realm'
+  });
+  const GAME_ROUTE_SLUG_TO_ID = Object.freeze({
+    pairs:'pairs',
+    'detect-the-word':'detectword',
+    make24:'make24',
+    'make-the-number':'make24',
+    'track-the-coin':'trackcoin',
+    'rule-shift':'ruleshift',
+    'baseline-realm':'ninja'
+  });
+
+  const GAME_PANEL_MAP = Object.freeze({
+    pairs:{ panels:['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
+    detectword:{ panels:['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], defaultPanel:'wordGameCard', get:function(){ return wordOpenPanel; }, set:function(value){ wordOpenPanel = value; } },
+    make24:{ panels:['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], defaultPanel:'make24GameCard', get:function(){ return make24OpenPanel; }, set:function(value){ make24OpenPanel = value; } },
+    trackcoin:{ panels:['trackCoinGamePanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], defaultPanel:'trackCoinGamePanel', get:function(){ return trackCoinOpenPanel; }, set:function(value){ trackCoinOpenPanel = value; } },
+    ruleshift:{ panels:['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], defaultPanel:'ruleShiftGameCard', get:function(){ return ruleShiftOpenPanel; }, set:function(value){ ruleShiftOpenPanel = value; } },
+    ninja:{ panels:['ninjaGameCard'], defaultPanel:'ninjaGameCard', get:function(){ return ninjaOpenPanel; }, set:function(value){ ninjaOpenPanel = value; } }
+  });
+
+  function q(sel, root=document){ return root.querySelector(sel); }
+  function qsa(sel, root=document){ return Array.from(root.querySelectorAll(sel)); }
+
+  function isMobileGameViewport(){
+    if(typeof window === 'undefined') return false;
+    try{
+      const width = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
+      const height = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0);
+      const coarse = !!(window.matchMedia && window.matchMedia('(pointer:coarse)').matches);
+      const touchPoints = Number((window.navigator && window.navigator.maxTouchPoints) || 0);
+      return width <= 820 || ((coarse || touchPoints > 0) && Math.min(width,height) <= 820 && Math.max(width,height) <= 1100);
+    }catch(_error){
+      return Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 820;
+    }
+  }
+
+  function startButtonLabel(){
+    return isMobileGameViewport() ? 'Start New Game' : 'Start New Game [' + SITEWIDE_START_HOTKEY_LABEL + ']';
+  }
+  function autoNextButtonLabel(gameId){
+    const enabled = autoNextEnabled(gameId);
+    return isMobileGameViewport()
+      ? 'Auto-Next: ' + (enabled ? 'On' : 'Off')
+      : 'Auto-Next Game: ' + (enabled ? 'On' : 'Off') + ' [' + SITEWIDE_AUTONEXT_HOTKEY_LABEL + ']';
+  }
+  function keypadButtonLabel(open){
+    return isMobileGameViewport()
+      ? (open ? 'Close Keypad' : 'Open Keypad')
+      : (open ? 'Close Keypad [' + SITEWIDE_KEYBOARD_HOTKEY_LABEL + ']' : 'Open Keypad [' + SITEWIDE_KEYBOARD_HOTKEY_LABEL + ']');
+  }
+  function hotkeyActionLabel(label, hotkey){
+    return isMobileGameViewport() ? label : label + ' [' + hotkey + ']';
+  }
+  function countedHotkeyActionLabel(label, hotkey, count){
+    return hotkeyActionLabel(label, hotkey) + ' (' + count + ')';
+  }
+  function mobileSubmitButtonHtml(){
+    return isMobileGameViewport() ? '' : '<div class="game-input-submit-row"><button class="action ghost submit-game-toggle" type="submit">Submit</button></div>';
+  }
+  function resyncHeaderAfterMobileGameExit(){
+    try{
+      if(typeof window.BASELINE_syncHomebarHeight === 'function') window.BASELINE_syncHomebarHeight();
+    }catch(_e){}
+    try{
+      document.dispatchEvent(new Event('baseline:homebar-resync'));
+    }catch(_e){}
+    const scroller = q('.bl-scroll');
+    if(scroller){
+      try{
+        scroller.style.removeProperty('top');
+        scroller.style.removeProperty('overflow');
+      }catch(_e){}
+    }
+    try{ document.documentElement.offsetHeight; }catch(_e){}
+  }
+
+  function focusGameInput(id){
+    if(typeof window === 'undefined') return;
+    window.setTimeout(function(){
+      const input = document.getElementById(id);
+      if(!input || input.disabled) return;
+      if(isMobileGameViewport()){
+        try{ input.setAttribute('inputmode', 'none'); input.setAttribute('readonly', 'readonly'); input.blur(); }catch(_error){}
+        return;
+      }
+      try{ input.removeAttribute('readonly'); input.removeAttribute('inputmode'); }catch(_error){}
+      input.focus({ preventScroll:true });
+      if(typeof input.select === 'function') input.select();
+    }, 0);
+  }
+
+  function defaultGameCardId(gameId){
+    return gameId === 'pairs' ? 'pairsGameCard'
+      : gameId === 'detectword' ? 'wordGameCard'
+      : gameId === 'make24' ? 'make24GameCard'
+      : gameId === 'trackcoin' ? 'trackCoinGamePanel'
+      : gameId === 'ruleshift' ? 'ruleShiftGameCard'
+      : gameId === 'ninja' ? 'ninjaGameCard'
+      : '';
+  }
+  function defaultGamePanelId(gameId){
+    return gameId === 'pairs' ? 'pairsPanel'
+      : gameId === 'detectword' ? 'detectwordPanel'
+      : gameId === 'make24' ? 'make24Panel'
+      : gameId === 'trackcoin' ? 'trackcoinPanel'
+      : gameId === 'ruleshift' ? 'ruleshiftPanel'
+      : gameId === 'ninja' ? 'ninjaPanel'
+      : '';
+  }
+  function defaultGameSurfaceId(gameId){
+    return gameId === 'pairs' ? 'pairsBoard'
+      : gameId === 'detectword' ? 'wordBoard'
+      : gameId === 'make24' ? 'make24Board'
+      : gameId === 'trackcoin' ? 'trackCoinScene'
+      : gameId === 'ruleshift' ? 'ruleShiftBoard'
+      : gameId === 'ninja' ? 'realmSceneFrame'
+      : '';
+  }
+  function openGameCardPanel(gameId){
+    if(gameId === 'pairs') setPairsPanel('pairsGameCard');
+    else if(gameId === 'detectword') setWordPanel('wordGameCard');
+    else if(gameId === 'make24') setMake24Panel('make24GameCard');
+    else if(gameId === 'trackcoin') setTrackCoinPanel('trackCoinGamePanel');
+    else if(gameId === 'ruleshift') setRuleShiftPanel('ruleShiftGameCard');
+    else if(gameId === 'ninja') setNinjaPanel('ninjaGameCard');
+  }
+  function markGameNode(id, attr, value, extraClass){
+    const el = document.getElementById(id);
+    if(!el) return null;
+    el.setAttribute(attr, value);
+    if(extraClass) el.classList.add(extraClass);
+    return el;
+  }
+  function ensureGamePlayContract(){
+    if(typeof document === 'undefined') return;
+
+    // Sitewide game contract:
+    // - every game opens idle until Start New Game is pressed;
+    // - every authenticated game profile saves through the account API;
+    // - the game card is always the game window / mobile root;
+    // - the board/scene is only the play surface;
+    // - controls, Round Status, Start New Game, and Auto-Next stay inside the same root;
+    // - Start New Game uses Alt+N and Auto-Next uses Alt+A so typing games do not clash.
+    ['pairs','detectword','make24','trackcoin','ruleshift','ninja'].forEach(function(gameId){
+      markGameNode(defaultGamePanelId(gameId), 'data-game-panel', gameId, 'game-panel-shell');
+      markGameNode(defaultGameCardId(gameId), 'data-game-card', gameId, 'game-card-shell');
+      const card = gameCardElement(gameId);
+      if(card){ card.setAttribute('data-game-play-root', gameId); card.classList.add('game-play-root'); }
+    });
+
+    const pairsWindow = refs.pairsBoard && refs.pairsBoard.closest('.board-wrap');
+    if(pairsWindow){ pairsWindow.removeAttribute('data-game-play-root'); pairsWindow.setAttribute('data-game-play-window','pairs'); pairsWindow.classList.remove('game-play-root'); pairsWindow.classList.add('game-play-window'); }
+    if(refs.pairsBoard){ refs.pairsBoard.setAttribute('data-game-play-surface','pairs'); refs.pairsBoard.classList.add('game-play-surface'); }
+
+    const wordWindow = refs.wordBoard && refs.wordBoard.closest('.board-wrap');
+    if(wordWindow){ wordWindow.removeAttribute('data-game-play-root'); wordWindow.setAttribute('data-game-play-window','detectword'); wordWindow.classList.remove('game-play-root'); wordWindow.classList.add('game-play-window'); }
+    if(refs.wordBoard){ refs.wordBoard.setAttribute('data-game-play-surface','detectword'); refs.wordBoard.classList.add('game-play-surface'); }
+
+    const makeWindow = refs.make24Board && refs.make24Board.closest('.board-wrap');
+    if(makeWindow){ makeWindow.removeAttribute('data-game-play-root'); makeWindow.setAttribute('data-game-play-window','make24'); makeWindow.classList.remove('game-play-root'); makeWindow.classList.add('game-play-window'); }
+    if(refs.make24Board){ refs.make24Board.setAttribute('data-game-play-surface','make24'); refs.make24Board.classList.add('game-play-surface'); }
+
+    const trackRoot = refs.trackCoinBoard || document.getElementById('trackCoinBoard');
+    if(trackRoot){ trackRoot.removeAttribute('data-game-play-root'); trackRoot.setAttribute('data-game-play-surface','trackcoin'); trackRoot.classList.remove('game-play-root'); trackRoot.classList.add('game-play-surface'); }
+    const trackScene = document.getElementById('trackCoinScene') || q('.trackcoin-scene', trackRoot || document);
+    if(trackScene){ trackScene.id = 'trackCoinScene'; trackScene.setAttribute('data-game-play-surface','trackcoin-scene'); trackScene.classList.add('game-play-surface'); }
+
+    const ruleShiftBoard = document.getElementById('ruleShiftBoard');
+    if(ruleShiftBoard){ ruleShiftBoard.setAttribute('data-game-play-surface','ruleshift'); ruleShiftBoard.classList.add('game-play-surface'); }
+
+    const realmFrame = document.getElementById('realmSceneFrame') || document.getElementById('realmWindow');
+    if(realmFrame){ realmFrame.setAttribute('data-game-play-root','ninja'); realmFrame.setAttribute('data-game-play-surface','ninja'); realmFrame.classList.add('game-play-root','game-play-surface'); }
+
+    qsa('[data-action^="start-"]').forEach(function(btn){
+      btn.classList.add('start-new-game-toggle', 'ghost');
+    });
+    qsa('#wordGuessForm button[type="submit"], #make24ExpressionForm button[type="submit"]').forEach(function(btn){
+      btn.classList.add('submit-game-toggle', 'ghost');
+    });
+    qsa('[data-auto-next-toggle]').forEach(function(btn){
+      btn.classList.add('auto-next-toggle', 'ghost');
+    });
+  }
+  function gamePanelElement(gameId){ return document.getElementById(defaultGamePanelId(gameId)); }
+  function gameCardElement(gameId){ return document.getElementById(defaultGameCardId(gameId)); }
+  function gamePlayRootElement(gameId){
+    ensureGamePlayContract();
+    return gameCardElement(gameId) || q('[data-game-play-root="' + gameId + '"]') || gamePanelElement(gameId);
+  }
+  function gamePlaySurfaceElement(gameId){
+    ensureGamePlayContract();
+    return q('[data-game-play-surface="' + gameId + '"]') || gamePlayRootElement(gameId);
+  }
+  function mobileGameRootElement(gameId){
+    ensureGamePlayContract();
+    return gamePanelElement(gameId) || gamePlayRootElement(gameId);
+  }
+  function scrollToElementInPageScroller(element){
+    if(!element || typeof window === 'undefined') return;
+    window.setTimeout(function(){
+      const root = q('.bl-scroll');
+      try{
+        const rect = element.getBoundingClientRect();
+        const viewportTop = root ? root.getBoundingClientRect().top : 0;
+        const viewportBottom = root ? root.getBoundingClientRect().bottom : (window.innerHeight || document.documentElement.clientHeight || 0);
+        const usableTop = viewportTop + 12;
+        const usableBottom = viewportBottom - 12;
+        const visibleEnough = rect.top >= usableTop && rect.top < usableBottom && Math.min(rect.bottom, usableBottom) - Math.max(rect.top, usableTop) >= Math.min(180, rect.height || 180);
+        if(visibleEnough) return;
+        if(root){
+          const y = rect.top - root.getBoundingClientRect().top + root.scrollTop - 10;
+          root.scrollTo({ top: Math.max(0, y), left:0, behavior:'auto' });
+        }else{
+          const y = rect.top + window.pageYOffset - 10;
+          window.scrollTo({ top:Math.max(0, y), left:0, behavior:'auto' });
+        }
+      }catch(_error){
+        try{ element.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'auto' }); }catch(_error2){}
+      }
+    }, 0);
+  }
+  function syncMobileInputMode(gameId){
+    const mobile = isMobileGameViewport() || (document.body && document.body.classList.contains('bl-mobile-game-mode'));
+    const ids = gameId === 'make24' ? ['make24ExpressionInput'] : gameId === 'detectword' ? ['wordGuessInput'] : [];
+    ids.forEach(function(id){
+      const input = document.getElementById(id);
+      if(!input) return;
+      if(mobile){
+        input.setAttribute('readonly', 'readonly');
+        input.setAttribute('inputmode', 'none');
+        input.setAttribute('autocomplete', 'off');
+        try{ input.blur(); }catch(_error){}
+      }else{
+        input.removeAttribute('readonly');
+        input.removeAttribute('inputmode');
+      }
+    });
+  }
+  function syncAllMobileInputModes(){ ['detectword','make24'].forEach(syncMobileInputMode); }
+  function keypadButton(gameId, key, label, extra){
+    return '<button class="mobile-game-key' + (extra ? ' ' + extra : '') + '" data-mobile-game-key="' + gameId + ':' + key + '" type="button">' + label + '</button>';
+  }
+  function injectMobileGameControls(gameId){
+    ensureGamePlayContract();
+    if(gameId === 'detectword' && refs.wordBoard && document.getElementById('wordGuessInput') && !q('.mobile-game-keypad[data-keypad="detectword"]', refs.wordBoard)){
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(function(letter){ return keypadButton('detectword', letter.toLowerCase(), letter, 'mobile-game-key--letter'); }).join('');
+      refs.wordBoard.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-word-keypad" data-keypad="detectword" aria-label="Word input keyboard">' + letters + keypadButton('detectword','backspace','⌫','mobile-game-key--utility') + keypadButton('detectword','clear','Clear','mobile-game-key--utility') + keypadButton('detectword','submit','Submit','mobile-game-key--submit') + '</div>');
+    }
+    if(gameId === 'make24' && refs.make24Board && document.getElementById('make24ExpressionInput') && !q('.mobile-game-keypad[data-keypad="make24"]', refs.make24Board)){
+      const keys = ['7','8','9','(','4','5','6',')','1','2','3','+','0','-','*','/'];
+      const symbols = { '*':'×', '/':'÷', '-':'−' };
+      const keysHtml = keys.map(function(key){ return keypadButton('make24', key, symbols[key] || key, /[0-9]/.test(key) ? 'mobile-game-key--number' : 'mobile-game-key--operator'); }).join('');
+      refs.make24Board.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-make24-keypad" data-keypad="make24" aria-label="Number expression keypad">' + keysHtml + keypadButton('make24','backspace','⌫','mobile-game-key--utility') + keypadButton('make24','clear','Clear','mobile-game-key--utility') + keypadButton('make24','submit','Submit','mobile-game-key--submit') + '</div>');
+    }
+  }
+  function injectAllMobileGameControls(){ injectMobileGameControls('detectword'); injectMobileGameControls('make24'); }
+  function isDesktopKeypadGame(gameId){ return gameId === 'detectword' || gameId === 'make24'; }
+  function syncDesktopKeypadState(){
+    if(typeof document === 'undefined') return;
+    const mobileViewport = isMobileGameViewport();
+    ['detectword','make24'].forEach(function(gameId){
+      const root = gameCardElement(gameId) || q('[data-game-play-root="' + gameId + '"]');
+      const mobileRoot = q('.is-mobile-game-root[data-mobile-game-root="' + gameId + '"]');
+      const open = !mobileViewport && desktopKeypadOpenGame === gameId;
+      const shownByMobileRoot = !!(mobileRoot || (root && root.classList && root.classList.contains('is-mobile-game-root')));
+      if(root){
+        root.classList.toggle('desktop-keypad-open', open);
+        root.classList.toggle('keypad-open', open || shownByMobileRoot);
+      }
+      qsa('[data-desktop-keypad-toggle="' + gameId + '"]').forEach(function(btn){
+        btn.hidden = mobileViewport;
+        btn.setAttribute('aria-hidden', String(mobileViewport));
+        btn.setAttribute('aria-pressed', String(open));
+        btn.textContent = keypadButtonLabel(open);
+      });
+      qsa('.mobile-game-keypad[data-keypad="' + gameId + '"]').forEach(function(keypad){
+        keypad.setAttribute('aria-hidden', String(!(open || shownByMobileRoot)));
+      });
+    });
+  }
+  function toggleDesktopKeypad(gameId){
+    const id = normaliseGameId(gameId);
+    if(!isDesktopKeypadGame(id)) return false;
+    ensureGamePlayContract();
+    injectMobileGameControls(id);
+    syncMobileInputMode(id);
+    if(isMobileGameViewport()){
+      ensureMobileGameMode(id);
+      return true;
+    }
+    desktopKeypadOpenGame = desktopKeypadOpenGame === id ? '' : id;
+    syncDesktopKeypadState();
+    focusGamePlaySurface(id, { scroll:false, mobileMode:false, preserveView:true });
+    return true;
+  }
+  function setupGamePlayContractObserver(){
+    const host = document.getElementById('games');
+    if(!host || typeof MutationObserver === 'undefined') return;
+    let pending = false;
+    const observer = new MutationObserver(function(){
+      if(pending) return;
+      pending = true;
+      window.requestAnimationFrame(function(){
+        pending = false;
+        ensureGamePlayContract();
+        injectAllMobileGameControls();
+        syncAllMobileInputModes();
+        syncDesktopKeypadState();
+      });
+    });
+    observer.observe(host, { childList:true, subtree:true });
+  }
+  function exitMobileGameMode(){
+    if(typeof document === 'undefined' || !document.body) return;
+    function finishMobileExit(){
+      try{
+        document.body.classList.remove('bl-mobile-game-mode');
+        document.body.removeAttribute('data-mobile-game');
+        qsa('.is-mobile-game-root').forEach(function(el){
+          el.classList.remove('is-mobile-game-root');
+          try{ el.removeAttribute('data-mobile-game-root'); }catch(_attrError){}
+        });
+        desktopKeypadOpenGame = '';
+        syncDesktopKeypadState();
+        const scroller = q('.bl-scroll');
+        if(scroller){
+          scroller.style.removeProperty('top');
+          scroller.style.removeProperty('overflow');
+        }
+        document.documentElement.style.removeProperty('overflow');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('touch-action');
+        resyncHeaderAfterMobileGameExit();
+        window.setTimeout(resyncHeaderAfterMobileGameExit, 0);
+        window.setTimeout(resyncHeaderAfterMobileGameExit, 80);
+      }catch(_cleanupError){}
+    }
+    finishMobileExit();
+    try{
+      if(document.fullscreenElement && document.fullscreenElement.classList && document.fullscreenElement.classList.contains('game-play-root')){
+        const exitPromise = document.exitFullscreen();
+        if(exitPromise && typeof exitPromise.finally === 'function') exitPromise.finally(finishMobileExit);
+        else window.setTimeout(finishMobileExit, 120);
+      }
+    }catch(_error){ window.setTimeout(finishMobileExit, 120); }
+  }
+
+  function requestNativeMobileFullscreen(root){
+    if(!root || !isMobileGameViewport() || typeof document === 'undefined') return;
+    try{
+      if(!document.fullscreenEnabled || document.fullscreenElement || typeof root.requestFullscreen !== 'function') return;
+      if(window.navigator && window.navigator.userActivation && !window.navigator.userActivation.isActive) return;
+      root.requestFullscreen().catch(function(){});
+    }catch(_error){}
+  }
+
+  function ensureMobileGameMode(gameId, options){
+    if(!isMobileGameViewport()) return;
+    const id = normaliseGameId(gameId);
+    if(!id) return;
+    const modeOptions = options || {};
+    ensureGamePlayContract();
+    const root = mobileGameRootElement(id);
+    if(!root) return;
+    qsa('.is-mobile-game-root').forEach(function(el){
+      if(el !== root){
+        el.classList.remove('is-mobile-game-root');
+        try{ el.removeAttribute('data-mobile-game-root'); }catch(_attrError){}
+      }
+    });
+    document.body.classList.add('bl-mobile-game-mode');
+    document.body.setAttribute('data-mobile-game', id);
+    root.classList.add('is-mobile-game-root');
+    root.setAttribute('data-mobile-game-root', id);
+    if(!q(':scope > .mobile-game-exit', root)){
+      root.insertAdjacentHTML('afterbegin', '<button class="mobile-game-exit" data-exit-mobile-game-mode type="button" aria-label="Back to Games Overview">Back To Games Overview</button>');
+    }
+    injectMobileGameControls(id);
+    desktopKeypadOpenGame = '';
+    syncMobileInputMode(id);
+    syncDesktopKeypadState();
+    // Mobile uses the in-page game view only. Native fullscreen is deliberately disabled
+    // because it causes browser chrome/layout instability on touch devices.
+  }
+  function focusGamePlaySurface(gameId, opts){
+    const id = normaliseGameId(gameId);
+    if(!id) return;
+    const options = opts || {};
+    ensureGamePlayContract();
+    if(currentTab !== 'games' || selectedGame !== id) selectGame(id);
+    openGameCardPanel(id);
+    ensureGamePlayContract();
+    if(options.mobileMode !== false) ensureMobileGameMode(id);
+    const target = gamePlaySurfaceElement(id) || gamePlayRootElement(id);
+    if(!target) return;
+    try{ if(target.tabIndex < 0) target.tabIndex = -1; target.focus({ preventScroll:true }); }catch(_error){}
+    if(document.body && document.body.classList.contains('bl-mobile-game-mode')) return;
+    if(options.scroll !== false && !options.preserveView) scrollToElementInPageScroller(target);
+  }
+  function gameEntryTargetElement(gameId){
+    const id = normaliseGameId(gameId);
+    if(!id) return null;
+    ensureGamePlayContract();
+    const panel = gamePanelElement(id);
+    if(panel) return q('.game-header', panel) || panel;
+    return gamePlayRootElement(id);
+  }
+  function focusGameEntry(gameId, opts){
+    const id = normaliseGameId(gameId);
+    if(!id) return;
+    const options = opts || {};
+    ensureGamePlayContract();
+    if(currentTab !== 'games' || selectedGame !== id) selectGame(id);
+    openGameCardPanel(id);
+    ensureGamePlayContract();
+    if(options.mobileMode !== false) ensureMobileGameMode(id);
+    const focusTarget = gamePanelElement(id) || gamePlayRootElement(id);
+    const scrollTarget = gameEntryTargetElement(id) || focusTarget;
+    if(focusTarget){
+      try{ if(focusTarget.tabIndex < 0) focusTarget.tabIndex = -1; focusTarget.focus({ preventScroll:true }); }catch(_error){}
+    }
+    if(document.body && document.body.classList.contains('bl-mobile-game-mode')){
+      const root = mobileGameRootElement(id);
+      try{ if(root && typeof root.scrollTo === 'function') root.scrollTo({ top:0, left:0, behavior:'auto' }); }catch(_scrollError){}
+      return;
+    }
+    if(scrollTarget && options.scroll !== false && !options.preserveView) scrollToElementInPageScroller(scrollTarget);
+  }
+  function scrollGameCardIntoView(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:false }); }
+  function focusGameCard(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:true }); }
+  function readAutoNextSettings(){
+    const defaults = { pairs:false, detectword:false, make24:false, trackcoin:false };
+    if(typeof window === 'undefined') return defaults;
+    try{
+      const raw = window.localStorage && window.localStorage.getItem(AUTO_NEXT_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : null;
+      AUTO_NEXT_GAMES.forEach(function(gameId){ defaults[gameId] = !!(parsed && parsed[gameId]); });
+    }catch(_error){}
+    return defaults;
+  }
+  function writeAutoNextSettings(){
+    if(typeof window === 'undefined') return;
+    try{ if(window.localStorage) window.localStorage.setItem(AUTO_NEXT_STORAGE_KEY, JSON.stringify(autoNextSettings)); }catch(_error){}
+  }
+  function autoNextEnabled(gameId){ return AUTO_NEXT_GAMES.includes(gameId) && !!autoNextSettings[gameId]; }
+  function clearAutoNextTimer(gameId){
+    if(!gameId || !autoNextTimers[gameId]) return;
+    window.clearTimeout(autoNextTimers[gameId]);
+    autoNextTimers[gameId] = 0;
+  }
+
+  function resetGameRoundToIdle(gameId){
+    const id = normaliseGameId(gameId);
+    if(!id) return;
+    if(id === 'pairs'){
+      clearAutoNextTimer('pairs');
+      pairsBoardState = null;
+      pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
+      return;
+    }
+    if(id === 'detectword'){
+      clearAutoNextTimer('detectword');
+      wordState = null;
+      wordIdleMessage = 'Choose a letter tier and press Start New Game when you are ready.';
+      return;
+    }
+    if(id === 'make24'){
+      clearAutoNextTimer('make24');
+      make24State = null;
+      make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
+      return;
+    }
+    if(id === 'trackcoin'){
+      clearAutoNextTimer('trackcoin');
+      cancelTrackCoinAnimation();
+      trackCoinState = null;
+      return;
+    }
+    if(id === 'ruleshift'){
+      clearAutoNextTimer('ruleshift');
+      clearRuleShiftTimer();
+      ruleShiftState = null;
+      ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
+    }
+  }
+  function toggleAutoNext(gameId){
+    if(!AUTO_NEXT_GAMES.includes(gameId)) return;
+    autoNextSettings[gameId] = !autoNextSettings[gameId];
+    if(!autoNextSettings[gameId]) clearAutoNextTimer(gameId);
+    writeAutoNextSettings();
+    renderAutoNextControls();
+  }
+  function realmHostMethod(method){
+    const host = window.BaselineRealmHost;
+    return host && typeof host[method] === 'function' ? host[method].bind(host) : null;
+  }
+  function syncRealmFullscreenControls(){
+    const method = realmHostMethod('syncFullscreenControls');
+    return method ? method() : undefined;
+  }
+  function syncGameButtonLabels(){
+    if(refs.newPairsBoardBtn) refs.newPairsBoardBtn.textContent = startButtonLabel();
+    if(refs.newWordRoundBtn) refs.newWordRoundBtn.textContent = startButtonLabel();
+    if(refs.newTrackCoinRoundBtn) refs.newTrackCoinRoundBtn.textContent = startButtonLabel();
+    if(refs.newRuleShiftBtn) refs.newRuleShiftBtn.textContent = startButtonLabel();
+    if(refs.newMake24Btn) refs.newMake24Btn.textContent = startButtonLabel();
+    qsa('[data-desktop-keypad-toggle]').forEach(function(btn){
+      const id = btn.getAttribute('data-desktop-keypad-toggle') || '';
+      const root = gamePlayRootElement(id);
+      const open = !!(root && root.classList.contains('desktop-keypad-open'));
+      btn.textContent = keypadButtonLabel(open);
+    });
+    syncRealmFullscreenControls();
+  }
+  function renderAutoNextControls(){
+    qsa('[data-auto-next-toggle]').forEach(function(btn){
+      const gameId = btn.getAttribute('data-auto-next-toggle') || '';
+      const enabled = autoNextEnabled(gameId);
+      btn.setAttribute('aria-pressed', String(enabled));
+      btn.classList.toggle('is-active', enabled);
+      btn.textContent = autoNextButtonLabel(gameId);
+    });
+  }
+  function scheduleAutoNext(gameId, starter, delayMs){
+    if(!autoNextEnabled(gameId) || typeof starter !== 'function') return;
+    clearAutoNextTimer(gameId);
+    const wait = Number(delayMs || AUTO_NEXT_DELAYS[gameId] || 900);
+    autoNextTimers[gameId] = window.setTimeout(function(){
+      autoNextTimers[gameId] = 0;
+      focusGamePlaySurface(gameId, { scroll:false, mobileMode:true });
+      window.setTimeout(function(){
+        starter();
+        focusGamePlaySurface(gameId, { scroll:false, mobileMode:true });
+      }, 80);
+    }, wait);
+  }
+  function getGamePanelConfig(gameId){ return GAME_PANEL_MAP[gameId] || null; }
+  function normaliseGameId(gameId){
+    const value = String(gameId || '').trim().toLowerCase();
+    if(GAME_IDS.includes(value)) return value;
+    return GAME_ROUTE_SLUG_TO_ID[value] || '';
+  }
+  function activeGameIdForHotkeys(){
+    const selected = normaliseGameId(selectedGame);
+    if(selected) return selected;
+    try{
+      const hash = String(window.location.hash || '').replace(/^#/, '');
+      if(hash){
+        if(GAME_IDS.includes(hash)) return hash;
+        const params = new URLSearchParams(hash);
+        const fromHash = normaliseGameId(params.get('game') || '');
+        if(fromHash) return fromHash;
+      }
+    }catch(_error){}
+    const activePanel = q('.game-panel.is-active');
+    if(activePanel){
+      return activePanel.id === 'pairsPanel' ? 'pairs'
+        : activePanel.id === 'detectwordPanel' ? 'detectword'
+        : activePanel.id === 'make24Panel' ? 'make24'
+        : activePanel.id === 'trackcoinPanel' ? 'trackcoin'
+        : activePanel.id === 'ruleshiftPanel' ? 'ruleshift'
+        : activePanel.id === 'ninjaPanel' ? 'ninja'
+        : '';
+    }
+    return '';
+  }
+  function startActiveGameFromHotkey(gameId){
+    const id = normaliseGameId(gameId);
+    if(id === 'pairs'){ startPairsBoard(); return true; }
+    if(id === 'detectword'){ startWordRound(); return true; }
+    if(id === 'make24'){ startMake24Puzzle(); return true; }
+    if(id === 'trackcoin'){ startTrackCoinRound(); return true; }
+    if(id === 'ruleshift'){ startRuleShiftRound(); return true; }
+    return false;
+  }
+  function toggleAutoNextForActiveGame(gameId){
+    const id = normaliseGameId(gameId);
+    if(!AUTO_NEXT_GAMES.includes(id)) return false;
+    toggleAutoNext(id);
+    return true;
+  }
+  function normalisePanelId(gameId, panelId){ const config = getGamePanelConfig(gameId); if(!config) return ''; const value = String(panelId || ''); return config.panels.includes(value) ? value : config.defaultPanel; }
+  function currentPanelIdForGame(gameId){ const config = getGamePanelConfig(gameId); return config ? normalisePanelId(gameId, config.get()) : ''; }
+
+  function gamesHubBaseRoute(){ return '/baseline-games-hub/games-hub'; }
+  function gamesHubCleanRouteForState(){
+    const base = gamesHubBaseRoute();
+    if(currentTab !== 'games') return base;
+    if(!selectedGame) return base + '/games-list';
+    return base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
+  }
+  function gamesHubStateFromCleanPath(){
+    try{
+      const path = String(window.location.pathname || '').toLowerCase().replace(/\/+$/,'');
+      const marker = '/baseline-games-hub/games-hub';
+      const idx = path.indexOf(marker);
+      if(idx === -1){
+        if(/\/baseline-games-hub\/?$/.test(path)) return { tab:'hub', game:'', panel:'' };
+        return null;
+      }
+      const rest = path.slice(idx + marker.length).replace(/^\/+/, '');
+      if(!rest) return { tab:'hub', game:'', panel:'' };
+      if(rest === 'games-list') return { tab:'games', game:'', panel:'' };
+      const game = normaliseGameId(rest.split('/')[0]);
+      return game ? { tab:'games', game:game, panel:normalisePanelId(game, '') } : { tab:'games', game:'', panel:'' };
+    }catch(_error){ return null; }
+  }
+  function legacyGamesHubStateFromHash(){
+    const raw = String(window.location.hash || '').replace(/^#/, '');
+    if(!raw) return null;
+    if(GAME_IDS.includes(raw)) return { tab:'games', game:raw, panel:normalisePanelId(raw, '') };
+    try{
+      const params = new URLSearchParams(raw);
+      const requestedTab = String(params.get('tab') || '').toLowerCase();
+      const game = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
+      const panel = game ? normalisePanelId(game, params.get('panel') || '') : '';
+      return { tab:(requestedTab === 'games' || game) ? 'games' : 'hub', game:game, panel:panel };
+    }catch(_error){ return null; }
+  }
+
+  function buildHashState(){
+    const params = new URLSearchParams();
+    params.set('tab', currentTab === 'games' ? 'games' : 'hub');
+    if(currentTab === 'games' && selectedGame){
+      params.set('game', selectedGame);
+      const panelId = currentPanelIdForGame(selectedGame);
+      if(panelId) params.set('panel', panelId);
+    }
+    return params.toString();
+  }
+  function buildViewStateSnapshot(){
+    return {
+      tab: currentTab === 'games' ? 'games' : 'hub',
+      game: selectedGame || '',
+      panel: selectedGame ? (currentPanelIdForGame(selectedGame) || '') : ''
+    };
+  }
+  function persistViewState(){
+    if(typeof window === 'undefined') return;
+    const payload = JSON.stringify(buildViewStateSnapshot());
+    try{ if(window.sessionStorage) window.sessionStorage.setItem('baselineGamesHubView', payload); }catch(_error){}
+    try{ if(window.localStorage) window.localStorage.setItem('baselineGamesHubView', payload); }catch(_error){}
+  }
+  function readPersistedViewState(){
+    if(typeof window === 'undefined') return null;
+    try{
+      const raw = (window.sessionStorage && window.sessionStorage.getItem('baselineGamesHubView')) || (window.localStorage && window.localStorage.getItem('baselineGamesHubView'));
+      if(!raw) return null;
+      const parsed = JSON.parse(raw);
+      if(!parsed || typeof parsed !== 'object') return null;
+      const tab = parsed.tab === 'games' ? 'games' : 'hub';
+      const game = tab === 'games' ? normaliseGameId(parsed.game || '') : '';
+      return { tab, game, panel: game ? normalisePanelId(game, parsed.panel || '') : '' };
+    }catch(_error){
+      return null;
+    }
+  }
+  function clearPersistedViewState(){
+    if(typeof window === 'undefined') return;
+    try{ if(window.sessionStorage) window.sessionStorage.removeItem('baselineGamesHubView'); }catch(_error){}
+    try{ if(window.localStorage) window.localStorage.removeItem('baselineGamesHubView'); }catch(_error){}
+  }
+
+  function isGamesHubReloadNavigation(){
+    if(typeof window === 'undefined') return false;
+    try{
+      const entries = window.performance && typeof window.performance.getEntriesByType === 'function'
+        ? window.performance.getEntriesByType('navigation')
+        : [];
+      const nav = entries && entries[0];
+      if(nav && String(nav.type || '').toLowerCase() === 'reload') return true;
+    }catch(_error){}
+    try{
+      return !!(window.performance && window.performance.navigation && window.performance.navigation.type === 1);
+    }catch(_error){}
+    return false;
+  }
+
+  function hashHasExplicitGame(){
+    if(typeof window === 'undefined') return false;
+    try{
+      const raw = String(window.location.hash || '').replace(/^#/, '');
+      if(!raw) return false;
+      if(GAME_IDS.includes(raw)) return true;
+      const params = new URLSearchParams(raw);
+      return params.has('game') && !!normaliseGameId(params.get('game') || '');
+    }catch(_error){
+      return false;
+    }
+  }
+
+  function applyStoredGameForReload(stored){
+    if(!stored || stored.tab !== 'games' || !stored.game) return false;
+    currentTab = 'games';
+    selectedGame = normaliseGameId(stored.game || '');
+    if(!selectedGame) return false;
+    const config = getGamePanelConfig(selectedGame);
+    if(config){ config.set(stored.panel || normalisePanelId(selectedGame, '')); }
+    return true;
+  }
+  function syncHashState(mode){
+    if(suspendHashSync || typeof window === 'undefined') return;
+    persistViewState();
+    const nextUrl = gamesHubCleanRouteForState();
+    const currentUrl = window.location.pathname + window.location.search;
+    if(currentUrl === nextUrl && !(window.location.hash || '')) return;
+    const shouldPush = mode === 'push' && window.history && typeof window.history.pushState === 'function';
+    if(shouldPush){
+      window.history.pushState({ baselineGames:true }, '', nextUrl);
+    }else if(window.history && typeof window.history.replaceState === 'function'){
+      window.history.replaceState({ baselineGames:true }, '', nextUrl);
+    }else{
+      window.location.hash = '#' + buildHashState();
+    }
+  }
+  function applyHashState(options){
+    if(typeof window === 'undefined') return;
+    const useStored = !options || options.useStored !== false;
+    const stored = useStored ? readPersistedViewState() : null;
+    const cleanState = gamesHubStateFromCleanPath();
+    const legacyState = cleanState || legacyGamesHubStateFromHash();
+    if(legacyState){
+      currentTab = legacyState.tab === 'games' ? 'games' : 'hub';
+      selectedGame = currentTab === 'games' ? normaliseGameId(legacyState.game || '') : '';
+      if(selectedGame){
+        const config = getGamePanelConfig(selectedGame);
+        if(config){ config.set(legacyState.panel || (stored && stored.game === selectedGame ? stored.panel : '') || normalisePanelId(selectedGame, '')); }
+      }
+      if(currentTab !== 'games') clearPersistedViewState();
+      return;
+    }
+    currentTab = 'hub';
+    selectedGame = '';
+    clearPersistedViewState();
+    return;
+
+    const raw = String(window.location.hash || '').replace(/^#/, '');
+    if(!raw){
+      // Fresh openings from the index must always start on the Games Hub landing
+      // view. On an actual browser refresh, however, preserve the active game
+      // that was saved immediately before unload.
+      if(isReload && applyStoredGameForReload(stored)) return;
+      currentTab = 'hub';
+      selectedGame = '';
+      clearPersistedViewState();
+      return;
+    }
+    if(GAME_IDS.includes(raw)){
+      currentTab = 'games';
+      selectedGame = raw;
+    }else{
+      const params = new URLSearchParams(raw);
+      const requestedTab = String(params.get('tab') || '').toLowerCase();
+      const explicitGame = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
+      currentTab = (requestedTab === 'games' || explicitGame) ? 'games' : 'hub';
+      selectedGame = currentTab === 'games' ? explicitGame : '';
+
+      // Important: #tab=games normally means the Games Overview list, not the
+      // last stored game. The exception is a true browser reload: if the user
+      // was already inside a game, Refresh should refresh that game instead of
+      // behaving like Back to the Games list.
+      if(!selectedGame){
+        if(isReload && currentTab === 'games' && applyStoredGameForReload(stored)) return;
+        if(currentTab !== 'games') clearPersistedViewState();
+        return;
+      }
+
+      const config = getGamePanelConfig(selectedGame);
+      const panelFromHash = normalisePanelId(selectedGame, params.get('panel') || '');
+      if(config){
+        const fallbackPanel = stored && stored.game === selectedGame ? stored.panel : '';
+        config.set(panelFromHash || fallbackPanel || normalisePanelId(selectedGame, ''));
+      }
+    }
+  }
+  function restoreFromHashState(options){
+    const restoreOptions = options && Object.prototype.hasOwnProperty.call(options, 'useStored') ? options : { useStored:false };
+    const shouldRepairReloadUrl = false;
+    suspendHashSync = true;
+    applyHashState(restoreOptions);
+    activateTab(currentTab);
+    selectGame(selectedGame);
+    suspendHashSync = false;
+    if(shouldRepairReloadUrl && currentTab === 'games' && selectedGame && !hashHasExplicitGame()){
+      syncHashState('replace');
+    }
+    if(window.location.hash){
+      syncHashState('replace');
+    }
+    safeRenderAll();
+  }
+  function gamesHubBaseUrl(){
+    if(typeof window === 'undefined') return '';
+    return window.location.pathname + window.location.search;
+  }
+  function gamesHubUrlForHash(hashValue){
+    const hash = String(hashValue || '').replace(/^#/, '');
+    return gamesHubBaseUrl() + (hash ? ('#' + hash) : '');
+  }
+  function replaceGamesHubListEntry(){
+    if(typeof window === 'undefined' || !window.history || typeof window.history.replaceState !== 'function') return;
+    try{
+      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
+    }catch(_error){}
+  }
+  function pushGamesHubGameEntry(){
+    if(typeof window === 'undefined' || !window.history || !selectedGame) return;
+    if(typeof window.history.replaceState !== 'function' || typeof window.history.pushState !== 'function') return;
+    const gameHash = buildHashState();
+    if(!gameHash || gameHash.indexOf('game=') === -1) return;
+    const currentFullHash = '#' + gameHash;
+    const existing = window.history.state || {};
+    if(String(window.location.hash || '') === currentFullHash && existing && existing.baselineGamesGameEntry && existing.game === selectedGame) return;
+    try{
+      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
+      window.history.pushState({ baselineGames:true, baselineGamesGameEntry:true, game:selectedGame, panel:currentPanelIdForGame(selectedGame) || '' }, '', gamesHubUrlForHash(gameHash));
+      persistViewState();
+    }catch(_error){
+      syncHashState('push');
+    }
+  }
+  function ensureGamesHubBackEntry(){
+    // Refresh must be a real browser refresh.
+    // Do not rewrite the current history entry into the Games Overview during startup.
+    // The back-entry is only created when the user actively selects a game from the list.
+    return;
+  }
+
+  function escapeHtml(value){
+    return String(value == null ? '' : value)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;')
+      .replace(/'/g,'&#39;');
+  }
+  function clamp(value, min, max){ return Math.max(min, Math.min(max, value)); }
+  function sum(arr){ return arr.reduce((a,b)=>a+b,0); }
+  function formatInt(value){ return Math.round(Number(value || 0)).toLocaleString('en-GB'); }
+  function formatCompact(value){ const n=Number(value||0), a=Math.abs(n); if(a>=1e12)return (n/1e12).toFixed(a>=1e13?0:1).replace(/\.0$/,'')+'T'; if(a>=1e9)return (n/1e9).toFixed(a>=1e10?0:1).replace(/\.0$/,'')+'B'; if(a>=1e6)return (n/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,'')+'M'; if(a>=1e3)return (n/1e3).toFixed(a>=1e4?0:1).replace(/\.0$/,'')+'K'; return formatInt(n); }
+  const GAME_TEMPLATE_CONTRACT = Object.freeze({
+    profileFields:['level','xp','skillPoints','cleanWinStreak'],
+    runFields:['lastMessage','hadFailure','roundBank'],
+    statusPattern:['level','xp','tier','streak','cleanStreak','cleanBonus'],
+    cleanStreak:{ label:'Clean Streak Bonus', perStepPct:4, maxPct:24 },
+    rewardRule:'Clean completions increase the clean streak. Failed or wrong rounds reset it. Every game must show the clean streak and clean bonus in its status/progress output.'
+  });
+  function cleanWinBonusPct(streak){
+    const clean = GAME_TEMPLATE_CONTRACT.cleanStreak;
+    return Math.min(clean.maxPct, Math.max(0, Math.round(Number(streak || 0)) * clean.perStepPct));
+  }
+  function cleanBonusStatusText(profile){
+    const streak = Math.max(0, Math.round(Number(profile && profile.cleanWinStreak || 0)));
+    return 'Clean streak ' + streak + ' · clean bonus +' + cleanWinBonusPct(streak) + '%';
+  }
+  function cleanBonusRewardText(streak){
+    const pct = cleanWinBonusPct(streak);
+    return pct ? ' · clean bonus +' + pct + '%' : '';
+  }
+  function shuffle(list){
+    const copy = list.slice();
+    for(let i = copy.length - 1; i > 0; i -= 1){
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = copy[i]; copy[i] = copy[j]; copy[j] = tmp;
+    }
+    return copy;
+  }
+  function xpNeededForLevel(level){
+    return 60 + ((level - 1) * 35) + ((level - 1) * (level - 1) * 4);
+  }
+  function getAuth(){
+    try{
+      if(window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function'){
+        const auth = window.BASELINE_auth.get() || {};
+        return { authed:!!auth.authed, name:String(auth.name || ''), email:String(auth.email || '') };
+      }
+    }catch(_e){}
+    return { authed:false, name:'', email:'' };
+  }
+  async function apiJson(url, options){
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timeoutId = controller ? window.setTimeout(function(){ try{ controller.abort(); }catch(_e){} }, 2600) : 0;
+    try{
+      const response = await fetch(url, Object.assign({ credentials:'same-origin' }, options || {}, controller ? { signal:controller.signal } : {}));
+      const data = await response.json().catch(() => ({}));
+      if(!response.ok || !data.ok) throw new Error((data && data.error) || 'request_failed');
+      return data;
+    }finally{
+      if(timeoutId) window.clearTimeout(timeoutId);
+    }
+  }
+
+  function defaultPairsProfile(){
+    return {
+      app:'pairs', bank:0, xp:0, level:1, skillPoints:1, boardsCleared:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      skills:{ insight:0, flow:0, banker:0, recall:0, tempo:0 }, selectedTier:'starter'
+    };
+  }
+  function defaultMake24Profile(){
+    return {
+      app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0,
+      skills:{ clarity:0, flow:0, banker:0, reserve:0, precision:0 }, selectedTier:'starter'
+    };
+  }
+  function defaultWordProfile(){
+    return {
+      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      skills:{ flow:0, banker:0, reserve:0, focus:0 }, selectedTier:'tier3'
+    };
+  }
+
+  function defaultRuleShiftProfile(){
+    return {
+      app:'ruleshift', bank:0, xp:0, level:1, skillPoints:1,
+      gamesPlayed:0, correctAnswers:0, wrongAnswers:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      selectedTier:'starter', skills:{ focus:0, banker:0, recovery:0, adapt:0 }
+    };
+  }
+
+  function defaultTrackCoinProfile(){
+    return {
+      app:'trackcoin',
+      xp:0, level:1, coins:0, selectedTier:'tier1', currentTier:'tier1', highestUnlockedTier:'tier1',
+      bestStreak:0, currentStreak:0, totalCorrect:0, totalRounds:0, totalXpEarned:0, totalCoinsEarned:0, cleanWinStreak:0,
+      trackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT, bestTrackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT,
+      bestAccuracy:0, perfectMiniSet:0, totalMiniSetsCleared:0, skillPoints:1,
+      skills:{ read:0, banker:0, flow:0, discipline:0, steal:0 }
+    };
+  }
+
+  function fallbackNinjaProfile(){
+    return {
+      app:'ninja', coins:0, xp:0, level:1, stage:1, enemyHp:0, highestStage:1, totalKills:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, bossesDefeated:0, totalCoinsEarned:0,
+      prestigeCount:0, spirit:0, upgrades:{ blade:0, drills:0, treasury:0, meditation:0, breaker:0 }, spiritShop:{ focus:0, fortune:0, vigor:0, ember:0, tents:0, mark:0 },
+      workshop:{ crafting:1, tailoring:1, cooking:1, alchemy:1 },
+      exploration:{ map:1, step:0, maxSteps:6, event:'idle', enemyHp:0, enemyMaxHp:0, enemyName:'', routeLog:'Step forward from Basecamp to begin the route.', loot:0, relics:0, mapsCleared:0, merchantVisits:0, chestsFound:0 },
+      lastSeenAt:0, bonusCache:{ unlockedTraits:[] }, offlineSummary:'', prestigeEarnedTotal:0
+    };
+  }
+  function defaultNinjaProfile(){
+    const method = realmHostMethod('defaultLegacyProfile');
+    return method ? method() : fallbackNinjaProfile();
+  }
+
+
+
+  function applyLevelCurve(profile){
+    let leveled = 0;
+    while(profile.xp >= xpNeededForLevel(profile.level)){
+      profile.xp -= xpNeededForLevel(profile.level);
+      profile.level += 1;
+      profile.skillPoints += 1;
+      leveled += 1;
+    }
+    return leveled;
+  }
+  function refundLockedSkills(profile, defs){
+    let refund = 0;
+    defs.forEach(def => {
+      const current = clamp(Math.round(Number(profile.skills[def.id] || 0)), 0, def.max);
+      const allowed = profile.level >= def.unlockLevel ? current : 0;
+      if(current > allowed) refund += (current - allowed);
+      profile.skills[def.id] = allowed;
+    });
+    profile.skillPoints = Math.max(0, Math.round(Number(profile.skillPoints || 0)) + refund);
+  }
+  function spentSkillPoints(profile, defs){
+    return defs.reduce((total, def) => total + Math.max(0, Math.round(Number(profile.skills[def.id] || 0))), 0);
+  }
+  function earnedSkillPoints(profile){
+    return Math.max(1, Math.round(Number(profile.level || 1)));
+  }
+  function reconcileSkillPoints(profile, defs){
+    const spent = spentSkillPoints(profile, defs);
+    profile.skillPoints = Math.max(0, earnedSkillPoints(profile) - spent);
+  }
+  function reconcileAllSkillProfiles(){
+    if(profiles.pairs) reconcileSkillPoints(profiles.pairs, PAIRS_SKILLS);
+    if(profiles.make24) reconcileSkillPoints(profiles.make24, MAKE24_SKILLS);
+    if(profiles.detectword) reconcileSkillPoints(profiles.detectword, WORD_SKILLS);
+    if(profiles.trackcoin) reconcileSkillPoints(profiles.trackcoin, TRACKCOIN_SKILLS);
+    if(profiles.ruleshift) reconcileSkillPoints(profiles.ruleshift, RULESHIFT_SKILLS);
+  }
+  function normalisePairsProfile(data){
+    const base = defaultPairsProfile();
+    const merged = Object.assign({}, base, data || {});
+    merged.bank = Math.max(0, Math.round(Number(merged.bank || 0)));
+    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
+    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
+    merged.skillPoints = Math.max(0, Math.round(Number(merged.skillPoints || 0)));
+    merged.boardsCleared = Math.max(0, Math.round(Number(merged.boardsCleared || 0)));
+    merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
+    merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
+    merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
+    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.skills = Object.assign({}, base.skills, merged.skills || {});
+    refundLockedSkills(merged, PAIRS_SKILLS);
+    applyLevelCurve(merged);
+    reconcileSkillPoints(merged, PAIRS_SKILLS);
+    const unlocked = PAIRS_TIERS.filter(t => merged.level >= t.unlockLevel);
+    if(!unlocked.some(t => t.id === merged.selectedTier)) merged.selectedTier = unlocked.slice(-1)[0].id;
+    return merged;
+  }
+  function normaliseMake24Profile(data){
+    const base = defaultMake24Profile();
+    const merged = Object.assign({}, base, data || {});
+    merged.bank = Math.max(0, Math.round(Number(merged.bank || 0)));
+    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
+    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
+    merged.skillPoints = Math.max(0, Math.round(Number(merged.skillPoints || 0)));
+    merged.puzzlesSolved = Math.max(0, Math.round(Number(merged.puzzlesSolved || 0)));
+    merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
+    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.skills = Object.assign({}, base.skills, merged.skills || {});
+    refundLockedSkills(merged, MAKE24_SKILLS);
+    applyLevelCurve(merged);
+    reconcileSkillPoints(merged, MAKE24_SKILLS);
+    const unlocked = MAKE24_TIERS.filter(t => merged.level >= t.unlockLevel);
+    if(!unlocked.some(t => t.id === merged.selectedTier)) merged.selectedTier = unlocked.slice(-1)[0].id;
+    return merged;
+  }
+  function normaliseWordProfile(data){
+    const base = defaultWordProfile();
+    const merged = Object.assign({}, base, data || {});
+    merged.bank = Math.max(0, Math.round(Number(merged.bank || 0)));
+    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
+    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
+    merged.skillPoints = Math.max(0, Math.round(Number(merged.skillPoints || 0)));
+    merged.wordsSolved = Math.max(0, Math.round(Number(merged.wordsSolved || 0)));
+    merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
+    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
+    merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
+    merged.skills = Object.assign({}, base.skills, merged.skills || {});
+    try{ delete merged.skills.lexicon; }catch(_e){}
+    refundLockedSkills(merged, WORD_SKILLS);
+    applyLevelCurve(merged);
+    reconcileSkillPoints(merged, WORD_SKILLS);
+    const unlocked = WORD_TIERS.filter(t => merged.level >= t.unlockLevel);
+    if(!unlocked.some(t => t.id === merged.selectedTier)) merged.selectedTier = unlocked.slice(-1)[0].id;
+    return merged;
+  }
+
+
+  function normaliseRuleShiftProfile(data){
+    const base = defaultRuleShiftProfile();
+    const merged = Object.assign({}, base, data || {});
+    merged.bank = Math.max(0, Math.round(Number(merged.bank || 0)));
+    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
+    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
+    merged.skillPoints = Math.max(0, Math.round(Number(merged.skillPoints || 0)));
+    merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
+    merged.correctAnswers = Math.max(0, Math.round(Number(merged.correctAnswers || 0)));
+    merged.wrongAnswers = Math.max(0, Math.round(Number(merged.wrongAnswers || 0)));
+    merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
+    merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
+    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.skills = Object.assign({}, base.skills, merged.skills || {});
+    refundLockedSkills(merged, RULESHIFT_SKILLS);
+    applyLevelCurve(merged);
+    reconcileSkillPoints(merged, RULESHIFT_SKILLS);
+    const unlocked = RULESHIFT_TIERS.filter(t => merged.level >= t.unlockLevel);
+    if(!unlocked.some(t => t.id === merged.selectedTier)) merged.selectedTier = unlocked.slice(-1)[0].id;
+    return merged;
+  }
+
+  function readTrackCoinStorage(){
+    try{
+      const raw = localStorage.getItem(TRACKCOIN_STORAGE_KEY);
+      if(!raw) return defaultTrackCoinProfile();
+      return normaliseTrackCoinProfile(JSON.parse(raw));
+    }catch(_e){
+      return defaultTrackCoinProfile();
+    }
+  }
+  function writeTrackCoinStorage(profile){
+    try{ localStorage.setItem(TRACKCOIN_STORAGE_KEY, JSON.stringify(profile)); }catch(_e){}
+  }
+  function highestUnlockedTrackCoinTier(profile){
+    return TRACKCOIN_TIERS.reduce((acc, tier)=> profile.level >= tier.unlockLevel ? tier.id : acc, 'tier1');
+  }
+  function normaliseTrackCoinProfile(data){
+    const base = defaultTrackCoinProfile();
+    const merged = Object.assign({}, base, data || {});
+    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
+    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
+    merged.coins = Math.max(0, Math.round(Number(merged.coins || 0)));
+    merged.skillPoints = Math.max(0, Math.round(Number(merged.skillPoints || 0)));
+    merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
+    merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
+    merged.totalCorrect = Math.max(0, Math.round(Number(merged.totalCorrect || 0)));
+    merged.totalRounds = Math.max(0, Math.round(Number(merged.totalRounds || 0)));
+    merged.totalXpEarned = Math.max(0, Math.round(Number(merged.totalXpEarned || 0)));
+    merged.totalCoinsEarned = Math.max(0, Math.round(Number(merged.totalCoinsEarned || 0)));
+    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.trackCoinSpeedPercent = trackCoinNormaliseSpeedPercent(merged.trackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT);
+    merged.bestTrackCoinSpeedPercent = Math.max(TRACKCOIN_BASE_SPEED_PERCENT, trackCoinNormaliseSpeedPercent(merged.bestTrackCoinSpeedPercent || merged.trackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT));
+    merged.bestAccuracy = Math.max(0, Number(merged.bestAccuracy || 0));
+    merged.perfectMiniSet = Math.max(0, Math.round(Number(merged.perfectMiniSet || 0)));
+    merged.totalMiniSetsCleared = Math.max(0, Math.round(Number(merged.totalMiniSetsCleared || 0)));
+    merged.skills = Object.assign({}, base.skills, merged.skills || {});
+    refundLockedSkills(merged, TRACKCOIN_SKILLS);
+    applyLevelCurve(merged);
+    reconcileSkillPoints(merged, TRACKCOIN_SKILLS);
+    merged.highestUnlockedTier = highestUnlockedTrackCoinTier(merged);
+    const selectedTier = TRACKCOIN_TIERS.find(t => t.id === merged.selectedTier && merged.level >= t.unlockLevel);
+    merged.selectedTier = selectedTier ? selectedTier.id : merged.highestUnlockedTier;
+    merged.currentTier = merged.selectedTier;
+    return merged;
+  }
+
+  function normaliseFallbackNinjaProfile(data){
+    const source = data && typeof data === 'object' ? data : {};
+    const realm = source.realm && typeof source.realm === 'object' ? source.realm : {};
+    const wallet = realm.wallet && typeof realm.wallet === 'object' ? realm.wallet : {};
+    const training = realm.ninjaTraining && typeof realm.ninjaTraining === 'object' ? realm.ninjaTraining : {};
+    const base = fallbackNinjaProfile();
+    const merged = Object.assign({}, base, source);
+    const numberValue = function(primary, nested, fallback){ const value = primary !== undefined ? primary : (nested !== undefined ? nested : fallback); const number = Number(value); return Number.isFinite(number) ? number : fallback; };
+    merged.coins = Math.max(0, Math.round(numberValue(source.coins, wallet.coins, 0)));
+    merged.spirit = Math.max(0, Math.round(numberValue(source.spirit, wallet.spirit, 0)));
+    merged.xp = Math.max(0, Math.round(numberValue(source.xp, training.xp, 0)));
+    merged.level = Math.max(1, Math.round(numberValue(source.level, training.level, 1)));
+    merged.stage = Math.max(1, Math.round(numberValue(source.stage, training.stage, 1)));
+    merged.enemyHp = Math.max(0, numberValue(source.enemyHp, training.enemyHp, 0));
+    merged.highestStage = Math.max(merged.stage, Math.round(numberValue(source.highestStage, training.highestStage, merged.stage)));
+    ['totalKills','currentStreak','bestStreak','cleanWinStreak','bossesDefeated','totalCoinsEarned','prestigeCount','prestigeEarnedTotal','lastSeenAt'].forEach(function(key){ merged[key] = Math.max(0, Math.round(numberValue(source[key], training[key], base[key] || 0))); });
+    merged.offlineSummary = String(source.offlineSummary !== undefined ? source.offlineSummary : (training.offlineSummary || ''));
+    merged.upgrades = Object.assign({}, base.upgrades, training.upgrades || {}, source.upgrades || {});
+    Object.keys(base.upgrades).forEach(function(key){ merged.upgrades[key] = Math.max(0, Math.round(Number(merged.upgrades[key] || 0))); });
+    merged.spiritShop = Object.assign({}, base.spiritShop, training.spiritShop || {}, source.spiritShop || {});
+    Object.keys(base.spiritShop).forEach(function(key){ merged.spiritShop[key] = Math.max(0, Math.round(Number(merged.spiritShop[key] || 0))); });
+    merged.workshop = Object.assign({}, base.workshop, realm.workshop || {}, source.workshop || {});
+    Object.keys(base.workshop).forEach(function(key){ merged.workshop[key] = Math.max(1, Math.round(Number(merged.workshop[key] || 1))); });
+    merged.exploration = Object.assign({}, base.exploration, realm.exploration || {}, source.exploration || {});
+    merged.bonusCache = Object.assign({ unlockedTraits:[] }, training.bonusCache || {}, source.bonusCache || {});
+    if(!Array.isArray(merged.bonusCache.unlockedTraits)) merged.bonusCache.unlockedTraits = [];
+    if(source.realm && typeof source.realm === 'object') merged.realm = source.realm;
+    return merged;
+  }
+  function normaliseNinjaProfile(data){
+    const method = realmHostMethod('normaliseLegacyProfile');
+    return method ? method(data) : normaliseFallbackNinjaProfile(data);
+  }
+  function normaliseProfile(app, data){
+    if(app === 'pairs') return normalisePairsProfile(data);
+    if(app === 'make24') return normaliseMake24Profile(data);
+    if(app === 'detectword') return normaliseWordProfile(data);
+    if(app === 'trackcoin') return normaliseTrackCoinProfile(data);
+    if(app === 'ruleshift') return normaliseRuleShiftProfile(data);
+    return normaliseNinjaProfile(data);
+  }
+  function defaultProfileForApp(app){
+    return normaliseProfile(app, app === 'pairs' ? defaultPairsProfile() : app === 'make24' ? defaultMake24Profile() : app === 'detectword' ? defaultWordProfile() : app === 'trackcoin' ? defaultTrackCoinProfile() : app === 'ruleshift' ? defaultRuleShiftProfile() : defaultNinjaProfile());
+  }
+
+  async function loadProfile(app){
+    const trackcoinFallback = app === 'trackcoin' ? readTrackCoinStorage() : null;
+    const guestFallback = guestProfiles[app] || readGuestProfile(app) || trackcoinFallback || defaultProfileForApp(app);
+    if(!authState.authed || location.protocol === 'file:'){
+      profiles[app] = normaliseProfile(app, guestFallback);
+      guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
+      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
+      return;
+    }
+    try{
+      const data = await apiJson(API_PATH + '?app=' + encodeURIComponent(app));
+      profiles[app] = normaliseProfile(app, data.profile || {});
+      guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
+      writeGuestProfile(app, profiles[app]);
+      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
+    }catch(_e){
+      profiles[app] = normaliseProfile(app, guestFallback);
+      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
+    }
+  }
+
+  function seedProfilesForImmediateRender(){
+    authState = getAuth();
+    GAME_APPS.forEach(function(app){
+      try{
+        profiles[app] = normaliseProfile(app, guestProfiles[app] || readGuestProfile(app) || (app === 'trackcoin' ? readTrackCoinStorage() : null) || defaultProfileForApp(app));
+        guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
+        if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
+      }catch(_e){
+        profiles[app] = defaultProfileForApp(app);
+      }
+    });
+  }
+  function safeRenderAll(){
+    try{ renderAll(); }catch(error){ try{ console.error('baseline-games-hub render failure', error); }catch(_e){} }
+  }
+
+  async function loadAllProfiles(){
+    authState = getAuth();
+    await Promise.allSettled(GAME_APPS.map(loadProfile));
+    resolveNinjaBonuses();
+    renderAuthState();
+    applyOfflineNinjaProgress();
+    safeRenderAll();
+  }
+  function scheduleSave(app){
+    const profile = profiles[app];
+    if(!profile) return;
+    if(app === 'trackcoin') writeTrackCoinStorage(profile);
+    guestProfiles[app] = JSON.parse(JSON.stringify(profile));
+    writeGuestProfile(app, profile);
+    if(!authState.authed || location.protocol === 'file:'){
+      return;
+    }
+    window.clearTimeout(saveTimers[app]);
+    saveTimers[app] = window.setTimeout(async function(){
+      try{
+        const data = await apiJson(API_PATH, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ app, profile }) });
+        if(data && data.profile){
+          guestProfiles[app] = JSON.parse(JSON.stringify(data.profile));
+          writeGuestProfile(app, data.profile);
+          if(app === 'trackcoin') writeTrackCoinStorage(data.profile);
+        }
+      }catch(_e){
+        writeGuestProfile(app, guestProfiles[app] || profile);
+      }
+    }, 180);
+  }
+
+  function dartsFocusedProfile(){
+    try{
+      if(window.DartsFocusedGames && typeof window.DartsFocusedGames.getProfile === 'function') return window.DartsFocusedGames.getProfile();
+      const raw = window.localStorage && (window.localStorage.getItem('__bl_darts_focused_v1__') || window.localStorage.getItem('__bl_darts_focused_v2__'));
+      return raw ? JSON.parse(raw) : null;
+    }catch(_error){ return null; }
+  }
+  function badmintonFocusedProfile(){
+    try{
+      if(window.BadmintonFocusedGames && typeof window.BadmintonFocusedGames.getProfile === 'function') return window.BadmintonFocusedGames.getProfile();
+      const raw = window.localStorage && window.localStorage.getItem('__bl_badminton_focused_v1__');
+      return raw ? JSON.parse(raw) : null;
+    }catch(_error){ return null; }
+  }
+  function totalBank(){
+    const darts = dartsFocusedProfile();
+    const badminton = badmintonFocusedProfile();
+    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0));
+  }
+  function renderAuthState(){
+    if(!refs.authStateNote) return;
+    if(authState.authed){
+      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
+    }else{
+      refs.authStateNote.innerHTML = '<strong>Guest save is active.</strong><span class="inline-note">All Games Hub profiles use local guest saves until you sign in, then the same sitewide profile system saves them to your account.</span>';
+    }
+  }
+
+  function profileOrDefault(app){
+    return profiles[app] || defaultProfileForApp(app);
+  }
+  function gameMeta(){
+    const ninja = profileOrDefault('ninja');
+    const detectword = profileOrDefault('detectword');
+    const make24 = profileOrDefault('make24');
+    const pairs = profileOrDefault('pairs');
+    const trackcoin = profileOrDefault('trackcoin');
+    const ruleshift = profileOrDefault('ruleshift');
+    return [
+      { id:'detectword', group:'Core Games', name:'Detect The Word', art:'/systems/baseline-games-hub/games/overview-art/detect-the-word.svg', note:'Wordle-style feedback, 3–7 letter tiers, and button or in-game letter keypad submission.', brainBenefit:'Language deduction, spelling, pattern narrowing, and verbal working memory.', progress:()=> 'Level ' + detectword.level + ' · ' + detectword.wordsSolved + ' solved' },
+      { id:'make24', group:'Core Games', name:'Make The Number', art:'/systems/baseline-games-hub/games/overview-art/make-the-number.svg', note:'Variable target-number puzzles with tiered number sets, hints, rerolls, and in-game number/operator keypad input.', brainBenefit:'Number flexibility, working memory, multi-step problem solving, and planning.', progress:()=> 'Level ' + make24.level + ' · ' + make24.puzzlesSolved + ' solved' },
+      { id:'pairs', group:'Core Games', name:'Pairs', art:'/systems/baseline-games-hub/games/overview-art/pairs.svg', note:'Memory matching with tiered boards, skill gating, and account-bound Bank rewards.', brainBenefit:'Visual memory, pattern recall, short-term memory, and calm concentration.', progress:()=> 'Level ' + pairs.level + ' · ' + pairs.boardsCleared + ' cleared' },
+      { id:'ruleshift', group:'Core Games', name:'Rule Shift', art:'/systems/baseline-games-hub/games/overview-art/rule-shift.svg', note:'Timed rule-switching challenge for flexible attention, impulse control, and deliberate choices.', brainBenefit:'Mental flexibility, impulse control, working memory, and attention switching.', progress:()=> 'Level ' + ruleshift.level + ' · Best streak ' + ruleshift.bestStreak },
+      { id:'trackcoin', group:'Core Games', name:'Track the Coin', art:'/systems/baseline-games-hub/games/overview-art/track-the-coin.svg', note:'Working-memory shuffle tracking with tiers, streak bonuses, and pace progression.', brainBenefit:'Visual tracking, sustained attention, working memory, and focus under movement.', progress:()=> 'Level ' + trackcoin.level + ' · Best streak ' + trackcoin.bestStreak },
+      { id:'darts-focused', group:'Testing', name:'Darts Focused', art:'/systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg', note:'10 distinct games played entirely on the website, each with selectable tiers, experience and mastery linked to Baseline Realm.', brainBenefit:'Darts-specific calculation, selective attention, visual memory, pressure control, strategic flexibility and recovery after mistakes.', progress:()=> { const darts=dartsFocusedProfile(); return 'Level ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games'; }, externalModule:'darts-focused' },
+      { id:'badminton-focused', group:'Testing', name:'Badminton Focused', art:'/systems/baseline-games-hub/games/badminton-focused/art/badminton-focused-overview.svg', note:'15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.', brainBenefit:'Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure.', progress:()=> { const badminton=badmintonFocusedProfile(); return 'Level ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games'; }, externalModule:'badminton-focused' },
+      { id:'ninja', group:'Testing', name:'Baseline Realm', art:'/systems/baseline-games-hub/games/overview-art/baseline-realm.svg', note:'Experimental Basecamp/RPG layer with Ninja Training, exploration, and settlement systems.', brainBenefit:'Long-term planning, reward tracking, routine engagement, and strategic progression.', progress:()=> 'Level ' + ninja.level + ' · Stage ' + ninja.stage }
+    ];
+  }
+  function renderGamesList(){
+    let currentGroup = '';
+    refs.gamesList.innerHTML = gameMeta().map(meta => {
+      const group = meta.group || 'Games';
+      const heading = group !== currentGroup ? (currentGroup = group, '<div class="games-list-group" role="presentation"><span>' + escapeHtml(group) + '</span></div>') : '';
+      const featured = meta.id === 'darts-focused' || meta.id === 'ninja';
+      if(meta.externalModule === 'darts-focused'){
+        return heading + '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused">' +
+          '<button class="game-row darts-overview-row" data-open-darts-focused type="button">' +
+            '<img class="game-card-art darts-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
+            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
+            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
+          '</button>' +
+          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
+        '</div>';
+      }
+      if(meta.externalModule === 'badminton-focused'){
+        return heading + '<div class="game-row-wrap game-row-wrap--featured badminton-focused-overview-row" data-game-card="badminton-focused">' +
+          '<button class="game-row badminton-overview-row" data-open-badminton-focused type="button">' +
+            '<img class="game-card-art badminton-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
+            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
+            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
+          '</button>' +
+          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Badminton Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
+        '</div>';
+      }
+      return heading + '<div class="game-row-wrap' + (featured ? ' game-row-wrap--featured' : '') + (selectedGame === meta.id ? ' is-selected' : '') + '" data-game-card="' + meta.id + '">' +
+        '<button class="game-row" data-select-game="' + meta.id + '" type="button">' +
+          '<img class="game-card-art" src="' + escapeHtml(meta.art || '') + '" alt="">' +
+          '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
+          '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open game</span></div>' +
+        '</button>' +
+        '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What ' + escapeHtml(meta.name) + ' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
+      '</div>';
+    }).join('');
+  }
+  function requestDartsFocusedOpen(attempt){
+    const tries = Number(attempt || 0);
+    if(window.DartsFocusedGames && typeof window.DartsFocusedGames.open === 'function'){
+      window.DartsFocusedGames.open();
+      return;
+    }
+    if(window.DartsFocusedLoader && typeof window.DartsFocusedLoader.load === 'function'){
+      window.DartsFocusedLoader.load().then(function(api){ if(api && typeof api.open === 'function') api.open(); }).catch(function(error){ console.error('[Games Hub] Darts Focused could not open.', error); });
+      return;
+    }
+    if(tries < 20) window.setTimeout(function(){ requestDartsFocusedOpen(tries + 1); }, 50);
+  }
+  function requestBadmintonFocusedOpen(attempt){
+    const tries = Number(attempt || 0);
+    if(window.BadmintonFocusedGames && typeof window.BadmintonFocusedGames.open === 'function'){
+      window.BadmintonFocusedGames.open();
+      return;
+    }
+    if(window.BadmintonFocusedLoader && typeof window.BadmintonFocusedLoader.load === 'function'){
+      window.BadmintonFocusedLoader.load().then(function(api){ if(api && typeof api.open === 'function') api.open(); }).catch(function(error){ console.error('[Games Hub] Badminton Focused could not open.', error); });
+      return;
+    }
+    if(tries < 20) window.setTimeout(function(){ requestBadmintonFocusedOpen(tries + 1); }, 50);
+  }
+  function requestBaselineRealmLoad(attempt){
+    const tries = Number(attempt || 0);
+    if(window.BaselineRealmLoader && typeof window.BaselineRealmLoader.load === 'function'){
+      window.BaselineRealmLoader.load().catch(function(error){ console.error('[Games Hub] Baseline Realm could not start.', error); });
+      return;
+    }
+    try{ window.dispatchEvent(new CustomEvent('baseline:realm:load')); }catch(_error){}
+    if(tries < 20) window.setTimeout(function(){ requestBaselineRealmLoad(tries + 1); }, 50);
+  }
+
+  function selectGame(gameId, options){
+    const opts = options || {};
+    const previousGame = selectedGame;
+    selectedGame = normaliseGameId(gameId);
+    if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
+      resetGameRoundToIdle(selectedGame);
+    }
+    if(!selectedGame) exitMobileGameMode();
+    const panels = {
+      pairs: refs.pairsPanel,
+      detectword: refs.detectwordPanel,
+      make24: refs.make24Panel,
+      trackcoin: refs.trackcoinPanel,
+      ruleshift: refs.ruleshiftPanel,
+      ninja: refs.ninjaPanel
+    };
+    Object.keys(panels).forEach(function(key){ if(panels[key]){ const active=key === selectedGame; panels[key].classList.toggle('is-active', active); panels[key].hidden=!active; panels[key].setAttribute('aria-hidden',String(!active)); } });
+    document.querySelectorAll('#games .game-panel').forEach(function(panel){ if(!Object.values(panels).includes(panel) && panel.classList.contains('is-active')){ panel.classList.remove('is-active'); panel.hidden=true; panel.setAttribute('aria-hidden','true'); } });
+    const gamesSection = document.getElementById('games');
+    if(gamesSection) gamesSection.classList.toggle('has-active-game', !!selectedGame);
+    if(selectedGame === 'pairs') setPairsPanel(normalisePanelId('pairs', pairsOpenPanel));
+    if(selectedGame === 'detectword') setWordPanel(normalisePanelId('detectword', wordOpenPanel));
+    if(selectedGame === 'make24') setMake24Panel(normalisePanelId('make24', make24OpenPanel));
+    if(selectedGame === 'trackcoin') setTrackCoinPanel(normalisePanelId('trackcoin', trackCoinOpenPanel));
+    if(selectedGame === 'ruleshift') setRuleShiftPanel(normalisePanelId('ruleshift', ruleShiftOpenPanel));
+    if(selectedGame === 'ninja'){ setNinjaPanel(normalisePanelId('ninja', ninjaOpenPanel)); requestBaselineRealmLoad(); }
+    if(selectedGame || currentTab === 'games') activateTab('games', { sync:false });
+    renderGamesList();
+    if(!suspendHashSync){
+      const historyMode = opts.historyMode || (opts.pushHistory ? 'push' : 'replace');
+      if(selectedGame && historyMode === 'push') pushGamesHubGameEntry();
+      else syncHashState(historyMode);
+    }
+    /* Do not auto-scroll when selecting hub tabs or game rows. Explicit callers such as auto-next can still request focus/scroll. */
+  }
+
+  function setExclusivePanel(openId, panelIds, buttonAttr, readyButtonValue){
+    panelIds.forEach(function(id){
+      const panel = document.getElementById(id);
+      if(panel){
+        const isOpen = id === openId;
+        panel.hidden = !isOpen;
+        panel.setAttribute('aria-hidden', String(!isOpen));
+        panel.classList.toggle('is-active-panel', isOpen);
+      }
+    });
+    qsa('[' + buttonAttr + ']').forEach(function(btn){
+      const active = btn.getAttribute(buttonAttr) === openId;
+      btn.setAttribute('aria-expanded', String(active));
+      btn.classList.toggle('is-active', active);
+      if(readyButtonValue && btn.getAttribute(buttonAttr) === readyButtonValue.id){
+        btn.classList.toggle('is-ready', !active && !!readyButtonValue.ready);
+      }else{
+        btn.classList.remove('is-ready');
+      }
+    });
+  }
+
+  function setPairsPanel(panelId){
+    pairsOpenPanel = normalisePanelId('pairs', panelId || 'pairsGameCard');
+    setExclusivePanel(pairsOpenPanel, ['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], 'data-pairs-panel', { id:'pairsSkillCard', ready: profiles.pairs && profiles.pairs.skillPoints > 0 });
+    syncHashState();
+  }
+
+  function setWordPanel(panelId){
+    wordOpenPanel = normalisePanelId('detectword', panelId || 'wordGameCard');
+    setExclusivePanel(wordOpenPanel, ['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], 'data-word-panel', { id:'wordSkillCard', ready: profiles.detectword && profiles.detectword.skillPoints > 0 });
+    syncHashState();
+  }
+
+  function setMake24Panel(panelId){
+    make24OpenPanel = normalisePanelId('make24', panelId || 'make24GameCard');
+    setExclusivePanel(make24OpenPanel, ['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], 'data-make24-panel', { id:'make24SkillCard', ready: profiles.make24 && profiles.make24.skillPoints > 0 });
+    syncHashState();
+  }
+
+  function setTrackCoinPanel(panelId){
+    trackCoinOpenPanel = normalisePanelId('trackcoin', panelId || 'trackCoinGamePanel');
+    setExclusivePanel(trackCoinOpenPanel, ['trackCoinGamePanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], 'data-trackcoin-panel', { id:'trackCoinSkillPanel', ready: profiles.trackcoin && profiles.trackcoin.skillPoints > 0 });
+    syncHashState();
+  }
+
+
+  function setRuleShiftPanel(panelId){
+    ruleShiftOpenPanel = normalisePanelId('ruleshift', panelId || 'ruleShiftGameCard');
+    setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
+    syncHashState();
+  }
+
+  function setNinjaPanel(panelId){
+    ninjaOpenPanel = normalisePanelId('ninja', panelId || 'ninjaGameCard');
+    setExclusivePanel(ninjaOpenPanel, ['ninjaGameCard','ninjaUpgradesCard','ninjaBonusesCard','ninjaPrestigeCard'], 'data-ninja-panel');
+    syncHashState();
+  }
+
+  function renderHubSummary(){
+    const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
+    openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
+    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Pairs, Detect The Word, Make The Number, Track the Coin, and Rule Shift feed Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderNinjaSummary()].join('');
+    Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
+  }
+
+  function levelUpFromGain(profile, xpGain){
+    let leveled = 0;
+    profile.xp += xpGain;
+    while(profile.xp >= xpNeededForLevel(profile.level)){
+      profile.xp -= xpNeededForLevel(profile.level);
+      profile.level += 1;
+      profile.skillPoints += 1;
+      leveled += 1;
+    }
+    return leveled;
+  }
+
+  function currentPairsTier(){
+    const profile = profiles.pairs || defaultPairsProfile();
+    return PAIRS_TIERS.find(t => t.id === profile.selectedTier) || PAIRS_TIERS[0];
+  }
+  function nextPairsTierToUnlock(){
+    const profile = profiles.pairs || defaultPairsProfile();
+    return PAIRS_TIERS.find(t => profile.level < t.unlockLevel) || null;
+  }
+  function buildPairsDeck(tier){
+    const chosenFaces = shuffle(PAIRS_FACES).slice(0, tier.pairs);
+    const deck = [];
+    chosenFaces.forEach((face, index) => {
+      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false });
+      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false });
+    });
+    return shuffle(deck);
+  }
+  function startPairsBoard(){
+    clearAutoNextTimer('pairs');
+    const tier = currentPairsTier();
+    profiles.pairs.gamesPlayed += 1;
+    pairsBoardState = {
+      cards: buildPairsDeck(tier), selected: [], matchedPairs:0, moves:0, roundBank:0, flipLock:false,
+      hintsLeft: profiles.pairs.skills.insight || 0, faceSeen:{}, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
+    };
+    scheduleSave('pairs');
+    applyPairsTempoPreview();
+    renderAll();
+  }
+  function pairsMismatchDelay(){
+    return Math.max(260, 650 - ((profiles.pairs.skills.tempo || 0) * 90));
+  }
+  function applyPairsTempoPreview(){
+    if(!pairsBoardState) return;
+    const reduction = Math.max(0, 650 - pairsMismatchDelay());
+    pairsBoardState.lastMessage = reduction > 0
+      ? ('Board opened. Match all pairs. Tempo shortens mismatch recovery by ' + reduction + ' ms.')
+      : 'Board opened. Match all pairs.';
+  }
+  function calculatePairsRewards(){
+    const tier = currentPairsTier();
+    const profile = profiles.pairs;
+    const nextClean = pairsBoardState && !pairsBoardState.hadFailure ? profile.cleanWinStreak + 1 : 0;
+    const nextStreak = profile.currentStreak + 1;
+    const cleanPct = cleanWinBonusPct(nextClean) / 100;
+    const streakPct = trackCoinStreakBonusPct(nextStreak) / 100;
+    const bankMult = (1 + ((profile.skills.banker || 0) * 0.10)) * (1 + cleanPct) * (1 + streakPct);
+    const xpMult = (1 + ((profile.skills.flow || 0) * 0.08)) * (1 + cleanPct) * (1 + streakPct);
+    return { bank:Math.round(tier.bankReward * bankMult), xp:Math.round(tier.xpReward * xpMult), cleanPct:Math.round(cleanPct * 100), streakPct:Math.round(streakPct * 100), nextClean, nextStreak };
+  }
+  function completePairsBoard(){
+    const rewards = calculatePairsRewards();
+    const profile = profiles.pairs;
+    profile.bank += rewards.bank;
+    profile.boardsCleared += 1;
+    profile.currentStreak = rewards.nextStreak;
+    profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
+    profile.cleanWinStreak = rewards.nextClean;
+    const levels = levelUpFromGain(profile, rewards.xp);
+    pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+    pairsBoardState.roundBank += rewards.bank;
+    scheduleSave('pairs');
+    renderAll();
+    scheduleAutoNext('pairs', startPairsBoard);
+  }
+  function handlePairsMismatch(selectedCards){
+    const penaltyEligible = selectedCards.every(card => card.wasKnown);
+    let penalty = 0;
+    if(penaltyEligible){
+      penalty = Math.max(0, currentPairsTier().penalty - (profiles.pairs.skills.recall || 0));
+      profiles.pairs.bank = Math.max(0, profiles.pairs.bank - penalty);
+      pairsBoardState.roundBank -= penalty;
+    }
+    pairsBoardState.hadFailure = true;
+    profiles.pairs.currentStreak = 0;
+    pairsBoardState.lastMessage = penaltyEligible && penalty > 0 ? ('Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.') : 'Learning miss. Clean bonus lost for this board. Streak reset.';
+    scheduleSave('pairs');
+    window.setTimeout(function(){
+      if(!pairsBoardState) return;
+      selectedCards.forEach(card => { card.open = false; });
+      pairsBoardState.selected = [];
+      pairsBoardState.flipLock = false;
+      renderAll();
+    }, pairsMismatchDelay());
+  }
+  function handlePairsCardFlip(cardId){
+    if(!pairsBoardState || pairsBoardState.flipLock) return;
+    const card = pairsBoardState.cards.find(item => item.id === cardId);
+    if(!card || card.open || card.matched) return;
+    card.wasKnown = (pairsBoardState.faceSeen[card.face] || 0) >= 1;
+    pairsBoardState.faceSeen[card.face] = (pairsBoardState.faceSeen[card.face] || 0) + 1;
+    card.open = true;
+    pairsBoardState.selected.push(card);
+    renderPairsBoard();
+    if(pairsBoardState.selected.length < 2) return;
+    pairsBoardState.moves += 1;
+    const [a, b] = pairsBoardState.selected;
+    if(a.face === b.face){
+      a.matched = true;
+      b.matched = true;
+      pairsBoardState.selected = [];
+      pairsBoardState.matchedPairs += 1;
+      pairsBoardState.lastMessage = 'Pair matched cleanly.';
+      if(pairsBoardState.matchedPairs >= currentPairsTier().pairs){ completePairsBoard(); return; }
+      renderAll();
+      return;
+    }
+    pairsBoardState.flipLock = true;
+    handlePairsMismatch([a, b]);
+  }
+  function usePairsHint(){
+    if(!pairsBoardState || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || pairsBoardState.hintBusy) return;
+    const hiddenCards = pairsBoardState.cards.filter(card => !card.matched && !card.open);
+    if(!hiddenCards.length) return;
+    const card = hiddenCards[Math.floor(Math.random() * hiddenCards.length)];
+    pairsBoardState.hintsLeft -= 1;
+    pairsBoardState.hintBusy = true;
+    card.open = true;
+    pairsBoardState.lastMessage = 'Hint used. One unmatched card was flashed briefly.';
+    renderAll();
+    window.setTimeout(function(){
+      if(!pairsBoardState) return;
+      if(!card.matched && !pairsBoardState.selected.includes(card)) card.open = false;
+      pairsBoardState.hintBusy = false;
+      renderPairsBoard();
+      refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+    }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
+  }
+  function spendPairsSkill(skillId){
+    const profile = profiles.pairs;
+    reconcileSkillPoints(profile, PAIRS_SKILLS);
+    const skill = PAIRS_SKILLS.find(item => item.id === skillId);
+    if(!skill || profile.skillPoints <= 0 || profile.level < skill.unlockLevel || (profile.skills[skillId] || 0) >= skill.max) return;
+    profile.skills[skillId] += 1;
+    reconcileSkillPoints(profile, PAIRS_SKILLS);
+    scheduleSave('pairs');
+    resolveNinjaBonuses();
+    renderAll();
+  }
+  function renderPairsProgress(){
+    const profile = profiles.pairs;
+    const needed = xpNeededForLevel(profile.level);
+    refs.pairsXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
+    if(refs.pairsLevelHeading) refs.pairsLevelHeading.textContent = 'Level - ' + profile.level;
+    refs.pairsXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
+    refs.pairsSkillPointsValue.textContent = String(profile.skillPoints);
+    refs.pairsBoardsClearedValue.textContent = String(profile.boardsCleared);
+    refs.pairsGamesPlayedValue.textContent = String(profile.gamesPlayed);
+    if(refs.pairsTierValue) refs.pairsTierValue.textContent = currentPairsTier().name;
+    if(refs.pairsStreakValue) refs.pairsStreakValue.textContent = String(profile.currentStreak);
+    if(refs.pairsCleanStreakValue) refs.pairsCleanStreakValue.textContent = String(profile.cleanWinStreak);
+    if(refs.pairsCleanBonusValue) refs.pairsCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    if(refs.pairsStats){
+      refs.pairsStats.innerHTML = [
+        ['Best streak', profile.bestStreak],
+        ['Current streak', profile.currentStreak],
+        ['Clean streak', profile.cleanWinStreak],
+        ['Bank from Pairs', profile.bank],
+        ['Current tier', currentPairsTier().name],
+        ['Unlocked tiers', PAIRS_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + PAIRS_TIERS.length]
+      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+    }
+    const ready = profile.skillPoints > 0;
+    if(refs.pairsSkillAlertBtn){ refs.pairsSkillAlertBtn.disabled = !ready; refs.pairsSkillAlertBtn.classList.toggle('is-ready', ready); }
+    setPairsPanel(pairsOpenPanel || 'pairsGameCard');
+  }
+  function renderPairsTierList(){
+    const profile = profiles.pairs;
+    refs.pairsTierSelectList.innerHTML = PAIRS_TIERS.map(tier => {
+      const locked = profile.level < tier.unlockLevel;
+      const active = profile.selectedTier === tier.id;
+      const detail = locked ? ('Unlock ' + tier.unlockLevel) : ('+' + tier.bankReward + ' Bank / +' + tier.xpReward + ' XP');
+      return '<button class="tier-btn' + (active ? ' active' : '') + '" data-pairs-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + tier.name + ' · ' + tier.pairs + ' pairs</span><span>' + detail + '</span></button>';
+    }).join('');
+  }
+  function renderPairsSkillTree(){
+    const profile = profiles.pairs;
+    refs.pairsSkillTreeGrid.innerHTML = PAIRS_SKILLS.map(skill => {
+      const level = profile.skills[skill.id] || 0;
+      const locked = profile.level < skill.unlockLevel;
+      const maxed = level >= skill.max;
+      const canSpend = profile.skillPoints > 0 && !locked && !maxed;
+      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-pairs-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+    }).join('');
+    refs.pairsSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Insight ' + profile.skills.insight + ' · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Recall -' + profile.skills.recall + ' repeat loss · Tempo -' + (profile.skills.tempo * 90) + ' ms recovery</span><span class="inline-note">Current streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '% · clean bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span>';
+  }
+  function renderPairsBoard(){
+    const tier = currentPairsTier();
+    if(refs.pairsBoard) refs.pairsBoard.classList.toggle('is-pairs-idle', !pairsBoardState);
+    refs.pairsTierNameValue.textContent = tier.name;
+    if(!pairsBoardState){
+      refs.pairsMovesValue.textContent = '0';
+      refs.pairsMatchedValue.textContent = '0 / ' + tier.pairs;
+      refs.pairsRoundBankValue.textContent = '0';
+      refs.pairsHintBtn.disabled = true;
+      refs.pairsHintBtn.textContent = 'Use Hint';
+      refs.pairsBoard.style.gridTemplateColumns = '1fr';
+      refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is idle.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span><span class="inline-note">Use the Start New Game control at the bottom-right of the game window.</span></div>';
+      refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No board is active yet.</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+      return;
+    }
+    refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
+    refs.pairsMatchedValue.textContent = String(pairsBoardState.matchedPairs) + ' / ' + tier.pairs;
+    refs.pairsRoundBankValue.textContent = String(pairsBoardState.roundBank);
+    refs.pairsHintBtn.disabled = pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || !!pairsBoardState.hintBusy;
+    refs.pairsHintBtn.textContent = 'Use Hint (' + pairsBoardState.hintsLeft + ')';
+    refs.pairsBoard.style.gridTemplateColumns = 'repeat(' + (isMobileGameViewport() ? Math.min(4, tier.cols) : tier.cols) + ', minmax(0, 1fr))';
+    refs.pairsBoard.innerHTML = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button"' + ((card.matched || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back">?</span><span class="memory-card-face memory-card-front">' + card.face + '</span></button>').join('');
+    refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
+  }
+  function renderPairsSummary(){
+    const profile = profiles.pairs;
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    const current = currentPairsTier();
+    const next = nextPairsTierToUnlock();
+    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Pairs board tiers are unlocked.';
+    const skillText = 'Insight ' + profile.skills.insight + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Recall ' + profile.skills.recall + ' · Tempo -' + (profile.skills.tempo * 90) + ' ms';
+    return '<details class="game-summary-details" data-summary="pairs"><summary><span>Pairs</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Boards cleared: ' + profile.boardsCleared + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Pairs: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Streak bonus: +' + trackCoinStreakBonusPct(profile.currentStreak) + '%</span><span>Current streak: ' + profile.currentStreak + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>' + current.pairs + ' pairs on current tier</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>' + skillText + '</span><span>Best streak: ' + profile.bestStreak + ' · unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+  }
+
+  function currentMake24Tier(){
+    const profile = profiles.make24 || defaultMake24Profile();
+    return MAKE24_TIERS.find(t => t.id === profile.selectedTier) || MAKE24_TIERS[0];
+  }
+  function nextMake24TierToUnlock(){
+    return MAKE24_TIERS.find(t => profiles.make24.level < t.unlockLevel) || null;
+  }
+  function allMakeNumberSolutions(numbers, target){
+    const tolerance = 1e-6;
+    const wanted = Number(target || 0);
+    const seen = new Set();
+    function recurse(items){
+      if(items.length === 1){
+        if(Math.abs(items[0].value - wanted) < tolerance){ seen.add(items[0].expr); }
+        return;
+      }
+      for(let i = 0; i < items.length; i += 1){
+        for(let j = 0; j < items.length; j += 1){
+          if(i === j) continue;
+          const remaining = [];
+          for(let k = 0; k < items.length; k += 1){ if(k !== i && k !== j) remaining.push(items[k]); }
+          const a = items[i];
+          const b = items[j];
+          if(i < j){ remaining.push({ value:a.value + b.value, expr:'(' + a.expr + '+' + b.expr + ')' }); recurse(remaining); remaining.pop(); }
+          if(i < j){ remaining.push({ value:a.value * b.value, expr:'(' + a.expr + '×' + b.expr + ')' }); recurse(remaining); remaining.pop(); }
+          remaining.push({ value:a.value - b.value, expr:'(' + a.expr + '-' + b.expr + ')' }); recurse(remaining); remaining.pop();
+          if(Math.abs(b.value) > tolerance){ remaining.push({ value:a.value / b.value, expr:'(' + a.expr + '÷' + b.expr + ')' }); recurse(remaining); remaining.pop(); }
+        }
+      }
+    }
+    recurse(numbers.map(n => ({ value:n, expr:String(n) })));
+    return [...seen];
+  }
+
+  function make24HintFromSolution(solution, hintIndex){
+    const clean = String(solution || '').replace(/[\s]+/g, '');
+    const ops = Array.from(clean.matchAll(/[+\-×÷]/g)).map(match => match[0]);
+    const finalMatch = clean.match(/([+\-×÷])[^+\-×÷]*$/);
+    const finalOp = finalMatch ? finalMatch[1] : (ops[ops.length - 1] || '');
+    const uniqueOps = Array.from(new Set(ops));
+    const step = Math.max(0, Number(hintIndex || 0));
+    const opWord = function(op){
+      return op === '+' ? 'addition' : op === '-' ? 'subtraction' : op === '×' ? 'multiplication' : op === '÷' ? 'division' : 'mixed operations';
+    };
+    if(step === 0){
+      if(uniqueOps.length === 1) return 'Guide: this round leans heavily on ' + opWord(uniqueOps[0]) + '.';
+      if(uniqueOps.includes('×') || uniqueOps.includes('÷')) return 'Guide: look for a strong intermediate value before the last step.';
+      return 'Guide: combine numbers into a useful subtotal before finishing the expression.';
+    }
+    if(step === 1){
+      if(finalOp) return 'Guide: the final step is ' + opWord(finalOp) + '.';
+      return 'Guide: parentheses matter here more than speed.';
+    }
+    if(uniqueOps.includes('×') && uniqueOps.includes('+')) return 'Guide: try making one compact product, then merge it with the remaining value.';
+    if(uniqueOps.includes('÷')) return 'Guide: keep an eye out for a clean division rather than forcing a large total early.';
+    if(uniqueOps.includes('-')) return 'Guide: a helpful difference appears somewhere before the finish.';
+    return 'Guide: build toward the target in stages rather than using all four numbers at once.';
+  }
+  function scoreMake24Solution(solution){
+    const divisions = (solution.match(/÷/g) || []).length;
+    const mults = (solution.match(/×/g) || []).length;
+    const nested = (solution.match(/\(/g) || []).length;
+    return (divisions * 4) + (mults * 2) + nested;
+  }
+  function make24PuzzleSignature(puzzle){
+    const target = puzzle && typeof puzzle === 'object' && !Array.isArray(puzzle) ? puzzle.target : 24;
+    const numbers = Array.isArray(puzzle) ? puzzle : ((puzzle && puzzle.numbers) || []);
+    return target + '|' + numbers.slice().sort((a, b) => a - b).join('-');
+  }
+
+  function make24DifficultyBand(tier){
+    const order = MAKE24_TIERS.findIndex(item => item.id === tier.id);
+    return Math.max(0, order);
+  }
+
+  function make24AcceptsDifficulty(tier, easiest){
+    const band = make24DifficultyBand(tier);
+    if(band <= 0) return easiest <= 5;
+    if(band === 1) return easiest >= 2 && easiest <= 8;
+    if(band === 2) return easiest >= 3 && easiest <= 11;
+    if(band === 3) return easiest >= 5 && easiest <= 14;
+    return easiest >= 6;
+  }
+
+  const MAKE_NUMBER_PUZZLES = Object.freeze({
+    starter:[
+      { target:8, numbers:[1,1,1,3] }, { target:11, numbers:[1,1,1,5] }, { target:13, numbers:[1,1,2,4] }, { target:16, numbers:[1,1,2,5] }, { target:18, numbers:[1,1,3,4] },
+      { target:21, numbers:[1,1,3,5] }, { target:23, numbers:[1,1,4,5] }, { target:26, numbers:[1,2,3,5] }, { target:29, numbers:[1,1,5,5] }, { target:31, numbers:[1,2,4,5] },
+      { target:34, numbers:[1,2,5,5] }, { target:36, numbers:[1,3,3,5] }, { target:39, numbers:[1,3,5,5] }, { target:42, numbers:[1,3,4,5] }, { target:44, numbers:[1,4,5,5] },
+      { target:47, numbers:[2,4,5,5] }, { target:49, numbers:[1,5,5,5] }, { target:52, numbers:[2,5,5,5] }, { target:54, numbers:[2,4,4,5] }, { target:60, numbers:[3,3,5,5] }
+    ],
+    field:[
+      { target:12, numbers:[1,1,1,6] }, { target:17, numbers:[1,1,3,6] }, { target:21, numbers:[1,1,2,7] }, { target:26, numbers:[1,1,5,5] }, { target:31, numbers:[1,1,5,6] },
+      { target:35, numbers:[1,1,4,7] }, { target:40, numbers:[1,1,4,5] }, { target:44, numbers:[1,2,3,7] }, { target:49, numbers:[1,2,4,6] }, { target:54, numbers:[1,2,3,6] },
+      { target:58, numbers:[1,2,4,7] }, { target:63, numbers:[1,2,5,7] }, { target:68, numbers:[1,3,4,6] }, { target:72, numbers:[1,1,6,6] }, { target:77, numbers:[1,2,6,7] },
+      { target:81, numbers:[1,3,4,7] }, { target:86, numbers:[2,2,6,7] }, { target:91, numbers:[1,2,7,7] }, { target:95, numbers:[1,3,5,6] }, { target:100, numbers:[1,3,5,5] }
+    ],
+    forge:[
+      { target:20, numbers:[2,4,5,9] }, { target:28, numbers:[2,3,6,7] }, { target:37, numbers:[2,2,4,9] }, { target:45, numbers:[2,5,9,9] }, { target:54, numbers:[3,4,8,9] },
+      { target:62, numbers:[2,2,7,9] }, { target:71, numbers:[2,2,8,9] }, { target:79, numbers:[2,9,9,9] }, { target:87, numbers:[6,9,9,9] }, { target:96, numbers:[4,6,8,8] },
+      { target:104, numbers:[2,8,8,9] }, { target:113, numbers:[2,5,6,9] }, { target:121, numbers:[2,5,7,9] }, { target:129, numbers:[2,3,5,9] }, { target:138, numbers:[2,3,6,8] },
+      { target:146, numbers:[2,4,4,9] }, { target:155, numbers:[2,7,9,9] }, { target:163, numbers:[3,4,5,8] }, { target:172, numbers:[3,4,7,8] }, { target:180, numbers:[2,5,8,9] }
+    ],
+    citadel:[
+      { target:35, numbers:[5,7,9,9] }, { target:49, numbers:[2,2,7,7] }, { target:63, numbers:[7,9,9,9] }, { target:77, numbers:[7,9,9,11] }, { target:91, numbers:[2,2,9,10] },
+      { target:105, numbers:[2,5,6,7] }, { target:119, numbers:[2,11,11,11] }, { target:133, numbers:[2,3,5,9] }, { target:147, numbers:[2,6,7,7] }, { target:161, numbers:[2,3,7,7] },
+      { target:174, numbers:[2,2,8,11] }, { target:188, numbers:[2,4,5,9] }, { target:202, numbers:[2,2,9,11] }, { target:216, numbers:[2,6,8,9] }, { target:230, numbers:[2,3,7,10] },
+      { target:244, numbers:[2,2,11,11] }, { target:258, numbers:[2,3,8,11] }, { target:272, numbers:[2,3,9,10] }, { target:286, numbers:[2,3,10,11] }, { target:300, numbers:[2,6,10,10] }
+    ],
+    crown:[
+      { target:50, numbers:[3,3,5,10] }, { target:84, numbers:[7,7,7,12] }, { target:118, numbers:[2,2,9,13] }, { target:153, numbers:[2,6,12,13] }, { target:187, numbers:[2,8,11,13] },
+      { target:221, numbers:[2,10,12,13] }, { target:255, numbers:[2,5,7,7] }, { target:289, numbers:[2,3,11,13] }, { target:324, numbers:[2,8,9,9] }, { target:358, numbers:[2,3,10,12] },
+      { target:392, numbers:[2,4,7,7] }, { target:426, numbers:[2,3,12,12] }, { target:461, numbers:[3,7,12,13] }, { target:495, numbers:[2,9,10,11] }, { target:529, numbers:[4,9,10,13] },
+      { target:563, numbers:[3,7,8,10] }, { target:597, numbers:[3,5,10,12] }, { target:632, numbers:[2,4,12,13] }, { target:666, numbers:[2,6,9,12] }, { target:700, numbers:[2,5,7,10] }
+    ]
+  });
+
+  const MAKE_NUMBER_GENERATED_BANKS = Object.create(null);
+
+  function makeNumberFormulaTemplates(band){
+    const simple = [
+      function(a,b,c,d){ return { target:(a + b) * c - d, solution:'((' + a + '+' + b + ')×' + c + ')-' + d }; },
+      function(a,b,c,d){ return { target:(a * b) + c + d, solution:'(' + a + '×' + b + ')+' + c + '+' + d }; },
+      function(a,b,c,d){ return { target:(a + b + c) * d, solution:'(' + a + '+' + b + '+' + c + ')×' + d }; }
+    ];
+    const medium = [
+      function(a,b,c,d){ return { target:(a + b) * (c + d), solution:'(' + a + '+' + b + ')×(' + c + '+' + d + ')' }; },
+      function(a,b,c,d){ return { target:(a * b) + (c * d), solution:'(' + a + '×' + b + ')+(' + c + '×' + d + ')' }; },
+      function(a,b,c,d){ return { target:(a * c) - b + d, solution:'(' + a + '×' + c + ')-' + b + '+' + d }; }
+    ];
+    const hard = [
+      function(a,b,c,d){ return { target:(a * b * c) - d, solution:'((' + a + '×' + b + ')×' + c + ')-' + d }; },
+      function(a,b,c,d){ return { target:(a + b) * c + d, solution:'((' + a + '+' + b + ')×' + c + ')+' + d }; },
+      function(a,b,c,d){ return { target:(a * d) + (b * c), solution:'(' + a + '×' + d + ')+(' + b + '×' + c + ')' }; }
+    ];
+    return band <= 0 ? simple : (band <= 1 ? simple.concat(medium) : medium.concat(hard));
+  }
+
+  function targetBandForTier(tier){
+    const band = make24DifficultyBand(tier);
+    if(band <= 0) return { min:6, max:75 };
+    if(band === 1) return { min:12, max:130 };
+    if(band === 2) return { min:24, max:220 };
+    if(band === 3) return { min:36, max:360 };
+    return { min:50, max:720 };
+  }
+
+  function buildMakeNumberPuzzleBank(tier){
+    if(MAKE_NUMBER_GENERATED_BANKS[tier.id]) return MAKE_NUMBER_GENERATED_BANKS[tier.id];
+    const band = make24DifficultyBand(tier);
+    const minNumber = band >= 2 ? 2 : 1;
+    const maxNumber = Math.max(minNumber, Number(tier.maxNumber || 6));
+    const targetBand = targetBandForTier(tier);
+    const templates = makeNumberFormulaTemplates(band);
+    const seen = new Set();
+    const bank = [];
+    function addPuzzle(numbers, result){
+      const target = Math.round(Number(result.target));
+      if(!Number.isFinite(target) || target < targetBand.min || target > targetBand.max) return;
+      const key = target + '|' + numbers.slice().sort((a, b) => a - b).join('-');
+      if(seen.has(key)) return;
+      seen.add(key);
+      bank.push({ target, numbers:numbers.slice(), solutions:[result.solution] });
+    }
+    for(let a = minNumber; a <= maxNumber && bank.length < 100; a += 1){
+      for(let b = minNumber; b <= maxNumber && bank.length < 100; b += 1){
+        for(let c = minNumber; c <= maxNumber && bank.length < 100; c += 1){
+          for(let d = minNumber; d <= maxNumber && bank.length < 100; d += 1){
+            if(new Set([a,b,c,d]).size < 2) continue;
+            const template = templates[(a + (b * 2) + (c * 3) + (d * 5) + band) % templates.length];
+            addPuzzle([a,b,c,d], template(a,b,c,d));
+          }
+        }
+      }
+    }
+    let guard = 0;
+    while(bank.length < 100 && guard < 5000){
+      guard += 1;
+      const a = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      const b = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      const c = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      const d = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      if(new Set([a,b,c,d]).size < 2) continue;
+      const template = templates[guard % templates.length];
+      addPuzzle([a,b,c,d], template(a,b,c,d));
+    }
+    MAKE_NUMBER_GENERATED_BANKS[tier.id] = bank.slice(0, 100);
+    return MAKE_NUMBER_GENERATED_BANKS[tier.id];
+  }
+
+  function buildMake24Puzzle(tier){
+    const previous = make24State && Array.isArray(make24State.numbers) ? make24PuzzleSignature({ target:make24State.target || 24, numbers:make24State.numbers }) : '';
+    const bank = shuffle(buildMakeNumberPuzzleBank(tier));
+    for(const puzzle of bank){
+      if(make24PuzzleSignature(puzzle) === previous && bank.length > 1) continue;
+      return { target:puzzle.target, numbers:puzzle.numbers.slice(), solutions:puzzle.solutions.slice() };
+    }
+    const fallback = { target:24, numbers:[1,3,4,6] };
+    return { target:fallback.target, numbers:fallback.numbers.slice(), solutions:allMakeNumberSolutions(fallback.numbers, fallback.target) };
+  }
+  function startMake24Puzzle(){
+    clearAutoNextTimer('make24');
+    const tier = currentMake24Tier();
+    const puzzle = buildMake24Puzzle(tier);
+    profiles.make24.gamesPlayed += 1;
+    make24State = {
+      target:puzzle.target,
+      numbers:puzzle.numbers,
+      solutions:puzzle.solutions,
+      hintsLeft:profiles.make24.skills.clarity || 0,
+      rerollsLeft:profiles.make24.skills.reserve || 0,
+      mistakes:0,
+      hadFailure:false,
+      roundBank:0,
+      lastMessage:'Puzzle ready. Use all shown numbers exactly once to make ' + puzzle.target + '.',
+      revealSolution:'',
+      hintsUsed:0,
+      completed:false
+    };
+    scheduleSave('make24');
+    renderAll();
+  }
+  function countNumbers(list){
+    const map = new Map();
+    list.forEach(num => map.set(num, (map.get(num) || 0) + 1));
+    return map;
+  }
+  function sameNumberMultiset(a, b){
+    const mapA = countNumbers(a);
+    const mapB = countNumbers(b);
+    if(mapA.size !== mapB.size) return false;
+    for(const [key, value] of mapA){ if(mapB.get(key) !== value) return false; }
+    return true;
+  }
+  function submitMake24Expression(event){
+    event.preventDefault();
+    if(!make24State || make24State.completed) return;
+    const input = (event && event.target && event.target.querySelector) ? event.target.querySelector('#make24ExpressionInput') : refs.make24ExpressionInput;
+    if(!input) return;
+    let raw = String(input.value || '').trim();
+    if(!raw) return;
+    raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
+    if(!/^[\d\s()+\-*/.]+$/.test(raw)){
+      make24State.lastMessage = 'Only digits, brackets, and + - × ÷ are allowed.';
+      renderMake24Board();
+      focusGameInput('make24ExpressionInput');
+      return;
+    }
+    const usedNumbers = (raw.match(/\d+/g) || []).map(Number);
+    if(usedNumbers.length !== 4 || !sameNumberMultiset(usedNumbers, make24State.numbers)){
+      make24State.lastMessage = 'Use each shown number exactly once. Concatenation is not allowed.';
+      renderMake24Board();
+      focusGameInput('make24ExpressionInput');
+      return;
+    }
+    let value = NaN;
+    try{ value = Function('"use strict"; return (' + raw + ');')(); }catch(_e){ value = NaN; }
+    if(Number.isFinite(value) && Math.abs(value - (make24State.target || 24)) < 1e-6){
+      const tier = currentMake24Tier();
+      const nextClean = make24State && !make24State.hadFailure ? profiles.make24.cleanWinStreak + 1 : 0;
+      const cleanPct = cleanWinBonusPct(nextClean) / 100;
+      const bankGain = Math.round(tier.bankReward * (1 + (profiles.make24.skills.banker || 0) * 0.10) * (1 + cleanPct));
+      const xpGain = Math.round(tier.xpReward * (1 + (profiles.make24.skills.flow || 0) * 0.08) * (1 + cleanPct));
+      profiles.make24.bank += bankGain;
+      profiles.make24.puzzlesSolved += 1;
+      profiles.make24.cleanWinStreak = nextClean;
+      const levels = levelUpFromGain(profiles.make24, xpGain);
+      make24State.roundBank += bankGain;
+      make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      make24State.revealSolution = '';
+      make24State.completed = true;
+      scheduleSave('make24');
+      resolveNinjaBonuses();
+      renderAll();
+      scheduleAutoNext('make24', startMake24Puzzle);
+      return;
+    }
+    make24State.mistakes += 1;
+    make24State.hadFailure = true;
+    profiles.make24.cleanWinStreak = 0;
+    const penalty = Math.max(0, currentMake24Tier().penalty - (profiles.make24.skills.precision || 0));
+    if(make24State.mistakes > 1 && penalty > 0){
+      profiles.make24.bank = Math.max(0, profiles.make24.bank - penalty);
+      make24State.roundBank -= penalty;
+      make24State.lastMessage = 'Not ' + (make24State.target || 24) + '. -' + penalty + ' Bank after repeated mistakes.';
+    }else{
+      make24State.lastMessage = 'Not ' + (make24State.target || 24) + ' yet. No Bank deduction on the first miss.';
+    }
+    scheduleSave('make24');
+    renderAll();
+    focusGameInput('make24ExpressionInput');
+  }
+  function useMake24Hint(){
+    if(!make24State || make24State.completed || make24State.hintsLeft <= 0) return;
+    make24State.hintsLeft -= 1;
+    const hintIndex = Math.max(0, Number(make24State.hintsUsed || 0));
+    make24State.hintsUsed = hintIndex + 1;
+    make24State.revealSolution = make24HintFromSolution(make24State.solutions[0] || '', hintIndex);
+    make24State.lastMessage = 'Guide used. You received a light tactical prompt only.';
+    renderMake24Board();
+  }
+  function rerollMake24Puzzle(){
+    if(!make24State || make24State.completed || make24State.rerollsLeft <= 0) return;
+    make24State.rerollsLeft -= 1;
+    const puzzle = buildMake24Puzzle(currentMake24Tier());
+    make24State.target = puzzle.target;
+    make24State.numbers = puzzle.numbers;
+    make24State.solutions = puzzle.solutions;
+    make24State.revealSolution = '';
+    make24State.hintsUsed = 0;
+    make24State.mistakes = 0;
+    make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
+    renderAll();
+  }
+  function spendMake24Skill(skillId){
+    const profile = profiles.make24;
+    reconcileSkillPoints(profile, MAKE24_SKILLS);
+    const skill = MAKE24_SKILLS.find(item => item.id === skillId);
+    if(!skill || profile.skillPoints <= 0 || profile.level < skill.unlockLevel || (profile.skills[skillId] || 0) >= skill.max) return;
+    profile.skills[skillId] += 1;
+    reconcileSkillPoints(profile, MAKE24_SKILLS);
+    scheduleSave('make24');
+    resolveNinjaBonuses();
+    renderAll();
+  }
+  function renderMake24Progress(){
+    const profile = profiles.make24;
+    const needed = xpNeededForLevel(profile.level);
+    refs.make24XpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
+    if(refs.make24LevelHeading) refs.make24LevelHeading.textContent = 'Level - ' + profile.level;
+    refs.make24XpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
+    refs.make24SkillPointsValue.textContent = String(profile.skillPoints);
+    refs.make24SolvedValue.textContent = String(profile.puzzlesSolved);
+    refs.make24GamesPlayedValue.textContent = String(profile.gamesPlayed);
+    if(refs.make24TierValue) refs.make24TierValue.textContent = currentMake24Tier().name;
+    if(refs.make24CleanStreakValue) refs.make24CleanStreakValue.textContent = String(profile.cleanWinStreak);
+    if(refs.make24CleanBonusValue) refs.make24CleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    if(refs.make24Stats){
+      refs.make24Stats.innerHTML = [
+        ['Clean streak', profile.cleanWinStreak],
+        ['Bank from Make The Number', profile.bank],
+        ['Current tier', currentMake24Tier().name],
+        ['Unlocked tiers', MAKE24_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + MAKE24_TIERS.length],
+        ['Guide level', profile.skills.clarity],
+        ['Reserve level', profile.skills.reserve]
+      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+    }
+    const ready = profile.skillPoints > 0;
+    if(refs.make24SkillAlertBtn){ refs.make24SkillAlertBtn.disabled = !ready; refs.make24SkillAlertBtn.classList.toggle('is-ready', ready); }
+    setMake24Panel(make24OpenPanel || 'make24GameCard');
+  }
+  function renderMake24TierList(){
+    const profile = profiles.make24;
+    refs.make24TierSelectList.innerHTML = MAKE24_TIERS.map(tier => {
+      const locked = profile.level < tier.unlockLevel;
+      const active = profile.selectedTier === tier.id;
+      const detail = locked ? ('Unlock ' + tier.unlockLevel) : ('1–' + tier.maxNumber + ' · +' + tier.bankReward + ' Bank');
+      return '<button class="tier-btn' + (active ? ' active' : '') + '" data-make24-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + tier.name + '</span><span>' + detail + '</span></button>';
+    }).join('');
+  }
+  function renderMake24SkillTree(){
+    const profile = profiles.make24;
+    refs.make24SkillTreeGrid.innerHTML = MAKE24_SKILLS.map(skill => {
+      const level = profile.skills[skill.id] || 0;
+      const locked = profile.level < skill.unlockLevel;
+      const maxed = level >= skill.max;
+      const canSpend = profile.skillPoints > 0 && !locked && !maxed;
+      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-make24-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+    }).join('');
+    refs.make24SkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Clarity ' + profile.skills.clarity + ' guide use(s) · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve ' + profile.skills.reserve + ' reroll(s) · Precision -' + profile.skills.precision + ' repeat loss</span>';
+  }
+  function renderMake24Board(){
+    const tier = currentMake24Tier();
+    refs.make24TierNameValue.textContent = tier.name;
+    if(refs.make24TargetValue) refs.make24TargetValue.textContent = make24State ? String(make24State.target || 24) : '—';
+    if(!make24State){
+      refs.make24MistakesValue.textContent = '0';
+      refs.make24RoundBankValue.textContent = '0';
+      if(refs.make24HintBtn) refs.make24HintBtn.disabled = true;
+      if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
+      refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is idle.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
+      refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No puzzle is active yet.</span>';
+      return;
+    }
+    refs.make24MistakesValue.textContent = String(make24State.mistakes);
+    refs.make24RoundBankValue.textContent = String(make24State.roundBank);
+    const make24HintsLeft = make24State.hintsLeft || 0;
+    const make24RerollsLeft = make24State.rerollsLeft || 0;
+    if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; refs.make24HintBtn.textContent = countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft); }
+    if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; refs.make24RerollBtn.textContent = countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft); }
+    const make24Closed = !!make24State.completed;
+    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
+    refs.make24ExpressionInput = document.getElementById('make24ExpressionInput');
+    refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
+    if(refs.make24ExpressionInput && !make24State.completed) focusGameInput('make24ExpressionInput');
+  }
+  function renderMake24Summary(){
+    const profile = profiles.make24;
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    const current = currentMake24Tier();
+    const next = nextMake24TierToUnlock();
+    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Make The Number tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="make24"><summary><span>Make The Number</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Puzzles solved: ' + profile.puzzlesSolved + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>Bank from Make The Number: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Numbers up to ' + current.maxNumber + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Clarity ' + profile.skills.clarity + ' · Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Precision ' + profile.skills.precision + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+  }
+
+  function currentWordTier(){
+    return WORD_TIERS.find(t => t.id === profiles.detectword.selectedTier) || WORD_TIERS[0];
+  }
+  function nextWordTierToUnlock(){ return WORD_TIERS.find(t => profiles.detectword.level < t.unlockLevel) || null; }
+  function chooseRandomWord(length){
+    const bank = (WORD_BANK[length] || WORD_BANK[5]).filter(word => String(word).length === length);
+    const recent = wordRecentByLength[length] || [];
+    let pool = bank.filter(word => !recent.includes(word));
+    if(!pool.length){
+      recent.length = 0;
+      pool = bank.slice();
+    }
+    const chosen = pool[Math.floor(Math.random() * pool.length)] || bank[0] || 'word';
+    recent.unshift(chosen);
+    const memory = Math.min(28, Math.max(8, Math.floor(bank.length * 0.45)));
+    wordRecentByLength[length] = recent.slice(0, memory);
+    return chosen;
+  }
+  function startWordRound(){
+    clearAutoNextTimer('detectword');
+    const tier = currentWordTier();
+    const secret = chooseRandomWord(tier.letters);
+    profiles.detectword.gamesPlayed += 1;
+    wordState = {
+      secret,
+      guesses:[],
+      maxGuesses: 6 + (profiles.detectword.skills.reserve || 0),
+      roundBank:0,
+      lastMessage:'Round ready. Submit a valid dictionary word.',
+      hadFailure:false
+    };
+    scheduleSave('detectword');
+    renderAll();
+  }
+  function evaluateWordGuess(guess, secret){
+    const result = Array.from({ length: guess.length }, (_, idx) => ({ letter:guess[idx], state:'absent' }));
+    const secretPool = secret.split('');
+    guess.split('').forEach((char, idx) => {
+      if(secret[idx] === char){
+        result[idx].state = 'correct';
+        secretPool[idx] = null;
+      }
+    });
+    guess.split('').forEach((char, idx) => {
+      if(result[idx].state === 'correct') return;
+      const poolIndex = secretPool.indexOf(char);
+      if(poolIndex >= 0){ result[idx].state = 'present'; secretPool[poolIndex] = null; }
+    });
+    return result;
+  }
+  function computeWordRewardMultiplier(profile){
+    const streakFactor = 1 + ((profile.skills.focus || 0) * Math.min(profile.currentStreak, 5) * 0.04);
+    return streakFactor;
+  }
+  function submitWordGuess(event){
+    event.preventDefault();
+    if(!wordState) return;
+    const input = (event && event.target && event.target.querySelector) ? event.target.querySelector('#wordGuessInput') : refs.wordGuessInput;
+    if(!input) return;
+    const tier = currentWordTier();
+    const guess = String(input.value || '').trim().toLowerCase();
+    if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    const evaluation = evaluateWordGuess(guess, wordState.secret);
+    wordState.guesses.push({ word:guess, evaluation });
+    if(guess === wordState.secret){
+      const profile = profiles.detectword;
+      profile.wordsSolved += 1;
+      profile.currentStreak += 1;
+      const nextClean = wordState && !wordState.hadFailure ? profile.cleanWinStreak + 1 : 0;
+      profile.cleanWinStreak = nextClean;
+      profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
+      const rewardMult = computeWordRewardMultiplier(profile) * (1 + (cleanWinBonusPct(nextClean) / 100));
+      const bankGain = Math.round(tier.bankReward * (1 + (profile.skills.banker || 0) * 0.10) * rewardMult);
+      const xpGain = Math.round(tier.xpReward * (1 + (profile.skills.flow || 0) * 0.08) * rewardMult);
+      profile.bank += bankGain;
+      const levels = levelUpFromGain(profile, xpGain);
+      wordState.roundBank += bankGain;
+      wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      scheduleSave('detectword');
+      resolveNinjaBonuses();
+      renderAll();
+      scheduleAutoNext('detectword', startWordRound);
+      return;
+    }
+    wordState.hadFailure = true;
+    if(wordState.guesses.length >= wordState.maxGuesses){
+      profiles.detectword.currentStreak = 0;
+      profiles.detectword.cleanWinStreak = 0;
+      wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
+      scheduleSave('detectword');
+      renderAll();
+      scheduleAutoNext('detectword', startWordRound);
+      return;
+    }
+    wordState.lastMessage = 'Guess logged. Keep reading the pattern.';
+    renderAll();
+    focusGameInput('wordGuessInput');
+  }
+  function spendWordSkill(skillId){
+    const profile = profiles.detectword;
+    reconcileSkillPoints(profile, WORD_SKILLS);
+    const skill = WORD_SKILLS.find(item => item.id === skillId);
+    if(!skill || profile.skillPoints <= 0 || profile.level < skill.unlockLevel || (profile.skills[skillId] || 0) >= skill.max) return;
+    profile.skills[skillId] += 1;
+    reconcileSkillPoints(profile, WORD_SKILLS);
+    scheduleSave('detectword');
+    resolveNinjaBonuses();
+    renderAll();
+  }
+  function renderWordProgress(){
+    const profile = profiles.detectword;
+    const needed = xpNeededForLevel(profile.level);
+    refs.wordXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
+    if(refs.wordLevelHeading) refs.wordLevelHeading.textContent = 'Level - ' + profile.level;
+    refs.wordXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
+    refs.wordSkillPointsValue.textContent = String(profile.skillPoints);
+    refs.wordSolvedValue.textContent = String(profile.wordsSolved);
+    refs.wordStreakValue.textContent = String(profile.currentStreak);
+    if(refs.wordTierValue) refs.wordTierValue.textContent = currentWordTier().name;
+    if(refs.wordBestStreakValue) refs.wordBestStreakValue.textContent = String(profile.bestStreak);
+    if(refs.wordCleanStreakValue) refs.wordCleanStreakValue.textContent = String(profile.cleanWinStreak);
+    if(refs.wordCleanBonusValue) refs.wordCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    if(refs.wordStats){
+      refs.wordStats.innerHTML = [
+        ['Best streak', profile.bestStreak],
+        ['Clean streak', profile.cleanWinStreak],
+        ['Bank from Detect The Word', profile.bank],
+        ['Current tier', currentWordTier().name],
+        ['Unlocked tiers', WORD_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + WORD_TIERS.length],
+        ['Focus level', profile.skills.focus]
+      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+    }
+    const ready = profile.skillPoints > 0;
+    if(refs.wordSkillAlertBtn){ refs.wordSkillAlertBtn.disabled = !ready; refs.wordSkillAlertBtn.classList.toggle('is-ready', ready); }
+    setWordPanel(wordOpenPanel || 'wordGameCard');
+  }
+  function renderWordTierList(){
+    const profile = profiles.detectword;
+    refs.wordTierSelectList.innerHTML = WORD_TIERS.map(tier => {
+      const locked = profile.level < tier.unlockLevel;
+      const active = profile.selectedTier === tier.id;
+      const detail = locked ? ('Unlock ' + tier.unlockLevel) : ('+' + tier.bankReward + ' Bank / +' + tier.xpReward + ' XP');
+      return '<button class="tier-btn' + (active ? ' active' : '') + '" data-word-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + tier.name + '</span><span>' + detail + '</span></button>';
+    }).join('');
+  }
+  function renderWordSkillTree(){
+    const profile = profiles.detectword;
+    refs.wordSkillTreeGrid.innerHTML = WORD_SKILLS.map(skill => {
+      const level = profile.skills[skill.id] || 0;
+      const locked = profile.level < skill.unlockLevel;
+      const maxed = level >= skill.max;
+      const canSpend = profile.skillPoints > 0 && !locked && !maxed;
+      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-word-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+    }).join('');
+    refs.wordSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve +' + profile.skills.reserve + ' guesses · Focus streak scaler ' + profile.skills.focus + '</span>';
+  }
+  function wordFeedbackLegendHtml(){
+    return '<div class="word-feedback-legend" aria-label="Letter feedback legend"><span><i class="word-feedback-dot word-feedback-dot--correct" aria-hidden="true"></i>Correct place</span><span><i class="word-feedback-dot word-feedback-dot--present" aria-hidden="true"></i>In word, different place</span><span><i class="word-feedback-dot word-feedback-dot--absent" aria-hidden="true"></i>Not in word</span></div>';
+  }
+  function renderWordBoard(){
+    const tier = currentWordTier();
+    refs.wordTierNameValue.textContent = tier.name;
+    if(!wordState){
+      refs.wordGuessesValue.textContent = '0 / 6';
+      refs.wordRoundBankValue.textContent = '0';
+      refs.wordBoard.innerHTML = '<div class="empty-box"><strong>Detect The Word is idle.</strong><span class="inline-note">' + escapeHtml(wordIdleMessage) + '</span></div>';
+      refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No word round is active yet.</span>';
+      return;
+    }
+    refs.wordGuessesValue.textContent = wordState.guesses.length + ' / ' + wordState.maxGuesses;
+    refs.wordRoundBankValue.textContent = String(wordState.roundBank);
+    const rows = [];
+    for(let i = 0; i < wordState.maxGuesses; i += 1){
+      const guess = wordState.guesses[i];
+      const cells = [];
+      if(guess){
+        guess.evaluation.forEach(entry => cells.push('<div class="letter-cell ' + entry.state + '">' + entry.letter.toUpperCase() + '</div>'));
+      }else{
+        for(let j = 0; j < tier.letters; j += 1){ cells.push('<div class="letter-cell">&nbsp;</div>'); }
+      }
+      rows.push('<div class="word-row" style="--letters:' + tier.letters + '">' + cells.join('') + '</div>');
+    }
+    const solved = wordState.guesses.some(entry => entry.word === wordState.secret);
+    const ended = solved || wordState.guesses.length >= wordState.maxGuesses;
+    const legendHtml = wordFeedbackLegendHtml();
+    const resultHtml = solved
+      ? '<div class="solution-box word-result-box"><strong>Word solved: ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>'
+      : '<div class="solution-box word-result-box"><strong>Word was ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>';
+    refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
+    refs.wordGuessInput = document.getElementById('wordGuessInput');
+    refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(wordState.lastMessage) + '</span>';
+    if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
+  }
+
+  function renderDetectWordSummary(){
+    const profile = profiles.detectword;
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    const current = currentWordTier();
+    const next = nextWordTierToUnlock();
+    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Detect The Word tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="detectword"><summary><span>Detect The Word</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Words solved: ' + profile.wordsSolved + '</span><span>Best streak: ' + profile.bestStreak + '</span></div><div class="game-summary-row"><span>Bank from Detect The Word: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Flow ' + profile.skills.flow + ' · Banker ' + profile.skills.banker + ' · Reserve ' + profile.skills.reserve + ' · Focus ' + profile.skills.focus + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+  }
+
+  function resolveNinjaBonuses(){ const method = realmHostMethod('resolveBonuses'); return method ? method() : {}; }
+  function applyOfflineNinjaProgress(){ const method = realmHostMethod('applyOfflineProgress'); return method ? method() : undefined; }
+  function startNinjaLoop(){ const method = realmHostMethod('startLoop'); return method ? method() : undefined; }
+
+
+  function toggleRealmFullscreen(){ const method = realmHostMethod('toggleFullscreen'); return method ? method() : undefined; }
+  function renderNinja(){ const method = realmHostMethod('render'); return method ? method() : undefined; }
+  function renderNinjaSummary(){
+    const method = realmHostMethod('renderSummary');
+    if(method){
+      const summary = method();
+      if(summary) return summary;
+    }
+    const profile = profiles.ninja || fallbackNinjaProfile();
+    const traits = profile.bonusCache && Array.isArray(profile.bonusCache.unlockedTraits) ? profile.bonusCache.unlockedTraits : [];
+    return '<details class="game-summary-details" data-summary="ninja"><summary><span>Baseline Realm</span><span class="inline-note">Stage ' + profile.stage + '</span></summary><div class="game-summary-body"><div class="game-summary-row"><span>Highest stage: ' + profile.highestStage + '</span><span>Spirit: ' + profile.spirit + '</span></div><div class="game-summary-row"><span>Total coins earned: ' + formatInt(profile.totalCoinsEarned) + '</span><span>Bosses defeated: ' + profile.bossesDefeated + '</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Resolved bonus traits</span><span>' + escapeHtml(traits.join(' · ') || 'Baseline Realm loads when selected.') + '</span></div></div></details>';
+  }
+
+
+  function cancelTrackCoinAnimation(){
+    if(trackCoinAnimationFrame){ window.cancelAnimationFrame(trackCoinAnimationFrame); trackCoinAnimationFrame = 0; }
+    if(trackCoinShuffleTimer){ window.clearTimeout(trackCoinShuffleTimer); trackCoinShuffleTimer = 0; }
+  }
+
+  function currentTrackCoinTier(){
+    return TRACKCOIN_TIERS.find(t => t.id === profiles.trackcoin.selectedTier) || TRACKCOIN_TIERS[0];
+  }
+  function trackCoinUnlockedTier(){
+    const id = highestUnlockedTrackCoinTier(profiles.trackcoin);
+    return TRACKCOIN_TIERS.find(t => t.id === id) || TRACKCOIN_TIERS[0];
+  }
+  function trackCoinStreakBonusPct(streak){
+    const match = TRACKCOIN_STREAK_BONUS.find(item => streak >= item.streak);
+    return match ? match.pct : 0;
+  }
+  function trackCoinAccuracy(profile){
+    return profile.totalRounds > 0 ? (profile.totalCorrect / Math.max(1, profile.totalRounds)) : 0;
+  }
+  function trackCoinRpgUnlocked(profile){
+    return profile.level >= 10 || profile.bestStreak >= 20 || (profile.totalRounds >= 20 && trackCoinAccuracy(profile) >= 0.85) || (profile.level >= 6 && (TRACKCOIN_TIERS.findIndex(t => t.id === profile.highestUnlockedTier) >= 2));
+  }
+  function trackCoinCupPositions(count){
+    const total = Math.max(1, Number(count || 1));
+    if(total === 1) return [50];
+    const mobile = isMobileGameViewport();
+    // Keep the full cup group centred on mobile and prevent edge clipping.
+    // This calculation is symmetric around 50%, so Track The Coin never drifts left/right.
+    const spacing = mobile
+      ? (total <= 3 ? 22 : total <= 4 ? 18.5 : total <= 5 ? 15.5 : 12.8)
+      : (total <= 3 ? 25 : total <= 4 ? 22 : total <= 5 ? 18 : 15);
+    const totalSpread = Math.min(mobile ? 66 : 72, spacing * (total - 1));
+    const step = totalSpread / Math.max(1, total - 1);
+    const start = 50 - (totalSpread / 2);
+    return Array.from({ length:total }, (_, index) => +(start + (step * index)).toFixed(2));
+  }
+
+  function trackCoinNormaliseSpeedPercent(value){
+    const n = Math.round(Number(value || TRACKCOIN_BASE_SPEED_PERCENT));
+    return Math.max(TRACKCOIN_BASE_SPEED_PERCENT, n);
+  }
+  function trackCoinCurrentSpeedPercent(profile){
+    return trackCoinNormaliseSpeedPercent(profile && profile.trackCoinSpeedPercent);
+  }
+  function trackCoinSpeedMultiplier(profile){
+    return trackCoinCurrentSpeedPercent(profile) / TRACKCOIN_BASE_SPEED_PERCENT;
+  }
+  function trackCoinMovementSpeedMultiplier(profile){
+    return Math.max(0.01, trackCoinSpeedMultiplier(profile) * TRACKCOIN_START_SPEED_SCALE);
+  }
+  function trackCoinPreviousMilestone(speedPercent){
+    const speed = trackCoinNormaliseSpeedPercent(speedPercent);
+    if(speed < TRACKCOIN_FIRST_MILESTONE_PERCENT) return TRACKCOIN_BASE_SPEED_PERCENT;
+    return Math.floor(speed / TRACKCOIN_MILESTONE_STEP_PERCENT) * TRACKCOIN_MILESTONE_STEP_PERCENT;
+  }
+  function trackCoinFailureFallbackSpeed(speedPercent){
+    const speed = trackCoinNormaliseSpeedPercent(speedPercent);
+    const milestone = trackCoinPreviousMilestone(speed);
+    if(milestone >= TRACKCOIN_FIRST_MILESTONE_PERCENT && speed > milestone) return milestone;
+    return TRACKCOIN_BASE_SPEED_PERCENT;
+  }
+  function trackCoinNextSpeedAfterCorrect(speedPercent){
+    return trackCoinNormaliseSpeedPercent(speedPercent) + TRACKCOIN_SPEED_STEP_PERCENT;
+  }
+  function trackCoinSpeedStatusText(profile){
+    const speed = trackCoinCurrentSpeedPercent(profile);
+    const milestone = trackCoinPreviousMilestone(speed);
+    const protectedText = speed > milestone && milestone >= TRACKCOIN_FIRST_MILESTONE_PERCENT
+      ? ' · milestone fallback ' + milestone + '%'
+      : (speed >= TRACKCOIN_FIRST_MILESTONE_PERCENT && speed % TRACKCOIN_MILESTONE_STEP_PERCENT === 0 ? ' · milestone reached' : '');
+    return 'Cup speed ' + speed + '%' + protectedText;
+  }
+  function buildTrackCoinRound(){
+    const tier = currentTrackCoinTier();
+    const profile = profiles.trackcoin || defaultTrackCoinProfile();
+    const count = tier.containers;
+    const positions = trackCoinCupPositions(count);
+    const baseTop = isMobileGameViewport() ? (count >= 5 ? 70 : 74) : (count >= 5 ? 64 : 68);
+    const cups = Array.from({ length:count }, (_, index) => ({ id:'cup' + index, left:positions[index], top:baseTop, tilt:0 }));
+    const coinCupId = cups[Math.floor(Math.random() * count)].id;
+    const speedPercent = trackCoinCurrentSpeedPercent(profile);
+    const speedMultiplier = trackCoinSpeedMultiplier(profile);
+    const movementSpeedMultiplier = trackCoinMovementSpeedMultiplier(profile);
+    const baseStepDuration = Number(tier.speed || 740);
+    const speedStepDuration = Math.max(90, Math.round(baseStepDuration / movementSpeedMultiplier));
+    const targetDuration = TRACKCOIN_SHUFFLE_MIN_MS + Math.floor(Math.random() * ((TRACKCOIN_SHUFFLE_MAX_MS - TRACKCOIN_SHUFFLE_MIN_MS) + 1));
+    const minimumTierSteps = Math.max(TRACKCOIN_MIN_MOVES, (tier.minSwaps || 1) + count);
+    const stepsCount = Math.max(minimumTierSteps, Math.ceil(targetDuration / speedStepDuration));
+    const stepDuration = Math.max(1, Math.round(targetDuration / stepsCount));
+    const patterns = ['cross','rise','drop','diagonal','orbit','zigzag','sweep','spiral'];
+    const sequence = Array.from({ length:stepsCount }, () => ({ duration:stepDuration, pattern:patterns[Math.floor(Math.random() * patterns.length)] }));
+    const totalDuration = stepDuration * stepsCount;
+    return {
+      tierId:tier.id, phase:'show', cups, coinCupId, sequence, pickLocked:true, resolved:false,
+      message:'Watch the coin before it is covered, then track every cup through a 6–8 second shuffle. ' + trackCoinSpeedStatusText(profile) + '.', revealAll:false, baseTop, totalDuration, speedPercent, speedMultiplier, movementSpeedMultiplier, targetDuration
+    };
+  }
+  function trackCoinGenerateOrder(cups){
+    const current = cups.map(cup => cup.id);
+    let order = shuffle(current);
+    let attempts = 0;
+    while(attempts < 10){
+      const moved = order.filter((id, index) => id !== current[index]).length;
+      const longJump = order.some((id, index) => Math.abs(current.indexOf(id) - index) >= 2);
+      if(moved >= Math.max(2, Math.floor(current.length * 0.66)) && longJump) break;
+      order = shuffle(current);
+      attempts += 1;
+    }
+    if(order.every((id, index) => id === current[index])) order = current.slice(1).concat(current[0]);
+    return order;
+  }
+  function trackCoinMidTop(pattern, baseTop, slotIndex, count, direction){
+    const centered = slotIndex - ((count - 1) / 2);
+    if(pattern === 'rise') return baseTop - 46 - (Math.abs(centered) * 4);
+    if(pattern === 'drop') return baseTop + 34 + (Math.abs(centered) * 3);
+    if(pattern === 'diagonal') return baseTop + (centered * 16 * direction);
+    if(pattern === 'orbit') return baseTop - 18 + (Math.sin((slotIndex + 1) * 1.35) * 32);
+    if(pattern === 'zigzag') return baseTop - 28 + ((slotIndex % 2 === 0 ? -1 : 1) * 28);
+    if(pattern === 'sweep') return baseTop - 10 + (direction * 34) - (Math.abs(centered) * 5);
+    if(pattern === 'spiral') return baseTop - 36 + Math.sin((slotIndex + 1) * 1.8) * 40;
+    return baseTop - 30 + ((slotIndex % 2 === 0 ? -1 : 1) * 16);
+  }
+  function trackCoinFinalTop(pattern, baseTop, slotIndex){
+    if(pattern === 'orbit') return baseTop + (Math.cos((slotIndex + 1) * 1.2) * 10);
+    if(pattern === 'diagonal') return baseTop + ((slotIndex % 2 === 0 ? -1 : 1) * 8);
+    if(pattern === 'zigzag') return baseTop + ((slotIndex % 2 === 0 ? -1 : 1) * 10);
+    if(pattern === 'sweep') return baseTop + ((slotIndex % 3) - 1) * 6;
+    if(pattern === 'spiral') return baseTop + Math.cos((slotIndex + 1) * 1.4) * 12;
+    return baseTop + ((slotIndex % 3) - 1) * 4;
+  }
+  function syncTrackCoinMotionDom(){
+    if(!trackCoinState || !refs.trackCoinBoard) return;
+    const lane = q('.trackcoin-lane', refs.trackCoinBoard);
+    if(!lane) return;
+    const cupNodes = qsa('.trackcoin-cup[data-trackcoin-cup-id]', lane);
+    if(!cupNodes.length) return;
+    const byId = Object.create(null);
+    cupNodes.forEach(function(node){
+      const id = node.getAttribute('data-trackcoin-cup-id') || '';
+      if(id) byId[id] = node;
+    });
+    trackCoinState.cups.forEach(function(cup, index){
+      const node = byId[cup.id] || cupNodes[index];
+      if(!node) return;
+      node.style.left = cup.left + '%';
+      node.style.top = cup.top + 'px';
+      node.style.setProperty('--cup-tilt', cup.tilt + 'deg');
+    });
+  }
+
+  function applyTrackCoinMotionStep(step, onDone){
+    if(!trackCoinState) return;
+    cancelTrackCoinAnimation();
+    const cups = trackCoinState.cups;
+    const positions = trackCoinCupPositions(cups.length);
+    const order = trackCoinGenerateOrder(cups);
+    const targetIndex = Object.fromEntries(order.map((id, index) => [id, index]));
+    const starts = cups.map(cup => ({ left:cup.left, top:cup.top, tilt:cup.tilt }));
+    const targets = cups.map((cup, currentIndex) => {
+      const destIndex = targetIndex[cup.id];
+      const destLeft = positions[destIndex];
+      const direction = destLeft >= cup.left ? 1 : -1;
+      return {
+        left: positions[destIndex],
+        top: trackCoinFinalTop(step.pattern, trackCoinState.baseTop, destIndex),
+        tilt: (destIndex % 2 === 0 ? -1 : 1) * (step.pattern === 'cross' ? 3 : 2),
+        curveLeft: ((cup.left + destLeft) / 2) + (step.pattern === 'orbit' ? (direction * 14 * Math.sin((currentIndex + 1) * 1.4)) : step.pattern === 'sweep' ? (direction * 20) : step.pattern === 'spiral' ? (direction * 16) : direction * 12),
+        curveTop: trackCoinMidTop(step.pattern, trackCoinState.baseTop, destIndex, cups.length, direction)
+      };
+    });
+    const startAt = performance.now();
+    function frame(now){
+      if(!trackCoinState || trackCoinState.phase !== 'hide') return;
+      const raw = clamp((now - startAt) / step.duration, 0, 1);
+      const eased = 0.5 - (0.5 * Math.cos(Math.PI * raw));
+      cups.forEach((cup, idx) => {
+        const s = starts[idx];
+        const t = targets[idx];
+        const inv = 1 - eased;
+        cup.left = +(inv * inv * s.left + 2 * inv * eased * t.curveLeft + eased * eased * t.left).toFixed(2);
+        cup.top = +(inv * inv * s.top + 2 * inv * eased * t.curveTop + eased * eased * t.top).toFixed(2);
+        cup.tilt = +(s.tilt + ((t.tilt - s.tilt) * eased)).toFixed(2);
+      });
+      syncTrackCoinMotionDom();
+      if(raw < 1){
+        trackCoinAnimationFrame = window.requestAnimationFrame(frame);
+      }else{
+        cups.sort((a, b) => targetIndex[a.id] - targetIndex[b.id]);
+        cups.forEach((cup, slotIndex) => {
+          const target = targets.find(item => Math.abs(item.left - positions[slotIndex]) < 0.01);
+          cup.left = positions[slotIndex];
+          cup.top = target ? target.top : cup.top;
+          cup.tilt = target ? target.tilt : cup.tilt;
+        });
+        trackCoinAnimationFrame = 0;
+        syncTrackCoinMotionDom();
+        if(typeof onDone === 'function') onDone();
+      }
+    }
+    trackCoinAnimationFrame = window.requestAnimationFrame(frame);
+  }
+  function startTrackCoinRound(options){
+    clearAutoNextTimer('trackcoin');
+    cancelTrackCoinAnimation();
+    const profile = profiles.trackcoin;
+    profile.selectedTier = currentTrackCoinTier().id;
+    profile.currentTier = profile.selectedTier;
+    trackCoinState = buildTrackCoinRound();
+    const startWindowMs = options && Number(options.startWindowMs) ? Number(options.startWindowMs) : 1100;
+    if(startWindowMs >= 3000){
+      trackCoinState.message = 'Auto-next started. You have a 3 second start window: lock onto the visible coin before the cup drops. ' + trackCoinSpeedStatusText(profile) + '.';
+    }
+    renderTrackCoin();
+    trackCoinShuffleTimer = window.setTimeout(function(){
+      if(!trackCoinState) return;
+      trackCoinState.phase = 'cover';
+      trackCoinState.message = 'The coin is covered. Hold the starting position, then follow the full shuffle. ' + trackCoinSpeedStatusText(profile) + '.';
+      renderTrackCoin();
+      trackCoinShuffleTimer = window.setTimeout(function(){
+        if(!trackCoinState) return;
+        trackCoinState.phase = 'hide';
+        trackCoinState.message = 'Shuffle started. Follow every cup movement. ' + trackCoinSpeedStatusText(profile) + '.';
+        renderTrackCoin();
+        runTrackCoinShuffle(0);
+      }, 700);
+    }, startWindowMs);
+  }
+  function runTrackCoinShuffle(stepIndex){
+    if(!trackCoinState) return;
+    if(stepIndex >= trackCoinState.sequence.length){
+      trackCoinState.phase = 'pick';
+      trackCoinState.pickLocked = false;
+      trackCoinState.message = 'Select the cup holding the coin.';
+      renderTrackCoin();
+      return;
+    }
+    const step = trackCoinState.sequence[stepIndex];
+    applyTrackCoinMotionStep(step, function(){
+      runTrackCoinShuffle(stepIndex + 1);
+    });
+  }
+  function grantTrackCoinRewards(correct){
+    const profile = profiles.trackcoin;
+    const tier = currentTrackCoinTier();
+    const roundSpeed = trackCoinState && trackCoinState.speedPercent ? trackCoinState.speedPercent : trackCoinCurrentSpeedPercent(profile);
+    const previousSpeed = trackCoinCurrentSpeedPercent(profile);
+    const streakPct = trackCoinStreakBonusPct(profile.currentStreak) + ((profile.skills.steal || 0) * 4);
+    const cleanPct = cleanWinBonusPct(correct ? (profile.cleanWinStreak + 1) : 0) + ((profile.skills.flow || 0) * 5);
+    const baseXp = tier.xpReward * tier.multiplier;
+    const baseCoins = tier.coinReward * tier.multiplier;
+    let xpGain = correct ? Math.round(baseXp * (1 + (streakPct / 100) + (cleanPct / 100) + ((profile.skills.read || 0) * 0.06))) : Math.round(baseXp * (0.35 + ((profile.skills.discipline || 0) * 0.05)));
+    let coinGain = correct ? Math.round(baseCoins * (1 + (streakPct / 100) + (cleanPct / 100) + ((profile.skills.banker || 0) * 0.10))) : Math.round(baseCoins * (0.25 + ((profile.skills.discipline || 0) * 0.05)));
+    if(correct){
+      profile.currentStreak += 1;
+      profile.cleanWinStreak += 1;
+      profile.totalCorrect += 1;
+      profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
+      profile.trackCoinSpeedPercent = trackCoinNextSpeedAfterCorrect(roundSpeed);
+      profile.bestTrackCoinSpeedPercent = Math.max(trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent), profile.trackCoinSpeedPercent);
+      if(profile.currentStreak % 4 === 0){
+        xpGain += Math.round(tier.perfectBonusXp * tier.multiplier);
+        coinGain += Math.round(tier.perfectBonusCoins * tier.multiplier);
+        profile.totalMiniSetsCleared += 1;
+      }
+    }else{
+      profile.currentStreak = 0;
+      profile.cleanWinStreak = 0;
+      profile.trackCoinSpeedPercent = trackCoinFailureFallbackSpeed(roundSpeed);
+    }
+    profile.totalRounds += 1;
+    profile.totalXpEarned += xpGain;
+    profile.totalCoinsEarned += coinGain;
+    profile.coins += coinGain;
+    const levelUps = levelUpFromGain(profile, xpGain);
+    profile.highestUnlockedTier = highestUnlockedTrackCoinTier(profile);
+    if(TRACKCOIN_TIERS.findIndex(t => t.id === profile.selectedTier) > TRACKCOIN_TIERS.findIndex(t => t.id === profile.highestUnlockedTier)){
+      profile.selectedTier = profile.highestUnlockedTier;
+    }
+    profile.currentTier = profile.selectedTier;
+    profile.bestAccuracy = Math.max(profile.bestAccuracy, trackCoinAccuracy(profile));
+    scheduleSave('trackcoin');
+    return { xpGain, coinGain, levelUps, bonusPct:streakPct, cleanPct, previousSpeed, roundSpeed, nextSpeed:trackCoinCurrentSpeedPercent(profile) };
+  }
+  function chooseTrackCoinCup(choiceRaw){
+    if(!trackCoinState || trackCoinState.pickLocked || trackCoinState.resolved) return;
+    cancelTrackCoinAnimation();
+    const choice = Number(choiceRaw);
+    if(Number.isNaN(choice)) return;
+    const pickedCup = trackCoinState.cups[choice];
+    if(!pickedCup) return;
+    trackCoinState.pickLocked = true;
+    trackCoinState.resolved = true;
+    trackCoinState.revealAll = true;
+    trackCoinState.pickedCupId = pickedCup.id;
+    const correct = pickedCup.id === trackCoinState.coinCupId;
+    trackCoinState.lastResult = correct ? 'correct' : 'missed';
+    const reward = grantTrackCoinRewards(correct);
+    trackCoinState.message = correct
+      ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · +' + reward.levelUps + ' level' + (reward.levelUps > 1 ? 's' : '') : '') + '.'
+      : 'Missed. The coin has been revealed under the correct cup. Cup speed falls from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. Streak bonus reset. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins.';
+    resolveNinjaBonuses();
+    renderAll();
+    scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+  }
+  function renderTrackCoinTierList(){
+    const profile = profiles.trackcoin;
+    refs.trackCoinTierSelectList.innerHTML = TRACKCOIN_TIERS.map(tier => {
+      const locked = profile.level < tier.unlockLevel;
+      const active = profile.selectedTier === tier.id;
+      return '<button class="tier-btn' + (active ? ' active' : '') + '" data-trackcoin-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + tier.name + '</span><span>' + (locked ? ('Unlock ' + tier.unlockLevel) : ('×' + tier.multiplier.toFixed(2))) + '</span></button>';
+    }).join('');
+  }
+  function spendTrackCoinSkill(skillId){
+    const profile = profiles.trackcoin;
+    reconcileSkillPoints(profile, TRACKCOIN_SKILLS);
+    const skill = TRACKCOIN_SKILLS.find(item => item.id === skillId);
+    if(!skill || profile.skillPoints <= 0 || profile.level < skill.unlockLevel || (profile.skills[skillId] || 0) >= skill.max) return;
+    profile.skills[skillId] += 1;
+    reconcileSkillPoints(profile, TRACKCOIN_SKILLS);
+    scheduleSave('trackcoin');
+    resolveNinjaBonuses();
+    renderAll();
+  }
+  function renderTrackCoinSkillTree(){
+    if(!refs.trackCoinSkillTreeGrid || !refs.trackCoinSkillSummary) return;
+    const profile = profiles.trackcoin;
+    refs.trackCoinSkillTreeGrid.innerHTML = TRACKCOIN_SKILLS.map(skill => {
+      const level = profile.skills[skill.id] || 0;
+      const locked = profile.level < skill.unlockLevel;
+      const maxed = level >= skill.max;
+      const canSpend = profile.skillPoints > 0 && !locked && !maxed;
+      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + skill.name + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + skill.description + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-trackcoin-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+    }).join('');
+    refs.trackCoinSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
+  }
+  function renderTrackCoin(){
+    if(!refs.trackCoinBoard || !refs.trackCoinTierSelectList || !refs.trackCoinXpFill || !refs.trackCoinXpMeta || !refs.trackCoinLevelHeading || !refs.trackCoinCoinsValue || !refs.trackCoinTierValue || !refs.trackCoinUnlockedTierValue || !refs.trackCoinStreakValue || !refs.trackCoinStreakBonusValue || !refs.trackCoinStats || !refs.trackCoinRpgState || !refs.trackCoinSkillPointsValue) return;
+    const profile = profiles.trackcoin;
+    const tier = currentTrackCoinTier();
+    const needed = xpNeededForLevel(profile.level);
+    const streakBonus = trackCoinStreakBonusPct(profile.currentStreak) + ((profile.skills.steal || 0) * 4);
+    refs.trackCoinXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
+    refs.trackCoinLevelHeading.textContent = 'Level - ' + profile.level;
+    refs.trackCoinXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
+    refs.trackCoinSkillPointsValue.textContent = String(profile.skillPoints || 0);
+    refs.trackCoinCoinsValue.textContent = formatInt(profile.coins);
+    refs.trackCoinTierValue.textContent = tier.name;
+    refs.trackCoinUnlockedTierValue.textContent = (TRACKCOIN_TIERS.find(t => t.id === profile.highestUnlockedTier) || TRACKCOIN_TIERS[0]).name;
+    refs.trackCoinStreakValue.textContent = String(profile.currentStreak);
+    refs.trackCoinStreakBonusValue.textContent = '+' + streakBonus + '%';
+    if(refs.trackCoinCleanStreakValue) refs.trackCoinCleanStreakValue.textContent = String(profile.cleanWinStreak);
+    if(refs.trackCoinCleanBonusValue) refs.trackCoinCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    renderTrackCoinTierList();
+    renderTrackCoinSkillTree();
+    const accuracyPct = Math.round(trackCoinAccuracy(profile) * 100);
+    refs.trackCoinStats.innerHTML = [
+      ['Best streak', profile.bestStreak],
+      ['Total correct', profile.totalCorrect],
+      ['Rounds played', profile.totalRounds],
+      ['Accuracy', accuracyPct + '%'],
+      ['Cup speed', trackCoinCurrentSpeedPercent(profile) + '%'],
+      ['Best cup speed', trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%'],
+      ['Total XP earned', profile.totalXpEarned],
+      ['Total coins earned', profile.totalCoinsEarned]
+    ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+    refs.trackCoinRpgState.textContent = trackCoinRpgUnlocked(profile)
+      ? 'Pace unlock threshold reached for RPG integration.'
+      : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
+    setTrackCoinPanel(trackCoinOpenPanel || 'trackCoinGamePanel');
+
+    const trackCoinResultClass = trackCoinState && trackCoinState.resolved ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
+    const trackCoinStatusTitle = trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status';
+    const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press Start New Game when you are ready.';
+    const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
+    const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
+
+    if(!trackCoinState){
+      refs.trackCoinBoard.innerHTML = '<div class="empty-box trackcoin-idle-card"><strong>Track the Coin is idle.</strong><span class="inline-note">Choose a tier and press Start New Game when you are ready.</span><span class="inline-note">The coin will be shown first, then covered, then shuffled. ' + escapeHtml(trackCoinSpeedStatusText(profile)) + '.</span><span class="inline-note">Use the Start New Game control at the bottom-right of the game window.</span></div>';
+      ensureGamePlayContract();
+      return;
+    }
+    const tierSpeed = Math.max(1, Math.round(trackCoinState.totalDuration / Math.max(1, trackCoinState.sequence.length)));
+    const showCoinNow = trackCoinState.phase === 'show' || trackCoinState.revealAll;
+    const coinCup = showCoinNow ? trackCoinState.cups.find(cup => cup.id === trackCoinState.coinCupId) : null;
+    const coinHtml = coinCup ? '<div class="trackcoin-item-token" aria-hidden="true" style="left:' + coinCup.left + '%;top:' + (coinCup.top + 72) + 'px"></div>' : '';
+    const positions = trackCoinState.cups.map((cup, idx) => {
+      const selectable = trackCoinState.phase === 'pick' && !trackCoinState.pickLocked;
+      const isCorrect = trackCoinState.revealAll && cup.id === trackCoinState.coinCupId;
+      const isPicked = trackCoinState.revealAll && cup.id === trackCoinState.pickedCupId;
+      const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
+      return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"' + (selectable ? '' : ' disabled') + '></button>';
+    }).join('');
+    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + ' · streak bonus ' + streakBonus + '% · clean bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span></div><div class="trackcoin-lane" data-cups="' + tier.containers + '">' + coinHtml + positions + '</div></div>';
+    ensureGamePlayContract();
+  }
+  function renderTrackCoinSummary(){
+    const profile = profiles.trackcoin;
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    const current = currentTrackCoinTier();
+    return '<details class="game-summary-details" data-summary="trackcoin"><summary><span>Track the Coin</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Current tier: ' + current.name + '</span><span>Coins: ' + profile.coins + '</span></div><div class="game-summary-row"><span>Cup speed: ' + trackCoinCurrentSpeedPercent(profile) + '%</span><span>Best speed: ' + trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%</span></div><div class="game-summary-row"><span>Clean win bonus: +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Accuracy: ' + Math.round(trackCoinAccuracy(profile) * 100) + '%</span></div><div class="game-summary-row"><span>Total correct: ' + profile.totalCorrect + '</span><span>Rounds played: ' + profile.totalRounds + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Read ' + profile.skills.read + ' · Banker ' + profile.skills.banker + ' · Flow ' + profile.skills.flow + ' · Discipline ' + profile.skills.discipline + ' · Pace Control -' + (profile.skills.steal * 4) + '%</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+  }
+
+
+
+  function currentRuleShiftTier(){
+    const profile = profiles.ruleshift || defaultRuleShiftProfile();
+    return RULESHIFT_TIERS.find(t => t.id === profile.selectedTier) || RULESHIFT_TIERS[0];
+  }
+  function nextRuleShiftTierToUnlock(){
+    const profile = profiles.ruleshift || defaultRuleShiftProfile();
+    return RULESHIFT_TIERS.find(t => profile.level < t.unlockLevel) || null;
+  }
+  function ruleShiftName(list, id){
+    const found = list.find(function(item){ return item.id === id; });
+    return found ? found.name : String(id || '');
+  }
+  function ruleShiftAllOptions(){
+    const options = [];
+    RULESHIFT_COLOURS.forEach(function(colour){
+      RULESHIFT_SHAPES.forEach(function(shape){
+        RULESHIFT_SIZES.forEach(function(size){
+          options.push({ id: colour.id + '-' + shape.id + '-' + size.id, colour: colour.id, shape: shape.id, size: size.id });
+        });
+      });
+    });
+    return options;
+  }
+  function buildRuleShiftRule(tier, previousRule){
+    const rules = tier.rules && tier.rules.length ? tier.rules : ['colour','shape'];
+    let type = rules[Math.floor(Math.random() * rules.length)];
+    if(previousRule && rules.length > 1){
+      let guard = 0;
+      while(type === previousRule.type && guard < 8){
+        type = rules[Math.floor(Math.random() * rules.length)];
+        guard += 1;
+      }
+    }
+
+    const colour = RULESHIFT_COLOURS[Math.floor(Math.random() * RULESHIFT_COLOURS.length)];
+    const shape = RULESHIFT_SHAPES[Math.floor(Math.random() * RULESHIFT_SHAPES.length)];
+    const configuredSizeIds = Array.isArray(tier && tier.sizes) ? tier.sizes : [];
+    const availableSizes = RULESHIFT_SIZES.filter(function(item){ return !configuredSizeIds.length || configuredSizeIds.includes(item.id); });
+    const sizePool = availableSizes.length ? availableSizes : RULESHIFT_SIZES;
+    const size = sizePool[Math.floor(Math.random() * sizePool.length)];
+
+    let label = '';
+    let brief = '';
+
+    if(type === 'colour'){ label = 'Choose ' + colour.name + '.'; brief = 'Colour'; }
+    else if(type === 'shape'){ label = 'Choose a ' + shape.name + '.'; brief = 'Shape'; }
+    else if(type === 'colourShape'){ label = 'Choose the ' + colour.name + ' ' + shape.name + '.'; brief = 'Colour + shape'; }
+    else if(type === 'size'){ label = 'Choose a ' + size.name + ' object.'; brief = 'Size'; }
+    else if(type === 'colourSize'){ label = 'Choose a ' + size.name + ' ' + colour.name + ' object.'; brief = 'Colour + size'; }
+    else if(type === 'shapeSize'){ label = 'Choose a ' + size.name + ' ' + shape.name + '.'; brief = 'Shape + size'; }
+    else{ label = 'Choose ' + colour.name + '.'; brief = 'Colour'; type = 'colour'; }
+
+    return { type:type, colour:colour.id, shape:shape.id, size:size.id, label:label, brief:brief };
+  }
+  function ruleShiftMatches(rule, option){
+    if(!rule || !option) return false;
+    if(rule.type === 'colour') return option.colour === rule.colour;
+    if(rule.type === 'shape') return option.shape === rule.shape;
+    if(rule.type === 'size') return option.size === rule.size;
+    if(rule.type === 'notColour') return option.colour !== rule.colour;
+    if(rule.type === 'notShape') return option.shape !== rule.shape;
+    if(rule.type === 'colourShape') return option.colour === rule.colour && option.shape === rule.shape;
+    if(rule.type === 'colourSize') return option.colour === rule.colour && option.size === rule.size;
+    if(rule.type === 'shapeSize') return option.shape === rule.shape && option.size === rule.size;
+    return false;
+  }
+
+  function ruleShiftTimeLimitMs(tier){
+    return Math.max(3000, Number(tier && tier.timeLimitMs) || 5000);
+  }
+  function clearRuleShiftTimer(){
+    if(ruleShiftTimer){
+      window.clearInterval(ruleShiftTimer);
+      ruleShiftTimer = 0;
+    }
+  }
+  function ruleShiftRemainingMs(){
+    if(!ruleShiftState || !ruleShiftState.deadlineAt) return 0;
+    return Math.max(0, ruleShiftState.deadlineAt - Date.now());
+  }
+  function ruleShiftTimerText(ms){
+    return (Math.max(0, Math.ceil(ms / 1000))).toString() + 's';
+  }
+  function syncRuleShiftTimer(){
+    if(!ruleShiftState || ruleShiftState.finished){
+      clearRuleShiftTimer();
+      return;
+    }
+    const tier = currentRuleShiftTier();
+    const total = ruleShiftTimeLimitMs(tier);
+    const left = ruleShiftRemainingMs();
+    const value = document.getElementById('ruleShiftTimerValue');
+    const fill = document.getElementById('ruleShiftTimerFill');
+    if(value) value.textContent = ruleShiftTimerText(left);
+    if(fill) fill.style.width = clamp((left / Math.max(1, total)) * 100, 0, 100) + '%';
+    if(left <= 0) handleRuleShiftTimeout();
+  }
+  function startRuleShiftTimer(){
+    clearRuleShiftTimer();
+    syncRuleShiftTimer();
+    ruleShiftTimer = window.setInterval(syncRuleShiftTimer, 120);
+  }
+  function handleRuleShiftTimeout(){
+    if(!ruleShiftState || ruleShiftState.finished || ruleShiftState.resolvingTimeout) return;
+    ruleShiftState.resolvingTimeout = true;
+    clearRuleShiftTimer();
+    const profile = profiles.ruleshift;
+    profile.wrongAnswers += 1;
+    failRuleShiftRun('Time ran out. Run failed — no reward awarded.');
+    ruleShiftState.resolvingTimeout = false;
+  }
+
+  function buildRuleShiftOptions(tier, rule){
+    const count = clamp(Number(tier && tier.optionCount) || 8, 6, 12);
+    const colourIds = RULESHIFT_COLOURS.map(function(item){ return item.id; });
+    const shapeIds = RULESHIFT_SHAPES.map(function(item){ return item.id; });
+    const allSizeIds = RULESHIFT_SIZES.map(function(item){ return item.id; });
+    const configuredSizeIds = Array.isArray(tier && tier.sizes) ? tier.sizes : [];
+    const sizeIds = configuredSizeIds.length ? allSizeIds.filter(function(id){ return configuredSizeIds.includes(id); }) : allSizeIds.slice();
+    if(!sizeIds.length) sizeIds.push(allSizeIds[0] || 'large');
+    const fallbackColour = colourIds[0] || 'red';
+    const fallbackShape = shapeIds[0] || 'circle';
+    const fallbackSize = sizeIds[0] || 'small';
+
+    const targetColour = colourIds.includes(rule.colour) ? rule.colour : fallbackColour;
+    const targetShape = shapeIds.includes(rule.shape) ? rule.shape : fallbackShape;
+    const targetSize = sizeIds.includes(rule.size) ? rule.size : fallbackSize;
+    const otherSize = sizeIds.find(function(id){ return id !== targetSize; }) || fallbackSize;
+
+    const selected = [];
+    const usedIds = new Set();
+
+    function optionId(option){
+      return option.colour + '-' + option.shape + '-' + option.size;
+    }
+
+    function addOption(colour, shape, size){
+      const option = {
+        colour: colourIds.includes(colour) ? colour : fallbackColour,
+        shape: shapeIds.includes(shape) ? shape : fallbackShape,
+        size: sizeIds.includes(size) ? size : fallbackSize
+      };
+      option.id = optionId(option);
+      if(usedIds.has(option.id)) return false;
+      usedIds.add(option.id);
+      selected.push(option);
+      return true;
+    }
+
+    function addNonMatching(colour, shape, size){
+      const option = {
+        colour: colourIds.includes(colour) ? colour : fallbackColour,
+        shape: shapeIds.includes(shape) ? shape : fallbackShape,
+        size: sizeIds.includes(size) ? size : fallbackSize
+      };
+      if(ruleShiftMatches(rule, option)) return false;
+      return addOption(option.colour, option.shape, option.size);
+    }
+
+    function fillFromPool(pool){
+      shuffle(pool).forEach(function(option){
+        if(selected.length >= count) return;
+        addNonMatching(option.colour, option.shape, option.size);
+      });
+    }
+
+    function fillFromPoolLimit(pool, limit){
+      let added = 0;
+      shuffle(pool).forEach(function(option){
+        if(selected.length >= count || added >= limit) return;
+        if(addNonMatching(option.colour, option.shape, option.size)) added += 1;
+      });
+    }
+
+    addOption(targetColour, targetShape, targetSize);
+
+    if(rule.type === 'size'){
+      // Size enters only in harder tiers. Exactly one option matches the requested size.
+      const sizeDistractors = [];
+      colourIds.forEach(function(colour){
+        shapeIds.forEach(function(shape){
+          sizeDistractors.push({ colour:colour, shape:shape, size:otherSize });
+        });
+      });
+      fillFromPool(sizeDistractors);
+    }else if(rule.type === 'colourShape'){
+      // Compound colour + shape prompts must not be solvable by colour alone or shape alone.
+      // Keep exactly one true target, then add distractors that share each descriptor separately.
+      fillFromPoolLimit(shapeIds.filter(function(id){ return id !== targetShape; }).map(function(shape, index){
+        return { colour:targetColour, shape:shape, size:(index % 2 === 0) ? targetSize : otherSize };
+      }), 3);
+      fillFromPoolLimit(colourIds.filter(function(id){ return id !== targetColour; }).map(function(colour, index){
+        return { colour:colour, shape:targetShape, size:(index % 2 === 0) ? otherSize : targetSize };
+      }), 3);
+    }else if(rule.type === 'colourSize'){
+      // Colour + size prompts need colour-only and size-only distractors.
+      fillFromPool(sizeIds.filter(function(id){ return id !== targetSize; }).map(function(size){
+        return { colour:targetColour, shape:shapeIds.find(function(id){ return id !== targetShape; }) || targetShape, size:size };
+      }));
+      fillFromPool(colourIds.filter(function(id){ return id !== targetColour; }).map(function(colour, index){
+        return { colour:colour, shape:shapeIds[index % shapeIds.length] || targetShape, size:targetSize };
+      }));
+    }else if(rule.type === 'shapeSize'){
+      // Shape + size prompts need shape-only and size-only distractors.
+      fillFromPool(sizeIds.filter(function(id){ return id !== targetSize; }).map(function(size){
+        return { colour:colourIds.find(function(id){ return id !== targetColour; }) || targetColour, shape:targetShape, size:size };
+      }));
+      fillFromPool(shapeIds.filter(function(id){ return id !== targetShape; }).map(function(shape, index){
+        return { colour:colourIds[index % colourIds.length] || targetColour, shape:shape, size:targetSize };
+      }));
+    }else{
+      // Single-descriptor prompts keep the clean spread: all 8 colours and all 8 shapes once.
+      // That keeps single prompts simple while the compound prompts above deliberately break uniqueness.
+      const remainingColours = shuffle(colourIds.filter(function(id){ return id !== targetColour; }));
+      const remainingShapes = shuffle(shapeIds.filter(function(id){ return id !== targetShape; }));
+      for(let index = 0; index < count - 1; index += 1){
+        addOption(
+          remainingColours[index] || fallbackColour,
+          remainingShapes[index] || fallbackShape,
+          (index % 2 === 0) ? otherSize : targetSize
+        );
+      }
+    }
+
+    const allOptions = [];
+    colourIds.forEach(function(colour){
+      shapeIds.forEach(function(shape){
+        sizeIds.forEach(function(size){
+          allOptions.push({ colour:colour, shape:shape, size:size });
+        });
+      });
+    });
+    fillFromPool(allOptions);
+
+    return shuffle(selected.slice(0, count));
+  }
+  function startRuleShiftRound(){
+    clearAutoNextTimer('ruleshift');
+    clearRuleShiftTimer();
+    const tier = currentRuleShiftTier();
+    profiles.ruleshift.gamesPlayed += 1;
+    ruleShiftState = {
+      round:0,
+      maxRounds:tier.rounds,
+      roundBank:0,
+      mistakes:0,
+      hadFailure:false,
+      currentRule:null,
+      options:[],
+      finished:false,
+      lastMessage:'Run started. Read the rule before choosing.',
+      lastWasRuleChange:false,
+      deadlineAt:0,
+      resolvingTimeout:false
+    };
+    advanceRuleShiftRound(true);
+    scheduleSave('ruleshift');
+    renderAll();
+    startRuleShiftTimer();
+  }
+  function advanceRuleShiftRound(isStart, overrideMessage){
+    if(!ruleShiftState || ruleShiftState.finished) return;
+    const tier = currentRuleShiftTier();
+    ruleShiftState.round += 1;
+    const previousRule = ruleShiftState.currentRule;
+    const rule = buildRuleShiftRule(tier, previousRule);
+    ruleShiftState.currentRule = rule;
+    ruleShiftState.options = buildRuleShiftOptions(tier, rule);
+    ruleShiftState.deadlineAt = Date.now() + ruleShiftTimeLimitMs(tier);
+    ruleShiftState.lastWasRuleChange = !!(previousRule && previousRule.type !== rule.type);
+    if(overrideMessage){
+      ruleShiftState.lastMessage = overrideMessage;
+    }else if(isStart){
+      ruleShiftState.lastMessage = 'Run active. Choose carefully — one wrong answer fails the run.';
+    }else{
+      ruleShiftState.lastMessage = ruleShiftState.lastWasRuleChange ? 'Correct. Rule changed — check it before choosing.' : 'Correct. Same rule family — keep focus.';
+    }
+  }
+  function failRuleShiftRun(message){
+    if(!ruleShiftState || ruleShiftState.finished) return;
+    clearRuleShiftTimer();
+    const profile = profiles.ruleshift;
+    profile.currentStreak = 0;
+    profile.cleanWinStreak = 0;
+    ruleShiftState.mistakes += 1;
+    ruleShiftState.hadFailure = true;
+    ruleShiftState.failed = true;
+    ruleShiftState.finished = true;
+    ruleShiftState.roundBank = 0;
+    ruleShiftState.lastMessage = message || 'Run failed — no reward awarded.';
+    scheduleSave('ruleshift');
+    renderAll();
+  }
+
+  function completeRuleShiftRun(){
+    if(!ruleShiftState || ruleShiftState.finished) return;
+    clearRuleShiftTimer();
+    const profile = profiles.ruleshift;
+    const tier = currentRuleShiftTier();
+    const xpMult = 1 + ((profile.skills.focus || 0) * 0.08);
+    const bankMult = 1 + ((profile.skills.banker || 0) * 0.10);
+    const nextClean = ruleShiftState.hadFailure ? 0 : profile.cleanWinStreak + 1;
+    const cleanBonus = cleanWinBonusPct(nextClean);
+    const xpGain = Math.max(1, Math.round((tier.xpReward + ruleShiftState.roundBank) * xpMult * (1 + cleanBonus / 100)));
+    const bankGain = Math.max(0, Math.round((tier.bankReward + ruleShiftState.roundBank) * bankMult * (1 + cleanBonus / 100)));
+    const leveled = levelUpFromGain(profile, xpGain);
+    profile.bank += bankGain;
+    profile.cleanWinStreak = nextClean;
+    ruleShiftState.finished = true;
+    ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank and +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Level up +' + leveled : '') + '.';
+    scheduleSave('ruleshift');
+    resolveNinjaBonuses();
+    renderAll();
+    scheduleAutoNext('ruleshift', startRuleShiftRound, AUTO_NEXT_DELAYS.ruleshift);
+  }
+  function chooseRuleShiftOption(optionId){
+    if(!ruleShiftState || ruleShiftState.finished || !ruleShiftState.currentRule) return;
+    clearRuleShiftTimer();
+    const profile = profiles.ruleshift;
+    const tier = currentRuleShiftTier();
+    const option = (ruleShiftState.options || []).find(function(item){ return item.id === optionId; });
+    if(!option) return;
+    const correct = ruleShiftMatches(ruleShiftState.currentRule, option);
+    if(correct){
+      profile.correctAnswers += 1;
+      profile.currentStreak += 1;
+      profile.bestStreak = Math.max(profile.bestStreak, profile.currentStreak);
+      const adaptBonus = ruleShiftState.lastWasRuleChange ? (profile.skills.adapt || 0) : 0;
+      ruleShiftState.roundBank += 2 + adaptBonus;
+      if(ruleShiftState.round >= ruleShiftState.maxRounds){
+        completeRuleShiftRun();
+      }else{
+        advanceRuleShiftRound(false);
+        scheduleSave('ruleshift');
+        renderAll();
+        startRuleShiftTimer();
+      }
+      return;
+    }
+    profile.wrongAnswers += 1;
+    failRuleShiftRun('Incorrect choice. Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
+  }
+  function spendRuleShiftSkill(skillId){
+    const profile = profiles.ruleshift;
+    reconcileSkillPoints(profile, RULESHIFT_SKILLS);
+    const skill = RULESHIFT_SKILLS.find(function(item){ return item.id === skillId; });
+    if(!skill || profile.skillPoints <= 0 || profile.level < skill.unlockLevel || (profile.skills[skillId] || 0) >= skill.max) return;
+    profile.skills[skillId] += 1;
+    reconcileSkillPoints(profile, RULESHIFT_SKILLS);
+    scheduleSave('ruleshift');
+    renderAll();
+  }
+  function renderRuleShiftProgress(){
+    const profile = profiles.ruleshift;
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    if(refs.ruleShiftLevelHeading) refs.ruleShiftLevelHeading.textContent = 'Level - ' + profile.level;
+    if(refs.ruleShiftXpMeta) refs.ruleShiftXpMeta.textContent = profile.xp + ' / ' + needed + ' XP';
+    if(refs.ruleShiftXpFill) refs.ruleShiftXpFill.style.width = pct + '%';
+    if(refs.ruleShiftSkillPointsValue) refs.ruleShiftSkillPointsValue.textContent = profile.skillPoints;
+    if(refs.ruleShiftBankValue) refs.ruleShiftBankValue.textContent = formatInt(profile.bank);
+    if(refs.ruleShiftTierValue) refs.ruleShiftTierValue.textContent = currentRuleShiftTier().name;
+    if(refs.ruleShiftStreakValue) refs.ruleShiftStreakValue.textContent = profile.currentStreak;
+    if(refs.ruleShiftBestStreakValue) refs.ruleShiftBestStreakValue.textContent = profile.bestStreak;
+    if(refs.ruleShiftCleanStreakValue) refs.ruleShiftCleanStreakValue.textContent = profile.cleanWinStreak;
+    if(refs.ruleShiftCleanBonusValue) refs.ruleShiftCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+  }
+  function renderRuleShiftTierList(){
+    if(!refs.ruleShiftTierSelectList) return;
+    const profile = profiles.ruleshift;
+    refs.ruleShiftTierSelectList.innerHTML = RULESHIFT_TIERS.map(function(tier){
+      const locked = profile.level < tier.unlockLevel;
+      const active = profile.selectedTier === tier.id;
+      const detail = locked ? ('Unlock ' + tier.unlockLevel) : (tier.optionCount + ' choices · ' + tier.rounds + ' rounds · ' + Math.round(ruleShiftTimeLimitMs(tier) / 1000) + 's timer · +' + tier.bankReward + ' Bank / +' + tier.xpReward + ' XP');
+      return '<button class="tier-btn' + (active ? ' active' : '') + '" data-ruleshift-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + escapeHtml(tier.name) + '</span><span>' + escapeHtml(detail) + '</span></button>';
+    }).join('');
+  }
+  function renderRuleShiftSkillTree(){
+    if(!refs.ruleShiftSkillTreeGrid || !refs.ruleShiftSkillSummary) return;
+    const profile = profiles.ruleshift;
+    refs.ruleShiftSkillTreeGrid.innerHTML = RULESHIFT_SKILLS.map(function(skill){
+      const level = profile.skills[skill.id] || 0;
+      const locked = profile.level < skill.unlockLevel;
+      const maxed = level >= skill.max;
+      const canSpend = profile.skillPoints > 0 && !locked && !maxed;
+      const buttonLabel = locked ? ('Unlocks at level ' + skill.unlockLevel) : (maxed ? 'Maxed' : (level > 0 ? 'Upgrade skill' : 'Add skill'));
+      return '<article class="skill-item"><div class="skill-meta"><h4>' + escapeHtml(skill.name) + '</h4><span>Level ' + level + ' / ' + skill.max + '</span></div><p>' + escapeHtml(skill.description) + '</p><p class="inline-note">Requires level ' + skill.unlockLevel + '.</p><button class="action' + (canSpend ? '' : ' secondary') + '" data-ruleshift-skill="' + skill.id + '" type="button"' + (canSpend ? '' : ' disabled') + '>' + buttonLabel + '</button></article>';
+    }).join('');
+    refs.ruleShiftSkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span class="inline-note">' + cleanBonusStatusText(profile) + '</span><span class="inline-note">Unspent skill points: ' + profile.skillPoints + '</span>';
+  }
+  function renderRuleShiftBoard(){
+    if(!refs.ruleShiftBoard || !refs.ruleShiftRoundSummary) return;
+    const profile = profiles.ruleshift;
+    const tier = currentRuleShiftTier();
+    if(refs.ruleShiftTierNameValue) refs.ruleShiftTierNameValue.textContent = tier.name;
+    if(refs.ruleShiftRoundValue) refs.ruleShiftRoundValue.textContent = ruleShiftState ? (ruleShiftState.round + ' / ' + ruleShiftState.maxRounds) : '0 / ' + tier.rounds;
+    if(refs.ruleShiftMistakesValue) refs.ruleShiftMistakesValue.textContent = ruleShiftState ? ruleShiftState.mistakes : 0;
+    if(refs.ruleShiftRoundBankValue) refs.ruleShiftRoundBankValue.textContent = ruleShiftState ? ruleShiftState.roundBank : 0;
+    if(!ruleShiftState){
+      refs.ruleShiftBoard.innerHTML = '<div class="empty-box ruleshift-idle-card"><strong>Rule Shift is idle.</strong><span class="inline-note">' + escapeHtml(ruleShiftIdleMessage) + '</span><span class="inline-note">The target shape is always present. Start when ready.</span></div>';
+      refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">No Rule Shift run is active yet.</span>';
+      return;
+    }
+    refs.ruleShiftRoundSummary.innerHTML = '<strong>Game Status</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span>';
+    if(ruleShiftState.finished){
+      const finishedTitle = ruleShiftState.failed ? 'Run failed.' : 'Run complete.';
+      const finishedPrompt = ruleShiftState.failed ? 'Incorrect answers end the run. Press Start New Game to try again.' : 'Press Start New Game to begin another switching run.';
+      refs.ruleShiftBoard.innerHTML = '<div class="ruleshift-complete-card' + (ruleShiftState.failed ? ' ruleshift-failed-card' : '') + '"><strong>' + finishedTitle + '</strong><span class="inline-note">' + escapeHtml(ruleShiftState.lastMessage) + '</span><span class="inline-note">' + finishedPrompt + '</span></div>';
+      return;
+    }
+    const rule = ruleShiftState.currentRule;
+    const remaining = ruleShiftRemainingMs();
+    const timePct = clamp((remaining / Math.max(1, ruleShiftTimeLimitMs(tier))) * 100, 0, 100);
+    const cards = (ruleShiftState.options || []).map(function(option){
+      const label = ruleShiftName(RULESHIFT_COLOURS, option.colour) + ' ' + ruleShiftName(RULESHIFT_SIZES, option.size) + ' ' + ruleShiftName(RULESHIFT_SHAPES, option.shape);
+      return '<button class="ruleshift-token ruleshift-colour--' + escapeHtml(option.colour) + ' ruleshift-size--' + escapeHtml(option.size) + '" data-ruleshift-pick="' + escapeHtml(option.id) + '" type="button" aria-label="' + escapeHtml(label) + '"><span class="ruleshift-shape ruleshift-shape--' + escapeHtml(option.shape) + '"></span></button>';
+    }).join('');
+    refs.ruleShiftBoard.innerHTML =
+      '<div class="ruleshift-rule-card">' +
+        '<div class="ruleshift-rule-head"><span class="ruleshift-rule-kicker">' + escapeHtml(rule.brief) + '</span><span class="ruleshift-round-count">Round ' + ruleShiftState.round + ' of ' + ruleShiftState.maxRounds + '</span></div>' +
+        '<strong>' + escapeHtml(rule.label) + '</strong>' +
+        '<div class="ruleshift-timer" aria-label="Rule Shift timer"><span>Time</span><strong id="ruleShiftTimerValue">' + ruleShiftTimerText(remaining) + '</strong><div class="ruleshift-timer-bar"><div class="ruleshift-timer-fill" id="ruleShiftTimerFill" style="width:' + timePct + '%"></div></div></div>' +
+      '</div>' +
+      '<div class="ruleshift-choice-card"><div class="ruleshift-options-grid">' + cards + '</div></div>';
+    syncRuleShiftTimer();
+  }
+  function renderRuleShiftStats(){
+    if(!refs.ruleShiftStats) return;
+    const profile = profiles.ruleshift;
+    const total = profile.correctAnswers + profile.wrongAnswers;
+    const accuracy = total ? Math.round((profile.correctAnswers / total) * 100) : 0;
+    refs.ruleShiftStats.innerHTML = '<div class="trackcoin-stat-card"><strong>Runs played</strong><span>' + profile.gamesPlayed + '</span></div><div class="trackcoin-stat-card"><strong>Correct choices</strong><span>' + profile.correctAnswers + '</span></div><div class="trackcoin-stat-card"><strong>Wrong choices</strong><span>' + profile.wrongAnswers + '</span></div><div class="trackcoin-stat-card"><strong>Accuracy</strong><span>' + accuracy + '%</span></div><div class="trackcoin-stat-card"><strong>Best streak</strong><span>' + profile.bestStreak + '</span></div><div class="trackcoin-stat-card"><strong>Clean streak</strong><span>' + profile.cleanWinStreak + '</span></div>';
+  }
+  function renderRuleShift(){
+    if(!profiles.ruleshift) return;
+    renderRuleShiftProgress();
+    renderRuleShiftTierList();
+    renderRuleShiftSkillTree();
+    renderRuleShiftBoard();
+    renderRuleShiftStats();
+  }
+  function renderRuleShiftSummary(){
+    const profile = profiles.ruleshift || defaultRuleShiftProfile();
+    const needed = xpNeededForLevel(profile.level);
+    const pct = clamp((profile.xp / needed) * 100, 0, 100);
+    const current = currentRuleShiftTier();
+    const next = nextRuleShiftTierToUnlock();
+    const total = profile.correctAnswers + profile.wrongAnswers;
+    const accuracy = total ? Math.round((profile.correctAnswers / total) * 100) : 0;
+    const nextText = next ? ('Next unlock: ' + next.name + ' at level ' + next.unlockLevel + '.') : 'All Rule Shift tiers are unlocked.';
+    return '<details class="game-summary-details" data-summary="ruleshift"><summary><span>Rule Shift</span><span class="inline-note">Level ' + profile.level + '</span></summary><div class="game-summary-body"><div class="game-summary-progress"><div class="xp-meta"><strong>Experience</strong><span class="inline-note">' + profile.xp + ' / ' + needed + ' XP</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + pct + '%"></div></div></div><div class="game-summary-row"><span>Bank from Rule Shift: ' + profile.bank + '</span><span>Current tier: ' + current.name + '</span></div><div class="game-summary-row"><span>Correct choices: ' + profile.correctAnswers + '</span><span>Accuracy: ' + accuracy + '%</span></div><div class="game-summary-row"><span>Best streak: ' + profile.bestStreak + '</span><span>Runs played: ' + profile.gamesPlayed + '</span></div><div class="game-summary-row"><span>' + nextText + '</span><span>Clean streak: ' + profile.cleanWinStreak + '</span></div><div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Focus ' + profile.skills.focus + ' · Banker ' + profile.skills.banker + ' · Recovery ' + profile.skills.recovery + ' · Adapt ' + profile.skills.adapt + '</span><span>Unspent skill points: ' + profile.skillPoints + '</span></div></div></details>';
+  }
+
+
+  function renderAll(){
+    if(!profiles.pairs || !profiles.make24 || !profiles.detectword || !profiles.trackcoin || !profiles.ruleshift || !profiles.ninja) return;
+    reconcileAllSkillProfiles();
+    renderGamesList();
+    syncHashState();
+    renderPairsProgress();
+    renderPairsTierList();
+    renderPairsSkillTree();
+    renderPairsBoard();
+    renderWordProgress();
+    renderWordTierList();
+    renderWordSkillTree();
+    renderWordBoard();
+    renderMake24Progress();
+    renderMake24TierList();
+    renderMake24SkillTree();
+    renderMake24Board();
+    renderTrackCoinSkillTree();
+    renderTrackCoin();
+    renderRuleShift();
+    renderNinja();
+    ensureGamePlayContract();
+    injectAllMobileGameControls();
+    syncAllMobileInputModes();
+    syncDesktopKeypadState();
+    renderHubSummary();
+    syncGameButtonLabels();
+    renderAutoNextControls();
+  }
+
+  function activateTab(target, options){
+    const opts = options || {};
+    currentTab = target === 'games' ? 'games' : 'hub';
+    qsa('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.getAttribute('data-target') === currentTab)));
+    qsa('.section').forEach(section => section.classList.toggle('active', section.id === currentTab));
+    if(opts.sync !== false) syncHashState(opts.historyMode);
+  }
+  function wireTabs(){
+    qsa('.tab').forEach(button => {
+      button.addEventListener('click', function(event){
+        if(event){
+          event.preventDefault();
+          event.stopPropagation();
+          if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
+        }
+        const target = button.getAttribute('data-target');
+        if(target === 'games'){
+          selectedGame = '';
+          activateTab('games');
+          selectGame('', { historyMode:'replace' });
+          return;
+        }
+        activateTab(target);
+      }, true);
+    });
+  }
+
+  const GAME_HELP_CONTENT = Object.freeze({
+    pairs:{
+      title:'Pairs',
+      brain:'Visual memory, pattern recall, short-term memory, and calm concentration.',
+      how:'Flip cards to find matching pairs. Remember where each symbol appears. Clear the board to earn Bank and XP. Higher tiers add more pairs and stronger rewards.'
+    },
+    detectword:{
+      title:'Detect The Word',
+      brain:'Language deduction, spelling, pattern narrowing, and verbal working memory.',
+      how:'Guess the hidden word for the active letter tier. Correct place, present letters, and absent letters help you narrow the answer. Dictionary rule: standard English words of the active length can be submitted; the answer pool remains curated by tier.'
+    },
+    make24:{
+      title:'Make The Number',
+      brain:'Number flexibility, working memory, multi-step problem solving, and planning.',
+      how:'Use all shown numbers exactly once with +, −, ×, ÷, and brackets to hit the target number. Expression rule: every puzzle must use all shown numbers exactly once; concatenating numbers is not allowed.'
+    },
+    trackcoin:{
+      title:'Track the Coin',
+      brain:'Visual tracking, sustained attention, working memory, and focus under movement.',
+      how:'Watch which cup starts with the coin. Follow the shuffle, then choose the cup holding the coin. Correct picks build streaks and increase pace; missed rounds reveal the answer and reduce the pace.'
+    },
+    ruleshift:{
+      title:'Rule Shift',
+      brain:'Mental flexibility, impulse control, working memory, and attention switching.',
+      how:'Read the rule, watch the timer, and press a matching shape. The correct answer is always present. Rules can ask for colour, shape, size, combined features, or the opposite. Wrong choices and time-outs move you to a new rule, so stop, read, and choose deliberately.'
+    },
+    ninja:{
+      title:'Baseline Realm',
+      brain:'Long-term planning, reward tracking, routine engagement, and strategic progression.',
+      how:'Use Ninja Training, Basecamp, Exploration, Workshop, Calorie Escape, Tactical Operations, upgrades, stores and party management as one connected RPG campaign inside the Games Hub.'
+    }
+  });
+  function gameHelpContent(gameId){
+    return GAME_HELP_CONTENT[normaliseGameId(gameId)] || null;
+  }
+  function ensureGamesHubModal(){
+    let modal = document.getElementById('gamesHubInfoModal');
+    if(modal) return modal;
+    modal = document.createElement('div');
+    modal.id = 'gamesHubInfoModal';
+    modal.className = 'games-modal';
+    modal.hidden = true;
+    modal.innerHTML = '<div class="games-modal__backdrop" data-close-games-modal="1"></div><section class="games-modal__panel" role="dialog" aria-modal="true" aria-labelledby="gamesModalTitle"><button class="games-modal__close" data-close-games-modal="1" type="button" aria-label="Close">×</button><h3 id="gamesModalTitle"></h3><div class="games-modal__body" id="gamesModalBody"></div></section>';
+    document.body.appendChild(modal);
+    return modal;
+  }
+  function openGamesHubModal(gameId, mode){
+    const content = gameHelpContent(gameId);
+    if(!content) return;
+    const modal = ensureGamesHubModal();
+    const title = document.getElementById('gamesModalTitle');
+    const body = document.getElementById('gamesModalBody');
+    if(!title || !body) return;
+    const isBrain = mode === 'brain';
+    title.textContent = isBrain ? (content.title + ' — Brain Benefit') : (content.title + ' — How To Play');
+    body.innerHTML = isBrain
+      ? '<p>' + escapeHtml(content.brain) + '</p>'
+      : '<p>' + escapeHtml(content.how) + '</p>';
+    modal.hidden = false;
+    document.body.classList.add('games-modal-open');
+    const close = modal.querySelector('.games-modal__close');
+    if(close && typeof close.focus === 'function') close.focus({ preventScroll:true });
+  }
+  function closeGamesHubModal(){
+    const modal = document.getElementById('gamesHubInfoModal');
+    if(modal) modal.hidden = true;
+    if(document.body) document.body.classList.remove('games-modal-open');
+  }
+function toggleGameFullscreen(gameId){
+    const id = normaliseGameId(gameId);
+    if(!id) return;
+    if(id === 'ninja'){ toggleRealmFullscreen(); return; }
+    ensureGamePlayContract();
+    const target = gamePlayRootElement(id) || gamePlaySurfaceElement(id);
+    if(!target) return;
+    if(isMobileGameViewport()) return;
+    if(!document.fullscreenEnabled) return;
+    if(document.fullscreenElement){
+      document.exitFullscreen().catch(function(){});
+    }else{
+      target.requestFullscreen().then(function(){ syncDesktopKeypadState(); }).catch(function(){});
+    }
+  }
+  function ensureGameFullscreenButtons(){
+    const ids = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
+    ids.forEach(function(id){
+      const panel = document.getElementById(id + 'Panel');
+      if(!panel) return;
+      const header = panel.querySelector('.game-header');
+      if(!header) return;
+      let actions = header.querySelector('.link-actions');
+      if(!actions){
+        actions = document.createElement('div');
+        actions.className = 'link-actions';
+        header.appendChild(actions);
+      }
+
+      if(!actions.querySelector('[data-select-game=""]')){
+        const backBtn = document.createElement('button');
+        backBtn.className = 'action secondary';
+        backBtn.type = 'button';
+        backBtn.setAttribute('data-select-game', '');
+        backBtn.textContent = 'Back To Games Overview';
+        actions.appendChild(backBtn);
+      }
+
+      if(!actions.querySelector('[data-game-info-modal="' + id + '"]')){
+        const infoBtn = document.createElement('button');
+        infoBtn.className = 'action secondary game-info-toggle';
+        infoBtn.type = 'button';
+        infoBtn.setAttribute('data-game-info-modal', id);
+        infoBtn.setAttribute('aria-label', 'Brain benefit');
+        infoBtn.title = 'Brain benefit';
+        infoBtn.textContent = 'ⓘ';
+        actions.insertBefore(infoBtn, actions.firstChild);
+      }
+
+      if(!actions.querySelector('[data-game-howto-modal="' + id + '"]')){
+        const howBtn = document.createElement('button');
+        howBtn.className = 'action secondary game-howto-toggle';
+        howBtn.type = 'button';
+        howBtn.setAttribute('data-game-howto-modal', id);
+        howBtn.textContent = 'How To Play';
+        const full = actions.querySelector('[data-game-fullscreen="' + id + '"]');
+        const back = actions.querySelector('[data-select-game=""]');
+        actions.insertBefore(howBtn, full || back || null);
+      }
+
+      qsa('[data-game-fullscreen="' + id + '"]', actions).forEach(function(existingBtn){
+        if(id === 'ninja' || isMobileGameViewport()) existingBtn.remove();
+      });
+      if(id !== 'ninja' && !isMobileGameViewport() && !actions.querySelector('[data-game-fullscreen="' + id + '"]')){
+        const btn = document.createElement('button');
+        btn.className = 'action secondary game-fullscreen-toggle';
+        btn.type = 'button';
+        btn.setAttribute('data-game-fullscreen', id);
+        btn.textContent = 'Full Screen';
+        const back = actions.querySelector('[data-select-game=""]');
+        actions.insertBefore(btn, back || null);
+      }
+
+      const infoBtn = actions.querySelector('[data-game-info-modal="' + id + '"]');
+      const howBtn = actions.querySelector('[data-game-howto-modal="' + id + '"]');
+      const fullBtn = actions.querySelector('[data-game-fullscreen="' + id + '"]');
+      const backBtn = actions.querySelector('[data-select-game=""]');
+      if(infoBtn) infoBtn.style.order = '1';
+      if(howBtn) howBtn.style.order = '2';
+      if(fullBtn) fullBtn.style.order = '3';
+      if(backBtn) backBtn.style.order = '4';
+
+      const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
+      const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
+      if(isDesktopKeypadGame(id) && windowActions && !windowActions.querySelector('[data-desktop-keypad-toggle="' + id + '"]')){
+        const keyboardBtn = document.createElement('button');
+        keyboardBtn.className = 'action ghost desktop-keypad-toggle';
+        keyboardBtn.type = 'button';
+        keyboardBtn.setAttribute('data-desktop-keypad-toggle', id);
+        keyboardBtn.setAttribute('aria-pressed', 'false');
+        keyboardBtn.textContent = keypadButtonLabel(false);
+        const autoNextBtn = windowActions.querySelector('[data-auto-next-toggle]');
+        windowActions.insertBefore(keyboardBtn, autoNextBtn || null);
+      }
+    });
+    syncDesktopKeypadState();
+  }
+
+  function cacheRefs(){
+    [
+      'authStateNote','bankSummary','gamesSummaryWrap','gamesList',
+      'pairsPanel','pairsLevelHeading','pairsXpMeta','pairsXpFill','pairsSkillAlertBtn','pairsSkillTree','pairsSkillTreeGrid','pairsSkillPointsValue','pairsBoardsClearedValue','pairsGamesPlayedValue','pairsTierValue','pairsStreakValue','pairsCleanStreakValue','pairsCleanBonusValue','pairsTierNameValue','pairsMovesValue','pairsMatchedValue','pairsRoundBankValue','pairsHintBtn','pairsRoundSummary','pairsBoard','pairsTierSelectList','pairsSkillSummary','pairsStats','newPairsBoardBtn',
+      'detectwordPanel','wordLevelHeading','wordXpMeta','wordXpFill','wordSkillAlertBtn','wordSkillTree','wordSkillTreeGrid','wordSkillPointsValue','wordSolvedValue','wordStreakValue','wordTierValue','wordBestStreakValue','wordCleanStreakValue','wordCleanBonusValue','wordTierNameValue','wordGuessesValue','wordRoundBankValue','wordRoundSummary','wordBoard','wordTierSelectList','wordSkillSummary','wordStats','newWordRoundBtn',
+      'make24Panel','make24LevelHeading','make24XpMeta','make24XpFill','make24SkillAlertBtn','make24SkillTree','make24SkillTreeGrid','make24SkillPointsValue','make24SolvedValue','make24GamesPlayedValue','make24TierValue','make24CleanStreakValue','make24CleanBonusValue','make24TierNameValue','make24TargetValue','make24MistakesValue','make24RoundBankValue','make24HintBtn','make24RerollBtn','make24RoundSummary','make24Board','make24TierSelectList','make24SkillSummary','make24Stats','newMake24Btn',
+      'trackcoinPanel','newTrackCoinRoundBtn','trackCoinXpMeta','trackCoinXpFill','trackCoinLevelHeading','trackCoinSkillPointsValue','trackCoinCoinsValue','trackCoinTierValue','trackCoinUnlockedTierValue','trackCoinStreakValue','trackCoinStreakBonusValue','trackCoinCleanStreakValue','trackCoinCleanBonusValue','trackCoinBoard','trackCoinTierSelectList','trackCoinStats','trackCoinRpgState','trackCoinSkillTreeGrid','trackCoinSkillSummary','trackCoinGameToggleBtn','trackCoinSkillToggleBtn','trackCoinTierToggleBtn','trackCoinProgressToggleBtn',
+      'ruleshiftPanel','newRuleShiftBtn','ruleShiftXpMeta','ruleShiftXpFill','ruleShiftLevelHeading','ruleShiftSkillPointsValue','ruleShiftBankValue','ruleShiftTierValue','ruleShiftStreakValue','ruleShiftBestStreakValue','ruleShiftCleanStreakValue','ruleShiftCleanBonusValue','ruleShiftTierNameValue','ruleShiftRoundValue','ruleShiftMistakesValue','ruleShiftRoundBankValue','ruleShiftRoundSummary','ruleShiftBoard','ruleShiftTierSelectList','ruleShiftSkillTreeGrid','ruleShiftSkillSummary','ruleShiftStats',
+      'ninjaPanel','ninjaXpMeta','ninjaXpFill','ninjaLevelValue','ninjaStageValue','ninjaCoinsValue','ninjaDpsValue','ninjaOfflineRateValue','ninjaSpiritValue','ninjaCleanStreakValue','ninjaCleanBonusValue','ninjaOfflineMessage','ninjaSceneHpValue','ninjaManualStrikeBtn','ninjaBonusRefreshBtn','ninjaEnemyLabel','ninjaEnemyTypeValue','ninjaBossesValue','ninjaHighestStageValue','ninjaEnemyHpFill','ninjaCombatSummary','ninjaUpgradesList','ninjaBonusesList','ninjaTraitsList','ninjaPrestigeSummary','ninjaPrestigeBtn','ninjaRunnerWrap','ninjaEnemyWrap','ninjaHitFlash'
+    ].forEach(id => { refs[id] = document.getElementById(id); });
+  }
+  function updateInputValueWithoutKeyboard(input, nextValue){
+    if(!input) return;
+    input.value = String(nextValue || '');
+    try{ input.dispatchEvent(new Event('input', { bubbles:true })); }catch(_error){}
+  }
+  function handleMobileGameKey(gameId, key){
+    const id = normaliseGameId(gameId);
+    const input = id === 'make24' ? document.getElementById('make24ExpressionInput') : id === 'detectword' ? document.getElementById('wordGuessInput') : null;
+    if(!input) return;
+    syncMobileInputMode(id);
+    const raw = String(key || '');
+    if(raw === 'submit'){
+      const form = input.closest('form');
+      if(form) form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable:true, bubbles:true }));
+      focusGamePlaySurface(id, { scroll:false, mobileMode:false, preserveView:true });
+      return;
+    }
+    if(raw === 'clear'){
+      updateInputValueWithoutKeyboard(input, '');
+      return;
+    }
+    if(raw === 'backspace'){
+      updateInputValueWithoutKeyboard(input, String(input.value || '').slice(0, -1));
+      return;
+    }
+    let append = raw;
+    if(id === 'detectword'){
+      append = append.replace(/[^a-z]/g, '');
+      const max = Number(input.getAttribute('maxlength') || currentWordTier().letters || 7);
+      updateInputValueWithoutKeyboard(input, (String(input.value || '') + append).slice(0, max).toLowerCase());
+      return;
+    }
+    if(id === 'make24'){
+      append = append === 'x' ? '*' : append;
+      append = append.replace(/[^0-9+\-*/().]/g, '');
+      updateInputValueWithoutKeyboard(input, String(input.value || '') + append);
+    }
+  }
+
+  function bindEvents(){
+    document.addEventListener('click', function(event){
+      const modalClose = event.target.closest('[data-close-games-modal]');
+      if(modalClose){ closeGamesHubModal(); return; }
+      const infoModal = event.target.closest('[data-game-info-modal]');
+      if(infoModal){ if(event){ event.preventDefault(); event.stopPropagation(); } openGamesHubModal(infoModal.getAttribute('data-game-info-modal') || '', 'brain'); return; }
+      const howToModal = event.target.closest('[data-game-howto-modal]');
+      if(howToModal){ if(event){ event.preventDefault(); event.stopPropagation(); } openGamesHubModal(howToModal.getAttribute('data-game-howto-modal') || '', 'how'); return; }
+      const openDartsFocused = event.target.closest('[data-open-darts-focused]');
+      if(openDartsFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestDartsFocusedOpen(); return; }
+      const openBadmintonFocused = event.target.closest('[data-open-badminton-focused]');
+      if(openBadmintonFocused){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } requestBadmintonFocusedOpen(); return; }
+      const autoNextToggle = event.target.closest('[data-auto-next-toggle]');
+      if(autoNextToggle){ toggleAutoNext(autoNextToggle.getAttribute('data-auto-next-toggle') || ''); return; }
+      const gameFullscreen = event.target.closest('[data-game-fullscreen]'); if(gameFullscreen){ toggleGameFullscreen(gameFullscreen.getAttribute('data-game-fullscreen') || ''); return; }
+      const desktopKeypadToggle = event.target.closest('[data-desktop-keypad-toggle]'); if(desktopKeypadToggle){ toggleDesktopKeypad(desktopKeypadToggle.getAttribute('data-desktop-keypad-toggle') || ''); return; }
+      const select = event.target.closest('[data-select-game]');
+      if(select){
+        const nextGame = select.getAttribute('data-select-game') || '';
+        if(!nextGame) exitMobileGameMode();
+        selectGame(nextGame, { historyMode: nextGame ? 'push' : 'replace' });
+        if(nextGame) focusGameEntry(nextGame, { scroll:true, mobileMode:true });
+        return;
+      }
+      const exitMobileModeBtn = event.target.closest('[data-exit-mobile-game-mode]');
+      if(exitMobileModeBtn){
+        exitMobileGameMode();
+        selectGame('', { historyMode:'replace' });
+        window.setTimeout(function(){
+          const games = document.getElementById('games');
+          const scroller = q('.bl-scroll');
+          try{
+            if(scroller) scroller.scrollTo({ top:0, left:0, behavior:'auto' });
+            else window.scrollTo({ top:0, left:0, behavior:'auto' });
+            if(games && typeof games.focus === 'function') games.focus({ preventScroll:true });
+          }catch(_scrollError){}
+        }, 80);
+        return;
+      }
+      const mobileKeyBtn = event.target.closest('[data-mobile-game-key]');
+      if(mobileKeyBtn){
+        const raw = String(mobileKeyBtn.getAttribute('data-mobile-game-key') || '');
+        const idx = raw.indexOf(':');
+        if(idx > 0) handleMobileGameKey(raw.slice(0, idx), raw.slice(idx + 1));
+        return;
+      }
+      const pairTier = event.target.closest('[data-pairs-tier]');
+      if(pairTier){
+        const tier = PAIRS_TIERS.find(item => item.id === pairTier.getAttribute('data-pairs-tier'));
+        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('pairs'); renderAll(); }
+        return;
+      }
+      const wordTier = event.target.closest('[data-word-tier]');
+      if(wordTier){
+        const tier = WORD_TIERS.find(item => item.id === wordTier.getAttribute('data-word-tier'));
+        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
+        return;
+      }
+      const make24Tier = event.target.closest('[data-make24-tier]');
+      const trackCoinTier = event.target.closest('[data-trackcoin-tier]');
+      if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
+      if(make24Tier){
+        const tier = MAKE24_TIERS.find(item => item.id === make24Tier.getAttribute('data-make24-tier'));
+        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
+        return;
+      }
+      const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
+      const pairPanelBtn = event.target.closest('[data-pairs-panel]'); if(pairPanelBtn){ setPairsPanel(pairPanelBtn.getAttribute('data-pairs-panel')); return; }
+      const wordSkill = event.target.closest('[data-word-skill]'); if(wordSkill){ spendWordSkill(wordSkill.getAttribute('data-word-skill')); return; }
+      const wordPanelBtn = event.target.closest('[data-word-panel]'); if(wordPanelBtn){ setWordPanel(wordPanelBtn.getAttribute('data-word-panel')); return; }
+      const make24Skill = event.target.closest('[data-make24-skill]'); if(make24Skill){ spendMake24Skill(make24Skill.getAttribute('data-make24-skill')); return; }
+      const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel')); return; }
+      const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
+      const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel')); return; }
+      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
+      const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
+      const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel')); return; }
+      const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel')); return; }
+      const panelToggle = event.target.closest('[data-toggle-panel]'); if(panelToggle){ const id = panelToggle.getAttribute('data-toggle-panel'); const target = document.getElementById(id); if(target){ const hidden = !!target.hidden; target.hidden = !hidden; panelToggle.setAttribute('aria-expanded', String(hidden)); } return; }
+      const make24BoardHintBtn = event.target.closest('#make24BoardHintBtn'); if(make24BoardHintBtn){ useMake24Hint(); return; }
+      const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
+      const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
+      const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
+      const trackCoinStart = event.target.closest('[data-action="start-trackcoin"], #newTrackCoinRoundBtn'); if(trackCoinStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); return; }
+      const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
+      const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
+      const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
+      const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
+      const pairCard = event.target.closest('[data-card]'); if(pairCard){ handlePairsCardFlip(pairCard.getAttribute('data-card')); return; }
+    });
+    document.addEventListener('keydown', function(event){
+      const input = event.target;
+      const targetId = input && input.id ? input.id : '';
+      if(event.key === 'Enter' && !event.shiftKey && !event.isComposing && (targetId === 'wordGuessInput' || targetId === 'make24ExpressionInput')){
+        const form = input.closest('form');
+        if(form){
+          event.preventDefault();
+          form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', { cancelable:true, bubbles:true }));
+        }
+        return;
+      }
+      if(event.defaultPrevented || event.ctrlKey || event.metaKey || event.isComposing) return;
+      const typing = !!(input && (input.matches('input, textarea, select') || input.isContentEditable));
+      const key = String(event.key || '').toLowerCase();
+      if(!key) return;
+      const hotkeyGame = activeGameIdForHotkeys();
+
+      if(event.altKey && key === 'n'){
+        event.preventDefault();
+        if(startActiveGameFromHotkey(hotkeyGame)) focusGamePlaySurface(hotkeyGame, { scroll:false, mobileMode:true });
+        return;
+      }
+      if(event.altKey && key === 'a'){
+        event.preventDefault();
+        toggleAutoNextForActiveGame(hotkeyGame);
+        return;
+      }
+      if(event.altKey && key === 'k'){
+        event.preventDefault();
+        toggleDesktopKeypad(hotkeyGame);
+        return;
+      }
+      if(event.altKey) return;
+
+      if(hotkeyGame === 'pairs' && !typing){
+        if(key === 'h'){ event.preventDefault(); usePairsHint(); return; }
+      }
+      if(hotkeyGame === 'make24'){
+        if(!typing && key === 'h'){ event.preventDefault(); useMake24Hint(); return; }
+        if(!typing && key === 'j'){ event.preventDefault(); rerollMake24Puzzle(); return; }
+      }
+    });
+    document.addEventListener('submit', function(event){
+      const make24Form = event.target.closest('#make24ExpressionForm');
+      if(make24Form){ submitMake24Expression(event); return; }
+      const wordForm = event.target.closest('#wordGuessForm');
+      if(wordForm){ submitWordGuess(event); return; }
+    });
+    if(refs.newPairsBoardBtn){ refs.newPairsBoardBtn.textContent = startButtonLabel(); refs.newPairsBoardBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); }); }
+    if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
+    if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard'); });
+    if(refs.newWordRoundBtn){ refs.newWordRoundBtn.textContent = startButtonLabel(); refs.newWordRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); }); }
+    if(refs.newTrackCoinRoundBtn){ refs.newTrackCoinRoundBtn.textContent = startButtonLabel(); refs.newTrackCoinRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); }); }
+    if(refs.newRuleShiftBtn){ refs.newRuleShiftBtn.textContent = startButtonLabel(); refs.newRuleShiftBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); }); }
+    if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard'); });
+    if(refs.newMake24Btn){ refs.newMake24Btn.textContent = startButtonLabel(); refs.newMake24Btn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); }); }
+    if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
+    if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
+    if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard'); });
+    if(refs.gamesSummaryWrap) refs.gamesSummaryWrap.addEventListener('toggle', function(event){ const details = event.target.closest('details[data-summary]'); if(!details) return; const id = details.getAttribute('data-summary'); if(details.open) openSummaryIds.add(id); else openSummaryIds.delete(id); }, true);
+    if(window.BASELINE_auth && typeof window.BASELINE_auth.onChange === 'function'){ window.BASELINE_auth.onChange(loadAllProfiles); }
+    document.addEventListener('baseline:auth', loadAllProfiles);
+  }
+  function init(){
+    cacheRefs();
+    const coreDependencies = {
+      profiles:profiles, refs:refs, q:q, qsa:qsa, clamp:clamp, sum:sum, formatInt:formatInt, formatCompact:formatCompact,
+      escapeHtml:escapeHtml, hotkeyActionLabel:hotkeyActionLabel, cleanWinBonusPct:cleanWinBonusPct, xpNeededForLevel:xpNeededForLevel, applyLevelCurve:applyLevelCurve,
+      scheduleSave:scheduleSave, renderAll:renderAll, renderHubSummary:renderHubSummary, renderGamesList:renderGamesList,
+      syncHashState:syncHashState, isMobileGameViewport:isMobileGameViewport, profileOrDefault:profileOrDefault
+    };
+    window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES = coreDependencies;
+    if(window.BaselineRealmHost && typeof window.BaselineRealmHost.configure === 'function'){
+      try{ window.BaselineRealmHost.configure(coreDependencies); }
+      catch(error){ console.error('[Baseline Games Hub] Realm configuration failed; Hub controls remain active.', error); }
+    }
+    ensureGamePlayContract();
+    setupGamePlayContractObserver();
+    ensureGameFullscreenButtons();
+    seedProfilesForImmediateRender();
+    resolveNinjaBonuses();
+    wireTabs();
+    bindEvents();
+    if(typeof window !== 'undefined'){
+      window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
+      window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
+      window.addEventListener('beforeunload', persistViewState);
+      window.addEventListener('pagehide', persistViewState);
+      document.addEventListener('fullscreenchange', function(){ syncDesktopKeypadState(); syncGameButtonLabels(); renderAutoNextControls(); });
+      document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') closeGamesHubModal(); });
+      window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
+      window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });
+      window.addEventListener('orientationchange', function(){ syncAllMobileInputModes(); syncDesktopKeypadState(); if(selectedGame) focusGamePlaySurface(selectedGame, { scroll:false, mobileMode:!isDesktopKeypadGame(selectedGame) }); });
+      try{ document.documentElement.setAttribute('data-baseline-games-resize-mobile-input-sync','1'); }catch(_e){}
+    }
+    restoreFromHashState({ useStored:true });
+    ensureGamesHubBackEntry();
+    renderAuthState();
+    safeRenderAll();
+    startNinjaLoop();
+    loadAllProfiles().then(function(){ startNinjaLoop(); }).catch(function(){ safeRenderAll(); });
+    window.BASELINE_GAMES_HUB_CORE_READY = true;
+    document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
+  }
+  init();
+})();

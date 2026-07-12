@@ -1,0 +1,68 @@
+/* Baseline Lifestyle — Shared Pattern
+   Enforces the Baseline Food Approach layout/pattern sitewide,
+   while allowing each page to define its palette via variables.
+*/
+
+html, body{ height:100%; }
+html{ background: var(--page-bg, #000); }
+body{
+  margin:0;
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+body[data-app="food"],
+body[data-app="skin"]{
+  background: var(--page-bg);
+  background-attachment: fixed;
+  background-size: 100% 100%;
+}
+
+body[data-app="skin"]::before,
+body[data-app="skin"]::after{
+  content: none !important;
+  display: none !important;
+}
+
+.card{
+  position:relative;
+  isolation:isolate;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg, 22px);
+  box-shadow: var(--shadow-soft, 0 12px 30px -22px rgba(0,0,0,.24));
+  color: var(--ink);
+}
+.card > *{
+  position:relative;
+  z-index:1;
+}
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  pointer-events:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.52), inset 0 -18px 42px -34px rgba(0,0,0,.10);
+}
+
+
+.filter-bar{
+  background: var(--filter-bg);
+  border: 1px solid var(--border);
+}
+.filter-bar .clear{
+  background: var(--showall-bg);
+  border: 1px solid var(--showall-border);
+}
+
+.print-btn{
+  background: var(--showall-bg);
+  border: 1px solid var(--showall-border);
+}
+
+@media print{
+  .card::after{content:none;display:none;}
+}

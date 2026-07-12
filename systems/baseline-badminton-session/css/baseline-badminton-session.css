@@ -1,0 +1,1091 @@
+:root{
+  --homebar-h:56px;
+  --hero-ink:#111111;
+  --hero-ink-soft:#111111;
+  --boundary-grey:rgba(70,70,74,0.42);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;min-height:100%;background:var(--page-bg);color:var(--ink);font-family:var(--font);scroll-behavior:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-size:19px;line-height:1.55;background:var(--page-bg)}
+.bl-scroll{background:var(--page-bg);background-size:100% 100%;background-attachment:fixed}
+.title,.subtitle{color:var(--hero-ink)}
+.subtitle{max-width:none}
+.section{display:none;animation:fade var(--dur-3) var(--ease-soft)}
+.section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:22px}
+.card h2,.card h3{margin:0 0 12px 0;color:var(--accent-2);font-family:var(--font-soft)}
+.card h2{font-size:31px;line-height:1.1}
+.card h3{font-size:23px;line-height:1.16}
+.card p{margin:0 0 12px 0}
+.note{color:var(--muted);font-size:16px}
+.grid{display:grid;gap:16px;grid-template-columns:1fr}
+.grid-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.row > *{min-width:0}
+label{display:grid;gap:6px;font-size:16px;font-weight:850;color:var(--muted)}
+input,select,textarea,button{font:inherit}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:14px;border:1px solid var(--border-strong);background:var(--bl-badminton-input-bg);color:var(--ink);outline:none}
+input:focus,select:focus,textarea:focus{box-shadow:0 0 0 4px var(--ring);border-color:var(--accent)}
+button{appearance:none;border:none;cursor:pointer}
+.action,button.action{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:10px 14px;border-radius:999px;background:var(--bl-badminton-input-bg);border:1px solid rgba(79,25,125,0.18);color:var(--accent-2);font-weight:900;box-shadow:0 10px 22px -20px rgba(74,23,116,0.24)}
+.action:hover{filter:brightness(1.03)}
+.action.secondary{background:var(--bl-badminton-panel-bg);color:var(--accent-2)}
+.action.tight{min-height:36px;padding:8px 12px;font-size:15px}
+.action.danger{background:linear-gradient(180deg,#d93030 0%,#8d1026 100%);color:#fff7ef;border-color:#8d1026}
+.tab{appearance:none;border:none;cursor:pointer;background:var(--bl-badminton-tab-bg);padding:10px 14px;border-radius:999px;font-size:16px;font-weight:760;color:var(--muted);border:1px solid rgba(79,25,125,0.16);box-shadow:0 10px 22px -20px rgba(74,23,116,0.26);transition:transform .08s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;white-space:nowrap}
+.tab:hover{transform:translateY(-1px);background:var(--bl-badminton-tab-hover-bg);border-color:rgba(106,31,179,0.26);box-shadow:0 16px 30px -24px rgba(74,23,116,0.34)}
+.tab[aria-selected="true"]{color:var(--accent-2);background:var(--bl-badminton-input-bg);border-color:rgba(79,25,125,0.22);box-shadow:0 22px 46px -34px rgba(74,23,116,0.38)}
+.metric-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.metric-chip{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(79,25,125,0.18);background:var(--bl-badminton-panel-soft-bg);font-size:15px;color:var(--ink)}
+.metric-chip strong{color:var(--accent-2)}
+.empty-state{border:1px dashed rgba(106,31,179,0.28);border-radius:16px;padding:14px;color:var(--muted);background:var(--bl-badminton-panel-soft-bg)}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:720px;background:var(--bl-badminton-input-bg);border-radius:16px;overflow:hidden}
+th,td{padding:10px 12px;border-bottom:1px solid rgba(79,25,125,0.12);text-align:left;vertical-align:top}
+th{font-size:15px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:none}
+.small-cell{width:1%;white-space:nowrap}
+.status-box{border:1px solid var(--border);border-radius:16px;padding:14px;background:var(--bl-badminton-panel-bg)}
+.status-box strong{color:var(--accent-2)}
+hr.rule{border:none;border-top:1px solid rgba(79,25,125,0.16);margin:16px 0}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:15px}
+
+.card--system-hero{padding:28px 24px 24px}
+.session-lead,.session-copy,.session-copy-wide{max-width:none;width:100%}
+.session-lead{font-size:22px;line-height:1.74;color:color-mix(in srgb,var(--ink) 90%,var(--accent-2));margin-bottom:16px}
+.session-copy{font-size:19px;line-height:1.7}
+.session-copy-wide{font-size:18px;line-height:1.72;color:color-mix(in srgb,var(--ink) 92%,var(--accent-2))}
+.system-panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 10px}
+.system-panel{padding:16px 18px;border-radius:20px;border:1px solid rgba(79,25,125,0.16);background:var(--bl-badminton-input-bg);box-shadow:0 14px 28px -24px rgba(74,23,116,0.30)}
+.system-panel h3{margin:0 0 8px 0;font-size:21px}
+.system-panel p{margin:0;font-size:17px;line-height:1.62;color:color-mix(in srgb,var(--ink) 88%,var(--accent-2))}
+
+.system-text-block{display:grid;gap:16px;margin-top:10px}
+.system-points{margin:0;padding-left:1.2em;display:grid;gap:12px}
+.system-points>li{padding:14px 16px;border-radius:18px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-bg)}
+.system-subpoints{margin:10px 0 0 0;padding-left:1.1em;display:grid;gap:8px}
+.system-subpoints li{margin:0;color:color-mix(in srgb,var(--ink) 88%,var(--accent-2))}
+.play-grid{display:grid;grid-template-columns:repeat(2,minmax(280px,320px));justify-content:center;gap:24px;width:100%}
+@media (max-width:900px){.play-grid{grid-template-columns:1fr;max-width:360px;margin:0 auto}}
+
+.plan-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.plan-output{display:grid;gap:16px}
+.games-card{display:grid;gap:16px}
+.games-card .courts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
+.court-card{display:grid;gap:12px;grid-template-rows:auto auto auto auto 1fr;align-content:start;min-height:100%;border:1px solid var(--border);border-radius:22px;padding:16px;background:var(--card-bg);box-shadow:var(--shadow-soft);transition:opacity .16s ease,filter .16s ease,border-color .16s ease}
+.court-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.court-title{font-size:20px;font-weight:900;color:var(--accent-2);font-family:var(--font-soft)}
+.court-kind{font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.side-banner{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;min-height:118px;padding:10px 12px;border-radius:16px;border:1px solid rgba(79,25,125,0.12);background:var(--bl-badminton-panel-bg)}
+.side-banner strong{color:var(--accent-2)}
+.side-banner .stack{display:grid;gap:4px}
+.side-sub{font-size:14px;color:var(--muted)}
+.court-frame{position:relative;border-radius:20px;overflow:hidden;border:1px solid rgba(106,31,179,0.34);background:radial-gradient(circle at 50% 50%,#ffd66f 0%,#f3aa57 48%,#d9b7f1 100%);box-shadow:inset 0 1px 0 rgba(255,228,142,0.36),inset 0 0 42px rgba(106,31,179,0.16),0 16px 36px -28px rgba(74,23,116,0.48)}
+.court-diagram{display:block;position:relative}
+.court-diagram svg{display:block;width:100%;height:auto}
+
+/* BASELINE-MATCHUP-SUMMARY-V5: compact readable names with lilac court surfaces */
+.court-summary{display:grid;gap:9px;justify-items:center;text-align:center;width:100%;padding:9px 11px;border-radius:18px;border:1px solid var(--border);background:var(--card-bg);box-shadow:var(--shadow-soft)}
+.court-summary-title{width:100%;font-size:16px;font-weight:950;line-height:1.12;letter-spacing:.035em;text-transform:uppercase;color:var(--accent-2);font-family:var(--font-soft)}
+.court-vs-grid{display:grid;grid-template-columns:minmax(96px,1fr) minmax(58px,76px) minmax(96px,1fr);gap:9px;align-items:center;width:100%}
+.court-vs-side{display:grid;gap:4px;align-items:center;justify-items:center;min-width:0;min-height:46px;padding:1px 0;background:transparent;border:0;border-radius:0;color:var(--accent-2);font-weight:950;line-height:1.08}
+.court-vs-team{display:grid;gap:1px;justify-items:center;align-items:center;width:100%;min-width:0;font-size:16px;line-height:1.06}
+.team-name-line{display:block;max-width:100%;white-space:normal;overflow-wrap:normal;word-break:normal;text-align:center}
+.court-vs-rating{font-size:12px;color:var(--muted);font-weight:950;line-height:1;white-space:nowrap}
+.court-vs-separator{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;justify-self:stretch;color:var(--accent-2);font-size:13px;font-weight:950;letter-spacing:.07em;text-align:center;text-transform:uppercase}
+.court-vs-separator::before,.court-vs-separator::after{content:"";height:1px;background:rgba(79,25,125,0.24)}
+.score-side{justify-items:center;text-align:center}
+.score-side-title{display:grid;gap:3px;justify-items:center;margin:0;font-family:var(--font-soft);line-height:1.07}
+.score-side-team{display:grid;gap:1px;justify-items:center;align-items:center;width:100%;font-size:18px;line-height:1.06;color:var(--accent-2);font-weight:950}
+.score-side-rating{font-size:14px;color:var(--muted);font-weight:950;line-height:1}
+.score-side-label{font-size:14px;color:var(--muted);font-weight:950;text-transform:uppercase;letter-spacing:.05em;line-height:1}
+.score-side input{max-width:120px;margin:0 auto;text-align:center}
+#currentGamesGrid .court-card,#currentGamesGrid .court-summary,#currentGamesGrid .score-side,#currentGamesGrid .status-box{background:var(--card-bg)!important;border-color:var(--border)!important}
+#currentGamesGrid .status-box{font-size:14px;line-height:1.45;box-shadow:var(--shadow-soft)}
+#currentGamesGrid .status-box strong{font-size:14px}
+@media (max-width:520px){.court-vs-grid{grid-template-columns:minmax(0,1fr) minmax(48px,64px) minmax(0,1fr);gap:7px}.court-vs-separator{width:100%;justify-self:center}.court-vs-side{width:100%;min-height:0}.court-vs-team{font-size:15px}.court-vs-rating{font-size:11px}.score-side-team{font-size:17px}.score-side-rating,.score-side-label{font-size:13px}}
+
+.boundary-mask{position:absolute;inset:0;pointer-events:none}
+.boundary-mask svg{display:block;width:100%;height:100%}
+.finished-stack{display:grid;gap:14px}
+.finished-details{border:1px solid rgba(79,25,125,0.14);border-radius:18px;background:var(--bl-badminton-panel-bg);overflow:hidden}
+.finished-details summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:900;color:var(--accent-2);display:flex;justify-content:space-between;gap:12px;align-items:center}
+.finished-details summary::-webkit-details-marker{display:none}
+.finished-details[open] summary{border-bottom:1px solid rgba(79,25,125,0.12)}
+.finished-details-body{padding:14px 16px 16px;display:grid;gap:14px}
+.finished-batch{border:1px solid rgba(79,25,125,0.12);border-radius:16px;padding:14px;background:var(--bl-badminton-panel-bg);display:grid;gap:10px}
+.finished-batch-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.finished-batch-title{font-size:18px;font-weight:900;color:var(--accent-2);font-family:var(--font-soft)}
+.finished-summary-table{width:100%;min-width:0}
+.finished-summary-table th,.finished-summary-table td{font-size:15px}
+.hardship-note{font-size:14px;color:var(--muted)}
+.court-meta{display:grid;gap:10px}
+.court-note{font-size:15px;line-height:1.55;color:var(--muted)}
+.score-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.score-side{display:grid;gap:8px;padding:12px;border-radius:16px;border:1px solid var(--border);background:var(--card-bg)}
+.score-side h4{margin:0;font-size:18px;color:var(--accent-2);font-family:var(--font-soft)}
+.score-side input{max-width:120px}
+.court-card,.court-meta{overflow:visible}.court-side-legend{display:flex;gap:10px;flex-wrap:wrap;margin:8px 0 6px;color:var(--muted);font-size:14px;font-weight:800}.court-side-legend span{padding:6px 10px;border-radius:999px;background:var(--bl-badminton-panel-soft-bg);border:1px solid rgba(79,25,125,0.10)}
+.saved-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(106,31,179,0.08);border:1px solid rgba(79,25,125,0.15);font-size:14px;color:var(--accent-2);font-weight:900}
+.player-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--bl-badminton-panel-soft-bg);border:1px solid rgba(79,25,125,0.15);font-size:15px}
+.court-card.is-saved{opacity:0.48;filter:saturate(0.82);border-color:rgba(79,25,125,0.10)}
+.court-card.is-saved input,.court-card.is-saved select,.court-card.is-saved button{pointer-events:none}
+.attendance-panel{display:grid;gap:12px;padding:14px;border-radius:18px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-bg);margin-top:14px}
+.attendance-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.attendance-actions{display:flex;gap:10px;flex-wrap:wrap}
+.attendance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.attendance-pill{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:16px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-soft-bg);font-size:15px;font-weight:800;color:var(--accent-2)}
+.attendance-pill input{width:auto;margin:0}
+.player-add-row{display:grid;gap:12px;grid-template-columns:minmax(0,1fr) auto;align-items:end}
+.player-add-row .action{margin-bottom:1px}
+.hidden{display:none !important}
+.manager-only.hidden-row{display:none}
+.auto-pair-box{padding:14px;border-radius:16px;border:1px dashed rgba(79,25,125,0.28);background:var(--bl-badminton-panel-soft-bg);color:var(--muted)}
+.pair-summary-list{display:grid;gap:10px}
+.pair-summary-item{padding:12px 14px;border-radius:16px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-bg)}
+.pair-summary-item strong{color:var(--accent-2)}
+.top-alert{margin-top:12px}
+
+.gameplan-subtabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+.gameplan-subtab{appearance:none;border:none;cursor:pointer;background:var(--bl-badminton-tab-bg);padding:10px 14px;border-radius:999px;font-size:16px;font-weight:850;color:var(--muted);border:1px solid rgba(79,25,125,0.16);box-shadow:0 10px 22px -20px rgba(74,23,116,0.26)}
+.gameplan-subtab[aria-selected="true"]{color:var(--accent-2);background:var(--bl-badminton-input-bg);border-color:rgba(79,25,125,0.22)}
+.gameplan-panel{display:none}
+.gameplan-panel.active{display:grid}
+.admin-star{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;font-size:18px;line-height:1;vertical-align:middle;text-shadow:0 1px 2px rgba(0,0,0,0.18)}
+.admin-star--developer{color:#d93030}
+.admin-star--admin{color:#f2be22}
+.admin-star-toggle{display:inline-flex;align-items:center;justify-content:center;margin-left:8px;vertical-align:middle;cursor:pointer}
+.admin-star-toggle input{position:absolute;opacity:0;pointer-events:none}
+.admin-star-toggle .admin-star{margin-left:0;color:rgba(79,25,125,0.24);filter:saturate(.7)}
+.admin-star-toggle input:checked + .admin-star{color:#f2be22;filter:none}
+.admin-star-toggle:focus-within .admin-star{outline:2px solid var(--accent-2);outline-offset:3px;border-radius:999px}
+.login-select{min-width:220px}
+.readonly-note{font-size:14px;color:var(--muted);margin-top:8px}
+.locked-control{opacity:.55;pointer-events:none}
+
+
+.rule-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.rule-admin-card{padding:14px;border-radius:16px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-soft-bg);display:grid;gap:12px}
+.rule-admin-list{display:grid;gap:10px}
+.rule-admin-item{padding:12px 14px;border-radius:14px;border:1px solid rgba(79,25,125,0.12);background:var(--bl-badminton-panel-soft-bg);display:grid;gap:8px}
+.rule-admin-item-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.select-note{font-size:14px;color:var(--muted)}
+.player-pref-stack{display:grid;gap:8px;min-width:220px;max-width:320px}
+.player-pref-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:14px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-soft-bg);color:var(--accent-2);font-size:14px;font-weight:900}
+.player-pref-toggle input{width:18px;height:18px;margin:0;accent-color:var(--accent-2);flex:0 0 auto}
+.player-pref-toggle input:disabled{opacity:.45;cursor:not-allowed}
+.player-pref-toggle span{min-width:0}
+.player-pref-label{display:block;line-height:1.12}
+.player-pref-hint{display:block;margin-top:3px;color:var(--muted);font-size:12px;font-weight:750;line-height:1.18}
+.player-actions{vertical-align:middle;text-align:right;white-space:nowrap}
+.player-actions-head{text-align:right}
+.player-action-row{display:inline-flex;gap:10px;align-items:center;justify-content:flex-end}
+.player-login-input{min-width:220px}
+.rule-zone-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.rule-zone-pill{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-soft-bg);font-size:14px;font-weight:800;color:var(--accent-2)}
+.rule-zone-pill input{width:auto;margin:0}
+
+@media (max-width:1180px){
+  .system-panels,.plan-controls,.games-card .courts-grid,.grid-three,.attendance-grid{grid-template-columns:1fr}
+}
+@media (max-width:820px){
+  .grid-two,.score-grid,.hardship-row,.rule-admin-grid,.player-add-row,.attendance-grid{grid-template-columns:1fr}
+  table{min-width:620px}
+  .card--system-hero{padding:22px 18px 20px}
+  .session-lead{font-size:20px}
+}
+
+.court-visual-row{display:grid;grid-template-columns:1fr;gap:0;align-items:center;justify-items:center;align-self:stretch;width:100%;min-width:0}
+.court-frame{width:100%;max-width:360px;margin:0 auto;min-height:0;aspect-ratio:100/220;display:flex;align-items:center;justify-content:center}
+.court-diagram{width:100%}
+.court-diagram svg{width:100%;height:auto}
+@media (max-width:1180px){.court-frame{max-width:420px}}
+@media (max-width:720px){.court-frame{max-width:360px}}
+
+
+/* System tab direct explanation: no ladder-card layout. */
+.system-text-block--direct{gap:14px}
+.system-section-card{padding:16px 18px;border-radius:20px;border:1px solid rgba(79,25,125,0.14);background:var(--bl-badminton-panel-bg);box-shadow:0 14px 28px -25px rgba(74,23,116,0.20)}
+.system-section-card h3{margin:0 0 8px 0;color:var(--accent-2)}
+.system-section-card h4{margin:0 0 8px 0;color:var(--accent-2);font-family:var(--font-soft);font-size:19px}
+.system-section-card p{margin:0;color:var(--ink);line-height:1.62}
+.system-mode-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:12px}
+@media (max-width:820px){.system-mode-grid{grid-template-columns:1fr}}
+
+
+/* BASELINE-HARDSHIP-FIX-V2: stable hardship dropdown sizing */
+.hardship-control{display:grid;gap:10px;align-items:start;min-height:156px;overflow:visible;position:relative}
+.hardship-row{display:grid;grid-template-columns:minmax(260px,480px) auto;gap:14px;align-items:end;overflow:visible}
+.hardship-field{display:grid;gap:6px;min-width:260px;max-width:480px;min-height:118px;position:relative;overflow:visible}
+.hardship-field label{display:grid;gap:6px;min-height:76px}
+.hardship-field select{width:100%!important;height:52px!important;min-height:52px!important;max-height:52px!important}
+.hardship-field .bl-select{position:relative!important;display:block!important;width:100%!important;max-width:480px!important;height:52px!important;min-height:52px!important;overflow:visible!important}
+.hardship-field .bl-select-btn{width:100%!important;max-width:480px!important;height:52px!important;min-height:52px!important;max-height:52px!important;box-sizing:border-box!important}
+.hardship-control .hardship-note{min-height:2.6em}
+.hardship-save:disabled{opacity:.48;cursor:not-allowed;filter:saturate(.75)}
+.court-card,.court-meta{overflow:visible}
+
+/* BASELINE-NO-WHITE-SURFACE-V1: badminton surfaces are lilac, including form fields and generated rows */
+body[data-app="badminton"]{
+  --bl-badminton-card-bg:linear-gradient(180deg,#ead4fb 0%,#ddbef4 100%);
+  --bl-badminton-card-deep-bg:linear-gradient(180deg,#e4c8f7 0%,#d4acef 100%);
+  --bl-badminton-panel-bg:linear-gradient(180deg,#ecd8fb 0%,#dfc1f3 100%);
+  --bl-badminton-panel-soft-bg:linear-gradient(180deg,#f0ddfb 0%,#e5c9f5 100%);
+  --bl-badminton-input-bg:linear-gradient(180deg,#ead2fa 0%,#dfc0f2 100%);
+  --bl-badminton-tab-bg:linear-gradient(180deg,rgba(222,190,244,0.72),rgba(207,163,235,0.62));
+  --bl-badminton-tab-hover-bg:linear-gradient(180deg,rgba(232,207,249,0.84),rgba(215,178,241,0.74));
+  --bl-badminton-border:rgba(106,31,179,0.34);
+  --bl-badminton-border-soft:rgba(106,31,179,0.24);
+  --bl-badminton-shadow:0 22px 48px -34px rgba(74,23,116,0.52);
+  --card-bg:var(--bl-badminton-card-bg);
+  --showall-bg:var(--bl-badminton-panel-soft-bg);
+  --filter-bg:var(--bl-badminton-panel-soft-bg);
+  --border:var(--bl-badminton-border);
+  --border-strong:var(--bl-badminton-border-soft);
+  --shadow-soft:var(--bl-badminton-shadow);
+}
+body[data-app="badminton"] .card,
+body[data-app="badminton"] #currentGamesGrid .court-card{
+  background:var(--bl-badminton-card-bg)!important;
+  border-color:var(--bl-badminton-border)!important;
+  box-shadow:var(--bl-badminton-shadow)!important;
+}
+body[data-app="badminton"] .court-card{
+  background:var(--bl-badminton-card-deep-bg)!important;
+  border-color:var(--bl-badminton-border)!important;
+}
+body[data-app="badminton"] .system-panel,
+body[data-app="badminton"] .system-points>li,
+body[data-app="badminton"] .system-section-card,
+body[data-app="badminton"] .status-box,
+body[data-app="badminton"] .finished-details,
+body[data-app="badminton"] .finished-batch,
+body[data-app="badminton"] .attendance-panel,
+body[data-app="badminton"] .attendance-pill,
+body[data-app="badminton"] .auto-pair-box,
+body[data-app="badminton"] .pair-summary-item,
+body[data-app="badminton"] .rule-admin-card,
+body[data-app="badminton"] .rule-admin-item,
+body[data-app="badminton"] .rule-zone-pill,
+body[data-app="badminton"] .player-pref-toggle,
+body[data-app="badminton"] .metric-chip,
+body[data-app="badminton"] .player-pill,
+body[data-app="badminton"] .saved-pill,
+body[data-app="badminton"] .side-banner,
+body[data-app="badminton"] .court-summary,
+body[data-app="badminton"] .score-side,
+body[data-app="badminton"] .court-side-legend span,
+body[data-app="badminton"] #currentGamesGrid .court-summary,
+body[data-app="badminton"] #currentGamesGrid .score-side,
+body[data-app="badminton"] #currentGamesGrid .status-box{
+  background:var(--bl-badminton-panel-bg)!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+  box-shadow:inset 0 1px 0 rgba(158,82,207,0.22),0 14px 28px -26px rgba(74,23,116,0.34)!important;
+}
+body[data-app="badminton"] input[type="checkbox"],
+body[data-app="badminton"] input[type="radio"]{
+  accent-color:var(--accent-2);
+}
+body[data-app="badminton"] table,
+body[data-app="badminton"] thead,
+body[data-app="badminton"] tbody,
+body[data-app="badminton"] tr,
+body[data-app="badminton"] th,
+body[data-app="badminton"] td,
+body[data-app="badminton"] .finished-summary-table{
+  background:var(--bl-badminton-panel-soft-bg)!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+body[data-app="badminton"] .tab,
+body[data-app="badminton"] .gameplan-subtab{
+  background:var(--bl-badminton-tab-bg)!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+body[data-app="badminton"] .tab:hover,
+body[data-app="badminton"] .gameplan-subtab:hover{
+  background:var(--bl-badminton-tab-hover-bg)!important;
+}
+body[data-app="badminton"] .tab[aria-selected="true"],
+body[data-app="badminton"] .gameplan-subtab[aria-selected="true"],
+body[data-app="badminton"] .action,
+body[data-app="badminton"] button.action{
+  background:var(--bl-badminton-input-bg)!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+body[data-app="badminton"] .action.secondary{
+  background:var(--bl-badminton-panel-bg)!important;
+}
+body[data-app="badminton"] .top-alert,
+body[data-app="badminton"] .empty-state{
+  background:var(--bl-badminton-panel-soft-bg)!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+body[data-app="badminton"] .card::before{
+  box-shadow:inset 0 1px 0 rgba(158,82,207,0.20),inset 0 -18px 42px -30px rgba(106,31,179,0.30)!important;
+}
+
+/* BASELINE-CHECKBOX-REMOVE-V1: lilac checkboxes with purple ticks; red remove text on lilac button */
+body[data-app="badminton"] .attendance-pill input[type="checkbox"],
+body[data-app="badminton"] .player-pref-toggle input[type="checkbox"],
+body[data-app="badminton"] .rule-zone-pill input[type="checkbox"]{
+  appearance:none;
+  -webkit-appearance:none;
+  display:inline-grid;
+  place-content:center;
+  width:18px!important;
+  height:18px!important;
+  min-width:18px;
+  flex:0 0 18px;
+  margin:0!important;
+  padding:0!important;
+  border:2px solid rgba(79,25,125,0.44)!important;
+  border-radius:5px;
+  background:var(--bl-badminton-input-bg)!important;
+  background-color:#e4c8f7!important;
+  color:var(--accent-2)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.16),0 2px 5px -4px rgba(74,23,116,0.35);
+  cursor:pointer;
+}
+body[data-app="badminton"] .attendance-pill input[type="checkbox"]::after,
+body[data-app="badminton"] .player-pref-toggle input[type="checkbox"]::after,
+body[data-app="badminton"] .rule-zone-pill input[type="checkbox"]::after{
+  content:"✓";
+  font-size:15px;
+  line-height:1;
+  font-weight:950;
+  color:var(--accent-2);
+  transform:scale(0);
+  transform-origin:center;
+}
+body[data-app="badminton"] .attendance-pill input[type="checkbox"]:checked::after,
+body[data-app="badminton"] .player-pref-toggle input[type="checkbox"]:checked::after,
+body[data-app="badminton"] .rule-zone-pill input[type="checkbox"]:checked::after{
+  transform:scale(1);
+}
+body[data-app="badminton"] .attendance-pill input[type="checkbox"]:focus-visible,
+body[data-app="badminton"] .player-pref-toggle input[type="checkbox"]:focus-visible,
+body[data-app="badminton"] .rule-zone-pill input[type="checkbox"]:focus-visible{
+  outline:2px solid var(--accent-2);
+  outline-offset:3px;
+}
+body[data-app="badminton"] .attendance-pill input[type="checkbox"]:disabled,
+body[data-app="badminton"] .player-pref-toggle input[type="checkbox"]:disabled,
+body[data-app="badminton"] .rule-zone-pill input[type="checkbox"]:disabled{
+  opacity:.58;
+  cursor:not-allowed;
+}
+body[data-app="badminton"] .action.danger,
+body[data-app="badminton"] button.action.danger,
+body[data-app="badminton"] [data-player-remove]{
+  background:var(--bl-badminton-input-bg)!important;
+  background-color:#e4c8f7!important;
+  border-color:rgba(217,48,48,0.42)!important;
+  color:#d93030!important;
+  text-shadow:none!important;
+}
+body[data-app="badminton"] .action.danger:hover,
+body[data-app="badminton"] button.action.danger:hover,
+body[data-app="badminton"] [data-player-remove]:hover{
+  color:#b51e1e!important;
+  border-color:rgba(217,48,48,0.58)!important;
+}
+
+/* BASELINE-COURT-FOCUS-SURROUND-V1: lilac boundary moving inward to amber focus around the green court */
+body[data-app="badminton"] .court-frame{
+  background:radial-gradient(circle at 50% 50%,#ffd66f 0%,#f3aa57 48%,#d9b7f1 100%)!important;
+  border-color:rgba(106,31,179,0.34)!important;
+  box-shadow:inset 0 1px 0 rgba(255,228,142,0.36),inset 0 0 42px rgba(106,31,179,0.16),0 16px 36px -28px rgba(74,23,116,0.48)!important;
+}
+
+
+body[data-app="badminton"] #currentGamesGrid .court-card{
+  grid-template-columns:minmax(0,1fr);
+  justify-items:center;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-head,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-summary,
+body[data-app="badminton"] #currentGamesGrid .court-card > .status-box,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-visual-row,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-meta{
+  width:100%;
+  max-width:var(--bl-court-inner-max);
+  justify-self:center;
+}
+body[data-app="badminton"] #currentGamesGrid .court-frame{
+  width:100%;
+  max-width:var(--bl-court-inner-max);
+}
+body[data-app="badminton"] #currentGamesGrid .court-meta,
+body[data-app="badminton"] #currentGamesGrid .court-meta > *,
+body[data-app="badminton"] #currentGamesGrid .score-grid,
+body[data-app="badminton"] #currentGamesGrid .hardship-control{
+  width:100%;
+}
+body[data-app="badminton"] #currentGamesGrid .court-head,
+body[data-app="badminton"] #currentGamesGrid .court-meta,
+body[data-app="badminton"] #currentGamesGrid .hardship-control{
+  justify-items:center;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-row{
+  width:100%;
+  grid-template-columns:minmax(0,1fr);
+  justify-content:center;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-field{
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+@media (min-width:1181px){
+  body[data-app="badminton"] #currentGamesGrid{ --bl-court-inner-max: 450px; }
+}
+
+
+/* BASELINE-COURT-INNER-STABLE-V3
+   Center the nested panels inside a court card. This does not reposition the
+   outer court card in the page grid. It also prevents logged-in score/hardship
+   controls from widening the internal layout. */
+body[data-app="badminton"] #currentGamesGrid{
+  --bl-court-inner-max: 430px;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card{
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-items:center!important;
+  align-items:start!important;
+  min-width:0!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-head,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-summary,
+body[data-app="badminton"] #currentGamesGrid .court-card > .status-box,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-visual-row,
+body[data-app="badminton"] #currentGamesGrid .court-card > .court-meta{
+  box-sizing:border-box!important;
+  width:min(100%,var(--bl-court-inner-max))!important;
+  max-width:var(--bl-court-inner-max)!important;
+  justify-self:center!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-summary,
+body[data-app="badminton"] #currentGamesGrid .status-box,
+body[data-app="badminton"] #currentGamesGrid .court-meta,
+body[data-app="badminton"] #currentGamesGrid .score-grid,
+body[data-app="badminton"] #currentGamesGrid .hardship-control,
+body[data-app="badminton"] #currentGamesGrid .hardship-row,
+body[data-app="badminton"] #currentGamesGrid .hardship-field{
+  min-width:0!important;
+  max-width:100%!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-frame{
+  width:100%!important;
+  max-width:var(--bl-court-inner-max)!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-diagram,
+body[data-app="badminton"] #currentGamesGrid .court-diagram svg{
+  width:100%!important;
+  max-width:100%!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-meta{
+  display:grid!important;
+  justify-items:center!important;
+}
+body[data-app="badminton"] #currentGamesGrid .score-grid{
+  width:100%!important;
+  justify-self:center!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-control{
+  width:100%!important;
+  justify-self:center!important;
+  justify-items:center!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-row{
+  width:100%!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  justify-content:center!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-field,
+body[data-app="badminton"] #currentGamesGrid .hardship-field label,
+body[data-app="badminton"] #currentGamesGrid .hardship-field .bl-select,
+body[data-app="badminton"] #currentGamesGrid .hardship-field .bl-select-btn,
+body[data-app="badminton"] #currentGamesGrid .hardship-field select[data-hardship]{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+@media (min-width:1181px){
+  body[data-app="badminton"] #currentGamesGrid{ --bl-court-inner-max: 430px; }
+}
+
+/* BASELINE-BADMINTON-MOBILE-FINAL-V3
+   Android / narrow viewport layout repair. Desktop keeps existing design. */
+@media (max-width: 820px), (hover:none) and (pointer:coarse){
+  html[data-app="badminton"],
+  body[data-app="badminton"]{width:100%;max-width:100%;overflow-x:hidden!important;font-size:16px!important;line-height:1.45!important;}
+  body[data-app="badminton"] .bl-homebar{height:52px!important;padding:7px 8px!important;}
+  body[data-app="badminton"] .bl-homebar-inner{width:calc(100% - 10px)!important;gap:6px!important;flex-wrap:nowrap!important;}
+  body[data-app="badminton"] .bl-pages-dd{min-width:0!important;flex:1 1 auto!important;}
+  body[data-app="badminton"] .bl-pages-btn{max-width:100%!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;font-size:14px!important;padding:8px 10px!important;}
+  body[data-app="badminton"] .bl-homebar-right{gap:6px!important;flex:0 0 auto!important;}
+  body[data-app="badminton"] .bl-mini-btn{font-size:14px!important;padding:8px 9px!important;}
+  body[data-app="badminton"] .bl-scroll{top:52px!important;overflow-x:hidden!important;background-attachment:scroll!important;}
+  body[data-app="badminton"] .hero{background-size:cover!important;}
+  body[data-app="badminton"] .hero-inner{width:calc(100% - 18px)!important;padding:20px 8px 12px!important;}
+  body[data-app="badminton"] .title{font-size:clamp(28px,9vw,40px)!important;line-height:1.05!important;}
+  body[data-app="badminton"] .subtitle{font-size:clamp(15px,4.4vw,18px)!important;line-height:1.32!important;}
+  body[data-app="badminton"] .tabs{width:calc(100% - 18px)!important;margin:10px auto 0!important;padding:0 8px 10px!important;gap:8px!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;scroll-snap-type:x proximity!important;}
+  body[data-app="badminton"] .tab,
+  body[data-app="badminton"] .gameplan-subtab{flex:0 0 auto!important;font-size:15px!important;padding:10px 12px!important;scroll-snap-align:start!important;min-height:44px!important;}
+  body[data-app="badminton"] .card{padding:16px!important;border-radius:22px!important;max-width:100%!important;overflow:hidden!important;background:var(--bl-badminton-card-bg)!important;border-color:var(--bl-badminton-border)!important;}
+  body[data-app="badminton"] .card h2{font-size:clamp(28px,8.5vw,38px)!important;line-height:1.08!important;}
+  body[data-app="badminton"] .card h3{font-size:clamp(21px,6.5vw,28px)!important;}
+  body[data-app="badminton"] .session-lead{font-size:17px!important;line-height:1.55!important;}
+  body[data-app="badminton"] .system-section-card,
+  body[data-app="badminton"] .status-box,
+  body[data-app="badminton"] .attendance-panel,
+  body[data-app="badminton"] .court-summary,
+  body[data-app="badminton"] .score-side{background:var(--bl-badminton-panel-bg)!important;border-color:var(--bl-badminton-border-soft)!important;}
+  body[data-app="badminton"] .system-section-card{padding:14px!important;border-radius:18px!important;}
+  body[data-app="badminton"] .system-mode-grid,
+  body[data-app="badminton"] .plan-controls,
+  body[data-app="badminton"] .grid-two,
+  body[data-app="badminton"] .grid-three,
+  body[data-app="badminton"] .score-grid,
+  body[data-app="badminton"] .hardship-row,
+  body[data-app="badminton"] .rule-admin-grid,
+  body[data-app="badminton"] .player-add-row,
+  body[data-app="badminton"] .attendance-grid{grid-template-columns:1fr!important;}
+  body[data-app="badminton"] .gameplan-subtabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;gap:8px!important;margin:0 0 12px!important;padding-bottom:4px!important;scrollbar-width:none;}
+  body[data-app="badminton"] .gameplan-subtabs::-webkit-scrollbar{display:none;}
+  body[data-app="badminton"] label{font-size:15px!important;}
+  body[data-app="badminton"] input,
+  body[data-app="badminton"] select,
+  body[data-app="badminton"] textarea{min-height:46px!important;font-size:16px!important;}
+  body[data-app="badminton"] .action,
+  body[data-app="badminton"] button.action{min-height:44px!important;font-size:15px!important;max-width:100%;padding:10px 13px!important;}
+  body[data-app="badminton"] .row{gap:8px!important;align-items:stretch!important;}
+  body[data-app="badminton"] .attendance-actions,
+  body[data-app="badminton"] .player-action-row{width:100%;justify-content:flex-start!important;}
+  body[data-app="badminton"] .attendance-actions .action,
+  body[data-app="badminton"] .player-action-row .action{flex:1 1 140px!important;}
+  body[data-app="badminton"] .table-wrap{width:100%!important;max-width:100%!important;overflow-x:auto!important;-webkit-overflow-scrolling:touch!important;border-radius:18px;}
+  body[data-app="badminton"] table{min-width:560px!important;font-size:14px!important;}
+  body[data-app="badminton"] th,
+  body[data-app="badminton"] td{padding:9px 10px!important;}
+  body[data-app="badminton"] .games-card .courts-grid,
+  body[data-app="badminton"] #currentGamesGrid{grid-template-columns:1fr!important;gap:14px!important;max-width:100%!important;}
+  body[data-app="badminton"] .court-card{width:100%!important;max-width:100%!important;padding:14px!important;border-radius:20px!important;overflow:hidden!important;}
+  body[data-app="badminton"] .court-frame{max-width:min(100%,340px)!important;}
+  body[data-app="badminton"] .court-vs-grid{grid-template-columns:minmax(0,1fr) minmax(44px,58px) minmax(0,1fr)!important;gap:6px!important;}
+  body[data-app="badminton"] .court-vs-team{font-size:14px!important;}
+  body[data-app="badminton"] .team-name-line{overflow-wrap:anywhere!important;}
+  body[data-app="badminton"] .score-side input{max-width:100%!important;width:100%!important;}
+  body[data-app="badminton"] .player-pref-stack,
+  body[data-app="badminton"] .player-login-input,
+  body[data-app="badminton"] .login-select{min-width:0!important;max-width:100%!important;width:100%!important;}
+  body[data-app="badminton"] .player-actions{text-align:left!important;white-space:normal!important;}
+}
+@media (max-width: 440px){
+  body[data-app="badminton"] .bl-mini-btn{font-size:13px!important;padding:7px 8px!important;}
+  body[data-app="badminton"] .title{font-size:30px!important;}
+  body[data-app="badminton"] .tab,
+  body[data-app="badminton"] .gameplan-subtab{font-size:14px!important;padding:9px 10px!important;}
+  body[data-app="badminton"] .card{padding:14px!important;}
+  body[data-app="badminton"] table{min-width:520px!important;}
+}
+
+
+/* BASELINE-BADMINTON-LILAC-SURFACE-LOCK-20260526massagefix */
+body[data-app="badminton"]{
+  --bl-badminton-card-bg:linear-gradient(180deg,#ead4fb 0%,#ddbef4 100%);
+  --bl-badminton-card-deep-bg:linear-gradient(180deg,#e4c8f7 0%,#d7b4ef 100%);
+  --bl-badminton-panel-bg:linear-gradient(180deg,#ecd8fb 0%,#dfc1f3 100%);
+  --bl-badminton-panel-soft-bg:linear-gradient(180deg,#f0ddfb 0%,#e5c9f5 100%);
+  --bl-badminton-input-bg:linear-gradient(180deg,#ead2fa 0%,#dfc0f2 100%);
+  --bl-badminton-tab-bg:linear-gradient(180deg,rgba(222,190,244,0.72),rgba(207,163,235,0.62));
+  --bl-badminton-tab-hover-bg:linear-gradient(180deg,rgba(232,207,249,0.84),rgba(215,178,241,0.74));
+  --bl-badminton-border:rgba(106,31,179,0.34);
+  --bl-badminton-border-soft:rgba(106,31,179,0.24);
+  --card-bg:var(--bl-badminton-card-bg);
+  --filter-bg:var(--bl-badminton-panel-bg);
+  --showall-bg:var(--bl-badminton-input-bg);
+  --border:var(--bl-badminton-border);
+  --border-2:var(--bl-badminton-border-soft);
+  --border-strong:var(--bl-badminton-border-soft);
+}
+body[data-app="badminton"] .card,
+body[data-app="badminton"] .card--system-hero,
+body[data-app="badminton"] #gamePlanSetupCard,
+body[data-app="badminton"] #currentGamesCard,
+body[data-app="badminton"] #attendanceCard,
+body[data-app="badminton"] #finishedGamesCard,
+body[data-app="badminton"] #standings .card,
+body[data-app="badminton"] #roster .card,
+body[data-app="badminton"] #history .card{
+  background:var(--bl-badminton-card-bg)!important;
+  background-image:var(--bl-badminton-card-bg)!important;
+  background-color:#ddbef4!important;
+  border-color:var(--bl-badminton-border)!important;
+  color:var(--ink)!important;
+  box-shadow:var(--bl-badminton-shadow,0 22px 48px -34px rgba(74,23,116,0.52))!important;
+}
+body[data-app="badminton"] .system-section-card,
+body[data-app="badminton"] .status-box,
+body[data-app="badminton"] .attendance-panel,
+body[data-app="badminton"] .attendance-pill,
+body[data-app="badminton"] .finished-details,
+body[data-app="badminton"] .finished-batch,
+body[data-app="badminton"] .court-summary,
+body[data-app="badminton"] .score-side,
+body[data-app="badminton"] .side-banner,
+body[data-app="badminton"] .player-pill,
+body[data-app="badminton"] .saved-pill,
+body[data-app="badminton"] .rule-admin-card,
+body[data-app="badminton"] .rule-admin-item,
+body[data-app="badminton"] .rule-zone-pill,
+body[data-app="badminton"] .player-pref-toggle,
+body[data-app="badminton"] .metric-chip{
+  background:var(--bl-badminton-panel-bg)!important;
+  background-image:var(--bl-badminton-panel-bg)!important;
+  background-color:#dfc1f3!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+body[data-app="badminton"] .card::before,
+body[data-app="badminton"] .card::after{
+  box-shadow:inset 0 1px 0 rgba(158,82,207,0.18),inset 0 -18px 42px -30px rgba(106,31,179,0.22)!important;
+}
+
+
+/* BASELINE-BADMINTON-LILAC-SOURCE-OF-TRUTH
+   Final app-scoped override so Hostinger/localhost cannot diverge by inheriting
+   Food/Skin/Games card surfaces. Badminton cards and panels remain lilac. */
+html[data-app="badminton"],
+body[data-app="badminton"]{
+  --bl-badminton-card-bg:linear-gradient(180deg,#ead4fb 0%,#ddbef4 100%)!important;
+  --bl-badminton-card-solid:#ddbef4!important;
+  --bl-badminton-card-deep-bg:linear-gradient(180deg,#e4c8f7 0%,#d4acef 100%)!important;
+  --bl-badminton-panel-bg:linear-gradient(180deg,#ecd8fb 0%,#dfc1f3 100%)!important;
+  --bl-badminton-panel-soft-bg:linear-gradient(180deg,#f0ddfb 0%,#e5c9f5 100%)!important;
+  --bl-badminton-input-bg:linear-gradient(180deg,#ead2fa 0%,#dfc0f2 100%)!important;
+  --bl-badminton-border:rgba(106,31,179,0.34)!important;
+  --bl-badminton-border-soft:rgba(106,31,179,0.24)!important;
+  --card-bg:var(--bl-badminton-card-bg)!important;
+  --showall-bg:var(--bl-badminton-panel-soft-bg)!important;
+  --filter-bg:var(--bl-badminton-panel-soft-bg)!important;
+  --border:var(--bl-badminton-border)!important;
+  --border-2:rgba(106,31,179,0.38)!important;
+  --border-strong:var(--bl-badminton-border-soft)!important;
+}
+html[data-app="badminton"] body[data-app="badminton"] .card,
+html[data-app="badminton"] body[data-app="badminton"] main .card,
+html[data-app="badminton"] body[data-app="badminton"] .gameplan-panel > .card,
+html[data-app="badminton"] body[data-app="badminton"] .section > .card,
+html[data-app="badminton"] body[data-app="badminton"] #gamePlanSetupCard,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesCard,
+html[data-app="badminton"] body[data-app="badminton"] #attendanceCard,
+html[data-app="badminton"] body[data-app="badminton"] #finishedGamesCard{
+  background-image:var(--bl-badminton-card-bg)!important;
+  background-color:var(--bl-badminton-card-solid)!important;
+  border-color:var(--bl-badminton-border)!important;
+  color:var(--ink)!important;
+  box-shadow:0 22px 48px -34px rgba(74,23,116,0.52)!important;
+}
+html[data-app="badminton"] body[data-app="badminton"] .system-section-card,
+html[data-app="badminton"] body[data-app="badminton"] .status-box,
+html[data-app="badminton"] body[data-app="badminton"] .attendance-panel,
+html[data-app="badminton"] body[data-app="badminton"] .attendance-pill,
+html[data-app="badminton"] body[data-app="badminton"] .finished-details,
+html[data-app="badminton"] body[data-app="badminton"] .finished-batch,
+html[data-app="badminton"] body[data-app="badminton"] .auto-pair-box,
+html[data-app="badminton"] body[data-app="badminton"] .pair-summary-item,
+html[data-app="badminton"] body[data-app="badminton"] .rule-admin-card,
+html[data-app="badminton"] body[data-app="badminton"] .rule-admin-item,
+html[data-app="badminton"] body[data-app="badminton"] .rule-zone-pill,
+html[data-app="badminton"] body[data-app="badminton"] .player-pref-toggle,
+html[data-app="badminton"] body[data-app="badminton"] .metric-chip,
+html[data-app="badminton"] body[data-app="badminton"] .player-pill,
+html[data-app="badminton"] body[data-app="badminton"] .saved-pill,
+html[data-app="badminton"] body[data-app="badminton"] .side-banner,
+html[data-app="badminton"] body[data-app="badminton"] .court-summary,
+html[data-app="badminton"] body[data-app="badminton"] .score-side,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .status-box,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-summary,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .score-side{
+  background-image:var(--bl-badminton-panel-bg)!important;
+  background-color:#dfc1f3!important;
+  border-color:var(--bl-badminton-border-soft)!important;
+}
+html[data-app="badminton"] body[data-app="badminton"] .card::before,
+html[data-app="badminton"] body[data-app="badminton"] .card::after{
+  background:none!important;
+  background-image:none!important;
+  border-color:transparent!important;
+}
+html[data-app="badminton"] body[data-app="badminton"] .card::after{
+  content:""!important;
+  display:block!important;
+  position:absolute!important;
+  inset:0!important;
+  pointer-events:none!important;
+  border-radius:inherit!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -18px 42px -30px rgba(106,31,179,.30)!important;
+}
+
+
+/* CLEAN-DEPLOY-BADMINTON-LILAC-LOCK-20260526cleanroot
+   Badminton is a lilac system. This final page-scoped layer prevents any warm brown,
+   food, skin, massage, games, or global card surface from crossing into Badminton. */
+html[data-app="badminton"] body[data-app="badminton"] .card,
+html[data-app="badminton"] body[data-app="badminton"] main .card,
+html[data-app="badminton"] body[data-app="badminton"] .section > .card,
+html[data-app="badminton"] body[data-app="badminton"] .gameplan-panel > .card,
+html[data-app="badminton"] body[data-app="badminton"] #gamePlanSetupCard,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesCard,
+html[data-app="badminton"] body[data-app="badminton"] #attendanceCard,
+html[data-app="badminton"] body[data-app="badminton"] #finishedGamesCard,
+html[data-app="badminton"] body[data-app="badminton"] #standings .card,
+html[data-app="badminton"] body[data-app="badminton"] #roster .card,
+html[data-app="badminton"] body[data-app="badminton"] #history .card{
+  background:linear-gradient(180deg,#ead4fb 0%,#ddbef4 100%)!important;
+  background-image:linear-gradient(180deg,#ead4fb 0%,#ddbef4 100%)!important;
+  background-color:#ddbef4!important;
+  border-color:rgba(106,31,179,.34)!important;
+  color:#34164a!important;
+}
+html[data-app="badminton"] body[data-app="badminton"] .system-section-card,
+html[data-app="badminton"] body[data-app="badminton"] .status-box,
+html[data-app="badminton"] body[data-app="badminton"] .attendance-panel,
+html[data-app="badminton"] body[data-app="badminton"] .finished-details,
+html[data-app="badminton"] body[data-app="badminton"] .finished-batch,
+html[data-app="badminton"] body[data-app="badminton"] .auto-pair-box,
+html[data-app="badminton"] body[data-app="badminton"] .pair-summary-item,
+html[data-app="badminton"] body[data-app="badminton"] .court-summary,
+html[data-app="badminton"] body[data-app="badminton"] .score-side,
+html[data-app="badminton"] body[data-app="badminton"] .rule-admin-card,
+html[data-app="badminton"] body[data-app="badminton"] .rule-admin-item{
+  background:linear-gradient(180deg,#ecd8fb 0%,#dfc1f3 100%)!important;
+  background-image:linear-gradient(180deg,#ecd8fb 0%,#dfc1f3 100%)!important;
+  background-color:#dfc1f3!important;
+  border-color:rgba(106,31,179,.24)!important;
+}
+
+/* BASELINE-BADMINTON-HARDSHIP-RADIO-ALIGNMENT-20260609
+   Dominant visual repair for hardship radio options.
+   The global form-field rules make all inputs full-width/tall; radios need a
+   scoped override so the control sits beside its label as one coherent row. */
+body[data-app="badminton"] #currentGamesGrid .hardship-control{
+  min-height:auto!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+  gap:12px!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  align-items:stretch!important;
+  justify-content:stretch!important;
+  gap:12px!important;
+  width:100%!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-field{
+  display:grid!important;
+  gap:12px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:0!important;
+  align-items:stretch!important;
+  justify-items:stretch!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-label{
+  color:var(--accent-2)!important;
+  font-size:20px!important;
+  line-height:1.2!important;
+  font-weight:850!important;
+  text-align:left!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-group{
+  display:grid!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option{
+  display:grid!important;
+  grid-template-columns:22px minmax(0,1fr)!important;
+  align-items:center!important;
+  justify-items:start!important;
+  column-gap:12px!important;
+  min-height:48px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:10px 14px!important;
+  border:1px solid rgba(106,31,179,0.24)!important;
+  border-radius:16px!important;
+  background:var(--bl-badminton-panel-bg)!important;
+  color:var(--accent-2)!important;
+  font-size:18px!important;
+  font-weight:900!important;
+  line-height:1.22!important;
+  text-align:left!important;
+  cursor:pointer!important;
+  box-shadow:0 12px 24px -22px rgba(74,23,116,0.36)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option:hover{
+  border-color:rgba(106,31,179,0.38)!important;
+  filter:brightness(1.025)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option:focus-within{
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 4px var(--ring),0 12px 24px -22px rgba(74,23,116,0.36)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option input[type="radio"]{
+  appearance:auto!important;
+  -webkit-appearance:radio!important;
+  display:block!important;
+  box-sizing:border-box!important;
+  width:20px!important;
+  min-width:20px!important;
+  max-width:20px!important;
+  height:20px!important;
+  min-height:20px!important;
+  max-height:20px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  justify-self:start!important;
+  align-self:center!important;
+  cursor:pointer!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option span{
+  display:block!important;
+  min-width:0!important;
+  overflow-wrap:anywhere!important;
+  text-align:left!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-radio-option:has(input[type="radio"]:checked){
+  border-color:rgba(79,25,125,0.44)!important;
+  background:var(--bl-badminton-input-bg)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .hardship-control .hardship-note{
+  min-height:0!important;
+  margin-top:2px!important;
+  font-size:15px!important;
+  line-height:1.48!important;
+  text-align:left!important;
+}
+@media (max-width:520px){
+  body[data-app="badminton"] #currentGamesGrid .hardship-label{
+    font-size:18px!important;
+  }
+  body[data-app="badminton"] #currentGamesGrid .hardship-radio-option{
+    grid-template-columns:20px minmax(0,1fr)!important;
+    column-gap:10px!important;
+    min-height:46px!important;
+    padding:9px 12px!important;
+    font-size:17px!important;
+  }
+  body[data-app="badminton"] #currentGamesGrid .hardship-radio-option input[type="radio"]{
+    width:18px!important;
+    min-width:18px!important;
+    max-width:18px!important;
+    height:18px!important;
+    min-height:18px!important;
+    max-height:18px!important;
+  }
+}
+
+
+/* BASELINE-BADMINTON-SAVED-COURT-LOCK-V4
+   Saved current courts must visibly lock without a result badge, and without
+   rebuilding the other live court card. */
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card.is-saved{
+  opacity:.46!important;
+  filter:grayscale(.42) saturate(.72)!important;
+  border-color:rgba(70,70,74,.32)!important;
+  box-shadow:none!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved input,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved button,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved select,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card.is-saved input,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card.is-saved button,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card.is-saved select{
+  pointer-events:none!important;
+}
+body[data-app="badminton"] #currentGamesGrid .saved-pill,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .saved-pill{
+  display:none!important;
+}
+
+/* BASELINE-BADMINTON-CARD-ROW-ALIGN-V4 */
+body[data-app="badminton"] #currentGamesGrid .court-card{
+  grid-template-rows:auto minmax(96px,auto) minmax(104px,auto) minmax(300px,auto) auto auto!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card > .status-box{
+  min-height:104px!important;
+  align-content:start!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-visual-row{
+  min-height:300px!important;
+  align-items:start!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-meta{
+  align-self:start!important;
+}
+
+/* BASELINE-BADMINTON-CLEAN-STATE-LOCK-V5
+   Strong saved-court confirmation without a result badge. */
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card[data-court-saved="true"]{
+  opacity:.42!important;
+  filter:grayscale(.66) saturate(.55) contrast(.96)!important;
+  background:rgba(88,82,96,.18)!important;
+  border-color:rgba(56,58,66,.46)!important;
+  box-shadow:inset 0 0 0 2px rgba(56,58,66,.12)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved input,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved button,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved select,
+body[data-app="badminton"] #currentGamesGrid .court-card[data-court-saved="true"] input,
+body[data-app="badminton"] #currentGamesGrid .court-card[data-court-saved="true"] button,
+body[data-app="badminton"] #currentGamesGrid .court-card[data-court-saved="true"] select{
+  pointer-events:none!important;
+}
+
+/* BASELINE-BADMINTON-COURT-VARIABLES-V1 */
+body[data-app="badminton"] #currentGamesGrid .court-variable-editor{
+  width:100%!important;
+  margin:10px 0 0 0!important;
+  border:1px solid rgba(79,25,125,.16)!important;
+  border-radius:16px!important;
+  background:var(--bl-badminton-panel-soft-bg)!important;
+  overflow:hidden!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-variable-editor summary{
+  cursor:pointer!important;
+  list-style:none!important;
+  padding:10px 12px!important;
+  font-weight:900!important;
+  color:var(--accent-2)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-variable-editor summary::-webkit-details-marker{display:none!important;}
+body[data-app="badminton"] #currentGamesGrid .court-variable-editor summary::after{
+  content:'▾';
+  float:right;
+  opacity:.72;
+}
+body[data-app="badminton"] #currentGamesGrid .court-variable-editor[open] summary::after{content:'▴';}
+body[data-app="badminton"] #currentGamesGrid .court-variable-body{
+  display:grid!important;
+  gap:8px!important;
+  padding:0 12px 12px 12px!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-variable-body select{
+  width:100%!important;
+  min-width:0!important;
+}
+
+/* BASELINE-BADMINTON-DOMINANT-COURT-STATE-20260611 */
+.court-card.is-saved,
+.court-card.is-no-game{
+  opacity:.62;
+  filter:saturate(.72);
+  position:relative;
+}
+.court-card.is-saved input,
+.court-card.is-saved button,
+.court-card.is-saved select,
+.court-card.is-no-game input,
+.court-card.is-no-game button,
+.court-card.is-no-game select{
+  cursor:not-allowed;
+}
+.court-variable-editor{
+  border:1px solid var(--bl-badminton-border-soft);
+  border-radius:18px;
+  background:var(--bl-badminton-panel-bg);
+  padding:10px 12px;
+  box-shadow:inset 0 1px 0 rgba(158,82,207,0.18),0 12px 24px -24px rgba(74,23,116,0.34);
+}
+.court-variable-editor summary{
+  cursor:pointer;
+  font-weight:950;
+  color:var(--accent-2);
+}
+.court-variable-body{display:grid;gap:12px;margin-top:10px}
+.court-variable-section{display:grid;gap:8px}
+.court-sitout-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+.court-sitout-pill{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;border:1px solid var(--bl-badminton-border-soft);background:var(--bl-badminton-panel-soft-bg);font-weight:850;color:var(--ink)}
+.court-sitout-pill input{width:auto;min-width:18px}
+.court-no-game-section{border-top:1px solid rgba(79,25,125,.18);padding-top:10px}
+.court-no-game-switch{display:inline-flex;align-items:center;gap:10px;width:max-content;max-width:100%;font-weight:950;color:var(--accent-2)}
+.court-no-game-switch input{position:absolute;opacity:0;pointer-events:none}
+.court-no-game-slider{width:74px;height:34px;border-radius:999px;border:1px solid var(--bl-badminton-border-soft);background:var(--bl-badminton-panel-soft-bg);position:relative;box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+.court-no-game-slider::after{content:"";position:absolute;width:26px;height:26px;border-radius:999px;left:4px;top:3px;background:var(--accent-2);transition:left .16s ease,background .16s ease;box-shadow:0 5px 12px -8px rgba(74,23,116,.65)}
+.court-no-game-switch input:checked + .court-no-game-slider::after{left:42px;background:#8d1026}
+.no-game-dialog{position:absolute;inset:12px;z-index:8;display:grid;place-items:center;background:rgba(79,25,125,.12);backdrop-filter:blur(2px);border-radius:22px}
+.no-game-dialog-card{max-width:420px;display:grid;gap:12px;padding:18px;border-radius:22px;border:1px solid var(--bl-badminton-border);background:var(--bl-badminton-card-bg);box-shadow:var(--bl-badminton-shadow)}
+.next-set-panel{grid-column:1/-1;margin-bottom:4px}
+
+
+/* BASELINE-BADMINTON-DOMINANT-FIX-20260611
+   Locked courts use a warm purple/lilac darkening, not cold grey. No Game uses a deliberate range slider and a fixed visible dialog. */
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved,
+html[data-app="badminton"] body[data-app="badminton"] #currentGamesGrid .court-card.is-saved,
+body[data-app="badminton"] #currentGamesGrid .court-card[data-court-saved="true"],
+body[data-app="badminton"] #currentGamesGrid .court-card.is-no-game{
+  opacity:.68!important;
+  filter:saturate(.82) brightness(.82) contrast(.98)!important;
+  background:linear-gradient(180deg,rgba(126,72,166,.34),rgba(79,25,125,.30)),var(--bl-badminton-card-bg)!important;
+  border-color:rgba(79,25,125,.46)!important;
+  box-shadow:inset 0 0 0 2px rgba(106,31,179,.20),0 16px 34px -28px rgba(74,23,116,.52)!important;
+}
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved .court-summary,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved .score-side,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-saved .status-box,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-no-game .court-summary,
+body[data-app="badminton"] #currentGamesGrid .court-card.is-no-game .status-box{
+  background:linear-gradient(180deg,rgba(181,139,211,.38),rgba(126,72,166,.28)),var(--bl-badminton-panel-bg)!important;
+  border-color:rgba(79,25,125,.36)!important;
+}
+.court-no-game-range-label{display:grid;gap:8px;max-width:240px;font-weight:950;color:var(--accent-2)}
+.court-no-game-range{appearance:none;width:180px!important;height:26px!important;padding:0!important;border-radius:999px!important;border:1px solid var(--bl-badminton-border-soft)!important;background:linear-gradient(90deg,rgba(106,31,179,.22),rgba(106,31,179,.09))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;cursor:grab}
+.court-no-game-range:active{cursor:grabbing}
+.court-no-game-range::-webkit-slider-thumb{appearance:none;width:30px;height:30px;border-radius:999px;background:var(--accent-2);border:2px solid rgba(255,255,255,.35);box-shadow:0 8px 18px -10px rgba(74,23,116,.80)}
+.court-no-game-range::-moz-range-thumb{width:30px;height:30px;border-radius:999px;background:var(--accent-2);border:2px solid rgba(255,255,255,.35);box-shadow:0 8px 18px -10px rgba(74,23,116,.80)}
+.no-game-dialog{position:fixed!important;inset:0!important;z-index:9999!important;display:grid!important;place-items:center!important;padding:24px!important;background:rgba(46,14,76,.34)!important;backdrop-filter:blur(4px)!important;border-radius:0!important}
+.no-game-dialog-card{width:min(440px,calc(100vw - 48px))!important;max-height:calc(100vh - 80px)!important;overflow:auto!important;display:grid!important;gap:14px!important;padding:20px!important;border-radius:24px!important;border:1px solid rgba(106,31,179,.40)!important;background:var(--bl-badminton-card-bg)!important;box-shadow:0 24px 70px -28px rgba(46,14,76,.72)!important;color:var(--ink)!important}
+.no-game-dialog-card strong{color:var(--accent-2)!important;font-family:var(--font-soft)!important;font-size:24px!important}
+
+
+/* BASELINE-BADMINTON-COMPLETION-AUTO-NEXT-20260611
+   The next set is generated automatically when every active court is complete.
+   Keep any legacy next-set panel hidden if older state renders it. */
+body[data-app="badminton"] .next-set-panel{
+  display:none!important;
+}
+
+/* No Game modal lives under document.body, not inside the current court grid.
+   These rules make the modal and its Yes/No buttons reliably clickable. */
+body[data-app="badminton"] .no-game-dialog{
+  pointer-events:auto!important;
+  z-index:2147483000!important;
+}
+body[data-app="badminton"] .no-game-dialog-card,
+body[data-app="badminton"] .no-game-dialog-card *,
+body[data-app="badminton"] .no-game-dialog [data-no-game-action]{
+  pointer-events:auto!important;
+}
+body[data-app="badminton"] .hardship-control .hardship-note{
+  min-height:0;
+}

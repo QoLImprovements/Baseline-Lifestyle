@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en" data-app="massage">
+<head>
+<!-- HTML-OWN-FOLDER-RULES-REFERENCE-20260609
+Rules for this HTML file:
+rules/page-rules.md
+
+These Markdown rules are a human reference point, not live runtime config.
+-->
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Baseline Massage</title>
+<link href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-recipes.css?v=20260602_1715coherencecleanup" rel="stylesheet"/>
+<link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_CANONICAL_CSS_20260712_ALPHABETICAL_DROPDOWNS" rel="stylesheet"/>
+</head>
+<body data-app="massage" data-page="baseline-massage">
+<div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
+  <div class="bl-homebar-inner">
+    <div class="bl-pages-dd">
+      <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false">Baseline Massage &#9662;</button>
+      <div class="bl-pages-menu" role="menu" hidden>
+        <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system" aria-current="page">Baseline Massage</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Natural Skincare</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>
+        <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="bl-scroll">
+<header class="hero" id="top">
+  <div class="hero-inner">
+    <div>
+      <div class="title">Baseline Massage</div>
+      <div class="subtitle">Warm bodywork shaped around comfort, pressure, rhythm, flow, and receiving.</div>
+    </div>
+  </div>
+  <nav class="tabs" aria-label="Baseline Massage tabs">
+    <button class="tab" aria-selected="true" data-target="system" type="button">System</button>
+    <button class="tab" aria-selected="false" data-target="library" type="button">Massage Library</button>
+    <button class="tab" aria-selected="false" data-target="planner" type="button">Plan My Massage</button>
+  </nav>
+</header>
+
+<main class="wrap">
+  <section class="section active" id="system">
+    <div class="focus-stack">
+      <article class="card system-card">
+        <p class="lead system-intro-copy">Use this page to settle the massage preference before the session starts. Areas, pressure, pace, timing, clear agreement, and changes can be named early, so the session is easier to shape and easier to receive.</p>
+        <h2>How The System Works</h2>
+        <ul class="system-list">
+          <li><strong>Preference must be named:</strong> the receiver gives real information about areas, pressure, pace, likes, dislikes, and boundaries.</li>
+          <li><strong>Pressure is feedback:</strong> light, medium, firm, changing, or avoided pressure are all valid, but the feedback needs to be communicated.</li>
+          <li><strong>Time is deliberate:</strong> the receiver can choose broad full-body flow, one focused area, or a balanced session across several areas.</li>
+          <li><strong>Agreement is active:</strong> sensitive or specific areas require clear choice, clear comfort, and ongoing communication.</li>
+          <li><strong>Change is allowed:</strong> the session can be adjusted during the massage if something feels too much, not enough, or simply not right.</li>
+        </ul>
+        <div class="system-note-block">
+          <p><strong>Communication comes first:</strong> The massage is not built for someone who refuses to communicate. The planner exists so the receiver can state preferences clearly.</p>
+          <p><strong>Account-bound preference:</strong> Massage preferences are linked to the receiver’s account and visible only to the massage provider.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="library">
+    <div class="focus-stack">
+      <article class="card library-shell">
+        <h2>Massage Library</h2>
+        <p class="lead">Use the library to compare massage styles, understand massage techniques, and explore areas, themes, comfort choices, and session structure. Under Types Of Massage, use the dropdown to compare Lomi Lomi Massage, Sports Massage, and Swedish Massage. Under Massage Techniques, Lomi Lomi Techniques now sits alphabetically with the other technique families. The dropdowns let you show everything or focus on one technique family or massage type.</p>
+        <div class="library-tabs" aria-label="Massage Library categories" id="massageLibraryTabs"></div>
+        <div class="library-technique-controls" id="libraryTechniqueControls" hidden>
+          <label for="massageTechniqueFilter">Massage Techniques</label>
+          <select id="massageTechniqueFilter" aria-label="Filter massage techniques">
+            <option value="all">Show All</option>
+          </select>
+        </div>
+        <div class="library-technique-controls" id="libraryTypeControls" hidden>
+          <label for="massageTypeFilter">Types Of Massage</label>
+          <select id="massageTypeFilter" aria-label="Filter types of massage">
+            <option value="all">Show All</option>
+          </select>
+        </div>
+        <div class="lib" id="massageLibraryGrid"></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="section" id="planner">
+    <div class="focus-stack">
+      <article class="card planner-intro">
+        <h2>Plan my massage</h2>
+        <p class="lead">Choose how much control you want: let the provider shape the session, select broad focus areas, or build the full massage in detail.</p>
+        <p class="note">The massage preference is bound to the receiver’s account and visible only to the massage provider.</p>
+      </article>
+
+      <div class="subtabs planner-subtabs" role="tablist" aria-label="Massage planning level">
+        <button class="subtab" type="button" data-planner-mode="provider" aria-selected="true">Provider-Guided Massage</button>
+        <button class="subtab" type="button" data-planner-mode="focused" aria-selected="false">Focused Massage Planner</button>
+        <button class="subtab" type="button" data-planner-mode="advanced" aria-selected="false">Advanced / Custom Massage Planner</button>
+      </div>
+
+      <section class="planner-mode-panel active" data-planner-panel="provider">
+        <article class="card planner-mode-card" id="providerGuidedForm">
+          <div><h3>Provider-Guided Massage</h3><p class="note">Set the overall direction and comfort preferences, then allow the massage provider to shape the detailed flow and area balance.</p></div>
+          <div class="planner-controls">
+            <div class="planner-row"><label for="providerSessionLength">Session length</label><select id="providerSessionLength"><option>30 minutes</option><option>45 minutes</option><option selected>60 minutes</option><option>75 minutes</option><option>90 minutes</option><option>120 minutes</option></select></div>
+            <div class="planner-row"><label for="providerMassageStyle">Massage style</label><select id="providerMassageStyle" data-style-select data-theme-target="providerMassageTheme"><option>Lomi Lomi Massage</option><option>Sports Massage</option><option selected>Swedish Massage</option><option>Blended</option><option>Not sure / provider to advise</option></select></div>
+            <div class="planner-row"><label for="providerMassageTheme">Massage theme</label><select id="providerMassageTheme" data-theme-select></select></div>
+            <div class="planner-row"><label for="providerPressure">Pressure preference</label><select id="providerPressure" data-custom-select data-custom-target="providerPressureCustom" data-preserve-order><option selected>Provider to check and adjust</option><option>Changing / mixed pressure</option><option>Light</option><option>Medium</option><option>Firm</option><option>Custom preference</option></select></div>
+            <div class="planner-row full" id="providerPressureCustomRow" hidden><label for="providerPressureCustom">Custom pressure preference</label><input id="providerPressureCustom" type="text" placeholder="Describe the pressure you want, including anything to avoid."/></div>
+            <div class="planner-row"><label for="providerPace">Pace / rhythm</label><select id="providerPace" data-custom-select data-custom-target="providerPaceCustom"><option>Slow and settling</option><option>Steady and flowing</option><option>Focused waves</option><option>Mixed pace</option><option selected>Provider to shape it</option><option>Custom preference</option></select></div>
+            <div class="planner-row full" id="providerPaceCustomRow" hidden><label for="providerPaceCustom">Custom pace / rhythm</label><input id="providerPaceCustom" type="text" placeholder="Describe the pace, rhythm, pauses, or transitions you prefer."/></div>
+            <div class="planner-row full"><label for="providerComfortNotes">Comfort notes / sensitivities</label><textarea id="providerComfortNotes" placeholder="Temperature, draping comfort, quiet, talking, anxiety, sensitivity, or what helps you receive."></textarea></div>
+            <div class="planner-row"><label for="providerAvoidNotes">Anything to avoid</label><textarea id="providerAvoidNotes"></textarea></div>
+            <div class="planner-row"><label for="providerLikesNotes">Anything you especially like</label><textarea id="providerLikesNotes"></textarea></div>
+            <div class="planner-row full"><label for="providerExtraNotes">Other notes</label><textarea id="providerExtraNotes"></textarea></div>
+          </div>
+          <div class="button-row"><button class="planner-btn primary" type="button" data-simple-build="provider">Build My Massage Brief</button><button class="planner-btn" type="button" data-simple-clear="provider">Clear planner</button></div>
+          <pre class="brief-output" id="providerBriefOutput" aria-live="polite"></pre>
+        </article>
+      </section>
+
+      <section class="planner-mode-panel" data-planner-panel="focused">
+        <article class="card planner-mode-card" id="focusedMassageForm">
+          <div><h3>Focused Massage Planner</h3><p class="note">Choose broad body regions and the overall direction without allocating every individual area or minute.</p></div>
+          <div class="planner-controls">
+            <div class="planner-row"><label for="focusedSessionLength">Session length</label><select id="focusedSessionLength"><option>30 minutes</option><option>45 minutes</option><option selected>60 minutes</option><option>75 minutes</option><option>90 minutes</option><option>120 minutes</option></select></div>
+            <div class="planner-row"><label for="focusedMassageStyle">Massage style</label><select id="focusedMassageStyle" data-style-select data-theme-target="focusedMassageTheme"><option>Lomi Lomi Massage</option><option>Sports Massage</option><option selected>Swedish Massage</option><option>Blended</option><option>Not sure / provider to advise</option></select></div>
+            <div class="planner-row"><label for="focusedMassageTheme">Massage theme</label><select id="focusedMassageTheme" data-theme-select></select></div>
+            <div class="planner-row"><label for="focusedPressure">Pressure preference</label><select id="focusedPressure" data-custom-select data-custom-target="focusedPressureCustom" data-preserve-order><option selected>Provider to check and adjust</option><option>Changing / mixed pressure</option><option>Light</option><option>Medium</option><option>Firm</option><option>Custom preference</option></select></div>
+            <div class="planner-row full" id="focusedPressureCustomRow" hidden><label for="focusedPressureCustom">Custom pressure preference</label><input id="focusedPressureCustom" type="text"/></div>
+            <div class="planner-row"><label for="focusedPace">Pace / rhythm</label><select id="focusedPace" data-custom-select data-custom-target="focusedPaceCustom"><option>Slow and settling</option><option>Steady and flowing</option><option>Focused waves</option><option>Mixed pace</option><option selected>Provider to shape it</option><option>Custom preference</option></select></div>
+            <div class="planner-row full" id="focusedPaceCustomRow" hidden><label for="focusedPaceCustom">Custom pace / rhythm</label><input id="focusedPaceCustom" type="text"/></div>
+          </div>
+          <div><h3>Broad focus areas</h3><div class="broad-area-grid">
+            <label class="broad-area-option"><input type="checkbox" data-focused-area value="Head, scalp & face"/> Head, scalp &amp; face</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Neck & shoulders"/> Neck &amp; shoulders</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Back & torso"/> Back &amp; torso</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Arms & hands"/> Arms &amp; hands</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Hips & legs"/> Hips &amp; legs</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Feet & lower legs"/> Feet &amp; lower legs</label><label class="broad-area-option"><input type="checkbox" data-focused-area value="Full-body balance"/> Full-body balance</label>
+          </div></div>
+          <div class="planner-controls"><div class="planner-row full"><label for="focusedComfortNotes">Comfort notes / sensitivities</label><textarea id="focusedComfortNotes"></textarea></div><div class="planner-row"><label for="focusedAvoidNotes">Anything to avoid</label><textarea id="focusedAvoidNotes"></textarea></div><div class="planner-row"><label for="focusedLikesNotes">Anything you especially like</label><textarea id="focusedLikesNotes"></textarea></div><div class="planner-row full"><label for="focusedExtraNotes">Other notes</label><textarea id="focusedExtraNotes"></textarea></div></div>
+          <div class="button-row"><button class="planner-btn primary" type="button" data-simple-build="focused">Build My Massage Brief</button><button class="planner-btn" type="button" data-simple-clear="focused">Clear planner</button></div>
+          <pre class="brief-output" id="focusedBriefOutput" aria-live="polite"></pre>
+        </article>
+      </section>
+
+      <section class="planner-mode-panel" data-planner-panel="advanced">
+      <article class="card planner-form" id="massagePlannerForm">
+        <div><h3>Advanced / Custom Massage Planner</h3><p class="note">Build the full massage in detail, including individual areas, time allocation, flow, pressure, pace, sensory preferences, and clear agreement notes.</p></div>
+        <div class="planner-controls">
+          <div class="planner-row">
+            <label for="sessionLength">Session length</label>
+            <select id="sessionLength">
+              <option value="30">30 minutes</option>
+              <option value="45">45 minutes</option>
+              <option value="60" selected>60 minutes</option>
+              <option value="75">75 minutes</option>
+              <option value="90">90 minutes</option>
+              <option value="120">120 minutes</option>
+            </select>
+          </div>
+          <div class="planner-row">
+            <label for="massageStyle">Massage style</label>
+            <select id="massageStyle" data-style-select data-theme-target="massageTheme">
+              <option>Lomi Lomi Massage</option>
+              <option>Sports Massage</option>
+              <option selected>Swedish Massage</option>
+              <option>Blended</option>
+              <option>Not sure / shape it on the day</option>
+            </select>
+          </div>
+          <div class="planner-row">
+            <label for="massageTheme">Massage theme</label>
+            <select id="massageTheme" data-theme-select>
+              <option>Lomi Lomi Flow</option>
+              <option>Comfort &amp; Relaxation</option>
+              <option>Therapeutic Comfort</option>
+              <option>Restorative / Healing-Aid</option>
+              <option>Sports Focus</option>
+              <option>Energising &amp; Feel-good</option>
+              <option>Deep Reset</option>
+              <option>Custom theme</option>
+            </select>
+          </div>
+          <div class="planner-row">
+            <label for="pressurePreference">Pressure preference</label>
+            <select id="pressurePreference" data-custom-select data-custom-target="pressurePreferenceCustom" data-preserve-order><option selected>Provider to check and adjust</option><option>Changing / mixed pressure</option><option>Light</option><option>Medium</option><option>Firm</option><option>Custom preference</option></select>
+          </div>
+          <div class="planner-row">
+            <label for="flowStructure">Massage flow</label>
+            <select id="flowStructure">
+              <option>One theme throughout</option>
+              <option>Two-part flow</option>
+              <option>Three-part flow</option>
+            </select>
+          </div>
+          <div class="planner-row">
+            <label for="massagePace">Pace / rhythm</label>
+            <select id="massagePace" data-custom-select data-custom-target="massagePaceCustom"><option>Slow and settling</option><option>Steady and flowing</option><option>Focused waves</option><option>Mixed pace</option><option selected>Provider to shape it</option><option>Custom preference</option></select>
+          </div>
+        </div>
+        <div class="planner-controls">
+          <div class="planner-row full" id="pressurePreferenceCustomRow" hidden><label for="pressurePreferenceCustom">Custom pressure preference</label><input id="pressurePreferenceCustom" type="text" placeholder="Describe the pressure you want, including changes or areas to avoid."/></div>
+          <div class="planner-row full" id="massagePaceCustomRow" hidden><label for="massagePaceCustom">Custom pace / rhythm</label><input id="massagePaceCustom" type="text" placeholder="Describe the rhythm, speed, pauses, and transitions you want."/></div>
+        </div>
+
+        <div class="conditional-panel" id="customThemePanel" hidden>
+          <div class="planner-row">
+            <label for="customTheme">Custom theme</label>
+            <input id="customTheme" type="text" placeholder="Describe the feeling you want from the massage."/>
+          </div>
+        </div>
+
+        <div class="conditional-panel" id="twoPartFlowPanel" hidden>
+          <div class="planner-row">
+            <label for="twoPartFlow">Two-part flow option</label>
+            <select id="twoPartFlow">
+              <option>first 1/2 relaxation, second 1/2 energising</option>
+              <option>first 3/4 relaxation, last 1/4 feel-good</option>
+              <option>first 1/2 restorative / healing-aid, second 1/2 relaxation</option>
+              <option>first 1/2 Lomi Lomi flow, second 1/2 restorative</option>
+              <option>Customise my own flow</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="conditional-panel" id="threePartFlowPanel" hidden>
+          <div class="planner-row">
+            <label for="threePartFlow">Three-part flow option</label>
+            <select id="threePartFlow">
+              <option>first 1/4 relaxation, middle 1/2 restorative / healing-aid / sports, last 1/4 energising</option>
+              <option>first 1/4 settling, middle 1/2 focused work, last 1/4 calming finish</option>
+              <option>first 1/3 comfort, second 1/3 sports focus, final 1/3 full-body flow</option>
+              <option>first 1/3 Lomi Lomi flow, middle 1/3 focused work, final 1/3 Lomi Lomi flow</option>
+              <option>Customise my own flow</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="conditional-panel" id="customFlowPanel" hidden>
+          <h3>Customise my own flow</h3>
+          <p class="note">Choose from set fractions and set flow types. Three-part custom flow keeps the fractions inside one full session, so changing one part adjusts the available fractions for the others.</p>
+
+          <div class="custom-flow-grid" id="customTwoPartRows" hidden>
+            <div class="planner-row">
+              <label for="twoFirstFraction">First part fraction</label>
+              <select id="twoFirstFraction">
+                <option>1/4</option>
+                <option>1/3</option>
+                <option selected>1/2</option>
+                <option>2/3</option>
+                <option>3/4</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="twoFirstFlowType">First part flow</label>
+              <select id="twoFirstFlowType">
+                <option>Lomi Lomi Flow</option>
+                <option>Comfort &amp; Relaxation</option>
+                <option>Therapeutic Comfort</option>
+                <option>Restorative / Healing-Aid</option>
+                <option>Sports Focus</option>
+                <option>Energising &amp; Feel-good</option>
+                <option>Deep Reset</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="twoRemainingFlowType">Remaining flow</label>
+              <select id="twoRemainingFlowType">
+                <option>Lomi Lomi Flow</option>
+                <option>Comfort &amp; Relaxation</option>
+                <option>Therapeutic Comfort</option>
+                <option>Restorative / Healing-Aid</option>
+                <option>Sports Focus</option>
+                <option selected>Energising &amp; Feel-good</option>
+                <option>Deep Reset</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="custom-flow-grid" id="customThreePartRows" hidden>
+            <div class="planner-row">
+              <label for="threeFirstFraction">First part fraction</label>
+              <select id="threeFirstFraction" data-three-fraction="first">
+                <option value="1/4" selected>1/4</option>
+                <option value="1/3">1/3</option>
+                <option value="1/2">1/2</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="threeFirstFlowType">First part flow</label>
+              <select id="threeFirstFlowType">
+                <option>Lomi Lomi Flow</option>
+                <option selected>Comfort &amp; Relaxation</option>
+                <option>Therapeutic Comfort</option>
+                <option>Restorative / Healing-Aid</option>
+                <option>Sports Focus</option>
+                <option>Energising &amp; Feel-good</option>
+                <option>Deep Reset</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="threeMiddleFraction">Middle part fraction</label>
+              <select id="threeMiddleFraction" data-three-fraction="middle">
+                <option value="1/4" selected>1/4</option>
+                <option value="1/3">1/3</option>
+                <option value="1/2">1/2</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="threeMiddleFlowType">Middle part flow</label>
+              <select id="threeMiddleFlowType">
+                <option>Lomi Lomi Flow</option>
+                <option>Comfort &amp; Relaxation</option>
+                <option>Therapeutic Comfort</option>
+                <option selected>Restorative / Healing-Aid</option>
+                <option>Sports Focus</option>
+                <option>Energising &amp; Feel-good</option>
+                <option>Deep Reset</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="threeFinishFraction">Finishing fraction</label>
+              <select id="threeFinishFraction" data-three-fraction="finish">
+                <option value="1/4">1/4</option>
+                <option value="1/3">1/3</option>
+                <option value="1/2" selected>1/2</option>
+              </select>
+            </div>
+            <div class="planner-row">
+              <label for="threeFinishFlowType">Finishing flow</label>
+              <select id="threeFinishFlowType">
+                <option>Lomi Lomi Flow</option>
+                <option>Comfort &amp; Relaxation</option>
+                <option>Therapeutic Comfort</option>
+                <option>Restorative / Healing-Aid</option>
+                <option>Sports Focus</option>
+                <option selected>Energising &amp; Feel-good</option>
+                <option>Deep Reset</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="time-panel" aria-live="polite" id="timePanel">
+          <strong id="timeUsedText">0 / 60 minutes chosen</strong>
+          <div class="time-bar"><div class="time-fill" id="timeFill"></div></div>
+          <span class="note" id="timeRemainingText">60 minutes remaining.</span>
+        </div>
+
+        <div>
+          <h3>Body areas and time</h3>
+          <p class="note">Choose the areas you want and add time where needed. The planner stays compact and only blocks the brief if the total exceeds the session length.</p>
+          <div class="area-layout" id="massageAreaLayout"></div>
+        </div>
+
+        <div class="sensory-card" id="sensoryOptions">
+          <h3>Sensory / room options</h3>
+          <p class="note">Choose the room conditions that help the massage feel settled.</p>
+          <div class="sensory-grid">
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Essential oil diffuser"/> Essential oil diffuser</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Gentle music"/> Gentle music</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Silence"/> Silence</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Dimmer lighting"/> Dimmer lighting</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Warmer room"/> Warmer room</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Cooler room"/> Cooler room</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Minimal talking"/> Minimal talking</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Check-ins only"/> Check-ins only</label>
+            <label class="sensory-option"><input type="checkbox" data-sensory-check="Extra blanket / towel comfort"/> Extra blanket / towel comfort</label>
+          </div>
+        </div>
+
+        <div class="planner-controls">
+          <div class="planner-row full"><label for="comfortNotes">Comfort notes / sensitivities</label><textarea id="comfortNotes" placeholder="Temperature, draping comfort, quiet, talking, anxiety, old sensitivity, what helps you receive..."></textarea></div>
+          <div class="planner-row"><label for="avoidNotes">Anything to avoid</label><textarea id="avoidNotes" placeholder="Areas, pressure types, positions, sensations, words, or anything that would not feel good..."></textarea></div>
+          <div class="planner-row"><label for="likesNotes">Anything you especially like</label><textarea id="likesNotes" placeholder="More of: hands, feet, scalp, slow rhythm, firm shoulders, lighter finishing touch..."></textarea></div>
+          <div class="planner-row full"><label for="extraNotes">Other notes</label><textarea id="extraNotes" placeholder="Anything else you want the massage provider to know."></textarea></div>
+        </div>
+
+        <div>
+          <h3>Advisory notes</h3>
+          <ul class="advisory-list" id="massageAdvisories"><li>No areas selected yet.</li></ul>
+        </div>
+
+        <div class="button-row">
+          <button class="planner-btn primary" id="buildMassageBrief" type="button">Build My Massage Brief</button>
+          <button class="planner-btn" id="clearMassagePlanner" type="button">Clear planner</button>
+        </div>
+        <pre class="brief-output" id="massageBriefOutput" aria-live="polite"></pre>
+      </article>
+      </section>
+    </div>
+  </section>
+</main>
+
+</div>
+<script src="/sitewide/js/baseline-shared.js?v=20260712_LOMI_FULL_SITE"></script>
+<script src="/sitewide/js/baseline-tabs.js?v=20260712_LOMI_FULL_SITE"></script>
+<script>
+
+(function(){
+  'use strict';
+
+  const qs = (sel, root=document) => root.querySelector(sel);
+  const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+
+  const libraryData = [
+    {category:'Types Of Massage', items:[
+      {title:'Lomi Lomi Massage', desc:'A flowing Hawaiian massage tradition using broad, rhythmic contact to create continuity across the body rather than treating each area as an isolated task.', details:['Cultural context: Lomilomi is a Native Hawaiian healing practice with varied family, teacher, and lineage traditions. A general massage-library description cannot represent every traditional form.', 'What it feels like: long flowing strokes, broad contact, compression, rhythm, and smooth transitions that can make the massage feel spacious, warm, and connected.', 'How it is performed: trained practitioners may use the hands, forearms, arms, or elbows for gliding strokes, compression, and long continuous movement, with technique adapted to the receiver and the practitioner’s training.', 'Why someone might choose it: full-body flow, rhythmic movement, warmth, relaxation, and a session that feels integrated rather than divided into separate body parts.', 'Pressure choice: contact may range from light and soothing to firmer and more substantial, but it should remain clearly communicated, comfortable, and adjustable.', 'Session direction: the work may travel in long paths across larger areas, return in repeated waves, and use broad transitions so the body is not left feeling fragmented.', 'Related library section: see Lomi Lomi Techniques for general hands-on methods such as broad arm compression, forearm and hand gliding, long flowing strokes, and continuous full-body transitions.', 'Naming and training: where a provider is not traditionally trained in lomilomi, it is more accurate to describe the work as Lomi Lomi-inspired flowing massage rather than presenting it as the complete traditional Hawaiian healing practice.', 'Clear boundaries: pain, injury, unexplained swelling, numbness, fever, medical concerns, and any culturally or personally sensitive element require appropriate limits, consent, and referral where needed.']},
+      {title:'Sports Massage', desc:'Focused bodywork with clear pressure. Sports Massage is grounded, practical, and clearly communicated, supporting recovery, movement comfort, maintenance, and areas that feel overworked, tired, heavy, or restricted.', details:['Overall direction: pressure should stay useful, communicated, and adjustable rather than becoming forceful or something the receiver has to endure.', 'Scope: consultation, preparation, soft-tissue work, pressure awareness, stretching where appropriate, aftercare, and referral when something is outside massage. It does not diagnose or treat acute injury, unexplained symptoms, or pathology.', 'Focused pressure: firmer contact, compression, friction, soft tissue release, and stretching can be used, but the body should not be forced.', 'Useful for maintenance: training support, tired legs, shoulder load, recovery, movement comfort, and areas that repeatedly feel restricted.', 'Pressure can work in waves: broad pressure, focused contact, a lighter reset, then another round if wanted.', 'Clear boundaries: sharp pain, acute injury, unexplained swelling, numbness, fever, or medical concern needs appropriate clinical support.', 'Trigger point work: steady, specific pressure can be used carefully and briefly for local tightness or repeated holding patterns, followed by a broad reset rather than grinding pressure.', 'Soft tissue release: position, pressure, and gentle active or passive movement can be combined where an area responds better to movement than static pressure.', 'Cross-fibre friction: short focused friction can be used across the tissue direction with clear feedback, brief timing, and softer contact afterwards.', 'Assisted stretching: the provider can support the limb into a clear, tolerable stretch without forcing range, using static stretch, contract-relax, gentle range of movement, or shorter repeated stretches.', 'Gentle resisted engagement: a light contraction against support, followed by release, can help an area reset through active participation rather than force.', 'Compression for recovery: broad still or pulsed pressure through larger areas can support tired legs, shoulders, training load, and general recovery.']},
+      {title:'Swedish Massage', desc:'A warm, flowing, whole-body style built around glide, rhythm, broad contact, nurturing pressure, and smooth transitions so the body can feel warmer, quieter, easier, and more connected.', details:['What it feels like: long flowing strokes, warmth and glide, broad palm contact, soft transitions, and a pace that lets the body settle instead of bracing.', 'Why someone might choose it: comfort, relaxation, tiredness, body ease, stress, feeling held, and feeling reconnected with the body.', 'How the session may move: broad settling contact first, then a calm journey through areas such as the back, shoulders, legs, arms, hands, feet, neck, or head, finishing with lighter strokes.', 'Pressure choice: light, medium, firm, or changing pressure can all belong when the receiver names what works for them.', 'Long flowing strokes: broad palms, forearms, or soft knuckles move with oil or balm in long paths that connect one area to another, building warmth and helping the session feel continuous.', 'Settling holds: still contact over an agreed area can help the body arrive, calm the pace, close an area, or create a pause between different pressures.', 'Full-body rhythm: a repeated pace, pressure language, and transition style across different areas keeps the massage coherent rather than fragmented.', 'Warmth and glide: oil, balm, hand warmth, and smooth movement reduce drag, warm the tissue, and make touch easier to receive without becoming slippery or unfocused.', 'Finishing strokes: lighter, broader, or slower closing contact helps the receiver come back gradually and prevents the session from ending abruptly.']}
+    ]},
+    {category:'Body Areas', items:[
+      {title:'Head', desc:'Can be included for quiet, grounding, or a calmer finish.', details:['How it is approached: light contact, stillness, scalp work, or gentle pressure around the head where appropriate.', 'What it can support: settling, quietness, closing the session, and easing the transition out of massage.']},
+      {title:'Scalp', desc:'Can feel nurturing, settling, or deeply relaxing.', details:['How it is approached: fingertips, gentle circles, holds, or slow movement through the scalp.', 'What it can support: relaxation, feeling held, and a calmer finish.']},
+      {title:'Neck', desc:'Comfort-led work only; front and sides of neck need explicit agreement and care.', details:['How it is approached: gentle supported work, slow pressure changes, and careful positioning.', 'What it can support: shoulder load, posture comfort, and head/neck ease when clearly agreed.']},
+      {title:'Shoulders', desc:'A common focus area for load, stress, posture, and overuse.', details:['How it is approached: broad contact, kneading, compression, and careful focused work where useful.', 'What it can support: upper-body load, desk posture, training load, and general comfort.']},
+      {title:'Arms', desc:'Can be included for tiredness, training load, or simple full-body completion.', details:['How it is approached: long strokes, compression, petrissage, and hand-to-shoulder connection.', 'What it can support: full-body flow, hand/arm tiredness, racket sports, lifting, or repetitive use.']},
+      {title:'Hands', desc:'A small area that can feel personal, detailed, and comforting.', details:['How it is approached: palm pressure, finger traction, thumb work, and gentle joint movement.', 'What it can support: comfort, detail, and a nurturing finish.']},
+      {title:'Back', desc:'Upper, mid, and lower back can be treated as one connected area or divided for focus.', details:['How it is approached: long strokes, compression, kneading, friction, and focused waves of pressure.', 'What it can support: broad relaxation, shoulder load, breathing comfort, and lower-back ease.']},
+      {title:'Hips and legs', desc:'Hips, thighs, calves, ankles, and feet can be included for grounding, recovery, or full-body balance.', details:['How it is approached: broad pressure, compression, glide, assisted movement, and detailed work where wanted.', 'What it can support: training load, standing fatigue, grounding, and whole-body completion.']}
+    ]},
+    {category:'Massage Feelings / Themes', items:[
+      {title:'Comfort & Relaxation', desc:'Softening, warmth, rhythm, rest, and being looked after.', details:['How it is shaped: slower pace, broad contact, steady rhythm, and fewer abrupt transitions.', 'Useful when: the receiver wants to settle, rest, and feel looked after.']},
+      {title:'Lomi Lomi Flow', desc:'Broad, rhythmic, connected movement that helps the session feel continuous rather than divided into separate tasks.', details:['How it is shaped: long flowing strokes, hands, forearms or arms, broad compression, repeated rhythm, and smooth transitions, adapted to the provider’s training and the receiver’s comfort.', 'Useful when: the receiver wants warm full-body continuity, flowing rhythm, and fewer abrupt changes between areas.', 'Cultural note: this theme describes a Lomi Lomi-inspired session direction. Traditional lomilomi is a Native Hawaiian healing practice with varied family, teacher, and lineage traditions.']},
+      {title:'Therapeutic Comfort', desc:'Useful focused work without losing kindness or body ease.', details:['How it is shaped: focused areas are worked in waves, with lighter contact and resets between pressure.', 'Useful when: the receiver wants practical bodywork but still wants the session to feel warm and receivable.']},
+      {title:'Restorative / Healing-Aid', desc:'A gentle support feeling for tiredness, heaviness, and recovery.', details:['How it is shaped: steady pressure, warmth, slower transitions, and low sensory load.', 'Useful when: the body feels depleted, heavy, or in need of quieter support.']},
+      {title:'Sports Focus', desc:'Grounded work for overused, tired, restricted, or training-loaded areas.', details:['How it is shaped: clearer focus, more specific pressure, compression, stretching where useful, and direct feedback.', 'Useful when: recovery, maintenance, or movement comfort is the main aim.']},
+      {title:'Energising & Feel-good', desc:'A brighter finish, lighter rhythm, and a more awake body feeling.', details:['How it is shaped: lighter percussion where appropriate, quicker finishing rhythm, and more uplifting transitions.', 'Useful when: the receiver wants to leave refreshed rather than sleepy.']},
+      {title:'Deep Reset', desc:'Slower, fuller, more focused contact with time to settle after intensity.', details:['How it is shaped: deeper work is given time, varied carefully, and followed by calming contact.', 'Useful when: the receiver wants a more complete focused session without the body feeling rushed.']}
+    ]}
+  ];
+
+  const techniqueData = [
+    {category:'Compression', items:[
+      {title:'Static compression', desc:'Still pressure held through a broad or focused area.', details:['How it is performed: palms, thumbs, forearms, or soft fists hold steady pressure for a short period.', 'What it is used for: grounding, easing tight areas, and giving pressure without sliding.', 'Variations: palm compression, forearm compression, thumb compression, and broad supported holds.']},
+      {title:'Rhythmic compression', desc:'Repeated press-and-release contact.', details:['How it is performed: pressure is applied and released in a steady rhythm.', 'What it is used for: tired tissue, larger muscle groups, and a comfortable alternative to deep gliding.', 'Variations: palm pulsing, forearm pulsing, compression with rocking, and compression followed by glide.']},
+      {title:'Broad palm compression', desc:'A warm, non-pointed pressure using the whole palm.', details:['How it is performed: the palm settles into the tissue, then releases or moves gradually.', 'What it is used for: comfort, grounding, and pressure that feels supportive rather than sharp.', 'Variations: one-hand compression, two-hand compression, or palm compression with slow rocking.']}
+    ]},
+    {category:'Effleurage', items:[
+      {title:'Long gliding strokes', desc:'Continuous gliding contact that warms tissue, settles the nervous system, and connects one area of the massage to another.', details:['How it is performed: palms, fingers, or forearms glide with oil or balm in long, even paths, usually following the shape of the body rather than jumping between isolated points.', 'What it is used for: warming tissue, settling the receiver, connecting the session, checking how the body responds to pressure, and reducing abrupt transitions between areas.', 'Variations: broad palm glide, forearm glide, light finishing glide, slower grounding strokes, and connecting strokes between nearby areas.']},
+      {title:'Feathering', desc:'Very light finishing contact used to close or soften an area.', details:['How it is performed: fingertips or palms move lightly over the skin with minimal pressure.', 'What it is used for: calming the nervous system, finishing an area, or easing out of deeper pressure.', 'Variations: fingertip feathering, palm feathering, and slow closing strokes.']},
+      {title:'Forearm glide', desc:'A broader form of effleurage using the forearm for fuller contact.', details:['How it is performed: the forearm moves slowly through larger areas such as the back, thighs, or calves.', 'What it is used for: deeper warmth without poking pressure, larger-area flow, and broad grounding contact.', 'Variations: slow forearm glide, angled forearm glide, and forearm-to-palm transitions.']}
+    ]},
+    {category:'Friction', items:[
+      {title:'Circular friction', desc:'Small circular focused movement over a local area.', details:['How it is performed: fingers, thumbs, or knuckles make controlled circles without excessive force.', 'What it is used for: local warming, small areas of tightness, and more detailed attention.', 'Variations: thumb circles, fingertip circles, supported knuckle circles, and lighter circles over sensitive areas.']},
+      {title:'Cross-fibre friction', desc:'Short strokes across the line of the tissue.', details:['How it is performed: contact moves across the tissue direction for a brief, clearly communicated period.', 'What it is used for: focused texture work, tendon or muscle attachment work, and small stubborn areas.', 'Variations: thumb cross-fibre, finger cross-fibre, and short forearm-supported friction.']},
+      {title:'Linear friction', desc:'Short focused strokes along a small path.', details:['How it is performed: contact moves back and forth along a short line without grinding.', 'What it is used for: warming a small line of tissue and preparing for broader work afterwards.', 'Variations: thumb line work, knuckle line work, and gentle linear friction around joints.']}
+    ]},
+    {category:'Lomi Lomi Techniques', items:[
+      {title:'Broad arm compression', desc:'Broad pressure delivered through the forearm, arm, or carefully placed elbow contact rather than narrow, poking pressure.', details:['How it is performed: the provider settles broad contact into a suitable fleshy area, holds or pulses the pressure, and releases gradually while keeping the receiver informed.', 'What it is used for: warmth, grounding, larger-area pressure, and a fuller contact feeling without relying only on the hands.', 'Context: this is a general library description of a method used in some lomilomi training; exact practice varies by teacher, family, and lineage.']},
+      {title:'Continuous full-body transitions', desc:'Smooth movement connects one area to the next so the massage is experienced as one coherent flow rather than a set of disconnected tasks.', details:['How it is performed: broad gliding contact, returning strokes, and gradual changes of direction link nearby regions while draping, comfort, and boundaries remain clear.', 'What it is used for: continuity, whole-body connection, and reducing abrupt starts and stops between areas.', 'Context: the transition pattern should match the provider’s training and should not imitate culturally specific ritual or lineage practice that has not been learned.']},
+      {title:'Forearm gliding strokes', desc:'Long, broad gliding contact using the forearm to create warmth, rhythm, and continuous movement across larger areas.', details:['How it is performed: the soft forearm surface travels slowly with suitable oil or balm, using controlled body weight and avoiding sharp pressure from the elbow point.', 'What it is used for: broad warmth, flowing pressure, and connecting larger body regions without fragmented contact.', 'Variations: single-forearm glide, alternating forearm glide, and forearm-to-hand transitions, all adjusted to the receiver’s feedback.']},
+      {title:'Hand gliding strokes', desc:'Long, rhythmic strokes with the palms and hands that establish flow while keeping pressure responsive and clearly communicated.', details:['How it is performed: the hands glide in long paths, return smoothly, and maintain enough contact to avoid the massage feeling interrupted.', 'What it is used for: warming tissue, settling the pace, checking pressure, and linking detailed work back into a broader session rhythm.', 'Variations: broad palm glide, two-hand following strokes, lighter returning strokes, and slow finishing passes.']},
+      {title:'Long flowing strokes', desc:'Extended strokes travel across larger areas and repeat in waves, creating the recognisable sense of continuity associated with contemporary Lomi Lomi-style massage.', details:['How it is performed: hands, forearms, or arms move in long controlled paths with smooth changes of direction and no forced reach or unstable pressure.', 'What it is used for: full-body flow, rhythmic warmth, spaciousness, and helping separate areas feel part of one session.', 'Cultural and training note: traditional lomilomi is broader than a collection of strokes; this entry describes a general hands-on feature and is not a substitute for culturally grounded training.']}
+    ]},
+    {category:'Passive Movement / Gentle Mobilisation', items:[
+      {title:'Gentle range of movement', desc:'The provider moves an area while the receiver stays relaxed.', details:['How it is performed: joints are moved slowly through comfortable range only.', 'What it is used for: checking ease, reducing stiffness, and helping the body feel moved without effort.', 'Variations: shoulder range, hip range, ankle circles, wrist movement, and neck movement only with care.']},
+      {title:'Supported movement', desc:'Movement where the body is held and guided rather than pulled.', details:['How it is performed: the provider supports the limb or area fully while moving slowly.', 'What it is used for: comfort, trust, and gentle mobility work.', 'Variations: supported arm movement, supported leg movement, and supported head/neck movement where appropriate.']},
+      {title:'Light traction', desc:'Gentle lengthening pressure, never forceful pulling.', details:['How it is performed: a limb or area is supported and gently lengthened within comfort.', 'What it is used for: decompression feeling, lengthening, and a clearer finish after focused work.', 'Variations: ankle traction, wrist traction, gentle neck traction only if appropriate, and short release holds.']}
+    ]},
+    {category:'Petrissage', items:[
+      {title:'Kneading', desc:'Rhythmic lifting and pressing of soft tissue.', details:['How it is performed: tissue is gently gathered, lifted, compressed, and released in rhythm.', 'What it is used for: warming muscles, softening tight areas, and giving a nurturing pressure feeling.', 'Variations: thumb kneading, palm kneading, forearm-assisted kneading, and slower broad kneading.']},
+      {title:'Wringing', desc:'Two hands move tissue in opposing directions to create a rolling release.', details:['How it is performed: the hands move across the tissue in opposite directions, like gently wringing fabric.', 'What it is used for: larger muscle areas, warming, and freeing a broad section without drilling into one point.', 'Variations: back wringing, thigh wringing, calf wringing, and light rhythmic wringing.']},
+      {title:'Skin rolling', desc:'Gentle lifting and rolling of superficial tissue.', details:['How it is performed: a fold of tissue is lifted and rolled slowly, only where it feels comfortable.', 'What it is used for: surface tissue mobility and sensory awareness.', 'Variations: small local rolls, longer rolling paths, or very light assisted lifting.']}
+    ]},
+    {category:'Tapotement', items:[
+      {title:'Hacking', desc:'Light rhythmic chopping made with the outer / little-finger side of relaxed hands, not with a flat palm or hard edge.', details:['How it is performed: the relaxed outer edges of the hands alternate quickly over a larger muscle area, with loose wrists and soft, springy contact rather than hard chopping. The side of the hand is the defining feature of hacking.', 'What it is used for: brief energising, stimulating larger areas, changing the rhythm of the session, or adding a brighter finish when the receiver wants that feeling.', 'Variations: very light hacking, slower rhythmic hacking, short bursts only, or replacing it with softer tapping if the receiver finds side-hand percussion too sharp or startling.']},
+      {title:'Cupping', desc:'Rhythmic percussion using hollow, cupped hands so the contact feels springy rather than flat or slapping.', details:['How it is performed: the hands form a loose cup and alternate over larger fleshy areas, creating a soft hollow contact rather than a slap. The wrist stays relaxed and the pressure stays brief.', 'What it is used for: adding liveliness, stimulating larger areas, changing the pace after slower work, or giving an energising finish when that suits the receiver.', 'Variations: light cupping, alternating cupping, slower cupping, and short work over the back or thighs where appropriate.']},
+      {title:'Tapping', desc:'Light fingertip or hand tapping.', details:['How it is performed: fingers or relaxed hands tap rhythmically and lightly.', 'What it is used for: gentle stimulation, sensory variety, and a lighter energising finish.', 'Variations: fingertip tapping, soft hand tapping, and short rhythmic patterns.']},
+      {title:'Beating / loose-fist percussion', desc:'A stronger form of rhythmic percussion using loose fists or softened hand contact, only when clearly appropriate and wanted.', details:['How it is performed: loose fists or softened closed hands make brief, springy contact over larger muscle areas. It should never feel like striking, punishment, or force; the rhythm and looseness matter more than strength.', 'What it is used for: short energising work on large fleshy areas, usually as a brief change of rhythm rather than a main treatment style. It is not for bony, sensitive, painful, or anxious areas.', 'Variations: very light loose-fist percussion, alternating rhythm, short bursts only, or avoiding it entirely if it does not fit the receiver.']}
+    ]},
+    {category:'Vibration & Shaking', items:[
+      {title:'Fine vibration', desc:'Small rapid movement through the hands or fingers.', details:['How it is performed: a light vibration is transmitted through soft contact.', 'What it is used for: softening guarding, changing sensation, and easing an area after pressure.', 'Variations: fingertip vibration, palm vibration, and short local vibration.']},
+      {title:'Rocking', desc:'Gentle rhythmic movement through an area or the whole body.', details:['How it is performed: the provider applies a slow, contained rocking motion through the body or limb.', 'What it is used for: settling, reducing bracing, and helping the receiver feel safely moved.', 'Variations: shoulder rocking, hip rocking, limb rocking, and full-body settling rhythm.']},
+      {title:'Limb shaking', desc:'Gentle shaking through an arm or leg.', details:['How it is performed: the limb is supported and softly shaken without pulling or forcing.', 'What it is used for: releasing holding patterns and bringing ease back after focused work.', 'Variations: arm shaking, leg shaking, foot shaking, and very small supported movement.']}
+    ]}
+  ];
+
+  const areaGroups = [
+    {
+      title:'Upper Body',
+      help:'Tick the upper-body areas you want included.',
+      kind:'upper',
+      areas:['Head','Scalp','Neck','Shoulders','Arms','Hands','Upper back','Mid back','Lower back','Ribs / breathing area','Waist / obliques']
+    },
+    {
+      title:'Lower Body',
+      help:'Tick the lower-body areas you want included.',
+      kind:'lower',
+      areas:['Hips','Thighs','Knees','Calves','Shins','Ankles','Feet','Toes']
+    },
+    {
+      title:'Clear Agreement Areas',
+      help:'These can be included when the receiver clearly chooses them and the provider is comfortable working with them.',
+      kind:'sensitive',
+      areas:['Chest / pecs','Abdomen','Glutes','Inner thigh / adductors','Front or sides of neck','Face / jaw']
+    }
+  ];
+
+  const thresholds = {
+    small:25,
+    limb:30,
+    medium:40,
+    large:60
+  };
+
+  function categoryForArea(name){
+    const lower = String(name || '').toLowerCase();
+    if(/hands|feet|toes|jaw|face|scalp|head|knees|ankles/.test(lower)) return 'small';
+    if(/calves|shins|arms|thighs/.test(lower)) return 'limb';
+    if(/shoulders|lower back|mid back|upper back|hips|neck|ribs|waist|abdomen|chest|glutes|inner thigh/.test(lower)) return 'medium';
+    return 'medium';
+  }
+
+  function isSensitiveArea(name){
+    return /chest|pecs|abdomen|glutes|inner thigh|adductors|front or sides of neck|face|jaw/i.test(String(name || ''));
+  }
+
+  function findTimeEl(name){
+    return qsa('[data-area-time]').find(el => el.getAttribute('data-area-time') === name) || null;
+  }
+
+  function renderLibrary(){
+    const tabs = qs('#massageLibraryTabs');
+    const grid = qs('#massageLibraryGrid');
+    const controls = qs('#libraryTechniqueControls');
+    const filter = qs('#massageTechniqueFilter');
+    const typeControls = qs('#libraryTypeControls');
+    const typeFilter = qs('#massageTypeFilter');
+    if(!tabs || !grid) return;
+
+    tabs.innerHTML = '';
+    grid.innerHTML = '';
+    if(filter){
+      filter.innerHTML = '<option value="all">Show All</option>';
+      techniqueData.slice().sort((a, b) => a.category.localeCompare(b.category, undefined, {sensitivity:'base'})).forEach(group => {
+        const option = document.createElement('option');
+        option.value = 'category::' + group.category;
+        option.textContent = group.category;
+        filter.appendChild(option);
+      });
+    }
+    if(typeFilter){
+      typeFilter.innerHTML = '<option value="all">Show All</option>';
+      const massageTypes = libraryData.find(group => group.category === 'Types Of Massage');
+      if(massageTypes){
+        massageTypes.items.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, {sensitivity:'base'})).forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.title;
+          option.textContent = item.title;
+          typeFilter.appendChild(option);
+        });
+      }
+    }
+    if(filter){ sortSelectOptions(filter); filter.value = 'all'; }
+    if(typeFilter){ sortSelectOptions(typeFilter); typeFilter.value = 'all'; }
+
+    const tabGroups = [{category:'Massage Techniques', type:'techniques'}].concat(libraryData.map(group => Object.assign({type:'standard'}, group)));
+
+    if(controls) controls.hidden = false;
+    if(typeControls) typeControls.hidden = true;
+
+    tabGroups.forEach((group, index) => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'library-tab';
+      tab.textContent = group.category;
+      tab.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+      tab.dataset.libraryCategory = group.category;
+      tab.dataset.libraryType = group.type;
+      tabs.appendChild(tab);
+    });
+
+    techniqueData.slice().sort((a, b) => a.category.localeCompare(b.category, undefined, {sensitivity:'base'})).forEach((group, groupIndex) => {
+      group.items.forEach((item, itemIndex) => {
+        grid.appendChild(buildLibraryCard({
+          tabCategory:'Massage Techniques',
+          category:group.category,
+          title:item.title,
+          desc:item.desc,
+          details:item.details,
+          index:'tech_' + groupIndex + '_' + itemIndex,
+          techniqueCategory:group.category,
+          techniqueTitle:item.title,
+          hidden:false
+        }));
+      });
+    });
+
+    libraryData.forEach((group, groupIndex) => {
+      const items = group.category === 'Types Of Massage'
+        ? group.items.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, {sensitivity:'base'}))
+        : group.items;
+      items.forEach((item, itemIndex) => {
+        grid.appendChild(buildLibraryCard({
+          tabCategory:group.category,
+          category:group.category,
+          title:item.title,
+          desc:item.desc,
+          details:item.details || [],
+          index:'std_' + groupIndex + '_' + itemIndex,
+          typeTitle:group.category === 'Types Of Massage' ? item.title : '',
+          hidden:true
+        }));
+      });
+    });
+
+    function labelFromDetail(raw){
+      const text = String(raw || '').trim();
+      const splitAt = text.indexOf(':');
+      if(splitAt > 0 && splitAt < 42){
+        return {label:text.slice(0, splitAt).trim(), body:text.slice(splitAt + 1).trim()};
+      }
+      return {label:'Detail', body:text};
+    }
+
+    function overviewExpansion(data){
+      const category = String(data.category || '');
+      const title = String(data.title || '');
+      if(category === 'Types Of Massage') return '';
+      if(category === 'Effleurage') return ' It usually belongs at the beginning and end of a massage, and it can also be used between deeper work so the receiver does not feel jumped from one area to another.';
+      if(category === 'Petrissage') return ' It gives the body a warmer, worked-through feeling without needing to become sharp or clinical, and it can be adjusted from gentle and nurturing to firmer and more focused.';
+      if(category === 'Friction') return ' It is more local than flowing massage, so it needs to be used with care, brief timing, and clear feedback rather than being repeated until the body braces.';
+      if(category === 'Tapotement') return ' It is usually brighter and more stimulating than slow massage, so it fits best when the receiver wants energy, circulation, or a short change in rhythm.';
+      if(category === 'Compression') return ' It can feel grounding because the pressure is clear and held rather than slippery, making it useful when the receiver wants contact that feels steady and contained.';
+      if(category === 'Vibration & Shaking') return ' It changes the sensory quality of the massage and can help the body release guarding when a static or deep approach would feel too direct.';
+      if(category === 'Passive Movement / Gentle Mobilisation') return ' It brings movement into the session without asking the receiver to perform, and it should always stay inside a comfortable, supported range.';
+      if(/Head|Scalp|Neck|Shoulders|Arms|Hands|Back|Hips and legs/.test(title)) return ' This helps the receiver decide whether the area belongs in the session, whether it needs time, and whether it needs gentler handling or clearer agreement.';
+      if(/Comfort|Therapeutic|Restorative|Sports|Energising|Deep Reset/.test(title)) return ' It gives the session an emotional and practical direction so the provider is not guessing the intended mood, pressure, or finish.';
+      return ' It helps turn a general massage preference into something the provider can actually shape with pressure, pace, timing, and clear feedback.';
+    }
+
+    function detailExpansion(label, body, data){
+      const category = String(data.category || '');
+      const title = String(data.title || '');
+      if(category === 'Types Of Massage') return String(body || '').replace(/\s+$/,'');
+      const l = String(label || '').toLowerCase();
+      let extra = '';
+      if(l.includes('how')){
+        if(category === 'Effleurage') extra = ' The contact should feel continuous and unbroken, with enough pressure to feel present but not so much that it becomes digging or dragging.';
+        else if(category === 'Petrissage') extra = ' The movement should feel like the tissue is being warmed and worked through, not pinched or grabbed, with rhythm doing as much of the work as force.';
+        else if(category === 'Friction') extra = ' Because the movement is small and specific, it should be brief, deliberate, and followed by softer contact so the area does not feel irritated.';
+        else if(category === 'Tapotement') extra = ' The rhythm matters more than force: it should feel controlled, light enough to receive, and easy to stop if it feels too stimulating.';
+        else if(category === 'Compression') extra = ' The pressure can be still, pulsed, or slowly released, and it should feel broad enough to support the area rather than poke into it.';
+        else if(category === 'Vibration & Shaking') extra = ' The provider supports the area so the receiver does not have to hold themselves in place, and the movement stays small enough to feel safe.';
+        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' The provider supports the limb or joint so the receiver can stay relaxed, with the movement stopping before strain, stretch-pain, or loss of trust.';
+        else extra = ' The approach should be clear enough for the receiver to understand what is happening, while still being adjusted through comfort and feedback.';
+      }else if(l.includes('used') || l.includes('support') || l.includes('useful')){
+        if(category === 'Effleurage') extra = ' It is also useful as a transition, because it lets the massage feel close and connected rather than broken into separate tasks.';
+        else if(category === 'Petrissage') extra = ' It can bring a satisfying worked-through feeling while still keeping warmth and care in the session.';
+        else if(category === 'Friction') extra = ' It is best used as a focused tool inside a wider massage, not as the whole feeling of the session.';
+        else if(category === 'Tapotement') extra = ' It can wake an area up, change the mood of the session, or give a more energising finish when that is wanted.';
+        else if(category === 'Compression') extra = ' It can be especially useful when the receiver wants pressure but does not want constant sliding, oiliness, or a restless pace.';
+        else if(category === 'Vibration & Shaking') extra = ' It can soften guarding, reset an area after pressure, or make the body feel less fixed and held.';
+        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' It can help the body feel included and moved without turning the massage into exercise or performance.';
+        else extra = ' This gives the provider a clearer reason for including it and helps the receiver decide whether it belongs in the session.';
+      }else if(l.includes('variation')){
+        if(category === 'Effleurage') extra = ' The variation should match the area size and the desired mood: broad and slow for settling, lighter for finishing, firmer only when clearly wanted.';
+        else if(category === 'Petrissage') extra = ' The same family can feel comforting, focused, or sports-led depending on depth, speed, and how much tissue is lifted or compressed.';
+        else if(category === 'Friction') extra = ' The smaller the contact, the more important it is to keep it short, specific, and balanced with broader contact around it.';
+        else if(category === 'Tapotement') extra = ' These variations should be offered as options, not imposed, because some receivers find them energising while others find them too sharp or startling.';
+        else if(category === 'Compression') extra = ' A broad variation usually feels more supportive; a narrow variation feels more specific and should be checked more carefully.';
+        else if(category === 'Vibration & Shaking') extra = ' Smaller variations are calmer, while larger rocking or shaking can feel more resetting and expressive when the receiver likes it.';
+        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' The variation should follow the receiver’s comfort, the area being moved, and whether the aim is relaxation, mobility, or a gentle reset.';
+        else extra = ' The exact version should be chosen from comfort, area size, pressure preference, and the overall rhythm of the massage.';
+      }else{
+        extra = ' This point should be read as practical guidance, not a fixed script; the receiver’s comfort and communication shape how it is used.';
+      }
+      return String(body || '').replace(/\s+$/,'') + extra;
+    }
+
+    function buildDetailHtml(data){
+      const details = data.details && data.details.length ? data.details : ['Use: This can be included, skipped, softened, or made more focused depending on what the receiver clearly chooses.'];
+      return details.map(detail => {
+        const parsed = labelFromDetail(detail);
+        const body = detailExpansion(parsed.label, parsed.body, data);
+        return '<p><strong>' + escapeHtml(parsed.label) + ':</strong> ' + escapeHtml(body) + '</p>';
+      }).join('');
+    }
+
+    function buildLibraryCard(data){
+      const card = document.createElement('article');
+      card.className = 'library-card library-entry';
+      card.dataset.libraryCategory = data.tabCategory;
+      if(data.techniqueCategory) card.dataset.techniqueCategory = data.techniqueCategory;
+      if(data.techniqueTitle) card.dataset.techniqueTitle = data.techniqueTitle;
+      if(data.typeTitle) card.dataset.typeTitle = data.typeTitle;
+      card.hidden = !!data.hidden;
+      const detailId = 'libraryDetail_' + data.index;
+      card.innerHTML = [
+        '<span class="library-tag">' + escapeHtml(data.category) + '</span>',
+        '<h3>' + escapeHtml(data.title) + '</h3>',
+        '<p class="library-summary"><strong>Overview:</strong> ' + escapeHtml(data.desc + overviewExpansion(data)) + '</p>',
+        '<div class="library-detail" id="' + detailId + '">',
+        buildDetailHtml(data),
+        '</div>'
+      ].join('');
+      return card;
+    }
+
+    function activeTab(){
+      return qs('[data-library-category][aria-selected="true"]', tabs);
+    }
+
+    function applyTechniqueFilter(){
+      if(!filter) return;
+      const value = filter.value || 'all';
+      qsa('.library-card[data-library-category="Massage Techniques"]', grid).forEach(card => {
+        const category = card.dataset.techniqueCategory || '';
+        let show = true;
+        if(value.startsWith('category::')) show = category === value.split('::')[1];
+        card.hidden = !show;
+      });
+    }
+
+    function applyTypeFilter(){
+      if(!typeFilter) return;
+      const value = typeFilter.value || 'all';
+      qsa('.library-card[data-library-category="Types Of Massage"]', grid).forEach(card => {
+        const title = card.dataset.typeTitle || '';
+        card.hidden = value !== 'all' && title !== value;
+      });
+    }
+
+    tabs.addEventListener('click', e => {
+      const tab = e.target.closest('[data-library-category]');
+      if(!tab) return;
+      const category = tab.dataset.libraryCategory;
+      qsa('[data-library-category]', tabs).forEach(btn => btn.setAttribute('aria-selected', btn === tab ? 'true' : 'false'));
+      if(controls) controls.hidden = category !== 'Massage Techniques';
+      if(typeControls) typeControls.hidden = category !== 'Types Of Massage';
+      qsa('.library-card', grid).forEach(card => {
+        card.hidden = card.dataset.libraryCategory !== category;
+      });
+      if(category === 'Massage Techniques') applyTechniqueFilter();
+      if(category === 'Types Of Massage') applyTypeFilter();
+    });
+
+    if(filter){
+      filter.addEventListener('change', () => {
+        const tab = activeTab();
+        if(tab && tab.dataset.libraryCategory === 'Massage Techniques') applyTechniqueFilter();
+      });
+    }
+
+    if(typeFilter){
+      typeFilter.addEventListener('change', () => {
+        const tab = activeTab();
+        if(tab && tab.dataset.libraryCategory === 'Types Of Massage') applyTypeFilter();
+      });
+    }
+
+      }
+
+  function renderAreas(){
+    const root = qs('#massageAreaLayout');
+    if(!root) return;
+    root.innerHTML = '';
+
+    const card = document.createElement('article');
+    card.className = 'area-card body-area-card';
+    card.innerHTML = [
+      '<strong>Body areas</strong>',
+      '<span>Tick the areas wanted and add time only where needed.</span>',
+      '<div class="area-groups"></div>'
+    ].join('');
+
+    const groupsRoot = qs('.area-groups', card);
+
+    areaGroups.forEach(group => {
+      const section = document.createElement('section');
+      section.className = 'area-section area-section-' + group.kind + (group.kind === 'sensitive' ? ' agreement-card' : '');
+      section.innerHTML = [
+        '<div class="area-section-head">',
+        '<strong>' + escapeHtml(group.title) + '</strong>',
+        '<span>' + escapeHtml(group.help) + '</span>',
+        '</div>',
+        '<div class="area-list"></div>'
+      ].join('');
+
+      const list = qs('.area-list', section);
+      group.areas.forEach(name => {
+        const id = 'area_' + slug(name);
+        const row = document.createElement('div');
+        row.className = 'area-item';
+        row.dataset.areaName = name;
+        row.dataset.areaGroup = group.kind;
+        row.innerHTML = [
+          '<input type="checkbox" id="' + id + '" data-area-check="' + escapeHtml(name) + '"/>',
+          '<label for="' + id + '">' + escapeHtml(name) + '</label>',
+          '<input class="area-time" data-area-time="' + escapeHtml(name) + '" type="number" min="0" step="5" value="0" aria-label="' + escapeHtml(name) + ' minutes" disabled/>'
+        ].join('');
+        list.appendChild(row);
+      });
+
+      groupsRoot.appendChild(section);
+    });
+
+    root.appendChild(card);
+  }
+
+  function selectedAreas(){
+    return qsa('[data-area-check]').map(check => {
+      const name = check.getAttribute('data-area-check');
+      const timeEl = findTimeEl(name);
+      const minutes = Math.max(0, Number(timeEl && timeEl.value) || 0);
+      return { name, checked: check.checked, minutes };
+    }).filter(item => item.checked);
+  }
+
+
+  const threePartFractionCombos = [
+    {first:'1/4', middle:'1/4', finish:'1/2'},
+    {first:'1/4', middle:'1/2', finish:'1/4'},
+    {first:'1/2', middle:'1/4', finish:'1/4'},
+    {first:'1/3', middle:'1/3', finish:'1/3'}
+  ];
+
+  function uniqueValues(values){
+    return Array.from(new Set(values));
+  }
+
+  function setSelectOptionsById(id, values, selected){
+    const el = qs('#' + id);
+    if(!el) return '';
+    const safeValues = values && values.length ? values : ['1/4'];
+    const chosen = safeValues.includes(selected) ? selected : safeValues[0];
+    el.innerHTML = safeValues.map(value => '<option value="' + escapeHtml(value) + '"' + (value === chosen ? ' selected' : '') + '>' + escapeHtml(value) + '</option>').join('');
+    sortSelectOptions(el);
+    el.value = chosen;
+    return chosen;
+  }
+
+  function updateThreePartFractionOptions(){
+    const firstEl = qs('#threeFirstFraction');
+    const middleEl = qs('#threeMiddleFraction');
+    const finishEl = qs('#threeFinishFraction');
+    if(!firstEl || !middleEl || !finishEl) return;
+
+    let first = firstEl.value || '1/4';
+    let middle = middleEl.value || '1/4';
+
+    const firstOptions = uniqueValues(threePartFractionCombos.map(combo => combo.first));
+    first = setSelectOptionsById('threeFirstFraction', firstOptions, first);
+
+    let middleOptions = uniqueValues(threePartFractionCombos.filter(combo => combo.first === first).map(combo => combo.middle));
+    middle = setSelectOptionsById('threeMiddleFraction', middleOptions, middle);
+
+    let finishOptions = uniqueValues(threePartFractionCombos.filter(combo => combo.first === first && combo.middle === middle).map(combo => combo.finish));
+    setSelectOptionsById('threeFinishFraction', finishOptions, finishEl.value || finishOptions[0] || '1/2');
+  }
+
+  function updateConditionalFields(){
+    const theme = valueOf('massageTheme');
+    const flow = valueOf('flowStructure');
+    const twoCustom = flow === 'Two-part flow' && valueOf('twoPartFlow') === 'Customise my own flow';
+    const threeCustom = flow === 'Three-part flow' && valueOf('threePartFlow') === 'Customise my own flow';
+
+    setHidden('#customThemePanel', theme !== 'Custom theme');
+    setHidden('#twoPartFlowPanel', flow !== 'Two-part flow');
+    setHidden('#threePartFlowPanel', flow !== 'Three-part flow');
+    setHidden('#customFlowPanel', !(twoCustom || threeCustom));
+    setHidden('#customTwoPartRows', !twoCustom);
+    setHidden('#customThreePartRows', !threeCustom);
+
+    if(threeCustom) updateThreePartFractionOptions();
+
+    if(theme !== 'Custom theme') setValue('customTheme', '');
+    if(flow !== 'Two-part flow') setValue('twoPartFlow', valueOf('twoPartFlow') || 'first 1/2 relaxation, second 1/2 energising');
+    if(flow !== 'Three-part flow') setValue('threePartFlow', valueOf('threePartFlow') || 'first 1/4 relaxation, middle 1/2 restorative / healing-aid / sports, last 1/4 energising');
+  }
+
+  function updateAreaEnabledStates(){
+    qsa('[data-area-check]').forEach(check => {
+      const name = check.getAttribute('data-area-check');
+      const timeEl = findTimeEl(name);
+      if(!timeEl) return;
+      timeEl.disabled = !check.checked;
+      if(!check.checked) timeEl.value = '0';
+    });
+  }
+
+  function buildAdvisories(items){
+    const notes = [];
+    items.forEach(item => {
+      const type = categoryForArea(item.name);
+      const limit = thresholds[type] || 30;
+      if(isSensitiveArea(item.name)){
+        notes.push(item.name + ': clear-agreement area. This needs clear choice, comfort, and communication before and during the work.');
+      }
+      if(item.minutes >= limit){
+        notes.push(item.name + ': extended focus chosen. This can feel nurturing when it is varied properly. I may work it in waves — changing rhythm, pressure, angle, and nearby support areas so it stays comfortable, varied, and useful.');
+      }
+      if(type === 'small' && item.minutes >= 20){
+        notes.push(item.name + ': small-area focus. I will vary quickly rather than repeat one exact point or grind the same spot.');
+      }
+    });
+    return notes;
+  }
+
+  function updatePlanner(){
+    updateConditionalFields();
+    updateAreaEnabledStates();
+
+    const length = Number(valueOf('sessionLength')) || 60;
+    const items = selectedAreas();
+    const total = items.reduce((sum, item) => sum + item.minutes, 0);
+    const remaining = length - total;
+    const pct = length ? Math.min(100, Math.max(0, (total / length) * 100)) : 0;
+    const over = total > length;
+
+    setText('#timeUsedText', total + ' / ' + length + ' minutes chosen');
+    setText('#timeRemainingText', over ? Math.abs(remaining) + ' minutes over the chosen session length.' : remaining + ' minutes remaining.');
+    const fill = qs('#timeFill');
+    if(fill) fill.style.width = pct + '%';
+    const panel = qs('#timePanel');
+    if(panel) panel.classList.toggle('is-over', over);
+    const buildBtn = qs('#buildMassageBrief');
+    if(buildBtn) buildBtn.disabled = over;
+
+    const notes = buildAdvisories(items);
+    const list = qs('#massageAdvisories');
+    if(list){
+      if(!items.length){
+        list.innerHTML = '<li>No areas selected yet.</li>';
+      }else if(!notes.length){
+        list.innerHTML = '<li>No extended focus or clear-agreement notes generated yet.</li>';
+      }else{
+        list.innerHTML = notes.map(note => '<li>' + escapeHtml(note) + '</li>').join('');
+      }
+    }
+  }
+
+  function chosenTheme(){
+    return valueOf('massageTheme') === 'Custom theme' ? (valueOf('customTheme') || 'Custom theme') : valueOf('massageTheme');
+  }
+
+  function chosenFlow(){
+    const flow = valueOf('flowStructure');
+    if(flow === 'Two-part flow'){
+      if(valueOf('twoPartFlow') === 'Customise my own flow'){
+        return flow + ' — custom: first ' + valueOf('twoFirstFraction') + ' ' + valueOf('twoFirstFlowType') + ', remaining ' + valueOf('twoRemainingFlowType');
+      }
+      return flow + ' — ' + valueOf('twoPartFlow');
+    }
+    if(flow === 'Three-part flow'){
+      if(valueOf('threePartFlow') === 'Customise my own flow'){
+        return flow + ' — custom: first ' + valueOf('threeFirstFraction') + ' ' + valueOf('threeFirstFlowType') + ', middle ' + valueOf('threeMiddleFraction') + ' ' + valueOf('threeMiddleFlowType') + ', finishing ' + valueOf('threeFinishFraction') + ' ' + valueOf('threeFinishFlowType');
+      }
+      return flow + ' — ' + valueOf('threePartFlow');
+    }
+    return flow;
+  }
+
+  function selectedSensoryOptions(){
+    const selected = qsa('[data-sensory-check]')
+      .filter(el => el.checked)
+      .map(el => el.getAttribute('data-sensory-check'));
+    return [selected.length ? '- Room / sensory: ' + selected.join(', ') : '- Room / sensory: No specific options selected yet.'];
+  }
+
+  function buildBrief(){
+    const length = Number(valueOf('sessionLength')) || 60;
+    const items = selectedAreas();
+    const total = items.reduce((sum, item) => sum + item.minutes, 0);
+    if(total > length){
+      setText('#massageBriefOutput', 'The selected area time is over the chosen session length. Reduce the time allocation before building the brief.');
+      return;
+    }
+    const notes = buildAdvisories(items);
+    const areaLines = items.length
+      ? items.map(item => '- ' + item.name + ': ' + item.minutes + ' minutes').join('\n')
+      : '- No body areas selected yet.';
+
+    const brief = [
+      'My Massage Brief',
+      '',
+      'Chosen massage style: ' + valueOf('massageStyle'),
+      'Chosen theme: ' + chosenTheme(),
+      'Chosen flow: ' + chosenFlow(),
+      'Session length: ' + length + ' minutes',
+      'Time allocated: ' + total + ' minutes',
+      '',
+      'Selected areas and time:',
+      areaLines,
+      '',
+      'Pressure preferences:',
+      preferenceValue('pressurePreference','pressurePreferenceCustom') || 'Shape it with me on the day.',
+      '',
+      'Pace / rhythm:',
+      preferenceValue('massagePace','massagePaceCustom') || 'Shape it with me on the day.',
+      '',
+      'Sensory / room options:',
+      selectedSensoryOptions().join('\n'),
+      '',
+      'Extended focus / agreement notes:',
+      notes.length ? notes.map(note => '- ' + note).join('\n') : '- No extended focus or clear-agreement notes generated yet.',
+      '',
+      'Comfort notes:',
+      valueOf('comfortNotes') || '- None added yet.',
+      '',
+      'Anything to avoid:',
+      valueOf('avoidNotes') || '- None added yet.',
+      '',
+      'Anything especially liked:',
+      valueOf('likesNotes') || '- None added yet.',
+      '',
+      'Other notes:',
+      valueOf('extraNotes') || '- None added yet.',
+      '',
+      'Tell me what you like. I’ll shape the massage around you.'
+    ].join('\n');
+    setText('#massageBriefOutput', brief);
+  }
+
+  function clearPlanner(){
+    qsa('[data-area-check]').forEach(el => el.checked = false);
+    qsa('[data-area-time]').forEach(el => el.value = '0');
+    qsa('[data-sensory-check]').forEach(el => el.checked = false);
+    setValue('twoFirstFraction', '1/2');
+    setValue('twoFirstFlowType', 'Comfort & Relaxation');
+    setValue('twoRemainingFlowType', 'Energising & Feel-good');
+    setValue('threeFirstFraction', '1/4');
+    setValue('threeFirstFlowType', 'Comfort & Relaxation');
+    setValue('threeMiddleFraction', '1/4');
+    setValue('threeMiddleFlowType', 'Restorative / Healing-Aid');
+    setValue('threeFinishFraction', '1/2');
+    setValue('threeFinishFlowType', 'Energising & Feel-good');
+    ['pressurePreferenceCustom','massagePaceCustom','customTheme','comfortNotes','avoidNotes','likesNotes','extraNotes'].forEach(id => setValue(id, ''));
+    setValue('pressurePreference', 'Provider to check and adjust');
+    setValue('massagePace', 'Provider to shape it');
+    qsa('#massagePlannerForm [data-custom-select]').forEach(updateCustomPreference);
+    setText('#massageBriefOutput', '');
+    updatePlanner();
+  }
+
+  const themeOptionsByStyle = {
+    'Lomi Lomi Massage':['Lomi Lomi Flow','Comfort & Relaxation','Restorative / Healing-Aid','Deep Reset','Custom theme'],
+    'Sports Massage':['Sports Focus','Restorative / Healing-Aid','Deep Reset','Energising & Feel-good','Custom theme'],
+    'Swedish Massage':['Comfort & Relaxation','Therapeutic Comfort','Restorative / Healing-Aid','Energising & Feel-good','Deep Reset','Custom theme'],
+    'Blended':['Comfort & Relaxation','Lomi Lomi Flow','Therapeutic Comfort','Restorative / Healing-Aid','Sports Focus','Energising & Feel-good','Deep Reset','Custom theme'],
+    'Not sure / shape it on the day':['Comfort & Relaxation','Lomi Lomi Flow','Therapeutic Comfort','Restorative / Healing-Aid','Sports Focus','Energising & Feel-good','Deep Reset','Custom theme'],
+    'Not sure / provider to advise':['Comfort & Relaxation','Lomi Lomi Flow','Therapeutic Comfort','Restorative / Healing-Aid','Sports Focus','Energising & Feel-good','Deep Reset','Provider to advise']
+  };
+
+  function updateThemeForStyle(styleSelect){
+    const target = qs('#' + styleSelect.dataset.themeTarget);
+    if(!target) return;
+    const options = themeOptionsByStyle[styleSelect.value] || themeOptionsByStyle.Blended;
+    const current = target.value;
+    const chosen = options.includes(current) ? current : options[0];
+    target.innerHTML = options.map(v => '<option>' + escapeHtml(v) + '</option>').join('');
+    sortSelectOptions(target);
+    target.value = chosen;
+  }
+
+  function updateCustomPreference(select){
+    const input = qs('#' + select.dataset.customTarget);
+    if(!input) return;
+    const row = input.closest('.planner-row');
+    const show = select.value === 'Custom preference';
+    if(row) row.hidden = !show;
+    if(!show) input.value = '';
+  }
+
+  function preferenceValue(selectId, customId){
+    return valueOf(selectId) === 'Custom preference' ? (valueOf(customId) || 'Custom preference not yet described') : valueOf(selectId);
+  }
+
+  function bindPlannerModes(){
+    qsa('[data-planner-mode]').forEach(btn => btn.addEventListener('click', () => {
+      qsa('[data-planner-mode]').forEach(other => other.setAttribute('aria-selected', other === btn ? 'true' : 'false'));
+      qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === btn.dataset.plannerMode));
+    }));
+    qsa('[data-style-select]').forEach(el => { el.addEventListener('change', () => { updateThemeForStyle(el); updatePlanner(); }); updateThemeForStyle(el); });
+    qsa('[data-custom-select]').forEach(el => { el.addEventListener('change', () => updateCustomPreference(el)); updateCustomPreference(el); });
+    qsa('[data-simple-build]').forEach(btn => btn.addEventListener('click', () => buildSimpleBrief(btn.dataset.simpleBuild)));
+    qsa('[data-simple-clear]').forEach(btn => btn.addEventListener('click', () => clearSimplePlanner(btn.dataset.simpleClear)));
+  }
+
+  function buildSimpleBrief(mode){
+    const prefix = mode === 'provider' ? 'provider' : 'focused';
+    const title = mode === 'provider' ? 'Provider-Guided Massage Brief' : 'Focused Massage Brief';
+    const areas = mode === 'focused' ? qsa('[data-focused-area]:checked').map(el => el.value) : [];
+    const lines = [title,'','Session length: ' + valueOf(prefix+'SessionLength'),'Massage style: ' + valueOf(prefix+'MassageStyle'),'Massage theme: ' + valueOf(prefix+'MassageTheme'),'Pressure: ' + preferenceValue(prefix+'Pressure',prefix+'PressureCustom'),'Pace / rhythm: ' + preferenceValue(prefix+'Pace',prefix+'PaceCustom')];
+    if(mode === 'focused') lines.push('Broad focus areas: ' + (areas.length ? areas.join(', ') : 'Provider to balance across the body'));
+    lines.push('','Comfort notes / sensitivities:',valueOf(prefix+'ComfortNotes') || '- None added yet.','','Anything to avoid:',valueOf(prefix+'AvoidNotes') || '- None added yet.','','Anything especially liked:',valueOf(prefix+'LikesNotes') || '- None added yet.','','Other notes:',valueOf(prefix+'ExtraNotes') || '- None added yet.');
+    setText('#'+prefix+'BriefOutput', lines.join('\n'));
+  }
+
+  function clearSimplePlanner(mode){
+    const prefix = mode === 'provider' ? 'provider' : 'focused';
+    ['PressureCustom','PaceCustom','ComfortNotes','AvoidNotes','LikesNotes','ExtraNotes'].forEach(suffix => setValue(prefix+suffix,''));
+    setValue(prefix+'Pressure','Provider to check and adjust'); setValue(prefix+'Pace','Provider to shape it');
+    if(mode === 'focused') qsa('[data-focused-area]').forEach(el => el.checked=false);
+    setText('#'+prefix+'BriefOutput','');
+    qsa('#'+prefix+'GuidedForm [data-custom-select], #'+prefix+'MassageForm [data-custom-select]').forEach(updateCustomPreference);
+  }
+
+  function bindPlanner(){
+    const form = qs('#massagePlannerForm');
+    if(!form) return;
+    form.addEventListener('input', updatePlanner);
+    form.addEventListener('change', updatePlanner);
+    const build = qs('#buildMassageBrief');
+    const clear = qs('#clearMassagePlanner');
+    if(build) build.addEventListener('click', buildBrief);
+    if(clear) clear.addEventListener('click', clearPlanner);
+    qsa('[data-three-fraction]', form).forEach(el => el.addEventListener('change', updateThreePartFractionOptions));
+    updateThreePartFractionOptions();
+    updatePlanner();
+  }
+
+
+  const massageInnerKeys = {
+    library:'baselineMassageLibraryTab',
+    planner:'baselineMassagePlannerMode'
+  };
+
+  function safeGet(key){
+    try{return localStorage.getItem(key) || '';}catch(e){return '';}
+  }
+  function safeSet(key, value){
+    try{localStorage.setItem(key, value);}catch(e){}
+  }
+
+  function restoreMassageInnerTabs(){
+    const savedPlanner = safeGet(massageInnerKeys.planner);
+    if(savedPlanner && qs('[data-planner-mode="' + savedPlanner + '"]')){
+      qsa('[data-planner-mode]').forEach(btn => btn.setAttribute('aria-selected', btn.dataset.plannerMode === savedPlanner ? 'true' : 'false'));
+      qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === savedPlanner));
+    }
+
+    const savedLibraryRaw = safeGet(massageInnerKeys.library);
+    const savedLibrary = (savedLibraryRaw === 'Sports Massage Focus' || savedLibraryRaw === 'Swedish / Full Body Flow') ? 'Types Of Massage' : savedLibraryRaw;
+    let libraryButton = null;
+    if(savedLibrary){
+      try{ libraryButton = qs('[data-library-category="' + CSS.escape(savedLibrary) + '"]'); }
+      catch(_e){ libraryButton = qsa('[data-library-category]').find(btn => btn.dataset.libraryCategory === savedLibrary) || null; }
+    }
+    if(libraryButton) libraryButton.click();
+  }
+
+  qsa('[data-planner-mode]').forEach(btn => btn.addEventListener('click', () => safeSet(massageInnerKeys.planner, btn.dataset.plannerMode)));
+  const massageLibraryTabs = qs('#massageLibraryTabs');
+  if(massageLibraryTabs){
+    massageLibraryTabs.addEventListener('click', event => {
+      const btn = event.target.closest('[data-library-category]');
+      if(btn) safeSet(massageInnerKeys.library, btn.dataset.libraryCategory);
+    });
+  }
+
+  function numericOptionValue(text){
+    const value = String(text || '').trim();
+    let match = value.match(/^(\d+(?:\.\d+)?)\s*minutes?$/i);
+    if(match) return Number(match[1]);
+    match = value.match(/^(\d+)\s*\/\s*(\d+)$/);
+    if(match && Number(match[2])) return Number(match[1]) / Number(match[2]);
+    return null;
+  }
+
+  function sortSelectOptions(select){
+    if(!select || select.hasAttribute('data-preserve-order') || !select.options || select.options.length < 2) return;
+    const options = Array.from(select.options);
+    const selectedValue = select.value;
+    const numericValues = options.map(option => numericOptionValue(option.textContent));
+    const allNumeric = numericValues.every(value => value !== null && Number.isFinite(value));
+
+    options.sort((a, b) => {
+      if(allNumeric){
+        const difference = numericOptionValue(a.textContent) - numericOptionValue(b.textContent);
+        if(difference) return difference;
+      }
+      return String(a.textContent || '').trim().localeCompare(
+        String(b.textContent || '').trim(),
+        undefined,
+        {sensitivity:'base', numeric:true}
+      );
+    });
+
+    options.forEach(option => select.appendChild(option));
+    if(options.some(option => option.value === selectedValue)) select.value = selectedValue;
+  }
+
+  function sortAllDropdowns(root){
+    qsa('select', root || document).forEach(sortSelectOptions);
+  }
+
+  function setHidden(sel, hidden){
+    const el = qs(sel);
+    if(el) el.hidden = !!hidden;
+  }
+  function setText(sel, text){
+    const el = qs(sel);
+    if(el) el.textContent = text;
+  }
+  function setValue(id, val){
+    const el = qs('#' + id);
+    if(el) el.value = val;
+  }
+  function valueOf(id){
+    const el = qs('#' + id);
+    return el ? String(el.value || '').trim() : '';
+  }
+  function slug(s){
+    return String(s || '').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'area';
+  }
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+  renderLibrary();
+  renderAreas();
+  bindPlannerModes();
+  bindPlanner();
+  sortAllDropdowns();
+  restoreMassageInnerTabs();
+  window.addEventListener('pageshow', restoreMassageInnerTabs);
+})();
+
+</script>
+</body>
+</html>

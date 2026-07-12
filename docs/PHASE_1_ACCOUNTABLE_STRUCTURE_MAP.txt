@@ -1,0 +1,88 @@
+Phase 1 accountable structure
+
+Source used: baseline-lifestyle-site(18).zip
+
+Rule:
+- index.html remains the single website home/index file.
+- sitewide/ is only for files genuinely shared by the whole website.
+- each section owns its own folder, css/, js/, and content areas.
+- baseline-games-hub remains the parent container for the games.
+- individual games do not get standalone HTML files in Phase 1.
+- each game gets its own folder for local css/, js/, and game-art/.
+
+No existing files were moved, renamed, or edited in Phase 1.
+
+Created structure:
+- sitewide/
+- sitewide/css/
+- sitewide/js/
+- sitewide/api/
+- sitewide/assets/
+- baseline-food-approach/
+- baseline-food-approach/css/
+- baseline-food-approach/js/
+- baseline-food-approach/system/
+- baseline-food-approach/recipes/
+- baseline-food-approach/ingredients/
+- baseline-food-approach/diet-log/
+- baseline-natural-skincare/
+- baseline-natural-skincare/css/
+- baseline-natural-skincare/js/
+- baseline-natural-skincare/system/
+- baseline-natural-skincare/recipes/
+- baseline-natural-skincare/ingredients/
+- baseline-natural-skincare/skin-support-system/
+- baseline-massage/
+- baseline-massage/css/
+- baseline-massage/js/
+- baseline-massage/system/
+- baseline-massage/types-of-massage/
+- baseline-massage/massage-library/
+- baseline-massage/plan-my-massage/
+- baseline-fitness/
+- baseline-fitness/css/
+- baseline-fitness/js/
+- baseline-fitness/system/
+- baseline-fitness/workout-routine/
+- baseline-fitness/exercise-library/
+- baseline-fitness/achievements/
+- baseline-fitness/my-plan/
+- baseline-badminton-session/
+- baseline-badminton-session/css/
+- baseline-badminton-session/js/
+- baseline-badminton-session/system/
+- baseline-badminton-session/game-plan/
+- baseline-badminton-session/ratings-standings/
+- baseline-badminton-session/players-pairs/
+- baseline-badminton-session/session-history/
+- baseline-games-hub/
+- baseline-games-hub/css/
+- baseline-games-hub/js/
+- baseline-games-hub/game-status/
+- baseline-games-hub/games/
+- baseline-games-hub/games/css/
+- baseline-games-hub/games/js/
+- baseline-games-hub/games/pairs/
+- baseline-games-hub/games/pairs/css/
+- baseline-games-hub/games/pairs/js/
+- baseline-games-hub/games/pairs/game-art/
+- baseline-games-hub/games/detect-the-word/
+- baseline-games-hub/games/detect-the-word/css/
+- baseline-games-hub/games/detect-the-word/js/
+- baseline-games-hub/games/detect-the-word/game-art/
+- baseline-games-hub/games/make-the-number/
+- baseline-games-hub/games/make-the-number/css/
+- baseline-games-hub/games/make-the-number/js/
+- baseline-games-hub/games/make-the-number/game-art/
+- baseline-games-hub/games/track-the-coin/
+- baseline-games-hub/games/track-the-coin/css/
+- baseline-games-hub/games/track-the-coin/js/
+- baseline-games-hub/games/track-the-coin/game-art/
+- baseline-games-hub/games/rule-shift/
+- baseline-games-hub/games/rule-shift/css/
+- baseline-games-hub/games/rule-shift/js/
+- baseline-games-hub/games/rule-shift/game-art/
+- baseline-games-hub/games/baseline-realm/
+- baseline-games-hub/games/baseline-realm/css/
+- baseline-games-hub/games/baseline-realm/js/
+- baseline-games-hub/games/baseline-realm/game-art/

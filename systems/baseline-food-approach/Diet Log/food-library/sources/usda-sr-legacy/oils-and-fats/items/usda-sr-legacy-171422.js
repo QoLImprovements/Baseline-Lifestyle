@@ -1,0 +1,73 @@
+/* Isolated Diet Log food record. Source of truth for this food. */
+(function(){
+  "use strict";
+  var item={
+  "basis": "g",
+  "basisGrams": 100.0,
+  "basisLabel": "100 g",
+  "category": "Oils & Fats",
+  "defaultMeasure": "2-tbsp-1-8-cup",
+  "description": "Fats and Oils",
+  "id": "usda-sr-legacy-171422",
+  "measures": [
+    {
+      "gramsPerUnit": 1.0,
+      "key": "g",
+      "kind": "weight",
+      "label": "g"
+    },
+    {
+      "gramsPerUnit": 27.0,
+      "key": "2-tbsp-1-8-cup",
+      "kind": "unit",
+      "label": "2 tbsp (1/8 cup)"
+    },
+    {
+      "gramsPerUnit": 13.6,
+      "key": "tablespoon",
+      "kind": "unit",
+      "label": "tablespoon"
+    },
+    {
+      "gramsPerUnit": 218.0,
+      "key": "cup",
+      "kind": "unit",
+      "label": "cup"
+    }
+  ],
+  "name": "Vegetable oil, palm kernel",
+  "nutritionPerBasis": {
+    "calcium_mg": 0.0,
+    "carbs_g": 0.0,
+    "energy_kcal": 862.0,
+    "fat_g": 100.0,
+    "fibre_g": 0.0,
+    "folate_ug": 0.0,
+    "iron_mg": 0.0,
+    "magnesium_mg": 0.0,
+    "omega3_g": 0.0,
+    "phosphorus_mg": 0.0,
+    "potassium_mg": 0.0,
+    "protein_g": 0.0,
+    "salt_g": 0.0,
+    "sat_fat_g": 81.5,
+    "sodium_mg": 0.0,
+    "sugar_g": 0.0,
+    "vitamin_a_ug": 0.0,
+    "vitamin_c_mg": 0.0,
+    "vitamin_e_mg": 3.81,
+    "vitamin_k_ug": 24.7
+  },
+  "source": "USDA SR Legacy April 2018",
+  "sourceId": "171422",
+  "state": "Unspecified",
+  "subcategory": "Fats and Oils",
+  "tags": [
+    "fats-and-oils",
+    "oils-and-fats",
+    "unspecified"
+  ]
+};
+  var list=Array.isArray(window.BASELINE_DIET_FOOD_LIBRARY)?window.BASELINE_DIET_FOOD_LIBRARY:(window.BASELINE_DIET_FOOD_LIBRARY=[]);
+  if(!list.some(function(existing){return existing&&existing.id===item.id;})) list.push(item);
+})();

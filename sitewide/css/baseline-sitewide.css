@@ -1,0 +1,2689 @@
+/* ==========================================================================
+   Baseline Sitewide UI
+   - Shared safety utilities (layout + motion)
+   - Shared themed controls/surfaces that deliberately use page variables
+   - Removes floating "Back to recipe" / "Back to top" buttons sitewide
+
+   This file is not structural-only anymore: it also owns selected shared UI
+   presentation such as scrollbars, enhanced selects, flyouts, print handling,
+   and cross-page defensive overrides. Page palettes still come from the
+   per-page/theme variables.
+   ========================================================================== */
+
+/* Layout safety */
+html, body{
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: auto; /* disables native smooth scrolling */
+}
+
+
+/* --------------------------------------------------------------------------
+   SITEWIDE PAGE WIDTH AUTHORITY
+   --------------------------------------------------------------------------
+   One clear owner for page container width. Page HTML/CSS files should not
+   hard-code .wrap width, max-width, margin, or padding. They may style page
+   colour, cards, components, and section-specific internal layout only.
+   -------------------------------------------------------------------------- */
+:root{
+  --bl-page-max-width: 1500px;
+  --bl-page-gutter: 24px;
+  --bl-page-gutter-lg: 64px;
+  --bl-page-margin-top: 16px;
+  --bl-page-margin-bottom: 40px;
+
+  /* Header geometry aliases stay tied to the same authority. */
+  --bl-maxw: var(--bl-page-max-width);
+  --bl-gutter: var(--bl-page-gutter);
+  --bl-gutter-lg: var(--bl-page-gutter-lg);
+}
+
+.wrap{
+  max-width: none !important;
+  width: min(var(--bl-page-max-width), calc(100% - var(--bl-page-gutter))) !important;
+  margin: var(--bl-page-margin-top) auto var(--bl-page-margin-bottom) !important;
+  padding: 0 !important;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px){
+  .wrap{
+    width: min(var(--bl-page-max-width), calc(100% - var(--bl-page-gutter))) !important;
+    margin-top: var(--bl-page-margin-top) !important;
+    margin-bottom: var(--bl-page-margin-bottom) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Themed scrollbars (sitewide)
+   - Uses per-page tokens from baseline-themes.css (mirrored to :root by JS).
+   - Removes default white/grey scrollbar chrome.
+   -------------------------------------------------------------------------- */
+html{
+  scrollbar-width: auto; /* Firefox */
+  scrollbar-color: var(--scroll-thumb, rgba(0,0,0,.5)) var(--scroll-track, transparent);
+}
+
+/* When using the fixed banner layout, the page scrolls inside .bl-scroll.
+   Apply the same theming so there is no default white/grey chrome. */
+.bl-scroll{
+  scrollbar-width: auto;
+  scrollbar-color: var(--scroll-thumb, rgba(0,0,0,.5)) var(--scroll-track, transparent);
+}
+
+/* WebKit/Blink */
+::-webkit-scrollbar{ width: 12px; height: 12px; }
+::-webkit-scrollbar-track{ background: var(--scroll-track, transparent); }
+::-webkit-scrollbar-thumb{
+  background: var(--scroll-thumb, rgba(0,0,0,.5));
+  border-radius: 999px;
+  border: 3px solid var(--scroll-track, transparent);
+}
+::-webkit-scrollbar-thumb:hover{
+  background: var(--scroll-thumb-hover, var(--scroll-thumb, rgba(0,0,0,.65)));
+}
+
+/* Hide the horizontal scrollbar on the tab strip (mobile shows a grey bar otherwise). */
+.tabs{
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Legacy Edge */
+}
+.tabs::-webkit-scrollbar{ height: 0px; }
+
+
+/* --------------------------------------------------------------------------
+   REMOVE FLOATING BUTTONS SITEWIDE
+   (These are the bottom corner "Back to recipe" / "Back to top" buttons.)
+   -------------------------------------------------------------------------- */
+.back-fab,
+.top-fab,
+#backFab,
+#topFab{
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* If any page reserved space for FABs, remove it */
+body{ padding-bottom: 0 !important; }
+
+/* Consistent box sizing */
+*{ box-sizing: border-box; }
+
+/* Ingredient Library: force “← View recipe …” link to its own line */
+#ingredientRecipeLink{
+  display:block !important;
+  width:100% !important;
+  margin-left:0 !important;
+  margin-top:10px !important;
+}
+
+
+/* Strong override: disable card hover lift even if later CSS reintroduces it */
+body .card,
+body .card:hover,
+body .card:focus-within,
+body .card:focus-visible{
+  transform: none !important;
+  filter: none !important;
+  transition: none !important;
+}
+
+
+@media print{
+  body{ background:#fff !important; color:#000 !important; }
+  .card{ background:transparent !important; box-shadow:none !important; border:none !important; }
+  .card::before, .card::after{ content:none !important; display:none !important; }
+}
+
+/* --------------------------------------------------------------------------
+   Themed custom dropdown (select) — single owner
+   --------------------------------------------------------------------------
+   Behaviour lives in js/baseline-shared.js.
+   Styling lives here only.
+
+   Contract:
+   - dropdown surfaces inherit each page's solid theme variables;
+   - menus are fully opaque, never blurred/translucent;
+   - open menus sit above recipe controls and capture their own events;
+   - no page-level shield/overlay blocks the trigger button.
+   -------------------------------------------------------------------------- */
+.bl-select{
+  position:relative;
+  display:inline-block;
+  flex:0 1 auto;
+  max-width:100%;
+}
+
+.bl-select[data-bl-enhanced="1"] select{
+  opacity:0;
+  pointer-events:none;
+}
+
+.bl-select-btn{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  cursor:pointer;
+  text-align:left;
+  pointer-events:auto;
+}
+
+.bl-select.is-open{
+  z-index:13000;
+}
+
+.bl-select-menu{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:0;
+  min-width:100%;
+  max-width:min(92vw, 520px);
+  z-index:13001;
+  padding:8px;
+  border-radius:16px;
+  border:1px solid var(--border, rgba(0,0,0,.14));
+  background:var(--bl-surface-panel-solid, var(--showall-bg, var(--card-bg, #fff)));
+  background-image:none;
+  background-color:var(--bl-surface-panel-solid, var(--showall-bg, var(--card-bg, #fff)));
+  color:var(--ink, var(--bl-surface-ink, #111));
+  opacity:1;
+  pointer-events:auto;
+  isolation:isolate;
+  mix-blend-mode:normal;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+  filter:none;
+  box-shadow:var(--shadow, 0 22px 56px -38px rgba(0,0,0,.55));
+  overflow-x:hidden;
+  overflow-y:auto;
+  max-height:min(55vh, 360px);
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  scrollbar-width:auto;
+  scrollbar-color:var(--accent, #7a4a3a) var(--bl-surface-panel-solid, var(--showall-bg, #fff));
+}
+
+.bl-select-menu::before,
+.bl-select-menu::after{
+  content:none !important;
+  display:none !important;
+}
+
+.bl-select-menu[hidden]{
+  display:none !important;
+}
+
+.bl-select-menu::-webkit-scrollbar{ width:11px; height:11px; }
+.bl-select-menu::-webkit-scrollbar-track{
+  background:var(--bl-surface-panel-solid, var(--showall-bg, #fff));
+  border-radius:999px;
+}
+.bl-select-menu::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg, var(--accent, #7a4a3a), var(--accent-3, var(--accent, #7a4a3a)));
+  border-radius:999px;
+  border:3px solid var(--bl-surface-panel-solid, var(--showall-bg, #fff));
+}
+.bl-select-menu::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg, var(--accent-2, var(--accent, #7a4a3a)), var(--accent, #7a4a3a));
+}
+
+.bl-select-menu [role="option"]{
+  display:block;
+  width:100%;
+  text-align:left;
+  border:none;
+  background:var(--bl-surface-control-solid, var(--bl-surface-panel-solid, var(--showall-bg, #fff)));
+  background-image:none;
+  background-color:var(--bl-surface-control-solid, var(--bl-surface-panel-solid, var(--showall-bg, #fff)));
+  padding:10px 12px;
+  border-radius:12px;
+  font:inherit;
+  font-weight:850;
+  line-height:1.25;
+  color:var(--ink, var(--bl-surface-ink, #111));
+  -webkit-text-fill-color:currentColor;
+  cursor:pointer;
+  pointer-events:auto;
+  opacity:1;
+  mix-blend-mode:normal;
+}
+
+.bl-select-menu [role="option"]:hover,
+.bl-select-menu [role="option"][aria-selected="true"]{
+  background:var(--bl-surface-active-solid, var(--bl-surface-control-solid, var(--accent-soft, #fff)));
+  background-image:none;
+  background-color:var(--bl-surface-active-solid, var(--bl-surface-control-solid, var(--accent-soft, #fff)));
+}
+
+.bl-select-menu [role="option"]:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 4px var(--ring, rgba(0,0,0,.16));
+}
+
+@media (max-width:520px){
+  .bl-select-menu{ max-height:min(42vh, 300px); }
+}
+
+/* Recipe Scale By Ingredient: keep closed button and open options visually identical. */
+body[data-app] #recipes .scale-block .bl-select,
+body[data-app] #recipes .scale-block .bl-select select,
+body[data-app] #recipes .scale-block .bl-select-btn,
+body[data-app] #recipes .scale-block .scale-ingredient-select,
+body[data-app] #recipes .scale-block .scale-unit-select,
+body[data-app] #recipes .scale-block .bl-select-menu [role="option"]{
+  font-size:16px;
+  font-weight:850;
+  line-height:1.25;
+}
+body[data-app] #recipes .scale-block .bl-select-btn{
+  display:flex;
+  align-items:center;
+}
+
+/* --------------------------------------------------------------------------
+   Themed number steppers (replaces unthemed native spinners)
+   - Works consistently across mobile/desktop
+   - Uses page variables (no hard-coded palette)
+   -------------------------------------------------------------------------- */
+
+/* Hide native number spinners (we use plain numeric inputs for consistency) */
+input[type="number"]{
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bl-number{
+  display:inline-grid;
+  grid-template-columns:minmax(0, 1fr) 28px;
+  align-items:stretch;
+  gap:6px;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+}
+
+/* Hide native spinners (we provide themed controls instead) */
+.bl-number input[type="number"]{
+  -moz-appearance: textfield;
+  appearance: textfield;
+  width:100%;
+  min-width:0;
+  padding-right: 10px;
+}
+.bl-number input[type="number"]::-webkit-outer-spin-button,
+.bl-number input[type="number"]::-webkit-inner-spin-button{
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bl-number-stepper{
+  width:28px;
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.bl-number-stepper .bl-step{
+  width:100%;
+  flex:1 1 0;
+  min-height:0;
+  min-width:0;
+  padding:0;
+  border-radius:10px;
+  border: 1px solid var(--border, rgba(0,0,0,.14));
+  background: var(--card-bg, rgba(255,255,255,.70));
+  color: var(--ink, #111);
+  font-weight: 900;
+  line-height: 1;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.bl-number-stepper .bl-step:hover{ filter: brightness(1.03); }
+.bl-number-stepper .bl-step:active{ transform: translateY(0.5px); }
+.bl-number-stepper .bl-step:focus-visible{
+  outline:none;
+  box-shadow: 0 0 0 4px var(--ring, rgba(0,0,0,.16));
+}
+
+
+/* Segmented control — used for “Type of oats” in Hearty Oat Porridge */
+.oat-toggle{
+  display:inline-flex;
+  align-items:center;
+  border:1px solid rgba(122,74,58,0.18);
+  background:rgba(255,255,255,0.18);
+  border-radius:999px;
+  overflow:hidden;
+  max-width:100%;
+}
+.oat-toggle .oat-option{
+  appearance:none;
+  -webkit-appearance:none;
+  border:0;
+  background:transparent;
+  color:var(--ink);
+  font-weight:850;
+  font-size:16px;
+  padding:9px 12px;
+  cursor:pointer;
+  line-height:1;
+  white-space:nowrap;
+}
+.oat-toggle .oat-option + .oat-option{
+  border-left:1px solid rgba(122,74,58,0.16);
+}
+.oat-toggle .oat-option.is-active{
+  background:rgba(255,255,255,0.34);
+}
+.oat-toggle .oat-option:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 4px var(--ring);
+  position:relative;
+  z-index:1;
+}
+@media (max-width: 520px){
+  .oat-toggle{ width:100%; }
+  .oat-toggle .oat-option{ flex:1 1 50%; text-align:center; }
+}
+
+/* Optional row: Type of oats (used by the oat porridge recipe in Recipe Overview) */
+#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .oat-label{ grid-column:1; grid-row:3; }
+#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .oat-toggle{ grid-column:2; grid-row:3; }
+
+/* --------------------------------------------------------------------------
+   Theme fidelity fixes
+   - Ensure HTML backdrop matches system gradient (prevents solid fallback bleed)
+   - Keep long dropdowns readable while matching each page's surface token
+   -------------------------------------------------------------------------- */
+html{
+  background: var(--page-bg, var(--bg, #fff));
+}
+body{
+  min-height: 100vh;
+}
+body[data-app="food"],
+body[data-app="skin"],
+body[data-app="fitness"],
+body[data-app="badminton"],
+body[data-app="massage"]{
+  background: var(--page-bg) !important;
+}
+
+
+/* Notes bullet lists inside ingredient cards */
+.notes-list{
+  margin: 8px 0 0 0;
+  padding-left: 18px;
+}
+.notes-list li{
+  margin: 6px 0;
+  line-height: 1.35;
+}
+
+/* Prevent fixed header from obscuring deep-linked sections/cards */
+.section[id],
+.card[id]{
+  scroll-margin-top: calc(var(--bl-homebar-h, 56px) + 18px);
+}
+
+/* Support library intro text should match the main site’s readable body sizing */
+.support-intro{
+  font-size: 1em;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
+/* --------------------------------------------------------------------------
+   Banner flyouts (Account + Binaural)
+   -------------------------------------------------------------------------- */
+
+/* Home page does not load the canonical header CSS, but it still uses the
+   same banner controls (Beats + Account) injected by baseline-shared.js.
+   Keep these styles here so the controls render correctly sitewide. */
+
+.bl-homebar-right{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.bl-mini-btn{
+  appearance:none;
+  background: var(--showall-bg, rgba(255,255,255,.18));
+  border: 1px solid var(--showall-border, rgba(0,0,0,.18));
+  color: var(--ink, #1b0b09);
+  border-radius: 999px;
+  padding: 10px 12px;
+  font: inherit;
+  font-weight: 900;
+  letter-spacing: .02em;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.bl-mini-btn:hover{ filter: brightness(1.03); }
+.bl-mini-btn:active{ transform: translateY(1px); }
+
+.bl-flyout{
+  position: fixed;
+  top: 62px;
+  right: 14px;
+  z-index: 12000;
+  width: min(440px, calc(100vw - 24px));
+}
+.bl-flyout[hidden]{ display:none !important; }
+.bl-flyout .muted{
+  color: var(--muted);
+}
+
+.bl-flyout input,
+.bl-flyout select{
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.bl-flyout input{
+  background: rgba(255,255,255,.06);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+.bl-flyout input[type="range"]{
+  padding: 0;
+  border-radius: 10px;
+}
+.bl-flyout input:focus,
+.bl-flyout select:focus{
+  border-color: rgba(255,255,255,.25);
+}
+
+.bl-flyout .row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.bl-flyout .row > *{
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.bl-flyout input[type="number"]{
+  flex: 0 0 110px;
+  width: 110px;
+}
+
+.bl-flyout select{
+  background: rgba(255,255,255,.06);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.bl-flyout details > summary{
+  cursor: pointer;
+  user-select: none;
+}
+
+.bl-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--showall-border);
+  background: rgba(255,255,255,.04);
+}
+
+
+/* Keep flyout content usable on small screens */
+.bl-flyout .bl-player{
+  max-height: calc(100vh - 90px);
+  overflow-y: auto;
+}
+
+.bl-player input[type="range"]{
+  width: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   Recipe favourites
+   -------------------------------------------------------------------------- */
+.fav-btn{
+  appearance:none;
+  background:transparent;
+  border:0;
+  color:var(--accent-2);
+  border-radius:0;
+  padding:0;
+  margin:0;
+  line-height:1;
+  font:inherit;
+  cursor:pointer;
+  box-shadow:none;
+}
+.fav-btn.is-fav{ filter:none; }
+.fav-btn:hover{ filter:none; text-decoration:none; }
+.fav-btn:active{ transform:none; }
+
+
+
+
+/* Fitness plan generator alignment */
+body[data-app="fitness"] .row.row-2{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: start;
+}
+body[data-app="fitness"] .row.row-2 > div{ min-width: 0; }
+body[data-app="fitness"] .row.row-2 input,
+body[data-app="fitness"] .row.row-2 select{
+  width: 100%;
+}
+body[data-app="fitness"] .bl-goal-row label.muted{ opacity: 0.85; }
+
+
+/* Flyout card styling (opaque; must match the current page/theme) */
+:root{
+  /* Default to a solid surface first. Page palettes can supply a gradient image,
+     but the fallback colour must remain opaque so page content never bleeds through. */
+  --bl-flyout-bg-image: none;
+  --bl-flyout-bg-color: var(--card-bg, var(--bg, #fff));
+  --bl-flyout-control-bg-image: var(--showall-bg, var(--card-bg, none));
+  --bl-flyout-control-bg-color: var(--card-bg, var(--bg, #fff));
+  --bl-flyout-ink: var(--ink, #111);
+}
+body[data-app="home"]{
+  --bl-flyout-bg-image: none;
+  --bl-flyout-bg-color: #3d3d43;
+  --bl-flyout-control-bg-color: #56565f;
+}
+body[data-app="food"]{
+  --bl-flyout-bg-image: linear-gradient(180deg, #ffd26a 0%, #f08a24 100%);
+  --bl-flyout-bg-color: #f08a24;
+  --bl-flyout-control-bg-color: #ffb000;
+}
+body[data-app="skin"]{
+  --bl-flyout-bg-image: var(--skin-page-gradient);
+  --bl-flyout-bg-color: #e8c1b2;
+  --bl-flyout-control-bg-color: #e1ad9b;
+}
+body[data-app="badminton"]{
+  --bl-flyout-bg-image: linear-gradient(180deg, #faf4ff 0%, #e7cff6 100%);
+  --bl-flyout-bg-color: #faf4ff;
+  --bl-flyout-control-bg-color: #f4e5ff;
+}
+body[data-app="fitness"]{
+  --bl-flyout-bg-image: none;
+  --bl-flyout-bg-color: #10090d;
+  --bl-flyout-control-bg-color: #1d1016;
+}
+body[data-app="games"]{
+  --bl-flyout-bg-image: linear-gradient(90deg,#253B5F 0%,#4E6A95 22%,#86A0C0 45%,#B8C8E0 50%,#86A0C0 55%,#4E6A95 78%,#253B5F 100%);
+  --bl-flyout-bg-color: #3E5B84;
+  --bl-flyout-control-bg-image: linear-gradient(135deg,#8FA6C7 0%,#6F88AD 58%,#4E668D 100%);
+  --bl-flyout-control-bg-color: #6F88AD;
+  --bl-flyout-ink: #101827;
+}
+.bl-flyout .card{
+  background-image: var(--bl-flyout-bg-image) !important;
+  background-color: var(--bl-flyout-bg-color) !important;
+  color: var(--bl-flyout-ink) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 18px 46px rgba(0,0,0,.25) !important;
+  border-radius: 18px;
+  opacity: 1 !important;
+  mix-blend-mode: normal !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.bl-flyout .card .muted{ color: var(--muted); }
+
+/* --------------------------------------------------------------------------
+   Banner / dropdown / flyout gradient lock
+   - Buttons, dropdown controls, and panel backgrounds use the current HTML's
+     gradient tokens only.
+   - Replaces prior stacked overrides that were fighting each other.
+   -------------------------------------------------------------------------- */
+html:not(.bl-pages-dd-ready) .bl-topnav{
+  display:flex !important;
+}
+
+.bl-homebar,
+.bl-homebar *,
+.bl-pages-dd,
+.bl-system-wrap,
+#bl-auth-flyout,
+#bl-beats-flyout,
+.bl-flyout{
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+
+.bl-homebar{
+  background: var(--homebar-bg, var(--banner-pill-bg, var(--page-bg, transparent))) !important;
+  background-image: var(--homebar-bg, var(--banner-pill-bg, var(--page-bg, transparent))) !important;
+  background-color: var(--banner-pill-solid, transparent) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  opacity:1 !important;
+}
+
+.bl-pages-btn,
+.bl-system-toggle,
+.bl-mini-btn,
+#bl-beats-toggle,
+#bl-auth-toggle,
+.bl-pages-link,
+.bl-system-menu a,
+.bl-flyout .bl-select-btn,
+.bl-flyout .bl-select-menu [role="option"],
+#bl-auth-flyout .bl-auth-form .bl-mini-btn,
+#bl-auth-flyout .bl-auth-form button,
+#bl-auth-flyout .bl-auth-authed .bl-select-btn,
+#bl-beats-flyout .bl-mini-btn,
+#bl-beats-flyout button,
+#bl-beats-flyout input:not([type="range"]),
+#bl-beats-flyout select,
+#bl-beats-flyout textarea{
+  background: var(--banner-pill-bg) !important;
+  background-image: var(--banner-pill-bg) !important;
+  background-color: var(--banner-pill-solid, transparent) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  -webkit-text-fill-color: currentColor !important;
+  border: 1px solid var(--banner-pill-border, var(--border, rgba(0,0,0,.18))) !important;
+  opacity:1 !important;
+  mix-blend-mode:normal !important;
+}
+
+.bl-pages-menu,
+.bl-system-menu{
+  background: var(--banner-pill-bg) !important;
+  background-image: var(--banner-pill-bg) !important;
+  background-color: var(--banner-pill-solid, transparent) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  border: 1px solid var(--banner-pill-border, var(--border, rgba(0,0,0,.18))) !important;
+  opacity:1 !important;
+  mix-blend-mode:normal !important;
+  box-shadow: 0 18px 38px rgba(0,0,0,.22) !important;
+}
+
+/* Flyout panels are not banner pills. Keep them on opaque page surfaces. */
+#bl-auth-flyout .card,
+#bl-beats-flyout .card,
+.bl-flyout .card{
+  background-image: var(--bl-flyout-bg-image) !important;
+  background-color: var(--bl-flyout-bg-color) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  color: var(--bl-flyout-ink, var(--ink, #111)) !important;
+  border: 1px solid var(--border, rgba(0,0,0,.18)) !important;
+  opacity:1 !important;
+  mix-blend-mode:normal !important;
+  box-shadow: 0 18px 38px rgba(0,0,0,.22) !important;
+}
+
+.bl-flyout .bl-select-menu{
+  background-image: var(--bl-flyout-control-bg-image) !important;
+  background-color: var(--bl-flyout-control-bg-color) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  color: var(--bl-flyout-ink, var(--ink, #111)) !important;
+  border: 1px solid var(--border, rgba(0,0,0,.18)) !important;
+  opacity:1 !important;
+  mix-blend-mode:normal !important;
+  box-shadow: 0 18px 38px rgba(0,0,0,.22) !important;
+}
+
+/* Skincare: keep the mirrored page gradient as the source of truth, but stop
+   the banner/button fallback colour from darkening the surface if the browser
+   privileges background-color over background-image on compact controls. */
+body[data-app="skin"] .bl-homebar,
+body[data-app="skin"] .bl-pages-btn,
+body[data-app="skin"] .bl-system-toggle,
+body[data-app="skin"] .bl-mini-btn,
+body[data-app="skin"] #bl-beats-toggle,
+body[data-app="skin"] #bl-auth-toggle,
+body[data-app="skin"] .bl-pages-link,
+body[data-app="skin"] .bl-system-menu a,
+body[data-app="skin"] .bl-flyout .bl-select-btn,
+body[data-app="skin"] .bl-flyout .bl-select-menu [role="option"],
+body[data-app="skin"] #bl-auth-flyout .bl-auth-form .bl-mini-btn,
+body[data-app="skin"] #bl-auth-flyout .bl-auth-form button,
+body[data-app="skin"] #bl-auth-flyout .bl-auth-authed .bl-select-btn,
+body[data-app="skin"] #bl-beats-flyout .bl-mini-btn,
+body[data-app="skin"] #bl-beats-flyout button,
+body[data-app="skin"] #bl-beats-flyout input:not([type="range"]),
+body[data-app="skin"] #bl-beats-flyout select,
+body[data-app="skin"] #bl-beats-flyout textarea,
+body[data-app="skin"] .bl-pages-menu,
+body[data-app="skin"] .bl-system-menu,
+body[data-app="skin"] #bl-auth-flyout .card,
+body[data-app="skin"] #bl-beats-flyout .card,
+body[data-app="skin"] .bl-flyout .card{
+  background-image: var(--bl-flyout-bg-image) !important;
+  background-color: var(--bl-flyout-bg-color) !important;
+}
+body[data-app="skin"] .bl-flyout .bl-select-menu{
+  background-image: var(--bl-flyout-control-bg-image) !important;
+  background-color: var(--bl-flyout-control-bg-color) !important;
+}
+
+.bl-pages-link:hover,
+.bl-pages-link[aria-current="page"],
+.bl-system-menu a:hover,
+.bl-flyout .bl-mini-btn:hover,
+.bl-flyout button:hover,
+.bl-flyout .bl-select-menu [role="option"]:hover,
+.bl-flyout .bl-select-menu [role="option"][aria-selected="true"]{
+  filter: brightness(1.04) !important;
+}
+
+.bl-pages-menu,
+.bl-system-menu,
+.bl-flyout .bl-select-menu{
+  padding: 10px !important;
+}
+
+.bl-pages-link,
+.bl-system-menu a,
+.bl-flyout .bl-select-menu [role="option"]{
+  margin: 4px 0 !important;
+}
+
+#bl-auth-flyout{
+  width: min(440px, calc(100vw - 24px)) !important;
+}
+
+#bl-auth-flyout .bl-auth-authed[hidden],
+#bl-auth-flyout .bl-auth-form[hidden]{
+  display:none !important;
+}
+
+#bl-auth-flyout .bl-auth-authed:not([hidden]){
+  display: grid !important;
+  row-gap: 12px !important;
+}
+
+#bl-auth-flyout #bl-fav-links{
+  display: grid !important;
+  row-gap: 14px !important;
+  margin-top: 2px !important;
+}
+
+#bl-auth-flyout .bl-auth-meta{
+  margin: 10px 0 0 !important;
+  color: var(--muted) !important;
+  font-size: .96rem !important;
+  line-height: 1.35 !important;
+}
+
+#bl-auth-flyout .bl-auth-shell[hidden]{
+  display:none !important;
+}
+
+#bl-auth-flyout .bl-auth-view-switch{
+  display:grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  margin: 0 0 14px 0 !important;
+}
+
+#bl-auth-flyout .bl-auth-switch{
+  width:100% !important;
+}
+
+#bl-auth-flyout .bl-auth-switch.is-active{
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--banner-pill-ink, var(--ink, #111)) 18%, transparent) !important;
+}
+
+#bl-auth-flyout .bl-auth-helper{
+  margin:0 !important;
+  line-height:1.45 !important;
+}
+
+#bl-auth-flyout .bl-auth-fieldgroup{
+  display: grid !important;
+  row-gap: 6px !important;
+}
+
+#bl-auth-flyout .bl-auth-fieldgroup label,
+#bl-auth-flyout .bl-auth-form > label{
+  display: block !important;
+  margin: 0 0 2px 2px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+#bl-auth-flyout #bl-favs-food-select,
+#bl-auth-flyout #bl-favs-skin-select,
+#bl-auth-flyout #bl-favs-food-select + .bl-select-btn,
+#bl-auth-flyout #bl-favs-skin-select + .bl-select-btn,
+#bl-auth-flyout .bl-auth-fieldgroup .bl-select{
+  width: 100% !important;
+  max-width: 100% !important;
+  display: block !important;
+}
+
+#bl-auth-flyout .bl-auth-fitness-link-wrap{
+  margin-top: 2px !important;
+}
+
+#bl-auth-flyout .bl-auth-fitness-link{
+  display: inline-block !important;
+  padding: 0 !important;
+  background: transparent !important;
+  background-image: none !important;
+  background-color: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  text-decoration: underline !important;
+  font-weight: 600 !important;
+}
+
+#bl-auth-flyout .bl-auth-fitness-link:hover{
+  filter: none !important;
+  opacity: .88 !important;
+}
+
+#bl-auth-flyout .bl-auth-form:not([hidden]){
+  display:grid !important;
+  row-gap:10px !important;
+}
+
+#bl-auth-flyout .bl-auth-form .row{
+  display:flex !important;
+  gap:12px !important;
+  margin-top:8px !important;
+  align-items:center !important;
+}
+
+#bl-auth-flyout .bl-auth-form .row > .bl-mini-btn,
+#bl-auth-flyout .bl-auth-form .row > button{
+  flex:1 1 0 !important;
+  width:100% !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell{
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  width:100% !important;
+  border: 1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border-radius: 10px !important;
+  background-image: var(--bl-flyout-control-bg-image, var(--card-bg, var(--showall-bg, none))) !important;
+  background-color: var(--bl-flyout-control-bg-color, var(--card-bg, var(--bg, #fff))) !important;
+  background-repeat:no-repeat !important;
+  background-size:100% 100% !important;
+  background-position:center !important;
+  box-shadow: none !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell::before{
+  content:none !important;
+  display:none !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:not([type="range"]),
+#bl-auth-flyout .bl-auth-form input{
+  position:relative !important;
+  z-index:1 !important;
+  width:100% !important;
+  display:block !important;
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  border:0 !important;
+  outline:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  background-color:transparent !important;
+  box-shadow:none !important;
+  -webkit-box-shadow:0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  caret-color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  padding: 11px 12px !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill:hover,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill:focus,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill:active,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill:hover,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill:focus,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill:active{
+  -webkit-text-fill-color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  caret-color: var(--banner-pill-ink, var(--ink, #111)) !important;
+  background:transparent !important;
+  background-image:none !important;
+  background-color:transparent !important;
+  -webkit-box-shadow:0 0 0 1000px transparent inset !important;
+  box-shadow:0 0 0 1000px transparent inset !important;
+  transition: background-color 99999s ease-out 0s !important;
+}
+
+#bl-auth-flyout .status{
+  margin-top: 12px !important;
+  line-height: 1.45 !important;
+  min-height: 1.4em !important;
+}
+
+#bl-auth-flyout .status a{
+  color: inherit !important;
+  text-decoration: underline !important;
+}
+
+#bl-auth-flyout .status.is-success{
+  color: color-mix(in srgb, var(--banner-pill-ink, var(--ink, #111)) 82%, #0a7a3f 18%) !important;
+}
+
+#bl-auth-flyout .status.is-error{
+  color: color-mix(in srgb, var(--banner-pill-ink, var(--ink, #111)) 82%, #a11a1a 18%) !important;
+}
+
+/* Account flyout must follow the current page theme on an opaque surface. */
+#bl-auth-flyout .card{
+  background-image: var(--bl-flyout-bg-image) !important;
+  background-color: var(--bl-flyout-bg-color) !important;
+  color: var(--ink, #111) !important;
+  border: 1px solid var(--border, rgba(0,0,0,.18)) !important;
+}
+
+#bl-auth-flyout .bl-auth-switch,
+#bl-auth-flyout .bl-auth-form .bl-mini-btn,
+#bl-auth-flyout .bl-auth-form button,
+#bl-auth-flyout .bl-auth-authed .bl-select-btn{
+  background-image: var(--bl-flyout-control-bg-image, var(--showall-bg, var(--card-bg, none))) !important;
+  background-color: var(--bl-flyout-control-bg-color, var(--showall-bg, var(--card-bg, #fff))) !important;
+  color: var(--ink, #111) !important;
+  -webkit-text-fill-color: currentColor !important;
+  border: 1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+}
+
+#bl-auth-flyout .bl-auth-switch.is-active{
+  filter: brightness(1.02) !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell:focus-within{
+  border-color: var(--border-2, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
+  box-shadow: 0 0 0 4px var(--ring, rgba(0,0,0,.12)) !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:not([type="range"]),
+#bl-auth-flyout .bl-auth-form input,
+#bl-auth-flyout .bl-auth-meta,
+#bl-auth-flyout .bl-auth-helper,
+#bl-auth-flyout .status{
+  color: var(--ink, #111) !important;
+  -webkit-text-fill-color: currentColor !important;
+  caret-color: var(--ink, #111) !important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input::placeholder,
+#bl-auth-flyout .bl-auth-form input::placeholder{
+  color: color-mix(in srgb, var(--ink, #111) 68%, transparent) !important;
+  -webkit-text-fill-color: color-mix(in srgb, var(--ink, #111) 68%, transparent) !important;
+  opacity: 1 !important;
+}
+
+#bl-auth-flyout .status.is-success{
+  color: color-mix(in srgb, var(--ink, #111) 82%, #0a7a3f 18%) !important;
+}
+
+#bl-auth-flyout .status.is-error{
+  color: color-mix(in srgb, var(--ink, #111) 82%, #a11a1a 18%) !important;
+}
+
+body[data-app="fitness"] #openAccountBtn,
+body[data-app="fitness"] #profileStatus{
+  display:none !important;
+}
+
+/* Prevent page-local .card rules from reformatting banner flyouts. */
+.bl-flyout .card,
+#bl-auth-flyout .card,
+#bl-beats-flyout .card{
+  display:block !important;
+  height:auto !important;
+  min-height:0 !important;
+  padding:18px 18px 20px !important;
+  overflow:visible !important;
+  text-align:left !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+}
+
+.bl-flyout .card > h3:first-child,
+#bl-auth-flyout .card > h3:first-child,
+#bl-beats-flyout .card > h3:first-child{
+  margin:0 0 12px 0 !important;
+  padding:0 !important;
+  font-size:20px !important;
+  line-height:1.15 !important;
+  text-align:left !important;
+  background:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+.bl-flyout .card > p:first-of-type,
+#bl-auth-flyout .card > p:first-of-type,
+#bl-beats-flyout .card > p:first-of-type{
+  margin:0 0 14px 0 !important;
+}
+
+.bl-flyout .bl-player,
+#bl-beats-flyout .bl-player{
+  min-height:0 !important;
+  max-height:calc(100vh - 90px) !important;
+  overflow-y:auto !important;
+}
+.bl-flyout input::placeholder,
+.bl-flyout textarea::placeholder{
+  color: color-mix(in srgb, var(--banner-pill-ink, var(--ink, #111)) 70%, white 30%) !important;
+  opacity:1 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile banner controls
+   - Use compact icon buttons for Beats + Account on mobile so they never
+     collide with page titles, especially on the index header.
+   -------------------------------------------------------------------------- */
+.bl-btn-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  font-size:18px;
+  line-height:1;
+  color:currentColor;
+}
+.bl-icon-svg{
+  display:block;
+  width:1.12em;
+  height:1.12em;
+  fill:currentColor;
+}
+#bl-beats-toggle .bl-btn-icon{
+  color:#000;
+}
+#bl-auth-toggle .bl-btn-icon{
+  color:var(--ink, #1b0b09);
+}
+.bl-btn-label{
+  display:inline-block;
+}
+
+@media (max-width: 900px){
+  #bl-beats-toggle,
+  #bl-auth-toggle{
+    width: 42px;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 !important;
+    gap: 0 !important;
+    border-radius: 999px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+
+  #bl-beats-toggle .bl-btn-label,
+  #bl-auth-toggle .bl-btn-label{
+    display:none !important;
+  }
+
+  .bl-homebar-right{
+    gap: 8px;
+  }
+}
+
+
+/* Index page: never show Beats in the homepage banner */
+body[data-app="home"] #bl-beats-toggle{ display:none !important; }
+
+
+/* --------------------------------------------------------------------------
+   Skincare libraries: force the single themed page scroller
+   - Ingredient Library and Skin Support Library must not create extra inner
+     scroll areas. The page should scroll only through .bl-scroll.
+   -------------------------------------------------------------------------- */
+body[data-app="skin"] #ingredients .grid,
+body[data-app="skin"] #support .grid,
+body[data-app="skin"] #ingredients .lib,
+body[data-app="skin"] #support .lib,
+body[data-app="skin"] #ingredients [data-library-scroll],
+body[data-app="skin"] #support [data-library-scroll],
+body[data-app="skin"] #ingredients .library-scroll,
+body[data-app="skin"] #support .library-scroll,
+body[data-app="skin"] #ingredients .library-scroll-shell,
+body[data-app="skin"] #support .library-scroll-shell,
+body[data-app="skin"] #ingredients .ingredient-library-scroll,
+body[data-app="skin"] #support .support-library-scroll{
+  max-height:none !important;
+  height:auto !important;
+  overflow:visible !important;
+  overflow-y:visible !important;
+  overscroll-behavior:auto !important;
+}
+
+/* BASELINE-SOLID-SURFACES-V2: sitewide opaque-surface policy for pages that still had translucent/off-white panels.
+   Food, skincare, and badminton keep their page-specific approved surfaces. */
+body[data-app="fitness"] .card,
+body[data-app="fitness"] .ex-row,
+body[data-app="fitness"] .lib-card,
+body[data-app="fitness"] .ill,
+body[data-app="fitness"] .pill,
+body[data-app="fitness"] .block,
+body[data-app="fitness"] .k,
+body[data-app="fitness"] .session-card,
+body[data-app="fitness"] .ach-badge,
+body[data-app="fitness"] .ach-card,
+body[data-app="fitness"] .mini-panel,
+body[data-app="fitness"] .stat,
+body[data-app="fitness"] .stat-card{
+  background:var(--card-bg)!important;
+  background-color:var(--card-bg)!important;
+  border-color:var(--border)!important;
+  backdrop-filter:none!important;
+}
+body[data-app="fitness"] input,
+body[data-app="fitness"] select,
+body[data-app="fitness"] textarea{
+  background:var(--filter-bg)!important;
+  background-color:var(--filter-bg)!important;
+  border-color:var(--border-2)!important;
+  color:var(--ink)!important;
+}
+body[data-app="fitness"] .action.secondary,
+body[data-app="fitness"] .tab,
+body[data-app="fitness"] .ex-remove,
+body[data-app="fitness"] .ghost,
+body[data-app="fitness"] .chip,
+body[data-app="fitness"] .toggle,
+body[data-app="fitness"] .session-meta,
+body[data-app="fitness"] .ach-meta,
+body[data-app="fitness"] .kpi,
+body[data-app="fitness"] .mini-chip{
+  background:var(--showall-bg)!important;
+  background-color:var(--showall-bg)!important;
+  border-color:var(--showall-border)!important;
+  color:var(--ink)!important;
+}
+
+body[data-app="games"] .card,
+body[data-app="games"] .summary-box,
+body[data-app="games"] .progress-shell,
+body[data-app="games"] .skill-item,
+body[data-app="games"] .empty-box,
+body[data-app="games"] .game-row,
+body[data-app="games"] .tier-btn,
+body[data-app="games"] .formula-box,
+body[data-app="games"] .word-box,
+body[data-app="games"] .ninja-box,
+body[data-app="games"] .solution-box,
+body[data-app="games"] .clue-bar,
+body[data-app="games"] .upgrade-item,
+body[data-app="games"] .bonus-item,
+body[data-app="games"] .game-summary-details,
+body[data-app="games"] .game-summary-body,
+body[data-app="games"] .realm-window,
+body[data-app="games"] .realm-drawer,
+body[data-app="games"] .realm-spirit-card,
+body[data-app="games"] .realm-stat-chip,
+body[data-app="games"] .trackcoin-stat-card,
+body[data-app="games"] .realm-manage-card,
+body[data-app="games"] .realm-enemy-status,
+body[data-app="games"] .realm-exploration-overlay,
+body[data-app="games"] .ninja-scene__overlay{
+  background:var(--card-bg)!important;
+  background-color:var(--card-bg)!important;
+  border-color:var(--border)!important;
+  color:var(--ink)!important;
+  backdrop-filter:none!important;
+}
+body[data-app="games"] .action,
+body[data-app="games"] .action.secondary,
+body[data-app="games"] .action.ghost,
+body[data-app="games"] .tab,
+body[data-app="games"] .stat-pill,
+body[data-app="games"] .trait-chip,
+body[data-app="games"] .realm-tab-btn,
+body[data-app="games"] .realm-mini-action,
+body[data-app="games"] .game-toggle-btn{
+  background:var(--showall-bg)!important;
+  background-color:var(--showall-bg)!important;
+  border-color:var(--showall-border)!important;
+  color:var(--accent-2)!important;
+}
+body[data-app="games"] .text-input,
+body[data-app="games"] input,
+body[data-app="games"] select,
+body[data-app="games"] textarea{
+  background:var(--filter-bg)!important;
+  background-color:var(--filter-bg)!important;
+  border-color:var(--border-2)!important;
+  color:var(--ink)!important;
+}
+body[data-app="games"] .number-chip,
+body[data-app="games"] .letter-cell,
+body[data-app="games"] .game-summary-details summary{
+  background:var(--filter-bg)!important;
+  background-color:var(--filter-bg)!important;
+  border-color:var(--border)!important;
+  color:var(--accent-2)!important;
+}
+
+
+
+/* BASELINE-OPAQUE-SURFACE-COHERENCE-V3
+   Shared opaque UI surfaces for dark Fitness and warm Games pages.
+   Food, Skincare, and Badminton keep their page-specific surfaces. */
+body[data-app="fitness"] .card,
+body[data-app="fitness"] .ex-row,
+body[data-app="fitness"] .lib-card,
+body[data-app="fitness"] .ill,
+body[data-app="fitness"] .pill,
+body[data-app="fitness"] .block,
+body[data-app="fitness"] .k,
+body[data-app="fitness"] .session-card,
+body[data-app="fitness"] .session-subcard,
+body[data-app="fitness"] .ach-badge,
+body[data-app="fitness"] .ach-card,
+body[data-app="fitness"] .mini-panel,
+body[data-app="fitness"] .stat,
+body[data-app="fitness"] .stat-card{
+  background:var(--card-bg)!important;
+  border-color:var(--border)!important;
+  backdrop-filter:none!important;
+}
+body[data-app="fitness"] input,
+body[data-app="fitness"] select,
+body[data-app="fitness"] textarea{
+  background:var(--filter-bg)!important;
+  border-color:var(--border-2)!important;
+  color:var(--ink)!important;
+}
+body[data-app="games"] .card,
+body[data-app="games"] .summary-box,
+body[data-app="games"] .progress-shell,
+body[data-app="games"] .skill-item,
+body[data-app="games"] .empty-box,
+body[data-app="games"] .game-row,
+body[data-app="games"] .game-board-card,
+body[data-app="games"] .game-side-card,
+body[data-app="games"] .game-card,
+body[data-app="games"] .game-subpanel-grid > *,
+body[data-app="games"] .trackcoin-stat-card,
+body[data-app="games"] .realm-spirit-card,
+body[data-app="games"] .realm-drawer,
+body[data-app="games"] .realm-overlay-screen,
+body[data-app="games"] .word-box,
+body[data-app="games"] .formula-box,
+body[data-app="games"] .game-summary-details,
+body[data-app="games"] .upgrade-item,
+body[data-app="games"] .bonus-item,
+body[data-app="games"] .realm-stat-chip,
+body[data-app="games"] .realm-manage-card{
+  background:var(--card-bg)!important;
+  border-color:var(--border)!important;
+  color:var(--ink)!important;
+  backdrop-filter:none!important;
+}
+body[data-app="games"] input,
+body[data-app="games"] select,
+body[data-app="games"] textarea,
+body[data-app="games"] .text-input{
+  background:var(--filter-bg)!important;
+  border-color:var(--border-2)!important;
+  color:var(--ink)!important;
+}
+body[data-app="games"] .tab,
+body[data-app="games"] .action,
+body[data-app="games"] .action.secondary,
+body[data-app="games"] .action.ghost,
+body[data-app="games"] .stat-pill,
+body[data-app="games"] .tier-btn,
+body[data-app="games"] .realm-mini-action,
+body[data-app="games"] .realm-close-btn,
+body[data-app="games"] .realm-tab-btn,
+body[data-app="games"] .trait-chip,
+body[data-app="games"] .clue-bar,
+body[data-app="games"] .solution-box{
+  background:var(--showall-bg)!important;
+  border-color:var(--showall-border)!important;
+  color:var(--accent-2)!important;
+}
+
+/* BASELINE-HOMEBAR-COHERENCE-V4
+   Single sitewide banner contract:
+   - Pages dropdown is the only page navigation shown in the banner.
+   - Beats and Account controls remain visible on every non-home system page.
+   - Existing static dropdown markup is functional; JS no longer depends on .bl-topnav. */
+.bl-homebar-inner{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  width:100% !important;
+  min-width:0 !important;
+  flex-wrap:nowrap !important;
+}
+
+.bl-pages-dd{
+  position:relative !important;
+  display:flex !important;
+  align-items:center !important;
+  flex:0 1 auto !important;
+  min-width:0 !important;
+  max-width:min(420px, calc(100vw - 24px)) !important;
+  z-index:13010 !important;
+}
+
+.bl-pages-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  max-width:100% !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+}
+
+.bl-topnav,
+.bl-topnav--hidden,
+html:not(.bl-pages-dd-ready) .bl-topnav,
+html.bl-pages-dd-ready .bl-topnav{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+  width:0 !important;
+  height:0 !important;
+  overflow:hidden !important;
+}
+
+.bl-homebar-spacer{
+  display:block !important;
+  flex:1 1 auto !important;
+  min-width:12px !important;
+  height:1px !important;
+  pointer-events:none !important;
+}
+
+.bl-homebar-right{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  gap:10px !important;
+  flex:0 0 auto !important;
+  margin-left:auto !important;
+  min-width:max-content !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  z-index:13020 !important;
+}
+
+#bl-beats-toggle,
+#bl-auth-toggle{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  white-space:nowrap !important;
+}
+
+body[data-app="home"] #bl-beats-toggle{
+  display:none !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+
+.bl-pages-menu{
+  position:absolute !important;
+  left:0 !important;
+  top:calc(100% + 10px) !important;
+  z-index:13030 !important;
+  width:min(380px, calc(100vw - 28px)) !important;
+  padding:10px !important;
+  border-radius:16px !important;
+}
+
+.bl-pages-menu:not([hidden]){
+  display:block !important;
+}
+
+.bl-pages-menu[hidden]{
+  display:none !important;
+}
+
+.bl-pages-link{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:100% !important;
+}
+
+
+/* BASELINE-MASSAGE-SITEWIDE-20260526massagefix */
+body[data-app="massage"]{
+  --bl-flyout-bg-image:linear-gradient(180deg,#c09570 0%,#aa7854 100%);
+  --bl-flyout-bg-color:#aa7854;
+  --bl-flyout-control-bg-image:linear-gradient(180deg,#d2a078 0%,#b98159 100%);
+  --bl-flyout-control-bg-color:#b98159;
+}
+
+
+/* BASELINE-SOLID-SURFACE-CONTRACT-20260527
+   Page gradients stay on the page/banner. Cards, recipe controls, account fields,
+   panel controls, and sliders use solid opaque colours sampled from each page palette. */
+body[data-app="home"]{
+  --bl-surface-card-solid:#3d3d43;
+  --bl-surface-panel-solid:#47474d;
+  --bl-surface-control-solid:#56565f;
+  --bl-surface-input-solid:#4f4f58;
+  --bl-surface-active-solid:#6a6a74;
+  --bl-surface-ink:#f4efe7;
+  --bl-slider-track-solid:#47474d;
+  --bl-slider-thumb-solid:#9b9baa;
+  --bl-slider-border-solid:#2b2b30;
+  --bl-home-account-gradient:linear-gradient(90deg,#2f3035 0%,#50515a 30%,#757680 50%,#50515a 70%,#2f3035 100%);
+}
+body[data-app="food"]{
+  --bl-surface-card-solid:#f5b84a;
+  --bl-surface-recipe-card-solid:#ffc04d;
+  --bl-surface-panel-solid:#e98225;
+  --bl-surface-control-solid:#ee942d;
+  --bl-surface-input-solid:#ffb13b;
+  --bl-surface-active-solid:#c92727;
+  --bl-surface-ink:#1b0b09;
+  --bl-slider-track-solid:#b11226;
+  --bl-slider-thumb-solid:#ffb000;
+  --bl-slider-border-solid:#7a1a21;
+}
+body[data-app="skin"]{
+  --bl-surface-card-solid:#d99a82;
+  --bl-surface-recipe-card-solid:#d89178;
+  --bl-surface-panel-solid:#c87962;
+  --bl-surface-control-solid:#cf8167;
+  --bl-surface-input-solid:#e0aa94;
+  --bl-surface-active-solid:#b8644d;
+  --bl-surface-ink:#2b2b28;
+  --bl-slider-track-solid:#b8644d;
+  --bl-slider-thumb-solid:#e1ad9b;
+  --bl-slider-border-solid:#7a4a3a;
+}
+body[data-app="massage"]{
+  --bl-surface-card-solid:#aa7854;
+  --bl-surface-recipe-card-solid:#b98159;
+  --bl-surface-panel-solid:#b7855f;
+  --bl-surface-control-solid:#b98159;
+  --bl-surface-input-solid:#875d40;
+  --bl-surface-active-solid:#c58d62;
+  --bl-surface-ink:#24140b;
+  --bl-slider-track-solid:#775036;
+  --bl-slider-thumb-solid:#d2a078;
+  --bl-slider-border-solid:#2f1a0e;
+}
+body[data-app="fitness"]{
+  --bl-surface-card-solid:#130b10;
+  --bl-surface-recipe-card-solid:#1d1016;
+  --bl-surface-panel-solid:#1d1016;
+  --bl-surface-control-solid:#701725;
+  --bl-surface-input-solid:#2a1118;
+  --bl-surface-active-solid:#9b1a2d;
+  --bl-surface-ink:#f6eaf0;
+  --bl-slider-track-solid:#2a1118;
+  --bl-slider-thumb-solid:#9b1a2d;
+  --bl-slider-border-solid:#f6eaf0;
+}
+body[data-app="badminton"]{
+  --bl-surface-card-solid:#efdcfb;
+  --bl-surface-recipe-card-solid:#e7cff6;
+  --bl-surface-panel-solid:#e1c4f4;
+  --bl-surface-control-solid:#d7b7ee;
+  --bl-surface-input-solid:#efdcfb;
+  --bl-surface-active-solid:#c29cff;
+  --bl-surface-ink:#2c123f;
+  --bl-slider-track-solid:#6a1fb3;
+  --bl-slider-thumb-solid:#f08b2f;
+  --bl-slider-border-solid:#2c123f;
+}
+body[data-app="games"]{
+  --bl-surface-card-solid:#8EA4C2;
+  --bl-surface-recipe-card-solid:#9FB2CE;
+  --bl-surface-panel-solid:#7F96B9;
+  --bl-surface-control-solid:#6F88AD;
+  --bl-surface-input-solid:#B9C9E2;
+  --bl-surface-active-solid:#5C739B;
+  --bl-surface-ink:#101827;
+  --bl-slider-track-solid:#2C4368;
+  --bl-slider-thumb-solid:#B9C9E2;
+  --bl-slider-border-solid:#203552;
+}
+
+/* Index header Account button: deliberately grey-gradient, tied to the grey header, with clear white text. */
+body[data-app="home"] #bl-auth-toggle{
+  background:var(--bl-home-account-gradient)!important;
+  background-image:var(--bl-home-account-gradient)!important;
+  background-color:#50515a!important;
+  color:#ffffff!important;
+  -webkit-text-fill-color:#ffffff!important;
+  border-color:#9a9aa6!important;
+  box-shadow:0 14px 28px -22px rgba(0,0,0,.55)!important;
+}
+body[data-app="home"] #bl-auth-toggle .bl-btn-label,
+body[data-app="home"] #bl-auth-toggle .bl-btn-icon{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;}
+
+/* Cards and panels: solid opaque surfaces on system pages, never translucent or gradient-filled. */
+body:not([data-app="home"]) .card,
+body:not([data-app="home"]) .method-card,
+body:not([data-app="home"]) .logic-card,
+body:not([data-app="home"]) .session-card,
+body:not([data-app="home"]) .summary-box,
+body:not([data-app="home"]) .progress-shell,
+body:not([data-app="home"]) .empty-box,
+body:not([data-app="home"]) .skill-item,
+body:not([data-app="home"]) .game-summary-details,
+body:not([data-app="home"]) .game-summary-body,
+body:not([data-app="home"]) .formula-box,
+body:not([data-app="home"]) .word-box,
+body:not([data-app="home"]) .ninja-box,
+body:not([data-app="home"]) .trackcoin-stat-card,
+body:not([data-app="home"]) .realm-window,
+body:not([data-app="home"]) .realm-drawer,
+body:not([data-app="home"]) .realm-spirit-card,
+body:not([data-app="home"]) .realm-stat-chip,
+body:not([data-app="home"]) .realm-manage-card,
+body:not([data-app="home"]) .system-section-card,
+body:not([data-app="home"]) .system-panel,
+body:not([data-app="home"]) .court-card,
+body:not([data-app="home"]) .status-box,
+body:not([data-app="home"]) .diet-log-panel,
+body:not([data-app="home"]) .diet-food-row,
+body:not([data-app="home"]) .diet-entry-card,
+body:not([data-app="home"]) .diet-selected-card,
+body:not([data-app="home"]) .diet-kpi-card,
+body:not([data-app="home"]) .diet-mini-stat{
+  background-image:none!important;
+  background-color:var(--bl-surface-card-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* Recipe area: warmer/deeper solid cards and solid controls, no internal gradients. */
+body[data-app] #recipes .card,
+body[data-app] #recipes .recipe.card,
+body[data-app] #recipes-landing.card,
+body[data-app] #recipes .recipe-page,
+body[data-app] #recipes .side-recipe-nav,
+body[data-app] #recipes .scale-tools,
+body[data-app] .recipe.card{
+  background-image:none!important;
+  background-color:var(--bl-surface-recipe-card-solid,var(--bl-surface-card-solid))!important;
+  opacity:1!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+body[data-app] #recipes .multiplier,
+body[data-app] #recipes .filter-bar,
+body[data-app] #recipes .glide-controller,
+body[data-app] #recipes .scale-block,
+body[data-app] #recipes .variant-switcher,
+body[data-app] #recipes .recipe-controls{
+  background-image:none!important;
+  background-color:var(--bl-surface-panel-solid)!important;
+  border-color:var(--border,var(--showall-border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+body[data-app] #recipes .back-btn,
+body[data-app] #recipes .print-btn,
+body[data-app] #recipes .scale-toggle,
+body[data-app] #recipes .scale-apply,
+body[data-app] #recipes .multiplier button,
+body[data-app] #recipes .ingredient-recipe-link a,
+body[data-app] #recipes .action,
+body[data-app] #recipes button,
+body[data-app] #recipes .bl-number-stepper .bl-step{
+  background-image:none!important;
+  background-color:var(--bl-surface-control-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+body[data-app] #recipes input:not([type="range"]),
+body[data-app] #recipes select,
+body[data-app] #recipes textarea,
+body[data-app] #recipes .scale-tools input,
+body[data-app] #recipes .scale-tools select,
+body[data-app] #recipes .multiplier input,
+body[data-app] #recipes .multiplier select{
+  background-image:none!important;
+  background-color:var(--bl-surface-input-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--border-2,var(--border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+body[data-app] #recipes .scale-tools{
+  background-image:none!important;
+  background-color:var(--bl-surface-panel-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+}
+
+/* Account + Binaural flyouts: solid panels and solid fields/buttons from current page palette. */
+body[data-app] #bl-auth-flyout .card,
+body[data-app] #bl-beats-flyout .card,
+body[data-app] .bl-flyout .card{
+  background-image:none!important;
+  background-color:var(--bl-surface-card-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+body[data-app] #bl-auth-flyout .bl-auth-input-shell,
+body[data-app] #bl-auth-flyout input:not([type="range"]),
+body[data-app] #bl-auth-flyout select,
+body[data-app] #bl-auth-flyout textarea,
+body[data-app] #bl-beats-flyout input:not([type="range"]),
+body[data-app] #bl-beats-flyout select,
+body[data-app] #bl-beats-flyout textarea,
+body[data-app] .bl-flyout input:not([type="range"]),
+body[data-app] .bl-flyout select,
+body[data-app] .bl-flyout textarea{
+  background-image:none!important;
+  background-color:var(--bl-surface-input-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  caret-color:currentColor!important;
+  border-color:var(--border-2,var(--border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+body[data-app] #bl-auth-flyout .bl-auth-input-shell > input,
+body[data-app] #bl-auth-flyout .bl-auth-input-shell > input:not([type="range"]){
+  background:transparent!important;
+  background-image:none!important;
+  background-color:transparent!important;
+}
+body[data-app] #bl-auth-flyout .bl-mini-btn,
+body[data-app] #bl-auth-flyout button,
+body[data-app] #bl-beats-flyout .bl-mini-btn,
+body[data-app] #bl-beats-flyout button{
+  background-image:none!important;
+  background-color:var(--bl-surface-control-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  box-shadow:none!important;
+}
+
+/* General page controls: solid tones from the page palette, not gradients. */
+body:not([data-app="home"]) input:not([type="range"]),
+body:not([data-app="home"]) select,
+body:not([data-app="home"]) textarea,
+body:not([data-app="home"]) .text-input,
+body:not([data-app="home"]) .diet-static-value{
+  background-image:none!important;
+  background-color:var(--bl-surface-input-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--border-2,var(--border,rgba(0,0,0,.18)))!important;
+}
+body:not([data-app="home"]) .action,
+body:not([data-app="home"]) button.action,
+body:not([data-app="home"]) .tab,
+body:not([data-app="home"]) .game-toggle-btn,
+body:not([data-app="home"]) .tier-btn,
+body:not([data-app="home"]) .stat-pill,
+body:not([data-app="home"]) .trait-chip,
+body:not([data-app="home"]) .solution-box,
+body:not([data-app="home"]) .clue-bar,
+body:not([data-app="home"]) .number-chip,
+body:not([data-app="home"]) .letter-cell,
+body:not([data-app="home"]) .metric-chip,
+body:not([data-app="home"]) .gameplan-subtab,
+body:not([data-app="home"]) .diet-inline-note,
+body:not([data-app="home"]) .diet-entry-macros span{
+  background-image:none!important;
+  background-color:var(--bl-surface-control-solid)!important;
+  color:var(--ink,var(--bl-surface-ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
+}
+body:not([data-app="home"]) .tab[aria-selected="true"],
+body:not([data-app="home"]) .game-toggle-btn.is-active,
+body:not([data-app="home"]) .tier-btn.active,
+body:not([data-app="home"]) .gameplan-subtab[aria-selected="true"]{
+  background-image:none!important;
+  background-color:var(--bl-surface-active-solid)!important;
+}
+
+/* Sliders: remove browser blue/white defaults and use page-local solid colours. */
+body[data-app] input[type="range"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  width:100%!important;
+  height:24px!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  color:var(--bl-slider-thumb-solid)!important;
+  accent-color:var(--bl-slider-thumb-solid)!important;
+  cursor:pointer!important;
+}
+body[data-app] input[type="range"]::-webkit-slider-runnable-track{
+  height:12px!important;
+  border-radius:999px!important;
+  background:var(--bl-slider-track-solid)!important;
+  border:1px solid var(--bl-slider-border-solid)!important;
+  box-shadow:none!important;
+}
+body[data-app] input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  width:24px!important;
+  height:24px!important;
+  margin-top:-7px!important;
+  border-radius:50%!important;
+  border:2px solid var(--bl-slider-border-solid)!important;
+  background:var(--bl-slider-thumb-solid)!important;
+  box-shadow:none!important;
+}
+body[data-app] input[type="range"]::-moz-range-track{
+  height:12px!important;
+  border-radius:999px!important;
+  background:var(--bl-slider-track-solid)!important;
+  border:1px solid var(--bl-slider-border-solid)!important;
+  box-shadow:none!important;
+}
+body[data-app] input[type="range"]::-moz-range-thumb{
+  width:24px!important;
+  height:24px!important;
+  border-radius:50%!important;
+  border:2px solid var(--bl-slider-border-solid)!important;
+  background:var(--bl-slider-thumb-solid)!important;
+  box-shadow:none!important;
+}
+body[data-app] input[type="range"]::-moz-range-progress{
+  height:12px!important;
+  border-radius:999px!important;
+  background:var(--bl-surface-active-solid)!important;
+}
+body[data-app] input::placeholder,
+body[data-app] textarea::placeholder{
+  color:color-mix(in srgb, var(--ink,var(--bl-surface-ink,#111)) 70%, transparent)!important;
+  -webkit-text-fill-color:color-mix(in srgb, var(--ink,var(--bl-surface-ink,#111)) 70%, transparent)!important;
+  opacity:1!important;
+}
+body[data-app] input:-webkit-autofill,
+body[data-app] input:-webkit-autofill:hover,
+body[data-app] input:-webkit-autofill:focus,
+body[data-app] textarea:-webkit-autofill,
+body[data-app] select:-webkit-autofill{
+  -webkit-text-fill-color:var(--ink,var(--bl-surface-ink,#111))!important;
+  box-shadow:0 0 0 1000px var(--bl-surface-input-solid) inset!important;
+  transition:background-color 99999s ease-out 0s!important;
+}
+/* END BASELINE-SOLID-SURFACE-CONTRACT-20260527 */
+
+/* BASELINE-FLYOUT-FIELD-CONTRAST-20260527
+   Targeted repair only: Account/Binaural text-entry controls keep page palette
+   surfaces, but no browser-white fields and no low-contrast dark field + dark text. */
+body[data-app="home"]{
+  --bl-flyout-field-bg:#56565f;
+  --bl-flyout-field-ink:#f4efe7;
+  --bl-flyout-field-placeholder:#d0c7bb;
+}
+body[data-app="food"]{
+  --bl-flyout-field-bg:#ffd26a;
+  --bl-flyout-field-ink:#1b0b09;
+  --bl-flyout-field-placeholder:#5a0c15;
+}
+body[data-app="skin"]{
+  --bl-flyout-field-bg:#e8c1b2;
+  --bl-flyout-field-ink:#2b2b28;
+  --bl-flyout-field-placeholder:#6b463b;
+}
+body[data-app="badminton"]{
+  --bl-flyout-field-bg:#efdcfb;
+  --bl-flyout-field-ink:#2c123f;
+  --bl-flyout-field-placeholder:#4f197d;
+}
+body[data-app="fitness"]{
+  --bl-flyout-field-bg:#2a1118;
+  --bl-flyout-field-ink:#f6eaf0;
+  --bl-flyout-field-placeholder:#d7b8c4;
+}
+body[data-app="massage"]{
+  --bl-flyout-field-bg:#d2a078;
+  --bl-flyout-field-ink:#24140b;
+  --bl-flyout-field-placeholder:#472d1d;
+}
+body[data-app="games"]{
+  --bl-flyout-field-bg:#B9C9E2;
+  --bl-flyout-field-ink:#101827;
+  --bl-flyout-field-placeholder:#263957;
+}
+
+#bl-auth-flyout .bl-auth-view-switch{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+#bl-auth-flyout [data-auth-switch="login"]{
+  display:none!important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:not([type="range"]),
+#bl-auth-flyout .bl-auth-form input:not([type="range"]),
+#bl-beats-flyout input:not([type="range"]),
+#bl-beats-flyout select,
+#bl-beats-flyout textarea,
+#bl-beats-flyout .bl-select-btn{
+  background:var(--bl-flyout-field-bg)!important;
+  background-image:none!important;
+  background-color:var(--bl-flyout-field-bg)!important;
+  color:var(--bl-flyout-field-ink)!important;
+  -webkit-text-fill-color:var(--bl-flyout-field-ink)!important;
+  caret-color:var(--bl-flyout-field-ink)!important;
+  border-color:var(--border-2,var(--showall-border,var(--border,rgba(0,0,0,.18))))!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+}
+
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell{
+  overflow:hidden!important;
+}
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input,
+#bl-auth-flyout .bl-auth-form input:not([type="range"]){
+  box-shadow:0 0 0 1000px var(--bl-flyout-field-bg) inset!important;
+}
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill:hover,
+#bl-auth-flyout .bl-auth-form .bl-auth-input-shell > input:-webkit-autofill:focus,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill:hover,
+#bl-auth-flyout .bl-auth-form input:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--bl-flyout-field-ink)!important;
+  caret-color:var(--bl-flyout-field-ink)!important;
+  box-shadow:0 0 0 1000px var(--bl-flyout-field-bg) inset!important;
+  -webkit-box-shadow:0 0 0 1000px var(--bl-flyout-field-bg) inset!important;
+  background-color:var(--bl-flyout-field-bg)!important;
+  transition:background-color 99999s ease-out 0s!important;
+}
+
+#bl-auth-flyout input::placeholder,
+#bl-auth-flyout textarea::placeholder,
+#bl-beats-flyout input::placeholder,
+#bl-beats-flyout textarea::placeholder{
+  color:var(--bl-flyout-field-placeholder)!important;
+  -webkit-text-fill-color:var(--bl-flyout-field-placeholder)!important;
+  opacity:.86!important;
+}
+
+#bl-beats-flyout .bl-select-menu,
+#bl-beats-flyout .bl-select-menu [role="option"]{
+  background:var(--bl-flyout-field-bg)!important;
+  background-image:none!important;
+  background-color:var(--bl-flyout-field-bg)!important;
+  color:var(--bl-flyout-field-ink)!important;
+  -webkit-text-fill-color:var(--bl-flyout-field-ink)!important;
+}
+
+/* BASELINE-PAGE-GRADIENT-FLYOUT-LOCK-20260527B
+   Narrow correction:
+   - Banner buttons/dropdowns and Account/Binaural panels use the current page gradient.
+   - Account/Binaural text-entry fields remain solid readable page-palette colours, never browser white.
+   - Binaural sliders/status avoid system blue/white glyphs.
+   - Does not alter cards, recipes, page palettes, or non-flyout controls. */
+body[data-app]{
+  --bl-active-page-gradient: var(--banner-pill-bg, var(--homebar-bg, var(--page-bg, var(--header-gradient, none))));
+}
+
+/* Skincare centre stays warm-light rather than near-white. These vars only affect the skin page/index theme tokens. */
+body[data-app="skin"],
+html[data-app="skin"]{
+  --skin-wash:#dc9f88;
+  --skin-milk:#e1ad9b;
+  --skin-cream:#e8c1b2;
+  --skin-page-gradient:linear-gradient(90deg,
+    var(--skin-deep) 0%,
+    var(--skin-peach) 10%,
+    var(--skin-wash) 24%,
+    var(--skin-milk) 38%,
+    var(--skin-cream) 48%,
+    var(--skin-cream) 52%,
+    var(--skin-milk) 62%,
+    var(--skin-wash) 76%,
+    var(--skin-peach) 90%,
+    var(--skin-deep) 100%
+  );
+  --header-gradient:var(--skin-page-gradient);
+  --page-bg:var(--skin-page-gradient);
+  --homebar-bg:var(--skin-page-gradient);
+  --banner-pill-bg:var(--skin-page-gradient);
+  --banner-pill-solid:var(--skin-cream);
+}
+
+/* Banner/page dropdown controls: use the page gradient, including Skincare. */
+body[data-app] .bl-pages-btn,
+body[data-app] .bl-system-toggle,
+body[data-app] #bl-beats-toggle,
+body[data-app] #bl-auth-toggle,
+body[data-app] .bl-pages-menu,
+body[data-app] .bl-system-menu,
+body[data-app] .bl-pages-link,
+body[data-app] .bl-system-menu a{
+  background:var(--bl-active-page-gradient)!important;
+  background-image:var(--bl-active-page-gradient)!important;
+  background-color:var(--banner-pill-solid, transparent)!important;
+  background-repeat:no-repeat!important;
+  background-size:100% 100%!important;
+  color:var(--banner-pill-ink,var(--ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--banner-pill-border,var(--border,rgba(0,0,0,.18)))!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+}
+
+/* Account + Binaural panel backgrounds: true current page gradient, sitewide. */
+body[data-app] #bl-auth-flyout .card,
+body[data-app] #bl-beats-flyout .card{
+  background:var(--bl-active-page-gradient)!important;
+  background-image:var(--bl-active-page-gradient)!important;
+  background-color:var(--banner-pill-solid, var(--bl-flyout-bg-color, transparent))!important;
+  background-repeat:no-repeat!important;
+  background-size:100% 100%!important;
+  color:var(--ink,#111)!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+/* Keep Account/Binaural text-entry surfaces solid and readable, not white/blue, over the gradient panels. */
+body[data-app] #bl-auth-flyout .bl-auth-input-shell,
+body[data-app] #bl-auth-flyout .bl-auth-input-shell > input,
+body[data-app] #bl-auth-flyout input:not([type="range"]),
+body[data-app] #bl-auth-flyout select,
+body[data-app] #bl-auth-flyout textarea,
+body[data-app] #bl-beats-flyout input:not([type="range"]),
+body[data-app] #bl-beats-flyout select,
+body[data-app] #bl-beats-flyout textarea,
+body[data-app] #bl-beats-flyout .bl-select-btn{
+  background:var(--bl-flyout-field-bg,var(--bl-surface-input-solid,var(--showall-bg)))!important;
+  background-image:none!important;
+  background-color:var(--bl-flyout-field-bg,var(--bl-surface-input-solid,var(--showall-bg)))!important;
+  color:var(--bl-flyout-field-ink,var(--ink,#111))!important;
+  -webkit-text-fill-color:var(--bl-flyout-field-ink,var(--ink,#111))!important;
+  caret-color:var(--bl-flyout-field-ink,var(--ink,#111))!important;
+  border-color:var(--border-2,var(--showall-border,var(--border,rgba(0,0,0,.18))))!important;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+}
+
+/* Binaural buttons can use the page gradient; text-entry controls above stay solid. */
+body[data-app] #bl-beats-flyout .bl-mini-btn,
+body[data-app] #bl-beats-flyout button{
+  background:var(--bl-active-page-gradient)!important;
+  background-image:var(--bl-active-page-gradient)!important;
+  background-color:var(--banner-pill-solid,transparent)!important;
+  color:var(--banner-pill-ink,var(--ink,#111))!important;
+  -webkit-text-fill-color:currentColor!important;
+  border-color:var(--banner-pill-border,var(--border,rgba(0,0,0,.18)))!important;
+}
+
+/* Binaural sliders only: remove pale/blue browser-looking pieces without touching page sliders elsewhere. */
+body[data-app] #bl-beats-flyout input[type="range"]{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  accent-color:var(--bl-slider-thumb-solid,var(--accent))!important;
+  background:transparent!important;
+  border:0!important;
+}
+body[data-app] #bl-beats-flyout input[type="range"]::-webkit-slider-runnable-track{
+  background:var(--bl-slider-track-solid,var(--accent))!important;
+  border-color:var(--bl-slider-border-solid,var(--border))!important;
+}
+body[data-app] #bl-beats-flyout input[type="range"]::-webkit-slider-thumb{
+  background:var(--bl-slider-thumb-solid,var(--accent-3,var(--accent)))!important;
+  border-color:var(--bl-slider-border-solid,var(--border))!important;
+  box-shadow:none!important;
+}
+body[data-app] #bl-beats-flyout input[type="range"]::-moz-range-track{
+  background:var(--bl-slider-track-solid,var(--accent))!important;
+  border-color:var(--bl-slider-border-solid,var(--border))!important;
+}
+body[data-app] #bl-beats-flyout input[type="range"]::-moz-range-thumb{
+  background:var(--bl-slider-thumb-solid,var(--accent-3,var(--accent)))!important;
+  border-color:var(--bl-slider-border-solid,var(--border))!important;
+  box-shadow:none!important;
+}
+
+body[data-app="skin"] #bl-beats-flyout input[type="range"]{
+  --bl-slider-track-solid:#b8644d;
+  --bl-slider-thumb-solid:#cf8167;
+  --bl-slider-border-solid:#7a4a3a;
+}
+
+#bl-beats-status{
+  color:var(--ink,#111)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+/* END BASELINE-PAGE-GRADIENT-FLYOUT-LOCK-20260527B */
+
+/* BASELINE-BINAURAL-SAVE-FIT-AND-BADMINTON-SIZE-20260527 */
+/*
+   Targeted Binaural flyout repair.
+   Scope:
+   - Sitewide: keep the preset Save button wide enough for "⭐ Save".
+   - Badminton only: neutralise page-card/mobile rules that were making the
+     shared Binaural flyout oversized. Colours/gradients/sliders are left on
+     the existing current-page rules above.
+*/
+#bl-beats-flyout #bl-user-presets .row{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) max-content !important;
+  align-items:center !important;
+  gap:10px !important;
+}
+
+#bl-beats-flyout #bl-save-preset{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:132px !important;
+  max-width:none !important;
+  min-height:44px !important;
+  padding:10px 18px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+  line-height:1.1 !important;
+  text-align:center !important;
+}
+
+#bl-beats-flyout #bl-save-preset-name{
+  min-width:0 !important;
+}
+
+@media (max-width:520px){
+  #bl-beats-flyout #bl-user-presets .row{
+    grid-template-columns:1fr !important;
+  }
+  #bl-beats-flyout #bl-save-preset{
+    width:100% !important;
+  }
+}
+
+/* Badminton must use the same compact shared Binaural flyout geometry. */
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout{
+  width:min(440px, calc(100vw - 24px)) !important;
+  max-width:calc(100vw - 24px) !important;
+}
+
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout .card.bl-player,
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout .bl-player{
+  box-sizing:border-box !important;
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:calc(100vh - 90px) !important;
+  padding:18px 18px 20px !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  text-align:left !important;
+  gap:0 !important;
+  align-items:stretch !important;
+  justify-content:flex-start !important;
+}
+
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout .card.bl-player > h3:first-child{
+  margin:0 0 12px 0 !important;
+  padding:0 !important;
+  font-size:20px !important;
+  line-height:1.15 !important;
+  text-align:left !important;
+  background:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout .card.bl-player > p:first-of-type{
+  margin:0 0 14px 0 !important;
+  font-size:inherit !important;
+  line-height:1.45 !important;
+}
+
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout .row{
+  gap:10px !important;
+  align-items:center !important;
+}
+
+html body[data-app="badminton"] #bl-beats-flyout.bl-flyout input[type="number"]{
+  flex:0 0 110px !important;
+  width:110px !important;
+}
+/* END BASELINE-BINAURAL-SAVE-FIT-AND-BADMINTON-SIZE-20260527 */
+
+/* BASELINE-BINAURAL-GLOBAL-PANEL-SIZE-LOCK-20260527
+   Global Binaural panel geometry lock.
+   Uses the Games Hub compact flyout as the template and applies the same
+   width/card/content geometry across all pages. Colours and sliders remain
+   governed by the existing page theme rules above. */
+:root{
+  --bl-binaural-panel-width: min(440px, calc(100vw - 24px));
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout{
+  width: var(--bl-binaural-panel-width) !important;
+  max-width: calc(100vw - 24px) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout .card.bl-player,
+html body[data-app] #bl-beats-flyout.bl-flyout .bl-player{
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100vh - 90px) !important;
+  padding: 18px 18px 20px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  text-align: left !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout .card.bl-player > h3:first-child{
+  margin: 0 0 12px 0 !important;
+  padding: 0 !important;
+  font-size: 20px !important;
+  line-height: 1.15 !important;
+  text-align: left !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout .card.bl-player > p:first-of-type{
+  margin: 0 0 14px 0 !important;
+  font-size: inherit !important;
+  line-height: 1.45 !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout .row{
+  display: flex !important;
+  gap: 10px !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout .row > *{
+  min-width: 0 !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout input[type="number"]{
+  flex: 0 0 110px !important;
+  width: 110px !important;
+  max-width: 110px !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout input[type="range"]{
+  min-width: 0 !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout #bl-user-presets .row{
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) max-content !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout #bl-save-preset-name{
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+html body[data-app] #bl-beats-flyout.bl-flyout #bl-save-preset{
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 132px !important;
+  max-width: none !important;
+  min-height: 44px !important;
+  padding: 10px 18px !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  text-overflow: clip !important;
+  line-height: 1.1 !important;
+  text-align: center !important;
+}
+
+@media (max-width: 520px){
+  html body[data-app] #bl-beats-flyout.bl-flyout #bl-user-presets .row{
+    grid-template-columns: 1fr !important;
+  }
+  html body[data-app] #bl-beats-flyout.bl-flyout #bl-save-preset{
+    width: 100% !important;
+  }
+}
+/* END BASELINE-BINAURAL-GLOBAL-PANEL-SIZE-LOCK-20260527 */
+
+
+/* BASELINE-DROPDOWN-SITEWIDE-PORTAL-OPAQUE-20260602_1347
+   Single dominant dropdown contract.
+   - Theme-linked colour comes from css/baseline-themes.css solid tokens.
+   - The open menu is portal-positioned by js/baseline-shared.js so sliders and
+     buttons underneath cannot draw over it or receive the menu click.
+   - No full-page blocking shield is used. */
+html body[data-app] .bl-select{
+  position:relative!important;
+  isolation:isolate!important;
+}
+
+html body[data-app] .bl-select.is-open{
+  z-index:2147483000!important;
+}
+
+html body[data-app] .bl-select-menu,
+html body[data-app] #recipes .bl-select-menu,
+html body[data-app] .bl-flyout .bl-select-menu{
+  position:absolute!important;
+  top:calc(100% + 8px)!important;
+  left:0!important;
+  min-width:100%!important;
+  max-width:min(92vw, 520px)!important;
+  z-index:2147483001!important;
+  display:block;
+  padding:8px!important;
+  border-radius:16px!important;
+  border:1px solid var(--border, rgba(0,0,0,.18))!important;
+  background:var(--bl-dropdown-panel-solid, var(--bl-surface-panel-solid, #fff))!important;
+  background-image:none!important;
+  background-color:var(--bl-dropdown-panel-solid, var(--bl-surface-panel-solid, #fff))!important;
+  background-clip:padding-box!important;
+  color:var(--bl-dropdown-ink, var(--ink, var(--bl-surface-ink, #111)))!important;
+  -webkit-text-fill-color:currentColor!important;
+  opacity:1!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  isolation:isolate!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  box-shadow:0 24px 60px -34px rgba(0,0,0,.62)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  max-height:min(55vh, 360px)!important;
+  -webkit-overflow-scrolling:touch!important;
+  overscroll-behavior:contain!important;
+  touch-action:pan-y!important;
+}
+
+html body[data-app] .bl-select-menu.bl-select-menu--portal{
+  position:fixed!important;
+  top:var(--bl-select-menu-top, 0px)!important;
+  left:var(--bl-select-menu-left, 0px)!important;
+  width:var(--bl-select-menu-width, auto)!important;
+  min-width:var(--bl-select-menu-width, 180px)!important;
+  max-width:calc(100vw - 16px)!important;
+}
+
+html body[data-app] .bl-select-menu[hidden],
+html body[data-app] #recipes .bl-select-menu[hidden],
+html body[data-app] .bl-flyout .bl-select-menu[hidden]{
+  display:none!important;
+  visibility:hidden!important;
+}
+
+html body[data-app] .bl-select-menu::before,
+html body[data-app] .bl-select-menu::after,
+html body[data-app] .bl-select-menu *::before,
+html body[data-app] .bl-select-menu *::after{
+  background-image:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html body[data-app] .bl-select-menu [role="option"],
+html body[data-app] #recipes .bl-select-menu [role="option"],
+html body[data-app] .bl-flyout .bl-select-menu [role="option"]{
+  display:block!important;
+  width:100%!important;
+  text-align:left!important;
+  margin:0 0 4px 0!important;
+  padding:10px 12px!important;
+  border:0!important;
+  border-radius:12px!important;
+  background:var(--bl-dropdown-control-solid, var(--bl-surface-control-solid, var(--bl-dropdown-panel-solid, #fff)))!important;
+  background-image:none!important;
+  background-color:var(--bl-dropdown-control-solid, var(--bl-surface-control-solid, var(--bl-dropdown-panel-solid, #fff)))!important;
+  color:var(--bl-dropdown-ink, var(--ink, var(--bl-surface-ink, #111)))!important;
+  -webkit-text-fill-color:currentColor!important;
+  font:inherit!important;
+  font-weight:850!important;
+  line-height:1.25!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  cursor:pointer!important;
+  isolation:isolate!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+}
+html body[data-app] .bl-select-menu [role="option"]:last-child{
+  margin-bottom:0!important;
+}
+html body[data-app] .bl-select-menu [role="option"]:hover,
+html body[data-app] .bl-select-menu [role="option"][aria-selected="true"],
+html body[data-app] #recipes .bl-select-menu [role="option"]:hover,
+html body[data-app] #recipes .bl-select-menu [role="option"][aria-selected="true"],
+html body[data-app] .bl-flyout .bl-select-menu [role="option"]:hover,
+html body[data-app] .bl-flyout .bl-select-menu [role="option"][aria-selected="true"]{
+  background:var(--bl-dropdown-active-solid, var(--bl-surface-active-solid, var(--bl-dropdown-control-solid, #fff)))!important;
+  background-image:none!important;
+  background-color:var(--bl-dropdown-active-solid, var(--bl-surface-active-solid, var(--bl-dropdown-control-solid, #fff)))!important;
+}
+
+html body[data-app] .bl-select-menu,
+html body[data-app] .bl-select-menu *{
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+/* END BASELINE-DROPDOWN-SITEWIDE-PORTAL-OPAQUE-20260602_1347 */
+
+
+
+/* BASELINE-MOBILE-AUTH-FIX-20260604
+   Mobile login flyout: keep the account form visible, scrollable and tappable. */
+@media (max-width:900px){
+  #bl-auth-flyout{
+    position:fixed!important;
+    left:10px!important;
+    right:10px!important;
+    top:calc(10px + env(safe-area-inset-top, 0px))!important;
+    width:auto!important;
+    max-width:none!important;
+    max-height:calc(100svh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    z-index:50000!important;
+  }
+  #bl-auth-flyout .card{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+    border-radius:22px!important;
+  }
+  #bl-auth-flyout .bl-auth-form:not([hidden]){
+    display:grid!important;
+  }
+  #bl-auth-flyout .bl-auth-form .row,
+  #bl-auth-flyout .bl-auth-form .row > button,
+  #bl-auth-flyout .bl-auth-form .row > .bl-mini-btn{
+    width:100%!important;
+  }
+  #bl-auth-flyout input,
+  #bl-auth-flyout button,
+  #bl-auth-flyout .bl-mini-btn{
+    min-height:46px!important;
+    touch-action:manipulation!important;
+  }
+}
+
+
+/* BASELINE-GAMES-FLYOUT-BLUE-AUTHORITY-20260606_games_blue_flyout_authority
+   Dominant source of truth for Games Hub Account + Binaural flyouts.
+   These flyouts are shared banner UI, so their colour authority belongs here, not in a page rescue layer. */
+body[data-app="games"]{
+  --bl-flyout-bg-image:linear-gradient(90deg,#253B5F 0%,#4E6A95 22%,#86A0C0 45%,#B8C8E0 50%,#86A0C0 55%,#4E6A95 78%,#253B5F 100%)!important;
+  --bl-flyout-bg-color:#3E5B84!important;
+  --bl-flyout-control-bg-image:linear-gradient(135deg,#8FA6C7 0%,#6F88AD 58%,#4E668D 100%)!important;
+  --bl-flyout-control-bg-color:#6F88AD!important;
+  --bl-flyout-field-bg:#B9C9E2!important;
+  --bl-flyout-field-ink:#101827!important;
+  --bl-flyout-field-placeholder:#263957!important;
+  --bl-flyout-ink:#101827!important;
+  --bl-slider-track-solid:#2C4368!important;
+  --bl-slider-thumb-solid:#B9C9E2!important;
+  --bl-slider-border-solid:#203552!important;
+  --bl-surface-card-solid:#8EA4C2!important;
+  --bl-surface-panel-solid:#7F96B9!important;
+  --bl-surface-control-solid:#6F88AD!important;
+  --bl-surface-input-solid:#B9C9E2!important;
+  --bl-surface-active-solid:#5C739B!important;
+  --bl-surface-ink:#101827!important;
+  --bl-dropdown-panel-solid:#7F96B9!important;
+  --bl-dropdown-control-solid:#B9C9E2!important;
+  --bl-dropdown-active-solid:#8FA6C7!important;
+  --bl-dropdown-ink:#101827!important;
+}
+body[data-app="games"] #bl-auth-flyout .card,
+body[data-app="games"] #bl-beats-flyout .card{
+  background-image:var(--bl-flyout-bg-image)!important;
+  background-color:var(--bl-flyout-bg-color)!important;
+  color:#101827!important;
+  -webkit-text-fill-color:#101827!important;
+  border-color:rgba(12,24,44,.58)!important;
+}
+body[data-app="games"] #bl-auth-flyout .bl-auth-switch,
+body[data-app="games"] #bl-auth-flyout .bl-auth-form .bl-mini-btn,
+body[data-app="games"] #bl-auth-flyout .bl-auth-form button,
+body[data-app="games"] #bl-beats-flyout .bl-mini-btn,
+body[data-app="games"] #bl-beats-flyout button{
+  background-image:var(--bl-flyout-control-bg-image)!important;
+  background-color:var(--bl-flyout-control-bg-color)!important;
+  color:#101827!important;
+  -webkit-text-fill-color:#101827!important;
+  border-color:rgba(12,24,44,.55)!important;
+}
+body[data-app="games"] #bl-auth-flyout .bl-auth-input-shell,
+body[data-app="games"] #bl-auth-flyout .bl-auth-form input,
+body[data-app="games"] #bl-beats-flyout input:not([type="range"]),
+body[data-app="games"] #bl-beats-flyout select,
+body[data-app="games"] #bl-beats-flyout .bl-select-btn{
+  background-image:none!important;
+  background-color:var(--bl-flyout-field-bg)!important;
+  color:var(--bl-flyout-field-ink)!important;
+  -webkit-text-fill-color:var(--bl-flyout-field-ink)!important;
+  caret-color:var(--bl-flyout-field-ink)!important;
+  border-color:rgba(12,24,44,.58)!important;
+}
+body[data-app="games"] #bl-auth-flyout input:-webkit-autofill,
+body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:hover,
+body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:focus{
+  -webkit-text-fill-color:#101827!important;
+  box-shadow:0 0 0 1000px #B9C9E2 inset!important;
+  -webkit-box-shadow:0 0 0 1000px #B9C9E2 inset!important;
+}
+/* END BASELINE-GAMES-FLYOUT-BLUE-AUTHORITY */
+
+
+
+/* BASELINE-SITEWIDE-INFO-POPOVER-20260706
+   Reusable information-button contract for every Baseline system.
+   The control inherits the active system palette. Hover/focus previews on
+   pointer devices; click/tap pins the same opaque portal above page content. */
+body[data-app]{
+  --bl-info-button-bg:var(--showall-bg,var(--filter-bg,var(--bg,#fff)));
+  --bl-info-button-ink:var(--accent-2,var(--ink,#111));
+  --bl-info-button-border:var(--showall-border,var(--border-2,var(--border,rgba(0,0,0,.24))));
+  --bl-info-accent:var(--accent,var(--accent-2,currentColor));
+  --bl-info-panel-bg:var(--bg,#fff);
+  --bl-info-panel-ink:var(--ink,#111);
+  --bl-info-panel-muted:var(--muted,var(--ink,#111));
+}
+.bl-info-wrap{position:relative;min-width:0;}
+.bl-info-source{display:none!important;}
+.bl-info-button{
+  appearance:none;
+  display:grid;
+  place-items:center;
+  width:44px;
+  min-width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  border:1px solid var(--bl-info-button-border)!important;
+  border-radius:50%;
+  background:var(--bl-info-button-bg)!important;
+  background-image:none!important;
+  color:var(--bl-info-button-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:none;
+  font-family:var(--font-soft,var(--font,system-ui,sans-serif));
+  font-size:25px;
+  font-style:normal;
+  font-weight:800;
+  line-height:1;
+  text-align:center;
+  cursor:pointer;
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  touch-action:manipulation;
+  transition:border-color .14s ease,box-shadow .14s ease,transform .14s ease,filter .14s ease;
+}
+.bl-info-button > span{display:block;line-height:1;transform:translateY(-1px);}
+.bl-info-button:hover,
+.bl-info-button:focus-visible,
+.bl-info-button[aria-expanded="true"]{
+  outline:none;
+  border-color:var(--bl-info-accent)!important;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--bl-info-accent) 24%,transparent)!important;
+  filter:brightness(1.04);
+}
+.bl-info-button:active{transform:translateY(1px);}
+.bl-info-popover{
+  position:fixed;
+  left:var(--bl-info-left,12px);
+  top:var(--bl-info-top,12px);
+  z-index:2147483000;
+  width:min(390px,calc(100vw - 24px));
+  max-height:min(70vh,520px);
+  overflow:auto;
+  padding:16px 17px;
+  border:1px solid var(--bl-info-button-border);
+  border-radius:16px;
+  background:var(--bl-info-panel-bg)!important;
+  background-image:none!important;
+  background-color:var(--bl-info-panel-bg)!important;
+  color:var(--bl-info-panel-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:0 22px 54px rgba(0,0,0,.42);
+  opacity:1!important;
+  mix-blend-mode:normal!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  line-height:1.5;
+  pointer-events:none;
+}
+.bl-info-popover[hidden]{display:none!important;}
+.bl-info-popover[data-pinned="true"]{pointer-events:auto;}
+.bl-info-popover strong:first-child{display:block;margin:0 0 8px;font-size:1.05rem;color:var(--bl-info-panel-ink);}
+.bl-info-popover p{margin:7px 0;color:var(--bl-info-panel-muted);}
+.bl-info-popover b{color:var(--bl-info-panel-ink);}
+.bl-info-popover::before{
+  content:"";
+  position:fixed;
+  left:var(--bl-info-arrow-left,24px);
+  top:var(--bl-info-arrow-top,24px);
+  width:13px;
+  height:13px;
+  border-left:1px solid var(--bl-info-button-border);
+  border-top:1px solid var(--bl-info-button-border);
+  background:var(--bl-info-panel-bg);
+  transform:rotate(45deg);
+}
+.bl-info-popover[data-placement="above"]::before{transform:rotate(225deg);}
+body[data-app="fitness"]{
+  --bl-info-button-bg:#1d1016;
+  --bl-info-button-ink:#f4efe7;
+  --bl-info-button-border:#7f2232;
+  --bl-info-panel-bg:#10090d;
+  --bl-info-panel-ink:#f4efe7;
+  --bl-info-panel-muted:rgba(255,255,255,.76);
+  --bl-info-accent:#b11226;
+}
+body[data-app="games"]{
+  --bl-info-button-bg:#6f88ad;
+  --bl-info-button-ink:#172033;
+  --bl-info-button-border:#253b5f;
+  --bl-info-panel-bg:#253b5f;
+  --bl-info-panel-ink:#f7f0e3;
+  --bl-info-panel-muted:#e4eaf3;
+  --bl-info-accent:#c4a36d;
+}
+@media (max-width:640px){
+  .bl-info-popover{
+    left:12px!important;
+    right:12px;
+    top:auto!important;
+    bottom:12px;
+    width:auto;
+    max-height:min(58vh,460px);
+    border-radius:18px;
+  }
+  .bl-info-popover::before{display:none;}
+}
+@media (prefers-reduced-motion:reduce){.bl-info-button{transition:none;}}

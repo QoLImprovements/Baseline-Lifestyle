@@ -1,0 +1,9 @@
+Badminton hardship override fix validation
+
+JS syntax check passed.
+Server override guard present.
+Current courts are re-evaluated from hardship memory before render.
+Dropdown context uses evaluated court state.
+Shot restriction is capped to the one available shot hardship.
+Movement restriction does not double-tighten when exact and side memory are both written.
+No .htaccess, Food, Skincare, HTML, CSS, or API files were changed.

@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="720" viewBox="0 0 2048 720" role="img" aria-label="Moonlit cedar valley and distant mountain forest">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#173d43"/><stop offset=".48" stop-color="#28574f"/><stop offset="1" stop-color="#102e28"/>
+    </linearGradient>
+    <radialGradient id="moonGlow"><stop stop-color="#f2e5b9" stop-opacity=".7"/><stop offset=".3" stop-color="#c7d8bd" stop-opacity=".22"/><stop offset="1" stop-color="#95b6a3" stop-opacity="0"/></radialGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#b3d1bf" stop-opacity="0"/><stop offset=".46" stop-color="#b3d1bf" stop-opacity=".16"/><stop offset="1" stop-color="#b3d1bf" stop-opacity="0"/></linearGradient>
+  </defs>
+  <rect width="2048" height="720" fill="url(#sky)"/>
+  <circle cx="1620" cy="145" r="116" fill="url(#moonGlow)"/><circle cx="1620" cy="145" r="38" fill="#e8e5c4" opacity=".72"/>
+  <g fill="#d6e8d7" opacity=".25"><circle cx="170" cy="112" r="2"/><circle cx="384" cy="66" r="3"/><circle cx="720" cy="154" r="2"/><circle cx="988" cy="82" r="2"/><circle cx="1295" cy="116" r="3"/><circle cx="1844" cy="82" r="2"/></g>
+  <path d="M0 383L170 229l116 87 164-166 165 167 151-135 174 151 197-204 166 184 155-128 166 158 144-132 200 169v210H0z" fill="#1b4642" opacity=".78"/>
+  <path d="M0 440l153-119 127 87 183-144 151 139 178-110 181 135 154-121 177 126 154-96 181 113 165-124 244 151v183H0z" fill="#153d37" opacity=".94"/>
+  <path d="M0 435c356-69 664-17 978 52 360 78 690 30 1070-45v278H0z" fill="#12362f"/>
+  <g fill="#0d2d28" opacity=".86">
+    <path d="M24 612l62-190 61 190h-37v108H62V612z"/><path d="M174 627l72-231 72 231h-41v93h-61v-93z"/>
+    <path d="M344 617l59-187 58 187h-32v103h-52V617z"/><path d="M505 629l78-249 77 249h-45v91h-65v-91z"/>
+    <path d="M700 620l65-210 65 210h-36v100h-57V620z"/><path d="M879 629l80-260 80 260h-47v91h-67v-91z"/>
+    <path d="M1085 619l63-202 63 202h-36v101h-54V619z"/><path d="M1254 629l77-249 78 249h-46v91h-65v-91z"/>
+    <path d="M1457 618l62-199 61 199h-34v102h-54V618z"/><path d="M1618 629l80-260 80 260h-46v91h-68v-91z"/>
+    <path d="M1819 616l61-195 61 195h-34v104h-54V616z"/><path d="M1950 632l64-207 64 207h-37v88h-55v-88z"/>
+  </g>
+  <path d="M0 506c345-54 602 63 931 33 358-33 649-123 1117-42v99c-413-73-727 8-1087 50-355 42-650-74-961-20z" fill="url(#mist)"/>
+  <path d="M0 664c285-36 561 58 873 48 378-13 704-107 1175-42v50H0z" fill="#09241f"/>
+</svg>

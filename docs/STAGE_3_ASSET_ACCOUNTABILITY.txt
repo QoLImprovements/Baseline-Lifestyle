@@ -1,0 +1,85 @@
+Stage 3 asset accountability
+
+Source used: baseline-lifestyle-site-phase-2-main-html-move-fixed.zip
+
+Moved CSS/JS/API/game-art into accountable folders.
+
+Sitewide moved to:
+- sitewide/css/
+- sitewide/js/
+- sitewide/api/
+
+Section-owned moved to:
+- baseline-food-approach/css and js
+- baseline-badminton-session/css and js
+- baseline-fitness/js
+- baseline-games-hub/css and js
+
+Game art moved to:
+- baseline-games-hub/games/baseline-realm/game-art/
+
+Created compatibility aliases for existing Realm -v2 art references that had no matching file.
+No recipes, ingredients, exercises, badminton data, or individual game HTML files were split in this stage.
+Compatibility rewrite rules were added for old /css, /js, /api, and /game-art paths.
+
+Moved files:
+- api/achievements.php -> sitewide/api/achievements.php
+- api/auth_providers.php -> sitewide/api/auth_providers.php
+- api/auth_status.php -> sitewide/api/auth_status.php
+- api/badminton_logins.php -> systems/baseline-badminton-session/systems/baseline-badminton-session/api/badminton_logins.php
+- api/badminton_session.php -> systems/baseline-badminton-session/systems/baseline-badminton-session/api/badminton_session.php
+- api/baseline.sqlite -> sitewide/api/baseline.sqlite
+- api/binaural.php -> sitewide/api/binaural.php
+- api/config.php -> systems/baseline-badminton-session/sitewide/api/config.php
+- api/favourites.php -> sitewide/api/favourites.php
+- api/forgot_password.php -> sitewide/api/forgot_password.php
+- api/games_profile.php -> systems/baseline-games-hub/systems/baseline-games-hub/api/games_profile.php
+- api/get_plan.php -> sitewide/api/get_plan.php
+- api/google_callback.php -> sitewide/api/google_callback.php
+- api/google_login.php -> sitewide/api/google_login.php
+- api/google_start.php -> sitewide/api/google_start.php
+- api/init.php -> sitewide/api/init.php
+- api/leaderboard.php -> sitewide/api/leaderboard.php
+- api/list_profiles.php -> sitewide/api/list_profiles.php
+- api/login.php -> sitewide/api/login.php
+- api/logout.php -> sitewide/api/logout.php
+- api/me.php -> sitewide/api/me.php
+- api/password_reset.php -> sitewide/api/password_reset.php
+- api/plan_update.php -> sitewide/api/plan_update.php
+- api/register.php -> sitewide/api/register.php
+- api/save_plan.php -> sitewide/api/save_plan.php
+- api/submit.php -> sitewide/api/submit.php
+- api/update_session.php -> sitewide/api/update_session.php
+- css/baseline-badminton-session.css -> baseline-badminton-session/css/baseline-badminton-session.css
+- css/baseline-diet-log.css -> baseline-food-approach/css/baseline-diet-log.css
+- css/baseline-games-hub.css -> baseline-games-hub/css/baseline-games-hub.css
+- css/baseline-header-canonical.css -> sitewide/css/baseline-header-canonical.css
+- css/baseline-home.css -> sitewide/css/baseline-home.css
+- css/baseline-pattern.css -> sitewide/css/baseline-pattern.css
+- css/baseline-recipes.css -> sitewide/css/baseline-recipes.css
+- css/baseline-sitewide.css -> sitewide/css/baseline-sitewide.css
+- css/baseline-themes.css -> sitewide/css/baseline-themes.css
+- game-art/baseline-ninja-enemy-bandit.svg -> baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-enemy-bandit.svg
+- game-art/baseline-ninja-enemy-oni.svg -> baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-enemy-oni.svg
+- game-art/baseline-ninja-enemy-scout.svg -> baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-enemy-scout.svg
+- game-art/baseline-ninja-runner.svg -> baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-runner.svg
+- game-art/baseline-realm-enemy-oni-v2.svg -> baseline-games-hub/games/baseline-realm/game-art/baseline-realm-enemy-oni-v2.svg
+- game-art/ninja-bg-loop.svg -> baseline-games-hub/games/baseline-realm/game-art/ninja-bg-loop.svg
+- game-art/realm-basecamp-scene.svg -> baseline-games-hub/games/baseline-realm/game-art/realm-basecamp-scene.svg
+- game-art/realm-training-loop.svg -> baseline-games-hub/games/baseline-realm/game-art/realm-training-loop.svg
+- js/baseline-badminton-session.js -> baseline-badminton-session/js/baseline-badminton-session.js
+- js/baseline-diet-food-library.js -> baseline-food-approach/js/baseline-diet-food-library.js
+- js/baseline-diet-log.js -> baseline-food-approach/js/baseline-diet-log.js
+- js/baseline-fitness-app.js -> baseline-fitness/js/baseline-fitness-app.js
+- js/baseline-games-hub.js -> baseline-games-hub/js/baseline-games-hub.js
+- js/baseline-ingredient-profiles.js -> sitewide/js/baseline-ingredient-profiles.js
+- js/baseline-shared.js -> sitewide/js/baseline-shared.js
+- js/baseline-tabs.js -> sitewide/js/baseline-tabs.js
+
+Created alias art files:
+- baseline-games-hub/games/baseline-realm/game-art/baseline-realm-enemy-bandit-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-enemy-bandit.svg
+- baseline-games-hub/games/baseline-realm/game-art/baseline-realm-enemy-scout-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-enemy-scout.svg
+- baseline-games-hub/games/baseline-realm/game-art/baseline-realm-runner-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/baseline-ninja-runner.svg
+- baseline-games-hub/games/baseline-realm/game-art/ninja-bg-loop-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/ninja-bg-loop.svg
+- baseline-games-hub/games/baseline-realm/game-art/realm-basecamp-scene-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/realm-basecamp-scene.svg
+- baseline-games-hub/games/baseline-realm/game-art/realm-training-loop-v2.svg copied from baseline-games-hub/games/baseline-realm/game-art/realm-training-loop.svg

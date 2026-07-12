@@ -1,0 +1,103 @@
+/* Isolated Diet Log food record. Source of truth for this food. */
+(function(){
+  "use strict";
+  var item={
+  "basis": "g",
+  "basisGrams": 100.0,
+  "basisLabel": "100 g",
+  "category": "Sweets & Desserts",
+  "defaultMeasure": "1-large-waffle",
+  "description": "Pancakes, waffles, French toast",
+  "id": "usda-fndds-2708321",
+  "measures": [
+    {
+      "gramsPerUnit": 1.0,
+      "key": "g",
+      "kind": "weight",
+      "label": "g"
+    },
+    {
+      "gramsPerUnit": 125.0,
+      "key": "1-large-waffle",
+      "kind": "unit",
+      "label": "1 large waffle"
+    },
+    {
+      "gramsPerUnit": 40.0,
+      "key": "1-small-waffle",
+      "kind": "unit",
+      "label": "1 small waffle"
+    },
+    {
+      "gramsPerUnit": 10.0,
+      "key": "1-miniature-bite-size-waffle",
+      "kind": "unit",
+      "label": "1 miniature/bite size waffle"
+    },
+    {
+      "gramsPerUnit": 3.7,
+      "key": "1-surface-inch-belgian-waffle",
+      "kind": "unit",
+      "label": "1 surface inch, Belgian waffle"
+    },
+    {
+      "gramsPerUnit": 75.0,
+      "key": "1-medium-waffle",
+      "kind": "unit",
+      "label": "1 medium waffle"
+    },
+    {
+      "gramsPerUnit": 75.0,
+      "key": "quantity-not-specified",
+      "kind": "unit",
+      "label": "Quantity not specified"
+    },
+    {
+      "gramsPerUnit": 2.5,
+      "key": "1-surface-inch",
+      "kind": "unit",
+      "label": "1 surface inch"
+    },
+    {
+      "gramsPerUnit": 135.0,
+      "key": "1-thick-belgian-waffle",
+      "kind": "unit",
+      "label": "1 thick / Belgian waffle"
+    }
+  ],
+  "name": "Waffle, chocolate, fast food / restaurant",
+  "nutritionPerBasis": {
+    "calcium_mg": 234.0,
+    "carbs_g": 46.1,
+    "energy_kcal": 480.0,
+    "fat_g": 28.9,
+    "fibre_g": 2.7,
+    "folate_ug": 45.0,
+    "iron_mg": 1.89,
+    "magnesium_mg": 33.0,
+    "omega3_g": 0.001,
+    "phosphorus_mg": 350.0,
+    "potassium_mg": 245.0,
+    "protein_g": 8.59,
+    "salt_g": 1.3525,
+    "sat_fat_g": 8.4,
+    "sodium_mg": 541.0,
+    "sugar_g": 18.0,
+    "vitamin_a_ug": 84.0,
+    "vitamin_c_mg": 0.0,
+    "vitamin_e_mg": 3.89,
+    "vitamin_k_ug": 20.2
+  },
+  "source": "USDA FNDDS 2021-2023",
+  "sourceId": "2708321",
+  "state": "Unspecified",
+  "subcategory": "Pancakes, waffles, French toast",
+  "tags": [
+    "pancakes-waffles-french-toast",
+    "sweets-and-desserts",
+    "unspecified"
+  ]
+};
+  var list=Array.isArray(window.BASELINE_DIET_FOOD_LIBRARY)?window.BASELINE_DIET_FOOD_LIBRARY:(window.BASELINE_DIET_FOOD_LIBRARY=[]);
+  if(!list.some(function(existing){return existing&&existing.id===item.id;})) list.push(item);
+})();

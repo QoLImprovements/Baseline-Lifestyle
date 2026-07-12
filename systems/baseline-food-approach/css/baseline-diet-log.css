@@ -1,0 +1,196 @@
+/* Baseline Food Approach — Diet Log */
+
+#diet-log .grid{ grid-template-columns:1fr; }
+#dietLogApp{ min-height:0; }
+
+.diet-log-app,
+.diet-log-stack,
+.diet-log-main,
+.diet-log-side{
+  display:grid;
+  gap:16px;
+}
+
+.diet-log-shell{
+  display:grid;
+  grid-template-columns:minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap:16px;
+  align-items:start;
+}
+
+.diet-log-panel{
+  border:1px solid rgba(200,100,50,0.18);
+  border-radius:18px;
+  background:linear-gradient(180deg, rgba(255,210,106,0.40), rgba(240,138,36,0.14));
+  box-shadow:0 14px 26px -26px rgba(200,100,50,0.18);
+  padding:16px;
+}
+
+.diet-log-panel-header{ display:grid; gap:10px; margin-bottom:12px; }
+.diet-log-panel-header h3,
+.diet-entry-group-head h4,
+.diet-food-row h4,
+.diet-selected-card h4,
+.diet-entry-card h5{ margin:0; }
+
+.diet-log-toolbar{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) 220px auto;
+  gap:10px;
+  align-items:end;
+}
+.diet-log-toolbar--header{ grid-template-columns:180px minmax(0, 1fr); }
+
+.diet-log-view-nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+}
+
+.diet-view[hidden]{ display:none !important; }
+
+.diet-field{ display:grid; gap:6px; min-width:0; }
+.diet-field--wide{ min-width:0; }
+.diet-field label{ font-size:16px; font-weight:850; color:var(--muted); }
+.diet-field input,
+.diet-field select,
+.diet-field textarea,
+.diet-static-value{
+  width:100%;
+  min-width:0;
+  padding:10px 12px;
+  border-radius:14px;
+  border:1px solid rgba(122,74,58,0.14);
+  font:inherit;
+  font-size:16px;
+  color:var(--ink);
+  background:rgba(255,210,106,0.30);
+  outline:none;
+}
+.diet-field textarea{ resize:vertical; min-height:120px; }
+.diet-field input:focus,
+.diet-field select:focus,
+.diet-field textarea:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
+
+.diet-log-helper-row,
+.diet-total-meta,
+.diet-entry-group-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.diet-log-helper-row--right{ justify-content:flex-end; }
+
+.diet-inline-note,
+.diet-food-copy,
+.diet-entry-copy,
+.diet-source-line,
+.diet-serving-line,
+.diet-measure-note{ color:var(--muted); }
+
+.diet-food-list,
+.diet-entry-list{ display:grid; gap:12px; }
+
+.diet-food-row,
+.diet-entry-card,
+.diet-selected-card,
+.diet-kpi-card,
+.diet-mini-stat{
+  border:1px solid rgba(200,100,50,0.18);
+  border-radius:16px;
+  background:rgba(255,255,255,0.18);
+  padding:14px;
+  box-shadow:0 12px 22px -22px rgba(35,23,19,0.20);
+}
+
+.diet-food-row{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) auto;
+  gap:12px;
+  align-items:start;
+}
+.diet-food-row.is-selected{ border-color:rgba(90,12,21,0.42); box-shadow:0 18px 36px -28px rgba(90,12,21,0.28); }
+.diet-food-row-copy{ min-width:0; display:grid; gap:8px; }
+.diet-food-row-meta{ display:grid; gap:8px; justify-items:end; }
+
+.diet-selected-head,
+.diet-entry-main{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+}
+
+.diet-food-kicker{ font-size:15px; font-weight:800; color:var(--accent-2); }
+
+.diet-entry-macros,
+.diet-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+.diet-inline-note,
+.diet-entry-macros span{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 10px;
+  border-radius:999px;
+  border:1px solid rgba(200,100,50,0.18);
+  background:rgba(255,255,255,0.22);
+  font-size:15px;
+}
+
+.diet-field-grid{
+  display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
+  gap:10px;
+  margin:12px 0;
+}
+.diet-field-grid--health{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+.diet-field-grid--recipe-readd{ grid-template-columns:repeat(3, minmax(0, 1fr)); }
+
+.diet-mini-stat-grid,
+.diet-kpi-grid{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:10px;
+  margin:12px 0;
+}
+.diet-mini-stat,
+.diet-kpi-card{ display:grid; gap:4px; }
+.diet-mini-stat span,
+.diet-kpi-card span{ color:var(--muted); font-size:15px; font-weight:760; }
+.diet-mini-stat strong,
+.diet-kpi-card strong{ font-size:18px; }
+.diet-kpi-card small{ color:var(--muted); font-size:14px; }
+
+.diet-nutrient-table-wrap{ overflow:auto; margin-top:12px; }
+.diet-nutrient-table{ width:100%; border-collapse:collapse; min-width:460px; }
+.diet-nutrient-table th,
+.diet-nutrient-table td{ padding:10px 12px; border-bottom:1px solid rgba(200,100,50,0.16); text-align:left; vertical-align:top; }
+.diet-nutrient-table th{ color:var(--accent-2); font-size:15px; font-weight:850; }
+
+.diet-recipe-status{ min-height:1.3em; color:var(--accent-2); font-size:15px; font-weight:760; }
+.diet-entry-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+
+@media (max-width: 1100px){
+  .diet-log-shell,
+  .diet-log-toolbar,
+  .diet-log-toolbar--header{ grid-template-columns:1fr; }
+  .diet-log-toolbar--header{ align-items:start; }
+}
+
+@media (max-width: 820px){
+  .diet-field-grid,
+  .diet-field-grid--health,
+  .diet-field-grid--recipe-readd,
+  .diet-mini-stat-grid,
+  .diet-kpi-grid,
+  .diet-food-row{ grid-template-columns:1fr; }
+  .diet-food-row-meta{ justify-items:start; }
+  .diet-selected-head,
+  .diet-entry-main{ display:grid; }
+}
+
+

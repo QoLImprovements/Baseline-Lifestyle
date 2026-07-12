@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2048" height="720" viewBox="0 0 2048 720" role="img" aria-label="Middle cedar grove with lantern trail">
+  <defs>
+    <linearGradient id="trunk" x1="0" x2="1"><stop stop-color="#09251f"/><stop offset=".5" stop-color="#1a4437"/><stop offset="1" stop-color="#071c18"/></linearGradient>
+    <radialGradient id="lamp"><stop stop-color="#fff2ae" stop-opacity=".92"/><stop offset=".28" stop-color="#e6a755" stop-opacity=".5"/><stop offset="1" stop-color="#c57938" stop-opacity="0"/></radialGradient>
+  </defs>
+  <g fill="#123a31" opacity=".92">
+    <path d="M-35 650L72 270l108 380h-61v70H23v-70z"/><path d="M245 655l108-397 109 397h-62v65h-96v-65z"/>
+    <path d="M545 647l97-351 98 351h-54v73h-87v-73z"/><path d="M807 657l115-421 115 421h-65v63H870v-63z"/>
+    <path d="M1125 650l103-378 104 378h-58v70h-92v-70z"/><path d="M1412 656l113-416 114 416h-64v64h-101v-64z"/>
+    <path d="M1728 648l101-369 101 369h-57v72h-89v-72z"/><path d="M1940 655l105-389 106 389h-60v65h-93v-65z"/>
+  </g>
+  <g fill="url(#trunk)"><rect x="78" y="370" width="35" height="350" rx="14"/><rect x="346" y="356" width="38" height="364" rx="15"/><rect x="633" y="390" width="34" height="330" rx="13"/><rect x="916" y="333" width="42" height="387" rx="16"/><rect x="1218" y="376" width="36" height="344" rx="14"/><rect x="1517" y="340" width="41" height="380" rx="16"/><rect x="1819" y="372" width="36" height="348" rx="14"/></g>
+  <g opacity=".48" stroke="#315c49" stroke-width="8" stroke-linecap="round"><path d="M95 438l-70-52m84 94l91-61M365 421l-90-64m103 113l88-67M650 447l-79-58m91 97l90-66M937 411l-100-69m116 119l103-77M1237 438l-86-64m100 111l88-62M1538 415l-94-68m106 118l98-72M1838 442l-91-64m102 109l92-66"/></g>
+  <path d="M742 720c54-128 145-205 282-205s228 77 282 205z" fill="#b7a06a" opacity=".12"/>
+  <g><circle cx="786" cy="581" r="54" fill="url(#lamp)"/><rect x="779" y="576" width="14" height="38" rx="4" fill="#d69a4c"/><circle cx="1262" cy="576" r="54" fill="url(#lamp)"/><rect x="1255" y="571" width="14" height="38" rx="4" fill="#d69a4c"/></g>
+</svg>

@@ -1,0 +1,61 @@
+/* Isolated Diet Log food record. Source of truth for this food. */
+(function(){
+  "use strict";
+  var item={
+  "basis": "g",
+  "basisGrams": 100.0,
+  "basisLabel": "100 g",
+  "category": "Infant Foods",
+  "defaultMeasure": "1-fl-oz",
+  "description": "Formula, prepared from powder",
+  "id": "usda-fndds-2705528",
+  "measures": [
+    {
+      "gramsPerUnit": 1.0,
+      "key": "g",
+      "kind": "weight",
+      "label": "g"
+    },
+    {
+      "gramsPerUnit": 30.5,
+      "key": "1-fl-oz",
+      "kind": "unit",
+      "label": "1 fl oz"
+    }
+  ],
+  "name": "Infant formula, Similac Sensitive, powder, made with bottled water",
+  "nutritionPerBasis": {
+    "calcium_mg": 63.0,
+    "carbs_g": 6.99,
+    "energy_kcal": 65.0,
+    "fat_g": 3.53,
+    "fibre_g": 0.0,
+    "folate_ug": 9.0,
+    "iron_mg": 1.17,
+    "magnesium_mg": 6.0,
+    "omega3_g": 0.01,
+    "phosphorus_mg": 37.0,
+    "potassium_mg": 70.0,
+    "protein_g": 1.4,
+    "salt_g": 0.055,
+    "sat_fat_g": 2.3,
+    "sodium_mg": 22.0,
+    "sugar_g": 6.99,
+    "vitamin_a_ug": 59.0,
+    "vitamin_c_mg": 5.7,
+    "vitamin_e_mg": 0.89,
+    "vitamin_k_ug": 5.2
+  },
+  "source": "USDA FNDDS 2021-2023",
+  "sourceId": "2705528",
+  "state": "Unspecified",
+  "subcategory": "Formula, prepared from powder",
+  "tags": [
+    "formula-prepared-from-powder",
+    "infant-foods",
+    "unspecified"
+  ]
+};
+  var list=Array.isArray(window.BASELINE_DIET_FOOD_LIBRARY)?window.BASELINE_DIET_FOOD_LIBRARY:(window.BASELINE_DIET_FOOD_LIBRARY=[]);
+  if(!list.some(function(existing){return existing&&existing.id===item.id;})) list.push(item);
+})();

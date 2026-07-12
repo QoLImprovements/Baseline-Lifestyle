@@ -1,0 +1,73 @@
+/* Isolated Diet Log food record. Source of truth for this food. */
+(function(){
+  "use strict";
+  var item={
+  "basis": "g",
+  "basisGrams": 100.0,
+  "basisLabel": "100 g",
+  "category": "Prepared Meals & Mixed Dishes",
+  "defaultMeasure": "1-cup",
+  "description": "Other Mexican mixed dishes",
+  "id": "usda-fndds-2708565",
+  "measures": [
+    {
+      "gramsPerUnit": 1.0,
+      "key": "g",
+      "kind": "weight",
+      "label": "g"
+    },
+    {
+      "gramsPerUnit": 170.0,
+      "key": "1-cup",
+      "kind": "unit",
+      "label": "1 cup"
+    },
+    {
+      "gramsPerUnit": 150.0,
+      "key": "quantity-not-specified",
+      "kind": "unit",
+      "label": "Quantity not specified"
+    },
+    {
+      "gramsPerUnit": 150.0,
+      "key": "1-enchilada-any-size",
+      "kind": "unit",
+      "label": "1 enchilada, any size"
+    }
+  ],
+  "name": "Enchilada, NFS",
+  "nutritionPerBasis": {
+    "calcium_mg": 116.0,
+    "carbs_g": 14.6,
+    "energy_kcal": 178.0,
+    "fat_g": 9.02,
+    "fibre_g": 2.3,
+    "folate_ug": 10.0,
+    "iron_mg": 0.86,
+    "magnesium_mg": 34.0,
+    "omega3_g": 0.005,
+    "phosphorus_mg": 192.0,
+    "potassium_mg": 190.0,
+    "protein_g": 10.0,
+    "salt_g": 1.1475,
+    "sat_fat_g": 3.22,
+    "sodium_mg": 459.0,
+    "sugar_g": 0.79,
+    "vitamin_a_ug": 37.0,
+    "vitamin_c_mg": 0.2,
+    "vitamin_e_mg": 0.83,
+    "vitamin_k_ug": 4.6
+  },
+  "source": "USDA FNDDS 2021-2023",
+  "sourceId": "2708565",
+  "state": "Unspecified",
+  "subcategory": "Other Mexican mixed dishes",
+  "tags": [
+    "other-mexican-mixed-dishes",
+    "prepared-meals-and-mixed-dishes",
+    "unspecified"
+  ]
+};
+  var list=Array.isArray(window.BASELINE_DIET_FOOD_LIBRARY)?window.BASELINE_DIET_FOOD_LIBRARY:(window.BASELINE_DIET_FOOD_LIBRARY=[]);
+  if(!list.some(function(existing){return existing&&existing.id===item.id;})) list.push(item);
+})();

@@ -1,0 +1,53 @@
+/* Baseline Food Approach standalone recipe-page additions. */
+
+body[data-app="food"] .phase4b-recipe-shell{
+    width:min(1180px, calc(100% - 48px));
+    margin:0 auto;
+    padding:32px 0 56px;
+  }
+  body[data-app="food"] .phase4b-recipe-top{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin:0 0 18px;
+  }
+  body[data-app="food"] .phase4b-recipe-top h1{
+    margin:0;
+    font-size:clamp(32px, 4vw, 56px);
+  }
+  body[data-app="food"] .phase4b-recipe-top .top-links{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  body[data-app="food"] .phase4b-link-pill{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:42px;
+    padding:9px 14px;
+    border-radius:999px;
+    border:1px solid rgba(200,100,50,0.22);
+    background:linear-gradient(180deg, rgba(255,210,106,0.42), rgba(240,138,36,0.16));
+    color:var(--accent-2);
+    font-size:16px;
+    font-weight:850;
+    text-decoration:none;
+    box-shadow:0 10px 22px -20px rgba(200,100,50,0.22);
+  }
+  body[data-app="food"] .phase4b-recipe-note{
+    margin:0 0 18px;
+    color:var(--muted);
+    font-weight:650;
+  }
+  body[data-app="food"] .recipe-page.standalone-recipe-card{
+    display:block!important;
+  }
+  @media (max-width:720px){
+    body[data-app="food"] .phase4b-recipe-shell{
+      width:min(100% - 28px, 1180px);
+      padding:22px 0 42px;
+    }
+  }
