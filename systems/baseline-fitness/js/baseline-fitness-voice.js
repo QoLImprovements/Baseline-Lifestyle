@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260712_3';
+  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260712_4';
   const STATES=Object.freeze({
     IDLE:'idle', INTRODUCING:'introducing', WAITING_START:'waiting_start',
     PERFORMING:'performing', WAITING_ACHIEVED:'waiting_achieved',
@@ -107,10 +107,25 @@
   function prepareModalPresentation(){
     stripSitewideVoicePanel();
     const title=$('#voiceWorkoutTitle');
-    if(title){ title.textContent='Voice workout'; title.classList.add('voice-visually-hidden'); }
+    if(title){
+      if(title.textContent!=='Voice workout') title.textContent='Voice workout';
+      title.classList.add('voice-visually-hidden');
+    }
     const target=$('#voiceExerciseTarget');
     if(target) target.hidden=true;
     ensureMicrophoneVisual();
+  }
+
+  let presentationScheduled=false;
+  function scheduleModalPresentation(){
+    if(presentationScheduled) return;
+    presentationScheduled=true;
+    const run=()=>{
+      presentationScheduled=false;
+      prepareModalPresentation();
+    };
+    if(typeof global.requestAnimationFrame==='function') global.requestAnimationFrame(run);
+    else global.setTimeout(run,0);
   }
 
   function setMicState(state,label){
@@ -464,8 +479,8 @@
   }
 
   function init(){
-    stripSitewideVoicePanel(); prepareModalPresentation(); bindUi();
-    new MutationObserver(()=>{ stripSitewideVoicePanel(); prepareModalPresentation(); }).observe(document.body,{childList:true,subtree:true});
+    prepareModalPresentation(); bindUi();
+    new MutationObserver(scheduleModalPresentation).observe(document.body,{childList:true,subtree:true});
     global.addEventListener('pagehide',()=>endVoiceWorkout(false));
     document.documentElement.setAttribute('data-baseline-fitness-voice-adapter',BUILD);
   }
