@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_5';
+const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_6';
+const BL_FITNESS_RUNTIME_EPOCH = '20260712_6';
 
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -10,6 +11,13 @@ header('Expires: 0');
 header('X-LiteSpeed-Cache-Control: no-cache');
 header('Permissions-Policy: microphone=(self)');
 header('X-Baseline-Fitness-Runtime: ' . BL_FITNESS_VOICE_RUNTIME);
+
+// Clear any pre-coherence HTML/CSS/JS once, then remember the delivered epoch.
+if((string)($_COOKIE['baseline_fitness_runtime_epoch'] ?? '') !== BL_FITNESS_RUNTIME_EPOCH){
+    header('Clear-Site-Data: "cache"');
+    $secure = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off') ? '; Secure' : '';
+    header('Set-Cookie: baseline_fitness_runtime_epoch=' . BL_FITNESS_RUNTIME_EPOCH . '; Path=/; Max-Age=31536000' . $secure . '; SameSite=Lax', false);
+}
 
 function bl_read_runtime_file(string $path): string {
     $content = @file_get_contents($path);
@@ -58,7 +66,7 @@ $fitnessVoice = bl_inline_script(__DIR__ . '/js/baseline-fitness-voice.js');
 $visibilityGuard = <<<'JS'
 (function(){
   'use strict';
-  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_5';
+  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_6';
   document.documentElement.setAttribute('data-baseline-fitness-voice-delivery',BUILD);
   var voiceIcon='<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   function ensureHeaderVoice(){
