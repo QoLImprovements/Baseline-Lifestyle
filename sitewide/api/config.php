@@ -462,6 +462,13 @@ function bl_ensure_schema(PDO $db): void {
     FOREIGN KEY(user_id) REFERENCES users(id)
   )');
   $db->exec('CREATE INDEX IF NOT EXISTS idx_binaural_user ON binaural_presets(user_id)');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS voice_settings (
+    user_id INTEGER PRIMARY KEY,
+    settings_json TEXT NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )');
 }
 
 function bl_db(): PDO {

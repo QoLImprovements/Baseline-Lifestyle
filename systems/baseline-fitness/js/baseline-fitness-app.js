@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SITEWIDE_INFO_20260711_4';
+  const BUILD='BASELINE_FITNESS_VOICE_WORKOUT_20260712_1';
   const API='/systems/baseline-fitness/api';
   const TYPES=Object.freeze({STANDARD:'standard-reps',LEG:'leg-reps',TIMED:'timed-hold'});
   const REP_SESSION_INCREMENT=1;
@@ -93,6 +93,7 @@
   let current={planId:0,planJson:null,sessions:[],progress:null};
   let dirty=false,hydrating=false,hydratedId=null,loadVersion=0,authBound=false,captionSequence=0,myPlanMode='create';
   let timerState={interval:null};
+  const workoutListeners=new Set();
 
   function esc(value){ return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char])); }
   function pad(value){ return String(value).padStart(2,'0'); }
@@ -190,18 +191,141 @@
   function futureWorkouts(){ const out=$('#futureWorkoutOut'); if(!out) return; const plan=current.planJson; if(!auth.authed||!plan){ out.textContent=auth.authed?'No saved plan yet.':'Log in and save a plan to see future workouts.'; return; } const currentIndex=+current.progress?.nextIndex||0; const future=(current.sessions||[]).filter(row=>row.status!=='done' && +row.session_index!==currentIndex).sort((a,b)=>+a.session_index-+b.session_index); if(!future.length){ out.innerHTML='<div class="future-empty">No future workouts remain in this plan.</div>'; return; } out.innerHTML=future.map(row=>renderSessionCard(row,+row.session_index,plan,'Future')).join(''); }
   function openTimerModal(step){ const modal=$('#timerModal'),digits=$('#timerDigits'),message=$('#timerModalMessage'); if(!modal||!digits||!message) return; closeTimerModal(false); let phase='prep'; let remaining=Math.round(clamp(current.planJson?.timerStartDelay||5,1,10)); modal.hidden=false; const tick=()=>{ if(phase==='prep'){ message.textContent=`Get into position. Timer starts in ${remaining} second${remaining===1?'':'s'}.`; digits.textContent=formatTimer(remaining); if(remaining<=0){ phase='run'; remaining=Math.round(step.target||0); return; } remaining-=1; return; } message.textContent=`${step.name} • hold for the full time.`; digits.textContent=formatTimer(remaining); if(remaining<=0){ message.textContent='Timer complete.'; clearInterval(timerState.interval); timerState.interval=null; return; } remaining-=1; }; tick(); timerState.interval=setInterval(tick,1000); }
   function closeTimerModal(hide=true){ if(timerState.interval){ clearInterval(timerState.interval); timerState.interval=null; } if(hide && $('#timerModal')) $('#timerModal').hidden=true; }
-  function recordStepResult(sessionIndex,stepIndex,status,achieved){ const saved=state(sessionIndex); saved.started=true; saved.results=Object.assign({},saved.results,{[stepIndex]:{status,achieved:Math.round(clamp(achieved||0,0,99999))}}); saved.completedSteps=Math.max(saved.completedSteps||0,stepIndex+1); saved.pendingFailureStep=null; setState(sessionIndex,saved); currentWorkout(); }
+  function recordStepResult(sessionIndex,stepIndex,status,achieved,inputMode='manual'){
+    const saved=state(sessionIndex);
+    saved.started=true;
+    saved.results=Object.assign({},saved.results,{[stepIndex]:{
+      status,
+      achieved:Math.round(clamp(achieved||0,0,99999)),
+      inputMode:String(inputMode||'manual')==='voice'?'voice':'manual'
+    }});
+    saved.completedSteps=Math.max(saved.completedSteps||0,stepIndex+1);
+    saved.pendingFailureStep=null;
+    setState(sessionIndex,saved);
+    currentWorkout();
+  }
   function setPendingFailure(sessionIndex,stepIndex){ const saved=state(sessionIndex); saved.started=true; saved.pendingFailureStep=stepIndex; setState(sessionIndex,saved); currentWorkout(); }
   function startWorkout(sessionIndex){ const saved=state(sessionIndex); saved.started=true; setState(sessionIndex,saved); currentWorkout(); }
-  function renderCurrentStep(step,stepIndex,sessionIndex,saved,completed,access){ const currentActive=stepIndex===completed; const stepResult=saved.results?.[stepIndex]; const canAct=access.can && saved.started && currentActive; const statusHtml=stepResult?`<div class="step-status ${stepResult.status==='success'?'success':'failed'}">${stepResult.status==='success'?'✓ Succeeded':'✕ Not Succeeded'}</div>`:''; const achievedHtml=stepResult&&stepResult.status==='failed'?`<div class="step-subnote">Achieved: ${esc(stepResult.achieved)} ${esc(step.unit)}</div>`:''; const timerButton=step.isTimed?`<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${stepIndex}" ${canAct?'':'disabled'}>Start Timer</button>`:''; const failOpen=saved.pendingFailureStep===stepIndex; return `<div class="current-step ${stepIndex<completed?'done':currentActive?'active':''}"><div class="current-step-head"><div><b>${esc(step.name)}</b><div class="current-step-text">${esc(step.display)}</div>${achievedHtml}</div><div class="step-actions">${statusHtml}${timerButton}<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${stepIndex}" aria-label="Succeeded" title="Succeeded" ${canAct?'':'disabled'}><span aria-hidden="true">✓</span></button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${stepIndex}" aria-label="Not Succeeded" title="Not Succeeded" ${canAct?'':'disabled'}><span aria-hidden="true">✕</span></button></div></div>${failOpen?`<div class="failure-entry"><label for="failedAmount${stepIndex}" class="note">Enter achieved ${esc(step.unit)}</label><input id="failedAmount${stepIndex}" class="failed-amount" data-step="${stepIndex}" type="number" min="0" inputmode="numeric" placeholder="${step.unit==='seconds'?'Seconds':'Reps'} achieved" /><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${stepIndex}">Save</button></div>`:''}</div>`; }
-  function currentWorkout(){ const out=$('#currentWorkoutOut'),status=$('#myPlanStatus'); if(!out) return; savedPlanCard(); completedWorkouts(); futureWorkouts(); syncMyPlanShells(); if(!auth.authed||!current.planJson||!current.sessions.length){ out.textContent=auth.authed?'Save a plan to unlock your current workout view.':'Log in and save a plan to see your current workout.'; return; } const index=+current.progress?.nextIndex||0,row=current.sessions.find(value=>+value.session_index===index); if(!row){ out.innerHTML='<div class="card"><h3 style="margin:0">Plan complete</h3><p class="note">All sessions in this plan have been completed.</p></div>'; if(status) status.textContent=''; return; } const access=availability(row,index,current.progress),steps=execution(work(current.planJson.items,index)),saved=state(index),completed=Math.round(clamp(saved.completedSteps||0,0,steps.length)); if(status) status.textContent=access.can?'Current workout ready.':access.due?'Complete earlier sessions first.':`Next workout unlocks on ${nice(row.scheduled_date)}.`; out.innerHTML=`<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${index} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${esc(nice(row.scheduled_date))}</span><span class="badge">${completed}/${steps.length} steps done</span></div></div><button class="action" type="button" id="startWorkoutBtn" ${access.can?'':'disabled'}>${saved.started?'Continue Workout':'Start Workout'}</button></div><div class="session-step-list">${steps.map((step,stepIndex)=>renderCurrentStep(step,stepIndex,index,saved,completed,access)).join('')}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${access.can&&completed===steps.length&&steps.length?'':'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${access.can?'':'disabled'}>Reset workout steps</button></div></div>`;
-    $('#startWorkoutBtn')?.addEventListener('click',()=>startWorkout(index));
-    $$('.step-success',out).forEach(control=>control.addEventListener('click',()=>recordStepResult(index,+control.dataset.step,'success',steps[+control.dataset.step].target)));
+  function renderCurrentStep(step,stepIndex,sessionIndex,saved,completed,access){
+    const currentActive=stepIndex===completed;
+    const stepResult=saved.results?.[stepIndex];
+    const canAct=access.can&&saved.started&&currentActive;
+    const statusHtml=stepResult?`<div class="step-status ${stepResult.status==='success'?'success':'failed'}">${stepResult.status==='success'?'✓ Succeeded':'✕ Failed'}</div>`:'';
+    const achievedHtml=stepResult?`<div class="step-subnote">Achieved: ${esc(stepResult.achieved)} ${esc(step.unit)}</div>`:'';
+    const timerButton=step.isTimed?`<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${stepIndex}" ${canAct?'':'disabled'}>Start Timer</button>`:'';
+    const failOpen=saved.pendingFailureStep===stepIndex;
+    return `<div class="current-step ${stepIndex<completed?'done':currentActive?'active':''}"><div class="current-step-head"><div><b>${esc(step.name)}</b><div class="current-step-text">${esc(step.display)}</div>${achievedHtml}</div><div class="step-actions">${statusHtml}${timerButton}<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${stepIndex}" aria-label="Succeeded" title="Succeeded" ${canAct?'':'disabled'}><span aria-hidden="true">✓</span></button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${stepIndex}" aria-label="Failed" title="Failed" ${canAct?'':'disabled'}><span aria-hidden="true">✕</span></button></div></div>${failOpen?`<div class="failure-entry"><label for="failedAmount${stepIndex}" class="note">Enter achieved ${esc(step.unit)}</label><input id="failedAmount${stepIndex}" class="failed-amount" data-step="${stepIndex}" type="number" min="0" inputmode="numeric" placeholder="${step.unit==='seconds'?'Seconds':'Reps'} achieved" /><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${stepIndex}">Save</button></div>`:''}</div>`;
+  }
+
+  function workoutContext(){
+    const base={available:false,canStart:false,planId:current.planId||0,sessionIndex:0,stepIndex:0,step:null,steps:[],completedSteps:0,totalSteps:0,started:false,allComplete:false,planComplete:false};
+    if(!auth.authed||!current.planJson||!current.sessions.length) return base;
+    const sessionIndex=+current.progress?.nextIndex||0;
+    const row=current.sessions.find(value=>+value.session_index===sessionIndex);
+    if(!row) return Object.assign(base,{available:true,planComplete:true,allComplete:true});
+    const access=availability(row,sessionIndex,current.progress);
+    const steps=execution(work(current.planJson.items,sessionIndex));
+    const saved=state(sessionIndex);
+    const completedSteps=Math.round(clamp(saved.completedSteps||0,0,steps.length));
+    return {
+      available:true,
+      canStart:Boolean(access.can),
+      access,
+      planId:current.planId||0,
+      sessionIndex,
+      scheduledDate:row.scheduled_date||'',
+      stepIndex:completedSteps,
+      step:steps[completedSteps]||null,
+      steps:steps.map(step=>Object.assign({},step)),
+      completedSteps,
+      totalSteps:steps.length,
+      started:Boolean(saved.started),
+      results:Object.assign({},saved.results||{}),
+      allComplete:Boolean(steps.length&&completedSteps>=steps.length),
+      planComplete:false,
+      timerStartDelay:Math.round(clamp(current.planJson?.timerStartDelay||5,1,10))
+    };
+  }
+
+  function notifyWorkout(){
+    const snapshot=workoutContext();
+    workoutListeners.forEach(listener=>{ try{ listener(snapshot); }catch(_error){} });
+    try{ document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated',{detail:snapshot})); }catch(_error){}
+  }
+
+  function startCurrentWorkout(inputMode='manual'){
+    const context=workoutContext();
+    if(!context.available||!context.canStart||context.planComplete) return context;
+    startWorkout(context.sessionIndex);
+    return workoutContext();
+  }
+
+  function succeedCurrentStep(inputMode='manual'){
+    const context=workoutContext();
+    if(!context.canStart||!context.started||!context.step) return context;
+    recordStepResult(context.sessionIndex,context.stepIndex,'success',context.step.target,inputMode);
+    return workoutContext();
+  }
+
+  function failCurrentStep(achieved,inputMode='manual'){
+    const context=workoutContext();
+    if(!context.canStart||!context.started||!context.step) return context;
+    const amount=Math.round(clamp(achieved,0,99999));
+    recordStepResult(context.sessionIndex,context.stepIndex,'failed',amount,inputMode);
+    return workoutContext();
+  }
+
+  function resetCurrentWorkout(){
+    const context=workoutContext();
+    if(!context.available||!context.sessionIndex) return context;
+    remove(stepKey(current.planId,context.sessionIndex));
+    currentWorkout();
+    return workoutContext();
+  }
+
+  async function finishCurrentWorkout(){
+    const context=workoutContext();
+    if(!context.canStart||!context.allComplete||!context.sessionIndex) return context;
+    await toggle(context.sessionIndex);
+    return workoutContext();
+  }
+
+  function currentWorkout(){
+    const out=$('#currentWorkoutOut'),status=$('#myPlanStatus');
+    if(!out) return;
+    savedPlanCard();
+    completedWorkouts();
+    futureWorkouts();
+    syncMyPlanShells();
+    if(!auth.authed||!current.planJson||!current.sessions.length){
+      out.textContent=auth.authed?'Save a plan to unlock your current workout view.':'Log in and save a plan to see your current workout.';
+      notifyWorkout();
+      return;
+    }
+    const context=workoutContext();
+    if(context.planComplete){
+      out.innerHTML='<div class="card"><h3 style="margin:0">Plan complete</h3><p class="note">All sessions in this plan have been completed.</p></div>';
+      if(status) status.textContent='';
+      notifyWorkout();
+      return;
+    }
+    const {sessionIndex:index,access,steps,completedSteps:completed,started}=context;
+    const row=current.sessions.find(value=>+value.session_index===index);
+    const saved=state(index);
+    if(status) status.textContent=access.can?'Current workout ready.':access.due?'Complete earlier sessions first.':`Next workout unlocks on ${nice(row.scheduled_date)}.`;
+    out.innerHTML=`<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${index} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${esc(nice(row.scheduled_date))}</span><span class="badge">${completed}/${steps.length} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${access.can?'':'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${access.can?'':'disabled'}>${started?'Continue Workout':'Start Workout'}</button></div></div><div class="session-step-list">${steps.map((step,stepIndex)=>renderCurrentStep(step,stepIndex,index,saved,completed,access)).join('')}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${access.can&&completed===steps.length&&steps.length?'':'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${access.can?'':'disabled'}>Reset workout steps</button></div></div>`;
+    $('#startWorkoutBtn')?.addEventListener('click',()=>startCurrentWorkout('manual'));
+    $$('.step-success',out).forEach(control=>control.addEventListener('click',()=>recordStepResult(index,+control.dataset.step,'success',steps[+control.dataset.step].target,'manual')));
     $$('.step-fail-toggle',out).forEach(control=>control.addEventListener('click',()=>setPendingFailure(index,+control.dataset.step)));
-    $$('.step-fail-save',out).forEach(control=>control.addEventListener('click',()=>{ const stepIndex=+control.dataset.step,field=$(`#failedAmount${stepIndex}`,out),value=Math.round(clamp(field?.value||0,0,99999)); if(value<=0){ if(field) field.focus(); return; } recordStepResult(index,stepIndex,'failed',value); }));
+    $$('.step-fail-save',out).forEach(control=>control.addEventListener('click',()=>{
+      const stepIndex=+control.dataset.step,field=$(`#failedAmount${stepIndex}`,out);
+      if(!field||String(field.value).trim()===''){ field?.focus(); return; }
+      recordStepResult(index,stepIndex,'failed',Math.round(clamp(field.value,0,99999)),'manual');
+    }));
     $$('.step-timer',out).forEach(control=>control.addEventListener('click',()=>openTimerModal(steps[+control.dataset.step])));
-    $('#resetWorkout',out)?.addEventListener('click',()=>{ remove(stepKey(current.planId,index)); currentWorkout(); });
-    $('#finishWorkout',out)?.addEventListener('click',()=>toggle(index));
+    $('#resetWorkout',out)?.addEventListener('click',resetCurrentWorkout);
+    $('#finishWorkout',out)?.addEventListener('click',finishCurrentWorkout);
+    notifyWorkout();
   }
   function hydrate(rawPlan){ const plan=normalisePlan(rawPlan); if(!plan) return; hydrating=true; try{ $('#startDate').value=plan.startDate||today(); $('#freq').value=plan.frequency||'3x'; $('#lengthMode').value=plan.lengthMode||'sessions'; $('#sessions').value=plan.sessions||18; const list=$('#exerciseList'); list.innerHTML=''; plan.items.forEach(value=>{ const row=makeRow(value.exercise); $('.ex-baseline',row).value=value.baseline; if(value.sets){ $('.ex-sets',row).dataset.lastSets=value.sets; syncRow(row); if(!$('.ex-sets',row).disabled) $('.ex-sets',row).value=value.sets; } list.append(row); }); if(!$('.ex-row')) list.append(makeRow(EX[0].name)); mode(); if(plan.goal){ $('#goalExercise').value=plan.goal.exercise||$('#goalExercise').value; $('#goalAmount').value=plan.goal.amount||''; syncGoals(); } dirty=false; }finally{ hydrating=false; } }
   function applyAuthSnapshot(snapshot){ auth=snapshot?.authed?{authed:true,name:String(snapshot.name||snapshot.user?.name||'')}:{authed:false,name:''}; syncFitnessAccountButton(); }
@@ -255,7 +379,28 @@
   async function deletePlan(){ if(FILE){ remove(planKey()); cleanupCurrentStepState(current.planId); current={planId:0,planJson:null,sessions:[],progress:null}; hydratedId=null; myPlanMode='create'; resetGenerator(); syncMyPlanShells(); closeDeletePlanModal(); currentWorkout(); return true; } const response=await post(API+'/delete_plan.php',{planId:current.planId||0}); if(response?.ok){ remove(planCacheKey()); cleanupCurrentStepState(current.planId); current={planId:0,planJson:null,sessions:[],progress:null}; hydratedId=null; myPlanMode='create'; resetGenerator(); closeDeletePlanModal(); await loadOwn(); return true; } const status=$('#deletePlanStatus'); if(status) status.textContent='Could not delete the plan.'; return false; }
   function openDeletePlanModal(){ const modal=$('#deletePlanModal'),input=$('#deletePlanConfirmInput'),status=$('#deletePlanStatus'),button=$('#confirmDeletePlanBtn'); if(!modal) return; modal.hidden=false; if(input) input.value=''; if(status) status.textContent=''; if(button) button.disabled=true; if(input) input.focus(); }
   function closeDeletePlanModal(){ const modal=$('#deletePlanModal'); if(modal) modal.hidden=true; }
-  async function toggle(index){ if(FILE){ const saved=read(planKey(),null),row=saved?.sessions?.find(value=>+value.session_index===index); if(!row) return; row.status=row.status==='done'?'planned':'done'; row.completed_at=row.status==='done'?Math.floor(Date.now()/1000):null; saved.progress=progress(saved.sessions,saved.planJson); write(planKey(),saved); remove(stepKey(current.planId,index)); await loadOwn(); return; } const response=await post(API+'/update_session.php',{planId:current.planId||0,sessionIndex:index,action:'toggle_done'}); if(response?.ok){ current.sessions=response.sessions||[]; current.progress=response.progress||null; remove(stepKey(current.planId,index)); currentWorkout(); } }
+  async function toggle(index){
+    if(FILE){
+      const saved=read(planKey(),null),row=saved?.sessions?.find(value=>+value.session_index===index);
+      if(!row) return false;
+      row.status=row.status==='done'?'planned':'done';
+      row.completed_at=row.status==='done'?Math.floor(Date.now()/1000):null;
+      saved.progress=progress(saved.sessions,saved.planJson);
+      write(planKey(),saved);
+      remove(stepKey(current.planId,index));
+      await loadOwn();
+      return true;
+    }
+    const response=await post(API+'/update_session.php',{planId:current.planId||0,sessionIndex:index,action:'toggle_done'});
+    if(response?.ok){
+      current.sessions=response.sessions||[];
+      current.progress=response.progress||null;
+      remove(stepKey(current.planId,index));
+      currentWorkout();
+      return true;
+    }
+    return false;
+  }
   async function profiles(){ const select=$('#profileSelect'); if(!select) return; let names=[]; if(FILE) names=(read('__bl_local_users_v1__',[])||[]).map(value=>value?.name).filter(Boolean); else { const response=await get(API+'/list_profiles.php'); names=response?.ok?(response.profiles||response.names||[]):[]; } const old=select.value; select.innerHTML='<option value="">Select profile…</option>'+names.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join(''); if(names.includes(old)) select.value=old; }
   async function profilePlan(name){ const out=$('#profilePlanOut'); if(!out) return; if(!name){ out.textContent='Select a profile to view their latest saved plan.'; return; } let saved=FILE?read(key(PLAN,name),null):null; if(!FILE){ const response=await get(API+'/get_plan.php',{name}); if(response?.ok&&response.hasPlan) saved={planJson:response.planJson,sessions:response.sessions,progress:response.progress}; } const plan=normalisePlan(saved?.planJson); if(plan) renderPlan(out,plan,saved.sessions||[],saved.progress||null); else out.textContent='No saved plan for this profile yet.'; }
   async function achievements(){ const summary=$('#achSummary'),grid=$('#achGrid'); if(!summary||!grid) return; if(!auth.authed){ summary.textContent='Log in to track milestones.'; grid.innerHTML=''; return; } const done=current.progress?.done||0,total=current.progress?.total||0; summary.innerHTML=`<strong>Sessions done:</strong> ${done} • <strong>Plan progress:</strong> ${done}/${total}`; const definitions=[['First Session',done>=1],['10 Sessions',done>=10],['30 Sessions',done>=30],['Plan Completed',total>0&&done===total]]; grid.innerHTML=definitions.map(([name,on])=>`<div class="ach-card ${on?'unlocked':''}"><div class="ach-icon">${on?'✓':'○'}</div><div class="ach-meta"><div class="name">${name}</div><div class="prog">${on?'Unlocked':'Locked'}</div></div></div>`).join(''); }
@@ -290,6 +435,16 @@
   function setPlanSubtab(view){ $$('.my-plan-subtab').forEach(button=>{ const active=button.dataset.planView===view; button.classList.toggle('active',active); button.setAttribute('aria-selected',String(active)); }); if($('#currentWorkoutOut')) $('#currentWorkoutOut').hidden=view!=='current'; if($('#completedWorkoutOut')) $('#completedWorkoutOut').hidden=view!=='completed'; if($('#futureWorkoutOut')) $('#futureWorkoutOut').hidden=view!=='future'; if($('#myPlanStatus')) $('#myPlanStatus').hidden=view!=='current'; }
   function init(){ activateFitnessTab(routedFitnessTab(),'none'); bindFitnessTabs(); const timerModal=$('#timerModal'),deleteModal=$('#deletePlanModal'); if(timerModal) timerModal.hidden=true; if(deleteModal) deleteModal.hidden=true; document.documentElement.setAttribute('data-baseline-fitness-runtime',BUILD); $$('select').forEach(normaliseSelect); const list=$('#exerciseList'); if(list){ list.innerHTML=''; list.append(makeRow(EX[0].name)); } if($('#startDate')&&!$('#startDate').value) $('#startDate').value=today(); mode(); ensureFitnessAccountButton(); bindAuth(); const renderedCachedPlan=showAnyCachedOwn(); if(!renderedCachedPlan) syncMyPlanShells(); $('#addExerciseBtn')?.addEventListener('click',()=>{ mark(); const used=new Set(items().map(item=>item.exercise)),next=EX.find(item=>!used.has(item.name))||EX[0]; list.append(makeRow(next.name)); syncGoals(); }); $('#lengthMode')?.addEventListener('change',()=>{ mark(); mode(); }); $('#goalExercise')?.addEventListener('change',()=>{ mark(); syncGoals(); }); ['startDate','freq','sessions','goalAmount'].forEach(id=>{ const control=$('#'+id); control?.addEventListener('input',mark); control?.addEventListener('change',mark); }); $('#genBtn')?.addEventListener('click',()=>renderPlan($('#planOut'),planFromUI(),null,null)); $('#savePlanBtn')?.addEventListener('click',()=>save(!!current.planId)); $('#cancelEditPlanBtn')?.addEventListener('click',()=>{ myPlanMode='view'; syncMyPlanShells(); currentWorkout(); }); $('#profileRefresh')?.addEventListener('click',profiles); $('#profileSelect')?.addEventListener('change',event=>profilePlan(event.currentTarget.value)); $('#exSearch')?.addEventListener('input',library); $('#exGroup')?.addEventListener('change',library); $$('.my-plan-subtab').forEach(button=>button.addEventListener('click',()=>setPlanSubtab(button.dataset.planView))); $('#closeTimerModalBtn')?.addEventListener('click',()=>closeTimerModal()); $('#cancelDeletePlanBtn')?.addEventListener('click',closeDeletePlanModal); $('#deletePlanConfirmInput')?.addEventListener('input',event=>{ const button=$('#confirmDeletePlanBtn'); if(button) button.disabled=String(event.currentTarget.value||'').trim()!=='DELETE'; }); $('#confirmDeletePlanBtn')?.addEventListener('click',()=>deletePlan()); const cachedAuth=global.BASELINE_auth?.get?.(); if(cachedAuth?.authed){ applyAuthSnapshot(cachedAuth); refreshAuthViews(); refreshAuth(); }else{ refreshAuth().then(refreshAuthViews); } library(); setPlanSubtab('current'); }
 
+  global.BASELINE_fitnessWorkout=Object.freeze({
+    BUILD,
+    getCurrentContext:workoutContext,
+    startSession:startCurrentWorkout,
+    succeedCurrentStep,
+    failCurrentStep,
+    finishSession:finishCurrentWorkout,
+    resetSession:resetCurrentWorkout,
+    onChange(listener){ workoutListeners.add(listener); return ()=>workoutListeners.delete(listener); }
+  });
   global.BASELINE_FITNESS_DEBUG=pure;
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init):init();
 })(typeof window!=='undefined'?window:globalThis);

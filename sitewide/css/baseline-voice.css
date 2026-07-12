@@ -1,0 +1,68 @@
+/* Baseline Lifestyle — sitewide voice controls. */
+#bl-voice-toggle[data-listening="true"]{
+  box-shadow:0 0 0 3px color-mix(in srgb, currentColor 24%, transparent);
+}
+#bl-voice-toggle[data-listening="true"] .bl-btn-icon{
+  animation:bl-voice-listening-pulse 1.25s ease-in-out infinite;
+}
+@keyframes bl-voice-listening-pulse{
+  0%,100%{opacity:.72;transform:scale(.94)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+@media (prefers-reduced-motion:reduce){
+  #bl-voice-toggle[data-listening="true"] .bl-btn-icon{animation:none}
+}
+#bl-voice-flyout{
+  z-index:10060;
+  width:min(500px,calc(100vw - 28px));
+}
+#bl-voice-flyout .bl-voice-settings-card{
+  max-height:min(780px,calc(100svh - 28px));
+  overflow:auto;
+}
+.bl-voice-settings-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.bl-voice-settings-head h3{margin:0}
+.bl-voice-support{
+  margin:12px 0;
+  padding:10px 12px;
+  border:1px solid var(--border,rgba(255,255,255,.18));
+  border-radius:12px;
+  font-size:.9rem;
+  line-height:1.45;
+}
+.bl-voice-support[data-supported="false"]{font-weight:700}
+.bl-voice-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:14px 0;
+}
+.bl-voice-grid label{
+  display:grid;
+  gap:6px;
+  min-width:0;
+  font-weight:750;
+}
+.bl-voice-grid input,.bl-voice-grid select{width:100%}
+.bl-voice-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.bl-voice-check{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 0;
+  cursor:pointer;
+}
+.bl-voice-check input{width:18px!important;min-width:18px;height:18px;margin-top:2px}
+.bl-voice-check span{display:grid;gap:2px;line-height:1.3}
+.bl-voice-check small{font-weight:500;color:var(--muted)}
+.bl-voice-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+#bl-voice-status[data-kind="success"]{font-weight:750}
+#bl-voice-status[data-kind="warning"],#bl-voice-status[data-kind="error"]{font-weight:800}
+@media (max-width:620px){
+  .bl-voice-grid,.bl-voice-check-grid{grid-template-columns:1fr}
+}

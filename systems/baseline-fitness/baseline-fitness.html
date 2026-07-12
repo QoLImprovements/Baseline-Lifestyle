@@ -27,7 +27,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-recipes.css?v=20260602_1347dropdownportalopaque"/>
 
-<link rel="stylesheet" href="/systems/baseline-fitness/css/baseline-fitness.css?v=FITNESS_CANONICAL_CSS_20260712"/>
+<link rel="stylesheet" href="/systems/baseline-fitness/css/baseline-fitness.css?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_1"/>
 
 
 
@@ -296,6 +296,33 @@ These Markdown rules are a human reference point, not live runtime config.
   </div>
 </div>
 
+<div class="voice-workout-overlay" id="voiceWorkoutModal" hidden>
+  <div class="voice-workout-modal card" role="dialog" aria-modal="true" aria-labelledby="voiceWorkoutTitle" aria-describedby="voiceWorkoutPrompt">
+    <div class="voice-workout-head">
+      <div>
+        <div class="voice-workout-kicker" id="voiceStepPosition">Voice-Activated Workout</div>
+        <h3 id="voiceWorkoutTitle">Voice-Activated Workout</h3>
+      </div>
+      <div class="voice-listening-status" id="voiceListeningStatus" aria-live="polite">Preparing voice control</div>
+    </div>
+    <div class="voice-workout-exercise">
+      <h2 id="voiceExerciseName">Current exercise</h2>
+      <div class="voice-workout-target" id="voiceExerciseTarget">The exercise target will appear here.</div>
+    </div>
+    <div class="voice-workout-timer-wrap" id="voiceWorkoutTimerWrap" hidden>
+      <div class="voice-workout-timer-label" id="voiceWorkoutTimerLabel">Timer</div>
+      <div class="voice-workout-timer" id="voiceWorkoutTimer">00:00</div>
+    </div>
+    <p class="voice-workout-prompt" id="voiceWorkoutPrompt">Follow the spoken instruction.</p>
+    <div class="voice-last-transcript" id="voiceLastTranscript" aria-live="polite">Listening for the expected command…</div>
+    <div class="voice-workout-actions">
+      <button class="compact-action compact-action--ghost" type="button" id="repeatVoiceInstructionBtn">Repeat Instruction</button>
+      <button class="compact-action compact-action--ghost" type="button" id="pauseVoiceListeningBtn">Pause Listening</button>
+      <button class="compact-action compact-action--danger" type="button" id="endVoiceWorkoutBtn">End Voice Workout</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="deletePlanModal" hidden>
   <div class="confirm-modal card" role="dialog" aria-modal="true" aria-labelledby="deletePlanTitle">
     <h3 id="deletePlanTitle" style="margin-top:0">Delete Plan</h3>
@@ -313,6 +340,7 @@ These Markdown rules are a human reference point, not live runtime config.
 
 <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_INFO_POPOVER_20260706_2"></script>
 <script defer src="/sitewide/js/baseline-auth-failsafe.js?v=SITEWIDE_AUTH_FAILSAFE_20260630"></script>
-<script defer src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_SITEWIDE_INFO_20260711_6"></script>
+<script defer src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_1"></script>
+<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice.js?v=BASELINE_FITNESS_VOICE_ADAPTER_20260712_1"></script>
 </body>
 </html>

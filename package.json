@@ -5,7 +5,10 @@
     "test:realm-stage1": "playwright test tests/baseline-realm-stage1.spec.js tests/baseline-realm-stage1-real-mobile.spec.js tests/baseline-realm-meridian-grove-live.spec.js tests/baseline-realm-context-menu.spec.js",
     "test:realm-stage2": "node --test tests/baseline-games-hub-loader-cache.test.mjs tests/games-server-storage.test.mjs tests/baseline-realm-context-menu.test.mjs tests/baseline-realm-save-migration.test.mjs tests/baseline-realm-stage2-architecture.test.mjs tests/baseline-realm-inventory-transactions.test.mjs tests/baseline-realm-integration.test.mjs systems/baseline-games-hub/games/baseline-realm/ninja-training/tests/ninja-training-rebuild.test.mjs tests/baseline-realm-no-legacy-art.test.mjs tests/baseline-realm-exploration-jrpg.test.mjs tests/calorie-escape-engine.test.mjs tests/calorie-escape-runtime.test.mjs tests/calorie-escape-progression.test.mjs tests/baseline-realm-tactical-operations.test.mjs",
     "test:realm-integration": "playwright test tests/baseline-realm-integration.spec.js tests/baseline-games-hub-startup-resilience.spec.js tests/baseline-games-hub-independent-core.spec.js tests/baseline-games-hub-core-controls.spec.js",
-    "test:realm-all": "npm run test:realm-stage2 && npm run test:realm-stage1 && npm run test:realm-integration"
+    "test:realm-all": "npm run test:realm-stage2 && npm run test:realm-stage1 && npm run test:realm-integration",
+    "test:voice": "node --test tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs",
+    "test:voice-ui": "playwright test tests/baseline-fitness-voice.spec.js",
+    "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

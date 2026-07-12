@@ -22,6 +22,7 @@
   const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
   const BASELINE_BEATS_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"/></svg>';
   const BASELINE_AUTH_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"/><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"/></svg>';
+  const BASELINE_VOICE_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
 
   function setupSitewideInfoPopovers(){
@@ -4988,6 +4989,7 @@ function buildControls(recipeEl){
         users: LOCAL_USERS_KEY,
         session: LOCAL_SESS_KEY,
         fitnessPlan: '__bl_fitness_plan_v1__',
+        voiceSettings: '__baseline_voice_settings_v1__',
       }
     };
   }catch(_e){}
@@ -5220,6 +5222,31 @@ function buildControls(recipeEl){
       onChange: (fn)=>{ authListeners.add(fn); return ()=>authListeners.delete(fn); },
     };
   }catch(_e){}
+  function setupSitewideVoiceAssets(){
+    if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
+    const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
+    let jsUrl = '/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_SITEWIDE_20260712_1';
+    let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_SITEWIDE_20260712_1';
+    try{
+      if(sharedScript && sharedScript.src){
+        jsUrl = new URL('baseline-voice.js?v=BASELINE_VOICE_SITEWIDE_20260712_1', sharedScript.src).href;
+        cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_SITEWIDE_20260712_1', sharedScript.src).href;
+      }
+    }catch(_e){}
+    if(!document.querySelector('link[data-baseline-voice-style]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href=cssUrl;
+      link.setAttribute('data-baseline-voice-style','true');
+      document.head.appendChild(link);
+    }
+    const script=document.createElement('script');
+    script.src=jsUrl;
+    script.defer=true;
+    script.setAttribute('data-baseline-voice-runtime','true');
+    document.body.appendChild(script);
+  }
+
   function setupHomebarRightControls(){
     function isHomePage(){
       return !!(document.body && document.body.dataset && document.body.dataset.app === 'home');
@@ -5235,6 +5262,7 @@ function buildControls(recipeEl){
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
+    const VOICE_ICON_SVG = BASELINE_VOICE_ICON_SVG;
     const AUTH_ICON_SVG = BASELINE_AUTH_ICON_SVG;
 
     function ensureButton(right, id, iconHtml, label){
@@ -5273,6 +5301,7 @@ function buildControls(recipeEl){
         container.appendChild(right);
       }
       if(!isHomePage()) ensureButton(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
+      ensureButton(right, 'bl-voice-toggle', VOICE_ICON_SVG, 'Voice');
       ensureButton(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
       return right;
     }
@@ -6920,6 +6949,7 @@ function setupRecipeFavourites(){
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
     safeInit('homebar right controls', setupHomebarRightControls);
+    safeInit('sitewide voice assets', setupSitewideVoiceAssets);
     safeInit('homebar height', syncHomebarHeight);
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);

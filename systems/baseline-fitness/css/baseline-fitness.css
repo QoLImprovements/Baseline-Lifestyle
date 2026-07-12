@@ -748,3 +748,119 @@ body[data-app="fitness"] textarea{
 .modal-overlay[hidden]{
   display:none!important;
 }
+
+/* BASELINE-FITNESS-VOICE-WORKOUT-20260712 */
+.workout-start-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.voice-workout-start{
+  white-space:nowrap;
+}
+.voice-workout-overlay{
+  position:fixed;
+  inset:0;
+  z-index:10080;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(5,2,6,.84);
+}
+.voice-workout-overlay[hidden]{display:none!important}
+.voice-workout-modal{
+  width:min(720px,100%);
+  max-height:calc(100svh - 40px);
+  overflow:auto;
+  padding:clamp(20px,4vw,34px)!important;
+  background:#10090d!important;
+  border-color:rgba(143,15,31,.72)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.55);
+}
+.voice-workout-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:18px;
+}
+.voice-workout-head h3{margin:4px 0 0;font-size:clamp(1.35rem,3vw,2rem)}
+.voice-workout-kicker{
+  color:var(--muted);
+  font-size:.9rem;
+  font-weight:850;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.voice-listening-status{
+  flex:0 0 auto;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  font-size:.88rem;
+  font-weight:850;
+  background:var(--showall-bg);
+}
+.voice-listening-status[data-kind="listening"],.voice-listening-status[data-kind="hearing"]{
+  border-color:rgba(90,220,140,.38);
+  background:rgba(28,122,66,.22);
+}
+.voice-listening-status[data-kind="error"]{
+  border-color:rgba(225,77,77,.55);
+  background:rgba(143,15,31,.26);
+}
+.voice-workout-exercise{
+  margin-top:24px;
+  padding:20px;
+  border:1px solid var(--border);
+  border-radius:18px;
+  background:#1a1115;
+}
+.voice-workout-exercise h2{margin:0;font-size:clamp(1.55rem,4vw,2.4rem)}
+.voice-workout-target{margin-top:10px;font-size:clamp(1.1rem,2.5vw,1.4rem);font-weight:900}
+.voice-workout-timer-wrap{
+  margin:20px 0 0;
+  text-align:center;
+}
+.voice-workout-timer-label{color:var(--muted);font-weight:800}
+.voice-workout-timer{
+  margin-top:4px;
+  font-size:clamp(3rem,12vw,6.5rem);
+  line-height:1;
+  font-weight:950;
+  letter-spacing:.04em;
+  font-variant-numeric:tabular-nums;
+}
+.voice-workout-prompt{
+  margin:22px 0 0;
+  font-size:clamp(1.05rem,2.4vw,1.35rem);
+  line-height:1.45;
+  font-weight:850;
+  text-align:center;
+}
+.voice-last-transcript{
+  margin-top:14px;
+  min-height:44px;
+  padding:11px 14px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  color:var(--muted);
+  text-align:center;
+}
+.voice-workout-actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:20px;
+}
+body.voice-workout-active{overflow:hidden}
+@media (max-width:700px){
+  .workout-start-actions{width:100%;justify-content:flex-start}
+  .workout-start-actions .action{flex:1 1 210px;justify-content:center}
+  .voice-workout-head{display:grid}
+  .voice-listening-status{justify-self:start}
+  .voice-workout-actions .compact-action{flex:1 1 180px;justify-content:center}
+}
+body.voice-workout-active .bl-scroll{overflow:hidden!important}
