@@ -1,191 +1,294 @@
-/* Baseline Lifestyle — immediate reuse of an already-approved microphone. */
+/* Baseline Lifestyle — microphone permission and continuous Fitness recognition. */
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_ACCESS_20260712_4';
-  const FITNESS_GUARD_BUILD='BASELINE_FITNESS_MUTATION_GUARD_20260712_1';
-  const FITNESS_LIVE_BUILD='BASELINE_FITNESS_LIVE_RECOGNITION_20260712_1';
+  const BUILD='BASELINE_VOICE_ACCESS_20260712_6';
+  const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_1';
   const APPROVED_KEY='__baseline_microphone_approved_v1__';
   if(global.__BASELINE_VOICE_ACCESS__) return;
   global.__BASELINE_VOICE_ACCESS__=true;
 
-  /*
-   * The Fitness voice controller enhances workout markup with a MutationObserver.
-   * Its callback schedules DOM work in a microtask. Without disconnecting first,
-   * those writes are observed again and create a permanent refresh loop.
-   *
-   * Guard only that named Fitness observer. Other sitewide observers remain native.
-   * The observer is resumed on the next animation frame, after its queued DOM work.
-   */
-  function installFitnessMutationGuard(){
-    const root=global.document?.documentElement;
-    const NativeMutationObserver=global.MutationObserver;
-    if(root?.getAttribute('data-app')!=='fitness') return;
-    if(typeof NativeMutationObserver!=='function'||global.__BASELINE_FITNESS_MUTATION_GUARD__) return;
+  const root=global.document?.documentElement;
+  const isFitness=root?.getAttribute('data-app')==='fitness';
+  const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
 
-    global.__BASELINE_FITNESS_MUTATION_GUARD__=true;
-
-    function GuardedMutationObserver(callback){
-      if(typeof callback!=='function') return new NativeMutationObserver(callback);
-      if(callback.name!=='scheduleEnhancement') return new NativeMutationObserver(callback);
-
-      let observedTarget=null;
-      let observedOptions=null;
-      let deliberatelyDisconnected=false;
-      let resumeHandle=0;
-      let nativeDisconnect=()=>{};
-      let nativeObserve=()=>{};
-
-      const observer=new NativeMutationObserver((records,instance)=>{
-        nativeDisconnect();
-        try{
-          callback(records,instance);
-        }finally{
-          if(deliberatelyDisconnected||!observedTarget) return;
-          const resume=()=>{
-            resumeHandle=0;
-            if(deliberatelyDisconnected||!observedTarget) return;
-            try{ nativeObserve(observedTarget,observedOptions); }catch(_error){}
-          };
-          if(typeof global.requestAnimationFrame==='function') resumeHandle=global.requestAnimationFrame(resume);
-          else resumeHandle=global.setTimeout(resume,0);
-        }
-      });
-
-      nativeObserve=observer.observe.bind(observer);
-      nativeDisconnect=observer.disconnect.bind(observer);
-      const nativeTakeRecords=observer.takeRecords.bind(observer);
-
-      observer.observe=(target,options)=>{
-        observedTarget=target;
-        observedOptions=options;
-        deliberatelyDisconnected=false;
-        return nativeObserve(target,options);
-      };
-      observer.disconnect=()=>{
-        deliberatelyDisconnected=true;
-        observedTarget=null;
-        observedOptions=null;
-        if(resumeHandle){
-          if(typeof global.cancelAnimationFrame==='function') global.cancelAnimationFrame(resumeHandle);
-          else global.clearTimeout(resumeHandle);
-          resumeHandle=0;
-        }
-        return nativeDisconnect();
-      };
-      observer.takeRecords=()=>nativeTakeRecords();
-      return observer;
-    }
-
-    GuardedMutationObserver.prototype=NativeMutationObserver.prototype;
-    try{ Object.setPrototypeOf(GuardedMutationObserver,NativeMutationObserver); }catch(_error){}
-    global.MutationObserver=GuardedMutationObserver;
-    root.setAttribute('data-baseline-fitness-mutation-guard',FITNESS_GUARD_BUILD);
-  }
-
-  function normaliseTranscript(value){
+  function normalise(value){
     return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
-      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
+      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ')
+      .replace(/\s+/g,' ').trim();
   }
 
-  function isImmediateFitnessCommand(value){
-    const text=normaliseTranscript(value);
-    if(text==='go'||text==='next') return true;
-    if(/\b(fail|failed|failure)\b/i.test(text)) return true;
-    return /\b(success|succeeded|successful)\b/i.test(text);
+  const ONES=Object.freeze({
+    zero:0,oh:0,o:0,one:1,two:2,to:2,too:2,three:3,four:4,for:4,
+    five:5,six:6,seven:7,eight:8,ate:8,nine:9,ten:10,eleven:11,
+    twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,
+    seventeen:17,eighteen:18,nineteen:19
+  });
+  const TENS=Object.freeze({
+    twenty:20,thirty:30,forty:40,fifty:50,sixty:60,
+    seventy:70,eighty:80,ninety:90
+  });
+  const FILLERS=new Set([
+    'i','ive','completed','complete','achieved','managed','did','done','got','made',
+    'about','approximately','sets','set','seconds','second','a','around','roughly',
+    'only','it','was','that','is','the','number','and'
+  ]);
+
+  function parseNumber(value){
+    const text=normalise(value);
+    if(!text||/\bthousand\b/.test(text)) return null;
+    const digit=text.match(/\b\d{1,3}\b/);
+    if(digit){
+      const number=Number(digit[0]);
+      return number>=0&&number<=999?number:null;
+    }
+    let current=0,seen=false,hundredSeen=false;
+    for(const token of text.split(' ').filter(Boolean)){
+      if(FILLERS.has(token)) continue;
+      if(Object.prototype.hasOwnProperty.call(ONES,token)){
+        current+=ONES[token];seen=true;continue;
+      }
+      if(Object.prototype.hasOwnProperty.call(TENS,token)){
+        current+=TENS[token];seen=true;continue;
+      }
+      if(token==='hundred'){
+        if(hundredSeen) return null;
+        if(current===0) current=1;
+        current*=100;hundredSeen=true;seen=true;
+      }
+    }
+    return seen&&current>=0&&current<=999?current:null;
   }
 
-  /*
-   * Chrome normally waits for a final recognition result before the Fitness
-   * controller sees a command. A short command such as “Go” can therefore sit in
-   * the Processing state for several seconds. This wrapper enables interim results
-   * immediately before recognition starts and allows only command-like interim
-   * transcripts through. Numerical answers remain blocked until the result is final,
-   * preventing “twenty-five” from being saved prematurely as “twenty”.
-   */
-  function installFitnessLiveRecognition(){
-    const root=global.document?.documentElement;
-    if(root?.getAttribute('data-app')!=='fitness') return;
-    if(global.__BASELINE_FITNESS_LIVE_RECOGNITION__) return;
+  function canonicalCommand(state,value){
+    const text=normalise(value);
+    if(!text) return null;
+    if(state==='awaiting_go'&&/\bgo\b/i.test(text)) return 'go';
+    if((state==='exercise_active'||state==='awaiting_result')&&/\b(fail|failed|failure)\b/i.test(text)) return 'fail';
+    if((state==='exercise_active'||state==='awaiting_result')&&/\b(success|succeeded|successful)\b/i.test(text)) return 'success';
+    if(state==='resting'&&/\bnext\b/i.test(text)) return 'next';
+    return null;
+  }
 
-    const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
-    global.BASELINE_fitnessLiveRecognition=Object.freeze({
-      BUILD:FITNESS_LIVE_BUILD,
-      isImmediateCommand:isImmediateFitnessCommand,
-      normalise:normaliseTranscript
-    });
-    if(typeof NativeRecognition!=='function') return;
+  function makeResult(transcript){
+    const result=[{transcript:String(transcript),confidence:1}];
+    result.isFinal=true;
+    return {resultIndex:0,results:[result]};
+  }
 
-    global.__BASELINE_FITNESS_LIVE_RECOGNITION__=true;
+  function installPersistentFitnessRecognition(){
+    if(!isFitness||typeof NativeRecognition!=='function'||global.__BASELINE_FITNESS_PERSISTENT_RECOGNITION__) return;
+    global.__BASELINE_FITNESS_PERSISTENT_RECOGNITION__=true;
 
-    function LiveSpeechRecognition(){
-      const recognition=new NativeRecognition();
-      const nativeStart=recognition.start.bind(recognition);
+    let native=null;
+    let nativeRunning=false;
+    let nativeWanted=false;
+    let nativeRestart=0;
+    let activeVirtual=null;
+    let pendingNumber=null;
+    let numberTimer=0;
+    let ignoreInputUntil=0;
 
-      try{ recognition.interimResults=true; }catch(_error){}
-
-      recognition.addEventListener('result',event=>{
-        let allow=false;
-        let finalResult=false;
-        const first=Math.max(0,Number(event?.resultIndex)||0);
-        const results=event?.results||[];
-
-        for(let index=first;index<results.length;index+=1){
-          const result=results[index];
-          if(!result) continue;
-          if(result.isFinal){
-            finalResult=true;
-            allow=true;
-            break;
-          }
-          for(let alternative=0;alternative<result.length;alternative+=1){
-            if(isImmediateFitnessCommand(result[alternative]?.transcript)){
-              allow=true;
-              break;
-            }
-          }
-          if(allow) break;
-        }
-
-        if(!allow){
-          event.stopImmediatePropagation?.();
-          root.setAttribute('data-baseline-fitness-voice-input','hearing');
-          return;
-        }
-
-        root.setAttribute('data-baseline-fitness-voice-input',finalResult?'final':'live');
-        if(finalResult){
-          global.queueMicrotask?.(()=>{
-            const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
-            if(status?.textContent==='Processing') status.textContent='Listening';
-          });
-        }
-      });
-
-      recognition.addEventListener('speechend',()=>{
-        const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
-        if(status?.textContent==='Processing') status.textContent='Listening';
-      });
-
-      recognition.start=()=>{
-        try{ recognition.interimResults=true; }catch(_error){}
-        return nativeStart();
-      };
-      return recognition;
+    function clearNumber(){
+      if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
+      pendingNumber=null;
     }
 
-    LiveSpeechRecognition.prototype=NativeRecognition.prototype;
-    try{ Object.setPrototypeOf(LiveSpeechRecognition,NativeRecognition); }catch(_error){}
+    function currentState(){
+      try{ return String(global.BASELINE_fitnessVoice?.state?.()||''); }
+      catch(_error){ return ''; }
+    }
 
-    if(global.SpeechRecognition) global.SpeechRecognition=LiveSpeechRecognition;
-    if(global.webkitSpeechRecognition) global.webkitSpeechRecognition=LiveSpeechRecognition;
-    if(!global.SpeechRecognition) global.SpeechRecognition=LiveSpeechRecognition;
+    function call(target,name,...args){
+      try{ target?.[name]?.(...args); }catch(_error){}
+    }
 
-    root.setAttribute('data-baseline-fitness-live-recognition',FITNESS_LIVE_BUILD);
+    function emit(transcript){
+      const target=activeVirtual;
+      if(!target||Date.now()<ignoreInputUntil) return false;
+      call(target,'onresult',makeResult(transcript));
+      return true;
+    }
+
+    function commitNumber(){
+      if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
+      const candidate=pendingNumber;pendingNumber=null;
+      if(!candidate||candidate.state!==currentState()) return false;
+      return emit(String(candidate.value));
+    }
+
+    function queueNumber(value,state,isFinal){
+      pendingNumber={value,state,updatedAt:Date.now()};
+      if(numberTimer) global.clearTimeout(numberTimer);
+      numberTimer=global.setTimeout(commitNumber,isFinal?60:430);
+      const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
+      if(status) status.textContent=`Heard ${value}`;
+    }
+
+    function alternatives(result){
+      const output=[];
+      for(let index=0;index<(result?.length||0);index+=1){
+        const transcript=String(result[index]?.transcript||'').trim();
+        if(transcript) output.push(transcript);
+      }
+      return output;
+    }
+
+    function handleNativeResult(event){
+      if(!activeVirtual||Date.now()<ignoreInputUntil) return;
+      if(global.speechSynthesis?.speaking||global.speechSynthesis?.pending) return;
+
+      const state=currentState();
+      const numberState=state==='awaiting_sets_number'||state==='awaiting_seconds_number';
+      const first=Math.max(0,Number(event?.resultIndex)||0);
+      const results=event?.results||[];
+
+      for(let resultIndex=first;resultIndex<results.length;resultIndex+=1){
+        const result=results[resultIndex];
+        const options=alternatives(result);
+        if(!options.length) continue;
+
+        if(numberState){
+          for(const transcript of options){
+            const value=parseNumber(transcript);
+            if(value!==null){ queueNumber(value,state,Boolean(result.isFinal));break; }
+          }
+          continue;
+        }
+
+        for(const transcript of options){
+          const command=canonicalCommand(state,transcript);
+          if(command){
+            clearNumber();
+            emit(command);
+            return;
+          }
+        }
+      }
+    }
+
+    function shouldRemainOpen(){
+      if(activeVirtual) return true;
+      const modal=global.document?.getElementById?.('voiceWorkoutModal');
+      const pause=global.document?.getElementById?.('pauseVoiceListeningBtn');
+      const visible=Boolean(modal&&!modal.hidden&&global.document?.body?.classList?.contains('voice-workout-active'));
+      const paused=/resume listening/i.test(String(pause?.textContent||''));
+      const speaking=Boolean(global.speechSynthesis?.speaking||global.speechSynthesis?.pending);
+      return visible&&!paused&&speaking;
+    }
+
+    function stopNative(){
+      nativeWanted=false;
+      if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
+      const current=native;native=null;nativeRunning=false;
+      try{ current?.abort?.(); }catch(_error){}
+    }
+
+    function schedulePolicyCheck(){
+      global.setTimeout(()=>{
+        if(!shouldRemainOpen()&&!activeVirtual) stopNative();
+      },220);
+    }
+
+    function scheduleNativeRestart(delay=35){
+      if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
+      if(!nativeWanted) return;
+      nativeRestart=global.setTimeout(startNative,delay);
+    }
+
+    function startNative(){
+      if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
+      if(!nativeWanted||nativeRunning) return;
+      try{
+        const recognition=new NativeRecognition();
+        native=recognition;
+        recognition.lang='en-GB';
+        recognition.continuous=true;
+        recognition.interimResults=true;
+        recognition.maxAlternatives=5;
+        recognition.onstart=()=>{
+          if(native!==recognition) return;
+          nativeRunning=true;
+          call(activeVirtual,'onstart');
+        };
+        recognition.onaudiostart=()=>call(activeVirtual,'onaudiostart');
+        recognition.onsoundstart=()=>call(activeVirtual,'onsoundstart');
+        recognition.onspeechstart=()=>call(activeVirtual,'onspeechstart');
+        recognition.onresult=handleNativeResult;
+        recognition.onspeechend=()=>{
+          if(pendingNumber){
+            if(numberTimer) global.clearTimeout(numberTimer);
+            numberTimer=global.setTimeout(commitNumber,100);
+          }
+          call(activeVirtual,'onspeechend');
+        };
+        recognition.onsoundend=()=>{
+          if(pendingNumber&&numberTimer){
+            global.clearTimeout(numberTimer);
+            numberTimer=global.setTimeout(commitNumber,130);
+          }
+          call(activeVirtual,'onsoundend');
+        };
+        recognition.onerror=event=>call(activeVirtual,'onerror',event);
+        recognition.onend=()=>{
+          if(native!==recognition) return;
+          native=null;nativeRunning=false;
+          const ended=activeVirtual;activeVirtual=null;
+          call(ended,'onend');
+          if(nativeWanted) scheduleNativeRestart(35);
+        };
+        recognition.start();
+      }catch(_error){
+        native=null;nativeRunning=false;scheduleNativeRestart(90);
+      }
+    }
+
+    function attach(target){
+      activeVirtual=target;
+      nativeWanted=true;
+      clearNumber();
+      ignoreInputUntil=Date.now()+90;
+      if(nativeRunning) global.queueMicrotask?.(()=>call(target,'onstart'));
+      else startNative();
+    }
+
+    function detach(target){
+      if(activeVirtual===target) activeVirtual=null;
+      clearNumber();
+      schedulePolicyCheck();
+    }
+
+    function PersistentSpeechRecognition(){
+      this.lang='en-GB';
+      this.continuous=true;
+      this.interimResults=true;
+      this.maxAlternatives=5;
+      this.onstart=null;
+      this.onaudiostart=null;
+      this.onsoundstart=null;
+      this.onspeechstart=null;
+      this.onresult=null;
+      this.onspeechend=null;
+      this.onsoundend=null;
+      this.onerror=null;
+      this.onend=null;
+    }
+    PersistentSpeechRecognition.prototype.start=function(){ attach(this); };
+    PersistentSpeechRecognition.prototype.abort=function(){ detach(this); };
+    PersistentSpeechRecognition.prototype.stop=function(){ detach(this); };
+
+    try{ Object.setPrototypeOf(PersistentSpeechRecognition,NativeRecognition); }catch(_error){}
+    global.SpeechRecognition=PersistentSpeechRecognition;
+    global.webkitSpeechRecognition=PersistentSpeechRecognition;
+    global.BASELINE_fitnessPersistentRecognition=Object.freeze({
+      BUILD:FITNESS_RECOGNITION_BUILD,
+      parseNumber,
+      commandFor:canonicalCommand
+    });
+    root.setAttribute('data-baseline-fitness-persistent-recognition',FITNESS_RECOGNITION_BUILD);
   }
 
-  installFitnessMutationGuard();
-  installFitnessLiveRecognition();
+  installPersistentFitnessRecognition();
 
   const base=global.BASELINE_voice;
   if(!base) return;
@@ -228,21 +331,16 @@
     return permissionState;
   }
 
-  // Resolve permission state before the user starts a workout. Session memory
-  // removes the media-device reacquisition delay even when the permission query
-  // has not yet completed after navigation.
   primePermissionState();
 
   async function prepareMicrophone(){
     const support=base.support?.()||{};
     if(!support.secureContext) throw new Error('secure_context_required');
     if(!support.recognition) throw new Error('speech_recognition_unsupported');
-
     if(approvalRemembered||permissionState==='granted') return true;
     if(permissionState==='denied') throw new Error('microphone_permission_denied');
     if(pending) return pending;
 
-    // The first permission request remains inside the user's click gesture.
     pending=Promise.resolve(base.prepareMicrophone())
       .then(result=>{
         approvalRemembered=true;
@@ -262,5 +360,5 @@
   }));
 
   global.BASELINE_voice=wrapped;
-  document.documentElement.setAttribute('data-baseline-voice-access',BUILD);
+  root?.setAttribute('data-baseline-voice-access',BUILD);
 })(window);
