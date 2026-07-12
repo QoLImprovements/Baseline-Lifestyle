@@ -2,8 +2,9 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_ACCESS_20260712_3';
+  const BUILD='BASELINE_VOICE_ACCESS_20260712_4';
   const FITNESS_GUARD_BUILD='BASELINE_FITNESS_MUTATION_GUARD_20260712_1';
+  const FITNESS_LIVE_BUILD='BASELINE_FITNESS_LIVE_RECOGNITION_20260712_1';
   const APPROVED_KEY='__baseline_microphone_approved_v1__';
   if(global.__BASELINE_VOICE_ACCESS__) return;
   global.__BASELINE_VOICE_ACCESS__=true;
@@ -82,7 +83,109 @@
     root.setAttribute('data-baseline-fitness-mutation-guard',FITNESS_GUARD_BUILD);
   }
 
+  function normaliseTranscript(value){
+    return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
+      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
+  }
+
+  function isImmediateFitnessCommand(value){
+    const text=normaliseTranscript(value);
+    if(text==='go'||text==='next') return true;
+    if(/\b(fail|failed|failure)\b/i.test(text)) return true;
+    return /\b(success|succeeded|successful)\b/i.test(text);
+  }
+
+  /*
+   * Chrome normally waits for a final recognition result before the Fitness
+   * controller sees a command. A short command such as “Go” can therefore sit in
+   * the Processing state for several seconds. This wrapper enables interim results
+   * immediately before recognition starts and allows only command-like interim
+   * transcripts through. Numerical answers remain blocked until the result is final,
+   * preventing “twenty-five” from being saved prematurely as “twenty”.
+   */
+  function installFitnessLiveRecognition(){
+    const root=global.document?.documentElement;
+    if(root?.getAttribute('data-app')!=='fitness') return;
+    if(global.__BASELINE_FITNESS_LIVE_RECOGNITION__) return;
+
+    const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
+    global.BASELINE_fitnessLiveRecognition=Object.freeze({
+      BUILD:FITNESS_LIVE_BUILD,
+      isImmediateCommand:isImmediateFitnessCommand,
+      normalise:normaliseTranscript
+    });
+    if(typeof NativeRecognition!=='function') return;
+
+    global.__BASELINE_FITNESS_LIVE_RECOGNITION__=true;
+
+    function LiveSpeechRecognition(){
+      const recognition=new NativeRecognition();
+      const nativeStart=recognition.start.bind(recognition);
+
+      try{ recognition.interimResults=true; }catch(_error){}
+
+      recognition.addEventListener('result',event=>{
+        let allow=false;
+        let finalResult=false;
+        const first=Math.max(0,Number(event?.resultIndex)||0);
+        const results=event?.results||[];
+
+        for(let index=first;index<results.length;index+=1){
+          const result=results[index];
+          if(!result) continue;
+          if(result.isFinal){
+            finalResult=true;
+            allow=true;
+            break;
+          }
+          for(let alternative=0;alternative<result.length;alternative+=1){
+            if(isImmediateFitnessCommand(result[alternative]?.transcript)){
+              allow=true;
+              break;
+            }
+          }
+          if(allow) break;
+        }
+
+        if(!allow){
+          event.stopImmediatePropagation?.();
+          root.setAttribute('data-baseline-fitness-voice-input','hearing');
+          return;
+        }
+
+        root.setAttribute('data-baseline-fitness-voice-input',finalResult?'final':'live');
+        if(finalResult){
+          global.queueMicrotask?.(()=>{
+            const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
+            if(status?.textContent==='Processing') status.textContent='Listening';
+          });
+        }
+      });
+
+      recognition.addEventListener('speechend',()=>{
+        const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
+        if(status?.textContent==='Processing') status.textContent='Listening';
+      });
+
+      recognition.start=()=>{
+        try{ recognition.interimResults=true; }catch(_error){}
+        return nativeStart();
+      };
+      return recognition;
+    }
+
+    LiveSpeechRecognition.prototype=NativeRecognition.prototype;
+    try{ Object.setPrototypeOf(LiveSpeechRecognition,NativeRecognition); }catch(_error){}
+
+    if(global.SpeechRecognition) global.SpeechRecognition=LiveSpeechRecognition;
+    if(global.webkitSpeechRecognition) global.webkitSpeechRecognition=LiveSpeechRecognition;
+    if(!global.SpeechRecognition) global.SpeechRecognition=LiveSpeechRecognition;
+
+    root.setAttribute('data-baseline-fitness-live-recognition',FITNESS_LIVE_BUILD);
+  }
+
   installFitnessMutationGuard();
+  installFitnessLiveRecognition();
 
   const base=global.BASELINE_voice;
   if(!base) return;
