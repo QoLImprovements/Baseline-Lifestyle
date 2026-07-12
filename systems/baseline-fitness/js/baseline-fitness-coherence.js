@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_2';
+  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_3';
   if(global.__BASELINE_FITNESS_COHERENCE__) return;
   global.__BASELINE_FITNESS_COHERENCE__=true;
   document.documentElement.setAttribute('data-baseline-fitness-coherence',BUILD);
@@ -85,8 +85,20 @@
         let data=null;
         try{ data=await response.clone().json(); }catch(_error){}
 
-        // Authoritative responses always win, including a genuine logged-out or no-plan result.
-        if(response.ok&&data?.ok===true) return response;
+        if(response.ok&&data?.ok===true){
+          // A cached user/plan remains the stable visible state while a parallel
+          // auth refresh briefly reports logged-out/no-plan. Explicit logout and
+          // deletion remove these cache keys first, so genuine user actions still win.
+          if(ownAuth&&data.authed===false&&localSession()){
+            const fallback=authFallback();
+            if(fallback) return jsonResponse(fallback);
+          }
+          if(ownPlan&&data.hasPlan===false&&cachedPlan()){
+            const fallback=planFallback();
+            if(fallback) return jsonResponse(fallback);
+          }
+          return response;
+        }
 
         const fallback=ownPlan?planFallback():authFallback();
         return fallback?jsonResponse(fallback):response;
