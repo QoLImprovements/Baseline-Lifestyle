@@ -1,4 +1,4 @@
-/* Baseline Fitness — live, single-response voice workout controller (fitness-only). */
+/* Baseline Fitness — exact-command, always-interruptible voice workout controller. */
 (function(global){
   'use strict';
 
@@ -6,13 +6,13 @@
   if(global[SINGLETON]) return;
   global[SINGLETON]=true;
 
-  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260712_5';
+  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260712_6';
   const STATES=Object.freeze({
     IDLE:'idle', INTRODUCING:'introducing', WAITING_START:'waiting_start',
-    PERFORMING:'performing', WAITING_ACHIEVED:'waiting_achieved',
-    CONFIRMING_ACHIEVED:'confirming_achieved', RESTING:'resting',
-    REST_EXPIRED:'rest_expired', COMPLETE:'complete', ERROR:'error'
+    PERFORMING:'performing', RESTING:'resting', REST_EXPIRED:'rest_expired',
+    COMPLETE:'complete', ERROR:'error'
   });
+  const COMMANDS=Object.freeze({go:'go',success:'success',fail:'fail',next:'next'});
   const Recognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
   const AudioContextClass=global.AudioContext||global.webkitAudioContext||null;
   const synthesis=global.speechSynthesis||null;
@@ -21,12 +21,13 @@
   const wait=milliseconds=>new Promise(resolve=>global.setTimeout(resolve,milliseconds));
 
   const session={
-    active:false,starting:false,state:STATES.IDLE,recognition:null,pausedByUser:false,
-    restInterval:null,exerciseInterval:null,restRemaining:0,exerciseRemaining:0,
-    pendingAchieved:null,lastInstruction:'',lastTranscript:'',handling:false,
-    speaking:false,speakingText:'',speechStartedAt:0,speechToken:0,speechSettle:null,
-    micMeter:null,micLevel:0,lastVoiceActivityAt:0,lastVoiceActivityStrength:0,
-    inputLockedUntil:0,lastAcceptedAt:0,lastAcceptedIntent:'',lastAcceptedTranscript:''
+    active:false,starting:false,finished:false,state:STATES.IDLE,
+    recognition:null,pausedByUser:false,restInterval:null,exerciseInterval:null,
+    restRemaining:0,exerciseRemaining:0,lastInstruction:'',lastTranscript:'',
+    handling:false,speaking:false,speakingText:'',speechStartedAt:0,
+    speechToken:0,speechSettle:null,micMeter:null,micLevel:0,
+    inputLockedUntil:0,lastAcceptedAt:0,lastAcceptedCommand:'',
+    lastAcceptedTranscript:''
   };
 
   function voice(){ return global.BASELINE_voice||null; }
@@ -34,57 +35,19 @@
   function modal(){ return $('#voiceWorkoutModal'); }
   function normalise(value){
     return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
-      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
-  }
-  function withoutFiller(value){
-    return normalise(value).replace(/^(?:i|im|i am|it was|that was|the result was|please)\s+/,'');
-  }
-  function containsPhrase(text,phrase){
-    if(text===phrase) return true;
-    return withoutFiller(text)===phrase;
+      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ')
+      .replace(/\s+/g,' ').trim();
   }
   function sameUtterance(left,right){
-    const a=withoutFiller(left),b=withoutFiller(right);
+    const a=normalise(left),b=normalise(right);
     if(!a||!b) return false;
     return a===b||a.includes(b)||b.includes(a);
   }
-
-  const ALIASES=Object.freeze({
-    start:['start','begin','go','go ahead','lets start','ready','i am ready','im ready','ready to start'],
-    succeeded:['succeeded','succeed','success','successful','successfully','i succeeded','i was successful','it was a success','complete','completed','done'],
-    failed:['failed','fail','failure','unsuccessful','unsuccessfully','i failed','it was a failure','not successful','did not succeed','didnt succeed','could not complete','couldnt complete'],
-    ready:['ready','i am ready','im ready','recovered','good to go','continue','next'],
-    finish:['finish','finished','finish workout','complete workout','workout complete','done'],
-    repeat:['repeat','repeat instruction','repeat that','say that again','say again'],
-    yes:['yes','correct','thats correct','that is correct'],
-    no:['no','incorrect','thats incorrect','that is incorrect'],
-    add_thirty_seconds:['add thirty seconds','add 30 seconds','thirty more seconds','30 more seconds','more recovery'],
-    stop_voice_workout:['stop voice workout','end voice workout','cancel voice workout','stop workout','end workout'],
-    pause:['pause','pause listening'],resume:['resume','resume listening','continue listening']
-  });
-
-  function aliasIntent(value,allowed){
+  function commandIntent(value){
     const text=normalise(value);
-    if(!text||/\b(?:not|dont|do not)\s+ready\b/.test(text)) return null;
-    const names=Array.isArray(allowed)?allowed:Object.keys(ALIASES);
-    for(const name of names){
-      if((ALIASES[name]||[]).some(alias=>containsPhrase(text,alias))) return name;
-    }
-    return null;
+    return Object.prototype.hasOwnProperty.call(COMMANDS,text)?COMMANDS[text]:null;
   }
-
-  function stateIntent(state,value){
-    const always=['stop_voice_workout','repeat'];
-    const byState={
-      [STATES.WAITING_START]:['start'],
-      [STATES.PERFORMING]:['failed','succeeded'],
-      [STATES.CONFIRMING_ACHIEVED]:['yes','no'],
-      [STATES.RESTING]:['ready','add_thirty_seconds'],
-      [STATES.REST_EXPIRED]:['start','add_thirty_seconds'],
-      [STATES.COMPLETE]:['finish']
-    };
-    return aliasIntent(value,always.concat(byState[state]||[]));
-  }
+  function stateIntent(_state,value){ return commandIntent(value); }
 
   function formatTimer(seconds){
     const total=Math.max(0,Math.round(Number(seconds)||0));
@@ -101,7 +64,6 @@
     if(minutes) return `${minutes} minute${minutes===1?'':'s'}`;
     return `${remainder} second${remainder===1?'':'s'}`;
   }
-  function unitQuestion(step){ return step?.unit==='seconds'?'How many seconds did you achieve?':'How many repetitions did you achieve?'; }
   function unitResult(step,amount){ return amountWord(step?.unit||'reps',amount); }
   function currentContext(){ return fitness()?.getCurrentContext?.()||null; }
   function displayLabel(step){ return step?`${step.name} - (${Math.round(Number(step.target)||0)})`:''; }
@@ -138,10 +100,7 @@
   function scheduleModalPresentation(){
     if(presentationScheduled) return;
     presentationScheduled=true;
-    const run=()=>{
-      presentationScheduled=false;
-      prepareModalPresentation();
-    };
+    const run=()=>{ presentationScheduled=false; prepareModalPresentation(); };
     if(typeof global.requestAnimationFrame==='function') global.requestAnimationFrame(run);
     else global.setTimeout(run,0);
   }
@@ -151,7 +110,10 @@
     if(!visual) return;
     visual.dataset.state=state||'idle';
     const status=$('.voice-mic-status',visual);
-    if(status) status.textContent=label||({listening:'Microphone active',hearing:'Hearing you',speaking:'Voice instruction',paused:'Microphone paused',error:'Microphone unavailable'}[state]||'Microphone active');
+    if(status) status.textContent=label||({
+      listening:'Microphone active',hearing:'Hearing you',speaking:'Voice instruction',
+      paused:'Microphone paused',error:'Microphone unavailable'
+    }[state]||'Microphone active');
   }
   function setListeningStatus(label,kind=''){
     const node=$('#voiceListeningStatus');
@@ -164,7 +126,6 @@
   function setPrompt(message){
     const node=$('#voiceWorkoutPrompt');
     if(node) node.textContent=String(message||'');
-    session.lastInstruction=String(message||'');
   }
   function setTranscript(value){ session.lastTranscript=String(value||''); }
   function showTimer(value,label='Timer'){
@@ -185,7 +146,7 @@
     }else if(options.complete){
       const position=$('#voiceStepPosition'),name=$('#voiceExerciseName');
       if(position) position.textContent=`${context.totalSteps}/${context.totalSteps} steps achieved`;
-      if(name) name.textContent='Workout steps complete';
+      if(name) name.textContent='Workout complete';
     }
   }
 
@@ -197,9 +158,19 @@
     document.body.classList.add('voice-workout-active');
     $('#endVoiceWorkoutBtn')?.focus?.({preventScroll:true});
   }
-  function closeModal(){ const node=modal(); if(node) node.hidden=true; document.body.classList.remove('voice-workout-active'); }
-  function clearRestTimer(){ if(session.restInterval){ clearInterval(session.restInterval); session.restInterval=null; } session.restRemaining=0; }
-  function clearExerciseTimer(){ if(session.exerciseInterval){ clearInterval(session.exerciseInterval); session.exerciseInterval=null; } session.exerciseRemaining=0; }
+  function closeModal(){
+    const node=modal();
+    if(node) node.hidden=true;
+    document.body.classList.remove('voice-workout-active');
+  }
+  function clearRestTimer(){
+    if(session.restInterval){ clearInterval(session.restInterval); session.restInterval=null; }
+    session.restRemaining=0;
+  }
+  function clearExerciseTimer(){
+    if(session.exerciseInterval){ clearInterval(session.exerciseInterval); session.exerciseInterval=null; }
+    session.exerciseRemaining=0;
+  }
   function clearTimers(){ clearRestTimer(); clearExerciseTimer(); }
 
   const BAR_SHAPE=[.45,.58,.73,.88,1,.88,.73,.58,.45];
@@ -247,10 +218,7 @@
     const mediaDevices=global.navigator?.mediaDevices;
     if(!mediaDevices?.getUserMedia||!AudioContextClass) return false;
     const stream=await mediaDevices.getUserMedia({audio:{
-      echoCancellation:true,
-      noiseSuppression:false,
-      autoGainControl:false,
-      channelCount:1
+      echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1
     }});
     let context=null;
     try{
@@ -262,9 +230,8 @@
       const source=context.createMediaStreamSource(stream);
       source.connect(analyser);
       const samples=new Uint8Array(analyser.fftSize);
-      const meter={stream,context,analyser,source,samples,frame:0,frameType:'raf',noiseFloor:.008};
+      const meter={stream,context,analyser,source,samples,frame:0,frameType:'raf'};
       session.micMeter=meter;
-
       const tick=()=>{
         if(session.micMeter!==meter) return;
         analyser.getByteTimeDomainData(samples);
@@ -274,19 +241,9 @@
           squareSum+=sample*sample;
         }
         const rms=Math.sqrt(squareSum/samples.length);
-        if(rms<meter.noiseFloor*1.75) meter.noiseFloor=(meter.noiseFloor*.965)+(rms*.035);
-        else meter.noiseFloor=(meter.noiseFloor*.998)+(rms*.002);
-        meter.noiseFloor=clamp(meter.noiseFloor,.002,.08);
-
         const decibels=20*Math.log10(Math.max(rms,.00001));
         const visibleLevel=clamp((decibels+62)/48,0,1);
-        const activity=clamp((rms-(meter.noiseFloor*1.5))/Math.max(.025,meter.noiseFloor*3.5),0,1);
-        if(activity>.24){
-          session.lastVoiceActivityAt=Date.now();
-          session.lastVoiceActivityStrength=activity;
-        }
         if(!session.pausedByUser) updateMicrophoneBars(visibleLevel,'live');
-
         if(typeof global.requestAnimationFrame==='function'){
           meter.frameType='raf'; meter.frame=global.requestAnimationFrame(tick);
         }else{
@@ -334,7 +291,7 @@
         instance.lang=voice()?.getSettings?.().language||'en-GB';
         instance.continuous=true;
         instance.interimResults=true;
-        instance.maxAlternatives=3;
+        instance.maxAlternatives=1;
         instance.onstart=()=>{ if(serial!==instanceSerial) return; running=true; report('listening'); };
         instance.onaudiostart=()=>{ if(serial===instanceSerial) report('listening'); };
         instance.onsoundstart=()=>{ if(serial===instanceSerial) report('hearing'); };
@@ -369,19 +326,11 @@
         if(serial!==instanceSerial) return;
         running=false; recognizer=null;
         const code=String(error?.name||'start_error');
-        if(code==='NotAllowedError'||code==='SecurityError'){ wanted=false; report('blocked',code); }
-        else scheduleRestart(100);
+        if(code==='NotAllowedError'||code==='SecurityError'){
+          wanted=false; report('blocked',code);
+        }else scheduleRestart(100);
         try{ options.onError?.(code,error); }catch(_error){}
       }
-    }
-    function recycle(delay=110){
-      if(!wanted||pauseDepth>0) return controller;
-      clearRestart();
-      const instance=recognizer;
-      ++instanceSerial; recognizer=null; running=false;
-      try{ instance?.abort?.(); }catch(_error){}
-      scheduleRestart(delay);
-      return controller;
     }
     function start(){ wanted=true; pauseDepth=0; startInstance(); return controller; }
     function pause(){
@@ -391,7 +340,11 @@
       try{ instance?.abort?.(); }catch(_error){}
       report('paused'); return controller;
     }
-    function resume(){ pauseDepth=Math.max(0,pauseDepth-1); if(wanted&&pauseDepth===0) scheduleRestart(40); return controller; }
+    function resume(){
+      pauseDepth=Math.max(0,pauseDepth-1);
+      if(wanted&&pauseDepth===0) scheduleRestart(40);
+      return controller;
+    }
     function stop(){
       wanted=false; pauseDepth=0; clearRestart();
       const instance=recognizer;
@@ -399,7 +352,9 @@
       try{ instance?.abort?.(); }catch(_error){}
       report('stopped');
     }
-    const controller=Object.freeze({start,pause,resume,stop,recycle,isWanted:()=>wanted,isRunning:()=>running,isPaused:()=>pauseDepth>0});
+    const controller=Object.freeze({
+      start,pause,resume,stop,isWanted:()=>wanted,isRunning:()=>running,isPaused:()=>pauseDepth>0
+    });
     return controller;
   }
 
@@ -429,16 +384,16 @@
 
   function speak(message,options={}){
     const text=String(message||'').trim(),settings=voice()?.getSettings?.()||{};
-    session.lastInstruction=text||session.lastInstruction;
-    if(!text||settings.spokenResponses===false||!synthesis||!global.SpeechSynthesisUtterance) return Promise.resolve(false);
-
+    if(text) session.lastInstruction=text;
+    if(!text||settings.spokenResponses===false||!synthesis||!global.SpeechSynthesisUtterance){
+      return Promise.resolve(false);
+    }
     if(options.interrupt!==false) interruptSpeech();
     const token=++session.speechToken;
     session.speaking=true;
     session.speakingText=normalise(text);
     session.speechStartedAt=Date.now();
     setMicState('speaking','Voice instruction');
-
     return new Promise(resolve=>{
       let finished=false,timeout=0;
       const settle=value=>{
@@ -450,7 +405,7 @@
           session.speaking=false;
           session.speakingText='';
           session.speechStartedAt=0;
-          if(session.active&&!session.pausedByUser) setListeningStatus('Listening','listening');
+          if(session.active&&!session.pausedByUser) setListeningStatus('Listening — interrupt at any time','listening');
         }
         resolve(Boolean(value));
       };
@@ -471,28 +426,36 @@
     });
   }
 
+  function safeInstructionFor(context,prefix=''){
+    const target=unitResult(context.step,context.step.target);
+    return `${prefix?prefix+' ':''}Step ${context.stepIndex+1} of ${context.totalSteps}. ${context.step.name}. Target ${target}. The microphone remains active.`;
+  }
+
   async function announceCurrentStep(prefix=''){
     clearTimers();
     const context=currentContext();
     if(!context||!context.available||!context.canStart){
-      session.state=STATES.ERROR; setListeningStatus('Workout unavailable','error');
-      setPrompt('The current workout is not available to voice control.'); return;
+      session.state=STATES.ERROR;
+      setListeningStatus('Workout unavailable','error');
+      setPrompt('The current workout is not available to voice control.');
+      return;
     }
     if(context.allComplete||!context.step) return announceComplete(context);
     session.state=STATES.WAITING_START;
-    renderContext(context); hideTimer();
-    const spokenTarget=unitResult(context.step,context.step.target);
-    setPrompt('Say “Start”, “Ready” or “Go” when you are ready.');
-    setListeningStatus(session.pausedByUser?'Listening paused':'Listening',session.pausedByUser?'paused':'listening');
-    await speak(`${prefix?prefix+' ':''}Step ${context.stepIndex+1} of ${context.totalSteps}. ${context.step.name}. Target ${spokenTarget}. Say Start, Ready or Go when you are ready.`);
+    renderContext(context);
+    hideTimer();
+    setPrompt('Say “Go” when ready. Interrupt at any time with “Success”, “Fail” or “Next”.');
+    setListeningStatus(session.pausedByUser?'Listening paused':'Listening — interrupt at any time',session.pausedByUser?'paused':'listening');
+    await speak(safeInstructionFor(context,prefix));
   }
 
   function beginAttempt(){
-    clearExerciseTimer();
+    clearTimers();
     const context=currentContext();
     if(!context?.step) return announceComplete(context||{totalSteps:0});
-    session.state=STATES.PERFORMING; renderContext(context);
-    setPrompt('Say “Succeeded”, “Success”, “Successful”, “Failed” or “Failure” when the attempt is complete.');
+    session.state=STATES.PERFORMING;
+    renderContext(context);
+    setPrompt('Say “Success”, “Fail” or “Next” at any time.');
     if(context.step.isTimed){
       session.exerciseRemaining=Math.max(0,Math.round(context.step.target||0));
       showTimer(session.exerciseRemaining,'Exercise time');
@@ -500,19 +463,26 @@
         session.exerciseRemaining=Math.max(0,session.exerciseRemaining-1);
         showTimer(session.exerciseRemaining,'Exercise time');
         if(session.exerciseRemaining<=0){
-          clearExerciseTimer(); showTimer(0,'Target time achieved');
-          if(session.state===STATES.PERFORMING) speak('Target time complete. Say Succeeded, Success, Failed or Failure.');
+          clearExerciseTimer();
+          showTimer(0,'Target time achieved');
+          if(session.state===STATES.PERFORMING) speak('Target time reached. The microphone remains active.');
         }
       },1000);
     }else hideTimer();
-    speak('Started.');
+    speak('Exercise underway. The microphone remains active.');
   }
 
   async function announceComplete(context=currentContext(),lead=''){
-    clearTimers(); session.state=STATES.COMPLETE;
-    renderContext(context||{totalSteps:0},{complete:true}); hideTimer();
-    setPrompt('Say “Finish” to complete the workout.');
-    await speak(`${lead?lead+' ':''}All workout steps are complete. Say Finish to complete the workout.`);
+    clearTimers();
+    session.state=STATES.COMPLETE;
+    renderContext(context||{totalSteps:0},{complete:true});
+    hideTimer();
+    setPrompt('Workout complete. Use End Voice Workout when finished reviewing.');
+    if(!session.finished){
+      session.finished=true;
+      try{ await fitness()?.finishSession?.(); }catch(_error){}
+    }
+    await speak(`${lead?lead+' ':''}Workout complete.`);
   }
 
   function startRest(options={}){
@@ -521,11 +491,12 @@
     if(!context||context.allComplete||!context.step) return announceComplete(context,options.lead||'');
     const settings=voice()?.getSettings?.()||{};
     const seconds=Math.max(1,Math.round(options.seconds||settings.maximumRestSeconds||150));
-    session.state=STATES.RESTING; session.restRemaining=seconds;
-    renderContext(context); showTimer(seconds,'Maximum recovery remaining');
-    setPrompt('Say “Ready”, “Recovered”, “Continue” or “Next” when feeling recovered.');
-    const recovery=options.extension?'Thirty seconds added. Say Ready when feeling recovered.':`Rest for up to ${durationPhrase(seconds)}. Say Ready when feeling recovered.`;
-    speak(`${options.lead?options.lead+' ':''}${recovery}`);
+    session.state=STATES.RESTING;
+    session.restRemaining=seconds;
+    renderContext(context);
+    showTimer(seconds,'Maximum recovery remaining');
+    setPrompt('Say “Go” to begin this exercise, or “Next” to skip it. “Success” and “Fail” also work immediately.');
+    speak(`${options.lead?options.lead+' ':''}Recovery period underway for up to ${durationPhrase(seconds)}. The microphone remains active.`);
     session.restInterval=setInterval(()=>{
       session.restRemaining=Math.max(0,session.restRemaining-1);
       showTimer(session.restRemaining,'Maximum recovery remaining');
@@ -538,147 +509,108 @@
   async function onRestExpired(){
     const context=currentContext();
     if(!context?.step) return announceComplete(context);
-    session.state=STATES.REST_EXPIRED; renderContext(context); showTimer(0,'Maximum recovery reached');
-    setPrompt('Say “Start”, “Ready” or “Go” when ready, or say “Add thirty seconds”.');
-    await speak(`Maximum recovery time reached. ${context.step.name}. Say Start, Ready or Go when ready, or say Add thirty seconds.`);
+    session.state=STATES.REST_EXPIRED;
+    renderContext(context);
+    showTimer(0,'Maximum recovery reached');
+    setPrompt('Say “Go” to begin this exercise, or “Next” to skip it.');
+    await speak(`Maximum recovery time reached. ${context.step.name}. The microphone remains active.`);
   }
 
-  function handleSucceeded(){
-    const before=currentContext(); if(!before?.step) return;
-    clearExerciseTimer();
+  function handleGo(){
+    if(session.state===STATES.COMPLETE||session.state===STATES.ERROR) return;
+    beginAttempt();
+  }
+
+  function handleSuccess(){
+    const before=currentContext();
+    if(!before?.step) return announceComplete(before||{totalSteps:0});
+    clearTimers();
     fitness()?.succeedCurrentStep?.('voice');
-    const lead=`Succeeded. ${unitResult(before.step,before.step.target)} achieved.`;
+    const lead=`Recorded as completed. ${unitResult(before.step,before.step.target)} achieved.`;
     setPrompt(lead);
     const after=currentContext();
     if(after?.allComplete||!after?.step) return announceComplete(after,lead);
     return startRest({lead});
   }
 
-  async function handleFailed(){
-    const context=currentContext(); if(!context?.step) return;
-    clearExerciseTimer(); session.state=STATES.WAITING_ACHIEVED; hideTimer();
-    const question=unitQuestion(context.step); setPrompt(question); await speak(question);
-  }
-
-  async function hearAchieved(transcript){
-    const context=currentContext(); if(!context?.step) return;
-    const amount=voice()?.parseNumber?.(transcript);
-    if(amount==null||amount<0){ await speak(`I did not recognise a number. ${unitQuestion(context.step)}`); return; }
-    session.pendingAchieved=Math.round(amount);
-    const confirm=voice()?.getSettings?.().confirmNumbers!==false;
-    if(confirm){
-      session.state=STATES.CONFIRMING_ACHIEVED;
-      setPrompt(`I heard ${unitResult(context.step,session.pendingAchieved)}. Say “Yes” or “No”.`);
-      await speak(`I heard ${unitResult(context.step,session.pendingAchieved)}. Is that correct? Say Yes or No.`);
-    }else await saveFailedAchievement(session.pendingAchieved);
-  }
-
-  function saveFailedAchievement(amount){
-    const before=currentContext(); if(!before?.step) return;
-    fitness()?.failCurrentStep?.(amount,'voice'); session.pendingAchieved=null;
-    const lead=`Failed. ${unitResult(before.step,amount)} achieved.`;
+  function handleFail(){
+    const before=currentContext();
+    if(!before?.step) return announceComplete(before||{totalSteps:0});
+    clearTimers();
+    fitness()?.failCurrentStep?.(0,'voice');
+    const lead='Recorded as incomplete.';
     setPrompt(lead);
     const after=currentContext();
     if(after?.allComplete||!after?.step) return announceComplete(after,lead);
     return startRest({lead});
   }
 
-  function likelySpeechEcho(transcript){
-    if(!session.speakingText) return false;
-    const heard=normalise(transcript);
-    if(!heard) return false;
-    return session.speakingText===heard
-      ||session.speakingText.includes(` ${heard} `)
-      ||heard.includes(session.speakingText);
+  function handleNext(){
+    const before=currentContext();
+    if(!before?.step) return announceComplete(before||{totalSteps:0});
+    clearTimers();
+    fitness()?.failCurrentStep?.(0,'voice-skip');
+    const after=currentContext();
+    if(after?.allComplete||!after?.step) return announceComplete(after,'Exercise skipped.');
+    return announceCurrentStep('Moving on.');
   }
 
-  function canInterruptSpeech(transcript){
-    if(!session.speaking) return true;
-    if(!likelySpeechEcho(transcript)) return true;
-    if(!session.micMeter) return true;
-    const age=Date.now()-session.lastVoiceActivityAt;
-    return session.lastVoiceActivityAt>=session.speechStartedAt&&age<1100&&session.lastVoiceActivityStrength>.26;
-  }
-
-  async function processAcceptedTranscript(command,transcript,stateAtInput){
+  function processAcceptedTranscript(command){
     if(!session.active) return;
-    if(!['stop_voice_workout','repeat'].includes(command)&&session.state!==stateAtInput) return;
-    if(command==='stop_voice_workout'){ endVoiceWorkout(true); return; }
-    if(command==='repeat'){ await speak(session.lastInstruction||'Please follow the instruction shown on screen.'); return; }
-    if(command==='achieved'){ await hearAchieved(transcript); return; }
-    if(command==='start'){ beginAttempt(); return; }
-    if(command==='succeeded'){ handleSucceeded(); return; }
-    if(command==='failed'){ await handleFailed(); return; }
-    if(command==='yes'&&session.state===STATES.CONFIRMING_ACHIEVED){ saveFailedAchievement(session.pendingAchieved||0); return; }
-    if(command==='no'&&session.state===STATES.CONFIRMING_ACHIEVED){
-      session.pendingAchieved=null; session.state=STATES.WAITING_ACHIEVED;
-      const context=currentContext(); setPrompt(unitQuestion(context?.step));
-      await speak(`Please say the achieved number again. ${unitQuestion(context?.step)}`); return;
-    }
-    if(command==='ready'&&session.state===STATES.RESTING){ clearRestTimer(); await announceCurrentStep('Recovery ended.'); return; }
-    if(command==='add_thirty_seconds'){
-      if(session.state===STATES.RESTING){
-        session.restRemaining+=30; showTimer(session.restRemaining,'Maximum recovery remaining');
-        await speak('Thirty seconds added.'); return;
-      }
-      startRest({seconds:30,extension:true}); return;
-    }
-    if(command==='finish'&&session.state===STATES.COMPLETE){
-      await fitness()?.finishSession?.();
-      await speak('Workout finished.');
-      endVoiceWorkout(false);
-    }
+    if(command==='go') return handleGo();
+    if(command==='success') return handleSuccess();
+    if(command==='fail') return handleFail();
+    if(command==='next') return handleNext();
   }
 
-  function handleTranscript(transcript,_alternatives,meta={}){
+  function handleTranscript(transcript){
     if(!session.active||session.handling||session.pausedByUser) return false;
     const text=String(transcript||'').trim(),fingerprint=normalise(text);
-    if(!fingerprint) return false;
-
-    const stateAtInput=session.state;
-    let command=null;
-    if(stateAtInput===STATES.WAITING_ACHIEVED){
-      if(!meta.isFinal) return false;
-      if(voice()?.parseNumber?.(text)==null) return false;
-      command='achieved';
-    }else command=stateIntent(stateAtInput,text);
+    const command=commandIntent(fingerprint);
     if(!command) return false;
 
     const now=Date.now();
     if(now<session.inputLockedUntil) return false;
     if(session.lastAcceptedTranscript&&sameUtterance(fingerprint,session.lastAcceptedTranscript)&&now-session.lastAcceptedAt<2500) return false;
-    if(session.lastAcceptedIntent===command&&now-session.lastAcceptedAt<900) return false;
-    if(session.speaking&&!canInterruptSpeech(text)) return false;
+    if(session.lastAcceptedCommand===command&&now-session.lastAcceptedAt<900) return false;
 
     interruptSpeech();
-    session.inputLockedUntil=now+500;
+    session.inputLockedUntil=now+450;
     session.lastAcceptedAt=now;
-    session.lastAcceptedIntent=command;
+    session.lastAcceptedCommand=command;
     session.lastAcceptedTranscript=fingerprint;
     session.handling=true;
     setTranscript(text);
     setMicState('hearing','Hearing you');
-    session.recognition?.recycle?.(110);
 
-    Promise.resolve(processAcceptedTranscript(command,text,stateAtInput)).catch(()=>{
-      if(session.active){ session.state=STATES.ERROR; setListeningStatus('Voice action failed','error'); }
-    }).finally(()=>{
+    try{
+      Promise.resolve(processAcceptedTranscript(command)).catch(()=>{
+        if(session.active){
+          session.state=STATES.ERROR;
+          setListeningStatus('Voice action failed','error');
+        }
+      });
+    }finally{
       session.handling=false;
-      session.inputLockedUntil=Math.max(session.inputLockedUntil,Date.now()+250);
-      if(session.active&&!session.pausedByUser&&session.state!==STATES.ERROR) setListeningStatus('Listening','listening');
-    });
+      if(session.active&&!session.pausedByUser&&session.state!==STATES.ERROR){
+        setListeningStatus('Listening — interrupt at any time','listening');
+      }
+    }
     return true;
   }
 
   function recognitionState(state,detail){
     if(!session.active&&state!=='blocked') return;
-    if(state==='listening') setListeningStatus(session.speaking?'Listening — interrupt anytime':'Listening','listening');
+    if(state==='listening') setListeningStatus('Listening — interrupt at any time','listening');
     else if(state==='hearing') setListeningStatus('Hearing speech','hearing');
     else if(state==='paused') setListeningStatus(session.pausedByUser?'Listening paused':'Reconnecting','paused');
     else if(state==='blocked'){
-      session.state=STATES.ERROR; setListeningStatus('Microphone blocked','error');
+      session.state=STATES.ERROR;
+      setListeningStatus('Microphone blocked','error');
       setPrompt('Microphone permission was blocked. Enable microphone permission in the browser, then start again.');
-    }else if(state==='error'&&detail!=='no-speech') setListeningStatus('Recognition reconnecting','paused');
+    }else if(state==='error'&&detail!=='no-speech'){
+      setListeningStatus('Recognition reconnecting','paused');
+    }
   }
 
   async function startVoiceWorkout(){
@@ -689,30 +621,46 @@
       if(!v||!f){ if(status) status.textContent='Voice control is still loading. Please try again.'; return; }
       const supported=v.support?.()||{};
       if(!Recognition||!supported.synthesis||!supported.secureContext){
-        if(status) status.textContent='Voice recognition and spoken responses require a supported browser over HTTPS.'; return;
+        if(status) status.textContent='Voice recognition and spoken responses require a supported browser over HTTPS.';
+        return;
       }
       const context=f.getCurrentContext?.();
-      if(!context?.available||!context.canStart){ if(status) status.textContent='The current workout is not available to start.'; return; }
+      if(!context?.available||!context.canStart){
+        if(status) status.textContent='The current workout is not available to start.';
+        return;
+      }
 
-      openModal(); setListeningStatus('Requesting microphone','paused'); setTranscript('');
+      openModal();
+      setListeningStatus('Requesting microphone','paused');
+      setTranscript('');
       try{
         const meterStarted=await startMicrophoneMeter();
         if(!meterStarted) await v.prepareMicrophone?.();
       }catch(error){
-        session.state=STATES.ERROR; setListeningStatus('Microphone unavailable','error');
+        session.state=STATES.ERROR;
+        setListeningStatus('Microphone unavailable','error');
         setPrompt(error?.message==='secure_context_required'?'Microphone access requires HTTPS.':'Microphone permission or speech recognition is unavailable.');
         return;
       }
 
-      session.active=true; session.state=STATES.INTRODUCING; session.pausedByUser=false;
-      session.inputLockedUntil=0; session.lastAcceptedAt=0; session.lastAcceptedIntent=''; session.lastAcceptedTranscript='';
+      session.active=true;
+      session.finished=false;
+      session.state=STATES.INTRODUCING;
+      session.pausedByUser=false;
+      session.inputLockedUntil=0;
+      session.lastAcceptedAt=0;
+      session.lastAcceptedCommand='';
+      session.lastAcceptedTranscript='';
       f.startSession?.('voice');
       session.recognition=createRecognitionController({
         onTranscript:handleTranscript,
         onState:recognitionState,
-        onError:code=>{ if(code==='not-allowed'||code==='service-not-allowed') recognitionState('blocked',code); }
+        onError:code=>{
+          if(code==='not-allowed'||code==='service-not-allowed') recognitionState('blocked',code);
+        }
       }).start();
-      const pauseButton=$('#pauseVoiceListeningBtn'); if(pauseButton) pauseButton.textContent='Pause Listening';
+      const pauseButton=$('#pauseVoiceListeningBtn');
+      if(pauseButton) pauseButton.textContent='Pause Listening';
       await wait(180);
       await announceCurrentStep();
     }finally{
@@ -722,14 +670,20 @@
 
   function endVoiceWorkout(spoken){
     const wasActive=session.active;
-    session.active=false; session.starting=false; session.state=STATES.IDLE; session.pausedByUser=false;
-    session.pendingAchieved=null; session.handling=false; session.inputLockedUntil=0;
+    session.active=false;
+    session.starting=false;
+    session.finished=false;
+    session.state=STATES.IDLE;
+    session.pausedByUser=false;
+    session.handling=false;
+    session.inputLockedUntil=0;
     clearTimers();
     try{ session.recognition?.stop?.(); }catch(_error){}
     session.recognition=null;
     stopMicrophoneMeter();
     interruptSpeech();
-    closeModal(); setListeningStatus('Voice workout ended','');
+    closeModal();
+    setListeningStatus('Voice workout ended','');
     if(spoken&&wasActive) speak('Voice workout ended.');
     document.dispatchEvent(new CustomEvent('baseline:fitness-voice-ended'));
   }
@@ -739,13 +693,15 @@
     session.pausedByUser=!session.pausedByUser;
     const button=$('#pauseVoiceListeningBtn');
     if(session.pausedByUser){
-      session.recognition.pause(); setMicrophoneMeterPaused(true);
+      session.recognition.pause();
+      setMicrophoneMeterPaused(true);
       if(button) button.textContent='Resume Listening';
       setListeningStatus('Listening paused','paused');
     }else{
-      setMicrophoneMeterPaused(false); session.recognition.resume();
+      setMicrophoneMeterPaused(false);
+      session.recognition.resume();
       if(button) button.textContent='Pause Listening';
-      setListeningStatus('Listening','listening');
+      setListeningStatus('Listening — interrupt at any time','listening');
     }
   }
 
@@ -754,20 +710,31 @@
     if(uiBound) return;
     uiBound=true;
     document.addEventListener('click',event=>{
-      const target=event.target?.closest?.('button'); if(!target) return;
+      const target=event.target?.closest?.('button');
+      if(!target) return;
       if(target.id==='startVoiceWorkoutBtn'){
-        event.preventDefault(); event.stopPropagation();
+        event.preventDefault();
+        event.stopPropagation();
         if(typeof event.stopImmediatePropagation==='function') event.stopImmediatePropagation();
-        startVoiceWorkout(); return;
+        startVoiceWorkout();
+        return;
       }
-      if(target.id==='repeatVoiceInstructionBtn'){ event.preventDefault(); speak(session.lastInstruction||'Please follow the instruction shown on screen.'); }
-      else if(target.id==='pauseVoiceListeningBtn'){ event.preventDefault(); toggleListening(); }
-      else if(target.id==='endVoiceWorkoutBtn'){ event.preventDefault(); endVoiceWorkout(true); }
+      if(target.id==='repeatVoiceInstructionBtn'){
+        event.preventDefault();
+        speak(session.lastInstruction||'The current exercise is shown on screen. The microphone remains active.');
+      }else if(target.id==='pauseVoiceListeningBtn'){
+        event.preventDefault();
+        toggleListening();
+      }else if(target.id==='endVoiceWorkoutBtn'){
+        event.preventDefault();
+        endVoiceWorkout(true);
+      }
     },true);
   }
 
   function init(){
-    prepareModalPresentation(); bindUi();
+    prepareModalPresentation();
+    bindUi();
     new MutationObserver(scheduleModalPresentation).observe(document.body,{childList:true,subtree:true});
     global.addEventListener('pagehide',()=>endVoiceWorkout(false));
     document.documentElement.setAttribute('data-baseline-fitness-voice-adapter',BUILD);
@@ -778,9 +745,9 @@
     start:startVoiceWorkout,
     stop:()=>endVoiceWorkout(false),
     state:()=>session.state,
-    aliases:ALIASES,
+    commands:COMMANDS,
     meterLevel:()=>session.micLevel,
-    debug:Object.freeze({intentFor:stateIntent,sameUtterance})
+    debug:Object.freeze({intentFor:stateIntent,commandFor:commandIntent,sameUtterance})
   });
   global.BASELINE_fitnessVoice=api;
   global[SINGLETON]=api;
