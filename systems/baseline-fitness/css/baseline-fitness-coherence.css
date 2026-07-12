@@ -1,0 +1,108 @@
+/* Baseline Fitness — final coherence overrides. */
+
+/* All top tabs use one visual system on every route. The previous my-plan-only
+   first-paint rule singled out System with a grey surface. */
+body[data-app="fitness"] .hero .tab[aria-selected="false"]{
+  color:var(--ink)!important;
+  background:linear-gradient(135deg,rgba(143,15,31,.60),rgba(177,18,38,.30))!important;
+  border-color:rgba(255,255,255,.18)!important;
+  box-shadow:0 12px 28px -22px rgba(143,15,31,.58)!important;
+}
+body[data-app="fitness"] .hero .tab[aria-selected="true"]{
+  color:rgba(255,255,255,.97)!important;
+  background:linear-gradient(135deg,rgba(143,15,31,.98),rgba(177,18,38,.84))!important;
+  border-color:rgba(255,255,255,.24)!important;
+  box-shadow:0 18px 44px -28px rgba(143,15,31,.72)!important;
+}
+
+/* One compact list inside the session card; exercises are rows, not cards. */
+body[data-app="fitness"] .session-step-list{
+  display:block!important;
+  margin-top:14px!important;
+  border-top:1px solid var(--border)!important;
+}
+body[data-app="fitness"] .current-step{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+body[data-app="fitness"] .current-step + .current-step{
+  border-top:1px solid var(--border)!important;
+}
+body[data-app="fitness"] .current-step.active{
+  padding-left:10px!important;
+  border-left:3px solid var(--accent-3)!important;
+  box-shadow:none!important;
+}
+body[data-app="fitness"] .current-step.done{opacity:.72!important}
+body[data-app="fitness"] .current-step-head{
+  min-height:62px;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center!important;
+  gap:12px!important;
+  padding:9px 0;
+  flex-wrap:nowrap!important;
+}
+body[data-app="fitness"] .current-step-label{
+  display:block;
+  font-size:1.05rem;
+  line-height:1.3;
+  font-weight:900;
+}
+body[data-app="fitness"] .current-step-text[hidden],
+body[data-app="fitness"] .step-subnote[hidden]{display:none!important}
+body[data-app="fitness"] .step-actions{
+  width:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+}
+body[data-app="fitness"] .step-status{
+  white-space:nowrap;
+  padding:6px 9px!important;
+}
+body[data-app="fitness"] .step-icon-btn{
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+}
+body[data-app="fitness"] .failure-entry{
+  margin:0 0 10px!important;
+  padding:10px!important;
+  border:1px solid var(--border)!important;
+  border-radius:12px!important;
+  background:var(--filter-bg)!important;
+}
+
+/* Preview, completed and future sessions use the same compact exercise list. */
+body[data-app="fitness"] .session-subcard.plan-exercise-row{
+  margin:0!important;
+  padding:9px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  font-weight:850;
+}
+body[data-app="fitness"] .session-subcard.plan-exercise-row + .session-subcard.plan-exercise-row{
+  border-top:1px solid var(--border)!important;
+}
+
+@media (max-width:760px){
+  body[data-app="fitness"] .current-step-head{
+    grid-template-columns:1fr;
+    gap:7px!important;
+  }
+  body[data-app="fitness"] .step-actions{
+    width:100%!important;
+    justify-content:flex-end!important;
+    flex-wrap:wrap!important;
+  }
+}
