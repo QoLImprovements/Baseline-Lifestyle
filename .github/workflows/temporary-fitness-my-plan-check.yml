@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - fix/fitness-my-plan-crash
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: read
