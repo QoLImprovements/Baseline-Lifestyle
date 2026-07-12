@@ -23,11 +23,12 @@ These Markdown rules are a human reference point, not live runtime config.
 
 <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_INFO_POPOVER_20260706_2"/>
+<link rel="stylesheet" href="/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_SITEWIDE_20260712_2" data-baseline-voice-style="true"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-recipes.css?v=20260602_1347dropdownportalopaque"/>
 
-<link rel="stylesheet" href="/systems/baseline-fitness/css/baseline-fitness.css?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_1"/>
+<link rel="stylesheet" href="/systems/baseline-fitness/css/baseline-fitness.css?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_2"/>
 
 
 
@@ -54,6 +55,20 @@ These Markdown rules are a human reference point, not live runtime config.
     <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>
   </div>
 </div>
+  <div class="bl-homebar-right">
+    <button class="bl-mini-btn" id="bl-beats-toggle" type="button" aria-label="Binaural" aria-expanded="false">
+      <span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"/></svg></span>
+      <span class="bl-btn-label">Binaural</span>
+    </button>
+    <button class="bl-mini-btn" id="bl-voice-toggle" type="button" aria-label="Voice control settings" aria-expanded="false">
+      <span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+      <span class="bl-btn-label">Voice</span>
+    </button>
+    <button class="bl-mini-btn" id="bl-auth-toggle" type="button" aria-label="Account" aria-expanded="false">
+      <span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"/><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"/></svg></span>
+      <span class="bl-btn-label">Account</span>
+    </button>
+  </div>
 </div>
 </div>
 
@@ -338,9 +353,10 @@ These Markdown rules are a human reference point, not live runtime config.
 </div>
 
 
-<script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_INFO_POPOVER_20260706_2"></script>
+<script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_VOICE_ACCESS_20260712_2"></script>
 <script defer src="/sitewide/js/baseline-auth-failsafe.js?v=SITEWIDE_AUTH_FAILSAFE_20260630"></script>
-<script defer src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_1"></script>
-<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice.js?v=BASELINE_FITNESS_VOICE_ADAPTER_20260712_1"></script>
+<script defer src="/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_SITEWIDE_20260712_2" data-baseline-voice-runtime="true"></script>
+<script defer src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_VOICE_WORKOUT_20260712_2"></script>
+<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice.js?v=BASELINE_FITNESS_VOICE_ADAPTER_20260712_2"></script>
 </body>
 </html>
