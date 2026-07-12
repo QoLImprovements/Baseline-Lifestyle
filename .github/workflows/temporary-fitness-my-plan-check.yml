@@ -1,0 +1,26 @@
+name: Temporary Fitness My Plan Check
+
+on:
+  push:
+    branches:
+      - fix/fitness-my-plan-crash
+
+permissions:
+  contents: read
+
+jobs:
+  fitness-my-plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Baseline Fitness browser tests
+        run: npx playwright test tests/baseline-fitness.spec.js --project=chromium
