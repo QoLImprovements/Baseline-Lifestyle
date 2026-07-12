@@ -1,10 +1,11 @@
-/* Baseline Lifestyle — microphone permission and continuous Fitness recognition. */
+/* Baseline Lifestyle — microphone permission and noise-gated Fitness recognition. */
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_ACCESS_20260712_7';
-  const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_1';
+  const BUILD='BASELINE_VOICE_ACCESS_20260712_8';
+  const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_2';
   const FITNESS_GUARD_BUILD='BASELINE_FITNESS_MUTATION_GUARD_20260712_2';
+  const FITNESS_UI_BUILD='BASELINE_FITNESS_VOICE_UI_CORRECTIONS_20260712_1';
   const APPROVED_KEY='__baseline_microphone_approved_v1__';
   if(global.__BASELINE_VOICE_ACCESS__) return;
   global.__BASELINE_VOICE_ACCESS__=true;
@@ -12,6 +13,8 @@
   const root=global.document?.documentElement;
   const isFitness=root?.getAttribute('data-app')==='fitness';
   const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
+  const AudioContextClass=global.AudioContext||global.webkitAudioContext||null;
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
 
   function installFitnessMutationGuard(){
     const NativeMutationObserver=global.MutationObserver;
@@ -77,6 +80,127 @@
     root?.setAttribute('data-baseline-fitness-mutation-guard',FITNESS_GUARD_BUILD);
   }
 
+  function installFitnessVoiceUiCorrections(){
+    if(!isFitness||global.__BASELINE_FITNESS_VOICE_UI_CORRECTIONS__) return;
+    global.__BASELINE_FITNESS_VOICE_UI_CORRECTIONS__=true;
+
+    const style=global.document?.createElement?.('style');
+    if(style){
+      style.id='baseline-fitness-voice-ui-corrections';
+      style.textContent=`
+        #voiceSettingsPanel .voice-settings-toggles{
+          display:grid!important;
+          grid-template-columns:repeat(2,minmax(0,1fr))!important;
+          gap:12px!important;
+          align-items:stretch!important;
+        }
+        #voiceSettingsPanel .voice-setting-toggle{
+          position:relative!important;
+          display:grid!important;
+          grid-template-columns:minmax(0,1fr) auto!important;
+          align-items:center!important;
+          gap:16px!important;
+          min-height:64px!important;
+          margin:0!important;
+          padding:14px 16px!important;
+          border:1px solid var(--border-2,var(--border,rgba(255,255,255,.18)))!important;
+          border-radius:14px!important;
+          background:var(--filter-bg,rgba(255,255,255,.045))!important;
+          text-align:left!important;
+          line-height:1.3!important;
+          cursor:pointer!important;
+        }
+        #voiceSettingsPanel .voice-setting-label{
+          min-width:0!important;
+          font-weight:800!important;
+        }
+        #voiceSettingsPanel .voice-setting-toggle>input[type="checkbox"]{
+          position:absolute!important;
+          inline-size:1px!important;
+          block-size:1px!important;
+          opacity:0!important;
+          pointer-events:none!important;
+        }
+        #voiceSettingsPanel .voice-setting-switch{
+          position:relative!important;
+          display:block!important;
+          width:52px!important;
+          height:30px!important;
+          border:1px solid rgba(255,255,255,.28)!important;
+          border-radius:999px!important;
+          background:rgba(255,255,255,.10)!important;
+          box-shadow:inset 0 1px 2px rgba(0,0,0,.28)!important;
+          transition:background .18s ease,border-color .18s ease!important;
+        }
+        #voiceSettingsPanel .voice-setting-switch::after{
+          content:""!important;
+          position:absolute!important;
+          top:3px!important;
+          left:3px!important;
+          width:22px!important;
+          height:22px!important;
+          border-radius:50%!important;
+          background:#f5f1f2!important;
+          box-shadow:0 2px 6px rgba(0,0,0,.32)!important;
+          transition:transform .18s ease!important;
+        }
+        #voiceSettingsPanel .voice-setting-toggle>input[type="checkbox"]:checked+.voice-setting-switch{
+          border-color:rgba(180,35,63,.9)!important;
+          background:rgba(180,35,63,.88)!important;
+        }
+        #voiceSettingsPanel .voice-setting-toggle>input[type="checkbox"]:checked+.voice-setting-switch::after{
+          transform:translateX(22px)!important;
+        }
+        #voiceSettingsPanel .voice-setting-toggle>input[type="checkbox"]:focus-visible+.voice-setting-switch{
+          outline:3px solid currentColor!important;
+          outline-offset:3px!important;
+        }
+        @media(max-width:760px){
+          #voiceSettingsPanel .voice-settings-toggles{grid-template-columns:1fr!important}
+        }
+      `;
+      global.document.head?.appendChild(style);
+    }
+
+    const promptLabels=Object.freeze({
+      exerciseInstructions:'Exercise instructions',
+      startInstructions:'Start instructions',
+      timerStartAnnouncement:'Timer-start announcement',
+      holdProgressPrompts:'Hold progress prompts',
+      completionAnnouncements:'Completion announcements',
+      resultQuestions:'Result questions'
+    });
+    function enhanceSettingsToggles(){
+      global.document?.querySelectorAll?.('#voiceSettingsPanel .voice-setting-toggle').forEach(toggle=>{
+        if(toggle.querySelector('.voice-setting-switch')) return;
+        const input=toggle.querySelector('input[type="checkbox"][data-voice-setting]');
+        if(!input) return;
+        const label=global.document.createElement('span');
+        label.className='voice-setting-label';
+        label.textContent=promptLabels[input.dataset.voiceSetting]||String(toggle.textContent||'').trim();
+        const switchControl=global.document.createElement('span');
+        switchControl.className='voice-setting-switch';
+        switchControl.setAttribute('aria-hidden','true');
+        toggle.replaceChildren(label,input,switchControl);
+      });
+    }
+    enhanceSettingsToggles();
+    if(global.MutationObserver&&global.document?.body){
+      new global.MutationObserver(()=>enhanceSettingsToggles()).observe(global.document.body,{childList:true,subtree:true});
+    }
+
+    global.addEventListener('click',event=>{
+      const button=event.target?.closest?.('#endVoiceWorkoutBtn');
+      if(!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation?.();
+      try{ global.BASELINE_fitnessVoice?.stop?.(); }catch(_error){}
+    },true);
+
+    root?.setAttribute('data-baseline-fitness-voice-ui-corrections',FITNESS_UI_BUILD);
+  }
+
   function normalise(value){
     return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
       .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ')
@@ -84,20 +208,28 @@
   }
 
   const ONES=Object.freeze({
-    zero:0,oh:0,o:0,one:1,two:2,to:2,too:2,three:3,four:4,for:4,
-    five:5,six:6,seven:7,eight:8,ate:8,nine:9,ten:10,eleven:11,
-    twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,
-    seventeen:17,eighteen:18,nineteen:19
+    zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,
+    nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,
+    fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19
   });
   const TENS=Object.freeze({
     twenty:20,thirty:30,forty:40,fifty:50,sixty:60,
     seventy:70,eighty:80,ninety:90
   });
+  const DIRECT_ALIASES=Object.freeze({oh:0,o:0,won:1,to:2,too:2,for:4,ate:8});
   const FILLERS=new Set([
-    'i','ive','completed','complete','achieved','managed','did','done','got','made',
-    'about','approximately','sets','set','seconds','second','a','around','roughly',
-    'only','it','was','that','is','the','number','and'
+    'i','ive','im','am','completed','complete','achieved','managed','did','done',
+    'got','made','about','approximately','sets','set','seconds','second','reps',
+    'rep','repetitions','repetition','a','around','roughly','only','it','was',
+    'that','is','the','number','and','do','of'
   ]);
+
+  function directAlias(text){
+    const exact=text.match(/^(oh|o|won|to|too|for|ate)(?:\s+(?:sets?|seconds?|reps?|repetitions?))?$/);
+    if(exact) return DIRECT_ALIASES[exact[1]];
+    const withUnit=text.match(/\b(oh|o|won|to|too|for|ate)\s+(?:sets?|seconds?|reps?|repetitions?)\b/);
+    return withUnit?DIRECT_ALIASES[withUnit[1]]:null;
+  }
 
   function parseNumber(value){
     const text=normalise(value);
@@ -107,19 +239,30 @@
       const number=Number(digit[0]);
       return number>=0&&number<=999?number:null;
     }
-    let current=0,seen=false,hundredSeen=false;
+    const alias=directAlias(text);
+    if(alias!==null) return alias;
+
+    let current=0;
+    let seen=false;
+    let hundredSeen=false;
     for(const token of text.split(' ').filter(Boolean)){
-      if(FILLERS.has(token)) continue;
+      if(FILLERS.has(token)||Object.prototype.hasOwnProperty.call(DIRECT_ALIASES,token)) continue;
       if(Object.prototype.hasOwnProperty.call(ONES,token)){
-        current+=ONES[token];seen=true;continue;
+        current+=ONES[token];
+        seen=true;
+        continue;
       }
       if(Object.prototype.hasOwnProperty.call(TENS,token)){
-        current+=TENS[token];seen=true;continue;
+        current+=TENS[token];
+        seen=true;
+        continue;
       }
       if(token==='hundred'){
         if(hundredSeen) return null;
         if(current===0) current=1;
-        current*=100;hundredSeen=true;seen=true;
+        current*=100;
+        hundredSeen=true;
+        seen=true;
       }
     }
     return seen&&current>=0&&current<=999?current:null;
@@ -128,15 +271,17 @@
   function canonicalCommand(state,value){
     const text=normalise(value);
     if(!text) return null;
-    if(state==='awaiting_go'&&/\bgo\b/i.test(text)) return 'go';
-    if((state==='exercise_active'||state==='awaiting_result')&&/\b(fail|failed|failure)\b/i.test(text)) return 'fail';
-    if((state==='exercise_active'||state==='awaiting_result')&&/\b(success|succeeded|successful)\b/i.test(text)) return 'success';
-    if(state==='resting'&&/\bnext\b/i.test(text)) return 'next';
+    if(state==='awaiting_go') return text==='go'?'go':null;
+    if(state==='resting') return text==='next'?'next':null;
+    if(state==='exercise_active'||state==='awaiting_result'){
+      if(/^(?:fail|failed|failure|i fail|i failed|it failed|that failed|that was a failure)$/.test(text)) return 'fail';
+      if(/^(?:success|succeeded|successful|i succeeded|it succeeded|that succeeded|that was successful|that was a success)$/.test(text)) return 'success';
+    }
     return null;
   }
 
-  function makeResult(transcript){
-    const result=[{transcript:String(transcript),confidence:1}];
+  function makeResult(transcript,confidence=1){
+    const result=[{transcript:String(transcript),confidence:clamp(confidence,0,1)}];
     result.isFinal=true;
     return {resultIndex:0,results:[result]};
   }
@@ -153,10 +298,107 @@
     let pendingNumber=null;
     let numberTimer=0;
     let ignoreInputUntil=0;
+    let meter=null;
 
-    function clearNumber(){
-      if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
-      pendingNumber=null;
+    const gate={
+      available:false,ready:false,startedAt:0,noiseFloor:.008,lastRms:.008,
+      lastVoiceAt:0,peakRatio:1,peakModulation:0,soundStartedAt:0,
+      speechStartedAt:0,speechEndedAt:0
+    };
+
+    function resetGateWindow(){
+      gate.peakRatio=1;
+      gate.peakModulation=0;
+      gate.soundStartedAt=0;
+      gate.speechStartedAt=0;
+      gate.speechEndedAt=0;
+      gate.lastVoiceAt=0;
+    }
+
+    function stopVoiceActivityMeter(){
+      const current=meter;
+      meter=null;
+      gate.available=false;
+      gate.ready=false;
+      if(!current) return;
+      if(current.frame){
+        if(current.frameType==='raf') global.cancelAnimationFrame?.(current.frame);
+        else global.clearTimeout(current.frame);
+      }
+      try{ current.source?.disconnect?.(); }catch(_error){}
+      try{ current.analyser?.disconnect?.(); }catch(_error){}
+      try{ current.stream?.getTracks?.().forEach(track=>track.stop()); }catch(_error){}
+      try{ current.context?.close?.(); }catch(_error){}
+    }
+
+    async function startVoiceActivityMeter(){
+      if(meter||!global.navigator?.mediaDevices?.getUserMedia||!AudioContextClass) return Boolean(meter);
+      try{
+        const stream=await global.navigator.mediaDevices.getUserMedia({audio:{
+          echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1
+        }});
+        const context=new AudioContextClass();
+        if(context.state==='suspended') await context.resume();
+        const analyser=context.createAnalyser();
+        analyser.fftSize=512;
+        analyser.smoothingTimeConstant=.28;
+        const source=context.createMediaStreamSource(stream);
+        source.connect(analyser);
+        const samples=new Uint8Array(analyser.fftSize);
+        const current={stream,context,analyser,source,samples,frame:0,frameType:'raf'};
+        meter=current;
+        gate.available=true;
+        gate.startedAt=Date.now();
+        gate.noiseFloor=.008;
+        gate.lastRms=.008;
+
+        const tick=()=>{
+          if(meter!==current) return;
+          analyser.getByteTimeDomainData(samples);
+          let sum=0;
+          for(let index=0;index<samples.length;index+=1){
+            const sample=(samples[index]-128)/128;
+            sum+=sample*sample;
+          }
+          const rms=Math.sqrt(sum/samples.length);
+          const floor=Math.max(.0025,gate.noiseFloor);
+          const ratio=rms/floor;
+          const modulation=Math.abs(rms-gate.lastRms)/floor;
+          const now=Date.now();
+          const calibrating=now-gate.startedAt<650;
+          const speechLike=!calibrating&&rms>Math.max(.0105,floor*1.62)&&(ratio>2.15||modulation>.18);
+
+          if(calibrating){
+            gate.noiseFloor=(gate.noiseFloor*.90)+(rms*.10);
+          }else if(!speechLike&&rms<floor*1.42){
+            gate.noiseFloor=(gate.noiseFloor*.985)+(rms*.015);
+          }else if(!speechLike){
+            gate.noiseFloor=(gate.noiseFloor*.998)+(rms*.002);
+          }
+          gate.noiseFloor=clamp(gate.noiseFloor,.0025,.12);
+          gate.lastRms=rms;
+          gate.ready=!calibrating;
+
+          if(speechLike){
+            gate.lastVoiceAt=now;
+            gate.peakRatio=Math.max(gate.peakRatio,ratio);
+            gate.peakModulation=Math.max(gate.peakModulation,modulation);
+          }
+
+          if(typeof global.requestAnimationFrame==='function'){
+            current.frameType='raf';
+            current.frame=global.requestAnimationFrame(tick);
+          }else{
+            current.frameType='timer';
+            current.frame=global.setTimeout(tick,35);
+          }
+        };
+        tick();
+        return true;
+      }catch(_error){
+        stopVoiceActivityMeter();
+        return false;
+      }
     }
 
     function currentState(){
@@ -168,35 +410,60 @@
       try{ target?.[name]?.(...args); }catch(_error){}
     }
 
-    function emit(transcript){
-      const target=activeVirtual;
+    function emitTo(target,transcript,confidence=1){
       if(!target||Date.now()<ignoreInputUntil) return false;
-      call(target,'onresult',makeResult(transcript));
+      call(target,'onresult',makeResult(transcript,confidence));
       return true;
+    }
+
+    function clearNumber(){
+      if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
+      pendingNumber=null;
     }
 
     function commitNumber(){
       if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
-      const candidate=pendingNumber;pendingNumber=null;
+      const candidate=pendingNumber;
+      pendingNumber=null;
       if(!candidate||candidate.state!==currentState()) return false;
-      return emit(String(candidate.value));
+      const emitted=emitTo(candidate.target,String(candidate.value),candidate.confidence);
+      if(emitted) resetGateWindow();
+      return emitted;
     }
 
-    function queueNumber(value,state,isFinal){
-      pendingNumber={value,state,updatedAt:Date.now()};
-      if(numberTimer) global.clearTimeout(numberTimer);
-      numberTimer=global.setTimeout(commitNumber,isFinal?60:430);
+    function queueNumber(value,state,target,isFinal,confidence){
+      pendingNumber={value,state,target,confidence,updatedAt:Date.now()};
+      if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
       const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
       if(status) status.textContent=`Heard ${value}`;
+      if(isFinal) return commitNumber();
+      numberTimer=global.setTimeout(commitNumber,520);
+      return true;
     }
 
     function alternatives(result){
       const output=[];
       for(let index=0;index<(result?.length||0);index+=1){
         const transcript=String(result[index]?.transcript||'').trim();
-        if(transcript) output.push(transcript);
+        if(!transcript) continue;
+        output.push({
+          transcript,
+          confidence:clamp(Number(result[index]?.confidence)||0,0,1)
+        });
       }
-      return output;
+      return output.sort((left,right)=>right.confidence-left.confidence);
+    }
+
+    function resultPassesVoiceGate(result,options){
+      const confidence=Math.max(0,...options.map(option=>option.confidence||0));
+      const now=Date.now();
+      const recentVoice=gate.lastVoiceAt>0&&now-gate.lastVoiceAt<1900;
+      const dynamicVoice=gate.peakRatio>=1.55&&(gate.peakModulation>=.10||gate.peakRatio>=2.35);
+      if(gate.available&&gate.ready) return recentVoice&&dynamicVoice;
+
+      const started=gate.speechStartedAt||gate.soundStartedAt;
+      const duration=started?now-started:0;
+      return confidence>=.72||(confidence>=.48&&duration>=120&&duration<=2600);
     }
 
     function handleNativeResult(event){
@@ -211,23 +478,26 @@
       for(let resultIndex=first;resultIndex<results.length;resultIndex+=1){
         const result=results[resultIndex];
         const options=alternatives(result);
-        if(!options.length) continue;
+        if(!options.length||!resultPassesVoiceGate(result,options)) continue;
 
         if(numberState){
-          for(const transcript of options){
-            const value=parseNumber(transcript);
-            if(value!==null){ queueNumber(value,state,Boolean(result.isFinal));break; }
+          for(const option of options){
+            const value=parseNumber(option.transcript);
+            if(value!==null){
+              queueNumber(value,state,activeVirtual,Boolean(result.isFinal),option.confidence||.8);
+              break;
+            }
           }
           continue;
         }
 
-        for(const transcript of options){
-          const command=canonicalCommand(state,transcript);
-          if(command){
-            clearNumber();
-            emit(command);
-            return;
-          }
+        if(!result.isFinal) continue;
+        for(const option of options){
+          const command=canonicalCommand(state,option.transcript);
+          if(!command) continue;
+          clearNumber();
+          if(emitTo(activeVirtual,command,option.confidence||.8)) resetGateWindow();
+          return;
         }
       }
     }
@@ -245,8 +515,13 @@
     function stopNative(){
       nativeWanted=false;
       if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
-      const current=native;native=null;nativeRunning=false;
+      const current=native;
+      native=null;
+      nativeRunning=false;
       try{ current?.abort?.(); }catch(_error){}
+      clearNumber();
+      stopVoiceActivityMeter();
+      resetGateWindow();
     }
 
     function schedulePolicyCheck(){
@@ -255,7 +530,7 @@
       },220);
     }
 
-    function scheduleNativeRestart(delay=35){
+    function scheduleNativeRestart(delay=55){
       if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
       if(!nativeWanted) return;
       nativeRestart=global.setTimeout(startNative,delay);
@@ -264,6 +539,7 @@
     function startNative(){
       if(nativeRestart){ global.clearTimeout(nativeRestart);nativeRestart=0; }
       if(!nativeWanted||nativeRunning) return;
+      startVoiceActivityMeter();
       try{
         const recognition=new NativeRecognition();
         native=recognition;
@@ -277,34 +553,49 @@
           call(activeVirtual,'onstart');
         };
         recognition.onaudiostart=()=>call(activeVirtual,'onaudiostart');
-        recognition.onsoundstart=()=>call(activeVirtual,'onsoundstart');
-        recognition.onspeechstart=()=>call(activeVirtual,'onspeechstart');
+        recognition.onsoundstart=()=>{
+          gate.soundStartedAt=Date.now();
+          gate.peakRatio=1;
+          gate.peakModulation=0;
+          gate.lastVoiceAt=0;
+          call(activeVirtual,'onsoundstart');
+        };
+        recognition.onspeechstart=()=>{
+          gate.speechStartedAt=Date.now();
+          call(activeVirtual,'onspeechstart');
+        };
         recognition.onresult=handleNativeResult;
         recognition.onspeechend=()=>{
-          if(pendingNumber){
-            if(numberTimer) global.clearTimeout(numberTimer);
-            numberTimer=global.setTimeout(commitNumber,100);
+          gate.speechEndedAt=Date.now();
+          if(pendingNumber&&!numberTimer) numberTimer=global.setTimeout(commitNumber,170);
+          else if(pendingNumber&&numberTimer){
+            global.clearTimeout(numberTimer);
+            numberTimer=global.setTimeout(commitNumber,170);
           }
           call(activeVirtual,'onspeechend');
         };
         recognition.onsoundend=()=>{
           if(pendingNumber&&numberTimer){
             global.clearTimeout(numberTimer);
-            numberTimer=global.setTimeout(commitNumber,130);
+            numberTimer=global.setTimeout(commitNumber,190);
           }
           call(activeVirtual,'onsoundend');
         };
         recognition.onerror=event=>call(activeVirtual,'onerror',event);
         recognition.onend=()=>{
           if(native!==recognition) return;
-          native=null;nativeRunning=false;
-          const ended=activeVirtual;activeVirtual=null;
+          native=null;
+          nativeRunning=false;
+          const ended=activeVirtual;
+          activeVirtual=null;
           call(ended,'onend');
-          if(nativeWanted) scheduleNativeRestart(35);
+          if(nativeWanted) scheduleNativeRestart(55);
         };
         recognition.start();
       }catch(_error){
-        native=null;nativeRunning=false;scheduleNativeRestart(90);
+        native=null;
+        nativeRunning=false;
+        scheduleNativeRestart(120);
       }
     }
 
@@ -312,7 +603,9 @@
       activeVirtual=target;
       nativeWanted=true;
       clearNumber();
-      ignoreInputUntil=Date.now()+90;
+      resetGateWindow();
+      ignoreInputUntil=Date.now()+220;
+      startVoiceActivityMeter();
       if(nativeRunning) global.queueMicrotask?.(()=>call(target,'onstart'));
       else startNative();
     }
@@ -320,6 +613,7 @@
     function detach(target){
       if(activeVirtual===target) activeVirtual=null;
       clearNumber();
+      resetGateWindow();
       schedulePolicyCheck();
     }
 
@@ -348,12 +642,20 @@
     global.BASELINE_fitnessPersistentRecognition=Object.freeze({
       BUILD:FITNESS_RECOGNITION_BUILD,
       parseNumber,
-      commandFor:canonicalCommand
+      commandFor:canonicalCommand,
+      gateStatus:()=>Object.freeze({
+        available:gate.available,
+        ready:gate.ready,
+        noiseFloor:gate.noiseFloor,
+        peakRatio:gate.peakRatio,
+        peakModulation:gate.peakModulation
+      })
     });
     root.setAttribute('data-baseline-fitness-persistent-recognition',FITNESS_RECOGNITION_BUILD);
   }
 
   installFitnessMutationGuard();
+  installFitnessVoiceUiCorrections();
   installPersistentFitnessRecognition();
 
   const base=global.BASELINE_voice;
