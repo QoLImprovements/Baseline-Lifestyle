@@ -119,6 +119,36 @@ test('voice commands are state-scoped and Fail variants are reliable', async ({ 
   });
 });
 
+test('live recognition releases commands immediately but holds partial numbers', async ({ page }) => {
+  await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessLiveRecognition));
+
+  const result=await page.evaluate(() => {
+    const live=globalThis.BASELINE_fitnessLiveRecognition;
+    return {
+      build:live.BUILD,
+      go:live.isImmediateCommand('Go'),
+      fail:live.isImmediateCommand('I failed'),
+      success:live.isImmediateCommand('Success'),
+      next:live.isImmediateCommand('Next'),
+      partialNumber:live.isImmediateCommand('twenty'),
+      numberPhrase:live.isImmediateCommand('twenty-five seconds'),
+      unrelated:live.isImmediateCommand('ready')
+    };
+  });
+
+  expect(result).toEqual({
+    build:'BASELINE_FITNESS_LIVE_RECOGNITION_20260712_1',
+    go:true,
+    fail:true,
+    success:true,
+    next:true,
+    partialNumber:false,
+    numberPhrase:false,
+    unrelated:false
+  });
+});
+
 test('spoken-number parsing supports digits, words and short phrases', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
