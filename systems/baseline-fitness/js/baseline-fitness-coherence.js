@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_1';
+  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_2';
   if(global.__BASELINE_FITNESS_COHERENCE__) return;
   global.__BASELINE_FITNESS_COHERENCE__=true;
   document.documentElement.setAttribute('data-baseline-fitness-coherence',BUILD);
@@ -170,7 +170,8 @@
   function scheduleCoherence(){
     if(scheduled) return;
     scheduled=true;
-    (global.requestAnimationFrame||global.setTimeout)(applyCoherence,0);
+    if(typeof global.requestAnimationFrame==='function') global.requestAnimationFrame(applyCoherence);
+    else global.setTimeout(applyCoherence,0);
   }
 
   function init(){
