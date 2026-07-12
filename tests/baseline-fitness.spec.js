@@ -33,7 +33,6 @@ test('every rep set increases by one between sessions', async ({ page }) => {
   await expect(cards.nth(2)).toContainText(sessions[2].join(' / '));
 });
 
-
 test('exercise information is optional, updates with the dropdown, and can stay open', async ({ page }) => {
   await page.goto(PATH, { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
@@ -63,9 +62,11 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG&&globalThis.BASELINE_fitnessVoice));
 
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_6');
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_7');
   await expect(page.locator('#voiceWorkoutTitle')).toHaveText('Voice workout');
   await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutTitle');
+  await expect(page.getByRole('button',{name:'Voice settings'})).toHaveCount(1);
+  await expect(page.locator('#voiceListeningStatus')).toHaveCount(0);
 
   await page.evaluate(() => {
     for(let index=0;index<25;index+=1){
@@ -86,36 +87,52 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   expect(await page.evaluate(() => 6*7)).toBe(42);
 });
 
-test('voice control accepts only four exact commands in every workout state', async ({ page }) => {
+test('voice commands are state-scoped and Fail variants are reliable', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
 
   const result=await page.evaluate(() => {
     const debug=globalThis.BASELINE_fitnessVoice.debug;
     return {
-      goDuringIntroduction:debug.intentFor('introducing','Go'),
-      successDuringInstruction:debug.intentFor('waiting_start','Success'),
-      failDuringExercise:debug.intentFor('performing','Fail'),
-      nextDuringRest:debug.intentFor('resting','Next'),
-      rejectsStart:debug.intentFor('waiting_start','Start'),
-      rejectsReady:debug.intentFor('waiting_start','Ready'),
-      rejectsSucceeded:debug.intentFor('performing','Succeeded'),
-      rejectsFailure:debug.intentFor('performing','Failure'),
-      rejectsLongerPhrase:debug.intentFor('waiting_start','Go ahead'),
-      sameInterimAndFinal:debug.sameUtterance('success','Success')
+      go:debug.intentFor('awaiting_go','Go'),
+      rejectsFailBeforeStart:debug.intentFor('awaiting_go','Fail'),
+      fail:debug.intentFor('exercise_active','Fail'),
+      failed:debug.intentFor('exercise_active','I failed'),
+      failure:debug.intentFor('awaiting_result','That was a failure'),
+      success:debug.intentFor('awaiting_result','Success'),
+      next:debug.intentFor('resting','Next'),
+      rejectsGoDuringRest:debug.intentFor('resting','Go'),
+      rejectsNextDuringResult:debug.intentFor('awaiting_result','Next')
     };
   });
 
   expect(result).toEqual({
-    goDuringIntroduction:'go',
-    successDuringInstruction:'success',
-    failDuringExercise:'fail',
-    nextDuringRest:'next',
-    rejectsStart:null,
-    rejectsReady:null,
-    rejectsSucceeded:null,
-    rejectsFailure:null,
-    rejectsLongerPhrase:null,
-    sameInterimAndFinal:true
+    go:'go',
+    rejectsFailBeforeStart:null,
+    fail:'fail',
+    failed:'fail',
+    failure:'fail',
+    success:'success',
+    next:'next',
+    rejectsGoDuringRest:null,
+    rejectsNextDuringResult:null
   });
+});
+
+test('spoken-number parsing supports digits, words and short phrases', async ({ page }) => {
+  await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
+
+  const result=await page.evaluate(() => {
+    const parse=globalThis.BASELINE_fitnessVoice.debug.parseNumber;
+    return [
+      parse('3'),
+      parse('I completed three sets'),
+      parse('twenty-five seconds'),
+      parse('I achieved nine hundred and ninety-nine seconds'),
+      parse('one thousand')
+    ];
+  });
+
+  expect(result).toEqual([3,3,25,999,1]);
 });
