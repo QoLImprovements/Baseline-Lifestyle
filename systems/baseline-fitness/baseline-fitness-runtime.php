@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_4';
+const BL_FITNESS_VOICE_RUNTIME = 'BASELINE_FITNESS_VOICE_RUNTIME_20260712_5';
 
 header('Content-Type: text/html; charset=utf-8');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
@@ -32,25 +32,33 @@ if($html === ''){
     exit;
 }
 
-// The runtime owns these three scripts so stale browser/server copies cannot win.
+// The runtime owns these scripts so stale browser/server copies cannot win.
 $html = preg_replace('~<script\b[^>]*src=["\'][^"\']*baseline-voice\.js[^"\']*["\'][^>]*>\s*</script>\s*~i', '', $html) ?? $html;
+$html = preg_replace('~<script\b[^>]*src=["\'][^"\']*baseline-voice-access\.js[^"\']*["\'][^>]*>\s*</script>\s*~i', '', $html) ?? $html;
+$html = preg_replace('~<script\b[^>]*src=["\'][^"\']*baseline-fitness-coherence\.js[^"\']*["\'][^>]*>\s*</script>\s*~i', '', $html) ?? $html;
 $html = preg_replace('~<script\b[^>]*src=["\'][^"\']*baseline-fitness-app\.js[^"\']*["\'][^>]*>\s*</script>\s*~i', '', $html) ?? $html;
 $html = preg_replace('~<script\b[^>]*src=["\'][^"\']*baseline-fitness-voice\.js[^"\']*["\'][^>]*>\s*</script>\s*~i', '', $html) ?? $html;
 $html = preg_replace('~<link\b[^>]*href=["\'][^"\']*baseline-voice\.css[^"\']*["\'][^>]*>\s*~i', '', $html) ?? $html;
+$html = preg_replace('~<link\b[^>]*href=["\'][^"\']*baseline-fitness-coherence\.css[^"\']*["\'][^>]*>\s*~i', '', $html) ?? $html;
 
 $voiceCss = bl_inline_style(__DIR__ . '/../../sitewide/css/baseline-voice.css');
-$runtimeCss = '<style id="baseline-fitness-voice-runtime-style">' . $voiceCss . '</style>';
+$coherenceCss = bl_inline_style(__DIR__ . '/css/baseline-fitness-coherence.css');
+$runtimeCss =
+    '<style id="baseline-fitness-voice-runtime-style">' . $voiceCss . '</style>' .
+    '<style id="baseline-fitness-coherence-runtime-style">' . $coherenceCss . '</style>';
 $runtimeMeta = '<meta name="baseline-fitness-voice-runtime" content="' . BL_FITNESS_VOICE_RUNTIME . '">';
 $html = str_ireplace('</head>', $runtimeMeta . $runtimeCss . '</head>', $html);
 
 $sitewideVoice = bl_inline_script(__DIR__ . '/../../sitewide/js/baseline-voice.js');
+$voiceAccess = bl_inline_script(__DIR__ . '/../../sitewide/js/baseline-voice-access.js');
+$fitnessCoherence = bl_inline_script(__DIR__ . '/js/baseline-fitness-coherence.js');
 $fitnessApp = bl_inline_script(__DIR__ . '/js/baseline-fitness-app.js');
 $fitnessVoice = bl_inline_script(__DIR__ . '/js/baseline-fitness-voice.js');
 
 $visibilityGuard = <<<'JS'
 (function(){
   'use strict';
-  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_4';
+  var BUILD='BASELINE_FITNESS_VOICE_VISIBILITY_GUARD_20260712_5';
   document.documentElement.setAttribute('data-baseline-fitness-voice-delivery',BUILD);
   var voiceIcon='<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
   function ensureHeaderVoice(){
@@ -96,6 +104,8 @@ JS;
 
 $runtimeScripts =
     '<script id="baseline-sitewide-voice-inline">' . $sitewideVoice . '</script>' .
+    '<script id="baseline-sitewide-voice-access-inline">' . $voiceAccess . '</script>' .
+    '<script id="baseline-fitness-coherence-inline">' . $fitnessCoherence . '</script>' .
     '<script id="baseline-fitness-app-inline">' . $fitnessApp . '</script>' .
     '<script id="baseline-fitness-voice-inline">' . $fitnessVoice . '</script>' .
     '<script id="baseline-fitness-voice-visibility-guard">' . $visibilityGuard . '</script>';
