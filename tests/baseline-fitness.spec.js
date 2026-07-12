@@ -63,15 +63,17 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG&&globalThis.BASELINE_fitnessVoice));
 
-  await expect(page.locator('#voiceWorkoutDialogTitle')).toHaveCount(1);
-  await expect(page.locator('#voiceWorkoutDialogTitle')).toHaveText('Voice workout');
-  await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutDialogTitle');
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_4');
+  await expect(page.locator('#voiceWorkoutTitle')).toHaveText('Voice workout');
+  await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutTitle');
 
   await page.evaluate(() => {
-    const probe=document.createElement('div');
-    probe.dataset.fitnessMutationProbe='true';
-    document.body.appendChild(probe);
-    probe.remove();
+    for(let index=0;index<25;index+=1){
+      const probe=document.createElement('div');
+      probe.dataset.fitnessMutationProbe=String(index);
+      document.body.appendChild(probe);
+      probe.remove();
+    }
   });
 
   await page.getByRole('button',{name:'My Plan',exact:true}).click();
