@@ -1,1 +1,871 @@
-!function(e){"use strict";const t="BASELINE_FITNESS_SINGLE_RUNTIME_20260713_1",n="/systems/baseline-fitness/api",s=Object.freeze({STANDARD:"standard-reps",LEG:"leg-reps",TIMED:"timed-hold"}),a=Object.freeze(["system","my-plan","my-body","library","achievements"]),o=Object.freeze({"exercise-library":"library","workout-routine":"my-plan"}),i=/\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/,r="__bl_fitness_plan_v1__",l="__bl_fitness_workout_progress_v2__",d="__bl_fitness_plan_cache_v1__",c=[{name:"Knee Push-Ups",unit:"reps",progressionType:s.STANDARD,base:10,family:"Push-Up",category:"upper",goodFor:"Chest, triceps and shoulder pressing strength with less load than a full push-up.",how:"Place hands under shoulders with knees down and keep a straight line from head to knees. Lower with control, then press back up."},{name:"Push-Ups",unit:"reps",progressionType:s.STANDARD,base:8,family:"Push-Up",category:"upper",goodFor:"Chest, triceps, shoulders and whole-body bracing.",how:"Keep a straight line from head to heels. Lower under control, keep the shoulders away from the ears, then press up."},{name:"Squats",unit:"reps",progressionType:s.LEG,base:12,family:"Squat",category:"lower",goodFor:"Leg strength, hip and knee control, and everyday sit-to-stand movement.",how:"Stand with feet around shoulder width. Sit down under control, keep knees tracking over toes, then stand tall."},{name:"Elbow Plank",unit:"seconds",progressionType:s.TIMED,base:20,family:"Plank",category:"core",goodFor:"Front-core endurance and trunk stability with less loading through the wrists.",how:"Place forearms down with elbows under shoulders. Keep the body straight, brace the trunk and breathe slowly."},{name:"Plank",unit:"seconds",progressionType:s.TIMED,base:20,family:"Plank",category:"core",goodFor:"Core endurance, shoulder stability and maintaining a controlled body line.",how:"Place hands under shoulders and keep the body straight. Brace gently without holding the breath."},{name:"Elbow Side Plank",unit:"seconds",progressionType:s.TIMED,base:15,family:"Side Plank",category:"core",goodFor:"Side-core endurance, hip stability and resistance to unwanted trunk rotation.",how:"Place the forearm under the shoulder, lift the hips and stack the pelvis. Hold the body line while breathing steadily."}],u=new Map(c.map(e=>[e.name,e]));function p(e,t,n){return Number.isFinite(e=Number(e))?Math.max(t,Math.min(n,e)):t}function m(e){return Math.max(1,Math.min(5,Math.round(Number(e)||3)))}function h(e){return u.get((e||"")+"")||c[0]}function f(e,t){const n=(e||"")+"";return Object.values(s).includes(n)?n:t.progressionType}function v(e){const t=e&&"object"==typeof e?e:{},n=h(t.exercise),s={exercise:n.name,baseline:Math.round(p(t.baseline||n.base,1,9999)),progressionType:f(t.progressionType,n)};return"reps"===n.unit&&(s.sets=m(t.sets||3)),s}function y(e){if(!e||"object"!=typeof e||!Array.isArray(e.items))return null;const t=Object.assign({},e,{version:7,items:e.items.map(v)});return t.sessions=Math.round(p(t.sessions||18,1,120)),t.lengthMode="goal"===t.lengthMode?"goal":"sessions",t.frequency=["1x","2x","3x"].includes(t.frequency)?t.frequency:"3x",t.days=Array.isArray(t.days)?t.days.filter(e=>["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].includes(e)).slice(0,Number(t.frequency[0])):[],t.timerStartDelay=Math.round(p(t.timerStartDelay||5,1,10)),t}function g(e,t){const n=Math.max(1,Math.round(Number(e)||1)),s=m(t);if(1===s)return[n];if(2===s)return[Math.max(1,Math.round(.75*n)),Math.max(1,Math.round(.85*n))];if(3===s){const e=Math.max(1,Math.round(.75*n)),t=Math.max(1,Math.round(.7*n));let s=Math.max(1,Math.round(.8*n));return s<=Math.max(e,t)&&(s=Math.max(e,t)+1),[e,t,s]}return(4===s?[.62,.7,.76,.84]:[.58,.64,.7,.76,.84]).map(e=>Math.max(1,Math.round(n*e)))}function b(e,t){const n=m(t);return e!==s.LEG?Array(n).fill(1):1===n?[2]:2===n?[2,3]:[2,...Array(n-2).fill(1),3]}function x(e,t,n,a=s.STANDARD){const o=Math.max(1,Math.round(Number(n)||1)),i=b(a,m(t));return g(e,t).map((e,t)=>e+(o-1)*i[t])}function S(e,t){let n=Math.max(1,Math.round(Number(e)||1));for(let e=2;e<=Math.max(1,Math.round(Number(t)||1));e++)n+=n<60?5:n<90?3:2;return n}function E(e,t){return(e||[]).map(e=>{const n=v(e),a=h(n.exercise);return"seconds"===a.unit?{item:a,unit:"seconds",hold:S(n.baseline,t),progressionType:s.TIMED}:{item:a,unit:"reps",sets:n.sets,values:x(n.baseline,n.sets,t,n.progressionType),progressionType:n.progressionType}})}const $=Object.freeze({BUILD:t,TYPES:s,EX:c,setValues:g,progressionIncrements:b,progressedSetValues:x,hold:S,work:E,normaliseItem:v,normalisePlan:y});if("undefined"!=typeof module&&module.exports&&(module.exports=$),"undefined"==typeof document)return void(e.BASELINE_FITNESS_DEBUG=$);if(e.__BASELINE_FITNESS_APP__)return;e.__BASELINE_FITNESS_APP__=!0;const w="file:"===location.protocol,k=(e,t=document)=>t.querySelector(e),L=(e,t=document)=>Array.from(t.querySelectorAll(e)),M=e.BASELINE_store&&"function"==typeof e.BASELINE_store.read?e.BASELINE_store:null,I=new Set;let _={authed:!1,name:""},A={planId:0,planJson:null,sessions:[],progress:null},P=!1,T=!1,D=null,C=0,B=!1,N=0,O="create",F={interval:null};function j(e){return((e??"")+"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]))}function J(e){return(e+"").padStart(2,"0")}function H(){const e=new Date;return`${e.getFullYear()}-${J(e.getMonth()+1)}-${J(e.getDate())}`}function q(e){const t=/^(\d{4})-(\d{2})-(\d{2})$/.exec((e||"")+"");return t?new Date(+t[1],+t[2]-1,+t[3]):null}function W(e){return`${e.getFullYear()}-${J(e.getMonth()+1)}-${J(e.getDate())}`}function R(e,t){const n=new Date(e);return n.setDate(n.getDate()+t),n}function G(e){const t=q(e);return t?t.toLocaleDateString(void 0,{weekday:"short",day:"2-digit",month:"short",year:"numeric"}):(e||"")+""}function U(e,t){return`${e}::${((t||"")+"").trim().toLowerCase()}`}function V(){return U(r,_.name)}function z(){return U(d,_.name)}function Y(e,t){return U(l,`${e||0}::${t||0}::${_.name||""}`)}function K(){return U("__bl_fitness_body_profile_v1__",_.name||"local")}function X(e,t){try{return M?M.read(e,t):JSON.parse(localStorage.getItem(e)||"null")??t}catch(e){return t}}function Q(e,t){try{return M?M.write(e,t):localStorage.setItem(e,JSON.stringify(t))}catch(e){return}}function Z(e){try{return M?M.del(e):localStorage.removeItem(e)}catch(e){return}}function ee(){T||(P=!0)}function te(e){if(!e)return;e.setAttribute("data-native-select","true");const t=e.parentElement?.classList?.contains("bl-select")?e.parentElement:null;t?.parentNode&&(t.parentNode.insertBefore(e,t),t.remove())}async function ne(e,t={}){if(w)return{ok:!1};try{const n=new URL(e,location.href);Object.entries(t).forEach(([e,t])=>n.searchParams.set(e,t));const s=await fetch(n,{credentials:"same-origin",headers:{Accept:"application/json"}});return await s.json()}catch(e){return{ok:!1}}}async function se(e,t){if(w)return{ok:!1};try{const n=await fetch(e,{method:"POST",headers:{"Content-Type":"application/json",Accept:"application/json"},credentials:"same-origin",body:JSON.stringify(t)});return await n.json()}catch(e){return{ok:!1}}}function ae(e){return`Max Baseline (${"seconds"===e.unit?"Seconds":"Reps"})`}function oe(t){const n=h(k(".ex-select",t)?.value),s=k(".baseline-label",t),a=k(".sets-label",t),o=k(".ex-sets",t),i=k(".ex-baseline",t);if(t.dataset.progressionType=n.progressionType,function(t,n){const s=k(".exercise-info-button",t),a=k(".exercise-caption-source",t);s&&(s.setAttribute("aria-label","Information about "+n.name),s.setAttribute("data-bl-info-title",n.name)),a&&(a.innerHTML=function(e){return`<strong>${j(e.name)}</strong><p><b>Good for:</b> ${j(e.goodFor)}</p><p><b>How:</b> ${j(e.how)}</p>`}(n)),e.BASELINE_info?.refresh?.()}(t,n),s&&(s.textContent=ae(n)),i&&(!i.value||+i.value<1)&&(i.value=n.base),"seconds"===n.unit)o&&!o.disabled&&(o.dataset.lastSets=o.value||"3"),a&&(a.textContent="Type"),o&&(o.innerHTML='<option value="hold">Hold</option>',o.disabled=!0);else if(a&&(a.textContent="Sets"),o){const e=m(o.dataset.lastSets||o.value||3);o.innerHTML=[1,2,3,4,5].map(t=>`<option value="${t}"${t===e?" selected":""}>${t}</option>`).join(""),o.disabled=!1}}function ie(e){const t=h(e),n=document.createElement("div"),s="exercise-caption-"+ ++N;var a;return n.className="ex-row",n.innerHTML=`<div class="ex-exercise-block"><div class="field-stack ex-field-exercise"><label>Exercise</label><select class="ex-select field-select-fixed" data-native-select="true">${a=t.name,c.map(e=>`<option value="${j(e.name)}"${e.name===a?" selected":""}>${j(e.name)}</option>`).join("")}</select></div><div class="exercise-info-wrap bl-info-wrap"><button class="exercise-info-button bl-info-button" data-bl-info-button type="button" aria-label="Information about ${j(t.name)}" aria-expanded="false" aria-controls="${s}"><span aria-hidden="true">i</span></button><div class="exercise-caption exercise-caption-source bl-info-source" id="${s}"></div></div></div><div class="field-stack ex-field-baseline"><label class="baseline-label">${ae(t)}</label><input class="ex-baseline field-input-fixed" type="number" min="1" inputmode="numeric" value="${t.base}"></div><div class="field-stack ex-field-sets"><label class="sets-label">Sets</label><select class="ex-sets field-select-fixed" data-native-select="true"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div><div class="ex-remove-wrap"><button class="action secondary ex-remove" type="button" aria-label="Remove exercise">×</button></div>`,oe(n),k(".ex-select",n).addEventListener("change",()=>{ee(),oe(n),le()}),k(".ex-baseline",n).addEventListener("input",ee),k(".ex-sets",n).addEventListener("change",e=>{ee(),e.currentTarget.dataset.lastSets=e.currentTarget.value}),k(".ex-remove",n).addEventListener("click",()=>{ee(),n.remove(),k(".ex-row")||k("#exerciseList")?.append(ie(c[0].name)),le()}),n}function re(){const e=new Set,t=[];return L(".ex-row").forEach(n=>{const s=h(k(".ex-select",n)?.value);if(e.has(s.name))return;e.add(s.name);const a={exercise:s.name,baseline:Math.round(p(k(".ex-baseline",n)?.value||s.base,1,9999)),progressionType:s.progressionType};"reps"===s.unit&&(a.sets=m(k(".ex-sets",n)?.value||k(".ex-sets",n)?.dataset.lastSets)),t.push(a)}),t}function le(){const e=k("#goalExercise");if(!e)return;const t=e.value,n=L(".ex-select").map(e=>e.value).filter((e,t,n)=>n.indexOf(e)===t);e.innerHTML=n.map(e=>`<option value="${j(e)}">${j(e)}</option>`).join(""),e.value=n.includes(t)?t:n[0]||"";const s=k("#goalAmountLabel");s&&(s.textContent=`Goal amount (${h(e.value).unit})`)}function de(){const e="goal"===k("#lengthMode")?.value;k("#sessions")&&(k("#sessions").disabled=e,k("#sessions").style.opacity=e?".7":"1"),k("#goalHint")&&(k("#goalHint").style.display=e?"":"none"),k("#goalControlsRow")&&(k("#goalControlsRow").style.opacity=e?"1":".55"),k("#goalExercise")&&(k("#goalExercise").disabled=!e),k("#goalAmount")&&(k("#goalAmount").disabled=!e),k("#goalExerciseLabel")&&(k("#goalExerciseLabel").className=e?"":"muted"),k("#goalAmountLabel")&&(k("#goalAmountLabel").className=e?"":"muted"),le()}function ce(e){if("goal"!==k("#lengthMode")?.value)return Math.round(p(k("#sessions")?.value||18,1,120));const t=h(k("#goalExercise")?.value),n=p(k("#goalAmount")?.value||t.base,1,99999),s=v(e.find(e=>e.exercise===t.name)||{exercise:t.name,baseline:t.base});for(let e=1;e<=120;e++){if("seconds"===t.unit&&S(s.baseline,e)>=n)return e;if("reps"===t.unit&&Math.max(...x(s.baseline,s.sets,e,s.progressionType))>=n)return e}return 120}function ue(e,t,n,s=[]){const a=(s||[]).map(e=>["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"].indexOf(e)).filter(e=>e>=0),o=[];let i=q(e)||q(H());if(a.length){for(;o.length<n;)a.includes(i.getDay())&&o.push(W(i)),i=R(i,1);return o}const r="1x"===t?[7]:"2x"===t?[3,4]:[2,2,3];for(let e=0;e<n;e++)o.push(W(i)),i=R(i,r[e%r.length]);return o}function pe(){const e=re(),t=k("#lengthMode")?.value||"sessions",n=A.planJson||{},s={version:7,startDate:k("#startDate")?.value||H(),frequency:k("#freq")?.value||"3x",sessions:ce(e),lengthMode:t,items:e,days:Array.isArray(n.days)?n.days:[],timerStartDelay:Math.round(p(n.timerStartDelay||5,1,10))};return"goal"===t&&(s.goal={exercise:k("#goalExercise")?.value||"",amount:Math.round(p(k("#goalAmount")?.value||1,1,99999))}),s}function me(e,t=[]){const n=new Map(t.map(e=>[+e.session_index,e])),s=Math.floor(Date.now()/1e3);return ue(e.startDate,e.frequency,e.sessions,e.days).map((e,t)=>{const a=n.get(t+1)||{};return{session_index:t+1,scheduled_date:e,status:a.status||"planned",completed_at:a.completed_at||null,updated_at:s}})}function he(e,t){let n=0,s=null;return e.forEach(e=>{"done"===e.status?n++:null===s&&(s=+e.session_index)}),null===s&&e.length&&(s=e.length+1),{done:n,total:e.length,nextIndex:s,startDate:t.startDate}}function fe(e){return["Baseline Fitness Plan",`Start: ${e.startDate} | Frequency: ${e.frequency} Weekly | Sessions: ${e.sessions}`,"",...e.items.map(e=>`${e.exercise}: baseline ${e.baseline} ${h(e.exercise).unit}${e.sets?" | sets "+e.sets:""}`)].join("\n")}function ve(e){const t=Math.max(0,Math.round(e||0));return`${J(Math.floor(t/60))}:${J(t%60)}`}function ye(e){return e.flatMap(e=>"reps"===e.unit?[`<div class="session-subcard plan-exercise-row">${j(e.item.name)} - (${e.values.map(e=>j(e)).join(" / ")})</div>`]:"Elbow Side Plank"===e.item.name?[`<div class="session-subcard plan-exercise-row">Elbow Plank Left - (${j(e.hold)})</div>`,`<div class="session-subcard plan-exercise-row">Elbow Plank Right - (${j(e.hold)})</div>`]:[`<div class="session-subcard plan-exercise-row">${j(e.item.name)} - (${j(e.hold)})</div>`]).join("")}function ge(e,t,n=null,s=null){const a=y(t);if(!e||!a)return;const o=ue(a.startDate,a.frequency,a.sessions,a.days);let i=`<div class="card"><h2>Your plan preview</h2><div class="session-plan-meta"><span class="badge">Start: ${j(G(a.startDate))}</span><span class="badge">Frequency: ${j(a.frequency)} Weekly</span><span class="badge">Sessions: ${a.sessions}</span>${s?`<span class="badge">Progress: ${s.done}/${s.total}</span>`:""}</div></div>`;for(let e=1;e<=a.sessions;e++){const t=n?.find(t=>+t.session_index===e)||{scheduled_date:o[e-1],status:"planned"};i+=`<div class="card session-card" data-session="${e}"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${e}</div><div class="muted">${j(G(t.scheduled_date))}</div></div><span class="badge">${"done"===t.status?"Done":"Planned"}</span></div><div class="divider"></div>${ye(E(a.items,e))}</div>`}e.innerHTML=i}function be(e,t,n,s){return`<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${t}${s?" - "+s:""}</div><div class="muted">${j(G(e.scheduled_date))}</div></div>${"done"===e.status?'<span class="badge">Done</span>':'<span class="badge">Planned</span>'}</div><div class="divider"></div>${ye(E(n.items,t))}</div>`}function xe(t=A.planId){if(!M)try{const n=e.localStorage;if(!n)return;const s=`${l}::${((t||0)+"").toLowerCase()}::`;for(let e=n.length-1;e>=0;e--){const t=n.key(e)||"";t.includes(s)&&t.includes(((_.name||"")+"").trim().toLowerCase())&&n.removeItem(t)}}catch(e){}}function Se(e){const t=X(Y(A.planId,e),{completedSteps:0,started:!1,results:{},pendingFailureStep:null})||{completedSteps:0,started:!1,results:{},pendingFailureStep:null};return Object.assign({completedSteps:0,started:!1,results:{},pendingFailureStep:null},t,{results:t&&"object"==typeof t.results?t.results:{}})}function Ee(e,t){Q(Y(A.planId,e),Object.assign({completedSteps:0,started:!1,results:{},pendingFailureStep:null},t,{results:t&&"object"==typeof t.results?t.results:{}}))}function $e(){const e=k("#myPlanGeneratorWrap"),t=k("#myPlanSavedWrap"),n=!!A.planJson&&"view"===O;e&&(e.hidden=n),t&&(t.hidden=!n),function(){const e=k("#savePlanBtn"),t=k("#cancelEditPlanBtn");e&&(e.textContent=A.planId&&"edit"===O?"Save plan changes":"Save plan"),t&&(t.hidden=!(A.planId&&"edit"===O))}()}function we(){T=!0;try{k("#startDate")&&(k("#startDate").value=H()),k("#freq")&&(k("#freq").value="3x"),k("#lengthMode")&&(k("#lengthMode").value="sessions"),k("#sessions")&&(k("#sessions").value="18"),k("#goalAmount")&&(k("#goalAmount").value="");const e=k("#exerciseList");e&&(e.innerHTML="",e.append(ie(c[0].name))),de(),le(),P=!1}finally{T=!1}}function ke(e=!0){F.interval&&(clearInterval(F.interval),F.interval=null),e&&k("#timerModal")&&(k("#timerModal").hidden=!0)}function Le(e,t,n,s,a="manual"){const o=Se(e);o.started=!0,o.results=Object.assign({},o.results,{[t]:{status:n,achieved:Math.round(p(s||0,0,99999)),inputMode:(a||"manual")+""=="voice"?"voice":"manual"}}),o.completedSteps=Math.max(o.completedSteps||0,t+1),o.pendingFailureStep=null,Ee(e,o),De()}function Me(){const e={available:!1,canStart:!1,planId:A.planId||0,sessionIndex:0,stepIndex:0,step:null,steps:[],completedSteps:0,totalSteps:0,started:!1,allComplete:!1,planComplete:!1};if(!_.authed||!A.planJson||!A.sessions.length)return e;const t=+A.progress?.nextIndex||0,n=A.sessions.find(e=>+e.session_index===t);if(!n)return Object.assign(e,{available:!0,planComplete:!0,allComplete:!0});const s=function(e,t,n){const s=!e.scheduled_date||e.scheduled_date<=H(),a="done"===e.status,o=+n?.nextIndex===t;return{due:s,done:a,next:o,can:s&&o&&!a}}(n,t,A.progress),a=function(e){const t=e.filter(e=>"reps"===e.unit),n=e.filter(e=>"seconds"===e.unit),s=[],a=Math.max(0,...t.map(e=>e.values.length));for(let e=0;e<a;e++)t.forEach(t=>{null!=t.values[e]&&s.push({name:t.item.name,label:`${t.item.name} - (${t.values[e]})`,display:`${t.values[e]} ${t.item.name}`,target:t.values[e],unit:"reps",isTimed:!1})});return n.forEach(e=>{"Elbow Side Plank"===e.item.name?["Left","Right"].forEach(t=>s.push({name:"Elbow Plank "+t,label:`Elbow Plank ${t} - (${e.hold})`,display:e.hold+" seconds",target:e.hold,unit:"seconds",isTimed:!0,side:t.toLowerCase()})):s.push({name:e.item.name,label:`${e.item.name} - (${e.hold})`,display:e.hold+" seconds",target:e.hold,unit:"seconds",isTimed:!0})}),s}(E(A.planJson.items,t)),o=Se(t),i=Math.round(p(o.completedSteps||0,0,a.length));return{available:!0,canStart:!!s.can,access:s,planId:A.planId||0,sessionIndex:t,scheduledDate:n.scheduled_date||"",stepIndex:i,step:a[i]||null,steps:a.map(e=>Object.assign({},e)),completedSteps:i,totalSteps:a.length,started:!!o.started,results:Object.assign({},o.results||{}),allComplete:!!(a.length&&i>=a.length),planComplete:!1,timerStartDelay:Math.round(p(A.planJson?.timerStartDelay||5,1,10))}}function Ie(){const e=Me();I.forEach(t=>{try{t(e)}catch(e){}});try{document.dispatchEvent(new CustomEvent("baseline:fitness-workout-updated",{detail:e}))}catch(e){}}function _e(){try{document.dispatchEvent(new CustomEvent("baseline:fitness-plan-updated",{detail:{planId:A.planId||0,hasPlan:!!A.planJson,progress:A.progress||null}}))}catch(e){}}function Ae(e="manual"){const t=Me();return t.available&&t.canStart&&!t.planComplete?(function(e){const t=Se(e);t.started=!0,Ee(e,t),De()}(t.sessionIndex),Me()):t}function Pe(){const e=Me();return e.available&&e.sessionIndex?(Z(Y(A.planId,e.sessionIndex)),De(),Me()):e}async function Te(){const e=Me();return e.canStart&&e.allComplete&&e.sessionIndex?(await async function(e){if(w){const t=X(V(),null),n=t?.sessions?.find(t=>+t.session_index===e);return!!n&&(n.status="done"===n.status?"planned":"done",n.completed_at="done"===n.status?Math.floor(Date.now()/1e3):null,t.progress=he(t.sessions,t.planJson),Q(V(),t),Z(Y(A.planId,e)),await Je(),!0)}const t=await se(n+"/update_session.php",{planId:A.planId||0,sessionIndex:e,action:"toggle_done"});return!!t?.ok&&(A.sessions=t.sessions||[],A.progress=t.progress||null,Z(Y(A.planId,e)),De(),_e(),!0)}(e.sessionIndex),Me()):e}function De(){const e=k("#currentWorkoutOut"),t=k("#myPlanStatus");if(!e)return;if(function(){const e=k("#myPlanOut"),t=A.planJson;if(!e||!t)return;const s=(t.days||[]).map(j).join(", ")||"Automatic spacing",a=p(t.timerStartDelay||5,1,10);e.innerHTML=`<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta"><span class="badge">Start: ${j(G(t.startDate))}</span><span class="badge">Frequency: ${j(t.frequency)} Weekly</span><span class="badge">Sessions: ${t.sessions}</span><span class="badge">Progress: ${A.progress?.done||0}/${A.progress?.total||t.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="planOptionsBtn" aria-expanded="false">Options</button><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Options</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div><div id="planOptionsPanel" class="plan-options-panel" hidden><b>Frequency</b><div class="options-frequency">${[1,2,3].map(e=>`<label class="option-choice"><input type="radio" name="savedFrequency" value="${e}x" ${t.frequency===e+"x"?"checked":""}> ${e}x Weekly</label>`).join("")}</div><b>Set Days</b><p class="note" style="margin:6px 0 10px">Choose no more days than the selected frequency.</p><div class="day-picker">${["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].map(e=>`<label class="day-choice"><input type="checkbox" name="savedDay" value="${e}" ${(t.days||[]).includes(e)?"checked":""}> ${e}</label>`).join("")}</div><div class="plan-options-meta"><div class="option-select-inline"><label for="timerDelaySelect" style="font-weight:850">Timer start delay</label><select id="timerDelaySelect" style="width:auto;min-width:120px">${Array.from({length:10},(e,t)=>t+1).map(e=>`<option value="${e}" ${e===a?"selected":""}>${e} second${1===e?"":"s"}</option>`).join("")}</select></div><div class="actions-inline"><button class="compact-action compact-action--primary" type="button" id="savePlanOptionsBtn">Save options</button><span class="note" id="planOptionsStatus">Days: ${s} • Timer delay: ${a} seconds</span></div></div></div></div>`,k("#planOptionsBtn")?.addEventListener("click",e=>{const t=k("#planOptionsPanel");if(!t)return;const n=t.hidden;t.hidden=!n,e.currentTarget.setAttribute("aria-expanded",n+"")}),k("#editOptionsBtn")?.addEventListener("click",()=>{O="edit",Ce(A.planJson),$e(),ot("my-plan","push")}),k("#deletePlanBtn")?.addEventListener("click",qe);const o=()=>{const e=Number(k('input[name="savedFrequency"]:checked')?.value?.[0]||3),t=L('input[name="savedDay"]:checked');L('input[name="savedDay"]').forEach(n=>{const s=!n.checked&&t.length>=e;n.disabled=s,n.closest("label")?.classList.toggle("is-disabled",s)})};L('input[name="savedFrequency"]').forEach(e=>e.addEventListener("change",()=>{const t=Number(e.value[0]);L('input[name="savedDay"]:checked').slice(t).forEach(e=>{e.checked=!1}),o()})),L('input[name="savedDay"]').forEach(e=>e.addEventListener("change",o)),o(),k("#savePlanOptionsBtn")?.addEventListener("click",async()=>{const e=k('input[name="savedFrequency"]:checked')?.value||t.frequency,s=L('input[name="savedDay"]:checked').map(e=>e.value),o=Number(e[0]),i=Math.round(p(k("#timerDelaySelect")?.value||a,1,10));s.length>o?k("#planOptionsStatus")&&(k("#planOptionsStatus").textContent=`Choose no more than ${o} day${1===o?"":"s"}.`):await async function(e){const t=fe(e);if(w){const n=X(V(),null),s=me(e,n?.sessions||[]);return Q(V(),Object.assign({},n,{planJson:e,planText:t,sessions:s,progress:he(s,e)})),D=null,O="view",void await Je()}const s=await se(n+"/plan_update.php",{planId:A.planId||0,planText:t,planJson:e,reschedule:!0});s?.ok?(D=null,O="view",await Je()):k("#planOptionsStatus")&&(k("#planOptionsStatus").textContent="Could not save options.")}(Object.assign({},t,{frequency:e,days:s,timerStartDelay:i}))})}(),function(){const e=k("#completedWorkoutOut");if(!e)return;const t=A.planJson;if(!_.authed||!t)return void(e.textContent=_.authed?"No saved plan yet.":"Log in and save a plan to see completed workouts.");const n=(A.sessions||[]).filter(e=>"done"===e.status).sort((e,t)=>+t.session_index-+e.session_index);e.innerHTML=n.length?n.map(e=>be(e,+e.session_index,t,"Completed")).join(""):'<div class="completed-empty">No completed workouts yet.</div>'}(),function(){const e=k("#futureWorkoutOut");if(!e)return;const t=A.planJson;if(!_.authed||!t)return void(e.textContent=_.authed?"No saved plan yet.":"Log in and save a plan to see future workouts.");const n=+A.progress?.nextIndex||0,s=(A.sessions||[]).filter(e=>"done"!==e.status&&+e.session_index!==n).sort((e,t)=>+e.session_index-+t.session_index);e.innerHTML=s.length?s.map(e=>be(e,+e.session_index,t,"Future")).join(""):'<div class="future-empty">No future workouts remain in this plan.</div>'}(),$e(),!_.authed||!A.planJson||!A.sessions.length)return e.textContent=_.authed?"Save a plan to unlock your current workout view.":"Log in and save a plan to see your current workout.",void Ie();const s=Me();if(s.planComplete)return e.innerHTML='<div class="card"><h3 style="margin:0">Plan complete</h3><p class="note">All sessions in this plan have been completed.</p></div>',t&&(t.textContent=""),void Ie();const{sessionIndex:a,access:o,steps:i,completedSteps:r,started:l}=s,d=A.sessions.find(e=>+e.session_index===a),c=Se(a);t&&(t.textContent=o.can?"Current workout ready.":o.due?"Complete earlier sessions first.":`Next workout unlocks on ${G(d.scheduled_date)}.`),e.innerHTML=`<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${a} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${j(G(d.scheduled_date))}</span><span class="badge">${r}/${i.length} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${o.can?"":"disabled"}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${o.can?"":"disabled"}>${l?"Continue Workout":"Start Workout"}</button></div></div><div class="session-step-list">${i.map((e,t)=>function(e,t,n,s,a,o){const i=t===a,r=s.results?.[t],l=o.can&&s.started&&i,d=r?`<div class="step-status ${"success"===r.status?"success":"failed"}">${"success"===r.status?"✓ Succeeded":"✕ Failed"} · Achieved ${j(r.achieved)}</div>`:"",c=e.isTimed?`<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${t}" ${l?"":"disabled"}>Start Timer</button>`:"",u=s.pendingFailureStep===t;return`<div class="current-step ${t<a?"done":i?"active":""}"><div class="current-step-head"><div><b class="current-step-label">${j(e.label||`${e.name} - (${e.target})`)}</b></div><div class="step-actions">${d}${c}<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${t}" aria-label="Succeeded" title="Succeeded" ${l?"":"disabled"}><span aria-hidden="true">✓</span></button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${t}" aria-label="Failed" title="Failed" ${l?"":"disabled"}><span aria-hidden="true">✕</span></button></div></div>${u?`<div class="failure-entry"><label for="failedAmount${t}" class="note">Enter achieved ${j(e.unit)}</label><input id="failedAmount${t}" class="failed-amount" data-step="${t}" type="number" min="0" inputmode="numeric" placeholder="${"seconds"===e.unit?"Seconds":"Reps"} achieved"><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${t}">Save</button></div>`:""}</div>`}(e,t,0,c,r,o)).join("")}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${o.can&&r===i.length&&i.length?"":"disabled"}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${o.can?"":"disabled"}>Reset workout steps</button></div></div>`,k("#startWorkoutBtn")?.addEventListener("click",()=>Ae("manual")),L(".step-success",e).forEach(e=>e.addEventListener("click",()=>Le(a,+e.dataset.step,"success",i[+e.dataset.step].target,"manual"))),L(".step-fail-toggle",e).forEach(e=>e.addEventListener("click",()=>function(e,t){const n=Se(e);n.started=!0,n.pendingFailureStep=t,Ee(e,n),De()}(a,+e.dataset.step))),L(".step-fail-save",e).forEach(t=>t.addEventListener("click",()=>{const n=+t.dataset.step,s=k("#failedAmount"+n,e);s&&""!==(s.value+"").trim()?Le(a,n,"failed",Math.round(p(s.value,0,99999)),"manual"):s?.focus()})),L(".step-timer",e).forEach(e=>e.addEventListener("click",()=>function(e){const t=k("#timerModal"),n=k("#timerDigits"),s=k("#timerModalMessage");if(!t||!n||!s)return;ke(!1);let a="prep",o=Math.round(p(A.planJson?.timerStartDelay||5,1,10));t.hidden=!1;const i=()=>"prep"===a?(s.textContent=`Get into position. Timer starts in ${o} second${1===o?"":"s"}.`,n.textContent=ve(o),o<=0?(a="run",void(o=Math.round(e.target||0))):void(o-=1)):(s.textContent=e.name+" • hold for the full time.",n.textContent=ve(o),o<=0?(s.textContent="Timer complete.",clearInterval(F.interval),void(F.interval=null)):void(o-=1));i(),F.interval=setInterval(i,1e3)}(i[+e.dataset.step]))),k("#resetWorkout",e)?.addEventListener("click",Pe),k("#finishWorkout",e)?.addEventListener("click",Te),Ie()}function Ce(e){const t=y(e);if(t){T=!0;try{k("#startDate")&&(k("#startDate").value=t.startDate||H()),k("#freq")&&(k("#freq").value=t.frequency||"3x"),k("#lengthMode")&&(k("#lengthMode").value=t.lengthMode||"sessions"),k("#sessions")&&(k("#sessions").value=t.sessions||18);const e=k("#exerciseList");e&&(e.innerHTML="",t.items.forEach(t=>{const n=ie(t.exercise);k(".ex-baseline",n).value=t.baseline,t.sets&&(k(".ex-sets",n).dataset.lastSets=t.sets,oe(n),k(".ex-sets",n).disabled||(k(".ex-sets",n).value=t.sets)),e.append(n)}),k(".ex-row")||e.append(ie(c[0].name))),de(),t.goal&&(k("#goalExercise")&&(k("#goalExercise").value=t.goal.exercise||k("#goalExercise").value),k("#goalAmount")&&(k("#goalAmount").value=t.goal.amount||""),le()),P=!1}finally{T=!1}}}function Be(e){_=e?.authed?{authed:!0,name:(e.name||e.user?.name||"")+""}:{authed:!1,name:""},je(),tt()}async function Ne(){try{if(e.BASELINE_auth?.refresh)Be(await e.BASELINE_auth.refresh()||e.BASELINE_auth.get?.());else{const e=await ne("/sitewide/api/me.php");Be(e?.ok&&e.authed?{authed:!0,name:(e.name||e.user?.name||"")+""}:{authed:!1})}}catch(e){_={authed:!1,name:""},je(),tt()}}async function Oe(){!function(){if(w||!_.authed)return!1;const e=X(z(),null),t=y(e?.planJson);t&&(A={planId:e.planId||0,planJson:t,sessions:Array.isArray(e.sessions)?e.sessions:[],progress:e.progress||he(Array.isArray(e.sessions)?e.sessions:[],t)},"edit"!==O&&(O="view"),$e(),De())}(),await Je(),await Promise.all([Re(),Ge()])}function Fe(){const t=k("#savePlanStatus");try{if("function"==typeof e.BASELINE_openAuth)return e.BASELINE_openAuth(),!0}catch(e){}const n=k("#bl-auth-toggle");return n?(n.click(),!0):(t&&(t.textContent="The account panel is still loading. Please try again."),!1)}function je(){const e=k("#fitnessAccountBtn");e&&(e.textContent=_.authed?"Account":"Log in / Sign up")}async function Je(){const e=++C;if(!_.authed)return A={planId:0,planJson:null,sessions:[],progress:null},D=null,O="create",$e(),k("#myPlanOut")&&(k("#myPlanOut").textContent="Log in and save a plan to see your schedule here."),De(),void _e();let t=null;if(w)t=X(V(),null);else{const s=await ne(n+"/get_plan.php");if(e!==C)return;s?.ok&&s.hasPlan&&(t={planId:s.planId,planJson:s.planJson,sessions:s.sessions,progress:s.progress}),function(e){!w&&_.authed&&(e?.planJson?Q(z(),{planId:e.planId||0,planJson:e.planJson,sessions:e.sessions||[],progress:e.progress||null,cachedAt:Date.now()}):Z(z()))}(t)}if(e!==C)return;const s=y(t?.planJson);if(!s)return A={planId:0,planJson:null,sessions:[],progress:null},D=null,O="create",$e(),we(),k("#myPlanOut")&&(k("#myPlanOut").textContent="No saved plan yet."),De(),void _e();if(A={planId:t.planId||0,planJson:s,sessions:Array.isArray(t.sessions)?t.sessions:[],progress:t.progress||he(Array.isArray(t.sessions)?t.sessions:[],s)},"edit"!==O&&(O="view"),$e(),De(),_e(),!P&&D!==A.planId){const e=s,t=A.planId;requestAnimationFrame(()=>{A.planId!==t||P||D===t||(Ce(e),D=t)})}}async function He(){if(w)return Z(V()),xe(A.planId),A={planId:0,planJson:null,sessions:[],progress:null},D=null,O="create",we(),$e(),We(),De(),_e(),!0;const e=await se(n+"/delete_plan.php",{planId:A.planId||0});return e?.ok?(Z(z()),xe(A.planId),A={planId:0,planJson:null,sessions:[],progress:null},D=null,O="create",we(),We(),await Je(),!0):(k("#deletePlanStatus")&&(k("#deletePlanStatus").textContent="Could not delete the plan."),!1)}function qe(){const e=k("#deletePlanModal"),t=k("#deletePlanConfirmInput"),n=k("#deletePlanStatus"),s=k("#confirmDeletePlanBtn");e&&(e.hidden=!1,t&&(t.value=""),n&&(n.textContent=""),s&&(s.disabled=!0),t?.focus())}function We(){k("#deletePlanModal")&&(k("#deletePlanModal").hidden=!0)}async function Re(){const e=k("#profileSelect");if(!e)return;let t=[];if(w)t=(X("__bl_local_users_v1__",[])||[]).map(e=>e?.name).filter(Boolean);else{const e=await ne(n+"/list_profiles.php");t=e?.ok&&(e.profiles||e.names)||[]}const s=e.value;e.innerHTML='<option value="">Select profile…</option>'+t.map(e=>`<option value="${j(e)}">${j(e)}</option>`).join(""),t.includes(s)&&(e.value=s)}async function Ge(){const e=k("#achSummary"),t=k("#achGrid");if(!e||!t)return;if(!_.authed)return e.textContent="Log in to track milestones.",void(t.innerHTML="");const n=A.progress?.done||0,s=A.progress?.total||0;e.innerHTML=`<strong>Sessions done:</strong> ${n} • <strong>Plan progress:</strong> ${n}/${s}`;const a=[["First Session",n>=1],["10 Sessions",n>=10],["30 Sessions",n>=30],["Plan Completed",s>0&&n===s]];t.innerHTML=a.map(([e,t])=>`<div class="ach-card ${t?"unlocked":""}"><div class="ach-icon">${t?"✓":"○"}</div><div class="ach-meta"><div class="name">${e}</div><div class="prog">${t?"Unlocked":"Locked"}</div></div></div>`).join("")}function Ue(){const e=k("#exerciseLibrary");if(!e)return;const t=(k("#exSearch")?.value||"").toLowerCase(),n=k("#exGroup")?.value||"all";e.innerHTML=c.filter(e=>("all"===n||e.category===n)&&(!t||(e.name+" "+e.family+" "+e.unit).toLowerCase().includes(t))).map(e=>`<div class="card exercise-card"><div class="title">${j(e.name)}</div><div class="muted">${j(e.family)} • ${j(e.unit)}</div><div class="divider"></div><p>${j(e.how)}</p></div>`).join("")}function Ve(e){const t=Number(e);return Number.isFinite(t)&&t>0?t:null}function ze(e){const t=Ve(e.age),n=Ve(e.height),s=Ve(e.weight),a=Ve(e.waist),o=Ve(e.hips),i=n?n/100:null,r=i&&s?s/(i*i):null;let l="";r&&(l=r<18.5?"Below range":r<25?"Healthy range":r<30?"Above range":"High range");let d=null;t&&n&&s&&["male","female"].includes(e.sex)&&(d=10*s+6.25*n-5*t+("male"===e.sex?5:-161));const c={sedentary:1.2,light:1.375,moderate:1.55,very:1.725,extra:1.9};return{age:t,height:n,weight:s,bmi:r,bmiCategory:l,bmr:d,tdee:d&&c[e.activity]?d*c[e.activity]:null,waistHeight:a&&n?a/n:null,waistHip:a&&o?a/o:null,healthyMin:i?18.5*i*i:null,healthyMax:i?24.9*i*i:null,bodySurface:n&&s?Math.sqrt(n*s/3600):null}}function Ye(e,t=1,n=""){return Number.isFinite(e)?`${e.toFixed(t)}${n}`:"—"}function Ke(e,t,n=""){return`<div class="body-summary-card"><div class="body-summary-label">${j(e)}</div><div class="body-summary-value">${j(t)}</div>${n?`<div class="note" style="margin-top:5px">${j(n)}</div>`:""}</div>`}function Xe(){const e=X(K(),null);return e&&"object"==typeof e?e:{}}function Qe(){const e=k("#bodyOverallSummary");if(!e)return;const t=Xe(),n=ze(t);if(!n.height||!n.weight)return void(e.innerHTML='<div class="card"><h2>Overall Summary</h2><p class="note">Complete your Body Profile to create your body summary and calculations.</p></div>');const s=n.healthyMin&&n.healthyMax?`${n.healthyMin.toFixed(1)}–${n.healthyMax.toFixed(1)} kg`:"—";e.innerHTML=`<div class="card"><h2>Overall Summary</h2><p class="note">Your latest saved body profile and calculated indicators.</p><div class="body-summary-grid">${Ke("Weight",Ye(n.weight,1," kg"))}${Ke("BMI",Ye(n.bmi,1),n.bmiCategory)}${Ke("BMR",Ye(n.bmr,0," kcal/day"),"Estimated resting energy")}${Ke("Daily energy",Ye(n.tdee,0," kcal/day"),"Estimated from activity level")}${Ke("Healthy BMI weight range",s)}${Ke("Waist-to-height",Ye(n.waistHeight,2))}${Ke("Waist-to-hip",Ye(n.waistHip,2))}${Ke("Body surface area",Ye(n.bodySurface,2," m²"))}${Ke("Resting heart rate",Ve(t.restingHeartRate)?Math.round(t.restingHeartRate)+" bpm":"—")}</div></div>`}function Ze(){const e=k("#bodyProfileForm");if(!e)return{};const t={};return new FormData(e).forEach((e,n)=>{t[n]=(e+"").trim()}),t}function et(e){const t=k("#bodyProfileCalculations");if(!t)return;const n=ze(e);t.innerHTML=`${Ke("BMI",Ye(n.bmi,1),n.bmiCategory)}${Ke("BMR",Ye(n.bmr,0," kcal/day"))}${Ke("Daily energy",Ye(n.tdee,0," kcal/day"))}${Ke("Waist-to-height",Ye(n.waistHeight,2))}${Ke("Waist-to-hip",Ye(n.waistHip,2))}${Ke("Body surface area",Ye(n.bodySurface,2," m²"))}`}function tt(){const e=Xe(),t=k("#bodyProfileForm");t&&(Array.from(t.elements).forEach(t=>{t?.name&&Object.prototype.hasOwnProperty.call(e,t.name)&&(t.value=e[t.name])}),et(e),Qe())}function nt(e){["overall","profile","services"].includes(e)||(e="overall"),L(".my-body-subtab").forEach(t=>{const n=t.dataset.bodyView===e;t.classList.toggle("active",n),t.setAttribute("aria-selected",n+"")}),L(".my-body-panel").forEach(t=>{t.hidden=t.dataset.bodyPanel!==e})}function st(){const e=location.pathname.match(i),t=e?e[1]:"system",n=o[t]||t;return{raw:t,target:a.includes(n)?n:"system",isAlias:!!o[t]}}function at(e){return`${location.pathname.replace(i,"")}/${e}`.replace(/\/{2,}/g,"/")}function ot(e,t="none"){a.includes(e)||(e="system"),document.documentElement.setAttribute("data-initial-fitness-tab",e),L(".tab[data-target]").forEach(t=>{const n=t.dataset.target===e;t.setAttribute("aria-selected",n+""),t.classList.toggle("active",n)}),L(".section").forEach(t=>t.classList.toggle("active",t.id===e));const n=st();"push"!==t||n.target===e&&n.raw===e?"replace"!==t||n.target===e&&n.raw===e||history.replaceState({fitnessTab:e},"",at(e)):history.pushState({fitnessTab:e},"",at(e));try{document.dispatchEvent(new CustomEvent("baseline:fitness-tab-changed",{detail:{target:e}}))}catch(e){}}function it(e){L(".my-plan-subtab").forEach(t=>{const n=t.dataset.planView===e;t.classList.toggle("active",n),t.setAttribute("aria-selected",n+"")}),k("#currentWorkoutOut")&&(k("#currentWorkoutOut").hidden="current"!==e),k("#completedWorkoutOut")&&(k("#completedWorkoutOut").hidden="completed"!==e),k("#futureWorkoutOut")&&(k("#futureWorkoutOut").hidden="future"!==e),k("#myPlanStatus")&&(k("#myPlanStatus").hidden="current"!==e)}function rt(){const s=st();ot(s.target,s.isAlias?"replace":"none"),L(".tab[data-target]").forEach(e=>e.addEventListener("click",t=>{t.preventDefault(),ot(e.dataset.target,"push")})),e.addEventListener("popstate",()=>ot(st().target,"none")),L(".my-body-subtab").forEach(e=>e.addEventListener("click",()=>nt(e.dataset.bodyView))),k("#bodyProfileForm")?.addEventListener("input",()=>et(Ze())),k("#bodyProfileForm")?.addEventListener("submit",e=>{e.preventDefault();const t=Ze();var n;n=t,Q(K(),n),et(t),Qe(),k("#bodyProfileStatus")&&(k("#bodyProfileStatus").textContent="Body profile saved.");try{document.dispatchEvent(new CustomEvent("baseline:fitness-body-updated",{detail:{profile:t}}))}catch(e){}}),k("#connectGarminBtn")?.addEventListener("click",()=>{k("#garminConnectionStatus")&&(k("#garminConnectionStatus").textContent="Garmin full-sync is prepared here, but the server OAuth credentials are not configured yet. No Garmin data has been connected.")}),tt(),nt("overall"),k("#timerModal")&&(k("#timerModal").hidden=!0),k("#deletePlanModal")&&(k("#deletePlanModal").hidden=!0),document.documentElement.setAttribute("data-baseline-fitness-runtime",t),L("select").forEach(te);const a=k("#exerciseList");a&&(a.innerHTML="",a.append(ie(c[0].name))),k("#startDate")&&!k("#startDate").value&&(k("#startDate").value=H()),de(),function(){if(k("#fitnessAccountBtn"))return void je();const e=k("#profileRefresh"),t=e?.parentElement;if(!t)return;const n=document.createElement("button");n.type="button",n.id="fitnessAccountBtn",n.className="action",n.addEventListener("click",Fe),t.append(n),je()}(),function(){if(B)return;B=!0,document.addEventListener("baseline:auth",async t=>{Be(t.detail||e.BASELINE_auth?.get?.()),await Oe()});let t=0;const n=()=>{e.BASELINE_auth?.onChange?e.BASELINE_auth.onChange(async e=>{Be(e),await Oe()}):(t+=1,t<80&&setTimeout(n,50))};n()}(),function(){if(w)return!1;let t=null;try{t=e.localStorage}catch(e){return!1}if(!t)return!1;let n=null,s="";try{for(let e=0;e<t.length;e++){const a=t.key(e)||"";if(!a.startsWith(d+"::"))continue;const o=X(a,null);o?.planJson&&(!n||Number(o.cachedAt||0)>Number(n.cachedAt||0))&&(n=o,s=a)}}catch(e){return!1}const a=y(n?.planJson);if(!a)return!1;const o=s.slice(30);return _={authed:!0,name:o},A={planId:n.planId||0,planJson:a,sessions:Array.isArray(n.sessions)?n.sessions:[],progress:n.progress||he(Array.isArray(n.sessions)?n.sessions:[],a)},O="view",je(),tt(),$e(),De(),!0}()||$e(),k("#addExerciseBtn")?.addEventListener("click",()=>{ee();const e=new Set(re().map(e=>e.exercise)),t=c.find(t=>!e.has(t.name))||c[0];a?.append(ie(t.name)),le()}),k("#lengthMode")?.addEventListener("change",()=>{ee(),de()}),k("#goalExercise")?.addEventListener("change",()=>{ee(),le()}),["startDate","freq","sessions","goalAmount"].forEach(e=>{const t=k("#"+e);t?.addEventListener("input",ee),t?.addEventListener("change",ee)}),k("#genBtn")?.addEventListener("click",()=>ge(k("#planOut"),pe(),null,null)),k("#savePlanBtn")?.addEventListener("click",()=>async function(e){if(!_.authed)return Fe(),void(k("#savePlanStatus")&&(k("#savePlanStatus").textContent="Log in or sign up to save this plan."));const t=pe(),s=fe(t);if(w){const n=X(V(),null),a=me(t,e?n?.sessions:[]),o=he(a,t),i=e&&n?.planId?n.planId:Date.now();return Q(V(),{planId:i,planJson:t,planText:s,sessions:a,progress:o}),P=!1,D=null,O="view",k("#savePlanStatus")&&(k("#savePlanStatus").textContent=e?"Plan updated.":"Saved."),void await Je()}const a=await se(`${n}${e?"/plan_update.php":"/save_plan.php"}`,e?{planId:A.planId||0,planText:s,planJson:t,reschedule:!0}:{planText:s,planJson:t});k("#savePlanStatus")&&(k("#savePlanStatus").textContent=a?.ok?e?"Plan updated.":"Saved.":e?"Update failed.":"Save failed."),a?.ok&&(P=!1,D=null,O="view",await Je())}(!!A.planId)),k("#cancelEditPlanBtn")?.addEventListener("click",()=>{O="view",$e(),De()}),k("#profileRefresh")?.addEventListener("click",Re),k("#profileSelect")?.addEventListener("change",e=>async function(e){const t=k("#profilePlanOut");if(!t)return;if(!e)return void(t.textContent="Select a profile to view their latest saved plan.");let s=w?X(U(r,e),null):null;if(!w){const t=await ne(n+"/get_plan.php",{name:e});t?.ok&&t.hasPlan&&(s={planJson:t.planJson,sessions:t.sessions,progress:t.progress})}const a=y(s?.planJson);a?ge(t,a,s.sessions||[],s.progress||null):t.textContent="No saved plan for this profile yet."}(e.currentTarget.value)),k("#exSearch")?.addEventListener("input",Ue),k("#exGroup")?.addEventListener("change",Ue),L(".my-plan-subtab").forEach(e=>e.addEventListener("click",()=>it(e.dataset.planView))),k("#closeTimerModalBtn")?.addEventListener("click",()=>ke()),k("#cancelDeletePlanBtn")?.addEventListener("click",We),k("#deletePlanConfirmInput")?.addEventListener("input",e=>{const t=k("#confirmDeletePlanBtn");t&&(t.disabled="DELETE"!==((e.currentTarget.value||"")+"").trim())}),k("#confirmDeletePlanBtn")?.addEventListener("click",He);const o=e.BASELINE_auth?.get?.();o?.authed?(Be(o),Oe(),Ne()):Ne().then(Oe),Ue(),it("current")}e.BASELINE_fitnessWorkout=Object.freeze({BUILD:t,getCurrentContext:Me,startSession:Ae,succeedCurrentStep:function(e="manual"){const t=Me();return t.canStart&&t.started&&t.step?(Le(t.sessionIndex,t.stepIndex,"success",t.step.target,e),Me()):t},failCurrentStep:function(e,t="manual"){const n=Me();return n.canStart&&n.started&&n.step?(Le(n.sessionIndex,n.stepIndex,"failed",Math.round(p(e,0,99999)),t),Me()):n},finishSession:Te,resetSession:Pe,onChange:e=>(I.add(e),()=>I.delete(e))}),e.BASELINE_FITNESS_DEBUG=$,"loading"===document.readyState?document.addEventListener("DOMContentLoaded",rt,{once:!0}):rt()}("undefined"!=typeof window?window:globalThis);
+/* Baseline Fitness — production-safe single owner runtime. */
+(function (global) {
+  'use strict';
+
+  const BUILD = 'BASELINE_FITNESS_PRODUCTION_CRASH_FIX_20260713_1';
+  const API = '/systems/baseline-fitness/api';
+  const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
+  const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
+  const ROUTE_RE = /\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/;
+  const PLAN_KEY = '__bl_fitness_plan_v1__';
+  const PLAN_CACHE_KEY = '__bl_fitness_plan_cache_v1__';
+  const STEP_KEY = '__bl_fitness_workout_progress_v2__';
+  const BODY_KEY = '__bl_fitness_body_profile_v1__';
+  const PAGE_SIZE = 12;
+  const REQUEST_TIMEOUT_MS = 12000;
+
+  const TYPES = Object.freeze({
+    STANDARD: 'standard-reps',
+    LEG: 'leg-reps',
+    TIMED: 'timed-hold'
+  });
+
+  const EXERCISES = Object.freeze([
+    { name: 'Knee Push-Ups', unit: 'reps', progressionType: TYPES.STANDARD, base: 10, family: 'Push-Up', category: 'upper', goodFor: 'Chest, triceps and shoulder pressing strength with less load than a full push-up.', how: 'Place hands under shoulders with knees down and keep a straight line from head to knees. Lower with control, then press back up.' },
+    { name: 'Push-Ups', unit: 'reps', progressionType: TYPES.STANDARD, base: 8, family: 'Push-Up', category: 'upper', goodFor: 'Chest, triceps, shoulders and whole-body bracing.', how: 'Keep a straight line from head to heels. Lower under control, keep the shoulders away from the ears, then press up.' },
+    { name: 'Squats', unit: 'reps', progressionType: TYPES.LEG, base: 12, family: 'Squat', category: 'lower', goodFor: 'Leg strength, hip and knee control, and everyday sit-to-stand movement.', how: 'Stand with feet around shoulder width. Sit down under control, keep knees tracking over toes, then stand tall.' },
+    { name: 'Elbow Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 20, family: 'Plank', category: 'core', goodFor: 'Front-core endurance and trunk stability with less loading through the wrists.', how: 'Place forearms down with elbows under shoulders. Keep the body straight, brace the trunk and breathe slowly.' },
+    { name: 'Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 20, family: 'Plank', category: 'core', goodFor: 'Core endurance, shoulder stability and maintaining a controlled body line.', how: 'Place hands under shoulders and keep the body straight. Brace gently without holding the breath.' },
+    { name: 'Elbow Side Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 15, family: 'Side Plank', category: 'core', goodFor: 'Side-core endurance, hip stability and resistance to unwanted trunk rotation.', how: 'Place the forearm under the shoulder, lift the hips and stack the pelvis. Hold the body line while breathing steadily.' }
+  ]);
+
+  const EXERCISE_BY_NAME = new Map(EXERCISES.map((item) => [item.name, item]));
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+  const FILE_PROTOCOL = typeof location !== 'undefined' && location.protocol === 'file:';
+  const STORE = global.BASELINE_store && typeof global.BASELINE_store.read === 'function' ? global.BASELINE_store : null;
+
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Object.freeze({ TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, executionSteps });
+  }
+  if (typeof document === 'undefined') return;
+  if (global.__BASELINE_FITNESS_APP__) return;
+  global.__BASELINE_FITNESS_APP__ = true;
+
+  let auth = { authed: false, name: '' };
+  let current = { planId: 0, planJson: null, sessions: [], progress: null };
+  let activeTopTab = 'system';
+  let activePlanSubtab = 'current';
+  let generatorMode = 'create';
+  let dirty = false;
+  let hydrating = false;
+  let hydratedPlanId = null;
+  let captionSequence = 0;
+  let planLoadPromise = null;
+  let planLoadSerial = 0;
+  let authUnsubscribe = null;
+  let timerInterval = null;
+  let renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE };
+  const workoutListeners = new Set();
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[char]));
+  }
+
+  function clamp(value, min, max) {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.max(min, Math.min(max, number)) : min;
+  }
+
+  function pad(value) { return String(value).padStart(2, '0'); }
+  function today() {
+    const date = new Date();
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
+  function parseDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+    return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
+  }
+  function isoDate(date) { return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`; }
+  function addDays(date, count) { const next = new Date(date); next.setDate(next.getDate() + count); return next; }
+  function niceDate(value) {
+    const date = parseDate(value);
+    return date ? date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : String(value || '');
+  }
+
+  function storageKey(prefix, suffix) { return `${prefix}::${String(suffix || '').trim().toLowerCase()}`; }
+  function userPlanKey() { return storageKey(PLAN_KEY, auth.name); }
+  function userCacheKey() { return storageKey(PLAN_CACHE_KEY, auth.name); }
+  function bodyProfileKey() { return storageKey(BODY_KEY, auth.name || 'local'); }
+  function stepStorageKey(planId, sessionIndex) { return storageKey(STEP_KEY, `${planId || 0}::${sessionIndex || 0}::${auth.name || ''}`); }
+
+  function readStorage(key, fallback) {
+    try {
+      if (STORE) return STORE.read(key, fallback);
+      const raw = global.localStorage ? global.localStorage.getItem(key) : null;
+      return raw == null ? fallback : (JSON.parse(raw) ?? fallback);
+    } catch (_error) { return fallback; }
+  }
+  function writeStorage(key, value) {
+    try {
+      if (STORE) return STORE.write(key, value);
+      if (global.localStorage) global.localStorage.setItem(key, JSON.stringify(value));
+    } catch (_error) {}
+  }
+  function removeStorage(key) {
+    try {
+      if (STORE) return STORE.del(key);
+      if (global.localStorage) global.localStorage.removeItem(key);
+    } catch (_error) {}
+  }
+
+  async function apiJson(path, options = {}) {
+    if (FILE_PROTOCOL) return { ok: false, error: 'server_required' };
+    const controller = typeof AbortController === 'function' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
+    try {
+      const baseUrl = location.origin && location.origin !== 'null' ? location.origin : 'https://fitness.test';
+      const url = new URL(path, baseUrl);
+      if (options.params) Object.entries(options.params).forEach(([name, value]) => url.searchParams.set(name, String(value)));
+      const response = await fetch(url, {
+        method: options.method || 'GET',
+        credentials: 'same-origin',
+        headers: Object.assign({ Accept: 'application/json' }, options.body ? { 'Content-Type': 'application/json' } : {}),
+        body: options.body ? JSON.stringify(options.body) : undefined,
+        signal: controller ? controller.signal : undefined
+      });
+      const text = await response.text();
+      let data = null;
+      try { data = text ? JSON.parse(text) : null; } catch (_error) { data = null; }
+      return data && typeof data === 'object' ? data : { ok: false, error: response.ok ? 'invalid_json' : `http_${response.status}` };
+    } catch (error) {
+      return { ok: false, error: error && error.name === 'AbortError' ? 'timeout' : 'network_error' };
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  }
+
+  function setCount(value) { return Math.max(1, Math.min(5, Math.round(Number(value) || 3))); }
+  function exerciseDefinition(name) { return EXERCISE_BY_NAME.get(String(name || '')) || EXERCISES[0]; }
+  function normaliseItem(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    const definition = exerciseDefinition(source.exercise);
+    const type = Object.values(TYPES).includes(String(source.progressionType || '')) ? String(source.progressionType) : definition.progressionType;
+    const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type };
+    if (definition.unit === 'reps') item.sets = setCount(source.sets || 3);
+    return item;
+  }
+  function normalisePlan(value) {
+    if (!value || typeof value !== 'object' || !Array.isArray(value.items) || !value.items.length) return null;
+    const plan = Object.assign({}, value, { version: 8, items: value.items.slice(0, EXERCISES.length).map(normaliseItem) });
+    plan.sessions = Math.round(clamp(plan.sessions || 18, 1, 120));
+    plan.frequency = ['1x', '2x', '3x'].includes(plan.frequency) ? plan.frequency : '3x';
+    plan.lengthMode = plan.lengthMode === 'goal' ? 'goal' : 'sessions';
+    plan.days = Array.isArray(plan.days) ? plan.days.filter((day) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(day)).slice(0, Number(plan.frequency[0])) : [];
+    plan.timerStartDelay = Math.round(clamp(plan.timerStartDelay || 5, 1, 10));
+    return plan;
+  }
+  function setValues(baseline, count) {
+    const max = Math.max(1, Math.round(Number(baseline) || 1));
+    const sets = setCount(count);
+    if (sets === 1) return [max];
+    if (sets === 2) return [Math.max(1, Math.round(max * 0.75)), Math.max(1, Math.round(max * 0.85))];
+    if (sets === 3) {
+      const first = Math.max(1, Math.round(max * 0.75));
+      const second = Math.max(1, Math.round(max * 0.70));
+      let third = Math.max(1, Math.round(max * 0.80));
+      if (third <= Math.max(first, second)) third = Math.max(first, second) + 1;
+      return [first, second, third];
+    }
+    return (sets === 4 ? [0.62, 0.70, 0.76, 0.84] : [0.58, 0.64, 0.70, 0.76, 0.84]).map((ratio) => Math.max(1, Math.round(max * ratio)));
+  }
+  function progressionIncrements(type, count) {
+    const sets = setCount(count);
+    if (type !== TYPES.LEG) return Array(sets).fill(1);
+    if (sets === 1) return [2];
+    if (sets === 2) return [2, 3];
+    return [2, ...Array(sets - 2).fill(1), 3];
+  }
+  function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    const increments = progressionIncrements(type, count);
+    return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
+  }
+  function holdValue(baseline, sessionIndex) {
+    let seconds = Math.max(1, Math.round(Number(baseline) || 1));
+    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) {
+      seconds += seconds < 60 ? 5 : seconds < 90 ? 3 : 2;
+    }
+    return seconds;
+  }
+  function workForSession(items, sessionIndex) {
+    return (items || []).map((raw) => {
+      const item = normaliseItem(raw);
+      const definition = exerciseDefinition(item.exercise);
+      return definition.unit === 'seconds'
+        ? { item: definition, unit: 'seconds', hold: holdValue(item.baseline, sessionIndex), progressionType: TYPES.TIMED }
+        : { item: definition, unit: 'reps', sets: item.sets, values: progressedSetValues(item.baseline, item.sets, sessionIndex, item.progressionType), progressionType: item.progressionType };
+    });
+  }
+  function executionSteps(work) {
+    const reps = work.filter((item) => item.unit === 'reps');
+    const holds = work.filter((item) => item.unit === 'seconds');
+    const steps = [];
+    const rounds = Math.max(0, ...reps.map((item) => item.values.length));
+    for (let round = 0; round < rounds; round += 1) {
+      reps.forEach((item) => {
+        if (item.values[round] == null) return;
+        steps.push({ name: item.item.name, label: `${item.item.name} - (${item.values[round]})`, target: item.values[round], unit: 'reps', isTimed: false });
+      });
+    }
+    holds.forEach((item) => {
+      const base = { name: item.item.name, target: item.hold, unit: 'seconds', isTimed: true };
+      if (item.item.family === 'Side Plank' || /side plank/i.test(item.item.name)) {
+        steps.push(Object.assign({}, base, { name: `${item.item.name} Left`, label: `${item.item.name} - Left (${item.hold} seconds)` }));
+        steps.push(Object.assign({}, base, { name: `${item.item.name} Right`, label: `${item.item.name} - Right (${item.hold} seconds)` }));
+      } else {
+        steps.push(Object.assign({}, base, { label: `${item.item.name} - (${item.hold} seconds)` }));
+      }
+    });
+    return steps;
+  }
+
+  function scheduleDates(plan) {
+    const selected = (plan.days || []).map((day) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(day)).filter((day) => day >= 0);
+    const dates = [];
+    let date = parseDate(plan.startDate) || parseDate(today());
+    if (selected.length) {
+      while (dates.length < plan.sessions) {
+        if (selected.includes(date.getDay())) dates.push(isoDate(date));
+        date = addDays(date, 1);
+      }
+      return dates;
+    }
+    const pattern = plan.frequency === '1x' ? [7] : plan.frequency === '2x' ? [3, 4] : [2, 2, 3];
+    for (let index = 0; index < plan.sessions; index += 1) {
+      dates.push(isoDate(date));
+      date = addDays(date, pattern[index % pattern.length]);
+    }
+    return dates;
+  }
+  function sessionRows(plan, previous = []) {
+    const old = new Map(previous.map((row) => [Number(row.session_index), row]));
+    return scheduleDates(plan).map((date, index) => {
+      const prior = old.get(index + 1) || {};
+      return { session_index: index + 1, scheduled_date: date, status: prior.status || 'planned', completed_at: prior.completed_at || null };
+    });
+  }
+  function calculateProgress(rows, plan) {
+    let done = 0;
+    let nextIndex = null;
+    rows.forEach((row) => {
+      if (row.status === 'done') done += 1;
+      else if (nextIndex == null) nextIndex = Number(row.session_index);
+    });
+    if (nextIndex == null && rows.length) nextIndex = rows.length + 1;
+    return { done, total: rows.length, nextIndex, startDate: plan.startDate };
+  }
+
+  function routeState() {
+    const match = location.pathname.match(ROUTE_RE);
+    const raw = match ? match[1] : 'system';
+    const target = ALIASES[raw] || raw;
+    return { raw, target: TABS.includes(target) ? target : 'system', alias: Boolean(ALIASES[raw]) };
+  }
+  function routePath(target) {
+    const base = location.pathname.replace(ROUTE_RE, '').replace(/\/$/, '');
+    return `${base}/${target}`.replace(/\/{2,}/g, '/');
+  }
+  function replaceTabButtons() {
+    $$('.tab[data-target]').forEach((oldButton) => {
+      const button = oldButton.cloneNode(true);
+      oldButton.replaceWith(button);
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        activateTopTab(button.dataset.target, 'push');
+      });
+    });
+  }
+  function activateTopTab(target, historyMode = 'none') {
+    if (!TABS.includes(target)) target = 'system';
+    activeTopTab = target;
+    document.documentElement.setAttribute('data-initial-fitness-tab', target);
+    $$('.tab[data-target]').forEach((button) => {
+      const active = button.dataset.target === target;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    $$('.section[id]').forEach((section) => section.classList.toggle('active', section.id === target));
+    const route = routeState();
+    try {
+      if (historyMode === 'push' && (route.target !== target || route.raw !== target)) history.pushState({ fitnessTab: target }, '', routePath(target));
+      if (historyMode === 'replace' && (route.target !== target || route.raw !== target)) history.replaceState({ fitnessTab: target }, '', routePath(target));
+    } catch (_error) {}
+    if (target === 'my-plan' || target === 'achievements') ensurePlanLoaded();
+    if (target === 'library') renderLibrary();
+    if (target === 'my-body') fillBodyProfile();
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-tab-changed', { detail: { target } })); } catch (_error) {}
+  }
+
+  function markDirty() { if (!hydrating) dirty = true; }
+  function normaliseNativeSelect(select) {
+    if (!select) return;
+    select.setAttribute('data-native-select', 'true');
+    const wrapper = select.parentElement && select.parentElement.classList.contains('bl-select') ? select.parentElement : null;
+    if (wrapper && wrapper.parentNode) { wrapper.parentNode.insertBefore(select, wrapper); wrapper.remove(); }
+  }
+  function exerciseOptions(selected) {
+    return EXERCISES.map((item) => `<option value="${escapeHtml(item.name)}"${item.name === selected ? ' selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
+  }
+  function baselineLabel(definition) { return `Max Baseline (${definition.unit === 'seconds' ? 'Seconds' : 'Reps'})`; }
+  function syncExerciseRow(row) {
+    const definition = exerciseDefinition($('.ex-select', row)?.value);
+    const label = $('.baseline-label', row);
+    const setsLabel = $('.sets-label', row);
+    const setsSelect = $('.ex-sets', row);
+    const baseline = $('.ex-baseline', row);
+    const info = $('.exercise-info-button', row);
+    const source = $('.exercise-caption-source', row);
+    row.dataset.progressionType = definition.progressionType;
+    if (label) label.textContent = baselineLabel(definition);
+    if (baseline && (!baseline.value || Number(baseline.value) < 1)) baseline.value = definition.base;
+    if (info) { info.setAttribute('aria-label', `Information about ${definition.name}`); info.setAttribute('data-bl-info-title', definition.name); }
+    if (source) source.innerHTML = `<strong>${escapeHtml(definition.name)}</strong><p><b>Good for:</b> ${escapeHtml(definition.goodFor)}</p><p><b>How:</b> ${escapeHtml(definition.how)}</p>`;
+    if (definition.unit === 'seconds') {
+      if (setsSelect && !setsSelect.disabled) setsSelect.dataset.lastSets = setsSelect.value || '3';
+      if (setsLabel) setsLabel.textContent = 'Type';
+      if (setsSelect) { setsSelect.innerHTML = '<option value="hold">Hold</option>'; setsSelect.disabled = true; }
+    } else {
+      if (setsLabel) setsLabel.textContent = 'Sets';
+      if (setsSelect) {
+        const count = setCount(setsSelect.dataset.lastSets || setsSelect.value || 3);
+        setsSelect.innerHTML = [1, 2, 3, 4, 5].map((number) => `<option value="${number}"${number === count ? ' selected' : ''}>${number}</option>`).join('');
+        setsSelect.disabled = false;
+      }
+    }
+    try { global.BASELINE_info?.refresh?.(); } catch (_error) {}
+  }
+  function makeExerciseRow(name) {
+    const definition = exerciseDefinition(name);
+    const row = document.createElement('div');
+    const captionId = `exercise-caption-${++captionSequence}`;
+    row.className = 'ex-row';
+    row.innerHTML = `<div class="ex-exercise-block"><div class="field-stack ex-field-exercise"><label>Exercise</label><select class="ex-select field-select-fixed" data-native-select="true">${exerciseOptions(definition.name)}</select></div><div class="exercise-info-wrap bl-info-wrap"><button class="exercise-info-button bl-info-button" data-bl-info-button type="button" aria-expanded="false" aria-controls="${captionId}"><span aria-hidden="true">i</span></button><div class="exercise-caption exercise-caption-source bl-info-source" id="${captionId}"></div></div></div><div class="field-stack ex-field-baseline"><label class="baseline-label">${baselineLabel(definition)}</label><input class="ex-baseline field-input-fixed" type="number" min="1" inputmode="numeric" value="${definition.base}"></div><div class="field-stack ex-field-sets"><label class="sets-label">Sets</label><select class="ex-sets field-select-fixed" data-native-select="true"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div><div class="ex-remove-wrap"><button class="action secondary ex-remove" type="button" aria-label="Remove exercise">×</button></div>`;
+    syncExerciseRow(row);
+    $('.ex-select', row)?.addEventListener('change', () => { markDirty(); syncExerciseRow(row); syncGoalControls(); });
+    $('.ex-baseline', row)?.addEventListener('input', markDirty);
+    $('.ex-sets', row)?.addEventListener('change', (event) => { markDirty(); event.currentTarget.dataset.lastSets = event.currentTarget.value; });
+    $('.ex-remove', row)?.addEventListener('click', () => {
+      markDirty(); row.remove();
+      const list = $('#exerciseList');
+      if (list && !$('.ex-row', list)) list.append(makeExerciseRow(EXERCISES[0].name));
+      syncGoalControls();
+    });
+    return row;
+  }
+  function itemsFromUi() {
+    const seen = new Set();
+    const items = [];
+    $$('.ex-row').forEach((row) => {
+      const definition = exerciseDefinition($('.ex-select', row)?.value);
+      if (seen.has(definition.name)) return;
+      seen.add(definition.name);
+      const item = { exercise: definition.name, baseline: Math.round(clamp($('.ex-baseline', row)?.value || definition.base, 1, 9999)), progressionType: definition.progressionType };
+      if (definition.unit === 'reps') item.sets = setCount($('.ex-sets', row)?.value || $('.ex-sets', row)?.dataset.lastSets);
+      items.push(item);
+    });
+    return items;
+  }
+  function syncGoalControls() {
+    const select = $('#goalExercise');
+    if (!select) return;
+    const old = select.value;
+    const names = $$('.ex-select').map((control) => control.value).filter((value, index, array) => array.indexOf(value) === index);
+    select.innerHTML = names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    select.value = names.includes(old) ? old : (names[0] || '');
+    const label = $('#goalAmountLabel');
+    if (label) label.textContent = `Goal amount (${exerciseDefinition(select.value).unit})`;
+  }
+  function syncLengthMode() {
+    const goal = $('#lengthMode')?.value === 'goal';
+    if ($('#sessions')) { $('#sessions').disabled = goal; $('#sessions').style.opacity = goal ? '.7' : '1'; }
+    if ($('#goalHint')) $('#goalHint').style.display = goal ? '' : 'none';
+    if ($('#goalControlsRow')) $('#goalControlsRow').style.opacity = goal ? '1' : '.55';
+    if ($('#goalExercise')) $('#goalExercise').disabled = !goal;
+    if ($('#goalAmount')) $('#goalAmount').disabled = !goal;
+    syncGoalControls();
+  }
+  function totalSessionsForUi(items) {
+    if ($('#lengthMode')?.value !== 'goal') return Math.round(clamp($('#sessions')?.value || 18, 1, 120));
+    const definition = exerciseDefinition($('#goalExercise')?.value);
+    const target = clamp($('#goalAmount')?.value || definition.base, 1, 99999);
+    const source = normaliseItem(items.find((item) => item.exercise === definition.name) || { exercise: definition.name, baseline: definition.base });
+    for (let index = 1; index <= 120; index += 1) {
+      if (definition.unit === 'seconds' && holdValue(source.baseline, index) >= target) return index;
+      if (definition.unit === 'reps' && Math.max(...progressedSetValues(source.baseline, source.sets, index, source.progressionType)) >= target) return index;
+    }
+    return 120;
+  }
+  function planFromUi() {
+    const items = itemsFromUi();
+    const existing = current.planJson || {};
+    const lengthMode = $('#lengthMode')?.value || 'sessions';
+    const plan = { version: 8, startDate: $('#startDate')?.value || today(), frequency: $('#freq')?.value || '3x', sessions: totalSessionsForUi(items), lengthMode, items, days: Array.isArray(existing.days) ? existing.days : [], timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
+    if (lengthMode === 'goal') plan.goal = { exercise: $('#goalExercise')?.value || '', amount: Math.round(clamp($('#goalAmount')?.value || 1, 1, 99999)) };
+    return plan;
+  }
+  function planText(plan) {
+    return ['Baseline Fitness Plan', `Start: ${plan.startDate} | Frequency: ${plan.frequency} Weekly | Sessions: ${plan.sessions}`, '', ...plan.items.map((item) => `${item.exercise}: baseline ${item.baseline} ${exerciseDefinition(item.exercise).unit}${item.sets ? ` | sets ${item.sets}` : ''}`)].join('\n');
+  }
+  function resetGenerator() {
+    hydrating = true;
+    try {
+      if ($('#startDate')) $('#startDate').value = today();
+      if ($('#freq')) $('#freq').value = '3x';
+      if ($('#lengthMode')) $('#lengthMode').value = 'sessions';
+      if ($('#sessions')) $('#sessions').value = '18';
+      if ($('#goalAmount')) $('#goalAmount').value = '';
+      const list = $('#exerciseList');
+      if (list) { list.innerHTML = ''; list.append(makeExerciseRow(EXERCISES[0].name)); }
+      syncLengthMode();
+      dirty = false;
+    } finally { hydrating = false; }
+  }
+  function hydrateGenerator(rawPlan) {
+    const plan = normalisePlan(rawPlan);
+    if (!plan) return;
+    hydrating = true;
+    try {
+      if ($('#startDate')) $('#startDate').value = plan.startDate || today();
+      if ($('#freq')) $('#freq').value = plan.frequency;
+      if ($('#lengthMode')) $('#lengthMode').value = plan.lengthMode;
+      if ($('#sessions')) $('#sessions').value = String(plan.sessions);
+      const list = $('#exerciseList');
+      if (list) {
+        list.innerHTML = '';
+        plan.items.forEach((item) => {
+          const row = makeExerciseRow(item.exercise);
+          const baseline = $('.ex-baseline', row); if (baseline) baseline.value = String(item.baseline);
+          const setsSelect = $('.ex-sets', row);
+          if (setsSelect && item.sets) { setsSelect.dataset.lastSets = String(item.sets); syncExerciseRow(row); if (!setsSelect.disabled) setsSelect.value = String(item.sets); }
+          list.append(row);
+        });
+      }
+      syncLengthMode();
+      if (plan.goal) {
+        if ($('#goalExercise')) $('#goalExercise').value = plan.goal.exercise || $('#goalExercise').value;
+        if ($('#goalAmount')) $('#goalAmount').value = String(plan.goal.amount || '');
+      }
+      dirty = false;
+    } finally { hydrating = false; }
+  }
+
+  function planExerciseRows(plan, sessionIndex) {
+    return workForSession(plan.items, sessionIndex).map((item) => `<div class="session-subcard plan-exercise-row"><b>${escapeHtml(item.item.name)}</b><div>${item.unit === 'seconds' ? `Hold <b>${item.hold}</b> seconds per side${item.item.family === 'Side Plank' ? '.' : '.'}` : `Sets (${item.sets}): ${item.values.map((value) => `<b>${value}</b>`).join(' / ')} reps.`}</div></div>`).join('');
+  }
+  function sessionCard(row, plan, suffix = '') {
+    const index = Number(row.session_index);
+    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(niceDate(row.scheduled_date))}</div></div><span class="badge">${row.status === 'done' ? 'Done' : 'Planned'}</span></div><div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
+  }
+  function paginatedCards(target, rows, plan, type) {
+    if (!target) return;
+    const limit = renderLimits[type] || PAGE_SIZE;
+    const visible = rows.slice(0, limit);
+    target.innerHTML = visible.length ? visible.map((row) => sessionCard(row, plan, type === 'completed' ? 'Completed' : 'Future')).join('') : `<div class="${type}-empty">No ${type === 'completed' ? 'completed' : 'future'} workouts ${type === 'completed' ? 'yet' : 'remain in this plan'}.</div>`;
+    if (rows.length > visible.length) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className = 'action secondary';
+      more.textContent = `Show ${Math.min(PAGE_SIZE, rows.length - visible.length)} more`;
+      more.addEventListener('click', () => { renderLimits[type] += PAGE_SIZE; renderPlanSubtab(type); });
+      target.append(more);
+    }
+  }
+  function renderPlanSubtab(view = activePlanSubtab) {
+    activePlanSubtab = ['current', 'completed', 'future'].includes(view) ? view : 'current';
+    $$('.my-plan-subtab').forEach((button) => {
+      const active = button.dataset.planView === activePlanSubtab;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', String(active));
+    });
+    if ($('#currentWorkoutOut')) $('#currentWorkoutOut').hidden = activePlanSubtab !== 'current';
+    if ($('#completedWorkoutOut')) $('#completedWorkoutOut').hidden = activePlanSubtab !== 'completed';
+    if ($('#futureWorkoutOut')) $('#futureWorkoutOut').hidden = activePlanSubtab !== 'future';
+    if ($('#myPlanStatus')) $('#myPlanStatus').hidden = activePlanSubtab !== 'current';
+    if (!current.planJson) return;
+    if (activePlanSubtab === 'current') renderCurrentWorkout();
+    if (activePlanSubtab === 'completed') {
+      const rows = current.sessions.filter((row) => row.status === 'done').sort((a, b) => Number(b.session_index) - Number(a.session_index));
+      paginatedCards($('#completedWorkoutOut'), rows, current.planJson, 'completed');
+    }
+    if (activePlanSubtab === 'future') {
+      const next = Number(current.progress?.nextIndex || 0);
+      const rows = current.sessions.filter((row) => row.status !== 'done' && Number(row.session_index) !== next).sort((a, b) => Number(a.session_index) - Number(b.session_index));
+      paginatedCards($('#futureWorkoutOut'), rows, current.planJson, 'future');
+    }
+  }
+  function renderSavedPlanHeader() {
+    const target = $('#myPlanOut');
+    const plan = current.planJson;
+    if (!target || !plan) return;
+    target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span><span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
+    $('#editOptionsBtn')?.addEventListener('click', () => { generatorMode = 'edit'; hydrateGenerator(plan); syncPlanShells(); });
+    $('#deletePlanBtn')?.addEventListener('click', openDeletePlanModal);
+  }
+  function syncPlanShells() {
+    const hasPlan = Boolean(current.planJson);
+    const showSaved = hasPlan && generatorMode === 'view';
+    if ($('#myPlanGeneratorWrap')) $('#myPlanGeneratorWrap').hidden = showSaved;
+    if ($('#myPlanSavedWrap')) $('#myPlanSavedWrap').hidden = !showSaved;
+    if ($('#savePlanBtn')) $('#savePlanBtn').textContent = hasPlan && generatorMode === 'edit' ? 'Save plan changes' : 'Save plan';
+    if ($('#cancelEditPlanBtn')) $('#cancelEditPlanBtn').hidden = !(hasPlan && generatorMode === 'edit');
+    if (showSaved) { renderSavedPlanHeader(); renderPlanSubtab(activePlanSubtab); }
+  }
+  function renderPreview() {
+    const target = $('#planOut');
+    const plan = normalisePlan(planFromUi());
+    if (!target || !plan) return;
+    renderLimits.preview = PAGE_SIZE;
+    const rows = sessionRows(plan);
+    const draw = () => {
+      const visible = rows.slice(0, renderLimits.preview);
+      target.innerHTML = `<div class="card"><h2>Your plan preview</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span></div></div>${visible.map((row) => sessionCard(row, plan)).join('')}`;
+      if (rows.length > visible.length) {
+        const more = document.createElement('button'); more.type = 'button'; more.className = 'action secondary'; more.textContent = `Show ${Math.min(PAGE_SIZE, rows.length - visible.length)} more sessions`;
+        more.addEventListener('click', () => { renderLimits.preview += PAGE_SIZE; draw(); });
+        target.append(more);
+      }
+    };
+    draw();
+  }
+
+  function defaultStepState() { return { completedSteps: 0, started: false, results: {}, pendingFailureStep: null }; }
+  function readStepState(sessionIndex) {
+    const source = readStorage(stepStorageKey(current.planId, sessionIndex), defaultStepState()) || defaultStepState();
+    return Object.assign(defaultStepState(), source, { results: source.results && typeof source.results === 'object' ? source.results : {} });
+  }
+  function writeStepState(sessionIndex, value) { writeStorage(stepStorageKey(current.planId, sessionIndex), Object.assign(defaultStepState(), value)); }
+  function accessFor(row, sessionIndex) {
+    const due = !row.scheduled_date || row.scheduled_date <= today();
+    const done = row.status === 'done';
+    const next = Number(current.progress?.nextIndex) === sessionIndex;
+    return { due, done, next, can: due && next && !done };
+  }
+  function workoutContext() {
+    const empty = { available: false, canStart: false, planId: current.planId || 0, sessionIndex: 0, stepIndex: 0, step: null, steps: [], completedSteps: 0, totalSteps: 0, started: false, allComplete: false, planComplete: false };
+    if (!auth.authed || !current.planJson || !current.sessions.length) return empty;
+    const sessionIndex = Number(current.progress?.nextIndex || 0);
+    const row = current.sessions.find((item) => Number(item.session_index) === sessionIndex);
+    if (!row) return Object.assign(empty, { available: true, allComplete: true, planComplete: true });
+    const steps = executionSteps(workForSession(current.planJson.items, sessionIndex));
+    const state = readStepState(sessionIndex);
+    const completed = Math.round(clamp(state.completedSteps || 0, 0, steps.length));
+    const access = accessFor(row, sessionIndex);
+    return { available: true, canStart: access.can, access, planId: current.planId || 0, sessionIndex, scheduledDate: row.scheduled_date || '', stepIndex: completed, step: steps[completed] || null, steps, completedSteps: completed, totalSteps: steps.length, started: Boolean(state.started), results: Object.assign({}, state.results || {}), allComplete: Boolean(steps.length && completed >= steps.length), planComplete: false, timerStartDelay: current.planJson.timerStartDelay || 5 };
+  }
+  function notifyWorkout() {
+    const snapshot = workoutContext();
+    workoutListeners.forEach((listener) => { try { listener(snapshot); } catch (_error) {} });
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated', { detail: snapshot })); } catch (_error) {}
+  }
+  function recordStep(status, achieved, inputMode = 'manual') {
+    const context = workoutContext();
+    if (!context.canStart || !context.started || !context.step) return context;
+    const state = readStepState(context.sessionIndex);
+    state.started = true;
+    state.results[context.stepIndex] = { status, achieved: Math.round(clamp(achieved, 0, 99999)), inputMode: inputMode === 'voice' ? 'voice' : 'manual' };
+    state.completedSteps = Math.max(state.completedSteps || 0, context.stepIndex + 1);
+    state.pendingFailureStep = null;
+    writeStepState(context.sessionIndex, state);
+    renderCurrentWorkout();
+    return workoutContext();
+  }
+  function startCurrentWorkout() {
+    const context = workoutContext();
+    if (!context.canStart || context.planComplete) return context;
+    const state = readStepState(context.sessionIndex); state.started = true; writeStepState(context.sessionIndex, state); renderCurrentWorkout(); return workoutContext();
+  }
+  function resetCurrentWorkout() {
+    const context = workoutContext();
+    if (context.sessionIndex) removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    renderCurrentWorkout(); return workoutContext();
+  }
+  async function finishCurrentWorkout() {
+    const context = workoutContext();
+    if (!context.canStart || !context.allComplete || !context.sessionIndex) return context;
+    const result = FILE_PROTOCOL
+      ? { ok: true }
+      : await apiJson(`${API}/update_session.php`, { method: 'POST', body: { planId: current.planId, sessionIndex: context.sessionIndex, action: 'toggle_done' } });
+    if (FILE_PROTOCOL) {
+      const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex); if (row) row.status = 'done';
+      current.progress = calculateProgress(current.sessions, current.planJson);
+    } else if (result.ok) {
+      current.sessions = Array.isArray(result.sessions) ? result.sessions : current.sessions;
+      current.progress = result.progress || calculateProgress(current.sessions, current.planJson);
+    }
+    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();
+    return workoutContext();
+  }
+  function formatTimer(seconds) { const total = Math.max(0, Math.round(Number(seconds) || 0)); return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`; }
+  function closeTimerModal() { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; } if ($('#timerModal')) $('#timerModal').hidden = true; }
+  function openTimer(step) {
+    const modal = $('#timerModal'); const digits = $('#timerDigits'); const message = $('#timerModalMessage');
+    if (!modal || !digits || !message) return;
+    closeTimerModal(); modal.hidden = false;
+    let prep = Math.round(clamp(current.planJson?.timerStartDelay || 5, 1, 10)); let remaining = Math.round(step.target || 1); let phase = 'prep';
+    const tick = () => {
+      if (phase === 'prep') {
+        message.textContent = `Get into position. Timer starts in ${prep} second${prep === 1 ? '' : 's'}.`; digits.textContent = formatTimer(prep);
+        if (prep <= 0) phase = 'work'; else prep -= 1;
+      } else {
+        message.textContent = `${step.name} • hold for the full time.`; digits.textContent = formatTimer(remaining);
+        if (remaining <= 0) { message.textContent = 'Timer complete.'; clearInterval(timerInterval); timerInterval = null; } else remaining -= 1;
+      }
+    };
+    tick(); timerInterval = setInterval(tick, 1000);
+  }
+  function renderCurrentWorkout() {
+    const out = $('#currentWorkoutOut'); const status = $('#myPlanStatus');
+    if (!out) return;
+    if (!auth.authed || !current.planJson || !current.sessions.length) {
+      out.textContent = auth.authed ? 'Save a plan to unlock your current workout view.' : 'Log in and save a plan to see your current workout.';
+      if (status) status.textContent = '';
+      notifyWorkout(); return;
+    }
+    const context = workoutContext();
+    if (context.planComplete) { out.innerHTML = '<div class="card"><h3 style="margin:0">Plan complete</h3><p class="note">All sessions in this plan have been completed.</p></div>'; if (status) status.textContent = ''; notifyWorkout(); return; }
+    const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex);
+    const state = readStepState(context.sessionIndex);
+    if (status) status.textContent = context.access.can ? 'Current workout ready.' : context.access.due ? 'Complete earlier sessions first.' : `Next workout unlocks on ${niceDate(row.scheduled_date)}.`;
+    const stepsHtml = context.steps.map((step, index) => {
+      const result = state.results[index]; const active = index === context.completedSteps; const canAct = context.access.can && state.started && active; const failOpen = state.pendingFailureStep === index;
+      return `<div class="current-step ${index < context.completedSteps ? 'done' : active ? 'active' : ''}"><div class="current-step-head"><div><b class="current-step-label">${escapeHtml(step.label)}</b></div><div class="step-actions">${result ? `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>` : ''}${step.isTimed ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Timer</button>` : ''}<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button></div></div>${failOpen ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">Enter achieved ${escapeHtml(step.unit)}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${index}">Save</button></div>` : ''}</div>`;
+    }).join('');
+    out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${escapeHtml(niceDate(row.scheduled_date))}</span><span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
+    $('#startWorkoutBtn', out)?.addEventListener('click', startCurrentWorkout);
+    $$('.step-success', out).forEach((button) => button.addEventListener('click', () => { const step = context.steps[Number(button.dataset.step)]; recordStep('success', step.target); }));
+    $$('.step-fail-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
+    $$('.step-fail-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || String(field.value).trim() === '') { field?.focus(); return; } recordStep('failed', field.value); }));
+    $$('.step-timer', out).forEach((button) => button.addEventListener('click', () => openTimer(context.steps[Number(button.dataset.step)])));
+    $('#resetWorkout', out)?.addEventListener('click', resetCurrentWorkout);
+    $('#finishWorkout', out)?.addEventListener('click', finishCurrentWorkout);
+    notifyWorkout();
+  }
+
+  function applyAuth(snapshot) {
+    const next = snapshot && snapshot.authed ? { authed: true, name: String(snapshot.name || snapshot.user?.name || '').trim() } : { authed: false, name: '' };
+    const unchanged = next.authed === auth.authed && next.name === auth.name;
+    auth = next;
+    const button = $('#fitnessAccountBtn'); if (button) button.textContent = auth.authed ? 'Account' : 'Log in / Sign up';
+    if (unchanged) return;
+    fillBodyProfile();
+    current = { planId: 0, planJson: null, sessions: [], progress: null };
+    hydratedPlanId = null; generatorMode = 'create'; planLoadPromise = null; planLoadSerial += 1;
+    syncPlanShells();
+    if (activeTopTab === 'my-plan' || activeTopTab === 'achievements') ensurePlanLoaded(true);
+  }
+  function bindAuthOnce() {
+    let attempts = 0;
+    const attach = () => {
+      const api = global.BASELINE_auth;
+      if (api && typeof api.get === 'function') {
+        applyAuth(api.get());
+        if (typeof api.onChange === 'function') authUnsubscribe = api.onChange((snapshot) => applyAuth(snapshot));
+        return;
+      }
+      attempts += 1;
+      if (attempts < 40) setTimeout(attach, 100);
+    };
+    attach();
+  }
+  function cachePlan(saved) {
+    if (!auth.authed) return;
+    if (saved && saved.planJson) writeStorage(userCacheKey(), { planId: saved.planId || 0, planJson: saved.planJson, sessions: saved.sessions || [], progress: saved.progress || null, cachedAt: Date.now() });
+    else removeStorage(userCacheKey());
+  }
+  function useCachedPlan() {
+    if (!auth.authed) return false;
+    const cached = readStorage(userCacheKey(), null);
+    const plan = normalisePlan(cached?.planJson);
+    if (!plan) return false;
+    current = { planId: cached.planId || 0, planJson: plan, sessions: Array.isArray(cached.sessions) ? cached.sessions.slice(0, plan.sessions) : sessionRows(plan), progress: cached.progress || calculateProgress(Array.isArray(cached.sessions) ? cached.sessions : sessionRows(plan), plan) };
+    generatorMode = 'view'; syncPlanShells(); return true;
+  }
+  async function loadPlanFromServer(force = false) {
+    if (!auth.authed) {
+      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; syncPlanShells();
+      if ($('#myPlanOut')) $('#myPlanOut').textContent = 'Log in and save a plan to see your schedule here.';
+      return;
+    }
+    if (!force && current.planJson) return;
+    const serial = ++planLoadSerial;
+    if ($('#myPlanStatus')) $('#myPlanStatus').textContent = 'Loading your plan…';
+    const response = FILE_PROTOCOL ? readStorage(userPlanKey(), null) : await apiJson(`${API}/get_plan.php`);
+    if (serial !== planLoadSerial) return;
+    const saved = FILE_PROTOCOL ? response : (response && response.ok && response.hasPlan ? { planId: response.planId, planJson: response.planJson, sessions: response.sessions, progress: response.progress } : null);
+    const plan = normalisePlan(saved?.planJson);
+    if (!plan) {
+      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; cachePlan(null); resetGenerator(); syncPlanShells();
+      if ($('#myPlanStatus')) $('#myPlanStatus').textContent = response?.error === 'timeout' ? 'Plan loading timed out. Try again.' : '';
+      return;
+    }
+    const rows = Array.isArray(saved.sessions) && saved.sessions.length ? saved.sessions.slice(0, plan.sessions) : sessionRows(plan);
+    current = { planId: saved.planId || 0, planJson: plan, sessions: rows, progress: saved.progress || calculateProgress(rows, plan) };
+    cachePlan(current); generatorMode = 'view'; renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE }; syncPlanShells(); renderAchievements();
+    if (!dirty && hydratedPlanId !== current.planId) { hydrateGenerator(plan); hydratedPlanId = current.planId; }
+  }
+  function ensurePlanLoaded(force = false) {
+    if (!auth.authed) { loadPlanFromServer(false); return Promise.resolve(); }
+    if (!force && current.planJson) return Promise.resolve();
+    if (!force && planLoadPromise) return planLoadPromise;
+    if (!force) useCachedPlan();
+    planLoadPromise = loadPlanFromServer(force).finally(() => { planLoadPromise = null; });
+    return planLoadPromise;
+  }
+
+  async function savePlan() {
+    if (!auth.authed) {
+      try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); }
+      if ($('#savePlanStatus')) $('#savePlanStatus').textContent = 'Log in or sign up to save this plan.';
+      return;
+    }
+    const plan = normalisePlan(planFromUi()); if (!plan) return;
+    const updating = Boolean(current.planId);
+    if ($('#savePlanStatus')) $('#savePlanStatus').textContent = updating ? 'Saving changes…' : 'Saving…';
+    let response;
+    if (FILE_PROTOCOL) {
+      const rows = sessionRows(plan, updating ? current.sessions : []); const saved = { planId: updating ? current.planId : Date.now(), planJson: plan, sessions: rows, progress: calculateProgress(rows, plan) };
+      writeStorage(userPlanKey(), saved); response = { ok: true };
+    } else {
+      response = await apiJson(`${API}/${updating ? 'plan_update.php' : 'save_plan.php'}`, { method: 'POST', body: updating ? { planId: current.planId, planText: planText(plan), planJson: plan, reschedule: true } : { planText: planText(plan), planJson: plan } });
+    }
+    if (!response.ok) { if ($('#savePlanStatus')) $('#savePlanStatus').textContent = 'Save failed. Please try again.'; return; }
+    dirty = false; generatorMode = 'view'; current = { planId: 0, planJson: null, sessions: [], progress: null }; hydratedPlanId = null;
+    await ensurePlanLoaded(true);
+    if ($('#savePlanStatus')) $('#savePlanStatus').textContent = updating ? 'Plan updated.' : 'Saved.';
+  }
+  function openDeletePlanModal() {
+    if ($('#deletePlanModal')) $('#deletePlanModal').hidden = false;
+    if ($('#deletePlanConfirmInput')) { $('#deletePlanConfirmInput').value = ''; $('#deletePlanConfirmInput').focus(); }
+    if ($('#confirmDeletePlanBtn')) $('#confirmDeletePlanBtn').disabled = true;
+    if ($('#deletePlanStatus')) $('#deletePlanStatus').textContent = '';
+  }
+  function closeDeletePlanModal() { if ($('#deletePlanModal')) $('#deletePlanModal').hidden = true; }
+  async function deletePlan() {
+    const response = FILE_PROTOCOL ? { ok: true } : await apiJson(`${API}/delete_plan.php`, { method: 'POST', body: { planId: current.planId } });
+    if (!response.ok) { if ($('#deletePlanStatus')) $('#deletePlanStatus').textContent = 'Could not delete the plan.'; return; }
+    removeStorage(userPlanKey()); removeStorage(userCacheKey());
+    current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; resetGenerator(); closeDeletePlanModal(); syncPlanShells(); renderAchievements();
+  }
+
+  async function loadProfiles() {
+    const select = $('#profileSelect'); if (!select) return;
+    const response = FILE_PROTOCOL ? { ok: true, profiles: [] } : await apiJson(`${API}/list_profiles.php`);
+    const names = response.ok ? (response.profiles || response.names || []) : [];
+    select.innerHTML = '<option value="">Select profile…</option>' + names.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+  }
+  async function renderProfilePlan(name) {
+    const target = $('#profilePlanOut'); if (!target) return;
+    if (!name) { target.textContent = 'Select a profile to view their latest saved plan.'; return; }
+    target.textContent = 'Loading plan…';
+    const response = await apiJson(`${API}/get_plan.php`, { params: { name } });
+    const plan = normalisePlan(response?.planJson);
+    if (!response.ok || !plan) { target.textContent = 'No saved plan for this profile yet.'; return; }
+    const rows = Array.isArray(response.sessions) ? response.sessions.slice(0, PAGE_SIZE) : sessionRows(plan).slice(0, PAGE_SIZE);
+    target.innerHTML = `<div class="card"><h2>${escapeHtml(name)}’s plan</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Sessions: ${plan.sessions}</span></div></div>${rows.map((row) => sessionCard(row, plan)).join('')}${plan.sessions > rows.length ? `<p class="note">Showing the first ${rows.length} sessions.</p>` : ''}`;
+  }
+  function renderAchievements() {
+    const summary = $('#achSummary'); const grid = $('#achGrid'); if (!summary || !grid) return;
+    if (!auth.authed) { summary.textContent = 'Log in to track milestones.'; grid.innerHTML = ''; return; }
+    const done = Number(current.progress?.done || 0); const total = Number(current.progress?.total || 0);
+    summary.innerHTML = `<strong>Sessions done:</strong> ${done} • <strong>Plan progress:</strong> ${done}/${total}`;
+    const items = [['First Session', done >= 1], ['10 Sessions', done >= 10], ['30 Sessions', done >= 30], ['Plan Completed', total > 0 && done === total]];
+    grid.innerHTML = items.map(([name, on]) => `<div class="ach-card ${on ? 'unlocked' : ''}"><div class="ach-icon">${on ? '✓' : '○'}</div><div class="ach-meta"><div class="name">${name}</div><div class="prog">${on ? 'Unlocked' : 'Locked'}</div></div></div>`).join('');
+  }
+  function renderLibrary() {
+    const target = $('#exerciseLibrary'); if (!target) return;
+    const query = String($('#exSearch')?.value || '').toLowerCase(); const group = $('#exGroup')?.value || 'all';
+    target.innerHTML = EXERCISES.filter((item) => (group === 'all' || item.category === group) && (!query || `${item.name} ${item.family} ${item.unit}`.toLowerCase().includes(query))).map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.unit)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p></div>`).join('');
+  }
+
+  function positive(value) { const number = Number(value); return Number.isFinite(number) && number > 0 ? number : null; }
+  function bodyCalculations(profile) {
+    const age = positive(profile.age); const height = positive(profile.height); const weight = positive(profile.weight); const waist = positive(profile.waist); const hips = positive(profile.hips); const metres = height ? height / 100 : null;
+    const bmi = metres && weight ? weight / (metres * metres) : null; let bmiCategory = '';
+    if (bmi) bmiCategory = bmi < 18.5 ? 'Below range' : bmi < 25 ? 'Healthy range' : bmi < 30 ? 'Above range' : 'High range';
+    const bmr = age && height && weight && ['male', 'female'].includes(profile.sex) ? 10 * weight + 6.25 * height - 5 * age + (profile.sex === 'male' ? 5 : -161) : null;
+    const factors = { sedentary: 1.2, light: 1.375, moderate: 1.55, very: 1.725, extra: 1.9 };
+    return { height, weight, bmi, bmiCategory, bmr, tdee: bmr && factors[profile.activity] ? bmr * factors[profile.activity] : null, waistHeight: waist && height ? waist / height : null, waistHip: waist && hips ? waist / hips : null, healthyMin: metres ? 18.5 * metres * metres : null, healthyMax: metres ? 24.9 * metres * metres : null, bodySurface: height && weight ? Math.sqrt(height * weight / 3600) : null };
+  }
+  function formatMetric(value, digits = 1, suffix = '') { return Number.isFinite(value) ? `${value.toFixed(digits)}${suffix}` : '—'; }
+  function metricCard(label, value, detail = '') { return `<div class="body-summary-card"><div class="body-summary-label">${escapeHtml(label)}</div><div class="body-summary-value">${escapeHtml(value)}</div>${detail ? `<div class="note" style="margin-top:5px">${escapeHtml(detail)}</div>` : ''}</div>`; }
+  function readBodyProfile() { const value = readStorage(bodyProfileKey(), null); return value && typeof value === 'object' ? value : {}; }
+  function profileFromForm() { const form = $('#bodyProfileForm'); const output = {}; if (form) new FormData(form).forEach((value, name) => { output[name] = String(value).trim(); }); return output; }
+  function renderBodyCalculations(profile) {
+    const target = $('#bodyProfileCalculations'); if (!target) return; const calc = bodyCalculations(profile);
+    target.innerHTML = `${metricCard('BMI', formatMetric(calc.bmi, 1), calc.bmiCategory)}${metricCard('BMR', formatMetric(calc.bmr, 0, ' kcal/day'))}${metricCard('Daily energy', formatMetric(calc.tdee, 0, ' kcal/day'))}${metricCard('Waist-to-height', formatMetric(calc.waistHeight, 2))}${metricCard('Waist-to-hip', formatMetric(calc.waistHip, 2))}${metricCard('Body surface area', formatMetric(calc.bodySurface, 2, ' m²'))}`;
+  }
+  function renderBodySummary() {
+    const target = $('#bodyOverallSummary'); if (!target) return; const profile = readBodyProfile(); const calc = bodyCalculations(profile);
+    if (!calc.height || !calc.weight) { target.innerHTML = '<div class="card"><h2>Overall Summary</h2><p class="note">Complete your Body Profile to create your body summary and calculations.</p></div>'; return; }
+    const healthy = calc.healthyMin && calc.healthyMax ? `${calc.healthyMin.toFixed(1)}–${calc.healthyMax.toFixed(1)} kg` : '—';
+    target.innerHTML = `<div class="card"><h2>Overall Summary</h2><p class="note">Your latest saved body profile and calculated indicators.</p><div class="body-summary-grid">${metricCard('Weight', formatMetric(calc.weight, 1, ' kg'))}${metricCard('BMI', formatMetric(calc.bmi, 1), calc.bmiCategory)}${metricCard('BMR', formatMetric(calc.bmr, 0, ' kcal/day'), 'Estimated resting energy')}${metricCard('Daily energy', formatMetric(calc.tdee, 0, ' kcal/day'), 'Estimated from activity level')}${metricCard('Healthy BMI weight range', healthy)}${metricCard('Waist-to-height', formatMetric(calc.waistHeight, 2))}${metricCard('Waist-to-hip', formatMetric(calc.waistHip, 2))}${metricCard('Body surface area', formatMetric(calc.bodySurface, 2, ' m²'))}${metricCard('Resting heart rate', positive(profile.restingHeartRate) ? `${Math.round(profile.restingHeartRate)} bpm` : '—')}</div></div>`;
+  }
+  function fillBodyProfile() {
+    const profile = readBodyProfile(); const form = $('#bodyProfileForm');
+    if (form) Array.from(form.elements).forEach((field) => { if (field.name && Object.prototype.hasOwnProperty.call(profile, field.name)) field.value = profile[field.name]; });
+    renderBodyCalculations(profile); renderBodySummary();
+  }
+  function setBodySubtab(view) {
+    if (!['overall', 'profile', 'services'].includes(view)) view = 'overall';
+    $$('.my-body-subtab').forEach((button) => { const active = button.dataset.bodyView === view; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
+    $$('.my-body-panel').forEach((panel) => { panel.hidden = panel.dataset.bodyPanel !== view; });
+  }
+
+  function bindUi() {
+    $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
+    $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView)));
+    $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
+    $('#bodyProfileForm')?.addEventListener('submit', (event) => { event.preventDefault(); const profile = profileFromForm(); writeStorage(bodyProfileKey(), profile); renderBodyCalculations(profile); renderBodySummary(); if ($('#bodyProfileStatus')) $('#bodyProfileStatus').textContent = 'Body profile saved.'; });
+    $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
+    $('#addExerciseBtn')?.addEventListener('click', () => { markDirty(); const used = new Set(itemsFromUi().map((item) => item.exercise)); const next = EXERCISES.find((item) => !used.has(item.name)) || EXERCISES[0]; $('#exerciseList')?.append(makeExerciseRow(next.name)); syncGoalControls(); });
+    $('#lengthMode')?.addEventListener('change', () => { markDirty(); syncLengthMode(); });
+    $('#goalExercise')?.addEventListener('change', () => { markDirty(); syncGoalControls(); });
+    ['startDate', 'freq', 'sessions', 'goalAmount'].forEach((id) => { const control = $(`#${id}`); control?.addEventListener('input', markDirty); control?.addEventListener('change', markDirty); });
+    $('#genBtn')?.addEventListener('click', renderPreview);
+    $('#savePlanBtn')?.addEventListener('click', savePlan);
+    $('#cancelEditPlanBtn')?.addEventListener('click', () => { generatorMode = 'view'; syncPlanShells(); });
+    $('#profileRefresh')?.addEventListener('click', loadProfiles);
+    $('#profileSelect')?.addEventListener('change', (event) => renderProfilePlan(event.currentTarget.value));
+    $('#exSearch')?.addEventListener('input', renderLibrary);
+    $('#exGroup')?.addEventListener('change', renderLibrary);
+    $('#closeTimerModalBtn')?.addEventListener('click', closeTimerModal);
+    $('#cancelDeletePlanBtn')?.addEventListener('click', closeDeletePlanModal);
+    $('#deletePlanConfirmInput')?.addEventListener('input', (event) => { if ($('#confirmDeletePlanBtn')) $('#confirmDeletePlanBtn').disabled = String(event.currentTarget.value || '').trim() !== 'DELETE'; });
+    $('#confirmDeletePlanBtn')?.addEventListener('click', deletePlan);
+    const refresh = $('#profileRefresh'); const host = refresh?.parentElement;
+    if (host && !$('#fitnessAccountBtn')) { const button = document.createElement('button'); button.type = 'button'; button.id = 'fitnessAccountBtn'; button.className = 'action'; button.textContent = 'Log in / Sign up'; button.addEventListener('click', () => { try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); } }); host.append(button); }
+  }
+
+  function init() {
+    document.documentElement.setAttribute('data-baseline-fitness-runtime', BUILD);
+    document.documentElement.setAttribute('data-baseline-fitness-tab-owner', BUILD);
+    replaceTabButtons();
+    global.BASELINE_selectTab = (target, options = {}) => activateTopTab(ALIASES[target] || target, options.silentHistory ? 'none' : 'push');
+    global.addEventListener('popstate', () => activateTopTab(routeState().target, 'none'));
+    $$('select').forEach(normaliseNativeSelect);
+    resetGenerator();
+    bindUi();
+    bindAuthOnce();
+    renderLibrary(); renderAchievements(); fillBodyProfile(); setBodySubtab('overall'); renderPlanSubtab('current');
+    const route = routeState(); activateTopTab(route.target, route.alias ? 'replace' : 'none');
+  }
+
+  global.BASELINE_fitnessWorkout = Object.freeze({
+    BUILD,
+    getCurrentContext: workoutContext,
+    startSession: startCurrentWorkout,
+    succeedCurrentStep: (inputMode = 'manual') => { const context = workoutContext(); return recordStep('success', context.step?.target || 0, inputMode); },
+    failCurrentStep: (achieved, inputMode = 'manual') => recordStep('failed', achieved, inputMode),
+    finishSession: finishCurrentWorkout,
+    resetSession: resetCurrentWorkout,
+    onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
+  });
+  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, executionSteps });
+
+  global.addEventListener('pagehide', () => { closeTimerModal(); if (typeof authUnsubscribe === 'function') authUnsubscribe(); });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
+})(typeof window !== 'undefined' ? window : globalThis);

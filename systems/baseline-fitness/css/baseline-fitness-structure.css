@@ -1,10 +1,15 @@
 /* Baseline Fitness — static structure styles and the single Binaural icon colour source. */
 
-html[data-app="fitness"] #bl-beats-toggle{
+html[data-app="fitness"] #bl-beats-toggle,
+html[data-app="fitness"] #bl-beats-toggle .bl-btn-icon,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg{
   color:#fff!important;
+  opacity:1!important;
 }
 html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg path{
-  fill:currentColor!important;
+  fill:#fff!important;
+  stroke:none!important;
+  opacity:1!important;
 }
 
 .my-body-shell{display:grid;gap:16px}
