@@ -26,7 +26,7 @@ function walk(directory, output = []) {
 }
 
 test('runtime systems have one canonical owner and no root shadow folders', () => {
-  const forbiddenRootFolders = ['api','games','css','js','rules','docs', ...systemNames];
+  const forbiddenRootFolders = ['api','games','css','js','rules','docs','scripts', ...systemNames];
   for (const shadow of forbiddenRootFolders) {
     assert.equal(fs.existsSync(path.join(root, shadow)), false, `obsolete root folder remains: ${shadow}`);
   }
@@ -57,6 +57,13 @@ test('Fitness My Body is routed through the canonical Fitness system', () => {
   assert.equal(fs.existsSync(path.join(root, 'baseline-fitness/my-body/index.php')), false);
 });
 
+test('inactive change templates are absent', () => {
+  const templates = walk(root)
+    .filter((file) => path.basename(file) === 'change-template.md')
+    .map((file) => path.relative(root, file));
+  assert.deepEqual(templates, []);
+});
+
 test('obsolete Massage route copies and local routers are absent', () => {
   for (const name of ['system','types','library','planner','.htaccess','ROUTING-README.txt']) {
     assert.equal(fs.existsSync(path.join(root, 'systems/baseline-massage', name)), false, `obsolete Massage file remains: ${name}`);
@@ -80,6 +87,7 @@ test('runtime code and page files do not contain exact duplicate copies', () => 
   for (const file of walk(root)) {
     if (!runtimeExtensions.has(path.extname(file).toLowerCase())) continue;
     const data = fs.readFileSync(file);
+    if (data.length === 0) continue;
     const key = `${data.length}:${crypto.createHash('sha256').update(data).digest('hex')}`;
     const list = groups.get(key) || [];
     list.push(path.relative(root,file));
