@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_COHERENCE_20260713_5';
+  const BUILD='BASELINE_FITNESS_COHERENCE_20260713_6';
   if(global.__BASELINE_FITNESS_COHERENCE__) return;
   global.__BASELINE_FITNESS_COHERENCE__=true;
   document.documentElement.setAttribute('data-baseline-fitness-coherence',BUILD);
@@ -665,7 +665,6 @@
     applyCoherence();
     activateTopTab(currentTopRoute(),'none');
     global.setTimeout(()=>{ applyCoherence();activateTopTab(currentTopRoute(),'none'); },0);
-    new MutationObserver(scheduleCoherence).observe(document.body,{childList:true,subtree:true});
     document.addEventListener('baseline:fitness-workout-updated',scheduleCoherence);
     document.addEventListener('baseline:auth',()=>{ fillBodyProfile();scheduleCoherence(); });
     document.addEventListener('click',event=>{
