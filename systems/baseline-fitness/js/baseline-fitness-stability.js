@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_STABILITY_20260713_2';
+  const BUILD='BASELINE_FITNESS_STABILITY_20260713_3';
   const root=global.document?.documentElement;
   if(global.__BASELINE_FITNESS_STABILITY__) return;
   global.__BASELINE_FITNESS_STABILITY__=true;
@@ -89,16 +89,10 @@
     global.__BASELINE_FITNESS_MUTATION_GUARD__=true;
   }
 
-  function normaliseTranscript(value){
-    return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
-      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ')
-      .replace(/\s+/g,' ').trim();
-  }
-
-  function installRecognitionAlias(){
+  function installRecognitionProxy(){
     const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition;
-    if(typeof NativeRecognition!=='function'||global.__BASELINE_FITNESS_RECOGNITION_ALIAS__) return;
-    global.__BASELINE_FITNESS_RECOGNITION_ALIAS__=true;
+    if(typeof NativeRecognition!=='function'||global.__BASELINE_FITNESS_RECOGNITION_PROXY__) return;
+    global.__BASELINE_FITNESS_RECOGNITION_PROXY__=true;
 
     function FitnessRecognition(){
       const native=new NativeRecognition();
@@ -108,11 +102,10 @@
         native.addEventListener('result',event=>{
           if(typeof resultHandler!=='function') return;
           const results=Array.from(event?.results||[],result=>{
-            const alternatives=Array.from(result||[],alternative=>{
-              const original=String(alternative?.transcript==null?'':alternative.transcript);
-              const transcript=normaliseTranscript(original)==='begin'?'done':original;
-              return {transcript,confidence:Number(alternative?.confidence)||0};
-            });
+            const alternatives=Array.from(result||[],alternative=>({
+              transcript:String(alternative?.transcript==null?'':alternative.transcript),
+              confidence:Number(alternative?.confidence)||0
+            }));
             alternatives.isFinal=Boolean(result?.isFinal);
             return alternatives;
           });
@@ -136,9 +129,10 @@
 
     // The older persistent-recognition layer restarted without retaining its
     // consumer after a native onend event. Keep the native recogniser and the
-    // Fitness runtime's own restart policy instead.
+    // Fitness runtime's own restart policy instead. Coherence still maps the
+    // spoken “Begin” command to the runtime's internal activation command.
     global.__BASELINE_FITNESS_PERSISTENT_RECOGNITION__=true;
-    root?.setAttribute('data-baseline-fitness-recognition-alias',BUILD);
+    root?.setAttribute('data-baseline-fitness-recognition-proxy',BUILD);
   }
 
   function whitenBinauralIcon(){
@@ -164,7 +158,7 @@
     observer.observe(homebar,{childList:true,subtree:true});
   }
 
-  installRecognitionAlias();
+  installRecognitionProxy();
   root?.setAttribute('data-baseline-fitness-stability',BUILD);
   if(global.document?.readyState==='loading') global.document.addEventListener('DOMContentLoaded',installIconGuard,{once:true});
   else installIconGuard();
