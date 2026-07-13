@@ -2,9 +2,10 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_ACCESS_20260713_11';
+  const BUILD='BASELINE_VOICE_ACCESS_20260713_10';
   const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260713_3';
-  const FITNESS_UI_BUILD='BASELINE_FITNESS_VOICE_UI_CORRECTIONS_20260713_3';
+  const FITNESS_GUARD_BUILD='BASELINE_FITNESS_MUTATION_GUARD_20260712_2';
+  const FITNESS_UI_BUILD='BASELINE_FITNESS_VOICE_UI_CORRECTIONS_20260713_2';
   const APPROVED_KEY='__baseline_microphone_approved_v1__';
   if(global.__BASELINE_VOICE_ACCESS__) return;
   global.__BASELINE_VOICE_ACCESS__=true;
@@ -14,6 +15,70 @@
   const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition||null;
   const AudioContextClass=global.AudioContext||global.webkitAudioContext||null;
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
+
+  function installFitnessMutationGuard(){
+    const NativeMutationObserver=global.MutationObserver;
+    if(!isFitness||typeof NativeMutationObserver!=='function'||global.__BASELINE_FITNESS_MUTATION_GUARD__) return;
+    global.__BASELINE_FITNESS_MUTATION_GUARD__=true;
+
+    function GuardedMutationObserver(callback){
+      if(typeof callback!=='function'||callback.name!=='scheduleEnhancement'){
+        return new NativeMutationObserver(callback);
+      }
+
+      let target=null;
+      let options=null;
+      let disconnected=false;
+      let resumeHandle=0;
+      let nativeObserve=()=>{};
+      let nativeDisconnect=()=>{};
+
+      const observer=new NativeMutationObserver((records,instance)=>{
+        nativeDisconnect();
+        try{
+          callback(records,instance);
+        }finally{
+          if(disconnected||!target) return;
+          const resume=()=>{
+            resumeHandle=0;
+            if(disconnected||!target) return;
+            try{ nativeObserve(target,options); }catch(_error){}
+          };
+          if(typeof global.requestAnimationFrame==='function') resumeHandle=global.requestAnimationFrame(resume);
+          else resumeHandle=global.setTimeout(resume,0);
+        }
+      });
+
+      nativeObserve=observer.observe.bind(observer);
+      nativeDisconnect=observer.disconnect.bind(observer);
+      const nativeTakeRecords=observer.takeRecords.bind(observer);
+
+      observer.observe=(nextTarget,nextOptions)=>{
+        target=nextTarget;
+        options=nextOptions;
+        disconnected=false;
+        return nativeObserve(nextTarget,nextOptions);
+      };
+      observer.disconnect=()=>{
+        disconnected=true;
+        target=null;
+        options=null;
+        if(resumeHandle){
+          if(typeof global.cancelAnimationFrame==='function') global.cancelAnimationFrame(resumeHandle);
+          else global.clearTimeout(resumeHandle);
+          resumeHandle=0;
+        }
+        return nativeDisconnect();
+      };
+      observer.takeRecords=()=>nativeTakeRecords();
+      return observer;
+    }
+
+    GuardedMutationObserver.prototype=NativeMutationObserver.prototype;
+    try{ Object.setPrototypeOf(GuardedMutationObserver,NativeMutationObserver); }catch(_error){}
+    global.MutationObserver=GuardedMutationObserver;
+    root?.setAttribute('data-baseline-fitness-mutation-guard',FITNESS_GUARD_BUILD);
+  }
 
   function installFitnessVoiceUiCorrections(){
     if(!isFitness||global.__BASELINE_FITNESS_VOICE_UI_CORRECTIONS__) return;
@@ -120,9 +185,10 @@
         toggle.replaceChildren(label,input,switchControl);
       });
     }
-    const scheduleEnhancement=()=>global.setTimeout(enhanceSettingsToggles,0);
-    if(global.document?.readyState==='loading') global.document.addEventListener('DOMContentLoaded',scheduleEnhancement,{once:true});
-    else scheduleEnhancement();
+    enhanceSettingsToggles();
+    if(global.MutationObserver&&global.document?.body){
+      new global.MutationObserver(()=>enhanceSettingsToggles()).observe(global.document.body,{childList:true,subtree:true});
+    }
 
     global.addEventListener('click',event=>{
       const button=event.target?.closest?.('#endVoiceWorkoutBtn');
@@ -616,6 +682,7 @@
     root.setAttribute('data-baseline-fitness-persistent-recognition',FITNESS_RECOGNITION_BUILD);
   }
 
+  installFitnessMutationGuard();
   installFitnessVoiceUiCorrections();
   installPersistentFitnessRecognition();
 

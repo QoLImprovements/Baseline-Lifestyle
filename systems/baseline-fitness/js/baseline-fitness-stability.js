@@ -85,6 +85,7 @@
     try{ Object.setPrototypeOf(StableMutationObserver,NativeMutationObserver); }catch(_error){}
     global.MutationObserver=StableMutationObserver;
 
+    // Prevent the older voice-access file from installing a second global observer wrapper.
     global.__BASELINE_FITNESS_MUTATION_GUARD__=true;
   }
 
@@ -126,6 +127,10 @@
     global.SpeechRecognition=FitnessRecognition;
     global.webkitSpeechRecognition=FitnessRecognition;
 
+    // The older persistent-recognition layer restarted without retaining its
+    // consumer after a native onend event. Keep the native recogniser and the
+    // Fitness runtime's own restart policy instead. Coherence still maps the
+    // spoken “Begin” command to the runtime's internal activation command.
     global.__BASELINE_FITNESS_PERSISTENT_RECOGNITION__=true;
     root?.setAttribute('data-baseline-fitness-recognition-proxy',BUILD);
   }

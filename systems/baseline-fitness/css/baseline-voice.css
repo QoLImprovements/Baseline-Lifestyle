@@ -156,12 +156,14 @@
   #bl-voice-flyout .bl-voice-settings-card{max-height:calc(100svh - 20px)}
 }
 
-/* Fitness Binaural control: one authoritative headphone colour. */
-html[data-app="fitness"] #bl-beats-toggle{
-  color:#fff;
-}
+html[data-app="fitness"] #bl-beats-toggle,
+html[data-app="fitness"] #bl-beats-toggle .bl-btn-icon,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg,
 html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg path{
-  fill:#fff;
+  color:#fff!important;
+  fill:#fff!important;
+  stroke:#fff!important;
+  opacity:1!important;
 }
 
 #bl-voice-toggle,
