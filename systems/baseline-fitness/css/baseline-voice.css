@@ -1,0 +1,172 @@
+/* Baseline Lifestyle — sitewide voice controls.
+   The Voice panel follows the same .bl-flyout/.card contract as Account and
+   Binaural; page themes provide all colours and surfaces. */
+#bl-voice-toggle[data-listening="true"]{
+  box-shadow:0 0 0 3px color-mix(in srgb,currentColor 24%,transparent);
+}
+#bl-voice-toggle[data-listening="true"] .bl-btn-icon{
+  animation:bl-voice-listening-pulse 1.25s ease-in-out infinite;
+}
+@keyframes bl-voice-listening-pulse{
+  0%,100%{opacity:.72;transform:scale(.94)}
+  50%{opacity:1;transform:scale(1.06)}
+}
+@media (prefers-reduced-motion:reduce){
+  #bl-voice-toggle[data-listening="true"] .bl-btn-icon{animation:none}
+}
+
+#bl-voice-flyout{
+  z-index:12000;
+  width:min(440px,calc(100vw - 24px));
+}
+#bl-voice-flyout .bl-voice-settings-card{
+  max-height:calc(100svh - 90px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:20px!important;
+}
+.bl-voice-settings-head{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  gap:12px;
+  margin-bottom:8px;
+}
+.bl-voice-settings-head h3{margin:0}
+
+#bl-voice-close{display:none!important}
+
+.bl-voice-support{
+  margin:12px 0;
+  padding:10px 12px;
+  border:1px solid var(--border,rgba(255,255,255,.18));
+  border-radius:12px;
+  background-image:var(--bl-flyout-control-bg-image,none)!important;
+  background-color:var(--bl-flyout-control-bg-color,var(--showall-bg))!important;
+  color:var(--bl-flyout-ink,var(--ink))!important;
+  font-size:.9rem;
+  line-height:1.45;
+}
+.bl-voice-support[data-supported="false"]{font-weight:700}
+
+.bl-voice-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin:14px 0;
+}
+.bl-voice-grid label{
+  display:grid;
+  gap:6px;
+  min-width:0;
+  font-weight:750;
+}
+#bl-voice-flyout input:not([type="checkbox"]):not([type="range"]),
+#bl-voice-flyout select{
+  width:100%;
+  min-height:42px;
+  padding:10px 12px;
+  border:1px solid var(--border,rgba(255,255,255,.18))!important;
+  border-radius:10px;
+  background-image:var(--bl-flyout-control-bg-image,none)!important;
+  background-color:var(--bl-flyout-control-bg-color,var(--showall-bg))!important;
+  color:var(--bl-flyout-ink,var(--ink))!important;
+  -webkit-text-fill-color:currentColor!important;
+  opacity:1!important;
+}
+
+.bl-voice-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.bl-voice-check{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:8px 0;
+  cursor:pointer;
+}
+.bl-voice-check input{
+  width:18px!important;
+  min-width:18px;
+  height:18px;
+  margin-top:2px;
+  accent-color:var(--accent-3,var(--accent));
+}
+.bl-voice-check span{display:grid;gap:2px;line-height:1.3}
+.bl-voice-check small{font-weight:500;color:var(--muted)}
+.bl-voice-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--border,rgba(255,255,255,.18));
+}
+#bl-voice-status[data-kind="success"]{font-weight:750}
+#bl-voice-status[data-kind="warning"],
+#bl-voice-status[data-kind="error"]{font-weight:800}
+
+@media (min-width:821px){
+  #bl-voice-toggle{
+    width:auto!important;
+    min-width:0!important;
+    height:38px!important;
+    min-height:38px!important;
+    padding:0 14px!important;
+    border-radius:999px!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:8px!important;
+    overflow:visible!important;
+  }
+  #bl-voice-toggle .bl-btn-label{
+    position:static!important;
+    width:auto!important;
+    height:auto!important;
+    overflow:visible!important;
+    clip:auto!important;
+    clip-path:none!important;
+    white-space:nowrap!important;
+  }
+}
+@media (max-width:820px){
+  #bl-voice-toggle{
+    width:42px!important;
+    min-width:42px!important;
+    height:42px!important;
+    min-height:42px!important;
+    padding:0!important;
+    border-radius:999px!important;
+    overflow:hidden!important;
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+  }
+  #bl-voice-toggle .bl-btn-label{
+    position:absolute!important;
+    width:1px!important;
+    height:1px!important;
+    overflow:hidden!important;
+    clip:rect(0 0 0 0)!important;
+    clip-path:inset(50%)!important;
+    white-space:nowrap!important;
+  }
+}
+@media (max-width:620px){
+  .bl-voice-grid,.bl-voice-check-grid{grid-template-columns:1fr}
+  #bl-voice-flyout .bl-voice-settings-card{max-height:calc(100svh - 20px)}
+}
+
+html[data-app="fitness"] #bl-beats-toggle,
+html[data-app="fitness"] #bl-beats-toggle .bl-btn-icon,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg path{
+  color:#fff!important;
+  fill:#fff!important;
+  stroke:#fff!important;
+  opacity:1!important;
+}
+
+#bl-voice-toggle,
+#bl-voice-flyout{
+  display:none!important;
+}
