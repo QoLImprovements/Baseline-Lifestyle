@@ -13,10 +13,11 @@ const systemNames = [
   'baseline-massage',
   'baseline-natural-skincare'
 ];
+const ignoredWalkDirectories = new Set(['.git','node_modules','playwright-report','test-results']);
 
 function walk(directory, output = []) {
   for (const entry of fs.readdirSync(directory, { withFileTypes:true })) {
-    if (['.git','node_modules','playwright-report','test-results'].includes(entry.name)) continue;
+    if (ignoredWalkDirectories.has(entry.name)) continue;
     const full = path.join(directory, entry.name);
     if (entry.isDirectory()) walk(full, output);
     else output.push(full);
@@ -25,8 +26,9 @@ function walk(directory, output = []) {
 }
 
 test('runtime systems have one canonical owner and no root shadow folders', () => {
-  for (const shadow of ['games','css','js','rules']) {
-    assert.equal(fs.existsSync(path.join(root, shadow)), false, `root shadow folder remains: ${shadow}`);
+  const forbiddenRootFolders = ['games','css','js','rules','docs', ...systemNames];
+  for (const shadow of forbiddenRootFolders) {
+    assert.equal(fs.existsSync(path.join(root, shadow)), false, `obsolete root folder remains: ${shadow}`);
   }
   assert.equal(fs.existsSync(path.join(root, 'systems/baseline-games-hub/games')), true);
   assert.deepEqual(
@@ -46,6 +48,13 @@ test('each primary system page lives inside its owning system folder', () => {
       `${system} is missing its canonical HTML entry`
     );
   }
+});
+
+test('Fitness My Body is routed through the canonical Fitness system', () => {
+  const htaccess = fs.readFileSync(path.join(root, '.htaccess'), 'utf8');
+  const canonicalRule = 'RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]';
+  assert.ok(htaccess.includes(canonicalRule), 'Fitness My Body is missing from the canonical system route');
+  assert.equal(fs.existsSync(path.join(root, 'baseline-fitness/my-body/index.php')), false);
 });
 
 test('obsolete Massage route copies and local routers are absent', () => {
@@ -80,9 +89,15 @@ test('runtime code and page files do not contain exact duplicate copies', () => 
   assert.deepEqual(duplicates, []);
 });
 
-test('distributable tree excludes generated development artifacts', () => {
-  for (const name of ['.git','node_modules','playwright-report','test-results']) {
-    assert.equal(fs.existsSync(path.join(root, name)), false, `generated artifact remains: ${name}`);
+test('generated development artifacts are excluded by repository rules', () => {
+  const ignoredEntries = new Set(
+    fs.readFileSync(path.join(root, '.gitignore'), 'utf8')
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+  );
+  for (const name of ['node_modules/','playwright-report/','test-results/']) {
+    assert.equal(ignoredEntries.has(name), true, `${name} is missing from .gitignore`);
   }
 });
 
