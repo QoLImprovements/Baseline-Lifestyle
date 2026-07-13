@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_10';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_11';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
   let renderQueued=false;
 
@@ -165,6 +165,18 @@
     else global.setTimeout(normaliseSidePlankRows,0);
   }
 
+  function whitenBinauralIcon(){
+    const control=Array.from(document.querySelectorAll('button,a')).find(node=>/^Binaural$/i.test(String(node.textContent||'').trim()));
+    if(!control) return false;
+    control.classList.add('baseline-binaural-white-icon');
+    control.querySelectorAll('svg,path').forEach(node=>{
+      node.style.setProperty('color','#fff','important');
+      node.style.setProperty('fill','#fff','important');
+      node.style.setProperty('stroke','#fff','important');
+    });
+    return true;
+  }
+
   function installStyles(){
     if(document.getElementById('baseline-side-plank-native-rows')) return;
     const oldStyle=document.getElementById('baseline-side-plank-three-rows');
@@ -191,6 +203,12 @@
       #currentWorkoutOut .side-plank-standard-row .side-plank-original-actions-hidden{display:flex!important}
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry]{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry][hidden]{display:none!important}
+      .baseline-binaural-white-icon .bl-icon-svg,
+      .baseline-binaural-white-icon .bl-icon-svg path{
+        color:#fff!important;
+        fill:#fff!important;
+        stroke:#fff!important;
+      }
     `;
     document.head.appendChild(style);
   }
@@ -198,6 +216,9 @@
   function installPatch(){
     installStyles();
     scheduleNormalise();
+    if(!whitenBinauralIcon()){
+      [50,250,1000].forEach(delay=>global.setTimeout(whitenBinauralIcon,delay));
+    }
     const root=document.getElementById('currentWorkoutOut');
     if(root) new MutationObserver(scheduleNormalise).observe(root,{childList:true,subtree:true});
     document.addEventListener('baseline:fitness-workout-updated',scheduleNormalise);
