@@ -265,7 +265,7 @@ Options -Indexes
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
-  RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
   # Baseline Games Hub hierarchy.
   RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
