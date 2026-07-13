@@ -24,6 +24,7 @@ These Markdown rules are a human reference point, not live runtime config.
 
 <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_INFO_POPOVER_20260706_2"/>
+<link rel="stylesheet" href="/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_FITNESS_ONLY_20260712_12"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth"/>
 <link rel="stylesheet" href="/sitewide/css/baseline-recipes.css?v=20260602_1347dropdownportalopaque"/>
@@ -332,41 +333,10 @@ These Markdown rules are a human reference point, not live runtime config.
 
 <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_FITNESS_STATIC_RESTORE_20260712_12"></script>
 <script defer src="/sitewide/js/baseline-auth-failsafe.js?v=SITEWIDE_AUTH_FAILSAFE_20260630"></script>
+<script defer src="/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_ENGINE_20260712_12"></script>
+<script defer src="/sitewide/js/baseline-voice-access.js?v=BASELINE_VOICE_ACCESS_20260712_12"></script>
 <script defer src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_STATIC_RESTORE_20260712_12"></script>
-<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v=BASELINE_FITNESS_VOICE_RUNTIME_20260713_1"></script>
 <script defer src="/systems/baseline-fitness/js/baseline-fitness-coherence.js?v=BASELINE_FITNESS_COHERENCE_20260712_12"></script>
-<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice.js?v=BASELINE_FITNESS_VOICE_PRODUCTION_PATH_FIX_20260713_1"></script>
-<script>
-  (function(){
-    function makeBinauralIconWhite(){
-      var controls=document.querySelectorAll('button,a');
-      var control=null;
-      for(var index=0;index<controls.length;index++){
-        if(/^Binaural$/i.test(String(controls[index].textContent||'').trim())){
-          control=controls[index];
-          break;
-        }
-      }
-      if(!control) return false;
-      control.style.setProperty('color','#fff','important');
-      var iconNodes=control.querySelectorAll('.bl-btn-icon,.bl-icon-svg,svg,path,i,use');
-      iconNodes.forEach(function(node){
-        node.style.setProperty('color','#fff','important');
-        if(/^(svg|path|use)$/i.test(node.tagName||'')){
-          node.style.setProperty('fill','#fff','important');
-          node.style.setProperty('stroke','#fff','important');
-        }
-      });
-      return true;
-    }
-    function install(){
-      makeBinauralIconWhite();
-      [50,250,1000].forEach(function(delay){ setTimeout(makeBinauralIconWhite,delay); });
-    }
-    document.documentElement.setAttribute('data-baseline-fitness-production-voice','BASELINE_FITNESS_VOICE_PRODUCTION_PATH_FIX_20260713_1');
-    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',install,{once:true});
-    else install();
-  })();
-</script>
+<script defer src="/systems/baseline-fitness/js/baseline-fitness-voice.js?v=BASELINE_FITNESS_VOICE_ADAPTER_20260712_12"></script>
 </body>
 </html>
