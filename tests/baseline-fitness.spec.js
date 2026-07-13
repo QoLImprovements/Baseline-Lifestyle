@@ -12,6 +12,19 @@ test('Fitness exposes a working in-page account control', async ({ page }) => {
   await expect(page.locator('#bl-auth-flyout')).toBeVisible();
 });
 
+test('Fitness tabs remain stationary on hover', async ({ page }) => {
+  await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
+  const tab=page.getByRole('button',{name:'My Plan',exact:true});
+  await expect(tab).toBeVisible();
+  const before=await tab.boundingBox();
+  await tab.hover();
+  await page.waitForTimeout(150);
+  const after=await tab.boundingBox();
+  expect(before).not.toBeNull();
+  expect(after).not.toBeNull();
+  expect(Math.abs(after.y-before.y)).toBeLessThan(0.1);
+});
+
 test('every rep set increases by one between sessions', async ({ page }) => {
   await page.goto(PATH, { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
@@ -88,14 +101,15 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   expect(await page.evaluate(() => 6*7)).toBe(42);
 });
 
-test('voice commands use Done and remain state-scoped', async ({ page }) => {
+test('voice commands use Begin and remain state-scoped', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
 
   const result=await page.evaluate(() => {
     const debug=globalThis.BASELINE_fitnessVoice.debug;
     return {
-      done:debug.intentFor('awaiting_go','Done'),
+      begin:debug.intentFor('awaiting_go','Begin'),
+      rejectsDone:debug.intentFor('awaiting_go','Done'),
       rejectsGo:debug.intentFor('awaiting_go','Go'),
       rejectsFailBeforeStart:debug.intentFor('awaiting_go','Fail'),
       fail:debug.intentFor('exercise_active','Fail'),
@@ -103,13 +117,14 @@ test('voice commands use Done and remain state-scoped', async ({ page }) => {
       failure:debug.intentFor('awaiting_result','That was a failure'),
       success:debug.intentFor('awaiting_result','Success'),
       next:debug.intentFor('resting','Next'),
-      rejectsDoneDuringRest:debug.intentFor('resting','Done'),
+      rejectsBeginDuringRest:debug.intentFor('resting','Begin'),
       rejectsNextDuringResult:debug.intentFor('awaiting_result','Next')
     };
   });
 
   expect(result).toEqual({
-    done:'done',
+    begin:'begin',
+    rejectsDone:null,
     rejectsGo:null,
     rejectsFailBeforeStart:null,
     fail:'fail',
@@ -117,7 +132,7 @@ test('voice commands use Done and remain state-scoped', async ({ page }) => {
     failure:'fail',
     success:'success',
     next:'next',
-    rejectsDoneDuringRest:null,
+    rejectsBeginDuringRest:null,
     rejectsNextDuringResult:null
   });
 });
@@ -130,9 +145,10 @@ test('persistent recognition requires exact commands and canonicalises spoken nu
     const recognition=globalThis.BASELINE_fitnessPersistentRecognition;
     return {
       build:recognition.BUILD,
-      done:recognition.commandFor('awaiting_go','done'),
+      begin:recognition.commandFor('awaiting_go','begin'),
+      rejectsDone:recognition.commandFor('awaiting_go','done'),
       rejectsGo:recognition.commandFor('awaiting_go','go'),
-      rejectsLongDonePhrase:recognition.commandFor('awaiting_go','I am done now'),
+      rejectsLongBeginPhrase:recognition.commandFor('awaiting_go','I am ready to begin'),
       fail:recognition.commandFor('exercise_active','I failed'),
       success:recognition.commandFor('awaiting_result','that was successful'),
       next:recognition.commandFor('resting','next'),
@@ -150,9 +166,10 @@ test('persistent recognition requires exact commands and canonicalises spoken nu
 
   expect(result).toEqual({
     build:'BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260713_3',
-    done:'done',
+    begin:'begin',
+    rejectsDone:null,
     rejectsGo:null,
-    rejectsLongDonePhrase:null,
+    rejectsLongBeginPhrase:null,
     fail:'fail',
     success:'success',
     next:'next',
