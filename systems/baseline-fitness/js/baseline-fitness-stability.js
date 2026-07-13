@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_STABILITY_20260713_1';
+  const BUILD='BASELINE_FITNESS_STABILITY_20260713_3';
   const root=global.document?.documentElement;
   if(global.__BASELINE_FITNESS_STABILITY__) return;
   global.__BASELINE_FITNESS_STABILITY__=true;
@@ -89,6 +89,52 @@
     global.__BASELINE_FITNESS_MUTATION_GUARD__=true;
   }
 
+  function installRecognitionProxy(){
+    const NativeRecognition=global.SpeechRecognition||global.webkitSpeechRecognition;
+    if(typeof NativeRecognition!=='function'||global.__BASELINE_FITNESS_RECOGNITION_PROXY__) return;
+    global.__BASELINE_FITNESS_RECOGNITION_PROXY__=true;
+
+    function FitnessRecognition(){
+      const native=new NativeRecognition();
+      let resultHandler=null;
+
+      try{
+        native.addEventListener('result',event=>{
+          if(typeof resultHandler!=='function') return;
+          const results=Array.from(event?.results||[],result=>{
+            const alternatives=Array.from(result||[],alternative=>({
+              transcript:String(alternative?.transcript==null?'':alternative.transcript),
+              confidence:Number(alternative?.confidence)||0
+            }));
+            alternatives.isFinal=Boolean(result?.isFinal);
+            return alternatives;
+          });
+          resultHandler.call(native,{resultIndex:Number(event?.resultIndex)||0,results});
+        });
+        Object.defineProperty(native,'onresult',{
+          configurable:true,
+          enumerable:true,
+          get(){ return resultHandler; },
+          set(value){ resultHandler=typeof value==='function'?value:null; }
+        });
+      }catch(_error){}
+
+      return native;
+    }
+
+    FitnessRecognition.prototype=NativeRecognition.prototype;
+    try{ Object.setPrototypeOf(FitnessRecognition,NativeRecognition); }catch(_error){}
+    global.SpeechRecognition=FitnessRecognition;
+    global.webkitSpeechRecognition=FitnessRecognition;
+
+    // The older persistent-recognition layer restarted without retaining its
+    // consumer after a native onend event. Keep the native recogniser and the
+    // Fitness runtime's own restart policy instead. Coherence still maps the
+    // spoken “Begin” command to the runtime's internal activation command.
+    global.__BASELINE_FITNESS_PERSISTENT_RECOGNITION__=true;
+    root?.setAttribute('data-baseline-fitness-recognition-proxy',BUILD);
+  }
+
   function whitenBinauralIcon(){
     const button=global.document?.getElementById?.('bl-beats-toggle');
     if(!button) return false;
@@ -112,6 +158,7 @@
     observer.observe(homebar,{childList:true,subtree:true});
   }
 
+  installRecognitionProxy();
   root?.setAttribute('data-baseline-fitness-stability',BUILD);
   if(global.document?.readyState==='loading') global.document.addEventListener('DOMContentLoaded',installIconGuard,{once:true});
   else installIconGuard();
