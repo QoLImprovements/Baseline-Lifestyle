@@ -4,6 +4,19 @@
 
 FileETag None
 
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # The current HTML still carries the pre-fix query tokens. Redirect those exact
+  # requests to a new public URL, so a cache or CDN cannot keep treating the
+  # repaired file as the older runtime.
+  RewriteCond %{QUERY_STRING} ^v=BASELINE_FITNESS_SINGLE_RUNTIME_20260713_1$ [NC]
+  RewriteRule ^js/baseline-fitness-app\.js$ /systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_LIVE_RELEASE_20260713_2 [R=302,L,NE]
+
+  RewriteCond %{QUERY_STRING} ^v=BASELINE_FITNESS_STRUCTURE_20260713_1$ [NC]
+  RewriteRule ^css/baseline-fitness-structure\.css$ /systems/baseline-fitness/css/baseline-fitness-structure.css?v=BASELINE_FITNESS_LIVE_RELEASE_20260713_2 [R=302,L,NE]
+</IfModule>
+
 <IfModule mod_expires.c>
   ExpiresActive On
   ExpiresByType text/html "access plus 0 seconds"
