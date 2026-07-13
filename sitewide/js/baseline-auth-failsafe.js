@@ -4,12 +4,34 @@
 (function(){
   'use strict';
 
-  const BUILD='SITEWIDE_AUTH_SINGLE_OWNER_20260702_4';
+  const BUILD='SITEWIDE_AUTH_SINGLE_OWNER_20260713_5';
   const originalFetch=window.fetch.bind(window);
   const sitewideEndpoints=new Set([
     'login.php','me.php','logout.php','auth_providers.php','register.php',
     'forgot_password.php','password_reset.php','favourites.php','binaural.php'
   ]);
+
+  // The live Fitness site previously stored complete server responses under a
+  // version-one cache key. A malformed or very large value is parsed
+  // synchronously when My Plan opens and can exhaust the renderer before the
+  // network request begins. Local previews do not contain that production
+  // storage, which is why the failure did not reproduce there. Remove only the
+  // obsolete Fitness plan-response cache; account/session data is untouched.
+  function clearObsoleteFitnessPlanCache(){
+    try{
+      const body=document.body;
+      if(!body || !body.dataset || body.dataset.app!=='fitness') return;
+      const prefixes=['__bl_fitness_plan_cache_v1__','__baseline_fitness_plan_cache_v1__'];
+      const removals=[];
+      const count=Math.min(Number(window.localStorage && window.localStorage.length)||0,500);
+      for(let index=0;index<count;index+=1){
+        const key=window.localStorage.key(index)||'';
+        if(prefixes.some(prefix=>key.indexOf(prefix)===0)) removals.push(key);
+      }
+      removals.forEach(key=>window.localStorage.removeItem(key));
+      document.documentElement.setAttribute('data-baseline-fitness-legacy-cache-cleared',String(removals.length));
+    }catch(_error){}
+  }
 
   function requestUrl(input){
     try{
@@ -35,6 +57,8 @@
     }
     return false;
   }
+
+  clearObsoleteFitnessPlanCache();
 
   window.fetch=async function(input,init){
     const url=requestUrl(input);
