@@ -55,7 +55,7 @@ test('Body Profile calculates and saves BMI and BMR', async ({ page }) => {
   await expect(page.locator('#bodyProfileStatus')).toHaveText('Body profile saved.');
   await page.getByRole('button',{name:'Overall Summary',exact:true}).click();
   await expect(page.locator('#bodyOverallSummary')).toContainText('24.7');
-  await expect(page.locator('#bodyOverallSummary')).toContainText('1,730');
+  await expect(page.locator('#bodyOverallSummary')).toContainText('1730');
 });
 
 test('Garmin is presented as a full-sync connected service without claiming a live connection', async ({ page }) => {
