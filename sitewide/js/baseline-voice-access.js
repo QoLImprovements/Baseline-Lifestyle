@@ -2,10 +2,10 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_ACCESS_20260712_8';
-  const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_2';
+  const BUILD='BASELINE_VOICE_ACCESS_20260713_9';
+  const FITNESS_RECOGNITION_BUILD='BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260713_3';
   const FITNESS_GUARD_BUILD='BASELINE_FITNESS_MUTATION_GUARD_20260712_2';
-  const FITNESS_UI_BUILD='BASELINE_FITNESS_VOICE_UI_CORRECTIONS_20260712_1';
+  const FITNESS_UI_BUILD='BASELINE_FITNESS_VOICE_UI_CORRECTIONS_20260713_2';
   const APPROVED_KEY='__baseline_microphone_approved_v1__';
   if(global.__BASELINE_VOICE_ACCESS__) return;
   global.__BASELINE_VOICE_ACCESS__=true;
@@ -88,6 +88,7 @@
     if(style){
       style.id='baseline-fitness-voice-ui-corrections';
       style.textContent=`
+        #voiceSettingsPanel{margin-top:18px!important}
         #voiceSettingsPanel .voice-settings-toggles{
           display:grid!important;
           grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -271,7 +272,7 @@
   function canonicalCommand(state,value){
     const text=normalise(value);
     if(!text) return null;
-    if(state==='awaiting_go') return text==='go'?'go':null;
+    if(state==='awaiting_go') return text==='done'?'done':null;
     if(state==='resting') return text==='next'?'next':null;
     if(state==='exercise_active'||state==='awaiting_result'){
       if(/^(?:fail|failed|failure|i fail|i failed|it failed|that failed|that was a failure)$/.test(text)) return 'fail';
@@ -298,6 +299,7 @@
     let pendingNumber=null;
     let numberTimer=0;
     let ignoreInputUntil=0;
+    let assistantSpeechBlockedUntil=0;
     let meter=null;
 
     const gate={
@@ -313,6 +315,29 @@
       gate.speechStartedAt=0;
       gate.speechEndedAt=0;
       gate.lastVoiceAt=0;
+    }
+
+    function installSpeechOutputGuard(){
+      const synthesis=global.speechSynthesis;
+      if(!synthesis||typeof synthesis.speak!=='function'||global.__BASELINE_FITNESS_SPEECH_OUTPUT_GUARD__) return;
+      global.__BASELINE_FITNESS_SPEECH_OUTPUT_GUARD__=true;
+      const nativeSpeak=synthesis.speak.bind(synthesis);
+      synthesis.speak=utterance=>{
+        assistantSpeechBlockedUntil=Math.max(assistantSpeechBlockedUntil,Date.now()+500);
+        const originalEnd=utterance?.onend;
+        const originalError=utterance?.onerror;
+        if(utterance){
+          utterance.onend=event=>{
+            assistantSpeechBlockedUntil=Date.now()+750;
+            try{ originalEnd?.call(utterance,event); }catch(_error){}
+          };
+          utterance.onerror=event=>{
+            assistantSpeechBlockedUntil=Date.now()+500;
+            try{ originalError?.call(utterance,event); }catch(_error){}
+          };
+        }
+        return nativeSpeak(utterance);
+      };
     }
 
     function stopVoiceActivityMeter(){
@@ -411,7 +436,7 @@
     }
 
     function emitTo(target,transcript,confidence=1){
-      if(!target||Date.now()<ignoreInputUntil) return false;
+      if(!target||Date.now()<ignoreInputUntil||Date.now()<assistantSpeechBlockedUntil) return false;
       call(target,'onresult',makeResult(transcript,confidence));
       return true;
     }
@@ -435,9 +460,9 @@
       pendingNumber={value,state,target,confidence,updatedAt:Date.now()};
       if(numberTimer){ global.clearTimeout(numberTimer);numberTimer=0; }
       const status=global.document?.querySelector?.('#voiceWorkoutModal .voice-mic-status');
-      if(status) status.textContent=`Heard ${value}`;
+      if(status) status.textContent='Listening';
       if(isFinal) return commitNumber();
-      numberTimer=global.setTimeout(commitNumber,520);
+      numberTimer=global.setTimeout(commitNumber,850);
       return true;
     }
 
@@ -467,7 +492,8 @@
     }
 
     function handleNativeResult(event){
-      if(!activeVirtual||Date.now()<ignoreInputUntil) return;
+      const now=Date.now();
+      if(!activeVirtual||now<ignoreInputUntil||now<assistantSpeechBlockedUntil) return;
       if(global.speechSynthesis?.speaking||global.speechSynthesis?.pending) return;
 
       const state=currentState();
@@ -478,7 +504,9 @@
       for(let resultIndex=first;resultIndex<results.length;resultIndex+=1){
         const result=results[resultIndex];
         const options=alternatives(result);
-        if(!options.length||!resultPassesVoiceGate(result,options)) continue;
+        if(!options.length) continue;
+        const voiceAccepted=numberState&&result.isFinal?true:resultPassesVoiceGate(result,options);
+        if(!voiceAccepted) continue;
 
         if(numberState){
           for(const option of options){
@@ -567,17 +595,16 @@
         recognition.onresult=handleNativeResult;
         recognition.onspeechend=()=>{
           gate.speechEndedAt=Date.now();
-          if(pendingNumber&&!numberTimer) numberTimer=global.setTimeout(commitNumber,170);
-          else if(pendingNumber&&numberTimer){
-            global.clearTimeout(numberTimer);
-            numberTimer=global.setTimeout(commitNumber,170);
+          if(pendingNumber){
+            if(numberTimer) global.clearTimeout(numberTimer);
+            numberTimer=global.setTimeout(commitNumber,700);
           }
           call(activeVirtual,'onspeechend');
         };
         recognition.onsoundend=()=>{
-          if(pendingNumber&&numberTimer){
-            global.clearTimeout(numberTimer);
-            numberTimer=global.setTimeout(commitNumber,190);
+          if(pendingNumber){
+            if(numberTimer) global.clearTimeout(numberTimer);
+            numberTimer=global.setTimeout(commitNumber,750);
           }
           call(activeVirtual,'onsoundend');
         };
@@ -604,7 +631,7 @@
       nativeWanted=true;
       clearNumber();
       resetGateWindow();
-      ignoreInputUntil=Date.now()+220;
+      ignoreInputUntil=Math.max(ignoreInputUntil,Date.now()+450,assistantSpeechBlockedUntil);
       startVoiceActivityMeter();
       if(nativeRunning) global.queueMicrotask?.(()=>call(target,'onstart'));
       else startNative();
@@ -636,6 +663,7 @@
     PersistentSpeechRecognition.prototype.abort=function(){ detach(this); };
     PersistentSpeechRecognition.prototype.stop=function(){ detach(this); };
 
+    installSpeechOutputGuard();
     try{ Object.setPrototypeOf(PersistentSpeechRecognition,NativeRecognition); }catch(_error){}
     global.SpeechRecognition=PersistentSpeechRecognition;
     global.webkitSpeechRecognition=PersistentSpeechRecognition;
