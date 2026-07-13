@@ -145,6 +145,124 @@
   50%{height:28px;opacity:.72}
 }
 
+/*
+ * Side-plank controls are two workout steps, not a separate component theme.
+ * Remove the large nested-card presentation and use the same compact row
+ * structure, spacing and controls as every other exercise in My Plan.
+ */
+#currentWorkoutOut .current-step:has(> .side-plank-manual){
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#currentWorkoutOut .current-step:has(> .side-plank-manual) > .current-step-head{
+  display:none!important;
+}
+#currentWorkoutOut .side-plank-manual{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+  margin:0!important;
+}
+#currentWorkoutOut .side-plank-side{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto!important;
+  column-gap:12px!important;
+  row-gap:6px!important;
+  align-items:center!important;
+  width:100%!important;
+  min-height:0!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+  border-radius:16px!important;
+  background:rgba(255,255,255,.05)!important;
+  box-shadow:none!important;
+}
+#currentWorkoutOut .side-plank-side h4{
+  grid-column:1!important;
+  grid-row:1!important;
+  margin:0!important;
+  font-size:inherit!important;
+  line-height:1.3!important;
+  font-weight:850!important;
+}
+#currentWorkoutOut .side-plank-side h4 + div{
+  grid-column:1!important;
+  grid-row:2!important;
+  margin:0!important;
+  color:var(--muted)!important;
+  font-size:.95rem!important;
+  font-weight:700!important;
+}
+#currentWorkoutOut .side-plank-side .actions-inline{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  align-self:center!important;
+  justify-self:end!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+  gap:8px!important;
+  margin:0!important;
+}
+#currentWorkoutOut .side-plank-side [data-side-success],
+#currentWorkoutOut .side-plank-side [data-side-fail]{
+  width:44px!important;
+  min-width:44px!important;
+  height:44px!important;
+  min-height:44px!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+  font-size:0!important;
+}
+#currentWorkoutOut .side-plank-side [data-side-success]::before{
+  content:'✓';
+  font-size:1.4rem;
+  line-height:1;
+}
+#currentWorkoutOut .side-plank-side [data-side-fail]::before{
+  content:'✕';
+  font-size:1.35rem;
+  line-height:1;
+}
+#currentWorkoutOut .side-plank-side .side-plank-result{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  align-self:center!important;
+  justify-self:end!important;
+  margin:0!important;
+  padding:6px 10px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.06)!important;
+  font-size:.92rem!important;
+  font-weight:800!important;
+}
+#currentWorkoutOut .side-plank-side [data-side-failure-entry]{
+  grid-column:1 / -1!important;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:4px;
+}
+#currentWorkoutOut .side-plank-side [data-side-failure-entry][hidden]{
+  display:none!important;
+}
+#currentWorkoutOut .side-plank-side [data-side-failure-entry] input{
+  width:160px!important;
+  max-width:100%!important;
+  margin:0!important;
+}
+#currentWorkoutOut .side-plank-side.is-locked{
+  opacity:.55!important;
+}
+
 @media (prefers-reduced-motion:reduce){
   .voice-mic-visual:not([data-meter="live"]) .voice-level-bars i{
     animation:none!important;
@@ -158,4 +276,14 @@
   .voice-mic-visual{gap:10px}
   .voice-level-bars{min-width:112px;gap:4px}
   .voice-mic-status{min-width:0;font-size:.92rem}
+  #currentWorkoutOut .side-plank-side{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto auto auto!important;
+  }
+  #currentWorkoutOut .side-plank-side .actions-inline,
+  #currentWorkoutOut .side-plank-side .side-plank-result{
+    grid-column:1!important;
+    grid-row:3!important;
+    justify-self:start!important;
+  }
 }
