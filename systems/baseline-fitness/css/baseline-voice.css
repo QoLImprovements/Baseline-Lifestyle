@@ -156,16 +156,6 @@
   #bl-voice-flyout .bl-voice-settings-card{max-height:calc(100svh - 20px)}
 }
 
-html[data-app="fitness"] #bl-beats-toggle,
-html[data-app="fitness"] #bl-beats-toggle .bl-btn-icon,
-html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg,
-html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg path{
-  color:#fff!important;
-  fill:#fff!important;
-  stroke:#fff!important;
-  opacity:1!important;
-}
-
 #bl-voice-toggle,
 #bl-voice-flyout{
   display:none!important;
