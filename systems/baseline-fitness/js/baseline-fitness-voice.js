@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_11';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_12';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
   let renderQueued=false;
 
@@ -166,13 +166,17 @@
   }
 
   function whitenBinauralIcon(){
-    const control=Array.from(document.querySelectorAll('button,a')).find(node=>/^Binaural$/i.test(String(node.textContent||'').trim()));
+    const control=document.getElementById('bl-beats-toggle')
+      ||Array.from(document.querySelectorAll('button,a')).find(node=>/^Binaural$/i.test(String(node.textContent||'').trim()));
     if(!control) return false;
     control.classList.add('baseline-binaural-white-icon');
-    control.querySelectorAll('svg,path').forEach(node=>{
+    control.style.setProperty('color','#fff','important');
+    control.querySelectorAll('.bl-btn-icon,.bl-icon-svg,svg,path,use').forEach(node=>{
       node.style.setProperty('color','#fff','important');
-      node.style.setProperty('fill','#fff','important');
-      node.style.setProperty('stroke','#fff','important');
+      if(/^(svg|path|use)$/i.test(String(node.tagName||''))){
+        node.style.setProperty('fill','#fff','important');
+        node.style.setProperty('stroke','#fff','important');
+      }
     });
     return true;
   }
@@ -203,31 +207,44 @@
       #currentWorkoutOut .side-plank-standard-row .side-plank-original-actions-hidden{display:flex!important}
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry]{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry][hidden]{display:none!important}
+      .baseline-binaural-white-icon,
+      .baseline-binaural-white-icon .bl-btn-icon,
       .baseline-binaural-white-icon .bl-icon-svg,
       .baseline-binaural-white-icon .bl-icon-svg path{
         color:#fff!important;
         fill:#fff!important;
         stroke:#fff!important;
+        opacity:1!important;
       }
     `;
     document.head.appendChild(style);
   }
 
   function installPatch(){
+    if(global.__BASELINE_FITNESS_SIDE_PLANK_PATCH__) return;
+    global.__BASELINE_FITNESS_SIDE_PLANK_PATCH__=true;
     installStyles();
+    whitenBinauralIcon();
+    [0,50,250,1000].forEach(delay=>global.setTimeout(whitenBinauralIcon,delay));
     scheduleNormalise();
-    if(!whitenBinauralIcon()){
-      [50,250,1000].forEach(delay=>global.setTimeout(whitenBinauralIcon,delay));
-    }
     const root=document.getElementById('currentWorkoutOut');
     if(root) new MutationObserver(scheduleNormalise).observe(root,{childList:true,subtree:true});
     document.addEventListener('baseline:fitness-workout-updated',scheduleNormalise);
     document.documentElement.setAttribute('data-baseline-side-plank-rows',BUILD);
   }
 
+  installStyles();
+  whitenBinauralIcon();
+  [0,50,250,1000].forEach(delay=>global.setTimeout(whitenBinauralIcon,delay));
+
+  if(global.BASELINE_fitnessVoice){
+    installPatch();
+    return;
+  }
+
   const script=document.createElement('script');
   script.src=SOURCE;
-  script.defer=true;
+  script.async=false;
   script.onload=installPatch;
   script.onerror=installPatch;
   document.head.appendChild(script);
