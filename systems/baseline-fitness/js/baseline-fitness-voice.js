@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_FLAT_ROWS_20260713_5';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_FLAT_ROWS_20260713_6';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
   let renderQueued=false;
 
@@ -109,6 +109,10 @@
         border-radius:0!important;
         background:transparent!important;
         box-shadow:none!important;
+        opacity:1!important;
+      }
+      #currentWorkoutOut .side-plank-standard-row:first-child{
+        border-top:1px solid rgba(255,255,255,.10)!important;
       }
       #currentWorkoutOut .side-plank-standard-row>.current-step-head{
         display:flex!important;
@@ -116,6 +120,7 @@
         justify-content:space-between!important;
         gap:12px!important;
         flex-wrap:nowrap!important;
+        width:100%!important;
       }
       #currentWorkoutOut .side-plank-standard-row .step-actions,
       #currentWorkoutOut .side-plank-standard-row .actions-inline{
@@ -131,10 +136,13 @@
         height:42px!important;
         font-size:inherit!important;
       }
+      #currentWorkoutOut .side-plank-standard-row [data-side-timer]{
+        min-width:198px!important;
+      }
       #currentWorkoutOut .side-plank-standard-row [data-side-success],
       #currentWorkoutOut .side-plank-standard-row [data-side-fail]{
-        width:44px!important;
-        min-width:44px!important;
+        width:60px!important;
+        min-width:60px!important;
         padding:0!important;
       }
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry]{
@@ -145,12 +153,14 @@
         flex-wrap:wrap;
       }
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry][hidden]{display:none!important}
-      #currentWorkoutOut .side-plank-standard-row.is-locked{opacity:.72!important}
       @media (max-width:700px){
         #currentWorkoutOut .side-plank-standard-row>.current-step-head{
           align-items:flex-start!important;
           flex-wrap:wrap!important;
         }
+        #currentWorkoutOut .side-plank-standard-row [data-side-timer]{min-width:0!important}
+        #currentWorkoutOut .side-plank-standard-row [data-side-success],
+        #currentWorkoutOut .side-plank-standard-row [data-side-fail]{width:44px!important;min-width:44px!important}
       }
     `;
     document.head.appendChild(style);
