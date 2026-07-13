@@ -5,7 +5,7 @@
   const SINGLETON='__BASELINE_FITNESS_VOICE_ADAPTER__';
   if(global[SINGLETON]) return;
 
-  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260712_7';
+  const BUILD='BASELINE_FITNESS_VOICE_ADAPTER_20260713_8';
   const SETTINGS_KEY='__baseline_fitness_voice_settings_v2__';
   const SIDE_KEY='__baseline_fitness_side_plank_v1__';
   const STATES=Object.freeze({
@@ -84,7 +84,7 @@
       .voice-settings-button:hover{filter:brightness(1.08)}
       .voice-settings-button:focus-visible{outline:3px solid currentColor;outline-offset:3px}
       .voice-settings-button svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
-      .voice-settings-panel{margin:0 0 16px;padding:16px;border:1px solid var(--border-2,var(--border));border-radius:16px;background:var(--card-bg,var(--surface));box-shadow:0 16px 38px rgba(0,0,0,.2)}
+      .voice-settings-panel{margin:18px 0 16px;padding:16px;border:1px solid var(--border-2,var(--border));border-radius:16px;background:var(--card-bg,var(--surface));box-shadow:0 16px 38px rgba(0,0,0,.2)}
       .voice-settings-panel[hidden]{display:none!important}.voice-settings-grid{display:grid;gap:14px}
       .voice-settings-row{display:grid;gap:7px}.voice-settings-row label,.voice-settings-title{font-weight:850}
       .voice-settings-inline{display:flex;align-items:center;gap:12px}.voice-settings-inline input[type=range]{flex:1}
@@ -169,7 +169,9 @@
 
   function setMicState(state,text=''){
     const visual=$('.voice-mic-visual');if(!visual) return;
-    visual.dataset.state=state;const status=$('.voice-mic-status',visual);if(status) status.textContent=text;
+    visual.dataset.state=state;
+    const status=$('.voice-mic-status',visual);
+    if(status) status.textContent=state==='paused'||state==='error'?text:'Listening';
   }
   function setPrompt(text){ const node=$('#voiceWorkoutPrompt');if(node) node.textContent=String(text||''); }
   function showTimer(seconds,label='Timer'){
@@ -251,7 +253,7 @@
       const recognition=new Recognition();session.recognition=recognition;
       recognition.lang='en-GB';recognition.continuous=true;recognition.interimResults=false;recognition.maxAlternatives=5;
       recognition.onstart=()=>{ if(serial!==session.recognitionSerial) return;session.recognitionRunning=true;setMicState('listening','Listening'); };
-      recognition.onspeechstart=()=>{ if(serial===session.recognitionSerial) setMicState('hearing','Processing'); };
+      recognition.onspeechstart=()=>{ if(serial===session.recognitionSerial) setMicState('hearing','Listening'); };
       recognition.onresult=event=>{
         if(serial!==session.recognitionSerial) return;
         for(let index=event.resultIndex;index<event.results.length;index++){
@@ -279,11 +281,11 @@
   function speak(text,settingName=null){
     const message=String(text||'').trim();if(message) session.lastInstruction=message;
     if(!message||!synthesis||!global.SpeechSynthesisUtterance||(settingName&&settings[settingName]===false)) return Promise.resolve(false);
-    cancelSpeech();pauseRecognitionForSpeech();session.speaking=true;const token=++session.speechToken;setMicState('speaking','');
+    cancelSpeech();pauseRecognitionForSpeech();session.speaking=true;const token=++session.speechToken;setMicState('speaking','Listening');
     return new Promise(resolve=>{
       let settled=false;const finish=value=>{
         if(settled) return;settled=true;if(token===session.speechToken) session.speaking=false;
-        if(session.active&&!session.pausedByUser&&session.state!==STATES.FINISHED&&session.state!==STATES.ERROR){ setMicState('listening','Listening');scheduleRecognitionRestart(35); }
+        if(session.active&&!session.pausedByUser&&session.state!==STATES.FINISHED&&session.state!==STATES.ERROR){ setMicState('listening','Listening');scheduleRecognitionRestart(80); }
         resolve(Boolean(value));
       };
       try{
@@ -296,7 +298,7 @@
 
   function exactCommandForState(state,value){
     const text=normalise(value);if(!text) return null;
-    if(state===STATES.AWAITING_GO) return text==='go'?'go':null;
+    if(state===STATES.AWAITING_GO) return text==='done'?'done':null;
     if(state===STATES.EXERCISE_ACTIVE||state===STATES.AWAITING_RESULT){
       if(/\b(fail|failed|failure)\b/i.test(text)) return 'fail';
       if(/\b(success|succeeded|successful)\b/i.test(text)) return 'success';
@@ -306,9 +308,9 @@
     return null;
   }
 
-  const ONES=Object.freeze({zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19});
+  const ONES=Object.freeze({zero:0,one:1,won:1,two:2,to:2,too:2,three:3,four:4,for:4,five:5,six:6,seven:7,eight:8,ate:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19});
   const TENS=Object.freeze({twenty:20,thirty:30,forty:40,fifty:50,sixty:60,seventy:70,eighty:80,ninety:90});
-  const NUMBER_FILLERS=new Set(['i','completed','complete','achieved','managed','did','about','approximately','sets','set','seconds','second','a','around','roughly','only']);
+  const NUMBER_FILLERS=new Set(['i','ive','im','am','completed','complete','achieved','managed','did','done','got','made','about','approximately','repetitions','repetition','reps','rep','sets','set','seconds','second','a','around','roughly','only','it','was','that','is','the','number','and']);
   function parseSpokenNumber(value){
     const text=normalise(value),digit=text.match(/\b\d{1,3}\b/);
     if(digit){ const number=Number(digit[0]);return number>=0&&number<=999?number:null; }
@@ -332,7 +334,7 @@
       else{ const command=exactCommandForState(session.state,raw);if(command) accepted=processCommand(command); }
       if(accepted){ session.lastAcceptedAt=now;session.lastAcceptedFingerprint=fingerprint;return true; }
     }
-    if(session.state===STATES.AWAITING_SETS_NUMBER||session.state===STATES.AWAITING_SECONDS_NUMBER) speak('I didn’t catch the number. Say only the number, for example, three.','resultQuestions');
+    if(session.state===STATES.AWAITING_SETS_NUMBER||session.state===STATES.AWAITING_SECONDS_NUMBER) speak('I didn’t catch the number. Please say the number again.','resultQuestions');
     return false;
   }
 
@@ -342,20 +344,17 @@
     catch(_error){ return {left:null,right:null}; }
   }
   function writeSideResults(context,value){ try{ localStorage.setItem(sideStorageKey(context),JSON.stringify(value)); }catch(_error){} }
-  function configuredSets(context){
-    if(!context?.step) return 1;const count=(context.steps||[]).filter(step=>!isTimed(step)&&step.name===context.step.name).length;return Math.max(1,count||1);
-  }
   function validateNumber(number){
     const value=Math.round(Number(number));if(!Number.isFinite(value)||value<0) return null;
-    if(session.state===STATES.AWAITING_SETS_NUMBER) return value<=configuredSets(session.currentContext)?value:null;
-    if(session.state===STATES.AWAITING_SECONDS_NUMBER){ const target=Math.max(0,Math.round(Number(session.currentContext?.step?.target)||0));return value<=target?value:null; }
+    const target=Math.max(0,Math.round(Number(session.currentContext?.step?.target)||0));
+    if(session.state===STATES.AWAITING_SETS_NUMBER||session.state===STATES.AWAITING_SECONDS_NUMBER) return value<=target?value:null;
     return null;
   }
 
   function processCommand(command){
     if(session.handling) return false;session.handling=true;
     try{
-      if(command==='go'){ beginExercise();return true; }
+      if(command==='done'){ beginExercise();return true; }
       if(command==='success'){ handleSuccess();return true; }
       if(command==='fail'){ handleFail();return true; }
       if(command==='next'){ prepareCurrentStep();return true; }
@@ -408,15 +407,15 @@
       session.state=STATES.AWAITING_SECONDS_NUMBER;const side=session.currentSide?` on the ${session.currentSide} side`:'';
       setPrompt('How many seconds did you achieve?');if(settings.resultQuestions!==false) speak(`How many seconds did you achieve${side}?`,'resultQuestions');
     }else{
-      session.state=STATES.AWAITING_SETS_NUMBER;setPrompt('How many sets did you achieve?');if(settings.resultQuestions!==false) speak('How many sets did you achieve?','resultQuestions');
+      session.state=STATES.AWAITING_SETS_NUMBER;setPrompt('How many repetitions did you achieve?');if(settings.resultQuestions!==false) speak('How many repetitions did you achieve?','resultQuestions');
     }
   }
   function handleNumber(rawNumber){
     const number=validateNumber(rawNumber);
-    if(number===null){ speak('I didn’t catch the number. Say only the number, for example, three.','resultQuestions');return false; }
+    if(number===null){ speak('I didn’t catch the number. Please say the number again.','resultQuestions');return false; }
     const context=session.currentContext||fitness()?.getCurrentContext?.();if(!context?.step) return false;
     if(session.state===STATES.AWAITING_SETS_NUMBER){
-      const confirmation=`${numberLabel(number)} set${number===1?'':'s'} recorded.`;fitness()?.failCurrentStep?.(number,'voice');setPrompt(confirmation.charAt(0).toUpperCase()+confirmation.slice(1));speak(confirmation,'resultQuestions').then(startRestOrFinish);return true;
+      const confirmation=`${numberLabel(number)} repetition${number===1?'':'s'} recorded.`;fitness()?.failCurrentStep?.(number,'voice');setPrompt(`Recorded: ${number} repetition${number===1?'':'s'}.`);speak(confirmation,'resultQuestions').then(startRestOrFinish);return true;
     }
     if(session.state===STATES.AWAITING_SECONDS_NUMBER){
       const confirmation=`${numberLabel(number)} second${number===1?'':'s'} recorded.`;
@@ -440,8 +439,8 @@
     session.restInterval=setInterval(()=>{ session.restRemaining=Math.max(0,session.restRemaining-1);showTimer(session.restRemaining,'Rest remaining');if(session.restRemaining<=0) clearRestTimer(); },1000);
   }
   function prepareSide(side){
-    const context=session.currentContext;if(!context?.step) return;clearTimers();session.currentSide=side;session.state=STATES.AWAITING_GO;renderContext(context);renderSide(side);showTimer(context.step.target,'Target time');setPrompt('When in position, say ‘Go’.');
-    const label=side==='left'?'left':'right',exercise=`Prepare for the ${label} side plank.`,start='When in position, say Go.';
+    const context=session.currentContext;if(!context?.step) return;clearTimers();session.currentSide=side;session.state=STATES.AWAITING_GO;renderContext(context);renderSide(side);showTimer(context.step.target,'Target time');setPrompt('When in position, say ‘Done’.');
+    const label=side==='left'?'left':'right',exercise=`Prepare for the ${label} side plank.`,start='When in position, say Done.';
     if(settings.exerciseInstructions!==false&&settings.startInstructions!==false) speak(`${exercise} ${start}`,'exerciseInstructions');
     else if(settings.exerciseInstructions!==false) speak(exercise,'exerciseInstructions');else if(settings.startInstructions!==false) speak(start,'startInstructions');
   }
@@ -455,13 +454,13 @@
     }
     session.state=STATES.AWAITING_GO;
     if(isTimed(context.step)){
-      showTimer(context.step.target,'Target time');setPrompt('When in position, say ‘Go’.');
-      if(settings.exerciseInstructions!==false) speak(`Prepare for ${context.step.name}.`,'exerciseInstructions').then(()=>{ if(settings.startInstructions!==false) return speak('When in position, say Go.','startInstructions'); });
-      else if(settings.startInstructions!==false) speak('When in position, say Go.','startInstructions');
+      showTimer(context.step.target,'Target time');setPrompt('When in position, say ‘Done’.');
+      if(settings.exerciseInstructions!==false) speak(`Prepare for ${context.step.name}.`,'exerciseInstructions').then(()=>{ if(settings.startInstructions!==false) return speak('When in position, say Done.','startInstructions'); });
+      else if(settings.startInstructions!==false) speak('When in position, say Done.','startInstructions');
     }else{
-      hideTimer();setPrompt('Say ‘Go’ to start.');
-      if(settings.exerciseInstructions!==false) speak(`Prepare for ${context.step.name}.`,'exerciseInstructions').then(()=>{ if(settings.startInstructions!==false) return speak('When ready, say Go.','startInstructions'); });
-      else if(settings.startInstructions!==false) speak('When ready, say Go.','startInstructions');
+      hideTimer();setPrompt('Say ‘Done’ to start.');
+      if(settings.exerciseInstructions!==false) speak(`Prepare for ${context.step.name}.`,'exerciseInstructions').then(()=>{ if(settings.startInstructions!==false) return speak('When ready, say Done.','startInstructions'); });
+      else if(settings.startInstructions!==false) speak('When ready, say Done.','startInstructions');
     }
   }
 
@@ -477,7 +476,7 @@
       const controller=fitness(),context=controller?.getCurrentContext?.();
       if(!controller||!context?.available||!context.canStart){ const status=$('#myPlanStatus');if(status) status.textContent='The current workout is not available to start.';return; }
       if(!Recognition||!synthesis||!global.isSecureContext){ const status=$('#myPlanStatus');if(status) status.textContent='Voice recognition requires a supported browser over HTTPS.';return; }
-      openModal();setMicState('paused','Processing');
+      openModal();setMicState('listening','Listening');
       try{ await startMicrophoneMeter(); }catch(_error){ setMicState('error','Microphone unavailable');setPrompt('Microphone unavailable');return; }
       controller.startSession?.('voice');session.active=true;session.workoutRunning=true;session.workoutPaused=false;session.pausedByUser=false;session.lastAcceptedAt=0;session.lastAcceptedFingerprint='';
       startRecognition();prepareCurrentStep();syncWorkoutButtons();
@@ -492,9 +491,9 @@
     }
   }
   function restoreVisibleInstruction(){
-    if(session.state===STATES.AWAITING_GO) setPrompt(isTimed(session.currentContext?.step)?'When in position, say ‘Go’.':'Say ‘Go’ to start.');
+    if(session.state===STATES.AWAITING_GO) setPrompt(isTimed(session.currentContext?.step)?'When in position, say ‘Done’.':'Say ‘Done’ to start.');
     else if(session.state===STATES.AWAITING_RESULT) setPrompt('Say ‘Success’ or ‘Fail’.');
-    else if(session.state===STATES.AWAITING_SETS_NUMBER) setPrompt('How many sets did you achieve?');
+    else if(session.state===STATES.AWAITING_SETS_NUMBER) setPrompt('How many repetitions did you achieve?');
     else if(session.state===STATES.AWAITING_SECONDS_NUMBER) setPrompt('How many seconds did you achieve?');
     else if(session.state===STATES.RESTING) setPrompt('Say ‘Next’ to continue.');
   }
@@ -549,7 +548,7 @@
       if(button.id==='voiceSettingsBtn'){ event.preventDefault();const panel=$('#voiceSettingsPanel'),open=Boolean(panel?.hidden);if(panel) panel.hidden=!open;button.setAttribute('aria-expanded',String(open));return; }
       if(button.id==='startVoiceWorkoutBtn'){ event.preventDefault();event.stopPropagation();event.stopImmediatePropagation?.();startVoiceWorkout();return; }
       if(button.id==='startWorkoutBtn'){ event.preventDefault();event.stopPropagation();event.stopImmediatePropagation?.();const action=button.dataset.workoutAction||'start';if(action==='stop') stopWorkout(true);else resumeManualWorkout();return; }
-      if(button.id==='endVoiceWorkoutBtn'){ event.preventDefault();stopWorkout(true);return; }
+      if(button.id==='endVoiceWorkoutBtn'){ event.preventDefault();stopWorkout(false);return; }
       if(button.id==='pauseVoiceListeningBtn'){ event.preventDefault();pauseListening();return; }
       if(button.id==='repeatVoiceInstructionBtn'){ event.preventDefault();speak(session.lastInstruction||'The current instruction is shown on screen.');return; }
       if(button.dataset.sideTimer){ event.preventDefault();openManualSideTimer(button.dataset.sideTimer);return; }
@@ -580,7 +579,7 @@
   const api=Object.freeze({
     BUILD,STATES,start:startVoiceWorkout,stop:()=>stopWorkout(false),state:()=>session.state,
     settings:()=>Object.assign({},settings),
-    debug:Object.freeze({intentFor:exactCommandForState,parseNumber:parseSpokenNumber,normalise,sameUtterance,isSidePlank})
+    debug:Object.freeze({intentFor:exactCommandForState,parseNumber:parseSpokenNumber,normalise,sameUtterance,isSidePlank,validateNumber})
   });
   global.BASELINE_fitnessVoice=api;global[SINGLETON]=api;
   document.readyState==='loading'?document.addEventListener('DOMContentLoaded',init,{once:true}):init();
