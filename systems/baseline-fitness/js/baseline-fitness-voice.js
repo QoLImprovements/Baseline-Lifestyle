@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_ROWS_20260713_1';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_ROWS_20260713_2';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
 
   function rowMarkup(side,target,enabled,result){
@@ -33,6 +33,9 @@
     document.querySelectorAll('#currentWorkoutOut .side-plank-manual').forEach(wrap=>{
       const state=readSideState(wrap);
       if(!state) return;
+      const signature=JSON.stringify({target:state.target,active:state.active,left:state.results.left,right:state.results.right});
+      if(wrap.dataset.coherentSignature===signature) return;
+      wrap.dataset.coherentSignature=signature;
       const left=wrap.querySelector('[data-manual-side="left"]');
       const right=wrap.querySelector('[data-manual-side="right"]');
       if(!left||!right) return;
