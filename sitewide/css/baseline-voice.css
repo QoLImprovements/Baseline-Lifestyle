@@ -159,6 +159,18 @@
   #bl-voice-flyout .bl-voice-settings-card{max-height:calc(100svh - 20px)}
 }
 
+/* Fitness banner icon consistency. The shared header creates this button as
+   #bl-beats-toggle; both its icon container and SVG must inherit white. */
+html[data-app="fitness"] #bl-beats-toggle,
+html[data-app="fitness"] #bl-beats-toggle .bl-btn-icon,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg,
+html[data-app="fitness"] #bl-beats-toggle .bl-icon-svg path{
+  color:#fff!important;
+  fill:#fff!important;
+  stroke:#fff!important;
+  opacity:1!important;
+}
+
 /* Fitness-only phase: do not expose Voice as a sitewide banner panel yet. */
 #bl-voice-toggle,
 #bl-voice-flyout{
