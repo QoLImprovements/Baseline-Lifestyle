@@ -62,8 +62,8 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG&&globalThis.BASELINE_fitnessVoice));
 
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260712_7');
-  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-persistent-recognition','BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_2');
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-voice-adapter','BASELINE_FITNESS_VOICE_ADAPTER_20260713_8');
+  await expect(page.locator('html')).toHaveAttribute('data-baseline-fitness-persistent-recognition','BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260713_3');
   await expect(page.locator('#voiceWorkoutTitle')).toHaveText('Voice workout');
   await expect(page.locator('#voiceWorkoutModal')).toHaveAttribute('aria-labelledby','voiceWorkoutTitle');
   await expect(page.getByRole('button',{name:'Voice settings'})).toHaveCount(1);
@@ -88,34 +88,36 @@ test('My Plan remains responsive after Fitness DOM updates', async ({ page }) =>
   expect(await page.evaluate(() => 6*7)).toBe(42);
 });
 
-test('voice commands are state-scoped and Fail variants are reliable', async ({ page }) => {
+test('voice commands use Done and remain state-scoped', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice?.debug));
 
   const result=await page.evaluate(() => {
     const debug=globalThis.BASELINE_fitnessVoice.debug;
     return {
-      go:debug.intentFor('awaiting_go','Go'),
+      done:debug.intentFor('awaiting_go','Done'),
+      rejectsGo:debug.intentFor('awaiting_go','Go'),
       rejectsFailBeforeStart:debug.intentFor('awaiting_go','Fail'),
       fail:debug.intentFor('exercise_active','Fail'),
       failed:debug.intentFor('exercise_active','I failed'),
       failure:debug.intentFor('awaiting_result','That was a failure'),
       success:debug.intentFor('awaiting_result','Success'),
       next:debug.intentFor('resting','Next'),
-      rejectsGoDuringRest:debug.intentFor('resting','Go'),
+      rejectsDoneDuringRest:debug.intentFor('resting','Done'),
       rejectsNextDuringResult:debug.intentFor('awaiting_result','Next')
     };
   });
 
   expect(result).toEqual({
-    go:'go',
+    done:'done',
+    rejectsGo:null,
     rejectsFailBeforeStart:null,
     fail:'fail',
     failed:'fail',
     failure:'fail',
     success:'success',
     next:'next',
-    rejectsGoDuringRest:null,
+    rejectsDoneDuringRest:null,
     rejectsNextDuringResult:null
   });
 });
@@ -128,39 +130,45 @@ test('persistent recognition requires exact commands and canonicalises spoken nu
     const recognition=globalThis.BASELINE_fitnessPersistentRecognition;
     return {
       build:recognition.BUILD,
-      go:recognition.commandFor('awaiting_go','go'),
-      rejectsLongGoPhrase:recognition.commandFor('awaiting_go','please go now'),
+      done:recognition.commandFor('awaiting_go','done'),
+      rejectsGo:recognition.commandFor('awaiting_go','go'),
+      rejectsLongDonePhrase:recognition.commandFor('awaiting_go','I am done now'),
       fail:recognition.commandFor('exercise_active','I failed'),
       success:recognition.commandFor('awaiting_result','that was successful'),
       next:recognition.commandFor('resting','next'),
       rejectsLongNextPhrase:recognition.commandFor('resting','next please'),
-      three:recognition.parseNumber('I completed three sets'),
-      recognisedWon:recognition.parseNumber('won set'),
-      recognisedToo:recognition.parseNumber('too sets'),
-      twentyFive:recognition.parseNumber('twenty-five seconds'),
+      nine:recognition.parseNumber('nine'),
+      fourteen:recognition.parseNumber('fourteen repetitions'),
+      nineteen:recognition.parseNumber('I achieved nineteen'),
+      twentyFive:recognition.parseNumber('twenty-five reps'),
+      recognisedWon:recognition.parseNumber('won repetition'),
+      recognisedToo:recognition.parseNumber('too reps'),
       nineNinetyNine:recognition.parseNumber('I achieved nine hundred and ninety-nine seconds'),
       rejectsThousand:recognition.parseNumber('one thousand')
     };
   });
 
   expect(result).toEqual({
-    build:'BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260712_2',
-    go:'go',
-    rejectsLongGoPhrase:null,
+    build:'BASELINE_FITNESS_PERSISTENT_RECOGNITION_20260713_3',
+    done:'done',
+    rejectsGo:null,
+    rejectsLongDonePhrase:null,
     fail:'fail',
     success:'success',
     next:'next',
     rejectsLongNextPhrase:null,
-    three:3,
+    nine:9,
+    fourteen:14,
+    nineteen:19,
+    twentyFive:25,
     recognisedWon:1,
     recognisedToo:2,
-    twentyFive:25,
     nineNinetyNine:999,
     rejectsThousand:null
   });
 });
 
-test('Voice Settings uses aligned custom switches', async ({ page }) => {
+test('Voice Settings uses aligned custom switches with spacing below the cog', async ({ page }) => {
   await page.goto('/baseline-fitness/system', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessVoice));
 
@@ -171,10 +179,12 @@ test('Voice Settings uses aligned custom switches', async ({ page }) => {
   });
 
   await page.getByRole('button',{name:'Voice settings'}).click();
-  await expect(page.locator('#voiceSettingsPanel')).toBeVisible();
-  await expect(page.locator('#voiceSettingsPanel .voice-setting-toggle')).toHaveCount(6);
-  await expect(page.locator('#voiceSettingsPanel .voice-setting-label')).toHaveCount(6);
-  await expect(page.locator('#voiceSettingsPanel .voice-setting-switch')).toHaveCount(6);
+  const panel=page.locator('#voiceSettingsPanel');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('.voice-setting-toggle')).toHaveCount(6);
+  await expect(panel.locator('.voice-setting-label')).toHaveCount(6);
+  await expect(panel.locator('.voice-setting-switch')).toHaveCount(6);
+  expect(await panel.evaluate(node=>parseFloat(getComputedStyle(node).marginTop))).toBeGreaterThanOrEqual(18);
 });
 
 test('End Voice Workout exits the website function without a browser prompt', async ({ page }) => {
