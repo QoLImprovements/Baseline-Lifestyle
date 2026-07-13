@@ -26,7 +26,7 @@ function walk(directory, output = []) {
 }
 
 test('runtime systems have one canonical owner and no root shadow folders', () => {
-  const forbiddenRootFolders = ['games','css','js','rules','docs', ...systemNames];
+  const forbiddenRootFolders = ['api','games','css','js','rules','docs', ...systemNames];
   for (const shadow of forbiddenRootFolders) {
     assert.equal(fs.existsSync(path.join(root, shadow)), false, `obsolete root folder remains: ${shadow}`);
   }
