@@ -26,6 +26,7 @@ function bl_fitness_ensure_schema(PDO $db): void {
     FOREIGN KEY(plan_id) REFERENCES plans(id),
     FOREIGN KEY(user_id) REFERENCES users(id)
   )');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_plans_user_created ON plans(user_id, created_at DESC, id DESC)');
   $db->exec('CREATE INDEX IF NOT EXISTS idx_plan_sessions_user ON plan_sessions(user_id)');
   $db->exec('CREATE INDEX IF NOT EXISTS idx_plan_sessions_plan ON plan_sessions(plan_id)');
 

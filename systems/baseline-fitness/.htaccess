@@ -1,0 +1,51 @@
+# Baseline Fitness live-release cache boundary.
+# The page uses stable asset filenames, so a release epoch is required to evict
+# stale browser/CDN copies when the contents behind those filenames change.
+
+FileETag None
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # The current HTML still carries the pre-fix query tokens. Redirect those exact
+  # requests to a new public URL, so a cache or CDN cannot keep treating the
+  # repaired file as the older runtime.
+  RewriteCond %{QUERY_STRING} ^v=BASELINE_FITNESS_SINGLE_RUNTIME_20260713_1$ [NC]
+  RewriteRule ^js/baseline-fitness-app\.js$ /systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_LIVE_RELEASE_20260713_2 [R=302,L,NE]
+
+  RewriteCond %{QUERY_STRING} ^v=BASELINE_FITNESS_STRUCTURE_20260713_1$ [NC]
+  RewriteRule ^css/baseline-fitness-structure\.css$ /systems/baseline-fitness/css/baseline-fitness-structure.css?v=BASELINE_FITNESS_LIVE_RELEASE_20260713_2 [R=302,L,NE]
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/xhtml+xml "access plus 0 seconds"
+  ExpiresByType application/x-httpd-php "access plus 0 seconds"
+  ExpiresByType text/css "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 0 seconds"
+  ExpiresByType text/javascript "access plus 0 seconds"
+</IfModule>
+
+<IfModule mod_setenvif.c>
+  SetEnvIf Cookie "(^|;[[:space:]]*)baseline_fitness_runtime_epoch=20260713_2(;|$)" baseline_fitness_epoch_current=1
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always unset ETag
+
+  <FilesMatch "\.(html?|php|css|js)$">
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+    Header always set X-Baseline-Fitness-Release "BASELINE_FITNESS_LIVE_RELEASE_20260713_2"
+  </FilesMatch>
+
+  # Clear only the HTTP cache once for this release. Storage and cookies are not
+  # cleared; the JavaScript migration removes only the obsolete Fitness cache key.
+  <Files "baseline-fitness.html">
+    Header always set Clear-Site-Data "\"cache\"" env=!baseline_fitness_epoch_current
+    Header always add Set-Cookie "baseline_fitness_runtime_epoch=20260713_2; Path=/; Max-Age=31536000; Secure; SameSite=Lax" env=!baseline_fitness_epoch_current
+  </Files>
+</IfModule>
