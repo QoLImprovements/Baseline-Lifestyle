@@ -37,7 +37,7 @@ const STATIC_ROUTE_RULES = [
   [/^\/baseline-massage\/(?:system|library|planner)\/?$/, '/systems/baseline-massage/baseline-massage.html'],
   [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-badminton-session\/(?:system|game-plan|ratings-standings|players-pairs|session-history)\/?$/, '/systems/baseline-badminton-session/baseline-badminton-session.html'],
-  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-plan)\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
+  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
 ];
 
 const DEFAULT_REDIRECTS = new Map([
