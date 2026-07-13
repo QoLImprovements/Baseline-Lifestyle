@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_9';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_NATIVE_ROWS_20260713_10';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
   let renderQueued=false;
 
@@ -176,8 +176,17 @@
       #currentWorkoutOut .side-plank-source-row>.current-step-head{display:none!important}
       #currentWorkoutOut .side-plank-standard-list{display:contents!important;margin:0!important;padding:0!important}
       #currentWorkoutOut .side-plank-standard-row[data-manual-side="left"]{
-        border-top:1px solid rgba(255,255,255,.10)!important;
-        border-bottom:1px solid rgba(255,255,255,.10)!important;
+        position:relative!important;
+      }
+      #currentWorkoutOut .side-plank-standard-row[data-manual-side="left"]::before{
+        content:""!important;
+        position:absolute!important;
+        top:0!important;
+        left:0!important;
+        right:0!important;
+        height:1px!important;
+        background:rgba(255,255,255,.12)!important;
+        pointer-events:none!important;
       }
       #currentWorkoutOut .side-plank-standard-row .side-plank-original-actions-hidden{display:flex!important}
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry]{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
