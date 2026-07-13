@@ -2,11 +2,12 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_THREE_ROWS_20260713_3';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_THREE_ROWS_20260713_4';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
+  let renderQueued=false;
 
   function targetFor(row,manual){
-    return String(row?.querySelector('.current-step-head b')?.textContent||'').match(/\((\d+)\)/)?.[1]
+    return String(row?.querySelector(':scope > .current-step-head b')?.textContent||'').match(/\((\d+)\)/)?.[1]
       || String(manual?.textContent||'').match(/\b(\d+)\b/)?.[1]
       || '0';
   }
@@ -30,13 +31,13 @@
 
   function sideStorageState(row,target){
     const context=global.BASELINE_fitnessWorkout?.getCurrentContext?.();
-    const rows=Array.from(document.querySelectorAll('#currentWorkoutOut .current-step'));
+    const rows=Array.from(document.querySelectorAll('#currentWorkoutOut > .current-step, #currentWorkoutOut .current-workout > .current-step'));
     const index=rows.indexOf(row);
     const active=Boolean(context&&index===context.stepIndex&&context.started&&context.canStart);
     const key=`__baseline_fitness_side_plank_v1__::${context?.planId||0}::${context?.sessionIndex||0}::${index}`;
     let results={left:null,right:null};
     try{ results=Object.assign(results,JSON.parse(localStorage.getItem(key)||'null')||{}); }catch(_error){}
-    return {active,results,target};
+    return {active,results,target,index};
   }
 
   function sideRow(side,state){
@@ -56,19 +57,41 @@
   }
 
   function normaliseSidePlankRows(){
+    renderQueued=false;
     document.querySelectorAll('#currentWorkoutOut .current-step').forEach(row=>{
       const manual=row.querySelector(':scope > .side-plank-manual');
       if(!manual) return;
 
       const target=targetFor(row,manual);
       const state=sideStorageState(row,target);
+      const signature=JSON.stringify({
+        target:state.target,
+        active:state.active,
+        index:state.index,
+        left:state.results.left,
+        right:state.results.right
+      });
+
       row.classList.add('side-plank-source-row');
       const heading=row.querySelector(':scope > .current-step-head');
-      if(heading) heading.hidden=true;
-      manual.hidden=false;
-      manual.className='side-plank-manual side-plank-standard-list';
+      if(heading&&!heading.hidden) heading.hidden=true;
+      if(manual.hidden) manual.hidden=false;
+      if(!manual.classList.contains('side-plank-standard-list')) manual.classList.add('side-plank-standard-list');
+
+      // Only replace the DOM when the actual workout state changed. The prior
+      // implementation rewrote innerHTML on every observer callback, causing an
+      // endless mutation loop that froze the My Plan page.
+      if(manual.dataset.renderSignature===signature) return;
+      manual.dataset.renderSignature=signature;
       manual.innerHTML=sideRow('left',state)+sideRow('right',state);
     });
+  }
+
+  function scheduleNormalise(){
+    if(renderQueued) return;
+    renderQueued=true;
+    if(typeof global.requestAnimationFrame==='function') global.requestAnimationFrame(normaliseSidePlankRows);
+    else global.setTimeout(normaliseSidePlankRows,0);
   }
 
   function installStyles(){
@@ -76,16 +99,9 @@
     const style=document.createElement('style');
     style.id='baseline-side-plank-three-rows';
     style.textContent=`
-      #currentWorkoutOut .side-plank-source-row{
-        display:contents!important;
-      }
-      #currentWorkoutOut .side-plank-source-row>:scope.current-step-head,
-      #currentWorkoutOut .side-plank-source-row>.current-step-head{
-        display:none!important;
-      }
-      #currentWorkoutOut .side-plank-standard-list{
-        display:contents!important;
-      }
+      #currentWorkoutOut .side-plank-source-row{display:contents!important}
+      #currentWorkoutOut .side-plank-source-row>.current-step-head{display:none!important}
+      #currentWorkoutOut .side-plank-standard-list{display:contents!important}
       #currentWorkoutOut .side-plank-standard-row{
         min-height:0!important;
         padding:10px 12px!important;
@@ -136,9 +152,12 @@
 
   function installPatch(){
     installStyles();
-    normaliseSidePlankRows();
-    new MutationObserver(()=>queueMicrotask(normaliseSidePlankRows)).observe(document.body,{childList:true,subtree:true});
-    document.addEventListener('baseline:fitness-workout-updated',normaliseSidePlankRows);
+    scheduleNormalise();
+    const root=document.getElementById('currentWorkoutOut');
+    if(root){
+      new MutationObserver(scheduleNormalise).observe(root,{childList:true,subtree:true});
+    }
+    document.addEventListener('baseline:fitness-workout-updated',scheduleNormalise);
     document.documentElement.setAttribute('data-baseline-side-plank-rows',BUILD);
   }
 
