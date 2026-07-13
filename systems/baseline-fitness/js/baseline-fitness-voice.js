@@ -1,8 +1,8 @@
-/* Baseline Fitness — load the preserved voice runtime, then render side-plank sides as standard rows. */
+/* Baseline Fitness — load the preserved voice runtime, then render side-plank sides as standard timed rows. */
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_SIDE_PLANK_FLAT_ROWS_20260713_6';
+  const BUILD='BASELINE_FITNESS_SIDE_PLANK_FLAT_ROWS_20260713_7';
   const SOURCE='/systems/baseline-fitness/js/baseline-fitness-voice-original.js?v='+BUILD;
   let renderQueued=false;
 
@@ -14,11 +14,9 @@
 
   function actionMarkup(side,enabled){
     const disabled=enabled?'':' disabled';
-    return `<div class="actions-inline">
-      <button class="compact-action compact-action--ghost" type="button" data-side-timer="${side}"${disabled}>Start Timer</button>
+    return `<button class="compact-action compact-action--ghost" type="button" data-side-timer="${side}"${disabled}>Start Timer</button>
       <button class="compact-action compact-action--success" type="button" data-side-success="${side}" aria-label="Success"${disabled}>✓</button>
-      <button class="compact-action compact-action--danger" type="button" data-side-fail="${side}" aria-label="Fail"${disabled}>✕</button>
-    </div>`;
+      <button class="compact-action compact-action--danger" type="button" data-side-fail="${side}" aria-label="Fail"${disabled}>✕</button>`;
   }
 
   function resultMarkup(result){
@@ -44,10 +42,13 @@
     const label=side==='left'?'Left':'Right';
     const result=state.results[side];
     const enabled=state.active&&!result&&(side==='left'||Boolean(state.results.left));
+    const actions=result
+      ? `<div class="step-actions">${resultMarkup(result)}</div>`
+      : `<div class="step-actions actions-inline">${actionMarkup(side,enabled)}</div>`;
     return `<section class="current-step side-plank-standard-row${enabled?' active':''}${result?' done':''}${side==='right'&&!state.results.left?' is-locked':''}" data-manual-side="${side}">
       <div class="current-step-head">
         <div><b>Elbow Side Plank ${label} - (${state.target})</b></div>
-        <div class="step-actions">${result?resultMarkup(result):actionMarkup(side,enabled)}</div>
+        ${actions}
       </div>
       <div data-side-failure-entry="${side}" hidden>
         <input type="number" min="0" max="${state.target}" inputmode="numeric" placeholder="Seconds achieved">
@@ -122,27 +123,33 @@
         flex-wrap:nowrap!important;
         width:100%!important;
       }
-      #currentWorkoutOut .side-plank-standard-row .step-actions,
-      #currentWorkoutOut .side-plank-standard-row .actions-inline{
+      #currentWorkoutOut .side-plank-standard-row .step-actions.actions-inline{
         display:flex!important;
         align-items:center!important;
         justify-content:flex-end!important;
         gap:8px!important;
+        width:auto!important;
+        min-width:0!important;
         margin:0!important;
         flex:0 0 auto!important;
       }
-      #currentWorkoutOut .side-plank-standard-row .compact-action{
+      #currentWorkoutOut .side-plank-standard-row .step-actions.actions-inline>.compact-action{
+        flex:0 0 auto!important;
         min-height:42px!important;
         height:42px!important;
+        text-align:center!important;
+        align-items:center!important;
+        justify-content:center!important;
         font-size:inherit!important;
       }
       #currentWorkoutOut .side-plank-standard-row [data-side-timer]{
-        min-width:198px!important;
+        width:auto!important;
+        min-width:0!important;
       }
       #currentWorkoutOut .side-plank-standard-row [data-side-success],
       #currentWorkoutOut .side-plank-standard-row [data-side-fail]{
-        width:60px!important;
-        min-width:60px!important;
+        width:44px!important;
+        min-width:44px!important;
         padding:0!important;
       }
       #currentWorkoutOut .side-plank-standard-row [data-side-failure-entry]{
@@ -158,9 +165,6 @@
           align-items:flex-start!important;
           flex-wrap:wrap!important;
         }
-        #currentWorkoutOut .side-plank-standard-row [data-side-timer]{min-width:0!important}
-        #currentWorkoutOut .side-plank-standard-row [data-side-success],
-        #currentWorkoutOut .side-plank-standard-row [data-side-fail]{width:44px!important;min-width:44px!important}
       }
     `;
     document.head.appendChild(style);
