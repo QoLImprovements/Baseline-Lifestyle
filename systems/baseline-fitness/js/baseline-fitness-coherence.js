@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_FITNESS_COHERENCE_20260712_3';
+  const BUILD='BASELINE_FITNESS_COHERENCE_20260713_4';
   if(global.__BASELINE_FITNESS_COHERENCE__) return;
   global.__BASELINE_FITNESS_COHERENCE__=true;
   document.documentElement.setAttribute('data-baseline-fitness-coherence',BUILD);
@@ -10,6 +10,142 @@
   const SESSION_KEY='__bl_local_session_v1__';
   const PLAN_CACHE_PREFIX='__bl_fitness_plan_cache_v1__::';
   const originalFetch=typeof global.fetch==='function'?global.fetch.bind(global):null;
+  let exposedVoiceSource=null;
+  let exposedVoiceWrapper=null;
+  let exposedRecognitionSource=null;
+  let exposedRecognitionWrapper=null;
+
+  function normaliseActivation(value){
+    return String(value==null?'':value).toLowerCase().replace(/[’']/g,'')
+      .replace(/[^a-z0-9\s-]/g,' ').replace(/-/g,' ').replace(/\s+/g,' ').trim();
+  }
+
+  function rewriteActivationText(value){
+    return String(value==null?'':value).replace(/\bdone\b/gi,'Begin');
+  }
+
+  function rewriteRecognitionTranscript(value){
+    const text=normaliseActivation(value);
+    if(text==='begin') return 'done';
+    if(text==='done') return '__disabled_done_activation__';
+    return String(value==null?'':value);
+  }
+
+  function installTabHoverStability(){
+    if(document.getElementById('baseline-fitness-stable-tab-hover')) return;
+    const style=document.createElement('style');
+    style.id='baseline-fitness-stable-tab-hover';
+    style.textContent=`
+      .tabs .tab{
+        transition:background .12s ease,border-color .12s ease,box-shadow .12s ease!important;
+      }
+      .tabs .tab:hover{
+        transform:none!important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function installBeginSpeechPrompts(){
+    const NativeUtterance=global.SpeechSynthesisUtterance;
+    if(typeof NativeUtterance!=='function'||global.__BASELINE_FITNESS_BEGIN_UTTERANCE__) return;
+    global.__BASELINE_FITNESS_BEGIN_UTTERANCE__=true;
+    function BeginSpeechSynthesisUtterance(text){
+      return new NativeUtterance(rewriteActivationText(text));
+    }
+    BeginSpeechSynthesisUtterance.prototype=NativeUtterance.prototype;
+    try{ Object.setPrototypeOf(BeginSpeechSynthesisUtterance,NativeUtterance); }catch(_error){}
+    global.SpeechSynthesisUtterance=BeginSpeechSynthesisUtterance;
+  }
+
+  function installBeginRecognitionAlias(){
+    if(global.__BASELINE_FITNESS_BEGIN_RECOGNITION_ALIAS__) return;
+    const PersistentRecognition=global.SpeechRecognition||global.webkitSpeechRecognition;
+    const NativeRecognition=typeof PersistentRecognition==='function'?Object.getPrototypeOf(PersistentRecognition):null;
+    const prototype=NativeRecognition?.prototype;
+    const nativeStart=prototype?.start;
+    if(typeof NativeRecognition!=='function'||typeof nativeStart!=='function') return;
+
+    const wrappedStart=function(...args){
+      if(!this.__baselineFitnessBeginResultAlias){
+        this.__baselineFitnessBeginResultAlias=true;
+        const nativeResultHandler=this.onresult;
+        if(typeof nativeResultHandler==='function'){
+          this.onresult=function(event){
+            let changed=false;
+            const results=Array.from(event?.results||[],result=>{
+              const alternatives=Array.from(result||[],alternative=>{
+                const transcript=rewriteRecognitionTranscript(alternative?.transcript);
+                if(transcript!==String(alternative?.transcript==null?'':alternative.transcript)) changed=true;
+                return {transcript,confidence:alternative?.confidence};
+              });
+              alternatives.isFinal=Boolean(result?.isFinal);
+              return alternatives;
+            });
+            const forwarded=changed?{resultIndex:event?.resultIndex||0,results}:event;
+            return nativeResultHandler.call(this,forwarded);
+          };
+        }
+      }
+      return nativeStart.apply(this,args);
+    };
+
+    try{
+      Object.defineProperty(prototype,'start',{
+        configurable:true,
+        writable:true,
+        value:wrappedStart
+      });
+      global.__BASELINE_FITNESS_BEGIN_RECOGNITION_ALIAS__=true;
+    }catch(_error){}
+  }
+
+  function exposeBeginDebugApis(){
+    const recognition=global.BASELINE_fitnessPersistentRecognition;
+    if(recognition&&recognition!==exposedRecognitionWrapper&&recognition!==exposedRecognitionSource){
+      exposedRecognitionSource=recognition;
+      exposedRecognitionWrapper=Object.freeze(Object.assign({},recognition,{
+        commandFor:(state,value)=>{
+          if(String(state)==='awaiting_go') return normaliseActivation(value)==='begin'?'begin':null;
+          return recognition.commandFor?.(state,value)??null;
+        }
+      }));
+      global.BASELINE_fitnessPersistentRecognition=exposedRecognitionWrapper;
+    }
+
+    const voice=global.BASELINE_fitnessVoice;
+    if(voice&&voice!==exposedVoiceWrapper&&voice!==exposedVoiceSource){
+      exposedVoiceSource=voice;
+      const debug=voice.debug||{};
+      const wrappedDebug=Object.freeze(Object.assign({},debug,{
+        intentFor:(state,value)=>{
+          if(String(state)==='awaiting_go') return normaliseActivation(value)==='begin'?'begin':null;
+          return debug.intentFor?.(state,value)??null;
+        }
+      }));
+      exposedVoiceWrapper=Object.freeze(Object.assign({},voice,{debug:wrappedDebug}));
+      global.BASELINE_fitnessVoice=exposedVoiceWrapper;
+      if(global.__BASELINE_FITNESS_VOICE_ADAPTER__===voice) global.__BASELINE_FITNESS_VOICE_ADAPTER__=exposedVoiceWrapper;
+    }
+  }
+
+  function enforceBeginPresentation(){
+    const prompt=document.querySelector('#voiceWorkoutPrompt');
+    if(prompt){
+      const next=rewriteActivationText(prompt.textContent);
+      if(prompt.textContent!==next) prompt.textContent=next;
+    }
+  }
+
+  function installBeginActivation(){
+    installBeginSpeechPrompts();
+    installBeginRecognitionAlias();
+    exposeBeginDebugApis();
+    enforceBeginPresentation();
+  }
+
+  installTabHoverStability();
+  installBeginActivation();
 
   function readJson(key){
     try{
@@ -178,6 +314,7 @@
     compactCurrentSteps();
     compactPlanExercises();
     enforceSavedPlanView();
+    installBeginActivation();
   }
   function scheduleCoherence(){
     if(scheduled) return;
@@ -188,6 +325,7 @@
 
   function init(){
     applyCoherence();
+    global.setTimeout(applyCoherence,0);
     new MutationObserver(scheduleCoherence).observe(document.body,{childList:true,subtree:true});
     document.addEventListener('baseline:fitness-workout-updated',scheduleCoherence);
     document.addEventListener('baseline:auth',scheduleCoherence);
