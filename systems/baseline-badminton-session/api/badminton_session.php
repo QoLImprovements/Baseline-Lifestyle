@@ -7,11 +7,13 @@ bl_session_start();
 const BL_BADMINTON_RATING_GAP_CAP = 5.0;
 
 function bl_badminton_state_table(PDO $db): void {
-  $db->exec('CREATE TABLE IF NOT EXISTS badminton_state_store (
-    state_key TEXT PRIMARY KEY,
-    state_json TEXT NOT NULL,
-    updated_at INTEGER NOT NULL
-  )');
+  bl_apply_schema_migration($db, 'badminton_session', 1, static function(PDO $db): void {
+    $db->exec('CREATE TABLE IF NOT EXISTS badminton_state_store (
+      state_key TEXT PRIMARY KEY,
+      state_json TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    )');
+  });
 }
 
 function bl_badminton_normalize(string $value): string {

@@ -28,6 +28,9 @@ const BL_MAX_NAME_LEN = 40;
 const BL_MAX_EMAIL_LEN = 254;
 const BL_MIN_PASSWORD_LEN = 8;
 const BL_RESET_TOKEN_TTL = 3600; // 1 hour
+const BL_CORE_SCHEMA_VERSION = 20260720;
+const BL_MAX_JSON_BYTES = 2097152; // 2 MiB
+const BL_CANONICAL_ORIGIN = 'https://baselinelifestyle.org';
 
 function bl_env(string $key, string $default=''): string {
   $value = getenv($key);
@@ -62,8 +65,46 @@ function bl_json($data, int $status=200): void {
   exit;
 }
 
+function bl_is_secure_request(): bool {
+  if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') return true;
+  return strtolower((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')) === 'https';
+}
+
+function bl_require_same_origin(): void {
+  $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+  if(in_array($method, ['GET', 'HEAD', 'OPTIONS'], true)) return;
+
+  $origin = trim((string)($_SERVER['HTTP_ORIGIN'] ?? ''));
+  if($origin === '') return; // Same-origin form posts and older clients may omit Origin.
+
+  $expected = parse_url(bl_request_origin());
+  $actual = parse_url($origin);
+  if(!$expected || !$actual) bl_json(['ok'=>false,'error'=>'invalid_origin'], 403);
+
+  $expectedScheme = strtolower((string)($expected['scheme'] ?? ''));
+  $expectedHost = strtolower((string)($expected['host'] ?? ''));
+  $expectedPort = (int)($expected['port'] ?? ($expectedScheme === 'https' ? 443 : 80));
+  $actualScheme = strtolower((string)($actual['scheme'] ?? ''));
+  $actualHost = strtolower((string)($actual['host'] ?? ''));
+  $actualPort = (int)($actual['port'] ?? ($actualScheme === 'https' ? 443 : 80));
+
+  if($actualScheme !== $expectedScheme || $actualHost !== $expectedHost || $actualPort !== $expectedPort){
+    bl_json(['ok'=>false,'error'=>'invalid_origin'], 403);
+  }
+}
+
 function bl_input_json(): array {
-  $raw = file_get_contents('php://input') ?: '';
+  bl_require_same_origin();
+  $contentLength = (int)($_SERVER['CONTENT_LENGTH'] ?? 0);
+  if($contentLength > BL_MAX_JSON_BYTES){
+    bl_json(['ok'=>false,'error'=>'request_too_large'], 413);
+  }
+
+  $raw = file_get_contents('php://input', false, null, 0, BL_MAX_JSON_BYTES + 1) ?: '';
+  if(strlen($raw) > BL_MAX_JSON_BYTES){
+    bl_json(['ok'=>false,'error'=>'request_too_large'], 413);
+  }
+
   $data = json_decode($raw, true);
   return is_array($data) ? $data : [];
 }
@@ -71,7 +112,7 @@ function bl_input_json(): array {
 function bl_session_start(): void {
   if(session_status() === PHP_SESSION_ACTIVE) return;
 
-  $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+  $secure = bl_is_secure_request();
   if(function_exists('session_name')){
     @session_name('baseline_session');
   }
@@ -204,13 +245,21 @@ function bl_send_text_mail(string $to, string $subject, string $body): bool {
 }
 
 function bl_request_origin(): string {
-  $configured = bl_env('BL_SITE_URL');
-  if($configured !== '') return rtrim($configured, '/');
+  $configured = rtrim(bl_env('BL_SITE_URL'), '/');
+  if($configured !== '' && filter_var($configured, FILTER_VALIDATE_URL) !== false){
+    $scheme = strtolower((string)(parse_url($configured, PHP_URL_SCHEME) ?? ''));
+    if(in_array($scheme, ['http', 'https'], true)) return $configured;
+  }
 
-  $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
-  $scheme = $https ? 'https' : 'http';
-  $host = (string)($_SERVER['HTTP_HOST'] ?? 'localhost');
-  return $scheme . '://' . $host;
+  $hostHeader = strtolower(trim((string)($_SERVER['HTTP_HOST'] ?? '')));
+  $host = preg_replace('/:\d+$/', '', $hostHeader) ?: '';
+  if(in_array($host, ['localhost', '127.0.0.1', '::1'], true)){
+    $scheme = bl_is_secure_request() ? 'https' : 'http';
+    return $scheme . '://' . ($hostHeader !== '' ? $hostHeader : 'localhost');
+  }
+
+  // Never build security-sensitive links from an untrusted Host header.
+  return BL_CANONICAL_ORIGIN;
 }
 
 function bl_site_base_path(): string {
@@ -469,6 +518,81 @@ function bl_ensure_schema(PDO $db): void {
     updated_at INTEGER NOT NULL,
     FOREIGN KEY(user_id) REFERENCES users(id)
   )');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS schema_migrations (
+    scope TEXT PRIMARY KEY,
+    version INTEGER NOT NULL,
+    applied_at INTEGER NOT NULL
+  )');
+
+  $db->exec('CREATE TABLE IF NOT EXISTS rate_limit_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    bucket_hash TEXT NOT NULL,
+    created_at INTEGER NOT NULL
+  )');
+  $db->exec('CREATE INDEX IF NOT EXISTS idx_rate_limit_bucket_time ON rate_limit_events(bucket_hash, created_at)');
+}
+
+function bl_apply_core_schema(PDO $db): void {
+  $current = (int)$db->query('PRAGMA user_version')->fetchColumn();
+  if($current >= BL_CORE_SCHEMA_VERSION) return;
+
+  $db->beginTransaction();
+  try {
+    bl_ensure_schema($db);
+    $db->exec('PRAGMA user_version = ' . BL_CORE_SCHEMA_VERSION);
+    $db->commit();
+  } catch(Throwable $error){
+    if($db->inTransaction()) $db->rollBack();
+    throw $error;
+  }
+}
+
+function bl_apply_schema_migration(PDO $db, string $scope, int $version, callable $migration): void {
+  $stmt = $db->prepare('SELECT version FROM schema_migrations WHERE scope = :scope LIMIT 1');
+  $stmt->execute([':scope' => $scope]);
+  if((int)($stmt->fetchColumn() ?: 0) >= $version) return;
+
+  $db->beginTransaction();
+  try {
+    $migration($db);
+    $stmt = $db->prepare('INSERT INTO schema_migrations(scope, version, applied_at) VALUES(:scope,:version,:applied) ON CONFLICT(scope) DO UPDATE SET version = excluded.version, applied_at = excluded.applied_at');
+    $stmt->execute([':scope'=>$scope, ':version'=>$version, ':applied'=>bl_now()]);
+    $db->commit();
+  } catch(Throwable $error){
+    if($db->inTransaction()) $db->rollBack();
+    throw $error;
+  }
+}
+
+function bl_rate_limit_allow(string $scope, string $subject, int $limit, int $windowSeconds): bool {
+  $db = bl_db();
+  $ip = substr((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 0, 64);
+  $bucket = hash('sha256', $scope . '|' . $ip . '|' . strtolower(trim($subject)));
+  $cutoff = bl_now() - max(1, $windowSeconds);
+
+  $db->prepare('DELETE FROM rate_limit_events WHERE bucket_hash = :bucket AND created_at < :cutoff')
+    ->execute([':bucket'=>$bucket, ':cutoff'=>$cutoff]);
+
+  $stmt = $db->prepare('SELECT COUNT(*) FROM rate_limit_events WHERE bucket_hash = :bucket AND created_at >= :cutoff');
+  $stmt->execute([':bucket'=>$bucket, ':cutoff'=>$cutoff]);
+  if((int)$stmt->fetchColumn() >= max(1, $limit)) return false;
+
+  $db->prepare('INSERT INTO rate_limit_events(bucket_hash, created_at) VALUES(:bucket,:created)')
+    ->execute([':bucket'=>$bucket, ':created'=>bl_now()]);
+
+  // Cheap, bounded housekeeping without adding work to every request.
+  if(random_int(1, 50) === 1){
+    $db->prepare('DELETE FROM rate_limit_events WHERE created_at < :cutoff')
+      ->execute([':cutoff'=>bl_now() - 86400]);
+  }
+  return true;
+}
+
+function bl_require_rate_limit(string $scope, string $subject, int $limit, int $windowSeconds): void {
+  if(bl_rate_limit_allow($scope, $subject, $limit, $windowSeconds)) return;
+  header('Retry-After: ' . max(1, $windowSeconds));
+  bl_json(['ok'=>false,'error'=>'too_many_requests'], 429);
 }
 
 function bl_db(): PDO {
@@ -481,7 +605,7 @@ function bl_db(): PDO {
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
   ]);
 
-  bl_ensure_schema($pdo);
+  bl_apply_core_schema($pdo);
 
   return $pdo;
 }

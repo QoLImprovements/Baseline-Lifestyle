@@ -40,6 +40,7 @@ try{
     bl_json(['ok'=>false,'error'=>'password_too_short','minLength'=>BL_MIN_PASSWORD_LEN], 400);
   }
 
+  bl_require_rate_limit('password_reset', substr($token, 0, 16), 10, 900);
   $row = bl_lookup_password_reset($db, $token);
   if(!$row){
     bl_json(['ok'=>false,'error'=>'invalid_or_expired_token'], 400);

@@ -125,3 +125,68 @@ test('large page styling is owned by canonical system stylesheets', () => {
     assert.ok(inlineCss < 1000, `${system} still contains a large competing inline stylesheet`);
   }
 });
+
+
+test('security and performance repairs stay in place', () => {
+  const runtimeExtensions = new Set(['.html','.css','.js','.mjs','.cjs','.php']);
+  for (const file of walk(root)) {
+    if (!runtimeExtensions.has(path.extname(file).toLowerCase())) continue;
+    const source = fs.readFileSync(file, 'utf8');
+    assert.equal(
+      /\/systems\/([^/'"]+)\/systems\/\1\//.test(source),
+      false,
+      `duplicated system path remains in ${path.relative(root,file)}`
+    );
+  }
+
+  const fitnessHtml = fs.readFileSync(path.join(root, 'systems/baseline-fitness/baseline-fitness.html'), 'utf8');
+  assert.ok(fitnessHtml.includes('/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1'));
+  assert.ok(fitnessHtml.includes('/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_CANONICAL_20260720_1'));
+  assert.equal(fitnessHtml.includes('/systems/baseline-fitness/css/baseline-voice.css'), false);
+  assert.equal(fitnessHtml.includes('/systems/baseline-fitness/js/baseline-voice.js'), false);
+  assert.equal(fs.existsSync(path.join(root, 'systems/baseline-fitness/css/baseline-voice.css')), false);
+  assert.equal(fs.existsSync(path.join(root, 'systems/baseline-fitness/js/baseline-voice.js')), false);
+  assert.equal(fitnessHtml.includes('/sitewide/css/baseline-recipes.css'), false);
+
+  const massageHtml = fs.readFileSync(path.join(root, 'systems/baseline-massage/baseline-massage.html'), 'utf8');
+  assert.equal(massageHtml.includes('/sitewide/css/baseline-recipes.css'), false);
+  assert.equal(massageHtml.includes('/sitewide/js/baseline-tabs.js'), false);
+
+  const homeHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.equal(homeHtml.includes('/sitewide/js/baseline-ingredient-profiles.js'), false);
+  assert.equal(homeHtml.includes('/sitewide/js/baseline-tabs.js'), false);
+
+  const forgotPassword = fs.readFileSync(path.join(root, 'sitewide/api/forgot_password.php'), 'utf8');
+  assert.equal(forgotPassword.includes('resetUrl'), false);
+  assert.equal(forgotPassword.includes('fallback_link'), false);
+});
+
+test('primary pages expose canonical discovery metadata and a level-one heading', () => {
+  const pages = [
+    ['index.html', 'https://baselinelifestyle.org/home/1'],
+    ...systemNames.map((system) => [
+      path.join('systems', system, `${system}.html`),
+      `https://baselinelifestyle.org/${system}/${system === 'baseline-games-hub' ? 'games-hub' : 'system'}`
+    ])
+  ];
+
+  for (const [relativePath, canonical] of pages) {
+    const html = fs.readFileSync(path.join(root, relativePath), 'utf8');
+    assert.match(html, /<meta[^>]+name=["']description["'][^>]*>/i, `${relativePath} is missing a description`);
+    assert.ok(html.includes(`rel="canonical" href="${canonical}"`), `${relativePath} has the wrong canonical URL`);
+    assert.match(html, /role=["']heading["'][^>]+aria-level=["']1["']/i, `${relativePath} is missing a level-one heading`);
+  }
+});
+
+test('database schemas are versioned instead of rebuilt on every API request', () => {
+  const config = fs.readFileSync(path.join(root, 'sitewide/api/config.php'), 'utf8');
+  assert.ok(config.includes('bl_apply_core_schema($pdo);'));
+  assert.equal(config.includes('bl_ensure_schema($pdo);'), false);
+
+  const fitnessSchema = fs.readFileSync(path.join(root, 'systems/baseline-fitness/api/schema.php'), 'utf8');
+  const gamesSchema = fs.readFileSync(path.join(root, 'systems/baseline-games-hub/api/schema.php'), 'utf8');
+  const badmintonApi = fs.readFileSync(path.join(root, 'systems/baseline-badminton-session/api/badminton_session.php'), 'utf8');
+  assert.ok(fitnessSchema.includes("bl_apply_schema_migration($db, 'fitness', 1"));
+  assert.ok(gamesSchema.includes("bl_apply_schema_migration($db, 'games_hub', 1"));
+  assert.ok(badmintonApi.includes("bl_apply_schema_migration($db, 'badminton_session', 1"));
+});

@@ -13,6 +13,7 @@ if($identifier === '' || $pass === ''){
 
 try{
   $db = bl_db();
+  bl_require_rate_limit('login', strtolower($identifier), 10, 900);
   $user = bl_find_user_by_identifier($db, $identifier);
   if(!$user){
     bl_json(['ok'=>false,'error'=>'invalid_login'], 401);

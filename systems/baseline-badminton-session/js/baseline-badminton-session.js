@@ -14,7 +14,7 @@
   const MAX_RATING_GAP = 5;
   const HEAVY_RATING_LOSS_BELOW = 12;
   const DEFAULT_APPROVED_ADMIN_USERNAMES = [];
-  const API_STATE_URL = '/systems/baseline-badminton-session/systems/baseline-badminton-session/api/badminton_session.php';
+  const API_STATE_URL = '/systems/baseline-badminton-session/api/badminton_session.php';
   const LOGIN_OPTIONS_URL = '/systems/baseline-badminton-session/api/badminton_logins.php';
   const SITE_MODERATOR_CANONICAL_LOGIN = 'Peter Bates-Wilkinson';
   const SITE_MODERATOR_ALIASES = ['bateswilkinson@gmail.com','peterbw','peter bates-wilkinson','peter bates wilkinson','peter bates-wilkinson'];

@@ -5225,12 +5225,12 @@ function buildControls(recipeEl){
   function setupSitewideVoiceAssets(){
     if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
     const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
-    let jsUrl = '/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_SITEWIDE_20260712_1';
-    let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_SITEWIDE_20260712_1';
+    let jsUrl = '/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_CANONICAL_20260720_1';
+    let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1';
     try{
       if(sharedScript && sharedScript.src){
-        jsUrl = new URL('baseline-voice.js?v=BASELINE_VOICE_SITEWIDE_20260712_1', sharedScript.src).href;
-        cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_SITEWIDE_20260712_1', sharedScript.src).href;
+        jsUrl = new URL('baseline-voice.js?v=BASELINE_VOICE_CANONICAL_20260720_1', sharedScript.src).href;
+        cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1', sharedScript.src).href;
       }
     }catch(_e){}
     if(!document.querySelector('link[data-baseline-voice-style]')){
