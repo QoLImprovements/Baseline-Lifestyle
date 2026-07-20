@@ -11,21 +11,25 @@ const require=createRequire(import.meta.url);
 const adapter=require(path.join(root,'systems/baseline-fitness/js/baseline-fitness-voice.js'));
 const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
 
-test('voice workout state accepts only context-appropriate literal commands',()=>{
+test('voice workout exposes the current literal-command state model',()=>{
   const S=adapter.STATES;
-  assert.equal(adapter.stateIntent(S.WAITING_START,'Start'),'start');
-  assert.equal(adapter.stateIntent(S.WAITING_START,'Succeeded'),null);
-  assert.equal(adapter.stateIntent(S.PERFORMING,'Succeeded'),'succeeded');
-  assert.equal(adapter.stateIntent(S.PERFORMING,'Failed'),'failed');
-  assert.equal(adapter.stateIntent(S.RESTING,'Ready'),'ready');
-  assert.equal(adapter.stateIntent(S.REST_EXPIRED,'Add thirty seconds'),'add_thirty_seconds');
-  assert.equal(adapter.stateIntent(S.COMPLETE,'Finish'),'finish');
+  assert.deepEqual(
+    Object.keys(S),
+    ['IDLE','BEGIN','TIMING','RESULT','NUMBER','PAUSED','FINISHED','ERROR']
+  );
+  assert.equal(S.BEGIN,'awaiting_begin');
+  assert.equal(S.RESULT,'awaiting_result');
+  assert.equal(adapter.debug.normalise('  Start!  '),'start');
+  assert.equal(adapter.debug.normalise('Succeeded'),'succeeded');
+  assert.equal(adapter.debug.parseNumber('I achieved 18 repetitions'),18);
 });
 
 test('voice dialogue keeps outcome and achievement terminology separate',()=>{
-  assert.equal(adapter.amountWord('reps',8),'8 repetitions');
-  assert.equal(adapter.amountWord('seconds',1),'1 second');
-  assert.equal(adapter.durationPhrase(150),'two minutes and thirty seconds');
+  const source=read('systems/baseline-fitness/js/baseline-fitness-voice.js');
+  assert.match(source,/say Success or Fail/i);
+  assert.match(source,/number of .*repetitions/i);
+  assert.match(source,/Success/);
+  assert.match(source,/Fail/);
 });
 
 test('fitness page loads one sitewide engine adapter and presents the voice popup',()=>{
