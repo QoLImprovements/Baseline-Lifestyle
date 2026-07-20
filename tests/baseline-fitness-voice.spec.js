@@ -11,11 +11,23 @@ const planPayload={
 
 test('voice workout can be started without clicking between exercises',async({page})=>{
   await page.addInitScript(()=>{
+    window.__recognizers=[];
     class RecognitionMock{
-      constructor(){ this.continuous=true; this.interimResults=false; this.maxAlternatives=3; }
-      start(){ setTimeout(()=>this.onstart&&this.onstart(),0); }
-      abort(){ setTimeout(()=>this.onend&&this.onend(),0); }
+      constructor(){
+        this.continuous=true;
+        this.interimResults=false;
+        this.maxAlternatives=3;
+        this.started=false;
+        window.__recognizers.push(this);
+      }
+      start(){ this.started=true; setTimeout(()=>this.onstart&&this.onstart(),0); }
+      abort(){ this.started=false; setTimeout(()=>this.onend&&this.onend(),0); }
       stop(){ this.abort(); }
+      emit(primary,alternatives=[],isFinal=false){
+        const result=[primary,...alternatives].map((transcript,index)=>({transcript,confidence:index?0.92:0.35}));
+        result.isFinal=isFinal;
+        this.onresult&&this.onresult({resultIndex:0,results:[result]});
+      }
     }
     window.SpeechRecognition=RecognitionMock;
     window.webkitSpeechRecognition=RecognitionMock;
@@ -38,6 +50,17 @@ test('voice workout can be started without clicking between exercises',async({pa
   await expect(page.locator('#startVoiceWorkoutBtn')).toBeVisible();
   await page.locator('#startVoiceWorkoutBtn').click();
   await expect(page.locator('#voiceWorkoutModal')).toBeVisible();
-  await expect(page.locator('#voiceWorkoutPrompt')).toContainText('Start');
+  await expect(page.locator('#voiceWorkoutPrompt')).toContainText('Begin');
   await expect(page.locator('#voiceExerciseName')).toContainText('Knee Push-Ups');
+  await page.waitForFunction(()=>window.__recognizers?.some(recognizer=>recognizer.started));
+
+  // The browser's first interim hypothesis is wrong, but a lower-ranked
+  // alternative contains the expected command. It must be accepted immediately.
+  await page.evaluate(()=>{
+    const recognizer=[...window.__recognizers].reverse().find(item=>item.started);
+    recognizer.emit('the gym',['begin'],false);
+  });
+
+  await expect.poll(()=>page.evaluate(()=>window.BASELINE_fitnessVoice.state())).toBe('awaiting_result');
+  await expect(page.locator('#voiceWorkoutPrompt')).toContainText('Success or Fail');
 });
