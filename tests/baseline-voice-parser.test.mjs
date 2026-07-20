@@ -30,6 +30,24 @@ test('literal workout commands resolve to canonical command names',()=>{
   assert.equal(voice.commandForTranscript('I am not ready',['ready']),null);
 });
 
+test('responsive command matching checks conversational phrases and every hypothesis',()=>{
+  assert.equal(voice.commandForTranscript('Please begin now',['start']),'start');
+  assert.equal(voice.commandForTranscript("Let's start",['start']),'start');
+
+  const alternative=voice.commandForAlternatives(
+    'the gym',
+    ['the gym','begin'],
+    ['start','ready']
+  );
+  assert.deepEqual(alternative,{command:'start',transcript:'begin'});
+
+  const number=voice.parseSpokenNumberFromAlternatives(
+    'I did some',
+    ['I did some','eighteen repetitions']
+  );
+  assert.deepEqual(number,{number:18,transcript:'eighteen repetitions'});
+});
+
 test('settings are clamped and normalised',()=>{
   const settings=voice.normaliseSettings({enabled:1,rate:8,pitch:-1,volume:3,maximumRestSeconds:900});
   assert.equal(settings.enabled,true);
