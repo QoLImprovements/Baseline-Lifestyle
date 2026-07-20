@@ -32,6 +32,18 @@ test('voice dialogue keeps outcome and achievement terminology separate',()=>{
   assert.match(source,/Fail/);
 });
 
+test('fitness voice accepts interim and alternative recognition results',()=>{
+  const source=read('systems/baseline-fitness/js/baseline-fitness-voice.js');
+  assert.match(source,/selectResponsiveTranscript/);
+  assert.match(source,/interimResults:!0/);
+  assert.match(source,/maxAlternatives:5/);
+  assert.match(source,/restartDelayMs:60/);
+  assert.ok(
+    source.indexOf('await L(),T()') > source.indexOf('startSession?.("voice")'),
+    'recognition must start after the opening spoken prompt'
+  );
+});
+
 test('fitness page loads one sitewide engine adapter and presents the voice popup',()=>{
   const html=read('systems/baseline-fitness/baseline-fitness.html');
   const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
