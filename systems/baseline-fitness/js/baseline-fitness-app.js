@@ -36,7 +36,7 @@
   const STORE = global.BASELINE_store && typeof global.BASELINE_store.read === 'function' ? global.BASELINE_store : null;
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Object.freeze({ TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, executionSteps });
+    module.exports = Object.freeze({ TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps });
   }
   if (typeof document === 'undefined') return;
   if (global.__BASELINE_FITNESS_APP__) return;
