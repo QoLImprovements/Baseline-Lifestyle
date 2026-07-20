@@ -28,6 +28,7 @@ $emailNormalized = bl_normalize_email($email);
 
 try{
   $db = bl_db();
+  bl_require_rate_limit('register', $emailNormalized, 5, 3600);
 
   $checkName = $db->prepare('SELECT id FROM users WHERE lower(name)=lower(:name) LIMIT 1');
   $checkName->execute([':name' => $name]);
