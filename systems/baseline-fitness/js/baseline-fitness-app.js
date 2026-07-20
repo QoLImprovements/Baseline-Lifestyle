@@ -864,7 +864,9 @@
     resetSession: resetCurrentWorkout,
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
-  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, executionSteps });
+  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps });
+  if (typeof module !== 'undefined' && module.exports) module.exports = global.BASELINE_FITNESS_DEBUG;
+  if (typeof document === 'undefined' || typeof global.addEventListener !== 'function') return;
 
   global.addEventListener('pagehide', () => { closeTimerModal(); if (typeof authUnsubscribe === 'function') authUnsubscribe(); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
