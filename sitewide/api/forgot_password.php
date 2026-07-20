@@ -7,7 +7,7 @@ $email = trim((string)($d['email'] ?? ($d['identifier'] ?? '')));
 
 $response = [
   'ok' => true,
-  'message' => 'If that account exists, a password reset option has been prepared.',
+  'message' => 'If that account exists, a password reset email will be sent shortly.',
 ];
 
 if($email === ''){
@@ -16,8 +16,11 @@ if($email === ''){
 
 try{
   $db = bl_db();
-  $user = bl_find_user_by_email($db, $email);
+  if(!bl_rate_limit_allow('forgot_password', bl_normalize_email($email), 5, 1800)){
+    bl_json($response);
+  }
 
+  $user = bl_find_user_by_email($db, $email);
   if(!$user){
     bl_json($response);
   }
@@ -34,15 +37,12 @@ try{
     $mailSent = bl_send_text_mail((string)$user['email'], 'Reset your Baseline Lifestyle password', $mailBody);
   }
 
-  $payload = $response + ['mailSent' => $mailSent];
   if(!$mailSent){
-    $payload['resetUrl'] = $reset['url'];
-    $payload['delivery'] = 'fallback_link';
-  }else{
-    $payload['delivery'] = 'email';
+    error_log('Baseline password reset email delivery failed for user ID ' . (int)($user['id'] ?? 0));
   }
 
-  bl_json($payload);
+  // Keep the response identical whether or not the account exists or email succeeds.
+  bl_json($response);
 }catch(Throwable $e){
   bl_json($response);
 }
