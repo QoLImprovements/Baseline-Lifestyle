@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_SITEWIDE_20260712_1';
+  const BUILD='BASELINE_VOICE_RESPONSIVE_20260720_1';
   const SETTINGS_KEY='__baseline_voice_settings_v1__';
   const API_ENDPOINT='/sitewide/api/voice_settings.php';
   const DEFAULTS=Object.freeze({
@@ -21,7 +21,7 @@
   });
 
   const COMMAND_ALIASES=Object.freeze({
-    start:['start','begin'],
+    start:['start','begin','go','start now','begin now','lets start','let us start'],
     succeeded:['succeeded','succeed','success'],
     failed:['failed','fail'],
     ready:['ready','i am ready'],
@@ -64,6 +64,35 @@
     for(const name of names){
       const aliases=COMMAND_ALIASES[name]||[name.replace(/_/g,' ')];
       if(aliases.some(alias=>phraseMatches(text,normaliseTranscript(alias)))) return name;
+    }
+    return null;
+  }
+
+  function transcriptCandidates(primary,alternatives=[]){
+    const values=[primary,...(Array.isArray(alternatives)?alternatives:[])]
+      .map(value=>String(value||'').trim())
+      .filter(Boolean);
+    const seen=new Set();
+    return values.filter(value=>{
+      const key=normaliseTranscript(value);
+      if(!key||seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function commandForAlternatives(primary,alternatives,allowed){
+    for(const transcript of transcriptCandidates(primary,alternatives)){
+      const command=commandForTranscript(transcript,allowed);
+      if(command) return {command,transcript};
+    }
+    return null;
+  }
+
+  function parseSpokenNumberFromAlternatives(primary,alternatives){
+    for(const transcript of transcriptCandidates(primary,alternatives)){
+      const number=parseSpokenNumber(transcript);
+      if(Number.isFinite(number)) return {number,transcript};
     }
     return null;
   }
@@ -117,7 +146,7 @@
     };
   }
 
-  const pure=Object.freeze({BUILD,DEFAULTS,COMMAND_ALIASES,normaliseTranscript,commandForTranscript,parseSpokenNumber,normaliseSettings});
+  const pure=Object.freeze({BUILD,DEFAULTS,COMMAND_ALIASES,normaliseTranscript,transcriptCandidates,commandForTranscript,commandForAlternatives,parseSpokenNumber,parseSpokenNumberFromAlternatives,normaliseSettings});
   if(typeof module!=='undefined'&&module.exports) module.exports=pure;
   if(typeof document==='undefined'){
     global.BASELINE_VOICE_DEBUG=pure;
@@ -216,65 +245,132 @@
     let running=false;
     let pauseDepth=0;
     let restartTimer=0;
+    let startWatchdog=0;
     let permanentlyBlocked=false;
+    let generation=0;
+    let lastInterim='';
+    let lastDelivered='';
+    let lastDeliveredAt=0;
+    const restartDelay=Math.round(clamp(options.restartDelayMs==null?80:options.restartDelayMs,40,1000));
 
     function report(state,detail){
       try{ options.onState&&options.onState(state,detail||null); }catch(_error){}
-      if(state==='listening') document.documentElement.setAttribute('data-baseline-voice-listening','true');
-      if(state==='stopped'||state==='blocked') document.documentElement.removeAttribute('data-baseline-voice-listening');
+      if(state==='listening'||state==='hearing') document.documentElement.setAttribute('data-baseline-voice-listening','true');
+      if(['paused','reconnecting','error','stopped','blocked'].includes(state)) document.documentElement.removeAttribute('data-baseline-voice-listening');
       syncToggleState();
     }
 
     function clearRestart(){ if(restartTimer){ clearTimeout(restartTimer); restartTimer=0; } }
+    function clearStartWatchdog(){ if(startWatchdog){ clearTimeout(startWatchdog); startWatchdog=0; } }
 
-    function scheduleRestart(){
+    function scheduleRestart(delay=restartDelay){
       clearRestart();
       if(!wanted||pauseDepth>0||permanentlyBlocked) return;
-      restartTimer=setTimeout(startInstance,250);
+      restartTimer=setTimeout(startInstance,Math.max(0,delay));
+    }
+
+    function deliverResult(result){
+      if(!result) return;
+      const isFinal=Boolean(result.isFinal);
+      if(!isFinal&&options.interimResults===false) return;
+
+      const alternatives=[];
+      for(let alternative=0;alternative<result.length;alternative++){
+        const transcript=String(result[alternative]?.transcript||'').trim();
+        if(transcript) alternatives.push(transcript);
+      }
+      if(!alternatives.length) return;
+
+      const key=normaliseTranscript(alternatives[0]);
+      if(!key) return;
+      if(!isFinal){
+        if(key===lastInterim) return;
+        lastInterim=key;
+      }else{
+        lastInterim='';
+      }
+
+      const now=Date.now();
+      if(key===lastDelivered&&now-lastDeliveredAt<750) return;
+      lastDelivered=key;
+      lastDeliveredAt=now;
+      try{
+        options.onTranscript&&options.onTranscript(alternatives[0],alternatives,{
+          isFinal,
+          confidence:Number(result[0]?.confidence||0)
+        });
+      }catch(_error){}
+    }
+
+    function applyContextualPhrases(instance){
+      const values=transcriptCandidates('',options.phrases||[]);
+      if(!values.length||!global.SpeechRecognitionPhrase||!('phrases' in instance)) return;
+      try{
+        instance.phrases=values.slice(0,64).map(phrase=>new global.SpeechRecognitionPhrase(phrase,8));
+      }catch(_error){}
     }
 
     function startInstance(){
       clearRestart();
       if(!wanted||pauseDepth>0||running||permanentlyBlocked) return;
+      const token=++generation;
       try{
-        recognizer=new Recognition();
-        recognizer.lang=settings.language||DEFAULTS.language;
-        recognizer.continuous=true;
-        recognizer.interimResults=false;
-        recognizer.maxAlternatives=3;
-        recognizer.onstart=()=>{ running=true; report('listening'); };
-        recognizer.onspeechstart=()=>report('hearing');
-        recognizer.onresult=event=>{
-          for(let index=event.resultIndex;index<event.results.length;index++){
-            const result=event.results[index];
-            if(!result||!result.isFinal) continue;
-            const alternatives=[];
-            for(let alternative=0;alternative<result.length;alternative++){
-              const transcript=String(result[alternative]?.transcript||'').trim();
-              if(transcript) alternatives.push(transcript);
-            }
-            if(alternatives.length){
-              try{ options.onTranscript&&options.onTranscript(alternatives[0],alternatives); }catch(_error){}
-            }
-          }
+        const instance=new Recognition();
+        recognizer=instance;
+        instance.lang=settings.language||DEFAULTS.language;
+        instance.continuous=options.continuous!==false;
+        instance.interimResults=options.interimResults!==false;
+        instance.maxAlternatives=Math.round(clamp(options.maxAlternatives==null?5:options.maxAlternatives,1,10));
+        applyContextualPhrases(instance);
+        instance.onstart=()=>{
+          if(token!==generation) return;
+          clearStartWatchdog();
+          running=true;
+          report('listening');
         };
-        recognizer.onerror=event=>{
+        instance.onspeechstart=()=>{ if(token===generation) report('hearing'); };
+        instance.onresult=event=>{
+          if(token!==generation) return;
+          for(let index=event.resultIndex||0;index<event.results.length;index++) deliverResult(event.results[index]);
+        };
+        instance.onnomatch=()=>{ if(token===generation) report('listening','no_match'); };
+        instance.onerror=event=>{
+          if(token!==generation) return;
           const code=String(event?.error||'recognition_error');
           if(code==='not-allowed'||code==='service-not-allowed'){
             permanentlyBlocked=true;
             wanted=false;
             report('blocked',code);
-          }else if(code!=='aborted') report('error',code);
+          }else if(code==='audio-capture'||code==='language-not-supported'){
+            report('error',code);
+          }else if(code!=='aborted'&&code!=='no-speech'){
+            report('reconnecting',code);
+          }
           try{ options.onError&&options.onError(code,event); }catch(_error){}
         };
-        recognizer.onend=()=>{
+        instance.onend=()=>{
+          if(token!==generation) return;
+          clearStartWatchdog();
           running=false;
-          recognizer=null;
-          if(wanted&&pauseDepth===0&&!permanentlyBlocked) scheduleRestart();
-          else if(!wanted) report('stopped');
+          if(recognizer===instance) recognizer=null;
+          if(wanted&&pauseDepth===0&&!permanentlyBlocked){
+            report('reconnecting');
+            scheduleRestart();
+          }else if(!wanted){
+            report('stopped');
+          }
         };
-        recognizer.start();
+        instance.start();
+        startWatchdog=setTimeout(()=>{
+          if(token!==generation||running||!wanted||pauseDepth>0) return;
+          report('reconnecting','start_timeout');
+          generation+=1;
+          recognizer=null;
+          try{ instance.abort(); }catch(_error){}
+          scheduleRestart(100);
+        },2500);
       }catch(error){
+        clearStartWatchdog();
         running=false;
         recognizer=null;
         const name=String(error?.name||'start_error');
@@ -282,7 +378,10 @@
           permanentlyBlocked=true;
           wanted=false;
           report('blocked',name);
-        }else scheduleRestart();
+        }else{
+          report('reconnecting',name);
+          scheduleRestart(120);
+        }
         try{ options.onError&&options.onError(name,error); }catch(_error){}
       }
     }
@@ -299,24 +398,35 @@
     function pause(){
       pauseDepth+=1;
       clearRestart();
-      if(recognizer){ try{ recognizer.abort(); }catch(_error){} }
+      clearStartWatchdog();
+      const instance=recognizer;
+      recognizer=null;
+      running=false;
+      generation+=1;
+      if(instance){ try{ instance.abort(); }catch(_error){} }
       report('paused');
       return controller;
     }
 
     function resume(){
       pauseDepth=Math.max(0,pauseDepth-1);
-      if(wanted&&pauseDepth===0) scheduleRestart();
+      if(wanted&&pauseDepth===0){
+        report('reconnecting');
+        scheduleRestart(50);
+      }
       return controller;
     }
 
     function stop(){
       wanted=false;
       pauseDepth=0;
+      generation+=1;
       clearRestart();
-      if(recognizer){ try{ recognizer.abort(); }catch(_error){} }
+      clearStartWatchdog();
+      const instance=recognizer;
       recognizer=null;
       running=false;
+      if(instance){ try{ instance.abort(); }catch(_error){} }
       if(activeRecognition===controller) activeRecognition=null;
       report('stopped');
     }
@@ -634,7 +744,10 @@
     stopSpeaking,
     stopAll,
     parseNumber:parseSpokenNumber,
+    parseNumberFromAlternatives:parseSpokenNumberFromAlternatives,
     commandForTranscript,
+    commandForAlternatives,
+    transcriptCandidates,
     normaliseTranscript,
     registerSystem,
     getSystem:name=>systems.get(String(name||'')),
