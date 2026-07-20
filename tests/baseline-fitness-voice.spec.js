@@ -31,6 +31,21 @@ test('voice workout can be started without clicking between exercises',async({pa
     }
     window.SpeechRecognition=RecognitionMock;
     window.webkitSpeechRecognition=RecognitionMock;
+    window.AudioContext=class AudioContextMock{
+      constructor(){ this.state='running'; }
+      async resume(){}
+      async close(){}
+      createAnalyser(){
+        return {
+          fftSize:256,
+          smoothingTimeConstant:0,
+          getByteTimeDomainData(data){ data.fill(128); }
+        };
+      }
+      createMediaStreamSource(){
+        return {connect(){},disconnect(){}};
+      }
+    };
     window.speechSynthesis={
       getVoices:()=>[],
       speak:utterance=>setTimeout(()=>utterance.onend&&utterance.onend(),0),
