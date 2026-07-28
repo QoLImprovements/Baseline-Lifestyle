@@ -1,5 +1,6 @@
 name: Run pending UI installer
 
+# Triggered through a reviewed merge so GitHub runs the installer on main.
 on:
   push:
     paths:
