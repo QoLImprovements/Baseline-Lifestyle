@@ -37,7 +37,21 @@
     return subtabButtons(mainId).some(button => button.dataset.charitySubtarget === subId);
   }
 
+  function normalisedState(mainValue, subValue){
+    const main = mainIds.has(mainValue) ? mainValue : 'operations';
+    const requestedSub = subValue || currentSubtab[main] || defaultSubtab[main];
+    const sub = validSubtab(main, requestedSub) ? requestedSub : defaultSubtab[main];
+    return { main, sub };
+  }
+
   function parseLocationState(){
+    try{
+      const params = new URLSearchParams(location.search || '');
+      const queryMain = String(params.get('section') || '').trim().toLowerCase();
+      const querySub = String(params.get('tab') || '').trim().toLowerCase();
+      if(queryMain || querySub) return normalisedState(queryMain, querySub);
+    }catch(_error){}
+
     let raw = String(location.hash || '').replace(/^#/, '').trim().toLowerCase();
     if(!raw) return { main:'operations', sub:'overview' };
 
@@ -51,14 +65,19 @@
     }
 
     const parts = raw.split('/').filter(Boolean);
-    const main = mainIds.has(parts[0]) ? parts[0] : 'operations';
-    const requestedSub = parts[1] || currentSubtab[main] || defaultSubtab[main];
-    const sub = validSubtab(main, requestedSub) ? requestedSub : defaultSubtab[main];
-    return { main, sub };
+    return normalisedState(parts[0], parts[1]);
   }
 
   function routeUrl(mainId, subId){
-    return location.pathname + location.search + '#' + mainId + '/' + subId;
+    try{
+      const url = new URL(location.href);
+      url.searchParams.set('section', mainId);
+      url.searchParams.set('tab', subId);
+      url.hash = '';
+      return url.pathname + url.search;
+    }catch(_error){
+      return location.pathname + '?section=' + encodeURIComponent(mainId) + '&tab=' + encodeURIComponent(subId);
+    }
   }
 
   function setButtonState(buttons, activeValue, dataKey){
@@ -72,10 +91,9 @@
 
   function activate(mainId, subId, options){
     const opts = options || {};
-    const selectedMain = mainIds.has(mainId) ? mainId : 'operations';
-    const selectedSub = validSubtab(selectedMain, subId)
-      ? subId
-      : (currentSubtab[selectedMain] || defaultSubtab[selectedMain]);
+    const state = normalisedState(mainId, subId);
+    const selectedMain = state.main;
+    const selectedSub = state.sub;
 
     currentSubtab[selectedMain] = selectedSub;
     setButtonState(mainTabs, selectedMain, 'charityTarget');
@@ -99,9 +117,7 @@
       try{
         if(opts.replace) history.replaceState({ charityMain:selectedMain, charitySub:selectedSub }, '', next);
         else history.pushState({ charityMain:selectedMain, charitySub:selectedSub }, '', next);
-      }catch(_error){
-        location.hash = selectedMain + '/' + selectedSub;
-      }
+      }catch(_error){}
     }
 
     if(opts.focusPanel){
