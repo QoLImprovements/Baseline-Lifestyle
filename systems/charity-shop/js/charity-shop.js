@@ -1,6 +1,18 @@
 (function(){
   'use strict';
 
+  function loadApprovedSharedUi(){
+    if(window.__BASELINE_PROTECTED_ACCESS__) return;
+    if(document.querySelector('script[src*="/sitewide/js/baseline-charity-access.js"]')) return;
+    const script = document.createElement('script');
+    script.src = '/sitewide/js/baseline-charity-access.js?v=BASELINE_PROTECTED_ACCESS_20260728_4';
+    script.async = false;
+    script.dataset.protectedAccessLoader = 'charity-shop';
+    document.head.appendChild(script);
+  }
+
+  loadApprovedSharedUi();
+
   const mainTabs = Array.from(document.querySelectorAll('.charity-main-tab[data-charity-target]'));
   const mainSections = Array.from(document.querySelectorAll('.charity-main-section'));
   const lockButton = document.getElementById('charityLockBtn');
