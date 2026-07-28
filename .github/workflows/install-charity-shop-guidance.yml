@@ -1,0 +1,53 @@
+name: Install charity shop guidance
+
+on:
+  push:
+    paths:
+      - .github/workflows/install-charity-shop-guidance.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add charity shop access loader to the home page
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
+          loader = '<script src="/sitewide/js/baseline-charity-access.js?v=BASELINE_CHARITY_ACCESS_20260728_1"></script>'
+          marker = '<script src="/sitewide/js/baseline-shared.js?v=EDIT_VERSION_20260607_NO_VISIBLE_TAB_HASHES"></script>'
+
+          if loader not in text:
+              if marker not in text:
+                  raise SystemExit('Could not find the home page shared-script marker.')
+              text = text.replace(marker, loader + '\n' + marker, 1)
+              path.write_text(text, encoding='utf-8')
+
+          workflow = Path('.github/workflows/install-charity-shop-guidance.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit installed guidance entry point
+        run: |
+          git config user.name "Baseline Lifestyle Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html .github/workflows/install-charity-shop-guidance.yml
+          if git diff --cached --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git commit -m "Add PIN-protected charity shop guidance entry point"
+          git push origin HEAD:main
