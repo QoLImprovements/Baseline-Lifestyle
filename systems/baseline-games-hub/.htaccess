@@ -5,6 +5,7 @@
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+  RewriteRule ^baseline-games-hub\.html$ /sitewide/page-shell.php?page=games [L,QSA]
   RewriteCond %{HTTP_COOKIE} !baseline_games_hub_epoch=20260707_1 [NC]
   RewriteRule ^ - [E=baseline_games_hub_cache_upgrade:1]
 </IfModule>
