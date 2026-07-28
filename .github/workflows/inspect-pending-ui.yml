@@ -1,0 +1,63 @@
+name: Inspect pending UI targets
+
+on:
+  push:
+    paths:
+      - .github/workflows/inspect-pending-ui.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Locate relevant code
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          terms = [
+              'binaural',
+              'bl-pages-menu',
+              'blProtectedKey',
+              'charityLockBtn',
+              'Show All',
+              'sortSelectOptions',
+          ]
+          allowed = {'.html', '.php', '.js', '.css', '.mjs', '.json'}
+          root = Path('.')
+          for term in terms:
+              print('\n' + '=' * 88)
+              print('TERM:', term)
+              print('=' * 88)
+              found = 0
+              for path in root.rglob('*'):
+                  if not path.is_file() or '.git' in path.parts or path.suffix.lower() not in allowed:
+                      continue
+                  try:
+                      lines = path.read_text(encoding='utf-8', errors='ignore').splitlines()
+                  except Exception:
+                      continue
+                  for index, line in enumerate(lines):
+                      if term.lower() not in line.lower():
+                          continue
+                      found += 1
+                      start = max(0, index - 4)
+                      end = min(len(lines), index + 7)
+                      print(f'\n--- {path}:{index + 1} ---')
+                      for pos in range(start, end):
+                          print(f'{pos + 1:5}: {lines[pos]}')
+                      if found >= 80:
+                          print('\n[match limit reached]')
+                          break
+                  if found >= 80:
+                      break
+              if not found:
+                  print('[no matches]')
+          PY
