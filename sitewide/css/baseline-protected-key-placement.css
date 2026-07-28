@@ -1,0 +1,25 @@
+/* Places the protected-section key directly after the section dropdown. */
+.bl-homebar-inner .bl-protected-key{
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  z-index:2!important;
+  width:46px!important;
+  height:38px!important;
+  flex:0 0 46px!important;
+  transform:none!important;
+  border-color:rgba(18,52,76,.18)!important;
+  background:#3a3936!important;
+}
+.bl-homebar-inner .bl-protected-key:hover{background:#4a4945!important;}
+.bl-homebar-inner .bl-protected-key:focus-visible{
+  outline:3px solid rgba(18,52,76,.28)!important;
+  outline-offset:2px!important;
+}
+@media (max-width:620px){
+  .bl-homebar-inner .bl-protected-key{
+    width:42px!important;
+    height:36px!important;
+    flex-basis:42px!important;
+  }
+}
