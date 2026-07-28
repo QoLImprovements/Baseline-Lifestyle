@@ -7,6 +7,9 @@ FileETag None
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
+  # Attach the shared protected-section key and approved UI fixes to the main page.
+  RewriteRule ^baseline-fitness\.html$ /sitewide/page-shell.php?page=fitness [L,QSA]
+
   # The current HTML still carries the pre-fix query tokens. Redirect those exact
   # requests to a new public URL, so a cache or CDN cannot keep treating the
   # repaired file as the older runtime.
