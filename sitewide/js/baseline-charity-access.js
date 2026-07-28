@@ -1,57 +1,57 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_CHARITY_ACCESS_20260728_1';
-  if(window.__BASELINE_CHARITY_ACCESS__) return;
-  window.__BASELINE_CHARITY_ACCESS__ = BUILD;
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260728_2';
+  if(window.__BASELINE_PROTECTED_ACCESS__) return;
+  window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
   function addStylesheet(){
-    if(document.querySelector('link[data-charity-access-style]')) return;
+    if(document.querySelector('link[data-protected-access-style]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = '/sitewide/css/baseline-charity-access.css?v=' + BUILD;
-    link.dataset.charityAccessStyle = 'true';
+    link.dataset.protectedAccessStyle = 'true';
     document.head.appendChild(link);
   }
 
   function buildInterface(){
     const header = document.querySelector('.bl-top-header');
-    if(!header || document.getElementById('blCharityKey')) return null;
+    if(!header || document.getElementById('blProtectedKey')) return null;
 
     const button = document.createElement('button');
-    button.id = 'blCharityKey';
-    button.className = 'bl-charity-key';
+    button.id = 'blProtectedKey';
+    button.className = 'bl-protected-key';
     button.type = 'button';
     button.setAttribute('aria-haspopup', 'dialog');
-    button.setAttribute('aria-controls', 'blCharityAccessOverlay');
+    button.setAttribute('aria-controls', 'blProtectedAccessOverlay');
     button.setAttribute('aria-expanded', 'false');
-    button.setAttribute('aria-label', 'Open charity shop guidance');
-    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg><span>Shop</span>';
+    button.setAttribute('aria-label', 'Open protected sections');
+    button.title = 'Protected sections';
+    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
     header.insertBefore(button, header.firstChild);
 
     const overlay = document.createElement('div');
-    overlay.id = 'blCharityAccessOverlay';
-    overlay.className = 'bl-charity-access-overlay';
+    overlay.id = 'blProtectedAccessOverlay';
+    overlay.className = 'bl-protected-access-overlay';
     overlay.hidden = true;
     overlay.innerHTML = [
-      '<section class="bl-charity-access-dialog" role="dialog" aria-modal="true" aria-labelledby="blCharityAccessTitle" aria-describedby="blCharityAccessCopy">',
-      '  <div class="bl-charity-access-head">',
+      '<section class="bl-protected-access-dialog" role="dialog" aria-modal="true" aria-labelledby="blProtectedAccessTitle" aria-describedby="blProtectedAccessCopy">',
+      '  <div class="bl-protected-access-head">',
       '    <div>',
-      '      <p class="bl-charity-access-kicker">Protected shop section</p>',
-      '      <h2 id="blCharityAccessTitle">Charity Shop Guidance</h2>',
+      '      <p class="bl-protected-access-kicker">Protected sections</p>',
+      '      <h2 id="blProtectedAccessTitle">Enter Digital Code</h2>',
       '    </div>',
-      '    <button class="bl-charity-access-close" id="blCharityAccessClose" type="button" aria-label="Close PIN entry">&times;</button>',
+      '    <button class="bl-protected-access-close" id="blProtectedAccessClose" type="button" aria-label="Close digital-code entry">&times;</button>',
       '  </div>',
-      '  <p class="bl-charity-access-copy" id="blCharityAccessCopy">Enter the shop digit code to open the internal guidance tabs.</p>',
-      '  <form class="bl-charity-access-form" id="blCharityAccessForm">',
-      '    <label for="blCharityPin">Digit code</label>',
-      '    <div class="bl-charity-pin-row">',
-      '      <input id="blCharityPin" name="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" aria-describedby="blCharityAccessStatus" required>',
-      '      <button id="blCharitySubmit" type="submit">Open guidance</button>',
+      '  <p class="bl-protected-access-copy" id="blProtectedAccessCopy">Each protected website section has its own digital code. Enter a code to open the section linked to it.</p>',
+      '  <form class="bl-protected-access-form" id="blProtectedAccessForm">',
+      '    <label for="blProtectedCode">Digital code</label>',
+      '    <div class="bl-protected-code-row">',
+      '      <input id="blProtectedCode" name="code" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" autocomplete="off" aria-describedby="blProtectedAccessStatus" required>',
+      '      <button id="blProtectedSubmit" type="submit">Continue</button>',
       '    </div>',
-      '    <p class="bl-charity-access-status" id="blCharityAccessStatus" role="status" aria-live="polite"></p>',
+      '    <p class="bl-protected-access-status" id="blProtectedAccessStatus" role="status" aria-live="polite"></p>',
       '  </form>',
-      '  <p class="bl-charity-access-note">The guidance is displayed as website content with separate tabs. The cash-counting app is not part of this section.</p>',
       '</section>'
     ].join('');
     document.body.appendChild(overlay);
@@ -66,17 +66,18 @@
 
     const button = ui.button;
     const overlay = ui.overlay;
-    const closeButton = document.getElementById('blCharityAccessClose');
-    const form = document.getElementById('blCharityAccessForm');
-    const pinInput = document.getElementById('blCharityPin');
-    const submitButton = document.getElementById('blCharitySubmit');
-    const status = document.getElementById('blCharityAccessStatus');
+    const closeButton = document.getElementById('blProtectedAccessClose');
+    const form = document.getElementById('blProtectedAccessForm');
+    const codeInput = document.getElementById('blProtectedCode');
+    const submitButton = document.getElementById('blProtectedSubmit');
+    const status = document.getElementById('blProtectedAccessStatus');
     let lastFocus = null;
 
     function cleanLockedQuery(){
       try{
         const url = new URL(location.href);
-        if(!url.searchParams.has('charity')) return;
+        if(!url.searchParams.has('protected') && !url.searchParams.has('charity')) return;
+        url.searchParams.delete('protected');
         url.searchParams.delete('charity');
         history.replaceState(history.state, '', url.pathname + (url.search || '') + (url.hash || ''));
       }catch(_error){}
@@ -86,73 +87,73 @@
       lastFocus = document.activeElement;
       overlay.hidden = false;
       button.setAttribute('aria-expanded', 'true');
-      document.body.classList.add('bl-charity-dialog-open');
+      document.body.classList.add('bl-protected-dialog-open');
       status.textContent = message || '';
-      pinInput.value = '';
+      codeInput.value = '';
       requestAnimationFrame(function(){
-        try{ pinInput.focus({ preventScroll:true }); }catch(_error){ try{ pinInput.focus(); }catch(__error){} }
+        try{ codeInput.focus({ preventScroll:true }); }catch(_error){ try{ codeInput.focus(); }catch(__error){} }
       });
     }
 
     function closeDialog(){
       overlay.hidden = true;
       button.setAttribute('aria-expanded', 'false');
-      document.body.classList.remove('bl-charity-dialog-open');
+      document.body.classList.remove('bl-protected-dialog-open');
       status.textContent = '';
-      pinInput.value = '';
+      codeInput.value = '';
       try{ (lastFocus || button).focus({ preventScroll:true }); }catch(_error){ try{ button.focus(); }catch(__error){} }
     }
 
-    async function submitPin(event){
+    async function submitCode(event){
       event.preventDefault();
-      const pin = String(pinInput.value || '').replace(/\D/g, '');
-      pinInput.value = pin;
-      if(!pin){
-        status.textContent = 'Enter the digit code.';
-        pinInput.focus();
+      const code = String(codeInput.value || '').replace(/\D/g, '');
+      codeInput.value = code;
+      if(!code){
+        status.textContent = 'Enter a digital code.';
+        codeInput.focus();
         return;
       }
 
       submitButton.disabled = true;
-      pinInput.disabled = true;
+      codeInput.disabled = true;
       status.textContent = 'Checking code...';
 
       try{
-        const response = await fetch('/sitewide/api/charity_shop_access.php', {
+        const response = await fetch('/sitewide/api/protected_access.php', {
           method:'POST',
           credentials:'same-origin',
           headers:{ 'Content-Type':'application/json' },
-          body:JSON.stringify({ action:'unlock', pin:pin })
+          body:JSON.stringify({ action:'unlock', code:code })
         });
         const data = await response.json().catch(function(){ return {}; });
-        if(!response.ok || !data.ok || !data.unlocked){
-          status.textContent = data.error === 'incorrect_pin'
-            ? 'That code is not correct.'
+        if(!response.ok || !data.ok || !data.redirect){
+          status.textContent = data.error === 'incorrect_code'
+            ? 'That digital code is not recognised.'
             : data.error === 'rate_limited'
               ? 'Too many attempts. Please wait before trying again.'
-              : 'The guidance could not be unlocked. Please try again.';
-          pinInput.value = '';
+              : 'The protected section could not be opened. Please try again.';
+          codeInput.value = '';
           return;
         }
-        status.textContent = 'Opening guidance...';
-        location.assign(data.redirect || '/charity-shop/guidance/');
+        status.textContent = 'Opening protected section...';
+        location.assign(data.redirect);
       }catch(_error){
         status.textContent = 'The code could not be checked. Confirm the internet connection and try again.';
       }finally{
         submitButton.disabled = false;
-        pinInput.disabled = false;
-        if(status.textContent !== 'Opening guidance...'){
-          try{ pinInput.focus(); }catch(_error){}
+        codeInput.disabled = false;
+        if(status.textContent !== 'Opening protected section...'){
+          try{ codeInput.focus(); }catch(_error){}
         }
       }
     }
 
     button.addEventListener('click', function(){ openDialog(''); });
     closeButton.addEventListener('click', closeDialog);
-    form.addEventListener('submit', submitPin);
-    pinInput.addEventListener('input', function(){
-      const digits = pinInput.value.replace(/\D/g, '');
-      if(pinInput.value !== digits) pinInput.value = digits;
+    form.addEventListener('submit', submitCode);
+    codeInput.addEventListener('input', function(){
+      const digits = codeInput.value.replace(/\D/g, '');
+      if(codeInput.value !== digits) codeInput.value = digits;
       if(status.textContent && status.textContent !== 'Checking code...') status.textContent = '';
     });
 
@@ -182,8 +183,8 @@
 
     try{
       const params = new URLSearchParams(location.search || '');
-      if(params.get('charity') === 'locked'){
-        openDialog('Enter the shop code to continue.');
+      if(params.get('protected') === 'locked' || params.get('charity') === 'locked'){
+        openDialog('Enter the digital code to continue.');
         cleanLockedQuery();
       }
     }catch(_error){}
