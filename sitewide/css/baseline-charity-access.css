@@ -1,0 +1,225 @@
+/* Home banner access button and PIN dialog for the protected charity shop guidance. */
+
+body[data-app="home"] .bl-top-header{
+  isolation:isolate;
+}
+
+.bl-charity-key{
+  position:absolute;
+  left:clamp(14px,2.4vw,30px);
+  top:50%;
+  z-index:6;
+  min-width:54px;
+  min-height:46px;
+  padding:8px 13px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  transform:translateY(-50%);
+  background:rgba(255,255,255,.09);
+  color:#fff;
+  box-shadow:0 8px 24px rgba(0,0,0,.2);
+  cursor:pointer;
+  font:700 14px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  letter-spacing:.02em;
+  -webkit-tap-highlight-color:transparent;
+}
+
+.bl-charity-key:hover{
+  background:rgba(255,255,255,.16);
+}
+
+.bl-charity-key:focus-visible{
+  outline:3px solid rgba(255,255,255,.72);
+  outline-offset:3px;
+}
+
+.bl-charity-key svg{
+  width:23px;
+  height:23px;
+  flex:0 0 auto;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+
+.bl-charity-access-overlay{
+  position:fixed;
+  inset:0;
+  z-index:30000;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(11,23,31,.76);
+  backdrop-filter:blur(7px);
+}
+
+.bl-charity-access-overlay[hidden]{
+  display:none;
+}
+
+.bl-charity-access-dialog{
+  width:min(430px,100%);
+  padding:26px;
+  border:1px solid rgba(18,52,76,.16);
+  border-radius:22px;
+  background:#f9fbfa;
+  color:#12344c;
+  box-shadow:0 30px 80px rgba(0,0,0,.34);
+}
+
+.bl-charity-access-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+}
+
+.bl-charity-access-kicker{
+  margin:0 0 7px;
+  color:#14979c;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+
+.bl-charity-access-dialog h2{
+  margin:0;
+  color:#12344c;
+  font-size:clamp(25px,5vw,32px);
+  line-height:1.12;
+}
+
+.bl-charity-access-close{
+  width:38px;
+  height:38px;
+  flex:0 0 auto;
+  border:1px solid rgba(18,52,76,.14);
+  border-radius:50%;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  color:#12344c;
+  cursor:pointer;
+  font-size:22px;
+  line-height:1;
+}
+
+.bl-charity-access-copy{
+  margin:15px 0 18px;
+  color:#4d6675;
+  font-size:16px;
+  line-height:1.5;
+}
+
+.bl-charity-access-form label{
+  display:block;
+  margin-bottom:8px;
+  color:#12344c;
+  font-weight:800;
+}
+
+.bl-charity-pin-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+}
+
+.bl-charity-pin-row input{
+  min-width:0;
+  height:50px;
+  padding:0 16px;
+  border:1px solid rgba(18,52,76,.22);
+  border-radius:13px;
+  background:#fff;
+  color:#12344c;
+  font:800 22px/1 ui-monospace,SFMono-Regular,Consolas,monospace;
+  letter-spacing:.18em;
+  text-align:center;
+}
+
+.bl-charity-pin-row input:focus{
+  outline:3px solid rgba(20,151,156,.2);
+  border-color:#14979c;
+}
+
+.bl-charity-pin-row button{
+  min-height:50px;
+  padding:0 20px;
+  border:0;
+  border-radius:13px;
+  background:linear-gradient(135deg,#12344c,#14979c);
+  color:#fff;
+  cursor:pointer;
+  font-weight:850;
+}
+
+.bl-charity-pin-row button:disabled{
+  opacity:.62;
+  cursor:wait;
+}
+
+.bl-charity-access-status{
+  min-height:24px;
+  margin:12px 0 0;
+  color:#ad3d3d;
+  font-size:14px;
+  font-weight:750;
+  line-height:1.4;
+}
+
+.bl-charity-access-note{
+  margin:14px 0 0;
+  padding-top:14px;
+  border-top:1px solid rgba(18,52,76,.1);
+  color:#6b7d88;
+  font-size:13px;
+  line-height:1.45;
+}
+
+body.bl-charity-dialog-open{
+  overflow:hidden !important;
+}
+
+@media (max-width:900px){
+  .bl-charity-key{
+    left:12px;
+    min-width:44px;
+    min-height:42px;
+    padding:7px 10px;
+  }
+
+  .bl-charity-key span{
+    position:absolute;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+    clip:rect(0 0 0 0);
+    clip-path:inset(50%);
+    white-space:nowrap;
+  }
+}
+
+@media (max-width:520px){
+  .bl-charity-key{
+    top:auto;
+    bottom:10px;
+    transform:none;
+  }
+
+  .bl-charity-access-dialog{
+    padding:22px 18px;
+    border-radius:18px;
+  }
+
+  .bl-charity-pin-row{
+    grid-template-columns:1fr;
+  }
+}
