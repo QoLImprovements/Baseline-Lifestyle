@@ -1,22 +1,156 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260728_2';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260728_4';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
-  function addStylesheet(){
-    if(document.querySelector('link[data-protected-access-style]')) return;
+  function addStylesheet(href, marker){
+    if(document.querySelector('link[' + marker + ']')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '/sitewide/css/baseline-charity-access.css?v=' + BUILD;
-    link.dataset.protectedAccessStyle = 'true';
+    link.href = href;
+    link.setAttribute(marker, 'true');
     document.head.appendChild(link);
   }
 
+  function addStylesheets(){
+    addStylesheet('/sitewide/css/baseline-charity-access.css?v=' + BUILD, 'data-protected-access-style');
+    addStylesheet('/sitewide/css/baseline-protected-key-placement.css?v=' + BUILD, 'data-protected-key-placement');
+    addStylesheet('/sitewide/css/baseline-ui-fixes.css?v=' + BUILD, 'data-baseline-ui-fixes');
+  }
+
+  function ordinarySectionMenu(){
+    return [
+      '<div class="bl-pages-dd" data-protected-current-section="charity-shop">',
+      '  <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false">Charity Shop &#9662;</button>',
+      '  <div class="bl-pages-menu" role="menu" hidden>',
+      '    <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Natural Skincare</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>',
+      '  </div>',
+      '</div>'
+    ].join('');
+  }
+
+  function bindSectionDropdown(dropdown){
+    if(!dropdown || dropdown.dataset.protectedDropdownBound === 'true') return;
+    const button = dropdown.querySelector('.bl-pages-btn');
+    const menu = dropdown.querySelector('.bl-pages-menu');
+    if(!button || !menu) return;
+    dropdown.dataset.protectedDropdownBound = 'true';
+
+    function setOpen(open){
+      menu.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+      dropdown.classList.toggle('is-open', open);
+    }
+
+    button.addEventListener('click', function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      setOpen(menu.hidden);
+    });
+    menu.addEventListener('click', function(event){
+      const link = event.target.closest('a');
+      if(link) setOpen(false);
+    });
+    document.addEventListener('click', function(event){
+      if(!dropdown.contains(event.target)) setOpen(false);
+    });
+    document.addEventListener('keydown', function(event){
+      if(event.key !== 'Escape' || menu.hidden) return;
+      setOpen(false);
+      try{ button.focus({preventScroll:true}); }catch(_error){ try{ button.focus(); }catch(__error){} }
+    });
+  }
+
+  function applyCharityPageStructure(){
+    if(!document.body || document.body.dataset.app !== 'charity-shop') return;
+
+    const homebarInner = document.querySelector('.bl-homebar .bl-homebar-inner');
+    if(homebarInner){
+      const existingDropdown = homebarInner.querySelector('.bl-pages-dd');
+      const currentButton = existingDropdown && existingDropdown.querySelector('.bl-pages-btn');
+      if(!existingDropdown || !currentButton || !/^Charity Shop\b/.test(currentButton.textContent || '')){
+        homebarInner.innerHTML = ordinarySectionMenu();
+      }
+      bindSectionDropdown(homebarInner.querySelector('.bl-pages-dd'));
+    }
+
+    const lockButton = document.getElementById('charityLockBtn');
+    if(lockButton) lockButton.remove();
+    document.querySelectorAll('.charity-access-label').forEach(function(label){ label.remove(); });
+
+    document.querySelectorAll('.charity-subtabs').forEach(function(group){ group.classList.add('subtabs'); });
+    document.querySelectorAll('.charity-subtab').forEach(function(button){
+      button.classList.add('subtab');
+      if(button.dataset.charitySubtarget === 'overview' && /^Overview$/i.test((button.textContent || '').trim())){
+        button.textContent = 'Systems';
+      }
+    });
+  }
+
+  function isShowAllOption(option){
+    if(!option) return false;
+    return String(option.value || '').trim().toLowerCase() === 'all' ||
+      /^show all$/i.test(String(option.textContent || '').trim());
+  }
+
+  function pinShowAllInSelect(select){
+    if(!select || !select.options || !select.options.length) return;
+    const options = Array.from(select.options);
+    const showAll = options.find(isShowAllOption);
+    if(showAll && select.options[0] !== showAll) select.insertBefore(showAll, select.options[0]);
+
+    const wrapper = select.closest('.bl-select');
+    const menu = wrapper && wrapper.querySelector('.bl-select-menu');
+    if(menu){
+      const rendered = Array.from(menu.querySelectorAll('[role="option"]'));
+      const renderedShowAll = rendered.find(function(option){
+        return String(option.dataset.value || option.getAttribute('data-value') || '').trim().toLowerCase() === 'all' ||
+          /^show all$/i.test(String(option.textContent || '').trim());
+      });
+      if(renderedShowAll && menu.firstElementChild !== renderedShowAll){
+        menu.insertBefore(renderedShowAll, menu.firstElementChild);
+      }
+    }
+  }
+
+  function pinMassageShowAll(){
+    if(!document.body || document.body.dataset.app !== 'massage') return;
+    document.querySelectorAll('select').forEach(pinShowAllInSelect);
+  }
+
+  function applyApprovedUiFixes(){
+    applyCharityPageStructure();
+    pinMassageShowAll();
+  }
+
+  function observeApprovedUiFixes(){
+    if(!document.body || window.__BASELINE_APPROVED_UI_OBSERVER__) return;
+    window.__BASELINE_APPROVED_UI_OBSERVER__ = true;
+    let frame = 0;
+    const observer = new MutationObserver(function(){
+      if(frame) return;
+      frame = requestAnimationFrame(function(){
+        frame = 0;
+        applyApprovedUiFixes();
+      });
+    });
+    observer.observe(document.body, { childList:true, subtree:true });
+  }
+
   function buildInterface(){
-    const header = document.querySelector('.bl-top-header');
-    if(!header || document.getElementById('blProtectedKey')) return null;
+    const pagesDropdown = document.querySelector('.bl-homebar-inner .bl-pages-dd');
+    const homebarInner = document.querySelector('.bl-homebar-inner');
+    const topHeader = document.querySelector('.bl-top-header');
+    const host = homebarInner || topHeader;
+    if(!host || document.getElementById('blProtectedKey')) return null;
 
     const button = document.createElement('button');
     button.id = 'blProtectedKey';
@@ -28,7 +162,14 @@
     button.setAttribute('aria-label', 'Open protected sections');
     button.title = 'Protected sections';
     button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
-    header.insertBefore(button, header.firstChild);
+
+    if(pagesDropdown && pagesDropdown.parentNode === host){
+      pagesDropdown.insertAdjacentElement('afterend', button);
+    }else{
+      const rightControls = host.querySelector('.bl-homebar-right');
+      if(rightControls) host.insertBefore(button, rightControls);
+      else host.insertBefore(button, host.firstChild);
+    }
 
     const overlay = document.createElement('div');
     overlay.id = 'blProtectedAccessOverlay';
@@ -60,7 +201,10 @@
   }
 
   function initialise(){
-    addStylesheet();
+    addStylesheets();
+    applyApprovedUiFixes();
+    observeApprovedUiFixes();
+
     const ui = buildInterface();
     if(!ui) return;
 
