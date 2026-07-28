@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^baseline-massage\.html$ /sitewide/page-shell.php?page=massage [L,QSA]
