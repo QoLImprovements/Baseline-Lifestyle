@@ -41,9 +41,9 @@ body[data-app="charity-shop"] .bl-scroll{
   min-height:100%!important;
   background:var(--charity-gradient)!important;
   background-image:var(--charity-gradient)!important;
-  background-size:100vw 100%!important;
-  background-position:center top!important;
-  background-repeat:repeat-y!important;
+  background-size:100vw 100vh!important;
+  background-position:left top!important;
+  background-repeat:no-repeat!important;
   background-attachment:fixed!important;
 }
 
@@ -62,9 +62,10 @@ html body[data-app="charity-shop"] .charity-main-tabs,
 html body[data-app="charity-shop"] .charity-subtabs{
   background:var(--charity-gradient)!important;
   background-image:var(--charity-gradient)!important;
-  background-size:100vw 100%!important;
-  background-position:center top!important;
+  background-size:100vw 100vh!important;
+  background-position:left top!important;
   background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
 }
 
 html body[data-app="charity-shop"] .bl-homebar,
