@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'CHARITY_SHOP_20260731_9';
+  const BUILD = 'CHARITY_SHOP_20260731_10';
   const ARTWORK_BUILD = '20260730_4';
   const FLOAT_TARGET_PENCE = 10000;
   const SMALL_COIN_CAP = 20;
@@ -27,7 +27,7 @@
       return;
     }
     const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260731_11';
+    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260731_12';
     script.async = false;
     script.dataset.protectedAccessLoader = 'charity-shop';
     script.addEventListener('load', loadCharityCorrections, {once:true});
@@ -474,7 +474,7 @@
   const mainTabs = Array.from(document.querySelectorAll('.charity-main-tab[data-charity-target]'));
   const mainSections = Array.from(document.querySelectorAll('.charity-main-section'));
   const lockButton = document.getElementById('charityLockBtn');
-  const defaultSubtab = Object.freeze({operations:'overview',sizes:'ladies',homeware:'duvet'});
+  const defaultSubtab = Object.freeze({operations:'overview',sizes:'ladies'});
   const currentSubtab = Object.assign({},defaultSubtab);
   const mainIds = new Set(mainTabs.map(function(button){return button.dataset.charityTarget;}));
   let applyingHistory = false;
@@ -488,7 +488,7 @@
     'ladies-sizes':['sizes','ladies'],
     'mens-sizes':['sizes','mens'],
     'shoe-sizes':['sizes','shoes'],
-    'duvet-sizes':['homeware','duvet']
+    'duvet-sizes':['sizes','duvet']
   });
 
   function subtabButtons(mainId){
@@ -503,8 +503,10 @@
     return subtabButtons(mainId).some(function(button){return button.dataset.charitySubtarget === subId;});
   }
   function normalisedState(mainValue,subValue){
-    const main = mainIds.has(mainValue) ? mainValue : 'operations';
-    const requestedSub = subValue || currentSubtab[main] || defaultSubtab[main];
+    const legacyHomeware = mainValue === 'homeware';
+    const main = legacyHomeware ? 'sizes' : (mainIds.has(mainValue) ? mainValue : 'operations');
+    const legacySubtab = legacyHomeware || subValue === 'sorting';
+    const requestedSub = legacySubtab ? 'duvet' : (subValue || currentSubtab[main] || defaultSubtab[main]);
     const sub = validSubtab(main,requestedSub) ? requestedSub : defaultSubtab[main];
     return {main:main,sub:sub};
   }
