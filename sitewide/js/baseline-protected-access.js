@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260731_11';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260731_12';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
@@ -70,7 +70,7 @@
     { panel:'sizes-ladies', asset:'ladies-size-guide', alt:'Ladies size guide for the charity shop', caption:"Ladies' Size Guide - the shop conversion artwork." },
     { panel:'sizes-mens', asset:'mens-size-guide', alt:'Mens size guide for the charity shop', caption:"Men's Size Guide - the shop conversion artwork." },
     { panel:'sizes-shoes', asset:'shoe-size-guide', alt:'Shoe size guide for the charity shop', caption:'Shoe Size Guide - the shop conversion artwork.' },
-    { panel:'homeware-duvet', asset:'duvet-size-guide', alt:'Duvet bedding size guide for the charity shop', caption:'Duvet Size Guide - the shop sorting artwork.' }
+    { panel:'sizes-duvet', asset:'duvet-size-guide', alt:'Duvet bedding size guide for the charity shop', caption:'Duvet Size Guide - the shop sorting artwork.' }
   ]);
 
   function installCharityArtwork(){
