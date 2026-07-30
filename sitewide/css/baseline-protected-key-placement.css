@@ -1,4 +1,4 @@
-/* Places the protected-section key directly after the section dropdown. */
+/* Places the protected-section key directly after the current section dropdown. */
 .bl-homebar-inner .bl-protected-key{
   position:relative!important;
   left:auto!important;
@@ -8,12 +8,16 @@
   height:38px!important;
   flex:0 0 46px!important;
   transform:none!important;
-  border-color:rgba(18,52,76,.18)!important;
-  background:#3a3936!important;
+  border:2px solid var(--protected-key-border,var(--banner-pill-border,var(--border)))!important;
+  background:var(--protected-key-bg,var(--banner-pill-bg,var(--header-gradient)))!important;
+  background-image:var(--protected-key-bg,var(--banner-pill-bg,var(--header-gradient)))!important;
+  color:var(--protected-key-ink,var(--banner-pill-ink,var(--ink)))!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.22)!important;
 }
-.bl-homebar-inner .bl-protected-key:hover{background:#4a4945!important;}
+.bl-homebar-inner .bl-protected-key:hover{filter:brightness(1.09)!important;}
 .bl-homebar-inner .bl-protected-key:focus-visible{
-  outline:3px solid rgba(18,52,76,.28)!important;
+  outline:3px solid var(--protected-key-focus,var(--ring,var(--accent)))!important;
   outline-offset:2px!important;
 }
 @media (max-width:620px){
