@@ -1,0 +1,250 @@
+name: Fix Charity Shop cash and panels
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-charity-cash-and-panels.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Clean Charity Shop cash markup and shared controls
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          js_path = Path('systems/charity-shop/js/charity-shop.js')
+          css_path = Path('systems/charity-shop/css/charity-shop-cashing-and-artwork.css')
+          php_path = Path('systems/charity-shop/charity-shop.php')
+
+          js = js_path.read_text(encoding='utf-8')
+          js = js.replace("const BUILD = 'CHARITY_SHOP_20260730_8';", "const BUILD = 'CHARITY_SHOP_20260730_11';", 1)
+
+          intro = """      '  <header class=\"card charity-card charity-card--wide charity-cashup-heading\">',
+      '    <p class=\"charity-kicker\">COUNT | MAKE FLOAT | CASH TO BANK</p>',
+      '    <h2>Cashing Up</h2>',
+      '    <p>Enter the number of each note and coin in the till. The page makes up the £100 float first, then calculates the remaining Cash To Bank.</p>',
+      '  </header>',
+"""
+          if intro not in js:
+              raise SystemExit('Cashing Up intro block not found')
+          js = js.replace(intro, '', 1)
+
+          old_heading = "      '      <div class=\"charity-cheque-heading\"><div><p class=\"charity-kicker\">POUNDS - PENCE</p><h3 id=\"charityBankBookTitle\">Cash To Bank Book</h3></div></div>',"
+          new_heading = "      '      <div class=\"charity-cheque-heading\"><h3 id=\"charityBankBookTitle\">Cash To Bank Book</h3></div>',"
+          if old_heading not in js:
+              raise SystemExit('POUNDS - PENCE heading not found')
+          js = js.replace(old_heading, new_heading, 1)
+          js_path.write_text(js, encoding='utf-8')
+
+          css = css_path.read_text(encoding='utf-8')
+          old_surface = """html body[data-app=\"charity-shop\"] .charity-cash-totals,
+html body[data-app=\"charity-shop\"] .charity-float-total-line,
+html body[data-app=\"charity-shop\"] .charity-bank-total-line,
+html body[data-app=\"charity-shop\"] .charity-cheque-row,
+html body[data-app=\"charity-shop\"] .charity-float-status,
+html body[data-app=\"charity-shop\"] .charity-float-fallback{
+  background:var(--charity-highlight)!important;
+  background-image:none!important;
+}
+"""
+          new_surface = """html body[data-app=\"charity-shop\"] .charity-cash-totals{
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+}
+
+html body[data-app=\"charity-shop\"] .charity-float-total-line,
+html body[data-app=\"charity-shop\"] .charity-bank-total-line,
+html body[data-app=\"charity-shop\"] .charity-cheque-row,
+html body[data-app=\"charity-shop\"] .charity-float-status,
+html body[data-app=\"charity-shop\"] .charity-float-fallback{
+  background:var(--charity-highlight)!important;
+  background-image:none!important;
+}
+"""
+          if old_surface not in css:
+              raise SystemExit('Till Totals surface rule not found')
+          css = css.replace(old_surface, new_surface, 1)
+
+          old_final = """html body[data-app=\"charity-shop\"] .charity-total-line--final{
+  margin-top:8px!important;
+  padding:14px!important;
+  border:1px solid var(--charity-red)!important;
+"""
+          new_final = """html body[data-app=\"charity-shop\"] .charity-total-line--final{
+  width:calc(100% + 28px)!important;
+  margin:8px -14px 0!important;
+  padding:14px!important;
+  border:1px solid var(--charity-red)!important;
+"""
+          if old_final not in css:
+              raise SystemExit('Cash To Bank final-line rule not found')
+          css = css.replace(old_final, new_final, 1)
+
+          marker = 'CHARITY_DROPDOWN_PANEL_COHERENCE_20260730_1'
+          authority = r'''
+
+/* CHARITY_DROPDOWN_PANEL_COHERENCE_20260730_1
+   Charity Shop-only presentation for the shared site dropdown and flyout panels. */
+html body[data-app="charity-shop"] .bl-pages-menu{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+  padding:8px!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:16px!important;
+  background:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  background-image:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  color:#fff!important;
+  box-shadow:0 14px 30px rgba(61,8,13,.34)!important;
+  opacity:1!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link{
+  order:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:44px!important;
+  padding:10px 12px!important;
+  border:1px solid transparent!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:none!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.28)!important;
+}
+
+html body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:hover,
+html body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:focus-visible{
+  border-color:rgba(255,255,255,.38)!important;
+  background:rgba(255,255,255,.12)!important;
+  outline:none!important;
+}
+
+html body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]{
+  order:-1!important;
+  border-color:rgba(255,255,255,.48)!important;
+  background:rgba(255,255,255,.16)!important;
+  font-weight:900!important;
+}
+
+html body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]::before,
+html body[data-app="charity-shop"] .bl-pages-btn::before{
+  content:"🔑";
+  display:inline-block;
+  flex:0 0 auto;
+  margin-right:2px;
+  font-size:.95em;
+  line-height:1;
+}
+
+html body[data-app="charity-shop"] #bl-beats-flyout > .card,
+html body[data-app="charity-shop"] #bl-beats-flyout .card.bl-player,
+html body[data-app="charity-shop"] #bl-auth-flyout > .card,
+html body[data-app="charity-shop"] #bl-auth-flyout .card,
+html body[data-app="charity-shop"] #bl-voice-flyout > .card,
+html body[data-app="charity-shop"] #bl-voice-flyout .card{
+  --ink:#fff;
+  --muted:rgba(255,255,255,.82);
+  border:1px solid rgba(255,255,255,.34)!important;
+  background:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  background-image:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  color:#fff!important;
+  box-shadow:0 18px 42px rgba(61,8,13,.36)!important;
+  opacity:1!important;
+  filter:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html body[data-app="charity-shop"] #bl-beats-flyout h1,
+html body[data-app="charity-shop"] #bl-beats-flyout h2,
+html body[data-app="charity-shop"] #bl-beats-flyout h3,
+html body[data-app="charity-shop"] #bl-beats-flyout h4,
+html body[data-app="charity-shop"] #bl-beats-flyout p,
+html body[data-app="charity-shop"] #bl-beats-flyout label,
+html body[data-app="charity-shop"] #bl-beats-flyout .note,
+html body[data-app="charity-shop"] #bl-auth-flyout h1,
+html body[data-app="charity-shop"] #bl-auth-flyout h2,
+html body[data-app="charity-shop"] #bl-auth-flyout h3,
+html body[data-app="charity-shop"] #bl-auth-flyout h4,
+html body[data-app="charity-shop"] #bl-auth-flyout p,
+html body[data-app="charity-shop"] #bl-auth-flyout label,
+html body[data-app="charity-shop"] #bl-auth-flyout .note,
+html body[data-app="charity-shop"] #bl-voice-flyout h1,
+html body[data-app="charity-shop"] #bl-voice-flyout h2,
+html body[data-app="charity-shop"] #bl-voice-flyout h3,
+html body[data-app="charity-shop"] #bl-voice-flyout h4,
+html body[data-app="charity-shop"] #bl-voice-flyout p,
+html body[data-app="charity-shop"] #bl-voice-flyout label,
+html body[data-app="charity-shop"] #bl-voice-flyout .note{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.24)!important;
+}
+
+html body[data-app="charity-shop"] #bl-beats-flyout input,
+html body[data-app="charity-shop"] #bl-beats-flyout select,
+html body[data-app="charity-shop"] #bl-auth-flyout input,
+html body[data-app="charity-shop"] #bl-auth-flyout select,
+html body[data-app="charity-shop"] #bl-voice-flyout input,
+html body[data-app="charity-shop"] #bl-voice-flyout select{
+  border-color:rgba(255,255,255,.46)!important;
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+}
+
+html body[data-app="charity-shop"] #bl-beats-flyout button,
+html body[data-app="charity-shop"] #bl-auth-flyout button,
+html body[data-app="charity-shop"] #bl-voice-flyout button{
+  border-color:rgba(255,255,255,.38)!important;
+  background:rgba(255,255,255,.12)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+'''
+          if marker not in css:
+              css = css.rstrip() + authority + '\n'
+          css_path.write_text(css, encoding='utf-8')
+
+          php = php_path.read_text(encoding='utf-8')
+          php = php.replace('/systems/charity-shop/css/charity-shop.css?v=CHARITY_GUIDANCE_20260728_2', '/systems/charity-shop/css/charity-shop.css?v=CHARITY_GUIDANCE_20260730_4', 1)
+          php = php.replace('/systems/charity-shop/js/charity-shop.js?v=CHARITY_GUIDANCE_20260728_2', '/systems/charity-shop/js/charity-shop.js?v=CHARITY_SHOP_20260730_11', 1)
+          php_path.write_text(php, encoding='utf-8')
+
+          workflow = Path('.github/workflows/fix-charity-cash-and-panels.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit Charity Shop-only cleanup
+        run: |
+          git config user.name "Baseline Lifestyle Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git commit -m "Tidy Charity cash totals and shared panels"
+          git push origin HEAD:main
