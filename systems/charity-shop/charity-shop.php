@@ -303,7 +303,22 @@ if($accessUntil <= time()){
               <p><strong>UK sizes are used for the shop.</strong> Use the EU size and the approximate foot length to help convert unclear labels.</p>
             </article>
 
-            <article class="card charity-card charity-table-card">
+            <article class="card charity-card charity-card--wide charity-table-card">
+              <h2>Ladies' shoes</h2>
+              <div class="charity-table-scroll">
+                <table>
+                  <thead><tr><th>UK</th><th>Europe (EU)</th><th>Foot length</th></tr></thead>
+                  <tbody>
+                    <tr><td>3</td><td>36</td><td>22.1-22.9 cm</td></tr><tr><td>4</td><td>37</td><td>23.0-23.8 cm</td></tr>
+                    <tr><td>5</td><td>38</td><td>23.9-24.6 cm</td></tr><tr><td>6</td><td>39</td><td>24.7-25.4 cm</td></tr>
+                    <tr><td>7</td><td>40</td><td>25.5-26.2 cm</td></tr><tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr>
+                    <tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="card charity-card charity-card--wide charity-table-card">
               <h2>Men's shoes</h2>
               <div class="charity-table-scroll">
                 <table>
@@ -313,21 +328,6 @@ if($accessUntil <= time()){
                     <tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr><tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
                     <tr><td>10</td><td>43</td><td>28.0-28.8 cm</td></tr><tr><td>11</td><td>44</td><td>28.9-29.6 cm</td></tr>
                     <tr><td>12</td><td>45</td><td>29.7-30.5 cm</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </article>
-
-            <article class="card charity-card charity-table-card">
-              <h2>Women's shoes</h2>
-              <div class="charity-table-scroll">
-                <table>
-                  <thead><tr><th>UK</th><th>Europe (EU)</th><th>Foot length</th></tr></thead>
-                  <tbody>
-                    <tr><td>3</td><td>36</td><td>22.1-22.9 cm</td></tr><tr><td>4</td><td>37</td><td>23.0-23.8 cm</td></tr>
-                    <tr><td>5</td><td>38</td><td>23.9-24.6 cm</td></tr><tr><td>6</td><td>39</td><td>24.7-25.4 cm</td></tr>
-                    <tr><td>7</td><td>40</td><td>25.5-26.2 cm</td></tr><tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr>
-                    <tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
                   </tbody>
                 </table>
               </div>
