@@ -1,0 +1,157 @@
+/* Charity Shop final component coherence — 2026-07-30
+   Scoped exclusively to the Charity Shop system. */
+
+/* The redundant generated Cashing Up introduction and pounds/pence kicker are
+   not part of the interface. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-cashup-heading,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-cheque-heading .charity-kicker{
+  display:none!important;
+}
+
+/* Till Totals uses the same reading surface as the other system cards. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-cash-totals{
+  background:var(--charity-cream,#fff9df)!important;
+  background-image:none!important;
+  color:var(--charity-ink,#17364d)!important;
+}
+
+/* The coloured final result bar extends into its own padding so its label and
+   value share the same text columns as Total Count and Float made. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line--final{
+  width:calc(100% + 28px)!important;
+  margin:8px -14px 0!important;
+  padding:14px!important;
+}
+
+/* Site-template dropdown: one contained menu surface rather than a separate
+   gradient card for every link. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:4px!important;
+  padding:8px!important;
+  border:1px solid rgba(255,255,255,.34)!important;
+  border-radius:16px!important;
+  background:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  background-image:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  color:#fff!important;
+  box-shadow:0 14px 30px rgba(61,8,13,.34)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link{
+  order:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  min-height:44px!important;
+  padding:10px 12px!important;
+  border:1px solid transparent!important;
+  border-radius:12px!important;
+  background:transparent!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:none!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.28)!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:hover,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:focus-visible{
+  border-color:rgba(255,255,255,.38)!important;
+  background:rgba(255,255,255,.12)!important;
+  outline:none!important;
+}
+
+/* Keep the currently accessed protected system first and identify it with a key. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]{
+  order:-1!important;
+  border-color:rgba(255,255,255,.48)!important;
+  background:rgba(255,255,255,.16)!important;
+  font-weight:900!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]::before,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-btn::before{
+  content:"🔑";
+  display:inline-block;
+  flex:0 0 auto;
+  margin-right:3px;
+  font-size:.95em;
+  line-height:1;
+}
+
+/* Binaural, Account and Voice panels use a single opaque dark system surface.
+   All explanatory panel text is white; form fields remain cream with dark ink. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout > .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout .card.bl-player,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout > .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout > .card,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout .card{
+  --ink:#fff;
+  --muted:rgba(255,255,255,.82);
+  border:1px solid rgba(255,255,255,.34)!important;
+  background:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  background-image:linear-gradient(90deg,#76151b 0%,#a62229 50%,#76151b 100%)!important;
+  color:#fff!important;
+  box-shadow:0 18px 42px rgba(61,8,13,.36)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout h4,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout .note,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout h4,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout .note,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h1,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h2,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h3,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout h4,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout p,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout label,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout .note{
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  text-shadow:0 1px 1px rgba(0,0,0,.24)!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout input,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout select,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout input,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout select{
+  border-color:rgba(255,255,255,.46)!important;
+  background:var(--charity-cream,#fff9df)!important;
+  background-image:none!important;
+  color:var(--charity-ink,#17364d)!important;
+  -webkit-text-fill-color:var(--charity-ink,#17364d)!important;
+}
+
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout button,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-auth-flyout button,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-voice-flyout button{
+  border-color:rgba(255,255,255,.38)!important;
+  background:rgba(255,255,255,.12)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
