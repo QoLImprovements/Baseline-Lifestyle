@@ -75,13 +75,44 @@ html body[data-app="charity-shop"]{
   --ring:rgba(245,207,36,.72);
   color:#17364d!important;
   background:var(--charity-mirror)!important;
+  background-image:var(--charity-mirror)!important;
+  background-color:#941b22!important;
   background-attachment:fixed!important;
-  background-size:100% 100%!important;
+  background-size:100vw 100%!important;
+  background-position:center top!important;
+  background-repeat:repeat-y!important;
+  background-blend-mode:normal!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
 }
-html body[data-app="charity-shop"] .charity-scroll{
-  background:linear-gradient(180deg,rgba(255,249,223,.28),rgba(255,249,223,.48)),var(--charity-mirror)!important;
+html body[data-app="charity-shop"] .charity-scroll,
+html body[data-app="charity-shop"] .bl-scroll{
+  background:var(--charity-mirror)!important;
+  background-image:var(--charity-mirror)!important;
+  background-color:#941b22!important;
+  background-size:100vw 100%!important;
+  background-position:center top!important;
+  background-repeat:repeat-y!important;
   background-attachment:fixed!important;
+  background-blend-mode:normal!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
   min-height:calc(100svh - 48px)!important;
+}
+html body[data-app="charity-shop"] .charity-scroll::before,
+html body[data-app="charity-shop"] .charity-scroll::after,
+html body[data-app="charity-shop"] .bl-scroll::before,
+html body[data-app="charity-shop"] .bl-scroll::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  background-image:none!important;
+  opacity:0!important;
+  filter:none!important;
 }
 html body[data-app="charity-shop"] .bl-homebar{
   border-bottom:3px solid #941b22!important;
