@@ -1,0 +1,134 @@
+name: Fix Charity Shop full-strength background
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-charity-full-strength-background.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove Charity Shop background wash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          css_path = Path('systems/charity-shop/css/charity-shop-cashing-and-artwork.css')
+          js_path = Path('systems/charity-shop/js/charity-shop.js')
+
+          marker = 'CHARITY_FULL_STRENGTH_BACKGROUND_20260730_1'
+          authority = r'''
+
+/* CHARITY_FULL_STRENGTH_BACKGROUND_20260730_1
+   Final Charity Shop-only background authority.
+   Prevents the shared UI-fixes stylesheet from placing a translucent cream wash
+   over the full-strength mirrored system gradient. */
+html body[data-app="charity-shop"],
+html body[data-app="charity-shop"] .charity-scroll,
+html body[data-app="charity-shop"] .bl-scroll{
+  min-height:100%!important;
+  background-color:#941b22!important;
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100vw 100%!important;
+  background-position:center top!important;
+  background-repeat:repeat-y!important;
+  background-attachment:fixed!important;
+  background-blend-mode:normal!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  isolation:isolate!important;
+}
+
+html body[data-app="charity-shop"] .bl-homebar,
+html body[data-app="charity-shop"] .bl-homebar::before,
+html body[data-app="charity-shop"] .charity-hero,
+html body[data-app="charity-shop"] .hero,
+html body[data-app="charity-shop"] .charity-main-tabs,
+html body[data-app="charity-shop"] .charity-subtabs{
+  background-color:#941b22!important;
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100vw 100%!important;
+  background-position:center top!important;
+  background-repeat:no-repeat!important;
+  background-blend-mode:normal!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-scroll::before,
+html body[data-app="charity-shop"] .charity-scroll::after,
+html body[data-app="charity-shop"] .bl-scroll::before,
+html body[data-app="charity-shop"] .bl-scroll::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+  background-image:none!important;
+  opacity:0!important;
+  filter:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-wrap,
+html body[data-app="charity-shop"] .charity-main-section,
+html body[data-app="charity-shop"] .charity-main-section.active,
+html body[data-app="charity-shop"] .charity-subpanel,
+html body[data-app="charity-shop"] .charity-subpanel.active{
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+}
+
+@media(max-width:900px){
+  html body[data-app="charity-shop"],
+  html body[data-app="charity-shop"] .charity-scroll,
+  html body[data-app="charity-shop"] .bl-scroll{
+    background-attachment:scroll!important;
+  }
+}
+'''
+
+          css = css_path.read_text(encoding='utf-8')
+          if marker not in css:
+              css = css.rstrip() + authority + '\n'
+              css_path.write_text(css, encoding='utf-8')
+
+          js = js_path.read_text(encoding='utf-8')
+          js = js.replace("const BUILD = 'CHARITY_SHOP_20260730_8';", "const BUILD = 'CHARITY_SHOP_20260730_9';", 1)
+          js_path.write_text(js, encoding='utf-8')
+
+          workflow = Path('.github/workflows/fix-charity-full-strength-background.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+      - name: Commit Charity Shop-only correction
+        run: |
+          git config user.name "Baseline Lifestyle Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git commit -m "Restore full-strength Charity Shop background"
+          git push origin HEAD:main
