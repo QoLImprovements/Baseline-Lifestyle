@@ -51,8 +51,7 @@ if($accessUntil <= time()){
       </div>
       <nav class="tabs charity-main-tabs" aria-label="Charity shop guidance sections" role="tablist">
         <button class="tab charity-main-tab" id="charityMainOperations" type="button" role="tab" aria-selected="true" aria-controls="operations" data-charity-target="operations">Shop Operations</button>
-        <button class="tab charity-main-tab" id="charityMainSizes" type="button" role="tab" aria-selected="false" aria-controls="sizes" data-charity-target="sizes">Clothing Sizes</button>
-        <button class="tab charity-main-tab" id="charityMainHomeware" type="button" role="tab" aria-selected="false" aria-controls="homeware" data-charity-target="homeware">Homeware Sizes</button>
+        <button class="tab charity-main-tab" id="charityMainSizes" type="button" role="tab" aria-selected="false" aria-controls="sizes" data-charity-target="sizes">Clothing &amp; Houseware Sizes</button>
       </nav>
     </header>
 
@@ -194,10 +193,11 @@ if($accessUntil <= time()){
       </section>
 
       <section class="section charity-main-section" id="sizes" role="tabpanel" aria-labelledby="charityMainSizes" tabindex="0" hidden>
-        <nav class="charity-subtabs" role="tablist" aria-label="Clothing size guides">
+        <nav class="charity-subtabs" role="tablist" aria-label="Clothing and houseware size guides">
           <button class="charity-subtab" id="sizesLadiesTab" type="button" role="tab" aria-selected="true" aria-controls="sizes-ladies" data-charity-subtarget="ladies">Ladies' Sizes</button>
           <button class="charity-subtab" id="sizesMensTab" type="button" role="tab" aria-selected="false" aria-controls="sizes-mens" data-charity-subtarget="mens">Men's Sizes</button>
           <button class="charity-subtab" id="sizesShoesTab" type="button" role="tab" aria-selected="false" aria-controls="sizes-shoes" data-charity-subtarget="shoes">Shoe Sizes</button>
+          <button class="charity-subtab" id="sizesDuvetTab" type="button" role="tab" aria-selected="false" aria-controls="sizes-duvet" data-charity-subtarget="duvet">Duvet Sizes</button>
         </nav>
 
         <div class="charity-subpanel active" id="sizes-ladies" role="tabpanel" aria-labelledby="sizesLadiesTab" tabindex="0">
@@ -344,19 +344,11 @@ if($accessUntil <= time()){
             </article>
           </div>
         </div>
-      </section>
-
-      <section class="section charity-main-section" id="homeware" role="tabpanel" aria-labelledby="charityMainHomeware" tabindex="0" hidden>
-        <nav class="charity-subtabs" role="tablist" aria-label="Homeware size guides">
-          <button class="charity-subtab" id="homewareDuvetTab" type="button" role="tab" aria-selected="true" aria-controls="homeware-duvet" data-charity-subtarget="duvet">Duvet Sizes</button>
-          <button class="charity-subtab" id="homewareSortingTab" type="button" role="tab" aria-selected="false" aria-controls="homeware-sorting" data-charity-subtarget="sorting">Sorting Rules</button>
-        </nav>
-
-        <div class="charity-subpanel active" id="homeware-duvet" role="tabpanel" aria-labelledby="homewareDuvetTab" tabindex="0">
+        <div class="charity-subpanel" id="sizes-duvet" role="tabpanel" aria-labelledby="sizesDuvetTab" tabindex="0" hidden>
           <div class="charity-grid">
             <article class="card charity-card charity-card--wide">
               <h2>Duvet size guide</h2>
-              <p>Use the bedding size label first. When no label is visible, measure the duvet cover width by length and use the nearest standard size.</p>
+              <p>Use the duvet or duvet-cover size label first. When no usable label is visible, measure the duvet cover width by length and use the nearest standard duvet size.</p>
             </article>
 
             <article class="card charity-card charity-card--wide charity-table-card">
@@ -373,36 +365,33 @@ if($accessUntil <= time()){
                 </table>
               </div>
             </article>
-          </div>
-        </div>
 
-        <div class="charity-subpanel" id="homeware-sorting" role="tabpanel" aria-labelledby="homewareSortingTab" tabindex="0" hidden>
-          <div class="charity-grid">
             <article class="card charity-card charity-card--wide charity-checklist">
-              <h2>Shop rules</h2>
+              <h2>Duvet-cover sorting rules</h2>
               <ul>
-                <li>Use the bedding size label first.</li>
-                <li>When no label is visible, use the measurements to sort it.</li>
-                <li>Measure width x length when checking duvet covers.</li>
-                <li>Sizes are approximate and brand fit may vary.</li>
+                <li>Use the duvet or duvet-cover size label first.</li>
+                <li>When no usable label is visible, use the duvet-cover measurements to sort it.</li>
+                <li>Measure the full width x length of the duvet cover.</li>
+                <li>Duvet-cover measurements are approximate and may vary slightly by brand.</li>
               </ul>
             </article>
 
             <article class="card charity-card">
               <h2>Measure clearly</h2>
-              <p>Lay the item as flat as practical. Measure the full width and full length rather than a folded section.</p>
+              <p>Lay the duvet cover as flat as practical. Measure its full width and full length rather than a folded section.</p>
             </article>
             <article class="card charity-card">
-              <h2>Choose the nearest standard</h2>
-              <p>Compare the measurements with the duvet table and use the nearest recognised UK size when no usable label is present.</p>
+              <h2>Choose the nearest duvet size</h2>
+              <p>Compare the duvet-cover measurements with the duvet table and use the nearest recognised UK duvet size when no usable label is present.</p>
             </article>
           </div>
         </div>
       </section>
+
     </main>
   </div>
 
   <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_CHARITY_GUIDANCE_20260728_2"></script>
-  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_GUIDANCE_20260728_2"></script>
+  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_SHOP_20260731_10"></script>
 </body>
 </html>
