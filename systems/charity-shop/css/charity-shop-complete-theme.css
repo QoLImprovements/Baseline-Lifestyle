@@ -1,58 +1,397 @@
-/* Complete Charity Shop visual system — Air Ambulance red/yellow mirrored identity. */
-html[data-app="charity-shop"],body[data-app="charity-shop"]{
-  --charity-full-gradient:linear-gradient(90deg,#941b22 0%,#c9252d 12%,#eb3f2f 25%,#f28c20 38%,#f5cf24 47%,#fff0a0 50%,#f5cf24 53%,#f28c20 62%,#eb3f2f 75%,#c9252d 88%,#941b22 100%);
-  --charity-reading-gradient:linear-gradient(90deg,rgba(148,27,34,.36) 0%,rgba(201,37,45,.24) 12%,rgba(235,63,47,.18) 25%,rgba(242,140,32,.22) 38%,rgba(245,207,36,.38) 47%,#fff9df 50%,rgba(245,207,36,.38) 53%,rgba(242,140,32,.22) 62%,rgba(235,63,47,.18) 75%,rgba(201,37,45,.24) 88%,rgba(148,27,34,.36) 100%);
-  --charity-card-gradient:linear-gradient(90deg,rgba(148,27,34,.16) 0%,rgba(245,207,36,.22) 25%,#fff9df 44%,#fffdf3 50%,#fff9df 56%,rgba(245,207,36,.22) 75%,rgba(148,27,34,.16) 100%);
-  background:var(--charity-reading-gradient)!important;background-attachment:fixed!important;background-size:100% 100%!important;color:#17364d!important;
+/* Charity Shop single-gradient authority — 2026-07-30
+   One mirrored Air Ambulance palette across the banner, header and all pages.
+   Content uses calm solid reading surfaces rather than a competing second gradient. */
+
+html[data-app="charity-shop"],
+body[data-app="charity-shop"]{
+  --charity-gradient:linear-gradient(90deg,
+    #941b22 0%,
+    #c9252d 12%,
+    #eb3f2f 25%,
+    #f28c20 38%,
+    #f5cf24 47%,
+    #fff0a0 50%,
+    #f5cf24 53%,
+    #f28c20 62%,
+    #eb3f2f 75%,
+    #c9252d 88%,
+    #941b22 100%
+  );
+  --charity-ink:#17364d;
+  --charity-muted:#40586a;
+  --charity-red:#941b22;
+  --charity-red-mid:#c9252d;
+  --charity-gold:#f5cf24;
+  --charity-cream:#fff9df;
+  --charity-panel:rgba(255,249,223,.94);
+  --charity-panel-strong:rgba(255,249,223,.98);
+  --charity-border:rgba(148,27,34,.42);
+  --charity-border-soft:rgba(148,27,34,.26);
+  --charity-shadow:0 14px 30px rgba(80,12,19,.16);
+  color:var(--charity-ink)!important;
+  background:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+  background-attachment:fixed!important;
 }
-body[data-app="charity-shop"]::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;background:linear-gradient(90deg,rgba(112,20,29,.34) 0 1.1%,transparent 1.1% 98.9%,rgba(112,20,29,.34) 98.9% 100%)}
-body[data-app="charity-shop"] .charity-scroll{background:var(--charity-reading-gradient)!important;background-attachment:fixed!important}
-body[data-app="charity-shop"] .charity-wrap{position:relative;padding:28px clamp(14px,2vw,28px) 76px!important;border-left:6px solid rgba(148,27,34,.40);border-right:6px solid rgba(148,27,34,.40);background:linear-gradient(90deg,rgba(148,27,34,.12),rgba(255,249,223,.38) 18%,rgba(255,249,223,.62) 50%,rgba(255,249,223,.38) 82%,rgba(148,27,34,.12));box-shadow:inset 12px 0 24px -18px rgba(112,20,29,.65),inset -12px 0 24px -18px rgba(112,20,29,.65)}
-body[data-app="charity-shop"] .charity-main-section{padding:14px;border:2px solid rgba(148,27,34,.30);border-radius:28px;background:var(--charity-reading-gradient)!important;box-shadow:0 20px 48px rgba(112,20,29,.16),inset 5px 0 0 rgba(201,37,45,.16),inset -5px 0 0 rgba(201,37,45,.16)}
-body[data-app="charity-shop"] .charity-subpanel.active{padding:4px;background:transparent!important}
-body[data-app="charity-shop"] .charity-card{border:2px solid rgba(148,27,34,.30)!important;background:var(--charity-card-gradient)!important;background-image:var(--charity-card-gradient)!important;box-shadow:inset 7px 0 0 rgba(201,37,45,.14),inset -7px 0 0 rgba(201,37,45,.14),0 14px 34px rgba(112,20,29,.14)!important}
-body[data-app="charity-shop"] .charity-card--danger{border-color:#941b22!important;box-shadow:inset 8px 0 0 rgba(148,27,34,.28),inset -8px 0 0 rgba(148,27,34,.28),0 16px 34px rgba(112,20,29,.20)!important}
-body[data-app="charity-shop"] .charity-card--success{border-color:#f28c20!important;box-shadow:inset 8px 0 0 rgba(242,140,32,.24),inset -8px 0 0 rgba(242,140,32,.24),0 16px 34px rgba(112,20,29,.16)!important}
-body[data-app="charity-shop"] .charity-rule,body[data-app="charity-shop"] .charity-warning,body[data-app="charity-shop"] .charity-equation{border:2px solid rgba(148,27,34,.28)!important;background:linear-gradient(90deg,#fff0a0,#fff9df 50%,#fff0a0)!important;color:#6f1820!important}
-body[data-app="charity-shop"] .charity-step-number,body[data-app="charity-shop"] .charity-step-number--green,body[data-app="charity-shop"] .charity-step-number--teal{background:linear-gradient(135deg,#941b22,#c9252d 46%,#f28c20 72%,#f5cf24)!important;color:#fff!important;border:2px solid #fff0a0!important;box-shadow:0 8px 18px rgba(112,20,29,.30)!important}
-body[data-app="charity-shop"] .charity-table-card{overflow:visible!important}
-body[data-app="charity-shop"] .charity-table-scroll{border:2px solid rgba(148,27,34,.24);border-radius:16px;overflow:hidden!important;background:#fff9df!important}
-body[data-app="charity-shop"] .charity-table-scroll table{background:var(--charity-card-gradient)!important}
-body[data-app="charity-shop"] .charity-table-scroll td{background:rgba(255,249,223,.84)!important}
-body[data-app="charity-shop"] .charity-table-scroll tbody tr:nth-child(even) td{background:rgba(255,234,160,.70)!important}
-body[data-app="charity-shop"] .charity-table-scroll tbody tr:hover td{background:#fff0a0!important}
-body[data-app="charity-shop"] .charity-subtabs{position:relative;overflow:hidden!important}
-body[data-app="charity-shop"] .charity-subtabs::before{content:"";position:absolute;inset:0;background:var(--charity-reading-gradient);opacity:.58;pointer-events:none}
-body[data-app="charity-shop"] .charity-subtab{position:relative;z-index:1}
 
-.charity-artwork-card{grid-column:1/-1!important;padding:18px!important;text-align:center;background:var(--charity-card-gradient)!important}
-.charity-artwork-pair{grid-column:1/-1;display:grid;grid-template-columns:1fr;gap:20px}
-.charity-sheet{overflow:hidden;border:4px solid #941b22;border-radius:24px;background:#fff9df;box-shadow:0 18px 42px rgba(112,20,29,.22);text-align:left}
-.charity-sheet-head{padding:18px 22px;background:var(--charity-full-gradient);color:#fff;border-bottom:4px solid #941b22;text-align:left}
-.charity-sheet-head span{display:block;margin-bottom:5px;font-size:12px;font-weight:950;letter-spacing:.12em;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.4)}
-.charity-sheet-head h2{margin:0!important;color:#fff!important;font-size:clamp(28px,5vw,52px)!important;text-shadow:0 2px 4px rgba(64,10,17,.55)}
-.charity-sheet-illustration{padding:16px 18px 4px;background:linear-gradient(90deg,#fff3c4,#fff9df 50%,#fff3c4)}
-.charity-sheet-illustration svg{display:block;width:100%;height:auto;max-height:430px}
-.charity-sheet-copy{padding:16px 22px 22px;color:#17364d}
-.charity-sheet-copy p{margin:0!important;font-size:clamp(16px,2vw,21px)!important;font-weight:700;line-height:1.45!important;color:#17364d!important}
-.charity-sheet-points{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.charity-sheet-points span{display:flex;align-items:center;justify-content:center;min-height:70px;padding:12px;border:2px solid rgba(148,27,34,.28);border-radius:15px;background:linear-gradient(90deg,#fff0a0,#fff9df 50%,#fff0a0);font-weight:900;text-align:center;color:#6f1820}
-.charity-size-sheet{padding:18px;background:linear-gradient(90deg,#fff3c4,#fff9df 50%,#fff3c4)}
-.charity-size-sheet-title{margin-bottom:12px;font-size:22px;font-weight:950;color:#941b22;text-align:center}
-.charity-size-sheet-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.charity-size-sheet-grid>div{padding:14px 10px;border:2px solid rgba(148,27,34,.30);border-radius:14px;background:#fff9df;text-align:center}
-.charity-size-sheet-grid strong,.charity-size-sheet-grid span{display:block}
-.charity-size-sheet-grid strong{font-size:20px;color:#941b22}
-.charity-size-sheet-grid span{margin-top:5px;font-weight:750;color:#17364d}
-.charity-artwork-caption{margin:12px 0 0!important;font-size:14px!important;font-weight:800;color:#6f1820!important;text-align:center}
+html[data-app="charity-shop"],
+body[data-app="charity-shop"],
+body[data-app="charity-shop"] .charity-scroll,
+body[data-app="charity-shop"] .bl-scroll{
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+  background-attachment:fixed!important;
+}
 
-/* Higher-specificity final lock: no pale-blue card surface and no decorative layer overlapping a step. */
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging.charity-main-section article.charity-step-card::before,
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing.charity-main-section article.charity-step-card::before,
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging.charity-main-section article.charity-step-card::after,
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing.charity-main-section article.charity-step-card::after{content:none!important;display:none!important;background:none!important}
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging .charity-step-artwork,
-html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing .charity-step-artwork{background:#fff9df!important}
+body[data-app="charity-shop"]::before,
+body[data-app="charity-shop"]::after{
+  content:none!important;
+  display:none!important;
+}
 
-@media(max-width:760px){body[data-app="charity-shop"] .charity-wrap{border-left-width:3px;border-right-width:3px;padding-inline:8px!important}body[data-app="charity-shop"] .charity-main-section{padding:8px;border-radius:20px}.charity-artwork-card{padding:10px!important}.charity-sheet-points,.charity-size-sheet-grid{grid-template-columns:1fr 1fr}}
-@media(max-width:480px){.charity-sheet-points,.charity-size-sheet-grid{grid-template-columns:1fr}.charity-sheet-head{padding:14px 16px}.charity-sheet-copy{padding:14px 16px 18px}}
+/* The header and both navigation levels use the exact same gradient authority. */
+html body[data-app="charity-shop"] .charity-homebar,
+html body[data-app="charity-shop"] .charity-header,
+html body[data-app="charity-shop"] .charity-hero,
+html body[data-app="charity-shop"] .charity-main-tabs,
+html body[data-app="charity-shop"] .charity-subtabs,
+html body[data-app="charity-shop"] .bl-homebar,
+html body[data-app="charity-shop"] .hero{
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+}
+
+/* Remove the previous nested frame-on-frame treatment. */
+html body[data-app="charity-shop"] .charity-wrap{
+  position:relative!important;
+  width:min(1500px,calc(100% - 32px))!important;
+  margin:16px auto 42px!important;
+  padding:16px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-section{
+  width:100%!important;
+  min-width:0!important;
+  padding:16px!important;
+  border:1px solid rgba(112,20,29,.38)!important;
+  border-radius:22px!important;
+  background:rgba(255,249,223,.28)!important;
+  background-image:none!important;
+  box-shadow:0 16px 34px rgba(80,12,19,.18)!important;
+  overflow:visible!important;
+}
+
+html body[data-app="charity-shop"] .charity-subpanel,
+html body[data-app="charity-shop"] .charity-subpanel.active{
+  min-width:0!important;
+  padding:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+html body[data-app="charity-shop"] .charity-grid,
+html body[data-app="charity-shop"] .charity-card-grid{
+  display:grid!important;
+  gap:18px!important;
+  align-items:start!important;
+  min-width:0!important;
+}
+
+/* One calm, solid reading surface. No competing card gradient. */
+html body[data-app="charity-shop"] .charity-card,
+html body[data-app="charity-shop"] article.charity-card,
+html body[data-app="charity-shop"] .charity-step-card,
+html body[data-app="charity-shop"] .charity-table-card,
+html body[data-app="charity-shop"] .charity-cashup-heading,
+html body[data-app="charity-shop"] .charity-cash-table-card,
+html body[data-app="charity-shop"] .charity-cash-totals,
+html body[data-app="charity-shop"] .charity-float-maker,
+html body[data-app="charity-shop"] .charity-cheque-summary{
+  min-width:0!important;
+  height:auto!important;
+  padding:20px!important;
+  border:1px solid var(--charity-border)!important;
+  border-radius:18px!important;
+  background:var(--charity-panel)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  box-shadow:var(--charity-shadow)!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+
+html body[data-app="charity-shop"] .charity-card--danger,
+html body[data-app="charity-shop"] .charity-card--success{
+  border-color:var(--charity-border)!important;
+  box-shadow:var(--charity-shadow)!important;
+}
+
+html body[data-app="charity-shop"] .charity-card::before,
+html body[data-app="charity-shop"] .charity-card::after,
+html body[data-app="charity-shop"] .charity-step-card::before,
+html body[data-app="charity-shop"] .charity-step-card::after{
+  content:none!important;
+  display:none!important;
+  background:none!important;
+}
+
+/* Step cards stay in normal document flow, eliminating title/artwork overlap. */
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card,
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-rows:auto!important;
+  align-content:start!important;
+  align-items:start!important;
+  gap:12px!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card > *,
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card > *{
+  position:static!important;
+  inset:auto!important;
+  float:none!important;
+  clear:both!important;
+  width:auto!important;
+  max-width:100%!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  transform:none!important;
+  z-index:auto!important;
+}
+
+html body[data-app="charity-shop"] .charity-step-number,
+html body[data-app="charity-shop"] .charity-step-number--green,
+html body[data-app="charity-shop"] .charity-step-number--teal{
+  display:inline-grid!important;
+  place-items:center!important;
+  justify-self:start!important;
+  width:38px!important;
+  height:38px!important;
+  margin:0 0 2px!important;
+  border:2px solid var(--charity-gold)!important;
+  border-radius:50%!important;
+  background:var(--charity-red-mid)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 14px rgba(80,12,19,.24)!important;
+}
+
+html body[data-app="charity-shop"] h1,
+html body[data-app="charity-shop"] h2,
+html body[data-app="charity-shop"] h3,
+html body[data-app="charity-shop"] h4,
+html body[data-app="charity-shop"] .charity-card h2,
+html body[data-app="charity-shop"] .charity-card h3{
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+}
+
+html body[data-app="charity-shop"] p,
+html body[data-app="charity-shop"] li,
+html body[data-app="charity-shop"] .note,
+html body[data-app="charity-shop"] .charity-card p,
+html body[data-app="charity-shop"] .charity-card li{
+  color:var(--charity-muted)!important;
+  -webkit-text-fill-color:var(--charity-muted)!important;
+}
+
+/* Actual A4 illustration crops remain inside their cards and cannot overlap text. */
+html body[data-app="charity-shop"] .charity-step-artwork{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:4px auto 0!important;
+  overflow:hidden!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:14px!important;
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  box-shadow:0 8px 18px rgba(80,12,19,.10)!important;
+  isolation:isolate!important;
+}
+
+html body[data-app="charity-shop"] .charity-step-artwork img{
+  position:absolute!important;
+  left:var(--art-left)!important;
+  top:var(--art-top)!important;
+  display:block!important;
+  width:var(--art-width)!important;
+  height:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-rule,
+html body[data-app="charity-shop"] .charity-warning,
+html body[data-app="charity-shop"] .charity-equation{
+  position:static!important;
+  inset:auto!important;
+  float:none!important;
+  clear:both!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:4px 0 0!important;
+  padding:12px 14px!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:12px!important;
+  background:#fff0a0!important;
+  background-image:none!important;
+  color:#6f1820!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+
+/* Internal navigation is strong; its controls are simple and readable. */
+html body[data-app="charity-shop"] .charity-main-tabs,
+html body[data-app="charity-shop"] .charity-subtabs{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+  padding:10px!important;
+  border:1px solid rgba(112,20,29,.52)!important;
+  border-radius:16px!important;
+  overflow:visible!important;
+  box-shadow:0 10px 22px rgba(80,12,19,.16)!important;
+}
+
+html body[data-app="charity-shop"] .charity-subtabs::before{
+  content:none!important;
+  display:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-tab,
+html body[data-app="charity-shop"] .charity-subtab{
+  position:relative!important;
+  z-index:1!important;
+  min-height:38px!important;
+  padding:8px 14px!important;
+  border:1px solid rgba(148,27,34,.30)!important;
+  border-radius:999px!important;
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+  box-shadow:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-tab[aria-selected="true"],
+html body[data-app="charity-shop"] .charity-subtab[aria-selected="true"],
+html body[data-app="charity-shop"] .charity-main-tab.active,
+html body[data-app="charity-shop"] .charity-subtab.active{
+  border-color:var(--charity-gold)!important;
+  background:var(--charity-red)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 5px 12px rgba(80,12,19,.24)!important;
+}
+
+/* Tables and cashing-up controls use solid surfaces from the same palette. */
+html body[data-app="charity-shop"] .charity-table-scroll,
+html body[data-app="charity-shop"] .charity-cash-table-wrap,
+html body[data-app="charity-shop"] .charity-float-table-wrap{
+  width:100%!important;
+  overflow:auto!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:14px!important;
+  background:var(--charity-panel-strong)!important;
+  background-image:none!important;
+}
+
+html body[data-app="charity-shop"] table{
+  width:100%!important;
+  background:transparent!important;
+  background-image:none!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+
+html body[data-app="charity-shop"] thead th{
+  background:var(--charity-red)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+html body[data-app="charity-shop"] tbody th,
+html body[data-app="charity-shop"] tbody td{
+  background:rgba(255,249,223,.96)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+}
+
+html body[data-app="charity-shop"] tbody tr:nth-child(even) th,
+html body[data-app="charity-shop"] tbody tr:nth-child(even) td{
+  background:#fff0c2!important;
+}
+
+html body[data-app="charity-shop"] input,
+html body[data-app="charity-shop"] select,
+html body[data-app="charity-shop"] textarea,
+html body[data-app="charity-shop"] .charity-cash-count{
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+  border-color:var(--charity-border)!important;
+}
+
+/* The injected full-sheet duplicates are deliberately suppressed. */
+html body[data-app="charity-shop"] .charity-artwork-card,
+html body[data-app="charity-shop"] .charity-artwork-pair[data-charity-sheet-artwork]{
+  display:none!important;
+}
+
+@media(max-width:900px){
+  html body[data-app="charity-shop"] .charity-wrap{
+    width:calc(100% - 16px)!important;
+    margin-top:8px!important;
+    padding:8px!important;
+  }
+  html body[data-app="charity-shop"] .charity-main-section{
+    padding:10px!important;
+    border-radius:16px!important;
+  }
+  html body[data-app="charity-shop"] .charity-card,
+  html body[data-app="charity-shop"] article.charity-card,
+  html body[data-app="charity-shop"] .charity-step-card{
+    padding:16px!important;
+  }
+}
+
+@media(max-width:620px){
+  html body[data-app="charity-shop"] .charity-main-tabs,
+  html body[data-app="charity-shop"] .charity-subtabs{
+    gap:7px!important;
+    padding:8px!important;
+  }
+  html body[data-app="charity-shop"] .charity-main-tab,
+  html body[data-app="charity-shop"] .charity-subtab{
+    padding:8px 11px!important;
+    font-size:14px!important;
+  }
+}
