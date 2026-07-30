@@ -1,17 +1,26 @@
 (function(){
   'use strict';
 
-  const BUILD = 'CHARITY_SHOP_COHERENCE_20260730_1';
+  const BUILD = 'CHARITY_SHOP_COHERENCE_20260730_2';
 
   function normaliseLegacyHomewareRoute(){
     try{
       const url = new URL(window.location.href);
-      if(String(url.searchParams.get('section') || '').toLowerCase() !== 'homeware') return;
+      const querySection = String(url.searchParams.get('section') || '').toLowerCase();
+      const queryTab = String(url.searchParams.get('tab') || '').toLowerCase();
+      const rawHash = String(url.hash || '').replace(/^#/,'').toLowerCase();
+      const legacyHash = rawHash === 'duvet-sizes' || rawHash === 'homeware/duvet' || rawHash === 'homeware/sorting';
+      if(querySection !== 'homeware' && !legacyHash) return false;
+
       url.searchParams.set('section','sizes');
-      const requestedTab = String(url.searchParams.get('tab') || '').toLowerCase();
+      const requestedTab = querySection === 'homeware' ? queryTab : (rawHash.endsWith('sorting') ? 'sorting' : 'duvet');
       url.searchParams.set('tab',requestedTab === 'sorting' ? 'duvet' : (requestedTab || 'duvet'));
-      history.replaceState(history.state,'',url.pathname + url.search + url.hash);
-    }catch(_error){}
+      url.hash = '';
+      history.replaceState(history.state,'',url.pathname + url.search);
+      return true;
+    }catch(_error){
+      return false;
+    }
   }
 
   function combineSizeSections(){
@@ -74,6 +83,8 @@
 
   normaliseLegacyHomewareRoute();
   combineSizeSections();
+  window.addEventListener('popstate',normaliseLegacyHomewareRoute);
+  window.addEventListener('hashchange',normaliseLegacyHomewareRoute);
 
   if(document.readyState === 'loading'){
     document.addEventListener('DOMContentLoaded',loadFinalTheme,{once:true});
