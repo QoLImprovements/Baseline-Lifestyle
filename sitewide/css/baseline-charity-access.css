@@ -26,7 +26,28 @@ body[data-app="badminton"]{--protected-key-bg:var(--header-gradient);--protected
 body[data-app="fitness"]{--protected-key-bg:var(--header-gradient);--protected-dialog-bg:var(--page-bg);--protected-button-bg:var(--header-gradient);}
 body[data-app="games"]{--protected-key-bg:var(--header-gradient);--protected-dialog-bg:var(--page-bg);--protected-button-bg:var(--header-gradient);}
 body[data-app="massage"]{--protected-key-bg:var(--header-gradient,var(--page-bg));--protected-dialog-bg:var(--page-bg,var(--header-gradient));--protected-button-bg:var(--header-gradient,var(--page-bg));}
-body[data-app="home"]{--protected-key-bg:var(--banner-pill-bg);--protected-dialog-bg:var(--page-bg);--protected-button-bg:var(--banner-pill-bg);}
+
+/* The index is its own three-system composition. It must not inherit a two-system
+   Food/Skincare split from the generic theme file. */
+body[data-app="home"]{
+  --home-current-gradient:var(--index-page1-bg,linear-gradient(90deg,#b11226 0%,#f08a24 8.333%,#ffd26a 16.666%,#f08a24 25%,#b11226 33.333%,#6f4e36 33.333%,#916d4f 45.333%,#a58363 50%,#916d4f 54.666%,#6f4e36 66.666%,#b8644d 66.666%,#dc9f88 77.333%,#e8c1b2 83.333%,#dc9f88 89.333%,#b8644d 100%));
+  --protected-key-bg:linear-gradient(180deg,#353431 0%,#1f1e1c 100%);
+  --protected-key-ink:#f4efe7;
+  --protected-key-border:#c8c3bb;
+  --protected-key-focus:#ffd26a;
+  --protected-overlay-bg:rgba(24,23,25,.86);
+  --protected-dialog-bg:linear-gradient(rgba(31,30,28,.38),rgba(31,30,28,.38)),var(--home-current-gradient);
+  --protected-dialog-ink:#fffaf2;
+  --protected-dialog-muted:#f4efe7;
+  --protected-dialog-border:#d4d0c9;
+  --protected-dialog-shadow:0 34px 90px rgba(0,0,0,.56);
+  --protected-accent:#ffd26a;
+  --protected-input-bg:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%);
+  --protected-input-ink:#fffaf2;
+  --protected-button-bg:linear-gradient(180deg,#4d4c52 0%,#29282c 100%);
+  --protected-button-ink:#fffaf2;
+}
+body[data-app="home"]:has(.home-panel--play.is-active){--home-current-gradient:var(--index-page2-bg);}
 
 body[data-app="charity-shop"]{
   --protected-key-bg:linear-gradient(90deg,#941b22 0%,#c9252d 25%,#f28c20 43%,#f5cf24 50%,#f28c20 57%,#c9252d 75%,#941b22 100%);
@@ -101,5 +122,67 @@ body[data-app="home"] .bl-top-header{isolation:isolate;}
 .bl-protected-access-status{min-height:24px;margin:12px 0 0;color:var(--protected-accent);font-size:14px;font-weight:850;line-height:1.4}
 body.bl-protected-dialog-open{overflow:hidden!important}
 
+/* Index Account: remove the unauthorised white panel and use the exact current
+   index composition, with readable charcoal controls from the index header. */
+html body[data-app="home"] #bl-auth-flyout{background:transparent!important;color:#fffaf2!important;}
+html body[data-app="home"] #bl-auth-flyout .card,
+html body[data-app="home"] #bl-auth-flyout .bl-auth-card{
+  background:linear-gradient(rgba(31,30,28,.46),rgba(31,30,28,.46)),var(--home-current-gradient)!important;
+  background-image:linear-gradient(rgba(31,30,28,.46),rgba(31,30,28,.46)),var(--home-current-gradient)!important;
+  background-size:100% 100%!important;
+  border:3px solid #d4d0c9!important;
+  color:#fffaf2!important;
+  box-shadow:inset 7px 0 0 rgba(255,255,255,.12),inset -7px 0 0 rgba(255,255,255,.12),0 28px 70px rgba(0,0,0,.50)!important;
+}
+html body[data-app="home"] #bl-auth-flyout h1,
+html body[data-app="home"] #bl-auth-flyout h2,
+html body[data-app="home"] #bl-auth-flyout h3,
+html body[data-app="home"] #bl-auth-flyout label,
+html body[data-app="home"] #bl-auth-flyout p,
+html body[data-app="home"] #bl-auth-flyout .bl-auth-title{color:#fffaf2!important;-webkit-text-fill-color:#fffaf2!important;text-shadow:0 1px 2px rgba(0,0,0,.55)!important;}
+html body[data-app="home"] #bl-auth-flyout .bl-auth-input-shell,
+html body[data-app="home"] #bl-auth-flyout .bl-auth-input-shell>input,
+html body[data-app="home"] #bl-auth-flyout input:not([type="range"]){
+  background:#45444a!important;background-image:none!important;color:#fffaf2!important;-webkit-text-fill-color:#fffaf2!important;
+  border-color:#c8c3bb!important;box-shadow:0 0 0 7px rgba(255,255,255,.14)!important;
+}
+html body[data-app="home"] #bl-auth-flyout button,
+html body[data-app="home"] #bl-auth-flyout .bl-mini-btn{
+  background:linear-gradient(180deg,#4f4e54 0%,#29282c 100%)!important;background-image:linear-gradient(180deg,#4f4e54 0%,#29282c 100%)!important;
+  color:#fffaf2!important;-webkit-text-fill-color:#fffaf2!important;border-color:#c8c3bb!important;box-shadow:0 8px 20px rgba(0,0,0,.22)!important;
+}
+html body[data-app="home"] #bl-auth-flyout input::placeholder{color:#d9d4cc!important;-webkit-text-fill-color:#d9d4cc!important;}
+
+/* Restore the original web information. Remove the injected full-sheet copies
+   and captions, so there is no duplicated guidance or broken white image strip. */
+html body[data-app="charity-shop"] .charity-artwork-card{display:none!important;}
+
+/* Use only the exact illustrations from the A4 sheets inside the existing cards.
+   The original HTML wording remains unchanged and appears once. */
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card::after,
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card::after{
+  content:"";display:block;width:100%;margin-top:16px;border:0;border-radius:14px;
+  background-color:#eef7f6;background-repeat:no-repeat;box-shadow:none;
+}
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card:nth-of-type(2)::after{
+  aspect-ratio:1005/300;background-image:url('/systems/charity-shop/artwork.php?asset=hang-it-right&v=20260730_3');background-size:232.74% auto;background-position:8.62% 36.93%;
+}
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card:nth-of-type(3)::after{
+  aspect-ratio:990/300;background-image:url('/systems/charity-shop/artwork.php?asset=hang-it-right&v=20260730_3');background-size:236.26% auto;background-position:92.66% 36.93%;
+}
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card:nth-of-type(4)::after{
+  aspect-ratio:2140/535;background-image:url('/systems/charity-shop/artwork.php?asset=hang-it-right&v=20260730_3');background-size:109.30% auto;background-position:55.30% 89.36%;
+}
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card:nth-of-type(2)::after{
+  aspect-ratio:430/335;background-image:url('/systems/charity-shop/artwork.php?asset=cube-it-right&v=20260730_3');background-size:543.95% auto;background-position:6.29% 42.84%;
+}
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card:nth-of-type(4)::after{
+  aspect-ratio:675/345;background-image:url('/systems/charity-shop/artwork.php?asset=cube-it-right&v=20260730_3');background-size:346.52% auto;background-position:6.31% 90.91%;
+}
+
 @media(max-width:900px){.bl-protected-key{left:12px;width:44px;height:42px}}
-@media(max-width:620px){.bl-protected-access-dialog{padding:22px 18px;border-radius:20px}.bl-protected-code-row{grid-template-columns:1fr}}
+@media(max-width:620px){
+  .bl-protected-access-dialog{padding:22px 18px;border-radius:20px}.bl-protected-code-row{grid-template-columns:1fr}
+  html body[data-app="charity-shop"] #operations-hanging article.charity-step-card::after,
+  html body[data-app="charity-shop"] #operations-cubing article.charity-step-card::after{margin-top:12px;border-radius:10px;}
+}
