@@ -1,0 +1,361 @@
+name: Unify protected access system
+
+on:
+  push:
+    paths:
+      - .github/workflows/unify-protected-access-system.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply one protected access design and canonical charity route
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('.')
+          old_js = root / 'sitewide/js/baseline-charity-access.js'
+          new_js = root / 'sitewide/js/baseline-protected-access.js'
+          old_css = root / 'sitewide/css/baseline-charity-access.css'
+          new_css = root / 'sitewide/css/baseline-protected-access.css'
+          build = 'BASELINE_PROTECTED_ACCESS_20260730_9'
+
+          if old_js.exists():
+              js = old_js.read_text(encoding='utf-8')
+          elif new_js.exists():
+              js = new_js.read_text(encoding='utf-8')
+          else:
+              raise SystemExit('Protected-access JavaScript source was not found.')
+
+          js = re.sub(r"const BUILD = '[^']+';", f"const BUILD = '{build}';", js, count=1)
+          js = js.replace('/sitewide/css/baseline-charity-access.css', '/sitewide/css/baseline-protected-access.css')
+          new_js.write_text(js, encoding='utf-8')
+          if old_js.exists() and old_js != new_js:
+              old_js.unlink()
+
+          if old_css.exists():
+              css = old_css.read_text(encoding='utf-8')
+          elif new_css.exists():
+              css = new_css.read_text(encoding='utf-8')
+          else:
+              raise SystemExit('Protected-access CSS source was not found.')
+
+          key_marker = '.bl-protected-key{'
+          marker_index = css.find(key_marker)
+          if marker_index < 0:
+              raise SystemExit('Protected-access key marker was not found in CSS.')
+          css_tail = css[marker_index:]
+
+          css_header = r'''/* Baseline Lifestyle — universal protected access system.
+             Every page uses the index-page dialog. The viewport cover is fully opaque. */
+
+          body[data-app]{
+            --protected-key-bg:var(--banner-pill-bg,var(--header-gradient,var(--page-bg,#3a3936)));
+            --protected-key-ink:var(--banner-pill-ink,var(--ink,#fff));
+            --protected-key-border:var(--banner-pill-border,var(--border,rgba(255,255,255,.34)));
+            --protected-key-focus:var(--ring,var(--accent,rgba(255,255,255,.72)));
+            --protected-overlay-bg:#55575a;
+            --protected-dialog-bg:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%);
+            --protected-dialog-ink:#fffaf2;
+            --protected-dialog-muted:#f4efe7;
+            --protected-dialog-border:#d4d0c9;
+            --protected-dialog-shadow:0 34px 90px rgba(0,0,0,.56);
+            --protected-accent:#ffd26a;
+            --protected-input-bg:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%);
+            --protected-input-ink:#fffaf2;
+            --protected-button-bg:linear-gradient(180deg,#4d4c52 0%,#29282c 100%);
+            --protected-button-ink:#fffaf2;
+          }
+
+          body[data-app="food"],
+          body[data-app="badminton"],
+          body[data-app="fitness"],
+          body[data-app="games"]{
+            --protected-key-bg:var(--header-gradient,var(--page-bg));
+          }
+          body[data-app="skin"]{--protected-key-bg:var(--skin-page-gradient,var(--header-gradient,var(--page-bg)))}
+          body[data-app="massage"]{--protected-key-bg:var(--header-gradient,var(--page-bg))}
+
+          body[data-app="home"]{
+            --home-banner-gradient:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%);
+            --protected-key-bg:var(--home-banner-gradient);
+            --protected-key-ink:#f4efe7;
+            --protected-key-border:#c8c3bb;
+            --protected-key-focus:#ffd26a;
+            --index-games-gradient:linear-gradient(90deg,
+              #153d44 0%,#235f63 18%,#4f8476 36%,#b38d58 50%,#4f8476 64%,#235f63 82%,#153d44 100%
+            );
+          }
+
+          body[data-app="charity-shop"]{
+            --protected-key-bg:linear-gradient(90deg,#941b22 0%,#c9252d 25%,#f28c20 43%,#f5cf24 50%,#f28c20 57%,#c9252d 75%,#941b22 100%);
+            --protected-key-ink:#fff9df;
+            --protected-key-border:#f5cf24;
+            --protected-key-focus:#fff0a0;
+          }
+
+          body[data-app="home"] .bl-top-header{isolation:isolate}
+
+          '''
+
+          visual_lock = r'''
+
+          /* One visual authority: identical dialog on Home, Food, Massage, Skincare,
+             Fitness, Badminton, Games and Charity Shop. */
+          html body[data-app] .bl-protected-access-overlay{
+            position:fixed!important;
+            inset:0!important;
+            z-index:30000!important;
+            display:grid!important;
+            place-items:center!important;
+            padding:18px!important;
+            background:#55575a!important;
+            background-image:none!important;
+            opacity:1!important;
+            filter:none!important;
+            mix-blend-mode:normal!important;
+            -webkit-backdrop-filter:none!important;
+            backdrop-filter:none!important;
+          }
+          html body[data-app] .bl-protected-access-overlay[hidden]{display:none!important}
+
+          html body[data-app] .bl-protected-access-dialog{
+            position:relative!important;
+            width:min(680px,100%)!important;
+            max-width:680px!important;
+            padding:clamp(24px,4vw,40px)!important;
+            border:4px solid #d4d0c9!important;
+            border-radius:30px!important;
+            background:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%)!important;
+            background-image:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%)!important;
+            background-size:100% 100%!important;
+            background-repeat:no-repeat!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            opacity:1!important;
+            filter:none!important;
+            mix-blend-mode:normal!important;
+            box-shadow:0 34px 90px rgba(0,0,0,.56)!important;
+            overflow:hidden!important;
+            isolation:isolate!important;
+          }
+          html body[data-app] .bl-protected-access-dialog::before,
+          html body[data-app] .bl-protected-access-dialog::after{content:none!important;display:none!important}
+
+          html body[data-app] .bl-protected-access-kicker{
+            margin:0 0 7px!important;
+            color:#ffd26a!important;
+            -webkit-text-fill-color:#ffd26a!important;
+            font-size:13px!important;
+            font-weight:900!important;
+            letter-spacing:.1em!important;
+            text-transform:uppercase!important;
+            text-shadow:none!important;
+          }
+          html body[data-app] .bl-protected-access-dialog h2,
+          html body[data-app] #blProtectedAccessTitle{
+            margin:0!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            font-size:clamp(30px,6vw,50px)!important;
+            line-height:1.06!important;
+            text-shadow:0 1px 2px rgba(0,0,0,.55)!important;
+          }
+          html body[data-app] .bl-protected-access-copy{
+            margin:18px 0 22px!important;
+            color:#f4efe7!important;
+            -webkit-text-fill-color:#f4efe7!important;
+            font-size:clamp(16px,2.3vw,20px)!important;
+            line-height:1.5!important;
+            font-weight:650!important;
+            text-shadow:0 1px 2px rgba(0,0,0,.45)!important;
+          }
+          html body[data-app] .bl-protected-access-form label{
+            display:block!important;
+            margin-bottom:9px!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            font-size:18px!important;
+            font-weight:900!important;
+            text-shadow:0 1px 2px rgba(0,0,0,.45)!important;
+          }
+          html body[data-app] .bl-protected-access-close{
+            width:46px!important;
+            height:46px!important;
+            flex:0 0 auto!important;
+            border:2px solid #d4d0c9!important;
+            border-radius:50%!important;
+            display:inline-flex!important;
+            align-items:center!important;
+            justify-content:center!important;
+            background:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%)!important;
+            background-image:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%)!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            font-size:24px!important;
+            font-weight:900!important;
+            line-height:1!important;
+            box-shadow:none!important;
+          }
+          html body[data-app] .bl-protected-code-row{
+            display:grid!important;
+            grid-template-columns:minmax(0,1fr) auto!important;
+            gap:12px!important;
+          }
+          html body[data-app] .bl-protected-code-row input{
+            min-width:0!important;
+            height:60px!important;
+            padding:0 16px!important;
+            border:3px solid #d4d0c9!important;
+            border-radius:17px!important;
+            background:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%)!important;
+            background-image:linear-gradient(180deg,#5d5c63 0%,#3d3c41 100%)!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            caret-color:#fffaf2!important;
+            font:800 23px/1 ui-monospace,SFMono-Regular,Consolas,monospace!important;
+            letter-spacing:.18em!important;
+            text-align:center!important;
+            box-shadow:0 0 0 7px rgba(255,210,106,.20)!important;
+            opacity:1!important;
+          }
+          html body[data-app] .bl-protected-code-row input:focus{
+            outline:3px solid #ffd26a!important;
+            outline-offset:2px!important;
+            border-color:#ffd26a!important;
+          }
+          html body[data-app] .bl-protected-code-row button{
+            min-height:60px!important;
+            padding:0 30px!important;
+            border:3px solid #d4d0c9!important;
+            border-radius:17px!important;
+            background:linear-gradient(180deg,#4d4c52 0%,#29282c 100%)!important;
+            background-image:linear-gradient(180deg,#4d4c52 0%,#29282c 100%)!important;
+            color:#fffaf2!important;
+            -webkit-text-fill-color:#fffaf2!important;
+            font-size:17px!important;
+            font-weight:900!important;
+            box-shadow:0 10px 24px rgba(0,0,0,.18)!important;
+          }
+          html body[data-app] .bl-protected-access-status{
+            min-height:24px!important;
+            margin:12px 0 0!important;
+            color:#ffd26a!important;
+            -webkit-text-fill-color:#ffd26a!important;
+            font-size:14px!important;
+            font-weight:850!important;
+            line-height:1.4!important;
+          }
+
+          @media(max-width:620px){
+            html body[data-app] .bl-protected-access-dialog{padding:22px 18px!important;border-radius:20px!important}
+            html body[data-app] .bl-protected-code-row{grid-template-columns:1fr!important}
+          }
+          '''
+
+          css = css_header + css_tail + visual_lock
+          new_css.write_text(css, encoding='utf-8')
+          if old_css.exists() and old_css != new_css:
+              old_css.unlink()
+
+          text_suffixes = {'.html','.htm','.php','.js','.css','.md','.yml','.yaml','.json','.txt'}
+          for path in root.rglob('*'):
+              if not path.is_file() or '.git' in path.parts:
+                  continue
+              if path in {new_js,new_css}:
+                  continue
+              if path.name != '.htaccess' and path.suffix.lower() not in text_suffixes:
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except UnicodeDecodeError:
+                  continue
+              original = text
+              text = text.replace('/sitewide/js/baseline-charity-access.js', '/sitewide/js/baseline-protected-access.js')
+              text = text.replace('/sitewide/css/baseline-charity-access.css', '/sitewide/css/baseline-protected-access.css')
+              text = text.replace('/charity-shop/guidance/', '/baseline-charity-shop/guidance')
+              text = text.replace('/charity-shop/guidance', '/baseline-charity-shop/guidance')
+              text = re.sub(
+                  r'(/sitewide/js/baseline-protected-access\.js\?v=)[^"\'\s<)]+',
+                  r'\1' + build,
+                  text
+              )
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+
+          htaccess = root / '.htaccess'
+          ht = htaccess.read_text(encoding='utf-8')
+          route_block = '''  # Baseline Charity Shop uses the same virtual clean-route structure as every other system.\n  RewriteRule ^charity-shop/guidance/?$ /baseline-charity-shop/guidance [R=301,L]\n  RewriteRule ^baseline-charity-shop/guidance/?$ systems/charity-shop/charity-shop.php [L,QSA]\n\n'''
+          if 'RewriteRule ^baseline-charity-shop/guidance/?$' not in ht:
+              marker = '  # Standard page tab routes.\n'
+              if marker not in ht:
+                  raise SystemExit('Could not locate clean-route insertion point in .htaccess.')
+              ht = ht.replace(marker, route_block + marker, 1)
+              htaccess.write_text(ht, encoding='utf-8')
+
+          wrapper = root / 'charity-shop/guidance/index.php'
+          if wrapper.exists():
+              wrapper.unlink()
+
+          # Ensure the canonical redirect is exact even if the old route lacked a trailing slash.
+          access = root / 'sitewide/api/protected_access.php'
+          access_text = access.read_text(encoding='utf-8')
+          access_text = re.sub(
+              r"'redirect'\s*=>\s*'[^']*charity-shop/guidance[^']*'",
+              "'redirect' => '/baseline-charity-shop/guidance'",
+              access_text
+          )
+          access.write_text(access_text, encoding='utf-8')
+
+          # The protected page should describe its canonical public route.
+          charity_page = root / 'systems/charity-shop/charity-shop.php'
+          charity_text = charity_page.read_text(encoding='utf-8')
+          canonical = '  <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">\n'
+          if 'rel="canonical"' not in charity_text:
+              charity_text = charity_text.replace('  <title>Charity Shop Guidance | Baseline Lifestyle</title>\n', '  <title>Charity Shop Guidance | Baseline Lifestyle</title>\n' + canonical, 1)
+          charity_page.write_text(charity_text, encoding='utf-8')
+
+          workflow = root / '.github/workflows/unify-protected-access-system.yml'
+          if workflow.exists():
+              workflow.unlink()
+
+          # Repository-level checks.
+          if old_js.exists() or old_css.exists():
+              raise SystemExit('Legacy charity-named protected-access assets still exist.')
+          if not new_js.exists() or not new_css.exists():
+              raise SystemExit('Universal protected-access assets were not created.')
+          if wrapper.exists():
+              raise SystemExit('Physical charity root wrapper was not removed.')
+          if "background:#55575a!important" not in new_css.read_text(encoding='utf-8'):
+              raise SystemExit('Opaque grey access overlay was not installed.')
+          if "RewriteRule ^baseline-charity-shop/guidance/?$" not in htaccess.read_text(encoding='utf-8'):
+              raise SystemExit('Canonical Charity Shop rewrite is missing.')
+          PY
+
+          node --check sitewide/js/baseline-protected-access.js
+          php -l sitewide/api/protected_access.php
+          php -l systems/charity-shop/charity-shop.php
+
+      - name: Commit coherent protected access system
+        run: |
+          git config user.name "Baseline Lifestyle Automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes required."
+            exit 0
+          fi
+          git commit -m "Unify protected access design and charity route"
+          git push origin HEAD:main
