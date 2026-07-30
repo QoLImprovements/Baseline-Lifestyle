@@ -1,0 +1,69 @@
+/* Complete Charity Shop visual system — Air Ambulance red/yellow mirrored identity. */
+html[data-app="charity-shop"],body[data-app="charity-shop"]{
+  --charity-full-gradient:linear-gradient(90deg,#941b22 0%,#c9252d 12%,#eb3f2f 25%,#f28c20 38%,#f5cf24 47%,#fff0a0 50%,#f5cf24 53%,#f28c20 62%,#eb3f2f 75%,#c9252d 88%,#941b22 100%);
+  --charity-reading-gradient:linear-gradient(90deg,rgba(148,27,34,.36) 0%,rgba(201,37,45,.24) 12%,rgba(235,63,47,.18) 25%,rgba(242,140,32,.22) 38%,rgba(245,207,36,.38) 47%,#fff9df 50%,rgba(245,207,36,.38) 53%,rgba(242,140,32,.22) 62%,rgba(235,63,47,.18) 75%,rgba(201,37,45,.24) 88%,rgba(148,27,34,.36) 100%);
+  --charity-card-gradient:linear-gradient(90deg,rgba(148,27,34,.16) 0%,rgba(245,207,36,.22) 25%,#fff9df 44%,#fffdf3 50%,#fff9df 56%,rgba(245,207,36,.22) 75%,rgba(148,27,34,.16) 100%);
+  background:var(--charity-reading-gradient)!important;
+  background-attachment:fixed!important;
+  background-size:100% 100%!important;
+  color:#17364d!important;
+}
+body[data-app="charity-shop"]::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(90deg,rgba(112,20,29,.34) 0 1.1%,transparent 1.1% 98.9%,rgba(112,20,29,.34) 98.9% 100%);
+}
+body[data-app="charity-shop"] .charity-scroll{
+  background:var(--charity-reading-gradient)!important;
+  background-attachment:fixed!important;
+}
+body[data-app="charity-shop"] .charity-wrap{
+  position:relative;padding:28px clamp(14px,2vw,28px) 76px!important;border-left:6px solid rgba(148,27,34,.40);border-right:6px solid rgba(148,27,34,.40);
+  background:linear-gradient(90deg,rgba(148,27,34,.12),rgba(255,249,223,.38) 18%,rgba(255,249,223,.62) 50%,rgba(255,249,223,.38) 82%,rgba(148,27,34,.12));
+  box-shadow:inset 12px 0 24px -18px rgba(112,20,29,.65),inset -12px 0 24px -18px rgba(112,20,29,.65);
+}
+body[data-app="charity-shop"] .charity-main-section{
+  padding:14px;border:2px solid rgba(148,27,34,.30);border-radius:28px;background:var(--charity-reading-gradient)!important;
+  box-shadow:0 20px 48px rgba(112,20,29,.16),inset 5px 0 0 rgba(201,37,45,.16),inset -5px 0 0 rgba(201,37,45,.16);
+}
+body[data-app="charity-shop"] .charity-subpanel.active{
+  padding:4px;background:transparent!important;
+}
+body[data-app="charity-shop"] .charity-card{
+  border:2px solid rgba(148,27,34,.30)!important;background:var(--charity-card-gradient)!important;background-image:var(--charity-card-gradient)!important;
+  box-shadow:inset 7px 0 0 rgba(201,37,45,.14),inset -7px 0 0 rgba(201,37,45,.14),0 14px 34px rgba(112,20,29,.14)!important;
+}
+body[data-app="charity-shop"] .charity-card--danger{border-color:#941b22!important;box-shadow:inset 8px 0 0 rgba(148,27,34,.28),inset -8px 0 0 rgba(148,27,34,.28),0 16px 34px rgba(112,20,29,.20)!important}
+body[data-app="charity-shop"] .charity-card--success{border-color:#f28c20!important;box-shadow:inset 8px 0 0 rgba(242,140,32,.24),inset -8px 0 0 rgba(242,140,32,.24),0 16px 34px rgba(112,20,29,.16)!important}
+body[data-app="charity-shop"] .charity-rule,body[data-app="charity-shop"] .charity-warning,body[data-app="charity-shop"] .charity-equation{
+  border:2px solid rgba(148,27,34,.28)!important;background:linear-gradient(90deg,#fff0a0,#fff9df 50%,#fff0a0)!important;color:#6f1820!important;
+}
+body[data-app="charity-shop"] .charity-step-number,body[data-app="charity-shop"] .charity-step-number--green,body[data-app="charity-shop"] .charity-step-number--teal{
+  background:linear-gradient(135deg,#941b22,#c9252d 46%,#f28c20 72%,#f5cf24)!important;color:#fff!important;border:2px solid #fff0a0!important;box-shadow:0 8px 18px rgba(112,20,29,.30)!important;
+}
+body[data-app="charity-shop"] .charity-table-card{overflow:visible!important}
+body[data-app="charity-shop"] .charity-table-scroll{border:2px solid rgba(148,27,34,.24);border-radius:16px;overflow:hidden!important;background:#fff9df!important}
+body[data-app="charity-shop"] .charity-table-scroll table{background:var(--charity-card-gradient)!important}
+body[data-app="charity-shop"] .charity-table-scroll td{background:rgba(255,249,223,.84)!important}
+body[data-app="charity-shop"] .charity-table-scroll tbody tr:nth-child(even) td{background:rgba(255,234,160,.70)!important}
+body[data-app="charity-shop"] .charity-table-scroll tbody tr:hover td{background:#fff0a0!important}
+body[data-app="charity-shop"] .charity-subtabs{position:relative;overflow:hidden!important}
+body[data-app="charity-shop"] .charity-subtabs::before{
+  content:"";position:absolute;inset:0;background:var(--charity-reading-gradient);opacity:.58;pointer-events:none
+}
+body[data-app="charity-shop"] .charity-subtab{position:relative;z-index:1}
+
+.charity-artwork-card{grid-column:1/-1!important;padding:18px!important;text-align:center;background:var(--charity-card-gradient)!important}
+.charity-artwork-card h2{margin-bottom:14px!important}
+.charity-artwork-link{display:block;border:3px solid rgba(148,27,34,.38);border-radius:20px;overflow:hidden;background:#fff9df;box-shadow:0 16px 36px rgba(112,20,29,.18)}
+.charity-artwork-link:focus-visible{outline:4px solid #f5cf24;outline-offset:4px}
+.charity-artwork-image{display:block;width:100%;height:auto;max-height:min(82vh,1100px);object-fit:contain;background:#fff9df}
+.charity-artwork-caption{margin:10px 0 0!important;font-size:14px!important;font-weight:800;color:#6f1820!important}
+.charity-artwork-pair{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.charity-artwork-pair .charity-artwork-card{grid-column:auto!important}
+
+@media(max-width:760px){
+  body[data-app="charity-shop"] .charity-wrap{border-left-width:3px;border-right-width:3px;padding-inline:8px!important}
+  body[data-app="charity-shop"] .charity-main-section{padding:8px;border-radius:20px}
+  .charity-artwork-pair{grid-template-columns:1fr}
+  .charity-artwork-card{padding:10px!important}
+}
