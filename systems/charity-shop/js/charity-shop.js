@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'CHARITY_SHOP_20260730_8';
+  const BUILD = 'CHARITY_SHOP_20260731_9';
   const ARTWORK_BUILD = '20260730_4';
   const FLOAT_TARGET_PENCE = 10000;
   const SMALL_COIN_CAP = 20;
@@ -27,7 +27,7 @@
       return;
     }
     const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_9';
+    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260731_11';
     script.async = false;
     script.dataset.protectedAccessLoader = 'charity-shop';
     script.addEventListener('load', loadCharityCorrections, {once:true});
