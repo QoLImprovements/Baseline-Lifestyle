@@ -57,9 +57,12 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-subtabs{
   background:var(--charity-gradient)!important;
   background-image:var(--charity-gradient)!important;
   background-color:#6f1218!important;
-  background-size:100vw 100%!important;
-  background-position:center top!important;
-  background-repeat:repeat-y!important;
+  /* Every independently painted full-width region uses the viewport as the
+     positioning area, so the mirrored colour stops cannot drift sideways. */
+  background-size:100vw 100vh!important;
+  background-position:left top!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
   opacity:1!important;
   filter:none!important;
   mix-blend-mode:normal!important;
@@ -265,6 +268,23 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-page
   content:none!important;
   display:none!important;
 }
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-btn{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-protected-site-key{
+  display:inline-block!important;
+  flex:0 0 18px!important;
+  width:18px!important;
+  height:18px!important;
+  background:currentColor!important;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='12' r='4.2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M12.2 12H22M18 12v3M15 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='8' cy='12' r='4.2' fill='none' stroke='black' stroke-width='2'/%3E%3Cpath d='M12.2 12H22M18 12v3M15 12v2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/contain no-repeat!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-protected-site-caret{
+  line-height:1!important;
+}
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-btn-icon,
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-btn-label,
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar svg,
@@ -361,6 +381,10 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout inp
 html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-webkit-slider-thumb,
 html[data-app="charity-shop"] body[data-app="charity-shop"] #bl-beats-flyout input[type="range"]::-moz-range-thumb{
   background:#dc8551!important;
+  border:2px solid #fff!important;
+  box-shadow:none!important;
+  opacity:1!important;
+  visibility:visible!important;
 }
 
 /* The lock transition is universal. Reassert its shared variables after every
