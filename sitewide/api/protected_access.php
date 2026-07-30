@@ -18,7 +18,7 @@ function bl_protected_sections(): array {
     'charity_shop_guidance' => [
       'code' => trim(bl_env('BL_CHARITY_SHOP_PIN', '97')),
       'session_key' => 'charity_shop_access_until',
-      'redirect' => '/charity-shop/guidance/',
+      'redirect' => '/baseline-charity-shop/guidance',
     ],
   ];
 }

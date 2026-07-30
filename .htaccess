@@ -269,6 +269,10 @@ Options -Indexes
   RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]
   RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/recipes/$1.html [L,QSA]
 
+  # Baseline Charity Shop uses the same virtual clean-route structure as every other system.
+  RewriteRule ^charity-shop/guidance/?$ /baseline-charity-shop/guidance [R=301,L]
+  RewriteRule ^baseline-charity-shop/guidance/?$ systems/charity-shop/charity-shop.php [L,QSA]
+
   # Standard page tab routes.
   RewriteRule ^baseline-food-approach/(system|recipes|ingredient-library|diet-log)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
 

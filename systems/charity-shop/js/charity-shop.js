@@ -22,12 +22,12 @@
       loadCharityCorrections();
       return;
     }
-    if(document.querySelector('script[src*="/sitewide/js/baseline-charity-access.js"]')){
+    if(document.querySelector('script[src*="/sitewide/js/baseline-protected-access.js"]')){
       loadCharityCorrections();
       return;
     }
     const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-charity-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_7';
+    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_9';
     script.async = false;
     script.dataset.protectedAccessLoader = 'charity-shop';
     script.addEventListener('load', loadCharityCorrections, {once:true});

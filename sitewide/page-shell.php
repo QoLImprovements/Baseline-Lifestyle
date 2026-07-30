@@ -35,8 +35,8 @@ if ($html === false) {
     exit;
 }
 
-$loader = '<script defer src="/sitewide/js/baseline-charity-access.js?v=BASELINE_PROTECTED_ACCESS_20260728_4"></script>';
-if (stripos($html, '/sitewide/js/baseline-charity-access.js') === false) {
+$loader = '<script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_9"></script>';
+if (stripos($html, '/sitewide/js/baseline-protected-access.js') === false) {
     $closingBody = strripos($html, '</body>');
     if ($closingBody !== false) {
         $html = substr($html, 0, $closingBody) . $loader . "\n" . substr($html, $closingBody);

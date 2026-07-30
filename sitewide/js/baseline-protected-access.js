@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260730_5';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260730_9';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
@@ -15,7 +15,7 @@
   }
 
   function addStylesheets(){
-    addStylesheet('/sitewide/css/baseline-charity-access.css?v=' + BUILD, 'data-protected-access-style');
+    addStylesheet('/sitewide/css/baseline-protected-access.css?v=' + BUILD, 'data-protected-access-style');
     addStylesheet('/sitewide/css/baseline-protected-key-placement.css?v=' + BUILD, 'data-protected-key-placement');
     addStylesheet('/sitewide/css/baseline-ui-fixes.css?v=' + BUILD, 'data-baseline-ui-fixes');
   }

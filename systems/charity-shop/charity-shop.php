@@ -24,6 +24,7 @@ if($accessUntil <= time()){
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Charity Shop Guidance | Baseline Lifestyle</title>
+  <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">
   <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque">
   <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_INFO_POPOVER_20260706_2">
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607">
