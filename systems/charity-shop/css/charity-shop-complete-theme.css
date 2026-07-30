@@ -46,5 +46,13 @@ body[data-app="charity-shop"] .charity-subtab{position:relative;z-index:1}
 .charity-size-sheet-grid span{margin-top:5px;font-weight:750;color:#17364d}
 .charity-artwork-caption{margin:12px 0 0!important;font-size:14px!important;font-weight:800;color:#6f1820!important;text-align:center}
 
+/* Higher-specificity final lock: no pale-blue card surface and no decorative layer overlapping a step. */
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging.charity-main-section article.charity-step-card::before,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing.charity-main-section article.charity-step-card::before,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging.charity-main-section article.charity-step-card::after,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing.charity-main-section article.charity-step-card::after{content:none!important;display:none!important;background:none!important}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-hanging .charity-step-artwork,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #operations-cubing .charity-step-artwork{background:#fff9df!important}
+
 @media(max-width:760px){body[data-app="charity-shop"] .charity-wrap{border-left-width:3px;border-right-width:3px;padding-inline:8px!important}body[data-app="charity-shop"] .charity-main-section{padding:8px;border-radius:20px}.charity-artwork-card{padding:10px!important}.charity-sheet-points,.charity-size-sheet-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:480px){.charity-sheet-points,.charity-size-sheet-grid{grid-template-columns:1fr}.charity-sheet-head{padding:14px 16px}.charity-sheet-copy{padding:14px 16px 18px}}
