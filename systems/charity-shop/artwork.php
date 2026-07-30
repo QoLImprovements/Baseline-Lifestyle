@@ -15,17 +15,22 @@ if($accessUntil <= time()){
 }
 
 $assets = [
-  'back-room-consequences' => 'back-room-consequences.webp',
-  'hang-it-right' => 'hang-it-right.webp',
-  'cube-it-right' => 'cube-it-right.webp',
-  'ladies-size-guide' => 'ladies-size-guide.webp',
-  'mens-size-guide' => 'mens-size-guide.webp',
-  'shoe-size-guide' => 'shoe-size-guide.webp',
-  'duvet-size-guide' => 'duvet-size-guide.webp',
+  'back-room-consequences' => ['file' => 'back-room-consequences.jpg', 'type' => 'image/jpeg'],
+  'hang-it-right' => ['file' => 'hang-it-right.jpg', 'type' => 'image/jpeg'],
+  'cube-it-right' => ['file' => 'cube-it-right.jpg', 'type' => 'image/jpeg'],
 ];
 
 $key = strtolower(trim((string)($_GET['asset'] ?? '')));
-$base = $assets[$key] ?? '';
+$asset = $assets[$key] ?? null;
+if(!is_array($asset)){
+  http_response_code(404);
+  header('Content-Type: text/plain; charset=utf-8');
+  echo 'Artwork not found.';
+  exit;
+}
+
+$base = (string)($asset['file'] ?? '');
+$contentType = (string)($asset['type'] ?? 'application/octet-stream');
 $parts = $base === '' ? [] : glob(__DIR__ . '/artwork/' . $base . '.part*.b64');
 if(!is_array($parts) || $parts === []){
   http_response_code(404);
@@ -50,7 +55,7 @@ if($binary === false){
   exit;
 }
 
-header('Content-Type: image/webp');
+header('Content-Type: ' . $contentType);
 header('Content-Length: ' . strlen($binary));
 header('Cache-Control: private, no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
