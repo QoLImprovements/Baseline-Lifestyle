@@ -43,6 +43,9 @@ body[data-app="charity-shop"]{
   --bl-surface-input-solid:var(--charity-field-surface)!important;
   --bl-flyout-field-bg:var(--charity-field-surface)!important;
   --bl-flyout-field-ink:var(--charity-surface-ink)!important;
+  --scroll-track:#6f1218!important;
+  --scroll-thumb:#9f2426!important;
+  --scroll-thumb-hover:#c44f1f!important;
 }
 
 /* One opaque mirrored background across the Charity Shop system. */
@@ -92,6 +95,8 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line-
 html[data-app="charity-shop"] body[data-app="charity-shop"] .charity-total-line--final > output{
   margin:0!important;
   padding:0!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
 }
 
 /* Normal site cards: one opaque medium terracotta surface, not a gradient. */
@@ -293,6 +298,11 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar svg *{
   fill:currentColor!important;
   stroke:currentColor!important;
   -webkit-text-fill-color:#fff!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] #blProtectedKey svg,
+html[data-app="charity-shop"] body[data-app="charity-shop"] #blProtectedKey svg *{
+  fill:none!important;
+  stroke:currentColor!important;
 }
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu[hidden]{display:none!important;}
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){display:block!important;}
