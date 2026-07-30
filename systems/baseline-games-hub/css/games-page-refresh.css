@@ -1,0 +1,311 @@
+/* Baseline Games Hub page refresh — 2026-07-30
+   Restores the canonical sitewide header geometry and replaces the cold,
+   single-colour blue treatment with a warmer games-lounge palette. */
+
+html[data-app="games"],
+body[data-app="games"]{
+  --games-page-deep:#153d44;
+  --games-page-mid:#235f63;
+  --games-page-soft:#4f8476;
+  --games-page-light:#b18c58;
+  --games-accent:#d8734e;
+  --games-accent-warm:#efb457;
+  --games-ink:#173438;
+  --games-muted:#405b5b;
+  --games-border:rgba(23,52,56,.28);
+  --games-border-strong:rgba(23,52,56,.46);
+  --games-shadow:0 22px 46px -30px rgba(12,35,38,.52);
+  --games-page-gradient:linear-gradient(105deg,
+    #153d44 0%,
+    #235f63 24%,
+    #4f8476 50%,
+    #ad8957 74%,
+    #7c4b4b 100%
+  );
+  --games-surface:#f2e2c2;
+  --games-surface-2:#ead5ad;
+  --games-card:#f1dfbb;
+  --games-panel:#f8ecd3;
+  --games-panel-2:#e3c99b;
+  --games-control:linear-gradient(180deg,#f4c56c 0%,#dc884e 100%);
+  --games-control-hover:linear-gradient(180deg,#ffd47e 0%,#e79154 100%);
+  --games-control-active:linear-gradient(180deg,#d9794c 0%,#b95b43 100%);
+  --games-play:linear-gradient(180deg,#dce9d8 0%,#bfd4c5 100%);
+  --games-play-deep:#2f6665;
+  --games-surface-gradient:linear-gradient(180deg,#f7ebd2 0%,#ead5ad 100%);
+  --games-row-gradient:linear-gradient(90deg,#f8ecd5 0%,#eedab5 58%,#e4c58f 100%);
+  --games-input-gradient:linear-gradient(180deg,#fff4df 0%,#ead6af 100%);
+
+  --page-bg:var(--games-page-gradient)!important;
+  --hero-bg:var(--games-page-gradient)!important;
+  --homebar-bg:var(--games-page-gradient)!important;
+  --header-gradient:var(--games-page-gradient)!important;
+  --card-bg:var(--games-card)!important;
+  --accent:var(--games-accent)!important;
+  --accent-2:var(--games-ink)!important;
+  --muted:var(--games-muted)!important;
+  --ink:var(--games-ink)!important;
+  --border:var(--games-border)!important;
+  --border-2:var(--games-border-strong)!important;
+  --showall-bg:rgba(255,244,220,.15)!important;
+  --showall-border:rgba(255,246,226,.34)!important;
+  --ring:rgba(239,180,87,.34)!important;
+  --scroll-track:#173f45!important;
+  --scroll-thumb:#d89355!important;
+  --scroll-thumb-hover:#f0b765!important;
+  --bl-surface-panel-solid:#f8ecd3!important;
+  --bl-surface-control-solid:#efd9b4!important;
+  --bl-surface-active-solid:#e8c58e!important;
+  --bl-surface-ink:#173438!important;
+}
+
+html[data-app="games"],
+body[data-app="games"],
+body[data-app="games"] .bl-scroll{
+  background:
+    radial-gradient(circle at 13% 9%,rgba(246,197,108,.20),transparent 22%),
+    radial-gradient(circle at 88% 17%,rgba(216,115,78,.22),transparent 24%),
+    radial-gradient(circle at 55% 82%,rgba(104,153,126,.18),transparent 28%),
+    var(--games-page-gradient)!important;
+  background-attachment:fixed!important;
+  color:var(--games-ink)!important;
+}
+
+/* Header geometry: use the same page-width authority as the other systems. */
+body[data-app="games"] .hero{
+  width:100%!important;
+  max-width:none!important;
+  padding-left:0!important;
+  padding-right:0!important;
+  overflow:hidden!important;
+  background:linear-gradient(105deg,#133940 0%,#235f63 54%,#76524b 100%)!important;
+  border-bottom-color:rgba(255,242,217,.20)!important;
+}
+
+body[data-app="games"] .hero-inner,
+body[data-app="games"] .hero > .tabs{
+  width:min(var(--bl-page-max-width,1500px),calc(100% - var(--bl-page-gutter,24px)))!important;
+  max-width:none!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+body[data-app="games"] .hero-inner{
+  padding:24px 20px!important;
+  align-items:flex-start!important;
+}
+
+body[data-app="games"] .hero-inner > div{
+  width:100%!important;
+  min-width:0!important;
+}
+
+body[data-app="games"] .hero .title{
+  color:#fff8eb!important;
+  -webkit-text-fill-color:#fff8eb!important;
+}
+
+body[data-app="games"] .hero .subtitle{
+  max-width:1000px!important;
+  margin-top:4px!important;
+  color:rgba(255,248,235,.88)!important;
+  -webkit-text-fill-color:rgba(255,248,235,.88)!important;
+}
+
+body[data-app="games"] .hero > .tabs{
+  margin-top:10px!important;
+  padding:0 20px 18px!important;
+  border-bottom:1px solid rgba(255,242,217,.18)!important;
+}
+
+body[data-app="games"] .hero .tab{
+  background:rgba(255,244,220,.13)!important;
+  color:#fff8eb!important;
+  -webkit-text-fill-color:#fff8eb!important;
+  border-color:rgba(255,245,224,.28)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;
+}
+
+body[data-app="games"] .hero .tab:hover{
+  background:rgba(255,244,220,.22)!important;
+}
+
+body[data-app="games"] .hero .tab[aria-selected="true"]{
+  background:linear-gradient(180deg,#f6ca74 0%,#dc804d 100%)!important;
+  color:#19383a!important;
+  -webkit-text-fill-color:#19383a!important;
+  border-color:rgba(106,57,39,.38)!important;
+  box-shadow:0 12px 24px -18px rgba(10,31,34,.72),inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+
+/* Top banner and chooser remain dark enough for the white controls. */
+body[data-app="games"] .bl-homebar,
+body[data-app="games"] .bl-homebar::before,
+body[data-app="games"] .bl-pages-menu{
+  background:linear-gradient(105deg,#133940 0%,#235f63 58%,#76524b 100%)!important;
+  background-image:linear-gradient(105deg,#133940 0%,#235f63 58%,#76524b 100%)!important;
+}
+
+body[data-app="games"] .bl-mini-btn,
+body[data-app="games"] .bl-pages-link{
+  color:#fff8eb!important;
+  -webkit-text-fill-color:#fff8eb!important;
+}
+
+body[data-app="games"] .bl-mini-btn{
+  background:rgba(255,244,220,.13)!important;
+  border-color:rgba(255,245,224,.28)!important;
+}
+
+body[data-app="games"] .bl-pages-link:hover,
+body[data-app="games"] .bl-pages-link[aria-current="page"]{
+  background:rgba(246,202,116,.20)!important;
+}
+
+/* Warm, contrasting content surfaces. */
+body[data-app="games"] .card,
+body[data-app="games"] .game-card,
+body[data-app="games"] .game-panel .card,
+body[data-app="games"] .progress-shell,
+body[data-app="games"] .summary-box,
+body[data-app="games"] .round-status-card,
+body[data-app="games"] .skill-item,
+body[data-app="games"] .trackcoin-stat-card,
+body[data-app="games"] .game-summary-details,
+body[data-app="games"] .game-summary-body,
+body[data-app="games"] .empty-box,
+body[data-app="games"] .formula-box,
+body[data-app="games"] .word-box,
+body[data-app="games"] .solution-box,
+body[data-app="games"] .clue-bar,
+body[data-app="games"] .number-chip,
+body[data-app="games"] .letter-cell,
+body[data-app="games"] .upgrade-item,
+body[data-app="games"] .bonus-item{
+  background:var(--games-surface-gradient)!important;
+  background-image:var(--games-surface-gradient)!important;
+  color:var(--games-ink)!important;
+  -webkit-text-fill-color:var(--games-ink)!important;
+  border-color:var(--games-border)!important;
+}
+
+body[data-app="games"] #hub > .grid > .card,
+body[data-app="games"] #gamesOverviewCard{
+  border-top:5px solid var(--games-accent)!important;
+  box-shadow:0 20px 42px -30px rgba(13,42,44,.62),inset 0 1px 0 rgba(255,255,255,.32)!important;
+}
+
+body[data-app="games"] .card h2,
+body[data-app="games"] .card h3,
+body[data-app="games"] .game-row h3{
+  color:#173f43!important;
+  -webkit-text-fill-color:#173f43!important;
+}
+
+body[data-app="games"] .note,
+body[data-app="games"] .inline-note,
+body[data-app="games"] .game-row p,
+body[data-app="games"] .game-summary-row{
+  color:var(--games-muted)!important;
+  -webkit-text-fill-color:var(--games-muted)!important;
+}
+
+body[data-app="games"] .game-row{
+  background:var(--games-row-gradient)!important;
+  background-image:var(--games-row-gradient)!important;
+  border-color:var(--games-border)!important;
+  box-shadow:inset 6px 0 0 var(--games-accent),0 12px 26px -20px rgba(13,42,44,.44)!important;
+}
+
+body[data-app="games"] .game-row:hover{
+  background:linear-gradient(90deg,#fff1d8 0%,#f2d9ad 58%,#e7bd82 100%)!important;
+}
+
+body[data-app="games"] .game-summary-details > summary,
+body[data-app="games"] .tier-btn,
+body[data-app="games"] .stat-pill{
+  background:var(--games-row-gradient)!important;
+  background-image:var(--games-row-gradient)!important;
+  color:var(--games-ink)!important;
+  -webkit-text-fill-color:var(--games-ink)!important;
+  border-color:var(--games-border)!important;
+}
+
+body[data-app="games"] .action,
+body[data-app="games"] .game-toggle-btn,
+body[data-app="games"] .auto-next-toggle{
+  background:var(--games-control)!important;
+  background-image:var(--games-control)!important;
+  color:#17383a!important;
+  -webkit-text-fill-color:#17383a!important;
+  border-color:rgba(105,57,39,.32)!important;
+}
+
+body[data-app="games"] .action:hover,
+body[data-app="games"] .game-toggle-btn:hover,
+body[data-app="games"] .auto-next-toggle:hover{
+  background:var(--games-control-hover)!important;
+  background-image:var(--games-control-hover)!important;
+}
+
+body[data-app="games"] .action.secondary,
+body[data-app="games"] .action.ghost{
+  background:linear-gradient(180deg,#eef0d7 0%,#c8d8c4 100%)!important;
+  background-image:linear-gradient(180deg,#eef0d7 0%,#c8d8c4 100%)!important;
+  border-color:rgba(35,95,99,.30)!important;
+}
+
+body[data-app="games"] .game-toggle-btn.is-active,
+body[data-app="games"] .auto-next-toggle[aria-pressed="true"]{
+  background:linear-gradient(180deg,#6d9e88 0%,#39736d 100%)!important;
+  background-image:linear-gradient(180deg,#6d9e88 0%,#39736d 100%)!important;
+  color:#fff8eb!important;
+  -webkit-text-fill-color:#fff8eb!important;
+  border-color:#285d5c!important;
+  box-shadow:0 0 0 4px rgba(239,180,87,.22),0 14px 26px -20px rgba(13,42,44,.58)!important;
+}
+
+body[data-app="games"] .game-info-details{
+  background:linear-gradient(180deg,#ecd9b3 0%,#dfc28e 100%)!important;
+  border-color:var(--games-border)!important;
+}
+
+body[data-app="games"] .game-info-details .progress-shell{
+  background:linear-gradient(180deg,#f8ecd4 0%,#ead5ad 100%)!important;
+  border-top-color:var(--games-border)!important;
+}
+
+body[data-app="games"] .xp-bar,
+body[data-app="games"] .meter{
+  background:#2f6665!important;
+  border-color:rgba(19,61,68,.42)!important;
+}
+
+body[data-app="games"] .xp-fill,
+body[data-app="games"] .meter-fill{
+  background:linear-gradient(90deg,#d76e4b 0%,#efb457 52%,#6d9e88 100%)!important;
+}
+
+body[data-app="games"] .text-input,
+body[data-app="games"] input.text-input,
+body[data-app="games"] textarea.text-input,
+body[data-app="games"] select{
+  background:var(--games-input-gradient)!important;
+  background-image:var(--games-input-gradient)!important;
+  color:var(--games-ink)!important;
+  -webkit-text-fill-color:var(--games-ink)!important;
+  border-color:var(--games-border)!important;
+}
+
+@media (max-width:899px){
+  body[data-app="games"] .hero-inner{
+    padding:16px 12px!important;
+  }
+
+  body[data-app="games"] .hero > .tabs{
+    width:min(var(--bl-page-max-width,1500px),calc(100% - var(--bl-page-gutter,24px)))!important;
+    padding-left:12px!important;
+    padding-right:12px!important;
+    padding-bottom:12px!important;
+  }
+}
