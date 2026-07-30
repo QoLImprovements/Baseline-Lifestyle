@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260730_9';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260730_10';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
@@ -26,6 +26,7 @@
       '  <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false">Charity Shop &#9662;</button>',
       '  <div class="bl-pages-menu" role="menu" hidden>',
       '    <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>',
+      '    <a class="bl-pages-link" role="menuitem" aria-current="page" href="/baseline-charity-shop/guidance">Charity Shop</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Natural Skincare</a>',
@@ -102,8 +103,19 @@
       const existingDropdown = homebarInner.querySelector('.bl-pages-dd');
       const currentButton = existingDropdown && existingDropdown.querySelector('.bl-pages-btn');
       if(!existingDropdown || !currentButton || !/^Charity Shop\b/.test(currentButton.textContent || '')){
-        homebarInner.innerHTML = ordinarySectionMenu();
+        const template = document.createElement('div');
+        template.innerHTML = ordinarySectionMenu();
+        const replacementDropdown = template.firstElementChild;
+        if(replacementDropdown){
+          if(existingDropdown){
+            existingDropdown.replaceWith(replacementDropdown);
+          }else{
+            const sharedControls = homebarInner.querySelector('.bl-homebar-spacer, .bl-homebar-right');
+            homebarInner.insertBefore(replacementDropdown, sharedControls || homebarInner.firstChild || null);
+          }
+        }
       }
+      document.querySelectorAll('.charity-homebar-actions').forEach(function(group){ group.remove(); });
       bindSectionDropdown(homebarInner.querySelector('.bl-pages-dd'));
     }
     const lockButton = document.getElementById('charityLockBtn');
