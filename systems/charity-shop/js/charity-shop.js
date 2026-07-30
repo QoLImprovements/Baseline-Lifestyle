@@ -1,13 +1,36 @@
 (function(){
   'use strict';
 
+  const BUILD = 'CHARITY_SHOP_20260730_6';
+  const ARTWORK_BUILD = '20260730_4';
+
+  function loadCharityCorrections(){
+    let link = document.querySelector('link[data-charity-cashing-corrections]');
+    if(!link){
+      link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=' + BUILD;
+      link.dataset.charityCashingCorrections = 'true';
+      document.head.appendChild(link);
+    }else{
+      document.head.appendChild(link);
+    }
+  }
+
   function loadApprovedSharedUi(){
-    if(window.__BASELINE_PROTECTED_ACCESS__) return;
-    if(document.querySelector('script[src*="/sitewide/js/baseline-charity-access.js"]')) return;
+    if(window.__BASELINE_PROTECTED_ACCESS__){
+      loadCharityCorrections();
+      return;
+    }
+    if(document.querySelector('script[src*="/sitewide/js/baseline-charity-access.js"]')){
+      loadCharityCorrections();
+      return;
+    }
     const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-charity-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_1';
+    script.src = '/sitewide/js/baseline-charity-access.js?v=BASELINE_PROTECTED_ACCESS_20260730_6';
     script.async = false;
     script.dataset.protectedAccessLoader = 'charity-shop';
+    script.addEventListener('load', loadCharityCorrections, {once:true});
     document.head.appendChild(script);
   }
 
@@ -15,166 +38,412 @@
     if(document.querySelector('link[data-charity-complete-theme]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260730_1';
+    link.href = '/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260730_2';
     link.dataset.charityCompleteTheme = 'true';
     document.head.appendChild(link);
   }
 
-  function posterFrame(title, kicker, body, illustration, modifier){
-    return '<article class="card charity-card charity-artwork-card '+(modifier||'')+'">' +
-      '<div class="charity-sheet" role="img" aria-label="'+title.replace(/"/g,'&quot;')+' A4 training-sheet artwork">' +
-        '<div class="charity-sheet-head"><span>'+kicker+'</span><h2>'+title+'</h2></div>' +
-        '<div class="charity-sheet-illustration">'+illustration+'</div>' +
-        '<div class="charity-sheet-copy">'+body+'</div>' +
-      '</div>' +
-    '</article>';
+  const DENOMINATIONS = Object.freeze([
+    {key:'gbp50', label:'£50', pence:5000},
+    {key:'gbp20', label:'£20', pence:2000},
+    {key:'gbp10', label:'£10', pence:1000},
+    {key:'gbp5', label:'£5', pence:500},
+    {key:'gbp2', label:'£2', pence:200},
+    {key:'gbp1', label:'£1', pence:100},
+    {key:'p50', label:'50p', pence:50},
+    {key:'p20', label:'20p', pence:20},
+    {key:'p10', label:'10p', pence:10},
+    {key:'p5', label:'5p', pence:5},
+    {key:'p2', label:'2p', pence:2},
+    {key:'p1', label:'1p', pence:1}
+  ]);
+
+  const CHEQUE_GROUPS = Object.freeze([
+    {label:'£50 notes', keys:['gbp50']},
+    {label:'£20 notes', keys:['gbp20']},
+    {label:'£10 notes', keys:['gbp10']},
+    {label:'£5 notes', keys:['gbp5']},
+    {label:'£2 coins', keys:['gbp2']},
+    {label:'£1 coins', keys:['gbp1']},
+    {label:'50p + 20p', keys:['p50','p20']},
+    {label:'10p + 5p', keys:['p10','p5']},
+    {label:'2p + 1p', keys:['p2','p1']}
+  ]);
+
+  function money(pence){
+    return new Intl.NumberFormat('en-GB',{
+      style:'currency',
+      currency:'GBP',
+      minimumFractionDigits:2,
+      maximumFractionDigits:2
+    }).format(pence / 100);
   }
 
-  function hangerArtwork(){
-    return '<svg viewBox="0 0 760 330" aria-hidden="true">' +
-      '<defs><linearGradient id="hangerBg" x1="0" x2="1"><stop stop-color="#941b22"/><stop offset=".5" stop-color="#f5cf24"/><stop offset="1" stop-color="#941b22"/></linearGradient></defs>' +
-      '<rect width="760" height="330" rx="28" fill="url(#hangerBg)" opacity=".18"/>' +
-      '<path d="M378 38c0-31 48-31 48 0 0 16-12 23-26 30l-24 12" fill="none" stroke="#17364d" stroke-width="12" stroke-linecap="round"/>' +
-      '<path d="M376 80 170 174h420L400 80" fill="none" stroke="#17364d" stroke-width="15" stroke-linejoin="round"/>' +
-      '<rect x="118" y="160" width="54" height="70" rx="12" fill="#f5cf24" stroke="#941b22" stroke-width="8"/><rect x="588" y="160" width="54" height="70" rx="12" fill="#f5cf24" stroke="#941b22" stroke-width="8"/>' +
-      '<path d="M150 215 225 204 270 286 380 270 490 286 535 204 610 215" fill="#c9252d" stroke="#941b22" stroke-width="9" stroke-linejoin="round"/>' +
-      '<path d="M270 286 270 219M490 286 490 219" stroke="#fff0a0" stroke-width="7" stroke-linecap="round"/>' +
-      '<circle cx="90" cy="92" r="34" fill="#941b22"/><text x="90" y="104" text-anchor="middle" font-size="34" font-weight="900" fill="#fff">1</text>' +
-      '<circle cx="670" cy="92" r="34" fill="#c9252d"/><text x="670" y="104" text-anchor="middle" font-size="34" font-weight="900" fill="#fff">2</text>' +
-      '<circle cx="380" cy="300" r="28" fill="#f28c20"/><text x="380" y="310" text-anchor="middle" font-size="28" font-weight="900" fill="#fff">3</text>' +
-    '</svg>';
+  function chequeAmount(pence){
+    const safe = Math.max(0, Math.round(Number(pence) || 0));
+    return Math.floor(safe / 100) + ' - ' + String(safe % 100).padStart(2,'0');
   }
 
-  function cubeArtwork(){
-    return '<svg viewBox="0 0 760 330" aria-hidden="true">' +
-      '<defs><linearGradient id="cubeBg" x1="0" x2="1"><stop stop-color="#941b22"/><stop offset=".5" stop-color="#fff0a0"/><stop offset="1" stop-color="#941b22"/></linearGradient></defs>' +
-      '<rect width="760" height="330" rx="28" fill="url(#cubeBg)" opacity=".18"/>' +
-      '<path d="M380 42c0-30 46-30 46 0 0 16-12 23-25 30l-21 10" fill="none" stroke="#17364d" stroke-width="11" stroke-linecap="round"/>' +
-      '<path d="M380 82 200 164h360L400 82" fill="none" stroke="#17364d" stroke-width="14"/>' +
-      '<path d="M250 164v118h260V164l-62-24-68 38-68-38z" fill="#f28c20" stroke="#941b22" stroke-width="9" stroke-linejoin="round"/>' +
-      '<rect x="335" y="96" width="90" height="74" rx="16" fill="#f5cf24" stroke="#941b22" stroke-width="8"/>' +
-      '<text x="380" y="145" text-anchor="middle" font-size="38" font-weight="900" fill="#17364d">12</text>' +
-      '<path d="M93 242h116M551 242h116" stroke="#c9252d" stroke-width="12" stroke-linecap="round"/>' +
-      '<path d="m176 217 32 25-32 25M584 217l-32 25 32 25" fill="none" stroke="#c9252d" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '<text x="94" y="102" font-size="26" font-weight="900" fill="#941b22">CHECK</text><text x="566" y="102" font-size="26" font-weight="900" fill="#941b22">CUBE</text>' +
-    '</svg>';
+  function cashRows(){
+    return DENOMINATIONS.map(function(item){
+      return [
+        '<tr data-cash-row="'+item.key+'">',
+        '  <th scope="row">'+item.label+'</th>',
+        '  <td><label class="charity-cash-visually-hidden" for="cash-'+item.key+'">Number of '+item.label+' items</label>',
+        '      <input id="cash-'+item.key+'" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="'+item.key+'" data-pence="'+item.pence+'"></td>',
+        '  <td><output class="charity-cash-subtotal" data-subtotal="'+item.key+'">£0.00</output></td>',
+        '</tr>'
+      ].join('');
+    }).join('');
   }
 
-  function impactArtwork(){
-    return '<svg viewBox="0 0 760 330" aria-hidden="true">' +
-      '<defs><linearGradient id="impactBg" x1="0" x2="1"><stop stop-color="#941b22"/><stop offset=".5" stop-color="#f5cf24"/><stop offset="1" stop-color="#941b22"/></linearGradient></defs>' +
-      '<rect width="760" height="330" rx="28" fill="url(#impactBg)" opacity=".20"/>' +
-      '<g fill="#fff9df" stroke="#941b22" stroke-width="7"><path d="M55 54h214v80H165l-28 30 5-30H55z"/><path d="M491 45h214v88H603l-30 32 7-32h-89z"/><path d="M270 205h220v86H380l-31 28 8-28h-87z"/></g>' +
-      '<g fill="#17364d" font-size="21" font-weight="850"><text x="76" y="88">Wrong size cube</text><text x="76" y="116">on the rail</text><text x="512" y="80">Clothes keep</text><text x="512" y="108">falling</text><text x="298" y="240">Someone else has</text><text x="298" y="269">to put it right</text></g>' +
-      '<circle cx="220" cy="225" r="48" fill="#f28c20" stroke="#941b22" stroke-width="8"/><circle cx="540" cy="225" r="48" fill="#c9252d" stroke="#941b22" stroke-width="8"/>' +
-      '<path d="M185 294q35-40 70 0M505 294q35-40 70 0" fill="none" stroke="#17364d" stroke-width="12" stroke-linecap="round"/>' +
-      '<circle cx="204" cy="214" r="5" fill="#17364d"/><circle cx="236" cy="214" r="5" fill="#17364d"/><path d="M205 244q15-12 30 0" fill="none" stroke="#17364d" stroke-width="6"/>' +
-      '<circle cx="524" cy="214" r="5" fill="#fff"/><circle cx="556" cy="214" r="5" fill="#fff"/><path d="M525 244q15 12 30 0" fill="none" stroke="#fff" stroke-width="6"/>' +
-    '</svg>';
+  function chequeRows(){
+    return CHEQUE_GROUPS.map(function(group){
+      return '<div class="charity-cheque-row"><span>'+group.label+'</span><output data-cheque-keys="'+group.keys.join(',')+'">0 - 00</output></div>';
+    }).join('');
   }
 
-  function sizeArtwork(label, rows){
-    return '<div class="charity-size-sheet"><div class="charity-size-sheet-title">'+label+'</div><div class="charity-size-sheet-grid">' + rows.map(function(row){return '<div><strong>'+row[0]+'</strong><span>'+row[1]+'</span></div>';}).join('') + '</div></div>';
-  }
+  function installCashingUp(){
+    const operations = document.getElementById('operations');
+    if(!operations || document.getElementById('operations-cashing')) return;
 
-  function injectSheetArtwork(){
-    if(document.querySelector('[data-charity-sheet-artwork]')) return;
-
-    const overview = document.querySelector('#operations-overview .charity-grid');
-    if(overview){
-      const shell = document.createElement('div');
-      shell.dataset.charitySheetArtwork = 'overview';
-      shell.className = 'charity-artwork-pair';
-      shell.innerHTML = posterFrame('Back-room choices. Shop-floor consequences.','SYSTEMS',
-        '<p>Agreed systems contain the work. When they are skipped, the consequence moves to customers and shop-floor volunteers.</p>',impactArtwork(),'charity-sheet--impact');
-      overview.insertBefore(shell, overview.firstChild);
+    const tabs = operations.querySelector('.charity-subtabs');
+    if(tabs && !tabs.querySelector('[data-charity-subtarget="cashing"]')){
+      const source = tabs.querySelector('.charity-subtab:last-of-type');
+      const tab = source ? source.cloneNode(false) : document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'charity-subtab subtab';
+      tab.dataset.charitySubtarget = 'cashing';
+      tab.setAttribute('role','tab');
+      tab.setAttribute('aria-selected','false');
+      tab.setAttribute('aria-controls','operations-cashing');
+      tab.tabIndex = -1;
+      tab.textContent = 'Cashing Up';
+      tabs.appendChild(tab);
     }
 
-    const hanging = document.querySelector('#operations-hanging .charity-grid');
-    if(hanging){
-      const node = document.createElement('div');
-      node.dataset.charitySheetArtwork = 'hanging';
-      node.className = 'charity-artwork-pair';
-      node.innerHTML = posterFrame('Hang It Right','A4 TRAINING SHEET',
-        '<div class="charity-sheet-points"><span>1. Clips to the end stops</span><span>2. Waistband taut and even</span><span>3. Fold excess neatly behind</span></div>',hangerArtwork(),'charity-sheet--hang');
-      hanging.insertBefore(node, hanging.firstChild);
+    const panel = document.createElement('div');
+    panel.id = 'operations-cashing';
+    panel.className = 'charity-subpanel charity-cashing-panel';
+    panel.hidden = true;
+    panel.tabIndex = -1;
+    panel.setAttribute('role','tabpanel');
+    panel.innerHTML = [
+      '<div class="charity-cashup">',
+      '  <header class="card charity-card charity-card--wide charity-cashup-heading">',
+      '    <p class="charity-kicker">COUNT | TOTAL | MINUS FLOAT</p>',
+      '    <h2>Cashing Up</h2>',
+      '    <p>Enter the number of each note and coin in the till. Each row calculates its value, then the fixed £100 float is subtracted.</p>',
+      '  </header>',
+      '  <div class="charity-cashup-layout">',
+      '    <section class="card charity-card charity-cash-table-card" aria-labelledby="charityCashCountTitle">',
+      '      <h3 id="charityCashCountTitle">Cash in till</h3>',
+      '      <div class="charity-cash-table-wrap">',
+      '        <table class="charity-cash-table">',
+      '          <thead><tr><th scope="col">Note or coin</th><th scope="col">How many</th><th scope="col">Value</th></tr></thead>',
+      '          <tbody>'+cashRows()+'</tbody>',
+      '        </table>',
+      '      </div>',
+      '    </section>',
+      '    <aside class="charity-cash-summary-column">',
+      '      <section class="card charity-card charity-cash-totals" aria-labelledby="charityCashTotalsTitle">',
+      '        <h3 id="charityCashTotalsTitle">Till totals</h3>',
+      '        <div class="charity-total-line"><span>Total Count</span><output id="charityCashTotal" aria-live="polite">£0.00</output></div>',
+      '        <div class="charity-float-line"><span>Float</span><strong>£100.00</strong></div>',
+      '        <div class="charity-total-line charity-total-line--final"><span>Minus Float</span><output id="charityCashMinusFloat" aria-live="polite">−£100.00</output></div>',
+      '        <p class="charity-cash-result-label">Cash in till after the £100 float</p>',
+      '      </section>',
+      '      <section class="card charity-card charity-cheque-summary" aria-labelledby="charityChequeTitle">',
+      '        <div class="charity-cheque-heading"><div><p class="charity-kicker">POUNDS - PENCE</p><h3 id="charityChequeTitle">Cheque book summary</h3></div><span aria-hidden="true">£</span></div>',
+      '        <p>Copy these grouped amounts into the cheque book.</p>',
+      '        <div class="charity-cheque-rows">'+chequeRows()+'</div>',
+      '      </section>',
+      '    </aside>',
+      '  </div>',
+      '</div>'
+    ].join('');
+    operations.appendChild(panel);
+
+    const values = Object.create(null);
+    const inputs = Array.from(panel.querySelectorAll('.charity-cash-count'));
+    const totalOutput = panel.querySelector('#charityCashTotal');
+    const minusFloatOutput = panel.querySelector('#charityCashMinusFloat');
+
+    function update(){
+      let total = 0;
+      inputs.forEach(function(input){
+        const count = Math.max(0, Math.floor(Number(input.value) || 0));
+        const pence = Number(input.dataset.pence) || 0;
+        const subtotal = count * pence;
+        values[input.dataset.key] = subtotal;
+        total += subtotal;
+        const output = panel.querySelector('[data-subtotal="'+input.dataset.key+'"]');
+        if(output) output.textContent = money(subtotal);
+      });
+      totalOutput.textContent = money(total);
+      minusFloatOutput.textContent = money(total - 10000);
+      panel.querySelectorAll('[data-cheque-keys]').forEach(function(output){
+        const grouped = String(output.dataset.chequeKeys || '').split(',').reduce(function(sum,key){
+          return sum + (values[key] || 0);
+        },0);
+        output.textContent = chequeAmount(grouped);
+      });
     }
 
-    const cubing = document.querySelector('#operations-cubing .charity-grid');
-    if(cubing){
-      const node = document.createElement('div');
-      node.dataset.charitySheetArtwork = 'cubing';
-      node.className = 'charity-artwork-pair';
-      node.innerHTML = posterFrame('Cube It Right','A4 TRAINING SHEET',
-        '<div class="charity-sheet-points"><span>Check the label</span><span>Use the size guide</span><span>Fit the correct cube before the rail</span></div>',cubeArtwork(),'charity-sheet--cube');
-      cubing.insertBefore(node, cubing.firstChild);
-    }
+    inputs.forEach(function(input){
+      input.addEventListener('input', update);
+      input.addEventListener('change', function(){
+        input.value = String(Math.max(0, Math.floor(Number(input.value) || 0)));
+        update();
+      });
+    });
+    update();
+  }
 
-    const sizeSheets = [
-      ['#sizes-ladies .charity-grid','Ladies Size Guide', [['UK 8','EU 36 · US 4'],['UK 12','EU 40 · US 8'],['UK 16','EU 44 · US 12'],['UK 20','EU 48 · US 16']]],
-      ['#sizes-mens .charity-grid','Men\'s Size Guide', [['S','Chest 36–38 in'],['M','Chest 38–40 in'],['L','Chest 40–42 in'],['XL','Chest 42–44 in']]],
-      ['#sizes-shoes .charity-grid','Shoe Size Guide', [['UK 4','EU 37'],['UK 6','EU 39'],['UK 8','EU 41'],['UK 10','EU 43']]],
-      ['#homeware-duvet .charity-grid','Duvet Bedding Size Guide', [['Single','135 × 200 cm'],['Double','200 × 200 cm'],['King','225 × 220 cm'],['Super King','260 × 220 cm']]]
-    ];
-    sizeSheets.forEach(function(item){
-      const grid = document.querySelector(item[0]);
-      if(!grid) return;
-      const article = document.createElement('article');
-      article.className = 'card charity-card charity-artwork-card';
-      article.dataset.charitySheetArtwork = item[1];
-      article.innerHTML = '<div class="charity-sheet charity-sheet--size"><div class="charity-sheet-head"><span>A4 SIZE GUIDE</span><h2>'+item[1]+'</h2></div>'+sizeArtwork(item[1],item[2])+'<p class="charity-artwork-caption">Use the full conversion table below for detailed sorting.</p></div>';
-      grid.insertBefore(article, grid.firstChild);
+  const STEP_ARTWORK = Object.freeze({
+    hanging:[
+      {asset:'hang-it-right', crop:[190,500,920,270], className:'hang-step-1', alt:'Hanger clips pushed out to both end stops, from the Hang It Right A4 artwork.'},
+      {asset:'hang-it-right', crop:[1360,495,830,275], className:'hang-step-2', alt:'Waistband held straight, firm and taut, from the Hang It Right A4 artwork.'},
+      {asset:'hang-it-right', crop:[120,1010,2100,505], className:'hang-step-3', alt:'Wide garment folded around the back and secured, from the Hang It Right A4 artwork.'}
+    ],
+    cubing:[
+      {asset:'cube-it-right', crop:[160,560,360,290], className:'cube-step-1', alt:'Garment label showing UK size 14, from the Cube It Right A4 artwork.'},
+      {asset:'cube-it-right', crop:[1240,580,915,260], className:'cube-step-2', alt:'Ladies and mens cube size-guide panels, from the Cube It Right A4 artwork.'},
+      {asset:'cube-it-right', crop:[120,1200,640,345], className:'cube-step-3', alt:'Label size 14 matched to cube 14 on a hanger, from the Cube It Right A4 artwork.'}
+    ]
+  });
+
+  function artworkNode(item){
+    const crop = item.crop;
+    const frame = document.createElement('figure');
+    frame.className = 'charity-step-artwork ' + item.className;
+    frame.style.aspectRatio = crop[2] + ' / ' + crop[3];
+    frame.style.setProperty('--art-width',(2339 / crop[2] * 100) + '%');
+    frame.style.setProperty('--art-left',(-crop[0] / crop[2] * 100) + '%');
+    frame.style.setProperty('--art-top',(-crop[1] / crop[3] * 100) + '%');
+
+    const image = document.createElement('img');
+    image.src = '/systems/charity-shop/artwork.php?asset=' + encodeURIComponent(item.asset) + '&v=' + ARTWORK_BUILD;
+    image.alt = item.alt;
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    frame.appendChild(image);
+    return frame;
+  }
+
+  function installStepArtwork(){
+    [
+      ['#operations-hanging',STEP_ARTWORK.hanging],
+      ['#operations-cubing',STEP_ARTWORK.cubing]
+    ].forEach(function(entry){
+      const section = document.querySelector(entry[0]);
+      if(!section) return;
+      const cards = Array.from(section.querySelectorAll('article.charity-step-card')).slice(0,3);
+      cards.forEach(function(card,index){
+        if(card.querySelector('.charity-step-artwork') || !entry[1][index]) return;
+        card.appendChild(artworkNode(entry[1][index]));
+      });
     });
   }
 
   loadApprovedSharedUi();
   loadCompleteCharityTheme();
-  injectSheetArtwork();
+  loadCharityCorrections();
+  installCashingUp();
+  installStepArtwork();
 
   const mainTabs = Array.from(document.querySelectorAll('.charity-main-tab[data-charity-target]'));
   const mainSections = Array.from(document.querySelectorAll('.charity-main-section'));
   const lockButton = document.getElementById('charityLockBtn');
-  const defaultSubtab = Object.freeze({operations:'overview',sizes:'ladies',homeware:'duvet'});
-  const currentSubtab = Object.assign({}, defaultSubtab);
-  const mainIds = new Set(mainTabs.map(button => button.dataset.charityTarget));
+  const defaultSubtab = Object.freeze({
+    operations:'overview',
+    sizes:'ladies',
+    homeware:'duvet'
+  });
+  const currentSubtab = Object.assign({},defaultSubtab);
+  const mainIds = new Set(mainTabs.map(function(button){return button.dataset.charityTarget;}));
   let applyingHistory = false;
 
-  const legacyRoutes = Object.freeze({overview:['operations','overview'],hanging:['operations','hanging'],cubing:['operations','cubing'],'ladies-sizes':['sizes','ladies'],'mens-sizes':['sizes','mens'],'shoe-sizes':['sizes','shoes'],'duvet-sizes':['homeware','duvet']});
+  const legacyRoutes = Object.freeze({
+    overview:['operations','overview'],
+    hanging:['operations','hanging'],
+    cubing:['operations','cubing'],
+    cashing:['operations','cashing'],
+    'cashing-up':['operations','cashing'],
+    'ladies-sizes':['sizes','ladies'],
+    'mens-sizes':['sizes','mens'],
+    'shoe-sizes':['sizes','shoes'],
+    'duvet-sizes':['homeware','duvet']
+  });
 
-  function subtabButtons(mainId){const section=document.getElementById(mainId);return section?Array.from(section.querySelectorAll('.charity-subtab[data-charity-subtarget]')):[]}
-  function subpanels(mainId){const section=document.getElementById(mainId);return section?Array.from(section.querySelectorAll('.charity-subpanel')):[]}
-  function validSubtab(mainId,subId){return subtabButtons(mainId).some(button=>button.dataset.charitySubtarget===subId)}
-  function normalisedState(mainValue,subValue){const main=mainIds.has(mainValue)?mainValue:'operations';const requestedSub=subValue||currentSubtab[main]||defaultSubtab[main];const sub=validSubtab(main,requestedSub)?requestedSub:defaultSubtab[main];return{main,sub}}
+  function subtabButtons(mainId){
+    const section = document.getElementById(mainId);
+    return section ? Array.from(section.querySelectorAll('.charity-subtab[data-charity-subtarget]')) : [];
+  }
+
+  function subpanels(mainId){
+    const section = document.getElementById(mainId);
+    return section ? Array.from(section.querySelectorAll('.charity-subpanel')) : [];
+  }
+
+  function validSubtab(mainId,subId){
+    return subtabButtons(mainId).some(function(button){return button.dataset.charitySubtarget === subId;});
+  }
+
+  function normalisedState(mainValue,subValue){
+    const main = mainIds.has(mainValue) ? mainValue : 'operations';
+    const requestedSub = subValue || currentSubtab[main] || defaultSubtab[main];
+    const sub = validSubtab(main,requestedSub) ? requestedSub : defaultSubtab[main];
+    return {main:main,sub:sub};
+  }
 
   function parseLocationState(){
-    try{const params=new URLSearchParams(location.search||'');const queryMain=String(params.get('section')||'').trim().toLowerCase();const querySub=String(params.get('tab')||'').trim().toLowerCase();if(queryMain||querySub)return normalisedState(queryMain,querySub)}catch(_error){}
-    let raw=String(location.hash||'').replace(/^#/,'').trim().toLowerCase();if(!raw)return{main:'operations',sub:'overview'};
-    if(raw.startsWith('?')){const params=new URLSearchParams(raw.slice(1));raw=String(params.get('tab')||'').trim().toLowerCase()}
-    if(legacyRoutes[raw])return{main:legacyRoutes[raw][0],sub:legacyRoutes[raw][1]};
-    const parts=raw.split('/').filter(Boolean);return normalisedState(parts[0],parts[1]);
+    try{
+      const params = new URLSearchParams(location.search || '');
+      const queryMain = String(params.get('section') || '').trim().toLowerCase();
+      const querySub = String(params.get('tab') || '').trim().toLowerCase();
+      if(queryMain || querySub) return normalisedState(queryMain,querySub);
+    }catch(_error){}
+
+    let raw = String(location.hash || '').replace(/^#/,'').trim().toLowerCase();
+    if(!raw) return {main:'operations',sub:'overview'};
+    if(raw.startsWith('?')){
+      const params = new URLSearchParams(raw.slice(1));
+      raw = String(params.get('tab') || '').trim().toLowerCase();
+    }
+    if(legacyRoutes[raw]) return {main:legacyRoutes[raw][0],sub:legacyRoutes[raw][1]};
+    const parts = raw.split('/').filter(Boolean);
+    return normalisedState(parts[0],parts[1]);
   }
 
-  function routeUrl(mainId,subId){try{const url=new URL(location.href);url.searchParams.set('section',mainId);url.searchParams.set('tab',subId);url.hash='';return url.pathname+url.search}catch(_error){return location.pathname+'?section='+encodeURIComponent(mainId)+'&tab='+encodeURIComponent(subId)}}
-  function setButtonState(buttons,activeValue,dataKey){buttons.forEach(button=>{const active=button.dataset[dataKey]===activeValue;button.setAttribute('aria-selected',String(active));button.classList.toggle('active',active);button.tabIndex=active?0:-1})}
+  function routeUrl(mainId,subId){
+    try{
+      const url = new URL(location.href);
+      url.searchParams.set('section',mainId);
+      url.searchParams.set('tab',subId);
+      url.hash = '';
+      return url.pathname + url.search;
+    }catch(_error){
+      return location.pathname + '?section=' + encodeURIComponent(mainId) + '&tab=' + encodeURIComponent(subId);
+    }
+  }
+
+  function setButtonState(buttons,activeValue,dataKey){
+    buttons.forEach(function(button){
+      const active = button.dataset[dataKey] === activeValue;
+      button.setAttribute('aria-selected',String(active));
+      button.classList.toggle('active',active);
+      button.tabIndex = active ? 0 : -1;
+    });
+  }
 
   function activate(mainId,subId,options){
-    const opts=options||{};const state=normalisedState(mainId,subId);const selectedMain=state.main;const selectedSub=state.sub;currentSubtab[selectedMain]=selectedSub;setButtonState(mainTabs,selectedMain,'charityTarget');
-    mainSections.forEach(section=>{const active=section.id===selectedMain;section.classList.toggle('active',active);section.hidden=!active});
-    const buttons=subtabButtons(selectedMain);setButtonState(buttons,selectedSub,'charitySubtarget');subpanels(selectedMain).forEach(panel=>{const active=panel.id===selectedMain+'-'+selectedSub;panel.classList.toggle('active',active);panel.hidden=!active});
-    if(opts.history!==false&&!applyingHistory){const next=routeUrl(selectedMain,selectedSub);try{if(opts.replace)history.replaceState({charityMain:selectedMain,charitySub:selectedSub},'',next);else history.pushState({charityMain:selectedMain,charitySub:selectedSub},'',next)}catch(_error){}}
-    if(opts.focusPanel){const panel=document.getElementById(selectedMain+'-'+selectedSub);try{panel&&panel.focus({preventScroll:true})}catch(_error){try{panel&&panel.focus()}catch(__error){}}}
+    const opts = options || {};
+    const state = normalisedState(mainId,subId);
+    const selectedMain = state.main;
+    const selectedSub = state.sub;
+    currentSubtab[selectedMain] = selectedSub;
+    setButtonState(mainTabs,selectedMain,'charityTarget');
+
+    mainSections.forEach(function(section){
+      const active = section.id === selectedMain;
+      section.classList.toggle('active',active);
+      section.hidden = !active;
+    });
+
+    const buttons = subtabButtons(selectedMain);
+    setButtonState(buttons,selectedSub,'charitySubtarget');
+    subpanels(selectedMain).forEach(function(panel){
+      const active = panel.id === selectedMain + '-' + selectedSub;
+      panel.classList.toggle('active',active);
+      panel.hidden = !active;
+    });
+
+    if(opts.history !== false && !applyingHistory){
+      const next = routeUrl(selectedMain,selectedSub);
+      try{
+        if(opts.replace) history.replaceState({charityMain:selectedMain,charitySub:selectedSub},'',next);
+        else history.pushState({charityMain:selectedMain,charitySub:selectedSub},'',next);
+      }catch(_error){}
+    }
+
+    if(opts.focusPanel){
+      const panel = document.getElementById(selectedMain + '-' + selectedSub);
+      try{panel && panel.focus({preventScroll:true});}
+      catch(_error){try{panel && panel.focus();}catch(__error){}}
+    }
   }
 
-  function bindArrowNavigation(buttons,valueForButton,activateButton){buttons.forEach((button,index)=>{button.addEventListener('keydown',function(event){if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;event.preventDefault();let nextIndex=index;if(event.key==='ArrowLeft')nextIndex=(index-1+buttons.length)%buttons.length;if(event.key==='ArrowRight')nextIndex=(index+1)%buttons.length;if(event.key==='Home')nextIndex=0;if(event.key==='End')nextIndex=buttons.length-1;const nextButton=buttons[nextIndex];nextButton.focus();activateButton(valueForButton(nextButton))})})}
+  function bindArrowNavigation(buttons,valueForButton,activateButton){
+    buttons.forEach(function(button,index){
+      button.addEventListener('keydown',function(event){
+        if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if(event.key === 'ArrowLeft') nextIndex = (index - 1 + buttons.length) % buttons.length;
+        if(event.key === 'ArrowRight') nextIndex = (index + 1) % buttons.length;
+        if(event.key === 'Home') nextIndex = 0;
+        if(event.key === 'End') nextIndex = buttons.length - 1;
+        const nextButton = buttons[nextIndex];
+        nextButton.focus();
+        activateButton(valueForButton(nextButton));
+      });
+    });
+  }
 
-  mainTabs.forEach(button=>{button.addEventListener('click',function(){const mainId=button.dataset.charityTarget;activate(mainId,currentSubtab[mainId]||defaultSubtab[mainId],{history:true})})});
-  bindArrowNavigation(mainTabs,button=>button.dataset.charityTarget,mainId=>activate(mainId,currentSubtab[mainId]||defaultSubtab[mainId],{history:true}));
-  mainSections.forEach(section=>{const buttons=subtabButtons(section.id);buttons.forEach(button=>{button.addEventListener('click',function(){activate(section.id,button.dataset.charitySubtarget,{history:true})})});bindArrowNavigation(buttons,button=>button.dataset.charitySubtarget,subId=>activate(section.id,subId,{history:true}))});
+  mainTabs.forEach(function(button){
+    button.addEventListener('click',function(){
+      const mainId = button.dataset.charityTarget;
+      activate(mainId,currentSubtab[mainId] || defaultSubtab[mainId],{history:true});
+    });
+  });
 
-  function restoreFromLocation(){applyingHistory=true;const state=parseLocationState();activate(state.main,state.sub,{history:false});applyingHistory=false}
-  window.addEventListener('popstate',restoreFromLocation);window.addEventListener('hashchange',restoreFromLocation);
+  bindArrowNavigation(
+    mainTabs,
+    function(button){return button.dataset.charityTarget;},
+    function(mainId){activate(mainId,currentSubtab[mainId] || defaultSubtab[mainId],{history:true});}
+  );
 
-  if(lockButton){lockButton.addEventListener('click',async function(){lockButton.disabled=true;lockButton.textContent='Locking...';try{await fetch('/sitewide/api/protected_access.php',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'lock',section:'charity_shop_guidance'})})}catch(_error){}location.assign('/home/1')})}
+  mainSections.forEach(function(section){
+    const buttons = subtabButtons(section.id);
+    buttons.forEach(function(button){
+      button.addEventListener('click',function(){
+        activate(section.id,button.dataset.charitySubtarget,{history:true});
+      });
+    });
+    bindArrowNavigation(
+      buttons,
+      function(button){return button.dataset.charitySubtarget;},
+      function(subId){activate(section.id,subId,{history:true});}
+    );
+  });
 
-  const initial=parseLocationState();activate(initial.main,initial.sub,{history:true,replace:true});
+  function restoreFromLocation(){
+    applyingHistory = true;
+    const state = parseLocationState();
+    activate(state.main,state.sub,{history:false});
+    applyingHistory = false;
+  }
+
+  window.addEventListener('popstate',restoreFromLocation);
+  window.addEventListener('hashchange',restoreFromLocation);
+
+  if(lockButton){
+    lockButton.addEventListener('click',async function(){
+      lockButton.disabled = true;
+      lockButton.textContent = 'Locking...';
+      try{
+        await fetch('/sitewide/api/protected_access.php',{
+          method:'POST',
+          credentials:'same-origin',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({action:'lock',section:'charity_shop_guidance'})
+        });
+      }catch(_error){}
+      location.assign('/home/1');
+    });
+  }
+
+  const initial = parseLocationState();
+  activate(initial.main,initial.sub,{history:true,replace:true});
 })();
