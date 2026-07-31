@@ -300,7 +300,7 @@ if($accessUntil <= time()){
           <div class="charity-grid">
             <article class="card charity-card charity-card--wide">
               <h2>Shoe size guide</h2>
-              <p><strong>UK sizes are used for the shop.</strong> Use the EU size and the approximate foot length to help convert unclear labels.</p>
+              <p><strong>UK sizes are used for the shop.</strong> EU conversions and foot lengths are approximate because brands vary; use them to help convert unclear labels.</p>
             </article>
 
             <article class="card charity-card charity-card--wide charity-table-card">
@@ -309,10 +309,11 @@ if($accessUntil <= time()){
                 <table>
                   <thead><tr><th>UK</th><th>Europe (EU)</th><th>Foot length</th></tr></thead>
                   <tbody>
-                    <tr><td>3</td><td>36</td><td>22.1-22.9 cm</td></tr><tr><td>4</td><td>37</td><td>23.0-23.8 cm</td></tr>
-                    <tr><td>5</td><td>38</td><td>23.9-24.6 cm</td></tr><tr><td>6</td><td>39</td><td>24.7-25.4 cm</td></tr>
-                    <tr><td>7</td><td>40</td><td>25.5-26.2 cm</td></tr><tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr>
-                    <tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
+                    <tr><td>2</td><td>35</td><td>21.3-22.0 cm</td></tr><tr><td>3</td><td>36</td><td>22.1-22.9 cm</td></tr>
+                    <tr><td>4</td><td>37</td><td>23.0-23.8 cm</td></tr><tr><td>5</td><td>38</td><td>23.9-24.6 cm</td></tr>
+                    <tr><td>6</td><td>39</td><td>24.7-25.4 cm</td></tr><tr><td>7</td><td>40</td><td>25.5-26.2 cm</td></tr>
+                    <tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr><tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
+                    <tr><td>10</td><td>43</td><td>28.0-28.8 cm</td></tr><tr><td>11</td><td>44</td><td>28.9-29.6 cm</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -324,10 +325,12 @@ if($accessUntil <= time()){
                 <table>
                   <thead><tr><th>UK</th><th>Europe (EU)</th><th>Foot length</th></tr></thead>
                   <tbody>
+                    <tr><td>4</td><td>37</td><td>23.0-23.8 cm</td></tr><tr><td>5</td><td>38</td><td>23.9-24.6 cm</td></tr>
                     <tr><td>6</td><td>39</td><td>24.7-25.4 cm</td></tr><tr><td>7</td><td>40</td><td>25.5-26.2 cm</td></tr>
                     <tr><td>8</td><td>41</td><td>26.3-27.1 cm</td></tr><tr><td>9</td><td>42</td><td>27.2-27.9 cm</td></tr>
                     <tr><td>10</td><td>43</td><td>28.0-28.8 cm</td></tr><tr><td>11</td><td>44</td><td>28.9-29.6 cm</td></tr>
-                    <tr><td>12</td><td>45</td><td>29.7-30.5 cm</td></tr>
+                    <tr><td>12</td><td>45</td><td>29.7-30.5 cm</td></tr><tr><td>13</td><td>46</td><td>30.6-31.3 cm</td></tr>
+                    <tr><td>14</td><td>47</td><td>31.4-32.2 cm</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -340,6 +343,7 @@ if($accessUntil <= time()){
                 <li>Use the EU size to convert shoes into UK sizes.</li>
                 <li>Check that both shoes are the same size and belong to the same pair.</li>
                 <li>When the size is unclear, check the label inside the shoe.</li>
+                <li>Sizes outside these practical chart ranges also exist; always use the size printed inside the shoe when it is legible.</li>
               </ul>
             </article>
           </div>
