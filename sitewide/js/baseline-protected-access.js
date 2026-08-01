@@ -1,23 +1,32 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260801_2';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260801_3';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
-  function addStylesheet(href, marker){
-    if(document.querySelector('link[' + marker + ']')) return;
+  function addStylesheet(href, marker, moveToEnd){
+    const existing = document.querySelector('link[' + marker + ']');
+    if(existing){
+      /* Static pages can carry an older cache key. Keep the same shared file
+         identity, update it to this build, and place only the universal
+         transition authority after system themes so fields cannot leak in. */
+      if(existing.getAttribute('href') !== href) existing.setAttribute('href',href);
+      if(moveToEnd) document.head.appendChild(existing);
+      return existing;
+    }
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = href;
     link.setAttribute(marker, 'true');
     document.head.appendChild(link);
+    return link;
   }
 
   function addStylesheets(){
-    addStylesheet('/sitewide/css/baseline-protected-access.css?v=' + BUILD, 'data-protected-access-style');
     addStylesheet('/sitewide/css/baseline-protected-key-placement.css?v=' + BUILD, 'data-protected-key-placement');
     addStylesheet('/sitewide/css/baseline-ui-fixes.css?v=' + BUILD, 'data-baseline-ui-fixes');
+    addStylesheet('/sitewide/css/baseline-protected-access.css?v=' + BUILD, 'data-protected-access-style', true);
   }
 
   function ordinarySectionMenu(){
