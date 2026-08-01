@@ -1,0 +1,100 @@
+/* Baseline Lifestyle — shared system gradient and header alignment authority.
+   System themes own colour. This file owns the common viewport coordinate
+   system and restores the canonical banner/header geometry after page CSS. */
+
+html[data-app]:not([data-app="home"]),
+html[data-app]:not([data-app="home"]) body[data-app],
+html[data-app]:not([data-app="home"]) body[data-app] .bl-scroll,
+html[data-app]:not([data-app="home"]) body[data-app] .charity-scroll,
+html[data-app]:not([data-app="home"]) body[data-app] .bl-homebar,
+html[data-app]:not([data-app="home"]) body[data-app] .hero,
+html[data-app]:not([data-app="home"]) body[data-app] .charity-hero{
+  background-size:100vw 100vh!important;
+  background-position:left top!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+}
+
+/* Banner and hero are always true edge-to-edge system bands. Internal content
+   uses the sitewide container; page themes may not change the outer shape. */
+html[data-app]:not([data-app="home"]) body[data-app] .bl-homebar,
+html[data-app]:not([data-app="home"]) body[data-app] .hero,
+html[data-app]:not([data-app="home"]) body[data-app] .charity-hero{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+  border-radius:0!important;
+  clip-path:none!important;
+  transform:none!important;
+}
+
+html[data-app]:not([data-app="home"]) body[data-app] .hero{
+  padding:0!important;
+  overflow:visible!important;
+}
+
+html[data-app]:not([data-app="home"]) body[data-app] .hero-inner{
+  width:min(var(--bl-maxw),calc(100% - var(--bl-gutter)))!important;
+  max-width:none!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  padding:var(--bl-hero-pad-y) var(--bl-hero-pad-x)!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:16px!important;
+  flex-wrap:wrap!important;
+}
+
+html[data-app]:not([data-app="home"]) body[data-app] .hero>.tabs{
+  width:min(var(--bl-maxw),calc(100% - var(--bl-gutter)))!important;
+  max-width:none!important;
+  margin:10px auto 0!important;
+  padding:0 var(--bl-hero-pad-x) 12px!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  background:transparent!important;
+  background-image:none!important;
+  background-attachment:scroll!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+}
+
+html[data-app]:not([data-app="home"]) body[data-app] .hero.compact .hero-inner{
+  padding:10px 20px!important;
+  gap:10px!important;
+}
+html[data-app]:not([data-app="home"]) body[data-app] .hero.compact>.tabs{
+  padding-bottom:8px!important;
+}
+
+/* Scrollbars inherit each system's own tokens instead of a legacy module's
+   hard-coded accent. This covers the page scroller and nested panels. */
+html[data-app]:not([data-app="home"]),
+html[data-app]:not([data-app="home"]) body[data-app],
+html[data-app]:not([data-app="home"]) body[data-app] *{
+  scrollbar-color:var(--scroll-thumb,var(--accent)) var(--scroll-track,var(--bg))!important;
+}
+html[data-app]:not([data-app="home"]) body[data-app] ::-webkit-scrollbar-track{
+  background:var(--scroll-track,var(--bg))!important;
+}
+html[data-app]:not([data-app="home"]) body[data-app] ::-webkit-scrollbar-thumb{
+  background:var(--scroll-thumb,var(--accent))!important;
+  border-color:var(--scroll-track,var(--bg))!important;
+}
+html[data-app]:not([data-app="home"]) body[data-app] ::-webkit-scrollbar-thumb:hover{
+  background:var(--scroll-thumb-hover,var(--accent-2,var(--accent)))!important;
+}
+
+@media (min-width:900px){
+  html[data-app]:not([data-app="home"]) body[data-app] .hero-inner{
+    padding:24px 20px!important;
+  }
+  html[data-app]:not([data-app="home"]) body[data-app] .hero>.tabs{
+    padding-left:20px!important;
+    padding-right:20px!important;
+  }
+}

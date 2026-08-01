@@ -141,6 +141,9 @@ html[data-app="games"] body[data-app="games"]::after{
 html[data-app="games"] body[data-app="games"] :is(
   .card,.game-card,.game-shell,.game-panel,.game-row,.summary-box,.bank-box,
   .games-list-group,.game-summary-item,.game-stat-card,.trackcoin-stat-card,
+  .progress-shell,.skill-item,.empty-box,.game-info-details,
+  .game-summary-details,.game-summary-body,.formula-box,.word-box,.solution-box,
+  .clue-bar,.upgrade-item,.bonus-item,
   .word-board-shell,.make24-board-shell,.pairs-board-shell,.rule-shift-shell,.track-coin-shell,
   .darts-focused-shell,.darts-game-card,.darts-tier-panel,.darts-category-card,
   .badminton-focused-panel .badminton-game-card,.badminton-tier-panel,
@@ -159,7 +162,7 @@ html[data-app="games"] body[data-app="games"] :is(
   border-color:var(--games-border)!important;
   color:var(--g01-ink)!important;
   -webkit-text-fill-color:currentColor!important;
-  box-shadow:0 18px 38px -28px rgba(2,5,17,.84)!important;
+  box-shadow:none!important;
   backdrop-filter:none!important;
 }
 html[data-app="games"] body[data-app="games"] :is(
@@ -182,8 +185,11 @@ html[data-app="games"] body[data-app="games"] :is(
 html[data-app="games"] body[data-app="games"] :is(
   .tab,.mobile-game-key,.action,.compact-action,.secondary,.ghost,.auto-next-toggle,
   .game-row-info-button,.bl-info-button,.game-info-button,.tier-button,.tier-btn,
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert,
   .darts-game-selector,.darts-tier-button,.darts-choice,.darts-routine-list button,
+  .darts-category-card,.darts-selector-info,
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
+  .badminton-selector-info,
   .realm-mini-action,.realm-close-btn,.realm-tab-btn,.realm-fab__icon,.realm-audio-controls button
 ),
 html[data-app="games"] body[data-app="games"] #ninjaPanel .jrpg-game button,
@@ -200,8 +206,10 @@ html[data-app="games"] body[data-app="games"] #ninjaPanel #realmBasecampScreen .
 html[data-app="games"] body[data-app="games"] :is(
   .tab,.mobile-game-key,.action,.compact-action,.secondary,.ghost,.auto-next-toggle,
   .game-row-info-button,.bl-info-button,.game-info-button,.tier-button,.tier-btn,
-  .darts-game-selector,.darts-tier-button,.darts-choice,
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert,
+  .darts-game-selector,.darts-tier-button,.darts-choice,.darts-category-card,.darts-selector-info,
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
+  .badminton-selector-info,
   .realm-mini-action,.realm-close-btn,.realm-tab-btn
 ):is(:hover,:active,[aria-pressed="true"],[aria-selected="true"],.is-active,.is-selected),
 html[data-app="games"] body[data-app="games"] #ninjaPanel .jrpg-game button:is(:hover,:active,.is-active),
@@ -222,7 +230,7 @@ html[data-app="games"] body[data-app="games"] [aria-disabled="true"]{
 
 /* Keyboard users receive a two-colour focus ring that remains visible against
    every point in the mirror gradient and the flat card surface. */
-html[data-app="games"] body[data-app="games"] :is(button,a,input,select,textarea,[tabindex]):focus-visible{
+html[data-app="games"] body[data-app="games"] :is(button,a,input,select,textarea,[tabindex]):not(.bl-protected-access-overlay *):focus-visible{
   outline:3px solid var(--g01-ink)!important;
   outline-offset:3px!important;
   box-shadow:0 0 0 6px var(--g01-focus)!important;
@@ -232,7 +240,7 @@ html[data-app="games"] body[data-app="games"] :is(button,a,input,select,textarea
 html[data-app="games"] body[data-app="games"] :is(
   input:not([type="range"]),select,textarea,.text-input,.game-input,.status,.badge,
   .pill,.chip,.game-save-status,.realm-save-status,.games-save-tooltip,[role="tooltip"]
-){
+):not(.bl-protected-access-overlay *){
   background:var(--g01-card)!important;
   background-image:none!important;
   background-color:var(--g01-card)!important;
@@ -241,7 +249,7 @@ html[data-app="games"] body[data-app="games"] :is(
   -webkit-text-fill-color:var(--g01-ink)!important;
   caret-color:var(--g01-focus)!important;
 }
-html[data-app="games"] body[data-app="games"] :is(input,textarea)::placeholder{
+html[data-app="games"] body[data-app="games"] :is(input,textarea):not(.bl-protected-access-overlay *)::placeholder{
   color:var(--g01-placeholder)!important;
   -webkit-text-fill-color:var(--g01-placeholder)!important;
   opacity:1!important;
@@ -362,6 +370,381 @@ html[data-app="games"] body[data-app="games"] :is(
 html[data-app="games"] body[data-app="games"] :is(#dartsGameCard,#badmintonGameCard):fullscreen{
   background:var(--g01-mirror)!important;
   background-image:var(--g01-mirror)!important;
+}
+
+/* G01 completion authority.
+   The Hub's canonical and independently-loaded game styles pre-date G01.
+   These selectors cover their remaining UI surfaces without changing layout,
+   typography, game logic, or realistic/semantic artwork. */
+
+/* Information bars, progress summaries and idle/status panels are interface
+   cards. Their bodies are flat; their clickable summary rows are controls. */
+html[data-app="games"] body[data-app="games"] :is(
+  .progress-shell,.round-status-card,.empty-box,.skill-item,
+  .game-info-details,.game-summary-details,.game-summary-body,
+  .formula-box,.word-box,.solution-box,.clue-bar,.upgrade-item,.bonus-item
+){
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  background-color:var(--g01-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
+){
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  background-color:var(--g01-mid)!important;
+  border-color:rgba(140,167,255,.62)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+  text-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
+):is(:hover,:focus-visible,[aria-expanded="true"],.is-active,.is-ready){
+  background:var(--g01-mirror-active)!important;
+  background-image:var(--g01-mirror-active)!important;
+  border-color:var(--g01-focus)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .game-info-details,.game-summary-details
+)[open] summary{
+  border-bottom-color:rgba(140,167,255,.46)!important;
+}
+
+/* Experience and neutral progress indicators use the same cool palette. */
+html[data-app="games"] body[data-app="games"] :is(.xp-bar,.meter,.darts-pressure-bar,.badminton-timer-bar){
+  background:var(--g01-deep)!important;
+  background-image:none!important;
+  border-color:rgba(140,167,255,.42)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .xp-fill,.meter-fill,.darts-pressure-bar>span,.badminton-timer-bar>span
+){
+  background:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+  background-image:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+}
+html[data-app="games"] body[data-app="games"] progress{accent-color:var(--g01-focus)!important}
+
+/* Darts: instructional and calculation chrome is G01. The realistic board's
+   red/green scoring segments remain sport-owned content. */
+html[data-app="games"] body[data-app="games"] :is(
+  .darts-scenario-header,.darts-situation-card,.darts-scenario-facts span,
+  .darts-coaching-note,.darts-calculation-note,.darts-visual-intro,
+  .darts-stage-copy,.darts-memory-veil,.darts-memory-arena,
+  .darts-routine-list li,.darts-sequence-readout,.darts-series-progress,
+  .darts-fact-list label,.darts-confidence-control,.darts-calibration-result,
+  .darts-comparison div,.darts-xp-block,.darts-tier-panel
+){
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  background-color:var(--g01-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
+  .darts-routine-list button,.darts-selector-info
+){
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  background-color:var(--g01-mid)!important;
+  border-color:rgba(140,167,255,.62)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
+  .darts-routine-list button,.darts-selector-info
+):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
+  background:var(--g01-mirror-active)!important;
+  background-image:var(--g01-mirror-active)!important;
+  border-color:var(--g01-focus)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .darts-board-frame,.darts-visual-intro__art,.darts-visual-intro__art--memory
+){
+  background:radial-gradient(circle at 50% 45%,rgba(140,167,255,.32),#1A244D 66%,#080D22 100%)!important;
+  background-image:radial-gradient(circle at 50% 45%,rgba(140,167,255,.32),#1A244D 66%,#080D22 100%)!important;
+  border-color:rgba(140,167,255,.46)!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-memory-veil::after{
+  background:linear-gradient(90deg,transparent 0%,rgba(82,107,194,.34) 50%,rgba(8,13,34,.30) 100%)!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-category-icon,
+html[data-app="games"] body[data-app="games"] .darts-game-selector::before{
+  background:var(--g01-active)!important;
+  background-color:var(--g01-active)!important;
+  border-color:var(--g01-focus)!important;
+  color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-simulated-mark{
+  fill:var(--g01-focus)!important;
+  stroke:var(--g01-deep)!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-board-zone.is-highlight{
+  filter:brightness(1.55) drop-shadow(0 0 9px #8CA7FF)!important;
+  stroke:#F2F5FF!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-sequence-dots>span{
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  border-color:var(--games-border)!important;
+  color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] .darts-sequence-dots>span.is-current{
+  background:var(--g01-active)!important;
+  border-color:var(--g01-focus)!important;
+}
+
+/* Badminton: menus, coaching panels and scene backplates use G01. Court,
+   player and shuttle illustrations keep their functional visual meaning. */
+html[data-app="games"] body[data-app="games"] :is(
+  .badminton-situation,.badminton-progress-box,.badminton-tier-panel,
+  .badminton-pattern-strip,.badminton-xp-block,.badminton-roadmap span,
+  .badminton-scene-caption
+){
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  background-color:var(--g01-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .badminton-choice,.badminton-game-selector,.badminton-tier-button,
+  .badminton-zone-grid button,.badminton-selector-info
+){
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  background-color:var(--g01-mid)!important;
+  border-color:rgba(140,167,255,.62)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .badminton-choice,.badminton-game-selector,.badminton-tier-button,
+  .badminton-zone-grid button,.badminton-selector-info
+):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
+  background:var(--g01-mirror-active)!important;
+  background-image:var(--g01-mirror-active)!important;
+  border-color:var(--g01-focus)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .badminton-court-shell,.badminton-freeze-scene,.badminton-contact-panel,
+  .badminton-tactical-scene
+){
+  background:radial-gradient(circle at 50% 42%,rgba(140,167,255,.30),#1A244D 68%,#080D22 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(140,167,255,.30),#1A244D 68%,#080D22 100%)!important;
+  border-color:rgba(140,167,255,.46)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .badminton-pattern-strip span,.badminton-scene-caption span,.badminton-contact-light
+){
+  background:var(--g01-active)!important;
+  background-image:none!important;
+  border-color:var(--g01-focus)!important;
+  color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] .badminton-contact-light.is-contact{
+  background:var(--g01-focus)!important;
+  color:var(--g01-deep)!important;
+  box-shadow:0 0 0 11px rgba(140,167,255,.22)!important;
+}
+html[data-app="games"] body[data-app="games"] .badminton-court-zone.is-highlight{
+  fill:var(--g01-focus)!important;
+  filter:drop-shadow(0 0 9px rgba(140,167,255,.88))!important;
+}
+html[data-app="games"] body[data-app="games"] .badminton-distractor{
+  background:rgba(140,167,255,.34)!important;
+  border-color:var(--g01-focus)!important;
+}
+
+/* The site's cards are flat reading surfaces. Remove the inherited glossy
+   pseudo-layer, offset shadow and hover lift that made Games cards appear to
+   have a second coloured card behind them. */
+html[data-app="games"] body[data-app="games"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .game-summary-body,.progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+){
+  box-shadow:none!important;
+  filter:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+)::before,
+html[data-app="games"] body[data-app="games"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+)::after{
+  content:none!important;
+  display:none!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] #gamesList .game-row:is(:hover,:focus-visible,.is-selected){
+  transform:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(
+  .tab,.action,.compact-action,.secondary,.ghost,.game-toggle-btn,
+  .mobile-game-key,.game-row-info-button,.game-info-button,.bl-info-button,
+  .tier-btn,.darts-choice,.darts-tier-button,.darts-game-selector,
+  .badminton-choice,.badminton-tier-button,.badminton-game-selector
+){box-shadow:none!important}
+
+/* Pairs must never dim the content merely because a resolved card is disabled.
+   Both card faces and their symbols are fully opaque, unfiltered and use a
+   high-contrast G01 foreground in every interaction state. */
+html[data-app="games"] body[data-app="games"] .memory-card,
+html[data-app="games"] body[data-app="games"] .memory-card[disabled]{
+  background:var(--g01-deep)!important;
+  background-image:none!important;
+  border-color:var(--g01-focus)!important;
+  color:var(--g01-ink)!important;
+  opacity:1!important;
+  filter:none!important;
+  box-shadow:none!important;
+  mix-blend-mode:normal!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card-face,
+html[data-app="games"] body[data-app="games"] .memory-card-face *{
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+  filter:none!important;
+  visibility:visible!important;
+  mix-blend-mode:normal!important;
+  text-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card-back{
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  opacity:1!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card-front{
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  opacity:0!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card:is(.is-open,.is-matched) .memory-card-back{
+  opacity:0!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card:is(.is-open,.is-matched) .memory-card-front{
+  opacity:1!important;
+  transform:scale(1)!important;
+}
+html[data-app="games"] body[data-app="games"] .memory-card.is-matched{
+  outline:3px solid var(--g01-focus)!important;
+  outline-offset:2px!important;
+}
+
+/* Core game boards use G01 chrome too. Gameplay states and Rule Shift's named
+   colour discrimination remain semantic content, but their enclosing panels,
+   timers, controls and neutral pieces no longer expose the retired palette. */
+html[data-app="games"] body[data-app="games"] :is(
+  .trackcoin-scene,.trackcoin-game-status,.trackcoin-idle-cue,.trackcoin-idle-card,
+  .trackcoin-status,.trackcoin-lane,.ruleshift-idle-card,.ruleshift-complete-card,
+  .ruleshift-rule-card,.ruleshift-choice-card,.mobile-game-keypad,
+  .mobile-word-keypad,.mobile-make24-keypad
+){
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  background-color:var(--g01-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--g01-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] .trackcoin-lane{
+  background:radial-gradient(circle at 50% 42%,rgba(140,167,255,.28),#1A244D 62%,#080D22 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(140,167,255,.28),#1A244D 62%,#080D22 100%)!important;
+}
+html[data-app="games"] body[data-app="games"] .trackcoin-cup{
+  background:linear-gradient(180deg,#4656A6 0%,#1E2759 55%,#080D22 100%)!important;
+  background-image:linear-gradient(180deg,#4656A6 0%,#1E2759 55%,#080D22 100%)!important;
+  border-color:var(--g01-focus)!important;
+  color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] .trackcoin-cup::before{
+  background:linear-gradient(180deg,#526BC2 0%,#1E2759 100%)!important;
+  background-image:linear-gradient(180deg,#526BC2 0%,#1E2759 100%)!important;
+  border-color:var(--g01-focus)!important;
+}
+html[data-app="games"] body[data-app="games"] .trackcoin-item-token{
+  background:radial-gradient(circle at 35% 28%,#F2F5FF 0%,#8CA7FF 36%,#526BC2 68%,#1E2759 100%)!important;
+  background-image:radial-gradient(circle at 35% 28%,#F2F5FF 0%,#8CA7FF 36%,#526BC2 68%,#1E2759 100%)!important;
+  border-color:var(--g01-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(.number-chip,.ruleshift-token){
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  border-color:var(--g01-focus)!important;
+  color:var(--g01-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] .ruleshift-timer-bar{
+  background:var(--g01-deep)!important;
+  background-image:none!important;
+  border-color:var(--games-border)!important;
+}
+html[data-app="games"] body[data-app="games"] .ruleshift-timer-fill{
+  background:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+  background-image:linear-gradient(90deg,#526BC2 0%,#8CA7FF 50%,#526BC2 100%)!important;
+}
+
+/* Correct/incorrect feedback remains semantic, but uses cool accessible tones
+   instead of the retired warm Games palette. */
+html[data-app="games"] body[data-app="games"] :is(.darts-feedback,.badminton-feedback).is-correct{
+  background:#173E39!important;
+  background-image:none!important;
+  border-color:#72C7AF!important;
+  color:var(--g01-ink)!important;
+}
+html[data-app="games"] body[data-app="games"] :is(.darts-feedback,.badminton-feedback).is-wrong{
+  background:#4C2540!important;
+  background-image:none!important;
+  border-color:#E49AB8!important;
+  color:var(--g01-ink)!important;
+}
+
+/* Force both the page scroller and independently scrolling game lists to use
+   Indigo Circuit instead of the legacy orange thumb. */
+html[data-app="games"],
+html[data-app="games"] body[data-app="games"],
+html[data-app="games"] body[data-app="games"] :is(
+  .bl-scroll,.darts-game-selectors,.badminton-game-selectors,
+  #ninjaPanel .realm-drawer-pane:not([hidden])
+){
+  scrollbar-color:var(--g01-active) var(--g01-deep)!important;
+}
+html[data-app="games"] body[data-app="games"] ::-webkit-scrollbar-track{
+  background:var(--g01-deep)!important;
+}
+html[data-app="games"] body[data-app="games"] ::-webkit-scrollbar-thumb{
+  background:var(--g01-active)!important;
+  border-color:var(--g01-deep)!important;
+}
+html[data-app="games"] body[data-app="games"] ::-webkit-scrollbar-thumb:hover{
+  background:var(--g01-focus)!important;
+}
+html[data-app="games"] body[data-app="games"] #ninjaPanel .realm-drawer-pane:not([hidden])::-webkit-scrollbar-track{
+  background:var(--g01-deep)!important;
+}
+html[data-app="games"] body[data-app="games"] #ninjaPanel .realm-drawer-pane:not([hidden])::-webkit-scrollbar-thumb{
+  background:var(--g01-active)!important;
+  border-color:var(--g01-deep)!important;
 }
 
 @media (max-width:520px){

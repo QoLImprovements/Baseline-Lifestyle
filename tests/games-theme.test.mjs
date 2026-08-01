@@ -13,7 +13,11 @@ const files = {
   core:'systems/baseline-games-hub/js/baseline-games-hub-core.js',
   home:'sitewide/css/baseline-home.css',
   themes:'sitewide/css/baseline-themes.css',
-  sitewide:'sitewide/css/baseline-sitewide.css'
+  sitewide:'sitewide/css/baseline-sitewide.css',
+  alignment:'sitewide/css/baseline-gradient-alignment.css',
+  shared:'sitewide/js/baseline-shared.js',
+  protectedCss:'sitewide/css/baseline-protected-access.css',
+  protectedJs:'sitewide/js/baseline-protected-access.js'
 };
 
 const g01 = Object.freeze({
@@ -53,7 +57,7 @@ test('sitewide Games fallbacks, homepage card and first paint use G01',async()=>
     read(files.hub),read(files.home),read(files.themes),read(files.sitewide)
   ]);
   assert.match(hub,/theme-color" content="#080D22"/);
-  assert.match(hub,/G01_INDIGO_CIRCUIT_20260801_1/);
+  assert.match(hub,/games-hub-theme\.css\?v=G01_INDIGO_CIRCUIT_20260801_3/);
   assert.match(home,/--games-card-bg:linear-gradient\(90deg,[\s\S]*?var\(--games-deep\) 0%,[\s\S]*?var\(--games-mid\) 25%,[\s\S]*?var\(--games-soft\) 50%,[\s\S]*?var\(--games-mid\) 75%,[\s\S]*?var\(--games-deep\) 100%/);
   assert.match(themes,/--games-page-gradient:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)/);
   assert.match(sitewide,/--bl-flyout-bg-image:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)!important/);
@@ -66,6 +70,50 @@ test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are 
     '#bl-beats-flyout .card','.bl-flyout .bl-select-menu [role="option"]',
     '.tab','#ninjaPanel .jrpg-game button','#realmBasecampScreen .realm-location-button'
   ].forEach(selector => assert.ok(theme.includes(selector),selector));
+});
+
+test('remaining Hub summaries, Darts panels and core game surfaces use G01',async()=>{
+  const theme = await read(files.theme);
+  [
+    '.game-info-details summary','.game-summary-details summary','.stat-pill','.empty-box',
+    '.darts-scenario-header','.darts-scenario-facts span','.darts-coaching-note',
+    '.trackcoin-scene','.ruleshift-rule-card','.number-chip'
+  ].forEach(selector => assert.ok(theme.includes(selector),selector));
+  assert.match(theme,/\.game-info-details summary[\s\S]*?background:var\(--g01-mirror\)!important/);
+  assert.match(theme,/\.darts-scenario-header[\s\S]*?background:var\(--g01-card\)!important/);
+});
+
+test('Games cards are flat and Pairs symbols remain fully visible',async()=>{
+  const theme = await read(files.theme);
+  assert.match(theme,/The site's cards are flat reading surfaces/);
+  assert.match(theme,/\.card,\.game-card,\.game-row[\s\S]*?box-shadow:none!important/);
+  assert.match(theme,/\.card,\.game-card,\.game-row[\s\S]*?\)::after\{[\s\S]*?content:none!important;[\s\S]*?display:none!important/);
+  assert.match(theme,/\.memory-card\[disabled\]\{[\s\S]*?opacity:1!important;[\s\S]*?filter:none!important/);
+  assert.match(theme,/\.memory-card-face,[\s\S]*?color:var\(--g01-ink\)!important;[\s\S]*?text-shadow:none!important/);
+});
+
+test('every system shares viewport-aligned gradients, canonical header geometry and themed scrollbars',async()=>{
+  const [alignment,shared,hub] = await Promise.all([
+    read(files.alignment),read(files.shared),read(files.hub)
+  ]);
+  assert.match(alignment,/background-size:100vw 100vh!important;/);
+  assert.match(alignment,/background-position:left top!important;/);
+  assert.match(alignment,/\.hero-inner\{[\s\S]*?width:min\(var\(--bl-maxw\),calc\(100% - var\(--bl-gutter\)\)\)!important;/);
+  assert.match(alignment,/\.hero>\.tabs\{[\s\S]*?margin:10px auto 0!important;[\s\S]*?padding:0 var\(--bl-hero-pad-x\) 12px!important;/);
+  assert.match(alignment,/scrollbar-color:var\(--scroll-thumb,var\(--accent\)\) var\(--scroll-track,var\(--bg\)\)!important;/);
+  assert.match(shared,/ensureGradientAlignmentStylesheet/);
+  assert.match(shared,/BASELINE_GRADIENT_ALIGNMENT_20260801_1/);
+  assert.match(hub,/data-baseline-gradient-alignment="true"/);
+});
+
+test('Digital Code remains universal and cannot inherit a system theme',async()=>{
+  const [theme,protectedCss,protectedJs] = await Promise.all([
+    read(files.theme),read(files.protectedCss),read(files.protectedJs)
+  ]);
+  assert.match(theme,/:not\(\.bl-protected-access-overlay \*\)/);
+  assert.match(protectedCss,/html body\[data-app\] \.bl-protected-code-row input\{[\s\S]*?background:linear-gradient\(180deg,#5d5c63 0%,#3d3c41 100%\)!important;/);
+  assert.doesNotMatch(protectedCss,/--index-games-gradient|\.card--games|\.home-panel--play/);
+  assert.match(protectedJs,/addStylesheet\('\/sitewide\/css\/baseline-protected-access\.css[\s\S]*?true\);/);
 });
 
 test('all eight Games overview images are versioned and carry G01 artwork',async()=>{
