@@ -76,7 +76,7 @@
   function floatRows(){
     return FLOAT_DISPLAY_KEYS.map(function(key){
       const item = DENOMINATION_BY_KEY[key];
-      const aim = key === 'gbp5' ? 'Maximum 6' : (key === 'gbp1' ? 'Maximum 55' : 'Aim for 15');
+      const aim = key === 'gbp5' ? '6 (Max)' : (key === 'gbp1' ? '55 (Max)' : '15>');
       return [
         '<tr data-float-row="'+key+'">',
         '  <th scope="row">'+item.label+'</th>',
