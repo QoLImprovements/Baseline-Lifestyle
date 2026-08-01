@@ -24,20 +24,37 @@ if($accessUntil <= time()){
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Charity Shop Guidance | Baseline Lifestyle</title>
+  <meta name="theme-color" content="#6f1218">
+  <style>html[data-app="charity-shop"],body[data-app="charity-shop"]{margin:0;min-height:100%;color:#0c2232;background:linear-gradient(90deg,#6f1218 0%,#861920 12%,#9f2426 25%,#b43724 38%,#c44f1f 50%,#b43724 62%,#9f2426 75%,#861920 88%,#6f1218 100%);}</style>
   <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">
   <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque">
   <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_INFO_POPOVER_20260706_2">
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607">
   <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop.css?v=CHARITY_GUIDANCE_20260728_2">
+  <link rel="stylesheet" href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-protected-access-style="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-protected-key-placement="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-baseline-ui-fixes="true">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260801_1" data-charity-complete-theme="true">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260801_1" data-charity-cashing-corrections="true">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_FINAL_COHERENCE_20260801_1">
 </head>
 <body data-app="charity-shop" data-page="charity-shop-guidance">
   <div class="bl-homebar" role="navigation" aria-label="Charity shop guidance navigation">
     <div class="bl-homebar-inner">
-      <div class="charity-homebar-actions">
-        <span class="charity-access-label" aria-label="Protected website section">Protected section</span>
-        <button class="bl-mini-btn" id="charityLockBtn" type="button">Lock &amp; return home</button>
+      <div class="bl-pages-dd" data-protected-current-section="charity-shop">
+        <button class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button" aria-haspopup="menu" aria-expanded="false" aria-label="Charity Shop, locked site"><span class="bl-protected-site-label">Charity Shop</span><span class="bl-protected-site-key" aria-hidden="true"></span><span class="bl-protected-site-caret" aria-hidden="true">&#9662;</span></button>
+        <div class="bl-pages-menu" role="menu" hidden>
+          <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Natural Skincare</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>
+        </div>
       </div>
+      <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
     </div>
   </div>
 
@@ -58,13 +75,15 @@ if($accessUntil <= time()){
     <main class="wrap charity-wrap">
       <section class="section charity-main-section active" id="operations" role="tabpanel" aria-labelledby="charityMainOperations" tabindex="0">
         <nav class="charity-subtabs" role="tablist" aria-label="Shop operations guidance">
-          <button class="charity-subtab" id="operationsOverviewTab" type="button" role="tab" aria-selected="true" aria-controls="operations-overview" data-charity-subtarget="overview">Overview</button>
+          <button class="charity-subtab" id="operationsOverviewTab" type="button" role="tab" aria-selected="true" aria-controls="operations-overview" data-charity-subtarget="overview">Systems</button>
           <button class="charity-subtab" id="operationsHangingTab" type="button" role="tab" aria-selected="false" aria-controls="operations-hanging" data-charity-subtarget="hanging">Hang It Right</button>
           <button class="charity-subtab" id="operationsCubingTab" type="button" role="tab" aria-selected="false" aria-controls="operations-cubing" data-charity-subtarget="cubing">Cube It Right</button>
+          <button class="charity-subtab" id="operationsCashingTab" type="button" role="tab" aria-selected="false" aria-controls="operations-cashing" data-charity-subtarget="cashing" tabindex="-1">Cashing Up</button>
         </nav>
 
         <div class="charity-subpanel active" id="operations-overview" role="tabpanel" aria-labelledby="operationsOverviewTab" tabindex="0">
           <div class="charity-grid charity-grid--overview">
+            <figure class="card charity-card charity-card--wide charity-artwork-card" data-charity-artwork="back-room-consequences"><img src="/systems/charity-shop/artwork.php?asset=back-room-consequences&amp;v=20260730_1" alt="Back-room choices and shop-floor consequences charity shop poster" loading="eager" decoding="async"><figcaption>Back-room choices. Shop-floor consequences.</figcaption></figure>
             <article class="card charity-card charity-card--wide charity-statement">
               <p class="charity-kicker">Back-room choices. Shop-floor consequences.</p>
               <h2>When agreed systems are not followed, the consequences do not disappear.</h2>
@@ -190,6 +209,7 @@ if($accessUntil <= time()){
             </article>
           </div>
         </div>
+        <div class="charity-subpanel charity-cashing-panel" id="operations-cashing" role="tabpanel" aria-labelledby="operationsCashingTab" tabindex="-1" hidden></div>
       </section>
 
       <section class="section charity-main-section" id="sizes" role="tabpanel" aria-labelledby="charityMainSizes" tabindex="0" hidden>
@@ -395,7 +415,9 @@ if($accessUntil <= time()){
     </main>
   </div>
 
-  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_CHARITY_GUIDANCE_20260728_2"></script>
-  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_SHOP_20260731_10"></script>
+  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_1"></script>
+  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_CHARITY_GUIDANCE_20260801_1"></script>
+  <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
+  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_SHOP_20260801_1"></script>
 </body>
 </html>

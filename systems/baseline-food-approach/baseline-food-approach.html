@@ -14,6 +14,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta content="no-cache" http-equiv="Pragma"/>
 <meta content="0" http-equiv="Expires"/>
 <title>Baseline Food Approach</title>
+<meta name="theme-color" content="#b11226"/>
+<style>html[data-app="food"],body[data-app="food"]{margin:0;min-height:100%;color:#1b0b09;background:linear-gradient(90deg,#b11226 0%,#f08a24 18%,#ffb000 34%,#ffd26a 50%,#ffb000 66%,#f08a24 82%,#b11226 100%);}</style>
 <meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-food-approach/system">
 <meta property="og:type" content="website">
@@ -27,6 +29,10 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-recipes.css?v=EDIT_VERSION_20260607_MOBILE_BATCH_APPLY_INLINE_LOCK_V2" rel="stylesheet"/>
 <link href="/systems/baseline-food-approach/css/baseline-diet-log.css?v=20260602_1347dropdownportalopaque" rel="stylesheet"/>
 <link href="/systems/baseline-food-approach/css/baseline-food-approach.css?v=FOOD_CANONICAL_CSS_20260712" rel="stylesheet"/>
+<link href="/systems/baseline-food-approach/css/baseline-food-main.css?v=FOOD_CANONICAL_CSS_20260712" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
+<link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
+<link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <!-- Sitewide structural rules (no colours) -->
 <!-- Shared system components -->
 <!-- Recipes UI (cards + multiplier + thickness controls) -->
@@ -37,7 +43,6 @@ These Markdown rules are a human reference point, not live runtime config.
 </head>
 <body data-app="food">
 <!-- BaselineLifestyle: global home link -->
-<link href="/systems/baseline-food-approach/css/baseline-food-main.css?v=FOOD_CANONICAL_CSS_20260712" rel="stylesheet"/>
 <div aria-label="BaselineLifestyle" class="bl-homebar" role="navigation">
 <div class="bl-homebar-inner">
 <div class="bl-pages-dd">
@@ -52,6 +57,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <a class="bl-pages-link" href="/baseline-games-hub/games-hub" role="menuitem">Baseline Games Hub</a>
 </div>
 </div>
+<button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
 </div>
 </div>
 <div class="bl-scroll">
@@ -1087,6 +1093,7 @@ Recommended structure:
 </footer>
 </div>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=20260527gradienttruth"></script>
+<script src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_1"></script>
 <script src="/sitewide/js/baseline-shared.js?v=EDIT_VERSION_20260607_CLEAN_RECIPE_PATH_ROUTES"></script>
 <script defer="" src="/systems/baseline-food-approach/js/baseline-diet-food-library.js?v=COMPLETE_OFFICIAL_FOOD_LIBRARY_20260617"></script>
 <script defer="" src="/systems/baseline-food-approach/js/baseline-diet-log.js?v=DIET_LIBRARY_READY_WAIT_20260617"></script>

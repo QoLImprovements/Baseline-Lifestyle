@@ -1,69 +1,21 @@
 (function(){
   'use strict';
 
-  const BUILD = 'CHARITY_SHOP_20260731_10';
+  const BUILD = 'CHARITY_SHOP_20260801_1';
   const ARTWORK_BUILD = '20260730_4';
-  const FLOAT_TARGET_PENCE = 10000;
-  const SMALL_COIN_CAP = 20;
-
-  function loadCharityCorrections(){
-    let link = document.querySelector('link[data-charity-cashing-corrections]');
-    if(!link){
-      link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.dataset.charityCashingCorrections = 'true';
-    }
-    link.href = '/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=' + BUILD;
-    document.head.appendChild(link);
+  const FLOAT_ENGINE = window.BASELINE_CHARITY_FLOAT;
+  if(!FLOAT_ENGINE){
+    throw new Error('The charity float engine did not load.');
   }
-
-  function loadApprovedSharedUi(){
-    if(window.__BASELINE_PROTECTED_ACCESS__){
-      loadCharityCorrections();
-      return;
-    }
-    if(document.querySelector('script[src*="/sitewide/js/baseline-protected-access.js"]')){
-      loadCharityCorrections();
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260731_12';
-    script.async = false;
-    script.dataset.protectedAccessLoader = 'charity-shop';
-    script.addEventListener('load', loadCharityCorrections, {once:true});
-    document.head.appendChild(script);
-  }
-
-  function loadCompleteCharityTheme(){
-    if(document.querySelector('link[data-charity-complete-theme]')) return;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260730_2';
-    link.dataset.charityCompleteTheme = 'true';
-    document.head.appendChild(link);
-  }
-
-  const DENOMINATIONS = Object.freeze([
-    {key:'gbp50', label:'£50', pence:5000},
-    {key:'gbp20', label:'£20', pence:2000},
-    {key:'gbp10', label:'£10', pence:1000},
-    {key:'gbp5', label:'£5', pence:500},
-    {key:'gbp2', label:'£2', pence:200},
-    {key:'gbp1', label:'£1', pence:100},
-    {key:'p50', label:'50p', pence:50},
-    {key:'p20', label:'20p', pence:20},
-    {key:'p10', label:'10p', pence:10},
-    {key:'p5', label:'5p', pence:5},
-    {key:'p2', label:'2p', pence:2},
-    {key:'p1', label:'1p', pence:1}
-  ]);
+  const FLOAT_TARGET_PENCE = FLOAT_ENGINE.FLOAT_TARGET_PENCE;
+  const DENOMINATIONS = FLOAT_ENGINE.DENOMINATIONS;
 
   const DENOMINATION_BY_KEY = Object.freeze(DENOMINATIONS.reduce(function(map,item){
     map[item.key] = item;
     return map;
   },Object.create(null)));
 
-  const SMALL_COIN_KEYS = Object.freeze(['p50','p20','p10','p5','p2','p1']);
+  const SMALL_COIN_KEYS = FLOAT_ENGINE.SMALL_COIN_KEYS;
   const SMALL_COIN_KEY_SET = new Set(SMALL_COIN_KEYS);
 
   const BANK_BOOK_GROUPS = Object.freeze([
@@ -78,31 +30,7 @@
     {label:'2p + 1p', keys:['p2','p1']}
   ]);
 
-  const FLOAT_MINIMUM_TARGETS = Object.freeze({
-    gbp5:6,
-    gbp1:55,
-    p50:15,
-    p20:15,
-    p10:15,
-    p5:15,
-    p2:15,
-    p1:15
-  });
-
-  /* Preferred £100 mix. Every coin below £1 stays between 15 and the cap of 20. */
-  const FLOAT_IDEAL_TARGETS = Object.freeze({
-    gbp5:6,
-    gbp1:55,
-    p50:15,
-    p20:20,
-    p10:20,
-    p5:20,
-    p2:17,
-    p1:16
-  });
-
-  const FLOAT_DISPLAY_KEYS = Object.freeze(['gbp5','gbp1','p50','p20','p10','p5','p2','p1']);
-  const FLOAT_FILL_PRIORITY = Object.freeze(['p20','p10','p5','p50','p2','p1','gbp1','gbp2','gbp5','gbp10','gbp20','gbp50']);
+  const FLOAT_DISPLAY_KEYS = FLOAT_ENGINE.FLOAT_DISPLAY_KEYS;
 
   function money(pence){
     return new Intl.NumberFormat('en-GB',{
@@ -119,109 +47,11 @@
   }
 
   function emptyCounts(){
-    return DENOMINATIONS.reduce(function(counts,item){
-      counts[item.key] = 0;
-      return counts;
-    },Object.create(null));
-  }
-
-  function valueOfCounts(counts){
-    return DENOMINATIONS.reduce(function(total,item){
-      return total + ((counts[item.key] || 0) * item.pence);
-    },0);
-  }
-
-  function cappedAvailableCounts(available){
-    const capped = emptyCounts();
-    DENOMINATIONS.forEach(function(item){
-      const count = Math.max(0,Math.floor(Number(available[item.key]) || 0));
-      capped[item.key] = SMALL_COIN_KEY_SET.has(item.key) ? Math.min(SMALL_COIN_CAP,count) : count;
-    });
-    return capped;
-  }
-
-  function boundedBestAllocation(available,target,priority){
-    const safeTarget = Math.max(0,Math.floor(Number(target) || 0));
-    const states = new Array(safeTarget + 1);
-    states[0] = emptyCounts();
-
-    priority.forEach(function(key){
-      const item = DENOMINATION_BY_KEY[key];
-      if(!item) return;
-      let remainingCount = Math.min(
-        Math.max(0,Math.floor(Number(available[key]) || 0)),
-        Math.floor(safeTarget / item.pence)
-      );
-      let bundle = 1;
-      while(remainingCount > 0){
-        const take = Math.min(bundle,remainingCount);
-        const bundleValue = take * item.pence;
-        for(let amount = safeTarget - bundleValue; amount >= 0; amount -= 1){
-          if(!states[amount] || states[amount + bundleValue]) continue;
-          const next = Object.assign(emptyCounts(),states[amount]);
-          next[key] += take;
-          states[amount + bundleValue] = next;
-        }
-        remainingCount -= take;
-        bundle *= 2;
-      }
-    });
-
-    for(let amount = safeTarget; amount >= 0; amount -= 1){
-      if(states[amount]) return {value:amount,counts:states[amount]};
-    }
-    return {value:0,counts:emptyCounts()};
-  }
-
-  function preferredFloatAllocation(available){
-    const cappedAvailable = cappedAvailableCounts(available);
-    const allocation = emptyCounts();
-    const remaining = emptyCounts();
-
-    DENOMINATIONS.forEach(function(item){
-      const availableCount = cappedAvailable[item.key] || 0;
-      const targetCount = Math.max(0,Math.floor(Number(FLOAT_IDEAL_TARGETS[item.key]) || 0));
-      const keep = Math.min(availableCount,targetCount);
-      allocation[item.key] = keep;
-      remaining[item.key] = availableCount - keep;
-    });
-
-    const baseValue = valueOfCounts(allocation);
-    const fill = boundedBestAllocation(remaining,FLOAT_TARGET_PENCE - baseValue,FLOAT_FILL_PRIORITY);
-    DENOMINATIONS.forEach(function(item){
-      allocation[item.key] += fill.counts[item.key] || 0;
-    });
-    return allocation;
+    return FLOAT_ENGINE.emptyCounts();
   }
 
   function makeFloatAllocation(available){
-    const cappedAvailable = cappedAvailableCounts(available);
-    let allocation = preferredFloatAllocation(cappedAvailable);
-    let value = valueOfCounts(allocation);
-
-    if(value < FLOAT_TARGET_PENCE && valueOfCounts(cappedAvailable) >= FLOAT_TARGET_PENCE){
-      const fallback = boundedBestAllocation(cappedAvailable,FLOAT_TARGET_PENCE,FLOAT_FILL_PRIORITY);
-      if(fallback.value > value){
-        allocation = fallback.counts;
-        value = fallback.value;
-      }
-    }
-
-    SMALL_COIN_KEYS.forEach(function(key){
-      allocation[key] = Math.min(SMALL_COIN_CAP,allocation[key] || 0);
-    });
-    value = valueOfCounts(allocation);
-
-    const minimumsMet = Object.keys(FLOAT_MINIMUM_TARGETS).every(function(key){
-      return (allocation[key] || 0) >= FLOAT_MINIMUM_TARGETS[key];
-    });
-    const idealMet = Object.keys(FLOAT_IDEAL_TARGETS).every(function(key){
-      return (allocation[key] || 0) === FLOAT_IDEAL_TARGETS[key];
-    }) && ['gbp50','gbp20','gbp10','gbp2'].every(function(key){
-      return (allocation[key] || 0) === 0;
-    });
-
-    return {counts:allocation,value:value,minimumsMet:minimumsMet,idealMet:idealMet};
+    return FLOAT_ENGINE.makeFloatAllocation(available);
   }
 
   function cashRows(){
@@ -246,7 +76,7 @@
   function floatRows(){
     return FLOAT_DISPLAY_KEYS.map(function(key){
       const item = DENOMINATION_BY_KEY[key];
-      const aim = SMALL_COIN_KEY_SET.has(key) ? '15–20' : String(FLOAT_MINIMUM_TARGETS[key] || 0);
+      const aim = key === 'gbp5' ? 'Maximum 6' : (key === 'gbp1' ? 'Maximum 55' : 'Aim for 15');
       return [
         '<tr data-float-row="'+key+'">',
         '  <th scope="row">'+item.label+'</th>',
@@ -260,7 +90,7 @@
 
   function installCashingUp(){
     const operations = document.getElementById('operations');
-    if(!operations || document.getElementById('operations-cashing')) return;
+    if(!operations) return;
 
     const tabs = operations.querySelector('.charity-subtabs');
     if(tabs && !tabs.querySelector('[data-charity-subtarget="cashing"]')){
@@ -277,13 +107,17 @@
       tabs.appendChild(tab);
     }
 
-    const panel = document.createElement('div');
-    panel.id = 'operations-cashing';
-    panel.className = 'charity-subpanel charity-cashing-panel';
-    panel.hidden = true;
-    panel.tabIndex = -1;
-    panel.setAttribute('role','tabpanel');
-    panel.innerHTML = [
+    let panel = document.getElementById('operations-cashing');
+    if(!panel){
+      panel = document.createElement('div');
+      panel.id = 'operations-cashing';
+      panel.className = 'charity-subpanel charity-cashing-panel';
+      panel.hidden = true;
+      panel.tabIndex = -1;
+      panel.setAttribute('role','tabpanel');
+      operations.appendChild(panel);
+    }
+    if(!panel.querySelector('.charity-cashup')) panel.innerHTML = [
       '<div class="charity-cashup">',
       '  <header class="card charity-card charity-card--wide charity-cashup-heading">',
       '    <p class="charity-kicker">COUNT | MAKE FLOAT | CASH TO BANK</p>',
@@ -329,7 +163,8 @@
       '  </div>',
       '</div>'
     ].join('');
-    operations.appendChild(panel);
+    if(panel.dataset.cashingBound === 'true') return;
+    panel.dataset.cashingBound = 'true';
 
     const inputs = Array.from(panel.querySelectorAll('.charity-cash-count'));
     const totalOutput = panel.querySelector('#charityCashTotal');
@@ -374,29 +209,33 @@
       cashToBankOutput.textContent = money(cashToBank);
       bankBookTotalOutput.textContent = money(cashToBank);
 
-      if(floatPlan.value === FLOAT_TARGET_PENCE && floatPlan.idealMet){
-        floatStatus.textContent = 'Preferred £100 float ready.';
-        floatStatus.dataset.state = 'ready';
-      }else if(floatPlan.value === FLOAT_TARGET_PENCE && floatPlan.minimumsMet){
-        floatStatus.textContent = '£100 float made. The change mix was adjusted to the cash available.';
+      if(floatPlan.exact && floatPlan.exceptionalVariance){
+        floatStatus.textContent = '£100 float ready. Extra available change was used because another small denomination was short.';
         floatStatus.dataset.state = 'adjusted';
-      }else if(floatPlan.value === FLOAT_TARGET_PENCE){
-        floatStatus.textContent = '£100 float made. One or more preferred denomination targets were unavailable.';
-        floatStatus.dataset.state = 'fallback';
+      }else if(floatPlan.exact && floatPlan.shortSmallDenominations.length){
+        floatStatus.textContent = '£100 float ready. The mix was adjusted because some small change was unavailable.';
+        floatStatus.dataset.state = 'adjusted';
+      }else if(floatPlan.exact){
+        floatStatus.textContent = '£100 float ready.';
+        floatStatus.dataset.state = 'ready';
       }else{
-        floatStatus.textContent = 'Float short by ' + money(FLOAT_TARGET_PENCE - floatPlan.value) + '.';
+        const reason = floatPlan.problem === 'cash_shortage'
+          ? 'There is not enough cash in the till.'
+          : (floatPlan.problem === 'rule_shortage'
+            ? 'The strict £5-note and £1-coin limits prevent a compliant £100 float.'
+            : 'The available denominations cannot make an exact compliant £100 float.');
+        floatStatus.textContent = reason + ' Float short by ' + money(floatPlan.shortage) + '.';
         floatStatus.dataset.state = 'short';
       }
 
-      const fallbackUsed = DENOMINATIONS.filter(function(item){
-        const ideal = FLOAT_IDEAL_TARGETS[item.key] || 0;
-        return (floatPlan.counts[item.key] || 0) > ideal;
+      const fallbackUsed = SMALL_COIN_KEYS.map(function(key){ return DENOMINATION_BY_KEY[key]; }).filter(function(item){
+        return (floatPlan.counts[item.key] || 0) > FLOAT_ENGINE.NORMAL_SMALL_COIN_LIMIT;
       });
-      if(fallbackUsed.length){
+      if(floatPlan.exceptionalVariance && fallbackUsed.length){
         floatFallback.hidden = false;
-        floatFallback.textContent = 'Fallback used: ' + fallbackUsed.map(function(item){
+        floatFallback.textContent = 'Availability adjustment: keep ' + fallbackUsed.map(function(item){
           return (floatPlan.counts[item.key] || 0) + ' × ' + item.label;
-        }).join(', ') + '.';
+        }).join(', ') + ' so the float reaches exactly £100.';
       }else{
         floatFallback.hidden = true;
         floatFallback.textContent = '';
@@ -465,9 +304,6 @@
     });
   }
 
-  loadApprovedSharedUi();
-  loadCompleteCharityTheme();
-  loadCharityCorrections();
   installCashingUp();
   installStepArtwork();
 

@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260731_12';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260801_1';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
@@ -171,30 +171,35 @@
     const homebarInner = document.querySelector('.bl-homebar-inner');
     const topHeader = document.querySelector('.bl-top-header');
     const host = homebarInner || topHeader;
-    if(!host || document.getElementById('blProtectedKey')) return null;
+    if(!host) return null;
 
-    const button = document.createElement('button');
-    button.id = 'blProtectedKey';
-    button.className = 'bl-protected-key';
-    button.type = 'button';
-    button.setAttribute('aria-haspopup','dialog');
-    button.setAttribute('aria-controls','blProtectedAccessOverlay');
-    button.setAttribute('aria-expanded','false');
-    button.setAttribute('aria-label','Open protected sections');
-    button.title = 'Protected sections';
-    button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
-    if(pagesDropdown && pagesDropdown.parentNode === host) pagesDropdown.insertAdjacentElement('afterend',button);
-    else{
-      const rightControls = host.querySelector('.bl-homebar-right');
-      if(rightControls) host.insertBefore(button,rightControls);
-      else host.insertBefore(button,host.firstChild);
+    let button = document.getElementById('blProtectedKey');
+    if(!button){
+      button = document.createElement('button');
+      button.id = 'blProtectedKey';
+      button.className = 'bl-protected-key';
+      button.type = 'button';
+      button.setAttribute('aria-haspopup','dialog');
+      button.setAttribute('aria-controls','blProtectedAccessOverlay');
+      button.setAttribute('aria-expanded','false');
+      button.setAttribute('aria-label','Open protected sections');
+      button.title = 'Protected sections';
+      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
+      if(pagesDropdown && pagesDropdown.parentNode === host) pagesDropdown.insertAdjacentElement('afterend',button);
+      else{
+        const rightControls = host.querySelector('.bl-homebar-right');
+        if(rightControls) host.insertBefore(button,rightControls);
+        else host.insertBefore(button,host.firstChild);
+      }
     }
 
-    const overlay = document.createElement('div');
-    overlay.id = 'blProtectedAccessOverlay';
-    overlay.className = 'bl-protected-access-overlay';
-    overlay.hidden = true;
-    overlay.innerHTML = [
+    let overlay = document.getElementById('blProtectedAccessOverlay');
+    if(!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'blProtectedAccessOverlay';
+      overlay.className = 'bl-protected-access-overlay';
+      overlay.hidden = true;
+      overlay.innerHTML = [
       '<section class="bl-protected-access-dialog" role="dialog" aria-modal="true" aria-labelledby="blProtectedAccessTitle" aria-describedby="blProtectedAccessCopy">',
       '  <div class="bl-protected-access-head">',
       '    <div><p class="bl-protected-access-kicker">Protected sections</p><h2 id="blProtectedAccessTitle">Enter Digital Code</h2></div>',
@@ -210,8 +215,9 @@
       '    <p class="bl-protected-access-status" id="blProtectedAccessStatus" role="status" aria-live="polite"></p>',
       '  </form>',
       '</section>'
-    ].join('');
-    document.body.appendChild(overlay);
+      ].join('');
+      document.body.appendChild(overlay);
+    }
     return {button,overlay};
   }
 

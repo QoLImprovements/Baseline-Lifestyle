@@ -10,6 +10,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Baseline Games Hub</title>
+<meta name="theme-color" content="#153d44"/>
+<style>html[data-app="games"],body[data-app="games"]{margin:0;min-height:100%;color:#fff4df;background:linear-gradient(90deg,#153d44 0%,#235f63 13%,#4f8476 26%,#cc694b 39%,#e99455 47%,#f4c56c 50%,#e99455 53%,#cc694b 61%,#4f8476 74%,#235f63 87%,#153d44 100%);}</style>
 <meta name="description" content="Browser-based focus, number, word, darts, and adventure training games.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-games-hub/games-hub">
 <meta property="og:type" content="website">
@@ -38,6 +40,10 @@ These Markdown rules are a human reference point, not live runtime config.
 <link data-current-realm-style="ninja-training-current" href="/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css?v=REALM_NO_LEGACY_ART_COMPLETE_20260628" rel="stylesheet"/>
 <link data-realm-runtime-authority="GAMES_HUB_BADMINTON_INITIAL_20260707_1" href="/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css?v=GAMES_HUB_BADMINTON_INITIAL_20260707_1" rel="stylesheet"/>
 <link data-current-realm-style="realm-integration-current" href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-integration.css?v=REALM_NO_LEGACY_ART_COMPLETE_20260628" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
+<link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
+<link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
+<link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=GAMES_HUB_THEME_20260801_1" rel="stylesheet" data-games-hub-theme="true"/>
 </head>
 <body data-app="games" data-page="baseline-games-hub">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
@@ -54,6 +60,7 @@ These Markdown rules are a human reference point, not live runtime config.
     <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub" aria-current="page">Baseline Games Hub</a>
   </div>
 </div>
+  <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
   </div>
 </div>
 <div class="bl-scroll">
@@ -494,8 +501,9 @@ These Markdown rules are a human reference point, not live runtime config.
 </section>
 </main>
 </div>
+<script src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_1"></script>
 <script src="/sitewide/js/baseline-shared.js?v=SITEWIDE_INFO_POPOVER_20260706_2"></script>
-<script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=GAMES_HUB_CORE_DECOUPLED_20260629"></script>
+<script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=GAMES_HUB_STORAGE_20260801_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=GAMES_HUB_BADMINTON_INITIAL_20260707_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>

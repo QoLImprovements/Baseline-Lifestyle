@@ -10,6 +10,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Baseline Massage</title>
+<meta name="theme-color" content="#6f4e36"/>
+<style>html[data-app="massage"],body[data-app="massage"]{margin:0;min-height:100%;color:#24140b;background:linear-gradient(90deg,#6f4e36 0%,#805d42 18%,#916d4f 36%,#a58363 50%,#916d4f 64%,#805d42 82%,#6f4e36 100%);}</style>
 <meta name="description" content="Explore massage types and build a practical, personalised massage plan.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-massage/system">
 <meta property="og:type" content="website">
@@ -21,8 +23,11 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607" rel="stylesheet"/>
 <link href="/systems/baseline-massage/css/baseline-massage.css?v=MASSAGE_CANONICAL_CSS_20260712_ALPHABETICAL_DROPDOWNS" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
+<link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
+<link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
 </head>
-<body data-app="massage" data-page="baseline-massage">
+<body data-app="massage" data-page="baseline-massage" style="background-color:#6f4e36">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
   <div class="bl-homebar-inner">
     <div class="bl-pages-dd">
@@ -37,6 +42,7 @@ These Markdown rules are a human reference point, not live runtime config.
         <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>
       </div>
     </div>
+    <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
   </div>
 </div>
 <div class="bl-scroll">
@@ -404,6 +410,7 @@ These Markdown rules are a human reference point, not live runtime config.
 </main>
 
 </div>
+<script src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_1"></script>
 <script src="/sitewide/js/baseline-shared.js?v=20260712_LOMI_FULL_SITE"></script>
 <script>
 

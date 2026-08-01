@@ -5324,6 +5324,19 @@ function buildControls(recipeEl){
       const btn = q('.bl-pages-btn, #bl-pages-toggle', dd);
       const menu = q('.bl-pages-menu', dd);
       if(!btn || !menu) return;
+      if(!dd.hasAttribute('data-protected-current-section')){
+        const exactLabel = currentLabelFromMenu(menu);
+        btn.replaceChildren();
+        const label = document.createElement('span');
+        label.className = 'bl-pages-label';
+        label.textContent = exactLabel;
+        const caret = document.createElement('span');
+        caret.className = 'bl-pages-caret';
+        caret.setAttribute('aria-hidden','true');
+        caret.textContent = '\u25be';
+        btn.append(label,caret);
+        btn.setAttribute('aria-label',exactLabel);
+      }
       dd.dataset.blPagesBound = '1';
       btn.setAttribute('aria-haspopup','menu');
       btn.setAttribute('aria-expanded', menu.hidden ? 'false' : 'true');

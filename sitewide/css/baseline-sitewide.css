@@ -638,11 +638,11 @@ body[data-app="fitness"]{
   --bl-flyout-control-bg-color: #1d1016;
 }
 body[data-app="games"]{
-  --bl-flyout-bg-image: linear-gradient(90deg,#253B5F 0%,#4E6A95 22%,#86A0C0 45%,#B8C8E0 50%,#86A0C0 55%,#4E6A95 78%,#253B5F 100%);
-  --bl-flyout-bg-color: #3E5B84;
-  --bl-flyout-control-bg-image: linear-gradient(135deg,#8FA6C7 0%,#6F88AD 58%,#4E668D 100%);
-  --bl-flyout-control-bg-color: #6F88AD;
-  --bl-flyout-ink: #101827;
+  --bl-flyout-bg-image: linear-gradient(90deg,#153d44 0%,#235f63 22%,#cc694b 45%,#f4c56c 50%,#cc694b 55%,#235f63 78%,#153d44 100%);
+  --bl-flyout-bg-color: #235f63;
+  --bl-flyout-control-bg-image: linear-gradient(135deg,#f4c56c 0%,#e99455 58%,#cc694b 100%);
+  --bl-flyout-control-bg-color: #e99455;
+  --bl-flyout-ink: #173438;
 }
 .bl-flyout .card{
   background-image: var(--bl-flyout-bg-image) !important;
@@ -1585,16 +1585,16 @@ body[data-app="badminton"]{
   --bl-slider-border-solid:#2c123f;
 }
 body[data-app="games"]{
-  --bl-surface-card-solid:#8EA4C2;
-  --bl-surface-recipe-card-solid:#9FB2CE;
-  --bl-surface-panel-solid:#7F96B9;
-  --bl-surface-control-solid:#6F88AD;
-  --bl-surface-input-solid:#B9C9E2;
-  --bl-surface-active-solid:#5C739B;
-  --bl-surface-ink:#101827;
-  --bl-slider-track-solid:#2C4368;
-  --bl-slider-thumb-solid:#B9C9E2;
-  --bl-slider-border-solid:#203552;
+  --bl-surface-card-solid:#e99455;
+  --bl-surface-recipe-card-solid:#e99455;
+  --bl-surface-panel-solid:#cc694b;
+  --bl-surface-control-solid:#e99455;
+  --bl-surface-input-solid:#f4c56c;
+  --bl-surface-active-solid:#cc694b;
+  --bl-surface-ink:#173438;
+  --bl-slider-track-solid:#153d44;
+  --bl-slider-thumb-solid:#f4c56c;
+  --bl-slider-border-solid:#173438;
 }
 
 /* Index header Account button: deliberately grey-gradient, tied to the grey header, with clear white text. */
@@ -1907,9 +1907,9 @@ body[data-app="massage"]{
   --bl-flyout-field-placeholder:#472d1d;
 }
 body[data-app="games"]{
-  --bl-flyout-field-bg:#B9C9E2;
-  --bl-flyout-field-ink:#101827;
-  --bl-flyout-field-placeholder:#263957;
+  --bl-flyout-field-bg:#f4c56c;
+  --bl-flyout-field-ink:#173438;
+  --bl-flyout-field-placeholder:#235f63;
 }
 
 #bl-auth-flyout .bl-auth-view-switch{
@@ -2497,34 +2497,34 @@ html body[data-app] .bl-select-menu *{
    Dominant source of truth for Games Hub Account + Binaural flyouts.
    These flyouts are shared banner UI, so their colour authority belongs here, not in a page rescue layer. */
 body[data-app="games"]{
-  --bl-flyout-bg-image:linear-gradient(90deg,#253B5F 0%,#4E6A95 22%,#86A0C0 45%,#B8C8E0 50%,#86A0C0 55%,#4E6A95 78%,#253B5F 100%)!important;
-  --bl-flyout-bg-color:#3E5B84!important;
-  --bl-flyout-control-bg-image:linear-gradient(135deg,#8FA6C7 0%,#6F88AD 58%,#4E668D 100%)!important;
-  --bl-flyout-control-bg-color:#6F88AD!important;
-  --bl-flyout-field-bg:#B9C9E2!important;
-  --bl-flyout-field-ink:#101827!important;
-  --bl-flyout-field-placeholder:#263957!important;
-  --bl-flyout-ink:#101827!important;
-  --bl-slider-track-solid:#2C4368!important;
-  --bl-slider-thumb-solid:#B9C9E2!important;
-  --bl-slider-border-solid:#203552!important;
-  --bl-surface-card-solid:#8EA4C2!important;
-  --bl-surface-panel-solid:#7F96B9!important;
-  --bl-surface-control-solid:#6F88AD!important;
-  --bl-surface-input-solid:#B9C9E2!important;
-  --bl-surface-active-solid:#5C739B!important;
-  --bl-surface-ink:#101827!important;
-  --bl-dropdown-panel-solid:#7F96B9!important;
-  --bl-dropdown-control-solid:#B9C9E2!important;
-  --bl-dropdown-active-solid:#8FA6C7!important;
-  --bl-dropdown-ink:#101827!important;
+  --bl-flyout-bg-image:linear-gradient(90deg,#153d44 0%,#235f63 22%,#cc694b 45%,#f4c56c 50%,#cc694b 55%,#235f63 78%,#153d44 100%)!important;
+  --bl-flyout-bg-color:#235f63!important;
+  --bl-flyout-control-bg-image:linear-gradient(135deg,#f4c56c 0%,#e99455 58%,#cc694b 100%)!important;
+  --bl-flyout-control-bg-color:#e99455!important;
+  --bl-flyout-field-bg:#f4c56c!important;
+  --bl-flyout-field-ink:#173438!important;
+  --bl-flyout-field-placeholder:#235f63!important;
+  --bl-flyout-ink:#173438!important;
+  --bl-slider-track-solid:#153d44!important;
+  --bl-slider-thumb-solid:#f4c56c!important;
+  --bl-slider-border-solid:#173438!important;
+  --bl-surface-card-solid:#e99455!important;
+  --bl-surface-panel-solid:#cc694b!important;
+  --bl-surface-control-solid:#e99455!important;
+  --bl-surface-input-solid:#f4c56c!important;
+  --bl-surface-active-solid:#cc694b!important;
+  --bl-surface-ink:#173438!important;
+  --bl-dropdown-panel-solid:#cc694b!important;
+  --bl-dropdown-control-solid:#f4c56c!important;
+  --bl-dropdown-active-solid:#f4c56c!important;
+  --bl-dropdown-ink:#173438!important;
 }
 body[data-app="games"] #bl-auth-flyout .card,
 body[data-app="games"] #bl-beats-flyout .card{
   background-image:var(--bl-flyout-bg-image)!important;
   background-color:var(--bl-flyout-bg-color)!important;
-  color:#101827!important;
-  -webkit-text-fill-color:#101827!important;
+  color:#173438!important;
+  -webkit-text-fill-color:#173438!important;
   border-color:rgba(12,24,44,.58)!important;
 }
 body[data-app="games"] #bl-auth-flyout .bl-auth-switch,
@@ -2534,8 +2534,8 @@ body[data-app="games"] #bl-beats-flyout .bl-mini-btn,
 body[data-app="games"] #bl-beats-flyout button{
   background-image:var(--bl-flyout-control-bg-image)!important;
   background-color:var(--bl-flyout-control-bg-color)!important;
-  color:#101827!important;
-  -webkit-text-fill-color:#101827!important;
+  color:#173438!important;
+  -webkit-text-fill-color:#173438!important;
   border-color:rgba(12,24,44,.55)!important;
 }
 body[data-app="games"] #bl-auth-flyout .bl-auth-input-shell,
@@ -2553,9 +2553,9 @@ body[data-app="games"] #bl-beats-flyout .bl-select-btn{
 body[data-app="games"] #bl-auth-flyout input:-webkit-autofill,
 body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:hover,
 body[data-app="games"] #bl-auth-flyout input:-webkit-autofill:focus{
-  -webkit-text-fill-color:#101827!important;
-  box-shadow:0 0 0 1000px #B9C9E2 inset!important;
-  -webkit-box-shadow:0 0 0 1000px #B9C9E2 inset!important;
+  -webkit-text-fill-color:#173438!important;
+  box-shadow:0 0 0 1000px #f4c56c inset!important;
+  -webkit-box-shadow:0 0 0 1000px #f4c56c inset!important;
 }
 /* END BASELINE-GAMES-FLYOUT-BLUE-AUTHORITY */
 
@@ -2666,12 +2666,12 @@ body[data-app="fitness"]{
   --bl-info-accent:#b11226;
 }
 body[data-app="games"]{
-  --bl-info-button-bg:#6f88ad;
-  --bl-info-button-ink:#172033;
-  --bl-info-button-border:#253b5f;
-  --bl-info-panel-bg:#253b5f;
+  --bl-info-button-bg:#e99455;
+  --bl-info-button-ink:#173438;
+  --bl-info-button-border:#153d44;
+  --bl-info-panel-bg:#153d44;
   --bl-info-panel-ink:#f7f0e3;
-  --bl-info-panel-muted:#e4eaf3;
+  --bl-info-panel-muted:#f0dcc0;
   --bl-info-accent:#c4a36d;
 }
 @media (max-width:640px){
@@ -2687,3 +2687,4 @@ body[data-app="games"]{
   .bl-info-popover::before{display:none;}
 }
 @media (prefers-reduced-motion:reduce){.bl-info-button{transition:none;}}
+

@@ -40,11 +40,11 @@
   --bad-orange:#f08b2f;
   --bad-yellow:#ffd76c;
 
-  --games-deep:#3B466E;
-  --games-mid:#68728D;
-  --games-soft:#A6A4A4;
-  --games-tan:#E4D8C4;
-  --games-ink:#182033;
+  --games-deep:#153d44;
+  --games-mid:#235f63;
+  --games-soft:#cc694b;
+  --games-tan:#f4c56c;
+  --games-ink:#fff4df;
 
   --index-card-w:320px;
   --index-card-h:260px;
@@ -404,6 +404,11 @@ body[data-app="home"] .wrap{
 .card--fitness p{ color:rgba(255,255,255,.94); }
 
 .card--games{ background:var(--games-card-bg); color:var(--games-ink); }
+.card--games .card-shell{
+  background:linear-gradient(rgba(21,61,68,.74),rgba(21,61,68,.74)),var(--games-card-bg);
+  color:var(--games-ink);
+}
+.card--games :is(h2,p){color:var(--games-ink);text-shadow:0 1px 2px rgba(8,35,39,.7)}
 
 .view-arrow{
   position:absolute;
@@ -679,6 +684,9 @@ body[data-app="home"] .wrap{
       var(--games-mid) 82%,
       var(--games-deep) 100%);
     color:var(--games-ink);
+  }
+  .play-lane--games > .card .card-shell{
+    background:linear-gradient(rgba(21,61,68,.74),rgba(21,61,68,.74)),linear-gradient(180deg,var(--games-deep) 0%,var(--games-mid) 24%,var(--games-soft) 62%,var(--games-tan) 100%);
   }
 
   .grid > .card.card--food,

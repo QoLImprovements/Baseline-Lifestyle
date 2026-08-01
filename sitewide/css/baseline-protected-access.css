@@ -35,7 +35,7 @@ body[data-app="home"]{
   --protected-key-border:#c8c3bb;
   --protected-key-focus:#ffd26a;
   --index-games-gradient:linear-gradient(90deg,
-    #153d44 0%,#235f63 18%,#4f8476 36%,#b38d58 50%,#4f8476 64%,#235f63 82%,#153d44 100%
+    #153d44 0%,#235f63 13%,#4f8476 26%,#cc694b 39%,#e99455 47%,#f4c56c 50%,#e99455 53%,#cc694b 61%,#4f8476 74%,#235f63 87%,#153d44 100%
   );
 }
 

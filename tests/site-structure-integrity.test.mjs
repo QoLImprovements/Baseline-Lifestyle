@@ -13,6 +13,7 @@ const systemNames = [
   'baseline-massage',
   'baseline-natural-skincare'
 ];
+const ownedSystemNames = [...systemNames,'charity-shop'];
 const ignoredWalkDirectories = new Set(['.git','node_modules','playwright-report','test-results']);
 
 function walk(directory, output = []) {
@@ -26,7 +27,7 @@ function walk(directory, output = []) {
 }
 
 test('runtime systems have one canonical owner and no root shadow folders', () => {
-  const forbiddenRootFolders = ['api','games','css','js','rules','docs','scripts', ...systemNames];
+  const forbiddenRootFolders = ['api','games','css','js','rules','docs','scripts', ...ownedSystemNames];
   for (const shadow of forbiddenRootFolders) {
     assert.equal(fs.existsSync(path.join(root, shadow)), false, `obsolete root folder remains: ${shadow}`);
   }
@@ -36,7 +37,7 @@ test('runtime systems have one canonical owner and no root shadow folders', () =
       .filter((entry) => entry.isDirectory())
       .map((entry) => entry.name)
       .sort(),
-    systemNames
+    ownedSystemNames.sort()
   );
 });
 

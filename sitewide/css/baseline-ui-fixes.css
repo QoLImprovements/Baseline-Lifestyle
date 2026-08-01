@@ -1,7 +1,5 @@
 /* Shared UI corrections — shared components only.
    Charity Shop visual rules are owned by systems/charity-shop/css/. */
-@import url("/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_FINAL_COHERENCE_20260731_8");
-
 /* Binaural panel: wider, compact and without an internal scrollbar. */
 html body[data-app] #bl-beats-flyout.bl-flyout{
   width:min(560px,calc(100vw - 24px))!important;

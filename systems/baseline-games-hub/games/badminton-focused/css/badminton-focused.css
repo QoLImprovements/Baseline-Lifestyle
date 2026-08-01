@@ -3,54 +3,54 @@
 .badminton-focused-panel.is-active{display:block}
 .badminton-focused-panel *{box-sizing:border-box}
 .badminton-focused-panel{
-  --bad-ink:var(--games-ink,#172033);
-  --bad-muted:var(--games-muted,#3e485d);
-  --bad-deep:var(--games-page-deep,#253b5f);
-  --bad-mid:var(--games-page-mid,#577199);
-  --bad-soft:var(--games-page-soft,#8ea4c2);
-  --bad-light:var(--games-page-light,#b8c8e0);
+  --bad-ink:var(--games-ink,#173438);
+  --bad-muted:var(--games-muted,#f0dcc0);
+  --bad-deep:var(--games-page-deep,#153d44);
+  --bad-mid:var(--games-page-mid,#cc694b);
+  --bad-soft:var(--games-page-soft,#e99455);
+  --bad-light:var(--games-page-light,#f4c56c);
   --bad-gold:#d5ad5f;
   --bad-cream:#f3ead4;
-  --bad-border:var(--games-border-strong,rgba(24,32,51,.48));
+  --bad-border:var(--games-border-strong,rgba(23,52,56,.48));
   color:var(--bad-ink)
 }
 .badminton-focused-overview-row{position:relative}
 .badminton-focused-overview-row .game-row{width:100%;padding-right:76px}
 .badminton-focused-overview-row .game-row-info-button{position:absolute;right:16px;top:16px;transform:none;z-index:4}
 .badminton-overview-row{display:grid!important;grid-template-columns:86px minmax(0,1fr) auto!important;align-items:center;gap:18px;text-align:left}
-.badminton-overview-art{width:82px;height:82px;object-fit:cover;border-radius:18px;border:1px solid var(--bad-border);box-shadow:0 12px 24px -14px rgba(12,18,32,.7)}
+.badminton-overview-art{width:82px;height:82px;object-fit:cover;border-radius:18px;border:1px solid var(--bad-border);box-shadow:0 12px 24px -14px rgba(8,35,39,.7)}
 .badminton-overview-row p{margin:.35rem 0 0;max-width:880px}
 .badminton-heading-lockup{display:flex;align-items:center;gap:16px;min-width:0}
 .badminton-heading-lockup h2{margin:0}
 .badminton-heading-lockup p{margin:.3rem 0 0;color:var(--bad-muted)}
-.badminton-header-art{width:92px;height:92px;border-radius:21px;object-fit:cover;border:1px solid var(--bad-border);box-shadow:0 12px 28px -16px rgba(12,18,32,.74)}
+.badminton-header-art{width:92px;height:92px;border-radius:21px;object-fit:cover;border:1px solid var(--bad-border);box-shadow:0 12px 28px -16px rgba(8,35,39,.74)}
 .badminton-focused-layout{display:grid;grid-template-columns:minmax(275px,340px) minmax(0,1fr);gap:18px;align-items:start}
 .badminton-game-selectors{position:sticky;top:16px;display:grid;gap:9px;max-height:76vh;overflow:auto;padding:4px 6px 4px 3px;scrollbar-color:var(--bad-mid) transparent}
 .badminton-selector-wrap{position:relative;min-width:0}
-.badminton-game-selector{width:100%;min-height:86px;padding:11px 51px 11px 67px;border-radius:17px;border:1px solid rgba(24,32,51,.28);background:linear-gradient(135deg,rgba(184,200,224,.92),rgba(142,164,194,.58));color:var(--bad-ink);text-align:left;cursor:pointer;display:grid;align-content:center;gap:5px;position:relative;box-shadow:0 12px 22px -20px rgba(12,18,32,.68);transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease,background .14s ease}
+.badminton-game-selector{width:100%;min-height:86px;padding:11px 51px 11px 67px;border-radius:17px;border:1px solid rgba(23,52,56,.28);background:linear-gradient(135deg,rgba(244,197,108,.92),rgba(233,148,85,.58));color:var(--bad-ink);text-align:left;cursor:pointer;display:grid;align-content:center;gap:5px;position:relative;box-shadow:0 12px 22px -20px rgba(8,35,39,.68);transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease,background .14s ease}
 .badminton-game-selector>span:not(.badminton-selector-icon){font-weight:900;line-height:1.12}
 .badminton-game-selector small{color:var(--bad-muted);font-size:.75rem;line-height:1.22}
-.badminton-game-selector:hover,.badminton-game-selector:focus-visible{transform:translateY(-1px);border-color:var(--bad-border);background:linear-gradient(135deg,rgba(210,221,237,.98),rgba(142,164,194,.82));box-shadow:0 16px 30px -22px rgba(12,18,32,.75);outline:none}
-.badminton-game-selector.is-selected{background:linear-gradient(145deg,rgba(142,164,194,.98),rgba(184,200,224,.82));border-color:rgba(24,32,51,.58);box-shadow:inset 4px 0 0 var(--bad-deep),0 17px 30px -22px rgba(12,18,32,.8)}
-.badminton-selector-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:clamp(40px,4vw,44px);aspect-ratio:1;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,var(--bad-light),var(--bad-soft));border:1px solid rgba(24,32,51,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 9px 17px -12px rgba(12,18,32,.8)}
+.badminton-game-selector:hover,.badminton-game-selector:focus-visible{transform:translateY(-1px);border-color:var(--bad-border);background:linear-gradient(135deg,rgba(244,197,108,.98),rgba(233,148,85,.82));box-shadow:0 16px 30px -22px rgba(8,35,39,.75);outline:none}
+.badminton-game-selector.is-selected{background:linear-gradient(145deg,rgba(233,148,85,.98),rgba(244,197,108,.82));border-color:rgba(23,52,56,.58);box-shadow:inset 4px 0 0 var(--bad-deep),0 17px 30px -22px rgba(8,35,39,.8)}
+.badminton-selector-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:clamp(40px,4vw,44px);aspect-ratio:1;border-radius:13px;display:grid;place-items:center;background:linear-gradient(145deg,var(--bad-light),var(--bad-soft));border:1px solid rgba(23,52,56,.42);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 9px 17px -12px rgba(8,35,39,.8)}
 .badminton-selector-icon svg{display:block;width:72%;height:72%;max-width:100%;max-height:100%;overflow:visible}
 .badminton-selector-icon svg *{vector-effect:non-scaling-stroke}
-.badminton-selector-info{position:absolute!important;right:10px!important;top:10px!important;transform:none!important;z-index:6!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border-radius:50%!important;border:1px solid rgba(24,32,51,.4)!important;background:linear-gradient(145deg,rgba(184,200,224,.98),rgba(142,164,194,.92))!important;color:var(--bad-ink)!important;box-shadow:0 7px 14px -10px rgba(12,18,32,.9)!important;font-family:Georgia,serif!important;font-size:20px!important;line-height:1!important}
-.badminton-selector-info:hover,.badminton-selector-info:focus-visible,.badminton-selector-info[aria-expanded="true"]{background:linear-gradient(145deg,var(--bad-light),var(--bad-soft))!important;outline:2px solid rgba(24,32,51,.28)!important;outline-offset:2px!important}
+.badminton-selector-info{position:absolute!important;right:10px!important;top:10px!important;transform:none!important;z-index:6!important;width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;border-radius:50%!important;border:1px solid rgba(23,52,56,.4)!important;background:linear-gradient(145deg,rgba(244,197,108,.98),rgba(233,148,85,.92))!important;color:var(--bad-ink)!important;box-shadow:0 7px 14px -10px rgba(8,35,39,.9)!important;font-family:Georgia,serif!important;font-size:20px!important;line-height:1!important}
+.badminton-selector-info:hover,.badminton-selector-info:focus-visible,.badminton-selector-info[aria-expanded="true"]{background:linear-gradient(145deg,var(--bad-light),var(--bad-soft))!important;outline:2px solid rgba(23,52,56,.28)!important;outline-offset:2px!important}
 .badminton-game-card{min-width:0;overflow:visible!important}
-.badminton-active-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(24,32,51,.24)}
+.badminton-active-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:14px;border-bottom:1px solid rgba(23,52,56,.24)}
 .badminton-active-header h3{margin:0}
 .badminton-active-header p{margin:.25rem 0 0;color:var(--bad-muted)}
 .badminton-active-actions{justify-content:flex-end;align-items:center}
 .badminton-active-actions .bl-info-button{width:42px;min-width:42px;height:42px;padding:0;border-radius:50%;font-family:Georgia,serif;font-size:24px}
 .badminton-auto-next-toggle[aria-pressed="true"],#badmintonFullscreenBtn[aria-pressed="true"]{background:var(--bad-mid)!important;color:#fff!important;-webkit-text-fill-color:#fff!important}
-.badminton-tier-panel{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);gap:16px;align-items:center;margin-top:14px;padding:13px 14px;border:1px solid rgba(24,32,51,.26);border-radius:16px;background:linear-gradient(135deg,rgba(184,200,224,.72),rgba(142,164,194,.36))}
+.badminton-tier-panel{display:grid;grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);gap:16px;align-items:center;margin-top:14px;padding:13px 14px;border:1px solid rgba(23,52,56,.26);border-radius:16px;background:linear-gradient(135deg,rgba(244,197,108,.72),rgba(233,148,85,.36))}
 .badminton-tier-panel>div:first-child{display:grid;gap:3px}
 .badminton-tier-panel>div:first-child span{font-size:.78rem;color:var(--bad-muted);line-height:1.35}
 .badminton-tier-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.badminton-tier-button{min-height:46px;padding:8px 10px;border-radius:13px;border:1px solid rgba(24,32,51,.3);background:rgba(184,200,224,.75);color:var(--bad-ink);cursor:pointer;font-weight:850;display:grid;gap:1px;text-align:center}
+.badminton-tier-button{min-height:46px;padding:8px 10px;border-radius:13px;border:1px solid rgba(23,52,56,.3);background:rgba(244,197,108,.75);color:var(--bad-ink);cursor:pointer;font-weight:850;display:grid;gap:1px;text-align:center}
 .badminton-tier-button span{font-size:.65rem;font-weight:700;color:var(--bad-muted)}
-.badminton-tier-button:hover,.badminton-tier-button:focus-visible{background:rgba(210,221,237,.98);outline:none;border-color:var(--bad-border)}
+.badminton-tier-button:hover,.badminton-tier-button:focus-visible{background:rgba(244,197,108,.98);outline:none;border-color:var(--bad-border)}
 .badminton-tier-button.is-active{background:var(--bad-mid);color:#fff;-webkit-text-fill-color:#fff;border-color:var(--bad-deep);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
 .badminton-tier-button.is-active span{color:#fff;opacity:.9}
 .badminton-tier-button:disabled{opacity:.48;cursor:not-allowed}
@@ -59,59 +59,59 @@
 .badminton-centred{min-height:480px;display:grid;place-items:center;align-content:center;gap:14px;text-align:center;padding:18px}
 .badminton-centred p{max-width:700px;margin:0 auto;color:var(--bad-muted)}
 .badminton-eyebrow{display:inline-block;font-size:.72rem;font-weight:950;letter-spacing:.12em;text-transform:uppercase;color:var(--bad-muted)}
-.badminton-situation,.badminton-feedback,.badminton-progress-box{padding:15px 16px;border-radius:16px;border:1px solid rgba(24,32,51,.25);background:linear-gradient(145deg,rgba(184,200,224,.82),rgba(142,164,194,.38))}
+.badminton-situation,.badminton-feedback,.badminton-progress-box{padding:15px 16px;border-radius:16px;border:1px solid rgba(23,52,56,.25);background:linear-gradient(145deg,rgba(244,197,108,.82),rgba(233,148,85,.38))}
 .badminton-situation h4{margin:.45rem 0 0;line-height:1.35}
 .badminton-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.badminton-choice{min-height:60px;padding:13px 15px;border-radius:15px;border:1px solid rgba(24,32,51,.3);background:rgba(184,200,224,.68);color:var(--bad-ink);text-align:left;font-weight:850;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease}
-.badminton-choice:hover,.badminton-choice:focus-visible{background:rgba(210,221,237,.98);border-color:var(--bad-deep);transform:translateY(-1px);outline:none}
+.badminton-choice{min-height:60px;padding:13px 15px;border-radius:15px;border:1px solid rgba(23,52,56,.3);background:rgba(244,197,108,.68);color:var(--bad-ink);text-align:left;font-weight:850;cursor:pointer;transition:transform .12s ease,background .12s ease,border-color .12s ease}
+.badminton-choice:hover,.badminton-choice:focus-visible{background:rgba(244,197,108,.98);border-color:var(--bad-deep);transform:translateY(-1px);outline:none}
 .badminton-choice:disabled{opacity:.58;cursor:default;transform:none}
 .badminton-feedback{display:grid;gap:5px}
 .badminton-feedback strong{font-size:1.02rem}
 .badminton-feedback p{margin:0;line-height:1.5}
-.badminton-feedback.is-correct{background:rgba(87,113,153,.26);border-color:rgba(37,59,95,.42)}
+.badminton-feedback.is-correct{background:rgba(204,105,75,.26);border-color:rgba(21,61,68,.42)}
 .badminton-feedback.is-wrong{background:rgba(170,91,82,.18);border-color:rgba(130,65,59,.38)}
-.badminton-court-shell{position:relative;min-height:360px;display:grid;place-items:center;border-radius:22px;border:1px solid rgba(24,32,51,.35);background:radial-gradient(circle at 50% 42%,rgba(184,200,224,.95),rgba(87,113,153,.48));overflow:hidden;padding:18px}
-.badminton-court-svg{width:min(720px,100%);height:auto;filter:drop-shadow(0 18px 26px rgba(12,18,32,.28))}
+.badminton-court-shell{position:relative;min-height:360px;display:grid;place-items:center;border-radius:22px;border:1px solid rgba(23,52,56,.35);background:radial-gradient(circle at 50% 42%,rgba(244,197,108,.95),rgba(204,105,75,.48));overflow:hidden;padding:18px}
+.badminton-court-svg{width:min(720px,100%);height:auto;filter:drop-shadow(0 18px 26px rgba(8,35,39,.28))}
 .badminton-court-zone{cursor:pointer;transition:filter .12s ease,opacity .12s ease}
 .badminton-court-zone:hover,.badminton-court-zone:focus-visible{filter:brightness(1.25);outline:none}
 .badminton-court-zone.is-highlight{fill:#f2ce6d!important;opacity:.88!important;filter:drop-shadow(0 0 9px rgba(242,206,109,.85))}
-.badminton-shuttle{position:absolute;width:38px;height:38px;left:var(--sx,20%);top:var(--sy,35%);transform:translate(-50%,-50%) rotate(var(--sr,15deg));z-index:4;filter:drop-shadow(0 5px 6px rgba(12,18,32,.35))}
+.badminton-shuttle{position:absolute;width:38px;height:38px;left:var(--sx,20%);top:var(--sy,35%);transform:translate(-50%,-50%) rotate(var(--sr,15deg));z-index:4;filter:drop-shadow(0 5px 6px rgba(8,35,39,.35))}
 .badminton-shuttle.is-moving{animation:badmintonFlight var(--flight-time,1.8s) cubic-bezier(.22,.75,.35,1) forwards}
-.badminton-distractor{position:absolute;width:24px;height:24px;border-radius:50%;background:rgba(232,214,146,.35);border:2px solid rgba(24,32,51,.55);animation:badmintonDrift 1.3s ease-in-out infinite alternate;z-index:2}
+.badminton-distractor{position:absolute;width:24px;height:24px;border-radius:50%;background:rgba(232,214,146,.35);border:2px solid rgba(23,52,56,.55);animation:badmintonDrift 1.3s ease-in-out infinite alternate;z-index:2}
 .badminton-distractor.d1{left:12%;top:18%}.badminton-distractor.d2{right:10%;top:24%;animation-delay:.25s}.badminton-distractor.d3{left:18%;bottom:14%;animation-delay:.5s}.badminton-distractor.d4{right:18%;bottom:12%;animation-delay:.75s}
-.badminton-freeze-scene{min-height:330px;display:grid;place-items:center;border-radius:22px;overflow:hidden;border:1px solid rgba(24,32,51,.3);background:linear-gradient(160deg,#253b5f,#577199);padding:14px}
+.badminton-freeze-scene{min-height:330px;display:grid;place-items:center;border-radius:22px;overflow:hidden;border:1px solid rgba(23,52,56,.3);background:linear-gradient(160deg,#153d44,#cc694b);padding:14px}
 .badminton-freeze-scene svg{width:min(680px,100%);height:auto}
-.badminton-contact-panel{display:grid;gap:15px;text-align:center;padding:24px;border-radius:22px;border:1px solid rgba(24,32,51,.32);background:radial-gradient(circle at center,rgba(184,200,224,.98),rgba(142,164,194,.52));min-height:340px;place-items:center;align-content:center}
-.badminton-contact-light{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;border:5px solid rgba(24,32,51,.36);background:rgba(184,200,224,.78);font-weight:950;font-size:1.08rem;box-shadow:0 15px 35px -24px rgba(12,18,32,.8)}
-.badminton-contact-light.is-contact{background:var(--bad-gold);box-shadow:0 0 0 11px rgba(225,184,96,.24),0 15px 35px -24px rgba(12,18,32,.8);animation:badmintonPulse .45s ease-out}
-.badminton-contact-light.is-hold{background:rgba(142,164,194,.9)}
+.badminton-contact-panel{display:grid;gap:15px;text-align:center;padding:24px;border-radius:22px;border:1px solid rgba(23,52,56,.32);background:radial-gradient(circle at center,rgba(244,197,108,.98),rgba(233,148,85,.52));min-height:340px;place-items:center;align-content:center}
+.badminton-contact-light{width:120px;height:120px;border-radius:50%;display:grid;place-items:center;border:5px solid rgba(23,52,56,.36);background:rgba(244,197,108,.78);font-weight:950;font-size:1.08rem;box-shadow:0 15px 35px -24px rgba(8,35,39,.8)}
+.badminton-contact-light.is-contact{background:var(--bad-gold);box-shadow:0 0 0 11px rgba(225,184,96,.24),0 15px 35px -24px rgba(8,35,39,.8);animation:badmintonPulse .45s ease-out}
+.badminton-contact-light.is-hold{background:rgba(233,148,85,.9)}
 .badminton-zone-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;width:min(620px,100%)}
-.badminton-zone-grid button{min-height:72px;border-radius:14px;border:1px solid rgba(24,32,51,.3);background:rgba(184,200,224,.68);color:var(--bad-ink);font-weight:900;cursor:pointer}
-.badminton-zone-grid button:hover,.badminton-zone-grid button:focus-visible{background:rgba(210,221,237,.98);outline:none;border-color:var(--bad-deep)}
-.badminton-pattern-strip{display:flex;flex-wrap:wrap;gap:9px;align-items:center;padding:13px;border-radius:15px;background:rgba(24,32,51,.11);border:1px solid rgba(24,32,51,.2)}
-.badminton-pattern-strip span{padding:9px 12px;border-radius:999px;background:var(--bad-light);border:1px solid rgba(24,32,51,.25);font-weight:850}
+.badminton-zone-grid button{min-height:72px;border-radius:14px;border:1px solid rgba(23,52,56,.3);background:rgba(244,197,108,.68);color:var(--bad-ink);font-weight:900;cursor:pointer}
+.badminton-zone-grid button:hover,.badminton-zone-grid button:focus-visible{background:rgba(244,197,108,.98);outline:none;border-color:var(--bad-deep)}
+.badminton-pattern-strip{display:flex;flex-wrap:wrap;gap:9px;align-items:center;padding:13px;border-radius:15px;background:rgba(23,52,56,.11);border:1px solid rgba(23,52,56,.2)}
+.badminton-pattern-strip span{padding:9px 12px;border-radius:999px;background:var(--bad-light);border:1px solid rgba(23,52,56,.25);font-weight:850}
 .badminton-pattern-strip b{color:var(--bad-deep)}
 .badminton-reset-outcome{font-size:clamp(1.55rem,4vw,2.6rem);font-weight:950;max-width:760px}
 .badminton-reset-word{padding:11px 18px;border-radius:999px;background:var(--bad-deep);color:#fff;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
 .badminton-pressure-track{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
-.badminton-pressure-track span{height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid rgba(24,32,51,.25);background:rgba(184,200,224,.58);font-weight:950;opacity:.65}
-.badminton-pressure-track span.is-complete{opacity:.9;background:rgba(87,113,153,.34)}
-.badminton-pressure-track span.is-current{opacity:1;background:var(--bad-mid);color:#fff;border-color:var(--bad-deep);box-shadow:0 0 0 2px rgba(184,200,224,.5)}
-.badminton-timer-bar{height:11px;border-radius:999px;overflow:hidden;background:rgba(24,32,51,.16)}
-.badminton-timer-bar span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#577199,#e1b860,#a95f59);transform-origin:left;animation:badmintonCountdown var(--badminton-seconds) linear forwards}
-.badminton-xp-block{display:grid;gap:8px;margin-bottom:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(24,32,51,.25);background:rgba(87,113,153,.12)}
+.badminton-pressure-track span{height:46px;display:grid;place-items:center;border-radius:12px;border:1px solid rgba(23,52,56,.25);background:rgba(244,197,108,.58);font-weight:950;opacity:.65}
+.badminton-pressure-track span.is-complete{opacity:.9;background:rgba(204,105,75,.34)}
+.badminton-pressure-track span.is-current{opacity:1;background:var(--bad-mid);color:#fff;border-color:var(--bad-deep);box-shadow:0 0 0 2px rgba(244,197,108,.5)}
+.badminton-timer-bar{height:11px;border-radius:999px;overflow:hidden;background:rgba(23,52,56,.16)}
+.badminton-timer-bar span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#cc694b,#e1b860,#a95f59);transform-origin:left;animation:badmintonCountdown var(--badminton-seconds) linear forwards}
+.badminton-xp-block{display:grid;gap:8px;margin-bottom:12px;padding:12px 14px;border-radius:16px;border:1px solid rgba(23,52,56,.25);background:rgba(204,105,75,.12)}
 .badminton-xp-block .xp-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .badminton-xp-block .xp-bar{height:13px}
 .badminton-roadmap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.badminton-roadmap span{padding:10px 12px;border-radius:13px;border:1px solid rgba(24,32,51,.22);background:rgba(184,200,224,.54);font-size:.78rem;font-weight:800}
+.badminton-roadmap span{padding:10px 12px;border-radius:13px;border:1px solid rgba(23,52,56,.22);background:rgba(244,197,108,.54);font-size:.78rem;font-weight:800}
 
-.badminton-scene-caption{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(87,113,153,.18);border:1px solid rgba(24,32,51,.22)}
-.badminton-scene-caption span{padding:6px 9px;border-radius:999px;background:rgba(184,200,224,.72);border:1px solid rgba(24,32,51,.2);font-size:.74rem;font-weight:850}
-.badminton-tactical-scene{min-height:330px;display:grid;place-items:center;border-radius:22px;overflow:hidden;border:1px solid rgba(24,32,51,.3);background:radial-gradient(circle at 50% 42%,rgba(184,200,224,.94),rgba(87,113,153,.46));padding:12px}
+.badminton-scene-caption{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border-radius:14px;background:rgba(204,105,75,.18);border:1px solid rgba(23,52,56,.22)}
+.badminton-scene-caption span{padding:6px 9px;border-radius:999px;background:rgba(244,197,108,.72);border:1px solid rgba(23,52,56,.2);font-size:.74rem;font-weight:850}
+.badminton-tactical-scene{min-height:330px;display:grid;place-items:center;border-radius:22px;overflow:hidden;border:1px solid rgba(23,52,56,.3);background:radial-gradient(circle at 50% 42%,rgba(244,197,108,.94),rgba(204,105,75,.46));padding:12px}
 .badminton-tactical-scene svg{display:block;width:min(760px,100%);height:auto;max-height:430px}
 .badminton-motion-key{display:flex;flex-wrap:wrap;gap:10px;color:var(--bad-muted);font-size:.78rem;font-weight:800}
 .badminton-motion-key span{display:inline-flex;align-items:center;gap:6px}.badminton-motion-key i{display:inline-block;width:20px;height:4px;border-radius:999px;background:var(--bad-mid)}
-#badmintonGameCard:fullscreen{width:100vw;height:100vh;overflow:auto;padding:22px;background:var(--games-page-gradient,linear-gradient(135deg,#b8c8e0,#8ea4c2))}
+#badmintonGameCard:fullscreen{width:100vw;height:100vh;overflow:auto;padding:22px;background:var(--games-page-gradient,linear-gradient(135deg,#f4c56c,#e99455))}
 #badmintonGameCard:fullscreen .badminton-game-surface{min-height:calc(100vh - 230px)}
 @keyframes badmintonFlight{from{left:var(--sx);top:var(--sy);transform:translate(-50%,-50%) rotate(var(--sr,15deg))}to{left:var(--ex);top:var(--ey);transform:translate(-50%,-50%) rotate(calc(var(--sr,15deg) + 155deg))}}
 @keyframes badmintonDrift{from{transform:translate(-7px,-5px)}to{transform:translate(10px,8px)}}
@@ -122,3 +122,4 @@
 @media (max-width:720px){.badminton-overview-row{grid-template-columns:58px minmax(0,1fr)!important;padding-right:60px!important}.badminton-overview-row .game-row-meta{grid-column:2}.badminton-overview-art{width:56px;height:56px;border-radius:13px}.badminton-heading-lockup{align-items:flex-start}.badminton-header-art{width:68px;height:68px;border-radius:16px}.badminton-game-selectors{grid-template-columns:1fr}.badminton-choice-grid{grid-template-columns:1fr}.badminton-game-surface{min-height:0}.badminton-active-header{display:grid}.badminton-tier-list{grid-template-columns:1fr}.badminton-zone-grid{grid-template-columns:1fr 1fr}.badminton-court-shell{min-height:300px;padding:8px}}
 @media (max-width:480px){.badminton-game-selector{padding-left:61px}.badminton-selector-icon{left:10px;width:40px}.badminton-selector-icon svg{width:70%;height:70%}}
 @media (prefers-reduced-motion:reduce){.badminton-shuttle.is-moving,.badminton-distractor,.badminton-contact-light,.badminton-timer-bar span{animation:none!important}.badminton-choice,.badminton-game-selector{transition:none!important}}
+

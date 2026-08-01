@@ -42,12 +42,17 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
 });
 
 test('storage authority owns persistence only and never game controls',()=>{
-  assert.match(guard,/GAMES_HUB_STORAGE_20260703_1/);
+  assert.match(guard,/GAMES_HUB_STORAGE_20260801_1/);
   assert.match(guard,/canBrowse:\(\)=>true/);
   assert.match(guard,/canPlay:\(\)=>true/);
   assert.match(guard,/canSave:\(\)=>state\.canSave/);
   assert.doesNotMatch(guard,/blockLockedEvent|installStorageGate|fallbackBound|__gamesHubGuard|stopImmediatePropagation/);
   assert.doesNotMatch(guard,/document\.addEventListener\(['"](?:click|submit|keydown)['"]/);
+});
+
+test('account-state settlement reboots storage in place without reloading the page',()=>{
+  assert.doesNotMatch(guard,/location\.reload\s*\(/);
+  assert.match(guard,/bootstrap\(\);\s*emitStorageState\(\);/);
 });
 
 test('core remains the sole owner of normal Hub controls',()=>{

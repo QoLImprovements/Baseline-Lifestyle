@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='GAMES_HUB_STORAGE_20260703_1';
+  const BUILD='GAMES_HUB_STORAGE_20260801_1';
   const DATA_API='/systems/baseline-games-hub/api/games_data.php';
   const CORE_APPS=['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
   const ALL_APPS=[...CORE_APPS,'dartsfocused','meridiangrove','hubsettings'];
@@ -177,7 +177,10 @@
     global.setTimeout(()=>{
       let authenticated=false;
       try{authenticated=!!(global.BASELINE_auth&&global.BASELINE_auth.get&&global.BASELINE_auth.get().authed);}catch(_error){}
-      if(authenticated!==state.authenticated)global.location.reload();
+      if(authenticated!==state.authenticated){
+        bootstrap();
+        emitStorageState();
+      }
     },0);
   });
   document.documentElement.setAttribute('data-baseline-games-hub-storage',BUILD);
