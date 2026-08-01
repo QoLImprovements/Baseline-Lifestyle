@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "STAGE_3_ASSET_ACCOUNTABILITY_20260607";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_GRADIENT_ALIGNMENT_20260801_1";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -4624,6 +4624,24 @@ function buildControls(recipeEl){
   // ---------------------------
   function bootBaselineShared(){
     try{ if(window.__BL_SHARED_BOOTED__) return; window.__BL_SHARED_BOOTED__ = true; }catch(_e){}
+    // Load one final geometry/alignment authority after each system's theme.
+    // Every full-width gradient is painted in viewport coordinates, so its
+    // centre and colour stops cannot drift when a scrollbar or nested wrapper
+    // changes the element's own width.
+    (function ensureGradientAlignmentStylesheet(){
+      try{
+        const build = 'BASELINE_GRADIENT_ALIGNMENT_20260801_1';
+        const href = '/sitewide/css/baseline-gradient-alignment.css?v=' + build;
+        let link = document.querySelector('link[data-baseline-gradient-alignment]');
+        if(!link){
+          link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.setAttribute('data-baseline-gradient-alignment','true');
+        }
+        if(link.getAttribute('href') !== href) link.setAttribute('href',href);
+        document.head.appendChild(link);
+      }catch(_e){ /* the existing canonical header remains the safe fallback */ }
+    })();
     // ------------------------------------------------------------
     // Theme sync for root element
     // ------------------------------------------------------------
@@ -4651,13 +4669,15 @@ function buildControls(recipeEl){
           root.style.backgroundImage = bgImg;
           root.style.backgroundColor = bgCol;
           root.style.backgroundAttachment = 'fixed';
-          root.style.backgroundSize = '100% 100%';
+          root.style.backgroundSize = '100vw 100vh';
+          root.style.backgroundPosition = 'left top';
         }else{
           const pageBg = (cs.getPropertyValue('--page-bg') || '').trim();
           if(pageBg){
             root.style.background = pageBg;
             root.style.backgroundAttachment = 'fixed';
-            root.style.backgroundSize = '100% 100%';
+            root.style.backgroundSize = '100vw 100vh';
+            root.style.backgroundPosition = 'left top';
           }
         }
       }catch(_e){ /* no-op */ }
