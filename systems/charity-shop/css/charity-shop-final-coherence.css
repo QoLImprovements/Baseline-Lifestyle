@@ -265,8 +265,11 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-page
   backdrop-filter:none!important;
 }
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd{
+  position:relative!important;
+  z-index:16001!important;
   background:transparent!important;
   background-image:none!important;
+  overflow:visible!important;
 }
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu::before,
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar .bl-pages-dd .bl-pages-menu::after{
@@ -305,11 +308,41 @@ html[data-app="charity-shop"] body[data-app="charity-shop"] #blProtectedKey svg 
   stroke:currentColor!important;
 }
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu[hidden]{display:none!important;}
-html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){display:block!important;}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-homebar-inner{
+  overflow:visible!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){
+  display:block!important;
+  z-index:16002!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+  max-height:calc(100dvh - 76px)!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link{
+  min-height:44px!important;
+}
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-btn:focus-visible,
+html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link:focus-visible{
+  outline:3px solid #fff!important;
+  outline-offset:2px!important;
+  box-shadow:0 0 0 5px #6f1218!important;
+}
 html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu .bl-pages-link[aria-current="page"]{
   order:-1!important;
   border-color:#e6a06f!important;
   font-weight:900!important;
+}
+
+@media (max-width:520px){
+  html[data-app="charity-shop"] body[data-app="charity-shop"] .bl-pages-menu:not([hidden]){
+    left:0!important;
+    right:auto!important;
+    width:min(420px,calc(100vw - 12px))!important;
+    max-height:calc(100dvh - 118px)!important;
+  }
 }
 
 /* Account, Binaural and Voice retain the normal site flyout geometry. */
