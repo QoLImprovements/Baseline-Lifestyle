@@ -40,11 +40,11 @@
   --bad-orange:#f08b2f;
   --bad-yellow:#ffd76c;
 
-  --games-deep:#153d44;
-  --games-mid:#235f63;
-  --games-soft:#cc694b;
-  --games-tan:#f4c56c;
-  --games-ink:#fff4df;
+  --games-deep:#080D22;
+  --games-mid:#1E2759;
+  --games-soft:#4656A6;
+  --games-tan:#4656A6;
+  --games-ink:#F2F5FF;
 
   --index-card-w:320px;
   --index-card-h:260px;
@@ -104,11 +104,9 @@
     #000000 66.666%,
 
     var(--games-deep) 66.666%,
-    var(--games-mid) 72.666%,
-    var(--games-soft) 78.666%,
-    var(--games-tan) 83.333%,
-    var(--games-soft) 88%,
-    var(--games-mid) 94%,
+    var(--games-mid) 75%,
+    var(--games-soft) 83.333%,
+    var(--games-mid) 91.666%,
     var(--games-deep) 100%
   );
 
@@ -170,11 +168,9 @@
 
   --games-card-bg:linear-gradient(90deg,
     var(--games-deep) 0%,
-    var(--games-mid) 18%,
-    var(--games-soft) 36%,
-    var(--games-tan) 50%,
-    var(--games-soft) 64%,
-    var(--games-mid) 82%,
+    var(--games-mid) 25%,
+    var(--games-soft) 50%,
+    var(--games-mid) 75%,
     var(--games-deep) 100%
   );
 
@@ -405,10 +401,10 @@ body[data-app="home"] .wrap{
 
 .card--games{ background:var(--games-card-bg); color:var(--games-ink); }
 .card--games .card-shell{
-  background:linear-gradient(rgba(21,61,68,.74),rgba(21,61,68,.74)),var(--games-card-bg);
+  background:linear-gradient(rgba(8,13,34,.46),rgba(8,13,34,.46)),var(--games-card-bg);
   color:var(--games-ink);
 }
-.card--games :is(h2,p){color:var(--games-ink);text-shadow:0 1px 2px rgba(8,35,39,.7)}
+.card--games :is(h2,p){color:var(--games-ink);text-shadow:0 1px 2px rgba(2,5,17,.82)}
 
 .view-arrow{
   position:absolute;
@@ -677,16 +673,14 @@ body[data-app="home"] .wrap{
   .play-lane--games > .card .card-shell{
     background:linear-gradient(180deg,
       var(--games-deep) 0%,
-      var(--games-mid) 18%,
-      var(--games-soft) 36%,
-      var(--games-tan) 50%,
-      var(--games-soft) 64%,
-      var(--games-mid) 82%,
+      var(--games-mid) 25%,
+      var(--games-soft) 50%,
+      var(--games-mid) 75%,
       var(--games-deep) 100%);
     color:var(--games-ink);
   }
   .play-lane--games > .card .card-shell{
-    background:linear-gradient(rgba(21,61,68,.74),rgba(21,61,68,.74)),linear-gradient(180deg,var(--games-deep) 0%,var(--games-mid) 24%,var(--games-soft) 62%,var(--games-tan) 100%);
+    background:linear-gradient(rgba(8,13,34,.46),rgba(8,13,34,.46)),linear-gradient(180deg,var(--games-deep) 0%,var(--games-mid) 25%,var(--games-soft) 50%,var(--games-mid) 75%,var(--games-deep) 100%);
   }
 
   .grid > .card.card--food,
