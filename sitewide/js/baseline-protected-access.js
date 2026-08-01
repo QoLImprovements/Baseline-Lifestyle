@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260801_1';
+  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260801_2';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 
@@ -38,11 +38,26 @@
   }
 
   function bindSectionDropdown(dropdown){
-    if(!dropdown || dropdown.dataset.protectedDropdownBound === 'true') return;
+    if(!dropdown || dropdown.dataset.protectedDropdownBound === 'true' || dropdown.dataset.blPagesBound === '1') return;
     const button = dropdown.querySelector('.bl-pages-btn');
     const menu = dropdown.querySelector('.bl-pages-menu');
     if(!button || !menu) return;
     dropdown.dataset.protectedDropdownBound = 'true';
+    /* The shared header controller uses this same ownership marker. Without it,
+       both controllers toggle the Charity Shop menu on one click: one opens it
+       and the second immediately closes it. */
+    dropdown.dataset.blPagesBound = '1';
+    if(!menu.id) menu.id = 'bl-charity-pages-menu';
+    button.setAttribute('aria-controls',menu.id);
+    const items = function(){ return Array.from(menu.querySelectorAll('[role="menuitem"],a[href]')); };
+
+    function focusItem(index){
+      const links = items();
+      if(!links.length) return;
+      const safeIndex = (index + links.length) % links.length;
+      try{ links[safeIndex].focus({preventScroll:true}); }
+      catch(_error){ try{ links[safeIndex].focus(); }catch(__error){} }
+    }
 
     function setOpen(open){
       menu.hidden = !open;
@@ -53,6 +68,34 @@
       event.preventDefault();
       event.stopPropagation();
       setOpen(menu.hidden);
+    });
+    button.addEventListener('keydown',function(event){
+      if(event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      event.preventDefault();
+      setOpen(true);
+      focusItem(event.key === 'ArrowUp' ? -1 : 0);
+    });
+    menu.addEventListener('keydown',function(event){
+      const links = items();
+      if(!links.length) return;
+      const current = links.indexOf(document.activeElement);
+      if(event.key === 'ArrowDown'){
+        event.preventDefault();
+        focusItem(current < 0 ? 0 : current + 1);
+      }else if(event.key === 'ArrowUp'){
+        event.preventDefault();
+        focusItem(current < 0 ? -1 : current - 1);
+      }else if(event.key === 'Home'){
+        event.preventDefault();
+        focusItem(0);
+      }else if(event.key === 'End'){
+        event.preventDefault();
+        focusItem(-1);
+      }else if(event.key === 'Escape'){
+        event.preventDefault();
+        setOpen(false);
+        try{ button.focus({preventScroll:true}); }catch(_error){ try{ button.focus(); }catch(__error){} }
+      }
     });
     menu.addEventListener('click', function(event){ if(event.target.closest('a')) setOpen(false); });
     document.addEventListener('click', function(event){ if(!dropdown.contains(event.target)) setOpen(false); });

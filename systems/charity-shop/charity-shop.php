@@ -37,7 +37,7 @@ if($accessUntil <= time()){
   <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-baseline-ui-fixes="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260801_1" data-charity-complete-theme="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260801_1" data-charity-cashing-corrections="true">
-  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_FINAL_COHERENCE_20260801_1">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_DROPDOWN_ACCESS_20260801_2">
 </head>
 <body data-app="charity-shop" data-page="charity-shop-guidance">
   <div class="bl-homebar" role="navigation" aria-label="Charity shop guidance navigation">
@@ -415,9 +415,9 @@ if($accessUntil <= time()){
     </main>
   </div>
 
-  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_1"></script>
+  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_2"></script>
   <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_CHARITY_GUIDANCE_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
-  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_SHOP_20260801_1"></script>
+  <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
 </body>
 </html>
