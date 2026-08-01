@@ -32,12 +32,13 @@ if($accessUntil <= time()){
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607">
   <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop.css?v=CHARITY_GUIDANCE_20260728_2">
-  <link rel="stylesheet" href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-protected-access-style="true">
-  <link rel="stylesheet" href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-protected-key-placement="true">
-  <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" data-baseline-ui-fixes="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-protected-access-style="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-protected-key-placement="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-baseline-ui-fixes="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260801_1" data-charity-complete-theme="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260801_1" data-charity-cashing-corrections="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_DROPDOWN_ACCESS_20260801_2">
+  <link rel="stylesheet" href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" data-baseline-gradient-alignment="true">
 </head>
 <body data-app="charity-shop" data-page="charity-shop-guidance">
   <div class="bl-homebar" role="navigation" aria-label="Charity shop guidance navigation">
@@ -415,8 +416,8 @@ if($accessUntil <= time()){
     </main>
   </div>
 
-  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_2"></script>
-  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_CHARITY_GUIDANCE_20260801_1"></script>
+  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_3"></script>
+  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_GRADIENT_ALIGNMENT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
 </body>
