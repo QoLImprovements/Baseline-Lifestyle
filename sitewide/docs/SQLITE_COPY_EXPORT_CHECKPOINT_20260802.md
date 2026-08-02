@@ -20,6 +20,8 @@ Safety properties:
 - no production path is inferred and no database schema migration is run;
 - password hashes and authentication-provider subjects are deliberately excluded from Saved Data account projections;
 - unknown user-table columns are reported by name and are not copied into a catch-all values object;
+- voice settings are normalised through the same 12-field bounds/defaults used by the production API and exported directly, without a `settings` wrapper;
+- unknown nested voice-setting keys are reported by name and block combined validation;
 - shared Badminton must be represented by exactly one `global` source row and is exported as the direct canonical state, without a `states.global` wrapper.
 
 ## Verification tooling
@@ -32,11 +34,12 @@ It verifies:
 - every expected account and account-index lookup;
 - the exact account projection field allowlist;
 - explicit exclusion of `pass_hash` and `google_sub`;
-- favourites, Binaural presets and optional voice settings;
+- favourites and Binaural presets;
+- optional direct voice settings using the production field allowlist and bounds;
 - Fitness plans, plan sessions and achievements;
 - every Games Hub profile and one-file-per-game layout;
 - the one canonical shared Badminton `global` state at `Shared/badminton-session.json`;
-- direct Badminton payload shape with no obsolete `states` wrapper;
+- direct voice and Badminton payload shapes with no obsolete wrapper objects;
 - JSON envelopes, stable six-digit folders and allowed paths;
 - `0600` file and `0700` directory permissions on Unix hosts;
 - exported counts against recomputed source counts;
@@ -50,14 +53,14 @@ The verifier returns a non-zero exit code for any mismatch. The executable fixtu
 - `users` → account index plus `Users/{padded-id}/account.json` as a non-credential account projection
 - `favourites` → `favourites.json`, created only when records exist
 - `binaural_presets` → `binaural.json`, created only when records exist
-- `voice_settings` → optional `voice.json`
+- `voice_settings.settings_json` → direct normalised settings inside `Users/{padded-id}/voice.json`
 - Fitness plans, sessions and achievements → `fitness.json`
 - each Games Hub profile → one `Games/{app}.json` file
 - `badminton_state_store.global` → the direct state inside `Shared/badminton-session.json`
 
 Authentication credentials remain in the hardened authoritative authentication store. `account.json` contains only the stable user ID, display/account fields, primary provider label and timestamps. The private account index contains name/email lookups only and no provider-subject index.
 
-Password-reset tokens, rate-limit events, schema-migration bookkeeping, password hashes and provider subjects are deliberately not converted into permanent Saved Data resources. The export report records these exclusions, missing tables, invalid JSON and any unexpected source columns.
+Password-reset tokens, rate-limit events, schema-migration bookkeeping, password hashes and provider subjects are deliberately not converted into permanent Saved Data resources. The export report records these exclusions, missing tables, invalid JSON and unexpected source or nested setting fields.
 
 ## Disposable verification gates
 
@@ -65,7 +68,8 @@ The executable contracts:
 
 - create a temporary SQLite fixture, export it twice, verify the source hash is unchanged, check that fixture password/provider values never enter the shadow tree or evidence, compare all source-owned resources, test deterministic reruns and reject intentional tampering;
 - inventory every source table and prove unknown or non-empty retired tables fail closed;
-- prove the Badminton `global` row is exported directly, while a wrong key or multiple source rows are rejected.
+- prove the Badminton `global` row is exported directly, while a wrong key or multiple source rows are rejected;
+- prove voice settings are exported directly, normalised to API bounds/defaults and block on unknown nested keys.
 
 They never open the configured production database or production Saved Data.
 
@@ -74,6 +78,6 @@ They never open the configured production database or production Saved Data.
 - run the combined validator against a separately copied production database;
 - review the generated counts and representative-record evidence;
 - resolve any invalid or unmapped fields;
-- define exact per-resource payload schemas beyond the account and Badminton projections;
+- define exact remaining per-resource payload schemas beyond account, voice and Badminton;
 - define and test rollback for a partial production cutover;
 - do not enable a JSON writer or change live authority until those comparisons pass.
