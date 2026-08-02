@@ -76,35 +76,39 @@ function bl_secure_export_accounts(PDO $db, string $root, int $sourceTime, array
 
 function bl_secure_export_badminton(PDO $db, string $root, int $sourceTime, array &$report): void {
   $rows = bl_export_rows($db, 'badminton_state_store', ['state_key']);
-  $states = [];
-  $updated = $sourceTime;
-  $mapped = ['state_key','state_json','updated_at'];
-  foreach($rows as $row){
-    $extra = bl_export_extra_fields($row, $mapped);
-    if($extra !== []){
-      $report['unmappedFields']['badminton_state_store'] = array_values(array_unique(array_merge(
-        $report['unmappedFields']['badminton_state_store'] ?? [],
-        array_keys($extra)
-      )));
-    }
-    $key = trim((string)($row['state_key'] ?? ''));
-    if($key === ''){
-      $report['invalid'][] = ['table'=>'badminton_state_store','reason'=>'empty_state_key'];
-      continue;
-    }
-    $decoded = bl_export_json_value($row['state_json'] ?? null, 'badminton:' . $key, $report['invalid']);
-    if($decoded === null) continue;
-    $states[$key] = $decoded;
-    $updated = max($updated, bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime));
-  }
-  ksort($states);
-  if($states !== []){
-    bl_export_write_json(
-      bl_export_join($root, 'Shared', 'badminton-session.json'),
-      bl_export_envelope(['states'=>$states], $updated)
-    );
-  }
   $report['counts']['badmintonStates'] = count($rows);
+  $report['counts']['badmintonFiles'] = 0;
+  if($rows === []) return;
+
+  if(count($rows) !== 1){
+    $report['invalid'][] = ['table'=>'badminton_state_store','reason'=>'unexpected_state_row_count'];
+    return;
+  }
+
+  $row = $rows[0];
+  $mapped = ['state_key','state_json','updated_at'];
+  $extra = bl_export_extra_fields($row, $mapped);
+  if($extra !== []){
+    $report['unmappedFields']['badminton_state_store'] = array_values(array_unique(array_merge(
+      $report['unmappedFields']['badminton_state_store'] ?? [],
+      array_keys($extra)
+    )));
+  }
+
+  $key = trim((string)($row['state_key'] ?? ''));
+  if($key !== 'global'){
+    $report['invalid'][] = ['table'=>'badminton_state_store','reason'=>'unexpected_state_key'];
+    return;
+  }
+
+  $decoded = bl_export_json_value($row['state_json'] ?? null, 'badminton:global', $report['invalid']);
+  if($decoded === null) return;
+  $updated = bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime);
+  bl_export_write_json(
+    bl_export_join($root, 'Shared', 'badminton-session.json'),
+    bl_export_envelope($decoded, $updated)
+  );
+  $report['counts']['badmintonFiles'] = 1;
 }
 
 function bl_secure_export_field_map(): array {
@@ -125,7 +129,14 @@ function bl_secure_export_field_map(): array {
       'google_sub'=>'provider subject remains in the hardened authoritative store',
     ],
   ];
-  $map['badminton_state_store']['target'] = 'Shared/badminton-session.json';
+  $map['badminton_state_store'] = [
+    'target'=>'Shared/badminton-session.json',
+    'requiredStateKey'=>'global',
+    'fields'=>[
+      'state_json'=>'data (direct canonical Badminton state)',
+      'updated_at'=>'updatedAt',
+    ],
+  ];
   return $map;
 }
 

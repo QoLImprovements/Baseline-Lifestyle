@@ -49,7 +49,7 @@ try{
   $db->exec('CREATE TABLE games_profiles(id INTEGER PRIMARY KEY,user_id INTEGER,app TEXT,profile_json TEXT,created_at INTEGER,updated_at INTEGER)');
   $db->exec("INSERT INTO games_profiles VALUES(6,7,'pairs','{\"level\":2}',1700001000,1700001100)");
   $db->exec('CREATE TABLE badminton_state_store(state_key TEXT PRIMARY KEY,state_json TEXT,updated_at INTEGER)');
-  $db->exec("INSERT INTO badminton_state_store VALUES('main','{\"players\":[{\"name\":\"Peter\"}]}',1700001200)");
+  $db->exec("INSERT INTO badminton_state_store VALUES('global','{\"version\":4,\"players\":[{\"name\":\"Peter\"}],\"matches\":[]}',1700001200)");
   $db = null;
 
   $beforeHash = hash_file('sha256', $source);
@@ -82,6 +82,10 @@ try{
   bl_export_test_assert(!array_key_exists('byProvider', $index['data']), 'provider subject index was exported');
   $game = bl_export_test_read($output . '/Users/000007/Games/pairs.json');
   bl_export_test_assert(($game['data']['profile']['level'] ?? 0) === 2, 'game profile failed');
+  $badminton = bl_export_test_read($output . '/Shared/badminton-session.json');
+  bl_export_test_assert(($badminton['data']['version'] ?? 0) === 4, 'badminton version failed');
+  bl_export_test_assert(($badminton['data']['players'][0]['name'] ?? '') === 'Peter', 'direct badminton state failed');
+  bl_export_test_assert(!array_key_exists('states', $badminton['data']), 'obsolete badminton states wrapper remains');
 
   $firstTreeHash = bl_export_test_tree_hash($output);
   bl_secure_export_sqlite_copy($source, $output);
