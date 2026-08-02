@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/sitewide/migration/sqlite_exporter.php';
+require_once dirname(__DIR__) . '/sitewide/migration/sqlite_export_verifier.php';
 
 function bl_export_test_assert(bool $condition, string $message): void {
   if(!$condition) throw new RuntimeException($message);
@@ -75,7 +75,25 @@ try{
   $secondTreeHash = bl_export_test_tree_hash($output);
   bl_export_test_assert($firstTreeHash === $secondTreeHash, 'rerun was not deterministic');
 
-  echo "sqlite exporter contract passed\n";
+  $verified = bl_verify_sqlite_export($source, $output);
+  bl_export_test_assert($verified['ok'] === true, 'valid export did not verify: ' . json_encode($verified['errors']));
+  bl_export_test_assert(($verified['counts']['fitnessSessions'] ?? 0) === 1, 'verification counts failed');
+  bl_export_test_assert(($verified['representativeRecords']['users'][0] ?? '') === '000007', 'representative user failed');
+  bl_export_test_assert(($verified['representativeRecords']['games'][0] ?? '') === '000007:pairs', 'representative game failed');
+
+  $gamePath = $output . '/Users/000007/Games/pairs.json';
+  $tampered = bl_export_test_read($gamePath);
+  $tampered['data']['profile']['level'] = 99;
+  file_put_contents($gamePath, json_encode($tampered, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n");
+  chmod($gamePath, 0600);
+  $rejected = bl_verify_sqlite_export($source, $output);
+  bl_export_test_assert($rejected['ok'] === false, 'tampered export was accepted');
+  bl_export_test_assert(count($rejected['errors']) > 0, 'tamper rejection had no evidence');
+
+  bl_export_sqlite_copy($source, $output);
+  bl_export_test_assert(bl_verify_sqlite_export($source, $output)['ok'] === true, 'clean rerun did not restore validity');
+
+  echo "sqlite exporter and verifier contract passed\n";
 }finally{
   bl_export_remove_tree($base);
 }
