@@ -1,0 +1,36 @@
+name: Apply live stability patches
+
+on:
+  push:
+    branches:
+      - agent/fix-live-refresh-and-persistence-20260802
+    paths:
+      - .github/scripts/apply_live_stability_patches.py
+      - .github/workflows/apply-live-stability-patches.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Apply deterministic patches
+        run: python .github/scripts/apply_live_stability_patches.py
+      - name: Commit patched sources
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No patch changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply live refresh and persistence fixes"
+          git push
