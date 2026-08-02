@@ -32,7 +32,7 @@ test('Fitness loads API compatibility after shared auth and before its applicati
 
 test('compatibility repairs root and Fitness-relative API routing without a second auth UI', () => {
   const source = read('sitewide/js/baseline-auth-failsafe.js');
-  assert.match(source, /SITEWIDE_AUTH_SINGLE_OWNER_20260702_4/);
+  assert.match(source, /SITEWIDE_AUTH_SINGLE_OWNER_20260713_5/);
   assert.match(source, /window\.fetch=async/);
   assert.match(source, /\/sitewide\/api\//);
   assert.match(source, /baseline-fitness/);
@@ -60,10 +60,24 @@ test('server authentication session and API routing remain sitewide', () => {
   assert.match(login, /bl_set_auth_session\(\$user\)/);
 });
 
-test('physical root API routes preserve sitewide auth on local servers without rewrites', () => {
+test('HTTP and JSON handling have one focused server boundary', () => {
+  const config = read('sitewide/api/config.php');
+  const http = read('sitewide/api/http.php');
+  assert.match(config, /require_once __DIR__ \. '\/http\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:json|no_cache_headers|is_secure_request|require_same_origin|input_json|request_origin|site_base_path|site_url)\b/);
+  for(const name of ['bl_json','bl_no_cache_headers','bl_is_secure_request','bl_require_same_origin','bl_input_json','bl_request_origin','bl_site_base_path','bl_site_url']){
+    assert.match(http, new RegExp(`function ${name}\\b`), `${name} is missing from the HTTP boundary`);
+  }
+  assert.match(http, /register_shutdown_function/);
+  assert.match(http, /BL_MAX_JSON_BYTES/);
+  assert.match(http, /invalid_origin/);
+  assert.match(http, /Never build security-sensitive links from an untrusted Host header/);
+});
+
+test('the canonical rewrite owns root API routes without physical shadow endpoints', () => {
+  const htaccess = read('.htaccess');
+  assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
   for (const route of ['login','me','logout','auth_providers','register','forgot_password','password_reset']) {
-    const shim = read(`api/${route}.php`);
-    assert.match(shim, /sitewide\/api\//);
-    assert.match(shim, /307/);
+    assert.equal(fs.existsSync(path.join(root, `api/${route}.php`)), false, `${route}.php must not become a root shadow endpoint`);
   }
 });
