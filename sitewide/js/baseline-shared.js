@@ -4810,17 +4810,10 @@ function buildControls(recipeEl){
   // Sitewide: Account auth + favourites + binaural player (banner right side)
   // ---------------------------------------------------------------------------
 
-  const API_BASE = (function(){
-    try{
-      // On the live domain, keep API calls rooted at /api so login does not break
-      // from recipe/detail URLs or nested paths.
-      if(location.protocol === 'file:') return './api';
-      return '/api';
-    }catch(_e){
-      return '/api';
-    }
-  })();
-  const IS_FILE_PROTOCOL = (location.protocol === 'file:');
+  const sitewideApi = window.BASELINE_api;
+  const API_BASE = sitewideApi.base;
+  const IS_FILE_PROTOCOL = !!sitewideApi.isFile;
+  const apiJson = sitewideApi.json;
 
   function ensureDefaultHomebarScaffold(){
     if(q('.bl-top-header')) return null;
@@ -4940,63 +4933,6 @@ function buildControls(recipeEl){
     const u = String(username||'').trim();
     return prefix + '::' + u.toLowerCase();
   }
-
-  async function apiJson(url, opts={}){
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-    const method = (opts.method || 'GET').toUpperCase();
-    const init = {
-      method,
-      credentials: 'same-origin',
-      headers: Object.assign({ 'Accept':'application/json' }, (opts.headers || {})),
-    };
-    if(opts.body !== undefined){
-      init.headers['Content-Type'] = 'application/json';
-      init.body = JSON.stringify(opts.body);
-    }
-    let res, text;
-    try{
-      res = await fetch(url, init);
-      text = await res.text();
-    }catch(_e){
-      return { ok:false, status:0, data:{ ok:false, error:'network_error', endpoint:String(url || '') } };
-    }
-
-    let data = null;
-    const status = (res ? res.status : 0);
-    const contentType = (function(){
-      try{ return String(res.headers.get('content-type') || ''); }catch(_e){ return ''; }
-    })();
-
-    try{
-      data = text ? JSON.parse(text) : { ok:false, error:'empty_response' };
-    }catch(_e){
-      const preview = String(text || '').replace(/\s+/g, ' ').trim().slice(0, 220);
-      const looksLikeHtml = /^\s*(?:<!doctype\s+html|<html|<head|<body|<br\s*\/?\s*>|<b>)/i.test(String(text || ''));
-      data = {
-        ok:false,
-        error: looksLikeHtml ? 'api_returned_html' : 'api_non_json_response',
-        endpoint:String(url || ''),
-        status,
-        contentType,
-        rawPreview: preview
-      };
-      try{
-        console.warn('Baseline API returned non-JSON', { endpoint:String(url || ''), status, contentType, preview });
-      }catch(__e){}
-    }
-
-    return { ok: !!(res && res.ok && data && data.ok), status, data };
-  }
-
-  try{
-    window.BASELINE_api = {
-      json: apiJson,
-      get: (path)=>apiJson(path, { method:'GET' }),
-      post: (path, body)=>apiJson(path, { method:'POST', body }),
-    };
-  }catch(_e){}
 
   try{
     window.BASELINE_store = {

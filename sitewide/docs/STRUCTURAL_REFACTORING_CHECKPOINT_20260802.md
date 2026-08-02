@@ -103,6 +103,15 @@ The eighth change extracts SQLite connection ownership, core schema upgrades, sc
 - Rate-limit buckets retain the same IP, scope and normalized-subject inputs.
 - The executable contract creates and removes a uniquely named temporary SQLite database; it never opens production data or Saved Data.
 
+## Increment 9: sitewide API client boundary
+
+The ninth change extracts fetch, JSON serialization and bounded non-JSON error handling from the shared interface controller into `sitewide/js/baseline-api.js`.
+
+- Every page loads the API client before `baseline-shared.js`.
+- Same-origin credentials, request headers, response envelopes and file-preview behaviour are unchanged.
+- The client owns no interface, authentication state or local-storage behaviour.
+- A direct Node contract covers GET, POST, HTML failure, network failure and local-file cases without contacting a server.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
