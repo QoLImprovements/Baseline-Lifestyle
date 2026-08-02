@@ -27,7 +27,8 @@ The validator requires:
 - one canonical physical file per exported played game;
 - `Shared/Badminton/badminton.json` for the one shared `global` Badminton state;
 - no flattened `Shared/badminton-session.json` path;
-- no raw database-app filenames such as `detectword.json`, `make24.json`, `trackcoin.json`, `ruleshift.json`, `dartsfocused.json` or `ninja.json`.
+- no raw database-app filenames such as `detectword.json`, `make24.json`, `trackcoin.json`, `ruleshift.json`, `dartsfocused.json` or `ninja.json`;
+- no migration report, field map, validation evidence, lock or temporary file inside the candidate tree.
 
 The game verifier confirms that each stored source app maps to the correct filename, including `ninja` → `baseline-realm.json`.
 
@@ -37,9 +38,11 @@ Every non-internal source table is classified as exported, deliberately excluded
 
 ## Evidence contents
 
-The evidence includes source and tree hashes, source-table names/classifications, counts, missing-table names, invalid-record summaries, unmapped field names, explicit credential-field exclusions, checked-file totals, representative internal user/game identifiers and pass/fail gates.
+The separately written evidence includes source and tree hashes, source-table names/classifications, counts, missing-table names, invalid-record summaries, unmapped field names, explicit credential-field exclusions, checked-file totals, representative internal user/game identifiers and pass/fail gates.
 
-It excludes names, email addresses, provider subjects, password hashes and resource payload values.
+The field-map contract remains available from the migration tooling and repository documentation rather than being inserted into the live candidate tree.
+
+Evidence excludes names, email addresses, provider subjects, password hashes and resource payload values.
 
 ## Fail-closed behaviour
 
@@ -50,6 +53,7 @@ Validation fails on:
 - invalid source JSON;
 - an unsupported game identifier;
 - a non-canonical path or filename;
+- operational metadata inside Saved Data;
 - unmapped source fields;
 - credential leakage;
 - unexpected, missing, modified or permission-invalid files.
