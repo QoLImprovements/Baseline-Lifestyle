@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/sqlite_exporter.php';
+require_once __DIR__ . '/sqlite_secure_exporter.php';
 
 final class BaselineSqliteExportVerificationException extends RuntimeException {}
 
@@ -49,7 +49,7 @@ function bl_verify_resource_file(string $relative): bool {
   return preg_match('#^Users/[0-9]{6}/(?:account|favourites|binaural|fitness|voice)\.json$#', $relative) === 1
     || preg_match('#^Users/[0-9]{6}/Games/[a-z0-9][a-z0-9._-]{0,95}\.json$#', $relative) === 1
     || $relative === 'Account Index/accounts.json'
-    || $relative === 'Shared/Badminton/badminton.json';
+    || $relative === 'Shared/badminton-session.json';
 }
 
 function bl_verify_allowed_file(string $relative): bool {
@@ -100,6 +100,34 @@ function bl_verify_representatives(array $files): array {
   return ['users'=>$pick($users), 'games'=>$pick($games)];
 }
 
+function bl_verify_account_projection(array $account, string $relative): array {
+  $errors = [];
+  $data = is_array($account['data'] ?? null) ? $account['data'] : [];
+  $allowed = ['userId','name','email','authProvider','createdAt','updatedAt','lastLoginAt'];
+  $actual = array_keys($data);
+  sort($allowed);
+  sort($actual);
+  if($actual !== $allowed){
+    $errors[] = ['check'=>'account_projection_fields','path'=>$relative,'expected'=>$allowed,'actual'=>$actual];
+  }
+  if(!is_int($data['userId'] ?? null) || (int)$data['userId'] <= 0){
+    $errors[] = ['check'=>'account_projection_user_id','path'=>$relative];
+  }
+  foreach(['name','email','authProvider','createdAt','updatedAt'] as $field){
+    if(!is_string($data[$field] ?? null)) $errors[] = ['check'=>'account_projection_type','path'=>$relative,'field'=>$field];
+  }
+  if(($data['lastLoginAt'] ?? null) !== null && !is_string($data['lastLoginAt'])){
+    $errors[] = ['check'=>'account_projection_type','path'=>$relative,'field'=>'lastLoginAt'];
+  }
+  $encoded = json_encode($data, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+  foreach(['passwordHash','pass_hash','google_sub','tokenHash','providerSubject'] as $forbidden){
+    if(str_contains($encoded, $forbidden)){
+      $errors[] = ['check'=>'account_projection_secret_field','path'=>$relative,'field'=>$forbidden];
+    }
+  }
+  return $errors;
+}
+
 function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array {
   $source = bl_export_normalize_path($sourcePath);
   $actualRoot = bl_export_normalize_path($exportPath);
@@ -114,7 +142,7 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
   $expectedRoot = $temporaryBase . '/Saved Data';
   $errors = [];
   try{
-    $expectedReport = bl_export_sqlite_copy($source, $expectedRoot);
+    $expectedReport = bl_secure_export_sqlite_copy($source, $expectedRoot);
     $actualFiles = bl_verify_relative_files($actualRoot);
     $expectedFiles = bl_verify_relative_files($expectedRoot);
 
@@ -137,7 +165,10 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
         $errors[] = ['check'=>'file_content','path'=>$relative,'expectedSha256'=>$expectedHash,'actualSha256'=>$actualHash];
       }
       try{
-        bl_verify_read_json($actualPath, bl_verify_resource_file($relative));
+        $decoded = bl_verify_read_json($actualPath, bl_verify_resource_file($relative));
+        if(preg_match('#^Users/[0-9]{6}/account\.json$#', $relative) === 1){
+          $errors = array_merge($errors, bl_verify_account_projection($decoded, $relative));
+        }
       }catch(Throwable $error){
         $errors[] = ['check'=>'json_validation','path'=>$relative,'error'=>$error->getMessage()];
       }
@@ -159,6 +190,11 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
       if(($actualReport['unmappedFields'] ?? []) !== []){
         $errors[] = ['check'=>'unmapped_source_fields','fields'=>$actualReport['unmappedFields']];
       }
+      $excludedUserFields = $actualReport['intentionallyNotExportedFields']['users'] ?? [];
+      sort($excludedUserFields);
+      if($excludedUserFields !== ['google_sub','pass_hash']){
+        $errors[] = ['check'=>'authentication_field_exclusion','actual'=>$excludedUserFields];
+      }
     }catch(Throwable $error){
       $actualReport = [];
       $errors[] = ['check'=>'export_report','error'=>$error->getMessage()];
@@ -166,9 +202,16 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
 
     try{
       $index = bl_verify_read_json($actualRoot . '/Account Index/accounts.json');
+      $indexKeys = array_keys(is_array($index['data'] ?? null) ? $index['data'] : []);
+      sort($indexKeys);
+      if($indexKeys !== ['byEmail','byName']){
+        $errors[] = ['check'=>'account_index_fields','actual'=>$indexKeys];
+      }
       $indexJson = json_encode($index['data'], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-      if(str_contains($indexJson, 'passwordHash') || str_contains($indexJson, 'pass_hash')){
-        $errors[] = ['check'=>'account_index_secret_exposure'];
+      foreach(['passwordHash','pass_hash','google_sub','byProvider'] as $forbidden){
+        if(str_contains($indexJson, $forbidden)){
+          $errors[] = ['check'=>'account_index_secret_exposure','field'=>$forbidden];
+        }
       }
     }catch(BaselineSqliteExportVerificationException $error){
       if(($expectedReport['counts']['accounts'] ?? 0) > 0){
