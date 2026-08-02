@@ -68,6 +68,14 @@ The fourth change extracts current-user lookup, account-input validation, safe p
 - Password reset, mail, schema migration and rate limiting remain in `config.php` for later bounded changes.
 - The executable contract uses only an in-memory SQLite fixture; it never opens the production database or Saved Data.
 
+## Increment 5: mail boundary
+
+The fifth change extracts outbound text-mail configuration and header construction into `sitewide/api/mail.php`.
+
+- Host-provided sender settings and the existing safe local defaults are unchanged.
+- No test sends an email; the executable contract verifies configuration only.
+- Account recovery continues to call the same `bl_send_text_mail()` helper.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
