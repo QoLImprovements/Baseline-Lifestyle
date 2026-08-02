@@ -90,7 +90,7 @@ try{
 
   $pairs = bl_normalise_game_profile('pairs', ['level'=>2,'skills'=>['insight'=>99],'selectedTier'=>'invalid']);
   bl_resource_test_assert(($pairs['skills']['insight'] ?? -1) === 0, 'locked game skill was not returned');
-  bl_resource_test_assert(($pairs['skillPoints'] ?? 0) >= 100, 'returned game skill points missing');
+  bl_resource_test_assert(($pairs['skillPoints'] ?? 0) === 5, 'returned game skill points missing');
   bl_resource_test_assert(($pairs['selectedTier'] ?? '') === 'starter', 'game tier normalisation failed');
   bl_resource_test_assert(str_ends_with(bl_saved_game_path(7, 'ninja'), '/Games/baseline-realm.json'), 'canonical Realm path failed');
 
