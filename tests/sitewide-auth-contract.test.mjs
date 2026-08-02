@@ -8,6 +8,21 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = process.env.BASELINE_REPO_ROOT ? path.resolve(process.env.BASELINE_REPO_ROOT) : path.resolve(here, '..');
 const read = (relative) => fs.readFileSync(path.join(root, relative), 'utf8');
 
+function htmlFiles(relative=''){
+  const directory = path.join(root, relative);
+  const out = [];
+  for(const item of fs.readdirSync(directory, { withFileTypes:true })){
+    const child = path.join(relative, item.name);
+    if(item.isDirectory()){
+      if(['.git','node_modules','test-results'].includes(item.name)) continue;
+      out.push(...htmlFiles(child));
+    }else if(item.isFile() && item.name.endsWith('.html')){
+      out.push(child);
+    }
+  }
+  return out;
+}
+
 const entrypoints = [
   'index.html',
   'systems/baseline-food-approach/baseline-food-approach.html',
@@ -18,8 +33,26 @@ const entrypoints = [
   'systems/baseline-games-hub/baseline-games-hub.html'
 ];
 
-test('every primary site entry point loads the shared account runtime', () => {
-  for (const entry of entrypoints) assert.match(read(entry), /\/sitewide\/js\/baseline-shared\.js\?v=/);
+test('every page loads the API client before the shared account runtime', () => {
+  const pages = htmlFiles().filter(entry=>read(entry).includes('/sitewide/js/baseline-shared.js'));
+  assert.ok(pages.length >= entrypoints.length);
+  for (const entry of pages){
+    const html = read(entry);
+    const api = html.indexOf('/sitewide/js/baseline-api.js');
+    const shared = html.indexOf('/sitewide/js/baseline-shared.js');
+    assert.ok(api > -1 && shared > api, `${entry} must load the API client before the shared runtime`);
+  }
+});
+
+test('the shared controller delegates transport to the focused API client', () => {
+  const shared = read('sitewide/js/baseline-shared.js');
+  const api = read('sitewide/js/baseline-api.js');
+  assert.match(shared, /const sitewideApi = window\.BASELINE_api/);
+  assert.doesNotMatch(shared, /async function apiJson\b|await fetch\(/);
+  assert.match(api, /credentials:\s*'same-origin'/);
+  assert.match(api, /error:'network_error'/);
+  assert.match(api, /error: looksLikeHtml \? 'api_returned_html' : 'api_non_json_response'/);
+  assert.doesNotMatch(api, /authState|createElement|localStorage/);
 });
 
 test('Fitness loads API compatibility after shared auth and before its application', () => {
