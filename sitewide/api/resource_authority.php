@@ -10,6 +10,10 @@ function bl_resource_authority(): string {
   if(!in_array($mode, ['sqlite','mirror','saved-data'], true)){
     throw new BaselineSavedDataConfigurationException('invalid_resource_authority');
   }
+  if($mode !== 'sqlite'){
+    bl_saved_root();
+    bl_runtime_root();
+  }
   return $mode;
 }
 
@@ -41,11 +45,26 @@ function bl_resource_file_replace(string $path, array $data, ?int $expectedRevis
   return bl_saved_write($path, $data, $revision);
 }
 
+function bl_resource_file_delete(string $path, ?int $expectedRevision=null): void {
+  $current = bl_saved_read($path);
+  if($current === null) return;
+  $revision = (int)($current['revision'] ?? 0);
+  if($expectedRevision !== null && $revision !== $expectedRevision){
+    throw new BaselineSavedDataConflictException('revision_conflict');
+  }
+  bl_saved_with_resource_lock($path, static function() use ($path, $revision): void {
+    $latest = bl_saved_read($path);
+    if($latest === null) return;
+    if((int)($latest['revision'] ?? 0) !== $revision){
+      throw new BaselineSavedDataConflictException('revision_conflict');
+    }
+    if(!@unlink($path) && is_file($path)) throw new RuntimeException('resource_delete_failed');
+  });
+}
+
 function bl_resource_file_delete_if_empty(string $path, array $data, callable $isEmpty): ?array {
   if(!$isEmpty($data)) return bl_resource_file_replace($path, $data);
-  $current = bl_saved_read($path);
-  if($current === null) return null;
-  bl_saved_delete($path, (int)($current['revision'] ?? 0));
+  bl_resource_file_delete($path);
   return null;
 }
 
@@ -53,4 +72,19 @@ function bl_resource_timestamp(?string $iso): int {
   if($iso === null || $iso === '') return 0;
   $timestamp = strtotime($iso);
   return $timestamp === false ? 0 : $timestamp;
+}
+
+function bl_resource_revision_from_input(array $input): ?int {
+  if(!array_key_exists('expectedRevision', $input) && !array_key_exists('revision', $input)) return null;
+  $value = $input['expectedRevision'] ?? $input['revision'];
+  if(!is_int($value) && !(is_string($value) && preg_match('/^[0-9]+$/', $value) === 1)){
+    throw new InvalidArgumentException('invalid_expected_revision');
+  }
+  $revision = (int)$value;
+  if($revision < 0) throw new InvalidArgumentException('invalid_expected_revision');
+  return $revision;
+}
+
+function bl_resource_conflict_response(BaselineSavedDataConflictException $error): void {
+  bl_json(['ok'=>false,'error'=>'revision_conflict'], 409);
 }
