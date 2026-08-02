@@ -50,6 +50,15 @@ The second change extracts shared HTTP response hardening, origin validation, bo
 - Session, authentication and database behaviour remain in `config.php` for later bounded changes.
 - A direct PHP contract covers configured, local, forwarded-HTTPS and untrusted-host origin behaviour.
 
+## Increment 3: session boundary
+
+The third change extracts session creation, cookie policy and the small signed-in session value helpers into `sitewide/api/session.php`.
+
+- The cookie name, root path, secure detection, HTTP-only setting and `SameSite=Lax` policy are unchanged.
+- Login and logout continue to call the same public helper functions through `config.php`.
+- User lookup, permissions, authentication-provider logic and all database work remain outside this boundary.
+- A direct PHP contract verifies secure cookie settings, session values and clearing behaviour.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
