@@ -112,6 +112,15 @@ The ninth change extracts fetch, JSON serialization and bounded non-JSON error h
 - The client owns no interface, authentication state or local-storage behaviour.
 - A direct Node contract covers GET, POST, HTML failure, network failure and local-file cases without contacting a server.
 
+## Increment 10: sitewide local-store boundary
+
+The tenth change extracts JSON local-cache reads, writes, deletion and stable per-user cache keys from the shared interface controller into `sitewide/js/baseline-store.js`.
+
+- Existing key names and case-insensitive per-user cache keys are unchanged.
+- Missing, malformed or browser-blocked storage still degrades to the supplied fallback.
+- Fitness and other consumers continue to use the same `window.BASELINE_store` interface.
+- A direct Node contract covers serialization, deletion, fallbacks, denied storage and file-preview state.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
