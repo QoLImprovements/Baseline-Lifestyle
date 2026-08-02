@@ -28,8 +28,42 @@ function bl_contract_remove_tree(string $directory): void {
 }
 
 try{
+  bl_contract_assert(
+    str_ends_with(bl_saved_account_index_path(), '/Saved Data/Account Index/accounts.json'),
+    'account index path failed'
+  );
+
   $path = bl_saved_user_resource_path(7, 'fitness');
   bl_contract_assert(str_ends_with($path, '/Users/000007/fitness.json'), 'stable user path failed');
+
+  $gameExpectations = [
+    'ninja'=>'baseline-realm.json',
+    'baseline-realm'=>'baseline-realm.json',
+    'pairs'=>'pairs.json',
+    'detectword'=>'detect-word.json',
+    'make24'=>'make-24.json',
+    'trackcoin'=>'track-coin.json',
+    'ruleshift'=>'rule-shift.json',
+    'dartsfocused'=>'darts-focused.json',
+    'meridiangrove'=>'meridian-grove.json',
+  ];
+  foreach($gameExpectations as $game=>$file){
+    bl_contract_assert(
+      str_ends_with(bl_saved_game_path(7, $game), '/Users/000007/Games/' . $file),
+      'canonical game path failed for ' . $game
+    );
+  }
+  try{
+    bl_saved_game_path(7, '../unknown');
+    throw new RuntimeException('unknown game path was accepted');
+  }catch(InvalidArgumentException $expected){
+    bl_contract_assert($expected->getMessage() === 'invalid_game_resource', 'wrong invalid-game error');
+  }
+
+  bl_contract_assert(
+    str_ends_with(bl_saved_badminton_path(), '/Saved Data/Shared/Badminton/badminton.json'),
+    'shared Badminton path failed'
+  );
 
   $first = bl_saved_write($path, ['sessions'=>[]], 0);
   bl_contract_assert($first['revision'] === 1, 'first revision failed');

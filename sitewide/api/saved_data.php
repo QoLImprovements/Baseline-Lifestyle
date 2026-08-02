@@ -57,7 +57,12 @@ function bl_runtime_root(): string {
 }
 
 function bl_saved_assert_safe_component(string $component): string {
-  if($component === '' || preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $component) !== 1){
+  if(
+    $component === ''
+    || strlen($component) > 128
+    || $component !== trim($component)
+    || preg_match('/^[A-Za-z0-9][A-Za-z0-9._ -]*$/', $component) !== 1
+  ){
     throw new InvalidArgumentException('invalid_path_component');
   }
   return $component;
@@ -89,6 +94,10 @@ function bl_saved_user_folder(int $userId): string {
   return sprintf('%06d', $userId);
 }
 
+function bl_saved_account_index_path(): string {
+  return bl_saved_join(bl_saved_root(), 'Account Index', 'accounts.json');
+}
+
 function bl_saved_user_resource_path(int $userId, string $resource): string {
   $files = [
     'account' => 'account.json',
@@ -101,13 +110,45 @@ function bl_saved_user_resource_path(int $userId, string $resource): string {
   return bl_saved_join(bl_saved_root(), 'Users', bl_saved_user_folder($userId), $files[$resource]);
 }
 
+function bl_saved_game_files(): array {
+  return [
+    'ninja' => 'baseline-realm.json',
+    'baseline-realm' => 'baseline-realm.json',
+    'pairs' => 'pairs.json',
+    'detectword' => 'detect-word.json',
+    'detect-word' => 'detect-word.json',
+    'make24' => 'make-24.json',
+    'make-24' => 'make-24.json',
+    'trackcoin' => 'track-coin.json',
+    'track-coin' => 'track-coin.json',
+    'ruleshift' => 'rule-shift.json',
+    'rule-shift' => 'rule-shift.json',
+    'dartsfocused' => 'darts-focused.json',
+    'darts-focused' => 'darts-focused.json',
+    'meridiangrove' => 'meridian-grove.json',
+    'meridian-grove' => 'meridian-grove.json',
+  ];
+}
+
+function bl_saved_game_filename(string $game): string {
+  $game = strtolower(trim($game));
+  $files = bl_saved_game_files();
+  if(!isset($files[$game])) throw new InvalidArgumentException('invalid_game_resource');
+  return $files[$game];
+}
+
 function bl_saved_game_path(int $userId, string $game): string {
-  $game = strtolower(bl_saved_assert_safe_component($game));
-  return bl_saved_join(bl_saved_root(), 'Users', bl_saved_user_folder($userId), 'Games', $game . '.json');
+  return bl_saved_join(
+    bl_saved_root(),
+    'Users',
+    bl_saved_user_folder($userId),
+    'Games',
+    bl_saved_game_filename($game)
+  );
 }
 
 function bl_saved_badminton_path(): string {
-  return bl_saved_join(bl_saved_root(), 'Shared', 'badminton-session.json');
+  return bl_saved_join(bl_saved_root(), 'Shared', 'Badminton', 'badminton.json');
 }
 
 function bl_saved_decode_file(string $path): ?array {
@@ -169,30 +210,34 @@ function bl_saved_with_resource_lock(string $resourcePath, callable $operation){
 }
 
 function bl_saved_write_unlocked(string $path, array $data, int $expectedRevision): array {
-    $directory = dirname($path);
-    $current = bl_saved_decode_file($path);
-    $currentRevision = (int)($current['revision'] ?? 0);
-    if($currentRevision !== $expectedRevision){
-      throw new BaselineSavedDataConflictException('revision_conflict');
-    }
-    $envelope = [
-      'schemaVersion' => BL_SAVED_SCHEMA_VERSION,
-      'revision' => $currentRevision + 1,
-      'updatedAt' => gmdate('c'),
-      'data' => $data,
-    ];
-    $json = json_encode($envelope, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-    if(strlen($json) > BL_MAX_JSON_BYTES) throw new InvalidArgumentException('resource_too_large');
+  $directory = dirname($path);
+  $current = bl_saved_decode_file($path);
+  $currentRevision = (int)($current['revision'] ?? 0);
+  if($currentRevision !== $expectedRevision){
+    throw new BaselineSavedDataConflictException('revision_conflict');
+  }
+  $envelope = [
+    'schemaVersion' => BL_SAVED_SCHEMA_VERSION,
+    'revision' => $currentRevision + 1,
+    'updatedAt' => gmdate('c'),
+    'data' => $data,
+  ];
+  $json = json_encode($envelope, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
+  if(strlen($json) > BL_MAX_JSON_BYTES) throw new InvalidArgumentException('resource_too_large');
 
-    $temporary = bl_saved_join($directory, 'baseline-temp-' . bin2hex(random_bytes(12)) . '.tmp');
-    try{
-      bl_saved_write_stream($temporary, $json . "\n");
-      if(!@rename($temporary, $path)) throw new RuntimeException('atomic_replace_failed');
-      @chmod($path, 0600);
-    }finally{
-      if(is_file($temporary)) @unlink($temporary);
+  $temporary = bl_saved_join($directory, 'baseline-temp-' . bin2hex(random_bytes(12)) . '.tmp');
+  try{
+    bl_saved_write_stream($temporary, $json . "\n");
+    $decodedTemporary = bl_saved_decode_file($temporary);
+    if($decodedTemporary === null || (int)($decodedTemporary['revision'] ?? 0) !== $currentRevision + 1){
+      throw new BaselineSavedDataCorruptException('temporary_resource_validation_failed');
     }
-    return $envelope;
+    if(!@rename($temporary, $path)) throw new RuntimeException('atomic_replace_failed');
+    @chmod($path, 0600);
+  }finally{
+    if(is_file($temporary)) @unlink($temporary);
+  }
+  return $envelope;
 }
 
 function bl_saved_write(string $path, array $data, int $expectedRevision): array {

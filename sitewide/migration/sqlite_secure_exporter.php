@@ -4,12 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/sqlite_exporter.php';
 
 /**
- * Security-aligned exporter entry point.
+ * Security-aligned exporter entry point for the agreed resource-based Saved Data tree.
  *
- * The earlier low-level exporter functions remain available for fixture history,
- * but all supported CLI, verification and validation paths use this entry point.
- * It deliberately excludes authentication credentials and provider subjects from
- * Saved Data account projections and uses approved direct resource payloads.
+ * Authentication credentials and provider subjects remain in the protected account
+ * authority while user-owned and shared resources are exported to their canonical
+ * physical files.
  */
 
 function bl_secure_export_accounts(PDO $db, string $root, int $sourceTime, array &$report): array {
@@ -163,6 +162,75 @@ function bl_secure_export_voice(PDO $db, string $root, array $users, int $source
   $report['counts']['voiceFiles'] = $written;
 }
 
+function bl_secure_game_files(): array {
+  return [
+    'ninja'=>'baseline-realm.json',
+    'baseline-realm'=>'baseline-realm.json',
+    'pairs'=>'pairs.json',
+    'detectword'=>'detect-word.json',
+    'detect-word'=>'detect-word.json',
+    'make24'=>'make-24.json',
+    'make-24'=>'make-24.json',
+    'trackcoin'=>'track-coin.json',
+    'track-coin'=>'track-coin.json',
+    'ruleshift'=>'rule-shift.json',
+    'rule-shift'=>'rule-shift.json',
+    'dartsfocused'=>'darts-focused.json',
+    'darts-focused'=>'darts-focused.json',
+    'meridiangrove'=>'meridian-grove.json',
+    'meridian-grove'=>'meridian-grove.json',
+  ];
+}
+
+function bl_secure_game_filename(string $app): string {
+  $app = strtolower(trim($app));
+  $files = bl_secure_game_files();
+  if(!isset($files[$app])) throw new BaselineSqliteExportException('unsupported_game_resource');
+  return $files[$app];
+}
+
+function bl_secure_export_games(PDO $db, string $root, array $users, int $sourceTime, array &$report): void {
+  $rows = bl_export_rows($db, 'games_profiles', ['user_id','app','id']);
+  $written = 0;
+  foreach($rows as $row){
+    $uid = (int)($row['user_id'] ?? 0);
+    if(!isset($users[$uid])){
+      $report['invalid'][] = ['table'=>'games_profiles','reason'=>'missing_user','userId'=>$uid];
+      continue;
+    }
+    $app = strtolower(trim((string)($row['app'] ?? '')));
+    try{
+      $filename = bl_secure_game_filename($app);
+    }catch(BaselineSqliteExportException $error){
+      $report['invalid'][] = ['table'=>'games_profiles','reason'=>'unsupported_game_resource'];
+      continue;
+    }
+    $profile = bl_export_json_value($row['profile_json'] ?? null, 'game:' . $uid . ':' . $app, $report['invalid']);
+    if($profile === null) continue;
+    $updated = bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime);
+    $payload = [
+      'game'=>$app,
+      'profile'=>$profile,
+      'createdAt'=>bl_export_iso_time(bl_export_timestamp($row['created_at'] ?? 0, $sourceTime)),
+      'updatedAt'=>bl_export_iso_time($updated),
+    ];
+    bl_export_write_json(
+      bl_export_join($root, 'Users', $users[$uid]['folder'], 'Games', $filename),
+      bl_export_envelope($payload, $updated)
+    );
+    $written++;
+    $extra = bl_export_extra_fields($row, ['id','user_id','app','profile_json','created_at','updated_at']);
+    if($extra !== []){
+      $report['unmappedFields']['games_profiles'] = array_values(array_unique(array_merge(
+        $report['unmappedFields']['games_profiles'] ?? [],
+        array_keys($extra)
+      )));
+    }
+  }
+  $report['counts']['gameProfiles'] = count($rows);
+  $report['counts']['gameFiles'] = $written;
+}
+
 function bl_secure_export_badminton(PDO $db, string $root, int $sourceTime, array &$report): void {
   $rows = bl_export_rows($db, 'badminton_state_store', ['state_key']);
   $report['counts']['badmintonStates'] = count($rows);
@@ -194,7 +262,7 @@ function bl_secure_export_badminton(PDO $db, string $root, int $sourceTime, arra
   if($decoded === null) return;
   $updated = bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime);
   bl_export_write_json(
-    bl_export_join($root, 'Shared', 'badminton-session.json'),
+    bl_export_join($root, 'Shared', 'Badminton', 'badminton.json'),
     bl_export_envelope($decoded, $updated)
   );
   $report['counts']['badmintonFiles'] = 1;
@@ -214,8 +282,8 @@ function bl_secure_export_field_map(): array {
       'last_login_at'=>'lastLoginAt',
     ],
     'intentionallyNotExported'=>[
-      'pass_hash'=>'authentication credential remains in the hardened authoritative store',
-      'google_sub'=>'provider subject remains in the hardened authoritative store',
+      'pass_hash'=>'authentication credential remains in the protected account authority',
+      'google_sub'=>'provider subject remains in the protected account authority',
     ],
   ];
   $map['voice_settings'] = [
@@ -229,8 +297,18 @@ function bl_secure_export_field_map(): array {
       'confirmNumbers','confirmCommands','restAnnouncements','countdownAnnouncements','maximumRestSeconds',
     ],
   ];
+  $map['games_profiles'] = [
+    'target'=>'Users/{padded-id}/Games/{canonical-game-file}',
+    'canonicalFiles'=>bl_secure_game_files(),
+    'fields'=>[
+      'app'=>'data.game',
+      'profile_json'=>'data.profile',
+      'created_at'=>'data.createdAt',
+      'updated_at'=>'data.updatedAt',
+    ],
+  ];
   $map['badminton_state_store'] = [
-    'target'=>'Shared/badminton-session.json',
+    'target'=>'Shared/Badminton/badminton.json',
     'requiredStateKey'=>'global',
     'fields'=>[
       'state_json'=>'data (direct canonical Badminton state)',
@@ -291,7 +369,7 @@ function bl_secure_export_sqlite_copy(string $sourcePath, string $destinationPat
     bl_export_binaural($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_secure_export_voice($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_export_fitness($db, $staging, $users, $sourceMtimeBefore, $report);
-    bl_export_games($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_secure_export_games($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_secure_export_badminton($db, $staging, $sourceMtimeBefore, $report);
     $db = null;
 

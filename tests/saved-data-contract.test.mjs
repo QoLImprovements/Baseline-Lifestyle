@@ -27,6 +27,7 @@ test('private environment fallback is bounded, permission-checked, and allowlist
   assert.match(source, /parse_ini_file/);
   assert.match(source, /array_fill_keys/);
   assert.match(source, /BASELINE_SAVED_DATA_PATH/);
+  assert.match(source, /BASELINE_RUNTIME_PATH/);
   assert.match(source, /BL_CHARITY_SHOP_PIN/);
 });
 
@@ -40,19 +41,51 @@ test('saved data paths require private absolute host configuration', () => {
   assert.doesNotMatch(source, /public_html\/Saved Data|__DIR__\s*\.\s*['"]\/Saved Data/);
 });
 
-test('saved resources use stable IDs, narrow files, revisions, locks, and atomic replacement', () => {
+test('saved resources preserve the agreed physical file structure', () => {
   const source = read('sitewide/api/saved_data.php');
   for(const file of ['account.json','favourites.json','binaural.json','fitness.json','voice.json']){
     assert.ok(source.includes(`'${file}'`), `${file} is missing`);
   }
+  for(const file of [
+    'baseline-realm.json',
+    'pairs.json',
+    'detect-word.json',
+    'make-24.json',
+    'track-coin.json',
+    'rule-shift.json',
+    'darts-focused.json',
+    'meridian-grove.json',
+  ]){
+    assert.ok(source.includes(`'${file}'`), `${file} is missing`);
+  }
   assert.match(source, /sprintf\('%06d', \$userId\)/);
+  assert.match(source, /'Account Index', 'accounts\.json'/);
+  assert.match(source, /'Users'/);
   assert.match(source, /'Games'/);
-  assert.match(source, /badminton-session\.json/);
+  assert.match(source, /'Shared', 'Badminton', 'badminton\.json'/);
+  assert.doesNotMatch(source, /badminton-session\.json/);
+});
+
+test('saved resources use revisions, validation, locks, and atomic replacement', () => {
+  const source = read('sitewide/api/saved_data.php');
   assert.match(source, /expectedRevision/);
   assert.match(source, /revision_conflict/);
+  assert.match(source, /temporary_resource_validation_failed/);
   assert.match(source, /flock\(\$handle, LOCK_EX\)/);
   assert.match(source, /rename\(\$temporary, \$path\)/);
   assert.match(source, /fsync/);
+});
+
+test('saved-data structure remains the target authority rather than a SQLite substitute', () => {
+  const authority = read('sitewide/docs/SAVED_DATA_STRUCTURE_AUTHORITY_20260802.md');
+  const status = read('sitewide/docs/MODERNISATION_STATUS_20260802.md');
+  assert.match(authority, /Saved Data\/Users\/000001/);
+  assert.match(authority, /Shared\/Badminton\/badminton\.json/);
+  assert.match(authority, /one physical save file per played game/i);
+  assert.match(authority, /SQLite.*migration source|migration source.*SQLite/is);
+  assert.match(status, /target production authority.*independent resource files|independent resource files.*target production authority/is);
+  assert.match(status, /SQLite remains the current live production authority.*during migration/is);
+  assert.doesNotMatch(status, /Final data-authority architecture.*SQLite outside `public_html`/is);
 });
 
 test('supported migration entry points exclude authentication credentials', () => {
@@ -63,7 +96,6 @@ test('supported migration entry points exclude authentication credentials', () =
 
   assert.match(secure, /intentionallyNotExportedFields/);
   assert.match(secure, /'pass_hash','google_sub'/);
-  assert.match(secure, /Shared', 'badminton-session\.json/);
   assert.doesNotMatch(secure, /passwordHash\s*=>/);
   assert.match(exportCli, /bl_secure_export_sqlite_copy/);
   assert.match(verifier, /bl_secure_export_sqlite_copy/);

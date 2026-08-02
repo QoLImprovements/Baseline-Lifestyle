@@ -1,83 +1,65 @@
-# SQLite Copy Export Checkpoint — 2 August 2026
+# SQLite copied-data export checkpoint — corrected 2 August 2026
 
 ## Status
 
-This migration-tooling increment does not change production authority. SQLite remains the sole live authority and `saved_data.php` remains unwired.
+SQLite remains the current live source during migration. The exporter does not change production authority, but its output is the candidate tree for the agreed resource-based Saved Data architecture—not a replacement SQLite design.
 
-## Export tooling
+The canonical authority is recorded in `SAVED_DATA_STRUCTURE_AUTHORITY_20260802.md`.
 
-`sitewide/migration/export_sqlite_copy.php` exports an explicitly supplied SQLite copy into an isolated shadow Saved Data tree through the security-aligned exporter entry point.
+## Safety properties
 
-Safety properties:
+The copied database is opened read-only with query-only and integrity checks. Source hash, size and modification time are compared before and after export. Output is assembled privately through staging and atomic replacement, with private permissions and fail-closed reporting for missing tables, invalid JSON, unmapped fields and unclassified tables.
 
-- the source path must be explicit, absolute, readable and not a symbolic link;
-- SQLite is opened with `mode=ro` and `PRAGMA query_only = ON`;
-- `PRAGMA quick_check` must return `ok`;
-- source hash, size and modification time are checked before and after export;
-- output is assembled in a private staging directory and swapped only after every file validates and writes successfully;
-- directories use permission `0700` and files use `0600`;
-- rerunning against the same unchanged copy produces the same resource contents;
-- no production path is inferred and no database schema migration is run;
-- password hashes and authentication-provider subjects are deliberately excluded from Saved Data account projections;
-- unknown user-table columns are reported by name and are not copied into a catch-all values object;
-- voice settings are normalised through the same 12-field bounds/defaults used by the production API and exported directly, without a `settings` wrapper;
-- unknown nested voice-setting keys are reported by name and block combined validation;
-- shared Badminton must be represented by exactly one `global` source row and is exported as the direct canonical state, without a `states.global` wrapper.
+Password hashes and provider subjects are excluded from browser-facing account projections and remain in the protected authentication authority while the final account-index split is implemented.
 
-## Verification tooling
+## Canonical migration output
 
-`sitewide/migration/verify_sqlite_export.php` compares a completed shadow export with the same copied SQLite source.
+- accounts → `Account Index/accounts.json` plus `Users/{padded-id}/account.json`;
+- favourites → `Users/{padded-id}/favourites.json` only when records exist;
+- Binaural presets → `Users/{padded-id}/binaural.json` only when records exist;
+- voice settings → optional `Users/{padded-id}/voice.json`;
+- Fitness plans, sessions and achievements → initial `Users/{padded-id}/fitness.json` migration content;
+- each played game → one canonical file under `Users/{padded-id}/Games/`;
+- shared Badminton → `Shared/Badminton/badminton.json`.
 
-It verifies:
+Canonical game filename mapping:
 
-- source SHA-256 and read-only authority declaration;
-- every expected account and account-index lookup;
-- the exact account projection field allowlist;
-- explicit exclusion of `pass_hash` and `google_sub`;
-- favourites and Binaural presets;
-- optional direct voice settings using the production field allowlist and bounds;
-- Fitness plans, plan sessions and achievements;
-- every Games Hub profile and one-file-per-game layout;
-- the one canonical shared Badminton `global` state at `Shared/badminton-session.json`;
-- direct voice and Badminton payload shapes with no obsolete wrapper objects;
-- JSON envelopes, stable six-digit folders and allowed paths;
-- `0600` file and `0700` directory permissions on Unix hosts;
-- exported counts against recomputed source counts;
-- absence of unexpected files, invalid source JSON and unmapped source fields;
-- deterministic first, middle and last representative user/game records in the verification report.
+| Source app | Physical save file |
+|---|---|
+| `ninja` | `baseline-realm.json` |
+| `pairs` | `pairs.json` |
+| `detectword` | `detect-word.json` |
+| `make24` | `make-24.json` |
+| `trackcoin` | `track-coin.json` |
+| `ruleshift` | `rule-shift.json` |
+| `dartsfocused` | `darts-focused.json` |
+| `meridiangrove` | `meridian-grove.json` |
 
-The verifier returns a non-zero exit code for any mismatch. The executable fixture alters an exported game value and proves the verifier rejects the tampered tree before a clean deterministic rerun restores validity.
+The exporter fails closed on an unsupported game identifier rather than inventing a path.
 
-## Current mapping
+## Verification
 
-- `users` → account index plus `Users/{padded-id}/account.json` as a non-credential account projection
-- `favourites` → `favourites.json`, created only when records exist
-- `binaural_presets` → `binaural.json`, created only when records exist
-- `voice_settings.settings_json` → direct normalised settings inside `Users/{padded-id}/voice.json`
-- Fitness plans, sessions and achievements → `fitness.json`
-- each Games Hub profile → one `Games/{app}.json` file
-- `badminton_state_store.global` → the direct state inside `Shared/badminton-session.json`
+The independent verifier regenerates the expected tree and compares every path, file hash, envelope and permission. It allows only the canonical game filenames and validates that each file's stored game identifier maps back to that filename.
 
-Authentication credentials remain in the hardened authoritative authentication store. `account.json` contains only the stable user ID, display/account fields, primary provider label and timestamps. The private account index contains name/email lookups only and no provider-subject index.
+It also verifies:
 
-Password-reset tokens, rate-limit events, schema-migration bookkeeping, password hashes and provider subjects are deliberately not converted into permanent Saved Data resources. The export report records these exclusions, missing tables, invalid JSON and unexpected source or nested setting fields.
+- stable six-digit user folders;
+- exact account projection fields and credential exclusion;
+- account-index shape;
+- direct voice payload shape;
+- direct shared Badminton payload with no obsolete wrapper;
+- `Shared/Badminton/badminton.json` rather than a flattened path;
+- source counts, invalid records and unmapped fields;
+- rejection of extra, missing or tampered files.
 
-## Disposable verification gates
+## Completion boundary
 
-The executable contracts:
+A passing copied-data export proves that SQLite data can be represented in the canonical tree. It does not yet prove:
 
-- create a temporary SQLite fixture, export it twice, verify the source hash is unchanged, check that fixture password/provider values never enter the shadow tree or evidence, compare all source-owned resources, test deterministic reruns and reject intentional tampering;
-- inventory every source table and prove unknown or non-empty retired tables fail closed;
-- prove the Badminton `global` row is exported directly, while a wrong key or multiple source rows are rejected;
-- prove voice settings are exported directly, normalised to API bounds/defaults and block on unknown nested keys.
+- complete live schemas for every resource;
+- migration of eligible browser-only Fitness state;
+- protected resource-specific production readers and writers;
+- Hostinger backup and individual-file restoration;
+- controlled live cutover and rollback.
 
-They never open the configured production database or production Saved Data.
-
-## Still required before migration
-
-- run the combined validator against a separately copied production database;
-- review the generated counts and representative-record evidence;
-- resolve any invalid or unmapped fields;
-- define exact remaining per-resource payload schemas beyond account, voice and Badminton;
-- define and test rollback for a partial production cutover;
-- do not enable a JSON writer or change live authority until those comparisons pass.
+Do not declare Saved Data complete merely because the copy validates or SQLite is moved outside `public_html`.
