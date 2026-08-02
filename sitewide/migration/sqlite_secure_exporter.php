@@ -9,7 +9,7 @@ require_once __DIR__ . '/sqlite_exporter.php';
  * The earlier low-level exporter functions remain available for fixture history,
  * but all supported CLI, verification and validation paths use this entry point.
  * It deliberately excludes authentication credentials and provider subjects from
- * Saved Data account projections and uses the approved shared Badminton path.
+ * Saved Data account projections and uses approved direct resource payloads.
  */
 
 function bl_secure_export_accounts(PDO $db, string $root, int $sourceTime, array &$report): array {
@@ -74,6 +74,95 @@ function bl_secure_export_accounts(PDO $db, string $root, int $sourceTime, array
   return $byId;
 }
 
+function bl_secure_voice_bool($value, bool $default): bool {
+  if(is_bool($value)) return $value;
+  if($value === 1 || $value === '1' || $value === 'true') return true;
+  if($value === 0 || $value === '0' || $value === 'false') return false;
+  return $default;
+}
+
+function bl_secure_voice_float($value, float $default, float $minimum, float $maximum): float {
+  if(!is_numeric($value)) return $default;
+  return max($minimum, min($maximum, (float)$value));
+}
+
+function bl_secure_voice_int($value, int $default, int $minimum, int $maximum): int {
+  if(!is_numeric($value)) return $default;
+  return max($minimum, min($maximum, (int)round((float)$value)));
+}
+
+function bl_secure_voice_settings(array $settings, array &$report): array {
+  $allowed = [
+    'enabled',
+    'spokenResponses',
+    'language',
+    'voiceURI',
+    'rate',
+    'pitch',
+    'volume',
+    'confirmNumbers',
+    'confirmCommands',
+    'restAnnouncements',
+    'countdownAnnouncements',
+    'maximumRestSeconds',
+  ];
+  $unexpected = array_values(array_diff(array_keys($settings), $allowed));
+  sort($unexpected);
+  if($unexpected !== []){
+    $report['unmappedFields']['voice_settings.settings_json'] = array_values(array_unique(array_merge(
+      $report['unmappedFields']['voice_settings.settings_json'] ?? [],
+      $unexpected
+    )));
+  }
+
+  $language = substr(trim((string)($settings['language'] ?? 'en-GB')), 0, 24);
+  if($language === '') $language = 'en-GB';
+  return [
+    'enabled'=>bl_secure_voice_bool($settings['enabled'] ?? false, false),
+    'spokenResponses'=>bl_secure_voice_bool($settings['spokenResponses'] ?? true, true),
+    'language'=>$language,
+    'voiceURI'=>substr(trim((string)($settings['voiceURI'] ?? '')), 0, 240),
+    'rate'=>bl_secure_voice_float($settings['rate'] ?? 1, 1.0, 0.5, 2.0),
+    'pitch'=>bl_secure_voice_float($settings['pitch'] ?? 1, 1.0, 0.5, 2.0),
+    'volume'=>bl_secure_voice_float($settings['volume'] ?? 1, 1.0, 0.0, 1.0),
+    'confirmNumbers'=>bl_secure_voice_bool($settings['confirmNumbers'] ?? true, true),
+    'confirmCommands'=>bl_secure_voice_bool($settings['confirmCommands'] ?? false, false),
+    'restAnnouncements'=>bl_secure_voice_bool($settings['restAnnouncements'] ?? true, true),
+    'countdownAnnouncements'=>bl_secure_voice_bool($settings['countdownAnnouncements'] ?? true, true),
+    'maximumRestSeconds'=>bl_secure_voice_int($settings['maximumRestSeconds'] ?? 150, 150, 30, 600),
+  ];
+}
+
+function bl_secure_export_voice(PDO $db, string $root, array $users, int $sourceTime, array &$report): void {
+  $rows = bl_export_rows($db, 'voice_settings', ['user_id']);
+  $written = 0;
+  foreach($rows as $row){
+    $uid = (int)($row['user_id'] ?? 0);
+    if(!isset($users[$uid])){
+      $report['invalid'][] = ['table'=>'voice_settings','reason'=>'missing_user','userId'=>$uid];
+      continue;
+    }
+    $decoded = bl_export_json_value($row['settings_json'] ?? null, 'voice_settings:' . $uid, $report['invalid']);
+    if($decoded === null) continue;
+    $settings = bl_secure_voice_settings($decoded, $report);
+    $updated = bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime);
+    bl_export_write_json(
+      bl_export_join($root, 'Users', $users[$uid]['folder'], 'voice.json'),
+      bl_export_envelope($settings, $updated)
+    );
+    $written++;
+    $extra = bl_export_extra_fields($row, ['user_id','settings_json','updated_at']);
+    if($extra !== []){
+      $report['unmappedFields']['voice_settings'] = array_values(array_unique(array_merge(
+        $report['unmappedFields']['voice_settings'] ?? [],
+        array_keys($extra)
+      )));
+    }
+  }
+  $report['counts']['voiceSettings'] = count($rows);
+  $report['counts']['voiceFiles'] = $written;
+}
+
 function bl_secure_export_badminton(PDO $db, string $root, int $sourceTime, array &$report): void {
   $rows = bl_export_rows($db, 'badminton_state_store', ['state_key']);
   $report['counts']['badmintonStates'] = count($rows);
@@ -127,6 +216,17 @@ function bl_secure_export_field_map(): array {
     'intentionallyNotExported'=>[
       'pass_hash'=>'authentication credential remains in the hardened authoritative store',
       'google_sub'=>'provider subject remains in the hardened authoritative store',
+    ],
+  ];
+  $map['voice_settings'] = [
+    'target'=>'Users/{padded-id}/voice.json',
+    'fields'=>[
+      'settings_json'=>'data (direct normalised voice settings)',
+      'updated_at'=>'updatedAt',
+    ],
+    'allowedSettings'=>[
+      'enabled','spokenResponses','language','voiceURI','rate','pitch','volume',
+      'confirmNumbers','confirmCommands','restAnnouncements','countdownAnnouncements','maximumRestSeconds',
     ],
   ];
   $map['badminton_state_store'] = [
@@ -189,7 +289,7 @@ function bl_secure_export_sqlite_copy(string $sourcePath, string $destinationPat
     $users = bl_secure_export_accounts($db, $staging, $sourceMtimeBefore, $report);
     bl_export_favourites($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_export_binaural($db, $staging, $users, $sourceMtimeBefore, $report);
-    bl_export_voice($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_secure_export_voice($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_export_fitness($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_export_games($db, $staging, $users, $sourceMtimeBefore, $report);
     bl_secure_export_badminton($db, $staging, $sourceMtimeBefore, $report);
