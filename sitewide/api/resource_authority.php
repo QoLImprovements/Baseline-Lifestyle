@@ -45,21 +45,28 @@ function bl_resource_file_replace(string $path, array $data, ?int $expectedRevis
   return bl_saved_write($path, $data, $revision);
 }
 
-function bl_resource_file_delete(string $path, ?int $expectedRevision=null): void {
-  $current = bl_saved_read($path);
-  if($current === null) return;
-  $revision = (int)($current['revision'] ?? 0);
-  if($expectedRevision !== null && $revision !== $expectedRevision){
-    throw new BaselineSavedDataConflictException('revision_conflict');
-  }
-  bl_saved_with_resource_lock($path, static function() use ($path, $revision): void {
-    $latest = bl_saved_read($path);
-    if($latest === null) return;
-    if((int)($latest['revision'] ?? 0) !== $revision){
+function bl_resource_file_mutate(string $path, array $default, callable $mutator, ?int $expectedRevision=null): ?array {
+  bl_saved_ensure_directory(dirname($path));
+  return bl_saved_with_resource_lock($path, static function() use ($path, $default, $mutator, $expectedRevision): ?array {
+    $current = bl_saved_read($path);
+    $revision = (int)($current['revision'] ?? 0);
+    if($expectedRevision !== null && $revision !== $expectedRevision){
       throw new BaselineSavedDataConflictException('revision_conflict');
     }
-    if(!@unlink($path) && is_file($path)) throw new RuntimeException('resource_delete_failed');
+    $data = $current === null ? $default : ($current['data'] ?? $default);
+    if(!is_array($data)) throw new BaselineSavedDataCorruptException('resource_data_not_object');
+    $next = $mutator($data, $revision, $current);
+    if($next === null){
+      if($current !== null && !@unlink($path) && is_file($path)) throw new RuntimeException('resource_delete_failed');
+      return null;
+    }
+    if(!is_array($next)) throw new InvalidArgumentException('resource_mutator_must_return_array');
+    return bl_saved_write_unlocked($path, $next, $revision);
   });
+}
+
+function bl_resource_file_delete(string $path, ?int $expectedRevision=null): void {
+  bl_resource_file_mutate($path, [], static fn(): ?array => null, $expectedRevision);
 }
 
 function bl_resource_file_delete_if_empty(string $path, array $data, callable $isEmpty): ?array {
