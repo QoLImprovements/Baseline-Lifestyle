@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once dirname(__DIR__) . '/sitewide/migration/sqlite_export_verifier.php';
+require_once dirname(__DIR__) . '/sitewide/migration/sqlite_copy_validation.php';
 
 function bl_export_test_assert(bool $condition, string $message): void {
   if(!$condition) throw new RuntimeException($message);
@@ -26,6 +26,7 @@ function bl_export_test_tree_hash(string $directory): string {
 $base = sys_get_temp_dir() . '/baseline-sqlite-export-' . bin2hex(random_bytes(8));
 $source = $base . '/copied.sqlite';
 $output = $base . '/shadow/Saved Data';
+$evidence = $base . '/review/copied-data-evidence.json';
 @mkdir($base, 0700, true);
 
 try{
@@ -81,6 +82,30 @@ try{
   bl_export_test_assert(($verified['representativeRecords']['users'][0] ?? '') === '000007', 'representative user failed');
   bl_export_test_assert(($verified['representativeRecords']['games'][0] ?? '') === '000007:pairs', 'representative game failed');
 
+  $validated = bl_validate_sqlite_copy($source, $output, $evidence);
+  bl_export_test_assert($validated['ok'] === true, 'combined validation did not pass');
+  bl_export_test_assert($validated['readyForProductionCutover'] === false, 'validation incorrectly enabled cutover');
+  bl_export_test_assert(($validated['gates']['verificationCompleted'] ?? false) === true, 'verification gate missing');
+  bl_export_test_assert(($validated['export']['treeSha256'] ?? '') === bl_copy_validation_tree_hash($output), 'tree hash mismatch');
+  bl_export_test_assert(($validated['verification']['representativeRecords']['userFolders'][0] ?? '') === '000007', 'safe representative user missing');
+  bl_export_test_assert(is_file($evidence), 'evidence file missing');
+  $evidenceRaw = file_get_contents($evidence);
+  bl_export_test_assert(is_string($evidenceRaw), 'evidence read failed');
+  foreach(['Peter','peter@example.test','hash-value','google-7'] as $secret){
+    bl_export_test_assert(!str_contains($evidenceRaw, $secret), 'evidence exposed source value: ' . $secret);
+  }
+  if(DIRECTORY_SEPARATOR === '/'){
+    bl_export_test_assert(((int)fileperms($evidence) & 0777) === 0600, 'evidence permissions were not private');
+  }
+
+  $pathRejected = false;
+  try{
+    bl_validate_sqlite_copy($source, $output, $output . '/evidence.json');
+  }catch(BaselineSqliteCopyValidationException $error){
+    $pathRejected = $error->getMessage() === 'evidence_must_be_outside_export_tree';
+  }
+  bl_export_test_assert($pathRejected, 'evidence inside export tree was accepted');
+
   $gamePath = $output . '/Users/000007/Games/pairs.json';
   $tampered = bl_export_test_read($gamePath);
   $tampered['data']['profile']['level'] = 99;
@@ -93,7 +118,31 @@ try{
   bl_export_sqlite_copy($source, $output);
   bl_export_test_assert(bl_verify_sqlite_export($source, $output)['ok'] === true, 'clean rerun did not restore validity');
 
-  echo "sqlite exporter and verifier contract passed\n";
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec("UPDATE games_profiles SET profile_json='not-json' WHERE id=6");
+  $db = null;
+  $failedEvidence = $base . '/review/failed-evidence.json';
+  $failedClosed = false;
+  try{
+    bl_validate_sqlite_copy($source, $output, $failedEvidence);
+  }catch(BaselineSqliteCopyValidationException $error){
+    $failedClosed = $error->getMessage() === 'copied_data_validation_failed';
+  }
+  bl_export_test_assert($failedClosed, 'invalid copied data did not fail closed');
+  $failure = bl_export_test_read($failedEvidence);
+  bl_export_test_assert($failure['ok'] === false, 'failure evidence incorrectly passed');
+  bl_export_test_assert(($failure['export']['invalidCount'] ?? 0) === 1, 'invalid source count missing');
+  bl_export_test_assert(($failure['decision']['productionCutover'] ?? '') === 'blocked', 'failure evidence did not block cutover');
+  $failedRaw = file_get_contents($failedEvidence);
+  bl_export_test_assert(is_string($failedRaw) && !str_contains($failedRaw, 'Peter'), 'failure evidence exposed personal data');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec("UPDATE games_profiles SET profile_json='{\"level\":2}' WHERE id=6");
+  $db = null;
+  $restored = bl_validate_sqlite_copy($source, $output, $evidence);
+  bl_export_test_assert($restored['ok'] === true, 'restored copied data did not pass');
+
+  echo "sqlite exporter, verifier and validation evidence contract passed\n";
 }finally{
   bl_export_remove_tree($base);
 }
