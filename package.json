@@ -17,7 +17,7 @@
     "test:stability-smoke": "playwright test tests/stability-release-smoke.spec.js",
     "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs",
     "test:saved-data": "node --test tests/saved-data-contract.test.mjs tests/voice-recognition-policy.test.mjs",
-    "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/saved-data-contract.php"
+    "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/session-contract.php && php tests/saved-data-contract.php"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"
