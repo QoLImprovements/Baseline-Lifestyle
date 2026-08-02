@@ -120,12 +120,12 @@
     },
     {
       "id": "fitness-body-profile",
-      "inventoryPatterns": ["[expression] bodyProfileKey("],
+      "inventoryPatterns": ["[expression] bodyProfileKey(", "[expression] bodyKey("],
       "knownKeys": ["__bl_fitness_body_profile_v1__::{normalised-user}"],
       "classification": "fitness-user-data",
       "decision": "migrate-after-schema-validation",
       "target": "Users/{paddedUserId}/fitness.json#profile",
-      "cutoverRule": "Validate field allowlists and units. Do not create paths from the username embedded in the legacy key."
+      "cutoverRule": "Validate field allowlists and units. Do not create paths from the username embedded in the legacy key. The bridge expression and the Fitness application expression refer to the same physical browser key."
     },
     {
       "id": "storage-wrapper-implementation",
