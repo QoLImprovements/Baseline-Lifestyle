@@ -42,6 +42,7 @@ try{
   $path = $output . '/Shared/Badminton/badminton.json';
   bl_badminton_export_test_assert(is_file($path), 'canonical badminton file missing');
   bl_badminton_export_test_assert(!is_file($output . '/Shared/badminton-session.json'), 'flattened badminton path was written');
+  bl_badminton_export_test_assert(!is_dir($output . '/Migration Report'), 'migration metadata entered Saved Data');
   bl_badminton_export_test_assert(($report['counts']['badmintonStates'] ?? 0) === 1, 'badminton row count failed');
   bl_badminton_export_test_assert(($report['counts']['badmintonFiles'] ?? 0) === 1, 'badminton file count failed');
   $resource = bl_badminton_export_test_read($path);
@@ -49,7 +50,7 @@ try{
   bl_badminton_export_test_assert(($resource['data']['players'] ?? null) === [], 'direct badminton players missing');
   bl_badminton_export_test_assert(!array_key_exists('states', $resource['data']), 'obsolete states wrapper remains');
 
-  $fieldMap = bl_badminton_export_test_read($output . '/Migration Report/field-map.json');
+  $fieldMap = bl_secure_export_field_map();
   bl_badminton_export_test_assert(($fieldMap['badminton_state_store']['target'] ?? '') === 'Shared/Badminton/badminton.json', 'badminton target path drifted');
   bl_badminton_export_test_assert(($fieldMap['badminton_state_store']['requiredStateKey'] ?? '') === 'global', 'global state key contract missing');
 
