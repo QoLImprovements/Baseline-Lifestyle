@@ -33,14 +33,15 @@ const entrypoints = [
   'systems/baseline-games-hub/baseline-games-hub.html'
 ];
 
-test('every page loads the API client before the shared account runtime', () => {
+test('every page loads focused clients before the shared account runtime', () => {
   const pages = htmlFiles().filter(entry=>read(entry).includes('/sitewide/js/baseline-shared.js'));
   assert.ok(pages.length >= entrypoints.length);
   for (const entry of pages){
     const html = read(entry);
     const api = html.indexOf('/sitewide/js/baseline-api.js');
+    const store = html.indexOf('/sitewide/js/baseline-store.js');
     const shared = html.indexOf('/sitewide/js/baseline-shared.js');
-    assert.ok(api > -1 && shared > api, `${entry} must load the API client before the shared runtime`);
+    assert.ok(api > -1 && store > api && shared > store, `${entry} must load API and store clients before the shared runtime`);
   }
 });
 
@@ -53,6 +54,17 @@ test('the shared controller delegates transport to the focused API client', () =
   assert.match(api, /error:'network_error'/);
   assert.match(api, /error: looksLikeHtml \? 'api_returned_html' : 'api_non_json_response'/);
   assert.doesNotMatch(api, /authState|createElement|localStorage/);
+});
+
+test('the shared controller delegates local cache persistence to the focused store client', () => {
+  const shared = read('sitewide/js/baseline-shared.js');
+  const store = read('sitewide/js/baseline-store.js');
+  assert.match(shared, /const sitewideStore = window\.BASELINE_store/);
+  assert.doesNotMatch(shared, /function ls(?:Read|Write|Del)\b|function localUserKey\b/);
+  assert.match(store, /scope\.localStorage\.getItem/);
+  assert.match(store, /scope\.localStorage\.setItem/);
+  assert.match(store, /scope\.localStorage\.removeItem/);
+  assert.doesNotMatch(store, /authState|createElement|fetch\(/);
 });
 
 test('Fitness loads API compatibility after shared auth and before its application', () => {

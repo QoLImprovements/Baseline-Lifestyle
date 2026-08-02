@@ -4911,44 +4911,13 @@ function buildControls(recipeEl){
   }
 
 
-  // Lightweight client store (used by non-auth features that cache local UI state)
-  const LOCAL_USERS_KEY = '__bl_local_users_v1__';
-  const LOCAL_SESS_KEY  = '__bl_local_session_v1__';
-
-  function lsRead(key, fallback){
-    try{
-      const raw = localStorage.getItem(key);
-      if(!raw) return fallback;
-      return JSON.parse(raw);
-    }catch(_e){ return fallback; }
-  }
-  function lsWrite(key, val){
-    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(_e){}
-  }
-  function lsDel(key){
-    try{ localStorage.removeItem(key); }catch(_e){}
-  }
-
-  function localUserKey(prefix, username){
-    const u = String(username||'').trim();
-    return prefix + '::' + u.toLowerCase();
-  }
-
-  try{
-    window.BASELINE_store = {
-      isFile: !!IS_FILE_PROTOCOL,
-      read: lsRead,
-      write: lsWrite,
-      del: lsDel,
-      userKey: localUserKey,
-      keys: {
-        users: LOCAL_USERS_KEY,
-        session: LOCAL_SESS_KEY,
-        fitnessPlan: '__bl_fitness_plan_v1__',
-        voiceSettings: '__baseline_voice_settings_v1__',
-      }
-    };
-  }catch(_e){}
+  // Lightweight local cache used by non-auth interface features.
+  const sitewideStore = window.BASELINE_store;
+  const LOCAL_SESS_KEY = sitewideStore.keys.session;
+  const lsRead = sitewideStore.read;
+  const lsWrite = sitewideStore.write;
+  const lsDel = sitewideStore.del;
+  const localUserKey = sitewideStore.userKey;
 
   const authState = { authed:false, name:'', email:'', providers:{ password:true, google:false } };
   try{
