@@ -1,82 +1,51 @@
 <?php
 declare(strict_types=1);
-require __DIR__ . '/schema.php';
-$uid = bl_require_user_id();
+require __DIR__ . '/fitness_resource.php';
 
+$uid = bl_require_user_id();
 $d = bl_input_json();
 $planText = trim((string)($d['planText'] ?? ''));
 $planJson = $d['planJson'] ?? [];
-
+if(!is_array($planJson)) $planJson = [];
 if($planText === '') bl_json(['ok'=>false,'error'=>'empty_plan'], 400);
 
 try{
+  $mode = bl_resource_authority();
+  if($mode === 'saved-data'){
+    $resource = bl_fitness_resource_read($uid);
+    $expected = bl_resource_revision_from_input($d);
+    if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+    $planId = bl_fitness_next_plan_id($resource['data']);
+    $resource['data']['plans'][] = [
+      'sourcePlanId'=>$planId,
+      'createdAt'=>gmdate('c'),
+      'plan'=>$planJson,
+      'legacyPlanText'=>$planText,
+      'sessions'=>bl_fitness_new_sessions($planJson),
+    ];
+    $written = bl_fitness_resource_write($uid, $resource['data'], $resource['revision']);
+    bl_json(['ok'=>true,'planId'=>$planId,'revision'=>(int)($written['revision'] ?? 0)]);
+  }
+
   $db = bl_fitness_db();
   $db->beginTransaction();
   $stmt = $db->prepare('INSERT INTO plans(user_id, created_at, plan_text, plan_json) VALUES(:u,:t,:pt,:pj)');
-  $stmt->execute([
-    ':u'=>$uid,
-    ':t'=>time(),
-    ':pt'=>$planText,
-    ':pj'=>json_encode($planJson, JSON_UNESCAPED_SLASHES),
-  ]);
+  $stmt->execute([':u'=>$uid,':t'=>time(),':pt'=>$planText,':pj'=>json_encode($planJson, JSON_UNESCAPED_SLASHES)]);
   $planId = (int)$db->lastInsertId();
-
-  // Create scheduled sessions if we have enough detail in planJson.
-  $pj = is_array($planJson) ? $planJson : [];
-  $sessions = (int)($pj['sessions'] ?? 0);
-  if($sessions <= 0) $sessions = 18;
-
-  $frequency = (string)($pj['frequency'] ?? '3x');
-
-  $startDate = (string)($pj['startDate'] ?? '');
-  if(!preg_match('/^\d{4}-\d{2}-\d{2}$/', $startDate)){
-    $startDate = gmdate('Y-m-d');
-  }
-
-  $patterns = [
-    '1x' => [7],
-    '2x' => [3,4],
-    '3x' => [2,2,3],
-  ];
-  $pat = $patterns[$frequency] ?? $patterns['3x'];
-
-  $dt = new DateTimeImmutable($startDate, new DateTimeZone('UTC'));
+  $dates = bl_fitness_schedule_dates($planJson);
   $ins = $db->prepare('INSERT INTO plan_sessions(plan_id, user_id, session_index, scheduled_date, status, completed_at, updated_at) VALUES(:p,:u,:i,:d,:s,NULL,:t)');
   $now = time();
-  $dayNumbers = ['Sunday'=>0,'Monday'=>1,'Tuesday'=>2,'Wednesday'=>3,'Thursday'=>4,'Friday'=>5,'Saturday'=>6];
-  $selectedDayNumbers = [];
-  foreach((is_array($pj['days'] ?? null) ? $pj['days'] : []) as $dayName){
-    if(isset($dayNumbers[$dayName])) $selectedDayNumbers[] = $dayNumbers[$dayName];
+  foreach($dates as $offset=>$date){
+    $ins->execute([':p'=>$planId,':u'=>$uid,':i'=>$offset + 1,':d'=>$date,':s'=>'planned',':t'=>$now]);
   }
-  $selectedDayNumbers = array_values(array_unique($selectedDayNumbers));
-  $dates = [];
-  while(count($dates) < $sessions){
-    if($selectedDayNumbers){
-      if(in_array((int)$dt->format('w'), $selectedDayNumbers, true)) $dates[] = $dt->format('Y-m-d');
-      $dt = $dt->modify('+1 day');
-    }else{
-      $dates[] = $dt->format('Y-m-d');
-      $stepIndex = count($dates)-1;
-      if(count($dates) < $sessions){
-        $stepDays = (int)($pat[$stepIndex % count($pat)] ?? 2);
-        $dt = $dt->modify('+' . $stepDays . ' days');
-      }
-    }
-  }
-
-  for($i=1; $i<=$sessions; $i++){
-    $ins->execute([
-      ':p' => $planId,
-      ':u' => $uid,
-      ':i' => $i,
-      ':d' => $dates[$i-1],
-      ':s' => 'planned',
-      ':t' => $now,
-    ]);
-  }
-
   $db->commit();
+  if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $uid);
   bl_json(['ok'=>true,'planId'=>$planId]);
+}catch(BaselineSavedDataConflictException $e){
+  bl_resource_conflict_response($e);
+}catch(InvalidArgumentException $e){
+  if($e->getMessage() === 'invalid_expected_revision') bl_json(['ok'=>false,'error'=>'invalid_expected_revision'], 400);
+  bl_json(['ok'=>false,'error'=>'save_failed'], 500);
 }catch(Throwable $e){
   if(isset($db) && $db instanceof PDO && $db->inTransaction()) $db->rollBack();
   bl_json(['ok'=>false,'error'=>'save_failed'], 500);
