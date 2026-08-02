@@ -59,6 +59,15 @@ The third change extracts session creation, cookie policy and the small signed-i
 - User lookup, permissions, authentication-provider logic and all database work remain outside this boundary.
 - A direct PHP contract verifies secure cookie settings, session values and clearing behaviour.
 
+## Increment 4: authentication boundary
+
+The fourth change extracts current-user lookup, account-input validation, safe public account payloads and provider availability into `sitewide/api/authentication.php`.
+
+- Password hashes remain server-only and are excluded from the public payload.
+- Missing account records clear stale signed-in session state.
+- Password reset, mail, schema migration and rate limiting remain in `config.php` for later bounded changes.
+- The executable contract uses only an in-memory SQLite fixture; it never opens the production database or Saved Data.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
