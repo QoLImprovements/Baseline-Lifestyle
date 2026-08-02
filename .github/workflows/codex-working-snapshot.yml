@@ -1,0 +1,43 @@
+name: Codex working snapshot
+
+on:
+  push:
+    branches:
+      - agent/stability-release-process-20260802
+    paths:
+      - .github/workflows/codex-working-snapshot.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    name: Build tracked working snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Create tracked-file archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p snapshot-output
+          git ls-files -z |
+            tar --null -czf snapshot-output/repository-snapshot.tar.gz --files-from=-
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "tracked_files=$(git ls-files | wc -l)"
+          } > snapshot-output/snapshot-metadata.txt
+
+      - name: Upload short-lived snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-lifestyle-working-snapshot
+          path: snapshot-output/
+          if-no-files-found: error
+          retention-days: 1
