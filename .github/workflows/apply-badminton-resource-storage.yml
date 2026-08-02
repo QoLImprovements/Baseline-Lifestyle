@@ -1,0 +1,38 @@
+name: Apply Badminton resource storage patch
+
+on:
+  push:
+    branches:
+      - agent/complete-saved-data-runtime-20260802
+    paths:
+      - tools/apply_badminton_resource_storage.py
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/complete-saved-data-runtime-20260802
+          fetch-depth: 0
+      - name: Apply deterministic patch
+        run: python3 tools/apply_badminton_resource_storage.py
+      - name: Verify patch changed only the endpoint
+        run: |
+          git diff --exit-code -- tools/apply_badminton_resource_storage.py .github/workflows/apply-badminton-resource-storage.yml
+          git diff --check
+          git diff -- systems/baseline-badminton-session/api/badminton_session.php
+      - name: Commit patched endpoint
+        run: |
+          if git diff --quiet -- systems/baseline-badminton-session/api/badminton_session.php; then
+            echo "No endpoint changes required."
+            exit 0
+          fi
+          git config user.name "Baseline Saved Data automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add systems/baseline-badminton-session/api/badminton_session.php
+          git commit -m "Wire Badminton to controlled Saved Data authority"
+          git push origin HEAD:agent/complete-saved-data-runtime-20260802
