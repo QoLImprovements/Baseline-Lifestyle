@@ -121,6 +121,15 @@ The tenth change extracts JSON local-cache reads, writes, deletion and stable pe
 - Fitness and other consumers continue to use the same `window.BASELINE_store` interface.
 - A direct Node contract covers serialization, deletion, fallbacks, denied storage and file-preview state.
 
+## Increment 11: sitewide authentication client boundary
+
+The eleventh change extracts account state, provider discovery, login, registration, password recovery and logout operations from the shared interface controller into `sitewide/js/baseline-auth.js`.
+
+- The interface consumes immutable live state and the existing snapshot/subscription methods.
+- API paths, request bodies, local session cache and `baseline:auth` events are unchanged.
+- Google sign-in remains intentionally unavailable in the live interface.
+- A direct Node contract covers cached state, login, refresh, registration, recovery, logout and file previews without contacting a server.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
