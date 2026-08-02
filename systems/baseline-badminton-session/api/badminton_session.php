@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 require __DIR__ . '/../../../sitewide/api/config.php';
+require_once __DIR__ . '/badminton_storage.php';
 
 bl_session_start();
 
@@ -454,35 +455,44 @@ function bl_badminton_public_state(array $state, array $user, bool $isAdmin): ar
 }
 
 try{
-  $db = bl_db();
-  bl_badminton_state_table($db);
-  $stmt = $db->prepare('SELECT state_json, updated_at FROM badminton_state_store WHERE state_key=:k LIMIT 1');
-  $stmt->execute([':k'=>'global']);
-  $row = $stmt->fetch();
-  $storedState = [];
-  $updatedAt = null;
-  if($row){
-    $decoded = json_decode((string)($row['state_json'] ?? ''), true);
-    $storedState = is_array($decoded) ? bl_badminton_storage_state($decoded) : [];
-    $updatedAt = (int)($row['updated_at'] ?? 0);
+  $mode = bl_resource_authority();
+  if($mode === 'saved-data'){
+    $loaded = bl_badminton_file_load();
+  }else{
+    $db = bl_db();
+    $loaded = bl_badminton_sqlite_load($db);
+    if($mode === 'mirror'){
+      $mirrored = bl_badminton_mirror_state($loaded['state']);
+      $loaded['revision'] = (int)($mirrored['revision'] ?? 0);
+    }
   }
+  $storedState = is_array($loaded['state'] ?? null) ? bl_badminton_storage_state($loaded['state']) : [];
+  $updatedAt = $loaded['updated_at'] ?? null;
+  $revision = (int)($loaded['revision'] ?? 0);
 
   $user = bl_badminton_current_user();
   $isDeveloper = bl_badminton_is_developer($user);
   $isAdmin = bl_badminton_is_admin($user, $storedState);
   $authPayload = [
-    'logged_in' => (int)($user['id'] ?? 0) > 0,
-    'is_developer' => $isDeveloper,
-    'is_badminton_admin' => $isAdmin,
-    'user' => [
-      'id' => (int)($user['id'] ?? 0),
-      'name' => (string)($user['name'] ?? ''),
-      'email' => (string)($user['email'] ?? ''),
+    'logged_in'=>(int)($user['id'] ?? 0) > 0,
+    'is_developer'=>$isDeveloper,
+    'is_badminton_admin'=>$isAdmin,
+    'user'=>[
+      'id'=>(int)($user['id'] ?? 0),
+      'name'=>(string)($user['name'] ?? ''),
+      'email'=>(string)($user['email'] ?? ''),
     ],
   ];
 
   if(($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET'){
-    bl_json(['ok'=>true,'state'=>bl_badminton_public_state($storedState, $user, $isAdmin),'updated_at'=>$updatedAt,'auth'=>$authPayload]);
+    $response = [
+      'ok'=>true,
+      'state'=>bl_badminton_public_state($storedState, $user, $isAdmin),
+      'updated_at'=>$updatedAt,
+      'auth'=>$authPayload,
+    ];
+    if($mode !== 'sqlite') $response['revision'] = $revision;
+    bl_json($response);
   }
 
   if(($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST'){
@@ -492,9 +502,7 @@ try{
   $input = bl_input_json();
   $state = $input['state'] ?? null;
   if(!is_array($state)) bl_json(['ok'=>false,'error'=>'bad_state'], 400);
-
-  $state = bl_badminton_storage_state($state);
-  $state = bl_badminton_enrich_rating_state($state);
+  $state = bl_badminton_enrich_rating_state(bl_badminton_storage_state($state));
 
   if(bl_badminton_management_changed($storedState, $state) && !$isAdmin){
     bl_json([
@@ -514,7 +522,6 @@ try{
     ], 403);
   }
 
-
   $serverValidation = bl_badminton_validate_added_match_state($storedState, $state);
   if(empty($serverValidation['ok'])){
     bl_json([
@@ -526,14 +533,33 @@ try{
     ], 400);
   }
 
-  $json = json_encode(bl_badminton_storage_state($state), JSON_UNESCAPED_SLASHES);
-  if($json === false) bl_json(['ok'=>false,'error'=>'encode_failed'], 400);
+  if($mode === 'saved-data'){
+    $expected = bl_resource_revision_from_input($input);
+    $written = bl_badminton_file_write($state, $expected);
+    $updatedAt = bl_resource_timestamp((string)$written['updatedAt']);
+    $revision = (int)$written['revision'];
+  }else{
+    $updatedAt = bl_badminton_sqlite_write($db, $state);
+    if($mode === 'mirror'){
+      $written = bl_badminton_mirror_state($state);
+      $revision = (int)($written['revision'] ?? 0);
+    }
+  }
 
-  $now = time();
-  $stmt = $db->prepare('INSERT INTO badminton_state_store(state_key, state_json, updated_at) VALUES(:k,:j,:t)
-    ON CONFLICT(state_key) DO UPDATE SET state_json=excluded.state_json, updated_at=excluded.updated_at');
-  $stmt->execute([':k'=>'global', ':j'=>$json, ':t'=>$now]);
-  bl_json(['ok'=>true,'updated_at'=>$now,'auth'=>$authPayload,'state'=>bl_badminton_public_state($state, $user, $isAdmin)]);
+  $response = [
+    'ok'=>true,
+    'updated_at'=>$updatedAt,
+    'auth'=>$authPayload,
+    'state'=>bl_badminton_public_state($state, $user, $isAdmin),
+  ];
+  if($mode !== 'sqlite') $response['revision'] = $revision;
+  bl_json($response);
+}catch(BaselineSavedDataConflictException $e){
+  bl_resource_conflict_response($e);
+}catch(InvalidArgumentException $e){
+  if($e->getMessage() === 'invalid_expected_revision') bl_json(['ok'=>false,'error'=>'invalid_expected_revision'], 400);
+  if($e->getMessage() === 'encode_failed') bl_json(['ok'=>false,'error'=>'encode_failed'], 400);
+  bl_json(['ok'=>false,'error'=>'badminton_state_failed'], 500);
 }catch(Throwable $e){
   bl_json(['ok'=>false,'error'=>'badminton_state_failed'], 500);
 }
