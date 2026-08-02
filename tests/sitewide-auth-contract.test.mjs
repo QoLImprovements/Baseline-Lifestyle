@@ -80,6 +80,18 @@ test('HTTP and JSON handling have one focused server boundary', () => {
   assert.match(http, /Never build security-sensitive links from an untrusted Host header/);
 });
 
+test('current-user validation and public account payloads have one authentication boundary', () => {
+  const config = read('sitewide/api/config.php');
+  const auth = read('sitewide/api/authentication.php');
+  assert.match(config, /require_once __DIR__ \. '\/authentication\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:current_user|require_user|require_user_id|normalize_email|email_is_valid|password_is_valid|user_public_payload|is_google_enabled|auth_providers_payload)\b/);
+  for(const name of ['bl_current_user','bl_require_user','bl_require_user_id','bl_normalize_email','bl_email_is_valid','bl_password_is_valid','bl_user_public_payload','bl_is_google_enabled','bl_auth_providers_payload']){
+    assert.match(auth, new RegExp(`function ${name}\\b`), `${name} is missing from the authentication boundary`);
+  }
+  assert.match(auth, /SELECT \* FROM users WHERE id = :id LIMIT 1/);
+  assert.doesNotMatch(auth, /pass_hash\s*=>|password_hash\(|schema_migrations|function bl_send_text_mail/);
+});
+
 test('the canonical rewrite owns root API routes without physical shadow endpoints', () => {
   const htaccess = read('.htaccess');
   assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
