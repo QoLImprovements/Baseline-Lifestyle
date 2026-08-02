@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-time deterministic transformation for the existing validation-heavy endpoint.
 path = Path('systems/baseline-badminton-session/api/badminton_session.php')
 text = path.read_text(encoding='utf-8')
 require_line = "require __DIR__ . '/../../../sitewide/api/config.php';\n"
