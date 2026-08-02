@@ -45,11 +45,29 @@ function bl_verify_relative_files(string $root): array {
   return $files;
 }
 
+function bl_verify_canonical_game_files(): array {
+  return [
+    'baseline-realm.json',
+    'pairs.json',
+    'detect-word.json',
+    'make-24.json',
+    'track-coin.json',
+    'rule-shift.json',
+    'darts-focused.json',
+    'meridian-grove.json',
+  ];
+}
+
+function bl_verify_game_file(string $relative): bool {
+  if(preg_match('#^Users/[0-9]{6}/Games/([^/]+\.json)$#', $relative, $match) !== 1) return false;
+  return in_array($match[1], bl_verify_canonical_game_files(), true);
+}
+
 function bl_verify_resource_file(string $relative): bool {
   return preg_match('#^Users/[0-9]{6}/(?:account|favourites|binaural|fitness|voice)\.json$#', $relative) === 1
-    || preg_match('#^Users/[0-9]{6}/Games/[a-z0-9][a-z0-9._-]{0,95}\.json$#', $relative) === 1
+    || bl_verify_game_file($relative)
     || $relative === 'Account Index/accounts.json'
-    || $relative === 'Shared/badminton-session.json';
+    || $relative === 'Shared/Badminton/badminton.json';
 }
 
 function bl_verify_allowed_file(string $relative): bool {
@@ -128,6 +146,24 @@ function bl_verify_account_projection(array $account, string $relative): array {
   return $errors;
 }
 
+function bl_verify_game_projection(array $game, string $relative): array {
+  $errors = [];
+  $data = is_array($game['data'] ?? null) ? $game['data'] : [];
+  $app = strtolower(trim((string)($data['game'] ?? '')));
+  try{
+    $expectedFilename = bl_secure_game_filename($app);
+  }catch(Throwable $error){
+    return [['check'=>'game_projection_app','path'=>$relative]];
+  }
+  if(!str_ends_with($relative, '/Games/' . $expectedFilename)){
+    $errors[] = ['check'=>'game_projection_filename','path'=>$relative,'expected'=>$expectedFilename];
+  }
+  if(!is_array($data['profile'] ?? null)){
+    $errors[] = ['check'=>'game_projection_profile','path'=>$relative];
+  }
+  return $errors;
+}
+
 function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array {
   $source = bl_export_normalize_path($sourcePath);
   $actualRoot = bl_export_normalize_path($exportPath);
@@ -168,6 +204,9 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
         $decoded = bl_verify_read_json($actualPath, bl_verify_resource_file($relative));
         if(preg_match('#^Users/[0-9]{6}/account\.json$#', $relative) === 1){
           $errors = array_merge($errors, bl_verify_account_projection($decoded, $relative));
+        }
+        if(bl_verify_game_file($relative)){
+          $errors = array_merge($errors, bl_verify_game_projection($decoded, $relative));
         }
       }catch(Throwable $error){
         $errors[] = ['check'=>'json_validation','path'=>$relative,'error'=>$error->getMessage()];
