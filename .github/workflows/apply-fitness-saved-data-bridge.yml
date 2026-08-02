@@ -1,0 +1,37 @@
+name: Apply Fitness Saved Data bridge
+
+on:
+  push:
+    branches:
+      - agent/complete-saved-data-runtime-20260802
+    paths:
+      - tools/apply_fitness_saved_data_bridge.py
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/complete-saved-data-runtime-20260802
+          fetch-depth: 0
+      - name: Apply deterministic HTML patch
+        run: python3 tools/apply_fitness_saved_data_bridge.py
+      - name: Verify generated change
+        run: |
+          git diff --check
+          git diff -- systems/baseline-fitness/baseline-fitness.html
+      - name: Commit patched page
+        run: |
+          if git diff --quiet -- systems/baseline-fitness/baseline-fitness.html; then
+            echo "No page changes required."
+            exit 0
+          fi
+          git config user.name "Baseline Saved Data automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add systems/baseline-fitness/baseline-fitness.html
+          git commit -m "Load the Fitness Saved Data bridge before the app"
+          git push origin HEAD:agent/complete-saved-data-runtime-20260802
