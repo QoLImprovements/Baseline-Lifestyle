@@ -99,7 +99,11 @@ test('shared login, favourites, Binaural presets and logout complete one account
   await page.locator('#bl-auth-login').click();
   await expect(accountToggle.locator('.bl-btn-label')).toHaveText('Account');
 
-  await page.locator('#recipes-landing .recipe-open[data-recipe-id="r1"]').click();
+  await page.waitForFunction(() => typeof window.BASELINE_ensureContentUi === 'function');
+  await page.evaluate(() => {
+    window.BASELINE_ensureContentUi();
+    window.BASELINE_openRecipe('r1', { silentHistory: true, noScroll: true });
+  });
   await expect(page.locator('#r1')).toBeVisible();
   const favouriteButton = page.locator('#r1 .fav-btn');
   await expect(favouriteButton).toBeVisible();
