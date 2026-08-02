@@ -31,7 +31,7 @@
     },
     {
       "id": "outer-embed-snapshot",
-      "inventoryPatterns": ["__baseline_outer_embed_snapshot_v2__", "[expression] legacyKey"],
+      "inventoryPatterns": ["__baseline_outer_embed_snapshot_v2__"],
       "knownKeys": ["__baseline_outer_embed_snapshot_v2__"],
       "classification": "ephemeral-navigation-snapshot",
       "decision": "retire-without-migration",
