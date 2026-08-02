@@ -183,8 +183,10 @@ test('primary pages expose canonical discovery metadata and a level-one heading'
 
 test('database schemas are versioned instead of rebuilt on every API request', () => {
   const config = fs.readFileSync(path.join(root, 'sitewide/api/config.php'), 'utf8');
-  assert.ok(config.includes('bl_apply_core_schema($pdo);'));
-  assert.equal(config.includes('bl_ensure_schema($pdo);'), false);
+  const database = fs.readFileSync(path.join(root, 'sitewide/api/database.php'), 'utf8');
+  assert.ok(config.includes("require_once __DIR__ . '/database.php'"));
+  assert.ok(database.includes('bl_apply_core_schema($pdo);'));
+  assert.equal(database.includes('bl_ensure_schema($pdo);'), false);
 
   const fitnessSchema = fs.readFileSync(path.join(root, 'systems/baseline-fitness/api/schema.php'), 'utf8');
   const gamesSchema = fs.readFileSync(path.join(root, 'systems/baseline-games-hub/api/schema.php'), 'utf8');
