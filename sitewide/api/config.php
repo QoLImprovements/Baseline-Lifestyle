@@ -16,6 +16,7 @@ const BL_CANONICAL_ORIGIN = 'https://baselinelifestyle.org';
 
 require_once __DIR__ . '/http.php';
 require_once __DIR__ . '/session.php';
+require_once __DIR__ . '/authentication.php';
 
 function bl_db_path(): string {
   return bl_env(BL_DB_ENV_KEY, BL_DB_PATH);
@@ -27,69 +28,6 @@ function bl_now(): int {
 
 function bl_str_len(string $value): int {
   return function_exists('mb_strlen') ? (int)mb_strlen($value) : strlen($value);
-}
-
-function bl_current_user(?PDO $db=null): ?array {
-  bl_session_start();
-  $uid = bl_authed_uid();
-  if($uid <= 0) return null;
-
-  $db = $db ?: bl_db();
-  $stmt = $db->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');
-  $stmt->execute([':id' => $uid]);
-  $user = $stmt->fetch();
-  if(!$user){
-    bl_clear_auth_session();
-    return null;
-  }
-
-  $_SESSION['bl_name'] = (string)($user['name'] ?? '');
-  $_SESSION['bl_email'] = (string)($user['email'] ?? '');
-  return $user;
-}
-
-function bl_require_user(): array {
-  $user = bl_current_user();
-  if(!$user) bl_json(['ok'=>false,'error'=>'not_logged_in'], 401);
-  return $user;
-}
-
-function bl_require_user_id(): int {
-  $user = bl_require_user();
-  return (int)($user['id'] ?? 0);
-}
-
-function bl_normalize_email(string $email): string {
-  return strtolower(trim($email));
-}
-
-function bl_email_is_valid(string $email): bool {
-  if($email === '' || bl_str_len($email) > BL_MAX_EMAIL_LEN) return false;
-  return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
-}
-
-function bl_password_is_valid(string $password): bool {
-  return strlen($password) >= BL_MIN_PASSWORD_LEN && strlen($password) <= 128;
-}
-
-function bl_user_public_payload(array $user): array {
-  return [
-    'id' => (int)($user['id'] ?? 0),
-    'name' => (string)($user['name'] ?? ''),
-    'email' => (string)($user['email'] ?? ''),
-    'provider' => (string)($user['auth_provider'] ?? 'password'),
-  ];
-}
-
-function bl_is_google_enabled(): bool {
-  return bl_env('BL_GOOGLE_CLIENT_ID') !== '' && bl_env('BL_GOOGLE_CLIENT_SECRET') !== '';
-}
-
-function bl_auth_providers_payload(): array {
-  return [
-    'password' => true,
-    'google' => bl_is_google_enabled(),
-  ];
 }
 
 function bl_mail_from_email(): string {
