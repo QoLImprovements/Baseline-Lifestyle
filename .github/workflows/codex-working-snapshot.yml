@@ -1,9 +1,9 @@
 name: Codex working snapshot
 
 on:
-  push:
+  pull_request:
     branches:
-      - agent/stability-release-process-20260802
+      - main
     paths:
       - .github/workflows/codex-working-snapshot.yml
   workflow_dispatch:
