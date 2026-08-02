@@ -1,5 +1,7 @@
 # Hostinger Business deployment and rollback runbook
 
+The finite post-deployment release gate, safe private-path restore drill, stable-tag rule and forward-only Git rollback procedure are recorded in [`STABILITY_AND_RELEASE_CHECKPOINT_20260802.md`](./STABILITY_AND_RELEASE_CHECKPOINT_20260802.md).
+
 ## Deployment boundary
 
 Production deploys only reviewed `main`. Development and audit branches never auto-deploy to the production domain. Hostinger receives application source; it must not receive `.env`, SQLite files, logs, archives, local reports, `Saved Data` or `Runtime` from Git.
