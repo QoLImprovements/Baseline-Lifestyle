@@ -2,8 +2,9 @@
   "name": "baseline-lifestyle-site",
   "private": true,
   "scripts": {
-    "test": "npm run test:structure && npm run test:float && npm run test:games-theme && npm run test:charity-interface && npm run test:saved-data",
+    "test": "npm run test:structure && npm run test:auth-contract && npm run test:float && npm run test:games-theme && npm run test:charity-interface && npm run test:saved-data",
     "test:structure": "node --test tests/site-structure-integrity.test.mjs",
+    "test:auth-contract": "node --test tests/sitewide-auth-contract.test.mjs",
     "test:float": "node --test tests/charity-float.test.mjs",
     "test:games-theme": "node --test tests/games-theme.test.mjs",
     "test:charity-interface": "node --test tests/charity-interface.test.mjs",
@@ -16,7 +17,7 @@
     "test:stability-smoke": "playwright test tests/stability-release-smoke.spec.js",
     "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs",
     "test:saved-data": "node --test tests/saved-data-contract.test.mjs tests/voice-recognition-policy.test.mjs",
-    "test:saved-data-php": "php tests/private-environment-contract.php && php tests/saved-data-contract.php"
+    "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/saved-data-contract.php"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"
