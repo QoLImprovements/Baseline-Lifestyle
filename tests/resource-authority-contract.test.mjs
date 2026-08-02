@@ -62,7 +62,7 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.match(endpoint, /active_workout_not_current_session/);
   assert.match(endpoint, /active_workout_step_mismatch/);
   assert.match(endpoint, /profile_conflict/);
-  assert.match(endpoint, /expectedRevision/);
+  assert.match(endpoint, /bl_resource_revision_from_input/);
   assert.match(bridge, /action: 'import_local'/);
   assert.match(bridge, /revision_conflict/);
   assert.match(bridge, /serverProfile/);
