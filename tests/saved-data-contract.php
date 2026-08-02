@@ -35,6 +35,10 @@ try{
 
   $path = bl_saved_user_resource_path(7, 'fitness');
   bl_contract_assert(str_ends_with($path, '/Users/000007/fitness.json'), 'stable user path failed');
+  bl_contract_assert(
+    str_ends_with(bl_saved_temporary_directory(), '/Runtime/Temporary Files'),
+    'runtime temporary directory failed'
+  );
 
   $gameExpectations = [
     'ninja'=>'baseline-realm.json',
@@ -91,8 +95,11 @@ try{
   bl_contract_assert($renewed['expiresAt'] >= time() + 19, 'lease renewal failed');
   bl_saved_lease_release('fitness:7', $lease['token']);
 
-  $leftoverTemps = glob(dirname($path) . '/baseline-temp-*.tmp') ?: [];
-  bl_contract_assert($leftoverTemps === [], 'temporary files remain');
+  $savedTemps = glob($saved . '/**/baseline-temp-*.tmp', GLOB_BRACE) ?: [];
+  $runtimeTemps = glob($runtime . '/Temporary Files/*.tmp') ?: [];
+  bl_contract_assert($savedTemps === [], 'temporary file entered Saved Data');
+  bl_contract_assert($runtimeTemps === [], 'runtime temporary files remain');
+  bl_contract_assert(is_dir($runtime . '/Temporary Files'), 'runtime temporary directory was not created');
   echo "saved-data contract passed\n";
 }finally{
   bl_contract_remove_tree($base);
