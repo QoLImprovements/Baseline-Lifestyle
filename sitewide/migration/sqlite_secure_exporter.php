@@ -378,8 +378,6 @@ function bl_secure_export_sqlite_copy(string $sourcePath, string $destinationPat
     foreach($report['intentionallyNotExportedFields'] as &$fields) sort($fields);
     unset($fields);
     sort($report['missingTables']);
-    bl_export_write_json(bl_export_join($staging, 'Migration Report', 'field-map.json'), bl_secure_export_field_map());
-    bl_export_write_json(bl_export_join($staging, 'Migration Report', 'export-report.json'), $report);
 
     $sourceHashAfter = hash_file('sha256', $source);
     if($sourceHashAfter !== $sourceHashBefore || filesize($source) !== $sourceSizeBefore || filemtime($source) !== $sourceMtimeBefore){
