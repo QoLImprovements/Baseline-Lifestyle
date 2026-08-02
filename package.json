@@ -21,7 +21,7 @@
     "test:stability-smoke": "playwright test tests/stability-release-smoke.spec.js",
     "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs tests/voice-workflow-documentation.test.mjs",
     "test:saved-data": "node --test tests/saved-data-contract.test.mjs tests/voice-recognition-policy.test.mjs",
-    "test:migration-exporter": "php tests/sqlite-exporter-contract.php && php tests/sqlite-source-inventory-contract.php && php tests/badminton-export-schema-contract.php",
+    "test:migration-exporter": "php tests/sqlite-exporter-contract.php && php tests/sqlite-source-inventory-contract.php && php tests/badminton-export-schema-contract.php && php tests/voice-export-schema-contract.php",
     "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/session-contract.php && php tests/authentication-contract.php && php tests/mail-contract.php && php tests/account-recovery-contract.php && php tests/database-contract.php && php tests/saved-data-contract.php && npm run test:migration-exporter"
   },
   "devDependencies": {
