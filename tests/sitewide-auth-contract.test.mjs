@@ -121,6 +121,20 @@ test('password reset token handling has one focused account recovery boundary', 
   assert.match(recovery, /DELETE FROM password_reset_tokens WHERE user_id = :uid/);
 });
 
+test('SQLite connection, schema migration and rate limiting have one database boundary', () => {
+  const config = read('sitewide/api/config.php');
+  const database = read('sitewide/api/database.php');
+  assert.match(config, /require_once __DIR__ \. '\/database\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:db_path|table_columns|column_exists|ensure_schema|apply_core_schema|apply_schema_migration|rate_limit_allow|require_rate_limit|db)\b/);
+  for(const name of ['bl_db_path','bl_table_columns','bl_column_exists','bl_ensure_schema','bl_apply_core_schema','bl_apply_schema_migration','bl_rate_limit_allow','bl_require_rate_limit','bl_db']){
+    assert.match(database, new RegExp(`function ${name}\\b`), `${name} is missing from the database boundary`);
+  }
+  assert.match(database, /new PDO\('sqlite:' \./);
+  assert.match(database, /PRAGMA user_version/);
+  assert.match(database, /schema_migrations/);
+  assert.match(database, /rate_limit_events/);
+});
+
 test('the canonical rewrite owns root API routes without physical shadow endpoints', () => {
   const htaccess = read('.htaccess');
   assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
