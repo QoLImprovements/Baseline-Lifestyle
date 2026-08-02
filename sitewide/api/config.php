@@ -17,6 +17,7 @@ const BL_CANONICAL_ORIGIN = 'https://baselinelifestyle.org';
 require_once __DIR__ . '/http.php';
 require_once __DIR__ . '/session.php';
 require_once __DIR__ . '/authentication.php';
+require_once __DIR__ . '/mail.php';
 
 function bl_db_path(): string {
   return bl_env(BL_DB_ENV_KEY, BL_DB_PATH);
@@ -28,28 +29,6 @@ function bl_now(): int {
 
 function bl_str_len(string $value): int {
   return function_exists('mb_strlen') ? (int)mb_strlen($value) : strlen($value);
-}
-
-function bl_mail_from_email(): string {
-  return bl_env('BL_MAIL_FROM_EMAIL', 'no-reply@baseline.local');
-}
-
-function bl_mail_from_name(): string {
-  return bl_env('BL_MAIL_FROM_NAME', 'Baseline Lifestyle');
-}
-
-function bl_send_text_mail(string $to, string $subject, string $body): bool {
-  if(!function_exists('mail')) return false;
-
-  $fromEmail = bl_mail_from_email();
-  $fromName = bl_mail_from_name();
-  $headers = [
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'From: ' . $fromName . ' <' . $fromEmail . '>',
-  ];
-
-  return @mail($to, $subject, $body, implode("\r\n", $headers));
 }
 
 function bl_google_redirect_url(): string {
