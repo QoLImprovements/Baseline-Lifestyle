@@ -774,3 +774,44 @@ html[data-app="games"] body[data-app="games"] #ninjaPanel .realm-drawer-pane:not
     animation-iteration-count:1!important;
   }
 }
+
+/* Detect The Word belongs to Indigo Circuit too. Blank tiles and the feedback
+   key must not inherit the retired cream/orange Games palette. Semantic states
+   remain distinct through cool green, circuit blue and deep indigo. */
+html[data-app="games"] body[data-app="games"] .letter-cell{
+  background:var(--g01-card)!important;
+  background-image:none!important;
+  border-color:rgba(140,167,255,.48)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="games"] body[data-app="games"] :is(.letter-cell.correct,.word-feedback-dot--correct){
+  background:#2F665D!important;
+  background-image:none!important;
+  border-color:#72C7AF!important;
+  color:#F2F5FF!important;
+  -webkit-text-fill-color:#F2F5FF!important;
+}
+html[data-app="games"] body[data-app="games"] :is(.letter-cell.present,.word-feedback-dot--present){
+  background:#526BC2!important;
+  background-image:none!important;
+  border-color:#A9BCFF!important;
+  color:#F2F5FF!important;
+  -webkit-text-fill-color:#F2F5FF!important;
+}
+html[data-app="games"] body[data-app="games"] :is(.letter-cell.absent,.word-feedback-dot--absent){
+  background:#1E2759!important;
+  background-image:none!important;
+  border-color:#657BD0!important;
+  color:#DCE4FF!important;
+  -webkit-text-fill-color:#DCE4FF!important;
+}
+html[data-app="games"] body[data-app="games"] .word-feedback-legend span{
+  background:var(--g01-mirror)!important;
+  background-image:var(--g01-mirror)!important;
+  border-color:rgba(140,167,255,.62)!important;
+  color:var(--g01-ink)!important;
+  -webkit-text-fill-color:var(--g01-ink)!important;
+  box-shadow:none!important;
+}

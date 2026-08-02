@@ -1,8 +1,8 @@
-import './realm-stage-1-shell.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+import './realm-stage-1-shell.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { REALM_CRITICAL_PRELOAD, REALM_PRELOAD_GROUPS } from '../data/realm-preload-manifest.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmAccessibilityService } from './realm-accessibility-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmAssetLoader } from './realm-asset-loader.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { RealmAudioService } from './realm-audio-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+import { RealmAudioService } from './realm-audio-service.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { RealmEventBus } from './realm-event-bus.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmGamepadProvider } from './realm-gamepad-provider.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmInputManager } from './realm-input-manager.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
@@ -19,13 +19,13 @@ import {
   normaliseLegacyNinjaProfile,
   RealmSaveAdapter
 } from './realm-save-adapter.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 
-const BUILD = 'REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
 const STAGE_ONE_READY_BUILD = 'BASELINE_REALM_SHELL_INTERACTION_REPAIR_20260707_2';
 const OPTIONAL_MODULE_URLS = Object.freeze({
   explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,
@@ -290,7 +290,9 @@ async function registerConnectedRoster() {
   const current = stateService.read().realm.party;
   if (!current.active.length) {
     const preferred = explorationRosterIds.length ? explorationRosterIds : connectedRoster.map((character) => character.id);
-    const active = preferred.slice(0, 4);
+    // Exploration begins as Rowan's journey. Other connected characters stay
+    // registered as reserves so later recruitment can expand the party.
+    const active = preferred.slice(0, 1);
     const reserve = Object.keys(current.characters).filter((id) => !active.includes(id));
     stateService.setParty(active, reserve);
   }
@@ -340,6 +342,26 @@ function registerScenes() {
     })
   ];
   scenes.forEach((scene) => sceneRouter.register(scene));
+}
+
+function bindRealmVisibility() {
+  const panel = document.getElementById('ninjaPanel');
+  if (!panel || panel.dataset.realmVisibilityBound) return;
+  panel.dataset.realmVisibilityBound = BUILD;
+  const publish = (forced) => {
+    const active = typeof forced === 'boolean'
+      ? forced
+      : panel.classList.contains('is-active') && !panel.hidden && document.visibilityState !== 'hidden';
+    const detail = { active, scene: sceneRouter.getCurrentSceneId(), build: BUILD };
+    eventBus.emit('realm:visibility', detail);
+    globalThis.dispatchEvent?.(new CustomEvent('baseline:realm:visibility', { detail }));
+    if (!active) audioService?.pauseAll?.();
+    else audioService?.resumeAll?.();
+  };
+  new MutationObserver(() => publish()).observe(panel, { attributes: true, attributeFilter: ['class', 'hidden'] });
+  document.addEventListener('visibilitychange', () => publish());
+  globalThis.addEventListener?.('baseline:page-leaving', () => publish(false));
+  publish();
 }
 
 function isolateCoreDependencies(dependencies) {
@@ -405,12 +427,16 @@ function configure(dependencies) {
     setSettings: (reducedMotion) => updateSettings((settings) => { settings.accessibility.reducedMotion = reducedMotion; }, { type: 'accessibility-settings' })
   });
   registerScenes();
+  sceneRouter.navigate('basecamp', { initial: true }).catch((error) => {
+    console.error('[Baseline Realm] Initial Basecamp navigation failed.', error);
+  });
   bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter });
   inputManager.registerControllerProvider(gamepadProvider);
   inputManager.start();
   runtimeUi.bindAudio(audioService);
   audioService.scan();
   audioService.apply();
+  bindRealmVisibility();
   accessibilityService.start();
   document.documentElement.setAttribute('data-baseline-realm-stage-one', STAGE_ONE_READY_BUILD);
   document.documentElement.setAttribute('data-baseline-realm-stage-two', BUILD);

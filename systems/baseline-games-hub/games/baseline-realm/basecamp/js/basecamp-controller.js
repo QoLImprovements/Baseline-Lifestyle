@@ -10,6 +10,13 @@ const BUCKET_LABELS = Object.freeze({
   materials: 'Materials', items: 'Items', equipment: 'Equipment', food: 'Food', potions: 'Potions', tools: 'Tools'
 });
 
+const SERVICE_TITLES = Object.freeze({
+  storage: 'Storage',
+  merchant: 'Merchant Post',
+  rest: 'Campfire & Rest',
+  party: 'Party Preparation'
+});
+
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 }
@@ -54,10 +61,27 @@ export class BasecampController {
   open(mode, tab) {
     this.mode = mode;
     this.runtime?.openDrawerTab?.(tab);
-    queueMicrotask(() => this.render());
+    queueMicrotask(() => {
+      this.prepareFocusedMenu();
+      this.render();
+    });
+  }
+
+  prepareFocusedMenu() {
+    const drawer = document.getElementById('realmPanelDrawer');
+    const title = document.getElementById('realmDrawerTitle');
+    const note = document.getElementById('realmDrawerNote');
+    if (drawer) drawer.dataset.basecampService = this.mode;
+    if (title) title.textContent = SERVICE_TITLES[this.mode] || 'Basecamp';
+    if (note) { note.hidden = true; note.textContent = ''; }
   }
 
   handleClick(event) {
+    const close = event.target.closest?.('[data-realm-drawer="close"]');
+    if (close) {
+      document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
+      return;
+    }
     const landmark = event.target.closest?.('[data-basecamp-landmark]');
     if (landmark) {
       const id = landmark.dataset.basecampLandmark;
@@ -159,6 +183,9 @@ export class BasecampController {
 
   render() {
     if (!this.mounted || this.runtime?.getView?.() !== 'basecamp') return;
+    const drawer = document.getElementById('realmPanelDrawer');
+    if (drawer?.dataset.basecampService === 'workshop') return;
+    if (!drawer?.hidden) this.prepareFocusedMenu();
     if (this.mode === 'merchant') this.renderMerchant();
     else if (this.mode === 'rest') this.renderRest();
     else if (this.mode === 'party') this.renderParty();

@@ -1,14 +1,15 @@
-import { PARTY_BLUEPRINTS, SAVE_KEY } from '../data/meridian-grove.js?v=MERIDIAN_GROVE_RUNTIME_FIX_20260628';
-import { chooseRandomEncounter, movePlayer } from './jrpg-engine.js?v=MERIDIAN_GROVE_RUNTIME_FIX_20260628';
-import { MeridianGroveGame } from './exploration-jrpg.js?v=MERIDIAN_GROVE_RUNTIME_FIX_20260628';
+import { INITIAL_PARTY_IDS, PARTY_BLUEPRINTS, SAVE_KEY } from '../data/meridian-grove.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { chooseRandomEncounter, movePlayer } from './jrpg-engine.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { MeridianGroveGame } from './exploration-jrpg.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 
 const clone = (value) => JSON.parse(JSON.stringify(value));
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 function repairSavedParty(state, raw) {
-  if (!Array.isArray(raw?.party) || raw.party.length !== PARTY_BLUEPRINTS.length) return;
-  state.party = raw.party.map((saved, index) => {
-    const blueprint = PARTY_BLUEPRINTS.find((candidate) => candidate.id === saved?.id) || PARTY_BLUEPRINTS[index];
+  if (!Array.isArray(raw?.party)) return;
+  state.party = INITIAL_PARTY_IDS.map((id) => {
+    const blueprint = PARTY_BLUEPRINTS.find((candidate) => candidate.id === id);
+    const saved = raw.party.find((candidate) => candidate?.id === id) || {};
     const member = { ...clone(blueprint), ...clone(saved || {}) };
     member.equipment = { ...blueprint.equipment, ...(saved?.equipment || {}) };
     member.abilities = Array.from(new Set([...(blueprint.abilities || []), ...(saved?.abilities || [])]));

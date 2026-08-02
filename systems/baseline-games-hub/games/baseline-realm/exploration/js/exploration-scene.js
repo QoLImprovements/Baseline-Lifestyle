@@ -1,17 +1,18 @@
-import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=MERIDIAN_GROVE_RUNTIME_FIX_20260628';
+import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 
 const STYLE_ID = 'baseline-realm-exploration-jrpg-style';
-const STYLE_URL = '/systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css?v=MERIDIAN_GROVE_RUNTIME_FIX_20260628';
-const BUILD = 'MERIDIAN_GROVE_RUNTIME_FIX_20260628';
+const STYLE_URL = '/systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_WOOD_AUTHORITY_20260802_1';
+const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
 
 function ensureStylesheet() {
-  let link = document.getElementById(STYLE_ID);
+  let link = document.getElementById(STYLE_ID) || document.querySelector('link[data-current-realm-style="realm-exploration-current"]');
   if (!link) {
     link = document.createElement('link');
     link.id = STYLE_ID;
     link.rel = 'stylesheet';
     document.head.append(link);
   }
+  if (!link.id) link.id = STYLE_ID;
   if (link.getAttribute('href') !== STYLE_URL) link.href = STYLE_URL;
 }
 

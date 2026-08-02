@@ -77,6 +77,24 @@ export class RealmAudioService {
     return this.setMuted(!this.settings().muted);
   }
 
+  pauseAll() {
+    this.media.forEach((_, element) => {
+      if (!element.paused) element.dataset.realmResumeAfterPause = 'true';
+      try { element.pause?.(); } catch (_error) {}
+    });
+    this.eventBus?.emit('realm:audio:paused', { count: this.media.size });
+  }
+
+  resumeAll() {
+    this.media.forEach((_, element) => {
+      if (element.dataset.realmResumeAfterPause !== 'true') return;
+      delete element.dataset.realmResumeAfterPause;
+      const playback = element.play?.();
+      playback?.catch?.(() => {});
+    });
+    this.eventBus?.emit('realm:audio:resumed', { count: this.media.size });
+  }
+
   destroy() {
     this.unsubscribeMute?.();
     this.media.clear();

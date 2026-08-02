@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD='BASELINE_REALM_SHELL_ISOLATED_20260629_4';
+  const BUILD='REALM_WOOD_AUTHORITY_20260802_1';
   const HUB_BUILD='GAMES_HUB_REALM_ISOLATED_20260629_4';
   const ICONS='/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v='+BUILD;
   const BASECAMP_CSS='/systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css?v='+BUILD;
@@ -15,7 +15,7 @@
   }
 
   function ensureBasecampStyles(){
-    if(document.querySelector('link[data-realm-basecamp-style]'))return;
+    if(document.querySelector('link[data-realm-basecamp-style],link[data-current-realm-style="realm-basecamp-current"],link[href*="/baseline-realm/basecamp/css/basecamp.css"]'))return;
     const link=document.createElement('link');
     link.rel='stylesheet';
     link.href=BASECAMP_CSS;
@@ -58,11 +58,11 @@
     {key:'workshop',id:'realmCampWorkshopBtn',icon:'workshop',label:'Workshop',note:'Weapons and equipment',tab:'workshop',category:'blacksmith'},
     {key:'calorie-escape',id:'realmCampCalorieEscapeBtn',icon:'calorie',label:'Calorie Escape',note:'Movement route',view:'calorie-escape'},
     {key:'tactical-operations',id:'realmCampTacticalBtn',icon:'tactical',label:'Tactical Operations',note:'Operations table',view:'tactical-operations'},
-    {key:'storage',id:'realmCampStorageBtn',icon:'storage',label:'Storage',note:'Shared inventory',tab:'settlement'},
-    {key:'merchant',id:'realmCampMerchantBtn',icon:'merchant',label:'Merchant',note:'Supplies and exchange',tab:'stores'},
-    {key:'campfire-rest',id:'realmCampRestBtn',icon:'campfire',label:'Campfire & Rest',note:'Recovery point',tab:'settlement'},
+    {key:'storage',id:'realmCampStorageBtn',icon:'storage',label:'Storage',note:'Shared inventory'},
+    {key:'merchant',id:'realmCampMerchantBtn',icon:'merchant',label:'Merchant',note:'Supplies and exchange'},
+    {key:'campfire-rest',id:'realmCampRestBtn',icon:'campfire',label:'Campfire & Rest',note:'Recovery point'},
     {key:'cooking',id:'realmCampCookingBtn',icon:'cooking',label:'Cooking',note:'Food and effects',tab:'workshop',category:'cooking'},
-    {key:'party-preparation',id:'realmCampPartyBtn',icon:'party',label:'Party Preparation',note:'Ready the party',tab:'expeditions'}
+    {key:'party-preparation',id:'realmCampPartyBtn',icon:'party',label:'Party Preparation',note:'Ready the party'}
   ];
 
   function landmarkMarkup(item){
@@ -76,7 +76,7 @@
     if(item.view)attributes.push('data-realm-view="'+item.view+'"');
     if(item.tab)attributes.push('data-realm-open-tab="'+item.tab+'"');
     if(item.category)attributes.push('data-workshop-category="'+item.category+'"');
-    return '<button '+attributes.join(' ')+'><span class="realm-location-button__icon">'+labelledIcon(item.icon,item.label+' symbol')+'</span><span class="realm-location-button__copy">'+item.label+'</span><small>'+item.note+'</small></button>';
+    return '<button '+attributes.join(' ')+'><span class="realm-location-caption" aria-hidden="true"><span class="realm-location-button__icon">'+labelledIcon(item.icon,item.label+' symbol')+'</span><span class="realm-location-button__copy">'+item.label+'</span><small>'+item.note+'</small></span></button>';
   }
 
   function ensureBasecampLandmarks(){

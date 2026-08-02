@@ -45,6 +45,9 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
+<!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
+     deliberately loads last so shell alignment rules cannot repaint Realm. -->
+<link href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css?v=REALM_WOOD_AUTHORITY_20260802_1" rel="stylesheet" data-realm-wood-authority="true"/>
 </head>
 <body data-app="games" data-page="baseline-games-hub">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
@@ -509,7 +512,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
-<script type="module" src="/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v=GAMES_HUB_BADMINTON_INITIAL_20260707_1"></script>
+<script type="module" src="/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v=REALM_WOOD_AUTHORITY_20260802_1"></script>
 <script type="module" src="/systems/baseline-games-hub/js/baseline-games-hub.js?v=GAMES_HUB_BADMINTON_INITIAL_20260707_1"></script>
 </body>
 </html>

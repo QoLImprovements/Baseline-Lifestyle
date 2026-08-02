@@ -55,9 +55,11 @@ class GroveMusic {
     this.master = null;
     this.timer = null;
     this.enabled = true;
+    this.active = true;
     this.step = 0;
     this.motif = [293.66, 349.23, 440, 523.25, 440, 392, 329.63, 261.63, 293.66, 392, 466.16, 440];
     this.bass = [146.83, 130.81, 174.61, 196];
+    this.harmony = [220, 261.63, 293.66, 246.94];
   }
 
   ensure() {
@@ -66,7 +68,7 @@ class GroveMusic {
     if (!AudioContext) return;
     this.context = new AudioContext();
     this.master = this.context.createGain();
-    this.master.gain.value = 0.055;
+    this.master.gain.value = 0.05;
     this.master.connect(this.context.destination);
     this.playPhrase();
     this.timer = globalThis.setInterval(() => this.playPhrase(), 6800);
@@ -88,20 +90,35 @@ class GroveMusic {
   }
 
   playPhrase() {
-    if (!this.context || this.context.state === 'suspended') this.context?.resume().catch(() => {});
-    if (!this.context) return;
+    if (!this.context || !this.active || !this.enabled) return;
+    if (this.context.state === 'suspended') this.context.resume().catch(() => {});
     const start = this.context.currentTime + 0.08;
+    const turn = this.step % 3;
     this.motif.forEach((frequency, index) => {
-      this.note(frequency, start + index * 0.48, 0.4, index % 3 === 0 ? 'sine' : 'triangle', 0.11);
+      const lifted = turn === 1 && index > 7 ? frequency * 1.12246 : frequency;
+      this.note(lifted, start + index * 0.48, 0.4, index % 3 === 0 ? 'sine' : 'triangle', 0.095);
     });
-    this.bass.forEach((frequency, index) => this.note(frequency, start + index * 1.44, 1.2, 'sine', 0.085));
+    this.bass.forEach((frequency, index) => this.note(frequency, start + index * 1.44, 1.25, 'sine', 0.072));
+    this.harmony.forEach((frequency, index) => {
+      const when = start + index * 1.44;
+      this.note(frequency, when, 1.28, 'triangle', 0.026);
+      this.note(frequency * 1.5, when + 0.04, 1.18, 'sine', 0.018);
+    });
     this.step += 1;
   }
 
   setEnabled(enabled) {
     this.enabled = Boolean(enabled);
     if (this.enabled) this.ensure();
-    if (this.master) this.master.gain.setTargetAtTime(this.enabled ? 0.055 : 0.0001, this.context.currentTime, 0.08);
+    if (this.master) this.master.gain.setTargetAtTime(this.enabled && this.active ? 0.05 : 0.0001, this.context.currentTime, 0.08);
+  }
+
+  setActive(active) {
+    this.active = Boolean(active);
+    if (!this.context) return;
+    if (this.master) this.master.gain.setTargetAtTime(this.active && this.enabled ? 0.05 : 0.0001, this.context.currentTime, 0.06);
+    if (this.active && this.enabled) this.context.resume().catch(() => {});
+    else this.context.suspend().catch(() => {});
   }
 
   destroy() {
@@ -139,7 +156,12 @@ export class MeridianGroveGame {
     this.boundKeydown = (event) => this.handleKeydown(event);
     this.boundPointer = (event) => this.handlePointer(event);
     this.boundChange = (event) => this.handleChange(event);
-    this.boundVisibility = () => this.save('visibility');
+    this.boundVisibility = () => {
+      this.save('visibility');
+      this.syncAudioActivity();
+    };
+    this.boundRealmVisibility = () => this.syncAudioActivity();
+    this.panelObserver = null;
   }
 
   load() {
@@ -194,6 +216,12 @@ export class MeridianGroveGame {
     this.root.addEventListener('change', this.boundChange);
     globalThis.addEventListener('keydown', this.boundKeydown, true);
     document.addEventListener('visibilitychange', this.boundVisibility);
+    globalThis.addEventListener('baseline:realm:visibility', this.boundRealmVisibility);
+    const realmPanel = document.getElementById('ninjaPanel');
+    if (realmPanel && typeof MutationObserver !== 'undefined') {
+      this.panelObserver = new MutationObserver(() => this.syncAudioActivity());
+      this.panelObserver.observe(realmPanel, { attributes: true, attributeFilter: ['class', 'hidden'] });
+    }
     this.renderAll();
     if (!this.state.flags.introSeen) {
       this.openStory('The Meridian Gate', STORY.opening, 'Enter the grove', () => {
@@ -216,7 +244,15 @@ export class MeridianGroveGame {
     this.root.removeEventListener('change', this.boundChange);
     globalThis.removeEventListener('keydown', this.boundKeydown, true);
     document.removeEventListener('visibilitychange', this.boundVisibility);
+    globalThis.removeEventListener('baseline:realm:visibility', this.boundRealmVisibility);
+    this.panelObserver?.disconnect();
     this.music.destroy();
+  }
+
+  syncAudioActivity() {
+    const panel = document.getElementById('ninjaPanel');
+    const panelActive = Boolean(panel?.classList.contains('is-active') && !panel.hidden);
+    this.music.setActive(panelActive && document.visibilityState !== 'hidden' && this.isActive());
   }
 
   isActive() {
@@ -239,7 +275,8 @@ export class MeridianGroveGame {
             <button type="button" data-jrpg-panel="settings">Settings</button>
             <button type="button" data-jrpg-action="save">Save</button>
             <button type="button" data-jrpg-action="fullscreen">Full screen</button>
-            <button type="button" data-realm-view="basecamp">Basecamp</button>
+            <button type="button" data-jrpg-action="return-basecamp">Return to Basecamp</button>
+            <button type="button" data-jrpg-action="abandon">Abandon Route</button>
           </div>
         </header>
         <div class="jrpg-layout">
@@ -284,6 +321,10 @@ export class MeridianGroveGame {
     this.renderRouteLog();
     this.renderResourceRibbon();
     this.renderEncounterMeter();
+    this.root.querySelectorAll('[data-jrpg-action="return-basecamp"],[data-jrpg-action="abandon"]').forEach((button) => {
+      button.disabled = Boolean(this.state.battle);
+      button.title = this.state.battle ? 'Finish the battle before leaving the route.' : '';
+    });
     if (this.state.battle) this.renderBattle();
   }
 
@@ -416,7 +457,12 @@ export class MeridianGroveGame {
   commandTemplate(actor, actorIndex) {
     if (!actor) return '<div class="jrpg-command-wait"><strong>ATB running</strong><span>Commands appear when a party gauge is full.</span></div>';
     if (this.battleMenu.screen === 'commands') {
-      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${BATTLE_COMMANDS.map((label) => `<button type="button" data-battle-command="${label.toLowerCase()}">${label}</button>`).join('')}</div>`;
+      const availableCommands = BATTLE_COMMANDS.filter((label) => {
+        if (label === 'Ability') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'ability');
+        if (label === 'Magic') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'magic');
+        return true;
+      });
+      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${availableCommands.map((label) => `<button type="button" data-battle-command="${label.toLowerCase()}">${label}</button>`).join('')}</div>`;
     }
     if (this.battleMenu.screen === 'abilities' || this.battleMenu.screen === 'magic') {
       const kind = this.battleMenu.screen === 'abilities' ? 'ability' : 'magic';
@@ -528,6 +574,10 @@ export class MeridianGroveGame {
     if (button.dataset.jrpgPanel) this.openPanel(button.dataset.jrpgPanel);
     if (button.dataset.jrpgAction === 'save') { this.save('manual'); this.toast('Exploration saved.'); }
     if (button.dataset.jrpgAction === 'fullscreen') document.getElementById('realmFullscreenBtn')?.click();
+    if (button.dataset.jrpgAction === 'return-basecamp') this.leaveExploration(false);
+    if (button.dataset.jrpgAction === 'abandon') {
+      this.openChoice('Abandon this route?', 'Rowan will return safely to Basecamp. Current map position and route progress will reset; shared items and completed rewards remain.', [{ label: 'Abandon route', action: 'abandon-exploration' }, { label: 'Keep exploring', action: 'close' }]);
+    }
     if (button.dataset.modalClose !== undefined) this.closeModal();
     if (button.dataset.modalAction) this.runModalAction(button.dataset.modalAction);
     if (button.dataset.partyMove) {
@@ -604,7 +654,7 @@ export class MeridianGroveGame {
     }
     if (type === 'event') {
       const text = this.state.stageIndex === 0
-        ? 'A cracked waystone records four names, but the fourth has been deliberately erased.'
+        ? 'A cracked waystone answers Rowan’s token with one clear name and three unlit marks—places future companions may yet claim.'
         : this.state.stageIndex === 1
           ? 'The roots repeat the Custodian’s order: protect the Heartseed from every hand, including those trying to save it.'
           : 'The echo-crown answers Sable’s lantern with a second, impossible pulse beneath the hill.';
@@ -639,6 +689,13 @@ export class MeridianGroveGame {
   runModalAction(action) {
     const key = poiKey(this.state);
     if (action === 'close') { this.closeModal(); return; }
+    if (action === 'abandon-exploration') {
+      this.state = createInitialState();
+      this.state.flags.introSeen = true;
+      this.save('route-abandoned');
+      this.leaveExploration(false);
+      return;
+    }
     if (action === 'confirm-reset') {
       this.openChoice('Start a new route?', 'This replaces the current Meridian Grove save with a newly assembled route. Character and route progress in this slice will reset.', [{ label: 'Start new route', action: 'new-route' }, { label: 'Keep current route', action: 'close' }]);
       return;
@@ -696,6 +753,14 @@ export class MeridianGroveGame {
     }
     this.save(`modal-${action}`);
     this.renderAll();
+  }
+
+  leaveExploration(abandon = false) {
+    if (this.state.battle) return;
+    if (abandon) this.state = createInitialState();
+    this.save(abandon ? 'route-abandoned' : 'return-basecamp');
+    this.music.setActive(false);
+    Promise.resolve(this.onExit?.()).catch((error) => console.error('Unable to return to Basecamp.', error));
   }
 
   chooseBattleCommand(command) {

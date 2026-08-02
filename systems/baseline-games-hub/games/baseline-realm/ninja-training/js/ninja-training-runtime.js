@@ -52,7 +52,9 @@ export function createNinjaTrainingRuntime(dependencies) {
 
   let ninjaShurikenCooldownFrame = 0;
 
-  let realmView = 'training';
+  // Baseline Realm always opens at its navigation hub. Ninja Training is a
+  // destination chosen from Basecamp, never the Realm's implicit home screen.
+  let realmView = 'basecamp';
 
   let realmDrawerOpen = false;
 
@@ -952,6 +954,7 @@ function setRealmView(view){
   if(realmView !== 'training' && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
   if(realmView === 'training' && !realmDrawerTabsForView('training').includes(realmDrawerTab)) realmDrawerTab = 'upgrades';
   if(realmView !== 'training') realmDrawerOpen = false;
+  if(realmView !== 'basecamp') document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
   renderRealmChrome();
 }
 
@@ -964,6 +967,7 @@ function setRealmDrawerTab(tab){
 
 function toggleRealmDrawer(forceState){
   realmDrawerOpen = typeof forceState === 'boolean' ? forceState : !realmDrawerOpen;
+  if(!realmDrawerOpen) document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
   if(realmDrawerOpen && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
   renderRealmChrome();
 }

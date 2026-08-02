@@ -1,4 +1,4 @@
-const BUILD = 'NINJA_TRAINING_ACTUAL_SPRITES_20260706';
+const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
 const STYLESHEET = '/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css?v=' + BUILD;
 
 const ENEMY_PRESENTATION = Object.freeze({
@@ -8,7 +8,7 @@ const ENEMY_PRESENTATION = Object.freeze({
 });
 
 function ensureStylesheet() {
-  if (document.querySelector('link[data-ninja-training-rebuild]')) return;
+  if (document.querySelector('link[data-ninja-training-rebuild],link[data-current-realm-style="ninja-training-current"],link[href*="/ninja-training/css/ninja-training-rebuild.css"]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
   link.href = STYLESHEET;
@@ -18,12 +18,22 @@ function ensureStylesheet() {
 
 function createSynthAudio() {
   let context = null;
+  let output = null;
 
   function audioContext() {
     if (context) return context;
     const AudioContextClass = window.AudioContext || window.webkitAudioContext;
     if (!AudioContextClass) return null;
     context = new AudioContextClass();
+    const compressor = context.createDynamicsCompressor();
+    compressor.threshold.value = -22;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 5;
+    compressor.attack.value = 0.004;
+    compressor.release.value = 0.16;
+    output = context.createGain();
+    output.gain.value = 0.72;
+    output.connect(compressor).connect(context.destination);
     return context;
   }
 
@@ -40,7 +50,7 @@ function createSynthAudio() {
     volume.gain.setValueAtTime(0.0001, start);
     volume.gain.exponentialRampToValueAtTime(gain, start + 0.008);
     volume.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-    oscillator.connect(volume).connect(ctx.destination);
+    oscillator.connect(volume).connect(output || ctx.destination);
     oscillator.start(start);
     oscillator.stop(start + duration + 0.02);
   }
@@ -63,7 +73,7 @@ function createSynthAudio() {
     filter.Q.value = 0.7;
     volume.gain.value = gain;
     source.buffer = buffer;
-    source.connect(filter).connect(volume).connect(ctx.destination);
+    source.connect(filter).connect(volume).connect(output || ctx.destination);
     source.start(ctx.currentTime + delay);
   }
 
@@ -71,14 +81,18 @@ function createSynthAudio() {
     dash() {
       noise({ duration: 0.11, gain: 0.035 });
       tone({ frequency: 310, endFrequency: 92, duration: 0.13, gain: 0.04, type: 'sawtooth' });
+      tone({ frequency: 620, endFrequency: 185, duration: 0.09, gain: 0.018, type: 'triangle', delay: 0.012 });
+      tone({ frequency: 84, endFrequency: 52, duration: 0.16, gain: 0.035, type: 'sine', delay: 0.075 });
     },
     shuriken() {
       tone({ frequency: 980, endFrequency: 390, duration: 0.07, gain: 0.025, type: 'square' });
       noise({ duration: 0.045, gain: 0.018, delay: 0.025 });
+      tone({ frequency: 1450, endFrequency: 720, duration: 0.055, gain: 0.012, type: 'sine', delay: 0.018 });
     },
     hit() {
       tone({ frequency: 125, endFrequency: 62, duration: 0.09, gain: 0.045, type: 'triangle' });
       noise({ duration: 0.055, gain: 0.03 });
+      tone({ frequency: 76, endFrequency: 42, duration: 0.14, gain: 0.038, type: 'sine', delay: 0.015 });
     },
     defeat() {
       tone({ frequency: 160, endFrequency: 55, duration: 0.24, gain: 0.04, type: 'sine' });
@@ -188,6 +202,13 @@ function mountNinjaPresentation() {
     if (stageName && stageName.textContent !== presentation.route) stageName.textContent = presentation.route;
   }
 
+  function playEnemyEntry() {
+    enemy.classList.remove('is-entering');
+    void enemy.offsetWidth;
+    enemy.classList.add('is-entering');
+    window.setTimeout(() => enemy.classList.remove('is-entering'), reducedMotion.matches ? 80 : 1320);
+  }
+
   function showHit({ audio = false, strong = false } = {}) {
     clearTimer(hitTimer);
     enemy.classList.remove('is-hit', 'is-heavy-hit');
@@ -277,7 +298,10 @@ function mountNinjaPresentation() {
     const nextStage = parseStage(runState?.textContent);
     const hpParts = String(hpValue?.textContent || '').split('/');
     const nextHp = Number(String(hpParts[0] || '').replace(/[^0-9.]/g, ''));
-    if (nextStage && lastStage && nextStage > lastStage) showDefeat();
+    if (nextStage && lastStage && nextStage > lastStage) {
+      showDefeat();
+      window.setTimeout(playEnemyEntry, reducedMotion.matches ? 90 : 520);
+    }
     if (Number.isFinite(nextHp) && Number.isFinite(lastHp) && nextHp < lastHp && nextStage === lastStage) showHit();
     if (nextStage) lastStage = nextStage;
     if (Number.isFinite(nextHp)) lastHp = nextHp;
@@ -308,6 +332,7 @@ function mountNinjaPresentation() {
   reducedMotion.addEventListener?.('change', setReducedMotion);
   setReducedMotion();
   syncEnemyPresentation();
+  playEnemyEntry();
   scheduleIdleAttack();
 
   return Object.freeze({

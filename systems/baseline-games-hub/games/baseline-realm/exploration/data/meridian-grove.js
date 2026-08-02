@@ -4,10 +4,10 @@ export const ZONE_ID = 'meridian-grove';
 
 export const STORY = Object.freeze({
   title: 'The Meridian Grove',
-  opening: 'Three waystones have fallen silent along the old sun-road. Rowan Vale and the Lantern Company enter the Meridian Grove to recover the Heartseed before the forest seals its own paths forever.',
+  opening: 'Rowan Vale arrives alone at the Meridian Gate, carrying the worn waystone token that first drew him beyond Basecamp. Three markers on the old sun-road have gone silent. This first expedition is deliberately small: wake the nearest stone, learn the grove’s signs, and return safely with whatever the road reveals.',
   midpoint: 'The Rainroot Hollow is not diseased. Something beneath it is teaching the roots to remember fear.',
   finale: 'At the Crown of Echoes, the Hollow Hart wears the stolen Heartseed like a second heart. The company must break the binding without breaking the grove.',
-  ending: 'The Heartseed answers four hands rather than one. The Meridian Grove opens a living road back to Basecamp, carrying new materials, recipes, and rumours of farther zones.'
+  ending: 'The Heartseed answers Rowan’s waystone token and opens a living road back to Basecamp, carrying new materials, recipes, and the promise that future companions can follow.'
 });
 
 export const TILE_LEGEND = Object.freeze({
@@ -60,6 +60,8 @@ export const PARTY_BLUEPRINTS = Object.freeze([
   { id: 'corin', name: 'Corin Ash', role: 'Rainscout', level: 1, xp: 0, maxHp: 96, maxMp: 40, attack: 15, magic: 10, defence: 9, speed: 17, abilities: ['pinion-shot', 'storm-vial'], equipment: { weapon: 'rainsong-bow', armour: 'weathercloak', accessory: null } }
 ]);
 
+export const INITIAL_PARTY_IDS = Object.freeze(['rowan']);
+
 export const ITEMS = Object.freeze({
   'field-tonic': { id: 'field-tonic', name: 'Field Tonic', kind: 'item', target: 'ally', effect: 'heal', amount: 70, description: 'Alchemy: restore 70 HP.' },
   'lantern-draught': { id: 'lantern-draught', name: 'Lantern Draught', kind: 'item', target: 'ally', effect: 'mp', amount: 28, description: 'Alchemy: restore 28 MP.' },
@@ -79,8 +81,8 @@ export const MATERIALS = Object.freeze({
 });
 
 export const ENEMIES = Object.freeze({
-  'galesprout': { id: 'galesprout', name: 'Galesprout', art: 'enemy-galesprout', maxHp: 72, attack: 13, magic: 8, defence: 7, speed: 13, xp: 18, coins: 12, weaknesses: ['fire'], resistances: ['nature'], attacks: [{ name: 'Seed Dart', power: 1, element: 'pierce' }, { name: 'Pollen Haze', power: 0.75, element: 'nature', status: { id: 'slow', turns: 2, chance: 0.35 } }], drops: [{ id: 'glowseed', chance: 0.7, min: 1, max: 2 }, { id: 'peppercap', chance: 0.3, min: 1, max: 1 }] },
-  'glasswing': { id: 'glasswing', name: 'Glasswing Moth', art: 'enemy-glasswing', maxHp: 58, attack: 10, magic: 14, defence: 5, speed: 18, xp: 20, coins: 11, weaknesses: ['pierce'], resistances: ['light'], attacks: [{ name: 'Prism Dust', power: 1.05, element: 'light' }, { name: 'Wing Static', power: 0.8, element: 'lightning', status: { id: 'shocked', turns: 2, chance: 0.3 } }], drops: [{ id: 'rain-silk', chance: 0.75, min: 1, max: 2 }, { id: 'glowseed', chance: 0.25, min: 1, max: 1 }] },
+  'galesprout': { id: 'galesprout', name: 'Galesprout', art: 'enemy-galesprout', maxHp: 58, attack: 9, magic: 7, defence: 6, speed: 11, xp: 20, coins: 12, weaknesses: ['fire'], resistances: ['nature'], attacks: [{ name: 'Seed Dart', power: 0.9, element: 'pierce' }, { name: 'Pollen Haze', power: 0.65, element: 'nature', status: { id: 'slow', turns: 2, chance: 0.25 } }], drops: [{ id: 'glowseed', chance: 0.7, min: 1, max: 2 }, { id: 'peppercap', chance: 0.3, min: 1, max: 1 }] },
+  'glasswing': { id: 'glasswing', name: 'Glasswing Moth', art: 'enemy-glasswing', maxHp: 50, attack: 8, magic: 10, defence: 5, speed: 14, xp: 22, coins: 11, weaknesses: ['pierce'], resistances: ['light'], attacks: [{ name: 'Prism Dust', power: 0.9, element: 'light' }, { name: 'Wing Static', power: 0.7, element: 'lightning', status: { id: 'shocked', turns: 2, chance: 0.22 } }], drops: [{ id: 'rain-silk', chance: 0.75, min: 1, max: 2 }, { id: 'glowseed', chance: 0.25, min: 1, max: 1 }] },
   'mudglass-crab': { id: 'mudglass-crab', name: 'Mudglass Crab', art: 'enemy-mudglass', maxHp: 112, attack: 16, magic: 5, defence: 16, speed: 7, xp: 25, coins: 16, weaknesses: ['lightning'], resistances: ['slash', 'earth'], attacks: [{ name: 'Glass Claw', power: 1.15, element: 'slash' }, { name: 'Mire Brace', power: 0.7, element: 'earth', status: { id: 'guard', turns: 2, chance: 1, self: true } }], drops: [{ id: 'mossplate-chip', chance: 0.65, min: 1, max: 2 }, { id: 'bark-resin', chance: 0.4, min: 1, max: 1 }] },
   'root-prowler': { id: 'root-prowler', name: 'Root Prowler', art: 'enemy-root-prowler', maxHp: 94, attack: 18, magic: 7, defence: 10, speed: 15, xp: 27, coins: 18, weaknesses: ['ice'], resistances: ['nature'], attacks: [{ name: 'Briar Pounce', power: 1.2, element: 'pierce' }, { name: 'Sap Venom', power: 0.85, element: 'nature', status: { id: 'poison', turns: 3, chance: 0.4 } }], drops: [{ id: 'bark-resin', chance: 0.75, min: 1, max: 2 }, { id: 'peppercap', chance: 0.35, min: 1, max: 2 }] },
   'mossbound-custodian': { id: 'mossbound-custodian', name: 'Mossbound Custodian', art: 'enemy-custodian', elite: true, maxHp: 460, attack: 24, magic: 15, defence: 21, speed: 10, xp: 120, coins: 90, weaknesses: ['lightning', 'fire'], resistances: ['slash', 'nature'], attacks: [{ name: 'Waystone Hammer', power: 1.35, element: 'earth' }, { name: 'Binding Moss', power: 0.8, element: 'nature', status: { id: 'slow', turns: 3, chance: 0.55 } }, { name: 'Custodian Ward', power: 0, element: 'none', status: { id: 'guard', turns: 2, chance: 1, self: true } }], drops: [{ id: 'waystone-shard', chance: 1, min: 2, max: 3 }, { id: 'sunsteel-filings', chance: 1, min: 2, max: 3 }, { id: 'mossplate-chip', chance: 1, min: 2, max: 2 }], equipmentDrop: 'sunsteel-edge' },
@@ -89,9 +91,9 @@ export const ENEMIES = Object.freeze({
 
 export const ENCOUNTER_TABLES = Object.freeze({
   'sunlit-verge': [
-    { weight: 4, enemies: ['galesprout', 'galesprout'] },
-    { weight: 3, enemies: ['glasswing', 'galesprout'] },
-    { weight: 2, enemies: ['glasswing', 'glasswing'] }
+    { weight: 5, enemies: ['galesprout'] },
+    { weight: 4, enemies: ['glasswing'] },
+    { weight: 1, enemies: ['galesprout', 'glasswing'] }
   ],
   'rainroot-hollow': [
     { weight: 4, enemies: ['mudglass-crab', 'glasswing'] },

@@ -4,6 +4,7 @@ import {
   ENEMIES,
   EQUIPMENT,
   ITEMS,
+  INITIAL_PARTY_IDS,
   MATERIALS,
   PARTY_BLUEPRINTS,
   SAVE_VERSION,
@@ -62,7 +63,7 @@ export function createInitialState(seed = makeRouteSeed()) {
     player: { x: 1, y: 5, facing: 'right', steps: 0 },
     encounterMeter: 0,
     encounterThreshold: 100,
-    party: PARTY_BLUEPRINTS.map(makePartyMember),
+    party: PARTY_BLUEPRINTS.filter((blueprint) => INITIAL_PARTY_IDS.includes(blueprint.id)).map(makePartyMember),
     inventory: {
       coins: 45,
       items: { 'field-tonic': 3, 'lantern-draught': 2, 'bitterleaf-wrap': 2, 'trail-ration': 1 },
@@ -104,8 +105,9 @@ export function normaliseState(raw) {
     equipment: { ...fallback.inventory.equipment, ...(raw.inventory?.equipment || {}) },
     keyItems: { ...(raw.inventory?.keyItems || {}) }
   };
-  state.party = PARTY_BLUEPRINTS.map((blueprint, index) => {
-    const saved = raw.party?.[index] || {};
+  const savedParty = Array.isArray(raw.party) ? raw.party : [];
+  state.party = INITIAL_PARTY_IDS.map((id) => PARTY_BLUEPRINTS.find((blueprint) => blueprint.id === id)).filter(Boolean).map((blueprint) => {
+    const saved = savedParty.find((entry) => entry?.id === blueprint.id) || {};
     const member = { ...makePartyMember(blueprint), ...saved };
     member.equipment = { ...blueprint.equipment, ...(saved.equipment || {}) };
     member.abilities = Array.from(new Set([...(blueprint.abilities || []), ...(saved.abilities || [])]));
@@ -248,8 +250,9 @@ export function chooseRandomEncounter(state, random = Math.random) {
   return weightedChoice(ENCOUNTER_TABLES[stageId], random).enemies;
 }
 
-function scaleEnemy(template, stageIndex, kind) {
-  const scale = 1 + (stageIndex * 0.22) + (kind === 'random' ? 0 : 0.06);
+function scaleEnemy(template, stageIndex, kind, partySize = 4) {
+  const soloScale = partySize === 1 ? (kind === 'boss' ? 0.46 : kind === 'elite' ? 0.54 : 0.78) : 1;
+  const scale = (1 + (stageIndex * 0.22) + (kind === 'random' ? 0 : 0.06)) * soloScale;
   return {
     ...deepClone(template),
     instanceId: `${template.id}-${Math.random().toString(36).slice(2, 8)}`,
@@ -265,9 +268,10 @@ function scaleEnemy(template, stageIndex, kind) {
 }
 
 export function startBattle(state, enemyIds, kind = 'random') {
-  const enemies = enemyIds.map((id) => scaleEnemy(ENEMIES[id], state.stageIndex, kind));
-  state.party.forEach((member) => {
-    member.atb = Math.random() * 18;
+  const enemies = enemyIds.map((id) => scaleEnemy(ENEMIES[id], state.stageIndex, kind, state.party.length));
+  const openingActorIndex = state.party.findIndex((member) => member.hp > 0);
+  state.party.forEach((member, index) => {
+    member.atb = index === openingActorIndex ? 100 : Math.random() * 18;
     member.defending = false;
   });
   state.battle = {
@@ -276,7 +280,7 @@ export function startBattle(state, enemyIds, kind = 'random') {
     stageIndex: state.stageIndex,
     enemies,
     readyQueue: [],
-    activeActorIndex: null,
+    activeActorIndex: openingActorIndex >= 0 ? openingActorIndex : null,
     log: [`${enemies.map((enemy) => enemy.name).join(' and ')} block the route.`],
     escaped: false,
     victory: false,
