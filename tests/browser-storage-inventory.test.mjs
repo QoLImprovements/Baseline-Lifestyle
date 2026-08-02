@@ -88,6 +88,21 @@ test("migration rules are explicit and preserve unresolved user content", () => 
   assert.equal(skincare?.target, null);
 });
 
+test("shared Badminton browser state uses the canonical resource path", () => {
+  const rules = mapping.rules || [];
+  const sharedRules = rules.filter((rule) =>
+    ["badminton-shared-v3-legacy", "badminton-shared-v4-cache"].includes(rule.id),
+  );
+  assert.equal(sharedRules.length, 2);
+  for (const rule of sharedRules) {
+    assert.equal(rule.target, "Shared/badminton-session.json");
+  }
+  assert.equal(
+    rules.some((rule) => String(rule.target || "").includes("Shared/Badminton/badminton.json")),
+    false,
+  );
+});
+
 test("browser authentication preview keys are explicitly excluded", () => {
   const rules = mapping.rules || [];
   const localUsers = rules.find((rule) => rule.knownKeys?.includes("__bl_local_users_v1__"));

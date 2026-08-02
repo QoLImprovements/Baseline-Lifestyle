@@ -1,0 +1,218 @@
+<?php
+declare(strict_types=1);
+
+require_once __DIR__ . '/sqlite_exporter.php';
+
+/**
+ * Security-aligned exporter entry point.
+ *
+ * The earlier low-level exporter functions remain available for fixture history,
+ * but all supported CLI, verification and validation paths use this entry point.
+ * It deliberately excludes authentication credentials and provider subjects from
+ * Saved Data account projections and uses the approved shared Badminton path.
+ */
+
+function bl_secure_export_accounts(PDO $db, string $root, int $sourceTime, array &$report): array {
+  $rows = bl_export_rows($db, 'users', ['id']);
+  $byId = [];
+  $index = ['byName'=>[], 'byEmail'=>[]];
+  $mapped = ['id','name','email','email_normalized','pass_hash','auth_provider','google_sub','created_at','updated_at','last_login_at'];
+  $report['intentionallyNotExportedFields']['users'] = ['pass_hash','google_sub'];
+
+  foreach($rows as $row){
+    $id = (int)($row['id'] ?? 0);
+    if($id <= 0){
+      $report['invalid'][] = ['table'=>'users','reason'=>'invalid_user_id'];
+      continue;
+    }
+    $folder = bl_export_user_folder($id);
+    $name = trim((string)($row['name'] ?? ''));
+    $email = trim((string)($row['email'] ?? ''));
+    $emailNormalized = trim((string)($row['email_normalized'] ?? ''));
+    if($emailNormalized === '' && $email !== '') $emailNormalized = strtolower($email);
+    $provider = trim((string)($row['auth_provider'] ?? 'password')) ?: 'password';
+    $updated = bl_export_timestamp($row['updated_at'] ?? 0, bl_export_timestamp($row['created_at'] ?? 0, $sourceTime));
+    $extra = bl_export_extra_fields($row, $mapped);
+    if($extra !== []){
+      $report['unmappedFields']['users'] = array_values(array_unique(array_merge(
+        $report['unmappedFields']['users'] ?? [],
+        array_keys($extra)
+      )));
+    }
+
+    $account = [
+      'userId'=>$id,
+      'name'=>$name,
+      'email'=>$email,
+      'authProvider'=>$provider,
+      'createdAt'=>bl_export_iso_time(bl_export_timestamp($row['created_at'] ?? 0, $sourceTime)),
+      'updatedAt'=>bl_export_iso_time($updated),
+      'lastLoginAt'=>isset($row['last_login_at']) && is_numeric($row['last_login_at'])
+        ? bl_export_iso_time((int)$row['last_login_at'])
+        : null,
+    ];
+    bl_export_write_json(
+      bl_export_join($root, 'Users', $folder, 'account.json'),
+      bl_export_envelope($account, $updated)
+    );
+
+    $normalizedName = strtolower($name);
+    if($normalizedName !== '') $index['byName'][$normalizedName] = $folder;
+    if($emailNormalized !== '') $index['byEmail'][$emailNormalized] = $folder;
+    $byId[$id] = ['folder'=>$folder, 'updatedAt'=>$updated];
+  }
+
+  ksort($index['byName']);
+  ksort($index['byEmail']);
+  if($byId !== []){
+    bl_export_write_json(
+      bl_export_join($root, 'Account Index', 'accounts.json'),
+      bl_export_envelope($index, $sourceTime)
+    );
+  }
+  $report['counts']['accounts'] = count($byId);
+  return $byId;
+}
+
+function bl_secure_export_badminton(PDO $db, string $root, int $sourceTime, array &$report): void {
+  $rows = bl_export_rows($db, 'badminton_state_store', ['state_key']);
+  $states = [];
+  $updated = $sourceTime;
+  $mapped = ['state_key','state_json','updated_at'];
+  foreach($rows as $row){
+    $extra = bl_export_extra_fields($row, $mapped);
+    if($extra !== []){
+      $report['unmappedFields']['badminton_state_store'] = array_values(array_unique(array_merge(
+        $report['unmappedFields']['badminton_state_store'] ?? [],
+        array_keys($extra)
+      )));
+    }
+    $key = trim((string)($row['state_key'] ?? ''));
+    if($key === ''){
+      $report['invalid'][] = ['table'=>'badminton_state_store','reason'=>'empty_state_key'];
+      continue;
+    }
+    $decoded = bl_export_json_value($row['state_json'] ?? null, 'badminton:' . $key, $report['invalid']);
+    if($decoded === null) continue;
+    $states[$key] = $decoded;
+    $updated = max($updated, bl_export_timestamp($row['updated_at'] ?? 0, $sourceTime));
+  }
+  ksort($states);
+  if($states !== []){
+    bl_export_write_json(
+      bl_export_join($root, 'Shared', 'badminton-session.json'),
+      bl_export_envelope(['states'=>$states], $updated)
+    );
+  }
+  $report['counts']['badmintonStates'] = count($rows);
+}
+
+function bl_secure_export_field_map(): array {
+  $map = bl_export_field_map();
+  $map['users'] = [
+    'target'=>'Users/{padded-id}/account.json',
+    'fields'=>[
+      'id'=>'userId',
+      'name'=>'name',
+      'email'=>'email',
+      'auth_provider'=>'authProvider',
+      'created_at'=>'createdAt',
+      'updated_at'=>'updatedAt',
+      'last_login_at'=>'lastLoginAt',
+    ],
+    'intentionallyNotExported'=>[
+      'pass_hash'=>'authentication credential remains in the hardened authoritative store',
+      'google_sub'=>'provider subject remains in the hardened authoritative store',
+    ],
+  ];
+  $map['badminton_state_store']['target'] = 'Shared/badminton-session.json';
+  return $map;
+}
+
+function bl_secure_export_sqlite_copy(string $sourcePath, string $destinationPath): array {
+  $source = bl_export_normalize_path($sourcePath);
+  $destination = bl_export_normalize_path($destinationPath);
+  if(!is_file($source) || !is_readable($source)) throw new BaselineSqliteExportException('source_not_readable');
+  if(is_link($source)) throw new BaselineSqliteExportException('source_is_symlink');
+  if($source === $destination || str_starts_with($destination . '/', $source . '/')){
+    throw new BaselineSqliteExportException('destination_conflicts_with_source');
+  }
+
+  $sourceHashBefore = hash_file('sha256', $source);
+  $sourceSizeBefore = filesize($source);
+  $sourceMtimeBefore = filemtime($source);
+  if($sourceHashBefore === false || $sourceSizeBefore === false || $sourceMtimeBefore === false){
+    throw new BaselineSqliteExportException('source_stat_failed');
+  }
+
+  $parent = dirname($destination);
+  bl_export_ensure_directory($parent);
+  if(is_link($destination)) throw new BaselineSqliteExportException('destination_is_symlink');
+  $staging = $destination . '.staging-' . bin2hex(random_bytes(8));
+  $backup = $destination . '.previous-' . bin2hex(random_bytes(8));
+  bl_export_ensure_directory($staging);
+
+  $report = [
+    'formatVersion'=>BL_EXPORT_SCHEMA_VERSION,
+    'authority'=>'sqlite-copy-read-only',
+    'source'=>[
+      'sha256'=>$sourceHashBefore,
+      'sizeBytes'=>$sourceSizeBefore,
+      'modifiedAt'=>bl_export_iso_time($sourceMtimeBefore),
+    ],
+    'counts'=>[],
+    'missingTables'=>[],
+    'invalid'=>[],
+    'unmappedFields'=>[],
+    'intentionallyNotExported'=>['password_reset_tokens','rate_limit_events','schema_migrations'],
+    'intentionallyNotExportedFields'=>[],
+  ];
+
+  $expectedTables = ['users','favourites','binaural_presets','voice_settings','plans','plan_sessions','achievements','games_profiles','badminton_state_store'];
+  $swapped = false;
+  try{
+    $db = bl_export_open_readonly($source);
+    foreach($expectedTables as $table){
+      if(!bl_export_table_exists($db, $table)) $report['missingTables'][] = $table;
+    }
+    $users = bl_secure_export_accounts($db, $staging, $sourceMtimeBefore, $report);
+    bl_export_favourites($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_export_binaural($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_export_voice($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_export_fitness($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_export_games($db, $staging, $users, $sourceMtimeBefore, $report);
+    bl_secure_export_badminton($db, $staging, $sourceMtimeBefore, $report);
+    $db = null;
+
+    foreach($report['unmappedFields'] as &$fields) sort($fields);
+    unset($fields);
+    foreach($report['intentionallyNotExportedFields'] as &$fields) sort($fields);
+    unset($fields);
+    sort($report['missingTables']);
+    bl_export_write_json(bl_export_join($staging, 'Migration Report', 'field-map.json'), bl_secure_export_field_map());
+    bl_export_write_json(bl_export_join($staging, 'Migration Report', 'export-report.json'), $report);
+
+    $sourceHashAfter = hash_file('sha256', $source);
+    if($sourceHashAfter !== $sourceHashBefore || filesize($source) !== $sourceSizeBefore || filemtime($source) !== $sourceMtimeBefore){
+      throw new BaselineSqliteExportException('source_changed_during_export');
+    }
+
+    if(is_dir($destination)){
+      if(!@rename($destination, $backup)) throw new BaselineSqliteExportException('existing_export_backup_failed');
+    }elseif(file_exists($destination)){
+      throw new BaselineSqliteExportException('destination_not_directory');
+    }
+    if(!@rename($staging, $destination)){
+      if(is_dir($backup)) @rename($backup, $destination);
+      throw new BaselineSqliteExportException('export_swap_failed');
+    }
+    $swapped = true;
+    if(is_dir($backup)) bl_export_remove_tree($backup);
+    return $report;
+  }catch(Throwable $error){
+    if(!$swapped && is_dir($staging)) bl_export_remove_tree($staging);
+    if(!is_dir($destination) && is_dir($backup)) @rename($backup, $destination);
+    if($error instanceof BaselineSqliteExportException) throw $error;
+    throw new BaselineSqliteExportException('secure_export_failed: ' . $error->getMessage(), 0, $error);
+  }
+}

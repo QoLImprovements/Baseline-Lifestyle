@@ -54,9 +54,9 @@ function bl_copy_validation_invalid_summary(array $records): array {
   return $summary;
 }
 
-function bl_copy_validation_unmapped_fields(array $unmapped): array {
+function bl_copy_validation_field_names(array $source): array {
   $safe = [];
-  foreach($unmapped as $table=>$fields){
+  foreach($source as $table=>$fields){
     if(!is_string($table) || !is_array($fields)) continue;
     $names = [];
     foreach($fields as $field){
@@ -137,7 +137,7 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
 
   $base = bl_copy_validation_base_evidence();
   try{
-    $report = bl_export_sqlite_copy($source, $output);
+    $report = bl_secure_export_sqlite_copy($source, $output);
   }catch(Throwable $error){
     $evidence = $base + [
       'ok'=>false,
@@ -149,6 +149,7 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
         'missingTablesClear'=>false,
         'invalidRecordsClear'=>false,
         'unmappedFieldsClear'=>false,
+        'authenticationCredentialsExcluded'=>false,
       ],
     ];
     bl_copy_validation_write_evidence($evidencePath, $evidence);
@@ -164,14 +165,17 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
   $missingTables = array_values(array_filter($report['missingTables'] ?? [], 'is_string'));
   sort($missingTables);
   $invalid = is_array($report['invalid'] ?? null) ? $report['invalid'] : [];
-  $unmapped = bl_copy_validation_unmapped_fields(is_array($report['unmappedFields'] ?? null) ? $report['unmappedFields'] : []);
+  $unmapped = bl_copy_validation_field_names(is_array($report['unmappedFields'] ?? null) ? $report['unmappedFields'] : []);
+  $excludedFields = bl_copy_validation_field_names(is_array($report['intentionallyNotExportedFields'] ?? null) ? $report['intentionallyNotExportedFields'] : []);
   $verificationErrors = is_array($verification['errors'] ?? null) ? $verification['errors'] : [];
+  $authenticationExcluded = ($excludedFields['users'] ?? []) === ['google_sub','pass_hash'];
   $gates = [
     'exportCompleted'=>true,
     'verificationCompleted'=>(bool)($verification['ok'] ?? false),
     'missingTablesClear'=>$missingTables === [],
     'invalidRecordsClear'=>$invalid === [],
     'unmappedFieldsClear'=>$unmapped === [],
+    'authenticationCredentialsExcluded'=>$authenticationExcluded,
   ];
   $ok = !in_array(false, $gates, true);
 
@@ -191,6 +195,7 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
       'invalidSummary'=>bl_copy_validation_invalid_summary($invalid),
       'unmappedFields'=>$unmapped,
       'intentionallyNotExported'=>array_values(array_filter($report['intentionallyNotExported'] ?? [], 'is_string')),
+      'intentionallyNotExportedFields'=>$excludedFields,
     ],
     'verification'=>[
       'checkedFiles'=>max(0, (int)($verification['checkedFiles'] ?? 0)),
@@ -203,8 +208,8 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
       'copiedDataReview'=>$ok ? 'pass' : 'blocked',
       'productionCutover'=>'blocked',
       'reason'=>$ok
-        ? 'Copied-data export and verification passed. Live authority remains SQLite; backup and controlled-cutover evidence are still required.'
-        : 'Resolve missing tables, invalid records, unmapped fields or verification errors before any cutover design.',
+        ? 'Copied-data export and verification passed. Authentication credentials remain excluded and live authority remains SQLite; backup and controlled-cutover evidence are still required.'
+        : 'Resolve missing tables, invalid records, unmapped fields, credential-exclusion or verification errors before any cutover design.',
     ],
   ];
 

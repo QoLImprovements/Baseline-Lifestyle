@@ -53,26 +53,38 @@ try{
   $db = null;
 
   $beforeHash = hash_file('sha256', $source);
-  $first = bl_export_sqlite_copy($source, $output);
+  $first = bl_secure_export_sqlite_copy($source, $output);
   bl_export_test_assert(hash_file('sha256', $source) === $beforeHash, 'source database changed');
   bl_export_test_assert(($first['counts']['accounts'] ?? 0) === 1, 'account count failed');
+  bl_export_test_assert(($first['intentionallyNotExportedFields']['users'] ?? []) === ['google_sub','pass_hash'], 'credential exclusion report failed');
   bl_export_test_assert(is_file($output . '/Users/000007/account.json'), 'account file missing');
   bl_export_test_assert(is_file($output . '/Users/000007/favourites.json'), 'favourites file missing');
   bl_export_test_assert(is_file($output . '/Users/000007/binaural.json'), 'binaural file missing');
   bl_export_test_assert(is_file($output . '/Users/000007/voice.json'), 'voice file missing');
   bl_export_test_assert(is_file($output . '/Users/000007/fitness.json'), 'fitness file missing');
   bl_export_test_assert(is_file($output . '/Users/000007/Games/pairs.json'), 'game file missing');
-  bl_export_test_assert(is_file($output . '/Shared/Badminton/badminton.json'), 'badminton file missing');
+  bl_export_test_assert(is_file($output . '/Shared/badminton-session.json'), 'badminton file missing');
+  bl_export_test_assert(!is_file($output . '/Shared/Badminton/badminton.json'), 'obsolete badminton path was written');
 
-  $account = bl_export_test_read($output . '/Users/000007/account.json');
-  bl_export_test_assert(($account['data']['authentication']['passwordHash'] ?? '') === 'hash-value', 'password hash not preserved');
+  $accountPath = $output . '/Users/000007/account.json';
+  $account = bl_export_test_read($accountPath);
+  bl_export_test_assert(($account['data']['userId'] ?? 0) === 7, 'account user ID failed');
+  bl_export_test_assert(($account['data']['name'] ?? '') === 'Peter', 'account name failed');
+  bl_export_test_assert(($account['data']['authProvider'] ?? '') === 'password', 'account provider projection failed');
+  $accountRaw = file_get_contents($accountPath);
+  bl_export_test_assert(is_string($accountRaw), 'account read failed');
+  foreach(['hash-value','google-7','passwordHash','pass_hash','google_sub'] as $secret){
+    bl_export_test_assert(!str_contains($accountRaw, $secret), 'account projection exposed credential data: ' . $secret);
+  }
+
   $index = bl_export_test_read($output . '/Account Index/accounts.json');
   bl_export_test_assert(($index['data']['byEmail']['peter@example.test'] ?? '') === '000007', 'account index failed');
+  bl_export_test_assert(!array_key_exists('byProvider', $index['data']), 'provider subject index was exported');
   $game = bl_export_test_read($output . '/Users/000007/Games/pairs.json');
   bl_export_test_assert(($game['data']['profile']['level'] ?? 0) === 2, 'game profile failed');
 
   $firstTreeHash = bl_export_test_tree_hash($output);
-  bl_export_sqlite_copy($source, $output);
+  bl_secure_export_sqlite_copy($source, $output);
   $secondTreeHash = bl_export_test_tree_hash($output);
   bl_export_test_assert($firstTreeHash === $secondTreeHash, 'rerun was not deterministic');
 
@@ -86,6 +98,7 @@ try{
   bl_export_test_assert($validated['ok'] === true, 'combined validation did not pass');
   bl_export_test_assert($validated['readyForProductionCutover'] === false, 'validation incorrectly enabled cutover');
   bl_export_test_assert(($validated['gates']['verificationCompleted'] ?? false) === true, 'verification gate missing');
+  bl_export_test_assert(($validated['gates']['authenticationCredentialsExcluded'] ?? false) === true, 'credential exclusion gate missing');
   bl_export_test_assert(($validated['export']['treeSha256'] ?? '') === bl_copy_validation_tree_hash($output), 'tree hash mismatch');
   bl_export_test_assert(($validated['verification']['representativeRecords']['userFolders'][0] ?? '') === '000007', 'safe representative user missing');
   bl_export_test_assert(is_file($evidence), 'evidence file missing');
@@ -115,7 +128,7 @@ try{
   bl_export_test_assert($rejected['ok'] === false, 'tampered export was accepted');
   bl_export_test_assert(count($rejected['errors']) > 0, 'tamper rejection had no evidence');
 
-  bl_export_sqlite_copy($source, $output);
+  bl_secure_export_sqlite_copy($source, $output);
   bl_export_test_assert(bl_verify_sqlite_export($source, $output)['ok'] === true, 'clean rerun did not restore validity');
 
   $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
@@ -142,7 +155,7 @@ try{
   $restored = bl_validate_sqlite_copy($source, $output, $evidence);
   bl_export_test_assert($restored['ok'] === true, 'restored copied data did not pass');
 
-  echo "sqlite exporter, verifier and validation evidence contract passed\n";
+  echo "secure sqlite exporter, verifier and validation evidence contract passed\n";
 }finally{
   bl_export_remove_tree($base);
 }

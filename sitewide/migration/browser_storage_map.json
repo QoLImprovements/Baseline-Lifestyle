@@ -8,7 +8,7 @@
       "knownKeys": ["__baseline_badminton_session_v3__"],
       "classification": "legacy-shared-state",
       "decision": "normalise-and-compare",
-      "target": "Shared/Badminton/badminton.json",
+      "target": "Shared/badminton-session.json",
       "cutoverRule": "Import only through the protected Badminton administrator path. Compare with the current server state and never let a browser copy silently overwrite a newer shared revision."
     },
     {
@@ -17,7 +17,7 @@
       "knownKeys": ["__baseline_badminton_session_v4__"],
       "classification": "shared-state-browser-cache",
       "decision": "retain-as-non-authoritative-cache-until-cutover",
-      "target": "Shared/Badminton/badminton.json",
+      "target": "Shared/badminton-session.json",
       "cutoverRule": "The protected server resource is authoritative. Clear or refresh the local cache only after a verified server load; enforce Badminton administration permissions."
     },
     {
