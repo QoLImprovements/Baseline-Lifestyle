@@ -45,6 +45,9 @@ jobs:
       - name: Run Fitness voice browser test
         run: npm run test:voice-ui
 
+      - name: Run finite stability and release smoke test
+        run: npm run test:stability-smoke
+
       - name: Run Games Hub unit tests
         run: npm run test:realm-stage2
 
