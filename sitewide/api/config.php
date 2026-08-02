@@ -32,38 +32,6 @@ function bl_str_len(string $value): int {
   return function_exists('mb_strlen') ? (int)mb_strlen($value) : strlen($value);
 }
 
-function bl_google_redirect_url(): string {
-  $configured = bl_env('BL_GOOGLE_REDIRECT_URI');
-  if($configured !== '') return $configured;
-  return bl_request_origin() . bl_site_base_path() . '/api/google_callback.php';
-}
-
-function bl_find_user_by_identifier(PDO $db, string $identifier): ?array {
-  $identifier = trim($identifier);
-  if($identifier === '') return null;
-
-  if(str_contains($identifier, '@')){
-    $stmt = $db->prepare('SELECT * FROM users WHERE email_normalized = :email LIMIT 1');
-    $stmt->execute([':email' => bl_normalize_email($identifier)]);
-    $row = $stmt->fetch();
-    return $row ?: null;
-  }
-
-  $stmt = $db->prepare('SELECT * FROM users WHERE lower(name) = lower(:name) LIMIT 1');
-  $stmt->execute([':name' => $identifier]);
-  $row = $stmt->fetch();
-  return $row ?: null;
-}
-
-function bl_find_user_by_email(PDO $db, string $email): ?array {
-  $normalized = bl_normalize_email($email);
-  if($normalized === '') return null;
-  $stmt = $db->prepare('SELECT * FROM users WHERE email_normalized = :email LIMIT 1');
-  $stmt->execute([':email' => $normalized]);
-  $row = $stmt->fetch();
-  return $row ?: null;
-}
-
 function bl_table_columns(PDO $db, string $table): array {
   $out = [];
   $rows = $db->query('PRAGMA table_info(' . $table . ')')->fetchAll() ?: [];

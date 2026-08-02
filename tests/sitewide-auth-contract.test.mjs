@@ -80,15 +80,17 @@ test('HTTP and JSON handling have one focused server boundary', () => {
   assert.match(http, /Never build security-sensitive links from an untrusted Host header/);
 });
 
-test('current-user validation and public account payloads have one authentication boundary', () => {
+test('account lookup, current-user validation and public payloads have one authentication boundary', () => {
   const config = read('sitewide/api/config.php');
   const auth = read('sitewide/api/authentication.php');
   assert.match(config, /require_once __DIR__ \. '\/authentication\.php'/);
-  assert.doesNotMatch(config, /function bl_(?:current_user|require_user|require_user_id|normalize_email|email_is_valid|password_is_valid|user_public_payload|is_google_enabled|auth_providers_payload)\b/);
-  for(const name of ['bl_current_user','bl_require_user','bl_require_user_id','bl_normalize_email','bl_email_is_valid','bl_password_is_valid','bl_user_public_payload','bl_is_google_enabled','bl_auth_providers_payload']){
+  assert.doesNotMatch(config, /function bl_(?:current_user|require_user|require_user_id|normalize_email|email_is_valid|password_is_valid|user_public_payload|is_google_enabled|auth_providers_payload|google_redirect_url|find_user_by_identifier|find_user_by_email)\b/);
+  for(const name of ['bl_current_user','bl_require_user','bl_require_user_id','bl_normalize_email','bl_email_is_valid','bl_password_is_valid','bl_user_public_payload','bl_is_google_enabled','bl_auth_providers_payload','bl_google_redirect_url','bl_find_user_by_identifier','bl_find_user_by_email']){
     assert.match(auth, new RegExp(`function ${name}\\b`), `${name} is missing from the authentication boundary`);
   }
   assert.match(auth, /SELECT \* FROM users WHERE id = :id LIMIT 1/);
+  assert.match(auth, /SELECT \* FROM users WHERE email_normalized = :email LIMIT 1/);
+  assert.match(auth, /SELECT \* FROM users WHERE lower\(name\) = lower\(:name\) LIMIT 1/);
   assert.doesNotMatch(auth, /pass_hash\s*=>|password_hash\(|schema_migrations|function bl_send_text_mail/);
 });
 

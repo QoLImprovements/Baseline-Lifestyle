@@ -85,6 +85,15 @@ The sixth change extracts password-reset token generation, hashed-verifier looku
 - Completing a reset marks its token used and restores password authentication for the account.
 - The executable contract uses only an in-memory SQLite database and never opens production data.
 
+## Increment 7: authentication lookup completion
+
+The seventh change completes the authentication boundary by moving username/email lookup and Google callback URL construction out of `config.php`.
+
+- Username lookup remains case-insensitive and email lookup remains normalized.
+- Host-configured Google callback URLs still override the existing site-derived default.
+- Login, forgotten-password and Google callback routes keep calling the same helpers.
+- The executable contract extends its in-memory SQLite fixture and performs no production reads.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
