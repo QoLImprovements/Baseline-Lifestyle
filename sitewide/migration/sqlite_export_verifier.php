@@ -71,9 +71,7 @@ function bl_verify_resource_file(string $relative): bool {
 }
 
 function bl_verify_allowed_file(string $relative): bool {
-  return bl_verify_resource_file($relative)
-    || $relative === 'Migration Report/field-map.json'
-    || $relative === 'Migration Report/export-report.json';
+  return bl_verify_resource_file($relative);
 }
 
 function bl_verify_permissions(string $root, array $files): array {
@@ -164,6 +162,28 @@ function bl_verify_game_projection(array $game, string $relative): array {
   return $errors;
 }
 
+function bl_verify_source_report(array $report, string $source): array {
+  $errors = [];
+  if(($report['authority'] ?? null) !== 'sqlite-copy-read-only'){
+    $errors[] = ['check'=>'authority','actual'=>$report['authority'] ?? null];
+  }
+  if(($report['source']['sha256'] ?? null) !== hash_file('sha256', $source)){
+    $errors[] = ['check'=>'source_hash'];
+  }
+  if(($report['invalid'] ?? []) !== []){
+    $errors[] = ['check'=>'invalid_source_records','records'=>$report['invalid']];
+  }
+  if(($report['unmappedFields'] ?? []) !== []){
+    $errors[] = ['check'=>'unmapped_source_fields','fields'=>$report['unmappedFields']];
+  }
+  $excludedUserFields = $report['intentionallyNotExportedFields']['users'] ?? [];
+  sort($excludedUserFields);
+  if($excludedUserFields !== ['google_sub','pass_hash']){
+    $errors[] = ['check'=>'authentication_field_exclusion','actual'=>$excludedUserFields];
+  }
+  return $errors;
+}
+
 function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array {
   $source = bl_export_normalize_path($sourcePath);
   $actualRoot = bl_export_normalize_path($exportPath);
@@ -201,7 +221,7 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
         $errors[] = ['check'=>'file_content','path'=>$relative,'expectedSha256'=>$expectedHash,'actualSha256'=>$actualHash];
       }
       try{
-        $decoded = bl_verify_read_json($actualPath, bl_verify_resource_file($relative));
+        $decoded = bl_verify_read_json($actualPath);
         if(preg_match('#^Users/[0-9]{6}/account\.json$#', $relative) === 1){
           $errors = array_merge($errors, bl_verify_account_projection($decoded, $relative));
         }
@@ -214,30 +234,7 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
     }
 
     $errors = array_merge($errors, bl_verify_permissions($actualRoot, $actualFiles));
-
-    try{
-      $actualReport = bl_verify_read_json($actualRoot . '/Migration Report/export-report.json', false);
-      if(($actualReport['authority'] ?? null) !== 'sqlite-copy-read-only'){
-        $errors[] = ['check'=>'authority','actual'=>$actualReport['authority'] ?? null];
-      }
-      if(($actualReport['source']['sha256'] ?? null) !== hash_file('sha256', $source)){
-        $errors[] = ['check'=>'source_hash'];
-      }
-      if(($actualReport['invalid'] ?? []) !== []){
-        $errors[] = ['check'=>'invalid_source_records','records'=>$actualReport['invalid']];
-      }
-      if(($actualReport['unmappedFields'] ?? []) !== []){
-        $errors[] = ['check'=>'unmapped_source_fields','fields'=>$actualReport['unmappedFields']];
-      }
-      $excludedUserFields = $actualReport['intentionallyNotExportedFields']['users'] ?? [];
-      sort($excludedUserFields);
-      if($excludedUserFields !== ['google_sub','pass_hash']){
-        $errors[] = ['check'=>'authentication_field_exclusion','actual'=>$excludedUserFields];
-      }
-    }catch(Throwable $error){
-      $actualReport = [];
-      $errors[] = ['check'=>'export_report','error'=>$error->getMessage()];
-    }
+    $errors = array_merge($errors, bl_verify_source_report($expectedReport, $source));
 
     try{
       $index = bl_verify_read_json($actualRoot . '/Account Index/accounts.json');
@@ -261,7 +258,7 @@ function bl_verify_sqlite_export(string $sourcePath, string $exportPath): array 
     return [
       'ok'=>$errors === [],
       'authority'=>'sqlite-copy-read-only',
-      'counts'=>$actualReport['counts'] ?? [],
+      'counts'=>$expectedReport['counts'] ?? [],
       'representativeRecords'=>bl_verify_representatives($actualFiles),
       'checkedFiles'=>count($actualFiles),
       'errors'=>$errors,

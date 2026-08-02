@@ -66,6 +66,16 @@ test('saved resources preserve the agreed physical file structure', () => {
   assert.doesNotMatch(source, /badminton-session\.json/);
 });
 
+test('temporary and coordination files stay under Runtime', () => {
+  const source = read('sitewide/api/saved_data.php');
+  assert.match(source, /bl_saved_temporary_directory/);
+  assert.match(source, /bl_saved_join\(bl_runtime_root\(\), 'Temporary Files'\)/);
+  assert.match(source, /bl_saved_temporary_path\(\$path\)/);
+  assert.match(source, /saved_data_and_runtime_must_share_filesystem/);
+  assert.doesNotMatch(source, /bl_saved_join\(\$directory, 'baseline-temp-/);
+  assert.match(source, /bl_saved_join\(bl_runtime_root\(\), 'Locks'\)/);
+});
+
 test('saved resources use revisions, validation, locks, and atomic replacement', () => {
   const source = read('sitewide/api/saved_data.php');
   assert.match(source, /expectedRevision/);

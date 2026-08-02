@@ -45,6 +45,7 @@ try{
   $report = bl_secure_export_sqlite_copy($source, $output);
   $path = $output . '/Users/000007/voice.json';
   bl_voice_export_test_assert(is_file($path), 'voice file missing');
+  bl_voice_export_test_assert(!is_dir($output . '/Migration Report'), 'migration metadata entered Saved Data');
   bl_voice_export_test_assert(($report['counts']['voiceSettings'] ?? 0) === 1, 'voice row count failed');
   bl_voice_export_test_assert(($report['counts']['voiceFiles'] ?? 0) === 1, 'voice file count failed');
   $resource = bl_voice_export_test_read($path);
@@ -54,7 +55,7 @@ try{
   bl_voice_export_test_assert(!array_key_exists('settings', $resource['data']), 'obsolete settings wrapper remains');
   bl_voice_export_test_assert(count($resource['data']) === 12, 'voice settings allowlist drifted');
 
-  $fieldMap = bl_voice_export_test_read($output . '/Migration Report/field-map.json');
+  $fieldMap = bl_secure_export_field_map();
   bl_voice_export_test_assert(($fieldMap['voice_settings']['target'] ?? '') === 'Users/{padded-id}/voice.json', 'voice target drifted');
   bl_voice_export_test_assert(count($fieldMap['voice_settings']['allowedSettings'] ?? []) === 12, 'voice field map allowlist drifted');
 

@@ -21,17 +21,20 @@ The target production authority is the protected base-level Saved Data area, wit
 ├── Runtime/
 │   ├── Locks/
 │   └── Temporary Files/
+├── Migration Evidence/
+│   └── reports, field maps and validation evidence
 └── public_html/
     └── replaceable website and server code
 ```
 
-`Saved Data` and `Runtime` must be outside the public document root where Hostinger permits it. The browser must never browse or edit those folders directly.
+`Saved Data`, `Runtime` and private migration evidence must be outside the public document root where Hostinger permits it. The browser must never browse or edit those folders directly.
 
 The distinction is mandatory:
 
 - **Saved Data:** live values created, selected, completed or saved by users, plus shared live-system records.
 - **Replaceable application code:** rules, interfaces, validation, schemas, migrations, APIs and defaults.
 - **Runtime:** short locks, active-editing leases, heartbeats and incomplete temporary writes.
+- **Migration evidence:** source inventories, field maps, counts, hashes and validation reports. These are operational records, not live user resources.
 
 A deployment may replace `public_html`; it must leave `Saved Data` untouched and reconnect to the existing resources.
 
@@ -78,6 +81,8 @@ Saved Data/
 Files are created only when the relevant saved resource exists. Do not create empty files for unplayed games or optional panels that have no persistent user choices.
 
 Do not combine unrelated systems into one enormous user file. Do not split a small independent panel into unnecessary fragments.
+
+No `Migration Report`, evidence, lock, heartbeat or temporary file is permitted inside this tree.
 
 ## Resource decisions
 
@@ -143,17 +148,25 @@ Every persistent request must:
 3. enforce ownership or shared-system permissions;
 4. validate allowed fields, structure, size and depth;
 5. compare the submitted revision with the live revision;
-6. write a complete temporary file;
+6. write a complete temporary file under `Runtime/Temporary Files`;
 7. parse and validate that temporary file;
-8. acquire a short resource lock;
+8. acquire a short resource lock under `Runtime/Locks`;
 9. re-check the live revision;
 10. atomically replace the live file;
 11. release the lock;
 12. return the new revision and update time.
 
+`Saved Data` and `Runtime` must reside on the same filesystem so the final rename is atomic. Configuration fails closed when they are not.
+
 Loads address only the requested resource and never expose physical server paths.
 
 Long-lived active-editing leases apply only to genuinely conflicting editors. Independent resources must remain independently usable. Lease and temporary files belong under `Runtime`, not permanent Saved Data.
+
+## Migration evidence boundary
+
+The migration exporter returns its source report to the validation process but writes only live candidate resources into the candidate `Saved Data` tree.
+
+Field maps, source-table inventories, hashes, validation decisions and failure reports must be written to a separate private evidence path. They are never children of `Saved Data`, are never served as user resources and are not copied into the live authority during cutover.
 
 ## Migration boundary
 

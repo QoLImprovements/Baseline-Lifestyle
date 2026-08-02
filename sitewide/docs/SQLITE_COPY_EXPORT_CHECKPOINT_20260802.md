@@ -37,9 +37,17 @@ Canonical game filename mapping:
 
 The exporter fails closed on an unsupported game identifier rather than inventing a path.
 
+The candidate tree contains only live candidate resources. It contains no `Migration Report` directory, field-map file, source report, lock, heartbeat or temporary write.
+
+## Evidence boundary
+
+The exporter returns its source report to the validation process. The combined validation command writes source inventory, counts, hashes, invalid/unmapped summaries and its decision to the separately supplied private evidence path.
+
+`bl_secure_export_field_map()` remains the contract source for the field map, but the map is not inserted into `Saved Data`. Operational evidence must remain outside the live candidate tree.
+
 ## Verification
 
-The independent verifier regenerates the expected tree and compares every path, file hash, envelope and permission. It allows only the canonical game filenames and validates that each file's stored game identifier maps back to that filename.
+The independent verifier regenerates the expected resource-only tree and compares every path, file hash, envelope and permission. It allows only the canonical game filenames and validates that each file's stored game identifier maps back to that filename.
 
 It also verifies:
 
@@ -49,8 +57,8 @@ It also verifies:
 - direct voice payload shape;
 - direct shared Badminton payload with no obsolete wrapper;
 - `Shared/Badminton/badminton.json` rather than a flattened path;
-- source counts, invalid records and unmapped fields;
-- rejection of extra, missing or tampered files.
+- source counts, invalid records and unmapped fields from the separately held source report;
+- rejection of operational metadata, extra, missing or tampered files.
 
 ## Completion boundary
 

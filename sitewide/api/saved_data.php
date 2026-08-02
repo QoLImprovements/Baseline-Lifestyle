@@ -151,6 +151,20 @@ function bl_saved_badminton_path(): string {
   return bl_saved_join(bl_saved_root(), 'Shared', 'Badminton', 'badminton.json');
 }
 
+function bl_saved_temporary_directory(): string {
+  $directory = bl_saved_join(bl_runtime_root(), 'Temporary Files');
+  bl_saved_ensure_directory($directory);
+  return $directory;
+}
+
+function bl_saved_temporary_path(string $resourcePath): string {
+  if($resourcePath === '') throw new InvalidArgumentException('invalid_resource_path');
+  return bl_saved_join(
+    bl_saved_temporary_directory(),
+    hash('sha256', $resourcePath) . '-' . bin2hex(random_bytes(12)) . '.tmp'
+  );
+}
+
 function bl_saved_decode_file(string $path): ?array {
   if(!is_file($path)) return null;
   if(is_link($path)) throw new BaselineSavedDataCorruptException('resource_is_symlink');
@@ -210,7 +224,6 @@ function bl_saved_with_resource_lock(string $resourcePath, callable $operation){
 }
 
 function bl_saved_write_unlocked(string $path, array $data, int $expectedRevision): array {
-  $directory = dirname($path);
   $current = bl_saved_decode_file($path);
   $currentRevision = (int)($current['revision'] ?? 0);
   if($currentRevision !== $expectedRevision){
@@ -225,8 +238,18 @@ function bl_saved_write_unlocked(string $path, array $data, int $expectedRevisio
   $json = json_encode($envelope, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
   if(strlen($json) > BL_MAX_JSON_BYTES) throw new InvalidArgumentException('resource_too_large');
 
-  $temporary = bl_saved_join($directory, 'baseline-temp-' . bin2hex(random_bytes(12)) . '.tmp');
+  $temporary = bl_saved_temporary_path($path);
   try{
+    $targetStat = @stat(dirname($path));
+    $temporaryStat = @stat(dirname($temporary));
+    if(
+      is_array($targetStat)
+      && is_array($temporaryStat)
+      && isset($targetStat['dev'], $temporaryStat['dev'])
+      && $targetStat['dev'] !== $temporaryStat['dev']
+    ){
+      throw new BaselineSavedDataConfigurationException('saved_data_and_runtime_must_share_filesystem');
+    }
     bl_saved_write_stream($temporary, $json . "\n");
     $decodedTemporary = bl_saved_decode_file($temporary);
     if($decodedTemporary === null || (int)($decodedTemporary['revision'] ?? 0) !== $currentRevision + 1){
