@@ -83,7 +83,8 @@ test('saved-data structure remains the target authority rather than a SQLite sub
   assert.match(authority, /Shared\/Badminton\/badminton\.json/);
   assert.match(authority, /one physical save file per played game/i);
   assert.match(authority, /SQLite.*migration source|migration source.*SQLite/is);
-  assert.match(status, /Saved Data resource files.*target production authority/is);
+  assert.match(status, /target production authority.*independent resource files|independent resource files.*target production authority/is);
+  assert.match(status, /SQLite remains the current live production authority.*during migration/is);
   assert.doesNotMatch(status, /Final data-authority architecture.*SQLite outside `public_html`/is);
 });
 
