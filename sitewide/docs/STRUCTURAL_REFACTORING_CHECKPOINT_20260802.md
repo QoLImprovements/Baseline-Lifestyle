@@ -94,6 +94,15 @@ The seventh change completes the authentication boundary by moving username/emai
 - Login, forgotten-password and Google callback routes keep calling the same helpers.
 - The executable contract extends its in-memory SQLite fixture and performs no production reads.
 
+## Increment 8: database and schema boundary
+
+The eighth change extracts SQLite connection ownership, core schema upgrades, scoped migrations and database-backed rate limiting into `sitewide/api/database.php`.
+
+- The configured SQLite path and existing schema version remain authoritative.
+- Core schema application and scoped migrations retain their transaction boundaries.
+- Rate-limit buckets retain the same IP, scope and normalized-subject inputs.
+- The executable contract creates and removes a uniquely named temporary SQLite database; it never opens production data or Saved Data.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
