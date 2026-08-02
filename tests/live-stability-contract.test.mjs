@@ -41,3 +41,13 @@ test('protected key and Charity banner controls have stable first-paint geometry
   assert.match(css, /#bl-beats-toggle/);
   assert.match(css, /#bl-auth-toggle/);
 });
+
+test('new session-only navigation keys have explicit non-resource decisions', () => {
+  const mapping = JSON.parse(read('sitewide/migration/browser_storage_map.json'));
+  const rules = mapping.rules || [];
+  for (const id of ['pending-recipe-route', 'fitness-body-view']) {
+    const rule = rules.find(candidate => candidate.id === id);
+    assert.equal(rule?.decision, 'expire-with-session');
+    assert.equal(rule?.target, null);
+  }
+});
