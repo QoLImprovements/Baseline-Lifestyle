@@ -4,11 +4,18 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
+const PRODUCTION_PATHS = Object.freeze(["index.html", "sitewide", "systems"]);
 const INCLUDED_EXTENSIONS = new Set([".js", ".mjs", ".html", ".php"]);
 const EXCLUDED_DIRECTORIES = new Set([
   ".git",
   ".github",
+  ".cache",
+  ".venv",
   "node_modules",
+  "vendor",
+  "dist",
+  "build",
+  "coverage",
   "tests",
   "test-results",
   "playwright-report",
@@ -23,17 +30,29 @@ function lineNumber(source, offset) {
 function walk(directory, root, output = []) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
     if (entry.isDirectory()) {
-      if (!EXCLUDED_DIRECTORIES.has(entry.name)) {
+      if (!entry.name.startsWith(".") && !EXCLUDED_DIRECTORIES.has(entry.name)) {
         walk(path.join(directory, entry.name), root, output);
       }
       continue;
     }
-    if (!entry.isFile() || !INCLUDED_EXTENSIONS.has(path.extname(entry.name))) {
-      continue;
-    }
+    if (!entry.isFile() || !INCLUDED_EXTENSIONS.has(path.extname(entry.name))) continue;
     output.push(path.relative(root, path.join(directory, entry.name)).replaceAll("\\", "/"));
   }
   return output;
+}
+
+function productionFiles(root) {
+  const output = [];
+  for (const relative of PRODUCTION_PATHS) {
+    const target = path.join(root, relative);
+    if (!fs.existsSync(target)) continue;
+    const stat = fs.statSync(target);
+    if (stat.isDirectory()) walk(target, root, output);
+    else if (stat.isFile() && INCLUDED_EXTENSIONS.has(path.extname(target))) {
+      output.push(relative.replaceAll("\\", "/"));
+    }
+  }
+  return [...new Set(output)].sort();
 }
 
 function decodeLiteral(expression) {
@@ -139,7 +158,7 @@ function scanFile(root, relativePath) {
 }
 
 export function collectBrowserStorageInventory(root = DEFAULT_ROOT) {
-  const files = walk(root, root).sort();
+  const files = productionFiles(root);
   const occurrences = files.flatMap((relativePath) => scanFile(root, relativePath));
   occurrences.sort((left, right) =>
     left.file.localeCompare(right.file) || left.line - right.line || left.operation.localeCompare(right.operation),
@@ -168,6 +187,7 @@ export function collectBrowserStorageInventory(root = DEFAULT_ROOT) {
 
   return {
     formatVersion: 1,
+    productionPaths: [...PRODUCTION_PATHS],
     scannedFiles: files.length,
     occurrenceCount: occurrences.length,
     groups: [...groups.values()]
