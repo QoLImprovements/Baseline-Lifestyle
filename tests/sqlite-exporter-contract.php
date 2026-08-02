@@ -50,6 +50,7 @@ try{
   bl_export_test_assert(($first['counts']['accounts'] ?? 0) === 1, 'account count failed');
   bl_export_test_assert(($first['counts']['gameFiles'] ?? 0) === 3, 'game file count failed');
   bl_export_test_assert(($first['intentionallyNotExportedFields']['users'] ?? []) === ['google_sub','pass_hash'], 'credential exclusion report failed');
+  bl_export_test_assert(!is_dir($output . '/Migration Report'), 'migration metadata entered Saved Data');
 
   foreach([
     '/Account Index/accounts.json',
@@ -91,7 +92,7 @@ try{
   bl_export_test_assert(($badminton['data']['version'] ?? 0) === 4, 'badminton version failed');
   bl_export_test_assert(!array_key_exists('states', $badminton['data']), 'obsolete Badminton wrapper remains');
 
-  $fieldMap = bl_export_test_read($output . '/Migration Report/field-map.json');
+  $fieldMap = bl_secure_export_field_map();
   bl_export_test_assert(
     ($fieldMap['badminton_state_store']['target'] ?? '') === 'Shared/Badminton/badminton.json',
     'Badminton field-map target failed'
@@ -110,6 +111,7 @@ try{
   bl_export_test_assert($validated['readyForProductionCutover'] === false, 'validation incorrectly enabled cutover');
   bl_export_test_assert(($validated['gates']['verificationCompleted'] ?? false) === true, 'verification gate missing');
   bl_export_test_assert(($validated['gates']['authenticationCredentialsExcluded'] ?? false) === true, 'credential exclusion gate missing');
+  bl_export_test_assert(!str_starts_with($evidence, $output . '/'), 'evidence path entered Saved Data');
 
   $evidenceRaw = file_get_contents($evidence);
   bl_export_test_assert(is_string($evidenceRaw), 'evidence read failed');
@@ -143,7 +145,7 @@ try{
   bl_export_test_assert(($failure['export']['invalidCount'] ?? 0) === 1, 'invalid source count missing');
   bl_export_test_assert(($failure['decision']['productionCutover'] ?? '') === 'blocked', 'failure evidence did not block cutover');
 
-  echo "canonical Saved Data exporter, verifier and evidence contract passed\n";
+  echo "canonical resource-only Saved Data exporter, verifier and evidence contract passed\n";
 }finally{
   bl_export_remove_tree($base);
 }
