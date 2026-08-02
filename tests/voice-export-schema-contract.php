@@ -76,9 +76,9 @@ try{
   $normalised = bl_voice_export_test_read($path);
   bl_voice_export_test_assert(($normalised['data']['enabled'] ?? false) === true, 'boolean normalisation failed');
   bl_voice_export_test_assert(($normalised['data']['language'] ?? '') === 'en-GB', 'language default failed');
-  bl_voice_export_test_assert(($normalised['data']['rate'] ?? 0) === 2.0, 'rate clamp failed');
-  bl_voice_export_test_assert(($normalised['data']['pitch'] ?? 0) === 0.5, 'pitch clamp failed');
-  bl_voice_export_test_assert(($normalised['data']['volume'] ?? -1) === 0.0, 'volume clamp failed');
+  bl_voice_export_test_assert((float)($normalised['data']['rate'] ?? 0) === 2.0, 'rate clamp failed');
+  bl_voice_export_test_assert((float)($normalised['data']['pitch'] ?? 0) === 0.5, 'pitch clamp failed');
+  bl_voice_export_test_assert((float)($normalised['data']['volume'] ?? -1) === 0.0, 'volume clamp failed');
   bl_voice_export_test_assert(($normalised['data']['maximumRestSeconds'] ?? 0) === 600, 'rest limit clamp failed');
   bl_voice_export_test_assert(
     ($review['unmappedFields']['voice_settings.settings_json'] ?? []) === ['legacyWakeWord'],
