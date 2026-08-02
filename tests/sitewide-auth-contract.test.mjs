@@ -52,10 +52,16 @@ test('Fitness auth compatibility state redirects to the single sitewide source o
 
 test('server authentication session and API routing remain sitewide', () => {
   const config = read('sitewide/api/config.php');
+  const session = read('sitewide/api/session.php');
   const htaccess = read('.htaccess');
   const login = read('sitewide/api/login.php');
-  assert.match(config, /session_name\('baseline_session'\)/);
-  assert.match(config, /'path'\s*=>\s*'\/'/);
+  assert.match(config, /require_once __DIR__ \. '\/session\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:session_start|set_auth_session|clear_auth_session|authed_uid|authed_name|authed_email)\b/);
+  assert.match(session, /session_name\('baseline_session'\)/);
+  assert.match(session, /'path'\s*=>\s*'\/'/);
+  assert.match(session, /'secure'\s*=>\s*\$secure/);
+  assert.match(session, /'httponly'\s*=>\s*true/);
+  assert.match(session, /'samesite'\s*=>\s*'Lax'/);
   assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
   assert.match(login, /bl_set_auth_session\(\$user\)/);
 });
