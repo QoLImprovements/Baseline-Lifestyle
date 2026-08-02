@@ -1,97 +1,87 @@
-# Browser-storage migration map — 2 August 2026
+# Browser-storage migration map — corrected 2 August 2026
 
 ## Purpose
 
-This checkpoint maps production browser-storage access to an explicit migration, cache, local-only or retirement decision before any Saved Data cutover.
+This map assigns every production browser-storage group to migration, cache, local-only or retirement handling before the resource-based Saved Data cutover.
 
-The executable inventory scans only production entry points under `index.html`, `sitewide/` and `systems/`. Tests, prototypes, documentation, dependencies and generated output are excluded. Every discovered key/expression must be covered by `sitewide/migration/browser_storage_map.json`; a newly introduced storage group makes the contract fail until it receives a reviewed decision.
+SQLite is the current migration source. The target authority is the protected `Saved Data` tree with stable padded user folders, one meaningful file per independent resource, one physical save per played game and shared Badminton under its own folder.
 
-SQLite remains authoritative. This map does not enable JSON writes or import any browser data.
+The executable inventory scans production entry points under `index.html`, `sitewide/` and `systems/`. Every discovered key or expression must be covered by `sitewide/migration/browser_storage_map.json`; new or multiply assigned groups fail the contract.
 
 ## Authority rules
 
-1. A username, email or display name found inside a legacy key is lookup context only. It must never become a filesystem path.
-2. Guest/local data may be offered for explicit import, but it must never overwrite an authenticated resource automatically.
-3. Rebuildable caches and UI state are not migrated.
-4. A local cache beside an existing server record is not promoted above the server authority.
-5. Conflicting duplicate or legacy keys are reported; the importer must not silently choose one.
-6. Data with no approved destination remains local and blocks deletion until a schema is separately approved.
+1. Usernames, emails and display names found in legacy keys are lookup context only and never filesystem identities.
+2. Guest or local data cannot overwrite authenticated data automatically.
+3. Rebuildable caches and interface state are not migrated.
+4. Conflicting duplicate or legacy keys produce a blocking report; the importer never silently chooses.
+5. Data without an approved target remains protected locally and blocks retirement.
+6. Baseline Realm modes merge into one physical `baseline-realm.json` save rather than becoming separate game files.
+7. Shared Badminton maps only to `Shared/Badminton/badminton.json` and never into a user game save.
 
-## Migrate into approved resources
+## Canonical game filenames
 
-### Fitness
+| Production identifier | Saved file |
+|---|---|
+| `ninja` / `baseline-realm` | `baseline-realm.json` |
+| `pairs` | `pairs.json` |
+| `detectword` | `detect-word.json` |
+| `make24` | `make-24.json` |
+| `trackcoin` | `track-coin.json` |
+| `ruleshift` | `rule-shift.json` |
+| `dartsfocused` | `darts-focused.json` |
+| `meridiangrove` | `meridian-grove.json` |
 
-- `__bl_fitness_body_profile_v1__::{user}` → validated `fitness.json.bodyProfile`.
-- `__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{user}` → `fitness.json.activeWorkout` only when it matches the authoritative plan, next session and expected step count.
-- `__bl_fitness_plan_cache_v1__::{user}` is a rebuildable server cache and is not migrated.
-- `__bl_fitness_plan_v1__::{user}` is the file-protocol development fallback; production plans already come from the Fitness API and SQLite, so it is excluded from production migration.
+The Games Hub guest-profile bundle must be split by recognised game ID through this map. A physical file is created only when saveable progress exists.
 
-The body profile and active-workout targets still require final schema validation before cutover. Stale or mismatched workout progress must be reported rather than attached to the wrong plan.
+## Fitness
 
-### Voice
+- `__bl_fitness_body_profile_v1__::{user}` → `Users/{paddedUserId}/fitness.json#profile` after field and unit validation.
+- `__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{user}` → `fitness.json#activeWorkout` only when it matches the authoritative plan, next session and expected steps.
+- the server-plan cache is rebuilt rather than migrated;
+- the file-protocol plan fallback is excluded from production migration.
 
-- `__baseline_voice_settings_v1__` maps to optional `Users/{userId}/voice.json`.
-- The authenticated server `voice_settings` row takes precedence.
-- Guest settings remain local unless the user explicitly chooses to adopt them.
+Stale or mismatched progress is reported and never attached to the wrong plan.
 
-### Individual game saves
+## Voice
 
-The following map to one protected file per played game:
+`__baseline_voice_settings_v1__` maps to optional `Users/{paddedUserId}/voice.json`. The authenticated server record wins during migration; guest settings require explicit adoption.
 
-- Badminton Focused;
-- Darts Focused v1/v2;
-- Track Coin;
-- Baseline Realm Meridian Grove exploration;
-- Baseline Realm Tactical Operations v1/v2;
-- each recognised game inside the Games Hub guest-profile bundle.
+## Games
 
-Darts currently writes both its current and compatibility keys. Tactical Operations can also exist in the Realm inventory service and local fallback. These sources must be normalised and compared; divergence is a blocking report, not an invitation to choose the newest-looking value without validation.
+- Darts Focused v1/v2 → `Games/darts-focused.json`, with conflicting copies reported.
+- Track Coin → `Games/track-coin.json`.
+- Baseline Realm exploration → `Games/baseline-realm.json#exploration`.
+- Tactical Operations v1/v2 → `Games/baseline-realm.json#tacticalOperations`.
+- recognised guest-profile entries → their canonical physical files.
 
-### Shared Badminton
+`__bl_badminton_focused_v1__` is preserved locally because it is not recognised by the current protected Games API or canonical file map. It must not be deleted, silently mapped to shared Badminton, or assigned a physical filename until its game schema is explicitly approved.
 
-`__baseline_badminton_session_v4__` is a browser resilience copy beside the protected server state. It maps to `Shared/Badminton/badminton.json` only through the Badminton administrator path and revision/conflict checks. Legacy v3 is normalised and compared first. A local browser copy may not replace a newer shared revision.
+## Shared Badminton
+
+Both legacy v3 and current v4 browser copies target:
+
+```text
+Shared/Badminton/badminton.json
+```
+
+Import is allowed only through the protected administrator path after comparison with current server state. A browser cache cannot replace a newer shared revision.
 
 ## Deliberately not migrated
 
-- `__bl_games_auto_next_v1__`, `baselineGamesHubView` and `baselineIndexActiveView` are device/session interface preferences.
-- `bl_recipe_index_{app}` is rebuilt from recipe-page titles and is not the favourites authority.
-- outer-embed snapshots are deletion-only compatibility state.
-- generic storage-wrapper expressions are implementation details already accounted for by their concrete keys.
-- `__bl_local_users_v1__` and `__bl_local_session_v1__` are file-preview fallbacks. Browser-stored account/password or session material must never be promoted into production authentication.
+Device/session UI preferences, recipe-title indexes, outer-embed snapshots and generic storage-wrapper expressions are not persistent account data. Browser account/password previews and local preview sessions are explicitly excluded from production authentication.
 
-## Preserved locally because no approved resource exists
+## Preserved locally without an approved resource
 
-### Food diet log
+- the Food diet log;
+- Natural Skincare slider positions;
+- Badminton Focused game progress until its schema is approved.
 
-`__baseline_food_diet_log_v1__` contains dated food entries, daily notes, recipes and health-profile fields. The approved Saved Data tree has no diet-log resource. It must remain local and must not be forced into `fitness.json` merely because some fields are health-related.
+These entries block blanket localStorage deletion.
 
-### Natural Skincare slider positions
-
-`__baseline_slider_state__::{user}::{recipe-or-variant}` stores authenticated recipe-controller choices. The approved tree has no Natural Skincare settings resource. These values remain local until a protected schema and migration decision are separately approved.
-
-These two entries are explicit blockers against deleting all legacy localStorage after the main migration.
-
-## Verification command
+## Verification
 
 ```bash
 npm run test:browser-storage
 ```
 
-The contract:
-
-- scans production sources deterministically;
-- emits the discovered inventory for review;
-- rejects an unmapped storage group;
-- rejects duplicate mapping ownership;
-- requires every rule to state its classification, decision and cutover rule;
-- ensures the known account-preview keys are explicitly excluded;
-- ensures the diet log and skincare sliders remain protected from accidental retirement.
-
-## Still required before cutover
-
-- add exact JSON schema fields for Fitness body profile and resumable active-workout state;
-- decide whether diet logs and skincare preferences receive dedicated resources;
-- implement explicit guest-to-account import screens and conflict decisions;
-- compare local game copies with current authenticated server profiles using copied data;
-- test localStorage cleanup only after each migrated resource is verified;
-- retain guest and local-only values that have no approved destination.
+The contract verifies deterministic inventory, unique complete mapping, canonical game filenames, one Baseline Realm file, the nested shared Badminton path, explicit account-preview exclusion and preservation of unresolved user content.
