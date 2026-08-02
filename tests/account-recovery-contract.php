@@ -36,7 +36,7 @@ try {
 
   $issued = bl_issue_password_reset($db, $user);
   recovery_assert(substr_count((string)$issued['token'], '.') === 1, 'token_format_incorrect');
-  recovery_assert(str_starts_with((string)$issued['url'], 'https://example.test/index.html?bl-reset='), 'reset_url_incorrect');
+  recovery_assert(str_starts_with((string)$issued['url'], 'https://example.test/sitewide/index.html?bl-reset='), 'reset_url_incorrect');
   recovery_assert((int)$issued['expires_at'] >= $now + BL_RESET_TOKEN_TTL, 'expiry_too_early');
   recovery_assert((int)$issued['expires_at'] <= bl_now() + BL_RESET_TOKEN_TTL, 'expiry_too_late');
 
