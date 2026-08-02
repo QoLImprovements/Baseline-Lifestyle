@@ -23,7 +23,7 @@ The structural stage is therefore underway, not untouched, but it is not finishe
 
 Merge commit: `31e6b9be10cdbf98842067d7684ef02f14bf9fae`
 
-Added an explicit, read-only exporter for a separately copied SQLite database. It uses `mode=ro`, `PRAGMA query_only`, `PRAGMA quick_check`, source hash/stat checks, stable padded user IDs, private permissions, staging and deterministic output. It exports accounts, favourites, Binaural, voice, Fitness, individual games and shared Badminton without changing production authority.
+Added an explicit, read-only exporter for a separately copied SQLite database. It uses `mode=ro`, `PRAGMA query_only`, `PRAGMA quick_check`, source hash/stat checks, stable padded user IDs, private permissions, staging and deterministic output. It exports account projections, favourites, Binaural, voice, Fitness, individual games and shared Badminton without changing production authority.
 
 ### PR #37 — copied-export verifier
 
@@ -66,6 +66,25 @@ The map:
 - excludes browser account/session preview fallbacks from production authentication;
 - preserves diet logs and Natural Skincare slider positions locally because no approved Saved Data resource exists for them.
 
+### PR #41 — combined copied-data validation evidence
+
+Merge commit: `9c1f6f915274203d51a5fa62ca0b2450af7d5508`
+
+Added one fail-closed operator command that exports a separately copied SQLite database, independently verifies the resulting shadow tree and writes a separate privacy-safe evidence file. The evidence records source/tree hashes, counts, missing tables, invalid-record summaries, unmapped field names, checked-file totals and internal representative resource IDs without copying user values.
+
+A passing result still records `readyForProductionCutover: false`; it is evidence about the supplied copy only, not approval to change live authority.
+
+### PR #42 — account security and canonical Badminton alignment
+
+Merge commit: `989893df1be7bc8009d2daeb7034f6880be10371`
+
+Resolved two contradictions before the first real copied-production-data run:
+
+- password hashes and provider subjects are now explicitly excluded from Saved Data account projections and indexes, remaining in the hardened authentication store;
+- exporter, verifier, validation evidence, browser-storage map and architecture now agree on `Shared/badminton-session.json`.
+
+Supported migration entry points are contract-locked to the security-aligned exporter. The disposable fixture contains known password/provider values and proves that neither enters the account projection, account index or evidence.
+
 ## Checklist status
 
 | Stage | Status | Current evidence / next gate |
@@ -73,27 +92,36 @@ The map:
 | 1. Stability and release process | **Partially complete** | Automated finite smoke and release documentation foundations exist and repeatedly pass. Live stability period, production error-log inspection, permanent Hostinger-to-`main` confirmation, failed-check release enforcement, stable tag and final rollback rehearsal still require live administrative evidence. |
 | 2. Backups outside `public_html` | **Unproven** | Must be tested in Hostinger with a harmless file. Confirm inclusion, retention and individual restore for `Saved Data`, appropriate `Runtime` content and `.baseline-private.env`; then establish an encrypted external recovery copy. |
 | 3. Structural improvements | **In progress** | Eleven small separations are merged. Continue only with behaviour tests and small pull requests; no broad Fitness/Games/Badminton rewrite. |
-| 4. Saved Data implementation | **Foundation only** | Protected path/configuration, atomic-write and resource-contract foundations exist. Exact final schemas, account index, permissions, conflict handling, leases where needed and production readers/writers remain unwired. |
-| 5. Migration tools using copied data | **Tooling complete; real copied-data run pending** | Exporter, verifier, field report and browser-storage map are merged. Next run must use a separately copied production database and compare counts, representative records, invalid JSON and unmapped fields. |
-| 6. Controlled existing-data migration | **Not started** | Do not begin until copied-data export/verification passes and a fresh backup plus write-control/cutover plan are confirmed. |
+| 4. Saved Data implementation | **Foundation only** | Protected path/configuration, atomic-write and resource-contract foundations exist. Account projection security and the shared Badminton path are aligned. Exact remaining resource schemas, permissions, conflict handling and production readers/writers remain unwired. |
+| 5. Migration tools using copied data | **Repository tooling complete and security-aligned; real copied-data run pending** | Exporter, independent verifier, combined evidence gate, field report and browser-storage map are merged. Next run must use a separately copied production database and produce zero missing tables, invalid records and unmapped fields. |
+| 6. Controlled existing-data migration | **Not started** | Do not begin until copied-data validation passes and a fresh backup plus write-control/cutover plan are confirmed. |
 | 7. Stabilise Fitness internals | **Partially complete** | Active workout state and save flow are traced and behaviour tests exist. Full separation of rules/rendering, final `fitness.json` schema and copied-data migration tests remain. |
 | 8. Voice workflow documentation | **Complete for current production reality** | Exact active states, commands, transport, retries, errors, manual fallback and save behaviour are documented and contract-tested. |
 | 9. Real recognition prototype | **Reframed and pending** | Production already has a working OpenAI Realtime recogniser. The remaining prototype work is a stricter confirmation/idempotency flow or an alternative recogniser, isolated behind a feature flag. |
 | 10. Hostinger recognition feasibility | **Pending live benchmark** | Requires an isolated Hostinger deployment measuring exact model/runtime, RAM, CPU, storage, process persistence, dependencies, WebSockets, inference time and capacity. |
 | 11. Comparative voice testing | **Pending** | Requires a consent-aware identical-sample corpus and measured command/number accuracy, false activations/rejections, latency, noise, browsers and resource use. |
 | 12. Controlled voice integration | **Not started** | Integrate only a proven change, with expected-state/idempotency protection, authenticated sessions, limits, temporary-audio deletion, feature flag and rollback. |
-| 13. Saved Data/security testing | **Partially complete** | Existing atomic-write/path contracts and migration fixture tests pass. Comprehensive account/provider, revision conflict, symlink, interruption, restore and full migration tests remain. |
-| 14. Final documentation | **In progress** | Release, structure, copied-export, browser-storage and voice documents are updated. Final architecture/schema/restore/capacity/rollback documentation must reflect the eventual implemented authority. |
+| 13. Saved Data/security testing | **Partially complete** | Atomic write/path/revision contracts and copied-migration success, tamper, invalid-data, credential-exclusion and evidence tests pass. Comprehensive provider/account operations, symlink/interruption, restore and live copied-data tests remain. |
+| 14. Final documentation | **In progress** | Release, structure, copied-export, validation-evidence, browser-storage and voice documents are updated. Final architecture/schema/restore/capacity/rollback documentation must reflect the eventual implemented authority. |
 
 ## Immediate safe next sequence
 
 1. Create a fresh, separately copied production SQLite database; do not point tools at the live database.
-2. Run `export_sqlite_copy.php` into an isolated shadow directory.
-3. Run `verify_sqlite_export.php` against the same copy.
-4. Review generated counts, representative users/games, invalid records and unmapped fields without exposing personal data.
-5. Resolve schema gaps, especially Fitness body profile/active workout and any live fields not represented by the current fixture.
-6. Separately perform the harmless Hostinger backup/restore test.
-7. Only after both evidence sets pass, design the first resource-by-resource cutover pull request with rollback to the verified SQLite database.
+2. Keep the copy, shadow output and evidence outside `public_html` with private permissions.
+3. Run the combined command:
+
+   ```bash
+   php sitewide/migration/validate_sqlite_copy.php \
+     --source=/absolute/path/to/copied.sqlite \
+     --output=/absolute/path/to/shadow-saved-data \
+     --evidence=/absolute/path/to/copied-data-evidence.json
+   ```
+
+4. Require the command to exit successfully and review the evidence for expected counts, zero missing tables, zero invalid records, zero unmapped fields and confirmed authentication-credential exclusion.
+5. Privately inspect representative resources by their padded internal IDs; do not publish the shadow tree or account files as CI artifacts.
+6. Resolve schema gaps, especially Fitness body profile/active workout and any live fields not represented by the current fixture.
+7. Separately perform the harmless Hostinger backup/restore test.
+8. Only after both evidence sets pass, design the first resource-by-resource cutover pull request with rollback to the verified SQLite database.
 
 ## Explicitly not complete
 
