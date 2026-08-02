@@ -39,6 +39,17 @@ This boundary is intentionally narrow:
 
 Each item should be a separate pull request or another similarly bounded increment. Substantial runtime splits require browser regression coverage first.
 
+## Increment 2: HTTP and JSON boundary
+
+The second change extracts shared HTTP response hardening, origin validation, bounded JSON input and site-URL construction into `sitewide/api/http.php`.
+
+- `config.php` remains the entrypoint used by every existing API.
+- The fatal-error JSON safeguard is retained.
+- Non-GET same-origin validation and the 2 MiB JSON limit are retained.
+- Security-sensitive links still reject untrusted public Host headers.
+- Session, authentication and database behaviour remain in `config.php` for later bounded changes.
+- A direct PHP contract covers configured, local, forwarded-HTTPS and untrusted-host origin behaviour.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.
