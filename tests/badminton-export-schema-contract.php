@@ -39,8 +39,9 @@ try{
   $db = null;
 
   $report = bl_secure_export_sqlite_copy($source, $output);
-  $path = $output . '/Shared/badminton-session.json';
+  $path = $output . '/Shared/Badminton/badminton.json';
   bl_badminton_export_test_assert(is_file($path), 'canonical badminton file missing');
+  bl_badminton_export_test_assert(!is_file($output . '/Shared/badminton-session.json'), 'flattened badminton path was written');
   bl_badminton_export_test_assert(($report['counts']['badmintonStates'] ?? 0) === 1, 'badminton row count failed');
   bl_badminton_export_test_assert(($report['counts']['badmintonFiles'] ?? 0) === 1, 'badminton file count failed');
   $resource = bl_badminton_export_test_read($path);
@@ -49,7 +50,7 @@ try{
   bl_badminton_export_test_assert(!array_key_exists('states', $resource['data']), 'obsolete states wrapper remains');
 
   $fieldMap = bl_badminton_export_test_read($output . '/Migration Report/field-map.json');
-  bl_badminton_export_test_assert(($fieldMap['badminton_state_store']['target'] ?? '') === 'Shared/badminton-session.json', 'badminton target path drifted');
+  bl_badminton_export_test_assert(($fieldMap['badminton_state_store']['target'] ?? '') === 'Shared/Badminton/badminton.json', 'badminton target path drifted');
   bl_badminton_export_test_assert(($fieldMap['badminton_state_store']['requiredStateKey'] ?? '') === 'global', 'global state key contract missing');
 
   $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
@@ -73,7 +74,7 @@ try{
     'multiple badminton rows were not reported'
   );
 
-  echo "badminton direct export schema contract passed\n";
+  echo "badminton canonical folder export schema contract passed\n";
 }finally{
   bl_export_remove_tree($base);
 }
