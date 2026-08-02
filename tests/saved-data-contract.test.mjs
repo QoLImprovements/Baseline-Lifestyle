@@ -11,8 +11,20 @@ test('persistent and runtime directories cannot enter a deployment commit', () =
   const ignore = read('.gitignore');
   assert.match(ignore, /^\/Saved Data\/$/m);
   assert.match(ignore, /^\/Runtime\/$/m);
+  assert.match(ignore, /^\.baseline-private\.env$/m);
   assert.equal(fs.existsSync(path.join(root, 'Saved Data')), false);
   assert.equal(fs.existsSync(path.join(root, 'Runtime')), false);
+});
+
+test('private environment fallback is bounded, permission-checked, and allowlisted', () => {
+  const source = read('sitewide/api/config.php');
+  assert.match(source, /\.baseline-private\.env/);
+  assert.match(source, /\(\$permissions & 0077\) !== 0/);
+  assert.match(source, /\$size > 16384/);
+  assert.match(source, /parse_ini_file/);
+  assert.match(source, /array_fill_keys/);
+  assert.match(source, /BASELINE_SAVED_DATA_PATH/);
+  assert.match(source, /BL_CHARITY_SHOP_PIN/);
 });
 
 test('saved data paths require private absolute host configuration', () => {

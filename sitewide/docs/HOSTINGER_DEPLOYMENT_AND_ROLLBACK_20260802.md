@@ -23,6 +23,8 @@ The release owner must record screenshots or exported settings for these checks:
 - GitHub repository, production branch and automatic-deploy trigger;
 - deployment log and rollback mechanism.
 
+Verified on the Baseline Lifestyle Business account on 2 August 2026: PHP 8.3 is selected; SSH is active; the account exposes 50 GiB storage and a 600,000-inode allowance; private `Saved Data` and `Runtime` siblings can be created beside `public_html`; and daily plus manual website backups are available. hPanel exposes no general PHP environment-variable screen, so this branch supports an allowlisted `.baseline-private.env` beside `public_html`. That file must use mode `600`, must never enter Git and is rejected if it grants any group/other access.
+
 Hostinger documents `public_html` as the normal home directory and says the home directory cannot be changed on Web/Cloud plans. Confirm sibling private-directory access on the actual account before configuring Saved Data: <https://www.hostinger.com/support/1583494-what-is-the-path-to-your-website-s-root-home-directory-and-how-to-change-it-in-hostinger/>.
 
 Hostinger's published current Web tier table lists the top shared tier at 2 CPU cores, 3 GB RAM, 50 GB disk, 600,000 inodes and 60 PHP workers, while warning that existing Business customers can retain older limits. Treat hPanel as authoritative: <https://www.hostinger.com/support/6976044-parameters-and-limits-of-hosting-plans-in-hostinger/>.

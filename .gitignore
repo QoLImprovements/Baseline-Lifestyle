@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.baseline-private.env
 
 # Persistent/runtime data is provisioned on the host, never deployed from Git.
 /Saved Data/
