@@ -22,7 +22,7 @@ function bl_cutover_json(string $path): array {
 
 function bl_cutover_canonical($value): string {
   if(is_array($value)){
-    $isList = array_keys($value) === range(0, count($value) - 1);
+    $isList = $value === [] || array_keys($value) === range(0, count($value) - 1);
     if(!$isList){
       ksort($value);
       foreach($value as $key=>$entry) $value[$key] = json_decode(bl_cutover_canonical($entry), true);
