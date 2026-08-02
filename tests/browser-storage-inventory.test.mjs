@@ -66,7 +66,7 @@ test("every discovered storage group has one reviewed migration decision", () =>
 
 test("migration rules are explicit and preserve unresolved user content", () => {
   assert.equal(mapping.formatVersion, 1);
-  assert.match(mapping.authority, /SQLite remains authoritative/i);
+  assert.match(mapping.authority, /Saved Data resource files are the target production authority/i);
   const rules = mapping.rules || [];
   assert.ok(rules.length > 10);
   const ids = rules.map((rule) => rule.id);
@@ -80,25 +80,50 @@ test("migration rules are explicit and preserve unresolved user content", () => 
     assert.ok(rule.cutoverRule, `${rule.id}: cutover rule required`);
   }
 
-  const diet = rules.find((rule) => rule.id === "diet-log-local-content");
-  const skincare = rules.find((rule) => rule.id === "skincare-slider-settings");
-  assert.equal(diet?.decision, "preserve-local-and-block-retirement");
-  assert.equal(diet?.target, null);
-  assert.equal(skincare?.decision, "preserve-local-and-block-retirement");
-  assert.equal(skincare?.target, null);
+  for(const id of ["diet-log-local-content", "skincare-slider-settings", "badminton-focused-game"]){
+    const rule = rules.find((candidate) => candidate.id === id);
+    assert.equal(rule?.decision, "preserve-local-and-block-retirement");
+    assert.equal(rule?.target, null);
+  }
 });
 
-test("shared Badminton browser state uses the canonical resource path", () => {
+test("shared Badminton browser state uses the agreed nested resource path", () => {
   const rules = mapping.rules || [];
   const sharedRules = rules.filter((rule) =>
     ["badminton-shared-v3-legacy", "badminton-shared-v4-cache"].includes(rule.id),
   );
   assert.equal(sharedRules.length, 2);
   for (const rule of sharedRules) {
-    assert.equal(rule.target, "Shared/badminton-session.json");
+    assert.equal(rule.target, "Shared/Badminton/badminton.json");
   }
   assert.equal(
-    rules.some((rule) => String(rule.target || "").includes("Shared/Badminton/badminton.json")),
+    rules.some((rule) => String(rule.target || "").includes("Shared/badminton-session.json")),
+    false,
+  );
+});
+
+test("game browser data maps to canonical physical save files", () => {
+  assert.equal(mapping.canonicalGameFiles?.ninja, "baseline-realm.json");
+  assert.equal(mapping.canonicalGameFiles?.detectword, "detect-word.json");
+  assert.equal(mapping.canonicalGameFiles?.make24, "make-24.json");
+  assert.equal(mapping.canonicalGameFiles?.trackcoin, "track-coin.json");
+  assert.equal(mapping.canonicalGameFiles?.ruleshift, "rule-shift.json");
+  assert.equal(mapping.canonicalGameFiles?.dartsfocused, "darts-focused.json");
+  assert.equal(mapping.canonicalGameFiles?.meridiangrove, "meridian-grove.json");
+
+  const rules = mapping.rules || [];
+  assert.equal(
+    rules.find((rule) => rule.id === "trackcoin-game")?.target,
+    "Users/{paddedUserId}/Games/track-coin.json",
+  );
+  for(const id of ["realm-exploration-game", "realm-tactical-v1-legacy", "realm-tactical-v2"]){
+    assert.match(
+      rules.find((rule) => rule.id === id)?.target || "",
+      /^Users\/\{paddedUserId\}\/Games\/baseline-realm\.json#/,
+    );
+  }
+  assert.equal(
+    rules.some((rule) => /Games\/(?:detectword|make24|trackcoin|ruleshift|dartsfocused|ninja)\.json/.test(String(rule.target || ""))),
     false,
   );
 });
