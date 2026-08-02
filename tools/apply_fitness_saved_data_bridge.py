@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-time deterministic insertion into the minified production HTML.
 path = Path('systems/baseline-fitness/baseline-fitness.html')
 text = path.read_text(encoding='utf-8')
 app = '<script defer="defer" src="/systems/baseline-fitness/js/baseline-fitness-app.js?v=BASELINE_FITNESS_SINGLE_RUNTIME_20260713_1"></script>'
