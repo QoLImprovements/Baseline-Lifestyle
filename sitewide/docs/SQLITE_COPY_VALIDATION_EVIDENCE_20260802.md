@@ -1,73 +1,60 @@
-# Copied SQLite validation evidence gate — 2 August 2026
+# Copied SQLite validation evidence gate — corrected 2 August 2026
 
 ## Purpose
 
-The repository has one fail-closed command for the first real copied-production-data exercise. It combines a complete source-table inventory, the security-aligned read-only exporter and an independent verifier, then writes a separate privacy-safe evidence file.
+The fail-closed copied-data command inventories every source table, exports the supplied SQLite copy into the canonical resource-based Saved Data tree, independently regenerates and verifies that tree, and writes privacy-safe evidence.
 
-This command does **not** point at the live database, write to SQLite, change production readers or writers, enable Saved Data authority, migrate authentication credentials, or approve a production cutover.
+It does not alter the live database, enable production readers/writers, migrate authentication credentials or approve cutover.
 
 ## Command
 
 ```bash
 php sitewide/migration/validate_sqlite_copy.php \
   --source=/absolute/path/to/copied.sqlite \
-  --output=/absolute/path/to/shadow-saved-data \
+  --output=/absolute/path/to/candidate-saved-data \
   --evidence=/absolute/path/to/copied-data-evidence.json
 ```
 
-All three paths must be absolute. The source must be a separately created copy. The evidence file must be outside the export tree so that it cannot alter the tree being verified.
+The source must be a separate copy. All paths are absolute and the evidence file remains outside the verified tree.
 
-## What it performs
+## Canonical output checked
 
-1. Opens the supplied SQLite copy in read-only and query-only mode.
-2. Runs SQLite `quick_check`.
-3. Enumerates every non-internal source table before export.
-4. Classifies each source table as exported, deliberately excluded, accepted retired-and-empty, or unclassified.
-5. Blocks validation if any table is unclassified or if an empty-only retired table contains records.
-6. Exports the shadow Saved Data tree through staging and atomic replacement.
-7. Produces account projections without password hashes or provider subjects.
-8. Writes shared Badminton state only to `Shared/badminton-session.json`.
-9. Independently regenerates the expected tree from the same copy.
-10. Compares every expected file, JSON envelope, hash, path and private permission.
-11. Rejects missing tables, invalid source records, unmapped source fields, unexpected files, credential-field leakage and content differences.
-12. Writes a separate evidence file with mode `0600` on Unix-like hosts.
+The validator requires:
+
+- `Account Index/accounts.json` where an account lookup is generated;
+- stable `Users/{six-digit-id}/` folders;
+- independent account, favourites, Binaural, Fitness and optional voice files;
+- one canonical physical file per exported played game;
+- `Shared/Badminton/badminton.json` for the one shared `global` Badminton state;
+- no flattened `Shared/badminton-session.json` path;
+- no raw database-app filenames such as `detectword.json`, `make24.json`, `trackcoin.json`, `ruleshift.json`, `dartsfocused.json` or `ninja.json`.
+
+The game verifier confirms that each stored source app maps to the correct filename, including `ninja` → `baseline-realm.json`.
 
 ## Source-table classification
 
-The inventory prevents a table that exists only in production from being silently ignored by repository fixtures.
-
-Current classifications are:
-
-- exported: accounts, favourites, Binaural presets, voice settings, Fitness plans/sessions/achievements, Games Hub profiles and shared Badminton state;
-- deliberately excluded: password-reset tokens, rate-limit telemetry and schema-migration bookkeeping;
-- retired and accepted only while empty: `submissions`;
-- all other tables: unclassified and blocking.
-
-`submissions` is not part of the current Fitness-owned schema. It is accepted only when its row count is zero. Any future row causes it to move into the blocking unclassified set so user content cannot be discarded merely because the table is considered legacy.
+Every non-internal source table is classified as exported, deliberately excluded, accepted retired-and-empty, or blocking/unclassified. The retired `submissions` table is accepted only while empty. Any future row blocks validation so user content cannot be silently discarded.
 
 ## Evidence contents
 
-The evidence contains only information needed to review the migration gate:
+The evidence includes source and tree hashes, source-table names/classifications, counts, missing-table names, invalid-record summaries, unmapped field names, explicit credential-field exclusions, checked-file totals, representative internal user/game identifiers and pass/fail gates.
 
-- copied-source SHA-256, size and modification time;
-- complete source-table classification by table name;
-- complete exported-tree SHA-256;
-- resource counts;
-- missing-table names;
-- invalid-record counts grouped by source and reason;
-- unmapped field names, never their values;
-- explicitly excluded authentication field names;
-- number of checked files;
-- up to three representative padded user-folder IDs and game-resource IDs;
-- pass/fail state for each copied-data gate, including source-table classification and credential exclusion.
-
-It deliberately excludes usernames, names, email addresses, provider subjects, password hashes, favourites, plan contents, workout values, game payloads and Badminton player data. Password hashes and provider subjects are also excluded from the shadow Saved Data tree itself; they remain in the hardened authoritative authentication store.
+It excludes names, email addresses, provider subjects, password hashes and resource payload values.
 
 ## Fail-closed behaviour
 
-Any failed gate writes `ok: false`, records only a sanitised error summary and returns a non-zero CLI exit. Unclassified tables, non-empty retired tables, invalid data, unmapped fields or credential-bearing account content are never silently accepted.
+Validation fails on:
 
-Even a fully passing result always records:
+- an unknown or non-empty retired table;
+- a missing expected table;
+- invalid source JSON;
+- an unsupported game identifier;
+- a non-canonical path or filename;
+- unmapped source fields;
+- credential leakage;
+- unexpected, missing, modified or permission-invalid files.
+
+A passing result still records:
 
 ```json
 {
@@ -77,21 +64,10 @@ Even a fully passing result always records:
 }
 ```
 
-A passing copied-data validation means only that the isolated security-aligned export matches the supplied copy and every source table has a reviewed disposition. It does not prove Hostinger backup coverage, live restore, write control, concurrency handling, production permissions or rollback readiness.
+This describes the current live source during migration. It does not redefine SQLite as the final architecture. The target production authority is the resource structure in `SAVED_DATA_STRUCTURE_AUTHORITY_20260802.md`.
 
-## Required human review
+## Required review before cutover
 
-Before planning a cutover, review the evidence and the private shadow tree for:
+Confirm expected counts, zero invalid/unmapped/unclassified data, canonical game paths, the nested Badminton path, credential exclusion, complete Fitness and account schemas, eligible browser-data migration, protected live APIs, Hostinger backup/individual-resource restoration, controlled cutover and SQLite rollback.
 
-- every source table appearing in exactly one reviewed classification;
-- no non-empty retired or unclassified tables;
-- expected account and resource counts;
-- absence of missing tables;
-- zero invalid records;
-- zero unmapped fields;
-- confirmed exclusion of `pass_hash` and `google_sub`;
-- representative resources corresponding to expected internal IDs;
-- no unapproved resource types or obsolete Badminton paths;
-- successful Hostinger backup and harmless restore evidence gathered separately.
-
-Do not publish the shadow tree or account files as CI artifacts. Keep the copied database, shadow export and evidence outside `public_html` with private permissions, then securely remove temporary copies when the review is complete.
+Do not publish the copied database, candidate tree or account files as CI artifacts.
