@@ -50,3 +50,6 @@ jobs:
 
       - name: Lint PHP endpoints
         run: find sitewide systems -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Exercise saved-data atomic-write contract
+        run: npm run test:saved-data-php

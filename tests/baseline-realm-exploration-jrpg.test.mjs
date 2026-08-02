@@ -27,8 +27,9 @@ test('Exploration scene mounts the JRPG campaign rather than the legacy progress
   assert.match(ui, /root\.innerHTML = this\.shellTemplate\(\)/);
 });
 
-test('campaign defines four original active party characters and three stages', () => {
+test('campaign defines four original characters, a Rowan starting party, and three stages', () => {
   ['Rowan Vale', 'Sable Quill', 'Ilyra Fen', 'Corin Ash'].forEach((name) => assert.match(data, new RegExp(name)));
+  assert.match(data, /INITIAL_PARTY_IDS = Object\.freeze\(\['rowan'\]\)/);
   ['Sunlit Verge', 'Rainroot Hollow', 'Crown of Echoes'].forEach((name) => assert.match(data, new RegExp(name)));
   assert.match(data, /Mossbound Custodian/);
   assert.match(data, /The Hollow Hart/);
@@ -94,7 +95,8 @@ test('seeded route assembly is deterministic and contains the complete POI vocab
 
 test('map movement advances the visible party and encounter pressure', () => {
   const state = engineModule.createInitialState(12345);
-  assert.equal(state.party.length, 4);
+  assert.equal(state.party.length, 1);
+  assert.equal(state.party[0]?.id, 'rowan');
   const before = { ...state.player };
   const result = engineModule.movePlayer(state, 1, 0, () => 0.5);
   assert.equal(result.moved, true);

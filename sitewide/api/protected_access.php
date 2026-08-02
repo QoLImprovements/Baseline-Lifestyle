@@ -16,7 +16,7 @@ const BL_PROTECTED_ACCESS_SECONDS = 28800; // 8 hours
 function bl_protected_sections(): array {
   return [
     'charity_shop_guidance' => [
-      'code' => trim(bl_env('BL_CHARITY_SHOP_PIN', '97')),
+      'code' => trim(bl_env('BL_CHARITY_SHOP_PIN')),
       'session_key' => 'charity_shop_access_until',
       'redirect' => '/baseline-charity-shop/guidance',
     ],
@@ -79,7 +79,14 @@ if(!preg_match('/^\d{1,12}$/', $code)){
 $remoteAddress = trim((string)($_SERVER['REMOTE_ADDR'] ?? 'unknown'));
 bl_require_rate_limit('protected_section_code', $remoteAddress, 8, 900);
 
-foreach($sections as $sectionId => $section){
+$configuredSections = array_filter($sections, static function(array $section): bool {
+  return trim((string)($section['code'] ?? '')) !== '';
+});
+if(!$configuredSections){
+  bl_json(['ok' => false, 'error' => 'protected_access_not_configured'], 503);
+}
+
+foreach($configuredSections as $sectionId => $section){
   $expectedCode = (string)($section['code'] ?? '');
   $sessionKey = (string)($section['session_key'] ?? '');
   $redirect = (string)($section['redirect'] ?? '');

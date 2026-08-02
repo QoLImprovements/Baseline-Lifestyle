@@ -41,3 +41,10 @@ test('Charity Shop dropdown supports keyboard navigation and cannot be clipped',
   assert.match(page,/CHARITY_DROPDOWN_ACCESS_20260801_2/);
   assert.match(page,/CHARITY_FLOAT_COPY_20260801_2/);
 });
+
+test('protected access requires a host-supplied PIN and keeps no repository fallback',async()=>{
+  const endpoint = await read('sitewide/api/protected_access.php');
+  assert.match(endpoint,/bl_env\('BL_CHARITY_SHOP_PIN'\)/);
+  assert.match(endpoint,/protected_access_not_configured/);
+  assert.doesNotMatch(endpoint,/BL_CHARITY_SHOP_PIN',\s*'\d+'/);
+});
