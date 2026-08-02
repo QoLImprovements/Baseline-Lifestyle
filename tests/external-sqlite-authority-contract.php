@@ -24,7 +24,8 @@ function bl_external_test_database(string $path): void {
   @mkdir(dirname($path), 0700, true);
   $db = new PDO('sqlite:' . $path, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
   foreach(bl_external_sqlite_expected_tables() as $table){
-    $db->exec('CREATE TABLE "' . $table . '"(id INTEGER PRIMARY KEY)');
+    $identifier = '"' . str_replace('"', '""', $table) . '"';
+    $db->exec('CREATE TABLE ' . $identifier . '(id INTEGER PRIMARY KEY)');
   }
   $db->exec('INSERT INTO users(id) VALUES(1)');
   $db->exec('PRAGMA user_version = 20260720');
