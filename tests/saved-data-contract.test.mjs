@@ -55,6 +55,24 @@ test('saved resources use stable IDs, narrow files, revisions, locks, and atomic
   assert.match(source, /fsync/);
 });
 
+test('supported migration entry points exclude authentication credentials', () => {
+  const secure = read('sitewide/migration/sqlite_secure_exporter.php');
+  const exportCli = read('sitewide/migration/export_sqlite_copy.php');
+  const verifier = read('sitewide/migration/sqlite_export_verifier.php');
+  const validation = read('sitewide/migration/sqlite_copy_validation.php');
+
+  assert.match(secure, /intentionallyNotExportedFields/);
+  assert.match(secure, /'pass_hash','google_sub'/);
+  assert.match(secure, /Shared', 'badminton-session\.json/);
+  assert.doesNotMatch(secure, /passwordHash\s*=>/);
+  assert.match(exportCli, /bl_secure_export_sqlite_copy/);
+  assert.match(verifier, /bl_secure_export_sqlite_copy/);
+  assert.match(validation, /bl_secure_export_sqlite_copy/);
+  assert.doesNotMatch(exportCli, /\bbl_export_sqlite_copy\(/);
+  assert.doesNotMatch(verifier, /\bbl_export_sqlite_copy\(/);
+  assert.doesNotMatch(validation, /\bbl_export_sqlite_copy\(/);
+});
+
 test('environment example contains names only and no retired access-code fallback', () => {
   const example = read('.env.example');
   assert.match(example, /^BASELINE_SAVED_DATA_PATH=$/m);
