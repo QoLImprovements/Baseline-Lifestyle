@@ -49,7 +49,9 @@ try{
   $inventory = bl_source_table_inventory($source);
   bl_inventory_test_assert(in_array('users', $inventory['exportedTables'], true), 'exported table was not classified');
   bl_inventory_test_assert(in_array('password_reset_tokens', $inventory['intentionallyExcludedTables'], true), 'excluded table was not classified');
-  bl_inventory_test_assert($inventory['unclassifiedTables'] === ['submissions'], 'unclassified source table was not reported');
+  bl_inventory_test_assert($inventory['retiredEmptyTables'] === ['submissions'], 'empty retired table was not classified');
+  bl_inventory_test_assert($inventory['nonEmptyRetiredTables'] === [], 'empty retired table was incorrectly blocked');
+  bl_inventory_test_assert($inventory['unclassifiedTables'] === [], 'empty retired table blocked validation');
 
   $validationSource = file_get_contents(dirname(__DIR__) . '/sitewide/migration/sqlite_copy_validation.php');
   bl_inventory_test_assert(is_string($validationSource), 'validation source read failed');
@@ -58,10 +60,25 @@ try{
   bl_inventory_test_assert(str_contains($validationSource, "'sourceTableInventory'=>\$sourceInventory"), 'privacy-safe source inventory evidence is missing');
 
   $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
-  $db->exec('DROP TABLE submissions');
+  $db->exec('INSERT INTO submissions(id) VALUES(1)');
+  $db = null;
+  $nonEmpty = bl_source_table_inventory($source);
+  bl_inventory_test_assert($nonEmpty['nonEmptyRetiredTables'] === ['submissions'], 'non-empty retired table was not reported');
+  bl_inventory_test_assert($nonEmpty['unclassifiedTables'] === ['submissions'], 'non-empty retired table did not block validation');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec('DELETE FROM submissions');
+  $db->exec('CREATE TABLE mystery_records(id INTEGER PRIMARY KEY)');
+  $db = null;
+  $unknown = bl_source_table_inventory($source);
+  bl_inventory_test_assert($unknown['unclassifiedTables'] === ['mystery_records'], 'unknown source table was not reported');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec('DROP TABLE mystery_records');
   $db = null;
   $resolved = bl_source_table_inventory($source);
   bl_inventory_test_assert($resolved['unclassifiedTables'] === [], 'resolved source table remained unclassified');
+  bl_inventory_test_assert($resolved['retiredEmptyTables'] === ['submissions'], 'empty retired table classification was not restored');
 
   echo "sqlite source table inventory contract passed\n";
 }finally{
