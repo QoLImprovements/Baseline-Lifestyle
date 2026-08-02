@@ -41,7 +41,8 @@ function bl_external_sqlite_safe_counts(PDO $db, array $tables): array {
   $counts = [];
   foreach($tables as $table){
     if(!is_string($table) || preg_match('/^[A-Za-z0-9_]{1,96}$/', $table) !== 1) continue;
-    $counts[$table] = max(0, (int)$db->query('SELECT COUNT(*) FROM "' . $table . '"')->fetchColumn());
+    $identifier = '"' . str_replace('"', '""', $table) . '"';
+    $counts[$table] = max(0, (int)$db->query('SELECT COUNT(*) FROM ' . $identifier)->fetchColumn());
   }
   ksort($counts);
   return $counts;
