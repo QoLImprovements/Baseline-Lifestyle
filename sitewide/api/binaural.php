@@ -114,7 +114,9 @@ try{
         'updatedAt'=>$now,
       ]);
       $written = bl_resource_file_replace($path, ['presets'=>$next], $resource['revision']);
-      bl_json(['ok'=>true, is_array($existing) ? 'updated' : 'created'=>true, 'revision'=>$written['revision']]);
+      $response = ['ok'=>true,'revision'=>$written['revision']];
+      $response[is_array($existing) ? 'updated' : 'created'] = true;
+      bl_json($response);
     }
 
     $db = bl_db();
