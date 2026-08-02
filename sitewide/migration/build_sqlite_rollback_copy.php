@@ -240,7 +240,7 @@ function bl_build_sqlite_rollback_copy(string $source, string $savedData, string
   }
 }
 
-if(PHP_SAPI === 'cli'){
+if(PHP_SAPI === 'cli' && realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__){
   $options = getopt('', ['source-database:','saved-data:','output-database:','evidence:']);
   try{
     $source = bl_rollback_path((string)($options['source-database'] ?? ''), 'source_database');
