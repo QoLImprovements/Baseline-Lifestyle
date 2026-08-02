@@ -2,7 +2,7 @@
   "name": "baseline-lifestyle-site",
   "private": true,
   "scripts": {
-    "test": "npm run test:structure && npm run test:float && npm run test:games-theme && npm run test:charity-interface",
+    "test": "npm run test:structure && npm run test:float && npm run test:games-theme && npm run test:charity-interface && npm run test:saved-data",
     "test:structure": "node --test tests/site-structure-integrity.test.mjs",
     "test:float": "node --test tests/charity-float.test.mjs",
     "test:games-theme": "node --test tests/games-theme.test.mjs",
@@ -13,7 +13,9 @@
     "test:realm-all": "npm run test:realm-stage2 && npm run test:realm-stage1 && npm run test:realm-integration",
     "test:voice": "node --test tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs",
     "test:voice-ui": "playwright test tests/baseline-fitness-voice.spec.js",
-    "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs"
+    "test:fitness": "node --test tests/baseline-fitness-progression.test.mjs tests/baseline-voice-parser.test.mjs tests/baseline-fitness-voice.test.mjs",
+    "test:saved-data": "node --test tests/saved-data-contract.test.mjs tests/voice-recognition-policy.test.mjs",
+    "test:saved-data-php": "php tests/saved-data-contract.php"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

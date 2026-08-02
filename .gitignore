@@ -1,6 +1,11 @@
 # Private/server-only configuration
 .env
 .env.*
+!.env.example
+
+# Persistent/runtime data is provisioned on the host, never deployed from Git.
+/Saved Data/
+/Runtime/
 
 # Local/live database files
 api/baseline.sqlite

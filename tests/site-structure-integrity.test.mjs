@@ -65,10 +65,12 @@ test('inactive change templates are absent', () => {
   assert.deepEqual(templates, []);
 });
 
-test('obsolete Massage route copies and local routers are absent', () => {
-  for (const name of ['system','types','library','planner','.htaccess','ROUTING-README.txt']) {
+test('obsolete Massage route copies are absent and the canonical router is retained', () => {
+  for (const name of ['system','types','library','planner','ROUTING-README.txt']) {
     assert.equal(fs.existsSync(path.join(root, 'systems/baseline-massage', name)), false, `obsolete Massage file remains: ${name}`);
   }
+  const router = fs.readFileSync(path.join(root, 'systems/baseline-massage/.htaccess'), 'utf8');
+  assert.match(router, /RewriteRule \^baseline-massage\\\.html\$ \/sitewide\/page-shell\.php\?page=massage \[L,QSA\]/);
 });
 
 test('runtime source contains no unresolved merge conflicts', () => {
@@ -105,7 +107,7 @@ test('generated development artifacts are excluded by repository rules', () => {
       .map((line) => line.trim())
       .filter(Boolean)
   );
-  for (const name of ['node_modules/','playwright-report/','test-results/']) {
+  for (const name of ['node_modules/','playwright-report/','test-results/','/Saved Data/','/Runtime/']) {
     assert.equal(ignoredEntries.has(name), true, `${name} is missing from .gitignore`);
   }
 });
