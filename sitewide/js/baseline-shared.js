@@ -4919,234 +4919,18 @@ function buildControls(recipeEl){
   const lsDel = sitewideStore.del;
   const localUserKey = sitewideStore.userKey;
 
-  const authState = { authed:false, name:'', email:'', providers:{ password:true, google:false } };
-  try{
-    const cachedSession = lsRead(LOCAL_SESS_KEY, null);
-    if(cachedSession && cachedSession.name){
-      authState.authed = true;
-      authState.name = String(cachedSession.name || '').trim();
-      authState.email = String(cachedSession.email || '').trim();
-    }
-  }catch(_e){}
-  const authListeners = new Set();
-
-  function authSnapshot(){
-    return {
-      authed: !!authState.authed,
-      name: String(authState.name || ''),
-      email: String(authState.email || ''),
-      providers: Object.assign({ password:true, google:false }, authState.providers || {}),
-    };
-  }
-
-  function syncLocalSession(user){
-    const snap = user || {};
-    if(snap && snap.authed && snap.name){
-      lsWrite(LOCAL_SESS_KEY, {
-        name: String(snap.name || ''),
-        email: String(snap.email || ''),
-      });
-    }else{
-      lsDel(LOCAL_SESS_KEY);
-    }
-  }
-
-  function emitAuth(){
-    const snap = authSnapshot();
-    authListeners.forEach(fn=>{ try{ fn(snap); }catch(_e){} });
-    try{ document.dispatchEvent(new CustomEvent('baseline:auth', { detail: snap })); }catch(_e){}
-  }
-
-  async function refreshAuth(){
-    if(IS_FILE_PROTOCOL){
-      authState.authed = false;
-      authState.name = '';
-      authState.email = '';
-      authState.providers = { password:true, google:false };
-      emitAuth();
-      return authSnapshot();
-    }
-
-    const r = await apiJson(API_BASE + '/me.php');
-    if(r && r.data && r.data.ok && r.data.authed){
-      authState.authed = true;
-      authState.name = String(r.data.name || (r.data.user && r.data.user.name) || '').trim();
-      authState.email = String(r.data.email || (r.data.user && r.data.user.email) || '').trim();
-      authState.providers = Object.assign({ password:true, google:false }, r.data.providers || {});
-      syncLocalSession({ authed:true, name:authState.name, email:authState.email });
-    }else{
-      authState.authed = false;
-      authState.name = '';
-      authState.email = '';
-      authState.providers = Object.assign({ password:true, google:false }, (r && r.data && r.data.providers) || {});
-      syncLocalSession(null);
-    }
-    emitAuth();
-    return authSnapshot();
-  }
-
-  async function fetchAuthProviders(){
-    if(IS_FILE_PROTOCOL){
-      authState.providers = { password:true, google:false };
-      emitAuth();
-      return authState.providers;
-    }
-    const r = await apiJson(API_BASE + '/auth_providers.php');
-    if(r && r.data && r.data.ok){
-      authState.providers = Object.assign({ password:true, google:false }, r.data.providers || {});
-      emitAuth();
-    }
-    return Object.assign({ password:true, google:false }, authState.providers || {});
-  }
-
-  async function authLogin(identifier, pass){
-    identifier = String(identifier||'').trim();
-    pass = String(pass||'');
-    if(!identifier || !pass){
-      return { ok:false, status:400, data:{ ok:false, error:'missing_fields' } };
-    }
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-    const r = await apiJson(API_BASE + '/login.php', { method:'POST', body:{ identifier, password: pass } });
-    if(r && r.data && r.data.ok){
-      const user = (r.data && r.data.user) || {};
-      authState.authed = true;
-      authState.name = String(user.name || identifier || '').trim();
-      authState.email = String(user.email || '').trim();
-      authState.providers = Object.assign({ password:true, google:false }, r.data.providers || authState.providers || {});
-      syncLocalSession({ authed:true, name:authState.name, email:authState.email });
-      emitAuth();
-    }else{
-      await refreshAuth();
-    }
-    return r;
-  }
-
-  async function authRegister(arg1, arg2, arg3){
-    let payload = null;
-    if(arg1 && typeof arg1 === 'object'){
-      payload = {
-        name: String(arg1.name || '').trim(),
-        email: String(arg1.email || '').trim(),
-        password: String(arg1.password || ''),
-      };
-    }else{
-      payload = {
-        name: String(arg1 || '').trim(),
-        email: String(arg3 || '').trim(),
-        password: String(arg2 || ''),
-      };
-    }
-
-    if(!payload.name || !payload.email || !payload.password){
-      return { ok:false, status:400, data:{ ok:false, error:'missing_fields' } };
-    }
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-
-    const r = await apiJson(API_BASE + '/register.php', { method:'POST', body:payload });
-    if(r && r.data && r.data.ok){
-      const user = (r.data && r.data.user) || {};
-      authState.authed = true;
-      authState.name = String(user.name || payload.name || '').trim();
-      authState.email = String(user.email || payload.email || '').trim();
-      authState.providers = Object.assign({ password:true, google:false }, r.data.providers || authState.providers || {});
-      syncLocalSession({ authed:true, name:authState.name, email:authState.email });
-      emitAuth();
-    }else{
-      await refreshAuth();
-    }
-    return r;
-  }
-
-  async function authRequestPasswordReset(email){
-    email = String(email || '').trim();
-    if(!email){
-      return { ok:false, status:400, data:{ ok:false, error:'missing_fields' } };
-    }
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-    return apiJson(API_BASE + '/forgot_password.php', { method:'POST', body:{ email } });
-  }
-
-  async function authVerifyPasswordReset(token){
-    token = String(token || '').trim();
-    if(!token){
-      return { ok:false, status:400, data:{ ok:false, error:'missing_token' } };
-    }
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-    return apiJson(API_BASE + '/password_reset.php?token=' + encodeURIComponent(token));
-  }
-
-  async function authCompletePasswordReset(token, password, passwordConfirm){
-    token = String(token || '').trim();
-    password = String(password || '');
-    passwordConfirm = String(passwordConfirm || password);
-    if(!token || !password){
-      return { ok:false, status:400, data:{ ok:false, error:'missing_fields' } };
-    }
-    if(IS_FILE_PROTOCOL){
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-
-    const r = await apiJson(API_BASE + '/password_reset.php', {
-      method:'POST',
-      body:{ token, password, passwordConfirm }
-    });
-
-    if(r && r.data && r.data.ok){
-      const user = (r.data && r.data.user) || {};
-      authState.authed = true;
-      authState.name = String(user.name || '').trim();
-      authState.email = String(user.email || '').trim();
-      syncLocalSession({ authed:true, name:authState.name, email:authState.email });
-      emitAuth();
-    }else{
-      await refreshAuth();
-    }
-    return r;
-  }
-
-  function authStartGoogleSignIn(){
-    // Google auth has been intentionally removed from the live UI.
-    return { ok:false, status:0, data:{ ok:false, error:'google_sign_in_removed' } };
-  }
-
-  async function authLogout(){
-    if(IS_FILE_PROTOCOL){
-      authState.authed = false;
-      authState.name = '';
-      authState.email = '';
-      syncLocalSession(null);
-      emitAuth();
-      return { ok:false, status:0, data:{ ok:false, error:'server_required' } };
-    }
-    const r = await apiJson(API_BASE + '/logout.php', { method:'POST', body:{} });
-    syncLocalSession(null);
-    await refreshAuth();
-    return r;
-  }
-
-  try{
-    window.BASELINE_auth = {
-      get: authSnapshot,
-      refresh: refreshAuth,
-      fetchProviders: fetchAuthProviders,
-      login: authLogin,
-      register: authRegister,
-      requestPasswordReset: authRequestPasswordReset,
-      verifyPasswordReset: authVerifyPasswordReset,
-      completePasswordReset: authCompletePasswordReset,
-      startGoogleSignIn: authStartGoogleSignIn,
-      logout: authLogout,
-      onChange: (fn)=>{ authListeners.add(fn); return ()=>authListeners.delete(fn); },
-    };
-  }catch(_e){}
+  const authClient = window.BASELINE_auth;
+  const authState = authClient.state;
+  const authSnapshot = authClient.get;
+  const refreshAuth = authClient.refresh;
+  const fetchAuthProviders = authClient.fetchProviders;
+  const authLogin = authClient.login;
+  const authRegister = authClient.register;
+  const authRequestPasswordReset = authClient.requestPasswordReset;
+  const authVerifyPasswordReset = authClient.verifyPasswordReset;
+  const authCompletePasswordReset = authClient.completePasswordReset;
+  const authLogout = authClient.logout;
+  const onAuthChange = authClient.onChange;
   function setupSitewideVoiceAssets(){
     if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
     const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
@@ -5444,7 +5228,7 @@ function buildControls(recipeEl){
     }
     sync();
     window.addEventListener('resize', sync, { passive:true });
-    try{ authListeners.add(sync); }catch(_e){}
+    try{ onAuthChange(sync); }catch(_e){}
   }
 
   // When the banner is allowed to wrap (left-aligned nav), its height becomes
@@ -5475,7 +5259,7 @@ function buildControls(recipeEl){
     window.addEventListener('resize', set, { passive:true });
     try{
       // Also resync after auth label changes (button width can force wrapping).
-      authListeners.add(()=>set());
+      onAuthChange(()=>set());
     }catch(_e){}
     try{
       document.addEventListener('baseline:homebar-resync', function(){ set(); setTimeout(set, 0); setTimeout(set, 60); setTimeout(set, 180); });
@@ -6080,7 +5864,7 @@ function setupAuthFlyout(){
       }
     });
 
-    authListeners.add(renderAuthUI);
+    onAuthChange(renderAuthUI);
     switchAuthView('login', { keepStatus:true });
     renderAuthUI();
     syncAuthProviders();
@@ -6183,7 +5967,7 @@ function setupAuthFlyout(){
       });
     }
 
-    authListeners.add(refreshFavDropdowns);
+    onAuthChange(refreshFavDropdowns);
     document.addEventListener('baseline:favs-changed', refreshFavDropdowns);
     refreshFavDropdowns();
 
@@ -6630,7 +6414,7 @@ function setupBinauralFlyout(){
   }
 
   // Load user presets when auth changes (and on open).
-  authListeners.add(loadUserPresets);
+  onAuthChange(loadUserPresets);
 
   function open(){
     fly.hidden = false;
@@ -6841,7 +6625,7 @@ function setupRecipeFavourites(){
       landing.appendChild(wrap);
     }
 
-    authListeners.add(refreshFavs);
+    onAuthChange(refreshFavs);
     refreshFavs();
 
     // If the user exits focused recipe view (via Back / Show all), re-apply

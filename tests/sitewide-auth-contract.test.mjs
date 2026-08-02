@@ -40,8 +40,9 @@ test('every page loads focused clients before the shared account runtime', () =>
     const html = read(entry);
     const api = html.indexOf('/sitewide/js/baseline-api.js');
     const store = html.indexOf('/sitewide/js/baseline-store.js');
+    const auth = html.indexOf('/sitewide/js/baseline-auth.js');
     const shared = html.indexOf('/sitewide/js/baseline-shared.js');
-    assert.ok(api > -1 && store > api && shared > store, `${entry} must load API and store clients before the shared runtime`);
+    assert.ok(api > -1 && store > api && auth > store && shared > auth, `${entry} must load API, store and auth clients before the shared runtime`);
   }
 });
 
@@ -65,6 +66,18 @@ test('the shared controller delegates local cache persistence to the focused sto
   assert.match(store, /scope\.localStorage\.setItem/);
   assert.match(store, /scope\.localStorage\.removeItem/);
   assert.doesNotMatch(store, /authState|createElement|fetch\(/);
+});
+
+test('the shared controller delegates account state and operations to the focused auth client', () => {
+  const shared = read('sitewide/js/baseline-shared.js');
+  const auth = read('sitewide/js/baseline-auth.js');
+  assert.match(shared, /const authClient = window\.BASELINE_auth/);
+  assert.doesNotMatch(shared, /const authState = \{\s*authed:|async function auth(?:Login|Register|Logout)|function emitAuth\b/);
+  for(const name of ['refresh','fetchProviders','login','register','requestPasswordReset','verifyPasswordReset','completePasswordReset','logout','onChange']){
+    assert.match(auth, new RegExp(`\\b${name}\\b`), `${name} is missing from the auth client`);
+  }
+  assert.match(auth, /Object\.freeze\(stateView\)/);
+  assert.doesNotMatch(auth, /createElement|innerHTML|classList/);
 });
 
 test('Fitness loads API compatibility after shared auth and before its application', () => {
