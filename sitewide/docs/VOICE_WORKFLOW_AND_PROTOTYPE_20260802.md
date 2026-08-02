@@ -1,120 +1,169 @@
-# Fitness voice workflow trace and replacement gate
+# Fitness voice workflow: current production reality and replacement gate
 
-## Current production path
+## Scope and authority
 
-The live Fitness page loads `sitewide/js/baseline-voice.js` and `systems/baseline-fitness/js/baseline-fitness-voice.js`.
+This document records the code that is actually loaded by Baseline Fitness on 2 August 2026. It does not describe an intended future flow as though it already exists.
 
-1. `baseline-voice.js` owns settings, spoken-number parsing, speech synthesis and a generic browser-recognition wrapper used by shared code.
-2. The Fitness runtime opens WebRTC transcription through `sitewide/api/realtime_transcription.php`.
-3. That endpoint requires `OPENAI_API_KEY` and creates an OpenAI Realtime transcription session using `gpt-4o-transcribe`.
-4. Fitness supplies a broad prompt/vocabulary including `begin`, `start`, `ready`, `go`, result synonyms, repeat/stop phrases and numbers.
-5. Browser `speechSynthesis` speaks workout prompts; recognition is paused while speech is playing and resumed for the next expected state.
+The production voice path is already a working OpenAI Realtime transcription integration. It is not the browser `SpeechRecognition` wrapper and it is not the isolated policy prototype under `prototypes/voice-recognition/`.
 
-The existing state constants are effectively idle, begin, timing, result, number, paused, finished and error. The implemented flow is:
+The active components are:
 
-| State | Listening for | Action |
+- `sitewide/js/baseline-voice.js` — sitewide settings, compound-number parsing, queued browser speech synthesis and a reusable browser-recognition wrapper used by other shared features;
+- `systems/baseline-fitness/js/baseline-fitness-voice.js` — the Fitness state machine, WebRTC transcription client, prompts, microphone display and voice/manual adapter;
+- `sitewide/api/realtime_transcription.php` — authenticated same-origin SDP negotiation with OpenAI Realtime;
+- `systems/baseline-fitness/js/baseline-fitness-app.js` — the authoritative in-browser workout step logic used by both voice and manual controls.
+
+SQLite remains authoritative for saved plans and completed session status. During an active workout, individual step results are stored through the existing guarded Fitness workout-progress store. The normal **Finish workout** action then calls `update_session.php` to mark the session complete.
+
+## Recognition transport and server controls
+
+The Fitness adapter creates a `RTCPeerConnection`, obtains a one-channel microphone stream and posts an SDP offer to `/sitewide/api/realtime_transcription.php` with same-origin credentials.
+
+The endpoint:
+
+- accepts `POST application/sdp` only;
+- requires the normal same-origin check and an authenticated user;
+- limits each user to 12 session negotiations per 300 seconds;
+- limits the SDP body to 131,072 bytes;
+- keeps `OPENAI_API_KEY` on the server;
+- sends a pseudonymous HMAC safety identifier rather than account details;
+- creates an OpenAI Realtime transcription session using `gpt-4o-transcribe`;
+- configures far-field noise reduction and server VAD;
+- requests short British-English workout commands and numbers;
+- returns only the SDP answer to the browser.
+
+The repository does not write microphone recordings to SQLite, Saved Data, Runtime, logs or Git. The endpoint streams the browser microphone through the negotiated Realtime connection and logs only a bounded service failure status/cURL error when negotiation fails. This code review cannot make claims about external provider retention beyond the configured application behaviour.
+
+## Exact production states
+
+| Runtime constant | Stored value | Meaning |
 |---|---|---|
-| Begin | begin/start/ready/go | starts current exercise |
-| Timing/active | recognition paused during prompt/timing | timer or manual action advances |
-| Result | success/succeeded/successful/complete/completed or fail/failed/failure | success saves target; failure asks for achieved amount |
-| Number | any parsed number | clamps to 0..target, immediately saves failure result and advances |
-| Paused/error | resume/retry behavior in runtime | returns to an expected state where possible |
-| Finished | no workout commands | recognition should be stopped |
+| `IDLE` | `idle` | no active voice workout |
+| `BEGIN` | `awaiting_begin` | waiting to start the displayed step |
+| `TIMING` | `timing` | the adapter is running its timed-step countdown |
+| `RESULT` | `awaiting_result` | waiting for success or failure |
+| `NUMBER` | `awaiting_number` | waiting for the achieved amount after failure |
+| `PAUSED` | `paused` | microphone input paused by the manual control |
+| `FINISHED` | `finished` | all step results are recorded; the user must still finish the session |
+| `ERROR` | `error` | recognition cannot continue without user/server correction |
 
-Manual success/failure controls and voice ultimately use the shared `BASELINE_fitnessWorkout` save/progression actions. This is the boundary a replacement should call.
+There is no production `confirm_number`, `rest` or `await_continue` state.
 
-## Documented differences from the requested known flow
+## Exact command behaviour
 
-The repository does not currently implement several behaviors described as known:
+| Current state | Accepted voice input | Current action |
+|---|---|---|
+| any active listening state | `repeat` | repeats the last spoken instruction |
+| any active listening state | `stop voice workout`, `end voice workout`, `cancel voice workout` | closes voice mode but keeps recorded workout progress |
+| `awaiting_begin` | `begin`, `start`, `ready`; the transcript selector also maps `go` to `begin` | starts a timer for a timed step, or moves a repetition step to result entry |
+| `awaiting_result` | `success`, `succeeded`, `successful`, `complete`, `completed` | records the displayed target as a successful step through `BASELINE_fitnessWorkout.succeedCurrentStep("voice")` |
+| `awaiting_result` | `fail`, `failed`, `failure` | asks for the achieved number and enters `awaiting_number` |
+| `awaiting_number` | a parsed digit or compound English number | clamps the value to `0..target`, immediately records failure through `failCurrentStep(value, "voice")`, then moves to the next step |
+| `finished` | no step command | prompts the user to use **Finish Workout**; transcription remains connected until voice mode is ended or the page is left |
 
-- The number is not displayed/spoken back through a dedicated confirmation state before saving.
-- `confirmNumbers` exists in saved settings and the UI but is not enforced by the Fitness workout controller.
-- Rejected-number handling is absent because there is no confirmation state.
-- Workout rests and `Continue` are absent from the Fitness voice state machine. `maximumRestSeconds` and `restAnnouncements` are persisted/displayed but unused by this runtime.
-- An uncertain/incorrect recognized number can currently reach a save after parser acceptance.
-- Broad synonyms work today, despite the desired constrained vocabulary.
+The sitewide parser recognises digits and compound forms such as `twenty-three`, including hundreds and thousands. The Fitness adapter applies the current step target as an upper bound.
 
-These are gaps, not permission to rewrite production progression without first adding tests and clarifying the intended rest source.
+The shared settings UI exposes aliases for `yes`, `no`, `pause`, `resume`, `finish` and rest-related options, but the production Fitness adapter does not request or handle those commands in its current states. Their presence in shared settings is not evidence that the Fitness workflow implements them.
 
-## Candidate constrained state contract
+## Requested-flow comparison
 
-The isolated prototype in `prototypes/voice-recognition/workout-policy.mjs` exposes this engine-independent contract:
+| Requested behaviour | Production status | Evidence in current flow |
+|---|---|---|
+| “Begin” | implemented | begins the displayed step |
+| “Succeeded” | implemented | accepted together with several success synonyms |
+| “Failed” | implemented | enters achieved-number listening |
+| achieved-number entry | implemented | digits and compound English numbers are parsed |
+| display/speak recognised number | not implemented | the number is not echoed before saving |
+| require number confirmation | not implemented | `confirmNumbers` is stored in settings but not consulted by the Fitness adapter |
+| reject and re-enter number | only for no recognised number | an unparsed utterance asks again; a parsed number is saved immediately |
+| “Continue” after rest | not implemented | there is no rest or continue state in this adapter |
+| pause/resume | manual control only | the button pauses/resumes the Realtime microphone; spoken pause/resume is not routed |
+| repeat instruction | implemented | spoken `repeat` and a manual button use the same prompt function |
+| terminate voice workout | implemented | spoken stop/end/cancel phrases and the manual End Voice Workout button close voice mode |
+| finish the saved session by voice | not implemented | the user must use the normal **Finish workout** action after all steps |
 
-| State | Allowed vocabulary | Save permitted? |
+## Listening lifecycle, retries and errors
+
+1. Voice mode can start only for a signed-in user whose current planned session is due and available.
+2. The adapter opens the modal, obtains microphone access and creates the live amplitude meter.
+3. It calls the normal workout `startSession("voice")` action.
+4. It speaks `When Ready, Say “Begin”.`
+5. Only after that prompt completes does it establish Realtime transcription.
+6. Recognition is paused while the site speaks and resumed afterwards, preventing most prompt echo.
+7. Realtime delta and completed transcript events can both produce responsive commands.
+8. Connection loss retries with exponential delays from 500 ms to a maximum 10 seconds, for up to five attempts.
+9. Permission denial, missing microphone, missing server configuration, expired login and rate limiting enter explicit error states/messages.
+10. Browser/page exit stops recognition, closes media tracks and cancels speech.
+
+The visible microphone state distinguishes paused, speaking, reconnecting, hearing, transcribing, listening and error. Manual workout controls remain available independently of recognition.
+
+## Save and duplicate behaviour
+
+Voice and manual outcomes call the same `BASELINE_fitnessWorkout` functions. `recordStep()` checks that the workout can start, has started and has a current step, then records one result and advances `completedSteps`.
+
+The voice adapter also uses a `handling` lock while processing a transcript. After a successful action it changes state and advances the current step, so repeated fragments that arrive after the transition normally become invalid for the new state.
+
+This is useful duplicate resistance, but it is not the proposed final protection:
+
+- there is no server-issued expected-state token;
+- there is no consumed action/idempotency token;
+- step-result writes are not revisioned server writes;
+- an accepted number is saved before user confirmation;
+- no comparative corpus has yet proved false-activation behaviour under realistic noise and repeated transcript events.
+
+## Isolated constrained-policy prototype
+
+`prototypes/voice-recognition/workout-policy.mjs` is not loaded by production. It models the stricter requested sequence:
+
+| Prototype state | Allowed vocabulary | Save permitted? |
 |---|---|---|
 | `await_begin` | `Begin` | no |
 | `active` | none | no |
-| `await_result` | `Succeeded`, `Failed` | success may invoke authoritative action once |
+| `await_result` | `Succeeded`, `Failed` | success may invoke the authoritative action once |
 | `await_number` | number only, bounded by current target | no |
-| `confirm_number` | `Yes`, `No` | yes may invoke authoritative failure action once; no clears candidate |
+| `confirm_number` | `Yes`, `No` | yes may invoke the failure action once; no clears the candidate |
 | `rest` | `Continue` | no |
 | `complete` | none | no |
 
-`Start`, `Ready` and `Go` are intentionally not in the prototype. The existing production vocabulary remains unchanged until integration approval.
+`Start`, `Ready`, `Go` and the current broad result synonyms are deliberately excluded from that prototype. Production vocabulary must not be changed merely by editing this document or prototype.
 
-The recognizer must receive server-derived state context or a short-lived authenticated state token; it must not trust a browser's unverified claim that a number or command is currently legal. Recognition returns a candidate event only. It never writes Fitness data directly.
+## Number-confirmation integration contract
 
-## Number handling contract
+A future approved implementation should:
 
-1. Derive result type, target and unit from the current authoritative step.
-2. Enter number-only recognition after `Failed`.
-3. Parse digits and compound English numbers with the existing tested parser.
-4. Reject negative, non-integer, uncertain or above-target values unless the exercise schema explicitly permits another bound.
-5. Place the candidate in the existing field and display it prominently.
-6. Speak the candidate with its unit and ask for confirmation.
-7. `No` clears the candidate and returns to number listening.
-8. `Yes` invokes the same idempotent Fitness result action as the manual control.
-9. Mark the state/action token consumed so duplicate transcripts cannot create another save revision.
+1. derive unit, target and legal range from the authoritative current step;
+2. accept a number only while the expected state is number entry;
+3. place the candidate on screen without changing workout progress;
+4. speak the number and unit once;
+5. accept only `Yes` or `No` in confirmation state;
+6. clear and re-enter number listening after `No`;
+7. call the same authoritative manual/voice action after `Yes`;
+8. consume a short-lived expected-state/idempotency token so duplicate transcripts cannot save twice;
+9. preserve manual correction and completion controls throughout.
 
-Manual correction remains available at every recognition step.
+## Alternative recogniser feasibility gate
 
-## Audio/privacy contract
+The checklist's prototype/Hostinger stages now mean testing an alternative constrained or offline recogniser, not creating the first working recogniser. Production already uses OpenAI Realtime.
 
-- Prefer streaming or short bounded chunks.
-- Keep microphone audio in memory or a private Runtime temporary path.
-- Do not write audio into Saved Data, logs or Git.
-- Delete temporary chunks immediately after recognition and on error/timeout.
-- Log event type, duration, confidence band, engine version and redacted error only; do not log raw audio or routine transcripts by default.
-- Make listening/paused/error state visually and audibly clear.
-- Silence/background noise creates no Fitness revision.
+A non-production Hostinger benchmark must still establish:
 
-## Stage 10 feasibility gate
+- exact model and runtime;
+- native dependency and model-install compatibility;
+- RAM, CPU, storage, cold-start and warm inference time;
+- process persistence and deployment behaviour;
+- HTTPS/WebSocket and request-duration limits;
+- private temporary-file cleanup on success, disconnect and crash;
+- repeated-request behaviour and estimated simultaneous-user capacity;
+- whether the PHP site and candidate recogniser can coexist safely.
 
-Official Hostinger documentation now confirms managed server-side Node processes on Business plans and Node 18–24 support, but it does not document the specific offline-speech requirements. A real hPanel non-production benchmark must verify:
+Do not replace the current Realtime path unless identical-sample comparative testing demonstrates a material improvement in command accuracy, number accuracy, false activation, latency, reliability, privacy and hosting capacity.
 
-- chosen recognizer/model installation and native-module compatibility;
-- model size, download persistence and cold-start time;
-- 2-core/3-GB-class CPU/RAM behavior or the actual legacy-plan limits;
-- WebSocket and request-duration behavior;
-- concurrency during overlapping workouts;
-- process restart and deploy behavior;
-- environment configuration and private temporary-directory access;
-- temporary-audio cleanup under success, disconnect and crash;
-- whether the persistent PHP site and Node recognizer can coexist without route or resource contention.
+## Controlled integration sequence
 
-Reference: <https://www.hostinger.com/support/how-to-deploy-a-nodejs-website-in-hostinger/>.
-
-## Stage 11 comparative test matrix
-
-Create a consented, non-production corpus of short utterances covering quiet/noisy rooms, near/far microphones, laptop/phone/tablet, supported browsers, expected accents and deliberately invalid commands. Do not commit identifiable recordings.
-
-| Category | Required cases | Metric |
-|---|---|---|
-| Commands | Begin, Succeeded, Failed, Yes, No, Continue; invalid cross-state commands | exact event accuracy and false activation rate |
-| Numbers | 0, teens, similar-sounding values, compounds such as 23, target boundary, above target | exact numeric accuracy and unsafe acceptance rate |
-| Timing | cold and warm requests | median, p95 and worst response latency |
-| Reliability | silence, music, speech synthesis overlap, disconnect, repeated utterance | no duplicate save; recovery success |
-| Resources | idle and concurrent users | peak/steady RAM, CPU, model load time |
-| Privacy | success, timeout, crash | zero retained audio after cleanup window |
-
-Compare at least: current production Realtime path, the offline candidate on the real Hostinger plan and manual fallback. Predefine acceptance thresholds before looking at the result. A candidate must not replace production merely because its average accuracy is acceptable; state-specific false activation, number errors, latency and resource failures are release blockers.
-
-## Stage 12 integration sequence
-
-1. Keep current production recognition as default.
-2. Add server-issued expected-state tokens and idempotency before changing engines.
-3. Integrate the constrained policy behind a disabled feature flag.
-4. Enable only for test accounts and capture redacted metrics.
-5. Exercise the same manual/voice authoritative actions and revision conflicts.
-6. Roll out gradually only after the comparative gate passes.
-7. Preserve immediate feature-flag rollback to the previous recognizer and manual controls.
+1. Keep current OpenAI Realtime recognition and all manual controls as the production default.
+2. Add expected-state and idempotency protection before changing engines or enabling confirmation saves.
+3. Put the constrained policy or alternative recogniser behind a disabled feature flag.
+4. Enable it only for explicit test accounts with redacted metrics.
+5. Run identical consented samples through current Realtime, the candidate and manual fallback.
+6. Roll out only after predefined comparative thresholds pass.
+7. Preserve immediate rollback to the current recogniser and manual workflow.
