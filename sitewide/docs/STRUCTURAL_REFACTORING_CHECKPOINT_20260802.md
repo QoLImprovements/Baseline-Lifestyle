@@ -76,6 +76,15 @@ The fifth change extracts outbound text-mail configuration and header constructi
 - No test sends an email; the executable contract verifies configuration only.
 - Account recovery continues to call the same `bl_send_text_mail()` helper.
 
+## Increment 6: account recovery boundary
+
+The sixth change extracts password-reset token generation, hashed-verifier lookup, email masking and password replacement into `sitewide/api/account_recovery.php`.
+
+- Existing reset links, expiry duration and single-active-token behaviour are unchanged.
+- Only the selector is searchable; the random verifier remains hashed at rest.
+- Completing a reset marks its token used and restores password authentication for the account.
+- The executable contract uses only an in-memory SQLite database and never opens production data.
+
 ## Fixed constraints
 
 - SQLite remains the sole production authority for authenticated server data.

@@ -105,6 +105,20 @@ test('outbound text-mail configuration has one focused boundary', () => {
   assert.match(mail, /BL_MAIL_FROM_NAME/);
 });
 
+test('password reset token handling has one focused account recovery boundary', () => {
+  const config = read('sitewide/api/config.php');
+  const recovery = read('sitewide/api/account_recovery.php');
+  assert.match(config, /require_once __DIR__ \. '\/account_recovery\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:hash_verifier|generate_selector|generate_verifier|issue_password_reset|lookup_password_reset|mask_email|complete_password_reset)\b/);
+  for(const name of ['bl_hash_verifier','bl_generate_selector','bl_generate_verifier','bl_issue_password_reset','bl_lookup_password_reset','bl_mask_email','bl_complete_password_reset']){
+    assert.match(recovery, new RegExp(`function ${name}\\b`), `${name} is missing from the account recovery boundary`);
+  }
+  assert.match(recovery, /random_bytes/);
+  assert.match(recovery, /hash_equals/);
+  assert.match(recovery, /password_hash/);
+  assert.match(recovery, /DELETE FROM password_reset_tokens WHERE user_id = :uid/);
+});
+
 test('the canonical rewrite owns root API routes without physical shadow endpoints', () => {
   const htaccess = read('.htaccess');
   assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
