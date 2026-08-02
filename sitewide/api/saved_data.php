@@ -57,7 +57,12 @@ function bl_runtime_root(): string {
 }
 
 function bl_saved_assert_safe_component(string $component): string {
-  if($component === '' || preg_match('/^[A-Za-z0-9][A-Za-z0-9._-]*$/', $component) !== 1){
+  if(
+    $component === ''
+    || strlen($component) > 128
+    || $component !== trim($component)
+    || preg_match('/^[A-Za-z0-9][A-Za-z0-9._ -]*$/', $component) !== 1
+  ){
     throw new InvalidArgumentException('invalid_path_component');
   }
   return $component;
