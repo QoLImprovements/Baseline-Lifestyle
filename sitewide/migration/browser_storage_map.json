@@ -21,8 +21,12 @@
   "rules": [
     {
       "id": "badminton-shared-v3-legacy",
-      "inventoryPatterns": ["__baseline_badminton_session_v3__"],
-      "knownKeys": ["__baseline_badminton_session_v3__"],
+      "inventoryPatterns": [
+        "__baseline_badminton_session_v3__"
+      ],
+      "knownKeys": [
+        "__baseline_badminton_session_v3__"
+      ],
       "classification": "legacy-shared-state",
       "decision": "normalise-and-compare",
       "target": "Shared/Badminton/badminton.json",
@@ -30,8 +34,12 @@
     },
     {
       "id": "badminton-shared-v4-cache",
-      "inventoryPatterns": ["__baseline_badminton_session_v4__"],
-      "knownKeys": ["__baseline_badminton_session_v4__"],
+      "inventoryPatterns": [
+        "__baseline_badminton_session_v4__"
+      ],
+      "knownKeys": [
+        "__baseline_badminton_session_v4__"
+      ],
       "classification": "shared-state-browser-cache",
       "decision": "retain-as-non-authoritative-cache-until-cutover",
       "target": "Shared/Badminton/badminton.json",
@@ -39,8 +47,12 @@
     },
     {
       "id": "diet-log-local-content",
-      "inventoryPatterns": ["__baseline_food_diet_log_v1__"],
-      "knownKeys": ["__baseline_food_diet_log_v1__"],
+      "inventoryPatterns": [
+        "__baseline_food_diet_log_v1__"
+      ],
+      "knownKeys": [
+        "__baseline_food_diet_log_v1__"
+      ],
       "classification": "user-content-without-approved-resource",
       "decision": "preserve-local-and-block-retirement",
       "target": null,
@@ -48,8 +60,12 @@
     },
     {
       "id": "outer-embed-snapshot",
-      "inventoryPatterns": ["__baseline_outer_embed_snapshot_v2__"],
-      "knownKeys": ["__baseline_outer_embed_snapshot_v2__"],
+      "inventoryPatterns": [
+        "__baseline_outer_embed_snapshot_v2__"
+      ],
+      "knownKeys": [
+        "__baseline_outer_embed_snapshot_v2__"
+      ],
       "classification": "ephemeral-navigation-snapshot",
       "decision": "retire-without-migration",
       "target": null,
@@ -57,8 +73,12 @@
     },
     {
       "id": "voice-settings",
-      "inventoryPatterns": ["__baseline_voice_settings_v1__"],
-      "knownKeys": ["__baseline_voice_settings_v1__"],
+      "inventoryPatterns": [
+        "__baseline_voice_settings_v1__"
+      ],
+      "knownKeys": [
+        "__baseline_voice_settings_v1__"
+      ],
       "classification": "user-settings",
       "decision": "migrate-authenticated-value",
       "target": "Users/{paddedUserId}/voice.json",
@@ -66,8 +86,12 @@
     },
     {
       "id": "badminton-focused-game",
-      "inventoryPatterns": ["__bl_badminton_focused_v1__"],
-      "knownKeys": ["__bl_badminton_focused_v1__"],
+      "inventoryPatterns": [
+        "__bl_badminton_focused_v1__"
+      ],
+      "knownKeys": [
+        "__bl_badminton_focused_v1__"
+      ],
       "classification": "unapproved-individual-game-save",
       "decision": "preserve-local-and-block-retirement",
       "target": null,
@@ -75,8 +99,14 @@
     },
     {
       "id": "darts-focused-game",
-      "inventoryPatterns": ["__bl_darts_focused_v1__", "__bl_darts_focused_v2__"],
-      "knownKeys": ["__bl_darts_focused_v1__", "__bl_darts_focused_v2__"],
+      "inventoryPatterns": [
+        "__bl_darts_focused_v1__",
+        "__bl_darts_focused_v2__"
+      ],
+      "knownKeys": [
+        "__bl_darts_focused_v1__",
+        "__bl_darts_focused_v2__"
+      ],
       "classification": "individual-game-save-with-duplicate-legacy-key",
       "decision": "normalise-and-migrate-explicitly",
       "target": "Users/{paddedUserId}/Games/darts-focused.json",
@@ -84,8 +114,12 @@
     },
     {
       "id": "games-auto-next-preference",
-      "inventoryPatterns": ["__bl_games_auto_next_v1__"],
-      "knownKeys": ["__bl_games_auto_next_v1__"],
+      "inventoryPatterns": [
+        "__bl_games_auto_next_v1__"
+      ],
+      "knownKeys": [
+        "__bl_games_auto_next_v1__"
+      ],
       "classification": "device-ui-preference",
       "decision": "keep-local",
       "target": null,
@@ -93,8 +127,12 @@
     },
     {
       "id": "games-guest-profiles",
-      "inventoryPatterns": ["__bl_games_guest_profiles_v1__"],
-      "knownKeys": ["__bl_games_guest_profiles_v1__"],
+      "inventoryPatterns": [
+        "__bl_games_guest_profiles_v1__"
+      ],
+      "knownKeys": [
+        "__bl_games_guest_profiles_v1__"
+      ],
       "classification": "guest-game-profiles",
       "decision": "offer-explicit-per-game-import",
       "target": "Users/{paddedUserId}/Games/{canonicalGameFile}",
@@ -102,8 +140,12 @@
     },
     {
       "id": "trackcoin-game",
-      "inventoryPatterns": ["__bl_trackcoin_v1__"],
-      "knownKeys": ["__bl_trackcoin_v1__"],
+      "inventoryPatterns": [
+        "__bl_trackcoin_v1__"
+      ],
+      "knownKeys": [
+        "__bl_trackcoin_v1__"
+      ],
       "classification": "individual-game-save",
       "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/Games/track-coin.json",
@@ -111,8 +153,12 @@
     },
     {
       "id": "recipe-title-index",
-      "inventoryPatterns": ["[expression] 'bl_recipe_index_' + appKey"],
-      "knownKeys": ["bl_recipe_index_{app}"],
+      "inventoryPatterns": [
+        "[expression] 'bl_recipe_index_' + appKey"
+      ],
+      "knownKeys": [
+        "bl_recipe_index_{app}"
+      ],
       "classification": "rebuildable-display-cache",
       "decision": "rebuild-without-migration",
       "target": null,
@@ -120,8 +166,13 @@
     },
     {
       "id": "fitness-body-profile",
-      "inventoryPatterns": ["[expression] bodyProfileKey(", "[expression] bodyKey("],
-      "knownKeys": ["__bl_fitness_body_profile_v1__::{normalised-user}"],
+      "inventoryPatterns": [
+        "[expression] bodyProfileKey(",
+        "[expression] bodyKey("
+      ],
+      "knownKeys": [
+        "__bl_fitness_body_profile_v1__::{normalised-user}"
+      ],
       "classification": "fitness-user-data",
       "decision": "migrate-after-schema-validation",
       "target": "Users/{paddedUserId}/fitness.json#profile",
@@ -129,7 +180,9 @@
     },
     {
       "id": "storage-wrapper-implementation",
-      "inventoryPatterns": ["[expression] key"],
+      "inventoryPatterns": [
+        "[expression] key"
+      ],
       "knownKeys": [],
       "classification": "implementation-only",
       "decision": "no-independent-migration",
@@ -138,8 +191,12 @@
     },
     {
       "id": "realm-exploration-game",
-      "inventoryPatterns": ["[expression] SAVE_KEY"],
-      "knownKeys": ["baseline.realm.exploration.jrpg.v1"],
+      "inventoryPatterns": [
+        "[expression] SAVE_KEY"
+      ],
+      "knownKeys": [
+        "baseline.realm.exploration.jrpg.v1"
+      ],
       "classification": "baseline-realm-mode-save",
       "decision": "normalise-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#exploration",
@@ -147,8 +204,13 @@
     },
     {
       "id": "skincare-slider-settings",
-      "inventoryPatterns": ["[expression] sliderSaveStorageKey(saveId", "[expression] sliderSaveStorageKey(saveKey"],
-      "knownKeys": ["__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"],
+      "inventoryPatterns": [
+        "[expression] sliderSaveStorageKey(saveId",
+        "[expression] sliderSaveStorageKey(saveKey"
+      ],
+      "knownKeys": [
+        "__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"
+      ],
       "classification": "user-settings-without-approved-resource",
       "decision": "preserve-local-and-block-retirement",
       "target": null,
@@ -156,8 +218,12 @@
     },
     {
       "id": "fitness-active-workout",
-      "inventoryPatterns": ["[expression] stepStorageKey(current.planId"],
-      "knownKeys": ["__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"],
+      "inventoryPatterns": [
+        "[expression] stepStorageKey(current.planId"
+      ],
+      "knownKeys": [
+        "__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"
+      ],
       "classification": "fitness-active-session-state",
       "decision": "migrate-only-valid-current-session",
       "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
@@ -165,8 +231,12 @@
     },
     {
       "id": "fitness-plan-cache",
-      "inventoryPatterns": ["[expression] userCacheKey("],
-      "knownKeys": ["__bl_fitness_plan_cache_v1__::{normalised-user}"],
+      "inventoryPatterns": [
+        "[expression] userCacheKey("
+      ],
+      "knownKeys": [
+        "__bl_fitness_plan_cache_v1__::{normalised-user}"
+      ],
       "classification": "rebuildable-server-cache",
       "decision": "rebuild-without-migration",
       "target": null,
@@ -174,8 +244,12 @@
     },
     {
       "id": "fitness-file-protocol-plan",
-      "inventoryPatterns": ["[expression] userPlanKey("],
-      "knownKeys": ["__bl_fitness_plan_v1__::{normalised-user}"],
+      "inventoryPatterns": [
+        "[expression] userPlanKey("
+      ],
+      "knownKeys": [
+        "__bl_fitness_plan_v1__::{normalised-user}"
+      ],
       "classification": "file-protocol-development-fallback",
       "decision": "exclude-from-production-migration",
       "target": null,
@@ -183,8 +257,12 @@
     },
     {
       "id": "realm-tactical-v1-legacy",
-      "inventoryPatterns": ["baseline-realm:tactical-operations:v1"],
-      "knownKeys": ["baseline-realm:tactical-operations:v1"],
+      "inventoryPatterns": [
+        "baseline-realm:tactical-operations:v1"
+      ],
+      "knownKeys": [
+        "baseline-realm:tactical-operations:v1"
+      ],
       "classification": "legacy-baseline-realm-mode-save",
       "decision": "normalise-then-retire",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
@@ -192,8 +270,12 @@
     },
     {
       "id": "realm-tactical-v2",
-      "inventoryPatterns": ["baseline-realm:tactical-operations:v2"],
-      "knownKeys": ["baseline-realm:tactical-operations:v2"],
+      "inventoryPatterns": [
+        "baseline-realm:tactical-operations:v2"
+      ],
+      "knownKeys": [
+        "baseline-realm:tactical-operations:v2"
+      ],
       "classification": "baseline-realm-mode-save-and-local-fallback",
       "decision": "normalise-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
@@ -201,8 +283,12 @@
     },
     {
       "id": "games-hub-view",
-      "inventoryPatterns": ["baselineGamesHubView"],
-      "knownKeys": ["baselineGamesHubView"],
+      "inventoryPatterns": [
+        "baselineGamesHubView"
+      ],
+      "knownKeys": [
+        "baselineGamesHubView"
+      ],
       "classification": "device-ui-state",
       "decision": "keep-local-or-session-only",
       "target": null,
@@ -210,8 +296,12 @@
     },
     {
       "id": "site-index-view",
-      "inventoryPatterns": ["baselineIndexActiveView"],
-      "knownKeys": ["baselineIndexActiveView"],
+      "inventoryPatterns": [
+        "baselineIndexActiveView"
+      ],
+      "knownKeys": [
+        "baselineIndexActiveView"
+      ],
       "classification": "session-ui-state",
       "decision": "expire-with-session",
       "target": null,
@@ -220,7 +310,9 @@
     {
       "id": "local-account-preview-users",
       "inventoryPatterns": [],
-      "knownKeys": ["__bl_local_users_v1__"],
+      "knownKeys": [
+        "__bl_local_users_v1__"
+      ],
       "classification": "file-preview-auth-fallback",
       "decision": "exclude-and-retire-in-production",
       "target": null,
@@ -229,11 +321,39 @@
     {
       "id": "local-account-preview-session",
       "inventoryPatterns": [],
-      "knownKeys": ["__bl_local_session_v1__"],
+      "knownKeys": [
+        "__bl_local_session_v1__"
+      ],
       "classification": "file-preview-session-fallback",
       "decision": "exclude-and-retire-in-production",
       "target": null,
       "cutoverRule": "Authenticated server sessions remain authoritative; do not migrate this local preview session."
+    },
+    {
+      "id": "pending-recipe-route",
+      "inventoryPatterns": [
+        "__baseline_pending_recipe_route_v1__"
+      ],
+      "knownKeys": [
+        "__baseline_pending_recipe_route_v1__"
+      ],
+      "classification": "session-navigation-state",
+      "decision": "expire-with-session",
+      "target": null,
+      "cutoverRule": "This temporary route handoff exists only while replacing a standalone recipe shell with the complete parent application. Never migrate it to Saved Data."
+    },
+    {
+      "id": "fitness-body-view",
+      "inventoryPatterns": [
+        "__baseline_fitness_body_view_v1__"
+      ],
+      "knownKeys": [
+        "__baseline_fitness_body_view_v1__"
+      ],
+      "classification": "session-ui-state",
+      "decision": "expire-with-session",
+      "target": null,
+      "cutoverRule": "This remembers only the selected My Body subtab for the current browser session and is not Fitness account data."
     }
   ]
 }
