@@ -92,6 +92,19 @@ test('current-user validation and public account payloads have one authenticatio
   assert.doesNotMatch(auth, /pass_hash\s*=>|password_hash\(|schema_migrations|function bl_send_text_mail/);
 });
 
+test('outbound text-mail configuration has one focused boundary', () => {
+  const config = read('sitewide/api/config.php');
+  const mail = read('sitewide/api/mail.php');
+  assert.match(config, /require_once __DIR__ \. '\/mail\.php'/);
+  assert.doesNotMatch(config, /function bl_(?:mail_from_email|mail_from_name|send_text_mail)\b/);
+  for(const name of ['bl_mail_from_email','bl_mail_from_name','bl_send_text_mail']){
+    assert.match(mail, new RegExp(`function ${name}\\b`), `${name} is missing from the mail boundary`);
+  }
+  assert.match(mail, /Content-Type: text\/plain; charset=UTF-8/);
+  assert.match(mail, /BL_MAIL_FROM_EMAIL/);
+  assert.match(mail, /BL_MAIL_FROM_NAME/);
+});
+
 test('the canonical rewrite owns root API routes without physical shadow endpoints', () => {
   const htaccess = read('.htaccess');
   assert.match(htaccess, /RewriteRule \^api\/\(\.\*\)\$ sitewide\/api\/\$1 \[L,QSA\]/);
