@@ -1,0 +1,47 @@
+name: Codex repository audit snapshot
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - agent/baseline-modernisation-audit-20260802
+    paths:
+      - .github/workflows/codex-repository-audit.yml
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    name: Build tracked-file audit snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out audited commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Create complete tracked-file manifest and archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-output
+          git ls-files -z |
+            xargs -0 sha256sum > audit-output/tracked-files.sha256
+          git ls-files > audit-output/tracked-files.txt
+          git ls-files -z |
+            tar --null -czf audit-output/repository-snapshot.tar.gz --files-from=-
+          {
+            echo "commit=$(git rev-parse HEAD)"
+            echo "tracked_files=$(git ls-files | wc -l)"
+            echo "tracked_bytes=$(git ls-files -z | xargs -0 stat --format='%s' | awk '{ total += $1 } END { print total + 0 }')"
+          } > audit-output/snapshot-metadata.txt
+
+      - name: Upload audit snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-lifestyle-audit-snapshot
+          path: audit-output/
+          if-no-files-found: error
+          retention-days: 1
