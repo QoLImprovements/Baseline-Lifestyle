@@ -1,6 +1,23 @@
 {
   "formatVersion": 1,
-  "authority": "SQLite remains authoritative until an approved resource cutover",
+  "authority": "SQLite is the current migration source; protected Saved Data resource files are the target production authority",
+  "canonicalGameFiles": {
+    "ninja": "baseline-realm.json",
+    "baseline-realm": "baseline-realm.json",
+    "pairs": "pairs.json",
+    "detectword": "detect-word.json",
+    "detect-word": "detect-word.json",
+    "make24": "make-24.json",
+    "make-24": "make-24.json",
+    "trackcoin": "track-coin.json",
+    "track-coin": "track-coin.json",
+    "ruleshift": "rule-shift.json",
+    "rule-shift": "rule-shift.json",
+    "dartsfocused": "darts-focused.json",
+    "darts-focused": "darts-focused.json",
+    "meridiangrove": "meridian-grove.json",
+    "meridian-grove": "meridian-grove.json"
+  },
   "rules": [
     {
       "id": "badminton-shared-v3-legacy",
@@ -8,7 +25,7 @@
       "knownKeys": ["__baseline_badminton_session_v3__"],
       "classification": "legacy-shared-state",
       "decision": "normalise-and-compare",
-      "target": "Shared/badminton-session.json",
+      "target": "Shared/Badminton/badminton.json",
       "cutoverRule": "Import only through the protected Badminton administrator path. Compare with the current server state and never let a browser copy silently overwrite a newer shared revision."
     },
     {
@@ -17,8 +34,8 @@
       "knownKeys": ["__baseline_badminton_session_v4__"],
       "classification": "shared-state-browser-cache",
       "decision": "retain-as-non-authoritative-cache-until-cutover",
-      "target": "Shared/badminton-session.json",
-      "cutoverRule": "The protected server resource is authoritative. Clear or refresh the local cache only after a verified server load; enforce Badminton administration permissions."
+      "target": "Shared/Badminton/badminton.json",
+      "cutoverRule": "The protected shared Badminton resource is authoritative after cutover. Clear or refresh the local cache only after a verified server load and enforce established Badminton administration permissions."
     },
     {
       "id": "diet-log-local-content",
@@ -44,17 +61,17 @@
       "knownKeys": ["__baseline_voice_settings_v1__"],
       "classification": "user-settings",
       "decision": "migrate-authenticated-value",
-      "target": "Users/{userId}/voice.json",
+      "target": "Users/{paddedUserId}/voice.json",
       "cutoverRule": "Use the authenticated server voice_settings record when present. Keep guest settings local and never let guest data overwrite an authenticated resource."
     },
     {
       "id": "badminton-focused-game",
       "inventoryPatterns": ["__bl_badminton_focused_v1__"],
       "knownKeys": ["__bl_badminton_focused_v1__"],
-      "classification": "individual-game-save",
-      "decision": "migrate-explicitly",
-      "target": "Users/{userId}/Games/badminton-focused.json",
-      "cutoverRule": "Import a local/guest profile only through an explicit signed-in migration and only when it will not overwrite a newer authenticated save."
+      "classification": "unapproved-individual-game-save",
+      "decision": "preserve-local-and-block-retirement",
+      "target": null,
+      "cutoverRule": "This browser save is not recognised by the current protected Games API or canonical game-file map. Preserve it unchanged until a dedicated game schema and physical filename are explicitly approved; never discard or merge it into shared Badminton state."
     },
     {
       "id": "darts-focused-game",
@@ -62,7 +79,7 @@
       "knownKeys": ["__bl_darts_focused_v1__", "__bl_darts_focused_v2__"],
       "classification": "individual-game-save-with-duplicate-legacy-key",
       "decision": "normalise-and-migrate-explicitly",
-      "target": "Users/{userId}/Games/darts-focused.json",
+      "target": "Users/{paddedUserId}/Games/darts-focused.json",
       "cutoverRule": "Treat v1 as the current primary and v2 as the compatibility copy. Report a conflict if their payloads differ; do not choose silently."
     },
     {
@@ -80,8 +97,8 @@
       "knownKeys": ["__bl_games_guest_profiles_v1__"],
       "classification": "guest-game-profiles",
       "decision": "offer-explicit-per-game-import",
-      "target": "Users/{userId}/Games/{game}.json",
-      "cutoverRule": "Split by recognised game ID. Require a signed-in user decision and stale-write comparison; guest data must never automatically replace authenticated progress."
+      "target": "Users/{paddedUserId}/Games/{canonicalGameFile}",
+      "cutoverRule": "Split by recognised game ID using canonicalGameFiles. Require a signed-in user decision and stale-write comparison; guest data must never automatically replace authenticated progress."
     },
     {
       "id": "trackcoin-game",
@@ -89,8 +106,8 @@
       "knownKeys": ["__bl_trackcoin_v1__"],
       "classification": "individual-game-save",
       "decision": "migrate-explicitly",
-      "target": "Users/{userId}/Games/trackcoin.json",
-      "cutoverRule": "Prefer an existing authenticated Games Hub profile. Import local data only after recognised-resource validation and conflict review."
+      "target": "Users/{paddedUserId}/Games/track-coin.json",
+      "cutoverRule": "Prefer an existing authenticated Games Hub profile. Import local data only after recognised-resource validation, revision comparison and conflict review."
     },
     {
       "id": "recipe-title-index",
@@ -107,7 +124,7 @@
       "knownKeys": ["__bl_fitness_body_profile_v1__::{normalised-user}"],
       "classification": "fitness-user-data",
       "decision": "migrate-after-schema-validation",
-      "target": "Users/{userId}/fitness.json#bodyProfile",
+      "target": "Users/{paddedUserId}/fitness.json#profile",
       "cutoverRule": "Validate field allowlists and units. Do not create paths from the username embedded in the legacy key."
     },
     {
@@ -123,10 +140,10 @@
       "id": "realm-exploration-game",
       "inventoryPatterns": ["[expression] SAVE_KEY"],
       "knownKeys": ["baseline.realm.exploration.jrpg.v1"],
-      "classification": "individual-game-save",
-      "decision": "migrate-explicitly",
-      "target": "Users/{userId}/Games/baseline-realm-exploration.json",
-      "cutoverRule": "Validate the JRPG save version and shared-inventory interactions before importing."
+      "classification": "baseline-realm-mode-save",
+      "decision": "normalise-into-baseline-realm-resource",
+      "target": "Users/{paddedUserId}/Games/baseline-realm.json#exploration",
+      "cutoverRule": "Validate the JRPG save version and shared-inventory interactions, then merge it into the single Baseline Realm resource without overwriting newer Realm sections."
     },
     {
       "id": "skincare-slider-settings",
@@ -143,8 +160,8 @@
       "knownKeys": ["__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"],
       "classification": "fitness-active-session-state",
       "decision": "migrate-only-valid-current-session",
-      "target": "Users/{userId}/fitness.json#activeWorkout",
-      "cutoverRule": "Import only when plan ID, next session and step count match authoritative Fitness data. Invalid/stale entries must be reported, not silently applied."
+      "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
+      "cutoverRule": "Import only when plan ID, next session and step count match authoritative Fitness data. Invalid or stale entries must be reported, not silently applied."
     },
     {
       "id": "fitness-plan-cache",
@@ -153,7 +170,7 @@
       "classification": "rebuildable-server-cache",
       "decision": "rebuild-without-migration",
       "target": null,
-      "cutoverRule": "The server plan is authoritative; this cache may only accelerate display and must be replaced after a verified authoritative read."
+      "cutoverRule": "The server plan is authoritative during migration; this cache may only accelerate display and must be replaced after a verified authoritative read."
     },
     {
       "id": "fitness-file-protocol-plan",
@@ -162,25 +179,25 @@
       "classification": "file-protocol-development-fallback",
       "decision": "exclude-from-production-migration",
       "target": null,
-      "cutoverRule": "Production uses the Fitness API. This fallback must not compete with SQLite or JSON authority."
+      "cutoverRule": "Production uses the protected Fitness API. This fallback must not compete with SQLite during migration or the Saved Data resource after cutover."
     },
     {
       "id": "realm-tactical-v1-legacy",
       "inventoryPatterns": ["baseline-realm:tactical-operations:v1"],
       "knownKeys": ["baseline-realm:tactical-operations:v1"],
-      "classification": "legacy-individual-game-save",
+      "classification": "legacy-baseline-realm-mode-save",
       "decision": "normalise-then-retire",
-      "target": "Users/{userId}/Games/baseline-realm-tactical-operations.json",
-      "cutoverRule": "Use only when no valid newer v2/inventory-service save exists. Remove after a verified import."
+      "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
+      "cutoverRule": "Use only when no valid newer v2 or inventory-service state exists. Merge into the single Baseline Realm resource and remove the legacy key only after verified import."
     },
     {
       "id": "realm-tactical-v2",
       "inventoryPatterns": ["baseline-realm:tactical-operations:v2"],
       "knownKeys": ["baseline-realm:tactical-operations:v2"],
-      "classification": "individual-game-save-and-local-fallback",
-      "decision": "migrate-explicitly",
-      "target": "Users/{userId}/Games/baseline-realm-tactical-operations.json",
-      "cutoverRule": "Compare with the Baseline Realm inventory-service copy and report divergence before choosing a source."
+      "classification": "baseline-realm-mode-save-and-local-fallback",
+      "decision": "normalise-into-baseline-realm-resource",
+      "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
+      "cutoverRule": "Compare with the Baseline Realm inventory-service copy and report divergence before merging the selected state into the single Baseline Realm resource."
     },
     {
       "id": "games-hub-view",
@@ -189,7 +206,7 @@
       "classification": "device-ui-state",
       "decision": "keep-local-or-session-only",
       "target": null,
-      "cutoverRule": "Current tab/view is not progression data."
+      "cutoverRule": "Current tab or view is not progression data."
     },
     {
       "id": "site-index-view",
