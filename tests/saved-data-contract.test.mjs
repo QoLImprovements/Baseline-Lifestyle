@@ -17,7 +17,10 @@ test('persistent and runtime directories cannot enter a deployment commit', () =
 });
 
 test('private environment fallback is bounded, permission-checked, and allowlisted', () => {
-  const source = read('sitewide/api/config.php');
+  const config = read('sitewide/api/config.php');
+  const source = read('sitewide/api/private_environment.php');
+  assert.match(config, /require_once __DIR__ \. '\/private_environment\.php'/);
+  assert.doesNotMatch(config, /parse_ini_file|BASELINE_PRIVATE_ENV_PATH/);
   assert.match(source, /\.baseline-private\.env/);
   assert.match(source, /\(\$permissions & 0077\) !== 0/);
   assert.match(source, /\$size > 16384/);
