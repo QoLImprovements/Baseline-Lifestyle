@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/sqlite_export_verifier.php';
+require_once __DIR__ . '/sqlite_source_inventory.php';
 
 const BL_COPY_VALIDATION_FORMAT_VERSION = 1;
 
@@ -137,13 +138,38 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
 
   $base = bl_copy_validation_base_evidence();
   try{
+    $sourceInventory = bl_source_table_inventory($source);
+  }catch(Throwable $error){
+    $evidence = $base + [
+      'ok'=>false,
+      'stage'=>'source-inventory',
+      'failureCode'=>'source_inventory_failed',
+      'gates'=>[
+        'sourceTableInventoryCompleted'=>false,
+        'unclassifiedSourceTablesClear'=>false,
+        'exportCompleted'=>false,
+        'verificationCompleted'=>false,
+        'missingTablesClear'=>false,
+        'invalidRecordsClear'=>false,
+        'unmappedFieldsClear'=>false,
+        'authenticationCredentialsExcluded'=>false,
+      ],
+    ];
+    bl_copy_validation_write_evidence($evidencePath, $evidence);
+    throw new BaselineSqliteCopyValidationException('copied_data_source_inventory_failed', 0, $error);
+  }
+
+  try{
     $report = bl_secure_export_sqlite_copy($source, $output);
   }catch(Throwable $error){
     $evidence = $base + [
       'ok'=>false,
       'stage'=>'export',
       'failureCode'=>'export_failed',
+      'sourceTableInventory'=>$sourceInventory,
       'gates'=>[
+        'sourceTableInventoryCompleted'=>true,
+        'unclassifiedSourceTablesClear'=>($sourceInventory['unclassifiedTables'] ?? []) === [],
         'exportCompleted'=>false,
         'verificationCompleted'=>false,
         'missingTablesClear'=>false,
@@ -169,7 +195,11 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
   $excludedFields = bl_copy_validation_field_names(is_array($report['intentionallyNotExportedFields'] ?? null) ? $report['intentionallyNotExportedFields'] : []);
   $verificationErrors = is_array($verification['errors'] ?? null) ? $verification['errors'] : [];
   $authenticationExcluded = ($excludedFields['users'] ?? []) === ['google_sub','pass_hash'];
+  $unclassifiedTables = array_values(array_filter($sourceInventory['unclassifiedTables'] ?? [], 'is_string'));
+  sort($unclassifiedTables);
   $gates = [
+    'sourceTableInventoryCompleted'=>true,
+    'unclassifiedSourceTablesClear'=>$unclassifiedTables === [],
     'exportCompleted'=>true,
     'verificationCompleted'=>(bool)($verification['ok'] ?? false),
     'missingTablesClear'=>$missingTables === [],
@@ -187,6 +217,7 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
       'sizeBytes'=>max(0, (int)($report['source']['sizeBytes'] ?? 0)),
       'modifiedAt'=>(string)($report['source']['modifiedAt'] ?? ''),
     ],
+    'sourceTableInventory'=>$sourceInventory,
     'export'=>[
       'treeSha256'=>bl_copy_validation_tree_hash($output),
       'counts'=>bl_copy_validation_counts(is_array($report['counts'] ?? null) ? $report['counts'] : []),
@@ -208,8 +239,8 @@ function bl_validate_sqlite_copy(string $sourcePath, string $outputPath, string 
       'copiedDataReview'=>$ok ? 'pass' : 'blocked',
       'productionCutover'=>'blocked',
       'reason'=>$ok
-        ? 'Copied-data export and verification passed. Authentication credentials remain excluded and live authority remains SQLite; backup and controlled-cutover evidence are still required.'
-        : 'Resolve missing tables, invalid records, unmapped fields, credential-exclusion or verification errors before any cutover design.',
+        ? 'Copied-data export and verification passed. Every source table is classified, authentication credentials remain excluded and live authority remains SQLite; backup and controlled-cutover evidence are still required.'
+        : 'Resolve unclassified source tables, missing tables, invalid records, unmapped fields, credential-exclusion or verification errors before any cutover design.',
     ],
   ];
 

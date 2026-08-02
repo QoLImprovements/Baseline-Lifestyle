@@ -1,0 +1,86 @@
+<?php
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/sitewide/migration/sqlite_source_inventory.php';
+
+function bl_inventory_test_assert(bool $condition, string $message): void {
+  if(!$condition) throw new RuntimeException($message);
+}
+
+function bl_inventory_test_remove_tree(string $directory): void {
+  if(!is_dir($directory)) return;
+  $iterator = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS),
+    RecursiveIteratorIterator::CHILD_FIRST
+  );
+  foreach($iterator as $item){
+    if($item->isDir()) @rmdir($item->getPathname());
+    else @unlink($item->getPathname());
+  }
+  @rmdir($directory);
+}
+
+$base = sys_get_temp_dir() . '/baseline-source-inventory-' . bin2hex(random_bytes(8));
+$source = $base . '/copied.sqlite';
+@mkdir($base, 0700, true);
+
+try{
+  if(!extension_loaded('pdo_sqlite')) throw new RuntimeException('pdo_sqlite_required_for_inventory_contract');
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  foreach([
+    'users',
+    'favourites',
+    'binaural_presets',
+    'voice_settings',
+    'plans',
+    'plan_sessions',
+    'achievements',
+    'games_profiles',
+    'badminton_state_store',
+    'password_reset_tokens',
+    'rate_limit_events',
+    'schema_migrations',
+    'submissions',
+  ] as $table){
+    $db->exec('CREATE TABLE "' . $table . '"(id INTEGER PRIMARY KEY)');
+  }
+  $db = null;
+
+  $inventory = bl_source_table_inventory($source);
+  bl_inventory_test_assert(in_array('users', $inventory['exportedTables'], true), 'exported table was not classified');
+  bl_inventory_test_assert(in_array('password_reset_tokens', $inventory['intentionallyExcludedTables'], true), 'excluded table was not classified');
+  bl_inventory_test_assert($inventory['retiredEmptyTables'] === ['submissions'], 'empty retired table was not classified');
+  bl_inventory_test_assert($inventory['nonEmptyRetiredTables'] === [], 'empty retired table was incorrectly blocked');
+  bl_inventory_test_assert($inventory['unclassifiedTables'] === [], 'empty retired table blocked validation');
+
+  $validationSource = file_get_contents(dirname(__DIR__) . '/sitewide/migration/sqlite_copy_validation.php');
+  bl_inventory_test_assert(is_string($validationSource), 'validation source read failed');
+  bl_inventory_test_assert(str_contains($validationSource, 'bl_source_table_inventory($source)'), 'combined validation does not run source inventory');
+  bl_inventory_test_assert(str_contains($validationSource, "'unclassifiedSourceTablesClear'"), 'unclassified-table gate is missing');
+  bl_inventory_test_assert(str_contains($validationSource, "'sourceTableInventory'=>\$sourceInventory"), 'privacy-safe source inventory evidence is missing');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec('INSERT INTO submissions(id) VALUES(1)');
+  $db = null;
+  $nonEmpty = bl_source_table_inventory($source);
+  bl_inventory_test_assert($nonEmpty['nonEmptyRetiredTables'] === ['submissions'], 'non-empty retired table was not reported');
+  bl_inventory_test_assert($nonEmpty['unclassifiedTables'] === ['submissions'], 'non-empty retired table did not block validation');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec('DELETE FROM submissions');
+  $db->exec('CREATE TABLE mystery_records(id INTEGER PRIMARY KEY)');
+  $db = null;
+  $unknown = bl_source_table_inventory($source);
+  bl_inventory_test_assert($unknown['unclassifiedTables'] === ['mystery_records'], 'unknown source table was not reported');
+
+  $db = new PDO('sqlite:' . $source, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $db->exec('DROP TABLE mystery_records');
+  $db = null;
+  $resolved = bl_source_table_inventory($source);
+  bl_inventory_test_assert($resolved['unclassifiedTables'] === [], 'resolved source table remained unclassified');
+  bl_inventory_test_assert($resolved['retiredEmptyTables'] === ['submissions'], 'empty retired table classification was not restored');
+
+  echo "sqlite source table inventory contract passed\n";
+}finally{
+  bl_inventory_test_remove_tree($base);
+}
