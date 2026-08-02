@@ -15,6 +15,7 @@ const BL_MAX_JSON_BYTES = 2097152; // 2 MiB
 const BL_CANONICAL_ORIGIN = 'https://baselinelifestyle.org';
 
 require_once __DIR__ . '/http.php';
+require_once __DIR__ . '/session.php';
 
 function bl_db_path(): string {
   return bl_env(BL_DB_ENV_KEY, BL_DB_PATH);
@@ -26,56 +27,6 @@ function bl_now(): int {
 
 function bl_str_len(string $value): int {
   return function_exists('mb_strlen') ? (int)mb_strlen($value) : strlen($value);
-}
-
-function bl_session_start(): void {
-  if(session_status() === PHP_SESSION_ACTIVE) return;
-
-  $secure = bl_is_secure_request();
-  if(function_exists('session_name')){
-    @session_name('baseline_session');
-  }
-
-  @session_set_cookie_params([
-    'lifetime' => 0,
-    'path' => '/',
-    'secure' => $secure,
-    'httponly' => true,
-    'samesite' => 'Lax',
-  ]);
-
-  @ini_set('session.use_strict_mode', '1');
-  @ini_set('session.cookie_httponly', '1');
-  if($secure){
-    @ini_set('session.cookie_secure', '1');
-  }
-
-  @session_start();
-}
-
-function bl_set_auth_session(array $user): void {
-  bl_session_start();
-  @session_regenerate_id(true);
-  $_SESSION['bl_uid'] = (int)($user['id'] ?? 0);
-  $_SESSION['bl_name'] = (string)($user['name'] ?? '');
-  $_SESSION['bl_email'] = (string)($user['email'] ?? '');
-}
-
-function bl_clear_auth_session(): void {
-  bl_session_start();
-  $_SESSION = [];
-}
-
-function bl_authed_uid(): int {
-  return (int)($_SESSION['bl_uid'] ?? 0);
-}
-
-function bl_authed_name(): string {
-  return (string)($_SESSION['bl_name'] ?? '');
-}
-
-function bl_authed_email(): string {
-  return (string)($_SESSION['bl_email'] ?? '');
 }
 
 function bl_current_user(?PDO $db=null): ?array {
