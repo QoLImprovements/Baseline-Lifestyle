@@ -1,6 +1,6 @@
 !(function (t) {
   "use strict";
-  const e = "BASELINE_FITNESS_VOICE_REALTIME_20260720_2",
+  const e = "BASELINE_FITNESS_VOICE_FALLBACK_20260803_1",
     i = `__${e}__`;
   if (t[i]) return;
   t[i] = !0;
@@ -196,6 +196,7 @@
     let reconnectTimer = 0;
     let reconnectAttempts = 0;
     let permanentlyBlocked = false;
+    let browserFallback = null;
     const partials = new Map();
 
     function report(state, detail) {
@@ -208,6 +209,56 @@
       try {
         options.onError?.(code, error || null);
       } catch (_error) {}
+    }
+
+    function stopBrowserFallback() {
+      try {
+        browserFallback?.stop?.();
+      } catch (_error) {}
+      browserFallback = null;
+    }
+
+    function startBrowserFallback(reason) {
+      if (browserFallback) return true;
+      if (!wanted || paused) return false;
+      const voice = d();
+      let supported = true;
+      try {
+        supported = voice?.support?.().recognition !== false;
+      } catch (_error) {}
+      if (!supported || typeof voice?.startRecognition !== "function") return false;
+      cleanupConnection();
+      permanentlyBlocked = true;
+      try {
+        browserFallback = voice.startRecognition({
+          continuous: true,
+          interimResults: true,
+          maxAlternatives: 5,
+          phrases: [
+            "begin",
+            "start",
+            "ready",
+            "success",
+            "fail",
+            "repeat",
+            "stop voice workout",
+          ],
+          onState(state, detail) {
+            report(state, Object.assign({ provider: "browser", fallbackReason: reason }, detail || {}));
+          },
+          onTranscript(transcript, alternatives, meta) {
+            options.onTranscript?.(transcript, alternatives, Object.assign({ provider: "browser" }, meta || {}));
+          },
+          onError(code, error) {
+            reportError(code, error);
+          },
+        });
+        report("listening", { provider: "browser", fallbackReason: reason });
+        return true;
+      } catch (error) {
+        browserFallback = null;
+        return false;
+      }
     }
 
     function cleanupConnection() {
@@ -233,7 +284,7 @@
     }
 
     function scheduleReconnect() {
-      if (!wanted || paused || permanentlyBlocked || reconnectTimer) return;
+      if (!wanted || paused || permanentlyBlocked || browserFallback || reconnectTimer) return;
       if (reconnectAttempts >= 5) {
         permanentlyBlocked = true;
         reportError("realtime_service_unavailable");
@@ -296,7 +347,7 @@
         if (transcriptEvent.transcript) {
           options.onTranscript?.(transcriptEvent.transcript, [], {
             isFinal: transcriptEvent.isFinal,
-            provider: "openai-realtime",
+            provider: "openai-realtime-with-browser-fallback",
           });
         }
         if (transcriptEvent.isFinal) report("listening");
@@ -317,7 +368,7 @@
     }
 
     async function connect() {
-      if (!wanted || paused || permanentlyBlocked) return;
+      if (!wanted || paused || permanentlyBlocked || browserFallback) return;
       const token = ++generation;
       cleanupConnection();
       report("reconnecting");
@@ -377,6 +428,15 @@
           const payload = await response.json().catch(() => null);
           const code = handleServiceError(response.status, payload);
           cleanupConnection();
+          if (
+            [
+              "enhanced_voice_not_configured",
+              "realtime_service_unavailable",
+              "rate_limited",
+            ].includes(code) &&
+            startBrowserFallback(code)
+          )
+            return;
           if (code === "realtime_service_unavailable") scheduleReconnect();
           else reportError(code, payload);
           return;
@@ -394,6 +454,11 @@
               : "realtime_connection_failed";
         if (code === "not-allowed" || code === "audio-capture")
           permanentlyBlocked = true;
+        if (
+          code === "realtime_connection_failed" &&
+          startBrowserFallback(code)
+        )
+          return;
         if (code === "realtime_connection_failed") scheduleReconnect();
         else reportError(code, error);
       }
@@ -404,11 +469,19 @@
         wanted = false;
         paused = false;
         generation += 1;
+        stopBrowserFallback();
         cleanupConnection();
         report("stopped");
       },
       pause() {
         paused = true;
+        if (browserFallback) {
+          try {
+            browserFallback.pause?.();
+          } catch (_error) {}
+          report("paused", { provider: "browser" });
+          return;
+        }
         try {
           stream?.getAudioTracks?.().forEach((track) => {
             track.enabled = false;
@@ -419,6 +492,12 @@
       resume() {
         if (!wanted) return;
         paused = false;
+        if (browserFallback) {
+          try {
+            browserFallback.resume?.();
+          } catch (_error) {}
+          return;
+        }
         if (peer?.connectionState === "connected") {
           try {
             stream?.getAudioTracks?.().forEach((track) => {
@@ -721,7 +800,7 @@
                 ? ((a.state = n.ERROR),
                   S("error"),
                   h(
-                    "Enhanced voice recognition is not configured on the server.",
+                    "Voice recognition unavailable.",
                   ))
                 : "login_required" === t
                   ? ((a.state = n.ERROR),
@@ -731,13 +810,13 @@
                     ? ((a.state = n.ERROR),
                       S("error"),
                       h(
-                        "Voice recognition is temporarily busy. Please wait a moment.",
+                        "Voice recognition busy. Try again shortly.",
                       ))
                     : "realtime_service_unavailable" === t
                       ? ((a.state = n.ERROR),
                         S("error"),
                         h(
-                          "Enhanced voice recognition could not connect. Please try again.",
+                          "Voice recognition unavailable. Try again.",
                         ))
                     : "aborted" !== t && "no-speech" !== t && S("reconnecting");
         },

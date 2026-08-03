@@ -2,7 +2,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_LIVE_STABILITY_20260803_1';
+  const BUILD = 'BASELINE_LIVE_STABILITY_20260803_2';
   if(window.__BASELINE_LIVE_STABILITY__) return;
   window.__BASELINE_LIVE_STABILITY__ = BUILD;
   try{ document.documentElement.setAttribute('data-baseline-live-stability', BUILD); }catch(_error){}
@@ -147,11 +147,12 @@
     const update = function(){
       const prompt = document.getElementById('voiceWorkoutPrompt');
       if(!prompt) return;
-      let settings = {};
-      try{ settings = window.BASELINE_voice && window.BASELINE_voice.getSettings ? window.BASELINE_voice.getSettings() : {}; }catch(_error){}
       const message = String(prompt.textContent || '').trim();
-      if(settings && settings.spokenResponses === false && message === 'Enhanced voice recognition is not configured on the server.'){
-        prompt.textContent = 'Voice recognition could not connect. Spoken responses are off, but that setting does not disable recognition.';
+      if([
+        'Enhanced voice recognition is not configured on the server.',
+        'Voice recognition could not connect. Spoken responses are off, but that setting does not disable recognition.'
+      ].includes(message)){
+        prompt.textContent = 'Voice recognition unavailable.';
       }
     };
     const observer = new MutationObserver(update);
