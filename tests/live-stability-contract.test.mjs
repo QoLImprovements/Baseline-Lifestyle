@@ -9,7 +9,8 @@ test('live stability runtime covers the reported refresh and persistence faults'
   assert.match(js, /__baseline_pending_recipe_route_v1__/);
   assert.match(js, /__baseline_fitness_body_view_v1__/);
   assert.match(js, /data-baseline-games-stable/);
-  assert.match(js, /spokenResponses === false/);
+  assert.match(js, /Voice recognition unavailable\./);
+  assert.match(js, /prompt\.textContent = 'Voice recognition unavailable\.';/);
   assert.match(js, /expectedRevision/);
   assert.match(js, /Badminton could not save to the server/);
   assert.match(js, /location\.assign\('\/home\/1'\)/);
