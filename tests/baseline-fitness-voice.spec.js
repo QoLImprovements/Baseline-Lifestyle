@@ -201,6 +201,52 @@ test("voice workout can be started without clicking between exercises", async ({
     "listening",
   );
 
+  // Settings must be a complete foreground dialog, not a translated/clipped
+  // flyout in the upper-left corner.
+  await page.locator("#voiceWorkoutSettingsBtn").click();
+  await expect(page.locator("#bl-voice-flyout")).toBeVisible();
+  await expect(page.locator("#bl-voice-close")).toBeVisible();
+  const geometry = await page.evaluate(() => {
+    const overlay = document.querySelector("#bl-voice-flyout");
+    const card = document.querySelector("#bl-voice-flyout .bl-voice-settings-card");
+    const workout = document.querySelector("#voiceWorkoutModal");
+    const overlayRect = overlay.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    return {
+      overlay: {
+        left: overlayRect.left,
+        top: overlayRect.top,
+        right: overlayRect.right,
+        bottom: overlayRect.bottom,
+      },
+      card: {
+        left: cardRect.left,
+        top: cardRect.top,
+        right: cardRect.right,
+        bottom: cardRect.bottom,
+        scrollHeight: card.scrollHeight,
+        clientHeight: card.clientHeight,
+      },
+      overlayZ: Number(getComputedStyle(overlay).zIndex || 0),
+      workoutZ: Number(getComputedStyle(workout).zIndex || 0),
+      transform: getComputedStyle(overlay).transform,
+      viewport: { width: innerWidth, height: innerHeight },
+    };
+  });
+  expect(geometry.transform).toBe("none");
+  expect(geometry.overlay.left).toBeGreaterThanOrEqual(-1);
+  expect(geometry.overlay.top).toBeGreaterThanOrEqual(-1);
+  expect(geometry.overlay.right).toBeLessThanOrEqual(geometry.viewport.width + 1);
+  expect(geometry.overlay.bottom).toBeLessThanOrEqual(geometry.viewport.height + 1);
+  expect(geometry.card.left).toBeGreaterThanOrEqual(0);
+  expect(geometry.card.top).toBeGreaterThanOrEqual(0);
+  expect(geometry.card.right).toBeLessThanOrEqual(geometry.viewport.width);
+  expect(geometry.card.bottom).toBeLessThanOrEqual(geometry.viewport.height);
+  expect(geometry.card.scrollHeight).toBeLessThanOrEqual(geometry.card.clientHeight + 1);
+  expect(geometry.overlayZ).toBeGreaterThan(geometry.workoutZ);
+  await page.locator("#bl-voice-close").click();
+  await expect(page.locator("#bl-voice-flyout")).toBeHidden();
+
   // A streamed Realtime transcription delta should activate the next step
   // without waiting for a final browser SpeechRecognition result.
   await page.evaluate(() => {
