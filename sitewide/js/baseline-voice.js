@@ -2,7 +2,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='BASELINE_VOICE_RESPONSIVE_20260720_1';
+  const BUILD='BASELINE_VOICE_FITNESS_SETTINGS_20260803_1';
   const SETTINGS_KEY='__baseline_voice_settings_v1__';
   const API_ENDPOINT='/sitewide/api/voice_settings.php';
   const DEFAULTS=Object.freeze({
@@ -635,12 +635,14 @@
       <div class="card bl-voice-settings-card" role="dialog" aria-modal="false" aria-labelledby="bl-voice-settings-title">
         <div class="bl-voice-settings-head">
           <h3 id="bl-voice-settings-title">Voice Control</h3>
-          <button type="button" class="bl-mini-btn" id="bl-voice-close">Close</button>
+          <button type="button" class="bl-voice-close-icon" id="bl-voice-close" aria-label="Close voice settings" title="Close">&times;</button>
         </div>
-        <p class="muted">Voice settings are sitewide. The microphone listens only after a voice-enabled system is deliberately started.</p>
+        <p class="muted bl-voice-intro">Voice settings for workouts.</p>
         <div id="bl-voice-support" class="bl-voice-support" aria-live="polite"></div>
-        <label class="bl-voice-check"><input id="bl-voice-enabled" type="checkbox"> <span><strong>Enable Voice Control Sitewide</strong><small>Makes voice features available; it does not start listening.</small></span></label>
-        <label class="bl-voice-check"><input id="bl-voice-spoken" type="checkbox"> <span>Spoken responses</span></label>
+        <div class="bl-voice-primary-grid">
+          <label class="bl-voice-check"><input id="bl-voice-enabled" type="checkbox"> <span><strong>Enable Voice Control</strong><small>Makes voice features available for voice workouts; it does not start listening.</small></span></label>
+          <label class="bl-voice-check"><input id="bl-voice-spoken" type="checkbox"> <span><strong>Spoken Responses</strong><small>Plays spoken workout guidance and feedback.</small></span></label>
+        </div>
         <div class="bl-voice-grid">
           <label>Recognition language<select id="bl-voice-language"><option value="en-GB">English (United Kingdom)</option><option value="en-US">English (United States)</option><option value="en-IE">English (Ireland)</option><option value="en-AU">English (Australia)</option></select></label>
           <label>Voice<select id="bl-voice-voice"><option value="">Automatic voice</option></select></label>
@@ -656,7 +658,7 @@
           <label class="bl-voice-check"><input id="bl-voice-countdown" type="checkbox"> <span>Final countdown announcement</span></label>
         </div>
         <div class="bl-voice-actions">
-          <button type="button" class="bl-mini-btn" id="bl-voice-save">Save settings</button>
+          <button type="button" class="bl-mini-btn bl-voice-save-close" id="bl-voice-save">Save &amp; Close</button>
           <button type="button" class="bl-mini-btn" id="bl-voice-test-output">Test voice</button>
           <button type="button" class="bl-mini-btn" id="bl-voice-test-mic">Test microphone</button>
         </div>
@@ -670,7 +672,7 @@
       flyout.hidden?openSettings():closeSettings();
     });
     $('#bl-voice-close',flyout)?.addEventListener('click',closeSettings);
-    $('#bl-voice-save',flyout)?.addEventListener('click',()=>saveSettings(settingsFromUi()));
+    $('#bl-voice-save',flyout)?.addEventListener('click',async()=>{ await saveSettings(settingsFromUi()); closeSettings(); });
     $('#bl-voice-test-output',flyout)?.addEventListener('click',async()=>{
       settings=normaliseSettings(Object.assign({},settings,settingsFromUi(),{spokenResponses:true}));
       setStatus('Playing the selected voice.','');
