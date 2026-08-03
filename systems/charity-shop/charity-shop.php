@@ -35,6 +35,7 @@ if($accessUntil <= time()){
   <link rel="stylesheet" href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-protected-access-style="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-protected-key-placement="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-baseline-ui-fixes="true">
+  <link rel="stylesheet" href="/sitewide/css/baseline-live-stability.css?v=BASELINE_CHARITY_HEADER_20260803_2" data-baseline-live-stability-style="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260801_1" data-charity-complete-theme="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260801_1" data-charity-cashing-corrections="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_DROPDOWN_ACCESS_20260801_2">
@@ -56,6 +57,11 @@ if($accessUntil <= time()){
         </div>
       </div>
       <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
+      <div class="bl-homebar-spacer" aria-hidden="true"></div>
+      <div class="bl-homebar-right" aria-label="Site controls">
+        <button id="bl-beats-toggle" class="bl-mini-btn" type="button" aria-label="Binaural" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"></path></svg></span><span class="bl-btn-label">Binaural</span></button>
+        <button id="bl-auth-toggle" class="bl-mini-btn" type="button" aria-label="Account" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"></path><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"></path></svg></span><span class="bl-btn-label">Account</span></button>
+      </div>
     </div>
   </div>
 
@@ -416,8 +422,8 @@ if($accessUntil <= time()){
     </main>
   </div>
 
-  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_PROTECTED_ACCESS_20260801_3"></script>
-  <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_GRADIENT_ALIGNMENT_20260801_1"></script>
+  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_CHARITY_HEADER_20260803_2"></script>
+  <script defer src="/sitewide/js/baseline-shared.js?v=BASELINE_CHARITY_HEADER_20260803_2"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
 </body>
