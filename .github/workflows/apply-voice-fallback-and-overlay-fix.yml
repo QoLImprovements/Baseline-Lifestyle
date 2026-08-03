@@ -1,0 +1,31 @@
+name: Apply voice fallback and overlay fix
+
+on:
+  push:
+    branches:
+      - agent/fix-voice-recognition-and-workout-overlay-20260803
+    paths:
+      - .github/scripts/apply_voice_fallback_and_overlay_fix.py
+      - .github/workflows/apply-voice-fallback-and-overlay-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python .github/scripts/apply_voice_fallback_and_overlay_fix.py
+      - name: Commit voice and overlay fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix voice recognition fallback and workout overlay"
+          git push
