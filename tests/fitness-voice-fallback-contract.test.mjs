@@ -35,7 +35,7 @@ test('Voice settings stay fully on-screen above the workout without changing the
   assert.doesNotMatch(voice, /z-index:14050/);
 
   assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
-  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_2/);
+  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
   assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_OVERLAY_FIX_20260803_2/);
 
   const interfaceIndex = html.indexOf('baseline-fitness-voice-interface.css');
@@ -47,7 +47,29 @@ test('Fitness voice assets use fresh cache keys', () => {
   const html = read('systems/baseline-fitness/baseline-fitness.html');
   const protectedAccess = read('sitewide/js/baseline-protected-access.js');
   assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
-  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_2/);
+  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
   assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_OVERLAY_FIX_20260803_2/);
   assert.match(protectedAccess, /BASELINE_PROTECTED_ACCESS_20260803_2/);
+});
+
+test('Voice settings use concise fitness copy, aligned controls and Save and Close behaviour', () => {
+  const sharedVoice = read('sitewide/js/baseline-voice.js');
+  const fixesCss = read('sitewide/css/baseline-ui-fixes.css');
+  const html = read('systems/baseline-fitness/baseline-fitness.html');
+
+  assert.match(sharedVoice, /Voice settings for workouts\./);
+  assert.match(sharedVoice, />Enable Voice Control</);
+  assert.doesNotMatch(sharedVoice, /Enable Voice Control Sitewide/);
+  assert.doesNotMatch(sharedVoice, /Voice settings are sitewide/);
+  assert.match(sharedVoice, /Plays spoken workout guidance and feedback\./);
+  assert.match(sharedVoice, /Save &amp; Close/);
+  assert.match(sharedVoice, /aria-label="Close voice settings"/);
+  assert.match(sharedVoice, /await saveSettings\(settingsFromUi\(\)\); closeSettings\(\);/);
+
+  assert.match(fixesCss, /FITNESS-VOICE-SETTINGS-REFINEMENT-20260803/);
+  assert.match(fixesCss, /\.bl-voice-primary-grid\{/);
+  assert.match(fixesCss, /#bl-voice-close\.bl-voice-close-icon/);
+  assert.match(fixesCss, /grid-template-columns:repeat\(3,max-content\)!important/);
+  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
+  assert.match(html, /baseline-voice\.js\?v=BASELINE_VOICE_FITNESS_SETTINGS_20260803_1/);
 });
