@@ -20,6 +20,6 @@ test('Charity banner has complete static controls in canonical order', () => {
 
 test('Charity loads header stability CSS directly and cache-busts shared runtime', () => {
   assert.match(html, /baseline-live-stability\.css\?v=BASELINE_CHARITY_HEADER_20260803_2/);
-  assert.match(html, /baseline-protected-access\.js\?v=BASELINE_CHARITY_HEADER_20260803_2/);
-  assert.match(html, /baseline-shared\.js\?v=BASELINE_CHARITY_HEADER_20260803_2/);
+  assert.match(html, /baseline-protected-access\.js\?v=BASELINE_CHARITY_HEADER_20260803_3/);
+  assert.match(html, /baseline-shared\.js\?v=BASELINE_CHARITY_HEADER_20260803_3/);
 });
