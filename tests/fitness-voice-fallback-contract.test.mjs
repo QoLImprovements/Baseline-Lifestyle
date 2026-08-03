@@ -16,13 +16,23 @@ test('Fitness voice recognition falls back independently of spoken output', () =
   assert.match(voice, /Voice recognition unavailable\./);
 });
 
-test('Voice workout dialog hides the fixed site banner while active', () => {
-  const css = read('systems/baseline-fitness/css/baseline-fitness-voice-interface.css');
-  assert.match(css, /BASELINE-FITNESS-VOICE-OVERLAY-AUTHORITY-20260803/);
-  assert.match(css, /body\.voice-workout-active \.bl-homebar/);
-  assert.match(css, /body\.voice-workout-active #voiceWorkoutModal/);
-  assert.match(css, /z-index:20000!important/);
-  assert.match(css, /caret-color:transparent!important/);
+test('Voice settings stay above the workout without changing the ordinary banner', () => {
+  const interfaceCss = read('systems/baseline-fitness/css/baseline-fitness-voice-interface.css');
+  const fixesCss = read('sitewide/css/baseline-ui-fixes.css');
+  const html = read('systems/baseline-fitness/baseline-fitness.html');
+
+  assert.match(interfaceCss, /caret-color:transparent!important/);
+  assert.match(fixesCss, /body\.voice-workout-active \.bl-homebar\{\s*visibility:visible!important/);
+  assert.match(fixesCss, /#bl-voice-flyout\.bl-flyout:not\(\[hidden\]\)/);
+  assert.match(fixesCss, /z-index:30000!important/);
+  assert.match(fixesCss, /display:grid!important/);
+  assert.match(fixesCss, /grid-template-columns:repeat\(3,minmax\(0,1fr\)\)!important/);
+  assert.match(fixesCss, /#bl-voice-close\{\s*display:inline-flex!important/);
+  assert.match(fixesCss, /\.bl-voice-settings-card\{[\s\S]*?overflow:visible!important/);
+
+  const interfaceIndex = html.indexOf('baseline-fitness-voice-interface.css');
+  const fixesIndex = html.indexOf('baseline-ui-fixes.css');
+  assert.ok(interfaceIndex >= 0 && fixesIndex > interfaceIndex, 'Final UI fixes must load after the Fitness voice interface');
 });
 
 test('Fitness voice assets use fresh cache keys', () => {
