@@ -15,8 +15,12 @@ test('Charity loads account and Binaural dependencies before the shared runtime'
   assert.match(html, /baseline-shared\.js\?v=BASELINE_CHARITY_HEADER_20260803_3/);
 });
 
-test('Cash To Bank final label and amount are explicitly white', () => {
+test('Cash To Bank final label and amount are explicitly white with a fresh cache key', () => {
   assert.match(cashCss, /CHARITY-CASH-TO-BANK-WHITE-20260803/);
   assert.match(cashCss, /\.charity-total-line--final span/);
   assert.match(cashCss, /-webkit-text-fill-color:#fff!important/);
+  assert.match(html, /charity-shop-cashing-and-artwork\.css\?v=CHARITY_CASHING_20260803_2/);
+  assert.match(html, /CHARITY-CASH-TO-BANK-INLINE-AUTHORITY-20260803/);
+  assert.match(html, /#operations-cashing \.charity-total-line--final > span/);
+  assert.match(html, /#charityCashToBank/);
 });
