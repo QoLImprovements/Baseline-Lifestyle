@@ -37,9 +37,18 @@ if($accessUntil <= time()){
   <link rel="stylesheet" href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" data-baseline-ui-fixes="true">
   <link rel="stylesheet" href="/sitewide/css/baseline-live-stability.css?v=BASELINE_CHARITY_HEADER_20260803_2" data-baseline-live-stability-style="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-complete-theme.css?v=CHARITY_COMPLETE_20260801_1" data-charity-complete-theme="true">
-  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260801_1" data-charity-cashing-corrections="true">
+  <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-cashing-and-artwork.css?v=CHARITY_CASHING_20260803_2" data-charity-cashing-corrections="true">
   <link rel="stylesheet" href="/systems/charity-shop/css/charity-shop-final-coherence.css?v=CHARITY_DROPDOWN_ACCESS_20260801_2">
   <link rel="stylesheet" href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" data-baseline-gradient-alignment="true">
+  <style id="charityCashToBankWhiteAuthority">
+    /* CHARITY-CASH-TO-BANK-INLINE-AUTHORITY-20260803: final visual authority after all linked styles. */
+    html body[data-app="charity-shop"] #operations-cashing .charity-total-line--final > span,
+    html body[data-app="charity-shop"] #operations-cashing .charity-total-line--final > output,
+    html body[data-app="charity-shop"] #charityCashToBank{
+      color:#fff!important;
+      -webkit-text-fill-color:#fff!important;
+    }
+  </style>
 </head>
 <body data-app="charity-shop" data-page="charity-shop-guidance">
   <div class="bl-homebar" role="navigation" aria-label="Charity shop guidance navigation">
