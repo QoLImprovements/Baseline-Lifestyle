@@ -284,14 +284,8 @@
   }
 }
 
-/* BASELINE-FITNESS-VOICE-OVERLAY-AUTHORITY-20260803
-   The focused workout dialog owns the viewport while active. The fixed site
-   banner must not appear through or above it. */
-body.voice-workout-active .bl-homebar{
-  visibility:hidden!important;
-  opacity:0!important;
-  pointer-events:none!important;
-}
+/* The workout dialog sits above page content. The ordinary site banner is
+   not modified by the voice-workout state. */
 body.voice-workout-active #voiceWorkoutModal{
   z-index:20000!important;
 }

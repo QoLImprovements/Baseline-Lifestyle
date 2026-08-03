@@ -39,18 +39,14 @@ html body[data-app] #bl-beats-flyout.bl-flyout #bl-beats-status{
 }
 
 /* Fitness voice settings: the settings dialog must sit above the active
-   workout dialog. The ordinary site banner remains unchanged and visible. */
-html body.voice-workout-active .bl-homebar{
-  visibility:visible!important;
-  opacity:1!important;
-  pointer-events:auto!important;
-}
+   workout dialog. The ordinary site banner is deliberately untouched. */
 html body.voice-workout-active #voiceWorkoutModal{
   z-index:20000!important;
 }
 html body.voice-workout-active #bl-voice-flyout.bl-flyout:not([hidden]){
   display:grid!important;
   position:fixed!important;
+  transform:none!important;
   inset:0!important;
   left:0!important;
   right:0!important;
