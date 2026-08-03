@@ -206,6 +206,10 @@ test("voice workout can be started without clicking between exercises", async ({
   await page.locator("#voiceWorkoutSettingsBtn").click();
   await expect(page.locator("#bl-voice-flyout")).toBeVisible();
   await expect(page.locator("#bl-voice-close")).toBeVisible();
+  await expect(page.locator("#bl-voice-settings-title")).toHaveText("Voice Control");
+  await expect(page.locator(".bl-voice-intro")).toHaveText("Voice settings for workouts.");
+  await expect(page.locator("#bl-voice-spoken").locator("xpath=following-sibling::span")).toContainText("Plays spoken workout guidance and feedback.");
+  await expect(page.locator("#bl-voice-save")).toHaveText("Save & Close");
   const geometry = await page.evaluate(() => {
     const overlay = document.querySelector("#bl-voice-flyout");
     const card = document.querySelector("#bl-voice-flyout .bl-voice-settings-card");
@@ -244,6 +248,10 @@ test("voice workout can be started without clicking between exercises", async ({
   expect(geometry.card.bottom).toBeLessThanOrEqual(geometry.viewport.height);
   expect(geometry.card.scrollHeight).toBeLessThanOrEqual(geometry.card.clientHeight + 1);
   expect(geometry.overlayZ).toBeGreaterThan(geometry.workoutZ);
+  await page.locator("#bl-voice-save").click();
+  await expect(page.locator("#bl-voice-flyout")).toBeHidden();
+  await page.locator("#voiceWorkoutSettingsBtn").click();
+  await expect(page.locator("#bl-voice-flyout")).toBeVisible();
   await page.locator("#bl-voice-close").click();
   await expect(page.locator("#bl-voice-flyout")).toBeHidden();
 
