@@ -46,7 +46,8 @@ test('Voice settings stay fully on-screen above the workout without changing the
 test('Fitness voice assets use fresh cache keys', () => {
   const html = read('systems/baseline-fitness/baseline-fitness.html');
   const protectedAccess = read('sitewide/js/baseline-protected-access.js');
-  assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_1/);
-  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_FALLBACK_20260803_1/);
+  assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
+  assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_2/);
+  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_OVERLAY_FIX_20260803_2/);
   assert.match(protectedAccess, /BASELINE_PROTECTED_ACCESS_20260803_2/);
 });
