@@ -42,7 +42,7 @@ test("voice dialogue keeps outcome and achievement terminology separate", () => 
   assert.match(source, /Fail/);
 });
 
-test("fitness voice uses streamed OpenAI Realtime transcription instead of browser recognition", () => {
+test("fitness voice prefers streamed OpenAI Realtime transcription and retains browser recognition as a fallback", () => {
   const source = read("systems/baseline-fitness/js/baseline-fitness-voice.js");
   assert.match(source, /selectResponsiveTranscript/);
   assert.match(source, /RTCPeerConnection/);
@@ -52,14 +52,14 @@ test("fitness voice uses streamed OpenAI Realtime transcription instead of brows
     source,
     /conversation\.item\.input_audio_transcription\.completed/,
   );
-  assert.doesNotMatch(
-    source,
-    /SpeechRecognition|webkitSpeechRecognition|startRecognition/,
-  );
+  assert.match(source, /startBrowserFallback/);
+  assert.match(source, /voice\.startRecognition/);
+  assert.match(source, /enhanced_voice_not_configured/);
+  assert.match(source, /realtime_connection_failed/);
   const openingPrompt = source.indexOf("await L()");
   assert.ok(
     openingPrompt >= 0 && source.indexOf("T()", openingPrompt) > openingPrompt,
-    "Realtime transcription must start after the opening spoken prompt",
+    "Voice transcription must start after the opening prompt has completed or been skipped",
   );
 });
 
