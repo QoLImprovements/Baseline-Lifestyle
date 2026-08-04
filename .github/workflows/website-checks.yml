@@ -17,25 +17,37 @@ concurrency:
 jobs:
   migrate-skincare-routine:
     name: Apply skincare routine enhancement
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'agent/skincare-routine-calendar-groups-opaque-menu-20260804'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     outputs:
       changed: ${{ steps.apply.outputs.changed }}
+      target: ${{ steps.gate.outputs.target }}
 
     steps:
+      - name: Identify target branch
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/skincare-routine-calendar-groups-opaque-menu-20260804" ]; then
+            echo "target=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check out feature branch
+        if: steps.gate.outputs.target == 'true'
         uses: actions/checkout@v7
         with:
           ref: agent/skincare-routine-calendar-groups-opaque-menu-20260804
           fetch-depth: 0
 
       - name: Synchronise current main
+        if: steps.gate.outputs.target == 'true'
         run: |
           git fetch origin main
           git merge --no-edit origin/main
 
       - name: Set up Node.js
+        if: steps.gate.outputs.target == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -43,6 +55,7 @@ jobs:
 
       - name: Apply staged implementation
         id: apply
+        if: steps.gate.outputs.target == 'true'
         run: |
           if [ "$(cat systems/baseline-natural-skincare/js/skincare-routine-enhancements.js 2>/dev/null || true)" != "placeholder" ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
@@ -139,7 +152,7 @@ jobs:
   validate:
     name: Validate website
     needs: migrate-skincare-routine
-    if: always() && !(github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'agent/skincare-routine-calendar-groups-opaque-menu-20260804' && needs.migrate-skincare-routine.outputs.changed == 'true')
+    if: always() && !(needs.migrate-skincare-routine.outputs.target == 'true' && needs.migrate-skincare-routine.outputs.changed == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
