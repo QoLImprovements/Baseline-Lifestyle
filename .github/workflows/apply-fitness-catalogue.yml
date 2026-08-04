@@ -6,9 +6,6 @@ on:
       - agent/fitness-exercise-catalogue-20260804
     paths:
       - .github/workflows/apply-fitness-catalogue.yml
-  pull_request:
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -26,8 +23,19 @@ jobs:
         with:
           node-version: 22
 
+      - name: Repair migration quotation
+        run: sed -i 's/Begin”.”/Begin”.”/g; s/Begin”.”/Begin”.”/g; s/Begin”.”/Begin”.”/g' scripts/apply_fitness_catalogue.py
+
       - name: Apply catalogue migration
-        run: python3 scripts/apply_fitness_catalogue.py
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/apply_fitness_catalogue.py')
+          text = path.read_text()
+          text = text.replace('When Ready, Say “Begin”.”', 'When Ready, Say “Begin”."')
+          path.write_text(text)
+          PY
+          python3 scripts/apply_fitness_catalogue.py
 
       - name: Check JavaScript syntax
         run: |
