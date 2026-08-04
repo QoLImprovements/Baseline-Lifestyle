@@ -33,9 +33,7 @@ const planPayload = {
   progress: { done: 0, total: 1, nextIndex: 1, startDate: "2026-07-01" },
 };
 
-test("voice workout can be started without clicking between exercises", async ({
-  page,
-}) => {
+test("voice workout can be started from the Calisthenics routine subtab", async ({ page }) => {
   await page.addInitScript(() => {
     window.__realtimeChannels = [];
     const makeStream = () => {
@@ -46,6 +44,7 @@ test("voice workout can be started without clicking between exercises", async ({
         clone: () => makeStream(),
       };
     };
+
     class DataChannelMock {
       constructor() {
         this.readyState = "connecting";
@@ -71,6 +70,7 @@ test("voice workout can be started without clicking between exercises", async ({
         this.readyState = "closed";
       }
     }
+
     window.RTCPeerConnection = class RTCPeerConnectionMock {
       constructor() {
         this.connectionState = "new";
@@ -99,6 +99,7 @@ test("voice workout can be started without clicking between exercises", async ({
         this.connectionState = "closed";
       }
     };
+
     window.AudioContext = class AudioContextMock {
       constructor() {
         this.state = "running";
@@ -118,10 +119,10 @@ test("voice workout can be started without clicking between exercises", async ({
         return { connect() {}, disconnect() {} };
       }
     };
+
     window.speechSynthesis = {
       getVoices: () => [],
-      speak: (utterance) =>
-        setTimeout(() => utterance.onend && utterance.onend(), 0),
+      speak: (utterance) => setTimeout(() => utterance.onend && utterance.onend(), 0),
       cancel: () => {},
       addEventListener: () => {},
     };
@@ -142,6 +143,7 @@ test("voice workout can be started without clicking between exercises", async ({
       }),
     );
   });
+
   await page.route("**/sitewide/api/me.php", (route) =>
     route.fulfill({
       status: 200,
@@ -161,6 +163,13 @@ test("voice workout can be started without clicking between exercises", async ({
       body: JSON.stringify(planPayload),
     }),
   );
+  await page.route("**/systems/baseline-fitness/api/routine_state.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: true, hasRoutine: false, activities: [], logs: {} }),
+    }),
+  );
   await page.route("**/sitewide/api/voice_settings.php", (route) =>
     route.fulfill({
       status: 200,
@@ -176,9 +185,7 @@ test("voice workout can be started without clicking between exercises", async ({
     }),
   );
 
-  await page.goto("/baseline-fitness/my-plan", {
-    waitUntil: "domcontentloaded",
-  });
+  await page.goto("/baseline-fitness/my-plan", { waitUntil: "domcontentloaded" });
   await page.waitForFunction(() =>
     Boolean(
       window.BASELINE_fitnessWorkout &&
@@ -186,30 +193,31 @@ test("voice workout can be started without clicking between exercises", async ({
         window.BASELINE_fitnessVoice,
     ),
   );
+
+  const calisthenicsTab = page.locator('[data-fitness-routine-view="calisthenics"]');
+  await expect(calisthenicsTab).toBeVisible();
+  await calisthenicsTab.click();
+
   await expect(page.locator("#startVoiceWorkoutBtn")).toBeVisible();
   await page.locator("#startVoiceWorkoutBtn").click();
   await expect(page.locator("#voiceWorkoutModal")).toBeVisible();
   await expect(page.locator("#voiceWorkoutPrompt")).toContainText("Begin");
-  await expect(page.locator("#voiceExerciseName")).toContainText(
-    "Knee Push-Ups",
-  );
+  await expect(page.locator("#voiceExerciseName")).toContainText("Knee Push-Ups");
   await page.waitForFunction(() =>
     window.__realtimeChannels?.some((channel) => channel.readyState === "open"),
   );
-  await expect(page.locator("#voiceMicVisual")).toHaveAttribute(
-    "data-state",
-    "listening",
-  );
+  await expect(page.locator("#voiceMicVisual")).toHaveAttribute("data-state", "listening");
 
-  // Settings must be a complete foreground dialog, not a translated/clipped
-  // flyout in the upper-left corner.
   await page.locator("#voiceWorkoutSettingsBtn").click();
   await expect(page.locator("#bl-voice-flyout")).toBeVisible();
   await expect(page.locator("#bl-voice-close")).toBeVisible();
   await expect(page.locator("#bl-voice-settings-title")).toHaveText("Voice Control");
   await expect(page.locator(".bl-voice-intro")).toHaveText("Voice settings for workouts.");
-  await expect(page.locator("#bl-voice-spoken").locator("xpath=following-sibling::span")).toContainText("Plays spoken workout guidance and feedback.");
+  await expect(
+    page.locator("#bl-voice-spoken").locator("xpath=following-sibling::span"),
+  ).toContainText("Plays spoken workout guidance and feedback.");
   await expect(page.locator("#bl-voice-save")).toHaveText("Save & Close");
+
   const geometry = await page.evaluate(() => {
     const overlay = document.querySelector("#bl-voice-flyout");
     const card = document.querySelector("#bl-voice-flyout .bl-voice-settings-card");
@@ -248,6 +256,7 @@ test("voice workout can be started without clicking between exercises", async ({
   expect(geometry.card.bottom).toBeLessThanOrEqual(geometry.viewport.height);
   expect(geometry.card.scrollHeight).toBeLessThanOrEqual(geometry.card.clientHeight + 1);
   expect(geometry.overlayZ).toBeGreaterThan(geometry.workoutZ);
+
   await page.locator("#bl-voice-save").click();
   await expect(page.locator("#bl-voice-flyout")).toBeHidden();
   await page.locator("#voiceWorkoutSettingsBtn").click();
@@ -255,8 +264,6 @@ test("voice workout can be started without clicking between exercises", async ({
   await page.locator("#bl-voice-close").click();
   await expect(page.locator("#bl-voice-flyout")).toBeHidden();
 
-  // A streamed Realtime transcription delta should activate the next step
-  // without waiting for a final browser SpeechRecognition result.
   await page.evaluate(() => {
     const channel = [...window.__realtimeChannels]
       .reverse()
@@ -271,7 +278,5 @@ test("voice workout can be started without clicking between exercises", async ({
   await expect
     .poll(() => page.evaluate(() => window.BASELINE_fitnessVoice.state()))
     .toBe("awaiting_result");
-  await expect(page.locator("#voiceWorkoutPrompt")).toContainText(
-    "Success or Fail",
-  );
+  await expect(page.locator("#voiceWorkoutPrompt")).toContainText("Success or Fail");
 });
