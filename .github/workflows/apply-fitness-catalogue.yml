@@ -6,6 +6,9 @@ on:
       - agent/fitness-exercise-catalogue-20260804
     paths:
       - .github/workflows/apply-fitness-catalogue.yml
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
