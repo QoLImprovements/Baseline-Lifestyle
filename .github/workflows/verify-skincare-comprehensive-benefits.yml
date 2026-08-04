@@ -25,7 +25,10 @@ jobs:
           cache: npm
 
       - name: Apply integration
-        run: python3 scripts/apply_skincare_comprehensive_benefits.py
+        run: |
+          python3 scripts/apply_skincare_comprehensive_benefits.py
+          rm -f scripts/apply_skincare_comprehensive_benefits.py
+          rmdir scripts 2>/dev/null || true
 
       - name: Install locked dependencies
         run: npm ci
@@ -38,7 +41,6 @@ jobs:
 
       - name: Publish clean verified branch
         run: |
-          rm -f scripts/apply_skincare_comprehensive_benefits.py
           rm -f .github/workflows/apply-skincare-comprehensive-benefits.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
