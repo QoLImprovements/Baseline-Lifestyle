@@ -1,6 +1,6 @@
 !(function (t) {
   "use strict";
-  const e = "BASELINE_FITNESS_VOICE_FALLBACK_20260803_1",
+  const e = "BASELINE_FITNESS_VOICE_BURNOUT_HOLDS_20260804_1",
     i = `__${e}__`;
   if (t[i]) return;
   t[i] = !0;
@@ -22,6 +22,7 @@
       recognition: null,
       timer: null,
       remaining: 0,
+      elapsed: 0,
       lastInstruction: "",
       handling: !1,
       meter: null,
@@ -609,12 +610,12 @@
     e && delete e.dataset.meter;
   }
   function k() {
-    (a.timer && t.clearInterval(a.timer), (a.timer = null), (a.remaining = 0));
+    (a.timer && t.clearInterval(a.timer), (a.timer = null), (a.remaining = 0), (a.elapsed = 0));
   }
   function y(t) {
     const e = o("#voiceWorkoutTimerWrap");
     (e && (e.hidden = !1),
-      v("#voiceWorkoutTimerLabel", "Time remaining"),
+      v("#voiceWorkoutTimerLabel", "Hold time"),
       v(
         "#voiceWorkoutTimer",
         `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`,
@@ -690,6 +691,17 @@
               try {
                 const i = u(e);
                 if (!i) return;
+                if (a.state === n.TIMING && /\b(stop|done|finished|burnout)\b/.test(i))
+                  return void (await (async function () {
+                    const achieved = Math.max(1, a.elapsed || 1);
+                    k();
+                    b("Recorded");
+                    p()?.recordTimedCurrentStep?.(achieved, "voice");
+                    const e = m();
+                    if ((E(e), e?.allComplete || !e?.step))
+                      return ((a.state = n.FINISHED), void (await M("Workout steps complete. Use Finish Workout to complete this session.")));
+                    await L();
+                  })());
                 if (/\b(stop|end|cancel)\s+(voice\s+)?workout\b/.test(i))
                   return void C(!1);
                 if (/\brepeat\b/.test(i))
@@ -707,19 +719,12 @@
                         return (
                           k(),
                           (a.state = n.TIMING),
-                          (a.remaining = Math.max(
-                            1,
-                            Math.round(Number(e.step.target) || 1),
-                          )),
-                          y(a.remaining),
-                          await M("Timer starting."),
+                          (a.elapsed = 0),
+                          y(a.elapsed),
+                          await M(`Hold to technical burnout. The guide is ${e.step.target} seconds. Say Stop when your form reaches burnout.`),
                           void (a.timer = t.setInterval(() => {
-                            ((a.remaining = Math.max(0, a.remaining - 1)),
-                              y(a.remaining),
-                              a.remaining <= 0 &&
-                                (k(),
-                                (a.state = n.RESULT),
-                                M("Time complete. Say Success or Fail.")));
+                            a.elapsed += 1;
+                            y(a.elapsed);
                           }, 1e3))
                         );
                       ((a.state = n.RESULT),
@@ -838,7 +843,7 @@
           "All workout steps are complete. Use Finish Workout to complete this session.",
         ))
       );
-    ((a.state = n.BEGIN), await M("When Ready, Say “Begin”."));
+    ((a.state = n.BEGIN), await M(t.step?.isTimed ? "When ready, say Begin. Hold to technical burnout, then say Stop." : "When Ready, Say “Begin”."));
   }
   async function I() {
     if (a.active) return;

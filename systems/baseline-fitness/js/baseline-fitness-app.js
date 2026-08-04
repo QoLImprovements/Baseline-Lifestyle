@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_PRODUCTION_CRASH_FIX_20260713_1';
+  const BUILD = 'BASELINE_FITNESS_EXERCISE_CATALOGUE_20260804_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
@@ -14,21 +14,10 @@
   const PAGE_SIZE = 12;
   const REQUEST_TIMEOUT_MS = 12000;
 
-  const TYPES = Object.freeze({
-    STANDARD: 'standard-reps',
-    LEG: 'leg-reps',
-    TIMED: 'timed-hold'
-  });
-
-  const EXERCISES = Object.freeze([
-    { name: 'Knee Push-Ups', unit: 'reps', progressionType: TYPES.STANDARD, base: 10, family: 'Push-Up', category: 'upper', goodFor: 'Chest, triceps and shoulder pressing strength with less load than a full push-up.', how: 'Place hands under shoulders with knees down and keep a straight line from head to knees. Lower with control, then press back up.' },
-    { name: 'Push-Ups', unit: 'reps', progressionType: TYPES.STANDARD, base: 8, family: 'Push-Up', category: 'upper', goodFor: 'Chest, triceps, shoulders and whole-body bracing.', how: 'Keep a straight line from head to heels. Lower under control, keep the shoulders away from the ears, then press up.' },
-    { name: 'Squats', unit: 'reps', progressionType: TYPES.LEG, base: 12, family: 'Squat', category: 'lower', goodFor: 'Leg strength, hip and knee control, and everyday sit-to-stand movement.', how: 'Stand with feet around shoulder width. Sit down under control, keep knees tracking over toes, then stand tall.' },
-    { name: 'Elbow Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 20, family: 'Plank', category: 'core', goodFor: 'Front-core endurance and trunk stability with less loading through the wrists.', how: 'Place forearms down with elbows under shoulders. Keep the body straight, brace the trunk and breathe slowly.' },
-    { name: 'Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 20, family: 'Plank', category: 'core', goodFor: 'Core endurance, shoulder stability and maintaining a controlled body line.', how: 'Place hands under shoulders and keep the body straight. Brace gently without holding the breath.' },
-    { name: 'Elbow Side Plank', unit: 'seconds', progressionType: TYPES.TIMED, base: 15, family: 'Side Plank', category: 'core', goodFor: 'Side-core endurance, hip stability and resistance to unwanted trunk rotation.', how: 'Place the forearm under the shoulder, lift the hips and stack the pelvis. Hold the body line while breathing steadily.' }
-  ]);
-
+  const CATALOGUE = global.BASELINE_FITNESS_EXERCISE_CATALOGUE ||
+    (typeof module !== 'undefined' && module.exports ? require('./fitness-exercise-catalogue.js') : null);
+  if (!CATALOGUE) throw new Error('fitness_exercise_catalogue_missing');
+  const { TYPES, LEGACY_TIMED_TYPE, FAMILIES, FAMILY_ORDER, EXERCISES } = CATALOGUE;
   const EXERCISE_BY_NAME = new Map(EXERCISES.map((item) => [item.name, item]));
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -36,7 +25,7 @@
   const STORE = global.BASELINE_store && typeof global.BASELINE_store.read === 'function' ? global.BASELINE_store : null;
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Object.freeze({ TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps });
+    module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, setValues, progressionIncrements, progressedSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   }
   if (typeof document === 'undefined') return;
   if (global.__BASELINE_FITNESS_APP__) return;
@@ -142,14 +131,15 @@
   function normaliseItem(value) {
     const source = value && typeof value === 'object' ? value : {};
     const definition = exerciseDefinition(source.exercise);
-    const type = Object.values(TYPES).includes(String(source.progressionType || '')) ? String(source.progressionType) : definition.progressionType;
+    const rawType = String(source.progressionType || '');
+    const type = rawType === LEGACY_TIMED_TYPE ? TYPES.TIMED : Object.values(TYPES).includes(rawType) ? rawType : definition.progressionType;
     const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type };
     if (definition.unit === 'reps') item.sets = setCount(source.sets || 3);
     return item;
   }
   function normalisePlan(value) {
     if (!value || typeof value !== 'object' || !Array.isArray(value.items) || !value.items.length) return null;
-    const plan = Object.assign({}, value, { version: 8, items: value.items.slice(0, EXERCISES.length).map(normaliseItem) });
+    const plan = Object.assign({}, value, { version: 9, items: value.items.slice(0, EXERCISES.length).map(normaliseItem) });
     plan.sessions = Math.round(clamp(plan.sessions || 18, 1, 120));
     plan.frequency = ['1x', '2x', '3x'].includes(plan.frequency) ? plan.frequency : '3x';
     plan.lengthMode = plan.lengthMode === 'goal' ? 'goal' : 'sessions';
@@ -173,21 +163,19 @@
   }
   function progressionIncrements(type, count) {
     const sets = setCount(count);
-    if (type !== TYPES.LEG) return Array(sets).fill(1);
-    if (sets === 1) return [2];
-    if (sets === 2) return [2, 3];
-    return [2, ...Array(sets - 2).fill(1), 3];
+    return Array(sets).fill(type === TYPES.LEG ? 3 : 1);
   }
   function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
     const increments = progressionIncrements(type, count);
     return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
   }
+  function holdIncrement(seconds) {
+    return Math.max(1, Math.round(Number(seconds) || 1)) >= 90 ? 2 : 3;
+  }
   function holdValue(baseline, sessionIndex) {
     let seconds = Math.max(1, Math.round(Number(baseline) || 1));
-    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) {
-      seconds += seconds < 60 ? 5 : seconds < 90 ? 3 : 2;
-    }
+    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) seconds += holdIncrement(seconds);
     return seconds;
   }
   function workForSession(items, sessionIndex) {
@@ -204,19 +192,50 @@
     const holds = work.filter((item) => item.unit === 'seconds');
     const steps = [];
     const rounds = Math.max(0, ...reps.map((item) => item.values.length));
+
     for (let round = 0; round < rounds; round += 1) {
-      reps.forEach((item) => {
-        if (item.values[round] == null) return;
-        steps.push({ name: item.item.name, label: `${item.item.name} - (${item.values[round]})`, target: item.values[round], unit: 'reps', isTimed: false });
+      reps.forEach((entry) => {
+        if (entry.values[round] == null) return;
+        const perSide = entry.item.laterality === 'per-side';
+        steps.push({
+          name: entry.item.name,
+          exercise: entry.item.name,
+          exerciseKey: entry.item.name,
+          label: `${entry.item.name} - (${entry.values[round]}${perSide ? ' per side' : ''})`,
+          target: entry.values[round],
+          unit: 'reps',
+          isTimed: false,
+          progressionType: entry.progressionType,
+          laterality: entry.item.laterality,
+          familyKey: entry.item.familyKey
+        });
       });
     }
-    holds.forEach((item) => {
-      const base = { name: item.item.name, target: item.hold, unit: 'seconds', isTimed: true };
-      if (item.item.family === 'Side Plank' || /side plank/i.test(item.item.name)) {
-        steps.push(Object.assign({}, base, { name: `${item.item.name} Left`, label: `${item.item.name} - Left (${item.hold} seconds)` }));
-        steps.push(Object.assign({}, base, { name: `${item.item.name} Right`, label: `${item.item.name} - Right (${item.hold} seconds)` }));
+
+    holds.forEach((entry) => {
+      const base = {
+        exercise: entry.item.name,
+        target: entry.hold,
+        unit: 'seconds',
+        isTimed: true,
+        progressionType: TYPES.TIMED,
+        laterality: entry.item.laterality,
+        familyKey: entry.item.familyKey
+      };
+      if (entry.item.laterality === 'separate-left-right') {
+        ['Left', 'Right'].forEach((side) => {
+          steps.push(Object.assign({}, base, {
+            name: `${entry.item.name} ${side}`,
+            exerciseKey: `${entry.item.name}::${side.toLowerCase()}`,
+            label: `${entry.item.name} - ${side} • Hold to technical burnout (guide ${entry.hold} seconds)`
+          }));
+        });
       } else {
-        steps.push(Object.assign({}, base, { label: `${item.item.name} - (${item.hold} seconds)` }));
+        steps.push(Object.assign({}, base, {
+          name: entry.item.name,
+          exerciseKey: entry.item.name,
+          label: `${entry.item.name} • Hold to technical burnout (guide ${entry.hold} seconds)`
+        }));
       }
     });
     return steps;
@@ -307,7 +326,17 @@
     if (wrapper && wrapper.parentNode) { wrapper.parentNode.insertBefore(select, wrapper); wrapper.remove(); }
   }
   function exerciseOptions(selected) {
-    return EXERCISES.map((item) => `<option value="${escapeHtml(item.name)}"${item.name === selected ? ' selected' : ''}>${escapeHtml(item.name)}</option>`).join('');
+    return FAMILIES.map((family) => {
+      const options = EXERCISES.filter((item) => item.familyKey === family.key)
+        .map((item) => `<option value="${escapeHtml(item.name)}"${item.name === selected ? ' selected' : ''}>${escapeHtml(item.name)}</option>`)
+        .join('');
+      return `<optgroup label="${escapeHtml(family.label)}">${options}</optgroup>`;
+    }).join('');
+  }
+  function progressionDescription(definition) {
+    if (definition.progressionType === TYPES.TIMED) return 'Hold to technical burnout; next guide is achieved time +3 seconds, changing to +2 seconds from 90 seconds.';
+    if (definition.progressionType === TYPES.LEG) return '+3 repetitions to every set after success.';
+    return '+1 repetition to every set after success.';
   }
   function baselineLabel(definition) { return `Max Baseline (${definition.unit === 'seconds' ? 'Seconds' : 'Reps'})`; }
   function syncExerciseRow(row) {
@@ -319,10 +348,12 @@
     const info = $('.exercise-info-button', row);
     const source = $('.exercise-caption-source', row);
     row.dataset.progressionType = definition.progressionType;
+    row.dataset.familyKey = definition.familyKey;
+    row.dataset.laterality = definition.laterality;
     if (label) label.textContent = baselineLabel(definition);
     if (baseline && (!baseline.value || Number(baseline.value) < 1)) baseline.value = definition.base;
     if (info) { info.setAttribute('aria-label', `Information about ${definition.name}`); info.setAttribute('data-bl-info-title', definition.name); }
-    if (source) source.innerHTML = `<strong>${escapeHtml(definition.name)}</strong><p><b>Good for:</b> ${escapeHtml(definition.goodFor)}</p><p><b>How:</b> ${escapeHtml(definition.how)}</p>`;
+    if (source) source.innerHTML = `<strong>${escapeHtml(definition.name)}</strong><p><b>Family:</b> ${escapeHtml(definition.family)} • <b>Movement:</b> ${escapeHtml(definition.movementCategory)} • <b>Level:</b> ${escapeHtml(definition.variationLevel)}</p><p><b>Progression:</b> ${escapeHtml(progressionDescription(definition))}</p><p><b>Good for:</b> ${escapeHtml(definition.goodFor)}</p><p><b>How:</b> ${escapeHtml(definition.how)}</p>`;
     if (definition.unit === 'seconds') {
       if (setsSelect && !setsSelect.disabled) setsSelect.dataset.lastSets = setsSelect.value || '3';
       if (setsLabel) setsLabel.textContent = 'Type';
@@ -402,7 +433,7 @@
     const items = itemsFromUi();
     const existing = current.planJson || {};
     const lengthMode = $('#lengthMode')?.value || 'sessions';
-    const plan = { version: 8, startDate: $('#startDate')?.value || today(), frequency: $('#freq')?.value || '3x', sessions: totalSessionsForUi(items), lengthMode, items, days: Array.isArray(existing.days) ? existing.days : [], timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
+    const plan = { version: 9, startDate: $('#startDate')?.value || today(), frequency: $('#freq')?.value || '3x', sessions: totalSessionsForUi(items), lengthMode, items, days: Array.isArray(existing.days) ? existing.days : [], timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
     if (lengthMode === 'goal') plan.goal = { exercise: $('#goalExercise')?.value || '', amount: Math.round(clamp($('#goalAmount')?.value || 1, 1, 99999)) };
     return plan;
   }
@@ -453,7 +484,12 @@
   }
 
   function planExerciseRows(plan, sessionIndex) {
-    return workForSession(plan.items, sessionIndex).map((item) => `<div class="session-subcard plan-exercise-row"><b>${escapeHtml(item.item.name)}</b><div>${item.unit === 'seconds' ? `Hold <b>${item.hold}</b> seconds per side${item.item.family === 'Side Plank' ? '.' : '.'}` : `Sets (${item.sets}): ${item.values.map((value) => `<b>${value}</b>`).join(' / ')} reps.`}</div></div>`).join('');
+    return workForSession(plan.items, sessionIndex).map((entry) => {
+      const detail = entry.unit === 'seconds'
+        ? `Hold to technical burnout • guide <b>${entry.hold}</b> seconds${entry.item.laterality === 'separate-left-right' ? ' for each side.' : '.'}`
+        : `Sets (${entry.sets}): ${entry.values.map((value) => `<b>${value}</b>`).join(' / ')} reps${entry.item.laterality === 'per-side' ? ' per side.' : '.'}`;
+      return `<div class="session-subcard plan-exercise-row"><b>${escapeHtml(entry.item.name)}</b><div>${detail}</div></div>`;
+    }).join('');
   }
   function sessionCard(row, plan, suffix = '') {
     const index = Number(row.session_index);
@@ -553,7 +589,26 @@
     const state = readStepState(sessionIndex);
     const completed = Math.round(clamp(state.completedSteps || 0, 0, steps.length));
     const access = accessFor(row, sessionIndex);
-    return { available: true, canStart: access.can, access, planId: current.planId || 0, sessionIndex, scheduledDate: row.scheduled_date || '', stepIndex: completed, step: steps[completed] || null, steps, completedSteps: completed, totalSteps: steps.length, started: Boolean(state.started), results: Object.assign({}, state.results || {}), allComplete: Boolean(steps.length && completed >= steps.length), planComplete: false, timerStartDelay: current.planJson.timerStartDelay || 5 };
+    const context = {
+      available: true,
+      canStart: access.can,
+      access,
+      planId: current.planId || 0,
+      sessionIndex,
+      scheduledDate: row.scheduled_date || '',
+      stepIndex: completed,
+      step: steps[completed] || null,
+      steps,
+      completedSteps: completed,
+      totalSteps: steps.length,
+      started: Boolean(state.started),
+      results: Object.assign({}, state.results || {}),
+      allComplete: Boolean(steps.length && completed >= steps.length),
+      planComplete: false,
+      timerStartDelay: current.planJson.timerStartDelay || 5
+    };
+    const adjust = global.BASELINE_FITNESS_EXERCISE_PROGRESSION?.adjustContext;
+    return typeof adjust === 'function' ? adjust(context) : context;
   }
   function notifyWorkout() {
     const snapshot = workoutContext();
@@ -564,8 +619,18 @@
     const context = workoutContext();
     if (!context.canStart || !context.started || !context.step) return context;
     const state = readStepState(context.sessionIndex);
+    const step = context.step;
     state.started = true;
-    state.results[context.stepIndex] = { status, achieved: Math.round(clamp(achieved, 0, 99999)), inputMode: inputMode === 'voice' ? 'voice' : 'manual' };
+    state.results[context.stepIndex] = {
+      status: step.isTimed ? 'success' : status,
+      achieved: Math.round(clamp(achieved, 0, 99999)),
+      inputMode: inputMode === 'voice' ? 'voice' : 'manual',
+      exercise: step.exercise || step.name,
+      exerciseKey: step.exerciseKey || step.name,
+      stepName: step.name,
+      isTimed: Boolean(step.isTimed),
+      unit: step.unit
+    };
     state.completedSteps = Math.max(state.completedSteps || 0, context.stepIndex + 1);
     state.pendingFailureStep = null;
     writeStepState(context.sessionIndex, state);
@@ -604,18 +669,25 @@
   function openTimer(step) {
     const modal = $('#timerModal'); const digits = $('#timerDigits'); const message = $('#timerModalMessage');
     if (!modal || !digits || !message) return;
-    closeTimerModal(); modal.hidden = false;
-    let prep = Math.round(clamp(current.planJson?.timerStartDelay || 5, 1, 10)); let remaining = Math.round(step.target || 1); let phase = 'prep';
+    closeTimerModal();
+    modal.hidden = false;
+    let prep = Math.round(clamp(current.planJson?.timerStartDelay || 5, 1, 10));
+    let elapsed = 0;
+    let phase = 'prep';
     const tick = () => {
       if (phase === 'prep') {
-        message.textContent = `Get into position. Timer starts in ${prep} second${prep === 1 ? '' : 's'}.`; digits.textContent = formatTimer(prep);
-        if (prep <= 0) phase = 'work'; else prep -= 1;
+        message.textContent = `Get into position. Hold begins in ${prep} second${prep === 1 ? '' : 's'}.`;
+        digits.textContent = formatTimer(prep);
+        if (prep <= 0) { phase = 'work'; digits.textContent = formatTimer(0); }
+        else prep -= 1;
       } else {
-        message.textContent = `${step.name} • hold for the full time.`; digits.textContent = formatTimer(remaining);
-        if (remaining <= 0) { message.textContent = 'Timer complete.'; clearInterval(timerInterval); timerInterval = null; } else remaining -= 1;
+        message.textContent = `${step.name} • hold to technical burnout. Guide: ${step.target} seconds.`;
+        digits.textContent = formatTimer(elapsed);
+        elapsed += 1;
       }
     };
-    tick(); timerInterval = setInterval(tick, 1000);
+    tick();
+    timerInterval = setInterval(tick, 1000);
   }
   function renderCurrentWorkout() {
     const out = $('#currentWorkoutOut'); const status = $('#myPlanStatus');
@@ -630,15 +702,33 @@
     const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex);
     const state = readStepState(context.sessionIndex);
     if (status) status.textContent = context.access.can ? 'Current workout ready.' : context.access.due ? 'Complete earlier sessions first.' : `Next workout unlocks on ${niceDate(row.scheduled_date)}.`;
+
     const stepsHtml = context.steps.map((step, index) => {
-      const result = state.results[index]; const active = index === context.completedSteps; const canAct = context.access.can && state.started && active; const failOpen = state.pendingFailureStep === index;
-      return `<div class="current-step ${index < context.completedSteps ? 'done' : active ? 'active' : ''}"><div class="current-step-head"><div><b class="current-step-label">${escapeHtml(step.label)}</b></div><div class="step-actions">${result ? `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>` : ''}${step.isTimed ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Timer</button>` : ''}<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button></div></div>${failOpen ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">Enter achieved ${escapeHtml(step.unit)}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${index}">Save</button></div>` : ''}</div>`;
+      const result = state.results[index];
+      const active = index === context.completedSteps;
+      const canAct = context.access.can && state.started && active;
+      const failOpen = state.pendingFailureStep === index;
+      const resultText = result
+        ? step.isTimed
+          ? `<div class="step-status success">✓ Recorded · ${escapeHtml(result.achieved)} seconds</div>`
+          : `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>`
+        : '';
+      const timedActions = step.isTimed
+        ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Count-Up</button><button class="compact-action compact-action--success step-hold-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Record Hold</button>`
+        : `<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button>`;
+      const entry = failOpen
+        ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">${step.isTimed ? 'Enter exact burnout time (seconds)' : `Enter achieved ${escapeHtml(step.unit)}`}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action ${step.isTimed ? 'compact-action--success step-hold-save' : 'compact-action--danger step-fail-save'}" type="button" data-step="${index}">Save</button></div>`
+        : '';
+      return `<div class="current-step ${index < context.completedSteps ? 'done' : active ? 'active' : ''}"><div class="current-step-head"><div><b class="current-step-label">${escapeHtml(step.label)}</b></div><div class="step-actions">${resultText}${timedActions}</div></div>${entry}</div>`;
     }).join('');
+
     out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${escapeHtml(niceDate(row.scheduled_date))}</span><span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
     $('#startWorkoutBtn', out)?.addEventListener('click', startCurrentWorkout);
     $$('.step-success', out).forEach((button) => button.addEventListener('click', () => { const step = context.steps[Number(button.dataset.step)]; recordStep('success', step.target); }));
     $$('.step-fail-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
+    $$('.step-hold-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
     $$('.step-fail-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || String(field.value).trim() === '') { field?.focus(); return; } recordStep('failed', field.value); }));
+    $$('.step-hold-save', out).forEach((button) => button.addEventListener('click', () => { const field = $(`#failedAmount${button.dataset.step}`, out); if (!field || Number(field.value) <= 0) { field?.focus(); return; } closeTimerModal(); recordStep('success', field.value); }));
     $$('.step-timer', out).forEach((button) => button.addEventListener('click', () => openTimer(context.steps[Number(button.dataset.step)])));
     $('#resetWorkout', out)?.addEventListener('click', resetCurrentWorkout);
     $('#finishWorkout', out)?.addEventListener('click', finishCurrentWorkout);
@@ -777,8 +867,12 @@
   }
   function renderLibrary() {
     const target = $('#exerciseLibrary'); if (!target) return;
-    const query = String($('#exSearch')?.value || '').toLowerCase(); const group = $('#exGroup')?.value || 'all';
-    target.innerHTML = EXERCISES.filter((item) => (group === 'all' || item.category === group) && (!query || `${item.name} ${item.family} ${item.unit}`.toLowerCase().includes(query))).map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.unit)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p></div>`).join('');
+    const query = String($('#exSearch')?.value || '').toLowerCase();
+    const group = $('#exGroup')?.value || 'all';
+    target.innerHTML = EXERCISES
+      .filter((item) => (group === 'all' || item.familyKey === group) && (!query || `${item.name} ${item.family} ${item.section} ${item.movementCategory} ${item.unit}`.toLowerCase().includes(query)))
+      .map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.movementCategory)} • ${escapeHtml(item.variationLevel)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p><p class="note"><b>Progression:</b> ${escapeHtml(progressionDescription(item))}</p></div>`)
+      .join('');
   }
 
   function positive(value) { const number = Number(value); return Number.isFinite(number) && number > 0 ? number : null; }
@@ -860,11 +954,12 @@
     startSession: startCurrentWorkout,
     succeedCurrentStep: (inputMode = 'manual') => { const context = workoutContext(); return recordStep('success', context.step?.target || 0, inputMode); },
     failCurrentStep: (achieved, inputMode = 'manual') => recordStep('failed', achieved, inputMode),
+    recordTimedCurrentStep: (achieved, inputMode = 'manual') => recordStep('success', achieved, inputMode),
     finishSession: finishCurrentWorkout,
     resetSession: resetCurrentWorkout,
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
-  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, EXERCISES, setValues, progressedSetValues, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps });
+  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, setValues, progressionIncrements, progressedSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   if (typeof module !== 'undefined' && module.exports) module.exports = global.BASELINE_FITNESS_DEBUG;
   if (typeof document === 'undefined' || typeof global.addEventListener !== 'function') return;
 

@@ -163,12 +163,14 @@
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /*
- * Independent linear exercise progression.
+ * Independent exercise progression and timed-burnout history.
  *
- * Rep-based leg exercises add three repetitions to every set after each
- * successful workout. Push-up and other standard rep exercises add one
- * repetition to every set. A failed exercise repeats only its own targets;
- * successful exercises continue progressing normally.
+ * Rep exercises progress independently: leg-reps add three to every set and
+ * standard-reps add one. A failed rep exercise repeats only its own targets.
+ *
+ * Timed holds are measurements, not pass/fail targets. The user holds to
+ * technical burnout, the exact achieved duration is recorded, and the next
+ * guide is achieved time +3 seconds (or +2 seconds from 90 seconds onward).
  */
 (function (global) {
   'use strict';
@@ -176,7 +178,12 @@
   const STEP_PREFIX = '__bl_fitness_workout_progress_v2__::';
   const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
   const PLAN_PREFIX = '__bl_fitness_plan_v1__::';
-  const TYPES = Object.freeze({ STANDARD: 'standard-reps', LEG: 'leg-reps', TIMED: 'timed-hold' });
+  const TYPES = Object.freeze({
+    STANDARD: 'standard-reps',
+    LEG: 'leg-reps',
+    TIMED: 'timed-hold-burnout',
+    LEGACY_TIMED: 'timed-hold'
+  });
   const REP_INCREMENT = Object.freeze({ [TYPES.STANDARD]: 1, [TYPES.LEG]: 3 });
   const ANCHOR_SESSION = 6;
   const ANCHOR_VALUES = Object.freeze([44, 41, 47]);
@@ -206,21 +213,50 @@
   function canonicalExerciseName(name) {
     return String(name || '').trim().replace(/\s+(Left|Right)$/i, '');
   }
+  function timedExerciseKey(name) {
+    const raw = String(name || '').trim();
+    const side = raw.match(/\s+(Left|Right)$/i);
+    return side
+      ? `${canonicalExerciseName(raw)}::${side[1].toLowerCase()}`
+      : canonicalExerciseName(raw);
+  }
+  function isTimedType(type) {
+    return [TYPES.TIMED, TYPES.LEGACY_TIMED].includes(String(type || ''));
+  }
   function normaliseHistory(value) {
     const source = value && typeof value === 'object' ? value : {};
-    const raw = source.failuresBySession && typeof source.failuresBySession === 'object' ? source.failuresBySession : {};
+    const rawFailures = source.failuresBySession && typeof source.failuresBySession === 'object'
+      ? source.failuresBySession
+      : {};
+    const rawTimed = source.timedBySession && typeof source.timedBySession === 'object'
+      ? source.timedBySession
+      : {};
     const failuresBySession = {};
-    Object.entries(raw).forEach(([session, names]) => {
+    const timedBySession = {};
+
+    Object.entries(rawFailures).forEach(([session, names]) => {
       const index = Math.max(1, Math.round(Number(session) || 0));
       if (!index || !Array.isArray(names)) return;
       failuresBySession[String(index)] = Array.from(new Set(names.map(canonicalExerciseName).filter(Boolean)));
     });
-    return { failuresBySession };
+
+    Object.entries(rawTimed).forEach(([session, values]) => {
+      const index = Math.max(1, Math.round(Number(session) || 0));
+      if (!index || !values || typeof values !== 'object') return;
+      const clean = {};
+      Object.entries(values).forEach(([key, seconds]) => {
+        const achieved = Math.max(0, Math.round(Number(seconds) || 0));
+        if (key && achieved > 0) clean[String(key)] = achieved;
+      });
+      if (Object.keys(clean).length) timedBySession[String(index)] = clean;
+    });
+
+    return { failuresBySession, timedBySession };
   }
   function failedExercises(results) {
     const failed = new Set();
     Object.values(results && typeof results === 'object' ? results : {}).forEach((result) => {
-      if (!result || result.status !== 'failed') return;
+      if (!result || result.status !== 'failed' || result.isTimed || result.unit === 'seconds') return;
       const exercise = canonicalExerciseName(result.exercise);
       if (exercise) failed.add(exercise);
     });
@@ -230,6 +266,21 @@
     const next = normaliseHistory(history);
     next.failuresBySession[String(Math.max(1, Math.round(Number(sessionIndex) || 1)))] =
       Array.from(new Set((exercises || []).map(canonicalExerciseName).filter(Boolean)));
+    return next;
+  }
+  function recordTimedResults(history, sessionIndex, results) {
+    const next = normaliseHistory(history);
+    const session = String(Math.max(1, Math.round(Number(sessionIndex) || 1)));
+    const values = Object.assign({}, next.timedBySession[session] || {});
+
+    Object.values(results && typeof results === 'object' ? results : {}).forEach((result) => {
+      if (!result || !(result.isTimed || result.unit === 'seconds')) return;
+      const achieved = Math.max(0, Math.round(Number(result.achieved) || 0));
+      const key = String(result.exerciseKey || timedExerciseKey(result.stepName || result.exercise || ''));
+      if (key && achieved > 0) values[key] = achieved;
+    });
+
+    if (Object.keys(values).length) next.timedBySession[session] = values;
     return next;
   }
   function failureCountBefore(exercise, sessionIndex, history) {
@@ -242,6 +293,23 @@
   function effectiveSession(exercise, sessionIndex, history) {
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
     return Math.max(1, session - failureCountBefore(exercise, session, history));
+  }
+  function latestTimedAchievement(exerciseKey, sessionIndex, history) {
+    const key = String(exerciseKey || '');
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    const timed = normaliseHistory(history).timedBySession;
+    const previous = Object.keys(timed)
+      .map(Number)
+      .filter((index) => index < session && timed[String(index)]?.[key] > 0)
+      .sort((a, b) => b - a)[0];
+    return previous ? Number(timed[String(previous)][key]) : null;
+  }
+  function holdIncrement(seconds) {
+    return Math.max(1, Math.round(Number(seconds) || 1)) >= 90 ? 2 : 3;
+  }
+  function timedGuideFromAchievement(seconds) {
+    const achieved = Math.max(1, Math.round(Number(seconds) || 1));
+    return achieved + holdIncrement(achieved);
   }
   function setCount(value) { return Math.max(1, Math.min(5, Math.round(Number(value) || 3))); }
   function setValues(baseline, count) {
@@ -271,9 +339,7 @@
   }
   function holdValue(baseline, sessionIndex) {
     let seconds = Math.max(1, Math.round(Number(baseline) || 1));
-    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) {
-      seconds += seconds < 60 ? 5 : seconds < 90 ? 3 : 2;
-    }
+    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) seconds += holdIncrement(seconds);
     return seconds;
   }
   function targetsForExercise(item, sessionIndex) {
@@ -283,11 +349,8 @@
     const baseline = Math.max(1, Math.round(Number(source.baseline) || 1));
     const sets = setCount(source.sets || 3);
     const type = String(source.progressionType || TYPES.STANDARD);
-    const timed = type === TYPES.TIMED || !Object.hasOwn(source, 'sets');
-    if (timed) return [holdValue(baseline, session)];
+    if (isTimedType(type) || !Object.hasOwn(source, 'sets')) return [holdValue(baseline, session)];
 
-    // Preserve the completed Session 1–5 squat history. From Session 6 onward,
-    // this plan follows the same +3-per-set leg rule as every other leg exercise.
     if (exercise === 'Squats' && baseline === 40 && sets === 3 && session >= ANCHOR_SESSION) {
       const increase = (session - ANCHOR_SESSION) * REP_INCREMENT[TYPES.LEG];
       return ANCHOR_VALUES.map((value) => value + increase);
@@ -315,7 +378,7 @@
         baseline: Math.max(1, Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),
         progressionType
       };
-      if (progressionType !== TYPES.TIMED) {
+      if (!isTimedType(progressionType)) {
         const control = row.querySelector('.ex-sets');
         item.sets = setCount(control?.value || control?.dataset.lastSets || 3);
       }
@@ -330,7 +393,15 @@
   function historyForContext(context) {
     if (!global.localStorage || !context?.planId || !context?.sessionIndex) return normaliseHistory(null);
     const state = parseJson(global.localStorage.getItem(stepKey(context.planId, context.sessionIndex)));
-    return normaliseHistory(state?.exerciseFailures);
+    return normaliseHistory(state?.exerciseProgression || state?.exerciseFailures);
+  }
+  function replaceTargetInLabel(step, target) {
+    const label = String(step.label || step.name || '');
+    if (step.isTimed || step.unit === 'seconds') {
+      if (/guide\s+\d+\s+seconds/i.test(label)) return label.replace(/guide\s+\d+\s+seconds/i, `guide ${target} seconds`);
+      return `${step.name} • Hold to technical burnout (guide ${target} seconds)`;
+    }
+    return label.replace(/\(\d+(?:\s+per side)?\)/, `(${target}${step.laterality === 'per-side' ? ' per side' : ''})`);
   }
   function adjustedContext(source) {
     if (!source || typeof source !== 'object' || !Array.isArray(source.steps)) return source;
@@ -338,22 +409,39 @@
     const steps = source.steps.map((step) => step && typeof step === 'object' ? Object.assign({}, step) : step);
     const history = historyForContext(source);
     const plan = planForOwner();
-    const groups = new Map();
+    const repGroups = new Map();
 
     steps.forEach((step, index) => {
       const exercise = canonicalExerciseName(step?.exercise || step?.name);
       if (!exercise) return;
-      if (!groups.has(exercise)) groups.set(exercise, []);
-      groups.get(exercise).push(index);
+      step.exercise = exercise;
+
+      if (step.isTimed || step.unit === 'seconds') {
+        const key = timedExerciseKey(step.name || exercise);
+        const previous = latestTimedAchievement(key, source.sessionIndex, history);
+        const item = itemForExercise(plan, exercise);
+        const target = previous
+          ? timedGuideFromAchievement(previous)
+          : Number(targetsForExercise(item || { exercise, baseline: step.target || 1, progressionType: TYPES.TIMED }, source.sessionIndex)[0]);
+        step.exerciseKey = key;
+        step.progressionSession = source.sessionIndex;
+        step.target = target;
+        step.progressionType = TYPES.TIMED;
+        step.label = replaceTargetInLabel(step, target);
+        return;
+      }
+
+      if (!repGroups.has(exercise)) repGroups.set(exercise, []);
+      repGroups.get(exercise).push(index);
     });
 
-    groups.forEach((indexes, exercise) => {
+    repGroups.forEach((indexes, exercise) => {
       const item = itemForExercise(plan, exercise);
       const progressionSession = effectiveSession(exercise, source.sessionIndex, history);
       let targets = item ? targetsForExercise(item, progressionSession) : null;
       if (!targets || !targets.length) {
         const failures = failureCountBefore(exercise, source.sessionIndex, history);
-        const fallbackIncrement = indexes[0] != null && String(steps[indexes[0]]?.progressionType || '') === TYPES.LEG ? 3 : 1;
+        const fallbackIncrement = String(steps[indexes[0]]?.progressionType || '') === TYPES.LEG ? 3 : 1;
         targets = indexes.map((index) => Math.max(1, Number(steps[index]?.target || 1) - (failures * fallbackIncrement)));
       }
       indexes.forEach((stepIndex, position) => {
@@ -362,10 +450,7 @@
         step.exercise = exercise;
         step.progressionSession = progressionSession;
         step.target = target;
-        step.label = String(step.label || `${step.name} - (${target})`).replace(
-          /\(\d+(?:\s+seconds)?\)/,
-          `(${target}${step.isTimed ? ' seconds' : ''})`
-        );
+        step.label = replaceTargetInLabel(step, target);
       });
     });
 
@@ -375,7 +460,11 @@
       const step = steps[Number(index)];
       if (result && step) {
         result.exercise = canonicalExerciseName(result.exercise || step.exercise || step.name);
-        if (result.status === 'success') result.achieved = Number(step.target);
+        result.exerciseKey = result.exerciseKey || step.exerciseKey || timedExerciseKey(step.name || result.exercise);
+        result.stepName = result.stepName || step.name;
+        result.isTimed = Boolean(result.isTimed || step.isTimed);
+        result.unit = result.unit || step.unit;
+        if (result.status === 'success' && !result.isTimed) result.achieved = Number(step.target);
       }
       results[index] = result;
     });
@@ -389,14 +478,20 @@
   const PUBLIC_API = Object.freeze({
     TYPES,
     canonicalExerciseName,
+    timedExerciseKey,
     normaliseHistory,
     failedExercises,
     recordFailures,
+    recordTimedResults,
     failureCountBefore,
     effectiveSession,
+    latestTimedAchievement,
+    holdIncrement,
+    timedGuideFromAchievement,
     progressionIncrements,
     progressedSetValues,
-    targetsForExercise
+    targetsForExercise,
+    adjustContext: adjustedContext
   });
   global.BASELINE_FITNESS_EXERCISE_PROGRESSION = PUBLIC_API;
   if (typeof module !== 'undefined' && module.exports) module.exports = PUBLIC_API;
@@ -418,7 +513,8 @@
     const state = rawState && typeof rawState === 'object' ? Object.assign({}, rawState) : {};
     if (!parsed) return state;
     const existing = parseJson(global.localStorage.getItem(key));
-    state.exerciseFailures = normaliseHistory(state.exerciseFailures || existing?.exerciseFailures);
+    state.exerciseProgression = normaliseHistory(state.exerciseProgression || state.exerciseFailures || existing?.exerciseProgression || existing?.exerciseFailures);
+    delete state.exerciseFailures;
     state.results = state.results && typeof state.results === 'object' ? Object.assign({}, state.results) : {};
 
     const rawContext = contextForSession(parsed.sessionIndex);
@@ -428,7 +524,11 @@
       const result = Object.assign({}, raw);
       const step = context?.steps?.[Number(index)] || rawContext?.steps?.[Number(index)];
       result.exercise = canonicalExerciseName(result.exercise || step?.exercise || step?.name);
-      if (result.status === 'success' && step) result.achieved = Number(step.target);
+      result.exerciseKey = result.exerciseKey || step?.exerciseKey || timedExerciseKey(step?.name || result.exercise);
+      result.stepName = result.stepName || step?.name;
+      result.isTimed = Boolean(result.isTimed || step?.isTimed);
+      result.unit = result.unit || step?.unit;
+      if (result.status === 'success' && step && !result.isTimed) result.achieved = Number(step.target);
       state.results[index] = result;
     });
     return state;
@@ -445,23 +545,23 @@
   };
 
   Storage.prototype.removeItem = function (key) {
-    if (this !== global.localStorage || typeof key !== 'string' || !key.startsWith(STEP_PREFIX)) {
-      return previousRemove.apply(this, arguments);
-    }
+    if (this !== global.localStorage || typeof key !== 'string' || !key.startsWith(STEP_PREFIX)) return previousRemove.apply(this, arguments);
     const parsed = parseStepKey(key);
     const removed = parseJson(global.localStorage.getItem(key)) || {};
-    const history = normaliseHistory(removed.exerciseFailures);
+    const history = normaliseHistory(removed.exerciseProgression || removed.exerciseFailures);
     const result = previousRemove.apply(this, arguments);
     const next = originalWorkout?.getCurrentContext?.();
 
     if (parsed && next && Number(next.planId) === parsed.planId) {
       if (Number(next.sessionIndex) === parsed.sessionIndex) {
-        global.localStorage.setItem(key, JSON.stringify({ completedSteps: 0, started: false, results: {}, pendingFailureStep: null, exerciseFailures: history }));
+        global.localStorage.setItem(key, JSON.stringify({ completedSteps: 0, started: false, results: {}, pendingFailureStep: null, exerciseProgression: history }));
       } else if (Number(next.sessionIndex) > parsed.sessionIndex) {
-        const updatedHistory = recordFailures(history, parsed.sessionIndex, failedExercises(removed.results));
+        let updatedHistory = recordFailures(history, parsed.sessionIndex, failedExercises(removed.results));
+        updatedHistory = recordTimedResults(updatedHistory, parsed.sessionIndex, removed.results);
         const nextKey = stepKey(parsed.planId, next.sessionIndex, parsed.owner);
         const existing = parseJson(global.localStorage.getItem(nextKey)) || {};
-        existing.exerciseFailures = updatedHistory;
+        existing.exerciseProgression = updatedHistory;
+        delete existing.exerciseFailures;
         global.localStorage.setItem(nextKey, JSON.stringify(existing));
       }
     }
@@ -491,7 +591,7 @@
       card.querySelectorAll('.plan-exercise-row').forEach((row) => {
         const exercise = canonicalExerciseName(row.firstElementChild?.textContent);
         const item = itemForExercise(plan, exercise);
-        if (!item) return;
+        if (!item || isTimedType(item.progressionType)) return;
         const session = effectiveSession(exercise, sessionIndex, history);
         const targets = targetsForExercise(item, session);
         const detail = Array.from(row.children).find((child) => child.tagName === 'DIV');
@@ -512,7 +612,7 @@
       if (!step) return;
       if (node.textContent !== step.label) node.textContent = step.label;
       const status = node.closest('.current-step')?.querySelector('.step-status.success');
-      if (status && /Achieved\s+\d+/i.test(status.textContent)) {
+      if (status && !step.isTimed && /Achieved\s+\d+/i.test(status.textContent)) {
         const nextText = status.textContent.replace(/Achieved\s+\d+/i, `Achieved ${step.target}`);
         if (status.textContent !== nextText) status.textContent = nextText;
       }
@@ -523,8 +623,10 @@
     const name = root.querySelector?.('#voiceExerciseName');
     const target = root.querySelector?.('#voiceExerciseTarget');
     if (!context?.step || !name || !target) return;
-    if (canonicalExerciseName(name.textContent) !== canonicalExerciseName(context.step.name)) return;
-    const nextText = String(target.textContent || '').replace(/\d+/, String(context.step.target));
+    if (canonicalExerciseName(name.textContent) !== canonicalExerciseName(context.step.name) && !String(name.textContent).includes(context.step.name)) return;
+    const nextText = context.step.isTimed
+      ? `Hold to technical burnout • guide ${context.step.target} seconds`
+      : String(target.textContent || '').replace(/\d+/, String(context.step.target));
     if (target.textContent !== nextText) target.textContent = nextText;
   }
   function patchPage() {
@@ -550,37 +652,32 @@
     originalWorkout = candidate;
     const wrapper = {
       __independentExerciseProgression: true,
-      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_LINEAR_EXERCISE_PROGRESSION_20260804_2`,
+      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_CATALOGUE_AND_BURNOUT_20260804_1`,
       getCurrentContext() { return adjustedContext(candidate.getCurrentContext?.()); },
       startSession() { const result = candidate.startSession?.(); schedulePatch(); return adjustedContext(result); },
       succeedCurrentStep(inputMode = 'manual') {
         const result = candidate.succeedCurrentStep?.(inputMode);
-        repairCurrentState();
-        schedulePatch();
-        return adjustedContext(result);
+        repairCurrentState(); schedulePatch(); return adjustedContext(result);
       },
       failCurrentStep(achieved, inputMode = 'manual') {
         const result = candidate.failCurrentStep?.(achieved, inputMode);
-        repairCurrentState();
-        schedulePatch();
-        return adjustedContext(result);
+        repairCurrentState(); schedulePatch(); return adjustedContext(result);
+      },
+      recordTimedCurrentStep(achieved, inputMode = 'manual') {
+        const result = candidate.recordTimedCurrentStep?.(achieved, inputMode) || candidate.succeedCurrentStep?.(inputMode);
+        repairCurrentState(); schedulePatch(); return adjustedContext(result);
       },
       async finishSession() {
         repairCurrentState();
         const result = await candidate.finishSession?.();
-        schedulePatch();
-        return adjustedContext(result);
+        schedulePatch(); return adjustedContext(result);
       },
       resetSession() {
         const result = candidate.resetSession?.();
-        schedulePatch();
-        return adjustedContext(result);
+        schedulePatch(); return adjustedContext(result);
       },
       onChange(listener) {
-        return candidate.onChange?.((context) => {
-          schedulePatch();
-          listener(adjustedContext(context));
-        });
+        return candidate.onChange?.((context) => { schedulePatch(); listener(adjustedContext(context)); });
       }
     };
     global.BASELINE_fitnessWorkout = Object.freeze(wrapper);
