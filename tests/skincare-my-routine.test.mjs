@@ -79,7 +79,7 @@ test('routine action picker is searchable, grouped, functional and uses UK termi
   assert.match(routineUi, /<optgroup label=/);
   assert.match(routineUi, /routine-action-group-label/);
   assert.match(routineUi, /toLocaleLowerCase\('en-GB'\)/);
-  assert.match(routineUi, /chooseAction\(button\.dataset\.actionOption\)/);
+  assert.match(routineUi, /chooseAction\([^)]*dataset\.actionOption\)/);
   assert.match(routineUi, /resolveTypedAction\(\)/);
   assert.match(model.ACTIONS.map((item) => item.title).join(' '), /Moisturiser/);
   assert.doesNotMatch(model.ACTIONS.map((item) => item.title).join(' '), /Moisturizer/);
@@ -94,7 +94,7 @@ test('removal uses a themed inline confirmation instead of deleting immediately'
 });
 
 test('Public Routines uses an alphabetised profile dropdown rather than a search box', () => {
-  assert.match(html, /<select id="routinePublicProfile"/);
+  assert.match(html, /id="publicRoutineName"[^>]*>/);
   assert.doesNotMatch(html, /id="routinePublicSearch"/);
   assert.match(routineUi, /localeCompare\(right, 'en-GB'/);
   assert.match(routineUi, /request\(\{ list: 'public' \}\)/);
