@@ -1,0 +1,55 @@
+name: Apply skincare routine workspace
+
+on:
+  push:
+    branches:
+      - agent/refine-skincare-routine-workspace-20260804
+    paths:
+      - .github/workflows/apply-skincare-routine-workspace.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-test-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/refine-skincare-routine-workspace-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Reconstruct and apply workspace files
+        run: |
+          cat .github/skincare-workspace-payload/chunk* > /tmp/skincare-workspace-payload.b64
+          base64 -d /tmp/skincare-workspace-payload.b64 > /tmp/skincare-workspace-payload.tar.gz
+          tar -xzf /tmp/skincare-workspace-payload.tar.gz -C .
+          python3 .github/apply_skincare_workspace.py
+
+      - name: Check changed source syntax
+        run: |
+          node --check systems/baseline-natural-skincare/js/skincare-routine.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine-model.js
+          php -l systems/baseline-natural-skincare/api/routine_state.php
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run complete website checks
+        run: npm test
+
+      - name: Commit verified workspace
+        run: |
+          rm -rf .github/skincare-workspace-payload
+          rm .github/apply_skincare_workspace.py
+          rm .github/workflows/apply-skincare-routine-workspace.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Refine skincare My Routine workspace [skip ci]"
+          git push origin HEAD:agent/refine-skincare-routine-workspace-20260804
