@@ -66,13 +66,14 @@ jobs:
           echo "changed=true" >> "$GITHUB_OUTPUT"
           python3 - <<'PY'
           from pathlib import Path
-          import re, textwrap
+          import re
 
           workflow = Path('.github/workflows/apply-skincare-routine-calendar-groups.yml').read_text()
           match = re.search(r"python3 - <<'PYCODE'\n(.*?)\n\s*PYCODE", workflow, re.S)
           if not match:
               raise SystemExit('embedded skincare migration not found')
-          exec(compile(textwrap.dedent(match.group(1)), 'embedded-skincare-migration', 'exec'), {'__name__': '__main__'})
+          code = '\n'.join(line[10:] if line.startswith('          ') else line for line in match.group(1).splitlines())
+          exec(compile(code, 'embedded-skincare-migration', 'exec'), {'__name__': '__main__'})
 
           css_path = Path('systems/baseline-natural-skincare/css/skincare-routine-enhancements.css')
           css = css_path.read_text()
