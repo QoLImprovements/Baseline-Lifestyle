@@ -12,11 +12,15 @@ const fallbackTabs = fs.readFileSync(new URL('../sitewide/js/baseline-tabs.js', 
 const htaccess = fs.readFileSync(new URL('../.htaccess', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-natural-skincare/api/routine_state.php', import.meta.url), 'utf8');
 
-test('My Routine is a skincare tab with a clean route that survives refresh', () => {
+test('My Routine is a skincare tab with server and browser refresh-safe routes', () => {
   assert.match(html, /data-target="routine">My Routine<\/button>/);
   assert.match(html, /<section class="section" id="routine">/);
+  assert.match(shared, /'baseline-natural-skincare\.html': \{ base:'\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html', hashTabs:true/);
+  assert.match(fallbackTabs, /"baseline-natural-skincare\.html": \{ base:"\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html", hashTabs:true/);
   assert.match(shared, /routine:'my-routine'/);
   assert.match(fallbackTabs, /routine:"my-routine"/);
+  assert.match(shared, /cfg\.hashTabs/);
+  assert.match(fallbackTabs, /cfg\.hashTabs/);
   assert.match(
     htaccess,
     /RewriteRule \^baseline-natural-skincare\/\(system\|recipes\|ingredient-library\|skin-support-system\|my-routine\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html \[L,QSA\]/
@@ -92,8 +96,10 @@ test('public API returns the routine plan but keeps completion logs private', ()
   assert.match(publicPayload, /routine_private/);
 });
 
-test('routine assets are loaded by the skincare page', () => {
+test('routine assets and route controllers use fresh cache keys', () => {
   assert.match(html, /skincare-routine\.css\?v=SKINCARE_MY_ROUTINE_20260804_1/);
   assert.match(html, /skincare-routine-model\.js\?v=SKINCARE_MY_ROUTINE_20260804_2/);
   assert.match(html, /skincare-routine\.js\?v=SKINCARE_MY_ROUTINE_20260804_2/);
+  assert.match(html, /baseline-shared\.js\?v=SKINCARE_ROUTINE_REFRESH_SAFE_20260804_2/);
+  assert.match(html, /baseline-tabs\.js\?v=SKINCARE_ROUTINE_REFRESH_SAFE_20260804_2/);
 });
