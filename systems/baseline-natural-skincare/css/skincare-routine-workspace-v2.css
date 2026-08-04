@@ -1,4 +1,5 @@
 /* Baseline Natural Skincare — grouped routine plan/log and detailed product controls. */
+@import url('/systems/baseline-natural-skincare/css/skincare-routine-group-ui-v3.css?v=SKINCARE_GROUP_FIRST_UI_20260805_1');
 #routine .routine-group-row{display:grid;gap:12px!important;padding:14px!important;border:1px solid var(--skin-peach)!important;border-radius:18px!important;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important}
 #routine .routine-group-row-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center}
 #routine .routine-group-collapse,#routine [data-plan-group-collapse]{border:1px solid var(--skin-peach);border-radius:999px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));color:var(--ink);font:inherit;font-weight:900;padding:7px 11px;cursor:pointer}
@@ -19,7 +20,10 @@
 #routine .routine-field.inherited-setting{opacity:.76}
 #routine .routine-field.inherited-setting>span{color:var(--accent-2)}
 #routine .routine-product-field,#routine .routine-shaving-method-field{min-width:0}
-#routine .routine-product-field select,#routine .routine-shaving-method-field select{width:100%}
+#routine .routine-product-field{grid-column:1/-1;padding:14px;border:2px solid var(--skin-peach);border-radius:16px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))}
+#routine .routine-product-field>span{display:block;margin-bottom:7px;font-size:18px!important;font-weight:900;color:var(--accent-2)}
+#routine .routine-product-field select,#routine .routine-shaving-method-field select{width:100%;min-height:52px;font-size:17px!important;background:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
+#routine .routine-product-field select optgroup,#routine .routine-product-field select option{font-size:17px!important;background:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
 #routine .routine-custom-product-field{grid-column:1/-1}
 #routine .routine-benefit-field p{line-height:1.62;white-space:normal}
 #routine .routine-summary-group-head,#routine .routine-log-group-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
