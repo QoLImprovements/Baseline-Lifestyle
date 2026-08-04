@@ -1,3 +1,4 @@
+# Integration is applied and verified through the temporary base-branch workflow.
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
