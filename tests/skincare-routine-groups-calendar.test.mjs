@@ -17,7 +17,7 @@ test('routine enhancement assets load after the model and before the interface',
   assert.ok(modelIndex >= 0);
   assert.ok(enhancementIndex > modelIndex);
   assert.ok(interfaceIndex > enhancementIndex);
-  assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1/);
+  assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2/);
 });
 
 test('Routine Summary replaces the old My Routine summary heading', () => {
