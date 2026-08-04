@@ -1,3 +1,4 @@
+# Triggered after workflow registration on main.
 name: One-shot squat uniform progression
 
 on:
