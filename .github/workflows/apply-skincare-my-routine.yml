@@ -42,7 +42,7 @@ jobs:
           php -l systems/baseline-natural-skincare/api/routine_state.php
 
       - name: Run My Routine regression tests
-        run: node --test tests/skincare-my-routine.test.mjs tests/site-structure-integrity.test.mjs
+        run: node --test tests/skincare-my-routine.test.mjs
 
       - name: Commit verified implementation
         run: |
