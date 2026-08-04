@@ -29,7 +29,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-recipes.css?v=EDIT_VERSION_20260607_MOBILE_BATCH_APPLY_INLINE_LOCK_V2" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/baseline-natural-skincare.css?v=SKINCARE_CANONICAL_CSS_20260712" rel="stylesheet"/>
-<link href="/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_MY_ROUTINE_20260804_1" rel="stylesheet"/>
+<link href="/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -72,9 +72,9 @@ These Markdown rules are a human reference point, not live runtime config.
 <nav class="tabs">
 <button aria-selected="true" class="tab" data-target="system">System</button>
 <button aria-selected="false" class="tab" data-target="recipes">Recipes</button>
+<button aria-selected="false" class="tab" data-target="routine">My Routine</button>
 <button aria-selected="false" class="tab" data-target="ingredients">Ingredient Library</button>
 <button aria-selected="false" class="tab" data-target="support">Skin Support System</button>
-<button aria-selected="false" class="tab" data-target="routine">My Routine</button>
 </nav>
 </header>
 <main class="wrap">
@@ -1262,63 +1262,70 @@ Method steps MUST follow this format:
 <!-- MY ROUTINE -->
 <section class="section" id="routine">
 <div class="routine-shell">
-<div class="card routine-card">
-<div class="routine-topbar">
-<div>
-<h2>My Routine</h2>
-<p class="note">Build a personal self-care plan, state how often each action belongs in it, and keep a private completion log. The plan can remain private or be made public without exposing the log.</p>
-</div>
-<div class="routine-privacy">
-<label for="routineVisibility">Routine visibility</label>
-<select id="routineVisibility" aria-describedby="routineVisibilityDetail">
-<option value="private">Private — only I can see it</option>
-<option value="public">Public — others can view my plan</option>
-</select>
-<small id="routineVisibilityDetail">Private — only you can view your routine and log.</small>
-<div class="routine-auth-line"><span id="routineAuthStatus">Local draft mode.</span><button class="routine-login" id="routineLoginBtn" type="button">Log in</button></div>
-</div>
-</div>
-<div class="divider"></div>
-<div class="routine-save-status" id="routineSaveStatus" aria-live="polite"></div>
-</div>
-
-<div class="card routine-card">
-<div class="routine-builder-head">
-<div><h2>Routine plan</h2><p class="note">Choose an action, then set its place, frequency, benefits and any personal details.</p></div>
-</div>
-<div class="routine-add-row">
-<select id="routineActionSelect" aria-label="Select a self-care action"><option value="">Choose a category and self-care action…</option></select>
-<button class="routine-add-button" id="addRoutineActionBtn" type="button">Add to routine</button>
-</div>
-<div class="routine-items" id="routineItems" aria-live="polite"></div>
-</div>
-
-<div class="routine-layout">
-<div class="card routine-card">
-<h2>Routine summary</h2>
-<p class="note">Your actions are shown in their chosen order with their benefits and intended frequency.</p>
-<div class="routine-summary" id="routineSummary" aria-live="polite"></div>
-</div>
-
-<div class="card routine-card">
+<nav class="routine-subtabs" id="routineSubtabs" role="tablist" aria-label="My Routine sections">
+<button class="routine-subtab active" type="button" role="tab" aria-selected="true" data-routine-view="log">Routine Log</button>
+<button class="routine-subtab" type="button" role="tab" aria-selected="false" data-routine-view="summary" tabindex="-1">My Routine</button>
+<button class="routine-subtab" type="button" role="tab" aria-selected="false" data-routine-view="plan" tabindex="-1">Routine Plan</button>
+<button class="routine-subtab" type="button" role="tab" aria-selected="false" data-routine-view="public" tabindex="-1">Public Routines</button>
+</nav>
+<div class="routine-panel active" data-routine-panel="log">
+<div class="card routine-card routine-card-full">
 <div class="routine-log-head">
-<div><h2>Routine log</h2><p class="note">Record what you completed. Weekly actions remain available until their weekly target is reached.</p></div>
+<div><h2>Routine Log</h2><p class="note">Record completed actions for the selected date. Weekly actions remain available until their weekly target is reached.</p></div>
 <div class="routine-log-date"><label for="routineLogDate">Log date</label><input id="routineLogDate" type="date"/></div>
 </div>
 <div class="routine-log-progress" id="routineLogProgress">0 actions due</div>
 <div class="routine-log-items" id="routineLogItems" aria-live="polite"></div>
 </div>
 </div>
-
-<div class="card routine-card">
-<div class="routine-public-head">
-<div><h2>View a public routine</h2><p class="note">Search by profile name. Only the routine plan and benefits are shown; completion logs remain private.</p></div>
+<div class="routine-panel" data-routine-panel="summary" hidden>
+<div class="card routine-card routine-card-full">
+<div class="routine-summary-head">
+<div>
+<h2>My Routine</h2>
+<h3>Routine summary</h3>
+<p class="note">Build a personal self-care plan with a place and frequency for each action. The plan can remain private or be shared publicly, while your completion log always stays private.</p>
 </div>
-<div class="routine-public-search">
-<input id="publicRoutineName" type="search" maxlength="40" placeholder="Profile name" aria-label="Profile name"/>
+<select id="routineVisibility" class="routine-visibility-select" aria-label="Routine visibility">
+<option value="private">Private</option>
+<option value="public">Public</option>
+</select>
+</div>
+<div class="routine-save-status" id="routineSaveStatus" aria-live="polite"></div>
+<div class="divider"></div>
+<div class="routine-summary" id="routineSummary" aria-live="polite"></div>
+</div>
+</div>
+<div class="routine-panel" data-routine-panel="plan" hidden>
+<div class="card routine-card routine-card-full">
+<div class="routine-builder-head">
+<div><h2>Routine Plan</h2><p class="note">Type to find an action or open the grouped dropdown, then set its time, frequency, benefit summary and personal notes.</p></div>
+</div>
+<div class="routine-add-row">
+<div class="routine-action-combobox">
+<div class="routine-action-input-wrap">
+<input id="routineActionSearch" type="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="routineActionMenu" autocomplete="off" placeholder="Type or choose a routine action…"/>
+<button id="routineActionToggle" class="routine-action-toggle" type="button" aria-label="Open routine action list" aria-expanded="false" aria-controls="routineActionMenu">⌄</button>
+</div>
+<div id="routineActionMenu" class="routine-action-menu" role="listbox" hidden></div>
+<select id="routineActionSelect" class="routine-action-native" tabindex="-1" aria-hidden="true"><option value="">Choose a routine action…</option></select>
+</div>
+<button class="routine-add-button" id="addRoutineActionBtn" type="button">Add to routine</button>
+</div>
+<div class="routine-items" id="routineItems" aria-live="polite"></div>
+</div>
+</div>
+<div class="routine-panel" data-routine-panel="public" hidden>
+<div class="card routine-card routine-card-full">
+<div class="routine-public-head">
+<div><h2>Public Routines</h2><p class="note">Choose a public profile. Only its routine plan and benefit summaries are shown; completion logs remain private.</p></div>
+</div>
+<div class="routine-public-select">
+<select id="publicRoutineName" aria-label="Choose a public profile"><option value="">Choose a public profile…</option></select>
 <button class="routine-add-button" id="findPublicRoutineBtn" type="button">View routine</button>
 </div>
 <div class="routine-public-result" id="publicRoutineResult" aria-live="polite"></div>
+</div>
 </div>
 </div>
 </section>
@@ -2227,7 +2234,7 @@ Method steps MUST follow this format:
   window.addEventListener('load', initRecipeSliders);
 })();
 </script>
-<script src="/systems/baseline-natural-skincare/js/skincare-routine-model.js?v=SKINCARE_MY_ROUTINE_20260804_2"></script>
-<script src="/systems/baseline-natural-skincare/js/skincare-routine.js?v=SKINCARE_MY_ROUTINE_20260804_2"></script>
+<script src="/systems/baseline-natural-skincare/js/skincare-routine-model.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>
+<script src="/systems/baseline-natural-skincare/js/skincare-routine.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>
 </body>
 </html>

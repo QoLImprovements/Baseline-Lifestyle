@@ -14,6 +14,10 @@
     { value: 'weekly', label: 'A number of times each week' },
     { value: 'as-needed', label: 'As needed' }
   ]);
+  const BENEFIT_MODES = Object.freeze([
+    { value: 'brief', label: 'Brief' },
+    { value: 'comprehensive', label: 'Comprehensive' }
+  ]);
   const GROUPS = Object.freeze([
     'Cleansing',
     'Preparation, Mists & Toning',
@@ -31,8 +35,26 @@
     'Custom'
   ]);
 
+  const BENEFIT_DETAILS = Object.freeze({
+    'Cleansing': 'Used at a suitable frequency, it keeps residue removal deliberate while limiting unnecessary cleansing pressure on the skin barrier.',
+    'Preparation, Mists & Toning': 'Its role is preparatory rather than corrective, helping the next compatible step spread or feel more comfortable without making the routine unnecessarily complex.',
+    'Hydration & Barrier': 'It works best as part of an ordered hydration-and-sealing approach, with the amount adjusted to climate, skin feel and the layers used around it.',
+    'Serums & Active Ingredients': 'The chosen strength, area and frequency matter; recording them makes tolerance changes easier to identify and helps avoid unintentionally stacking active steps.',
+    'Exfoliation': 'Spacing and skin response are central, because more frequent use is not automatically more beneficial and may increase irritation or barrier disruption.',
+    'Devices — Light, Heat & Energy': 'The device instructions, treatment spacing and personal contraindications should remain the authority, while the routine records when and how the session is used.',
+    'Devices — Electrical & Conductive': 'Compatible conductive products, controlled intensity and consistent placement help make the session repeatable while reducing avoidable discomfort or uneven technique.',
+    'Devices — Mechanical, Suction & Cooling': 'Pressure, contact time, hygiene and spacing should be kept deliberate so the tool remains a controlled routine step rather than repeated mechanical stress.',
+    'Professional Treatments': 'Recording the appointment and recovery period helps coordinate home care around professional guidance and avoids crowding the treatment with unnecessary active or device steps.',
+    'Massage & Manual Care': 'The practical benefit depends on comfortable pressure, adequate glide and a duration that supports relaxation without pulling or overworking the skin.',
+    'Shaving & Hair Removal': 'Preparation, controlled technique and suitable aftercare work together to reduce drag and support comfort after hair removal.',
+    'Body, Hand & Foot Care': 'Consistent use can make care of larger or higher-friction areas easier to maintain, with texture and frequency adjusted to the needs of each area.',
+    'Protection & Progress Tracking': 'This supports prevention or consistent observation, helping routine decisions rely on repeated information rather than memory from a single day.',
+    'Custom': 'It remains a fixed tracking description while the personal notes field records the user-specific product, technique, purpose and reminders.'
+  });
+
   function action(id, group, title, benefit) {
-    return Object.freeze({ id, group, title, benefit });
+    const comprehensive = `${benefit} ${BENEFIT_DETAILS[group] || BENEFIT_DETAILS.Custom}`.trim();
+    return Object.freeze({ id, group, title, benefit, benefitBrief: benefit, benefitComprehensive: comprehensive });
   }
 
   const ACTIONS = Object.freeze([
@@ -137,6 +159,17 @@
 
   const ACTION_BY_ID = new Map(ACTIONS.map((item) => [item.id, item]));
 
+  function benefitText(value, requestedMode) {
+    const source = value && typeof value === 'object' ? value : {};
+    const definition = source.benefitBrief && source.benefitComprehensive
+      ? source
+      : ACTION_BY_ID.get(String(source.actionId || source.id || '')) || ACTIONS[0];
+    const mode = requestedMode === 'comprehensive' || (!requestedMode && source.benefitMode === 'comprehensive')
+      ? 'comprehensive'
+      : 'brief';
+    return mode === 'comprehensive' ? definition.benefitComprehensive : definition.benefitBrief;
+  }
+
   function cleanText(value, maximum) {
     return String(value == null ? '' : value).trim().slice(0, maximum);
   }
@@ -155,11 +188,13 @@
     const source = value && typeof value === 'object' ? value : {};
     const definition = ACTION_BY_ID.get(String(source.actionId || '')) || ACTIONS[0];
     const timeOfDay = TIMES.some((entry) => entry.value === source.timeOfDay) ? source.timeOfDay : 'anytime';
+    const benefitMode = source.benefitMode === 'comprehensive' ? 'comprehensive' : 'brief';
     return {
       id: cleanText(source.id || `routine-${fallbackIndex + 1}`, 80),
       actionId: definition.id,
       title: cleanText(source.title || definition.title, 100),
-      benefit: cleanText(source.benefit || definition.benefit, 600),
+      benefitMode,
+      benefit: benefitText(definition, benefitMode),
       timeOfDay,
       frequency: normaliseFrequency(source.frequency),
       notes: cleanText(source.notes, 600)
@@ -274,9 +309,11 @@
     DAYS,
     TIMES,
     FREQUENCIES,
+    BENEFIT_MODES,
     GROUPS,
     ACTIONS,
     ACTION_BY_ID,
+    benefitText,
     normaliseFrequency,
     normaliseItem,
     normaliseRoutine,
