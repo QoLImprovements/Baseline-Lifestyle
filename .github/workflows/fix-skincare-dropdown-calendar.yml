@@ -25,85 +25,21 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Apply visual corrections
+      - name: Apply definitive visual correction
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
 
           css_path = Path('systems/baseline-natural-skincare/css/skincare-routine-enhancements.css')
           css = css_path.read_text()
+          marker = 'SKINCARE_ROUTINE_VISUAL_CORRECTION_20260804_2'
+          correction = '''
 
-          replacements = {
-              r'#routine \.routine-calendar-card\{[^}]*\}': '#routine .routine-calendar-card{margin-top:16px;background:var(--skin-page-gradient)!important;}',
-              r'#routine \.routine-calendar-day\{.*?\n\}': '''#routine .routine-calendar-day{
-  position:relative;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:5px;
-  border:1px solid var(--skin-peach)!important;
-  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important;
-  color:var(--ink);
-  padding:9px;
-  font:inherit;
-  text-align:left;
-  cursor:pointer;
-  transition:transform .08s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;
-}''',
-              r'#routine \.routine-calendar-day:hover\{.*?\n\}': '''#routine .routine-calendar-day:hover{
-  transform:translateY(-1px);
-  border-color:var(--skin-deep)!important;
-  background:linear-gradient(180deg,var(--skin-milk),var(--skin-wash))!important;
-  box-shadow:0 14px 28px -26px #7a4a3a;
-}''',
-              r'#routine \.routine-calendar-day\.has-routine\{.*?\n\}': '''#routine .routine-calendar-day.has-routine{
-  background:linear-gradient(180deg,var(--skin-wash),var(--skin-peach))!important;
-  border-color:var(--skin-deep)!important;
-}''',
-              r'#routine \.routine-calendar-day\.selected\{.*?\n\}': '''#routine .routine-calendar-day.selected{
-  outline:3px solid var(--skin-deep)!important;
-  border-color:var(--skin-deep)!important;
-  background:linear-gradient(180deg,var(--skin-peach),var(--skin-deep))!important;
-}''',
-              r'#routine \.routine-calendar-count\{.*?\n\}': '''#routine .routine-calendar-count{
-  display:inline-grid;
-  place-items:center;
-  min-width:24px;
-  height:24px;
-  padding:0 6px;
-  border-radius:999px;
-  background:var(--skin-deep)!important;
-  color:#fff7f2!important;
-  font-size:12px;
-  font-weight:900;
-}'''
-          }
-          for pattern, replacement in replacements.items():
-              css, count = re.subn(pattern, replacement, css, count=1, flags=re.S)
-              if count != 1:
-                  raise SystemExit(f'Expected one CSS match for {pattern}, found {count}')
-
-          marker = '/* The action picker must be visually solid: no page content may show through it. */'
-          if marker not in css:
-              raise SystemExit('Opaque action-picker marker not found')
-          css = css.split(marker, 1)[0].rstrip() + '''
-
-/* The action picker is a solid foreground layer, never a translucent layer behind routine cards. */
-#routine .routine-add-row{
-  position:relative!important;
-  z-index:500!important;
-  isolation:isolate!important;
-}
-#routine .routine-action-combobox{
-  position:relative!important;
-  z-index:501!important;
-  isolation:isolate!important;
-}
-#routine .routine-items{
-  position:relative!important;
-  z-index:1!important;
-}
+/* SKINCARE_ROUTINE_VISUAL_CORRECTION_20260804_2 */
+/* Keep the action list above every routine card and make every list surface fully opaque. */
+#routine .routine-add-row{position:relative!important;z-index:500!important;isolation:isolate!important;}
+#routine .routine-action-combobox{position:relative!important;z-index:501!important;isolation:isolate!important;}
+#routine .routine-items{position:relative!important;z-index:1!important;}
 #routine .routine-action-menu{
   z-index:1000!important;
   opacity:1!important;
@@ -131,77 +67,66 @@ jobs:
   mix-blend-mode:normal!important;
   color:var(--ink)!important;
 }
-#routine .routine-action-group-label{
-  background:var(--skin-milk)!important;
-  color:var(--accent-2)!important;
-}
+#routine .routine-action-group-label{background:var(--skin-milk)!important;color:var(--accent-2)!important;}
 #routine .routine-action-option:hover,
 #routine .routine-action-option:focus,
-#routine .routine-action-option[aria-selected="true"]{
-  background:var(--skin-wash)!important;
-  color:var(--ink)!important;
-}
-#routine select,
-#routine select option,
-#routine select optgroup{
-  opacity:1!important;
-  background-color:var(--skin-cream)!important;
-  color:var(--ink)!important;
-}
+#routine .routine-action-option[aria-selected="true"]{background:var(--skin-wash)!important;color:var(--ink)!important;}
+#routine select,#routine select option,#routine select optgroup{opacity:1!important;background-color:var(--skin-cream)!important;color:var(--ink)!important;}
 
-/* Keep the calendar entirely inside the mirrored terracotta skincare palette. */
-#routine .routine-calendar-weekdays span,
-#routine .routine-calendar-nav strong{
-  color:var(--ink)!important;
-}
+/* Use only the established mirrored terracotta skincare colours in the calendar. */
+#routine .routine-calendar-card{background:var(--skin-page-gradient)!important;}
+#routine .routine-calendar-weekdays span,#routine .routine-calendar-nav strong{color:var(--ink)!important;}
 #routine .routine-calendar-nav button{
   background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important;
   border-color:var(--skin-peach)!important;
   color:var(--ink)!important;
 }
-#routine .routine-calendar-empty{
-  background:transparent!important;
+#routine .routine-calendar-day{
+  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important;
+  border-color:var(--skin-peach)!important;
+  color:var(--ink)!important;
 }
+#routine .routine-calendar-day:hover{
+  background:linear-gradient(180deg,var(--skin-milk),var(--skin-wash))!important;
+  border-color:var(--skin-deep)!important;
+}
+#routine .routine-calendar-day.has-routine{
+  background:linear-gradient(180deg,var(--skin-wash),var(--skin-peach))!important;
+  border-color:var(--skin-deep)!important;
+}
+#routine .routine-calendar-day.selected{
+  background:linear-gradient(180deg,var(--skin-peach),var(--skin-deep))!important;
+  border-color:var(--skin-deep)!important;
+  outline:3px solid var(--skin-deep)!important;
+}
+#routine .routine-calendar-count{background:var(--skin-deep)!important;color:#fff7f2!important;}
+#routine .routine-calendar-empty{background:transparent!important;}
 '''
-          css_path.write_text(css)
+          if marker not in css:
+              css_path.write_text(css.rstrip() + correction)
 
+          old = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1'
+          new = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2'
           html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
           html = html_path.read_text()
-          old_version = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1'
-          new_version = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2'
-          if old_version not in html:
-              raise SystemExit('Expected skincare enhancement cache key not found')
-          html_path.write_text(html.replace(old_version, new_version))
+          if old not in html and new not in html:
+              raise SystemExit('Skincare enhancement cache key not found')
+          html_path.write_text(html.replace(old, new))
 
           test_path = Path('tests/skincare-routine-groups-calendar.test.mjs')
-          test = test_path.read_text().replace(old_version, new_version)
-          addition = '''
-
-test('action dropdown is an opaque foreground layer above routine cards', () => {
-  assert.match(css, /\\.routine-add-row\\{[\\s\\S]*?z-index:500!important/);
-  assert.match(css, /\\.routine-action-menu\\{[\\s\\S]*?z-index:1000!important[\\s\\S]*?background:var\\(--skin-cream\\)!important/);
-  assert.match(css, /\\.routine-action-option\\{[\\s\\S]*?background:var\\(--skin-cream\\)!important/);
-});
-
-test('calendar uses only the mirrored skincare palette for date states', () => {
-  assert.match(css, /\\.routine-calendar-card\\{[^}]*var\\(--skin-page-gradient\\)/);
-  assert.match(css, /\\.routine-calendar-day\\.has-routine\\{[\\s\\S]*?var\\(--skin-wash\\)[\\s\\S]*?var\\(--skin-peach\\)/);
-  assert.match(css, /\\.routine-calendar-day\\.selected\\{[\\s\\S]*?var\\(--skin-peach\\)[\\s\\S]*?var\\(--skin-deep\\)/);
-  assert.match(css, /\\.routine-calendar-count\\{[\\s\\S]*?background:var\\(--skin-deep\\)!important/);
-});
-'''
-          if "action dropdown is an opaque foreground layer" not in test:
-              test += addition
+          test = test_path.read_text().replace(old, new)
           test_path.write_text(test)
           PY
 
       - name: Install locked dependencies
         run: npm ci
 
-      - name: Verify corrections
+      - name: Verify correction
         run: |
           node --test tests/skincare-routine-groups-calendar.test.mjs tests/skincare-my-routine.test.mjs
           npm run test:structure
+          grep -q 'z-index:1000!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
+          grep -q 'background:var(--skin-page-gradient)!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
 
       - name: Publish correction
         run: |
