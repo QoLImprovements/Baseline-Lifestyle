@@ -6,6 +6,9 @@ on:
       - agent/skincare-my-routine-20260804
     paths:
       - .github/workflows/apply-skincare-my-routine.yml
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
