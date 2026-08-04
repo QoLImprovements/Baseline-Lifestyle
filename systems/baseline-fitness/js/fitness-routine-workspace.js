@@ -129,7 +129,7 @@
     ['cardio','other','sports'].forEach((key)=>buildActivityPanel(key));
     const remembered=global.sessionStorage?.getItem(VIEW_KEY);
     const legacyPlanRoute=/\/baseline-fitness\/my-plan\/?$/.test(global.location?.pathname||'');
-    activateView(VIEWS.includes(remembered)?remembered:(legacyPlanRoute?'calisthenics':'log'));
+    activateView(legacyPlanRoute?'calisthenics':(VIEWS.includes(remembered)?remembered:'log'));
   }
 
   function buildActivityPanel(section){
