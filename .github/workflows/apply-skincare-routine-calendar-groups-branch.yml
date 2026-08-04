@@ -1,0 +1,106 @@
+name: Verify skincare routine calendar and groups branch
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    if: github.event.pull_request.head.ref == 'agent/skincare-routine-calendar-groups-opaque-menu-20260804'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/skincare-routine-calendar-groups-opaque-menu-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Apply staged implementation
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re, textwrap
+
+          enhancement = Path('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js')
+          if enhancement.exists() and enhancement.read_text().strip() != 'placeholder':
+              raise SystemExit(0)
+
+          workflow = Path('.github/workflows/apply-skincare-routine-calendar-groups.yml').read_text()
+          match = re.search(r"python3 - <<'PYCODE'\n(.*?)\n\s*PYCODE", workflow, re.S)
+          if not match:
+              raise SystemExit('embedded skincare migration not found')
+          code = textwrap.dedent(match.group(1))
+          exec(compile(code, 'embedded-skincare-migration', 'exec'), {'__name__': '__main__'})
+
+          css_path = Path('systems/baseline-natural-skincare/css/skincare-routine-enhancements.css')
+          css = css_path.read_text()
+          opaque = '''
+
+/* The action picker must be visually solid: no page content may show through it. */
+#routine .routine-action-menu{
+  opacity:1!important;
+  background-color:#f8e5da!important;
+  background-image:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  mix-blend-mode:normal!important;
+  isolation:isolate;
+}
+#routine .routine-action-group,
+#routine .routine-action-group-label,
+#routine .routine-action-option,
+#routine .routine-action-no-results{
+  opacity:1!important;
+  background-color:#f8e5da!important;
+  background-image:none!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  mix-blend-mode:normal!important;
+}
+#routine .routine-action-option:hover,
+#routine .routine-action-option:focus,
+#routine .routine-action-option[aria-selected="true"]{
+  background-color:#e6aa92!important;
+}
+#routine select,
+#routine select option,
+#routine select optgroup{
+  opacity:1!important;
+  background-color:#f8e5da!important;
+  color:var(--ink)!important;
+}
+'''
+          if 'The action picker must be visually solid' not in css:
+              css_path.write_text(css + opaque)
+          PY
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify implementation
+        run: |
+          node --check systems/baseline-natural-skincare/js/skincare-routine-enhancements.js
+          php -l systems/baseline-natural-skincare/api/schema.php
+          php -l systems/baseline-natural-skincare/api/routine_groups.php
+          node --test tests/skincare-my-routine.test.mjs tests/skincare-routine-groups-calendar.test.mjs
+          npm run test:structure
+
+      - name: Publish clean verified branch
+        run: |
+          rm -f .github/workflows/apply-skincare-routine-calendar-groups.yml
+          rm -f .github/workflows/apply-skincare-routine-calendar-groups-branch.yml
+          rm -f .github/workflows/README-skincare-routine-calendar-groups.txt
+          rm -f TEMP_STOP
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add skincare routine calendar, groups and opaque action menu [skip ci]"
+          git push origin HEAD:agent/skincare-routine-calendar-groups-opaque-menu-20260804
