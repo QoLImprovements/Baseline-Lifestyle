@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from pathlib import Path
 
+# Repairs the migration's updateItem signature before the one-time migration runs.
 path = Path(__file__).with_name('apply_routine_systems_overhaul.py')
 text = path.read_text()
 text = text.replace(
