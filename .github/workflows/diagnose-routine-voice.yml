@@ -1,0 +1,52 @@
+name: Diagnose routine voice workflow
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/diagnose-routine-voice.yml
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: agent/routine-systems-overhaul-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: Run and capture voice browser validation
+        id: voice
+        shell: bash
+        run: |
+          set +e
+          npm run test:voice-ui > ROUTINE_VOICE_VALIDATION.log 2>&1
+          status=$?
+          echo "exit_code=$status" >> "$GITHUB_OUTPUT"
+          printf 'exit_code=%s\n' "$status" > ROUTINE_VOICE_VALIDATION.status
+          exit 0
+
+      - name: Publish diagnostic result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ROUTINE_VOICE_VALIDATION.log ROUTINE_VOICE_VALIDATION.status
+          git commit -m "Record routine voice validation result"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
+
+      - name: Fail workflow when voice validation failed
+        if: steps.voice.outputs.exit_code != '0'
+        run: exit 1
