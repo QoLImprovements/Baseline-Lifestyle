@@ -56,82 +56,9 @@ jobs:
             exit 0
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
+          echo 'CgovKiBTS0lOQ0FSRV9ST1VUSU5FX1ZJU1VBTF9DT1JSRUNUSU9OXzIwMjYwODA0XzIgKi8KLyogS2VlcCB0aGUgYWN0aW9uIGxpc3QgYWJvdmUgZXZlcnkgcm91dGluZSBjYXJkIGFuZCBtYWtlIGV2ZXJ5IGxpc3Qgc3VyZmFjZSBmdWxseSBvcGFxdWUuICovCiNyb3V0aW5lIC5yb3V0aW5lLWFkZC1yb3d7cG9zaXRpb246cmVsYXRpdmUhaW1wb3J0YW50O3otaW5kZXg6NTAwIWltcG9ydGFudDtpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1hY3Rpb24tY29tYm9ib3h7cG9zaXRpb246cmVsYXRpdmUhaW1wb3J0YW50O3otaW5kZXg6NTAxIWltcG9ydGFudDtpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1pdGVtc3twb3NpdGlvbjpyZWxhdGl2ZSFpbXBvcnRhbnQ7ei1pbmRleDoxIWltcG9ydGFudDt9CiNyb3V0aW5lIC5yb3V0aW5lLWFjdGlvbi1tZW51ewogIHotaW5kZXg6MTAwMCFpbXBvcnRhbnQ7CiAgb3BhY2l0eToxIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWNvbG9yOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWltYWdlOm5vbmUhaW1wb3J0YW50OwogIC13ZWJraXQtYmFja2Ryb3AtZmlsdGVyOm5vbmUhaW1wb3J0YW50OwogIGJhY2tkcm9wLWZpbHRlcjpub25lIWltcG9ydGFudDsKICBmaWx0ZXI6bm9uZSFpbXBvcnRhbnQ7CiAgbWl4LWJsZW5kLW1vZGU6bm9ybWFsIWltcG9ydGFudDsKICBpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7CiAgYm94LXNoYWRvdzowIDI0cHggNTJweCAtMjBweCAjN2E0YTNhIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1hY3Rpb24tZ3JvdXAsCiNyb3V0aW5lIC5yb3V0aW5lLWFjdGlvbi1ncm91cC1sYWJlbCwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbiwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW5vLXJlc3VsdHN7CiAgb3BhY2l0eToxIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWNvbG9yOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWltYWdlOm5vbmUhaW1wb3J0YW50OwogIC13ZWJraXQtYmFja2Ryb3AtZmlsdGVyOm5vbmUhaW1wb3J0YW50OwogIGJhY2tkcm9wLWZpbHRlcjpub25lIWltcG9ydGFudDsKICBmaWx0ZXI6bm9uZSFpbXBvcnRhbnQ7CiAgbWl4LWJsZW5kLW1vZGU6bm9ybWFsIWltcG9ydGFudDsKICBjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1hY3Rpb24tZ3JvdXAtbGFiZWx7YmFja2dyb3VuZDp2YXIoLS1za2luLW1pbGspIWltcG9ydGFudDtjb2xvcjp2YXIoLS1hY2NlbnQtMikhaW1wb3J0YW50O30KI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbjpob3ZlciwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbjpmb2N1cywKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvblthcmlhLXNlbGVjdGVkPSJ0cnVlIl17YmFja2dyb3VuZDp2YXIoLS1za2luLXdhc2gpIWltcG9ydGFudDtjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDt9CiNyb3V0aW5lIHNlbGVjdCwjcm91dGluZSBzZWxlY3Qgb3B0aW9uLCNyb3V0aW5lIHNlbGVjdCBvcHRncm91cHtvcGFjaXR5OjEhaW1wb3J0YW50O2JhY2tncm91bmQtY29sb3I6dmFyKC0tc2tpbi1jcmVhbSkhaW1wb3J0YW50O2NvbG9yOnZhcigtLWluaykhaW1wb3J0YW50O30KCi8qIFVzZSBvbmx5IHRoZSBlc3RhYmxpc2hlZCBtaXJyb3JlZCB0ZXJyYWNvdHRhIHNraW5jYXJlIGNvbG91cnMgaW4gdGhlIGNhbGVuZGFyLiAqLwojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1jYXJke2JhY2tncm91bmQ6dmFyKC0tc2tpbi1wYWdlLWdyYWRpZW50KSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci13ZWVrZGF5cyBzcGFuLCNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLW5hdiBzdHJvbmd7Y29sb3I6dmFyKC0taW5rKSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1uYXYgYnV0dG9uewogIGJhY2tncm91bmQ6bGluZWFyLWdyYWRpZW50KDE4MGRlZyx2YXIoLS1za2luLWNyZWFtKSx2YXIoLS1za2luLW1pbGspKSFpbXBvcnRhbnQ7CiAgYm9yZGVyLWNvbG9yOnZhcigtLXNraW4tcGVhY2gpIWltcG9ydGFudDsKICBjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1kYXl7CiAgYmFja2dyb3VuZDpsaW5lYXItZ3JhZGllbnQoMTgwZGVnLHZhcigtLXNraW4tY3JlYW0pLHZhcigtLXNraW4tbWlsaykpIWltcG9ydGFudDsKICBib3JkZXItY29sb3I6dmFyKC0tc2tpbi1wZWFjaCkhaW1wb3J0YW50OwogIGNvbG9yOnZhcigtLWluaykhaW1wb3J0YW50Owp9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWRheTpob3ZlcnsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsdmFyKC0tc2tpbi1taWxrKSx2YXIoLS1za2luLXdhc2gpKSFpbXBvcnRhbnQ7CiAgYm9yZGVyLWNvbG9yOnZhcigtLXNraW4tZGVlcCkhaW1wb3J0YW50Owp9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWRheS5oYXMtcm91dGluZXsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsdmFyKC0tc2tpbi13YXNoKSx2YXIoLS1za2luLXBlYWNoKSkhaW1wb3J0YW50OwogIGJvcmRlci1jb2xvcjp2YXIoLS1za2luLWRlZXApIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1kYXkuc2VsZWN0ZWR7CiAgYmFja2dyb3VuZDpsaW5lYXItZ3JhZGllbnQoMTgwZGVnLHZhcigtLXNraW4tcGVhY2gpLHZhcigtLXNraW4tZGVlcCkpIWltcG9ydGFudDsKICBib3JkZXItY29sb3I6dmFyKC0tc2tpbi1kZWVwKSFpbXBvcnRhbnQ7CiAgb3V0bGluZTozcHggc29saWQgdmFyKC0tc2tpbi1kZWVwKSFpbXBvcnRhbnQ7Cn0KI3JvdXRpbmUgLnJvdXRpbmUtY2FsZW5kYXItY291bnR7YmFja2dyb3VuZDp2YXIoLS1za2luLWRlZXApIWltcG9ydGFudDtjb2xvcjojZmZmN2YyIWltcG9ydGFudDt9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWVtcHR5e2JhY2tncm91bmQ6dHJhbnNwYXJlbnQhaW1wb3J0YW50O30K' | base64 -d >> systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
           python3 - <<'PY'
           from pathlib import Path
-
-          css_path = Path('systems/baseline-natural-skincare/css/skincare-routine-enhancements.css')
-          css = css_path.read_text()
-          correction = '''
-
-/* SKINCARE_ROUTINE_VISUAL_CORRECTION_20260804_2 */
-/* Keep the action list above every routine card and make every list surface fully opaque. */
-#routine .routine-add-row{position:relative!important;z-index:500!important;isolation:isolate!important;}
-#routine .routine-action-combobox{position:relative!important;z-index:501!important;isolation:isolate!important;}
-#routine .routine-items{position:relative!important;z-index:1!important;}
-#routine .routine-action-menu{
-  z-index:1000!important;
-  opacity:1!important;
-  background:var(--skin-cream)!important;
-  background-color:var(--skin-cream)!important;
-  background-image:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  isolation:isolate!important;
-  box-shadow:0 24px 52px -20px #7a4a3a!important;
-}
-#routine .routine-action-group,
-#routine .routine-action-group-label,
-#routine .routine-action-option,
-#routine .routine-action-no-results{
-  opacity:1!important;
-  background:var(--skin-cream)!important;
-  background-color:var(--skin-cream)!important;
-  background-image:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  filter:none!important;
-  mix-blend-mode:normal!important;
-  color:var(--ink)!important;
-}
-#routine .routine-action-group-label{background:var(--skin-milk)!important;color:var(--accent-2)!important;}
-#routine .routine-action-option:hover,
-#routine .routine-action-option:focus,
-#routine .routine-action-option[aria-selected="true"]{background:var(--skin-wash)!important;color:var(--ink)!important;}
-#routine select,#routine select option,#routine select optgroup{opacity:1!important;background-color:var(--skin-cream)!important;color:var(--ink)!important;}
-
-/* Use only the established mirrored terracotta skincare colours in the calendar. */
-#routine .routine-calendar-card{background:var(--skin-page-gradient)!important;}
-#routine .routine-calendar-weekdays span,#routine .routine-calendar-nav strong{color:var(--ink)!important;}
-#routine .routine-calendar-nav button{
-  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important;
-  border-color:var(--skin-peach)!important;
-  color:var(--ink)!important;
-}
-#routine .routine-calendar-day{
-  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important;
-  border-color:var(--skin-peach)!important;
-  color:var(--ink)!important;
-}
-#routine .routine-calendar-day:hover{
-  background:linear-gradient(180deg,var(--skin-milk),var(--skin-wash))!important;
-  border-color:var(--skin-deep)!important;
-}
-#routine .routine-calendar-day.has-routine{
-  background:linear-gradient(180deg,var(--skin-wash),var(--skin-peach))!important;
-  border-color:var(--skin-deep)!important;
-}
-#routine .routine-calendar-day.selected{
-  background:linear-gradient(180deg,var(--skin-peach),var(--skin-deep))!important;
-  border-color:var(--skin-deep)!important;
-  outline:3px solid var(--skin-deep)!important;
-}
-#routine .routine-calendar-count{background:var(--skin-deep)!important;color:#fff7f2!important;}
-#routine .routine-calendar-empty{background:transparent!important;}
-'''
-          css_path.write_text(css.rstrip() + correction)
-
           old = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1'
           new = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2'
           html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
@@ -139,7 +66,6 @@ jobs:
           if old not in html and new not in html:
               raise SystemExit('Skincare enhancement cache key not found')
           html_path.write_text(html.replace(old, new))
-
           test_path = Path('tests/skincare-routine-groups-calendar.test.mjs')
           test_path.write_text(test_path.read_text().replace(old, new))
           PY
