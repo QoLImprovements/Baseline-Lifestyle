@@ -1,0 +1,112 @@
+name: Apply skincare refresh-safe route
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/skincare-refresh-safe-route-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Apply host-independent skincare routing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text, old, new, label):
+              count = text.count(old)
+              if count != 1:
+                  raise RuntimeError(f'{label}: expected one match, found {count}')
+              return text.replace(old, new, 1)
+
+          shared_path = Path('sitewide/js/baseline-shared.js')
+          shared = shared_path.read_text()
+          shared = replace_once(
+              shared,
+              "'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },",
+              "'baseline-natural-skincare.html': { base:'/systems/baseline-natural-skincare/baseline-natural-skincare.html', hashTabs:true, defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },",
+              'shared skincare route config'
+          )
+          shared = replace_once(
+              shared,
+              "'baseline-natural-skincare.html':'/baseline-natural-skincare/system',",
+              "'baseline-natural-skincare.html':'/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=system',",
+              'shared skincare page link'
+          )
+          shared = replace_once(
+              shared,
+              "      if(!cfg || !cfg.defaultTab) return null;\n      const path = String(location.pathname || '').toLowerCase().replace(/\\/+$/,'');",
+              "      if(!cfg || !cfg.defaultTab) return null;\n      if(cfg.hashTabs){\n        const hashMatch = /^#tab=([^&]+)/.exec(String(location.hash || ''));\n        if(hashMatch && hashMatch[1]){\n          let requested = hashMatch[1];\n          try{ requested = decodeURIComponent(requested); }catch(_e){}\n          if(cfg.tabs && cfg.tabs[requested]) return { kind:'tab', tabId:requested, raw:String(location.href || '') };\n        }\n      }\n      const path = String(location.pathname || '').toLowerCase().replace(/\\/+$/,'');",
+              'shared hash route state'
+          )
+          shared = replace_once(
+              shared,
+              "      const slug = cfg.tabs[String(tabId || '')] || cfg.tabs[cfg.defaultTab] || '';\n      return slug ? (cfg.base + '/' + slug) : cfg.base;",
+              "      const requested = String(tabId || cfg.defaultTab);\n      const selected = cfg.tabs[requested] ? requested : cfg.defaultTab;\n      if(cfg.hashTabs) return cfg.base + '#tab=' + encodeURIComponent(selected);\n      const slug = cfg.tabs[selected] || cfg.tabs[cfg.defaultTab] || '';\n      return slug ? (cfg.base + '/' + slug) : cfg.base;",
+              'shared tab URL builder'
+          )
+          shared = replace_once(
+              shared,
+              "    const label = String(labelText || '').trim().toLowerCase();\n    const stripped = href.split('#')[0].split('?')[0].replace(/^\\/+/, '');",
+              "    const label = String(labelText || '').trim().toLowerCase();\n    const pathOnly = href.split('#')[0].split('?')[0].replace(/^https?:\\/\\/[^/]+/i, '');\n    const skincareRoute = pathOnly.match(/^\\/?baseline-natural-skincare\\/(system|recipes|ingredient-library|skin-support-system|my-routine)\\/?$/i);\n    if(skincareRoute){\n      const tabBySlug = { system:'system', recipes:'recipes', 'ingredient-library':'ingredients', 'skin-support-system':'support', 'my-routine':'routine' };\n      const tabId = tabBySlug[String(skincareRoute[1] || '').toLowerCase()] || 'system';\n      return '/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=' + encodeURIComponent(tabId);\n    }\n    const stripped = href.split('#')[0].split('?')[0].replace(/^\\/+/, '');",
+              'shared clean skincare link fallback'
+          )
+          shared = shared.replace('SITEWIDE_SKINCARE_ROUTINE_ROUTE_20260804_1', 'SITEWIDE_SKINCARE_REFRESH_SAFE_20260804_2', 1)
+          shared_path.write_text(shared)
+
+          tabs_path = Path('sitewide/js/baseline-tabs.js')
+          tabs = tabs_path.read_text()
+          tabs = replace_once(
+              tabs,
+              '"baseline-natural-skincare.html": { base:"/baseline-natural-skincare", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },',
+              '"baseline-natural-skincare.html": { base:"/systems/baseline-natural-skincare/baseline-natural-skincare.html", hashTabs:true, tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },',
+              'fallback skincare route config'
+          )
+          tabs = replace_once(
+              tabs,
+              "    if(cfg && cfg.tabs && cfg.tabs[tabId]) return cfg.base + \"/\" + cfg.tabs[tabId];",
+              "    if(cfg && cfg.tabs && cfg.tabs[tabId]) return cfg.hashTabs ? (cfg.base + '#tab=' + encodeURIComponent(tabId)) : (cfg.base + '/' + cfg.tabs[tabId]);",
+              'fallback tab URL builder'
+          )
+          tabs_path.write_text(tabs)
+
+          html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
+          html = html_path.read_text()
+          html = replace_once(html, 'baseline-shared.js?v=SKINCARE_ROUTINE_ROUTE_20260804_1', 'baseline-shared.js?v=SKINCARE_ROUTINE_REFRESH_SAFE_20260804_2', 'shared cache key')
+          html = replace_once(html, 'baseline-tabs.js?v=SKINCARE_ROUTINE_ROUTE_20260804_1', 'baseline-tabs.js?v=SKINCARE_ROUTINE_REFRESH_SAFE_20260804_2', 'tabs cache key')
+          html_path.write_text(html)
+          PY
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check sitewide/js/baseline-shared.js
+          node --check sitewide/js/baseline-tabs.js
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run complete website checks
+        run: npm test
+
+      - name: Commit verified implementation
+        run: |
+          rm .github/workflows/apply-skincare-refresh-safe-route.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Make skincare tab URLs refresh-safe on Hostinger"
+          git push origin HEAD:agent/skincare-refresh-safe-route-20260804
