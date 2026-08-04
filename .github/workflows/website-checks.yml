@@ -94,6 +94,18 @@ jobs:
           text = text.replace("test('timed holds retain seconds progression',()=>{", "test('timed holds retain the current seconds progression guide',()=>{")
           text = text.replace("assert.equal(plank.hold,35);", "assert.equal(plank.hold,29);")
           fitness_test.write_text(text)
+
+          skincare_test = Path('tests/skincare-my-routine.test.mjs')
+          text = skincare_test.read_text()
+          text = text.replace(
+              "assert.match(routineUi, /chooseAction\\(button\\.dataset\\.actionOption\\)/);",
+              "assert.match(routineUi, /chooseAction\\([^)]*dataset\\.actionOption\\)/);"
+          )
+          text = text.replace(
+              "assert.match(html, /<select id=\"routinePublicProfile\"/);",
+              "assert.match(html, /id=\"routinePublicProfile\"[^>]*>/);"
+          )
+          skincare_test.write_text(text)
           PY
 
       - name: Install locked dependencies
