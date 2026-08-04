@@ -43,3 +43,11 @@ text, count = re.subn(pattern, lambda _match: replacement, text, count=1)
 if count != 1:
     raise SystemExit(f'could not repair updateItem migration block: {count}')
 path.write_text(text)
+
+legacy_test = Path(__file__).resolve().parents[1] / 'tests/skincare-my-routine.test.mjs'
+legacy_text = legacy_test.read_text()
+legacy_text = legacy_text.replace(
+    r"assert.match(html, /skincare-routine\.js\?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1/);",
+    r"assert.match(html, /skincare-routine\.js\?v=SKINCARE_ROUTINE_PRODUCTS_20260804_1/);"
+)
+legacy_test.write_text(legacy_text)
