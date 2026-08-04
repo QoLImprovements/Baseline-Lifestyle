@@ -1,7 +1,7 @@
 /* Baseline Fitness — protected browser-owned Saved Data bridge. */
 (function (global) {
   'use strict';
-  if (!global || !global.localStorage || global.__BASELINE_FITNESS_SAVED_DATA_BRIDGE__) return;
+  if (!global || !global.localStorage || typeof Storage === 'undefined' || global.__BASELINE_FITNESS_SAVED_DATA_BRIDGE__) return;
   global.__BASELINE_FITNESS_SAVED_DATA_BRIDGE__ = true;
 
   const API = '/systems/baseline-fitness/api/fitness_state.php';
@@ -163,198 +163,397 @@
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /*
- * Session 6 squat progression bridge.
+ * Independent exercise progression.
  *
- * The first five sessions retain the values already completed under the
- * original +2 / +1 / +3 progression. Session 6 is anchored at 44 / 41 / 47,
- * then all three sets increase by three reps per completed session.
+ * A failed exercise repeats its own target in the next workout. Exercises that
+ * succeeded continue to their next target. The history travels with the active
+ * workout state, so the existing Saved Data bridge can carry it between devices.
  */
 (function (global) {
   'use strict';
-  if (!global || global.__BASELINE_SQUAT_UNIFORM_PROGRESSION__) return;
-  global.__BASELINE_SQUAT_UNIFORM_PROGRESSION__ = true;
 
   const STEP_PREFIX = '__bl_fitness_workout_progress_v2__::';
+  const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
+  const PLAN_PREFIX = '__bl_fitness_plan_v1__::';
   const ANCHOR_SESSION = 6;
   const ANCHOR_VALUES = Object.freeze([44, 41, 47]);
-  const INCREMENT = 3;
-  let originalWorkout = null;
-  let frame = 0;
+  const SQUAT_INCREMENT = 3;
 
-  function sessionValues(sessionIndex) {
-    const session = Math.max(ANCHOR_SESSION, Math.round(Number(sessionIndex) || ANCHOR_SESSION));
-    const increase = (session - ANCHOR_SESSION) * INCREMENT;
-    return ANCHOR_VALUES.map((value) => value + increase);
+  function parseJson(raw) {
+    try { const value = JSON.parse(String(raw)); return value && typeof value === 'object' ? value : null; }
+    catch (_error) { return null; }
   }
-
-  function legacyValues(sessionIndex) {
+  function normaliseOwner(value) { return String(value || '').trim().toLowerCase(); }
+  function ownerName() {
+    try {
+      const snapshot = global.BASELINE_auth?.get?.();
+      return snapshot?.authed ? normaliseOwner(snapshot.name || snapshot.user?.name || '') : '';
+    } catch (_error) { return ''; }
+  }
+  function parseStepKey(key) {
+    if (!String(key || '').startsWith(STEP_PREFIX)) return null;
+    const parts = String(key).slice(STEP_PREFIX.length).split('::');
+    const planId = Number(parts.shift() || 0);
+    const sessionIndex = Number(parts.shift() || 0);
+    const owner = normaliseOwner(parts.join('::'));
+    return planId && sessionIndex ? { planId, sessionIndex, owner } : null;
+  }
+  function stepKey(planId, sessionIndex, owner = ownerName()) {
+    return `${STEP_PREFIX}${Number(planId) || 0}::${Number(sessionIndex) || 0}::${normaliseOwner(owner)}`;
+  }
+  function canonicalExerciseName(name) {
+    return String(name || '').trim().replace(/\s+(Left|Right)$/i, '');
+  }
+  function normaliseHistory(value) {
+    const source = value && typeof value === 'object' ? value : {};
+    const raw = source.failuresBySession && typeof source.failuresBySession === 'object'
+      ? source.failuresBySession
+      : {};
+    const failuresBySession = {};
+    Object.entries(raw).forEach(([session, names]) => {
+      const index = Math.max(1, Math.round(Number(session) || 0));
+      if (!index || !Array.isArray(names)) return;
+      failuresBySession[String(index)] = Array.from(new Set(names.map(canonicalExerciseName).filter(Boolean)));
+    });
+    return { failuresBySession };
+  }
+  function failedExercises(results) {
+    const failed = new Set();
+    Object.values(results && typeof results === 'object' ? results : {}).forEach((result) => {
+      if (!result || result.status !== 'failed') return;
+      const exercise = canonicalExerciseName(result.exercise);
+      if (exercise) failed.add(exercise);
+    });
+    return Array.from(failed);
+  }
+  function recordFailures(history, sessionIndex, exercises) {
+    const next = normaliseHistory(history);
+    next.failuresBySession[String(Math.max(1, Math.round(Number(sessionIndex) || 1)))] =
+      Array.from(new Set((exercises || []).map(canonicalExerciseName).filter(Boolean)));
+    return next;
+  }
+  function failureCountBefore(exercise, sessionIndex, history) {
+    const name = canonicalExerciseName(exercise);
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
-    return [30 + ((session - 1) * 2), 28 + (session - 1), 32 + ((session - 1) * 3)];
+    const source = normaliseHistory(history).failuresBySession;
+    return Object.entries(source).reduce((count, [failedSession, names]) => (
+      Number(failedSession) < session && names.includes(name) ? count + 1 : count
+    ), 0);
   }
-
-  function matchesPeterSquatPlan(values, sessionIndex) {
-    if (!Array.isArray(values) || values.length !== 3 || Number(sessionIndex) < ANCHOR_SESSION) return false;
-    const legacy = legacyValues(sessionIndex);
-    const desired = sessionValues(sessionIndex);
-    return values.every((value, index) => Number(value) === legacy[index] || Number(value) === desired[index]);
+  function effectiveSession(exercise, sessionIndex, history) {
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    return Math.max(1, session - failureCountBefore(exercise, session, history));
   }
-
-  function cloneStep(step) {
-    return step && typeof step === 'object' ? Object.assign({}, step) : step;
-  }
-
-  function adjustedContext(source) {
-    if (!source || typeof source !== 'object') return source;
-    const context = Object.assign({}, source);
-    const sessionIndex = Number(context.sessionIndex || 0);
-    if (sessionIndex < ANCHOR_SESSION || !Array.isArray(context.steps)) return context;
-
-    const steps = context.steps.map(cloneStep);
-    const squatIndexes = [];
-    steps.forEach((step, index) => {
-      if (String(step?.name || '').trim() === 'Squats' && !step?.isTimed) squatIndexes.push(index);
-    });
-    const values = squatIndexes.map((index) => Number(steps[index]?.target));
-    if (!matchesPeterSquatPlan(values, sessionIndex)) {
-      context.steps = steps;
-      context.step = steps[Number(context.stepIndex || 0)] || null;
-      return context;
+  function setCount(value) { return Math.max(1, Math.min(5, Math.round(Number(value) || 3))); }
+  function setValues(baseline, count) {
+    const max = Math.max(1, Math.round(Number(baseline) || 1));
+    const sets = setCount(count);
+    if (sets === 1) return [max];
+    if (sets === 2) return [Math.max(1, Math.round(max * 0.75)), Math.max(1, Math.round(max * 0.85))];
+    if (sets === 3) {
+      const first = Math.max(1, Math.round(max * 0.75));
+      const second = Math.max(1, Math.round(max * 0.70));
+      let third = Math.max(1, Math.round(max * 0.80));
+      if (third <= Math.max(first, second)) third = Math.max(first, second) + 1;
+      return [first, second, third];
     }
+    return (sets === 4 ? [0.62, 0.70, 0.76, 0.84] : [0.58, 0.64, 0.70, 0.76, 0.84])
+      .map((ratio) => Math.max(1, Math.round(max * ratio)));
+  }
+  function progressionIncrements(type, count) {
+    const sets = setCount(count);
+    if (String(type || '') !== 'leg-reps') return Array(sets).fill(1);
+    if (sets === 1) return [2];
+    if (sets === 2) return [2, 3];
+    return [2, ...Array(sets - 2).fill(1), 3];
+  }
+  function progressedSetValues(baseline, count, sessionIndex, type) {
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    const increments = progressionIncrements(type, count);
+    return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
+  }
+  function holdValue(baseline, sessionIndex) {
+    let seconds = Math.max(1, Math.round(Number(baseline) || 1));
+    for (let session = 2; session <= Math.max(1, Math.round(Number(sessionIndex) || 1)); session += 1) {
+      seconds += seconds < 60 ? 5 : seconds < 90 ? 3 : 2;
+    }
+    return seconds;
+  }
+  function targetsForExercise(item, sessionIndex) {
+    const source = item && typeof item === 'object' ? item : {};
+    const exercise = canonicalExerciseName(source.exercise);
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    const baseline = Math.max(1, Math.round(Number(source.baseline) || 1));
+    const sets = setCount(source.sets || 3);
+    const timed = String(source.progressionType || '') === 'timed-hold' || !Object.hasOwn(source, 'sets');
+    if (timed) return [holdValue(baseline, session)];
+    if (exercise === 'Squats' && baseline === 40 && sets === 3 && session >= ANCHOR_SESSION) {
+      const increase = (session - ANCHOR_SESSION) * SQUAT_INCREMENT;
+      return ANCHOR_VALUES.map((value) => value + increase);
+    }
+    return progressedSetValues(baseline, sets, session, source.progressionType || 'standard-reps');
+  }
+  function planForOwner(owner = ownerName()) {
+    if (!global.localStorage || !owner) return null;
+    const cached = parseJson(global.localStorage.getItem(`${PLAN_CACHE_PREFIX}${owner}`));
+    if (cached?.planJson?.items) return cached.planJson;
+    const saved = parseJson(global.localStorage.getItem(`${PLAN_PREFIX}${owner}`));
+    if (saved?.planJson?.items) return saved.planJson;
+    if (saved?.items) return saved;
+    return null;
+  }
+  function itemForExercise(plan, exercise) {
+    const name = canonicalExerciseName(exercise);
+    return Array.isArray(plan?.items) ? plan.items.find((item) => canonicalExerciseName(item?.exercise) === name) || null : null;
+  }
+  function historyForContext(context) {
+    if (!global.localStorage || !context?.planId || !context?.sessionIndex) return normaliseHistory(null);
+    const state = parseJson(global.localStorage.getItem(stepKey(context.planId, context.sessionIndex)));
+    return normaliseHistory(state?.exerciseFailures);
+  }
+  function adjustedContext(source) {
+    if (!source || typeof source !== 'object' || !Array.isArray(source.steps)) return source;
+    const context = Object.assign({}, source);
+    const steps = source.steps.map((step) => step && typeof step === 'object' ? Object.assign({}, step) : step);
+    const history = historyForContext(source);
+    const plan = planForOwner();
+    const groups = new Map();
 
-    const desired = sessionValues(sessionIndex);
-    squatIndexes.forEach((stepIndex, valueIndex) => {
-      const step = steps[stepIndex];
-      step.target = desired[valueIndex];
-      step.label = `Squats - (${desired[valueIndex]})`;
+    steps.forEach((step, index) => {
+      const exercise = canonicalExerciseName(step?.exercise || step?.name);
+      if (!exercise) return;
+      if (!groups.has(exercise)) groups.set(exercise, []);
+      groups.get(exercise).push(index);
     });
+
+    groups.forEach((indexes, exercise) => {
+      const item = itemForExercise(plan, exercise);
+      const progressionSession = effectiveSession(exercise, source.sessionIndex, history);
+      let targets = item ? targetsForExercise(item, progressionSession) : null;
+      if (!targets || !targets.length) {
+        const failures = failureCountBefore(exercise, source.sessionIndex, history);
+        targets = indexes.map((index) => Math.max(1, Number(steps[index]?.target || 1) - failures));
+      }
+      indexes.forEach((stepIndex, position) => {
+        const step = steps[stepIndex];
+        const target = Number(targets[Math.min(position, targets.length - 1)] || step.target || 1);
+        step.exercise = exercise;
+        step.progressionSession = progressionSession;
+        step.target = target;
+        step.label = String(step.label || `${step.name} - (${target})`).replace(
+          /\(\d+(?:\s+seconds)?\)/,
+          `(${target}${step.isTimed ? ' seconds' : ''})`
+        );
+      });
+    });
+
+    const results = {};
+    Object.entries(source.results && typeof source.results === 'object' ? source.results : {}).forEach(([index, raw]) => {
+      const result = raw && typeof raw === 'object' ? Object.assign({}, raw) : raw;
+      const step = steps[Number(index)];
+      if (result && step) {
+        result.exercise = canonicalExerciseName(result.exercise || step.exercise || step.name);
+        if (result.status === 'success') result.achieved = Number(step.target);
+      }
+      results[index] = result;
+    });
+
     context.steps = steps;
+    context.results = results;
     context.step = steps[Number(context.stepIndex || 0)] || null;
     return context;
   }
 
-  function activeOwnerSuffix() {
-    try {
-      const snapshot = global.BASELINE_auth?.get?.();
-      const name = snapshot?.authed ? String(snapshot.name || snapshot.user?.name || '').trim().toLowerCase() : '';
-      return name ? `::${name}` : '';
-    } catch (_error) { return ''; }
+  const PUBLIC_API = Object.freeze({
+    canonicalExerciseName,
+    normaliseHistory,
+    failedExercises,
+    recordFailures,
+    failureCountBefore,
+    effectiveSession,
+    targetsForExercise
+  });
+  global.BASELINE_FITNESS_EXERCISE_PROGRESSION = PUBLIC_API;
+  if (typeof module !== 'undefined' && module.exports) module.exports = PUBLIC_API;
+
+  if (!global.localStorage || typeof Storage === 'undefined' || global.__BASELINE_FITNESS_INDEPENDENT_PROGRESSION__) return;
+  global.__BASELINE_FITNESS_INDEPENDENT_PROGRESSION__ = true;
+
+  const previousSet = Storage.prototype.setItem;
+  const previousRemove = Storage.prototype.removeItem;
+  let originalWorkout = null;
+  let frame = 0;
+
+  function contextForSession(sessionIndex) {
+    const context = originalWorkout?.getCurrentContext?.();
+    return Number(context?.sessionIndex) === Number(sessionIndex) ? context : null;
+  }
+  function enrichState(key, rawState) {
+    const parsed = parseStepKey(key);
+    const state = rawState && typeof rawState === 'object' ? Object.assign({}, rawState) : {};
+    if (!parsed) return state;
+    const existing = parseJson(global.localStorage.getItem(key));
+    state.exerciseFailures = normaliseHistory(state.exerciseFailures || existing?.exerciseFailures);
+    state.results = state.results && typeof state.results === 'object' ? Object.assign({}, state.results) : {};
+
+    const rawContext = contextForSession(parsed.sessionIndex);
+    const context = rawContext ? adjustedContext(rawContext) : null;
+    Object.entries(state.results).forEach(([index, raw]) => {
+      if (!raw || typeof raw !== 'object') return;
+      const result = Object.assign({}, raw);
+      const step = context?.steps?.[Number(index)] || rawContext?.steps?.[Number(index)];
+      result.exercise = canonicalExerciseName(result.exercise || step?.exercise || step?.name);
+      if (result.status === 'success' && step) result.achieved = Number(step.target);
+      state.results[index] = result;
+    });
+    return state;
   }
 
-  function repairStoredSuccesses() {
-    if (!originalWorkout || !global.localStorage) return;
-    const rawContext = originalWorkout.getCurrentContext?.();
-    const context = adjustedContext(rawContext);
-    if (!context || Number(context.sessionIndex) < ANCHOR_SESSION || !Array.isArray(context.steps)) return;
-    const ownerSuffix = activeOwnerSuffix();
-    const expectedPrefix = `${STEP_PREFIX}${Number(context.planId) || 0}::${Number(context.sessionIndex) || 0}::`;
+  Storage.prototype.setItem = function (key, rawValue) {
+    if (this === global.localStorage && typeof key === 'string' && key.startsWith(STEP_PREFIX)) {
+      const value = enrichState(key, parseJson(rawValue) || {});
+      const result = previousSet.call(this, key, JSON.stringify(value));
+      schedulePatch();
+      return result;
+    }
+    return previousSet.apply(this, arguments);
+  };
 
-    for (let index = 0; index < global.localStorage.length; index += 1) {
-      const key = global.localStorage.key(index) || '';
-      if (!key.startsWith(expectedPrefix) || (ownerSuffix && !key.endsWith(ownerSuffix))) continue;
-      let state = null;
-      try { state = JSON.parse(global.localStorage.getItem(key) || 'null'); } catch (_error) { state = null; }
-      if (!state || typeof state !== 'object' || !state.results || typeof state.results !== 'object') continue;
+  Storage.prototype.removeItem = function (key) {
+    if (this !== global.localStorage || typeof key !== 'string' || !key.startsWith(STEP_PREFIX)) {
+      return previousRemove.apply(this, arguments);
+    }
+    const parsed = parseStepKey(key);
+    const removed = parseJson(global.localStorage.getItem(key)) || {};
+    const history = normaliseHistory(removed.exerciseFailures);
+    const result = previousRemove.apply(this, arguments);
+    const next = originalWorkout?.getCurrentContext?.();
 
-      let changed = false;
-      context.steps.forEach((step, stepIndex) => {
-        if (String(step?.name || '') !== 'Squats') return;
-        const result = state.results[stepIndex];
-        if (!result || result.status !== 'success' || Number(result.achieved) === Number(step.target)) return;
-        result.achieved = Number(step.target);
-        changed = true;
-      });
-      if (changed) global.localStorage.setItem(key, JSON.stringify(state));
+    if (parsed && next && Number(next.planId) === parsed.planId) {
+      if (Number(next.sessionIndex) === parsed.sessionIndex) {
+        global.localStorage.setItem(key, JSON.stringify({ completedSteps: 0, started: false, results: {}, pendingFailureStep: null, exerciseFailures: history }));
+      } else if (Number(next.sessionIndex) > parsed.sessionIndex) {
+        const updatedHistory = recordFailures(history, parsed.sessionIndex, failedExercises(removed.results));
+        const nextKey = stepKey(parsed.planId, next.sessionIndex, parsed.owner);
+        const existing = parseJson(global.localStorage.getItem(nextKey)) || {};
+        existing.exerciseFailures = updatedHistory;
+        global.localStorage.setItem(nextKey, JSON.stringify(existing));
+      }
+    }
+    schedulePatch();
+    return result;
+  };
+
+  function repairCurrentState() {
+    const context = originalWorkout?.getCurrentContext?.();
+    if (!context?.planId || !context?.sessionIndex) return;
+    const key = stepKey(context.planId, context.sessionIndex);
+    const state = parseJson(global.localStorage.getItem(key));
+    if (!state) return;
+    const enriched = enrichState(key, state);
+    if (JSON.stringify(enriched) !== JSON.stringify(state)) {
+      global.localStorage.setItem(key, JSON.stringify(enriched));
     }
   }
-
   function sessionIndexFromCard(card) {
     const text = String(card?.querySelector?.('.title, h3')?.textContent || '');
     const match = text.match(/Session\s+(\d+)/i);
     return match ? Number(match[1]) : 0;
   }
-
   function patchPlanRows(root) {
-    root.querySelectorAll?.('.session-card').forEach((card) => {
+    const plan = planForOwner();
+    const context = originalWorkout?.getCurrentContext?.();
+    const history = historyForContext(context);
+    if (!plan) return;
+    root.querySelectorAll?.('#myPlanSavedWrap .session-card').forEach((card) => {
       const sessionIndex = sessionIndexFromCard(card);
-      if (sessionIndex < ANCHOR_SESSION) return;
+      if (!sessionIndex) return;
       card.querySelectorAll('.plan-exercise-row').forEach((row) => {
-        if (String(row.firstElementChild?.textContent || '').trim() !== 'Squats') return;
+        const exercise = canonicalExerciseName(row.firstElementChild?.textContent);
+        const item = itemForExercise(plan, exercise);
+        if (!item) return;
+        const session = effectiveSession(exercise, sessionIndex, history);
+        const targets = targetsForExercise(item, session);
         const detail = Array.from(row.children).find((child) => child.tagName === 'DIV');
         const numbers = detail ? Array.from(detail.querySelectorAll('b')) : [];
-        const values = numbers.map((node) => Number(node.textContent));
-        if (!matchesPeterSquatPlan(values, sessionIndex)) return;
-        const desired = sessionValues(sessionIndex);
-        numbers.forEach((node, index) => { node.textContent = String(desired[index]); });
+        numbers.forEach((node, index) => {
+          const value = String(targets[Math.min(index, targets.length - 1)]);
+          if (node.textContent !== value) node.textContent = value;
+        });
       });
     });
   }
-
   function patchCurrentWorkout(root) {
-    root.querySelectorAll?.('.session-card').forEach((card) => {
-      const sessionIndex = sessionIndexFromCard(card);
-      if (sessionIndex < ANCHOR_SESSION) return;
-      const labels = Array.from(card.querySelectorAll('.current-step-label')).filter((node) => /^Squats\s*-\s*\(\d+\)/i.test(String(node.textContent || '').trim()));
-      const values = labels.map((node) => Number((String(node.textContent).match(/\((\d+)\)/) || [])[1]));
-      if (!matchesPeterSquatPlan(values, sessionIndex)) return;
-      const desired = sessionValues(sessionIndex);
-      labels.forEach((node, index) => {
-        node.textContent = `Squats - (${desired[index]})`;
-        const status = node.closest('.current-step')?.querySelector('.step-status.success');
-        if (status && /Achieved\s+\d+/i.test(status.textContent)) {
-          status.textContent = status.textContent.replace(/Achieved\s+\d+/i, `Achieved ${desired[index]}`);
-        }
-      });
+    const context = adjustedContext(originalWorkout?.getCurrentContext?.());
+    if (!context?.steps) return;
+    const labels = Array.from(root.querySelectorAll?.('#currentWorkoutOut .current-step-label') || []);
+    labels.forEach((node, index) => {
+      const step = context.steps[index];
+      if (!step) return;
+      if (node.textContent !== step.label) node.textContent = step.label;
+      const status = node.closest('.current-step')?.querySelector('.step-status.success');
+      if (status && /Achieved\s+\d+/i.test(status.textContent)) {
+        const nextText = status.textContent.replace(/Achieved\s+\d+/i, `Achieved ${step.target}`);
+        if (status.textContent !== nextText) status.textContent = nextText;
+      }
     });
   }
-
   function patchVoiceDisplay(root) {
+    const context = adjustedContext(originalWorkout?.getCurrentContext?.());
     const name = root.querySelector?.('#voiceExerciseName');
     const target = root.querySelector?.('#voiceExerciseTarget');
-    if (!name || !target || String(name.textContent || '').trim() !== 'Squats') return;
-    const context = adjustedContext(originalWorkout?.getCurrentContext?.());
-    if (!context?.step || String(context.step.name || '') !== 'Squats') return;
-    target.textContent = String(target.textContent || '').replace(/\d+/, String(context.step.target));
+    if (!context?.step || !name || !target) return;
+    if (canonicalExerciseName(name.textContent) !== canonicalExerciseName(context.step.name)) return;
+    const nextText = String(target.textContent || '').replace(/\d+/, String(context.step.target));
+    if (target.textContent !== nextText) target.textContent = nextText;
   }
-
   function patchPage() {
     frame = 0;
     if (!global.document) return;
+    repairCurrentState();
     patchPlanRows(global.document);
     patchCurrentWorkout(global.document);
     patchVoiceDisplay(global.document);
-    repairStoredSuccesses();
   }
-
   function schedulePatch() {
     if (frame || !global.requestAnimationFrame) return;
     frame = global.requestAnimationFrame(patchPage);
   }
-
   function installWorkoutWrapper() {
     const candidate = global.BASELINE_fitnessWorkout;
-    if (!candidate || candidate.__squatUniformProgression) {
+    if (!candidate || candidate.__independentExerciseProgression) {
       if (!candidate) global.setTimeout(installWorkoutWrapper, 50);
       return;
     }
     originalWorkout = candidate;
-
     const wrapper = {
-      __squatUniformProgression: true,
-      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_SQUAT_UNIFORM_20260804_1`,
+      __independentExerciseProgression: true,
+      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_INDEPENDENT_EXERCISE_PROGRESSION_20260804_1`,
       getCurrentContext() { return adjustedContext(candidate.getCurrentContext?.()); },
-      startSession() { return adjustedContext(candidate.startSession?.()); },
+      startSession() { const result = candidate.startSession?.(); schedulePatch(); return adjustedContext(result); },
       succeedCurrentStep(inputMode = 'manual') {
         const result = candidate.succeedCurrentStep?.(inputMode);
-        repairStoredSuccesses();
+        repairCurrentState();
         schedulePatch();
         return adjustedContext(result);
       },
-      failCurrentStep(achieved, inputMode = 'manual') { return adjustedContext(candidate.failCurrentStep?.(achieved, inputMode)); },
-      async finishSession() {
-        repairStoredSuccesses();
-        return adjustedContext(await candidate.finishSession?.());
+      failCurrentStep(achieved, inputMode = 'manual') {
+        const result = candidate.failCurrentStep?.(achieved, inputMode);
+        repairCurrentState();
+        schedulePatch();
+        return adjustedContext(result);
       },
-      resetSession() { return adjustedContext(candidate.resetSession?.()); },
+      async finishSession() {
+        repairCurrentState();
+        const result = await candidate.finishSession?.();
+        schedulePatch();
+        return adjustedContext(result);
+      },
+      resetSession() {
+        const result = candidate.resetSession?.();
+        schedulePatch();
+        return adjustedContext(result);
+      },
       onChange(listener) {
         return candidate.onChange?.((context) => {
           schedulePatch();
@@ -363,6 +562,7 @@
       }
     };
     global.BASELINE_fitnessWorkout = Object.freeze(wrapper);
+    repairCurrentState();
     schedulePatch();
   }
 
