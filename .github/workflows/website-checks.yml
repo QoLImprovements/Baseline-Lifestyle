@@ -74,42 +74,13 @@ jobs:
 
           css_path = Path('systems/baseline-natural-skincare/css/skincare-routine-enhancements.css')
           css = css_path.read_text()
-          opaque = '''
-
-/* The action picker must be visually solid: no page content may show through it. */
-#routine .routine-action-menu{
-  opacity:1!important;
-  background-color:#f8e5da!important;
-  background-image:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  mix-blend-mode:normal!important;
-  isolation:isolate;
-}
-#routine .routine-action-group,
-#routine .routine-action-group-label,
-#routine .routine-action-option,
-#routine .routine-action-no-results{
-  opacity:1!important;
-  background-color:#f8e5da!important;
-  background-image:none!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-  mix-blend-mode:normal!important;
-}
-#routine .routine-action-option:hover,
-#routine .routine-action-option:focus,
-#routine .routine-action-option[aria-selected="true"]{
-  background-color:#e6aa92!important;
-}
-#routine select,
-#routine select option,
-#routine select optgroup{
-  opacity:1!important;
-  background-color:#f8e5da!important;
-  color:var(--ink)!important;
-}
-'''
+          opaque = (
+              "\n\n/* The action picker must be visually solid: no page content may show through it. */\n"
+              "#routine .routine-action-menu{opacity:1!important;background-color:#f8e5da!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;mix-blend-mode:normal!important;isolation:isolate;}\n"
+              "#routine .routine-action-group,#routine .routine-action-group-label,#routine .routine-action-option,#routine .routine-action-no-results{opacity:1!important;background-color:#f8e5da!important;background-image:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;mix-blend-mode:normal!important;}\n"
+              "#routine .routine-action-option:hover,#routine .routine-action-option:focus,#routine .routine-action-option[aria-selected=\"true\"]{background-color:#e6aa92!important;}\n"
+              "#routine select,#routine select option,#routine select optgroup{opacity:1!important;background-color:#f8e5da!important;color:var(--ink)!important;}\n"
+          )
           if 'The action picker must be visually solid' not in css:
               css_path.write_text(css + opaque)
 
