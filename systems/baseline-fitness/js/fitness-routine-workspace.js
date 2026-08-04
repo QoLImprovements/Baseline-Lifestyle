@@ -22,18 +22,34 @@
     const reveal = () => {
       attempts += 1;
 
-      const mainRoutine = document.querySelector('.tab[data-target="my-plan"]');
-      if (mainRoutine && mainRoutine.getAttribute('aria-selected') !== 'true') mainRoutine.click();
+      document.querySelectorAll('.tab[data-target]').forEach((button) => {
+        button.setAttribute('aria-selected', button.dataset.target === 'my-plan' ? 'true' : 'false');
+      });
+      document.querySelectorAll('main.wrap > .section').forEach((section) => {
+        section.classList.toggle('active', section.id === 'my-plan');
+      });
 
-      const calisthenics = document.querySelector('[data-fitness-routine-view="calisthenics"]');
-      if (calisthenics && calisthenics.getAttribute('aria-selected') !== 'true') calisthenics.click();
+      document.querySelectorAll('[data-fitness-routine-view]').forEach((button) => {
+        const active = button.dataset.fitnessRoutineView === 'calisthenics';
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+        button.tabIndex = active ? 0 : -1;
+      });
+      document.querySelectorAll('[data-fitness-routine-panel]').forEach((panel) => {
+        panel.hidden = panel.dataset.fitnessRoutinePanel !== 'calisthenics';
+      });
 
       const generator = document.querySelector('#myPlanGeneratorWrap');
       const saved = document.querySelector('#myPlanSavedWrap');
       if (generator && saved && saved.hidden) generator.hidden = false;
 
       const parentSection = document.querySelector('#my-plan');
-      const routeReady = Boolean(parentSection?.classList.contains('active') && ((saved && !saved.hidden) || (generator && !generator.hidden)));
+      const calisthenicsPanel = document.querySelector('[data-fitness-routine-panel="calisthenics"]');
+      const routeReady = Boolean(
+        parentSection?.classList.contains('active') &&
+        calisthenicsPanel && !calisthenicsPanel.hidden &&
+        ((saved && !saved.hidden) || (generator && !generator.hidden))
+      );
       if (routeReady || attempts >= 120) global.clearInterval(interval);
     };
 
