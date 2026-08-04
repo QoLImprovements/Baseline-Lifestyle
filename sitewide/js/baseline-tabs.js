@@ -223,7 +223,7 @@
   var CLEAN_TAB_ROUTES = {
     "baseline-food-approach.html": { base:"/baseline-food-approach", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", "diet-log":"diet-log" } },
     "baseline-massage.html": { base:"/baseline-massage", tabs:{ system:"system", library:"library", planner:"planner" } },
-    "baseline-natural-skincare.html": { base:"/baseline-natural-skincare", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system" } },
+    "baseline-natural-skincare.html": { base:"/baseline-natural-skincare", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },
     "baseline-badminton-session.html": { base:"/baseline-badminton-session", tabs:{ system:"system", gameplan:"game-plan", standings:"ratings-standings", roster:"players-pairs", history:"session-history" } },
     "baseline-fitness.html": { base:"/baseline-fitness", tabs:{ system:"system", routine:"workout-routine", library:"exercise-library", achievements:"achievements", "my-plan":"my-plan" } }
   };
