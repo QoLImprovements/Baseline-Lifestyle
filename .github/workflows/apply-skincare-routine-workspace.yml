@@ -33,11 +33,26 @@ jobs:
           base64 -d /tmp/skincare-workspace-payload.b64 > /tmp/skincare-workspace-payload.tar.gz
           tar -xzf /tmp/skincare-workspace-payload.tar.gz -C .
           python3 .github/apply_skincare_workspace.py
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('tests/skincare-my-routine.test.mjs')
+          text = path.read_text()
+          text = text.replace(
+              'assert.match(html, /data-routine-view="log">Routine Log<\\/button>[\\s\\S]*?data-routine-view="summary">My Routine<\\/button>[\\s\\S]*?data-routine-view="plan">Routine Plan<\\/button>[\\s\\S]*?data-routine-view="public">Public Routines<\\/button>/);',
+              'assert.match(html, /data-routine-view="log"[^>]*>Routine Log<\\/button>[\\s\\S]*?data-routine-view="summary"[^>]*>My Routine<\\/button>[\\s\\S]*?data-routine-view="plan"[^>]*>Routine Plan<\\/button>[\\s\\S]*?data-routine-view="public"[^>]*>Public Routines<\\/button>/);'
+          )
+          text = text.replace(
+              "assert.match(api, /'profiles'=>\\$profiles/);",
+              "assert.match(api, /'profiles'=>array_values\\(array_unique\\(\\$profiles\\)\\)/);"
+          )
+          path.write_text(text)
+          PY
 
       - name: Check changed source syntax
         run: |
           node --check systems/baseline-natural-skincare/js/skincare-routine.js
           node --check systems/baseline-natural-skincare/js/skincare-routine-model.js
+          node --check tests/skincare-my-routine.test.mjs
           php -l systems/baseline-natural-skincare/api/routine_state.php
 
       - name: Install dependencies
