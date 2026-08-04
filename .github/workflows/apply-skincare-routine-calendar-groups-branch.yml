@@ -1,3 +1,4 @@
+# Refresh PR checks after the base workflow migration gate was corrected.
 name: Verify skincare routine calendar and groups branch
 
 on:
