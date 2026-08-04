@@ -1,0 +1,34 @@
+/* Baseline Natural Skincare — grouped routine plan/log and detailed product controls. */
+#routine .routine-group-row{display:grid;gap:12px!important;padding:14px!important;border:1px solid var(--skin-peach)!important;border-radius:18px!important;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important}
+#routine .routine-group-row-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center}
+#routine .routine-group-collapse,#routine [data-plan-group-collapse]{border:1px solid var(--skin-peach);border-radius:999px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));color:var(--ink);font:inherit;font-weight:900;padding:7px 11px;cursor:pointer}
+#routine .routine-group-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-top:12px;border-top:1px solid var(--skin-peach)}
+#routine .routine-group-settings[hidden]{display:none!important}
+#routine .routine-group-toggle{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-milk);font-weight:800}
+#routine .routine-group-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border:1px solid var(--skin-peach);border-radius:13px}
+#routine .routine-group-days legend{padding:0 7px;font-weight:900}
+#routine .routine-group-days label{display:flex;align-items:center;gap:5px;padding:6px 8px;border-radius:999px;background:var(--skin-cream)}
+#routine .routine-plan-group{display:grid;gap:0;border:1px solid var(--skin-peach);border-radius:20px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));overflow:visible;margin-bottom:16px}
+#routine .routine-plan-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;background:linear-gradient(90deg,var(--skin-wash),var(--skin-peach),var(--skin-wash));border-radius:19px 19px 0 0}
+#routine .routine-plan-group-head h3,#routine .routine-plan-group-head p{margin:0}
+#routine .routine-plan-group-head>span{font-weight:900}
+#routine .routine-plan-group-body{display:grid;gap:14px;padding:14px;min-width:0}
+#routine .routine-plan-group-body[hidden]{display:none!important}
+#routine .routine-plan-group.collapsed .routine-plan-group-head{border-radius:19px}
+#routine .routine-plan-group .routine-item{margin:0!important}
+#routine .routine-field.inherited-setting{opacity:.76}
+#routine .routine-field.inherited-setting>span{color:var(--accent-2)}
+#routine .routine-product-field,#routine .routine-shaving-method-field{min-width:0}
+#routine .routine-product-field select,#routine .routine-shaving-method-field select{width:100%}
+#routine .routine-custom-product-field{grid-column:1/-1}
+#routine .routine-benefit-field p{line-height:1.62;white-space:normal}
+#routine .routine-summary-group-head,#routine .routine-log-group-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+#routine .routine-summary-group-head h3,#routine .routine-log-group-head h3{margin:0}
+#routine .routine-summary-group-head span,#routine .routine-log-group-head span{padding:6px 10px;border-radius:999px;background:var(--skin-wash);font-weight:800}
+#routine .routine-summary-item-comprehensive>p{line-height:1.68}
+#routine .routine-log-group{display:grid;gap:10px;margin-top:18px;padding:14px;border:1px solid var(--skin-peach);border-radius:18px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))}
+#routine .routine-log-group .routine-log-item{margin:0}
+#routine .routine-action-menu{z-index:4000!important}
+#routine .routine-action-group,#routine .routine-action-group-label,#routine .routine-action-option,#routine .routine-action-no-results{background-color:var(--skin-cream)!important;opacity:1!important}
+#routine select,#routine select option,#routine select optgroup{background-color:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
+@media(max-width:780px){#routine .routine-group-settings{grid-template-columns:1fr}#routine .routine-group-days{grid-column:auto}#routine .routine-group-row-head{grid-template-columns:auto minmax(0,1fr) auto}#routine .routine-group-count{grid-column:2/3}}
