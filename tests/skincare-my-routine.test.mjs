@@ -70,10 +70,13 @@ test('selected-day and weekly due logic uses the routine log', () => {
 
 test('public API returns the routine plan but keeps completion logs private', () => {
   assert.match(api, /'publicRoutine'=>\[/);
-  const publicPayload = api.slice(api.indexOf("function bl_skincare_public_payload"), api.indexOf("try{"));
+  const start = api.indexOf('function bl_skincare_public_payload');
+  const end = api.indexOf("\ntry{\n  $db", start);
+  const publicPayload = api.slice(start, end);
+  assert.ok(start >= 0 && end > start);
   assert.match(publicPayload, /'routine'=>/);
   assert.doesNotMatch(publicPayload, /'logs'=>/);
-  assert.match(api, /routine_private/);
+  assert.match(publicPayload, /routine_private/);
 });
 
 test('routine assets are loaded by the skincare page', () => {
