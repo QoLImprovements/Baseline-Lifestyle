@@ -2,10 +2,10 @@
 #routine .routine-shell{display:grid;gap:16px;width:100%}
 #routine .routine-card,#routine .routine-panel{width:100%;min-width:0}
 #routine .routine-card{overflow:visible}
-#routine .routine-subtabs{display:flex;gap:8px;flex-wrap:wrap;padding:8px;border:1px solid rgba(122,74,58,.16);border-radius:18px;background:rgba(255,241,230,.45)}
-#routine .routine-subtab{flex:1 1 170px;border:1px solid transparent;border-radius:13px;background:transparent;color:var(--accent-2);padding:10px 14px;font:inherit;font-weight:850;cursor:pointer}
-#routine .routine-subtab:hover{background:rgba(255,250,245,.48)}
-#routine .routine-subtab.active{border-color:rgba(188,95,70,.28);background:rgba(255,250,245,.82);box-shadow:0 8px 20px -18px rgba(79,39,27,.62)}
+#routine .routine-subtabs{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:0;border:0;border-radius:0;background:transparent}
+#routine .routine-subtab{appearance:none;border:1px solid rgba(122,74,58,.12);cursor:pointer;background:rgba(239,210,197,.66);padding:10px 14px;border-radius:999px;font:inherit;font-size:16px;font-weight:760;color:var(--muted);box-shadow:0 10px 22px -20px rgba(35,23,19,.25);transition:transform .08s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;flex:0 0 auto}
+#routine .routine-subtab:hover{transform:translateY(-1px);background:rgba(239,210,197,.80);border-color:rgba(188,95,70,.28);box-shadow:0 16px 30px -24px rgba(188,95,70,.35)}
+#routine .routine-subtab.active{color:var(--ink);background:linear-gradient(135deg,var(--accent),var(--skin-peach));border-color:rgba(35,23,19,.18);box-shadow:0 22px 46px -34px rgba(188,95,70,.88)}
 #routine .routine-panel[hidden]{display:none!important}
 #routine .routine-panel.active{display:block}
 #routine .routine-panel .card{width:100%;box-sizing:border-box}
@@ -103,5 +103,5 @@
   #routine .routine-summary-head{display:grid}
   #routine .routine-visibility-select{width:100%}
   #routine .routine-item-head{align-items:flex-start}
-  #routine .routine-subtab{flex-basis:calc(50% - 4px)}
+  #routine .routine-subtab{flex:0 1 auto}
 }
