@@ -36,3 +36,4 @@
 #routine .routine-action-group,#routine .routine-action-group-label,#routine .routine-action-option,#routine .routine-action-no-results{background-color:var(--skin-cream)!important;opacity:1!important}
 #routine select,#routine select option,#routine select optgroup{background-color:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
 @media(max-width:780px){#routine .routine-group-settings{grid-template-columns:1fr}#routine .routine-group-days{grid-column:auto}#routine .routine-group-row-head{grid-template-columns:auto minmax(0,1fr) auto}#routine .routine-group-count{grid-column:2/3}}
+/* Product selection is a first-class routine-step control, not hidden metadata. */
