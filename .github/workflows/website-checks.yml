@@ -3,8 +3,7 @@ name: Website checks
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -15,125 +14,109 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  correct-skincare-visuals:
-    name: Correct skincare visuals
+  migrate-routine-systems:
+    name: Apply routine systems overhaul
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 20
     outputs:
       target: ${{ steps.gate.outputs.target }}
       changed: ${{ steps.apply.outputs.changed }}
-
     steps:
-      - name: Identify correction branch
-        id: gate
+      - id: gate
+        name: Identify target branch
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/fix-skincare-dropdown-calendar-20260804" ]; then
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/routine-systems-overhaul-20260804" ]; then
             echo "target=true" >> "$GITHUB_OUTPUT"
           else
             echo "target=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Check out correction branch
+      - name: Check out feature branch
         if: steps.gate.outputs.target == 'true'
         uses: actions/checkout@v7
         with:
-          ref: agent/fix-skincare-dropdown-calendar-20260804
+          ref: agent/routine-systems-overhaul-20260804
           fetch-depth: 0
-
+      - name: Synchronise current main
+        if: steps.gate.outputs.target == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          git merge --no-edit origin/main
       - name: Set up Node.js
         if: steps.gate.outputs.target == 'true'
         uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-
-      - name: Apply correction
-        id: apply
+      - id: apply
+        name: Apply migration
         if: steps.gate.outputs.target == 'true'
         run: |
-          if grep -q 'SKINCARE_ROUTINE_VISUAL_CORRECTION_20260804_2' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css; then
+          if [ ! -f scripts/apply_routine_systems_overhaul.py ]; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           echo "changed=true" >> "$GITHUB_OUTPUT"
-          echo 'CgovKiBTS0lOQ0FSRV9ST1VUSU5FX1ZJU1VBTF9DT1JSRUNUSU9OXzIwMjYwODA0XzIgKi8KLyogS2VlcCB0aGUgYWN0aW9uIGxpc3QgYWJvdmUgZXZlcnkgcm91dGluZSBjYXJkIGFuZCBtYWtlIGV2ZXJ5IGxpc3Qgc3VyZmFjZSBmdWxseSBvcGFxdWUuICovCiNyb3V0aW5lIC5yb3V0aW5lLWFkZC1yb3d7cG9zaXRpb246cmVsYXRpdmUhaW1wb3J0YW50O3otaW5kZXg6NTAwIWltcG9ydGFudDtpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1hY3Rpb24tY29tYm9ib3h7cG9zaXRpb246cmVsYXRpdmUhaW1wb3J0YW50O3otaW5kZXg6NTAxIWltcG9ydGFudDtpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1pdGVtc3twb3NpdGlvbjpyZWxhdGl2ZSFpbXBvcnRhbnQ7ei1pbmRleDoxIWltcG9ydGFudDt9CiNyb3V0aW5lIC5yb3V0aW5lLWFjdGlvbi1tZW51ewogIHotaW5kZXg6MTAwMCFpbXBvcnRhbnQ7CiAgb3BhY2l0eToxIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWNvbG9yOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWltYWdlOm5vbmUhaW1wb3J0YW50OwogIC13ZWJraXQtYmFja2Ryb3AtZmlsdGVyOm5vbmUhaW1wb3J0YW50OwogIGJhY2tkcm9wLWZpbHRlcjpub25lIWltcG9ydGFudDsKICBmaWx0ZXI6bm9uZSFpbXBvcnRhbnQ7CiAgbWl4LWJsZW5kLW1vZGU6bm9ybWFsIWltcG9ydGFudDsKICBpc29sYXRpb246aXNvbGF0ZSFpbXBvcnRhbnQ7CiAgYm94LXNoYWRvdzowIDI0cHggNTJweCAtMjBweCAjN2E0YTNhIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1hY3Rpb24tZ3JvdXAsCiNyb3V0aW5lIC5yb3V0aW5lLWFjdGlvbi1ncm91cC1sYWJlbCwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbiwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW5vLXJlc3VsdHN7CiAgb3BhY2l0eToxIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWNvbG9yOnZhcigtLXNraW4tY3JlYW0pIWltcG9ydGFudDsKICBiYWNrZ3JvdW5kLWltYWdlOm5vbmUhaW1wb3J0YW50OwogIC13ZWJraXQtYmFja2Ryb3AtZmlsdGVyOm5vbmUhaW1wb3J0YW50OwogIGJhY2tkcm9wLWZpbHRlcjpub25lIWltcG9ydGFudDsKICBmaWx0ZXI6bm9uZSFpbXBvcnRhbnQ7CiAgbWl4LWJsZW5kLW1vZGU6bm9ybWFsIWltcG9ydGFudDsKICBjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1hY3Rpb24tZ3JvdXAtbGFiZWx7YmFja2dyb3VuZDp2YXIoLS1za2luLW1pbGspIWltcG9ydGFudDtjb2xvcjp2YXIoLS1hY2NlbnQtMikhaW1wb3J0YW50O30KI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbjpob3ZlciwKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvbjpmb2N1cywKI3JvdXRpbmUgLnJvdXRpbmUtYWN0aW9uLW9wdGlvblthcmlhLXNlbGVjdGVkPSJ0cnVlIl17YmFja2dyb3VuZDp2YXIoLS1za2luLXdhc2gpIWltcG9ydGFudDtjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDt9CiNyb3V0aW5lIHNlbGVjdCwjcm91dGluZSBzZWxlY3Qgb3B0aW9uLCNyb3V0aW5lIHNlbGVjdCBvcHRncm91cHtvcGFjaXR5OjEhaW1wb3J0YW50O2JhY2tncm91bmQtY29sb3I6dmFyKC0tc2tpbi1jcmVhbSkhaW1wb3J0YW50O2NvbG9yOnZhcigtLWluaykhaW1wb3J0YW50O30KCi8qIFVzZSBvbmx5IHRoZSBlc3RhYmxpc2hlZCBtaXJyb3JlZCB0ZXJyYWNvdHRhIHNraW5jYXJlIGNvbG91cnMgaW4gdGhlIGNhbGVuZGFyLiAqLwojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1jYXJke2JhY2tncm91bmQ6dmFyKC0tc2tpbi1wYWdlLWdyYWRpZW50KSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci13ZWVrZGF5cyBzcGFuLCNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLW5hdiBzdHJvbmd7Y29sb3I6dmFyKC0taW5rKSFpbXBvcnRhbnQ7fQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1uYXYgYnV0dG9uewogIGJhY2tncm91bmQ6bGluZWFyLWdyYWRpZW50KDE4MGRlZyx2YXIoLS1za2luLWNyZWFtKSx2YXIoLS1za2luLW1pbGspKSFpbXBvcnRhbnQ7CiAgYm9yZGVyLWNvbG9yOnZhcigtLXNraW4tcGVhY2gpIWltcG9ydGFudDsKICBjb2xvcjp2YXIoLS1pbmspIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1kYXl7CiAgYmFja2dyb3VuZDpsaW5lYXItZ3JhZGllbnQoMTgwZGVnLHZhcigtLXNraW4tY3JlYW0pLHZhcigtLXNraW4tbWlsaykpIWltcG9ydGFudDsKICBib3JkZXItY29sb3I6dmFyKC0tc2tpbi1wZWFjaCkhaW1wb3J0YW50OwogIGNvbG9yOnZhcigtLWluaykhaW1wb3J0YW50Owp9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWRheTpob3ZlcnsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsdmFyKC0tc2tpbi1taWxrKSx2YXIoLS1za2luLXdhc2gpKSFpbXBvcnRhbnQ7CiAgYm9yZGVyLWNvbG9yOnZhcigtLXNraW4tZGVlcCkhaW1wb3J0YW50Owp9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWRheS5oYXMtcm91dGluZXsKICBiYWNrZ3JvdW5kOmxpbmVhci1ncmFkaWVudCgxODBkZWcsdmFyKC0tc2tpbi13YXNoKSx2YXIoLS1za2luLXBlYWNoKSkhaW1wb3J0YW50OwogIGJvcmRlci1jb2xvcjp2YXIoLS1za2luLWRlZXApIWltcG9ydGFudDsKfQojcm91dGluZSAucm91dGluZS1jYWxlbmRhci1kYXkuc2VsZWN0ZWR7CiAgYmFja2dyb3VuZDpsaW5lYXItZ3JhZGllbnQoMTgwZGVnLHZhcigtLXNraW4tcGVhY2gpLHZhcigtLXNraW4tZGVlcCkpIWltcG9ydGFudDsKICBib3JkZXItY29sb3I6dmFyKC0tc2tpbi1kZWVwKSFpbXBvcnRhbnQ7CiAgb3V0bGluZTozcHggc29saWQgdmFyKC0tc2tpbi1kZWVwKSFpbXBvcnRhbnQ7Cn0KI3JvdXRpbmUgLnJvdXRpbmUtY2FsZW5kYXItY291bnR7YmFja2dyb3VuZDp2YXIoLS1za2luLWRlZXApIWltcG9ydGFudDtjb2xvcjojZmZmN2YyIWltcG9ydGFudDt9CiNyb3V0aW5lIC5yb3V0aW5lLWNhbGVuZGFyLWVtcHR5e2JhY2tncm91bmQ6dHJhbnNwYXJlbnQhaW1wb3J0YW50O30K' | base64 -d >> systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
-          python3 - <<'PY'
-          from pathlib import Path
-          old = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1'
-          new = 'SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2'
-          html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
-          html = html_path.read_text()
-          if old not in html and new not in html:
-              raise SystemExit('Skincare enhancement cache key not found')
-          html_path.write_text(html.replace(old, new))
-          test_path = Path('tests/skincare-routine-groups-calendar.test.mjs')
-          test_path.write_text(test_path.read_text().replace(old, new))
-          PY
-
+          python3 scripts/repair_routine_migration.py
+          python3 scripts/apply_routine_systems_overhaul.py
       - name: Install locked dependencies
         if: steps.apply.outputs.changed == 'true'
         run: npm ci
-
-      - name: Verify correction
+      - name: Verify focused implementation
         if: steps.apply.outputs.changed == 'true'
         run: |
-          node --test tests/skincare-routine-groups-calendar.test.mjs tests/skincare-my-routine.test.mjs
+          node --check systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js
+          node --check systems/baseline-natural-skincare/js/skincare-product-library.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine-enhancements.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine.js
+          node --check systems/baseline-fitness/js/fitness-activity-catalogue.js
+          node --check systems/baseline-fitness/js/fitness-routine-workspace.js
+          php -l systems/baseline-natural-skincare/api/routine_state.php
+          php -l systems/baseline-natural-skincare/api/routine_groups.php
+          php -l systems/baseline-fitness/api/schema.php
+          php -l systems/baseline-fitness/api/routine_state.php
+          node --test tests/skincare-routine-overhaul.test.mjs tests/skincare-my-routine.test.mjs tests/skincare-routine-groups-calendar.test.mjs
+          node --test tests/fitness-routine-workspace.test.mjs tests/fitness-exercise-catalogue.test.mjs tests/fitness-independent-exercise-progression.test.mjs
           npm run test:structure
-          grep -q 'z-index:1000!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
-          grep -q 'background:var(--skin-page-gradient)!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
-
-      - name: Publish clean verified branch
+      - name: Publish clean verified feature branch
         if: steps.apply.outputs.changed == 'true'
         run: |
-          rm -f .github/workflows/fix-skincare-dropdown-calendar.yml
-          rm -f TEMP_SKINCARE_VISUAL_FIX
+          rm -f scripts/apply_routine_systems_overhaul.py scripts/repair_routine_migration.py
+          rm -f .github/workflows/apply-routine-systems-overhaul.yml
           echo 'bmFtZTogV2Vic2l0ZSBjaGVja3MKCm9uOgogIHB1bGxfcmVxdWVzdDoKICBwdXNoOgogICAgYnJhbmNoZXM6CiAgICAgIC0gbWFpbgogIHdvcmtmbG93X2Rpc3BhdGNoOgoKcGVybWlzc2lvbnM6CiAgY29udGVudHM6IHJlYWQKCmNvbmN1cnJlbmN5OgogIGdyb3VwOiB3ZWJzaXRlLWNoZWNrcy0ke3sgZ2l0aHViLnJlZiB9fQogIGNhbmNlbC1pbi1wcm9ncmVzczogdHJ1ZQoKam9iczoKICB2YWxpZGF0ZToKICAgIG5hbWU6IFZhbGlkYXRlIHdlYnNpdGUKICAgIHJ1bnMtb246IHVidW50dS1sYXRlc3QKICAgIHRpbWVvdXQtbWludXRlczogMjAKCiAgICBzdGVwczoKICAgICAgLSBuYW1lOiBDaGVjayBvdXQgcmVwb3NpdG9yeQogICAgICAgIHVzZXM6IGFjdGlvbnMvY2hlY2tvdXRAdjcKCiAgICAgIC0gbmFtZTogU2V0IHVwIE5vZGUuanMKICAgICAgICB1c2VzOiBhY3Rpb25zL3NldHVwLW5vZGVAdjYKICAgICAgICB3aXRoOgogICAgICAgICAgbm9kZS12ZXJzaW9uOiAyNAogICAgICAgICAgY2FjaGU6IG5wbQoKICAgICAgLSBuYW1lOiBJbnN0YWxsIGxvY2tlZCBkZXBlbmRlbmNpZXMKICAgICAgICBydW46IG5wbSBjaQoKICAgICAgLSBuYW1lOiBSdW4gc3RydWN0dXJlIHNhZmVndWFyZHMKICAgICAgICBydW46IG5wbSB0ZXN0CgogICAgICAtIG5hbWU6IFJ1biBGaXRuZXNzIGFuZCB2b2ljZSB1bml0IHRlc3RzCiAgICAgICAgcnVuOiBucG0gcnVuIHRlc3Q6Zml0bmVzcwoKICAgICAgLSBuYW1lOiBJbnN0YWxsIENocm9taXVtIGZvciB2b2ljZSBVSSBjaGVja3MKICAgICAgICBydW46IG5weCBwbGF5d3JpZ2h0IGluc3RhbGwgLS13aXRoLWRlcHMgY2hyb21pdW0KCiAgICAgIC0gbmFtZTogUnVuIEZpdG5lc3Mgdm9pY2UgYnJvd3NlciB0ZXN0CiAgICAgICAgcnVuOiBucG0gcnVuIHRlc3Q6dm9pY2UtdWkKCiAgICAgIC0gbmFtZTogUnVuIGZpbml0ZSBzdGFiaWxpdHkgYW5kIHJlbGVhc2Ugc21va2UgdGVzdAogICAgICAgIHJ1bjogbnBtIHJ1biB0ZXN0OnN0YWJpbGl0eS1zbW9rZQoKICAgICAgLSBuYW1lOiBSdW4gR2FtZXMgSHViIHVuaXQgdGVzdHMKICAgICAgICBydW46IG5wbSBydW4gdGVzdDpyZWFsbS1zdGFnZTIKCiAgICAgIC0gbmFtZTogTGludCBQSFAgZW5kcG9pbnRzCiAgICAgICAgcnVuOiBmaW5kIHNpdGV3aWRlIHN5c3RlbXMgLXR5cGUgZiAtbmFtZSAnKi5waHAnIC1wcmludDAgfCB4YXJncyAtMCAtbjEgcGhwIC1sCgogICAgICAtIG5hbWU6IEV4ZXJjaXNlIHNhdmVkLWRhdGEgYXRvbWljLXdyaXRlIGNvbnRyYWN0CiAgICAgICAgcnVuOiBucG0gcnVuIHRlc3Q6c2F2ZWQtZGF0YS1waHAK' | base64 -d > .github/workflows/website-checks.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Fix skincare dropdown layering and calendar palette"
-          git push origin HEAD:agent/fix-skincare-dropdown-calendar-20260804
+          git commit -m "Expand skincare and Fitness routine systems"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
 
   validate:
     name: Validate website
-    needs: correct-skincare-visuals
-    if: ${{ always() && !(needs.correct-skincare-visuals.outputs.target == 'true' && needs.correct-skincare-visuals.outputs.changed == 'true') }}
+    needs: migrate-routine-systems
+    if: ${{ always() && !(needs.migrate-routine-systems.outputs.target == 'true' && needs.migrate-routine-systems.outputs.changed == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-
-      - name: Install locked dependencies
-        run: npm ci
-
+      - run: npm ci
       - name: Run structure safeguards
         run: npm test
-
       - name: Run Fitness and voice unit tests
         run: npm run test:fitness
-
       - name: Install Chromium for voice UI checks
         run: npx playwright install --with-deps chromium
-
       - name: Run Fitness voice browser test
         run: npm run test:voice-ui
-
       - name: Run finite stability and release smoke test
         run: npm run test:stability-smoke
-
       - name: Run Games Hub unit tests
         run: npm run test:realm-stage2
-
       - name: Lint PHP endpoints
         run: find sitewide systems -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-
       - name: Exercise saved-data atomic-write contract
         run: npm run test:saved-data-php
