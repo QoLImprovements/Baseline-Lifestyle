@@ -3,6 +3,7 @@
   'use strict';
 
   const MODEL = global.BASELINE_SKINCARE_ROUTINE_MODEL;
+  const PRODUCTS = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
   if (!MODEL || !global.document || global.__BASELINE_SKINCARE_ROUTINE__) return;
   global.__BASELINE_SKINCARE_ROUTINE__ = true;
 
@@ -240,7 +241,16 @@
       target.innerHTML = '<div class="routine-empty">No actions have been added yet. Type or choose an option above to begin your routine.</div>';
       return;
     }
-    target.innerHTML = state.items.map((item, index) => `<article class="routine-item" data-routine-item="${escapeHtml(item.id)}">
+    target.innerHTML = state.items.map((item, index) => {
+      const definition = MODEL.ACTION_BY_ID.get(item.actionId);
+      const methodField = MODEL.supportsShavingMethod?.(item.actionId)
+        ? `<label class="routine-field routine-shaving-method-field"><span>Shaving method</span><select data-id="${escapeHtml(item.id)}" data-field="shavingMethod">${selectOptions(MODEL.SHAVING_METHODS, item.shavingMethod)}</select></label>`
+        : '';
+      const productOptions = PRODUCTS?.optionsHtml(item.actionId, item.productSelection) || '<option value="">No product selected</option>';
+      const customProduct = item.productSelection === 'custom'
+        ? `<label class="routine-field routine-field-wide routine-custom-product-field"><span>Custom product</span><input type="text" maxlength="180" value="${escapeHtml(item.customProductName || '')}" placeholder="Brand and product name" data-id="${escapeHtml(item.id)}" data-field="customProductName"></label>`
+        : '';
+      return `<article class="routine-item" data-routine-item="${escapeHtml(item.id)}">
       <div class="routine-item-head">
         <div><span class="routine-order">${index + 1}</span><strong>${escapeHtml(item.title)}</strong></div>
         <div class="routine-item-actions">${removalControls(item, index)}</div>
@@ -248,14 +258,18 @@
       <div class="routine-item-grid">
         <label class="routine-field"><span>Action name</span><input type="text" maxlength="100" value="${escapeHtml(item.title)}" data-id="${escapeHtml(item.id)}" data-field="title"></label>
         <label class="routine-field"><span>Time of day</span><select data-id="${escapeHtml(item.id)}" data-field="timeOfDay">${selectOptions(MODEL.TIMES, item.timeOfDay)}</select></label>
+        ${methodField}
+        <label class="routine-field routine-product-field"><span>Product / recipe used</span><select data-id="${escapeHtml(item.id)}" data-field="productSelection">${productOptions}</select></label>
+        ${customProduct}
         <label class="routine-field"><span>Benefit summary</span><select data-id="${escapeHtml(item.id)}" data-field="benefitMode">${selectOptions(MODEL.BENEFIT_MODES, item.benefitMode)}</select></label>
         <label class="routine-field"><span>How often</span><select data-id="${escapeHtml(item.id)}" data-field="frequencyMode">${selectOptions(MODEL.FREQUENCIES, item.frequency.mode)}</select></label>
         ${weeklyControl(item)}
-        <div class="routine-field routine-field-wide routine-benefit-field"><span>Benefits</span><p>${escapeHtml(MODEL.benefitText(item))}</p></div>
-        <label class="routine-field routine-field-wide"><span>Personal notes</span><textarea rows="2" maxlength="600" placeholder="Products, technique, order details or reminders" data-id="${escapeHtml(item.id)}" data-field="notes">${escapeHtml(item.notes)}</textarea></label>
+        <div class="routine-field routine-field-wide routine-benefit-field"><span>Benefits</span><p>${escapeHtml(MODEL.benefitText(item, item.benefitMode))}</p></div>
+        <label class="routine-field routine-field-wide"><span>Personal notes</span><textarea rows="3" maxlength="1200" placeholder="Products, technique, order details or reminders" data-id="${escapeHtml(item.id)}" data-field="notes">${escapeHtml(item.notes)}</textarea></label>
       </div>
       ${dayControls(item)}
-    </article>`).join('');
+    </article>`;
+    }).join('');
   }
 
   function summaryItem(item, index) {
@@ -368,7 +382,7 @@
       id: uniqueId(),
       actionId: action.id,
       title: action.title,
-      benefitMode: 'brief',
+      benefitMode: 'comprehensive',
       timeOfDay: 'anytime',
       frequency: { mode: 'daily', days: [], timesPerWeek: 3 },
       notes: ''
@@ -413,18 +427,31 @@
   }
 
   function updateItem(control) {
-    const item = itemById(control.dataset.id);
-    if (!item) return;
+    const id = control.dataset.id;
     const field = control.dataset.field;
-    if (field === 'title' || field === 'notes') item[field] = String(control.value || '').trim().slice(0, field === 'title' ? 100 : 600);
-    if (field === 'benefitMode') item.benefitMode = control.value === 'comprehensive' ? 'comprehensive' : 'brief';
-    if (field === 'timeOfDay') item.timeOfDay = MODEL.TIMES.some((entry) => entry.value === control.value) ? control.value : 'anytime';
-    if (field === 'frequencyMode') item.frequency.mode = MODEL.FREQUENCIES.some((entry) => entry.value === control.value) ? control.value : 'daily';
-    if (field === 'timesPerWeek') item.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(control.value) || 1)));
+    const value = control.value;
+    const item = itemById(id);
+    if (!item) return;
+    if (field === 'title') item.title = String(value || '').trim().slice(0, 100) || MODEL.ACTION_BY_ID.get(item.actionId)?.title || 'Self-Care Action';
+    if (field === 'notes') item.notes = String(value || '').slice(0, 1200);
+    if (field === 'benefitMode') item.benefitMode = MODEL.BENEFIT_MODES.some((mode) => mode.value === value) ? value : 'comprehensive';
+    if (field === 'timeOfDay') item.timeOfDay = MODEL.TIMES.some((time) => time.value === value) ? value : 'anytime';
+    if (field === 'frequencyMode') item.frequency.mode = MODEL.FREQUENCIES.some((frequency) => frequency.value === value) ? value : 'daily';
+    if (field === 'timesPerWeek') item.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(value) || 1)));
+    if (field === 'shavingMethod') item.shavingMethod = MODEL.SHAVING_METHODS?.some((method) => method.value === value) ? value : '';
+    if (field === 'productSelection') {
+      item.productSelection = String(value || '').slice(0, 180);
+      const details = PRODUCTS?.selectionDetails(item.productSelection, item.actionId) || { name: '' };
+      item.productName = details.name || '';
+      if (item.productSelection !== 'custom') item.customProductName = '';
+    }
+    if (field === 'customProductName') {
+      item.customProductName = String(value || '').slice(0, 180);
+      if (item.productSelection === 'custom') item.productName = item.customProductName;
+    }
     state.items = MODEL.normaliseRoutine(state.items);
     scheduleSave();
-    if (field === 'frequencyMode' || field === 'benefitMode') renderAll();
-    else { renderSummary(); renderLog(); }
+    renderAll();
   }
 
   function updateDay(control) {

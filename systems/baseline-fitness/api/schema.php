@@ -41,6 +41,16 @@ function bl_fitness_ensure_schema(PDO $db): void {
     )');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_achievements_user ON achievements(user_id)');
   });
+
+  bl_apply_schema_migration($db, 'fitness', 2, static function(PDO $db): void {
+    $db->exec('CREATE TABLE IF NOT EXISTS fitness_routine_state (
+      user_id INTEGER PRIMARY KEY,
+      routine_json TEXT NOT NULL DEFAULT "[]",
+      logs_json TEXT NOT NULL DEFAULT "{}",
+      updated_at INTEGER NOT NULL,
+      FOREIGN KEY(user_id) REFERENCES users(id)
+    )');
+  });
 }
 
 function bl_fitness_db(): PDO {

@@ -181,6 +181,12 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 
   await page.goto('/baseline-fitness/my-plan', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
+  const mainRoutineTab = page.locator('.tab[data-target="my-plan"]');
+  await expect(mainRoutineTab).toBeVisible();
+  await mainRoutineTab.click();
+  const calisthenicsTab = page.locator('[data-fitness-routine-view="calisthenics"]');
+  await expect(calisthenicsTab).toBeVisible();
+  await calisthenicsTab.click();
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   await page.locator('.ex-row').first().locator('.ex-baseline').fill('12');
   await page.locator('#sessions').fill('2');

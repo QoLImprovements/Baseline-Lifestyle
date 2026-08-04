@@ -292,3 +292,9 @@ Options -Indexes
   RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
   RewriteRule ^baseline-games-hub/games-hub/(games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
 </IfModule>
+
+# BASELINE-FITNESS-MY-ROUTINE-20260804
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^baseline-fitness/my-routine/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+</IfModule>

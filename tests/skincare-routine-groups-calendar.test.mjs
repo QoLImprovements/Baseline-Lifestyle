@@ -5,7 +5,10 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const html = readFileSync(resolve(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
-const enhancement = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
+const enhancementLoader = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
+const enhancementCore = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements-core.js'), 'utf8');
+const enhancement = `${enhancementLoader}\n${enhancementCore}`;
+const catalogue = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'), 'utf8');
 const css = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-enhancements.css'), 'utf8');
 const schema = readFileSync(resolve(root, 'systems/baseline-natural-skincare/api/schema.php'), 'utf8');
 const endpoint = readFileSync(resolve(root, 'systems/baseline-natural-skincare/api/routine_groups.php'), 'utf8');
@@ -13,13 +16,19 @@ const endpoint = readFileSync(resolve(root, 'systems/baseline-natural-skincare/a
 test('routine enhancement assets load after the model and before the interface', () => {
   const modelIndex = html.indexOf('skincare-routine-model.js');
   const comprehensiveIndex = html.indexOf('skincare-routine-comprehensive-benefits.js');
+  const catalogueIndex = html.indexOf('skincare-routine-catalogue-v2.js');
+  const productIndex = html.indexOf('skincare-product-library.js');
   const enhancementIndex = html.indexOf('skincare-routine-enhancements.js');
   const interfaceIndex = html.indexOf('skincare-routine.js');
   assert.ok(modelIndex >= 0);
   assert.ok(comprehensiveIndex > modelIndex);
-  assert.ok(enhancementIndex > comprehensiveIndex);
+  assert.ok(catalogueIndex > comprehensiveIndex);
+  assert.ok(productIndex > catalogueIndex);
+  assert.ok(enhancementIndex > productIndex);
   assert.ok(interfaceIndex > enhancementIndex);
   assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2/);
+  assert.match(html, /skincare-routine-workspace-v2\.css\?v=SKINCARE_ROUTINE_WORKSPACE_V2_20260804_1/);
+  assert.match(enhancementLoader, /skincare-routine-enhancements-core\.js/);
 });
 
 test('Routine Summary replaces the old My Routine summary heading', () => {
@@ -41,23 +50,25 @@ test('Routine Log receives a full-width monthly completion calendar', () => {
   assert.match(css, /\.routine-calendar-day\.has-routine/);
 });
 
-test('visibility uses a compact themed labelled control', () => {
-  assert.match(enhancement, /Routine Visibility/);
+test('visibility uses the existing compact themed labelled control', () => {
+  assert.match(html, /Routine Visibility/);
   assert.match(css, /\.routine-visibility-control/);
   assert.match(css, /width:82px!important/);
 });
 
-test('users can create, rename, remove and assign routine groups', () => {
+test('users can create, rename, remove, collapse and assign routine groups', () => {
   assert.match(enhancement, /Create group/);
   assert.match(enhancement, /function createGroup\(/);
-  assert.match(enhancement, /function renameGroup\(/);
+  assert.match(enhancement, /function updateGroup\(/);
+  assert.match(enhancement, /field === 'title'/);
   assert.match(enhancement, /function removeGroup\(/);
+  assert.match(enhancement, /data-group-collapse/);
   assert.match(enhancement, /data-routine-group-select/);
   assert.match(endpoint, /skincare_routine_groups/);
   assert.match(schema, /CREATE TABLE IF NOT EXISTS skincare_routine_groups/);
 });
 
 test('Oil-Based Cleansing Shower is available as a clear UK-facing routine label', () => {
-  assert.match(enhancement, /Oil-Based Cleansing Shower/);
-  assert.match(enhancement, /without relying on conventional body wash or shampoo/);
+  assert.match(catalogue, /Oil-Based Cleansing Shower/);
+  assert.match(catalogue, /without relying on conventional body wash or shampoo/);
 });
