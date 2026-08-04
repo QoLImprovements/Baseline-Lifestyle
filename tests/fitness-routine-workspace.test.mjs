@@ -5,7 +5,9 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const catalogue = require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
-const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
+const workspaceLoader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
+const workspaceCore = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-core.js', import.meta.url), 'utf8');
+const workspace = `${workspaceLoader}\n${workspaceCore}`;
 const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
@@ -71,4 +73,5 @@ test('Fitness routine assets load after the existing calisthenics runtime', () =
   const workspaceIndex = html.indexOf('fitness-routine-workspace.js');
   assert.ok(app >= 0 && voice > app && catalogueIndex > voice && workspaceIndex > catalogueIndex);
   assert.match(html, /fitness-routine-workspace\.css/);
+  assert.match(workspaceLoader, /fitness-routine-workspace-core\.js/);
 });
