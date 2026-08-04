@@ -19,12 +19,25 @@ function bl_skincare_group_decode(string $json, array $fallback): array {
   }
 }
 
+function bl_skincare_group_frequency($value): array {
+  $source = is_array($value) ? $value : [];
+  $mode = strtolower(bl_skincare_group_text($source['mode'] ?? 'daily', 24));
+  if(!in_array($mode, ['daily','days','weekly','as-needed'], true)) $mode = 'daily';
+  $allowedDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+  $days = [];
+  foreach((is_array($source['days'] ?? null) ? $source['days'] : []) as $day){
+    $day = bl_skincare_group_text($day, 12);
+    if(in_array($day, $allowedDays, true) && !in_array($day, $days, true)) $days[] = $day;
+  }
+  return ['mode'=>$mode,'days'=>$days,'timesPerWeek'=>max(1,min(14,(int)($source['timesPerWeek'] ?? 3)))];
+}
+
 function bl_skincare_groups_normalise($value): array {
   if(!is_array($value)) return [];
   $groups = [];
   $seenIds = [];
   $seenTitles = [];
-  foreach(array_slice($value, 0, 20) as $index=>$raw){
+  foreach(array_slice($value, 0, 30) as $index=>$raw){
     if(!is_array($raw)) continue;
     $id = bl_skincare_group_text($raw['id'] ?? ('routine-group-' . ($index + 1)), 80);
     $id = preg_replace('/[^a-zA-Z0-9_-]/', '-', $id) ?: '';
@@ -35,7 +48,17 @@ function bl_skincare_groups_normalise($value): array {
     if(isset($seenTitles[$titleKey])) continue;
     $seenIds[$id] = true;
     $seenTitles[$titleKey] = true;
-    $groups[] = ['id'=>$id,'title'=>$title];
+    $time = strtolower(bl_skincare_group_text($raw['timeOfDay'] ?? 'anytime', 20));
+    if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
+    $groups[] = [
+      'id'=>$id,
+      'title'=>$title,
+      'collapsed'=>!empty($raw['collapsed']),
+      'applyFrequency'=>!empty($raw['applyFrequency']),
+      'frequency'=>bl_skincare_group_frequency($raw['frequency'] ?? []),
+      'applyTime'=>!empty($raw['applyTime']),
+      'timeOfDay'=>$time,
+    ];
   }
   return $groups;
 }
@@ -45,7 +68,7 @@ function bl_skincare_group_assignments($value, array $groups): array {
   $valid = [];
   foreach($groups as $group) $valid[(string)$group['id']] = true;
   $assignments = [];
-  foreach(array_slice($value, 0, 50, true) as $itemId=>$groupId){
+  foreach(array_slice($value, 0, 120, true) as $itemId=>$groupId){
     $item = bl_skincare_group_text($itemId, 80);
     $group = bl_skincare_group_text($groupId, 80);
     if($item !== '' && isset($valid[$group])) $assignments[$item] = $group;
