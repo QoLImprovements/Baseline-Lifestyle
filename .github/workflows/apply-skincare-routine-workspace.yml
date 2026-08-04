@@ -6,6 +6,9 @@ on:
       - agent/refine-skincare-routine-workspace-20260804
     paths:
       - .github/workflows/apply-skincare-routine-workspace.yml
+  pull_request:
+    branches:
+      - main
 
 permissions:
   contents: write
@@ -52,4 +55,5 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Refine skincare My Routine workspace [skip ci]"
+          git pull --rebase origin agent/refine-skincare-routine-workspace-20260804
           git push origin HEAD:agent/refine-skincare-routine-workspace-20260804
