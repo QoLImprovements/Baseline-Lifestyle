@@ -1,0 +1,76 @@
+name: Finalise routine overhaul branch
+
+on:
+  push:
+    branches:
+      - agent/routine-systems-overhaul-20260804
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalise-routine-overhaul-branch
+  cancel-in-progress: true
+
+jobs:
+  finalise:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: agent/routine-systems-overhaul-20260804
+          fetch-depth: 0
+
+      - name: Configure Git and synchronise main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if ! git merge --no-edit origin/main; then
+            while IFS= read -r file; do
+              if [ "$file" = ".github/workflows/website-checks.yml" ] || [ "$file" = ".github/workflows/finalise-routine-overhaul.yml" ]; then
+                git checkout --theirs -- "$file"
+              else
+                git checkout --ours -- "$file"
+              fi
+              git add "$file"
+            done < <(git diff --name-only --diff-filter=U)
+            git commit -m "Synchronise routine overhaul with main"
+          fi
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Apply final source migration
+        run: python3 .github/finalise_routines.py
+
+      - name: Remove temporary migration files
+        run: |
+          rm .github/finalise_routines.py
+          rm .github/workflows/finalise-routine-overhaul-branch.yml
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify source and focused contracts
+        run: |
+          node --check systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js
+          node --check systems/baseline-fitness/js/baseline-fitness-app.js
+          node --check systems/baseline-fitness/js/fitness-saved-data-bridge.js
+          node --check systems/baseline-fitness/js/baseline-fitness-voice.js
+          node --test tests/routine-final-interface.test.mjs tests/skincare-routine-overhaul.test.mjs tests/fitness-routine-workspace.test.mjs tests/fitness-independent-exercise-progression.test.mjs
+          npm run test:structure
+
+      - name: Publish clean verified branch
+        run: |
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+            exit 0
+          fi
+          git commit -m "Finalise grouped routines, product choice and timed hold targets"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
