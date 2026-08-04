@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const model = require('../systems/baseline-natural-skincare/js/skincare-routine-model.js');
+const model = require('../systems/baseline-natural-skincare/js/skincare-routine-comprehensive-benefits.js');
 const html = fs.readFileSync(new URL('../systems/baseline-natural-skincare/baseline-natural-skincare.html', import.meta.url), 'utf8');
 const routineUi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
 const routineCss = fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine.css', import.meta.url), 'utf8');

@@ -12,10 +12,12 @@ const endpoint = readFileSync(resolve(root, 'systems/baseline-natural-skincare/a
 
 test('routine enhancement assets load after the model and before the interface', () => {
   const modelIndex = html.indexOf('skincare-routine-model.js');
+  const comprehensiveIndex = html.indexOf('skincare-routine-comprehensive-benefits.js');
   const enhancementIndex = html.indexOf('skincare-routine-enhancements.js');
   const interfaceIndex = html.indexOf('skincare-routine.js');
   assert.ok(modelIndex >= 0);
-  assert.ok(enhancementIndex > modelIndex);
+  assert.ok(comprehensiveIndex > modelIndex);
+  assert.ok(enhancementIndex > comprehensiveIndex);
   assert.ok(interfaceIndex > enhancementIndex);
   assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2/);
 });
