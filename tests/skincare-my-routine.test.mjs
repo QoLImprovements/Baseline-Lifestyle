@@ -6,15 +6,21 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 const model = require('../systems/baseline-natural-skincare/js/skincare-routine-model.js');
 const html = fs.readFileSync(new URL('../systems/baseline-natural-skincare/baseline-natural-skincare.html', import.meta.url), 'utf8');
+const routineUi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-shared.js', import.meta.url), 'utf8');
 const fallbackTabs = fs.readFileSync(new URL('../sitewide/js/baseline-tabs.js', import.meta.url), 'utf8');
+const htaccess = fs.readFileSync(new URL('../.htaccess', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-natural-skincare/api/routine_state.php', import.meta.url), 'utf8');
 
-test('My Routine is a skincare tab with a clean route', () => {
+test('My Routine is a skincare tab with a clean route that survives refresh', () => {
   assert.match(html, /data-target="routine">My Routine<\/button>/);
   assert.match(html, /<section class="section" id="routine">/);
   assert.match(shared, /routine:'my-routine'/);
   assert.match(fallbackTabs, /routine:"my-routine"/);
+  assert.match(
+    htaccess,
+    /RewriteRule \^baseline-natural-skincare\/\(system\|recipes\|ingredient-library\|skin-support-system\|my-routine\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html \[L,QSA\]/
+  );
 });
 
 test('routine interface includes privacy, builder, summary, log and public lookup', () => {
@@ -32,11 +38,18 @@ test('routine interface includes privacy, builder, summary, log and public looku
   assert.match(html, /Public — others can view my plan/);
 });
 
-test('self-care dropdown catalogue is data-driven', () => {
-  assert.ok(model.ACTIONS.length >= 20);
+test('self-care dropdown catalogue is broad, data-driven and subcategorised', () => {
+  assert.ok(model.ACTIONS.length >= 70, `expected at least 70 actions, received ${model.ACTIONS.length}`);
+  assert.equal(new Set(model.ACTIONS.map((item) => item.id)).size, model.ACTIONS.length);
+  assert.ok(model.GROUPS.length >= 12);
   assert.equal(model.ACTION_BY_ID.get('oil-cleanse').title, 'Anhydrous Oil Cleanse');
-  assert.equal(model.ACTION_BY_ID.get('microcurrent').group, 'Treatments & Devices');
+  assert.equal(model.ACTION_BY_ID.get('microcurrent').group, 'Devices — Electrical & Conductive');
+  assert.equal(model.ACTION_BY_ID.get('radiofrequency').title, 'Radiofrequency (RF)');
+  assert.equal(model.ACTION_BY_ID.get('radiofrequency').group, 'Devices — Light, Heat & Energy');
+  assert.equal(model.ACTION_BY_ID.get('professional-rf').group, 'Professional Treatments');
   assert.equal(model.ACTION_BY_ID.get('custom').title, 'Custom Self-Care Action');
+  assert.match(routineUi, /<optgroup label=/);
+  assert.match(routineUi, /MODEL\.GROUPS/);
 });
 
 test('frequency summaries support daily, selected days, weekly and as-needed routines', () => {
@@ -81,6 +94,6 @@ test('public API returns the routine plan but keeps completion logs private', ()
 
 test('routine assets are loaded by the skincare page', () => {
   assert.match(html, /skincare-routine\.css\?v=SKINCARE_MY_ROUTINE_20260804_1/);
-  assert.match(html, /skincare-routine-model\.js\?v=SKINCARE_MY_ROUTINE_20260804_1/);
-  assert.match(html, /skincare-routine\.js\?v=SKINCARE_MY_ROUTINE_20260804_1/);
+  assert.match(html, /skincare-routine-model\.js\?v=SKINCARE_MY_ROUTINE_20260804_2/);
+  assert.match(html, /skincare-routine\.js\?v=SKINCARE_MY_ROUTINE_20260804_2/);
 });
