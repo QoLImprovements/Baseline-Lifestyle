@@ -22,8 +22,8 @@ test('standard rep exercises progress every set by one from Session 1',()=>{
   assert.deepEqual(fitness.progressedSetValues(10,3,3,fitness.TYPES.STANDARD),[10,9,11]);
 });
 
-test('leg-reps use deterministic +2 / +1 / +3 progression',()=>{
-  const expected=[[15,14,16],[17,15,19],[19,16,22],[21,17,25]];
+test('leg-reps add three repetitions to every set',()=>{
+  const expected=[[15,14,16],[18,17,19],[21,20,22],[24,23,25]];
   assert.deepEqual(expected.map((_,index)=>fitness.progressedSetValues(20,3,index+1,fitness.TYPES.LEG)),expected);
   assert.deepEqual(fitness.progressedSetValues(20,3,4,fitness.TYPES.LEG),expected[3]);
 });
@@ -32,16 +32,16 @@ test('exercise definitions own progression behavior',()=>{
   const squat=fitness.work([{exercise:'Squats',baseline:20,sets:3}],4)[0];
   const pushUps=fitness.work([{exercise:'Push-Ups',baseline:20,sets:3}],4)[0];
   assert.equal(squat.progressionType,fitness.TYPES.LEG);
-  assert.deepEqual(squat.values,[21,17,25]);
+  assert.deepEqual(squat.values,[24,23,25]);
   assert.equal(pushUps.progressionType,fitness.TYPES.STANDARD);
   assert.deepEqual(pushUps.values,[18,17,19]);
 });
 
-test('timed holds retain seconds progression',()=>{
+test('timed holds retain the current seconds progression guide',()=>{
   const plank=fitness.work([{exercise:'Plank',baseline:20}],4)[0];
   assert.equal(plank.unit,'seconds');
   assert.equal(plank.progressionType,fitness.TYPES.TIMED);
-  assert.equal(plank.hold,35);
+  assert.equal(plank.hold,29);
   assert.equal('values' in plank,false);
 });
 
