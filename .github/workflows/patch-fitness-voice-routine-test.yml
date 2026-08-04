@@ -70,3 +70,5 @@ jobs:
           git add -A
           git commit -m "Navigate to Calisthenics in the voice workout test"
           git push origin HEAD:agent/routine-systems-overhaul-20260804
+
+# Synchronise the open pull request with the trusted default-branch workflow.
