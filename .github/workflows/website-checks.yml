@@ -152,7 +152,7 @@ jobs:
   validate:
     name: Validate website
     needs: migrate-skincare-routine
-    if: always() && !(needs.migrate-skincare-routine.outputs.target == 'true' && needs.migrate-skincare-routine.outputs.changed == 'true')
+    if: ${{ always() && !(needs.migrate-skincare-routine.outputs.target == 'true' && needs.migrate-skincare-routine.outputs.changed == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
