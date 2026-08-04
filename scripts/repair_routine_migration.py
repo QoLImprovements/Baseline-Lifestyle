@@ -42,6 +42,10 @@ pattern = r"update_item = r'''[\s\S]*?'update skincare item fields',\n\)\n"
 text, count = re.subn(pattern, lambda _match: replacement, text, count=1)
 if count != 1:
     raise SystemExit(f'could not repair updateItem migration block: {count}')
+
+cleanup = "\n# Remove one-time migration sources before repository structure checks.\nimport shutil\nshutil.rmtree(ROOT / 'scripts', ignore_errors=True)\n"
+if "shutil.rmtree(ROOT / 'scripts'" not in text:
+    text += cleanup
 path.write_text(text)
 
 legacy_test = Path(__file__).resolve().parents[1] / 'tests/skincare-my-routine.test.mjs'
