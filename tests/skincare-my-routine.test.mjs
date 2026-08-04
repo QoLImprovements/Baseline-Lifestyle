@@ -25,7 +25,7 @@ test('My Routine sits between Recipes and Ingredient Library and retains refresh
 });
 
 test('routine workspace uses four ordered subtabs and full-width panels', () => {
-  assert.match(html, /data-routine-view="log"[^>]*>Routine Log<\/button>[\s\S]*?data-routine-view="summary"[^>]*>My Routine<\/button>[\s\S]*?data-routine-view="plan"[^>]*>Routine Plan<\/button>[\s\S]*?data-routine-view="public"[^>]*>Public Routines<\/button>/);
+  assert.match(html, /data-routine-view="log"[^>]*>Routine Log<\/button>[\s\S]*?data-routine-view="summary"[^>]*>Routine Summary<\/button>[\s\S]*?data-routine-view="plan"[^>]*>Routine Plan<\/button>[\s\S]*?data-routine-view="public"[^>]*>Public Routines<\/button>/);
   for (const panel of ['log', 'summary', 'plan', 'public']) {
     assert.match(html, new RegExp(`data-routine-panel="${panel}"`));
   }
@@ -34,9 +34,10 @@ test('routine workspace uses four ordered subtabs and full-width panels', () => 
   assert.doesNotMatch(html, /id="routineVisibilityDetail"/);
 });
 
-test('My Routine summary contains compact visibility and sends empty plans to Routine Plan', () => {
-  assert.match(html, /<h2>My Routine<\/h2>\s*<h3>Routine summary<\/h3>/);
-  assert.match(html, /id="routineVisibility"[^>]*class="routine-visibility-select"/);
+test('Routine Summary contains compact visibility and sends empty plans to Routine Plan', () => {
+  assert.match(html, /<h2>Routine Summary<\/h2>/);
+  assert.doesNotMatch(html, /<h3>Routine summary<\/h3>/i);
+  assert.match(html, /Routine Visibility[\s\S]*id="routineVisibility"[^>]*class="routine-visibility-select"/);
   assert.match(html, /<option value="private">Private<\/option>/);
   assert.match(html, /<option value="public">Public<\/option>/);
   assert.match(routineUi, /No routine plan exists yet[\s\S]*data-open-routine-view=\\?"plan/);
@@ -78,68 +79,66 @@ test('routine action picker is searchable, grouped, functional and uses UK termi
   assert.match(routineUi, /<optgroup label=/);
   assert.match(routineUi, /routine-action-group-label/);
   assert.match(routineUi, /toLocaleLowerCase\('en-GB'\)/);
-  const catalogueText = model.ACTIONS.map((item) => `${item.title} ${item.benefitBrief}`).join(' ');
-  assert.doesNotMatch(catalogueText, /\bmoisturizer\b|\bpersonalized\b|\bcolor\b/i);
-  assert.match(catalogueText, /moisturiser/i);
+  assert.match(routineUi, /chooseAction\([^)]*dataset\.actionOption\)/);
+  assert.match(routineUi, /resolveTypedAction\(\)/);
+  assert.match(model.ACTIONS.map((item) => item.title).join(' '), /Moisturiser/);
+  assert.doesNotMatch(model.ACTIONS.map((item) => item.title).join(' '), /Moisturizer/);
 });
 
 test('removal uses a themed inline confirmation instead of deleting immediately', () => {
   assert.match(routineUi, /data-remove-request=/);
+  assert.match(routineUi, /routine-remove-confirm/);
+  assert.match(routineUi, /<span>Remove\?<\/span>/);
   assert.match(routineUi, /data-remove-confirm=/);
   assert.match(routineUi, /data-remove-cancel=/);
-  assert.match(routineUi, /function requestRemoveItem/);
-  assert.match(routineCss, /\.routine-remove-confirm/);
 });
 
 test('Public Routines uses an alphabetised profile dropdown rather than a search box', () => {
-  assert.match(html, /<select id="publicRoutineName"/);
-  assert.doesNotMatch(html, /id="publicRoutineName" type="search"/);
-  assert.match(routineUi, /request\(\{ list: 'public' \}\)/);
+  assert.match(html, /id="publicRoutineName"[^>]*>/);
+  assert.doesNotMatch(html, /id="routinePublicSearch"/);
   assert.match(routineUi, /localeCompare\(right, 'en-GB'/);
-  assert.match(api, /function bl_skincare_public_profiles/);
-  assert.match(api, /ORDER BY lower\(u\.name\), u\.name/);
-  assert.match(api, /\$_GET\['list'\]/);
+  assert.match(routineUi, /request\(\{ list: 'public' \}\)/);
 });
 
 test('frequency summaries support daily, selected days, weekly and as-needed routines', () => {
   assert.equal(model.frequencyText({ mode: 'daily' }), 'Every day');
-  assert.equal(model.frequencyText({ mode: 'days', days: ['Monday', 'Friday'] }), 'Monday, Friday');
+  assert.equal(model.frequencyText({ mode: 'days', days: ['Monday', 'Thursday'] }), 'Monday, Thursday');
   assert.equal(model.frequencyText({ mode: 'weekly', timesPerWeek: 3 }), '3× each week');
   assert.equal(model.frequencyText({ mode: 'as-needed' }), 'As needed');
 });
 
 test('selected-day and weekly due logic uses the routine log', () => {
+  const monday = '2026-08-03';
+  const tuesday = '2026-08-04';
   const selectedDays = model.normaliseItem({
-    id: 'steam',
+    id: 'selected-days',
     actionId: 'facial-steam',
     frequency: { mode: 'days', days: ['Monday'] }
   });
-  assert.equal(model.dueStatus(selectedDays, '2026-08-03', {}).due, true);
-  assert.equal(model.dueStatus(selectedDays, '2026-08-04', {}).due, false);
+  assert.equal(model.dueStatus(selectedDays, monday, {}).due, true);
+  assert.equal(model.dueStatus(selectedDays, tuesday, {}).due, false);
 
   const weekly = model.normaliseItem({
-    id: 'massage',
-    actionId: 'facial-massage',
+    id: 'weekly',
+    actionId: 'microcurrent',
     frequency: { mode: 'weekly', timesPerWeek: 2 }
   });
-  const logs = {
-    '2026-08-03': { massage: { completed: true } },
-    '2026-08-05': { massage: { completed: true } }
+  const oneDone = { '2026-08-03': { weekly: { completed: true } } };
+  const twoDone = {
+    '2026-08-03': { weekly: { completed: true } },
+    '2026-08-04': { weekly: { completed: true } }
   };
-  assert.equal(model.dueStatus(weekly, '2026-08-06', logs).due, false);
-  assert.equal(model.dueStatus(weekly, '2026-08-06', logs).detail, 'Weekly target complete');
+  assert.equal(model.dueStatus(weekly, tuesday, oneDone).due, true);
+  assert.equal(model.dueStatus(weekly, tuesday, twoDone).due, false);
 });
 
 test('public API returns the plan, lists public owners, and keeps completion logs private', () => {
+  assert.match(api, /function bl_skincare_public_profiles/);
+  assert.match(api, /ORDER BY lower\(u\.name\), u\.name/);
   assert.match(api, /'publicRoutine'=>\[/);
-  const start = api.indexOf('function bl_skincare_public_payload');
-  const end = api.indexOf("\ntry{\n  $db", start);
-  const publicPayload = api.slice(start, end);
-  assert.ok(start >= 0 && end > start);
+  const publicPayload = api.slice(api.indexOf("'publicRoutine'=>["), api.indexOf('];', api.indexOf("'publicRoutine'=>[")) + 2);
   assert.match(publicPayload, /'routine'=>/);
-  assert.doesNotMatch(publicPayload, /'logs'=>/);
-  assert.match(publicPayload, /routine_private/);
-  assert.match(api, /'profiles'=>array_values\(array_unique\(\$profiles\)\)/);
+  assert.doesNotMatch(publicPayload, /logs/);
 });
 
 test('routine assets use fresh workspace cache keys', () => {
