@@ -130,13 +130,14 @@
   }
 
   function actionOptions(selected = '') {
-    const groups = [];
-    MODEL.ACTIONS.forEach((item) => {
-      let group = groups.find((entry) => entry.name === item.group);
-      if (!group) { group = { name: item.group, items: [] }; groups.push(group); }
-      group.items.push(item);
-    });
-    return groups.map((group) => `<optgroup label="${escapeHtml(group.name)}">${group.items.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === selected ? ' selected' : ''}>${escapeHtml(item.title)}</option>`).join('')}</optgroup>`).join('');
+    const groupNames = Array.isArray(MODEL.GROUPS) && MODEL.GROUPS.length
+      ? MODEL.GROUPS
+      : Array.from(new Set(MODEL.ACTIONS.map((item) => item.group)));
+    return groupNames.map((groupName) => {
+      const items = MODEL.ACTIONS.filter((item) => item.group === groupName);
+      if (!items.length) return '';
+      return `<optgroup label="${escapeHtml(groupName)}">${items.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === selected ? ' selected' : ''}>${escapeHtml(item.title)}</option>`).join('')}</optgroup>`;
+    }).join('');
   }
 
   function selectOptions(values, selected) {
@@ -145,7 +146,7 @@
 
   function renderActionPicker() {
     const select = $('#routineActionSelect');
-    if (select) select.innerHTML = `<option value="">Select a self-care action…</option>${actionOptions()}`;
+    if (select) select.innerHTML = `<option value="">Choose a category and self-care action…</option>${actionOptions()}`;
   }
 
   function itemById(id) {

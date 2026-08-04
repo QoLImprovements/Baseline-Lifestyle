@@ -284,7 +284,7 @@ Options -Indexes
   # virtual public path; the physical app lives under /systems/.
   RewriteRule ^baseline-massage/(system|library|planner)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
 
-  RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
+  RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system|my-routine)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
   RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
