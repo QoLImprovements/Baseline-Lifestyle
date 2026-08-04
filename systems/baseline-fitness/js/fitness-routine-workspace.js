@@ -16,9 +16,12 @@
   }
 
   function openLegacyPlanRoute() {
-    if (!/\/baseline-fitness\/my-plan\/?$/.test(global.location?.pathname || '')) return;
+    const pathname = global.location?.pathname || '';
+    const initialTab = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
+    if (!/\/baseline-fitness\/my-plan\/?$/.test(pathname) && initialTab !== 'my-plan') return;
 
     let attempts = 0;
+    let interval = 0;
     const reveal = () => {
       attempts += 1;
 
@@ -43,18 +46,11 @@
       const saved = document.querySelector('#myPlanSavedWrap');
       if (generator && saved && saved.hidden) generator.hidden = false;
 
-      const parentSection = document.querySelector('#my-plan');
-      const calisthenicsPanel = document.querySelector('[data-fitness-routine-panel="calisthenics"]');
-      const routeReady = Boolean(
-        parentSection?.classList.contains('active') &&
-        calisthenicsPanel && !calisthenicsPanel.hidden &&
-        ((saved && !saved.hidden) || (generator && !generator.hidden))
-      );
-      if (routeReady || attempts >= 120) global.clearInterval(interval);
+      if (attempts >= 120 && interval) global.clearInterval(interval);
     };
 
     reveal();
-    const interval = global.setInterval(reveal, 100);
+    interval = global.setInterval(reveal, 100);
   }
 
   load('/systems/baseline-fitness/js/fitness-routine-workspace-core.js?v=BASELINE_FITNESS_ROUTINE_CORE_20260805_1')
