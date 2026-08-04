@@ -21,6 +21,10 @@
     let attempts = 0;
     const reveal = () => {
       attempts += 1;
+
+      const mainRoutine = document.querySelector('.tab[data-target="my-plan"]');
+      if (mainRoutine && mainRoutine.getAttribute('aria-selected') !== 'true') mainRoutine.click();
+
       const calisthenics = document.querySelector('[data-fitness-routine-view="calisthenics"]');
       if (calisthenics && calisthenics.getAttribute('aria-selected') !== 'true') calisthenics.click();
 
@@ -28,9 +32,9 @@
       const saved = document.querySelector('#myPlanSavedWrap');
       if (generator && saved && saved.hidden) generator.hidden = false;
 
-      if ((saved && !saved.hidden) || attempts >= 120) {
-        global.clearInterval(interval);
-      }
+      const parentSection = document.querySelector('#my-plan');
+      const routeReady = Boolean(parentSection?.classList.contains('active') && ((saved && !saved.hidden) || (generator && !generator.hidden)));
+      if (routeReady || attempts >= 120) global.clearInterval(interval);
     };
 
     reveal();
