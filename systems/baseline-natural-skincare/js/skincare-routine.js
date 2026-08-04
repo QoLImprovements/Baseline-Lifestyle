@@ -8,7 +8,9 @@
 
   const API = '/systems/baseline-natural-skincare/api/routine_state.php';
   const STORAGE_PREFIX = '__bl_skincare_routine_v1__::';
+  const VIEW_KEY = '__bl_skincare_routine_view_v1__';
   const SAVE_DELAY = 500;
+  const VALID_VIEWS = new Set(['log', 'summary', 'plan', 'public']);
   const state = {
     owner: '',
     authed: false,
@@ -16,9 +18,12 @@
     items: [],
     logs: {},
     selectedDate: MODEL.isoDate(new Date()),
+    activeView: 'log',
     loaded: false,
     saving: false,
     saveTimer: 0,
+    pendingRemoveId: '',
+    publicProfiles: [],
     publicRoutine: null
   };
 
@@ -65,6 +70,7 @@
   async function request(options = {}) {
     const url = new URL(API, global.location?.origin || 'https://baselinelifestyle.org');
     if (options.name) url.searchParams.set('name', options.name);
+    if (options.list) url.searchParams.set('list', options.list);
     try {
       const response = await fetch(url, {
         method: options.method || 'GET',
@@ -110,6 +116,7 @@
     state.saving = false;
     if (result.ok) {
       setStatus(state.visibility === 'public' ? 'Routine saved and public.' : 'Routine saved privately.', 'saved');
+      loadPublicProfiles();
     } else if (result.error === 'not_logged_in') {
       state.authed = false;
       setStatus('Your session ended. The routine remains saved on this device.', 'local');
@@ -130,23 +137,77 @@
   }
 
   function actionOptions(selected = '') {
-    const groupNames = Array.isArray(MODEL.GROUPS) && MODEL.GROUPS.length
-      ? MODEL.GROUPS
-      : Array.from(new Set(MODEL.ACTIONS.map((item) => item.group)));
-    return groupNames.map((groupName) => {
+    return MODEL.GROUPS.map((groupName) => {
       const items = MODEL.ACTIONS.filter((item) => item.group === groupName);
       if (!items.length) return '';
       return `<optgroup label="${escapeHtml(groupName)}">${items.map((item) => `<option value="${escapeHtml(item.id)}"${item.id === selected ? ' selected' : ''}>${escapeHtml(item.title)}</option>`).join('')}</optgroup>`;
     }).join('');
   }
 
-  function selectOptions(values, selected) {
-    return values.map((item) => `<option value="${escapeHtml(item.value)}"${item.value === selected ? ' selected' : ''}>${escapeHtml(item.label)}</option>`).join('');
+  function filteredActions(query = '') {
+    const words = String(query || '').trim().toLocaleLowerCase('en-GB').split(/\s+/).filter(Boolean);
+    if (!words.length) return MODEL.ACTIONS.slice();
+    return MODEL.ACTIONS.filter((item) => {
+      const haystack = `${item.title} ${item.group}`.toLocaleLowerCase('en-GB');
+      return words.every((word) => haystack.includes(word));
+    });
+  }
+
+  function actionMenuHtml(query = '') {
+    const matches = filteredActions(query);
+    if (!matches.length) return '<div class="routine-action-no-results">No matching routine action.</div>';
+    return MODEL.GROUPS.map((groupName) => {
+      const items = matches.filter((item) => item.group === groupName);
+      if (!items.length) return '';
+      return `<div class="routine-action-group" role="group" aria-label="${escapeHtml(groupName)}"><div class="routine-action-group-label">${escapeHtml(groupName)}</div>${items.map((item) => `<button type="button" class="routine-action-option" role="option" data-action-option="${escapeHtml(item.id)}">${escapeHtml(item.title)}</button>`).join('')}</div>`;
+    }).join('');
+  }
+
+  function setActionMenuOpen(open) {
+    const menu = $('#routineActionMenu');
+    const input = $('#routineActionSearch');
+    const toggle = $('#routineActionToggle');
+    if (!menu || !input) return;
+    menu.hidden = !open;
+    input.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (toggle) toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function renderActionMenu(query = '') {
+    const menu = $('#routineActionMenu');
+    if (menu) menu.innerHTML = actionMenuHtml(query);
+  }
+
+  function chooseAction(actionId, keepOpen = false) {
+    const action = MODEL.ACTION_BY_ID.get(String(actionId || ''));
+    const select = $('#routineActionSelect');
+    const input = $('#routineActionSearch');
+    if (!action) return null;
+    if (select) select.value = action.id;
+    if (input) input.value = action.title;
+    if (!keepOpen) setActionMenuOpen(false);
+    return action;
+  }
+
+  function resolveTypedAction() {
+    const input = $('#routineActionSearch');
+    const text = String(input?.value || '').trim();
+    if (!text) return null;
+    const exact = MODEL.ACTIONS.find((item) => item.title.localeCompare(text, 'en-GB', { sensitivity: 'base' }) === 0);
+    if (exact) return chooseAction(exact.id);
+    const matches = filteredActions(text);
+    if (matches.length === 1) return chooseAction(matches[0].id);
+    return null;
   }
 
   function renderActionPicker() {
     const select = $('#routineActionSelect');
-    if (select) select.innerHTML = `<option value="">Choose a category and self-care action…</option>${actionOptions()}`;
+    if (select) select.innerHTML = `<option value="">Choose a routine action…</option>${actionOptions()}`;
+    renderActionMenu('');
+  }
+
+  function selectOptions(values, selected) {
+    return values.map((item) => `<option value="${escapeHtml(item.value)}"${item.value === selected ? ' selected' : ''}>${escapeHtml(item.label)}</option>`).join('');
   }
 
   function itemById(id) {
@@ -163,28 +224,34 @@
     return `<label class="routine-field"><span>Times each week</span><input type="number" min="1" max="14" value="${item.frequency.timesPerWeek}" data-id="${escapeHtml(item.id)}" data-field="timesPerWeek"></label>`;
   }
 
+  function removalControls(item, index) {
+    if (state.pendingRemoveId === item.id) {
+      return `<span class="routine-remove-confirm" role="group" aria-label="Confirm removal"><span>Remove?</span><button type="button" data-remove-confirm="${escapeHtml(item.id)}">Yes</button><button type="button" data-remove-cancel="${escapeHtml(item.id)}">Cancel</button></span>`;
+    }
+    return `<button type="button" class="routine-mini" data-move="up" data-id="${escapeHtml(item.id)}"${index === 0 ? ' disabled' : ''} aria-label="Move ${escapeHtml(item.title)} up">↑</button>
+      <button type="button" class="routine-mini" data-move="down" data-id="${escapeHtml(item.id)}"${index === state.items.length - 1 ? ' disabled' : ''} aria-label="Move ${escapeHtml(item.title)} down">↓</button>
+      <button type="button" class="routine-mini routine-remove" data-remove-request="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.title)}">×</button>`;
+  }
+
   function renderRoutineItems() {
     const target = $('#routineItems');
     if (!target) return;
     if (!state.items.length) {
-      target.innerHTML = '<div class="routine-empty">No actions have been added yet. Choose one from the dropdown to begin your routine.</div>';
+      target.innerHTML = '<div class="routine-empty">No actions have been added yet. Type or choose an option above to begin your routine.</div>';
       return;
     }
     target.innerHTML = state.items.map((item, index) => `<article class="routine-item" data-routine-item="${escapeHtml(item.id)}">
       <div class="routine-item-head">
         <div><span class="routine-order">${index + 1}</span><strong>${escapeHtml(item.title)}</strong></div>
-        <div class="routine-item-actions">
-          <button type="button" class="routine-mini" data-move="up" data-id="${escapeHtml(item.id)}"${index === 0 ? ' disabled' : ''} aria-label="Move ${escapeHtml(item.title)} up">↑</button>
-          <button type="button" class="routine-mini" data-move="down" data-id="${escapeHtml(item.id)}"${index === state.items.length - 1 ? ' disabled' : ''} aria-label="Move ${escapeHtml(item.title)} down">↓</button>
-          <button type="button" class="routine-mini routine-remove" data-remove="${escapeHtml(item.id)}" aria-label="Remove ${escapeHtml(item.title)}">×</button>
-        </div>
+        <div class="routine-item-actions">${removalControls(item, index)}</div>
       </div>
       <div class="routine-item-grid">
         <label class="routine-field"><span>Action name</span><input type="text" maxlength="100" value="${escapeHtml(item.title)}" data-id="${escapeHtml(item.id)}" data-field="title"></label>
         <label class="routine-field"><span>Time of day</span><select data-id="${escapeHtml(item.id)}" data-field="timeOfDay">${selectOptions(MODEL.TIMES, item.timeOfDay)}</select></label>
-        <label class="routine-field routine-field-wide"><span>Benefits</span><textarea rows="2" maxlength="600" data-id="${escapeHtml(item.id)}" data-field="benefit">${escapeHtml(item.benefit)}</textarea></label>
+        <label class="routine-field"><span>Benefit summary</span><select data-id="${escapeHtml(item.id)}" data-field="benefitMode">${selectOptions(MODEL.BENEFIT_MODES, item.benefitMode)}</select></label>
         <label class="routine-field"><span>How often</span><select data-id="${escapeHtml(item.id)}" data-field="frequencyMode">${selectOptions(MODEL.FREQUENCIES, item.frequency.mode)}</select></label>
         ${weeklyControl(item)}
+        <div class="routine-field routine-field-wide routine-benefit-field"><span>Benefits</span><p>${escapeHtml(MODEL.benefitText(item))}</p></div>
         <label class="routine-field routine-field-wide"><span>Personal notes</span><textarea rows="2" maxlength="600" placeholder="Products, technique, order details or reminders" data-id="${escapeHtml(item.id)}" data-field="notes">${escapeHtml(item.notes)}</textarea></label>
       </div>
       ${dayControls(item)}
@@ -195,7 +262,7 @@
     return `<article class="routine-summary-item">
       <div class="routine-summary-title"><span>${index + 1}</span><strong>${escapeHtml(item.title)}</strong></div>
       <div class="routine-summary-frequency">${escapeHtml(MODEL.frequencyText(item.frequency))}</div>
-      <p>${escapeHtml(item.benefit)}</p>
+      <p>${escapeHtml(MODEL.benefitText(item))}</p>
       ${item.notes ? `<p class="routine-summary-notes"><b>Your notes:</b> ${escapeHtml(item.notes)}</p>` : ''}
     </article>`;
   }
@@ -204,7 +271,7 @@
     const target = $('#routineSummary');
     if (!target) return;
     if (!state.items.length) {
-      target.innerHTML = '<div class="routine-empty">Your routine plan and benefits summary will appear here.</div>';
+      target.innerHTML = '<div class="routine-empty">No routine plan exists yet. Add your first action in <button type="button" class="routine-text-button" data-open-routine-view="plan">Routine Plan</button>.</div>';
       return;
     }
     const groups = MODEL.summaryGroups(state.items);
@@ -227,6 +294,11 @@
     const target = $('#routineLogItems');
     const progress = $('#routineLogProgress');
     if (!target) return;
+    if (!state.items.length) {
+      target.innerHTML = '<div class="routine-empty">There is no routine to log yet. Create one in <button type="button" class="routine-text-button" data-open-routine-view="plan">Routine Plan</button>.</div>';
+      if (progress) progress.textContent = '0 actions due';
+      return;
+    }
     const due = state.items.map((item) => ({ item, status: MODEL.dueStatus(item, state.selectedDate, state.logs) })).filter((entry) => entry.status.due);
     if (!due.length) {
       target.innerHTML = '<div class="routine-empty">No routine actions are scheduled for this date.</div>';
@@ -249,22 +321,36 @@
     const control = $('#routineVisibility');
     if (control) {
       control.value = state.visibility;
-      control.disabled = !state.authed;
+      control.disabled = false;
+      control.title = state.visibility === 'public' ? 'Public plan; completion log remains private' : 'Private plan and completion log';
     }
-    const detail = $('#routineVisibilityDetail');
-    if (detail) detail.textContent = state.authed
-      ? state.visibility === 'public'
-        ? 'Public — other people can view the plan and benefits by searching your profile name. Your log stays private.'
-        : 'Private — only you can view your routine and log.'
-      : 'Log in before making a routine public. Your current draft remains on this device.';
-    const authStatus = $('#routineAuthStatus');
-    if (authStatus) authStatus.textContent = state.authed ? `Saving to ${state.owner}.` : 'Local draft mode.';
-    const login = $('#routineLoginBtn');
-    if (login) login.hidden = state.authed;
+  }
+
+  function renderSubtabs() {
+    $$('.routine-subtab').forEach((button) => {
+      const active = button.dataset.routineView === state.activeView;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-selected', active ? 'true' : 'false');
+      button.tabIndex = active ? 0 : -1;
+    });
+    $$('[data-routine-panel]').forEach((panel) => {
+      const active = panel.dataset.routinePanel === state.activeView;
+      panel.hidden = !active;
+      panel.classList.toggle('active', active);
+    });
+  }
+
+  function activateSubtab(view, focus = false) {
+    const selected = VALID_VIEWS.has(view) ? view : 'log';
+    state.activeView = selected;
+    try { global.sessionStorage?.setItem(VIEW_KEY, selected); } catch (_error) {}
+    renderSubtabs();
+    if (focus) $(`.routine-subtab[data-routine-view="${selected}"]`)?.focus();
   }
 
   function renderAll() {
     renderPrivacy();
+    renderSubtabs();
     renderRoutineItems();
     renderSummary();
     renderLog();
@@ -272,19 +358,27 @@
 
   function addSelectedAction() {
     const select = $('#routineActionSelect');
-    const action = MODEL.ACTION_BY_ID.get(String(select?.value || ''));
-    if (!action) { select?.focus(); return; }
+    const action = MODEL.ACTION_BY_ID.get(String(select?.value || '')) || resolveTypedAction();
+    if (!action) {
+      setActionMenuOpen(true);
+      $('#routineActionSearch')?.focus();
+      return;
+    }
     const item = MODEL.normaliseItem({
       id: uniqueId(),
       actionId: action.id,
       title: action.title,
-      benefit: action.benefit,
+      benefitMode: 'brief',
       timeOfDay: 'anytime',
       frequency: { mode: 'daily', days: [], timesPerWeek: 3 },
       notes: ''
     }, state.items.length);
     state.items.push(item);
+    state.pendingRemoveId = '';
     if (select) select.value = '';
+    const input = $('#routineActionSearch');
+    if (input) input.value = '';
+    renderActionMenu('');
     scheduleSave();
     renderAll();
     global.setTimeout(() => $(`[data-routine-item="${CSS.escape(item.id)}"] input[data-field="title"]`)?.focus(), 0);
@@ -295,13 +389,25 @@
     const next = direction === 'up' ? index - 1 : index + 1;
     if (index < 0 || next < 0 || next >= state.items.length) return;
     [state.items[index], state.items[next]] = [state.items[next], state.items[index]];
+    state.pendingRemoveId = '';
     scheduleSave();
     renderAll();
+  }
+
+  function requestRemoveItem(id) {
+    state.pendingRemoveId = id;
+    renderRoutineItems();
+  }
+
+  function cancelRemoveItem() {
+    state.pendingRemoveId = '';
+    renderRoutineItems();
   }
 
   function removeItem(id) {
     state.items = state.items.filter((item) => item.id !== id);
     Object.values(state.logs).forEach((entries) => { if (entries && typeof entries === 'object') delete entries[id]; });
+    state.pendingRemoveId = '';
     scheduleSave();
     renderAll();
   }
@@ -310,13 +416,14 @@
     const item = itemById(control.dataset.id);
     if (!item) return;
     const field = control.dataset.field;
-    if (field === 'title' || field === 'benefit' || field === 'notes') item[field] = String(control.value || '').trim().slice(0, field === 'title' ? 100 : 600);
+    if (field === 'title' || field === 'notes') item[field] = String(control.value || '').trim().slice(0, field === 'title' ? 100 : 600);
+    if (field === 'benefitMode') item.benefitMode = control.value === 'comprehensive' ? 'comprehensive' : 'brief';
     if (field === 'timeOfDay') item.timeOfDay = MODEL.TIMES.some((entry) => entry.value === control.value) ? control.value : 'anytime';
     if (field === 'frequencyMode') item.frequency.mode = MODEL.FREQUENCIES.some((entry) => entry.value === control.value) ? control.value : 'daily';
     if (field === 'timesPerWeek') item.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(control.value) || 1)));
     state.items = MODEL.normaliseRoutine(state.items);
     scheduleSave();
-    if (field === 'frequencyMode') renderAll();
+    if (field === 'frequencyMode' || field === 'benefitMode') renderAll();
     else { renderSummary(); renderLog(); }
   }
 
@@ -346,6 +453,23 @@
     scheduleSave();
   }
 
+  function renderPublicProfiles() {
+    const select = $('#publicRoutineName');
+    if (!select) return;
+    const selected = select.value;
+    const options = state.publicProfiles.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    select.innerHTML = `<option value="">${state.publicProfiles.length ? 'Choose a public profile…' : 'No public routines available'}</option>${options}`;
+    if (state.publicProfiles.includes(selected)) select.value = selected;
+    select.disabled = !state.publicProfiles.length;
+  }
+
+  async function loadPublicProfiles() {
+    const data = await request({ list: 'public' });
+    const profiles = Array.isArray(data?.profiles) ? data.profiles.map((name) => String(name || '').trim()).filter(Boolean) : [];
+    state.publicProfiles = Array.from(new Set(profiles)).sort((left, right) => left.localeCompare(right, 'en-GB', { sensitivity: 'base' }));
+    renderPublicProfiles();
+  }
+
   function renderPublicRoutine(data) {
     const target = $('#publicRoutineResult');
     if (!target) return;
@@ -357,7 +481,7 @@
     const groups = MODEL.summaryGroups(routine);
     target.innerHTML = `<div class="public-routine-head"><h3>${escapeHtml(data.publicRoutine.owner)}’s routine</h3><span class="routine-public-badge">Public</span></div>${['morning', 'evening', 'anytime'].map((key) => {
       if (!groups[key].length) return '';
-      return `<section class="public-routine-group"><h4>${escapeHtml(MODEL.timeLabel(key))}</h4>${groups[key].map((item) => `<article><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(MODEL.frequencyText(item.frequency))}</span><p>${escapeHtml(item.benefit)}</p></article>`).join('')}</section>`;
+      return `<section class="public-routine-group"><h4>${escapeHtml(MODEL.timeLabel(key))}</h4>${groups[key].map((item) => `<article><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(MODEL.frequencyText(item.frequency))}</span><p>${escapeHtml(MODEL.benefitText(item))}</p></article>`).join('')}</section>`;
     }).join('')}`;
   }
 
@@ -391,7 +515,7 @@
     const local = readLocal(state.owner) || (authed ? readLocal('guest') : null) || { visibility: 'private', items: [], logs: {} };
     if (!authed) {
       applySnapshot(local, 'guest');
-      setStatus(local.items.length ? 'Draft loaded from this device.' : 'Add an action to begin your local draft.', 'local');
+      setStatus(local.items.length ? 'Draft loaded from this device.' : 'Add an action in Routine Plan to begin your local draft.', 'local');
       return;
     }
 
@@ -406,7 +530,7 @@
         await saveNow();
       } else {
         applySnapshot({ visibility: 'private', routine: [], logs: {} }, owner);
-        setStatus('Add an action to begin your routine.', 'saved');
+        setStatus('Add an action in Routine Plan to begin your routine.', 'saved');
       }
     } else {
       applySnapshot(local, owner);
@@ -431,12 +555,85 @@
   }
 
   function bindEvents() {
+    $('#routineSubtabs')?.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-routine-view]');
+      if (button) activateSubtab(button.dataset.routineView);
+    });
+    $('#routineSubtabs')?.addEventListener('keydown', (event) => {
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+      const tabs = $$('.routine-subtab');
+      const current = Math.max(0, tabs.indexOf(event.target.closest('.routine-subtab')));
+      const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+      event.preventDefault();
+      activateSubtab(tabs[next].dataset.routineView, true);
+    });
+
+    $('#routine')?.addEventListener('click', (event) => {
+      const opener = event.target.closest('[data-open-routine-view]');
+      if (opener) activateSubtab(opener.dataset.openRoutineView, true);
+    });
+
+    $('#routineActionSearch')?.addEventListener('focus', (event) => {
+      renderActionMenu(event.currentTarget.value);
+      setActionMenuOpen(true);
+    });
+    $('#routineActionSearch')?.addEventListener('input', (event) => {
+      const select = $('#routineActionSelect');
+      if (select) select.value = '';
+      renderActionMenu(event.currentTarget.value);
+      setActionMenuOpen(true);
+    });
+    $('#routineActionSearch')?.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') { setActionMenuOpen(false); return; }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        setActionMenuOpen(true);
+        $('#routineActionMenu .routine-action-option')?.focus();
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        const action = resolveTypedAction();
+        if (action) addSelectedAction();
+      }
+    });
+    $('#routineActionToggle')?.addEventListener('click', () => {
+      const input = $('#routineActionSearch');
+      const open = input?.getAttribute('aria-expanded') === 'true';
+      renderActionMenu(input?.value || '');
+      setActionMenuOpen(!open);
+      input?.focus();
+    });
+    $('#routineActionMenu')?.addEventListener('click', (event) => {
+      const option = event.target.closest('[data-action-option]');
+      if (option) chooseAction(option.dataset.actionOption);
+    });
+    $('#routineActionMenu')?.addEventListener('keydown', (event) => {
+      const options = $$('.routine-action-option', event.currentTarget);
+      const current = options.indexOf(event.target.closest('.routine-action-option'));
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setActionMenuOpen(false);
+        $('#routineActionSearch')?.focus();
+      } else if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        chooseAction(event.target.dataset.actionOption);
+        $('#routineActionSearch')?.focus();
+      } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const next = (current + (event.key === 'ArrowDown' ? 1 : -1) + options.length) % options.length;
+        options[next]?.focus();
+      }
+    });
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.routine-action-combobox')) setActionMenuOpen(false);
+    });
     $('#addRoutineActionBtn')?.addEventListener('click', addSelectedAction);
-    $('#routineActionSelect')?.addEventListener('change', (event) => { if (event.currentTarget.value) addSelectedAction(); });
+
     $('#routineVisibility')?.addEventListener('change', (event) => {
       if (!state.authed) {
         event.currentTarget.value = 'private';
-        try { global.BASELINE_openAuth?.(); } catch (_error) {}
+        try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); }
         setStatus('Log in before making a routine public.', 'warning');
         return;
       }
@@ -444,25 +641,28 @@
       scheduleSave();
       renderPrivacy();
     });
-    $('#routineLoginBtn')?.addEventListener('click', () => {
-      try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); }
-    });
     $('#routineLogDate')?.addEventListener('change', (event) => {
       state.selectedDate = MODEL.isoDate(event.currentTarget.value);
       renderLog();
     });
     $('#findPublicRoutineBtn')?.addEventListener('click', findPublicRoutine);
-    $('#publicRoutineName')?.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); findPublicRoutine(); } });
+    $('#publicRoutineName')?.addEventListener('change', () => {
+      if ($('#publicRoutineName')?.value) findPublicRoutine();
+    });
 
     $('#routineItems')?.addEventListener('click', (event) => {
-      const remove = event.target.closest('[data-remove]');
-      if (remove) { removeItem(remove.dataset.remove); return; }
+      const request = event.target.closest('[data-remove-request]');
+      if (request) { requestRemoveItem(request.dataset.removeRequest); return; }
+      const confirm = event.target.closest('[data-remove-confirm]');
+      if (confirm) { removeItem(confirm.dataset.removeConfirm); return; }
+      const cancel = event.target.closest('[data-remove-cancel]');
+      if (cancel) { cancelRemoveItem(); return; }
       const move = event.target.closest('[data-move]');
       if (move) moveItem(move.dataset.id, move.dataset.move);
     });
     $('#routineItems')?.addEventListener('input', (event) => {
       const control = event.target.closest('[data-field]');
-      if (control) updateItem(control);
+      if (control && ['title', 'notes'].includes(control.dataset.field)) updateItem(control);
     });
     $('#routineItems')?.addEventListener('change', (event) => {
       const day = event.target.closest('[data-routine-day]');
@@ -483,17 +683,23 @@
   function init() {
     const root = $('#routine');
     if (!root) return;
-    document.documentElement.setAttribute('data-skincare-routine-runtime', 'SKINCARE_MY_ROUTINE_20260804_1');
+    try {
+      const storedView = global.sessionStorage?.getItem(VIEW_KEY);
+      if (VALID_VIEWS.has(storedView)) state.activeView = storedView;
+    } catch (_error) {}
+    document.documentElement.setAttribute('data-skincare-routine-runtime', 'SKINCARE_MY_ROUTINE_WORKSPACE_20260804_1');
     renderActionPicker();
     bindEvents();
     renderAll();
+    loadPublicProfiles();
     attachAuth();
   }
 
   global.BASELINE_SKINCARE_ROUTINE = Object.freeze({
     getState: () => JSON.parse(JSON.stringify(currentSnapshot())),
     save: saveNow,
-    render: renderAll
+    render: renderAll,
+    activateSubtab
   });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });

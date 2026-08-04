@@ -40,11 +40,14 @@ function bl_skincare_routine($value): array {
     if($title === '') $title = 'Self-Care Action';
     $time = strtolower(bl_skincare_text($raw['timeOfDay'] ?? 'anytime', 20));
     if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
+    $benefitMode = strtolower(bl_skincare_text($raw['benefitMode'] ?? 'brief', 20));
+    if(!in_array($benefitMode, ['brief','comprehensive'], true)) $benefitMode = 'brief';
     $items[] = [
       'id'=>$id,
       'actionId'=>$actionId,
       'title'=>$title,
-      'benefit'=>bl_skincare_text($raw['benefit'] ?? '', 600),
+      'benefitMode'=>$benefitMode,
+      'benefit'=>bl_skincare_text($raw['benefit'] ?? '', 1200),
       'timeOfDay'=>$time,
       'frequency'=>bl_skincare_frequency($raw['frequency'] ?? []),
       'notes'=>bl_skincare_text($raw['notes'] ?? '', 600),
@@ -110,6 +113,25 @@ function bl_skincare_own_payload(?array $row): array {
   ];
 }
 
+function bl_skincare_public_profiles(PDO $db): array {
+  $statement = $db->query("SELECT u.name, r.routine_json
+    FROM users u
+    INNER JOIN skincare_routines r ON r.user_id=u.id
+    WHERE r.visibility='public'
+    ORDER BY lower(u.name), u.name
+    LIMIT 500");
+  $profiles = [];
+  foreach(($statement ? $statement->fetchAll() : []) as $row){
+    $name = bl_skincare_text($row['name'] ?? '', BL_MAX_NAME_LEN);
+    $routine = bl_skincare_routine(bl_skincare_decode((string)($row['routine_json'] ?? '[]'), []));
+    if($name !== '' && count($routine) > 0) $profiles[] = $name;
+  }
+  usort($profiles, static function(string $left, string $right): int {
+    return strcasecmp($left, $right) ?: strcmp($left, $right);
+  });
+  return ['ok'=>true,'profiles'=>array_values(array_unique($profiles))];
+}
+
 function bl_skincare_public_payload(PDO $db, string $name): array {
   if($name === '' || bl_str_len($name) > BL_MAX_NAME_LEN) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
   $statement = $db->prepare('SELECT u.name, r.visibility, r.routine_json, r.updated_at
@@ -136,6 +158,8 @@ try{
   $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
   if($method === 'GET'){
+    $requestedList = strtolower(bl_skincare_text($_GET['list'] ?? '', 20));
+    if($requestedList === 'public') bl_json(bl_skincare_public_profiles($db));
     $requestedName = bl_skincare_text($_GET['name'] ?? '', BL_MAX_NAME_LEN);
     if($requestedName !== '') bl_json(bl_skincare_public_payload($db, $requestedName));
     $user = bl_require_user();
