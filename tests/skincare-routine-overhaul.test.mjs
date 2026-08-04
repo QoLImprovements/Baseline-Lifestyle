@@ -11,7 +11,9 @@ require('../systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.j
 const model = globalThis.BASELINE_SKINCARE_ROUTINE_MODEL;
 const products = require('../systems/baseline-natural-skincare/js/skincare-product-library.js');
 const ui = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
-const enhancements = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-enhancements.js', import.meta.url), 'utf8');
+const enhancementLoader = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-enhancements.js', import.meta.url), 'utf8');
+const enhancementCore = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-enhancements-core.js', import.meta.url), 'utf8');
+const enhancements = `${enhancementLoader}\n${enhancementCore}`;
 const html = fs.readFileSync(new URL('../systems/baseline-natural-skincare/baseline-natural-skincare.html', import.meta.url), 'utf8');
 const routineApi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/api/routine_state.php', import.meta.url), 'utf8');
 const groupApi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/api/routine_groups.php', import.meta.url), 'utf8');
@@ -85,6 +87,7 @@ test('group enhancements support schedules, collapsible plans and grouped logs',
   assert.match(enhancements, /renderGroupedLog/);
   assert.match(enhancements, /routine-log-group/);
   assert.match(enhancements, /effectiveItem/);
+  assert.match(enhancementLoader, /skincare-routine-enhancements-core\.js/);
 });
 
 test('server APIs preserve extended item and group settings', () => {
