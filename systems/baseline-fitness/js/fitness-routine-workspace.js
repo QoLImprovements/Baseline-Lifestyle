@@ -18,17 +18,23 @@
   function openLegacyPlanRoute() {
     if (!/\/baseline-fitness\/my-plan\/?$/.test(global.location?.pathname || '')) return;
 
+    let attempts = 0;
     const reveal = () => {
+      attempts += 1;
       const calisthenics = document.querySelector('[data-fitness-routine-view="calisthenics"]');
       if (calisthenics && calisthenics.getAttribute('aria-selected') !== 'true') calisthenics.click();
 
       const generator = document.querySelector('#myPlanGeneratorWrap');
       const saved = document.querySelector('#myPlanSavedWrap');
       if (generator && saved && saved.hidden) generator.hidden = false;
+
+      if ((saved && !saved.hidden) || attempts >= 120) {
+        global.clearInterval(interval);
+      }
     };
 
     reveal();
-    [80, 250, 700, 1400].forEach((delay) => global.setTimeout(reveal, delay));
+    const interval = global.setInterval(reveal, 100);
   }
 
   load('/systems/baseline-fitness/js/fitness-routine-workspace-core.js?v=BASELINE_FITNESS_ROUTINE_CORE_20260805_1')
