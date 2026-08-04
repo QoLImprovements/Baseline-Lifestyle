@@ -1,23 +1,22 @@
-name: Fix skincare dropdown and calendar palette
+name: Verify skincare dropdown and calendar correction
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-    paths:
-      - .github/workflows/fix-skincare-dropdown-calendar.yml
 
 permissions:
   contents: write
 
 jobs:
   fix-and-verify:
+    if: github.head_ref == 'agent/fix-skincare-dropdown-calendar-20260804'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: main
+          ref: agent/fix-skincare-dropdown-calendar-20260804
           fetch-depth: 0
 
       - uses: actions/setup-node@v6
@@ -128,11 +127,12 @@ jobs:
           grep -q 'z-index:1000!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
           grep -q 'background:var(--skin-page-gradient)!important' systems/baseline-natural-skincare/css/skincare-routine-enhancements.css
 
-      - name: Publish correction
+      - name: Publish verified branch
         run: |
           rm -f .github/workflows/fix-skincare-dropdown-calendar.yml
+          rm -f TEMP_SKINCARE_VISUAL_FIX
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Fix skincare dropdown layering and calendar palette"
-          git push origin HEAD:main
+          git push origin HEAD:agent/fix-skincare-dropdown-calendar-20260804
