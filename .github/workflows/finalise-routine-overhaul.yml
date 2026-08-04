@@ -1,0 +1,366 @@
+name: Finalise routine-system corrections
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+concurrency:
+  group: finalise-routine-overhaul-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  finalise:
+    if: github.head_ref == 'agent/routine-systems-overhaul-20260804'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v7
+        with:
+          ref: agent/routine-systems-overhaul-20260804
+          fetch-depth: 0
+
+      - name: Configure Git and synchronise main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin main
+          if ! git merge --no-edit origin/main; then
+            while IFS= read -r file; do
+              if [ "$file" = ".github/workflows/website-checks.yml" ]; then
+                git checkout --theirs -- "$file"
+              else
+                git checkout --ours -- "$file"
+              fi
+              git add "$file"
+            done < <(git diff --name-only --diff-filter=U)
+            git commit -m "Synchronise routine overhaul with main"
+          fi
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Apply final Skincare and timed-hold corrections
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(text, old, new, label):
+              if old not in text:
+                  if new in text:
+                      return text
+                  raise SystemExit(f'{label}: source text not found')
+              return text.replace(old, new, 1)
+
+          # Load the group-first Skincare controller and refresh the asset keys.
+          html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
+          html = html_path.read_text()
+          html = html.replace(
+              'skincare-routine-workspace-v2.css?v=SKINCARE_ROUTINE_WORKSPACE_V2_20260804_1',
+              'skincare-routine-workspace-v2.css?v=SKINCARE_ROUTINE_WORKSPACE_V2_20260805_2'
+          )
+          group_script = '<script src="/systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js?v=SKINCARE_GROUP_FIRST_UI_20260805_2"></script>'
+          routine_script = '<script src="/systems/baseline-natural-skincare/js/skincare-routine.js?v=SKINCARE_ROUTINE_PRODUCTS_20260804_1"></script>'
+          if group_script not in html:
+              html = replace_once(html, routine_script, routine_script + '\n' + group_script, 'Skincare group UI script')
+          html_path.write_text(html)
+
+          group_path = Path('systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js')
+          group_js = group_path.read_text()
+          old_preview = '''  function stepPreview(article) {
+    const values = [
+      selectedText(article, '[data-routine-group-select]'),
+      selectedText(article, '[data-field="timeOfDay"]'),
+      selectedText(article, '[data-field="frequencyMode"]'),
+      selectedText(article, '[data-field="shavingMethod"]'),
+      selectedText(article, '[data-field="productSelection"]')
+    ].filter((value) => value && value !== 'No routine group' && value !== 'No product selected');
+    return values.length ? values : ['Open to edit schedule, method, product and notes'];
+  }'''
+          new_preview = '''  function stepPreview(article) {
+    const product = selectedText(article, '[data-field="productSelection"]');
+    const values = [
+      selectedText(article, '[data-routine-group-select]'),
+      selectedText(article, '[data-field="timeOfDay"]'),
+      selectedText(article, '[data-field="frequencyMode"]'),
+      selectedText(article, '[data-field="shavingMethod"]')
+    ].filter((value) => value && value !== 'No routine group');
+    values.push(product && product !== 'No product selected'
+      ? `Product / Recipe: ${product}`
+      : 'Product / Recipe: Choose…');
+    return values;
+  }'''
+          group_js = replace_once(group_js, old_preview, new_preview, 'Skincare product preview')
+          group_path.write_text(group_js)
+
+          # Timed holds: prescribed target, countdown timer, normal success/failure controls.
+          app_path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
+          app = app_path.read_text()
+          app = app.replace('BASELINE_FITNESS_EXERCISE_CATALOGUE_20260804_1', 'BASELINE_FITNESS_TIMED_TARGETS_20260805_1', 1)
+          app = app.replace('label: `${entry.item.name} - ${side} • Hold to technical burnout (guide ${entry.hold} seconds)`', 'label: `${entry.item.name} - ${side} (${entry.hold} seconds)`')
+          app = app.replace('label: `${entry.item.name} • Hold to technical burnout (guide ${entry.hold} seconds)`', 'label: `${entry.item.name} (${entry.hold} seconds)`')
+          app = app.replace("status: step.isTimed ? 'success' : status,", "status,")
+          app = app.replace(
+              "if (definition.progressionType === TYPES.TIMED) return 'Hold to technical burnout; next guide is achieved time +3 seconds, changing to +2 seconds from 90 seconds.';",
+              "if (definition.progressionType === TYPES.TIMED) return 'Complete the timed target. Success advances by +3 seconds, changing to +2 seconds from 90 seconds; failure repeats the same target.';"
+          )
+          app = app.replace('`Hold to technical burnout • guide <b>${entry.hold}</b> seconds${entry.item.laterality === \'separate-left-right\' ? \' for each side.\' : \'.\'}`', '`Target: <b>${entry.hold}</b> seconds${entry.item.laterality === \'separate-left-right\' ? \' for each side.\' : \'.\'}`')
+
+          timer_pattern = re.compile(r"  function openTimer\(step\) \{.*?\n  \}\n  function renderCurrentWorkout", re.S)
+          timer_replacement = r'''  let timerAudioContext = null;
+  function getTimerAudioContext() {
+    const AudioContextClass = global.AudioContext || global.webkitAudioContext;
+    if (!AudioContextClass) return null;
+    if (!timerAudioContext) timerAudioContext = new AudioContextClass();
+    if (timerAudioContext.state === 'suspended') timerAudioContext.resume().catch(() => {});
+    return timerAudioContext;
+  }
+  function playTimerTone(frequency, duration = 0.12, delay = 0, volume = 0.13) {
+    global.setTimeout(() => {
+      const audio = getTimerAudioContext();
+      if (!audio) return;
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = frequency;
+      gain.gain.setValueAtTime(volume, audio.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + duration);
+      oscillator.connect(gain); gain.connect(audio.destination);
+      oscillator.start(); oscillator.stop(audio.currentTime + duration);
+    }, Math.max(0, delay));
+  }
+  function playMilestoneBeeps(count) {
+    const total = Math.max(1, Math.min(12, Math.round(Number(count) || 1)));
+    for (let index = 0; index < total; index += 1) playTimerTone(620, 0.11, index * 180, 0.12);
+  }
+  function playFinalCountdownTone(remaining) {
+    playTimerTone(920 + ((5 - remaining) * 55), 0.16, 0, 0.16);
+  }
+  function openTimer(step) {
+    const modal = $('#timerModal'); const digits = $('#timerDigits'); const message = $('#timerModalMessage');
+    if (!modal || !digits || !message) return;
+    closeTimerModal();
+    getTimerAudioContext();
+    modal.hidden = false;
+    const target = Math.max(1, Math.round(Number(step.target) || 1));
+    let prep = Math.round(clamp(current.planJson?.timerStartDelay || 5, 1, 10));
+    let remaining = target;
+    let phase = 'prep';
+    const tick = () => {
+      if (phase === 'prep') {
+        if (prep > 0) {
+          message.textContent = `Get into position. Hold begins in ${prep} second${prep === 1 ? '' : 's'}.`;
+          digits.textContent = formatTimer(prep);
+          prep -= 1;
+          return;
+        }
+        phase = 'work';
+      }
+      digits.textContent = formatTimer(remaining);
+      message.textContent = `${step.name} — target ${target} seconds.`;
+      if (remaining === 0) {
+        if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+        playTimerTone(1040, 0.42, 0, 0.18);
+        message.textContent = 'Target time complete. Mark ✓ if completed, or ✕ if burnout ended the hold early.';
+        return;
+      }
+      if (remaining <= 5) playFinalCountdownTone(remaining);
+      else if (remaining % 30 === 0) playMilestoneBeeps(remaining / 30);
+      remaining -= 1;
+    };
+    tick();
+    timerInterval = setInterval(tick, 1000);
+  }
+  function renderCurrentWorkout'''
+          app, count = timer_pattern.subn(timer_replacement, app, count=1)
+          if count != 1 and 'playMilestoneBeeps' not in app:
+              raise SystemExit('Fitness timer function not found')
+
+          app = app.replace(
+              '''      const resultText = result
+        ? step.isTimed
+          ? `<div class="step-status success">✓ Recorded · ${escapeHtml(result.achieved)} seconds</div>`
+          : `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>`
+        : '';''',
+              '''      const resultText = result
+        ? `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}${step.isTimed ? ' seconds' : ''}</div>`
+        : '';'''
+          )
+          app = app.replace(
+              '''      const timedActions = step.isTimed
+        ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Count-Up</button><button class="compact-action compact-action--success step-hold-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Record Hold</button>`
+        : `<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button>`;''',
+              '''      const timedActions = step.isTimed
+        ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Timer</button><button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'} aria-label="Timed target completed">✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'} aria-label="Timed target ended before completion">✕</button>`
+        : `<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button>`;'''
+          )
+          app = app.replace(
+              '''      const entry = failOpen
+        ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">${step.isTimed ? 'Enter exact burnout time (seconds)' : `Enter achieved ${escapeHtml(step.unit)}`}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action ${step.isTimed ? 'compact-action--success step-hold-save' : 'compact-action--danger step-fail-save'}" type="button" data-step="${index}">Save</button></div>`
+        : '';''',
+              '''      const entry = failOpen
+        ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">${step.isTimed ? 'Seconds completed before burnout' : `Enter achieved ${escapeHtml(step.unit)}`}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" max="${escapeHtml(step.target)}" inputmode="numeric"><button class="compact-action compact-action--danger step-fail-save" type="button" data-step="${index}">Save failure</button></div>`
+        : '';'''
+          )
+          app = re.sub(r"\n    \$\$\('\.step-hold-toggle'.*?\);", '', app)
+          app = re.sub(r"\n    \$\$\('\.step-hold-save'.*?\);", '', app)
+          if 'Record Hold' in app or 'Start Count-Up' in app:
+              raise SystemExit('Legacy timed-hold controls remain in Fitness app')
+          app_path.write_text(app)
+
+          # Repeat the failed timed target; successful timed targets progress normally.
+          bridge_path = Path('systems/baseline-fitness/js/fitness-saved-data-bridge.js')
+          bridge = bridge_path.read_text()
+          bridge = bridge.replace(
+              '''  function failedExercises(results) {
+    const failed = new Set();
+    Object.values(results && typeof results === 'object' ? results : {}).forEach((result) => {
+      if (!result || result.status !== 'failed' || result.isTimed || result.unit === 'seconds') return;
+      const exercise = canonicalExerciseName(result.exercise);
+      if (exercise) failed.add(exercise);
+    });
+    return Array.from(failed);
+  }''',
+              '''  function failedExercises(results) {
+    const failed = new Set();
+    Object.values(results && typeof results === 'object' ? results : {}).forEach((result) => {
+      if (!result || result.status !== 'failed') return;
+      const exercise = result.isTimed || result.unit === 'seconds'
+        ? String(result.exerciseKey || timedExerciseKey(result.stepName || result.exercise || ''))
+        : canonicalExerciseName(result.exercise);
+      if (exercise) failed.add(exercise);
+    });
+    return Array.from(failed);
+  }'''
+          )
+          bridge = bridge.replace(
+              '''    if (step.isTimed || step.unit === 'seconds') {
+        const key = timedExerciseKey(step.name || exercise);
+        const previous = latestTimedAchievement(key, source.sessionIndex, history);
+        const item = itemForExercise(plan, exercise);
+        const target = previous
+          ? timedGuideFromAchievement(previous)
+          : Number(targetsForExercise(item || { exercise, baseline: step.target || 1, progressionType: TYPES.TIMED }, source.sessionIndex)[0]);
+        step.exerciseKey = key;
+        step.progressionSession = source.sessionIndex;
+        step.target = target;
+        step.progressionType = TYPES.TIMED;
+        step.label = replaceTargetInLabel(step, target);
+        return;
+      }''',
+              '''    if (step.isTimed || step.unit === 'seconds') {
+        const key = timedExerciseKey(step.name || exercise);
+        const progressionSession = effectiveSession(key, source.sessionIndex, history);
+        const item = itemForExercise(plan, exercise);
+        const target = Number(targetsForExercise(item || { exercise, baseline: step.target || 1, progressionType: TYPES.TIMED }, progressionSession)[0]);
+        step.exerciseKey = key;
+        step.progressionSession = progressionSession;
+        step.target = target;
+        step.progressionType = TYPES.TIMED;
+        step.label = replaceTargetInLabel(step, target);
+        return;
+      }'''
+          )
+          bridge = bridge.replace(
+              '''    if (step.isTimed || step.unit === 'seconds') {
+      if (/guide\s+\d+\s+seconds/i.test(label)) return label.replace(/guide\s+\d+\s+seconds/i, `guide ${target} seconds`);
+      return `${step.name} • Hold to technical burnout (guide ${target} seconds)`;
+    }''',
+              '''    if (step.isTimed || step.unit === 'seconds') {
+      return `${step.name} (${target} seconds)`;
+    }'''
+          )
+          bridge = bridge.replace(
+              ''' * Timed holds are measurements, not pass/fail targets. The user holds to
+ * technical burnout, the exact achieved duration is recorded, and the next
+ * guide is achieved time +3 seconds (or +2 seconds from 90 seconds onward).''',
+              ''' * Timed holds use a prescribed target. Successful completion advances the
+ * target by +3 seconds (or +2 seconds from 90 seconds onward). Burnout before
+ * the target is a failure and repeats that same target at the next workout.'''
+          )
+          bridge_path.write_text(bridge)
+
+          # Voice mode follows the same target-and-failure meaning.
+          voice_path = Path('systems/baseline-fitness/js/baseline-fitness-voice.js')
+          voice = voice_path.read_text()
+          voice = voice.replace('BASELINE_FITNESS_VOICE_BURNOUT_HOLDS_20260804_1', 'BASELINE_FITNESS_VOICE_TIMED_TARGETS_20260805_1')
+          voice = voice.replace('await M(`Hold to technical burnout. The guide is ${e.step.target} seconds. Say Stop when your form reaches burnout.`)', 'await M(`Hold for the target of ${e.step.target} seconds. Say Stop only if burnout ends the hold before the target.`)')
+          voice = voice.replace('"When ready, say Begin. Hold to technical burnout, then say Stop."', '"When ready, say Begin. Complete the timed target, or say Stop if the hold ends early."')
+          voice_path.write_text(voice)
+
+          # Static regression contract for the requested controls and accessible product choice.
+          test_path = Path('tests/routine-final-interface.test.mjs')
+          test_path.write_text(r'''import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const fitness = fs.readFileSync(new URL('../systems/baseline-fitness/js/baseline-fitness-app.js', import.meta.url), 'utf8');
+const bridge = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-saved-data-bridge.js', import.meta.url), 'utf8');
+const skinHtml = fs.readFileSync(new URL('../systems/baseline-natural-skincare/baseline-natural-skincare.html', import.meta.url), 'utf8');
+const skinUi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js', import.meta.url), 'utf8');
+const skinRoutine = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
+const products = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-product-library.js', import.meta.url), 'utf8');
+
+test('timed holds use target labels, countdown timer and normal result controls', () => {
+  assert.match(fitness, /\(\$\{entry\.hold\} seconds\)/);
+  assert.match(fitness, />Start Timer<\/button>/);
+  assert.match(fitness, /aria-label="Timed target completed">✓<\/button>/);
+  assert.match(fitness, /aria-label="Timed target ended before completion">✕<\/button>/);
+  assert.doesNotMatch(fitness, /Record Hold|Start Count-Up|Hold to technical burnout/);
+  assert.match(fitness, /remaining % 30 === 0/);
+  assert.match(fitness, /remaining <= 5/);
+});
+
+test('timed failure repeats the same target rather than using burnout as the next target', () => {
+  assert.match(bridge, /const progressionSession = effectiveSession\(key, source\.sessionIndex, history\)/);
+  assert.match(bridge, /result\.isTimed \|\| result\.unit === 'seconds'/);
+  assert.doesNotMatch(bridge, /Hold to technical burnout/);
+});
+
+test('Skincare exposes product and recipe selection through the group-first interface', () => {
+  assert.match(skinHtml, /skincare-routine-group-ui-v3\.js/);
+  assert.match(skinRoutine, /<span>Product \/ recipe used<\/span>/);
+  assert.match(skinUi, /Product \/ Recipe: Choose…/);
+  assert.match(products, /<optgroup label="My Recipes">/);
+  assert.match(products, /<optgroup label="UK Product Library">/);
+});
+''')
+
+          package_path = Path('package.json')
+          import json
+          package = json.loads(package_path.read_text())
+          structure = package['scripts']['test:structure']
+          if 'tests/routine-final-interface.test.mjs' not in structure:
+              package['scripts']['test:structure'] = structure + ' tests/routine-final-interface.test.mjs'
+          package_path.write_text(json.dumps(package, indent=2) + '\n')
+          PY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify source and focused contracts
+        run: |
+          node --check systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js
+          node --check systems/baseline-fitness/js/baseline-fitness-app.js
+          node --check systems/baseline-fitness/js/fitness-saved-data-bridge.js
+          node --check systems/baseline-fitness/js/baseline-fitness-voice.js
+          node --test tests/routine-final-interface.test.mjs tests/skincare-routine-overhaul.test.mjs tests/fitness-routine-workspace.test.mjs tests/fitness-independent-exercise-progression.test.mjs
+          npm run test:structure
+
+      - name: Publish verified branch
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "No source changes remain to publish."
+            exit 0
+          fi
+          git add -A
+          git commit -m "Finalise grouped routines, product choice and timed hold targets"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
