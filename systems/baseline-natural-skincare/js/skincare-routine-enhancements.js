@@ -1,18 +1,20 @@
-/* Baseline Natural Skincare — routine calendar, comprehensive summary and routine groups. */
+/* Baseline Natural Skincare — grouped plans, grouped logs and monthly calendar. */
 (function (global) {
   'use strict';
 
   if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_ENHANCEMENTS__) return;
   global.__BASELINE_SKINCARE_ROUTINE_ENHANCEMENTS__ = true;
 
-  const CORE = global.BASELINE_SKINCARE_ROUTINE_MODEL;
-  if (!CORE) return;
+  const MODEL = global.BASELINE_SKINCARE_ROUTINE_MODEL;
+  const PRODUCTS = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
+  if (!MODEL) return;
 
   const GROUP_API = '/systems/baseline-natural-skincare/api/routine_groups.php';
   const ROUTINE_STORAGE_PREFIX = '__bl_skincare_routine_v1__::';
-  const GROUP_STORAGE_PREFIX = '__bl_skincare_routine_groups_v1__::';
+  const GROUP_STORAGE_PREFIX = '__bl_skincare_routine_groups_v2__::';
+  const LEGACY_GROUP_STORAGE_PREFIX = '__bl_skincare_routine_groups_v1__::';
   const SAVE_DELAY = 450;
-  const MAX_GROUPS = 20;
+  const MAX_GROUPS = 30;
   const state = {
     owner: 'guest',
     authed: false,
@@ -22,7 +24,8 @@
     calendarMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
     saveTimer: 0,
     loaded: false,
-    renderFrame: 0
+    renderFrame: 0,
+    rendering: false
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -39,7 +42,7 @@
   }
 
   function normaliseOwner(value) {
-    return String(value || '').trim().toLowerCase() || 'guest';
+    return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest';
   }
 
   function uniqueId(prefix = 'group') {
@@ -47,99 +50,28 @@
     return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
   }
 
-  /* Add a clearer UK-facing name for the user's body-cleansing method. */
-  const OIL_SHOWER_ACTION = Object.freeze({
-    id: 'oil-based-cleansing-shower',
-    group: 'Cleansing',
-    title: 'Oil-Based Cleansing Shower',
-    benefit: 'Uses an oil cleanser over the body during showering to loosen oil-soluble residue without relying on conventional body wash or shampoo.',
-    benefitBrief: 'Uses an oil cleanser over the body during showering to loosen oil-soluble residue without relying on conventional body wash or shampoo.',
-    benefitComprehensive: 'Uses an oil cleanser over the body during showering to loosen oil-soluble residue without relying on conventional body wash or shampoo. Applied with controlled slip and rinsed or removed according to the chosen method, it keeps the cleansing process deliberate while preserving the richer, lipid-conscious finish the routine is intended to provide.'
-  });
-
-  function extendRoutineModel() {
-    if (CORE.ACTION_BY_ID?.has(OIL_SHOWER_ACTION.id)) return CORE;
-    const actions = [];
-    let inserted = false;
-    CORE.ACTIONS.forEach((action) => {
-      actions.push(action);
-      if (action.id === 'oil-cleanse') {
-        actions.push(OIL_SHOWER_ACTION);
-        inserted = true;
-      }
-    });
-    if (!inserted) actions.push(OIL_SHOWER_ACTION);
-    const frozenActions = Object.freeze(actions);
-    const actionById = new Map(frozenActions.map((action) => [action.id, action]));
-
-    function benefitText(value, requestedMode) {
-      const source = value && typeof value === 'object' ? value : {};
-      const definition = source.benefitBrief && source.benefitComprehensive
-        ? source
-        : actionById.get(String(source.actionId || source.id || ''));
-      if (!definition) return CORE.benefitText(source, requestedMode);
-      const mode = requestedMode === 'comprehensive' || (!requestedMode && source.benefitMode === 'comprehensive')
-        ? 'comprehensive'
-        : 'brief';
-      return mode === 'comprehensive' ? definition.benefitComprehensive : definition.benefitBrief;
-    }
-
-    function normaliseItem(value, fallbackIndex = 0) {
-      const source = value && typeof value === 'object' ? value : {};
-      if (String(source.actionId || '') !== OIL_SHOWER_ACTION.id) return CORE.normaliseItem(source, fallbackIndex);
-      const timeOfDay = CORE.TIMES.some((entry) => entry.value === source.timeOfDay) ? source.timeOfDay : 'anytime';
-      const benefitMode = source.benefitMode === 'comprehensive' ? 'comprehensive' : 'brief';
-      return {
-        id: cleanText(source.id || `routine-${fallbackIndex + 1}`, 80),
-        actionId: OIL_SHOWER_ACTION.id,
-        title: cleanText(source.title || OIL_SHOWER_ACTION.title, 100),
-        benefitMode,
-        benefit: benefitText(OIL_SHOWER_ACTION, benefitMode),
-        timeOfDay,
-        frequency: CORE.normaliseFrequency(source.frequency),
-        notes: cleanText(source.notes, 600)
-      };
-    }
-
-    function normaliseRoutine(value) {
-      const source = Array.isArray(value) ? value : [];
-      const seen = new Set();
-      const items = [];
-      source.slice(0, 50).forEach((raw, index) => {
-        const item = normaliseItem(raw, index);
-        if (!item.id || seen.has(item.id)) item.id = `${item.id || 'routine'}-${index + 1}`;
-        seen.add(item.id);
-        items.push(item);
-      });
-      return items;
-    }
-
-    function summaryGroups(items) {
-      const groups = { morning: [], evening: [], anytime: [] };
-      normaliseRoutine(items).forEach((item) => groups[item.timeOfDay].push(item));
-      return groups;
-    }
-
-    const extended = Object.freeze(Object.assign({}, CORE, {
-      ACTIONS: frozenActions,
-      ACTION_BY_ID: actionById,
-      benefitText,
-      normaliseItem,
-      normaliseRoutine,
-      summaryGroups
-    }));
-    global.BASELINE_SKINCARE_ROUTINE_MODEL = extended;
-    return extended;
-  }
-
-  const MODEL = extendRoutineModel();
-
-  function groupStorageKey(owner = state.owner) {
-    return GROUP_STORAGE_PREFIX + normaliseOwner(owner);
+  function groupStorageKey(owner = state.owner, legacy = false) {
+    return `${legacy ? LEGACY_GROUP_STORAGE_PREFIX : GROUP_STORAGE_PREFIX}${normaliseOwner(owner)}`;
   }
 
   function routineStorageKey(owner = state.owner) {
-    return ROUTINE_STORAGE_PREFIX + normaliseOwner(owner);
+    return `${ROUTINE_STORAGE_PREFIX}${normaliseOwner(owner)}`;
+  }
+
+  function normaliseGroup(raw, index = 0) {
+    const source = raw && typeof raw === 'object' ? raw : {};
+    const id = cleanText(source.id || `routine-group-${index + 1}`, 80).replace(/[^a-zA-Z0-9_-]/g, '-');
+    const title = cleanText(source.title, 80);
+    if (!id || !title) return null;
+    return {
+      id,
+      title,
+      collapsed: Boolean(source.collapsed),
+      applyFrequency: Boolean(source.applyFrequency),
+      frequency: MODEL.normaliseFrequency(source.frequency),
+      applyTime: Boolean(source.applyTime),
+      timeOfDay: MODEL.TIMES.some((entry) => entry.value === source.timeOfDay) ? source.timeOfDay : 'anytime'
+    };
   }
 
   function normaliseGroups(value) {
@@ -148,35 +80,33 @@
     const seenTitles = new Set();
     const groups = [];
     source.slice(0, MAX_GROUPS).forEach((raw, index) => {
-      if (!raw || typeof raw !== 'object') return;
-      let id = cleanText(raw.id || `routine-group-${index + 1}`, 80).replace(/[^a-zA-Z0-9_-]/g, '-');
-      const title = cleanText(raw.title, 80);
-      if (!id || !title) return;
-      if (seenIds.has(id)) id = `${id}-${index + 1}`;
-      const titleKey = title.toLocaleLowerCase('en-GB');
+      const group = normaliseGroup(raw, index);
+      if (!group) return;
+      if (seenIds.has(group.id)) group.id = `${group.id}-${index + 1}`;
+      const titleKey = group.title.toLocaleLowerCase('en-GB');
       if (seenTitles.has(titleKey)) return;
-      seenIds.add(id);
+      seenIds.add(group.id);
       seenTitles.add(titleKey);
-      groups.push({ id, title });
+      groups.push(group);
     });
     return groups;
   }
 
   function normaliseAssignments(value, groups = state.groups) {
     const source = value && typeof value === 'object' ? value : {};
-    const validGroups = new Set(groups.map((group) => group.id));
+    const valid = new Set(groups.map((group) => group.id));
     const assignments = {};
-    Object.entries(source).slice(0, 50).forEach(([itemId, groupId]) => {
-      const cleanItemId = cleanText(itemId, 80);
-      const cleanGroupId = cleanText(groupId, 80);
-      if (cleanItemId && validGroups.has(cleanGroupId)) assignments[cleanItemId] = cleanGroupId;
+    Object.entries(source).slice(0, 120).forEach(([itemId, groupId]) => {
+      const item = cleanText(itemId, 80);
+      const group = cleanText(groupId, 80);
+      if (item && valid.has(group)) assignments[item] = group;
     });
     return assignments;
   }
 
   function readGroupLocal(owner = state.owner) {
     try {
-      const raw = global.localStorage?.getItem(groupStorageKey(owner));
+      const raw = global.localStorage?.getItem(groupStorageKey(owner)) || global.localStorage?.getItem(groupStorageKey(owner, true));
       const value = raw ? JSON.parse(raw) : null;
       const groups = normaliseGroups(value?.groups);
       return { groups, assignments: normaliseAssignments(value?.assignments, groups) };
@@ -200,11 +130,12 @@
       const raw = global.localStorage?.getItem(routineStorageKey());
       const value = raw ? JSON.parse(raw) : null;
       return {
+        visibility: value?.visibility === 'public' ? 'public' : 'private',
         items: MODEL.normaliseRoutine(value?.items || value?.routine),
         logs: MODEL.normaliseLogs(value?.logs)
       };
     } catch (_error) {
-      return { items: [], logs: {} };
+      return { visibility: 'private', items: [], logs: {} };
     }
   }
 
@@ -237,10 +168,6 @@
     writeGroupLocal();
     clearTimeout(state.saveTimer);
     state.saveTimer = global.setTimeout(saveGroupsNow, SAVE_DELAY);
-  }
-
-  function currentAuthSnapshot() {
-    try { return global.BASELINE_auth?.get?.() || null; } catch (_error) { return null; }
   }
 
   async function loadGroupsForAuth(snapshot) {
@@ -291,36 +218,49 @@
     connect();
   }
 
+  function groupById(groupId) {
+    return state.groups.find((group) => group.id === groupId) || null;
+  }
+
+  function groupForItem(itemId) {
+    return groupById(state.assignments[itemId]);
+  }
+
+  function effectiveItem(item) {
+    const group = groupForItem(item.id);
+    if (!group) return item;
+    const copy = Object.assign({}, item);
+    if (group.applyFrequency) copy.frequency = MODEL.normaliseFrequency(group.frequency);
+    if (group.applyTime) copy.timeOfDay = group.timeOfDay;
+    return copy;
+  }
+
   function groupOptions(selected = '') {
     const options = state.groups.map((group) => `<option value="${escapeHtml(group.id)}"${group.id === selected ? ' selected' : ''}>${escapeHtml(group.title)}</option>`).join('');
     return `<option value="">No routine group</option>${options}`;
   }
 
-  function groupItemCount(groupId, items) {
-    return items.filter((item) => state.assignments[item.id] === groupId).length;
+  function selectOptions(values, selected) {
+    return values.map((item) => `<option value="${escapeHtml(item.value)}"${item.value === selected ? ' selected' : ''}>${escapeHtml(item.label)}</option>`).join('');
+  }
+
+  function dayControls(group) {
+    if (!group.applyFrequency || group.frequency.mode !== 'days') return '';
+    return `<fieldset class="routine-group-days"><legend>Group days</legend>${MODEL.DAYS.map((day) => `<label><input type="checkbox" data-group-day="${escapeHtml(day)}" data-group-id="${escapeHtml(group.id)}"${group.frequency.days.includes(day) ? ' checked' : ''}><span>${escapeHtml(day.slice(0, 3))}</span></label>`).join('')}</fieldset>`;
+  }
+
+  function weeklyControl(group) {
+    if (!group.applyFrequency || group.frequency.mode !== 'weekly') return '';
+    return `<label class="routine-field"><span>Times each week</span><input type="number" min="1" max="14" value="${group.frequency.timesPerWeek}" data-group-field="timesPerWeek" data-group-id="${escapeHtml(group.id)}"></label>`;
   }
 
   function ensureStaticLabels() {
     const summaryTab = $('[data-routine-view="summary"]');
     if (summaryTab && summaryTab.textContent.trim() !== 'Routine Summary') summaryTab.textContent = 'Routine Summary';
-
     const summaryPanel = $('[data-routine-panel="summary"]');
     const heading = summaryPanel?.querySelector('.routine-summary-head h2');
     if (heading && heading.textContent.trim() !== 'Routine Summary') heading.textContent = 'Routine Summary';
     summaryPanel?.querySelector('.routine-summary-head h3')?.remove();
-    const note = summaryPanel?.querySelector('.routine-summary-head .note');
-    const noteText = 'A complete view of every routine action, its schedule, benefits and personal notes. The plan may remain private or be shared publicly, while the completion log always stays private.';
-    if (note && note.textContent.trim() !== noteText) note.textContent = noteText;
-
-    const visibility = $('#routineVisibility');
-    if (visibility && !visibility.closest('.routine-visibility-control')) {
-      const wrapper = document.createElement('label');
-      wrapper.className = 'routine-visibility-control';
-      const label = document.createElement('span');
-      label.textContent = 'Routine Visibility';
-      visibility.parentNode.insertBefore(wrapper, visibility);
-      wrapper.append(label, visibility);
-    }
   }
 
   function ensureCalendarCard() {
@@ -339,7 +279,7 @@
     if (!planCard || !addRow || planCard.querySelector('.routine-group-manager')) return;
     const manager = document.createElement('section');
     manager.className = 'routine-group-manager';
-    manager.innerHTML = `<div class="routine-group-manager-head"><div><h3>Routine Groups</h3><p class="note">Create named routines, then assign each action below. Examples include Microcurrent &amp; LED Routine, LED &amp; Shaving Routine, and Self-Massage &amp; Oil-Based Cleansing Shower.</p></div></div><div class="routine-group-create"><input id="routineGroupName" type="text" maxlength="80" autocomplete="off" placeholder="Name a routine group…"><button id="createRoutineGroup" type="button">Create group</button></div><div id="routineGroupList" class="routine-group-list" aria-live="polite"></div>`;
+    manager.innerHTML = `<div class="routine-group-manager-head"><div><h3>Routine Groups</h3><p class="note">A group can carry its own time and frequency. Actions may inherit those settings or retain their individual schedule.</p></div></div><div class="routine-group-create"><input id="routineGroupName" type="text" maxlength="80" autocomplete="off" placeholder="Name a routine group…"><button id="createRoutineGroup" type="button">Create group</button></div><div id="routineGroupList" class="routine-group-list" aria-live="polite"></div>`;
     addRow.insertAdjacentElement('beforebegin', manager);
   }
 
@@ -347,19 +287,26 @@
     const target = $('#routineGroupList');
     if (!target) return;
     const items = readRoutineLocal().items;
-    const html = state.groups.length
-      ? state.groups.map((group) => {
-        const count = groupItemCount(group.id, items);
-        const confirmation = state.pendingRemoveGroupId === group.id
-          ? `<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${escapeHtml(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`
-          : `<button type="button" class="routine-group-remove" data-group-remove-request="${escapeHtml(group.id)}" aria-label="Remove ${escapeHtml(group.title)}">×</button>`;
-        return `<div class="routine-group-row" data-routine-group="${escapeHtml(group.id)}"><input type="text" maxlength="80" value="${escapeHtml(group.title)}" data-group-title="${escapeHtml(group.id)}" aria-label="Routine group name"><span class="routine-group-count">${count} action${count === 1 ? '' : 's'}</span>${confirmation}</div>`;
-      }).join('')
-      : '<div class="routine-group-empty">No routine groups created yet.</div>';
+    const html = state.groups.length ? state.groups.map((group) => {
+      const count = items.filter((item) => state.assignments[item.id] === group.id).length;
+      const confirmation = state.pendingRemoveGroupId === group.id
+        ? `<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${escapeHtml(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`
+        : `<button type="button" class="routine-group-remove" data-group-remove-request="${escapeHtml(group.id)}" aria-label="Remove ${escapeHtml(group.title)}">×</button>`;
+      return `<article class="routine-group-row" data-routine-group="${escapeHtml(group.id)}">
+        <div class="routine-group-row-head"><button type="button" class="routine-group-collapse" data-group-collapse="${escapeHtml(group.id)}" aria-expanded="${group.collapsed ? 'false' : 'true'}">${group.collapsed ? '▸' : '▾'}</button><input type="text" maxlength="80" value="${escapeHtml(group.title)}" data-group-title="${escapeHtml(group.id)}" aria-label="Routine group name"><span class="routine-group-count">${count} action${count === 1 ? '' : 's'}</span>${confirmation}</div>
+        <div class="routine-group-settings"${group.collapsed ? ' hidden' : ''}>
+          <label class="routine-group-toggle"><input type="checkbox" data-group-field="applyTime" data-group-id="${escapeHtml(group.id)}"${group.applyTime ? ' checked' : ''}><span>Set time for this group</span></label>
+          <label class="routine-field"><span>Group time</span><select data-group-field="timeOfDay" data-group-id="${escapeHtml(group.id)}"${group.applyTime ? '' : ' disabled'}>${selectOptions(MODEL.TIMES, group.timeOfDay)}</select></label>
+          <label class="routine-group-toggle"><input type="checkbox" data-group-field="applyFrequency" data-group-id="${escapeHtml(group.id)}"${group.applyFrequency ? ' checked' : ''}><span>Set “How often” for this group</span></label>
+          <label class="routine-field"><span>Group frequency</span><select data-group-field="frequencyMode" data-group-id="${escapeHtml(group.id)}"${group.applyFrequency ? '' : ' disabled'}>${selectOptions(MODEL.FREQUENCIES, group.frequency.mode)}</select></label>
+          ${weeklyControl(group)}${dayControls(group)}
+        </div>
+      </article>`;
+    }).join('') : '<div class="routine-group-empty">No routine groups created yet.</div>';
     if (target.innerHTML !== html) target.innerHTML = html;
   }
 
-  function enhanceRoutineItems() {
+  function enhanceRoutineFields() {
     const routine = readRoutineLocal();
     const itemMap = new Map(routine.items.map((item) => [item.id, item]));
     let assignmentsChanged = false;
@@ -373,30 +320,99 @@
 
     $$('.routine-item[data-routine-item]').forEach((article) => {
       const itemId = article.dataset.routineItem;
+      const item = itemMap.get(itemId);
       const grid = article.querySelector('.routine-item-grid');
-      if (!itemId || !grid) return;
-      let field = grid.querySelector('[data-routine-group-field]');
-      if (!field) {
-        field = document.createElement('label');
-        field.className = 'routine-field routine-group-field';
-        field.dataset.routineGroupField = itemId;
-        field.innerHTML = `<span>Routine group</span><select data-routine-group-select="${escapeHtml(itemId)}"></select>`;
-        const actionName = grid.querySelector('[data-field="title"]')?.closest('.routine-field');
-        if (actionName?.nextSibling) grid.insertBefore(field, actionName.nextSibling);
-        else grid.prepend(field);
+      if (!item || !grid) return;
+
+      let groupField = grid.querySelector('[data-routine-group-field]');
+      if (!groupField) {
+        groupField = document.createElement('label');
+        groupField.className = 'routine-field routine-group-field';
+        groupField.dataset.routineGroupField = itemId;
+        groupField.innerHTML = `<span>Routine group</span><select data-routine-group-select="${escapeHtml(itemId)}"></select>`;
+        const first = grid.querySelector('.routine-field');
+        if (first?.nextSibling) grid.insertBefore(groupField, first.nextSibling);
+        else grid.prepend(groupField);
       }
-      const select = field.querySelector('select');
-      const selected = state.assignments[itemId] || '';
-      const options = groupOptions(selected);
-      if (select && select.innerHTML !== options) select.innerHTML = options;
-      if (select && select.value !== selected) select.value = selected;
+      const groupSelect = groupField.querySelector('select');
+      const selectedGroup = state.assignments[itemId] || '';
+      const options = groupOptions(selectedGroup);
+      if (groupSelect && groupSelect.innerHTML !== options) groupSelect.innerHTML = options;
+      if (groupSelect && groupSelect.value !== selectedGroup) groupSelect.value = selectedGroup;
+
+      const group = groupForItem(itemId);
+      const frequencyField = grid.querySelector('[data-field="frequencyMode"]')?.closest('.routine-field');
+      const timeField = grid.querySelector('[data-field="timeOfDay"]')?.closest('.routine-field');
+      if (frequencyField) {
+        frequencyField.classList.toggle('inherited-setting', Boolean(group?.applyFrequency));
+        frequencyField.querySelector('select')?.toggleAttribute('disabled', Boolean(group?.applyFrequency));
+        frequencyField.querySelector('span').textContent = group?.applyFrequency ? `How often — inherited from ${group.title}` : 'How often';
+      }
+      if (timeField) {
+        timeField.classList.toggle('inherited-setting', Boolean(group?.applyTime));
+        timeField.querySelector('select')?.toggleAttribute('disabled', Boolean(group?.applyTime));
+        timeField.querySelector('span').textContent = group?.applyTime ? `Time — inherited from ${group.title}` : 'Time of day';
+      }
     });
   }
 
+  function planGroupHeader(group, count) {
+    const schedule = [];
+    if (group?.applyTime) schedule.push(MODEL.timeLabel(group.timeOfDay));
+    if (group?.applyFrequency) schedule.push(MODEL.frequencyText(group.frequency));
+    return `<div class="routine-plan-group-head"><div><h3>${escapeHtml(group?.title || 'No routine group')}</h3>${schedule.length ? `<p>${escapeHtml(schedule.join(' · '))}</p>` : ''}</div><span>${count} action${count === 1 ? '' : 's'}</span>${group ? `<button type="button" data-plan-group-collapse="${escapeHtml(group.id)}" aria-expanded="${group.collapsed ? 'false' : 'true'}">${group.collapsed ? 'Expand' : 'Collapse'}</button>` : ''}</div>`;
+  }
+
+  function organisePlanGroups() {
+    const target = $('#routineItems');
+    if (!target || !target.querySelector('.routine-item')) return;
+    const articles = $$('.routine-item[data-routine-item]', target);
+    const byId = new Map(articles.map((article) => [article.dataset.routineItem, article]));
+    const fragment = document.createDocumentFragment();
+    const placed = new Set();
+
+    state.groups.forEach((group) => {
+      const itemIds = Object.entries(state.assignments).filter(([, groupId]) => groupId === group.id).map(([itemId]) => itemId).filter((itemId) => byId.has(itemId));
+      if (!itemIds.length) return;
+      const section = document.createElement('section');
+      section.className = `routine-plan-group${group.collapsed ? ' collapsed' : ''}`;
+      section.dataset.planGroup = group.id;
+      section.innerHTML = planGroupHeader(group, itemIds.length);
+      const body = document.createElement('div');
+      body.className = 'routine-plan-group-body';
+      body.hidden = group.collapsed;
+      itemIds.forEach((itemId) => { body.append(byId.get(itemId)); placed.add(itemId); });
+      section.append(body);
+      fragment.append(section);
+    });
+
+    const ungrouped = articles.filter((article) => !placed.has(article.dataset.routineItem));
+    if (ungrouped.length) {
+      const section = document.createElement('section');
+      section.className = 'routine-plan-group routine-plan-group-ungrouped';
+      section.innerHTML = planGroupHeader(null, ungrouped.length);
+      const body = document.createElement('div');
+      body.className = 'routine-plan-group-body';
+      ungrouped.forEach((article) => body.append(article));
+      section.append(body);
+      fragment.append(section);
+    }
+
+    target.replaceChildren(fragment);
+  }
+
+  function productText(item) {
+    if (item.productSelection === 'custom') return item.customProductName || item.productName || '';
+    return item.productName || PRODUCTS?.selectionDetails(item.productSelection, item.actionId)?.name || '';
+  }
+
   function summaryItem(item, index) {
-    const time = MODEL.timeLabel(item.timeOfDay);
-    const frequency = MODEL.frequencyText(item.frequency);
-    return `<article class="routine-summary-item routine-summary-item-comprehensive"><div class="routine-summary-title"><span>${index + 1}</span><strong>${escapeHtml(item.title)}</strong></div><div class="routine-summary-meta"><span>${escapeHtml(time)}</span><span>${escapeHtml(frequency)}</span></div><p>${escapeHtml(MODEL.benefitText(item, 'comprehensive'))}</p>${item.notes ? `<p class="routine-summary-notes"><b>Your notes:</b> ${escapeHtml(item.notes)}</p>` : ''}</article>`;
+    const effective = effectiveItem(item);
+    const product = productText(item);
+    const method = MODEL.supportsShavingMethod?.(item.actionId)
+      ? MODEL.SHAVING_METHODS?.find((entry) => entry.value === item.shavingMethod)?.label
+      : '';
+    return `<article class="routine-summary-item routine-summary-item-comprehensive"><div class="routine-summary-title"><span>${index + 1}</span><strong>${escapeHtml(item.title)}</strong></div><div class="routine-summary-meta"><span>${escapeHtml(MODEL.timeLabel(effective.timeOfDay))}</span><span>${escapeHtml(MODEL.frequencyText(effective.frequency))}</span>${method ? `<span>${escapeHtml(method)}</span>` : ''}${product ? `<span>${escapeHtml(product)}</span>` : ''}</div><p>${escapeHtml(MODEL.benefitText(item, 'comprehensive'))}</p>${item.notes ? `<p class="routine-summary-notes"><b>Your notes:</b> ${escapeHtml(item.notes)}</p>` : ''}</article>`;
   }
 
   function renderEnhancedSummary() {
@@ -404,26 +420,66 @@
     if (!target) return;
     const items = readRoutineLocal().items;
     if (!items.length) return;
-
     const assignedIds = new Set();
     const sections = [];
     state.groups.forEach((group) => {
       const groupItems = items.filter((item) => state.assignments[item.id] === group.id);
       if (!groupItems.length) return;
       groupItems.forEach((item) => assignedIds.add(item.id));
-      sections.push(`<section class="routine-summary-group routine-summary-custom-group"><h3>${escapeHtml(group.title)}</h3>${groupItems.map(summaryItem).join('')}</section>`);
+      const schedule = [group.applyTime ? MODEL.timeLabel(group.timeOfDay) : '', group.applyFrequency ? MODEL.frequencyText(group.frequency) : ''].filter(Boolean).join(' · ');
+      sections.push(`<section class="routine-summary-group routine-summary-custom-group"><div class="routine-summary-group-head"><h3>${escapeHtml(group.title)}</h3>${schedule ? `<span>${escapeHtml(schedule)}</span>` : ''}</div>${groupItems.map(summaryItem).join('')}</section>`);
     });
-
     const ungrouped = items.filter((item) => !assignedIds.has(item.id));
     if (ungrouped.length) {
       const timeGroups = MODEL.summaryGroups(ungrouped);
-      [['morning', 'Morning routine'], ['evening', 'Evening routine'], ['anytime', 'Flexible / any-time actions']].forEach(([key, label]) => {
+      [['morning','Morning routine'],['evening','Evening routine'],['anytime','Flexible / any-time actions']].forEach(([key,label]) => {
         if (timeGroups[key].length) sections.push(`<section class="routine-summary-group"><h3>${label}</h3>${timeGroups[key].map(summaryItem).join('')}</section>`);
       });
     }
-
     const html = sections.join('');
     if (target.innerHTML !== html) target.innerHTML = html;
+  }
+
+  function logItemHtml(item, status, entry) {
+    const product = productText(item);
+    const effective = effectiveItem(item);
+    const method = MODEL.supportsShavingMethod?.(item.actionId)
+      ? MODEL.SHAVING_METHODS?.find((option) => option.value === item.shavingMethod)?.label
+      : '';
+    const details = [MODEL.timeLabel(effective.timeOfDay), status.detail, method, product].filter(Boolean).join(' · ');
+    return `<article class="routine-log-item${entry.completed ? ' complete' : ''}"><label class="routine-log-check"><input type="checkbox" data-log-complete="${escapeHtml(item.id)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(details)}</small></span></label><input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${escapeHtml(entry.note || '')}" data-log-note="${escapeHtml(item.id)}"></article>`;
+  }
+
+  function renderGroupedLog() {
+    const target = $('#routineLogItems');
+    const progress = $('#routineLogProgress');
+    if (!target) return;
+    const routine = readRoutineLocal();
+    const selectedDate = $('#routineLogDate')?.value || MODEL.isoDate(new Date());
+    if (!routine.items.length) return;
+    const due = routine.items.map((item) => {
+      const effective = effectiveItem(item);
+      return { item, effective, status: MODEL.dueStatus(effective, selectedDate, routine.logs) };
+    }).filter((entry) => entry.status.due);
+    if (!due.length) {
+      target.innerHTML = '<div class="routine-empty">No routine actions are scheduled for this date.</div>';
+      if (progress) progress.textContent = '0 actions due';
+      return;
+    }
+    const entries = routine.logs[selectedDate] || {};
+    const completed = due.filter(({ item }) => entries[item.id]?.completed).length;
+    if (progress) progress.textContent = `${completed}/${due.length} completed`;
+    const sections = [];
+    const used = new Set();
+    state.groups.forEach((group) => {
+      const groupDue = due.filter(({ item }) => state.assignments[item.id] === group.id);
+      if (!groupDue.length) return;
+      groupDue.forEach(({ item }) => used.add(item.id));
+      sections.push(`<section class="routine-log-group"><div class="routine-log-group-head"><h3>${escapeHtml(group.title)}</h3>${group.applyFrequency ? `<span>${escapeHtml(MODEL.frequencyText(group.frequency))}</span>` : ''}</div>${groupDue.map(({ item, status }) => logItemHtml(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' })).join('')}</section>`);
+    });
+    const ungrouped = due.filter(({ item }) => !used.has(item.id));
+    if (ungrouped.length) sections.push(`<section class="routine-log-group"><h3>Ungrouped routine actions</h3>${ungrouped.map(({ item, status }) => logItemHtml(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' })).join('')}</section>`);
+    target.innerHTML = sections.join('');
   }
 
   function parseIsoDate(value) {
@@ -431,16 +487,10 @@
     return match ? new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])) : null;
   }
 
-  function monthKey(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-  }
-
   function completedItemsForDate(date, routine) {
     const entries = routine.logs[date] || {};
     const names = new Map(routine.items.map((item) => [item.id, item.title]));
-    return Object.entries(entries)
-      .filter(([, entry]) => entry?.completed)
-      .map(([itemId]) => names.get(itemId) || 'Routine action');
+    return Object.entries(entries).filter(([, entry]) => entry?.completed).map(([itemId]) => names.get(itemId) || 'Routine action');
   }
 
   function renderCalendar() {
@@ -449,17 +499,13 @@
     const grid = $('#routineCalendarGrid');
     const weekdays = $('.routine-calendar-weekdays');
     if (!monthLabel || !grid || !weekdays) return;
-
     const routine = readRoutineLocal();
     const selectedDate = $('#routineLogDate')?.value || MODEL.isoDate(new Date());
     const today = MODEL.isoDate(new Date());
     const year = state.calendarMonth.getFullYear();
     const month = state.calendarMonth.getMonth();
-    const monthText = state.calendarMonth.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-    if (monthLabel.textContent !== monthText) monthLabel.textContent = monthText;
-    const weekdayHtml = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => `<span>${day}</span>`).join('');
-    if (weekdays.innerHTML !== weekdayHtml) weekdays.innerHTML = weekdayHtml;
-
+    monthLabel.textContent = state.calendarMonth.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
+    weekdays.innerHTML = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map((day) => `<span>${day}</span>`).join('');
     const first = new Date(year, month, 1);
     const offset = (first.getDay() + 6) % 7;
     const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -476,66 +522,76 @@
       cells.push(`<button type="button" class="${classes.join(' ')}" data-calendar-date="${date}" title="${escapeHtml(title)}"><span class="routine-calendar-number">${day}</span>${completed.length ? `<span class="routine-calendar-count">${completed.length}</span>` : ''}</button>`);
     }
     while (cells.length % 7) cells.push('<span class="routine-calendar-empty" aria-hidden="true"></span>');
-    const html = cells.join('');
-    if (grid.innerHTML !== html) grid.innerHTML = html;
-    const renderedMonth = monthKey(state.calendarMonth);
-    if (grid.dataset.month !== renderedMonth) grid.dataset.month = renderedMonth;
+    grid.innerHTML = cells.join('');
   }
 
   function scheduleRender() {
-    if (state.renderFrame) return;
+    if (state.renderFrame || state.rendering) return;
     state.renderFrame = global.requestAnimationFrame(() => {
       state.renderFrame = 0;
-      ensureStaticLabels();
-      ensureCalendarCard();
-      ensureGroupManager();
-      renderGroupManager();
-      enhanceRoutineItems();
-      renderEnhancedSummary();
-      renderCalendar();
+      state.rendering = true;
+      try {
+        ensureStaticLabels();
+        ensureCalendarCard();
+        ensureGroupManager();
+        renderGroupManager();
+        enhanceRoutineFields();
+        organisePlanGroups();
+        renderEnhancedSummary();
+        renderGroupedLog();
+        renderCalendar();
+      } finally {
+        state.rendering = false;
+      }
     });
   }
 
   function createGroup() {
     const field = $('#routineGroupName');
     const title = cleanText(field?.value, 80);
-    if (!title || state.groups.length >= MAX_GROUPS) {
+    if (!title || state.groups.length >= MAX_GROUPS || state.groups.some((group) => group.title.localeCompare(title, 'en-GB', { sensitivity:'base' }) === 0)) {
       field?.focus();
       return;
     }
-    if (state.groups.some((group) => group.title.localeCompare(title, 'en-GB', { sensitivity: 'base' }) === 0)) {
-      field?.focus();
-      return;
-    }
-    state.groups.push({ id: uniqueId('routine-group'), title });
+    state.groups.push(normaliseGroup({ id: uniqueId('routine-group'), title }, state.groups.length));
     state.pendingRemoveGroupId = '';
     if (field) field.value = '';
     scheduleGroupSave();
     scheduleRender();
   }
 
-  function renameGroup(groupId, title) {
-    const group = state.groups.find((entry) => entry.id === groupId);
-    const clean = cleanText(title, 80);
-    if (!group || !clean) return;
-    if (state.groups.some((entry) => entry.id !== groupId && entry.title.localeCompare(clean, 'en-GB', { sensitivity: 'base' }) === 0)) return;
-    group.title = clean;
+  function updateGroup(groupId, field, value, checked) {
+    const group = groupById(groupId);
+    if (!group) return;
+    if (field === 'title') group.title = cleanText(value, 80) || group.title;
+    if (field === 'collapsed') group.collapsed = Boolean(checked);
+    if (field === 'applyFrequency') group.applyFrequency = Boolean(checked);
+    if (field === 'applyTime') group.applyTime = Boolean(checked);
+    if (field === 'frequencyMode') group.frequency.mode = MODEL.FREQUENCIES.some((entry) => entry.value === value) ? value : 'daily';
+    if (field === 'timesPerWeek') group.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(value) || 1)));
+    if (field === 'timeOfDay') group.timeOfDay = MODEL.TIMES.some((entry) => entry.value === value) ? value : 'anytime';
+    scheduleGroupSave();
+    scheduleRender();
+  }
+
+  function updateGroupDay(groupId, day, checked) {
+    const group = groupById(groupId);
+    if (!group || !MODEL.DAYS.includes(day)) return;
+    group.frequency.days = MODEL.DAYS.filter((entry) => entry === day ? checked : group.frequency.days.includes(entry));
     scheduleGroupSave();
     scheduleRender();
   }
 
   function removeGroup(groupId) {
     state.groups = state.groups.filter((group) => group.id !== groupId);
-    Object.keys(state.assignments).forEach((itemId) => {
-      if (state.assignments[itemId] === groupId) delete state.assignments[itemId];
-    });
+    Object.keys(state.assignments).forEach((itemId) => { if (state.assignments[itemId] === groupId) delete state.assignments[itemId]; });
     state.pendingRemoveGroupId = '';
     scheduleGroupSave();
     scheduleRender();
   }
 
   function assignItem(itemId, groupId) {
-    if (groupId && state.groups.some((group) => group.id === groupId)) state.assignments[itemId] = groupId;
+    if (groupId && groupById(groupId)) state.assignments[itemId] = groupId;
     else delete state.assignments[itemId];
     scheduleGroupSave();
     scheduleRender();
@@ -553,7 +609,7 @@
     const input = $('#routineLogDate');
     if (input) {
       input.value = date;
-      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles:true }));
     }
     scheduleRender();
   }
@@ -561,19 +617,18 @@
   function bindEvents() {
     document.addEventListener('click', (event) => {
       if (event.target.closest('#createRoutineGroup')) { createGroup(); return; }
-      const removeRequest = event.target.closest('[data-group-remove-request]');
-      if (removeRequest) {
-        state.pendingRemoveGroupId = removeRequest.dataset.groupRemoveRequest;
-        scheduleRender();
+      const collapse = event.target.closest('[data-group-collapse], [data-plan-group-collapse]');
+      if (collapse) {
+        const id = collapse.dataset.groupCollapse || collapse.dataset.planGroupCollapse;
+        const group = groupById(id);
+        if (group) updateGroup(id, 'collapsed', '', !group.collapsed);
         return;
       }
+      const removeRequest = event.target.closest('[data-group-remove-request]');
+      if (removeRequest) { state.pendingRemoveGroupId = removeRequest.dataset.groupRemoveRequest; scheduleRender(); return; }
       const removeConfirm = event.target.closest('[data-group-remove-confirm]');
       if (removeConfirm) { removeGroup(removeConfirm.dataset.groupRemoveConfirm); return; }
-      if (event.target.closest('[data-group-remove-cancel]')) {
-        state.pendingRemoveGroupId = '';
-        scheduleRender();
-        return;
-      }
+      if (event.target.closest('[data-group-remove-cancel]')) { state.pendingRemoveGroupId = ''; scheduleRender(); return; }
       const monthMove = event.target.closest('[data-calendar-move]');
       if (monthMove) { moveCalendar(monthMove.dataset.calendarMove === 'previous' ? -1 : 1); return; }
       const dateButton = event.target.closest('[data-calendar-date]');
@@ -581,18 +636,19 @@
     });
 
     document.addEventListener('keydown', (event) => {
-      if (event.target?.id === 'routineGroupName' && event.key === 'Enter') {
-        event.preventDefault();
-        createGroup();
-      }
+      if (event.target?.id === 'routineGroupName' && event.key === 'Enter') { event.preventDefault(); createGroup(); }
     });
 
     document.addEventListener('change', (event) => {
       const groupSelect = event.target.closest('[data-routine-group-select]');
-      if (groupSelect) {
-        assignItem(groupSelect.dataset.routineGroupSelect, groupSelect.value);
+      if (groupSelect) { assignItem(groupSelect.dataset.routineGroupSelect, groupSelect.value); return; }
+      const groupField = event.target.closest('[data-group-field]');
+      if (groupField) {
+        updateGroup(groupField.dataset.groupId, groupField.dataset.groupField, groupField.value, groupField.checked);
         return;
       }
+      const groupDay = event.target.closest('[data-group-day]');
+      if (groupDay) { updateGroupDay(groupDay.dataset.groupId, groupDay.dataset.groupDay, groupDay.checked); return; }
       if (event.target?.id === 'routineLogDate') {
         const date = parseIsoDate(event.target.value);
         if (date) state.calendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -601,45 +657,29 @@
     });
 
     document.addEventListener('blur', (event) => {
-      const groupTitle = event.target.closest('[data-group-title]');
-      if (groupTitle) renameGroup(groupTitle.dataset.groupTitle, groupTitle.value);
+      const title = event.target.closest('[data-group-title]');
+      if (title) updateGroup(title.dataset.groupTitle, 'title', title.value, false);
     }, true);
   }
 
   function observeRoutine() {
     const root = $('#routine');
     if (!root || typeof MutationObserver === 'undefined') return;
-    const observer = new MutationObserver(scheduleRender);
-    observer.observe(root, { childList: true, subtree: true });
-    global.addEventListener('pagehide', () => observer.disconnect(), { once: true });
+    const observer = new MutationObserver(() => scheduleRender());
+    observer.observe(root, { childList:true, subtree:true });
+    global.addEventListener?.('pagehide', () => observer.disconnect(), { once:true });
   }
 
-  function watchRoutineStorage() {
-    if (typeof Storage === 'undefined') return;
-    const originalSet = Storage.prototype.setItem;
-    if (originalSet.__skincareRoutineEnhancementWrapped) return;
-    function wrappedSetItem(key, value) {
-      const result = originalSet.apply(this, arguments);
-      if (this === global.localStorage && String(key || '').startsWith(ROUTINE_STORAGE_PREFIX)) global.setTimeout(scheduleRender, 0);
-      return result;
-    }
-    wrappedSetItem.__skincareRoutineEnhancementWrapped = true;
-    Storage.prototype.setItem = wrappedSetItem;
-  }
-
-  function initialise() {
+  function boot() {
     ensureStaticLabels();
     ensureCalendarCard();
     ensureGroupManager();
     bindEvents();
     observeRoutine();
-    watchRoutineStorage();
     attachAuth();
-    const selected = parseIsoDate($('#routineLogDate')?.value);
-    if (selected) state.calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1);
     scheduleRender();
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialise, { once: true });
-  else initialise();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
+  else boot();
 })(typeof window !== 'undefined' ? window : globalThis);
