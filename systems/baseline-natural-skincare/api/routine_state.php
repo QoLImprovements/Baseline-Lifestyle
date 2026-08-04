@@ -28,7 +28,11 @@ function bl_skincare_routine($value): array {
   if(!is_array($value)) return [];
   $items = [];
   $seen = [];
-  foreach(array_slice($value, 0, 50) as $offset=>$raw){
+  $shavingMethods = [
+    'wet-cartridge','wet-safety','wet-straight','electric-foil','electric-rotary',
+    'electric-wet-dry','trimmer','clipper','body-razor','dermaplaning'
+  ];
+  foreach(array_slice($value, 0, 120) as $offset=>$raw){
     if(!is_array($raw)) continue;
     $id = bl_skincare_text($raw['id'] ?? ('routine-' . ($offset + 1)), 80);
     if($id === '') $id = 'routine-' . ($offset + 1);
@@ -40,17 +44,25 @@ function bl_skincare_routine($value): array {
     if($title === '') $title = 'Self-Care Action';
     $time = strtolower(bl_skincare_text($raw['timeOfDay'] ?? 'anytime', 20));
     if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
-    $benefitMode = strtolower(bl_skincare_text($raw['benefitMode'] ?? 'brief', 20));
-    if(!in_array($benefitMode, ['brief','comprehensive'], true)) $benefitMode = 'brief';
+    $benefitMode = strtolower(bl_skincare_text($raw['benefitMode'] ?? 'comprehensive', 20));
+    if(!in_array($benefitMode, ['brief','comprehensive'], true)) $benefitMode = 'comprehensive';
+    $shavingMethod = strtolower(bl_skincare_text($raw['shavingMethod'] ?? '', 32));
+    if(!in_array($shavingMethod, $shavingMethods, true)) $shavingMethod = '';
     $items[] = [
       'id'=>$id,
       'actionId'=>$actionId,
       'title'=>$title,
       'benefitMode'=>$benefitMode,
-      'benefit'=>bl_skincare_text($raw['benefit'] ?? '', 1200),
+      'benefit'=>bl_skincare_text($raw['benefit'] ?? '', 5000),
       'timeOfDay'=>$time,
       'frequency'=>bl_skincare_frequency($raw['frequency'] ?? []),
-      'notes'=>bl_skincare_text($raw['notes'] ?? '', 600),
+      'notes'=>bl_skincare_text($raw['notes'] ?? '', 1200),
+      'shavingMethod'=>$shavingMethod,
+      'productSelection'=>bl_skincare_text($raw['productSelection'] ?? '', 180),
+      'productName'=>bl_skincare_text($raw['productName'] ?? '', 180),
+      'customProductName'=>bl_skincare_text($raw['customProductName'] ?? '', 180),
+      'useGroupFrequency'=>!empty($raw['useGroupFrequency']),
+      'useGroupTime'=>!empty($raw['useGroupTime']),
     ];
   }
   return $items;
@@ -66,7 +78,7 @@ function bl_skincare_logs($value): array {
     if(preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$date) !== 1) continue;
     $source = is_array($value[$date] ?? null) ? $value[$date] : [];
     $entries = [];
-    foreach(array_slice($source, 0, 50, true) as $itemId=>$raw){
+    foreach(array_slice($source, 0, 120, true) as $itemId=>$raw){
       if(!is_array($raw)) continue;
       $key = bl_skincare_text($itemId, 80);
       if($key === '') continue;
