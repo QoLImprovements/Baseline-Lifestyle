@@ -1,0 +1,133 @@
+name: One-shot squat uniform progression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-shot-squat-uniform-progression.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Patch squat progression
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          app_path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
+          html_path = Path('systems/baseline-fitness/baseline-fitness.html')
+
+          app = app_path.read_text(encoding='utf-8')
+          old_block = """  function progressionIncrements(type, count) {
+            const sets = setCount(count);
+            if (type !== TYPES.LEG) return Array(sets).fill(1);
+            if (sets === 1) return [2];
+            if (sets === 2) return [2, 3];
+            return [2, ...Array(sets - 2).fill(1), 3];
+          }
+          function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
+            const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+            const increments = progressionIncrements(type, count);
+            return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
+          }
+          """
+          new_block = """  const SQUAT_UNIFORM_ANCHOR = Object.freeze({
+            baseline: 40,
+            sets: 3,
+            session: 6,
+            values: Object.freeze([44, 41, 47]),
+            increment: 3
+          });
+          function progressionIncrements(type, count) {
+            const sets = setCount(count);
+            if (type !== TYPES.LEG) return Array(sets).fill(1);
+            return Array(sets).fill(3);
+          }
+          function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
+            const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+            const sets = setCount(count);
+            const roundedBaseline = Math.max(1, Math.round(Number(baseline) || 1));
+
+            if (type === TYPES.LEG && roundedBaseline === SQUAT_UNIFORM_ANCHOR.baseline && sets === SQUAT_UNIFORM_ANCHOR.sets) {
+              if (session >= SQUAT_UNIFORM_ANCHOR.session) {
+                const increase = (session - SQUAT_UNIFORM_ANCHOR.session) * SQUAT_UNIFORM_ANCHOR.increment;
+                return SQUAT_UNIFORM_ANCHOR.values.map((value) => value + increase);
+              }
+
+              const legacyIncrements = [2, 1, 3];
+              return setValues(roundedBaseline, sets).map((value, index) => value + ((session - 1) * legacyIncrements[index]));
+            }
+
+            const increments = progressionIncrements(type, sets);
+            return setValues(roundedBaseline, sets).map((value, index) => value + ((session - 1) * increments[index]));
+          }
+          """
+
+          if old_block not in app:
+              raise SystemExit('Expected squat progression block was not found; no files changed.')
+
+          app = app.replace(old_block, new_block, 1)
+          app = app.replace(
+              "const BUILD = 'BASELINE_FITNESS_PRODUCTION_CRASH_FIX_20260713_1';",
+              "const BUILD = 'BASELINE_FITNESS_SQUAT_UNIFORM_20260804_1';",
+              1,
+          )
+          app_path.write_text(app, encoding='utf-8')
+
+          old_cache = 'BASELINE_FITNESS_SINGLE_RUNTIME_20260713_1'
+          new_cache = 'BASELINE_FITNESS_SQUAT_UNIFORM_20260804_1'
+          html = html_path.read_text(encoding='utf-8')
+          if old_cache not in html:
+              raise SystemExit('Expected Baseline Fitness app cache key was not found.')
+          html_path.write_text(html.replace(old_cache, new_cache), encoding='utf-8')
+
+          for root_name in ('tests', 'test'):
+              root = Path(root_name)
+              if not root.exists():
+                  continue
+              for path in root.rglob('*'):
+                  if not path.is_file():
+                      continue
+                  try:
+                      text = path.read_text(encoding='utf-8')
+                  except UnicodeDecodeError:
+                      continue
+                  updated = text.replace(old_cache, new_cache)
+                  if updated != text:
+                      path.write_text(updated, encoding='utf-8')
+          PY
+
+      - name: Verify progression values
+        shell: bash
+        run: |
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const app = require('./systems/baseline-fitness/js/baseline-fitness-app.js');
+
+          assert.deepEqual(app.progressedSetValues(40, 3, 5, app.TYPES.LEG), [38, 32, 44]);
+          assert.deepEqual(app.progressedSetValues(40, 3, 6, app.TYPES.LEG), [44, 41, 47]);
+          assert.deepEqual(app.progressedSetValues(40, 3, 7, app.TYPES.LEG), [47, 44, 50]);
+          assert.deepEqual(app.progressedSetValues(40, 3, 8, app.TYPES.LEG), [50, 47, 53]);
+          assert.deepEqual(app.progressedSetValues(50, 3, 2, app.TYPES.LEG), [41, 38, 43]);
+          console.log('Squat progression checks passed.');
+          NODE
+
+      - name: Commit update and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "Baseline Update Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git rm .github/workflows/one-shot-squat-uniform-progression.yml
+          git add systems/baseline-fitness/js/baseline-fitness-app.js systems/baseline-fitness/baseline-fitness.html tests test 2>/dev/null || true
+          git commit -m "Set squat progression to uniform +3"
+          git push origin HEAD:main
