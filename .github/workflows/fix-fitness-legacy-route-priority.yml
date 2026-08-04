@@ -1,0 +1,60 @@
+name: Fix Fitness legacy route priority
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/fix-fitness-legacy-route-priority.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: agent/routine-systems-overhaul-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Give legacy My Plan route priority over remembered subtab
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('systems/baseline-fitness/js/fitness-routine-workspace.js')
+          text = path.read_text()
+          old = "activateView(VIEWS.includes(remembered)?remembered:(legacyPlanRoute?'calisthenics':'log'));"
+          new = "activateView(legacyPlanRoute?'calisthenics':(VIEWS.includes(remembered)?remembered:'log'));"
+          if old not in text:
+              if new in text:
+                  raise SystemExit(0)
+              raise SystemExit('legacy-route precedence line not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Fitness voice and stability browser checks
+        run: |
+          npm run test:voice-ui
+          npm run test:stability-smoke
+
+      - name: Publish clean validated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add systems/baseline-fitness/js/fitness-routine-workspace.js
+          git commit -m "Prioritise the legacy Fitness My Plan deep link"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
