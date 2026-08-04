@@ -163,11 +163,12 @@
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /*
- * Independent exercise progression.
+ * Independent linear exercise progression.
  *
- * A failed exercise repeats its own target in the next workout. Exercises that
- * succeeded continue to their next target. The history travels with the active
- * workout state, so the existing Saved Data bridge can carry it between devices.
+ * Rep-based leg exercises add three repetitions to every set after each
+ * successful workout. Push-up and other standard rep exercises add one
+ * repetition to every set. A failed exercise repeats only its own targets;
+ * successful exercises continue progressing normally.
  */
 (function (global) {
   'use strict';
@@ -175,9 +176,10 @@
   const STEP_PREFIX = '__bl_fitness_workout_progress_v2__::';
   const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
   const PLAN_PREFIX = '__bl_fitness_plan_v1__::';
+  const TYPES = Object.freeze({ STANDARD: 'standard-reps', LEG: 'leg-reps', TIMED: 'timed-hold' });
+  const REP_INCREMENT = Object.freeze({ [TYPES.STANDARD]: 1, [TYPES.LEG]: 3 });
   const ANCHOR_SESSION = 6;
   const ANCHOR_VALUES = Object.freeze([44, 41, 47]);
-  const SQUAT_INCREMENT = 3;
 
   function parseJson(raw) {
     try { const value = JSON.parse(String(raw)); return value && typeof value === 'object' ? value : null; }
@@ -206,9 +208,7 @@
   }
   function normaliseHistory(value) {
     const source = value && typeof value === 'object' ? value : {};
-    const raw = source.failuresBySession && typeof source.failuresBySession === 'object'
-      ? source.failuresBySession
-      : {};
+    const raw = source.failuresBySession && typeof source.failuresBySession === 'object' ? source.failuresBySession : {};
     const failuresBySession = {};
     Object.entries(raw).forEach(([session, names]) => {
       const index = Math.max(1, Math.round(Number(session) || 0));
@@ -235,8 +235,7 @@
   function failureCountBefore(exercise, sessionIndex, history) {
     const name = canonicalExerciseName(exercise);
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
-    const source = normaliseHistory(history).failuresBySession;
-    return Object.entries(source).reduce((count, [failedSession, names]) => (
+    return Object.entries(normaliseHistory(history).failuresBySession).reduce((count, [failedSession, names]) => (
       Number(failedSession) < session && names.includes(name) ? count + 1 : count
     ), 0);
   }
@@ -262,12 +261,10 @@
   }
   function progressionIncrements(type, count) {
     const sets = setCount(count);
-    if (String(type || '') !== 'leg-reps') return Array(sets).fill(1);
-    if (sets === 1) return [2];
-    if (sets === 2) return [2, 3];
-    return [2, ...Array(sets - 2).fill(1), 3];
+    const increment = REP_INCREMENT[String(type || '')] || REP_INCREMENT[TYPES.STANDARD];
+    return Array(sets).fill(increment);
   }
-  function progressedSetValues(baseline, count, sessionIndex, type) {
+  function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
     const increments = progressionIncrements(type, count);
     return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
@@ -285,13 +282,17 @@
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
     const baseline = Math.max(1, Math.round(Number(source.baseline) || 1));
     const sets = setCount(source.sets || 3);
-    const timed = String(source.progressionType || '') === 'timed-hold' || !Object.hasOwn(source, 'sets');
+    const type = String(source.progressionType || TYPES.STANDARD);
+    const timed = type === TYPES.TIMED || !Object.hasOwn(source, 'sets');
     if (timed) return [holdValue(baseline, session)];
+
+    // Preserve the completed Session 1–5 squat history. From Session 6 onward,
+    // this plan follows the same +3-per-set leg rule as every other leg exercise.
     if (exercise === 'Squats' && baseline === 40 && sets === 3 && session >= ANCHOR_SESSION) {
-      const increase = (session - ANCHOR_SESSION) * SQUAT_INCREMENT;
+      const increase = (session - ANCHOR_SESSION) * REP_INCREMENT[TYPES.LEG];
       return ANCHOR_VALUES.map((value) => value + increase);
     }
-    return progressedSetValues(baseline, sets, session, source.progressionType || 'standard-reps');
+    return progressedSetValues(baseline, sets, session, type);
   }
   function planForOwner(owner = ownerName()) {
     if (!global.localStorage || !owner) return null;
@@ -301,6 +302,26 @@
     if (saved?.planJson?.items) return saved.planJson;
     if (saved?.items) return saved;
     return null;
+  }
+  function planFromGeneratorUi() {
+    if (!global.document) return null;
+    const rows = Array.from(global.document.querySelectorAll('#exerciseList .ex-row'));
+    const items = rows.map((row) => {
+      const exercise = String(row.querySelector('.ex-select')?.value || '').trim();
+      if (!exercise) return null;
+      const progressionType = String(row.dataset.progressionType || TYPES.STANDARD);
+      const item = {
+        exercise,
+        baseline: Math.max(1, Math.round(Number(row.querySelector('.ex-baseline')?.value) || 1)),
+        progressionType
+      };
+      if (progressionType !== TYPES.TIMED) {
+        const control = row.querySelector('.ex-sets');
+        item.sets = setCount(control?.value || control?.dataset.lastSets || 3);
+      }
+      return item;
+    }).filter(Boolean);
+    return items.length ? { items } : null;
   }
   function itemForExercise(plan, exercise) {
     const name = canonicalExerciseName(exercise);
@@ -332,7 +353,8 @@
       let targets = item ? targetsForExercise(item, progressionSession) : null;
       if (!targets || !targets.length) {
         const failures = failureCountBefore(exercise, source.sessionIndex, history);
-        targets = indexes.map((index) => Math.max(1, Number(steps[index]?.target || 1) - failures));
+        const fallbackIncrement = indexes[0] != null && String(steps[indexes[0]]?.progressionType || '') === TYPES.LEG ? 3 : 1;
+        targets = indexes.map((index) => Math.max(1, Number(steps[index]?.target || 1) - (failures * fallbackIncrement)));
       }
       indexes.forEach((stepIndex, position) => {
         const step = steps[stepIndex];
@@ -365,12 +387,15 @@
   }
 
   const PUBLIC_API = Object.freeze({
+    TYPES,
     canonicalExerciseName,
     normaliseHistory,
     failedExercises,
     recordFailures,
     failureCountBefore,
     effectiveSession,
+    progressionIncrements,
+    progressedSetValues,
     targetsForExercise
   });
   global.BASELINE_FITNESS_EXERCISE_PROGRESSION = PUBLIC_API;
@@ -451,21 +476,16 @@
     const state = parseJson(global.localStorage.getItem(key));
     if (!state) return;
     const enriched = enrichState(key, state);
-    if (JSON.stringify(enriched) !== JSON.stringify(state)) {
-      global.localStorage.setItem(key, JSON.stringify(enriched));
-    }
+    if (JSON.stringify(enriched) !== JSON.stringify(state)) global.localStorage.setItem(key, JSON.stringify(enriched));
   }
   function sessionIndexFromCard(card) {
     const text = String(card?.querySelector?.('.title, h3')?.textContent || '');
     const match = text.match(/Session\s+(\d+)/i);
     return match ? Number(match[1]) : 0;
   }
-  function patchPlanRows(root) {
-    const plan = planForOwner();
-    const context = originalWorkout?.getCurrentContext?.();
-    const history = historyForContext(context);
+  function patchPlanRows(root, selector, plan, history) {
     if (!plan) return;
-    root.querySelectorAll?.('#myPlanSavedWrap .session-card').forEach((card) => {
+    root.querySelectorAll?.(selector).forEach((card) => {
       const sessionIndex = sessionIndexFromCard(card);
       if (!sessionIndex) return;
       card.querySelectorAll('.plan-exercise-row').forEach((row) => {
@@ -511,7 +531,9 @@
     frame = 0;
     if (!global.document) return;
     repairCurrentState();
-    patchPlanRows(global.document);
+    const context = originalWorkout?.getCurrentContext?.();
+    patchPlanRows(global.document, '#myPlanSavedWrap .session-card', planForOwner(), historyForContext(context));
+    patchPlanRows(global.document, '#planOut .session-card', planFromGeneratorUi(), normaliseHistory(null));
     patchCurrentWorkout(global.document);
     patchVoiceDisplay(global.document);
   }
@@ -528,7 +550,7 @@
     originalWorkout = candidate;
     const wrapper = {
       __independentExerciseProgression: true,
-      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_INDEPENDENT_EXERCISE_PROGRESSION_20260804_1`,
+      BUILD: `${candidate.BUILD || 'BASELINE_FITNESS'}_LINEAR_EXERCISE_PROGRESSION_20260804_2`,
       getCurrentContext() { return adjustedContext(candidate.getCurrentContext?.()); },
       startSession() { const result = candidate.startSession?.(); schedulePatch(); return adjustedContext(result); },
       succeedCurrentStep(inputMode = 'manual') {
