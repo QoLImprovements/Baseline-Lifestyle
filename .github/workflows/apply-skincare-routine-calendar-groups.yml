@@ -1,0 +1,116 @@
+name: Apply skincare routine calendar and groups
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-skincare-routine-calendar-groups.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Write enhancement files and patch page
+        run: |
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import base64, gzip, json
+
+          encoded = {
+            "systems/baseline-natural-skincare/js/skincare-routine-enhancements.js": "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",
+            "systems/baseline-natural-skincare/css/skincare-routine-enhancements.css": "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",
+            "systems/baseline-natural-skincare/api/routine_groups.php": "H4sIAKoXcmoC/61XbW/bNhD+7l9xBYxSwuTU7RZgc+YERqI23hI7s5UWmOARssQ4WmXJk6jVWdP/vuOLLFqOnXbYhwTmkffcC++eo34+W92vWhELkyBnVsHzOOSUP6xY0X9tn7Ry9lcZ54xmaciA0ovhhFI4AvKqCO/ZMjhCZXLSat2VacjjLIV5QouPcRoiGF3kWbminK251f47SErmQJxyaC+Ddbwsl3YPhLl0AZ9bAG1xDvqAkqVlqQ1bqaEbAPGdJbB5ThOWWvK0Dac1mMCoUSp/KFvHBS8sspzTopyjOrHhDCr8jVQBOtB1akRA//ZuCpe+4F/OeJmnyu5J68vBTGCSs4hp29D+s8hSB4I8Dx6gfRckyTwIP2JSlETEw/MHHZZSjTAyoVUhaQiei9R+/8aBX6bjEfUuJ+MPFH+4k8l4Ij3d+BkXVMJbFaLIxga9V/sh4wsDHt5b3n2efQrmCYM2y/Ms16muIt/SOJyBgqZZvgySuGC6IrbCxSt+UTuo9u3Kjj8TBtoKB/Og1wVj6TBqCLyYJ6yW3WU5CzAQCUyLJA7ZpiDxTt90bQgKaMdpxNb903YefNIhbjsk5DaEWcrjtGQqre1Y3Mm+okcNn8QRmcEZ1hzBHVRlHXmkQ7CNLGUUvoPXtu3Aj13bhF3lbEFztkoCdJi88v8IOv8MOr93Oz/RzuwVcYB08B+exUvsASFal4von/NKHlKOEWJYxpCl8X4f5fD4uIGTgmb4eDouCoag+h58VJ5hlgTGUV842IjS9PFX9rCvVXnOsyT7xFS7bkkspSzbc0f4lFuqGvyNzdnuLZreSw7a2tkB2D6iStIXUnnbWEJx5OgM40L+mDUJQ2k9RxlBUcSLdMlSTExVspoxFMA3NxBKZXFtt0bVV6IP5E9bn/Q3VCzFqpzNBLQNF7+24467irR033G2HEaYKGlhGFVULuQHylipmU0jdw9oaPxmtQszL1S9v3wJunBU8EpFFrQRpi91RBLUfvNqjaPP3S8yq3VzMUYKnuvhWBYsxxz04Ky+13bBA7SIgMJmNO+cIjWsxLwmU/fKPfdA06seKbV9LSlXEQJENODwdjK+ho0XmpI0PcOHS3fignCBxlG/p3/A1fB66MFrYp9sOdM5ZWsWlpxZPqnOioJXIczUaYxQOG0o3TExVeRulTFxCCksLZPkuYytgockCyJLp0eo7vSAFG7qnmQf0Ss5JMl9ULyToaIEB1eBokW19mcOMVKnJTp1A45r4V9jDB2ccXufAFVTWcJTnxi3pynZnxGcBz5WnpEmX9asEY5amzGFWZlWlV6I91FXH9pEqfe0eDvew/wjNQC+NqhmFerIPn/RkTkaTzskV1q4lfTFUvy2SIhjysIWqfDrmlbIPF4yy7YlxExWkX4+YcM0Liqaq/KTlar2qneukBibQ0GV0qpcKvqTu0vG7zOxK4dQuVqJIUSn7uS9O/HJxP3t1p169Nr1LscXOvR3ridaSBXpBkAwj9wRbohEWfuL/mkCkeRREYddvZYrA5LabsZT04LuCd0B8lWHS6I0sIA5xUcdzlUM1oEfusfKaxzjq5KrfMmfCsz+ho5QEFXFq7z4mim2B8kzs1DjmPWrwZzNaFS3qMpEIaaYLR3LfkodjvAWPRiOvPE+orQ02zlfT7y2rOz3gyusC6tiS6dn6vd29HtN/fEIzsejt1fDc6/ywQacH7c3FwPPhanr6a4ycPtsHSYlvu+PTGP6XNNkfXjHGa1Ru1SfNXpx/4xQrb07KHTPm6nATfmdw1L1naM5S33f3I7c6fngxr2g06vB9NKdwmNz43Y0PB9fuBWd7CS2iW/s/3cjRhJEbGol2UiV3P/W3vq7bJjKR8ogX5TCc3cdspUcmsZn2uGGVwc7pwvGr1lRBAskUNnw3drKk19/z/DInq6hd0GcKE45ViZa/wKVJhRlfhAAAA==",
+            "tests/skincare-routine-groups-calendar.test.mjs": "H4sIAKoXcmoC/61WXW/bNhR9z6+464udIpKztBiCJvbgOk5hNLEL2y0GTJtBS5TFliIFkrZjFP3vu9SHLfmj0Za9SeI9595z76FIFidSGTBUGwiVjKEhZEDf2ffGzRnLVonWVFXWsy8tbRTzS4HfQVES3DNOJxvhw48yJNTVOC35ilZDEmIiDDrzpcBylJQG2kVkM4O6MTXEDZgSJKYX0HDdxvlNDohMzFPAroRmgbZkGK432tBYt+ZEU84EdQQxS0W4o78x4RNFT6+4lr5xjiRLE17vslIREeHTmArz4uRfdat4dpRcGhtU4tfuV32kAl/rF2dGjmdSY8SR3NqPaExenJ4krJVRuUmUHO1ykEj2P7TYZsr1zRb4kOiDjGfW/c1GHlUZsPW90cAlCYCEhiowEYUYzcuBiADmNJSKph+xWKpC4tPGBTTPod2B72cAmZoUMBABfUI91lcusy+jsNk4GEIamw7+ZosvlVST5cBFO7JtofWotujsH+DKb82SnE4bLvdWD4rtlPTvxe7V0jlQWo6PifGjpq32An5uXs+61/t91Z58HAx73XF/Nh59ng6G/Vmv+9Af3nXHsw/45dNkdnV59dvl9eXb2a8tTPVj54Zx7obJMo6J2qALE4516nTWkgfwuIEiRucxETqViUXFAMdqD4gh27pXjK7br3KKV3/+3fnrdWcv+a3Xmi+NkaLTOtmP2+jqCAw/ViCBpHoozeM+cicmA3n69W30prMn0K696ew1qhA/p4KGDDcLDgVwV/g0ACPRc3GiaESFZqts55xuT2mEWNfj6K7/4Lk575Q+Ga/JcLfjzq2QNrzzI22pchXNzot1LI9TYTkx/ge5wNH7FCNQGYRLzp01C0yEUoSJ+CYVyKlhUoBPOP63iKqtMKcokvVyfG05RUJ8UMGzqLxSGgzsP/Neqjti6BEU7h2M9tyDLAvFgn8TH5CN50ZEF17f6/GKaTZnnJkNLHXaXlsh8Y3dYzHah5M55Rwf8MdllOR1+1r088s2QY2qd9U4ebqToNQA766vkqdfslsKEWZPGwpSGg2BpsDzy+DVRdHsCqNoLHEn2NMDqdlCQHHwZMdTXZG9lDcDPTv6cCn8zKIp6oMFec36sKz4/wCzWuvCKr/FVJeDpzr1zVFkdj8onQSz6jF/BJTdOGzvxv3utA/T7vuHPgzuYTiaQv+PwWQ6gZ+wlcY7Ytx5j3eOAHqcEvyBiAVMIrnGCwJDI68IQ+9ynHLqagxR8PmjgwedDSzmndq77rhPZ3y2r2tmIkyJ0+AbC7M2kGKFizgjwmEugw2siY5AKtARQUvLQu8/rzjJBjAMAAA==",
+            "systems/baseline-natural-skincare/api/schema.php": "H4sIAKoXcmoC/82UYW+bMBCGv/MrTtUkSERB3cdl3UTBqdAyUgGVUk2T5RiXeiOGYZM2qvLfZyeQTms6rR8mTUKA7OfuvXt98P5jc9dYBaMVaZkjVcupwmrTMHl+NppYLfvR8ZbhWlAGGEdxijF4YPue11+SK3bPC+aThvu0Fre89HRKe2JZ/ngMF0SyigsGCVFdSyrIvnNBtRYQSutOqNP6XrAC2rpTBpP0jq2IB2Pfuu0EVbwWsKyw7KMwE7LTjz3mXEVzeFMsR+9gXfMCHi0wMGmaatMjeMXLlpg0jgZdsIdMtgtnLkil9ygMUscSglk4/cAeGHXsMEVBjiAPLmYI4ikk8xzQIs7yDA4l9q1IcHbRAJ1kLdbZ4iRHlyiFqzT+HKQ38AnduD2y5pIvecXVBnK0yHd5k+vZDCI0Da5nOZw0LV8TxU6GiF4Ff5PaoRdivnw94FVdyj+yj9sD2zWFViowUYeSB35ApvMUxZeJacHp2xtBiqYoRUmIsl3L0jGL80RrzJA2LQyyMIjQLsPI1sN13Ns4idDiN2958YCf+YufTMN9yUbtGec8ce6vvUUoC/s6tvr+utl5+09nB5f6pXnVBO0j/nYciJS8FCsm1H84FeY0ttbx779YOtpgY7XxV7sL52bfLE/2J/jCr8KcjCFapv9DwkQakZ9yl8CZ/wQAAA=="
+          }
+          for relative, payload in encoded.items():
+              path = Path(relative)
+              path.parent.mkdir(parents=True, exist_ok=True)
+              path.write_bytes(gzip.decompress(base64.b64decode(payload)))
+
+          html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
+          html = html_path.read_text()
+          routine_css = '<link href="/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1" rel="stylesheet"/>'
+          enhancement_css = '<link href="/systems/baseline-natural-skincare/css/skincare-routine-enhancements.css?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1" rel="stylesheet"/>'
+          if enhancement_css not in html:
+              if routine_css not in html: raise SystemExit('routine CSS anchor missing')
+              html = html.replace(routine_css, routine_css + chr(10) + enhancement_css, 1)
+
+          model_script = '<script src="/systems/baseline-natural-skincare/js/skincare-routine-model.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>'
+          interface_script = '<script src="/systems/baseline-natural-skincare/js/skincare-routine.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>'
+          enhancement_script = '<script src="/systems/baseline-natural-skincare/js/skincare-routine-enhancements.js?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_1"></script>'
+          if enhancement_script not in html:
+              anchor = model_script + chr(10) + interface_script
+              if anchor not in html: raise SystemExit('routine script anchor missing')
+              html = html.replace(anchor, model_script + chr(10) + enhancement_script + chr(10) + interface_script, 1)
+
+          html = html.replace('data-routine-view="summary" tabindex="-1">My Routine</button>', 'data-routine-view="summary" tabindex="-1">Routine Summary</button>', 1)
+          old_summary = '''<div class="routine-summary-head">
+<div>
+<h2>My Routine</h2>
+<h3>Routine summary</h3>
+<p class="note">Build a personal self-care plan with a place and frequency for each action. The plan can remain private or be shared publicly, while your completion log always stays private.</p>
+</div>
+<select id="routineVisibility" class="routine-visibility-select" aria-label="Routine visibility">
+<option value="private">Private</option>
+<option value="public">Public</option>
+</select>
+</div>'''
+          new_summary = '''<div class="routine-summary-head">
+<div>
+<h2>Routine Summary</h2>
+<p class="note">A complete view of every routine action, its schedule, benefits and personal notes. The plan may remain private or be shared publicly, while the completion log always stays private.</p>
+</div>
+<label class="routine-visibility-control"><span>Routine Visibility</span><select id="routineVisibility" class="routine-visibility-select" aria-label="Routine visibility">
+<option value="private">Private</option>
+<option value="public">Public</option>
+</select></label>
+</div>'''
+          if old_summary in html:
+              html = html.replace(old_summary, new_summary, 1)
+          elif '<h2>Routine Summary</h2>' not in html:
+              raise SystemExit('routine summary block missing')
+          html_path.write_text(html)
+
+          package_path = Path('package.json')
+          package = json.loads(package_path.read_text())
+          test_file = 'tests/skincare-routine-groups-calendar.test.mjs'
+          structure = package['scripts']['test:structure']
+          if test_file not in structure:
+              package['scripts']['test:structure'] = structure + ' ' + test_file
+          package_path.write_text(json.dumps(package, indent=2) + chr(10))
+          PYCODE
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify skincare implementation
+        run: |
+          node --check systems/baseline-natural-skincare/js/skincare-routine-enhancements.js
+          php -l systems/baseline-natural-skincare/api/schema.php
+          php -l systems/baseline-natural-skincare/api/routine_groups.php
+          node --test tests/skincare-my-routine.test.mjs tests/skincare-routine-groups-calendar.test.mjs
+          npm run test:structure
+
+      - name: Commit verified implementation
+        run: |
+          rm .github/workflows/apply-skincare-routine-calendar-groups.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add skincare routine calendar and groups [skip ci]"
+          git push origin HEAD:main
