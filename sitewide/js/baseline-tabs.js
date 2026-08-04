@@ -223,7 +223,7 @@
   var CLEAN_TAB_ROUTES = {
     "baseline-food-approach.html": { base:"/baseline-food-approach", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", "diet-log":"diet-log" } },
     "baseline-massage.html": { base:"/baseline-massage", tabs:{ system:"system", library:"library", planner:"planner" } },
-    "baseline-natural-skincare.html": { base:"/baseline-natural-skincare", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },
+    "baseline-natural-skincare.html": { base:"/systems/baseline-natural-skincare/baseline-natural-skincare.html", hashTabs:true, tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },
     "baseline-badminton-session.html": { base:"/baseline-badminton-session", tabs:{ system:"system", gameplan:"game-plan", standings:"ratings-standings", roster:"players-pairs", history:"session-history" } },
     "baseline-fitness.html": { base:"/baseline-fitness", tabs:{ system:"system", routine:"workout-routine", library:"exercise-library", achievements:"achievements", "my-plan":"my-plan" } }
   };
@@ -231,7 +231,7 @@
   function urlForTab(id){
     var tabId = String(id || "").trim();
     var cfg = CLEAN_TAB_ROUTES[routeFileFromPath()];
-    if(cfg && cfg.tabs && cfg.tabs[tabId]) return cfg.base + "/" + cfg.tabs[tabId];
+    if(cfg && cfg.tabs && cfg.tabs[tabId]) return cfg.hashTabs ? (cfg.base + '#tab=' + encodeURIComponent(tabId)) : (cfg.base + '/' + cfg.tabs[tabId]);
     return urlWithoutHash() + "#tab=" + encodeURIComponent(tabId);
   }
 
