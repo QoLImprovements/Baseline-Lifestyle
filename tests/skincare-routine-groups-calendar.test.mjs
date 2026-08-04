@@ -5,7 +5,9 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const html = readFileSync(resolve(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
-const enhancement = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
+const enhancementLoader = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
+const enhancementCore = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements-core.js'), 'utf8');
+const enhancement = `${enhancementLoader}\n${enhancementCore}`;
 const catalogue = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'), 'utf8');
 const css = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-enhancements.css'), 'utf8');
 const schema = readFileSync(resolve(root, 'systems/baseline-natural-skincare/api/schema.php'), 'utf8');
@@ -26,6 +28,7 @@ test('routine enhancement assets load after the model and before the interface',
   assert.ok(interfaceIndex > enhancementIndex);
   assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2/);
   assert.match(html, /skincare-routine-workspace-v2\.css\?v=SKINCARE_ROUTINE_WORKSPACE_V2_20260804_1/);
+  assert.match(enhancementLoader, /skincare-routine-enhancements-core\.js/);
 });
 
 test('Routine Summary replaces the old My Routine summary heading', () => {
