@@ -194,6 +194,10 @@ test("voice workout can be started from the Calisthenics routine subtab", async 
     ),
   );
 
+  const myRoutineTab = page.locator('.tab[data-target="my-plan"]');
+  await expect(myRoutineTab).toBeVisible();
+  await myRoutineTab.click();
+
   const calisthenicsTab = page.locator('[data-fitness-routine-view="calisthenics"]');
   await expect(calisthenicsTab).toBeVisible();
   await calisthenicsTab.click();
