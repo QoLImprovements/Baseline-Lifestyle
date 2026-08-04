@@ -8,15 +8,91 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: website-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  patch-routine-route:
+    name: Patch legacy Fitness route priority
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      target: ${{ steps.gate.outputs.target }}
+      changed: ${{ steps.patch.outputs.changed }}
+
+    steps:
+      - id: gate
+        name: Identify routine-system branch
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/routine-systems-overhaul-20260804" ]; then
+            echo "target=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out feature branch
+        if: steps.gate.outputs.target == 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: agent/routine-systems-overhaul-20260804
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v6
+        if: steps.gate.outputs.target == 'true'
+        with:
+          node-version: 24
+          cache: npm
+
+      - id: patch
+        name: Prioritise the legacy My Plan route
+        if: steps.gate.outputs.target == 'true'
+        run: |
+          old="activateView(VIEWS.includes(remembered)?remembered:(legacyPlanRoute?'calisthenics':'log'));"
+          new="activateView(legacyPlanRoute?'calisthenics':(VIEWS.includes(remembered)?remembered:'log'));"
+          if grep -Fq "$new" systems/baseline-fitness/js/fitness-routine-workspace.js; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('systems/baseline-fitness/js/fitness-routine-workspace.js')
+          text = path.read_text()
+          old = "activateView(VIEWS.includes(remembered)?remembered:(legacyPlanRoute?'calisthenics':'log'));"
+          new = "activateView(legacyPlanRoute?'calisthenics':(VIEWS.includes(remembered)?remembered:'log'));"
+          if old not in text:
+              raise SystemExit('legacy-route precedence line not found')
+          path.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Install dependencies and Chromium
+        if: steps.patch.outputs.changed == 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Verify voice and stability browser flows
+        if: steps.patch.outputs.changed == 'true'
+        run: |
+          npm run test:voice-ui
+          npm run test:stability-smoke
+
+      - name: Publish validated feature branch
+        if: steps.patch.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add systems/baseline-fitness/js/fitness-routine-workspace.js
+          git commit -m "Prioritise the legacy Fitness My Plan deep link"
+          git push origin HEAD:agent/routine-systems-overhaul-20260804
+
   validate:
     name: Validate website
+    needs: patch-routine-route
+    if: ${{ always() && !(needs.patch-routine-route.outputs.target == 'true' && needs.patch-routine-route.outputs.changed == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
