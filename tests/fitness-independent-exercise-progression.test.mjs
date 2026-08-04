@@ -24,12 +24,40 @@ test('repeated failures keep only that exercise at the same progression session'
   assert.equal(progression.effectiveSession('Squats', 8, history), 8);
 });
 
-test('the Session 6 squat anchor and uniform progression remain intact', () => {
+test('every leg-rep set follows uniform plus-three linear progression', () => {
+  const legExercise = {
+    exercise: 'Squats',
+    baseline: 30,
+    sets: 3,
+    progressionType: progression.TYPES.LEG
+  };
+
+  assert.deepEqual(progression.progressionIncrements(progression.TYPES.LEG, 3), [3, 3, 3]);
+  assert.deepEqual(progression.targetsForExercise(legExercise, 1), [23, 21, 24]);
+  assert.deepEqual(progression.targetsForExercise(legExercise, 2), [26, 24, 27]);
+  assert.deepEqual(progression.targetsForExercise(legExercise, 3), [29, 27, 30]);
+});
+
+test('push-up and standard-rep sets follow uniform plus-one linear progression', () => {
+  const pushUps = {
+    exercise: 'Knee Push-Ups',
+    baseline: 50,
+    sets: 3,
+    progressionType: progression.TYPES.STANDARD
+  };
+
+  assert.deepEqual(progression.progressionIncrements(progression.TYPES.STANDARD, 3), [1, 1, 1]);
+  assert.deepEqual(progression.targetsForExercise(pushUps, 1), [38, 35, 40]);
+  assert.deepEqual(progression.targetsForExercise(pushUps, 2), [39, 36, 41]);
+  assert.deepEqual(progression.targetsForExercise(pushUps, 3), [40, 37, 42]);
+});
+
+test('the current Session 6 squat anchor continues with plus three per set', () => {
   const squats = {
     exercise: 'Squats',
     baseline: 40,
     sets: 3,
-    progressionType: 'leg-reps'
+    progressionType: progression.TYPES.LEG
   };
 
   assert.deepEqual(progression.targetsForExercise(squats, 6), [44, 41, 47]);
@@ -37,7 +65,7 @@ test('the Session 6 squat anchor and uniform progression remain intact', () => {
   assert.deepEqual(progression.targetsForExercise(squats, 8), [50, 47, 53]);
 });
 
-test('one failed set marks the exercise for repetition without affecting classmates', () => {
+test('one failed set marks the whole exercise for repetition without affecting others', () => {
   const results = {
     0: { status: 'success', exercise: 'Knee Push-Ups' },
     1: { status: 'success', exercise: 'Squats' },
