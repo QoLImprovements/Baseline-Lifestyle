@@ -127,7 +127,9 @@
     section.replaceChildren(shell); const calisthenics=$('[data-fitness-routine-panel="calisthenics"]',shell); original.forEach((node)=>calisthenics.append(node));
     const savedTitle=$('#myPlanSavedWrap h2'); if(savedTitle) savedTitle.textContent='Calisthenics';
     ['cardio','other','sports'].forEach((key)=>buildActivityPanel(key));
-    const remembered=global.sessionStorage?.getItem(VIEW_KEY); activateView(VIEWS.includes(remembered)?remembered:'log');
+    const remembered=global.sessionStorage?.getItem(VIEW_KEY);
+    const legacyPlanRoute=/\/baseline-fitness\/my-plan\/?$/.test(global.location?.pathname||'');
+    activateView(VIEWS.includes(remembered)?remembered:(legacyPlanRoute?'calisthenics':'log'));
   }
 
   function buildActivityPanel(section){
