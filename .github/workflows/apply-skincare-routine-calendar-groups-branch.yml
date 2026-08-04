@@ -1,6 +1,9 @@
 name: Verify skincare routine calendar and groups branch
 
 on:
+  push:
+    branches:
+      - agent/skincare-routine-calendar-groups-opaque-menu-20260804
   pull_request:
     branches:
       - main
@@ -10,7 +13,7 @@ permissions:
 
 jobs:
   apply-and-verify:
-    if: github.event.pull_request.head.ref == 'agent/skincare-routine-calendar-groups-opaque-menu-20260804'
+    if: github.event_name == 'push' || github.event.pull_request.head.ref == 'agent/skincare-routine-calendar-groups-opaque-menu-20260804'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
