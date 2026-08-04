@@ -8,127 +8,51 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: website-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  patch-routine-voice-test:
-    name: Update routine voice navigation test
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      target: ${{ steps.gate.outputs.target }}
-      changed: ${{ steps.patch.outputs.changed }}
-
-    steps:
-      - id: gate
-        name: Identify target branch
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/routine-systems-overhaul-20260804" ]; then
-            echo "target=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "target=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Check out feature branch
-        if: steps.gate.outputs.target == 'true'
-        uses: actions/checkout@v7
-        with:
-          ref: agent/routine-systems-overhaul-20260804
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v6
-        if: steps.gate.outputs.target == 'true'
-        with:
-          node-version: 24
-          cache: npm
-
-      - id: patch
-        name: Update browser workflow
-        if: steps.gate.outputs.target == 'true'
-        run: |
-          if grep -q 'data-fitness-routine-view="calisthenics"' tests/baseline-fitness-voice.spec.js; then
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          echo "changed=true" >> "$GITHUB_OUTPUT"
-          python3 - <<'PY'
-          from pathlib import Path
-          path = Path('tests/baseline-fitness-voice.spec.js')
-          text = path.read_text()
-          old = '''  await page.waitForFunction(() =>
-    Boolean(
-      window.BASELINE_fitnessWorkout &&
-        window.BASELINE_voice &&
-        window.BASELINE_fitnessVoice,
-    ),
-  );
-  await expect(page.locator("#startVoiceWorkoutBtn")).toBeVisible();'''
-          new = '''  await page.waitForFunction(() =>
-    Boolean(
-      window.BASELINE_fitnessWorkout &&
-        window.BASELINE_voice &&
-        window.BASELINE_fitnessVoice,
-    ),
-  );
-  await expect(page.locator('[data-fitness-routine-view="calisthenics"]')).toBeVisible();
-  await page.locator('[data-fitness-routine-view="calisthenics"]').click();
-  await expect(page.locator("#startVoiceWorkoutBtn")).toBeVisible();'''
-          if old not in text:
-              raise SystemExit('voice test insertion point not found')
-          path.write_text(text.replace(old, new, 1))
-          PY
-
-      - name: Install dependencies and Chromium
-        if: steps.patch.outputs.changed == 'true'
-        run: |
-          npm ci
-          npx playwright install --with-deps chromium
-
-      - name: Verify voice browser workflow
-        if: steps.patch.outputs.changed == 'true'
-        run: npm run test:voice-ui
-
-      - name: Publish clean feature branch
-        if: steps.patch.outputs.changed == 'true'
-        run: |
-          rm -f .github/workflows/patch-fitness-voice-routine-test.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Navigate to Calisthenics in the voice workout test"
-          git push origin HEAD:agent/routine-systems-overhaul-20260804
-
   validate:
     name: Validate website
-    needs: patch-routine-voice-test
-    if: ${{ always() && !(needs.patch-routine-voice-test.outputs.target == 'true' && needs.patch-routine-voice-test.outputs.changed == 'true') }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+
+      - name: Install locked dependencies
+        run: npm ci
+
       - name: Run structure safeguards
         run: npm test
+
       - name: Run Fitness and voice unit tests
         run: npm run test:fitness
+
       - name: Install Chromium for voice UI checks
         run: npx playwright install --with-deps chromium
+
       - name: Run Fitness voice browser test
         run: npm run test:voice-ui
+
       - name: Run finite stability and release smoke test
         run: npm run test:stability-smoke
+
       - name: Run Games Hub unit tests
         run: npm run test:realm-stage2
+
       - name: Lint PHP endpoints
         run: find sitewide systems -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
       - name: Exercise saved-data atomic-write contract
         run: npm run test:saved-data-php
