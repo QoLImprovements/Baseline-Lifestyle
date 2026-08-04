@@ -100,6 +100,7 @@ jobs:
         run: |
           rm -f .github/workflows/apply-skincare-routine-calendar-groups.yml
           rm -f .github/workflows/apply-skincare-routine-calendar-groups-branch.yml
+          rm -f .github/workflows/verify-skincare-routine-calendar-groups.yml
           rm -f .github/workflows/README-skincare-routine-calendar-groups.txt
           rm -f TEMP_STOP
           git config user.name "github-actions[bot]"
