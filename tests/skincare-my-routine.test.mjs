@@ -144,5 +144,5 @@ test('public API returns the plan, lists public owners, and keeps completion log
 test('routine assets use fresh workspace cache keys', () => {
   assert.match(html, /skincare-routine\.css\?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1/);
   assert.match(html, /skincare-routine-model\.js\?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1/);
-  assert.match(html, /skincare-routine\.js\?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1/);
+  assert.match(html, /skincare-routine\.js\?v=SKINCARE_ROUTINE_PRODUCTS_20260804_1/);
 });
