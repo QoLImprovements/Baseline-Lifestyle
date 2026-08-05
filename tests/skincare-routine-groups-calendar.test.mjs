@@ -8,6 +8,7 @@ const html = readFileSync(resolve(root, 'systems/baseline-natural-skincare/basel
 const loader = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
 const sitewide = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js'), 'utf8');
 const shared = readFileSync(resolve(root, 'sitewide/js/baseline-routine-system.js'), 'utf8');
+const sharedCss = readFileSync(resolve(root, 'sitewide/css/baseline-routine-system.css'), 'utf8');
 const catalogue = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'), 'utf8');
 const cssEntry = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-enhancements.css'), 'utf8');
 const css = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css'), 'utf8');
@@ -56,7 +57,8 @@ test('Skincare calendar includes Week and Month with full-width day rows', () =>
   assert.match(sitewide, /UI\.weekRow/);
   assert.match(sitewide, /bl-routine-week-list/);
   assert.match(sitewide, /UI\.monthDates/);
-  assert.match(shared, /\.bl-routine-week-list/);
+  assert.match(sharedCss, /\.bl-routine-week-list/);
+  assert.match(sharedCss, /grid-template-columns:1fr!important/);
 });
 
 test('routine plan steps and groups are collapsed and expandable', () => {
