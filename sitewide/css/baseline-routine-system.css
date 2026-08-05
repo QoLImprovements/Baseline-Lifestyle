@@ -1,0 +1,234 @@
+/* Baseline Lifestyle — shared My Routine template.
+   System pages supply palette variables; structure and interaction remain identical. */
+.bl-routine-root{
+  --bl-routine-surface:rgba(255,255,255,.08);
+  --bl-routine-surface-strong:rgba(255,255,255,.13);
+  --bl-routine-border:rgba(255,255,255,.18);
+  --bl-routine-text:var(--ink,currentColor);
+  --bl-routine-muted:var(--muted,currentColor);
+  --bl-routine-accent:var(--accent,#b11226);
+  --bl-routine-focus:var(--ring,rgba(177,18,38,.24));
+  --bl-routine-menu:#171014;
+  --bl-routine-menu-text:#fff;
+  position:relative;
+  isolation:isolate;
+}
+.bl-routine-shell{display:grid;gap:16px;min-width:0;width:100%}
+.bl-routine-tabs{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0;padding:0}
+.bl-routine-tab{flex:0 0 auto}
+.bl-routine-panel{min-width:0;width:100%}
+.bl-routine-panel[hidden]{display:none!important}
+.bl-routine-card{width:100%;min-width:0;box-sizing:border-box;overflow:visible}
+.bl-routine-group{display:grid;gap:12px;min-width:0}
+.bl-routine-entry,
+.bl-routine-summary-card,
+[data-bl-routine-disclosure-card]{position:relative;isolation:isolate;min-width:0}
+
+/* A single disclosure pattern is used for sessions, plan entries and summaries. */
+.bl-routine-disclosure{
+  appearance:none;
+  border:1px solid var(--bl-routine-border);
+  border-radius:999px;
+  background:var(--bl-routine-surface-strong);
+  color:var(--bl-routine-text);
+  padding:8px 12px;
+  font:inherit;
+  font-size:15px;
+  font-weight:850;
+  line-height:1.1;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.bl-routine-disclosure:hover,
+.bl-routine-disclosure:focus-visible{
+  border-color:var(--bl-routine-accent);
+  box-shadow:0 0 0 4px var(--bl-routine-focus);
+  outline:none;
+}
+.bl-routine-details{display:grid;gap:14px;min-width:0}
+.bl-routine-details[hidden]{display:none!important}
+.bl-routine-entry-head,
+.bl-routine-summary-head-row{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.bl-routine-entry-title{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
+.bl-routine-entry-title>span{display:grid;gap:4px;min-width:0}
+.bl-routine-entry-title small{color:var(--bl-routine-muted);line-height:1.45}
+.bl-routine-entry-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.bl-routine-preview-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.bl-routine-preview-chips>span{
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:5px 9px;
+  border:1px solid var(--bl-routine-border);
+  border-radius:999px;
+  background:var(--bl-routine-surface);
+  color:var(--bl-routine-text);
+  font-size:14px;
+  line-height:1.25;
+}
+
+/* Comprehensive summary structure shared by Skincare and Fitness. */
+.bl-routine-summary-list{display:grid;gap:14px}
+.bl-routine-summary-card{
+  display:grid;
+  gap:12px;
+  padding:16px;
+  border:1px solid var(--bl-routine-border);
+  border-radius:18px;
+  background:var(--bl-routine-surface);
+}
+.bl-routine-summary-card h3,
+.bl-routine-summary-card h4{margin:0}
+.bl-routine-summary-grid{
+  display:grid;
+  grid-template-columns:minmax(220px,.72fr) minmax(0,1.45fr);
+  gap:16px;
+}
+.bl-routine-summary-section{
+  min-width:0;
+  padding:14px;
+  border:1px solid var(--bl-routine-border);
+  border-radius:15px;
+  background:var(--bl-routine-surface);
+}
+.bl-routine-summary-section h4{margin:0 0 9px;font-size:19px}
+.bl-routine-summary-section p:last-child{margin-bottom:0}
+.bl-routine-summary-rows{display:grid;gap:8px;margin:0}
+.bl-routine-summary-rows>div{
+  display:grid;
+  grid-template-columns:minmax(120px,.55fr) minmax(0,1fr);
+  gap:12px;
+  padding-bottom:8px;
+  border-bottom:1px solid var(--bl-routine-border);
+}
+.bl-routine-summary-rows>div:last-child{padding-bottom:0;border-bottom:0}
+.bl-routine-summary-rows dt{font-weight:850;color:var(--bl-routine-muted)}
+.bl-routine-summary-rows dd{margin:0;overflow-wrap:anywhere}
+
+/* Shared calendar template. Month remains a grid; Week is one full-width row per day. */
+.bl-routine-calendar{display:grid;gap:14px}
+.bl-routine-calendar-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.bl-routine-calendar-controls{display:grid;gap:9px;justify-items:end}
+.bl-routine-calendar-view-tabs,
+.bl-routine-calendar-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bl-routine-calendar-nav strong{min-width:175px;text-align:center}
+.bl-routine-week-list{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+.bl-routine-day-row{
+  appearance:none;
+  width:100%;
+  min-height:82px;
+  display:grid;
+  grid-template-columns:minmax(185px,.42fr) minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+  padding:13px 15px;
+  border:1px solid var(--bl-routine-border);
+  border-radius:16px;
+  background:var(--bl-routine-surface);
+  color:var(--bl-routine-text);
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.bl-routine-day-row:hover,
+.bl-routine-day-row:focus-visible{
+  border-color:var(--bl-routine-accent);
+  box-shadow:0 0 0 4px var(--bl-routine-focus);
+  outline:none;
+}
+.bl-routine-day-row.has-completion{background:var(--bl-routine-surface-strong)}
+.bl-routine-day-row.selected{border-color:var(--bl-routine-accent);box-shadow:0 0 0 3px var(--bl-routine-focus) inset}
+.bl-routine-day-date{display:grid;gap:3px}
+.bl-routine-day-date strong{font-size:18px}
+.bl-routine-day-date span,
+.bl-routine-day-details{color:var(--bl-routine-muted)}
+.bl-routine-day-details{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.bl-routine-day-details>span{
+  display:inline-flex;
+  padding:5px 8px;
+  border:1px solid var(--bl-routine-border);
+  border-radius:999px;
+  background:var(--bl-routine-surface);
+  font-size:14px;
+  overflow-wrap:anywhere;
+}
+.bl-routine-day-count{
+  display:grid;
+  place-items:center;
+  min-width:34px;
+  height:34px;
+  padding:0 9px;
+  border-radius:999px;
+  background:var(--bl-routine-accent);
+  color:#fff;
+  font-weight:900;
+}
+
+/* Native controls must remain the top interactive layer. */
+.bl-routine-root input,
+.bl-routine-root textarea,
+.bl-routine-root select,
+.bl-routine-root button,
+.bl-routine-root label{
+  pointer-events:auto!important;
+  position:relative;
+}
+.bl-routine-root input,
+.bl-routine-root textarea,
+.bl-routine-root select,
+.bl-routine-root button{z-index:2}
+.bl-routine-root input[type="checkbox"],
+.bl-routine-root input[type="radio"]{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  opacity:1!important;
+  visibility:visible!important;
+}
+.bl-routine-root select,
+.bl-routine-root select option,
+.bl-routine-root select optgroup{opacity:1!important}
+.bl-routine-root [role="listbox"]{
+  z-index:10000!important;
+  opacity:1!important;
+  background-color:var(--bl-routine-menu)!important;
+  background-image:none!important;
+  color:var(--bl-routine-menu-text)!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  isolation:isolate!important;
+  pointer-events:auto!important;
+}
+.bl-routine-root [role="listbox"] [role="option"],
+.bl-routine-root [role="listbox"] [role="group"]{
+  opacity:1!important;
+  background-color:var(--bl-routine-menu)!important;
+  color:var(--bl-routine-menu-text)!important;
+  pointer-events:auto!important;
+}
+
+@media(max-width:820px){
+  .bl-routine-summary-grid{grid-template-columns:1fr}
+  .bl-routine-calendar-controls{justify-items:start}
+  .bl-routine-day-row{grid-template-columns:1fr auto;gap:10px}
+  .bl-routine-day-details{grid-column:1/-1}
+}
+@media(max-width:560px){
+  .bl-routine-tabs{gap:7px}
+  .bl-routine-day-row{min-height:74px;padding:11px 12px}
+  .bl-routine-day-date strong{font-size:17px}
+  .bl-routine-summary-rows>div{grid-template-columns:1fr;gap:3px}
+}
