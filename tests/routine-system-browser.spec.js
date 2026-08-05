@@ -17,6 +17,15 @@ async function mockGuestApis(page) {
   });
 }
 
+async function expectFullWidthWeekRows(page, selector) {
+  const rows = page.locator(selector);
+  await expect(rows).toHaveCount(7);
+  await expect(rows.first()).toBeVisible();
+  const widths = await rows.evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().width)));
+  expect(new Set(widths).size).toBe(1);
+  expect(widths[0]).toBeGreaterThan(500);
+}
+
 test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely interactive', async ({ page }) => {
   await mockGuestApis(page);
   await page.addInitScript(() => {
@@ -62,10 +71,7 @@ test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely i
 
   await page.locator('[data-routine-view="log"]').click();
   await page.locator('[data-skincare-calendar-view="week"]').click();
-  await expect(page.locator('#routineCalendarGrid.bl-routine-week-list .bl-routine-day-row')).toHaveCount(7);
-  const widths = await page.locator('#routineCalendarGrid .bl-routine-day-row').evaluateAll((rows) => rows.map((row) => Math.round(row.getBoundingClientRect().width)));
-  expect(new Set(widths).size).toBe(1);
-  expect(widths[0]).toBeGreaterThan(500);
+  await expectFullWidthWeekRows(page, '#routineCalendarGrid.bl-routine-week-list .bl-routine-day-row');
 });
 
 test('Fitness shares the same disclosures, summaries and full-width weekly rows', async ({ page }) => {
@@ -88,30 +94,8 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
 
   await page.goto('/baseline-fitness/my-routine', { waitUntil:'domcontentloaded' });
   const summaryTab = page.locator('[data-fitness-routine-view="summary"]');
-  await summaryTab.waitFor({ state:'attached' });
-  const ancestry = await summaryTab.evaluate((element) => {
-    const rows = [];
-    let current = element;
-    while (current && current.nodeType === Node.ELEMENT_NODE) {
-      const style = getComputedStyle(current);
-      const rect = current.getBoundingClientRect();
-      rows.push({
-        tag:current.tagName,
-        id:current.id || '',
-        classes:current.className || '',
-        hidden:Boolean(current.hidden),
-        display:style.display,
-        visibility:style.visibility,
-        opacity:style.opacity,
-        width:Math.round(rect.width),
-        height:Math.round(rect.height)
-      });
-      current = current.parentElement;
-    }
-    return rows;
-  });
-  console.log(`FITNESS_ROUTINE_VISIBILITY=${JSON.stringify(ancestry)}`);
   await expect(summaryTab).toBeVisible();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine/);
   const tabLabels = await page.locator('.fitness-routine-subtab').allTextContents();
   expect(tabLabels.slice(0, 3)).toEqual(['Routine Log', 'Exercise Summary', 'Calisthenics']);
 
@@ -134,8 +118,5 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
 
   await page.locator('[data-fitness-routine-view="log"]').click();
   await page.locator('[data-calendar-view="week"]').click();
-  await expect(page.locator('#fitnessCalendarGrid.bl-routine-week-list .bl-routine-day-row')).toHaveCount(7);
-  const widths = await page.locator('#fitnessCalendarGrid .bl-routine-day-row').evaluateAll((rows) => rows.map((row) => Math.round(row.getBoundingClientRect().width)));
-  expect(new Set(widths).size).toBe(1);
-  expect(widths[0]).toBeGreaterThan(500);
+  await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.bl-routine-week-list .bl-routine-day-row');
 });
