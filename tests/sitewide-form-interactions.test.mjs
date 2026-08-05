@@ -39,7 +39,7 @@ test('Skincare picker and controls are foreground, opaque and clickable', () => 
   assert.match(skincareCss, /z-index:10000!important/);
   assert.match(skincareCss, /background:var\(--skin-cream\)!important/);
   assert.match(skincareCss, /pointer-events:auto!important/);
-  assert.match(skincareCss, /appearance:auto!important/);
+  assert.match(routineCss, /appearance:auto!important/);
   assert.match(routineCss, /\[role="listbox"\]/);
   assert.match(routineCss, /backdrop-filter:none!important/);
 });
