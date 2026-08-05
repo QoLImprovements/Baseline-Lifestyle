@@ -1,8 +1,9 @@
-/* Baseline Natural Skincare — load the preserved routine core, then group-first controls. */
+/* Baseline Natural Skincare — load the reusable sitewide My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V3__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V3__ = true;
+  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V4__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V4__ = true;
+
   function load(src) {
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
@@ -13,8 +14,8 @@
       document.head.appendChild(script);
     });
   }
-  load('/systems/baseline-natural-skincare/js/skincare-routine-enhancements-core.js?v=SKINCARE_ROUTINE_CORE_20260805_1')
-    .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js?v=SKINCARE_GROUP_FIRST_UI_20260805_2'))
-    .then(() => load('/systems/baseline-natural-skincare/js/skincare-product-accessibility-v3.js?v=SKINCARE_PRODUCT_ACCESS_20260805_1'))
+
+  load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1')
+    .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260805_1'))
     .catch(() => {});
 })(typeof window !== 'undefined' ? window : globalThis);

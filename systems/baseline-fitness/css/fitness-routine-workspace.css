@@ -1,2 +1,4 @@
-/* Baseline Fitness — canonical entry point for the repaired My Routine workspace. */
-@import url('/systems/baseline-fitness/css/fitness-routine-workspace-v2.css?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_2');
+/* Baseline Fitness — shared My Routine structure and Fitness palette adapter. */
+@import url('/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1');
+@import url('/systems/baseline-fitness/css/fitness-routine-workspace-v2.css?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_3');
+@import url('/systems/baseline-fitness/css/fitness-routine-sitewide-v3.css?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260805_1');
