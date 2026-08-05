@@ -1,11 +1,9 @@
 name: Apply fitness frequency and schedule update
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-    paths:
-      - .github/workflows/apply-fitness-frequency-schedule-main.yml
   workflow_dispatch:
 
 permissions:
@@ -13,6 +11,7 @@ permissions:
 
 jobs:
   apply-and-test:
+    if: github.head_ref == 'agent/fitness-monthly-frequency-yoga-various-20260805'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
