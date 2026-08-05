@@ -1,5 +1,6 @@
 /* Baseline Natural Skincare — grouped routine plan/log and detailed product controls. */
 @import url('/systems/baseline-natural-skincare/css/skincare-routine-group-ui-v3.css?v=SKINCARE_GROUP_FIRST_UI_20260805_1');
+@import url('/systems/baseline-natural-skincare/css/skincare-routine-interaction-repair.css?v=SKINCARE_ROUTINE_INTERACTION_REPAIR_20260805_1');
 #routine .routine-group-row{display:grid;gap:12px!important;padding:14px!important;border:1px solid var(--skin-peach)!important;border-radius:18px!important;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important}
 #routine .routine-group-row-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center}
 #routine .routine-group-collapse,#routine [data-plan-group-collapse]{border:1px solid var(--skin-peach);border-radius:999px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));color:var(--ink);font:inherit;font-weight:900;padding:7px 11px;cursor:pointer}
