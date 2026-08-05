@@ -1,0 +1,52 @@
+name: Apply fitness frequency and schedule update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-fitness-frequency-schedule-main.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/fitness-monthly-frequency-yoga-various-20260805
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Apply migration
+        run: python3 scripts/apply_fitness_frequency_schedule_20260805.py
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify implementation
+        run: |
+          node --check systems/baseline-fitness/js/fitness-activity-catalogue-v2.js
+          node --check systems/baseline-fitness/js/fitness-routine-workspace-v2.js
+          node --check systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js
+          node --check systems/baseline-fitness/js/baseline-fitness-app.js
+          php -l systems/baseline-fitness/api/routine_state.php
+          node --test tests/fitness-frequency-schedule.test.mjs tests/fitness-routine-workspace.test.mjs tests/baseline-fitness-progression.test.mjs
+          npm run test:structure
+
+      - name: Publish clean feature branch
+        run: |
+          rm -f scripts/apply_fitness_frequency_schedule_20260805.py
+          rm -f .github/workflows/apply-fitness-frequency-schedule.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add monthly fitness frequency and flexible calisthenics scheduling"
+          git push origin HEAD:agent/fitness-monthly-frequency-yoga-various-20260805
