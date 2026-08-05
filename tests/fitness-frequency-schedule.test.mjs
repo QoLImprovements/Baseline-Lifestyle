@@ -1,3 +1,4 @@
+// Regression coverage for monthly activity cadence and flexible Calisthenics scheduling.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
