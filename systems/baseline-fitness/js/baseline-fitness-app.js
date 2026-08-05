@@ -141,9 +141,11 @@
     if (!value || typeof value !== 'object' || !Array.isArray(value.items) || !value.items.length) return null;
     const plan = Object.assign({}, value, { version: 9, items: value.items.slice(0, EXERCISES.length).map(normaliseItem) });
     plan.sessions = Math.round(clamp(plan.sessions || 18, 1, 120));
-    plan.frequency = ['1x', '2x', '3x'].includes(plan.frequency) ? plan.frequency : '3x';
+    plan.frequency = ['1x', '2x', '3x', '4x', '5x', '6x', '7x'].includes(plan.frequency) ? plan.frequency : '3x';
     plan.lengthMode = plan.lengthMode === 'goal' ? 'goal' : 'sessions';
-    plan.days = Array.isArray(plan.days) ? plan.days.filter((day) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(day)).slice(0, Number(plan.frequency[0])) : [];
+    plan.scheduleMode = plan.scheduleMode === 'specific-days' || (Array.isArray(plan.days) && plan.days.length) ? 'specific-days' : 'weekly-count';
+    plan.days = plan.scheduleMode === 'specific-days' && Array.isArray(plan.days) ? plan.days.filter((day) => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(day)).slice(0, 7) : [];
+    if (plan.scheduleMode === 'specific-days' && plan.days.length) plan.frequency = `${plan.days.length}x`;
     plan.timerStartDelay = Math.round(clamp(plan.timerStartDelay || 5, 1, 10));
     return plan;
   }
@@ -242,9 +244,11 @@
   }
 
   function scheduleDates(plan) {
-    const selected = (plan.days || []).map((day) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(day)).filter((day) => day >= 0);
+    const selected = (plan.scheduleMode === 'specific-days' ? (plan.days || []) : []).map((day) => ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].indexOf(day)).filter((day) => day >= 0);
     const dates = [];
-    let date = parseDate(plan.startDate) || parseDate(today());
+    const requestedStart = parseDate(plan.startDate) || parseDate(today());
+    const todayDate = parseDate(today());
+    let date = requestedStart < todayDate ? todayDate : requestedStart;
     if (selected.length) {
       while (dates.length < plan.sessions) {
         if (selected.includes(date.getDay())) dates.push(isoDate(date));
@@ -252,7 +256,8 @@
       }
       return dates;
     }
-    const pattern = plan.frequency === '1x' ? [7] : plan.frequency === '2x' ? [3, 4] : [2, 2, 3];
+    const weeklyCount = Math.max(1, Math.min(7, Number(String(plan.frequency || '3x').replace('x', '')) || 3));
+    const pattern = Array.from({ length:weeklyCount }, (_, index) => Math.floor(((index + 1) * 7) / weeklyCount) - Math.floor((index * 7) / weeklyCount));
     for (let index = 0; index < plan.sessions; index += 1) {
       dates.push(isoDate(date));
       date = addDays(date, pattern[index % pattern.length]);
@@ -266,6 +271,16 @@
       return { session_index: index + 1, scheduled_date: date, status: prior.status || 'planned', completed_at: prior.completed_at || null };
     });
   }
+  function rollForwardPendingSessions(rows, plan) {
+    const source = Array.isArray(rows) ? rows.map((row) => Object.assign({}, row)) : [];
+    const pending = source.filter((row) => row.status !== 'done');
+    if (!pending.length || String(pending[0].scheduled_date || '') >= today()) return source;
+    const futurePlan = Object.assign({}, plan, { startDate:today(), sessions:pending.length });
+    const futureDates = scheduleDates(futurePlan);
+    let index = 0;
+    return source.map((row) => row.status === 'done' ? row : Object.assign({}, row, { scheduled_date:futureDates[index++] || today() }));
+  }
+
   function calculateProgress(rows, plan) {
     let done = 0;
     let nextIndex = null;
@@ -433,7 +448,12 @@
     const items = itemsFromUi();
     const existing = current.planJson || {};
     const lengthMode = $('#lengthMode')?.value || 'sessions';
-    const plan = { version: 9, startDate: $('#startDate')?.value || today(), frequency: $('#freq')?.value || '3x', sessions: totalSessionsForUi(items), lengthMode, items, days: Array.isArray(existing.days) ? existing.days : [], timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
+    const scheduleMode = $('#scheduleMode')?.value === 'specific-days' ? 'specific-days' : 'weekly-count';
+    const selectedDays = $$('#specificDayControls input[data-plan-day]:checked').map((control) => control.dataset.planDay);
+    const startDate = $('#startDate')?.value && $('#startDate').value >= today() ? $('#startDate').value : today();
+    const days = scheduleMode === 'specific-days' ? (selectedDays.length ? selectedDays : [['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][parseDate(startDate).getDay()]]) : [];
+    const frequency = scheduleMode === 'specific-days' ? `${days.length}x` : ($('#freq')?.value || '3x');
+    const plan = { version: 9, startDate, frequency, scheduleMode, sessions: totalSessionsForUi(items), lengthMode, items, days, timerStartDelay: Math.round(clamp(existing.timerStartDelay || 5, 1, 10)) };
     if (lengthMode === 'goal') plan.goal = { exercise: $('#goalExercise')?.value || '', amount: Math.round(clamp($('#goalAmount')?.value || 1, 1, 99999)) };
     return plan;
   }
@@ -445,6 +465,9 @@
     try {
       if ($('#startDate')) $('#startDate').value = today();
       if ($('#freq')) $('#freq').value = '3x';
+      if ($('#scheduleMode')) $('#scheduleMode').value = 'weekly-count';
+      $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = false; });
+      global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = 'sessions';
       if ($('#sessions')) $('#sessions').value = '18';
       if ($('#goalAmount')) $('#goalAmount').value = '';
@@ -461,6 +484,9 @@
     try {
       if ($('#startDate')) $('#startDate').value = plan.startDate || today();
       if ($('#freq')) $('#freq').value = plan.frequency;
+      if ($('#scheduleMode')) $('#scheduleMode').value = plan.scheduleMode;
+      $$('#specificDayControls input[data-plan-day]').forEach((control) => { control.checked = plan.days.includes(control.dataset.planDay); });
+      global.BASELINE_syncCalisthenicsSchedule?.();
       if ($('#lengthMode')) $('#lengthMode').value = plan.lengthMode;
       if ($('#sessions')) $('#sessions').value = String(plan.sessions);
       const list = $('#exerciseList');
@@ -771,7 +797,8 @@
     const cached = readStorage(userCacheKey(), null);
     const plan = normalisePlan(cached?.planJson);
     if (!plan) return false;
-    current = { planId: cached.planId || 0, planJson: plan, sessions: Array.isArray(cached.sessions) ? cached.sessions.slice(0, plan.sessions) : sessionRows(plan), progress: cached.progress || calculateProgress(Array.isArray(cached.sessions) ? cached.sessions : sessionRows(plan), plan) };
+    const cachedRows = rollForwardPendingSessions(Array.isArray(cached.sessions) ? cached.sessions.slice(0, plan.sessions) : sessionRows(plan), plan);
+    current = { planId: cached.planId || 0, planJson: plan, sessions: cachedRows, progress: calculateProgress(cachedRows, plan) };
     generatorMode = 'view'; syncPlanShells(); return true;
   }
   async function loadPlanFromServer(force = false) {
@@ -792,8 +819,8 @@
       if ($('#myPlanStatus')) $('#myPlanStatus').textContent = response?.error === 'timeout' ? 'Plan loading timed out. Try again.' : '';
       return;
     }
-    const rows = Array.isArray(saved.sessions) && saved.sessions.length ? saved.sessions.slice(0, plan.sessions) : sessionRows(plan);
-    current = { planId: saved.planId || 0, planJson: plan, sessions: rows, progress: saved.progress || calculateProgress(rows, plan) };
+    const rows = rollForwardPendingSessions(Array.isArray(saved.sessions) && saved.sessions.length ? saved.sessions.slice(0, plan.sessions) : sessionRows(plan), plan);
+    current = { planId: saved.planId || 0, planJson: plan, sessions: rows, progress: calculateProgress(rows, plan) };
     cachePlan(current); generatorMode = 'view'; renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE }; syncPlanShells(); renderAchievements();
     if (!dirty && hydratedPlanId !== current.planId) { hydrateGenerator(plan); hydratedPlanId = current.planId; }
   }

@@ -23,6 +23,7 @@
     { value:'daily', label:'Every day' },
     { value:'days', label:'Specific days' },
     { value:'weekly', label:'A number of times each week' },
+    { value:'monthly', label:'A number of times each month' },
     { value:'as-needed', label:'As needed' }
   ]);
   const VIEWS = Object.freeze(['log','calisthenics','cardio','other','sports']);
@@ -106,7 +107,8 @@
     return {
       mode,
       days,
-      timesPerWeek:Math.max(1, Math.min(14, Math.round(Number(source.timesPerWeek) || 1)))
+      timesPerWeek:Math.max(1, Math.min(14, Math.round(Number(source.timesPerWeek) || 1))),
+      timesPerMonth:Math.max(1, Math.min(31, Math.round(Number(source.timesPerMonth) || 1)))
     };
   }
 
@@ -193,6 +195,7 @@
     if (frequency.mode === 'daily') return 'Every day';
     if (frequency.mode === 'days') return frequency.days.length ? frequency.days.join(', ') : 'Specific days not selected';
     if (frequency.mode === 'weekly') return `${frequency.timesPerWeek}× each week`;
+    if (frequency.mode === 'monthly') return `${frequency.timesPerMonth}× each month`;
     return 'As needed';
   }
 
@@ -207,6 +210,20 @@
     ), 0);
   }
 
+  function monthBounds(value) {
+    const date = localDate(value);
+    const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    return { start:isoDate(startDate), end:isoDate(endDate) };
+  }
+
+  function completedCountForMonth(itemId, date) {
+    const bounds = monthBounds(date);
+    return Object.entries(state.logs).reduce((count, [entryDate, entries]) => (
+      entryDate >= bounds.start && entryDate <= bounds.end && entries[itemId]?.completed ? count + 1 : count
+    ), 0);
+  }
+
   function dueStatus(item, date) {
     if (item.frequency.mode === 'daily') return { due:true, detail:'Due today' };
     if (item.frequency.mode === 'days') {
@@ -216,6 +233,10 @@
     if (item.frequency.mode === 'weekly') {
       const remaining = Math.max(0, item.frequency.timesPerWeek - completedCountForWeek(item.id, date));
       return { due:remaining > 0, detail:remaining > 0 ? `${remaining} remaining this week` : 'Weekly target complete' };
+    }
+    if (item.frequency.mode === 'monthly') {
+      const remaining = Math.max(0, item.frequency.timesPerMonth - completedCountForMonth(item.id, date));
+      return { due:remaining > 0, detail:remaining > 0 ? `${remaining} remaining this month` : 'Monthly target complete' };
     }
     return { due:true, detail:'Optional / as needed' };
   }
@@ -514,6 +535,11 @@
     return `<label class="field-stack"><span>Times each week</span><input type="number" min="1" max="14" value="${item.frequency.timesPerWeek}" data-activity-id="${escapeHtml(item.id)}" data-activity-field="timesPerWeek"></label>`;
   }
 
+  function monthlyControl(item) {
+    if (item.frequency.mode !== 'monthly') return '';
+    return `<label class="field-stack"><span>Times each month</span><input type="number" min="1" max="31" value="${item.frequency.timesPerMonth}" data-activity-id="${escapeHtml(item.id)}" data-activity-field="timesPerMonth"></label>`;
+  }
+
   function renderActivityList(section) {
     const target = $(`[data-activity-list="${section}"]`);
     if (!target) return;
@@ -533,6 +559,7 @@
           <label class="field-stack"><span>Time of day</span><select data-activity-id="${escapeHtml(item.id)}" data-activity-field="timeOfDay">${selectOptions(TIMES, item.timeOfDay)}</select></label>
           <label class="field-stack"><span>How often</span><select data-activity-id="${escapeHtml(item.id)}" data-activity-field="frequencyMode">${selectOptions(FREQUENCIES, item.frequency.mode)}</select></label>
           ${weeklyControl(item)}
+          ${monthlyControl(item)}
         </div>
         ${dayControls(item)}
         ${metricFields(item, 'plan')}
@@ -692,6 +719,7 @@
     if (field === 'timeOfDay') item.timeOfDay = TIMES.some((entry) => entry.value === control.value) ? control.value : 'anytime';
     if (field === 'frequencyMode') item.frequency.mode = FREQUENCIES.some((entry) => entry.value === control.value) ? control.value : 'weekly';
     if (field === 'timesPerWeek') item.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(control.value) || 1)));
+    if (field === 'timesPerMonth') item.frequency.timesPerMonth = Math.max(1, Math.min(31, Math.round(Number(control.value) || 1)));
     scheduleSave();
   }
 
