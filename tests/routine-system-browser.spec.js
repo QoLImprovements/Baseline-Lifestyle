@@ -87,7 +87,31 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
   });
 
   await page.goto('/baseline-fitness/my-routine', { waitUntil:'domcontentloaded' });
-  await expect(page.locator('[data-fitness-routine-view="summary"]')).toBeVisible();
+  const summaryTab = page.locator('[data-fitness-routine-view="summary"]');
+  await summaryTab.waitFor({ state:'attached' });
+  const ancestry = await summaryTab.evaluate((element) => {
+    const rows = [];
+    let current = element;
+    while (current && current.nodeType === Node.ELEMENT_NODE) {
+      const style = getComputedStyle(current);
+      const rect = current.getBoundingClientRect();
+      rows.push({
+        tag:current.tagName,
+        id:current.id || '',
+        classes:current.className || '',
+        hidden:Boolean(current.hidden),
+        display:style.display,
+        visibility:style.visibility,
+        opacity:style.opacity,
+        width:Math.round(rect.width),
+        height:Math.round(rect.height)
+      });
+      current = current.parentElement;
+    }
+    return rows;
+  });
+  console.log(`FITNESS_ROUTINE_VISIBILITY=${JSON.stringify(ancestry)}`);
+  await expect(summaryTab).toBeVisible();
   const tabLabels = await page.locator('.fitness-routine-subtab').allTextContents();
   expect(tabLabels.slice(0, 3)).toEqual(['Routine Log', 'Exercise Summary', 'Calisthenics']);
 
