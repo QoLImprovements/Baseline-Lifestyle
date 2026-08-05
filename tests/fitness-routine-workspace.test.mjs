@@ -12,6 +12,7 @@ const coherent = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness
 const cssEntry = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace.css', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
+const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-system.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../systems/baseline-fitness/api/schema.php', import.meta.url), 'utf8');
@@ -26,8 +27,7 @@ test('Fitness main navigation remains My Routine with refresh-safe routing', () 
 test('Exercise Summary is inserted directly between Routine Log and Calisthenics', () => {
   assert.match(coherent, /textContent = 'Exercise Summary'/);
   assert.match(coherent, /logButton\?\.insertAdjacentElement\('afterend', button\)/);
-  assert.match(coherent, /data\.fitnessRoutinePanel = 'summary'|dataset\.fitnessRoutinePanel = 'summary'/);
-  assert.match(coherent, /data-fitness-routine-panel=\\?"summary/);
+  assert.match(coherent, /panel\.dataset\.fitnessRoutinePanel = 'summary'/);
   assert.match(coherent, /activateSummary/);
 });
 
@@ -70,7 +70,7 @@ test('Fitness Week calendar uses one full-width row for every day', () => {
   assert.match(coherent, /makeWeekRows/);
   assert.match(coherent, /UI\.weekRow/);
   assert.match(coherent, /bl-routine-week-list/);
-  assert.match(shared, /grid-template-columns:minmax\(185px/);
+  assert.match(sharedCss, /grid-template-columns:minmax\(185px/);
 });
 
 test('activity, log and generated session details are collapsed and expandable', () => {
@@ -80,7 +80,7 @@ test('activity, log and generated session details are collapsed and expandable',
   assert.match(coherent, /Show session details/);
   assert.match(coherent, /Session details/);
   assert.match(coherent, /Edit details/);
-  assert.match(coherent, /data\.sitewideDisclosure = 'true'/);
+  assert.match(coherent, /card\.dataset\.sitewideDisclosure = 'true'/);
 });
 
 test('every current-plan exercise receives a comprehensive structured summary', () => {
@@ -118,4 +118,5 @@ test('Fitness entry point loads catalogue, shared system, workspace and coherenc
   assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && coherentIndex > workspaceIndex);
   assert.match(cssEntry, /baseline-routine-system\.css/);
   assert.match(cssEntry, /fitness-routine-sitewide-v3\.css/);
+  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1/);
 });
