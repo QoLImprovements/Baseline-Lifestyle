@@ -4,6 +4,8 @@
   if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__) return;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__ = true;
 
+  const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
+
   function navigationPathname() {
     try {
       const entry = global.performance?.getEntriesByType?.('navigation')?.[0];
@@ -16,11 +18,13 @@
   const requestedInitialTab = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
   const OPEN_MY_ROUTINE = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(requestedPath)
     || requestedInitialTab === 'my-plan';
+  const LEGACY_CALISTHENICS_ROUTE = /\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(requestedPath);
 
   let routeInterval = 0;
   let routeAttempts = 0;
   let visiblePasses = 0;
   let routeUrlCorrected = false;
+  let initialSubviewApplied = false;
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -40,6 +44,22 @@
       const suffix = String(global.location?.search || '') + String(global.location?.hash || '');
       global.history.replaceState(global.history.state, '', `/baseline-fitness/my-routine${suffix}`);
     } catch (_error) {}
+  }
+
+  function selectedRoutineSubview() {
+    try {
+      const remembered = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
+      if (['log','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
+    } catch (_error) {}
+    return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
+  }
+
+  function applyInitialRoutineSubview() {
+    if (initialSubviewApplied) return;
+    const routine = global.BASELINE_fitnessRoutine;
+    if (!routine || typeof routine.selectView !== 'function') return;
+    initialSubviewApplied = true;
+    routine.selectView(selectedRoutineSubview());
   }
 
   function selectMyRoutine() {
@@ -64,7 +84,10 @@
     if (!section) return false;
     const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
     const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
-    if (visible) correctRouteUrl();
+    if (visible) {
+      correctRouteUrl();
+      applyInitialRoutineSubview();
+    }
     return visible;
   }
 
@@ -98,6 +121,7 @@
     .then(() => load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_3'))
     .then(() => {
+      applyInitialRoutineSubview();
       stabiliseMyRoutineRoute();
       return load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260805_1');
     })
