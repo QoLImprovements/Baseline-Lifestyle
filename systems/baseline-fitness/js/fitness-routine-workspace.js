@@ -4,14 +4,21 @@
   if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__) return;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__ = true;
 
-  const requestedPath = String(global.location?.pathname || '');
+  function navigationPathname() {
+    try {
+      const entry = global.performance?.getEntriesByType?.('navigation')?.[0];
+      if (entry?.name) return new URL(entry.name, global.location?.href || document.baseURI).pathname;
+    } catch (_error) {}
+    return '';
+  }
+
+  const requestedPath = navigationPathname() || String(global.location?.pathname || '');
   const requestedInitialTab = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
   const OPEN_MY_ROUTINE = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(requestedPath)
     || requestedInitialTab === 'my-plan';
 
   let routeInterval = 0;
   let routeAttempts = 0;
-  let visiblePasses = 0;
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -53,12 +60,10 @@
     selectMyRoutine();
     if (routeInterval) return;
     routeAttempts = 0;
-    visiblePasses = 0;
     routeInterval = global.setInterval(() => {
       routeAttempts += 1;
-      const visible = selectMyRoutine();
-      visiblePasses = visible ? visiblePasses + 1 : 0;
-      if (visiblePasses >= 5 || routeAttempts >= 50) {
+      selectMyRoutine();
+      if (routeAttempts >= 50) {
         global.clearInterval(routeInterval);
         routeInterval = 0;
       }
