@@ -4,7 +4,7 @@ function fulfillJson(route, payload, status = 200) {
   return route.fulfill({ status, contentType:'application/json', body:JSON.stringify(payload) });
 }
 
-test('Fitness hydrates an existing two-session plan on the canonical My Routine route', async ({ page }) => {
+test('Fitness hydrates an existing two-session plan in the remembered Calisthenics view', async ({ page }) => {
   const pageErrors = [];
   const failedRequests = [];
   page.on('pageerror', (error) => pageErrors.push(error.message));
@@ -21,6 +21,10 @@ test('Fitness hydrates an existing two-session plan on the canonical My Routine 
     timerStartDelay:5
   };
 
+  await page.addInitScript(() => {
+    sessionStorage.setItem('__bl_fitness_routine_view_v2__', 'calisthenics');
+  });
+
   await page.route('**/*', async (route) => {
     const request = route.request();
     const pathname = new URL(request.url()).pathname;
@@ -36,35 +40,9 @@ test('Fitness hydrates an existing two-session plan on the canonical My Routine 
   });
 
   await page.goto('/baseline-fitness/my-routine', { waitUntil:'domcontentloaded' });
-  await page.waitForTimeout(2500);
-
-  const state = await page.evaluate(() => {
-    const section = document.querySelector('#my-plan');
-    const saved = document.querySelector('#myPlanSavedWrap');
-    const generator = document.querySelector('#myPlanGeneratorWrap');
-    return {
-      href:location.href,
-      initialTab:document.documentElement.getAttribute('data-initial-fitness-tab'),
-      sectionExists:Boolean(section),
-      sectionClass:section?.className || '',
-      sectionHidden:Boolean(section?.hidden),
-      sectionHtml:(section?.innerHTML || '').slice(0, 1200),
-      savedExists:Boolean(saved),
-      savedHidden:Boolean(saved?.hidden),
-      generatorExists:Boolean(generator),
-      generatorHidden:Boolean(generator?.hidden),
-      loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V4__),
-      workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
-      coherent:Boolean(window.__BASELINE_FITNESS_ROUTINE_SITEWIDE_V3__),
-      app:Boolean(window.__BASELINE_FITNESS_APP__),
-      debug:Boolean(window.BASELINE_FITNESS_DEBUG),
-      scripts:Array.from(document.scripts).map((script) => script.src).filter(Boolean).filter((src) => src.includes('fitness'))
-    };
-  });
-
-  console.log(`FITNESS_SAVED_RELOAD_STATE=${JSON.stringify({ state, pageErrors, failedRequests })}`);
-  expect(pageErrors).toEqual([]);
-  expect(failedRequests).toEqual([]);
+  await expect(page.locator('[data-fitness-routine-view="calisthenics"]')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
+  expect(pageErrors).toEqual([]);
+  expect(failedRequests).toEqual([]);
 });
