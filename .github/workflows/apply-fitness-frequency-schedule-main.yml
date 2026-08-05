@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - .github/workflows/apply-fitness-frequency-schedule-main.yml
+  workflow_dispatch:
 
 permissions:
   contents: write
