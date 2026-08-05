@@ -1,0 +1,172 @@
+/* Baseline Natural Skincare — palette adapter for the sitewide My Routine template. */
+#routine.bl-routine-root{
+  --bl-routine-surface:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));
+  --bl-routine-surface-strong:linear-gradient(180deg,var(--skin-wash),var(--skin-peach));
+  --bl-routine-border:var(--skin-peach);
+  --bl-routine-text:var(--ink);
+  --bl-routine-muted:var(--muted);
+  --bl-routine-accent:var(--skin-deep);
+  --bl-routine-focus:rgba(184,100,77,.24);
+  --bl-routine-menu:var(--skin-cream);
+  --bl-routine-menu-text:var(--ink);
+}
+#routine .routine-subtab{font-size:16px;padding:10px 14px}
+#routine .routine-panel[hidden]{display:none!important}
+#routine .routine-card{overflow:visible!important}
+
+/* No invisible layer may sit over routine controls. */
+#routine .routine-log-group,
+#routine .routine-log-item,
+#routine .routine-plan-group,
+#routine .routine-item,
+#routine .routine-calendar-card,
+#routine .routine-group-manager{
+  position:relative;
+  isolation:isolate;
+  pointer-events:auto!important;
+}
+#routine .routine-log-item::before,
+#routine .routine-log-item::after,
+#routine .routine-plan-group::before,
+#routine .routine-plan-group::after{pointer-events:none!important}
+#routine input,
+#routine textarea,
+#routine select,
+#routine button,
+#routine label{pointer-events:auto!important}
+#routine input[type="checkbox"],
+#routine input[type="radio"]{width:20px!important;height:20px!important;min-width:20px!important;margin:0;accent-color:var(--skin-deep)}
+#routine .routine-log-note{width:100%;min-height:50px;z-index:4!important}
+#routine .routine-log-check{z-index:4!important}
+#routine select,#routine select option,#routine select optgroup{background:var(--skin-cream)!important;color:var(--ink)!important}
+
+/* Fully opaque foreground action menu. */
+#routine .routine-add-row{position:relative;z-index:300;isolation:isolate;overflow:visible}
+#routine .routine-action-combobox{position:relative;z-index:301;overflow:visible}
+#routine .routine-action-menu{
+  position:absolute!important;
+  z-index:10000!important;
+  background:var(--skin-cream)!important;
+  color:var(--ink)!important;
+  opacity:1!important;
+  box-shadow:0 26px 60px -18px rgba(91,44,31,.72)!important;
+}
+#routine .routine-action-group,
+#routine .routine-action-group-label,
+#routine .routine-action-option,
+#routine .routine-action-no-results{background:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
+#routine .routine-action-group-label{background:var(--skin-milk)!important;color:var(--accent-2)!important}
+#routine .routine-action-option:hover,
+#routine .routine-action-option:focus,
+#routine .routine-action-option.is-keyboard-active,
+#routine .routine-action-option[aria-selected="true"]{background:var(--skin-wash)!important}
+
+/* Shared group and expandable step structure. */
+#routine .routine-group-manager{
+  display:grid;
+  gap:13px;
+  margin:0 0 18px;
+  padding:16px;
+  border:1px solid var(--skin-peach);
+  border-radius:18px;
+  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));
+}
+#routine .routine-group-manager-head h3{margin:0 0 5px;font-size:25px}
+#routine .routine-group-manager-head .note{margin:0}
+#routine .routine-group-create{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+#routine .routine-group-create button,
+#routine .routine-group-collapse,
+#routine [data-plan-group-collapse],
+#routine .routine-group-remove,
+#routine .routine-group-remove-confirm button,
+#routine .routine-calendar-nav button,
+#routine .routine-calendar-view{
+  border:1px solid var(--skin-peach);
+  border-radius:999px;
+  background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));
+  color:var(--ink);
+  font:inherit;
+  font-weight:850;
+  padding:8px 12px;
+  cursor:pointer;
+}
+#routine .routine-calendar-view[aria-selected="true"]{background:linear-gradient(180deg,var(--skin-peach),var(--skin-deep));color:#fff8f4}
+#routine .routine-group-list{display:grid;gap:10px}
+#routine .routine-group-row{display:grid;gap:12px;padding:14px}
+#routine .routine-group-row-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center}
+#routine .routine-group-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-top:12px;border-top:1px solid var(--skin-peach)}
+#routine .routine-group-settings[hidden]{display:none!important}
+#routine .routine-group-toggle{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-milk);font-weight:800}
+#routine .routine-group-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border:1px solid var(--skin-peach);border-radius:13px}
+#routine .routine-group-days label{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:var(--skin-cream)}
+#routine .routine-plan-group{display:grid;gap:0;margin-bottom:16px;border:1px solid var(--skin-peach);border-radius:20px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));overflow:visible}
+#routine .routine-plan-group-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 16px;background:linear-gradient(90deg,var(--skin-wash),var(--skin-peach),var(--skin-wash));border-radius:19px 19px 0 0}
+#routine .routine-plan-group-head h3,#routine .routine-plan-group-head p{margin:0}
+#routine .routine-plan-group-body{display:grid;gap:14px;padding:14px}
+#routine .routine-plan-group-body[hidden]{display:none!important}
+#routine .routine-item{display:grid;gap:12px;padding:15px 16px}
+#routine .routine-item-head{margin:0}
+#routine .routine-item .bl-routine-preview-chips{margin:0 0 0 40px}
+#routine .routine-product-preview-button{
+  border:1px solid var(--skin-peach);border-radius:999px;background:var(--skin-cream);color:var(--ink);
+  font:inherit;font-size:14px;font-weight:850;min-height:32px;padding:5px 9px;cursor:pointer
+}
+#routine .routine-item>.bl-routine-details{margin-top:2px}
+#routine .routine-product-field{grid-column:1/-1;padding:14px;border:2px solid var(--skin-peach);border-radius:16px;background:var(--skin-cream)}
+
+/* Log rows use the same entry structure as Fitness and remain directly editable. */
+#routine .routine-log-group{display:grid;gap:10px;margin-top:18px;padding:14px;border:1px solid var(--skin-peach);border-radius:18px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))}
+#routine .routine-log-group h3{margin:0}
+#routine .routine-log-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,.72fr);
+  gap:14px;
+  align-items:center;
+  padding:13px;
+  border:1px solid var(--skin-peach);
+  border-radius:16px;
+  background:var(--skin-cream);
+}
+#routine .routine-log-item.complete{background:var(--skin-wash);border-color:var(--skin-deep)}
+#routine .routine-log-check{display:flex;align-items:flex-start;gap:11px;cursor:pointer}
+#routine .routine-log-check span{display:grid;gap:4px}
+#routine .routine-log-check strong{font-size:19px}
+#routine .routine-log-check small{color:var(--muted);line-height:1.45}
+
+/* Comprehensive summaries now use the same two-part template as Fitness. */
+#routine .routine-summary-group{display:grid;gap:13px}
+#routine .routine-summary-group+.routine-summary-group{margin-top:20px}
+#routine .routine-summary-group-head h3{margin:0;font-size:24px}
+#routine .routine-summary-item{border-left:0!important}
+#routine .routine-summary-title{display:flex;align-items:center;gap:9px}
+#routine .routine-summary-title span{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:var(--skin-peach);font-weight:900}
+#routine .bl-routine-summary-section{background:var(--skin-cream)}
+#routine .routine-summary-notes{margin-top:12px!important;padding:11px 13px;border-left:4px solid var(--skin-deep);background:var(--skin-milk)}
+
+/* Calendar: Month is a grid; Week is seven full-width rows. */
+#routine .routine-calendar-card{margin-top:16px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))!important}
+#routine .routine-calendar-weekdays,
+#routine .routine-calendar-grid.month-view{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
+#routine .routine-calendar-weekdays{margin-bottom:7px}
+#routine .routine-calendar-weekdays span{text-align:center;font-weight:850;color:var(--muted)}
+#routine .routine-calendar-day{min-height:68px;border:1px solid var(--skin-peach);border-radius:14px;background:var(--skin-cream);color:var(--ink);padding:9px;font:inherit;text-align:left;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+#routine .routine-calendar-day:hover,#routine .routine-calendar-day:focus-visible{border-color:var(--skin-deep);background:var(--skin-milk);outline:none}
+#routine .routine-calendar-day.has-routine{background:var(--skin-wash);border-color:var(--skin-deep)}
+#routine .routine-calendar-day.selected{box-shadow:0 0 0 3px rgba(184,100,77,.26) inset;border-color:var(--skin-deep)}
+#routine .routine-calendar-day.outside-month{opacity:.48}
+#routine .routine-calendar-count{display:grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:var(--skin-deep);color:#fff;font-size:12px;font-weight:900}
+#routine .bl-routine-day-row{background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))}
+#routine .bl-routine-day-row.has-completion{background:linear-gradient(180deg,var(--skin-wash),var(--skin-peach))}
+#routine .bl-routine-day-details>span{background:var(--skin-cream)}
+
+@media(max-width:820px){
+  #routine .routine-group-settings{grid-template-columns:1fr}
+  #routine .routine-group-row-head{grid-template-columns:auto minmax(0,1fr) auto}
+  #routine .routine-log-item{grid-template-columns:1fr}
+  #routine .routine-item .bl-routine-preview-chips{margin-left:0}
+}
+@media(max-width:560px){
+  #routine .routine-group-create{grid-template-columns:1fr}
+  #routine .routine-calendar-weekdays,#routine .routine-calendar-grid.month-view{gap:4px}
+  #routine .routine-calendar-day{min-height:49px;padding:7px;border-radius:11px}
+}
