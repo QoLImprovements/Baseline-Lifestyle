@@ -1,0 +1,136 @@
+/* Baseline Natural Skincare — restore established controls and reliable interaction. */
+#routine .routine-add-row,
+#routine .routine-group-manager,
+#routine .routine-plan-group,
+#routine .routine-item,
+#routine .routine-card{
+  overflow:visible!important;
+}
+
+/* Searchable action picker must be above every routine card and completely opaque. */
+#routine .routine-add-row{position:relative!important;z-index:6000!important;isolation:isolate!important}
+#routine .routine-action-combobox{position:relative!important;z-index:6100!important;overflow:visible!important;isolation:isolate!important}
+#routine #routineActionMenu,
+#routine .routine-action-menu{
+  position:absolute!important;
+  z-index:9999!important;
+  background-color:var(--skin-cream)!important;
+  background-image:none!important;
+  color:var(--ink)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  isolation:isolate!important;
+  pointer-events:auto!important;
+  box-shadow:0 24px 50px -20px rgba(92,42,30,.72)!important;
+}
+#routine .routine-action-group,
+#routine .routine-action-group-label,
+#routine .routine-action-option,
+#routine .routine-action-no-results{
+  background-color:var(--skin-cream)!important;
+  background-image:none!important;
+  color:var(--ink)!important;
+  opacity:1!important;
+  filter:none!important;
+  mix-blend-mode:normal!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  pointer-events:auto!important;
+}
+#routine .routine-action-group-label{background-color:var(--skin-wash)!important}
+#routine .routine-action-option:hover,
+#routine .routine-action-option:focus,
+#routine .routine-action-option.is-keyboard-active,
+#routine .routine-action-option[aria-selected="true"]{
+  background-color:var(--skin-peach)!important;
+  outline:none!important;
+}
+#routine #routineItems,
+#routine .routine-group-manager,
+#routine .routine-plan-groups{position:relative;z-index:1}
+
+/* Use established site cards and controls rather than a separate visual system. */
+#routine .routine-group-manager,
+#routine .routine-plan-group,
+#routine .routine-group-editor,
+#routine .routine-item{
+  box-shadow:var(--shadow)!important;
+}
+#routine .routine-group-manager,
+#routine .routine-group-editor,
+#routine .routine-item{
+  background:var(--skin-cream)!important;
+  border:1px solid var(--skin-peach)!important;
+}
+#routine .routine-plan-group{
+  background:var(--skin-milk)!important;
+  border:1px solid var(--skin-peach)!important;
+}
+#routine .routine-plan-group-head{
+  background:var(--skin-wash)!important;
+  border-bottom:1px solid var(--skin-peach)!important;
+}
+#routine .routine-plan-group.collapsed .routine-plan-group-head{border-bottom:0!important}
+
+/* All routine controls stay in the foreground and remain clickable. */
+#routine input,
+#routine select,
+#routine textarea,
+#routine button,
+#routine label{
+  pointer-events:auto!important;
+}
+#routine input[type="checkbox"],
+#routine input[type="radio"]{
+  appearance:auto!important;
+  -webkit-appearance:auto!important;
+  width:20px!important;
+  height:20px!important;
+  min-width:20px!important;
+  opacity:1!important;
+  position:relative!important;
+  z-index:5!important;
+  accent-color:var(--skin-deep);
+}
+#routine select,
+#routine select option,
+#routine select optgroup{
+  background-color:var(--skin-cream)!important;
+  background-image:none!important;
+  color:var(--ink)!important;
+  opacity:1!important;
+}
+#routine .routine-group-toggle,
+#routine .routine-days label,
+#routine .routine-group-days label,
+#routine .routine-log-check{
+  cursor:pointer!important;
+}
+
+/* Group controls follow the page's normal two-column field layout. */
+#routine .routine-group-settings{align-items:start!important}
+#routine .routine-group-toggle{min-height:52px!important;background:var(--skin-milk)!important}
+#routine .routine-step-preview span,
+#routine .routine-product-preview-button{
+  background:var(--skin-milk)!important;
+  border-color:var(--skin-peach)!important;
+  box-shadow:none!important;
+}
+#routine .routine-step-edit-toggle,
+#routine [data-plan-group-collapse],
+#routine .routine-group-collapse,
+#routine .routine-group-create button{
+  background:var(--skin-wash)!important;
+  border:1px solid var(--skin-peach)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+#routine .routine-step-edit-toggle:hover,
+#routine [data-plan-group-collapse]:hover,
+#routine .routine-group-collapse:hover,
+#routine .routine-group-create button:hover{
+  background:var(--skin-peach)!important;
+}
