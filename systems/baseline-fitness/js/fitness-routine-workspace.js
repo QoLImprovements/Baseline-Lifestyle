@@ -19,6 +19,8 @@
 
   let routeInterval = 0;
   let routeAttempts = 0;
+  let visiblePasses = 0;
+  let routeUrlCorrected = false;
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -29,6 +31,15 @@
       script.onerror = reject;
       document.head.appendChild(script);
     });
+  }
+
+  function correctRouteUrl() {
+    if (routeUrlCorrected || !OPEN_MY_ROUTINE) return;
+    routeUrlCorrected = true;
+    try {
+      const suffix = String(global.location?.search || '') + String(global.location?.hash || '');
+      global.history.replaceState(global.history.state, '', `/baseline-fitness/my-routine${suffix}`);
+    } catch (_error) {}
   }
 
   function selectMyRoutine() {
@@ -52,7 +63,14 @@
     if (section?.hidden) section.hidden = false;
     if (!section) return false;
     const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
-    return section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
+    const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
+    if (visible) correctRouteUrl();
+    return visible;
+  }
+
+  function stopRouteStabiliser() {
+    if (routeInterval) global.clearInterval(routeInterval);
+    routeInterval = 0;
   }
 
   function stabiliseMyRoutineRoute() {
@@ -60,13 +78,11 @@
     selectMyRoutine();
     if (routeInterval) return;
     routeAttempts = 0;
+    visiblePasses = 0;
     routeInterval = global.setInterval(() => {
       routeAttempts += 1;
-      selectMyRoutine();
-      if (routeAttempts >= 50) {
-        global.clearInterval(routeInterval);
-        routeInterval = 0;
-      }
+      visiblePasses = selectMyRoutine() ? visiblePasses + 1 : 0;
+      if (visiblePasses >= 5 || routeAttempts >= 50) stopRouteStabiliser();
     }, 100);
   }
 
@@ -75,6 +91,7 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('load', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
+    global.addEventListener('pagehide', stopRouteStabiliser, { once:true });
   }
 
   load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3')
