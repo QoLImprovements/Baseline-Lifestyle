@@ -5,70 +5,79 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const html = readFileSync(resolve(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
-const enhancementLoader = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
-const enhancementCore = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements-core.js'), 'utf8');
-const enhancement = `${enhancementLoader}\n${enhancementCore}`;
+const loader = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'), 'utf8');
+const sitewide = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js'), 'utf8');
+const shared = readFileSync(resolve(root, 'sitewide/js/baseline-routine-system.js'), 'utf8');
 const catalogue = readFileSync(resolve(root, 'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'), 'utf8');
-const css = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-enhancements.css'), 'utf8');
+const cssEntry = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-enhancements.css'), 'utf8');
+const css = readFileSync(resolve(root, 'systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css'), 'utf8');
 const schema = readFileSync(resolve(root, 'systems/baseline-natural-skincare/api/schema.php'), 'utf8');
 const endpoint = readFileSync(resolve(root, 'systems/baseline-natural-skincare/api/routine_groups.php'), 'utf8');
 
-test('routine enhancement assets load after the model and before the interface', () => {
-  const modelIndex = html.indexOf('skincare-routine-model.js');
-  const comprehensiveIndex = html.indexOf('skincare-routine-comprehensive-benefits.js');
-  const catalogueIndex = html.indexOf('skincare-routine-catalogue-v2.js');
-  const productIndex = html.indexOf('skincare-product-library.js');
-  const enhancementIndex = html.indexOf('skincare-routine-enhancements.js');
-  const interfaceIndex = html.indexOf('skincare-routine.js');
-  assert.ok(modelIndex >= 0);
-  assert.ok(comprehensiveIndex > modelIndex);
-  assert.ok(catalogueIndex > comprehensiveIndex);
-  assert.ok(productIndex > catalogueIndex);
-  assert.ok(enhancementIndex > productIndex);
-  assert.ok(interfaceIndex > enhancementIndex);
-  assert.match(html, /skincare-routine-enhancements\.css\?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2/);
-  assert.match(html, /skincare-routine-workspace-v2\.css\?v=SKINCARE_ROUTINE_WORKSPACE_V2_20260804_1/);
-  assert.match(enhancementLoader, /skincare-routine-enhancements-core\.js/);
+test('Skincare loader replaces the competing observer stack with one controlled renderer', () => {
+  assert.match(loader, /baseline-routine-system\.js/);
+  assert.match(loader, /skincare-routine-sitewide-v4\.js/);
+  assert.doesNotMatch(loader, /skincare-routine-enhancements-core\.js/);
+  assert.doesNotMatch(loader, /skincare-routine-group-ui-v3\.js/);
+  assert.doesNotMatch(loader, /skincare-product-accessibility-v3\.js/);
+  assert.match(sitewide, /UI\.observe\(root, patch\)/);
+  assert.doesNotMatch(sitewide, /new MutationObserver/);
+  assert.match(shared, /observer\.disconnect\(\)/);
+  assert.match(shared, /observer\.observe\(root/);
 });
 
-test('Routine Summary replaces the old My Routine summary heading', () => {
+test('Routine Summary remains the coherent comprehensive summary tab', () => {
   assert.match(html, /data-routine-view="summary"[^>]*>Routine Summary<\/button>/);
-  assert.match(html, /<h2>Routine Summary<\/h2>/);
-  assert.doesNotMatch(html, /<h2>My Routine<\/h2>\s*<h3>Routine summary<\/h3>/);
+  assert.match(sitewide, /Benefits and practical role/);
+  assert.match(sitewide, /Routine details/);
+  assert.match(sitewide, /MODEL\.benefitText\(item, 'comprehensive'\)/);
+  assert.match(sitewide, /bl-routine-summary-grid/);
 });
 
-test('summary benefits are forced to comprehensive mode', () => {
-  assert.match(enhancement, /MODEL\.benefitText\(item, 'comprehensive'\)/);
-  assert.match(enhancement, /routine-summary-item-comprehensive/);
+test('Skincare log controls remain native and connected to the original data handlers', () => {
+  assert.match(sitewide, /data-log-complete/);
+  assert.match(sitewide, /data-log-note/);
+  assert.match(css, /pointer-events:auto!important/);
+  assert.match(css, /input\[type="checkbox"\]/);
+  assert.match(css, /routine-log-note/);
+  assert.match(css, /z-index:4!important/);
 });
 
-test('Routine Log receives a full-width monthly completion calendar', () => {
-  assert.match(enhancement, /Monthly Routine Calendar/);
-  assert.match(enhancement, /routine-calendar-card/);
-  assert.match(enhancement, /completedItemsForDate/);
-  assert.match(css, /\.routine-calendar-grid/);
-  assert.match(css, /\.routine-calendar-day\.has-routine/);
+test('Skincare action menu is opaque, foreground and keyboard-compatible', () => {
+  assert.match(css, /z-index:10000!important/);
+  assert.match(css, /background:var\(--skin-cream\)!important/);
+  assert.match(css, /opacity:1!important/);
+  assert.match(cssEntry, /baseline-routine-system\.css/);
 });
 
-test('visibility uses the existing compact themed labelled control', () => {
-  assert.match(html, /Routine Visibility/);
-  assert.match(css, /\.routine-visibility-control/);
-  assert.match(css, /width:82px!important/);
+test('Skincare calendar includes Week and Month with full-width day rows', () => {
+  assert.match(sitewide, /data-skincare-calendar-view="week"/);
+  assert.match(sitewide, /data-skincare-calendar-view="month"/);
+  assert.match(sitewide, /UI\.weekRow/);
+  assert.match(sitewide, /bl-routine-week-list/);
+  assert.match(sitewide, /UI\.monthDates/);
+  assert.match(shared, /\.bl-routine-week-list/);
 });
 
-test('users can create, rename, remove, collapse and assign routine groups', () => {
-  assert.match(enhancement, /Create group/);
-  assert.match(enhancement, /function createGroup\(/);
-  assert.match(enhancement, /function updateGroup\(/);
-  assert.match(enhancement, /field === 'title'/);
-  assert.match(enhancement, /function removeGroup\(/);
-  assert.match(enhancement, /data-group-collapse/);
-  assert.match(enhancement, /data-routine-group-select/);
+test('routine plan steps and groups are collapsed and expandable', () => {
+  assert.match(sitewide, /data-skincare-step-toggle/);
+  assert.match(sitewide, /Edit step/);
+  assert.match(sitewide, /Close step/);
+  assert.match(sitewide, /data-plan-group-collapse/);
+  assert.match(sitewide, /routine-plan-group-body/);
+});
+
+test('users can create, rename, remove and assign routine groups', () => {
+  assert.match(sitewide, /function createGroup\(/);
+  assert.match(sitewide, /function updateGroup\(/);
+  assert.match(sitewide, /field === 'title'/);
+  assert.match(sitewide, /function removeGroup\(/);
+  assert.match(sitewide, /data-routine-group-select/);
   assert.match(endpoint, /skincare_routine_groups/);
   assert.match(schema, /CREATE TABLE IF NOT EXISTS skincare_routine_groups/);
 });
 
-test('Oil-Based Cleansing Shower is available as a clear UK-facing routine label', () => {
+test('Oil-Based Cleansing Shower remains available with UK terminology', () => {
   assert.match(catalogue, /Oil-Based Cleansing Shower/);
   assert.match(catalogue, /without relying on conventional body wash or shampoo/);
 });
