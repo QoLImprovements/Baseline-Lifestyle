@@ -5,6 +5,7 @@
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
+  const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
 
   function navigationPathname() {
     try {
@@ -23,7 +24,6 @@
   let routeInterval = 0;
   let routeAttempts = 0;
   let visiblePasses = 0;
-  let routeUrlCorrected = false;
   let initialSubviewApplied = false;
 
   function load(src) {
@@ -38,11 +38,12 @@
   }
 
   function correctRouteUrl() {
-    if (routeUrlCorrected || !OPEN_MY_ROUTINE) return;
-    routeUrlCorrected = true;
+    if (!OPEN_MY_ROUTINE) return;
     try {
-      const suffix = String(global.location?.search || '') + String(global.location?.hash || '');
-      global.history.replaceState(global.history.state, '', `/baseline-fitness/my-routine${suffix}`);
+      const current = new URL(global.location.href);
+      if (current.pathname === CANONICAL_ROUTINE_PATH) return;
+      current.pathname = CANONICAL_ROUTINE_PATH;
+      global.history.replaceState(global.history.state, '', current.pathname + current.search + current.hash);
     } catch (_error) {}
   }
 
@@ -66,10 +67,9 @@
     if (!OPEN_MY_ROUTINE) return false;
     document.documentElement.setAttribute('data-initial-fitness-tab', 'my-plan');
 
-    if (typeof global.BASELINE_selectTab === 'function') {
-      try { global.BASELINE_selectTab('my-plan', { silentHistory:true }); } catch (_error) {}
-    }
-
+    /* Select the section directly. Calling the general route writer here used
+       the already-clean /my-routine path as a new route base and produced the
+       invalid nested address /my-routine/my-plan. */
     document.querySelectorAll('.tab[data-target]').forEach((button) => {
       const active = button.dataset.target === 'my-plan';
       button.classList.toggle('active', active);
@@ -79,15 +79,13 @@
       section.classList.toggle('active', section.id === 'my-plan');
     });
 
+    correctRouteUrl();
     const section = document.getElementById('my-plan');
     if (section?.hidden) section.hidden = false;
     if (!section) return false;
     const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
     const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
-    if (visible) {
-      correctRouteUrl();
-      applyInitialRoutineSubview();
-    }
+    if (visible) applyInitialRoutineSubview();
     return visible;
   }
 
