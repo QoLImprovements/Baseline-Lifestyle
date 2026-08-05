@@ -1,22 +1,14 @@
-/* Baseline Lifestyle — single-owner sitewide API compatibility.
-   This preserves the shared auth state machine and only repairs local servers
-   that do not apply the root /api rewrite. */
+/* Baseline Lifestyle — single-owner sitewide API and form compatibility. */
 (function(){
   'use strict';
 
-  const BUILD='SITEWIDE_AUTH_SINGLE_OWNER_20260713_5';
+  const BUILD='SITEWIDE_AUTH_AND_FORM_INTERACTIONS_20260805_1';
   const originalFetch=window.fetch.bind(window);
   const sitewideEndpoints=new Set([
     'login.php','me.php','logout.php','auth_providers.php','register.php',
     'forgot_password.php','password_reset.php','favourites.php','binaural.php'
   ]);
 
-  // The live Fitness site previously stored complete server responses under a
-  // version-one cache key. A malformed or very large value is parsed
-  // synchronously when My Plan opens and can exhaust the renderer before the
-  // network request begins. Local previews do not contain that production
-  // storage, which is why the failure did not reproduce there. Remove only the
-  // obsolete Fitness plan-response cache; account/session data is untouched.
   function clearObsoleteFitnessPlanCache(){
     try{
       const body=document.body;
@@ -58,7 +50,44 @@
     return false;
   }
 
+  function ensureFormInteractionAssets(){
+    if(!document.querySelector('link[data-baseline-form-interactions]')){
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='/sitewide/css/baseline-form-interactions.css?v=SITEWIDE_FORM_INTERACTIONS_20260805_1';
+      link.dataset.baselineFormInteractions='true';
+      document.head.appendChild(link);
+    }
+    if(!document.querySelector('script[data-baseline-form-interactions]')){
+      const script=document.createElement('script');
+      script.src='/sitewide/js/baseline-form-interactions.js?v=SITEWIDE_FORM_INTERACTIONS_20260805_1';
+      script.defer=true;
+      script.dataset.baselineFormInteractions='true';
+      document.head.appendChild(script);
+    }
+  }
+
+  function repairAuthForms(root=document){
+    const actions={
+      login:'#bl-auth-login',
+      signup:'#bl-auth-signup',
+      recover:'#bl-auth-recover',
+      reset:'#bl-auth-reset-submit'
+    };
+    root.querySelectorAll?.('#bl-auth-flyout .bl-auth-form[data-auth-view]').forEach(form=>{
+      const button=document.querySelector(actions[form.dataset.authView]||'');
+      if(button)button.type='submit';
+    });
+  }
+
   clearObsoleteFitnessPlanCache();
+  ensureFormInteractionAssets();
+  repairAuthForms();
+  const formObserver=new MutationObserver(records=>{
+    if(records.some(record=>Array.from(record.addedNodes||[]).some(node=>node.nodeType===1)))repairAuthForms();
+  });
+  try{formObserver.observe(document.documentElement,{childList:true,subtree:true});}catch(_error){}
+  window.addEventListener('pagehide',()=>formObserver.disconnect(),{once:true});
 
   window.fetch=async function(input,init){
     const url=requestUrl(input);
