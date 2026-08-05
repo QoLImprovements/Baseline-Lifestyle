@@ -4,6 +4,11 @@
   if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__) return;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__ = true;
 
+  const requestedPath = String(global.location?.pathname || '');
+  const requestedInitialTab = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
+  const OPEN_MY_ROUTINE = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(requestedPath)
+    || requestedInitialTab === 'my-plan';
+
   let routeInterval = 0;
   let routeAttempts = 0;
   let visiblePasses = 0;
@@ -19,14 +24,8 @@
     });
   }
 
-  function shouldOpenMyRoutine() {
-    const pathname = String(global.location?.pathname || '');
-    const initial = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
-    return /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(pathname) || initial === 'my-plan';
-  }
-
   function selectMyRoutine() {
-    if (!shouldOpenMyRoutine()) return false;
+    if (!OPEN_MY_ROUTINE) return false;
     document.documentElement.setAttribute('data-initial-fitness-tab', 'my-plan');
 
     if (typeof global.BASELINE_selectTab === 'function') {
@@ -50,7 +49,7 @@
   }
 
   function stabiliseMyRoutineRoute() {
-    if (!shouldOpenMyRoutine()) return;
+    if (!OPEN_MY_ROUTINE) return;
     selectMyRoutine();
     if (routeInterval) return;
     routeAttempts = 0;
@@ -66,7 +65,8 @@
     }, 100);
   }
 
-  if (shouldOpenMyRoutine()) {
+  if (OPEN_MY_ROUTINE) {
+    selectMyRoutine();
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('load', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
