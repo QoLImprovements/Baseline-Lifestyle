@@ -6,6 +6,7 @@
   if (!base) return;
 
   const additions = [
+    ['other','Yoga','yoga-various','Yoga (Various)','minutes'],
     ['other','Yoga','iyengar-yoga','Iyengar Yoga','minutes'],
     ['other','Yoga','kundalini-yoga','Kundalini Yoga','minutes'],
     ['other','Yoga','aerial-yoga','Aerial Yoga','minutes'],

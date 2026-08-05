@@ -13,7 +13,7 @@ function bl_fitness_routine_text($value, int $maximum): string {
 function bl_fitness_routine_frequency($value): array {
   $source = is_array($value) ? $value : [];
   $mode = strtolower(bl_fitness_routine_text($source['mode'] ?? 'weekly', 24));
-  if(!in_array($mode, ['daily','days','weekly','as-needed'], true)) $mode = 'weekly';
+  if(!in_array($mode, ['daily','days','weekly','monthly','as-needed'], true)) $mode = 'weekly';
   $allowedDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
   $days = [];
   foreach((is_array($source['days'] ?? null) ? $source['days'] : []) as $day){
@@ -24,6 +24,7 @@ function bl_fitness_routine_frequency($value): array {
     'mode'=>$mode,
     'days'=>$days,
     'timesPerWeek'=>max(1, min(14, (int)($source['timesPerWeek'] ?? 1))),
+    'timesPerMonth'=>max(1, min(31, (int)($source['timesPerMonth'] ?? 1))),
   ];
 }
 
