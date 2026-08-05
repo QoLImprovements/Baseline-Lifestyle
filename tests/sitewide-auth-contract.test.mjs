@@ -88,14 +88,18 @@ test('Fitness loads API compatibility after shared auth and before its applicati
   assert.ok(shared > -1 && authority > shared && app > authority);
 });
 
-test('compatibility repairs root and Fitness-relative API routing without a second auth UI', () => {
+test('compatibility repairs API routing, loads shared form interactions and keeps one auth UI', () => {
   const source = read('sitewide/js/baseline-auth-failsafe.js');
-  assert.match(source, /SITEWIDE_AUTH_SINGLE_OWNER_20260713_5/);
+  const interactions = read('sitewide/js/baseline-form-interactions.js');
+  assert.match(source, /SITEWIDE_AUTH_AND_FORM_INTERACTIONS_20260805_1/);
   assert.match(source, /window\.fetch=async/);
   assert.match(source, /\/sitewide\/api\//);
   assert.match(source, /baseline-fitness/);
   assert.match(source, /response\.status>=500/);
-  assert.match(source, /sitewideEndpoints/);
+  assert.match(source, /baseline-form-interactions\.js/);
+  assert.match(source, /button\.type='submit'/);
+  assert.match(interactions, /#bl-auth-flyout \.bl-auth-form:not\(\[hidden\]\) input/);
+  assert.match(interactions, /event\.key === 'Enter'/);
   assert.doesNotMatch(source, /BASELINE_auth\.login/);
   assert.doesNotMatch(source, /createElement\('div'\)/);
   assert.doesNotMatch(source, /bl-auth-failsafe-form/);

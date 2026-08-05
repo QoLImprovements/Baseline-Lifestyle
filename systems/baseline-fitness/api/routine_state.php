@@ -27,11 +27,33 @@ function bl_fitness_routine_frequency($value): array {
   ];
 }
 
+function bl_fitness_metric_values($value): array {
+  if(!is_array($value)) return [];
+  $output = [];
+  foreach(array_slice($value, 0, 30, true) as $key=>$raw){
+    $name = bl_fitness_routine_text($key, 60);
+    if($name === '' || preg_match('/^[A-Za-z][A-Za-z0-9_-]{0,59}$/', $name) !== 1) continue;
+    if(is_int($raw) || is_float($raw)){
+      $output[$name] = max(0.0, min(1000000.0, (float)$raw));
+      continue;
+    }
+    if(is_bool($raw)){
+      $output[$name] = $raw;
+      continue;
+    }
+    if(is_string($raw)){
+      $text = bl_fitness_routine_text($raw, 120);
+      if($text !== '') $output[$name] = $text;
+    }
+  }
+  return $output;
+}
+
 function bl_fitness_routine_activities($value): array {
   if(!is_array($value)) return [];
   $items = [];
   $seen = [];
-  foreach(array_slice($value, 0, 150) as $index=>$raw){
+  foreach(array_slice($value, 0, 200) as $index=>$raw){
     if(!is_array($raw)) continue;
     $id = bl_fitness_routine_text($raw['id'] ?? ('activity-' . ($index + 1)), 80);
     if($id === '') $id = 'activity-' . ($index + 1);
@@ -51,9 +73,10 @@ function bl_fitness_routine_activities($value): array {
       'section'=>$section,
       'timeOfDay'=>$time,
       'frequency'=>bl_fitness_routine_frequency($raw['frequency'] ?? []),
+      'targetMetrics'=>bl_fitness_metric_values($raw['targetMetrics'] ?? []),
       'target'=>$target,
       'measure'=>bl_fitness_routine_text($raw['measure'] ?? 'minutes', 24),
-      'notes'=>bl_fitness_routine_text($raw['notes'] ?? '', 800),
+      'notes'=>bl_fitness_routine_text($raw['notes'] ?? '', 1200),
     ];
   }
   return $items;
@@ -63,13 +86,13 @@ function bl_fitness_routine_logs($value): array {
   if(!is_array($value)) return [];
   $dates = array_keys($value);
   sort($dates, SORT_STRING);
-  $dates = array_slice($dates, -730);
+  $dates = array_slice($dates, -1095);
   $logs = [];
   foreach($dates as $date){
     if(preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$date) !== 1) continue;
     $source = is_array($value[$date] ?? null) ? $value[$date] : [];
     $entries = [];
-    foreach(array_slice($source, 0, 200, true) as $activityId=>$raw){
+    foreach(array_slice($source, 0, 250, true) as $activityId=>$raw){
       if(!is_array($raw)) continue;
       $key = bl_fitness_routine_text($activityId, 100);
       if($key === '') continue;
@@ -77,7 +100,8 @@ function bl_fitness_routine_logs($value): array {
       if($completedAt !== '' && strtotime($completedAt) === false) $completedAt = '';
       $entries[$key] = [
         'completed'=>!empty($raw['completed']),
-        'note'=>bl_fitness_routine_text($raw['note'] ?? '', 500),
+        'note'=>bl_fitness_routine_text($raw['note'] ?? '', 800),
+        'metrics'=>bl_fitness_metric_values($raw['metrics'] ?? []),
         'actual'=>max(0.0, min(100000.0, (float)($raw['actual'] ?? 0))),
         'completedAt'=>$completedAt,
       ];
