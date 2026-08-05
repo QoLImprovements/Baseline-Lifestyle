@@ -67,9 +67,16 @@
     if (!OPEN_MY_ROUTINE) return false;
     document.documentElement.setAttribute('data-initial-fitness-tab', 'my-plan');
 
-    /* Select the section directly. Calling the general route writer here used
-       the already-clean /my-routine path as a new route base and produced the
-       invalid nested address /my-routine/my-plan. */
+    /* Keep the Fitness application's private activeTopTab in step with the
+       visible section. Silent history prevents the old /my-plan route writer
+       from appending another segment to the canonical /my-routine address. */
+    const controllerReady = typeof global.BASELINE_selectTab === 'function';
+    if (controllerReady) {
+      try { global.BASELINE_selectTab('my-plan', { silentHistory:true }); } catch (_error) {}
+    }
+
+    /* Direct selection remains as a first-paint fallback before the Fitness
+       application has installed its canonical tab controller. */
     document.querySelectorAll('.tab[data-target]').forEach((button) => {
       const active = button.dataset.target === 'my-plan';
       button.classList.toggle('active', active);
@@ -86,7 +93,10 @@
     const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
     const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
     if (visible) applyInitialRoutineSubview();
-    return visible;
+
+    /* Do not declare the route stable until the application controller has
+       also accepted My Routine. That internal state owns saved-plan loading. */
+    return visible && controllerReady;
   }
 
   function stopRouteStabiliser() {
