@@ -4,8 +4,9 @@ import fs from 'node:fs';
 
 const interactions = fs.readFileSync(new URL('../sitewide/js/baseline-form-interactions.js', import.meta.url), 'utf8');
 const interactionCss = fs.readFileSync(new URL('../sitewide/css/baseline-form-interactions.css', import.meta.url), 'utf8');
+const routineCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-system.css', import.meta.url), 'utf8');
 const failsafe = fs.readFileSync(new URL('../sitewide/js/baseline-auth-failsafe.js', import.meta.url), 'utf8');
-const skincareCss = fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine-interaction-repair.css', import.meta.url), 'utf8');
+const skincareCss = fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css', import.meta.url), 'utf8');
 const skincareEntryCss = fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css', import.meta.url), 'utf8');
 const skincareRoutine = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
 
@@ -34,16 +35,18 @@ test('Skincare typing no longer triggers input-time full-card replacement', () =
 });
 
 test('Skincare picker and controls are foreground, opaque and clickable', () => {
-  assert.match(skincareEntryCss, /skincare-routine-interaction-repair\.css/);
-  assert.match(skincareCss, /z-index:9999!important/);
-  assert.match(skincareCss, /background-color:var\(--skin-cream\)!important/);
-  assert.match(skincareCss, /backdrop-filter:none!important/);
+  assert.match(skincareEntryCss, /skincare-routine-sitewide-v4\.css/);
+  assert.match(skincareCss, /z-index:10000!important/);
+  assert.match(skincareCss, /background:var\(--skin-cream\)!important/);
   assert.match(skincareCss, /pointer-events:auto!important/);
   assert.match(skincareCss, /appearance:auto!important/);
+  assert.match(routineCss, /\[role="listbox"\]/);
+  assert.match(routineCss, /backdrop-filter:none!important/);
 });
 
 test('shared interaction CSS does not permit translucent listboxes', () => {
   assert.match(interactionCss, /\[role="listbox"\]:not\(\[hidden\]\)/);
   assert.match(interactionCss, /opacity:1!important/);
   assert.match(interactionCss, /backdrop-filter:none!important/);
+  assert.match(routineCss, /opacity:1!important/);
 });
