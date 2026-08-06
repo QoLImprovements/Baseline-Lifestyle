@@ -30,6 +30,31 @@
     return parseIsoDate(value) || new Date();
   }
 
+  function todayIso() {
+    return isoDate(new Date());
+  }
+
+  function isFutureDate(value) {
+    const parsed = parseIsoDate(value);
+    return Boolean(parsed && isoDate(parsed) > todayIso());
+  }
+
+  function clampLogDate(value) {
+    const parsed = parseIsoDate(value);
+    if (!parsed) return todayIso();
+    const date = isoDate(parsed);
+    return date > todayIso() ? todayIso() : date;
+  }
+
+  function configureLogDateInput(input, value) {
+    if (!input) return todayIso();
+    const date = clampLogDate(value || input.value);
+    input.max = todayIso();
+    input.value = date;
+    input.setAttribute('aria-label', input.getAttribute('aria-label') || 'Activity performed date');
+    return date;
+  }
+
   function weekBounds(value) {
     const date = localDate(value);
     const offset = (date.getDay() + 6) % 7;
@@ -192,12 +217,14 @@
     const count = Math.max(0, Number(options.count || 0));
     const selected = iso === options.selectedDate;
     const today = iso === isoDate(new Date());
+    const disabled = Boolean(options.disabled || isFutureDate(iso));
     const details = Array.isArray(options.details) ? options.details.filter(Boolean) : [];
     const classes = ['bl-routine-day-row'];
     if (count) classes.push('has-completion');
     if (selected) classes.push('selected');
     if (today) classes.push('today');
-    return `<button type="button" class="${classes.join(' ')}" data-calendar-date="${iso}">
+    if (disabled) classes.push('future-date');
+    return `<button type="button" class="${classes.join(' ')}" data-calendar-date="${iso}"${disabled ? ' disabled aria-disabled="true"' : ''}>
       <span class="bl-routine-day-date"><strong>${escapeHtml(date.toLocaleDateString('en-GB', { weekday:'long' }))}</strong><span>${escapeHtml(date.toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' }))}</span></span>
       <span class="bl-routine-day-details">${details.length ? details.map((detail) => `<span>${escapeHtml(detail)}</span>`).join('') : '<span>No completed items</span>'}</span>
       <span class="bl-routine-day-count">${count}</span>
@@ -219,6 +246,10 @@
     isoDate,
     parseIsoDate,
     localDate,
+    todayIso,
+    isFutureDate,
+    clampLogDate,
+    configureLogDateInput,
     weekBounds,
     weekDates,
     monthDates,

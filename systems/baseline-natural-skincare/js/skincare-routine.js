@@ -41,6 +41,18 @@
     return String(value || '').trim().toLowerCase() || 'guest';
   }
 
+  function todayIso() {
+    return global.BASELINE_RoutineSystem?.todayIso?.() || MODEL.isoDate(new Date());
+  }
+
+  function clampLogDate(value) {
+    return global.BASELINE_RoutineSystem?.clampLogDate?.(value) || (MODEL.isoDate(value) > todayIso() ? todayIso() : MODEL.isoDate(value));
+  }
+
+  function isFutureDate(value) {
+    return global.BASELINE_RoutineSystem?.isFutureDate?.(value) || MODEL.isoDate(value) > todayIso();
+  }
+
   function storageKey(owner = state.owner) {
     return STORAGE_PREFIX + normaliseOwner(owner);
   }
@@ -303,8 +315,14 @@
   }
 
   function renderLog() {
+    state.selectedDate = clampLogDate(state.selectedDate);
     const dateInput = $('#routineLogDate');
-    if (dateInput && dateInput.value !== state.selectedDate) dateInput.value = state.selectedDate;
+    if (dateInput) {
+      const label = dateInput.closest('label')?.querySelector('span');
+      if (label) label.textContent = 'Activity performed date';
+      if (global.BASELINE_RoutineSystem?.configureLogDateInput) state.selectedDate = global.BASELINE_RoutineSystem.configureLogDateInput(dateInput, state.selectedDate);
+      else { dateInput.max = todayIso(); dateInput.value = state.selectedDate; }
+    }
     const target = $('#routineLogItems');
     const progress = $('#routineLogProgress');
     if (!target) return;
@@ -325,8 +343,8 @@
     target.innerHTML = due.map(({ item, status }) => {
       const entry = entries[item.id] || { completed: false, note: '', completedAt: '' };
       return `<article class="routine-log-item${entry.completed ? ' complete' : ''}">
-        <label class="routine-log-check"><input type="checkbox" data-log-complete="${escapeHtml(item.id)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(MODEL.timeLabel(item.timeOfDay))} · ${escapeHtml(status.detail)}</small></span></label>
-        <input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${escapeHtml(entry.note || '')}" data-log-note="${escapeHtml(item.id)}">
+        <label class="routine-log-check"><input type="checkbox" data-log-complete="${escapeHtml(item.id)}" data-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.title)}</strong><small>${escapeHtml(MODEL.timeLabel(item.timeOfDay))} · ${escapeHtml(status.detail)}</small></span></label>
+        <input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${escapeHtml(entry.note || '')}" data-log-note="${escapeHtml(item.id)}" data-log-date="${escapeHtml(state.selectedDate)}">
       </article>`;
     }).join('');
   }
@@ -464,19 +482,23 @@
     renderLog();
   }
 
-  function updateLogCompletion(itemId, completed) {
-    const entry = ensureLogDate(state.selectedDate)[itemId] || { completed: false, note: '', completedAt: '' };
+  function updateLogCompletion(itemId, completed, logDate = state.selectedDate) {
+    const date = clampLogDate(logDate);
+    if (isFutureDate(logDate)) return;
+    const entry = ensureLogDate(date)[itemId] || { completed: false, note: '', completedAt: '' };
     entry.completed = Boolean(completed);
     entry.completedAt = completed ? new Date().toISOString() : '';
-    ensureLogDate(state.selectedDate)[itemId] = entry;
+    ensureLogDate(date)[itemId] = entry;
     scheduleSave();
     renderLog();
   }
 
-  function updateLogNote(itemId, note) {
-    const entry = ensureLogDate(state.selectedDate)[itemId] || { completed: false, note: '', completedAt: '' };
+  function updateLogNote(itemId, note, logDate = state.selectedDate) {
+    const date = clampLogDate(logDate);
+    if (isFutureDate(logDate)) return;
+    const entry = ensureLogDate(date)[itemId] || { completed: false, note: '', completedAt: '' };
     entry.note = String(note || '').trim().slice(0, 500);
-    ensureLogDate(state.selectedDate)[itemId] = entry;
+    ensureLogDate(date)[itemId] = entry;
     scheduleSave();
   }
 
@@ -669,7 +691,8 @@
       renderPrivacy();
     });
     $('#routineLogDate')?.addEventListener('change', (event) => {
-      state.selectedDate = MODEL.isoDate(event.currentTarget.value);
+      state.selectedDate = clampLogDate(event.currentTarget.value);
+      event.currentTarget.value = state.selectedDate;
       renderLog();
     });
     $('#findPublicRoutineBtn')?.addEventListener('click', findPublicRoutine);
@@ -699,11 +722,11 @@
     });
     $('#routineLogItems')?.addEventListener('change', (event) => {
       const checkbox = event.target.closest('[data-log-complete]');
-      if (checkbox) updateLogCompletion(checkbox.dataset.logComplete, checkbox.checked);
+      if (checkbox) updateLogCompletion(checkbox.dataset.logComplete, checkbox.checked, checkbox.dataset.logDate);
     });
     $('#routineLogItems')?.addEventListener('input', (event) => {
       const note = event.target.closest('[data-log-note]');
-      if (note) updateLogNote(note.dataset.logNote, note.value);
+      if (note) updateLogNote(note.dataset.logNote, note.value, note.dataset.logDate);
     });
   }
 

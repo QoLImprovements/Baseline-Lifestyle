@@ -9,6 +9,7 @@ const BL_FITNESS_MAX_SESSIONS = 120;
 header('X-Baseline-Fitness-API-Build: ' . BL_FITNESS_PLAN_API_BUILD);
 
 $requestedName = trim((string)($_GET['name'] ?? ''));
+$requestedPlanId = max(0, (int)($_GET['planId'] ?? ($_GET['plan_id'] ?? 0)));
 $legacyPayload = ((string)($_GET['legacy'] ?? '')) === '1';
 
 function bl_fitness_plan_payload(string $name, array $record, int $revision=0, bool $legacy=false): array {
@@ -57,8 +58,9 @@ try{
       $name = (string)$user['name'];
     }
     $resource = bl_fitness_resource_read($userId);
-    $index = bl_fitness_latest_plan_index($resource['data']);
+    $index = $requestedPlanId > 0 ? bl_fitness_find_plan_index($resource['data'], $requestedPlanId) : bl_fitness_latest_plan_index($resource['data']);
     if($index === null){
+      if($requestedPlanId > 0) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_not_found'], 404);
       bl_json(['ok'=>true,'build'=>BL_FITNESS_PLAN_API_BUILD,'name'=>$name,'hasPlan'=>false,'has_plan'=>false,'revision'=>$resource['revision']]);
     }
     $record = $resource['data']['plans'][$index] ?? null;
@@ -81,10 +83,16 @@ try{
     $name = (string)$user['name'];
   }
 
-  $p = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE user_id=:u ORDER BY created_at DESC, id DESC LIMIT 1');
-  $p->execute([':u'=>$userId]);
+  if($requestedPlanId > 0){
+    $p = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE id=:p AND user_id=:u LIMIT 1');
+    $p->execute([':p'=>$requestedPlanId, ':u'=>$userId]);
+  }else{
+    $p = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE user_id=:u ORDER BY created_at DESC, id DESC LIMIT 1');
+    $p->execute([':u'=>$userId]);
+  }
   $planRow = $p->fetch();
   if(!$planRow){
+    if($requestedPlanId > 0) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_not_found'], 404);
     if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $userId);
     bl_json(['ok'=>true,'build'=>BL_FITNESS_PLAN_API_BUILD,'name'=>$name,'hasPlan'=>false,'has_plan'=>false]);
   }

@@ -450,12 +450,12 @@
     UI.renderHtml(target, sections.join(''));
   }
 
-  function logItem(item, status, entry) {
+  function logItem(item, status, entry, selectedDate) {
     const effective = effectiveItem(item);
     const details = [MODEL.timeLabel(effective.timeOfDay), status.detail, methodText(item), productText(item)].filter(Boolean).join(' · ');
     return `<article class="routine-log-item bl-routine-entry${entry.completed ? ' complete' : ''}">
-      <label class="routine-log-check"><input type="checkbox" data-log-complete="${esc(item.id)}"${entry.completed ? ' checked' : ''}><span><strong>${esc(item.title)}</strong><small>${esc(details)}</small></span></label>
-      <input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${esc(entry.note || '')}" data-log-note="${esc(item.id)}">
+      <label class="routine-log-check"><input type="checkbox" data-log-complete="${esc(item.id)}" data-log-date="${esc(selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${esc(item.title)}</strong><small>${esc(details)}</small></span></label>
+      <input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${esc(entry.note || '')}" data-log-note="${esc(item.id)}" data-log-date="${esc(selectedDate)}">
     </article>`;
   }
 
@@ -483,10 +483,10 @@
       const groupDue = due.filter(({ item }) => state.assignments[item.id] === group.id);
       if (!groupDue.length) return;
       groupDue.forEach(({ item }) => used.add(item.id));
-      sections.push(`<section class="routine-log-group bl-routine-group"><div class="routine-log-group-head"><h3>${esc(group.title)}</h3></div>${groupDue.map(({ item, status }) => logItem(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' })).join('')}</section>`);
+      sections.push(`<section class="routine-log-group bl-routine-group"><div class="routine-log-group-head"><h3>${esc(group.title)}</h3></div>${groupDue.map(({ item, status }) => logItem(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' }, selectedDate)).join('')}</section>`);
     });
     const ungrouped = due.filter(({ item }) => !used.has(item.id));
-    if (ungrouped.length) sections.push(`<section class="routine-log-group bl-routine-group"><h3>Ungrouped routine actions</h3>${ungrouped.map(({ item, status }) => logItem(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' })).join('')}</section>`);
+    if (ungrouped.length) sections.push(`<section class="routine-log-group bl-routine-group"><h3>Ungrouped routine actions</h3>${ungrouped.map(({ item, status }) => logItem(item, status, entries[item.id] || { completed:false,note:'',completedAt:'' }, selectedDate)).join('')}</section>`);
     UI.renderHtml(target, sections.join(''));
   }
 
@@ -500,13 +500,15 @@
     const iso = UI.isoDate(date);
     const completed = completedForDate(iso, routine);
     const selected = iso === ($('#routineLogDate')?.value || UI.isoDate(new Date()));
-    const today = iso === UI.isoDate(new Date());
+    const today = iso === UI.todayIso();
+    const future = UI.isFutureDate(iso);
     const classes = ['routine-calendar-day'];
     if (completed.length) classes.push('has-routine');
     if (selected) classes.push('selected');
     if (today) classes.push('today');
+    if (future) classes.push('future-date');
     if (date.getMonth() !== anchor.getMonth()) classes.push('outside-month');
-    return `<button type="button" class="${classes.join(' ')}" data-calendar-date="${iso}" title="${esc(completed.length ? completed.join(', ') : 'No completed routine actions')}"><span class="routine-calendar-number">${date.getDate()}</span>${completed.length ? `<span class="routine-calendar-count">${completed.length}</span>` : ''}</button>`;
+    return `<button type="button" class="${classes.join(' ')}" data-calendar-date="${iso}"${future ? ' disabled aria-disabled="true"' : ''} title="${esc(completed.length ? completed.join(', ') : 'No completed routine actions')}"><span class="routine-calendar-number">${date.getDate()}</span>${completed.length ? `<span class="routine-calendar-count">${completed.length}</span>` : ''}</button>`;
   }
 
   function renderCalendar() {
@@ -525,7 +527,7 @@
       grid.className = 'routine-calendar-grid bl-routine-week-list';
       UI.renderHtml(grid, UI.weekDates(state.calendarAnchor).map((date) => {
         const completed = completedForDate(UI.isoDate(date), routine);
-        return UI.weekRow(date, { count:completed.length, details:completed, selectedDate });
+        return UI.weekRow(date, { count:completed.length, details:completed, selectedDate, disabled:UI.isFutureDate(UI.isoDate(date)) });
       }).join(''), { preserveFocus:false });
       return;
     }
@@ -621,12 +623,13 @@
   }
 
   function selectDate(date) {
-    const parsed = UI.parseIsoDate(date);
-    if (!parsed) return;
+    const clamped = UI.clampLogDate(date);
+    const parsed = UI.parseIsoDate(clamped);
+    if (!parsed || UI.isFutureDate(date)) return;
     state.calendarAnchor = parsed;
     const input = $('#routineLogDate');
     if (input) {
-      input.value = date;
+      input.value = clamped;
       input.dispatchEvent(new Event('change', { bubbles:true }));
     }
     schedulePatch();
@@ -689,6 +692,7 @@
       const groupDay = event.target.closest('[data-group-day]');
       if (groupDay) { updateGroupDay(groupDay.dataset.groupId, groupDay.dataset.groupDay, groupDay.checked); return; }
       if (event.target?.id === 'routineLogDate') {
+        event.target.value = UI.configureLogDateInput(event.target, event.target.value);
         state.calendarAnchor = UI.localDate(event.target.value);
         global.setTimeout(schedulePatch, 0);
       }
