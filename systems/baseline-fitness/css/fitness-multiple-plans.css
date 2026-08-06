@@ -21,11 +21,7 @@
 }
 .calisthenics-plan-name-field>input{width:100%;min-width:0}
 
-/* Generator-wide geometry: labels, controls and date fields share the same
-   vertical rhythm instead of floating at different heights. */
-#myPlanGeneratorWrap{
-  --bl-generator-gap:16px;
-}
+#myPlanGeneratorWrap{--bl-generator-gap:16px}
 #myPlanGeneratorWrap .row-2{
   display:grid!important;
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -33,23 +29,10 @@
   align-items:start!important;
 }
 #myPlanGeneratorWrap .field-stack,
-#myPlanGeneratorWrap label{
-  min-width:0;
-}
-#myPlanGeneratorWrap .field-stack>span,
-#myPlanGeneratorWrap .field-stack>label{
-  line-height:1.35;
-}
-#myPlanGeneratorWrap :is(input,select,textarea){
-  max-width:100%;
-  box-sizing:border-box;
-}
-#myPlanGeneratorWrap :is(input:not([type="checkbox"]):not([type="radio"]),select){
-  min-height:50px;
-}
-#startDate{
-  cursor:pointer;
-}
+#myPlanGeneratorWrap label{min-width:0}
+#myPlanGeneratorWrap :is(input,select,textarea){max-width:100%;box-sizing:border-box}
+#myPlanGeneratorWrap :is(input:not([type="checkbox"]):not([type="radio"]),select){min-height:50px}
+#startDate{cursor:pointer}
 
 #exerciseList{
   display:grid!important;
@@ -58,34 +41,33 @@
 #myPlanGeneratorWrap .ex-row,
 [data-fitness-routine-panel="calisthenics"] .ex-row{
   display:grid!important;
-  grid-template-columns:minmax(300px,1.65fr) minmax(240px,1.05fr) minmax(165px,.72fr) minmax(105px,.45fr) 52px!important;
+  grid-template-columns:minmax(300px,2fr) minmax(245px,1.35fr) minmax(170px,.88fr) minmax(105px,.52fr) minmax(170px,.82fr) 52px!important;
   grid-template-areas:
-    "exercise progression baseline sets remove"
-    "exercise rep rep rep remove";
-  gap:.85rem 1rem!important;
+    "exercise progression baseline sets rep remove"
+    "details details details details details details";
+  gap:14px 16px!important;
   align-items:end!important;
   width:100%;
   min-width:0;
-  padding:1rem;
-  border:1px solid var(--border);
-  border-radius:20px;
-  background:var(--filter-bg,var(--card-bg));
+  padding:18px!important;
+  border:1px solid rgba(188,42,63,.30)!important;
+  border-radius:20px!important;
+  background:rgba(13,7,9,.92)!important;
 }
 .ex-row>*{min-width:0}
 .ex-exercise-block{
   grid-area:exercise;
-  align-self:stretch;
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) 44px!important;
-  gap:.55rem!important;
-  align-items:end!important;
+  display:block!important;
   min-width:0;
 }
+.ex-field-exercise{position:relative;z-index:5}
 .ex-field-progression-mode{grid-area:progression}
 .ex-field-baseline{grid-area:baseline}
 .ex-field-sets{grid-area:sets}
 .ex-field-rep-increase{grid-area:rep}
 .ex-remove-wrap{grid-area:remove}
+.ex-details-card{grid-area:details}
+
 .ex-field-exercise,
 .ex-field-progression-mode,
 .ex-field-baseline,
@@ -93,20 +75,21 @@
 .ex-field-rep-increase{
   display:grid!important;
   align-content:end!important;
-  gap:.45rem!important;
+  gap:7px!important;
   min-width:0;
   margin:0!important;
 }
-.ex-field-exercise label,
+.ex-field-exercise>label,
 .ex-field-progression-mode>span,
-.ex-field-baseline label,
-.ex-field-sets label,
+.ex-field-baseline>label,
+.ex-field-sets>label,
 .ex-field-rep-increase>span{
-  display:block;
-  min-height:1.5em;
-  margin:0;
-  font-weight:800;
-  line-height:1.35;
+  display:flex!important;
+  align-items:end!important;
+  min-height:27px!important;
+  margin:0!important;
+  font-weight:850!important;
+  line-height:1.25!important;
 }
 .ex-search-input,
 .ex-progression-mode,
@@ -115,70 +98,191 @@
 .ex-rep-increase{
   width:100%!important;
   min-width:0!important;
-  min-height:50px!important;
+  height:52px!important;
+  min-height:52px!important;
   margin:0!important;
 }
 .ex-select-source[hidden]{display:none!important}
-.exercise-info-wrap{
+.exercise-info-wrap{display:none!important}
+.ex-progression-note,
+.rep-increase-note{display:none!important}
+
+/* Exercise picker: same Fitness palette, with explicit exercise-family groups. */
+.ex-picker-control{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 48px;
+  width:100%;
+  min-width:0;
+}
+.ex-picker-control .ex-search-input{
+  border-radius:14px 0 0 14px!important;
+  border-right:0!important;
+}
+.ex-search-input::-webkit-search-cancel-button,
+.ex-search-input::-webkit-search-decoration{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:none!important;
+}
+.ex-picker-toggle{
+  width:48px!important;
+  min-width:48px!important;
+  height:52px!important;
+  min-height:52px!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid rgba(188,42,63,.48)!important;
+  border-left:0!important;
+  border-radius:0 14px 14px 0!important;
+  background:#2b1017!important;
+  color:rgba(255,255,255,.94)!important;
+  font:inherit!important;
+  font-size:20px!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+.ex-picker-toggle:hover,
+.ex-picker-toggle:focus-visible{
+  background:#3a121d!important;
+  box-shadow:0 0 0 3px rgba(177,18,38,.20)!important;
+  outline:none!important;
+}
+.ex-picker-menu{
+  position:absolute!important;
+  z-index:2147482000!important;
+  left:0!important;
+  right:0!important;
+  top:calc(100% + 8px)!important;
+  max-height:min(540px,62vh)!important;
+  overflow:auto!important;
+  padding:9px!important;
+  border:1px solid rgba(188,42,63,.55)!important;
+  border-radius:16px!important;
+  background:#10090c!important;
+  color:rgba(255,255,255,.94)!important;
+  box-shadow:0 24px 60px rgba(0,0,0,.58)!important;
+}
+.ex-picker-menu[hidden]{display:none!important}
+.ex-picker-group{
+  display:grid;
+  gap:3px;
+  padding:5px 0 9px;
+}
+.ex-picker-group+.ex-picker-group{
+  border-top:1px solid rgba(188,42,63,.22);
+  padding-top:10px;
+}
+.ex-picker-group-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:5px 9px 7px;
+  color:#f0b5bf;
+}
+.ex-picker-group-head strong{
+  font-size:.95rem;
+  letter-spacing:.01em;
+}
+.ex-picker-group-head span{
+  color:rgba(255,255,255,.58);
+  font-size:.78rem;
+  font-weight:700;
+}
+.ex-picker-option{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:12px!important;
+  width:100%!important;
+  min-height:44px!important;
+  padding:9px 10px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  color:rgba(255,255,255,.92)!important;
+  font:inherit!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+.ex-picker-option:hover,
+.ex-picker-option:focus-visible{
+  background:rgba(177,18,38,.20)!important;
+  outline:none!important;
+}
+.ex-picker-option small{
+  color:rgba(255,255,255,.55)!important;
+  font-size:.78rem!important;
+  white-space:nowrap;
+}
+.ex-picker-empty{
+  padding:13px;
+  color:rgba(255,255,255,.62);
+}
+
+.ex-remove-wrap{
   display:flex!important;
   align-items:flex-end!important;
   justify-content:center!important;
-  min-width:44px;
-}
-.exercise-info-button{
-  width:44px!important;
-  height:50px!important;
-  min-width:44px!important;
-  margin:0!important;
-}
-.ex-progression-note,
-.ex-field-rep-increase .rep-increase-note{
-  display:block;
-  margin:.15rem 0 0!important;
-  font-size:.88rem!important;
-  line-height:1.35!important;
-  min-height:0!important;
-}
-.ex-remove-wrap{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
   min-width:52px;
   margin:0!important;
-  align-self:stretch!important;
 }
 .ex-remove{
   width:52px!important;
   min-width:52px!important;
-  height:50px!important;
+  height:52px!important;
+  min-height:52px!important;
   margin:0!important;
   padding:0!important;
 }
+
+/* One concise, full-width facts strip replaces scattered explanatory prose. */
+.ex-details-card{
+  display:grid!important;
+  grid-template-columns:1.1fr 1fr 1.25fr 1.4fr;
+  gap:10px 14px;
+  width:100%;
+  margin-top:2px;
+  padding:12px 14px;
+  border:1px solid rgba(188,42,63,.24);
+  border-radius:14px;
+  background:rgba(68,18,29,.34);
+}
+.ex-details-card>span{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:7px;
+  align-items:baseline;
+  min-width:0;
+  color:rgba(255,255,255,.82);
+  line-height:1.35;
+}
+.ex-details-card b{
+  color:#f0b5bf;
+  font-size:.78rem;
+  text-transform:uppercase;
+  letter-spacing:.035em;
+}
+.ex-details-rule{grid-column:1/-1}
+
 #addExerciseBtn{justify-self:start}
-
-/* Keep the scheduling/goal controls visually grouped and compact. */
-#myPlanGeneratorWrap .divider{
-  margin:1rem 0!important;
-}
-#myPlanGeneratorWrap .actions-inline{
-  gap:.7rem!important;
-  flex-wrap:wrap!important;
-}
-
+#myPlanGeneratorWrap .divider{margin:1rem 0!important}
+#myPlanGeneratorWrap .actions-inline{gap:.7rem!important;flex-wrap:wrap!important}
 .fitness-calendar-day.future-date,
 .routine-calendar-day.future-date,
 .bl-routine-day-row.future-date{opacity:.48;cursor:not-allowed}
 
-@media (max-width:1380px){
+@media (max-width:1450px){
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
-    grid-template-columns:minmax(280px,1.5fr) minmax(220px,1fr) minmax(150px,.72fr) 52px!important;
+    grid-template-columns:minmax(280px,1.7fr) minmax(220px,1.2fr) minmax(150px,.8fr) minmax(105px,.5fr) 52px!important;
     grid-template-areas:
-      "exercise progression baseline remove"
-      "exercise sets rep remove";
+      "exercise progression baseline sets remove"
+      "rep rep rep rep remove"
+      "details details details details details";
   }
 }
-@media (max-width:1000px){
+@media (max-width:1050px){
   #myPlanGeneratorWrap .row-2{grid-template-columns:1fr!important}
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
@@ -187,11 +291,14 @@
       "exercise exercise"
       "progression baseline"
       "sets rep"
+      "details details"
       ". remove";
   }
-  .ex-remove-wrap{justify-self:end!important;align-self:end!important}
+  .ex-remove-wrap{justify-self:end!important}
+  .ex-details-card{grid-template-columns:1fr 1fr}
+  .ex-details-rule{grid-column:1/-1}
 }
-@media (max-width:650px){
+@media (max-width:680px){
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
     grid-template-columns:1fr!important;
@@ -201,10 +308,15 @@
       "baseline"
       "sets"
       "rep"
+      "details"
       "remove";
-    padding:.85rem;
+    padding:14px!important;
   }
   .ex-remove-wrap{justify-self:start!important}
+  .ex-details-card{grid-template-columns:1fr}
+  .ex-details-rule{grid-column:auto}
+  .ex-picker-option{grid-template-columns:1fr!important}
+  .ex-picker-option small{white-space:normal}
   .fitness-calisthenics-plan-manager .section-head-actions{display:grid}
   .fitness-calisthenics-plan-manager .action{width:100%}
 }
