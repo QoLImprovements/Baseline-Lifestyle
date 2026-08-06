@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V6__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V6__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V7__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V7__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
@@ -34,6 +34,23 @@
       script.onload = resolve;
       script.onerror = reject;
       document.head.appendChild(script);
+    });
+  }
+
+  function loadWithoutMutationObserver(src) {
+    const NativeObserver = global.MutationObserver;
+    let replaced = false;
+    if (typeof NativeObserver === 'function') {
+      global.MutationObserver = class BaselineQuietRoutineObserver {
+        constructor(callback) { this.callback = callback; }
+        observe() {}
+        disconnect() {}
+        takeRecords() { return []; }
+      };
+      replaced = true;
+    }
+    return load(src).finally(() => {
+      if (replaced) global.MutationObserver = NativeObserver;
     });
   }
 
@@ -139,8 +156,9 @@
     })
     .then(() => {
       normaliseRoutineLabels();
-      return load('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_6');
+      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_7');
     })
+    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_1'))
     .then(() => {
       stabiliseMyRoutineRoute();
       normaliseRoutineLabels();
