@@ -26,7 +26,7 @@ async function expectFullWidthWeekRows(page, selector) {
   expect(widths[0]).toBeGreaterThan(500);
 }
 
-test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely interactive', async ({ page }) => {
+test('Skincare checkboxes, notes, selects, group numbers and weekly calendar remain interactive', async ({ page }) => {
   await mockGuestApis(page);
   await page.addInitScript(() => {
     localStorage.setItem('__bl_skincare_routine_v1__::guest', JSON.stringify({
@@ -42,8 +42,10 @@ test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely i
       }],
       logs:{}
     }));
-    localStorage.removeItem('__bl_skincare_routine_groups_v3__::guest');
-    localStorage.removeItem('__bl_skincare_routine_groups_v2__::guest');
+    localStorage.setItem('__bl_skincare_routine_groups_v3__::guest', JSON.stringify({
+      groups:[{ id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false }],
+      assignments:{ 'browser-facial-steam':'browser-group' }
+    }));
   });
 
   await page.goto('/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=routine', { waitUntil:'domcontentloaded' });
@@ -60,6 +62,7 @@ test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely i
   await expect(page.locator('[data-log-note="browser-facial-steam"]')).toHaveValue('Steam completed comfortably');
 
   await page.locator('[data-routine-view="plan"]').click();
+  await expect(page.locator('.routine-plan-group[data-plan-group="browser-group"] .bl-v4-number')).toHaveText('1');
   const editStep = page.locator('[data-skincare-step-toggle="browser-facial-steam"]');
   await expect(editStep).toHaveText('Edit step');
   await editStep.click();
@@ -69,12 +72,18 @@ test('Skincare checkboxes, notes, selects and weekly calendar remain genuinely i
   await timeSelect.selectOption('evening');
   await expect(page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]')).toHaveValue('evening');
 
+  await page.locator('[data-routine-view="summary"]').click();
+  const filter = page.locator('#skinRoutineSummaryFilter');
+  await expect(filter).toBeVisible();
+  await filter.selectOption('group:browser-group');
+  await expect(page.locator('#routineSummary')).toContainText('Facial Steam');
+
   await page.locator('[data-routine-view="log"]').click();
   await page.locator('[data-skincare-calendar-view="week"]').click();
   await expectFullWidthWeekRows(page, '#routineCalendarGrid.bl-routine-week-list .bl-routine-day-row');
 });
 
-test('Fitness shares the same disclosures, summaries and full-width weekly rows', async ({ page }) => {
+test('Fitness uses Routine Plan as a third tab layer with shared groups and readable summaries', async ({ page }) => {
   await mockGuestApis(page);
   await page.addInitScript(() => {
     localStorage.setItem('__bl_fitness_routine_v2__::guest', JSON.stringify({
@@ -96,12 +105,19 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
   const summaryTab = page.locator('[data-fitness-routine-view="summary"]');
   await expect(summaryTab).toBeVisible();
   await expect(page).toHaveURL(/\/baseline-fitness\/my-routine/);
-  const tabLabels = await page.locator('.fitness-routine-subtab').allTextContents();
-  expect(tabLabels.slice(0, 3)).toEqual(['Routine Log', 'Routine Summary', 'Calisthenics']);
+  await expect(page.locator('.fitness-routine-subtabs [data-fitness-routine-view]')).toHaveCount(4);
+  const tabLabels = await page.locator('.fitness-routine-subtabs [data-fitness-routine-view]').allTextContents();
+  expect(tabLabels).toEqual(['Routine Log', 'Routine Summary', 'Routine Plan', 'Public Routines']);
 
-  await page.locator('[data-fitness-routine-view="other"]').click();
+  await page.locator('[data-fitness-routine-view="plan"]').click();
+  const planLabels = await page.locator('.bl-v4-plan-tabs [data-fitness-plan-view]').allTextContents();
+  expect(planLabels).toEqual(['Calisthenics', 'Cardio', 'Other Fitness Activities', 'Sports']);
+  await page.locator('[data-fitness-plan-view="other"]').click();
+  await expect(page.locator('[data-fitness-plan-panel="other"] .bl-v4-group-card')).toBeVisible();
+
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
+  await expect(activityCard.locator('.bl-v4-number')).toHaveText('1');
   const disclosure = activityCard.locator('[data-fitness-disclosure-key]');
   await expect(disclosure).toHaveText('Edit details');
   await expect(activityCard.locator('.fitness-collapsible-details')).toBeHidden();
@@ -114,7 +130,8 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
 
   await page.locator('[data-fitness-routine-view="summary"]').click();
   await expect(page.locator('#fitnessExerciseSummary')).toContainText('Hatha Yoga');
-  await expect(page.locator('#fitnessExerciseSummary')).toContainText('Benefits and practical role');
+  await expect(page.locator('#fitnessExerciseSummary')).toContainText('Everyday activities this supports');
+  await expect(page.locator('#fitnessExerciseSummary ul li').first()).toBeVisible();
 
   await page.locator('[data-fitness-routine-view="log"]').click();
   await page.locator('[data-calendar-view="week"]').click();
