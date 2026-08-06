@@ -45,6 +45,13 @@
     });
   }
 
+  function normaliseRoutineLabels() {
+    const button = document.querySelector('[data-fitness-routine-view="summary"]');
+    const heading = document.querySelector('[data-fitness-routine-panel="summary"] h2');
+    if (button) button.textContent = 'Routine Summary';
+    if (heading) heading.textContent = 'Routine Summary';
+  }
+
   function loadStableRoutineGroupSettings() {
     const NativeObserver = global.MutationObserver;
     let replaced = false;
@@ -59,6 +66,7 @@
     return load('/sitewide/js/baseline-routine-groups-settings.js?v=SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_2')
       .finally(() => {
         if (replaced) global.MutationObserver = NativeObserver;
+        normaliseRoutineLabels();
         refreshSharedRoutineEnhancements();
       });
   }
@@ -133,6 +141,7 @@
     routeInterval = global.setInterval(() => {
       routeAttempts += 1;
       visiblePasses = selectMyRoutine() ? visiblePasses + 1 : 0;
+      normaliseRoutineLabels();
       if (visiblePasses >= 5 || routeAttempts >= 50) stopRouteStabiliser();
     }, 100);
   }
@@ -154,13 +163,17 @@
       stabiliseMyRoutineRoute();
       return load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2');
     })
-    .then(() => load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3'))
+    .then(() => {
+      normaliseRoutineLabels();
+      return load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3');
+    })
     .then(() => {
       stabiliseMyRoutineRoute();
       return loadStableRoutineGroupSettings();
     })
     .then(() => {
       stabiliseMyRoutineRoute();
+      normaliseRoutineLabels();
       return load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1');
     })
     .catch(() => {});
