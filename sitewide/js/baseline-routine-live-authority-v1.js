@@ -6,7 +6,8 @@
    renderers replace. No whole-page or whole-My-Routine observer is used. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__) return;
+  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V4__) return;
+  global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V4__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V2__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V1__ = true;
@@ -64,6 +65,31 @@
     return { groups, assignments };
   }
 
+  function publicVisibilityControl(card) {
+    const selectId = app === 'skin' ? 'routineVisibility' : 'fitnessRoutineVisibility';
+    const select = document.getElementById(selectId);
+    let control = card.querySelector(':scope .bl-release-public-visibility,:scope .bl-v4-visibility');
+    if (!control && select) control = select.closest('.bl-v4-visibility,.routine-visibility-control,label');
+    if (!control && select) {
+      control = document.createElement('label');
+      control.className = 'bl-v4-visibility';
+      control.appendChild(select);
+    }
+    if (!control) return null;
+
+    control.classList.add('bl-release-public-visibility');
+    control.hidden = false;
+    control.removeAttribute('aria-hidden');
+    control.style.removeProperty('display');
+    let label = control.querySelector(':scope > span');
+    if (!label) {
+      label = document.createElement('span');
+      control.insertBefore(label, control.firstChild);
+    }
+    label.textContent = 'My Routine Visibility';
+    return control;
+  }
+
   function movePublicVisibility() {
     const panel = app === 'skin'
       ? $('[data-routine-panel="public"]')
@@ -71,7 +97,7 @@
     const card = panel?.querySelector(app === 'skin' ? '.routine-card' : '.fitness-routine-card');
     if (!card) return;
     card.classList.add('bl-v4-public-card');
-    const visibility = card.querySelector('.bl-release-public-visibility,.bl-v4-visibility');
+    const visibility = publicVisibilityControl(card);
     if (!visibility) return;
 
     let row = card.querySelector(':scope > .bl-live-public-head');
@@ -375,7 +401,7 @@
   function boot() {
     attachOutputObservers();
     schedule();
-    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_3');
+    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_4');
   }
 
   global.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once:true });
