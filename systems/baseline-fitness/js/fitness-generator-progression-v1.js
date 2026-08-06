@@ -2,7 +2,7 @@
 
    This extends the existing generator rather than replacing it. The base plan
    remains the data owner; this module adds one persisted `progressionMode`
-   field to each exercise and applies it to previews/current workout targets.
+   field to each exercise and applies it to previews and final workout targets.
 
    Modes:
      linear-percent  = existing percentage-based starting sets, linear increases
@@ -11,7 +11,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_GENERATOR_PROGRESSION_V1__) return;
+  if (!global.document || global.__BASELINE_FITNESS_GENERATOR_PROGRESSION_V2__) return;
+  global.__BASELINE_FITNESS_GENERATOR_PROGRESSION_V2__ = true;
   global.__BASELINE_FITNESS_GENERATOR_PROGRESSION_V1__ = true;
 
   const document = global.document;
@@ -27,10 +28,10 @@
   });
   const $ = (selector, root = document) => root?.querySelector?.(selector) || null;
   const $$ = (selector, root = document) => Array.from(root?.querySelectorAll?.(selector) || []);
+  const wrapperTimers = [];
   let listObserver = null;
   let frame = 0;
   let fetchWrapped = false;
-  let progressionInstallTimer = 0;
 
   function catalogue() {
     return global.BASELINE_FITNESS_EXERCISE_CATALOGUE || { EXERCISES:[] };
@@ -84,7 +85,7 @@
     return values.map((value) => `<option value="${value}"${value === mode ? ' selected' : ''}>${MODE_LABELS[value]}</option>`).join('');
   }
 
-  function syncRow(row, options = {}) {
+  function syncRow(row) {
     if (!row) return;
     const exerciseName = exerciseNameForRow(row);
     const definition = definitionFor(exerciseName);
@@ -252,6 +253,9 @@
       if (mode !== MODES.STRAIGHT || !item) return;
       const baseline = Math.max(1, Math.round(Number(item.baseline) || Number(steps[indexes[0]]?.target) || 1));
       const increase = Math.max(0, Math.round(Number(item.repIncrease) || 0));
+      /* The existing progression layer has already accounted for a failed
+         session by putting its effective session on each step. Preserve that
+         independent-exercise failure rule instead of advancing blindly. */
       const progressionSession = Math.max(1, Math.round(Number(steps[indexes[0]]?.progressionSession || context.sessionIndex) || 1));
       const target = baseline + ((progressionSession - 1) * increase);
       indexes.forEach((stepIndex) => { steps[stepIndex] = setTargetLabel(steps[stepIndex], target); });
@@ -279,6 +283,35 @@
     return true;
   }
 
+  function installWorkoutWrapper() {
+    const current = global.BASELINE_fitnessWorkout;
+    if (!current) return false;
+    if (current.__baselineStraightSetsFinalAuthority) return true;
+    const original = current;
+    const wrapped = Object.assign({}, original, {
+      __baselineStraightSetsFinalAuthority:true,
+      getCurrentContext() { return applyStraightSets(original.getCurrentContext?.()); },
+      startSession() { return applyStraightSets(original.startSession?.()); },
+      succeedCurrentStep(inputMode = 'manual') { return applyStraightSets(original.succeedCurrentStep?.(inputMode)); },
+      failCurrentStep(achieved, inputMode = 'manual') { return applyStraightSets(original.failCurrentStep?.(achieved, inputMode)); },
+      recordTimedCurrentStep(achieved, inputMode = 'manual') { return applyStraightSets(original.recordTimedCurrentStep?.(achieved, inputMode)); },
+      async finishSession() { return applyStraightSets(await original.finishSession?.()); },
+      resetSession() { return applyStraightSets(original.resetSession?.()); },
+      onChange(listener) {
+        return original.onChange?.((context) => {
+          try { listener(applyStraightSets(context)); } catch (_error) {}
+        });
+      }
+    });
+    global.BASELINE_fitnessWorkout = Object.freeze(wrapped);
+    return true;
+  }
+
+  function ensureRuntimeWrappers() {
+    installProgressionWrapper();
+    installWorkoutWrapper();
+  }
+
   function sessionIndexFromCard(card) {
     const text = String(card?.querySelector?.('.title,h3,.session-title')?.textContent || card?.textContent || '');
     const match = text.match(/Session\s+(\d+)/i);
@@ -298,7 +331,6 @@
   }
 
   function patchRows(root, useUi) {
-    root?.querySelectorAll?.('.plan-exercise-row')?.forEach?.(() => {});
     Array.from(root?.querySelectorAll?.('.plan-exercise-row') || []).forEach((row) => {
       const exercise = String(row.firstElementChild?.textContent || '').trim();
       const source = useUi ? uiItem(exercise) : itemForExercise(rawPlanForProgression(), exercise);
@@ -328,7 +360,7 @@
     }
 
     document.addEventListener('change', (event) => {
-      if (event.target?.closest?.('#exerciseList .ex-select,#exerciseList .ex-search-input,#exerciseList .ex-rep-increase,#exerciseList .ex-baseline,#exerciseList .ex-sets')) {
+      if (event.target?.closest?.('#exerciseList .ex-select,#exerciseList .ex-search-input,#exerciseList .ex-progression-mode,#exerciseList .ex-rep-increase,#exerciseList .ex-baseline,#exerciseList .ex-sets')) {
         global.setTimeout(schedule, 0);
       }
     }, true);
@@ -338,25 +370,23 @@
     document.addEventListener('click', (event) => {
       if (event.target?.closest?.('#genBtn,#savePlanBtn,#editOptionsBtn,[data-open-calisthenics-plan]')) global.setTimeout(schedule, 0);
     }, true);
-    document.addEventListener('baseline:fitness-plans-updated', schedule);
-    document.addEventListener('baseline:fitness-workout-updated', schedule);
+    document.addEventListener('baseline:fitness-plans-updated', () => { ensureRuntimeWrappers(); schedule(); });
+    document.addEventListener('baseline:fitness-workout-updated', () => { ensureRuntimeWrappers(); schedule(); });
 
-    const install = () => {
-      if (installProgressionWrapper()) {
-        global.clearInterval(progressionInstallTimer);
-        progressionInstallTimer = 0;
-      }
-    };
-    install();
-    if (!global.BASELINE_FITNESS_EXERCISE_PROGRESSION) progressionInstallTimer = global.setInterval(install, 100);
+    /* Catch normal script-load ordering without leaving a permanent polling
+       loop behind. If another Fitness bridge installs shortly after this file,
+       the final Straight Sets wrapper is restored above it. */
+    [0,100,300,700,1500,3000].forEach((delay) => {
+      wrapperTimers.push(global.setTimeout(ensureRuntimeWrappers, delay));
+    });
     schedule();
-    document.documentElement.setAttribute('data-baseline-fitness-progression-ui', 'BASELINE_FITNESS_GENERATOR_PROGRESSION_20260806_1');
+    document.documentElement.setAttribute('data-baseline-fitness-progression-ui', 'BASELINE_FITNESS_GENERATOR_PROGRESSION_20260806_2');
   }
 
   global.addEventListener('pagehide', () => {
     listObserver?.disconnect();
     if (frame) global.cancelAnimationFrame(frame);
-    if (progressionInstallTimer) global.clearInterval(progressionInstallTimer);
+    wrapperTimers.forEach((timer) => global.clearTimeout(timer));
   }, { once:true });
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
