@@ -21,6 +21,36 @@
 }
 .calisthenics-plan-name-field>input{width:100%;min-width:0}
 
+/* Generator-wide geometry: labels, controls and date fields share the same
+   vertical rhythm instead of floating at different heights. */
+#myPlanGeneratorWrap{
+  --bl-generator-gap:16px;
+}
+#myPlanGeneratorWrap .row-2{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:var(--bl-generator-gap) 20px!important;
+  align-items:start!important;
+}
+#myPlanGeneratorWrap .field-stack,
+#myPlanGeneratorWrap label{
+  min-width:0;
+}
+#myPlanGeneratorWrap .field-stack>span,
+#myPlanGeneratorWrap .field-stack>label{
+  line-height:1.35;
+}
+#myPlanGeneratorWrap :is(input,select,textarea){
+  max-width:100%;
+  box-sizing:border-box;
+}
+#myPlanGeneratorWrap :is(input:not([type="checkbox"]):not([type="radio"]),select){
+  min-height:50px;
+}
+#startDate{
+  cursor:pointer;
+}
+
 #exerciseList{
   display:grid!important;
   gap:1rem!important;
@@ -28,8 +58,11 @@
 #myPlanGeneratorWrap .ex-row,
 [data-fitness-routine-panel="calisthenics"] .ex-row{
   display:grid!important;
-  grid-template-columns:minmax(340px,2.15fr) minmax(170px,.78fr) minmax(120px,.52fr) minmax(285px,1.15fr) 52px!important;
-  gap:1rem!important;
+  grid-template-columns:minmax(300px,1.65fr) minmax(240px,1.05fr) minmax(165px,.72fr) minmax(105px,.45fr) 52px!important;
+  grid-template-areas:
+    "exercise progression baseline sets remove"
+    "exercise rep rep rep remove";
+  gap:.85rem 1rem!important;
   align-items:end!important;
   width:100%;
   min-width:0;
@@ -40,23 +73,32 @@
 }
 .ex-row>*{min-width:0}
 .ex-exercise-block{
+  grid-area:exercise;
+  align-self:stretch;
   display:grid!important;
   grid-template-columns:minmax(0,1fr) 44px!important;
   gap:.55rem!important;
   align-items:end!important;
   min-width:0;
 }
+.ex-field-progression-mode{grid-area:progression}
+.ex-field-baseline{grid-area:baseline}
+.ex-field-sets{grid-area:sets}
+.ex-field-rep-increase{grid-area:rep}
+.ex-remove-wrap{grid-area:remove}
 .ex-field-exercise,
+.ex-field-progression-mode,
 .ex-field-baseline,
 .ex-field-sets,
 .ex-field-rep-increase{
   display:grid!important;
   align-content:end!important;
-  gap:.5rem!important;
+  gap:.45rem!important;
   min-width:0;
   margin:0!important;
 }
 .ex-field-exercise label,
+.ex-field-progression-mode>span,
 .ex-field-baseline label,
 .ex-field-sets label,
 .ex-field-rep-increase>span{
@@ -67,12 +109,13 @@
   line-height:1.35;
 }
 .ex-search-input,
+.ex-progression-mode,
 .ex-baseline,
 .ex-sets,
 .ex-rep-increase{
   width:100%!important;
   min-width:0!important;
-  min-height:48px;
+  min-height:50px!important;
   margin:0!important;
 }
 .ex-select-source[hidden]{display:none!important}
@@ -84,66 +127,84 @@
 }
 .exercise-info-button{
   width:44px!important;
-  height:48px!important;
+  height:50px!important;
   min-width:44px!important;
   margin:0!important;
 }
+.ex-progression-note,
 .ex-field-rep-increase .rep-increase-note{
   display:block;
-  min-height:2.8em;
-  margin:.25rem 0 0!important;
-  font-size:.9rem!important;
-  line-height:1.4!important;
+  margin:.15rem 0 0!important;
+  font-size:.88rem!important;
+  line-height:1.35!important;
+  min-height:0!important;
 }
 .ex-remove-wrap{
   display:flex!important;
-  align-items:flex-end!important;
+  align-items:center!important;
   justify-content:center!important;
   min-width:52px;
   margin:0!important;
+  align-self:stretch!important;
 }
 .ex-remove{
   width:52px!important;
   min-width:52px!important;
-  height:48px!important;
+  height:50px!important;
   margin:0!important;
   padding:0!important;
 }
 #addExerciseBtn{justify-self:start}
-#myPlanGeneratorWrap .row,
-#myPlanGeneratorWrap .row-2{align-items:end}
-#myPlanGeneratorWrap :is(input,select,textarea){max-width:100%}
+
+/* Keep the scheduling/goal controls visually grouped and compact. */
+#myPlanGeneratorWrap .divider{
+  margin:1rem 0!important;
+}
+#myPlanGeneratorWrap .actions-inline{
+  gap:.7rem!important;
+  flex-wrap:wrap!important;
+}
+
 .fitness-calendar-day.future-date,
 .routine-calendar-day.future-date,
 .bl-routine-day-row.future-date{opacity:.48;cursor:not-allowed}
 
-@media (max-width:1260px){
+@media (max-width:1380px){
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
-    grid-template-columns:minmax(300px,1.7fr) minmax(165px,.8fr) minmax(120px,.6fr) 52px!important;
+    grid-template-columns:minmax(280px,1.5fr) minmax(220px,1fr) minmax(150px,.72fr) 52px!important;
+    grid-template-areas:
+      "exercise progression baseline remove"
+      "exercise sets rep remove";
   }
-  .ex-field-rep-increase{grid-column:1/-2}
-  .ex-remove-wrap{grid-column:-2/-1}
 }
-@media (max-width:900px){
+@media (max-width:1000px){
+  #myPlanGeneratorWrap .row-2{grid-template-columns:1fr!important}
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
     grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    grid-template-areas:
+      "exercise exercise"
+      "progression baseline"
+      "sets rep"
+      ". remove";
   }
-  .ex-exercise-block{grid-column:1/-1}
-  .ex-field-rep-increase{grid-column:1/-1}
-  .ex-remove-wrap{grid-column:2;justify-self:end}
+  .ex-remove-wrap{justify-self:end!important;align-self:end!important}
 }
 @media (max-width:650px){
   #myPlanGeneratorWrap .ex-row,
   [data-fitness-routine-panel="calisthenics"] .ex-row{
     grid-template-columns:1fr!important;
+    grid-template-areas:
+      "exercise"
+      "progression"
+      "baseline"
+      "sets"
+      "rep"
+      "remove";
     padding:.85rem;
   }
-  .ex-exercise-block,
-  .ex-field-rep-increase,
-  .ex-remove-wrap{grid-column:1}
-  .ex-remove-wrap{justify-self:start}
+  .ex-remove-wrap{justify-self:start!important}
   .fitness-calisthenics-plan-manager .section-head-actions{display:grid}
   .fitness-calisthenics-plan-manager .action{width:100%}
 }
