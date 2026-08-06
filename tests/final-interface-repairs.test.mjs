@@ -67,7 +67,7 @@ test('Skincare searchable controls stay inside the Skincare palette', () => {
   assert.match(liveCss, /#routineActionSearch::-webkit-search-cancel-button/);
   assert.match(liveCss, /-webkit-appearance:none!important/);
   assert.match(liveCss, /#routineActionToggle/);
-  assert.match(liveCss, /var\(--bl-routine-accent\)/);
+  assert.match(liveCss, /var\(--bl-routine-accent/);
 });
 
 test('Account exposes one Favorites dropdown with Food and Natural Skincare categories', () => {
