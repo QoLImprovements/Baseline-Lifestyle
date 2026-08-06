@@ -1,8 +1,8 @@
 /* Baseline Fitness — deterministic loader for the existing My Routine implementation. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V15__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V15__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V16__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V16__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -119,7 +119,6 @@
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260806_1', 'data-baseline-public-routine-groups'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2', 'data-fitness-routine-sitewide-v3'))
     .then(() => loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10', 'data-baseline-routine-coherence-v4'))
-    .then(() => load('/sitewide/js/baseline-fitness-routine-summary-bridge-v1.js?v=FITNESS_ROUTINE_SUMMARY_BRIDGE_20260806_1', 'data-fitness-routine-summary-bridge'))
     .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_5', 'data-baseline-routine-coherence-events-v4'))
     .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_2', 'data-baseline-routine-live-authority'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260806_1', 'data-fitness-generator-progression'))
