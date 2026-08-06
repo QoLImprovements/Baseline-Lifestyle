@@ -5,7 +5,9 @@ import { readFileSync } from 'node:fs';
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
 test('live stability runtime covers the reported refresh and persistence faults', () => {
-  const js = read('sitewide/js/baseline-live-stability.js');
+  const loader = read('sitewide/js/baseline-live-stability.js');
+  const core = read('sitewide/js/baseline-live-stability-core-v3.js');
+  const js = `${loader}\n${core}`;
   assert.match(js, /__baseline_pending_recipe_route_v1__/);
   assert.match(js, /__baseline_fitness_body_view_v1__/);
   assert.match(js, /data-baseline-games-stable/);
@@ -14,6 +16,9 @@ test('live stability runtime covers the reported refresh and persistence faults'
   assert.match(js, /expectedRevision/);
   assert.match(js, /Badminton could not save to the server/);
   assert.match(js, /location\.assign\('\/home\/1'\)/);
+  assert.match(loader, /baseline-unified-favorites-v1\.js/);
+  assert.match(loader, /baseline-detect-word-feedback-v1\.js/);
+  assert.doesNotMatch(loader, /installRoutineInterfaceRepairs/);
 });
 
 test('shared and protected runtimes load stability without reordering first-paint CSS', () => {
