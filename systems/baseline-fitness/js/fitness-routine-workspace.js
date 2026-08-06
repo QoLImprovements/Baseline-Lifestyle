@@ -1,249 +1,111 @@
-/* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
+/* Baseline Fitness — deterministic canonical My Routine loader. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V12__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V12__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V13__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V13__ = true;
 
-  const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
+  const BUILD = 'BASELINE_FITNESS_ROUTINE_CANONICAL_20260806_1';
+  const CANONICAL_PATH = '/baseline-fitness/my-routine';
+  const MAIN_VIEW_KEY = '__bl_fitness_canonical_view_v1__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
-  const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
 
-  function navigationPathname() {
+  function requestedPath() {
     try {
-      const entry = global.performance?.getEntriesByType?.('navigation')?.[0];
-      if (entry?.name) return new URL(entry.name, global.location?.href || document.baseURI).pathname;
+      const navigation = global.performance?.getEntriesByType?.('navigation')?.[0];
+      if (navigation?.name) return new URL(navigation.name, global.location.href).pathname;
     } catch (_error) {}
-    return '';
+    return String(global.location?.pathname || '');
   }
 
-  const requestedPath = navigationPathname() || String(global.location?.pathname || '');
-  const requestedInitialTab = document.documentElement.getAttribute('data-initial-fitness-tab') || '';
-  const OPEN_MY_ROUTINE = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(requestedPath)
-    || requestedInitialTab === 'my-plan';
-  const LEGACY_CALISTHENICS_ROUTE = /\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(requestedPath);
+  const path = requestedPath();
+  const openRoutine = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(path)
+    || document.documentElement.getAttribute('data-initial-fitness-tab') === 'my-plan';
+  const legacyPlanRoute = /\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(path);
 
-  let routeInterval = 0;
-  let routeAttempts = 0;
-  let visiblePasses = 0;
-  let initialSubviewApplied = false;
-  let restoreTimers = [];
+  function ensureStyle(href, marker) {
+    if (document.querySelector(`link[${marker}]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `${href}?v=${BUILD}`;
+    link.setAttribute(marker,'true');
+    document.head.appendChild(link);
+  }
 
-  function load(src) {
-    return new Promise((resolve, reject) => {
+  function loadScript(src, marker) {
+    const existing = document.querySelector(`script[${marker}]`);
+    if (existing) {
+      return existing.dataset.loaded === 'true'
+        ? Promise.resolve()
+        : new Promise((resolve,reject) => {
+            existing.addEventListener('load',resolve,{ once:true });
+            existing.addEventListener('error',reject,{ once:true });
+          });
+    }
+    return new Promise((resolve,reject) => {
       const script = document.createElement('script');
-      script.src = src;
+      script.src = `${src}?v=${BUILD}`;
       script.async = false;
-      script.onload = resolve;
-      script.onerror = reject;
+      script.setAttribute(marker,'true');
+      script.addEventListener('load',() => { script.dataset.loaded = 'true'; resolve(); },{ once:true });
+      script.addEventListener('error',reject,{ once:true });
       document.head.appendChild(script);
     });
   }
 
-  function loadWithoutMutationObserver(src) {
-    const NativeObserver = global.MutationObserver;
-    let replaced = false;
-    if (typeof NativeObserver === 'function') {
-      global.MutationObserver = class BaselineQuietRoutineObserver {
-        constructor(callback) { this.callback = callback; }
-        observe() {}
-        disconnect() {}
-        takeRecords() { return []; }
-      };
-      replaced = true;
-    }
-    return load(src).finally(() => {
-      if (replaced) global.MutationObserver = NativeObserver;
-    });
+  function ready() {
+    return document.readyState === 'loading'
+      ? new Promise((resolve) => document.addEventListener('DOMContentLoaded',resolve,{ once:true }))
+      : Promise.resolve();
   }
 
-  function normaliseRoutineLabels() {
-    const button = document.querySelector('[data-fitness-routine-view="summary"]');
-    const heading = document.querySelector('[data-fitness-routine-panel="summary"] h2');
-    if (button) button.textContent = 'Routine Summary';
-    if (heading) heading.textContent = 'Routine Summary';
-  }
-
-  function correctRouteUrl() {
-    if (!OPEN_MY_ROUTINE) return;
-    try {
-      const current = new URL(global.location.href);
-      if (current.pathname === CANONICAL_ROUTINE_PATH) return;
-      current.pathname = CANONICAL_ROUTINE_PATH;
-      global.history.replaceState(global.history.state, '', current.pathname + current.search + current.hash);
-    } catch (_error) {}
-  }
-
-  function selectedRoutineSubview() {
-    try {
-      const remembered = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      if (['log','summary','public','plan','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
-    } catch (_error) {}
-    return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
-  }
-
-  const INITIAL_ROUTINE_SUBVIEW = selectedRoutineSubview();
-  const NEEDS_NESTED_RESTORE = ['public','plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW);
-
-  function selectedPlanSubview() {
-    if (['calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) return INITIAL_ROUTINE_SUBVIEW;
-    try {
-      const remembered = String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
-      if (['calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
-    } catch (_error) {}
-    return 'calisthenics';
-  }
-
-  function applyInitialRoutineSubview() {
-    if (initialSubviewApplied) return;
-    const routine = global.BASELINE_fitnessRoutine;
-    if (!routine || typeof routine.selectView !== 'function') return;
-    if (INITIAL_ROUTINE_SUBVIEW === 'public') return;
-    const baseView = ['plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)
-      ? selectedPlanSubview()
-      : INITIAL_ROUTINE_SUBVIEW;
-    initialSubviewApplied = true;
-    routine.selectView(baseView);
-  }
-
-  function activateCoherentPanel(view) {
-    const shell = document.querySelector('.fitness-routine-shell');
-    const button = shell?.querySelector(`.fitness-routine-subtabs [data-fitness-routine-view="${view}"]`);
-    const panel = shell?.querySelector(`:scope > [data-fitness-routine-panel="${view}"]`);
-    if (!shell || !button || !panel) return false;
-    shell.querySelectorAll('.fitness-routine-subtabs [data-fitness-routine-view]').forEach((entry) => {
-      entry.setAttribute('aria-selected', entry === button ? 'true' : 'false');
-    });
-    shell.querySelectorAll(':scope > [data-fitness-routine-panel]').forEach((entry) => {
-      const active = entry === panel;
-      entry.hidden = !active;
-      entry.classList.toggle('active', active);
-    });
-    try { global.sessionStorage?.setItem(ROUTINE_VIEW_KEY, view); } catch (_error) {}
-    return true;
-  }
-
-  function activateCoherentPlanSubview(view) {
-    const planPanel = document.querySelector('[data-fitness-routine-panel="plan"]');
-    const button = planPanel?.querySelector(`[data-fitness-plan-view="${view}"]`);
-    const panel = planPanel?.querySelector(`[data-fitness-plan-panel="${view}"]`);
-    if (!planPanel || !button || !panel) return false;
-    planPanel.querySelectorAll('[data-fitness-plan-view]').forEach((entry) => {
-      entry.setAttribute('aria-selected', entry === button ? 'true' : 'false');
-    });
-    planPanel.querySelectorAll('[data-fitness-plan-panel]').forEach((entry) => {
-      entry.hidden = entry !== panel;
-    });
-    try { global.sessionStorage?.setItem(PLAN_VIEW_KEY, view); } catch (_error) {}
-    return true;
-  }
-
-  function restoreCoherentRoutineSubview() {
-    if (INITIAL_ROUTINE_SUBVIEW === 'public') return activateCoherentPanel('public');
-    if (['plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) {
-      const planReady = activateCoherentPanel('plan');
-      const subviewReady = activateCoherentPlanSubview(selectedPlanSubview());
-      return planReady && subviewReady;
-    }
-    return true;
-  }
-
-  function restoreCoherentRoutineSubviewAfterRenders() {
-    restoreTimers.forEach((timer) => global.clearTimeout(timer));
-    restoreTimers = [];
-    if (!NEEDS_NESTED_RESTORE) return;
-    restoreTimers = [0,50,150,350,800,1600].map((delay) => global.setTimeout(restoreCoherentRoutineSubview, delay));
-  }
-
-  function cancelDelayedRestore() {
-    restoreTimers.forEach((timer) => global.clearTimeout(timer));
-    restoreTimers = [];
-  }
-
-  function selectMyRoutine() {
-    if (!OPEN_MY_ROUTINE) return false;
-    document.documentElement.setAttribute('data-initial-fitness-tab', 'my-plan');
-
-    const controllerReady = typeof global.BASELINE_selectTab === 'function';
-    if (controllerReady) {
-      try { global.BASELINE_selectTab('my-plan', { silentHistory:true }); } catch (_error) {}
-    }
-
+  function selectRoutinePage() {
+    if (!openRoutine) return;
+    document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
+    try { global.BASELINE_selectTab?.('my-plan',{ silentHistory:true }); } catch (_error) {}
     document.querySelectorAll('.tab[data-target]').forEach((button) => {
       const active = button.dataset.target === 'my-plan';
-      button.classList.toggle('active', active);
-      button.setAttribute('aria-selected', active ? 'true' : 'false');
+      button.classList.toggle('active',active);
+      button.setAttribute('aria-selected',active ? 'true' : 'false');
     });
     document.querySelectorAll('main.wrap > .section').forEach((section) => {
-      section.classList.toggle('active', section.id === 'my-plan');
+      section.classList.toggle('active',section.id === 'my-plan');
     });
-
-    correctRouteUrl();
     const section = document.getElementById('my-plan');
-    if (section?.hidden) section.hidden = false;
-    if (!section) return false;
-    const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
-    const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
-    if (visible) applyInitialRoutineSubview();
-    return visible && controllerReady;
-  }
-
-  function stopRouteStabiliser() {
-    if (routeInterval) global.clearInterval(routeInterval);
-    routeInterval = 0;
-  }
-
-  function stabiliseMyRoutineRoute() {
-    if (!OPEN_MY_ROUTINE) return;
-    selectMyRoutine();
-    if (routeInterval) return;
-    routeAttempts = 0;
-    visiblePasses = 0;
-    routeInterval = global.setInterval(() => {
-      routeAttempts += 1;
-      visiblePasses = selectMyRoutine() ? visiblePasses + 1 : 0;
-      normaliseRoutineLabels();
-      if (visiblePasses >= 5 || routeAttempts >= 50) stopRouteStabiliser();
-    }, 100);
-  }
-
-  if (OPEN_MY_ROUTINE) {
-    selectMyRoutine();
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stabiliseMyRoutineRoute, { once:true });
-    global.addEventListener('load', stabiliseMyRoutineRoute, { once:true });
-    global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
-    global.addEventListener('click', (event) => {
-      if (event.target?.closest?.('[data-fitness-routine-view],[data-fitness-plan-view]')) cancelDelayedRestore();
-      if (event.target?.closest?.('.tab[data-target="my-plan"]')) {
-        global.setTimeout(correctRouteUrl, 0);
-        global.setTimeout(correctRouteUrl, 80);
+    if (section) section.hidden = false;
+    try {
+      const current = new URL(global.location.href);
+      if (current.pathname !== CANONICAL_PATH) {
+        current.pathname = CANONICAL_PATH;
+        global.history.replaceState(global.history.state,'',current.pathname + current.search + current.hash);
       }
-    }, true);
-    global.addEventListener('pagehide', () => {
-      stopRouteStabiliser();
-      cancelDelayedRestore();
-    }, { once:true });
+    } catch (_error) {}
   }
 
-  load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3')
-    .then(() => load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2'))
-    .then(() => load('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2'))
-    .then(() => load('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260805_1'))
+  function setInitialCanonicalView() {
+    if (!legacyPlanRoute) return;
+    try {
+      global.sessionStorage?.setItem(MAIN_VIEW_KEY,'plan');
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
+    } catch (_error) {}
+  }
+
+  ensureStyle('/sitewide/css/baseline-routine-canonical-v1.css','data-baseline-routine-canonical-style');
+
+  ready()
     .then(() => {
-      applyInitialRoutineSubview();
-      stabiliseMyRoutineRoute();
-      return load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2');
+      setInitialCanonicalView();
+      selectRoutinePage();
+      return loadScript('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js','data-fitness-activity-catalogue-v2');
     })
-    .then(() => {
-      normaliseRoutineLabels();
-      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10');
-    })
-    .then(() => load('/sitewide/js/baseline-fitness-routine-summary-bridge-v1.js?v=FITNESS_ROUTINE_SUMMARY_BRIDGE_20260806_1'))
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_4'))
-    .then(() => {
-      restoreCoherentRoutineSubviewAfterRenders();
-      stabiliseMyRoutineRoute();
-      normaliseRoutineLabels();
-      return load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1');
-    })
-    .catch(() => {});
+    .then(() => loadScript('/sitewide/js/baseline-routine-system.js','data-baseline-routine-system-script'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js','data-fitness-routine-workspace-v2'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js','data-fitness-calisthenics-schedule'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js','data-fitness-timed-hold-targets'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-routine-canonical.js','data-fitness-routine-canonical'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-routine-visibility.js','data-fitness-routine-visibility'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-exercise-family-filter.js','data-fitness-exercise-family-filter'))
+    .then(() => selectRoutinePage())
+    .catch((error) => {
+      try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {}
+    });
 })(typeof window !== 'undefined' ? window : globalThis);

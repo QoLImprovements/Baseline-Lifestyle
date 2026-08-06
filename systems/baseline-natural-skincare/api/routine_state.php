@@ -95,6 +95,52 @@ function bl_skincare_logs($value): array {
   return $logs;
 }
 
+function bl_skincare_group($value, int $index): ?array {
+  if(!is_array($value)) return null;
+  $id = preg_replace('/[^A-Za-z0-9_-]/', '-', bl_skincare_text($value['id'] ?? ('routine-group-' . ($index + 1)), 80));
+  $title = bl_skincare_text($value['title'] ?? '', 80);
+  if($id === '' || $title === '') return null;
+  $time = strtolower(bl_skincare_text($value['timeOfDay'] ?? 'anytime', 20));
+  if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
+  return [
+    'id'=>$id,
+    'title'=>$title,
+    'applyTime'=>!empty($value['applyTime']),
+    'timeOfDay'=>$time,
+    'applyFrequency'=>!empty($value['applyFrequency']),
+    'frequency'=>bl_skincare_frequency($value['frequency'] ?? []),
+  ];
+}
+
+function bl_skincare_groups($value): array {
+  $groups = [];
+  $ids = [];
+  $titles = [];
+  foreach(array_slice(is_array($value) ? $value : [], 0, 30) as $index=>$raw){
+    $group = bl_skincare_group($raw, $index);
+    if(!$group) continue;
+    if(isset($ids[$group['id']])) $group['id'] .= '-' . ($index + 1);
+    $titleKey = strtolower($group['title']);
+    if(isset($titles[$titleKey])) continue;
+    $ids[$group['id']] = true;
+    $titles[$titleKey] = true;
+    $groups[] = $group;
+  }
+  return $groups;
+}
+
+function bl_skincare_assignments($value, array $groups): array {
+  $valid = [];
+  foreach($groups as $group) $valid[(string)$group['id']] = true;
+  $assignments = [];
+  foreach(array_slice(is_array($value) ? $value : [], 0, 200, true) as $itemId=>$groupId){
+    $item = bl_skincare_text($itemId, 80);
+    $group = bl_skincare_text($groupId, 80);
+    if($item !== '' && isset($valid[$group])) $assignments[$item] = $group;
+  }
+  return $assignments;
+}
+
 function bl_skincare_decode(string $json, array $fallback): array {
   try{
     $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
@@ -146,7 +192,7 @@ function bl_skincare_public_profiles(PDO $db): array {
 
 function bl_skincare_public_payload(PDO $db, string $name): array {
   if($name === '' || bl_str_len($name) > BL_MAX_NAME_LEN) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
-  $statement = $db->prepare('SELECT u.name, r.visibility, r.routine_json, r.updated_at
+  $statement = $db->prepare('SELECT u.id, u.name, r.visibility, r.routine_json, r.updated_at
     FROM users u
     LEFT JOIN skincare_routines r ON r.user_id=u.id
     WHERE lower(u.name)=lower(:name)
@@ -155,11 +201,23 @@ function bl_skincare_public_payload(PDO $db, string $name): array {
   $row = $statement->fetch();
   if(!$row || $row['routine_json'] === null) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
   if(($row['visibility'] ?? '') !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
+
+  $groupStatement = $db->prepare('SELECT groups_json, assignments_json FROM skincare_routine_groups WHERE user_id=:user_id LIMIT 1');
+  $groupStatement->execute([':user_id'=>(int)($row['id'] ?? 0)]);
+  $groupRow = $groupStatement->fetch() ?: [];
+  $groups = bl_skincare_groups(bl_skincare_decode((string)($groupRow['groups_json'] ?? '[]'), []));
+  $assignments = bl_skincare_assignments(
+    bl_skincare_decode((string)($groupRow['assignments_json'] ?? '{}'), []),
+    $groups
+  );
+
   return [
     'ok'=>true,
     'publicRoutine'=>[
       'owner'=>(string)($row['name'] ?? $name),
       'routine'=>bl_skincare_routine(bl_skincare_decode((string)$row['routine_json'], [])),
+      'groups'=>$groups,
+      'assignments'=>$assignments,
       'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
     ],
   ];
