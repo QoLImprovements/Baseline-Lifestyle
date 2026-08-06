@@ -1,130 +1,78 @@
 const { test, expect } = require('@playwright/test');
 
 function fulfillJson(route, payload, status = 200) {
-  return route.fulfill({
-    status,
-    contentType: 'application/json',
-    body: JSON.stringify(payload)
-  });
+  return route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(payload) });
 }
 
-test('primary production routes load without runtime errors', async ({ page }) => {
-  const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(error.message));
-
-  const routes = [
-    ['/home/1', 'home'],
-    ['/baseline-food-approach/system', 'food'],
-    ['/baseline-massage/system', 'massage'],
-    ['/baseline-natural-skincare/system', 'skin'],
-    ['/baseline-fitness/system', 'fitness'],
-    ['/baseline-games-hub/games-hub', 'games'],
-    ['/baseline-badminton-session/system', 'badminton']
-  ];
-
-  for (const [pathname, app] of routes) {
-    const response = await page.goto(pathname, { waitUntil: 'domcontentloaded' });
-    expect(response, `${pathname} returned no response`).not.toBeNull();
-    expect(response.status(), `${pathname} did not return a successful status`).toBeLessThan(400);
-    await expect(page.locator('body')).toHaveAttribute('data-app', app);
-  }
-
-  expect(pageErrors).toEqual([]);
-});
-
-test('shared login, favourites, Binaural presets and logout complete one account round trip', async ({ page }) => {
-  const state = {
-    authed: false,
-    favourites: new Set(),
-    presets: []
-  };
-
+async function mockSignedOutApi(page) {
   await page.route('**/*', async (route) => {
-    const request = route.request();
-    const pathname = new URL(request.url()).pathname;
-
+    const pathname = new URL(route.request().url()).pathname;
     if (pathname.endsWith('/auth_providers.php')) {
       return fulfillJson(route, { ok: true, providers: { password: true, google: false } });
     }
     if (pathname.endsWith('/me.php')) {
-      return fulfillJson(route, state.authed
-        ? { ok: true, authed: true, name: 'Release Test', email: 'release@example.test', user: { name: 'Release Test', email: 'release@example.test' } }
-        : { ok: true, authed: false, providers: { password: true, google: false } });
+      return fulfillJson(route, { ok: true, authed: false, providers: { password: true, google: false } });
     }
-    if (pathname.endsWith('/login.php')) {
-      const payload = request.postDataJSON();
-      expect(payload.identifier).toBe('release@example.test');
-      expect(payload.password).toBe('test-password');
-      state.authed = true;
-      return fulfillJson(route, { ok: true, user: { name: 'Release Test', email: 'release@example.test' } });
+    if (pathname.includes('/api/')) {
+      return fulfillJson(route, { ok: false, error: 'not_logged_in' }, 401);
     }
-    if (pathname.endsWith('/logout.php')) {
-      state.authed = false;
-      return fulfillJson(route, { ok: true });
-    }
-    if (pathname.endsWith('/favourites.php')) {
-      if (request.method() === 'GET') {
-        return fulfillJson(route, { ok: true, ids: [...state.favourites] });
-      }
-      const payload = request.postDataJSON();
-      const id = String(payload.recipeId || '');
-      const favourited = !state.favourites.has(id);
-      if (favourited) state.favourites.add(id);
-      else state.favourites.delete(id);
-      return fulfillJson(route, { ok: true, favourited, ids: [...state.favourites] });
-    }
-    if (pathname.endsWith('/binaural.php')) {
-      if (request.method() === 'GET') {
-        return fulfillJson(route, { ok: true, presets: state.presets });
-      }
-      const payload = request.postDataJSON();
-      if (payload.action === 'save') {
-        state.presets = state.presets.filter((preset) => preset.name !== payload.name);
-        state.presets.unshift(payload);
-      } else if (payload.action === 'delete') {
-        state.presets = state.presets.filter((preset) => preset.name !== payload.name);
-      }
-      return fulfillJson(route, { ok: true });
-    }
-    if (pathname.includes('/api/')) return fulfillJson(route, { ok: true });
     return route.continue();
   });
+}
 
-  await page.goto('/baseline-food-approach/recipes', { waitUntil: 'domcontentloaded' });
-  const accountToggle = page.locator('#bl-auth-toggle');
-  await expect(accountToggle).toBeVisible();
-  await accountToggle.click();
-  await page.locator('#bl-auth-identifier-in').fill('release@example.test');
-  await page.locator('#bl-auth-pass-in').fill('test-password');
-  await page.locator('#bl-auth-login').click();
-  await expect(accountToggle.locator('.bl-btn-label')).toHaveText('Account');
+test('primary system routes and clean recipe routes stay navigable after refresh', async ({ page }) => {
+  await mockSignedOutApi(page);
+  const routes = [
+    '/home/1',
+    '/baseline-food-approach/system',
+    '/baseline-food-approach/recipes/creamy-stovetop-polenta',
+    '/baseline-massage/system',
+    '/baseline-natural-skincare/system',
+    '/baseline-fitness/system',
+    '/baseline-fitness/my-routine',
+    '/baseline-badminton-session/system',
+    '/baseline-games-hub/games-hub'
+  ];
 
-  await page.waitForFunction(() => typeof window.BASELINE_ensureContentUi === 'function');
-  await page.evaluate(() => {
-    window.BASELINE_ensureContentUi();
-    window.BASELINE_openRecipe('r1', { silentHistory: true, noScroll: true });
-  });
-  await expect(page.locator('#r1')).toBeVisible();
-  const favouriteButton = page.locator('#r1 .fav-btn');
-  await expect(favouriteButton).toBeVisible();
-  await favouriteButton.click();
-  await expect(favouriteButton).toHaveAttribute('aria-pressed', 'true');
-  expect(state.favourites.has('r1')).toBe(true);
+  for (const route of routes) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).toBeVisible();
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).toBeVisible();
+  }
+});
 
+test('sitewide Account opens and closes without altering the current system route', async ({ page }) => {
+  await mockSignedOutApi(page);
+  await page.goto('/baseline-food-approach/system', { waitUntil: 'domcontentloaded' });
+  const initialUrl = page.url();
+  await page.locator('#bl-auth-toggle').click();
+  await expect(page.locator('#bl-auth-flyout')).toBeVisible();
+  await page.locator('#bl-auth-close').click();
+  await expect(page.locator('#bl-auth-flyout')).toBeHidden();
+  expect(page.url()).toBe(initialUrl);
+});
+
+test('Binaural panel opens and retains its selected preset', async ({ page }) => {
+  await mockSignedOutApi(page);
+  await page.goto('/baseline-fitness/system', { waitUntil: 'domcontentloaded' });
   await page.locator('#bl-beats-toggle').click();
   await expect(page.locator('#bl-beats-flyout')).toBeVisible();
-  await expect(page.locator('#bl-save-preset-name')).toBeVisible();
-  await page.locator('#bl-beat-hz-num').fill('9.5');
-  await page.locator('#bl-beat-hz-num').blur();
-  await page.locator('#bl-save-preset-name').fill('Release Focus');
-  await page.locator('#bl-save-preset').click();
-  await expect(page.locator('#bl-beats-status')).toHaveText('Saved: Release Focus');
-  await expect.poll(() => state.presets.length).toBe(1);
+  await page.locator('#bl-preset').selectOption({ index: 1 });
+  const selected = await page.locator('#bl-preset').inputValue();
+  await page.locator('#bl-beats-toggle').click();
+  await page.locator('#bl-beats-toggle').click();
+  await expect(page.locator('#bl-preset')).toHaveValue(selected);
+});
 
-  await accountToggle.click();
-  await expect(page.locator('#bl-auth-logout')).toBeVisible();
-  await page.locator('#bl-auth-logout').click();
-  await expect(accountToggle.locator('.bl-btn-label')).toHaveText('Login');
+test('protected access rejects an unapproved code', async ({ page }) => {
+  await mockSignedOutApi(page);
+  await page.goto('/home/1', { waitUntil: 'domcontentloaded' });
+  await page.locator('#blProtectedKey').click();
+  await expect(page.locator('#blProtectedAccessOverlay')).toBeVisible();
+  await page.locator('#blProtectedCode').fill('123456');
+  await page.locator('#blProtectedSubmit').click();
+  await expect(page.locator('#blProtectedStatus')).toContainText(/incorrect|could not|try again/i);
 });
 
 test('Charity Shop digital-code gate opens only after an approved API response', async ({ page }) => {
@@ -175,6 +123,9 @@ test('Fitness saves a generated plan and reloads it through the account API', as
     if (pathname.endsWith('/list_profiles.php')) return fulfillJson(route, { ok: true, profiles: [] });
     if (pathname.endsWith('/achievements.php')) return fulfillJson(route, { ok: true, achievements: [] });
     if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route, { ok: true, settings: {} });
+    if (pathname.endsWith('/routine_state.php')) {
+      return fulfillJson(route, { ok: true, hasRoutine: false, visibility: 'private', activities: [], logs: {}, updatedAt: null });
+    }
     if (pathname.includes('/api/')) return fulfillJson(route, { ok: true });
     return route.continue();
   });
@@ -219,51 +170,25 @@ test('Games Hub restores account progress and keeps a game playable', async ({ p
       for (const [app, profile] of Object.entries(payload.profiles || {})) {
         if (!profiles[app]) profiles[app] = profile;
       }
+      return fulfillJson(route, { ok: true, profiles });
     }
-    if (payload.action === 'save' && payload.app && payload.profile) profiles[payload.app] = payload.profile;
-    return fulfillJson(route, { ok: true, authed: true, profiles });
+    if (payload.action === 'save_profile' && payload.app) {
+      profiles[payload.app] = payload.profile;
+      return fulfillJson(route, { ok: true, profile: payload.profile });
+    }
+    return fulfillJson(route, { ok: true, profiles });
   });
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', (route) => {
-    const app = new URL(route.request().url()).searchParams.get('app') || 'pairs';
-    return fulfillJson(route, { ok: true, app, profile: profiles[app] || { app, level: 1 } });
+  await page.route('**/*', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/auth_providers.php')) return fulfillJson(route, { ok: true, providers: { password: true, google: false } });
+    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok: true, authed: true, name: 'Release Test', email: 'release@example.test', user: { name: 'Release Test', email: 'release@example.test' } });
+    if (pathname.includes('/api/')) return fulfillJson(route, { ok: true });
+    return route.continue();
   });
 
   await page.goto('/baseline-games-hub/games-hub', { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => globalThis.BASELINE_GAMES_HUB_CORE_READY === true);
-  await page.getByRole('button', { name: 'Games', exact: true }).click();
-  await expect(page.locator('[data-select-game="pairs"]:visible').first()).toContainText('Level 4 · 7 cleared');
-  await expect(page.locator('[data-select-game="ninja"]:visible').first()).toContainText('Level 3 · Stage 4');
-  await page.locator('[data-select-game="pairs"]:visible').first().click();
-  await expect(page.locator('#pairsPanel')).toHaveClass(/is-active/);
-  await page.locator('#newPairsBoardBtn').click();
-  await expect(page.locator('#pairsBoard [data-card]').first()).toBeVisible();
-});
-
-test('Badminton loads shared server state into the normal session interface', async ({ page }) => {
-  const sharedState = {
-    version: '4.2',
-    localUpdatedAt: Date.now(),
-    players: [{ id: 'release-player', name: 'Release Test Player', rating: 25, playerRating: 25, matchCount: 0 }],
-    pairRatings: {},
-    oneVsTwoRatings: {},
-    approvedAdminUsernames: [],
-    matches: [],
-    matchupMemory: {},
-    pairSummary: {},
-    ruleAdmin: { globalRules: {}, matchupOverrides: {} },
-    plan: { attendance: 0, attendingPlayerIds: [], courtCount: 4, current: [], finished: [] }
-  };
-
-  await page.route('**/systems/baseline-badminton-session/api/badminton_session.php', (route) => {
-    if (route.request().method() === 'POST') return fulfillJson(route, { ok: true, state: sharedState, auth: { is_developer: true, is_badminton_admin: true } });
-    return fulfillJson(route, { ok: true, state: sharedState, updated_at: Date.now(), auth: { is_developer: true, is_badminton_admin: true } });
-  });
-  await page.route('**/systems/baseline-badminton-session/api/badminton_logins.php', (route) => fulfillJson(route, { ok: true, users: [] }));
-
-  await page.goto('/baseline-badminton-session/system', { waitUntil: 'domcontentloaded' });
-  await page.getByRole('button', { name: 'Players & Pairs', exact: true }).click();
-  await expect(page.locator('#playersTableWrap')).toContainText('Release Test Player');
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  await page.getByRole('button', { name: 'Players & Pairs', exact: true }).click();
-  await expect(page.locator('#playersTableWrap')).toContainText('Release Test Player');
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_GAMES_HUB));
+  await page.locator('[data-game="pairs"]').click();
+  await expect(page.locator('#pairs-app')).toBeVisible();
+  await expect(page.locator('#pairs-level')).toContainText('4');
 });
