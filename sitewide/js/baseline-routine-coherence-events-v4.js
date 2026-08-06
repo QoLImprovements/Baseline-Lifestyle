@@ -17,7 +17,7 @@
   }
   function refreshAfterRender() {
     timers.forEach((timer) => global.clearTimeout(timer));
-    timers = [0,60,160,360].map((delay) => global.setTimeout(refresh, delay));
+    timers = [0,60,160,360,800,1600].map((delay) => global.setTimeout(refresh, delay));
   }
   function insideRoutine(event) {
     const container = root();
@@ -38,4 +38,8 @@
   document.addEventListener('baseline:fitness-workout-updated', refreshAfterRender);
   global.addEventListener('pageshow', refreshAfterRender);
   global.addEventListener('pagehide', () => timers.forEach((timer) => global.clearTimeout(timer)), { once:true });
+
+  /* Dynamic loaders may finish just before or just after DOMContentLoaded. These
+     passes ensure the shared decorator runs after the owning routine renderer. */
+  refreshAfterRender();
 })(typeof window !== 'undefined' ? window : globalThis);
