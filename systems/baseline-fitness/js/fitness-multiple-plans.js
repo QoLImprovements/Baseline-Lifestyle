@@ -236,7 +236,7 @@
       const label = `${planName(plan, index)} — ${Number(progress.done || 0)}/${Number(progress.total || plan.planJson?.sessions || 0)} sessions`;
       return `<option value="${Number(plan.planId)}"${Number(plan.planId) === selected ? ' selected' : ''}>${escapeHtml(label)}</option>`;
     }).join('');
-    return `<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for different muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create another plan</button></div>
+    return `<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for different muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div>
       <label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect" data-native-select="true"${plans.length ? '' : ' disabled'}><option value="">${plans.length ? 'Choose a plan…' : 'No saved plans yet'}</option>${options}</select></label>`;
   }
 
@@ -301,7 +301,9 @@
     setSelectedPlanId(0);
     clearPlanCaches();
     try { global.sessionStorage?.setItem(VIEW_KEY, 'calisthenics'); } catch (_error) {}
-    global.location.assign('/baseline-fitness/my-routine?new-plan=1');
+    const url = new URL('/baseline-fitness/my-routine', global.location.origin);
+    url.searchParams.set('new-plan', String(Date.now()));
+    global.location.assign(url.toString());
   }
 
   function openPlan(planId) {
