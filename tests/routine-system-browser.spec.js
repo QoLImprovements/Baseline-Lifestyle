@@ -97,7 +97,7 @@ test('Fitness shares the same disclosures, summaries and full-width weekly rows'
   await expect(summaryTab).toBeVisible();
   await expect(page).toHaveURL(/\/baseline-fitness\/my-routine/);
   const tabLabels = await page.locator('.fitness-routine-subtab').allTextContents();
-  expect(tabLabels.slice(0, 3)).toEqual(['Routine Log', 'Exercise Summary', 'Calisthenics']);
+  expect(tabLabels.slice(0, 3)).toEqual(['Routine Log', 'Routine Summary', 'Calisthenics']);
 
   await page.locator('[data-fitness-routine-view="other"]').click();
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
