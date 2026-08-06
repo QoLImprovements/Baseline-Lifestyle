@@ -6,13 +6,14 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
 const catalogue = require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
-const workspaceLoader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
+const loader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
 const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js', import.meta.url), 'utf8');
-const coherent = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-sitewide-v3.js', import.meta.url), 'utf8');
-const cssEntry = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace.css', import.meta.url), 'utf8');
-const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url), 'utf8');
+const canonical = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-canonical.js', import.meta.url), 'utf8');
+const visibility = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-visibility.js', import.meta.url), 'utf8');
+const plans = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-multiple-plans.js', import.meta.url), 'utf8');
+const canonicalCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-canonical-v1.css', import.meta.url), 'utf8');
+const generatorCss = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-multiple-plans.css', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
-const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-system.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../systems/baseline-fitness/api/schema.php', import.meta.url), 'utf8');
@@ -22,13 +23,19 @@ test('Fitness main navigation remains My Routine with refresh-safe routing', () 
   assert.match(html, /data-target="my-plan">My Routine<\/button>/);
   assert.match(html, /my-routine\|my-plan/);
   assert.match(htaccess, /baseline-fitness\/my-routine/);
+  assert.match(loader, /CANONICAL_PATH = '\/baseline-fitness\/my-routine'/);
 });
 
-test('Exercise Summary is inserted directly between Routine Log and Calisthenics', () => {
-  assert.match(coherent, /textContent = 'Exercise Summary'/);
-  assert.match(coherent, /logButton\?\.insertAdjacentElement\('afterend', button\)/);
-  assert.match(coherent, /panel\.dataset\.fitnessRoutinePanel = 'summary'/);
-  assert.match(coherent, /activateSummary/);
+test('one canonical top-level interface owns Log, Summary, Plan and Public Routines', () => {
+  assert.match(canonical, /\['log','Routine Log'\]/);
+  assert.match(canonical, /\['summary','Routine Summary'\]/);
+  assert.match(canonical, /\['plan','Routine Plan'\]/);
+  assert.match(canonical, /\['public','Public Routines'\]/);
+  assert.match(canonical, /data-canonical-fitness-view/);
+  assert.match(canonical, /data-canonical-fitness-panel/);
+  assert.match(canonical, /PLAN_VIEWS = Object\.freeze\(\['calisthenics','cardio','other','sports'\]\)/);
+  assert.doesNotMatch(loader, /fitness-routine-sitewide-v3|baseline-routine-coherence-v4|routine-coherence-events|summary-bridge/);
+  assert.doesNotMatch(canonical, /MutationObserver|setInterval/);
 });
 
 test('catalogue provides expanded searchable cardio, activity and sports lists', () => {
@@ -54,48 +61,34 @@ test('activities retain relevant optional metrics rather than one generic amount
   assert.match(workspace, /data-log-metric/);
 });
 
-test('activity pickers remain searchable, keyboard navigable and fully opaque', () => {
+test('activity pickers remain searchable and keyboard navigable', () => {
   assert.match(workspace, /role="combobox"/);
   assert.match(workspace, /event\.key === 'ArrowDown'/);
   assert.match(workspace, /event\.key === 'ArrowUp'/);
   assert.match(workspace, /setPickerIndex/);
-  assert.match(css, /z-index:10000!important/);
-  assert.match(css, /background:#120a0e!important/);
-  assert.match(css, /opacity:1!important/);
+  assert.match(workspace, /resolveTypedActivity/);
 });
 
-test('Fitness Week calendar uses one full-width row for every day', () => {
+test('Routine Log retains week and month calendars while Summary uses one planned calendar', () => {
   assert.match(workspace, /data-calendar-view="week"/);
   assert.match(workspace, /data-calendar-view="month"/);
-  assert.match(coherent, /makeWeekRows/);
-  assert.match(coherent, /UI\.weekRow/);
-  assert.match(coherent, /bl-routine-week-list/);
-  assert.match(sharedCss, /grid-template-columns:minmax\(185px/);
+  assert.match(canonical, /function weeklyCalendar/);
+  assert.match(canonical, /Planned calendar/);
+  assert.match(canonicalCss, /\.bl-canonical-week/);
+  assert.match(shared, /function weekDates/);
 });
 
-test('activity, log and generated session details are collapsed and expandable', () => {
-  assert.match(coherent, /decorateActivityCards/);
-  assert.match(coherent, /decorateLogCards/);
-  assert.match(coherent, /decorateSessionCards/);
-  assert.match(coherent, /Show session details/);
-  assert.match(coherent, /Session details/);
-  assert.match(coherent, /Edit details/);
-  assert.match(coherent, /card\.dataset\.sitewideDisclosure = 'true'/);
+test('canonical Summary presents calisthenics and other fitness categories exactly once', () => {
+  assert.match(canonical, /function summaryPlanCard/);
+  assert.match(canonical, /function summaryActivityCard/);
+  assert.match(canonical, /\['cardio','Cardio'\]/);
+  assert.match(canonical, /\['other','Other Fitness Activity'\]/);
+  assert.match(canonical, /\['sports','Sports'\]/);
+  assert.match(canonical, /function stableHtml/);
+  assert.match(canonical, /if \(!target \|\| target\.dataset\.canonicalSignature === signature\) return/);
 });
 
-test('every current-plan exercise receives a comprehensive structured summary', () => {
-  assert.match(coherent, /plannedExerciseNames/);
-  assert.match(coherent, /global\.BASELINE_FITNESS_DEBUG\?\.EXERCISES/);
-  assert.match(coherent, /Exercise family/);
-  assert.match(coherent, /Movement category/);
-  assert.match(coherent, /Variation level/);
-  assert.match(coherent, /Progression rule/);
-  assert.match(coherent, /Benefits and practical role/);
-  assert.match(coherent, /How to perform it/);
-  assert.match(coherent, /activitySummaryCard/);
-});
-
-test('text and numeric fields save without activity-list replacement per character', () => {
+test('text and numeric activity fields save without replacing activity lists per character', () => {
   const inputHandler = workspace.slice(workspace.indexOf("root.addEventListener('input'"), workspace.indexOf("root.addEventListener('change'"));
   assert.match(inputHandler, /updateActivityField\(field\)/);
   assert.match(inputHandler, /updateTargetMetric\(targetMetric\)/);
@@ -110,13 +103,27 @@ test('Fitness activity state persists activity-specific target and result metric
   assert.match(api, /'metrics'=>bl_fitness_metric_values/);
 });
 
-test('Fitness entry point loads catalogue, shared system, workspace and coherence layer in order', () => {
-  const catalogueIndex = workspaceLoader.indexOf('fitness-activity-catalogue-v2.js');
-  const sharedIndex = workspaceLoader.indexOf('baseline-routine-system.js');
-  const workspaceIndex = workspaceLoader.indexOf('fitness-routine-workspace-v2.js');
-  const coherentIndex = workspaceLoader.indexOf('fitness-routine-sitewide-v3.js');
-  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && coherentIndex > workspaceIndex);
-  assert.match(cssEntry, /baseline-routine-system\.css/);
-  assert.match(cssEntry, /fitness-routine-sitewide-v3\.css/);
+test('Fitness visibility remains in the canonical Public panel and saves independently', () => {
+  assert.match(visibility, /My Routine Visibility/);
+  assert.match(visibility, /routine_visibility\.php/);
+  assert.doesNotMatch(visibility, /MutationObserver|setInterval/);
+});
+
+test('Fitness entry point loads base state owners before the canonical presentation', () => {
+  const catalogueIndex = loader.indexOf('fitness-activity-catalogue-v2.js');
+  const sharedIndex = loader.indexOf('baseline-routine-system.js');
+  const workspaceIndex = loader.indexOf('fitness-routine-workspace-v2.js');
+  const canonicalIndex = loader.indexOf('fitness-routine-canonical.js');
+  const visibilityIndex = loader.indexOf('fitness-routine-visibility.js');
+  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && canonicalIndex > workspaceIndex && visibilityIndex > canonicalIndex);
+  assert.match(loader, /baseline-routine-canonical-v1\.css/);
   assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2/);
+});
+
+test('Calisthenics generator is searchable and has one responsive aligned grid', () => {
+  assert.match(plans, /type = 'search'/);
+  assert.match(plans, /calisthenicsExerciseOptions/);
+  assert.match(generatorCss, /grid-template-columns:minmax\(340px,2\.15fr\)/);
+  assert.match(generatorCss, /align-items:end!important/);
+  assert.match(generatorCss, /\.ex-select-source\[hidden\]/);
 });
