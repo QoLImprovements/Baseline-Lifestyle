@@ -18,6 +18,7 @@ test('Skincare and Fitness load one shared stable My Routine layer', () => {
   assert.match(fitness, /loadWithoutMutationObserver/);
   assert.doesNotMatch(skincare, /baseline-routine-coherence-v3\.js/);
   assert.doesNotMatch(fitness, /baseline-routine-coherence-v3\.js/);
+  assert.doesNotMatch(fitness, /fitness-routine-canonical|baseline-routine-canonical-v1/);
 });
 
 test('Fitness has a nested Routine Plan layer with shared cross-section groups', () => {
@@ -32,17 +33,19 @@ test('Fitness has a nested Routine Plan layer with shared cross-section groups',
   assert.match(shared, /data-v4-entity-group/);
 });
 
-test('Create Another Plan and Open Plan have explicit functional handlers', () => {
+test('Create Another Plan and Open Plan have one authoritative handler before coherence fallbacks', () => {
   const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
-  const coherence = read('sitewide/js/baseline-routine-coherence-v4.js');
+  const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
+  const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
   assert.match(multiplePlans, />Create Another Plan<\/button>/);
   assert.doesNotMatch(multiplePlans, />Create another plan<\/button>/);
-  assert.match(multiplePlans, /url\.searchParams\.set\('new-plan', String\(Date\.now\(\)\)\)/);
-  assert.match(coherence, /#createCalisthenicsPlan/);
-  assert.match(coherence, /#calisthenicsPlanSelect/);
-  assert.match(coherence, /stopImmediatePropagation/);
-  assert.match(coherence, /BASELINE_fitnessPlans\?\.openPlan/);
+  assert.match(multiplePlans, /url\.searchParams\.set\('new-plan',\s*String\(Date\.now\(\)\)\)/);
+  assert.match(authority, /#createCalisthenicsPlan/);
+  assert.match(authority, /calisthenicsPlanSelect/);
+  assert.match(authority, /stopImmediatePropagation/);
+  assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
+  assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-coherence-v4.js'));
 });
 
 test('Calendar numbers use one aligned layer with a real hover and long-press caption portal', () => {
@@ -103,6 +106,7 @@ test('Settings, Public Routines and completion display follow the coherent contr
   const css = read('sitewide/css/baseline-routine-coherence-v4.css');
   const fitnessApi = read('systems/baseline-fitness/api/routine_state.php');
   const fitnessSchema = read('systems/baseline-fitness/api/schema.php');
+  const groupedPublic = read('sitewide/js/baseline-public-routine-groups-v1.js');
 
   assert.match(shared, /data-v4-settings-toggle/);
   assert.match(shared, /data-v4-settings-panel/);
@@ -113,6 +117,8 @@ test('Settings, Public Routines and completion display follow the coherent contr
   assert.match(fitnessApi, /publicRoutine/);
   assert.match(fitnessApi, /'plans'=>bl_fitness_public_plans/);
   assert.match(fitnessSchema, /visibility TEXT NOT NULL DEFAULT/);
+  assert.match(groupedPublic, /publicRoutine\.groups/);
+  assert.match(groupedPublic, /publicRoutine\.assignments/);
 
   const publicPayload = fitnessApi.slice(
     fitnessApi.indexOf('function bl_fitness_public_payload'),
