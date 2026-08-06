@@ -1,0 +1,145 @@
+/* Baseline Lifestyle — final visual authority for live My Routine behaviour.
+   Pure CSS: no render loop, no DOM ownership. */
+
+/* Skincare Routine Log numbering:
+   - a saved group owns one number;
+   - steps inside that group never display a number;
+   - isolated/ungrouped steps continue numbering after the displayed groups.
+   CSS counters make the number present on the same paint as the routine itself,
+   so decorator scripts cannot make it blink while a checkbox is being saved. */
+html[data-app="skin"] #routineLogItems{
+  counter-reset:bl-live-routine-number;
+}
+html[data-app="skin"] #routineLogItems > .routine-log-group > .routine-log-group-head{
+  counter-increment:bl-live-routine-number;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:.7rem!important;
+  flex-wrap:wrap!important;
+}
+html[data-app="skin"] #routineLogItems > .routine-log-group > .routine-log-group-head::before{
+  content:counter(bl-live-routine-number);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  background:var(--accent,#c8795f);
+  color:#fff;
+  font:inherit;
+  font-weight:950;
+  line-height:1;
+}
+html[data-app="skin"] #routineLogItems .routine-log-group-head > .bl-v4-number,
+html[data-app="skin"] #routineLogItems .routine-log-item .bl-v4-number{
+  display:none!important;
+}
+html[data-app="skin"] #routineLogItems > .routine-log-group > h3 ~ .routine-log-item .routine-log-check > span::before{
+  counter-increment:bl-live-routine-number;
+  content:counter(bl-live-routine-number);
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:40px;
+  height:40px;
+  margin-right:.65rem;
+  border-radius:50%;
+  background:var(--accent,#c8795f);
+  color:#fff;
+  font:inherit;
+  font-weight:950;
+  line-height:1;
+  vertical-align:middle;
+}
+
+/* The group completion control is intentionally only a checkbox beside the
+   group title.  Its accessible label remains on the input. */
+html[data-app="skin"] .bl-final-group-complete{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:0!important;
+  margin:0 0 0 .15rem!important;
+  padding:0!important;
+  font-size:0!important;
+  line-height:1!important;
+  white-space:normal!important;
+}
+html[data-app="skin"] .bl-final-group-complete > span{
+  display:none!important;
+}
+html[data-app="skin"] .bl-final-group-complete input{
+  width:1.25rem!important;
+  height:1.25rem!important;
+  margin:0!important;
+  flex:0 0 auto!important;
+}
+
+/* Public Routines: compact card, heading and visibility share one row. */
+.bl-v4-public-card{
+  gap:12px!important;
+  padding:20px 24px!important;
+}
+.bl-live-public-head{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  width:100%!important;
+}
+.bl-live-public-head > :first-child{
+  min-width:0;
+  flex:1 1 auto;
+}
+.bl-live-public-head h2,
+.bl-live-public-head h3{
+  margin-top:0!important;
+}
+.bl-live-public-head p{
+  margin:.35rem 0 0!important;
+}
+.bl-live-public-head .bl-release-public-visibility,
+.bl-live-public-head .bl-v4-visibility{
+  flex:0 0 auto!important;
+  align-self:flex-start!important;
+  justify-content:flex-end!important;
+  margin:0 0 0 auto!important;
+}
+.bl-release-public-visibility{
+  margin:0!important;
+}
+.bl-v4-public-controls{
+  margin-top:2px!important;
+}
+
+/* Once a Fitness Summary filter is active, hidden cards/sections stay hidden
+   even if an older renderer tries to restore its own display property. */
+html[data-app="fitness"] #fitnessExerciseSummary [data-bl-live-filter-hidden="true"]{
+  display:none!important;
+}
+
+/* Keep My Routine geometry steady while state is saved. */
+.bl-routine-root,
+.bl-routine-root *{
+  scroll-behavior:auto!important;
+}
+.bl-routine-root .bl-v4-number,
+.bl-routine-root .routine-log-item,
+.bl-routine-root .fitness-routine-log-item,
+.bl-routine-root .fitness-exercise-summary-item{
+  animation:none!important;
+  transition:none!important;
+}
+
+@media(max-width:760px){
+  .bl-v4-public-card{padding:16px!important}
+  .bl-live-public-head{display:grid!important}
+  .bl-live-public-head .bl-release-public-visibility,
+  .bl-live-public-head .bl-v4-visibility{
+    margin:0!important;
+    justify-content:flex-start!important;
+  }
+}
