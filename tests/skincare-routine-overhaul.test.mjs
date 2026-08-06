@@ -12,7 +12,7 @@ const model = globalThis.BASELINE_SKINCARE_ROUTINE_MODEL;
 const products = require('../systems/baseline-natural-skincare/js/skincare-product-library.js');
 const ui = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
 const loader = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-enhancements.js', import.meta.url), 'utf8');
-const coherent = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js', import.meta.url), 'utf8');
+const canonical = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-canonical.js', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-natural-skincare/baseline-natural-skincare.html', import.meta.url), 'utf8');
 const routineApi = fs.readFileSync(new URL('../systems/baseline-natural-skincare/api/routine_state.php', import.meta.url), 'utf8');
@@ -69,18 +69,27 @@ test('base routine UI retains product, method and comprehensive controls', () =>
   assert.match(ui, /maxlength="1200"/);
 });
 
-test('sitewide enhancement supports group schedules, collapsed plans and grouped logs without an observer loop', () => {
-  assert.match(coherent, /applyFrequency/);
-  assert.match(coherent, /applyTime/);
-  assert.match(coherent, /data-plan-group-collapse/);
-  assert.match(coherent, /routine-plan-group-body/);
-  assert.match(coherent, /renderGroupedLog/);
-  assert.match(coherent, /routine-log-group/);
-  assert.match(coherent, /effectiveItem/);
-  assert.match(coherent, /UI\.observe\(root, patch\)/);
-  assert.doesNotMatch(coherent, /new MutationObserver/);
+test('canonical enhancement supports group schedules and grouped logs without repaint loops', () => {
+  assert.match(canonical, /applyFrequency/);
+  assert.match(canonical, /applyTime/);
+  assert.match(canonical, /function groupedSections/);
+  assert.match(canonical, /routine-log-group/);
+  assert.match(canonical, /function effectiveItem/);
+  assert.match(canonical, /data-canonical-complete-group/);
+  assert.match(canonical, /function stableHtml/);
+  assert.doesNotMatch(canonical, /MutationObserver|setInterval/);
+  assert.doesNotMatch(loader, /skincare-routine-sitewide-v4|baseline-routine-coherence-v4|routine-coherence-events/);
+  assert.match(loader, /skincare-routine-canonical\.js/);
   assert.match(shared, /observer\.disconnect\(\)/);
-  assert.doesNotMatch(loader, /skincare-routine-enhancements-core\.js/);
+});
+
+test('canonical public view exposes group structure and a planned calendar', () => {
+  assert.match(canonical, /publicRoutine\.groups/);
+  assert.match(canonical, /publicRoutine\.assignments/);
+  assert.match(canonical, /function plannedWeek/);
+  assert.match(canonical, /bl-canonical-week/);
+  assert.match(routineApi, /'groups'=>\$groups/);
+  assert.match(routineApi, /'assignments'=>\$assignments/);
 });
 
 test('server APIs preserve extended item and group settings', () => {
@@ -92,7 +101,7 @@ test('server APIs preserve extended item and group settings', () => {
   assert.match(groupApi, /'collapsed'=>/);
 });
 
-test('scripts and styles retain their required base loading order', () => {
+test('scripts retain their required base and canonical loading order', () => {
   const modelIndex = html.indexOf('skincare-routine-model.js');
   const benefitsIndex = html.indexOf('skincare-routine-comprehensive-benefits.js');
   const catalogueIndex = html.indexOf('skincare-routine-catalogue-v2.js');
@@ -101,5 +110,6 @@ test('scripts and styles retain their required base loading order', () => {
   const uiIndex = html.indexOf('skincare-routine.js');
   assert.ok(modelIndex < benefitsIndex && benefitsIndex < catalogueIndex && catalogueIndex < productIndex && productIndex < enhancementIndex && enhancementIndex < uiIndex);
   assert.match(loader, /baseline-routine-system\.js/);
-  assert.match(loader, /skincare-routine-sitewide-v4\.js/);
+  assert.match(loader, /skincare-routine-canonical\.js/);
+  assert.ok(loader.indexOf('baseline-routine-system.js') < loader.indexOf('skincare-routine-canonical.js'));
 });
