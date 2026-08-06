@@ -43,7 +43,7 @@
 
   load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2')
     .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_2'))
-    .then(loadStableRoutineGroupSettings)
     .then(() => load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3'))
+    .then(loadStableRoutineGroupSettings)
     .catch(() => {});
 })(typeof window !== 'undefined' ? window : globalThis);
