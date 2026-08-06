@@ -12,6 +12,7 @@
   let frame = 0;
   let applying = false;
   let settleTimer = 0;
+  let newPlanTimer = 0;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({
@@ -62,9 +63,17 @@
     const groups = Array.isArray(settings.fitnessRoutineGroups)
       ? settings.fitnessRoutineGroups.filter((group) => group && group.id && group.title).map((group) => ({ id:String(group.id), title:String(group.title) }))
       : [];
-    const assignments = settings.fitnessRoutineAssignments && typeof settings.fitnessRoutineAssignments === 'object'
-      ? settings.fitnessRoutineAssignments
-      : {};
+    const valid = new Set(groups.map((group) => group.id));
+    const assignments = {};
+    Object.entries(settings.fitnessRoutineAssignments && typeof settings.fitnessRoutineAssignments === 'object' ? settings.fitnessRoutineAssignments : {}).forEach(([key, value]) => {
+      if (valid.has(String(value))) assignments[String(key)] = String(value);
+    });
+    document.querySelectorAll('[data-v4-entity-group]').forEach((select) => {
+      const key = String(select.dataset.v4EntityGroup || '');
+      const value = String(select.value || '');
+      if (key && valid.has(value)) assignments[key] = value;
+      else if (key && !value) delete assignments[key];
+    });
     return { groups, assignments };
   }
 
@@ -267,6 +276,30 @@
     role.dataset.v4Comprehensive = 'true';
   }
 
+  function setVisible(node, visible) {
+    node.hidden = !visible;
+    if (visible) node.style.removeProperty('display');
+    else node.style.setProperty('display', 'none', 'important');
+  }
+
+  function applySelectedFilter(target, data) {
+    const select = document.getElementById('fitnessSummaryGroupFilter');
+    if (!select || !target) return;
+    const value = String(select.value || 'all');
+    target.querySelectorAll('.fitness-summary-group').forEach((section) => {
+      let visible = 0;
+      section.querySelectorAll('.fitness-exercise-summary-item').forEach((card) => {
+        const key = String(card.dataset.v4Entity || '');
+        let show = value === 'all';
+        if (value.startsWith('group:')) show = String(data.assignments[key] || '') === value.slice(6);
+        if (value.startsWith('entity:')) show = key === value.slice(7);
+        setVisible(card, show);
+        if (show) visible += 1;
+      });
+      setVisible(section, visible > 0);
+    });
+  }
+
   function decorateNow() {
     frame = 0;
     if (applying) return;
@@ -280,6 +313,7 @@
       const data = groupState();
       const allEntities = entities();
       target.querySelectorAll('.fitness-exercise-summary-item').forEach((card) => decorateCard(card, routine, definitions, data, allEntities));
+      applySelectedFilter(target, data);
     } finally {
       applying = false;
       if (observer && target.isConnected) observer.observe(target, { childList:true, subtree:true });
@@ -308,10 +342,55 @@
     }, 180);
   }
 
+  function clearPlanCaches() {
+    try {
+      const keys = [];
+      for (let index = 0; index < global.localStorage.length; index += 1) {
+        const key = global.localStorage.key(index) || '';
+        if (key.startsWith('__bl_fitness_plan_cache_v1__::')) keys.push(key);
+      }
+      keys.forEach((key) => global.localStorage.removeItem(key));
+    } catch (_error) {}
+  }
+
+  function scheduleAnotherPlan() {
+    const currentOwner = owner();
+    try {
+      global.localStorage?.setItem(`__bl_fitness_creating_plan_v1__::${currentOwner}`, '1');
+      global.localStorage?.removeItem(`__bl_fitness_selected_plan_v1__::${currentOwner}`);
+      global.sessionStorage?.setItem('__bl_fitness_routine_view_v2__', 'plan');
+      global.sessionStorage?.setItem('__bl_fitness_plan_view_v4__', 'calisthenics');
+      global.sessionStorage?.setItem('__bl_fitness_new_plan_requested_v1__', String(Date.now()));
+    } catch (_error) {}
+    clearPlanCaches();
+    global.clearTimeout(newPlanTimer);
+    newPlanTimer = global.setTimeout(() => {
+      const url = new URL('/baseline-fitness/my-routine', global.location.origin);
+      url.searchParams.set('new-plan', String(Date.now()));
+      global.location.assign(url.toString());
+    }, 0);
+  }
+
+  function handleCreateAnotherPlan(event) {
+    if (!event.target?.closest?.('#createCalisthenicsPlan')) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    scheduleAnotherPlan();
+    return true;
+  }
+
+  global.addEventListener('pointerdown', handleCreateAnotherPlan, true);
   global.addEventListener('click', (event) => {
+    if (handleCreateAnotherPlan(event)) return;
     if (event.target?.closest?.('[data-fitness-routine-view="summary"],#my-plan')) refreshAfterRender();
   }, true);
   global.addEventListener('change', (event) => {
+    if (event.target?.id === 'fitnessSummaryGroupFilter') {
+      schedule();
+      global.setTimeout(schedule, 0);
+      return;
+    }
     if (event.target?.closest?.('#my-plan')) refreshAfterRender();
   }, true);
   document.addEventListener('baseline:routine-settings-changed', refreshAfterRender);
@@ -322,6 +401,7 @@
   global.addEventListener('pagehide', () => {
     observer?.disconnect();
     global.clearTimeout(settleTimer);
+    global.clearTimeout(newPlanTimer);
     if (frame) global.cancelAnimationFrame(frame);
   }, { once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
