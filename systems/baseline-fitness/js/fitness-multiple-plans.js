@@ -301,7 +301,7 @@
     setSelectedPlanId(0);
     clearPlanCaches();
     try { global.sessionStorage?.setItem(VIEW_KEY, 'calisthenics'); } catch (_error) {}
-    global.location.reload();
+    global.location.assign('/baseline-fitness/my-routine?new-plan=1');
   }
 
   function openPlan(planId) {

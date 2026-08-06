@@ -535,7 +535,8 @@
     const anchor = new Date(state.calendarAnchor.getFullYear(), state.calendarAnchor.getMonth(), 1);
     label.textContent = anchor.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
     weekdays.hidden = false;
-    weekdays.innerHTML = DAYS.map((day) => `<span>${esc(day.slice(0, 3))}</span>`).join('');
+    const orderedWeekdays = UI.orderedDays?.(DAYS) || DAYS;
+    weekdays.innerHTML = orderedWeekdays.map((day) => `<span>${esc(day.slice(0, 3))}</span>`).join('');
     grid.className = 'routine-calendar-grid month-view';
     UI.renderHtml(grid, UI.monthDates(anchor).map((date) => monthDayButton(date, anchor, routine)).join(''), { preserveFocus:false });
   }

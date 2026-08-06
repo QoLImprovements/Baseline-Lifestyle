@@ -118,5 +118,5 @@ test('Fitness entry point loads catalogue, shared system, workspace and coherenc
   assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && coherentIndex > workspaceIndex);
   assert.match(cssEntry, /baseline-routine-system\.css/);
   assert.match(cssEntry, /fitness-routine-sitewide-v3\.css/);
-  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1/);
+  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2/);
 });

@@ -26,7 +26,7 @@
     { value:'monthly', label:'A number of times each month' },
     { value:'as-needed', label:'As needed' }
   ]);
-  const VIEWS = Object.freeze(['log','calisthenics','cardio','other','sports']);
+  const VIEWS = Object.freeze(['log','summary','calisthenics','cardio','other','sports']);
   const CALENDAR_VIEWS = Object.freeze(['week','month']);
 
   const state = {
@@ -104,7 +104,8 @@
 
   function weekBounds(value) {
     const date = localDate(value);
-    const offset = (date.getDay() + 6) % 7;
+    const startIndex = global.BASELINE_RoutineSystem?.startDayIndex?.() ?? 1;
+    const offset = ((date.getDay() - startIndex) + 7) % 7;
     const start = new Date(date);
     start.setDate(start.getDate() - offset);
     const end = new Date(start);
@@ -682,7 +683,8 @@
       const selected = button.dataset.calendarView === state.calendarView;
       button.setAttribute('aria-selected', selected ? 'true' : 'false');
     });
-    weekdays.innerHTML = DAYS.map((day) => `<span>${day.slice(0, 3)}</span>`).join('');
+    const orderedWeekdays = global.BASELINE_RoutineSystem?.orderedDays?.(DAYS) || DAYS;
+    weekdays.innerHTML = orderedWeekdays.map((day) => `<span>${day.slice(0, 3)}</span>`).join('');
 
     if (state.calendarView === 'week') {
       const bounds = weekBounds(state.calendarAnchor);
@@ -701,7 +703,8 @@
     const month = firstOfMonth(state.calendarAnchor);
     label.textContent = month.toLocaleDateString('en-GB', { month:'long', year:'numeric' });
     grid.className = 'fitness-calendar-grid month-view';
-    const offset = (month.getDay() + 6) % 7;
+    const startIndex = global.BASELINE_RoutineSystem?.startDayIndex?.() ?? 1;
+    const offset = ((month.getDay() - startIndex) + 7) % 7;
     const first = new Date(month);
     first.setDate(first.getDate() - offset);
     const buttons = [];

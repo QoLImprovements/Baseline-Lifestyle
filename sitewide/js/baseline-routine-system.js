@@ -5,7 +5,7 @@
   global.__BASELINE_ROUTINE_SYSTEM__ = true;
 
   const document = global.document;
-  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1';
+  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2';
   const observers = new WeakMap();
 
   function escapeHtml(value) {
@@ -55,9 +55,56 @@
     return date;
   }
 
+
+  const SETTINGS_PREFIX = '__bl_sitewide_routine_settings_v1__::';
+  const DAY_NAMES = Object.freeze(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
+
+  function routineOwner() {
+    try {
+      const snapshot = global.BASELINE_auth?.get?.();
+      if (snapshot?.authed) return String(snapshot.name || snapshot.user?.name || 'user').trim().toLocaleLowerCase('en-GB') || 'user';
+    } catch (_error) {}
+    return 'guest';
+  }
+
+  function settingsKey(owner = routineOwner()) {
+    return `${SETTINGS_PREFIX}${String(owner || 'guest').trim().toLocaleLowerCase('en-GB') || 'guest'}`;
+  }
+
+  function readSettings(owner = routineOwner()) {
+    try {
+      const raw = global.localStorage?.getItem(settingsKey(owner));
+      const value = raw ? JSON.parse(raw) : {};
+      const startDay = DAY_NAMES.includes(value?.startDay) ? value.startDay : 'Monday';
+      return Object.assign({}, value && typeof value === 'object' ? value : {}, { startDay });
+    } catch (_error) {
+      return { startDay:'Monday' };
+    }
+  }
+
+  function writeSettings(patch, owner = routineOwner()) {
+    const current = readSettings(owner);
+    const next = Object.assign({}, current, patch && typeof patch === 'object' ? patch : {});
+    if (!DAY_NAMES.includes(next.startDay)) next.startDay = 'Monday';
+    try { global.localStorage?.setItem(settingsKey(owner), JSON.stringify(next)); } catch (_error) {}
+    try { document.dispatchEvent(new CustomEvent('baseline:routine-settings-changed', { detail:{ owner, settings:next } })); } catch (_error) {}
+    return next;
+  }
+
+  function startDayIndex(owner = routineOwner()) {
+    return Math.max(0, DAY_NAMES.indexOf(readSettings(owner).startDay));
+  }
+
+  function orderedDays(days = DAY_NAMES, owner = routineOwner()) {
+    const source = Array.isArray(days) && days.length ? days.slice() : DAY_NAMES.slice();
+    const startName = readSettings(owner).startDay;
+    const index = Math.max(0, source.indexOf(startName));
+    return source.slice(index).concat(source.slice(0, index));
+  }
+
   function weekBounds(value) {
     const date = localDate(value);
-    const offset = (date.getDay() + 6) % 7;
+    const offset = ((date.getDay() - startDayIndex()) + 7) % 7;
     const start = new Date(date);
     start.setDate(start.getDate() - offset);
     const end = new Date(start);
@@ -77,7 +124,7 @@
   function monthDates(value) {
     const anchor = localDate(value);
     const month = new Date(anchor.getFullYear(), anchor.getMonth(), 1);
-    const offset = (month.getDay() + 6) % 7;
+    const offset = ((month.getDay() - startDayIndex()) + 7) % 7;
     const first = new Date(month);
     first.setDate(first.getDate() - offset);
     return Array.from({ length:42 }, (_, index) => {
@@ -250,6 +297,11 @@
     isFutureDate,
     clampLogDate,
     configureLogDateInput,
+    routineOwner,
+    readSettings,
+    writeSettings,
+    startDayIndex,
+    orderedDays,
     weekBounds,
     weekDates,
     monthDates,
