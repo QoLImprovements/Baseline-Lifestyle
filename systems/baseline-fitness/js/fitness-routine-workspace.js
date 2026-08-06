@@ -1,10 +1,11 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V7__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V7__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V8__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V8__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
+  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
 
   function navigationPathname() {
@@ -79,15 +80,40 @@
     return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
   }
 
+  const INITIAL_ROUTINE_SUBVIEW = selectedRoutineSubview();
+
+  function selectedPlanSubview() {
+    if (['calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) return INITIAL_ROUTINE_SUBVIEW;
+    try {
+      const remembered = String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
+      if (['calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
+    } catch (_error) {}
+    return 'calisthenics';
+  }
+
   function applyInitialRoutineSubview() {
     if (initialSubviewApplied) return;
     const routine = global.BASELINE_fitnessRoutine;
     if (!routine || typeof routine.selectView !== 'function') return;
-    const remembered = selectedRoutineSubview();
-    if (remembered === 'public') return;
-    const baseView = remembered === 'plan' ? 'calisthenics' : remembered;
+    if (INITIAL_ROUTINE_SUBVIEW === 'public') return;
+    const baseView = ['plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)
+      ? selectedPlanSubview()
+      : INITIAL_ROUTINE_SUBVIEW;
     initialSubviewApplied = true;
     routine.selectView(baseView);
+  }
+
+  function restoreCoherentRoutineSubview() {
+    if (INITIAL_ROUTINE_SUBVIEW === 'public') {
+      document.querySelector('[data-fitness-routine-view="public"]')?.click();
+      return;
+    }
+    if (['plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) {
+      document.querySelector('[data-fitness-routine-view="plan"]')?.click();
+      document.querySelector(`[data-fitness-plan-view="${selectedPlanSubview()}"]`)?.click();
+      return;
+    }
+    document.querySelector(`[data-fitness-routine-view="${INITIAL_ROUTINE_SUBVIEW}"]`)?.click();
   }
 
   function selectMyRoutine() {
@@ -156,9 +182,12 @@
     })
     .then(() => {
       normaliseRoutineLabels();
-      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_7');
+      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_8');
     })
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_1'))
+    .then(() => {
+      restoreCoherentRoutineSubview();
+      return load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_1');
+    })
     .then(() => {
       stabiliseMyRoutineRoute();
       normaliseRoutineLabels();
