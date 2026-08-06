@@ -1,3 +1,4 @@
+// Repository-authored verification refresh for the final sitewide My Routine branch.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
