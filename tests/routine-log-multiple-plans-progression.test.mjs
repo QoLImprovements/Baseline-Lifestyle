@@ -46,7 +46,7 @@ test('future Routine Log dates cannot be selected or written', () => {
 test('multiple calisthenics plans can be listed, selected and created independently', () => {
   assert.match(listPlans, /'plans'=>\$plans/);
   assert.match(getPlan, /\$requestedPlanId/);
-  assert.match(plansRuntime, /Create another plan/);
+  assert.match(plansRuntime, /Create Another Plan/);
   assert.match(plansRuntime, /list_plans\.php/);
   assert.match(plansRuntime, /getPlansForDate/);
   assert.match(fitnessHtml, /fitness-multiple-plans\.js/);
