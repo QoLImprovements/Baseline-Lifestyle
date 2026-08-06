@@ -15,7 +15,8 @@
     });
   }
 
-  load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_1')
-    .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_1'))
+  load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2')
+    .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_2'))
+    .then(() => load('/sitewide/js/baseline-routine-groups-settings.js?v=SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_1'))
     .catch(() => {});
 })(typeof window !== 'undefined' ? window : globalThis);
