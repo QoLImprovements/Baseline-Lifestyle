@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V8__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V8__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V9__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V9__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -26,6 +26,7 @@
   let routeAttempts = 0;
   let visiblePasses = 0;
   let initialSubviewApplied = false;
+  let restoreTimers = [];
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -103,17 +104,51 @@
     routine.selectView(baseView);
   }
 
+  function activateCoherentPanel(view) {
+    const shell = document.querySelector('.fitness-routine-shell');
+    const button = shell?.querySelector(`.fitness-routine-subtabs [data-fitness-routine-view="${view}"]`);
+    const panel = shell?.querySelector(`:scope > [data-fitness-routine-panel="${view}"]`);
+    if (!shell || !button || !panel) return false;
+    shell.querySelectorAll('.fitness-routine-subtabs [data-fitness-routine-view]').forEach((entry) => {
+      entry.setAttribute('aria-selected', entry === button ? 'true' : 'false');
+    });
+    shell.querySelectorAll(':scope > [data-fitness-routine-panel]').forEach((entry) => {
+      const active = entry === panel;
+      entry.hidden = !active;
+      entry.classList.toggle('active', active);
+    });
+    try { global.sessionStorage?.setItem(ROUTINE_VIEW_KEY, view); } catch (_error) {}
+    return true;
+  }
+
+  function activateCoherentPlanSubview(view) {
+    const planPanel = document.querySelector('[data-fitness-routine-panel="plan"]');
+    const button = planPanel?.querySelector(`[data-fitness-plan-view="${view}"]`);
+    const panel = planPanel?.querySelector(`[data-fitness-plan-panel="${view}"]`);
+    if (!planPanel || !button || !panel) return false;
+    planPanel.querySelectorAll('[data-fitness-plan-view]').forEach((entry) => {
+      entry.setAttribute('aria-selected', entry === button ? 'true' : 'false');
+    });
+    planPanel.querySelectorAll('[data-fitness-plan-panel]').forEach((entry) => {
+      entry.hidden = entry !== panel;
+    });
+    try { global.sessionStorage?.setItem(PLAN_VIEW_KEY, view); } catch (_error) {}
+    return true;
+  }
+
   function restoreCoherentRoutineSubview() {
-    if (INITIAL_ROUTINE_SUBVIEW === 'public') {
-      document.querySelector('[data-fitness-routine-view="public"]')?.click();
-      return;
-    }
+    if (INITIAL_ROUTINE_SUBVIEW === 'public') return activateCoherentPanel('public');
     if (['plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) {
-      document.querySelector('[data-fitness-routine-view="plan"]')?.click();
-      document.querySelector(`[data-fitness-plan-view="${selectedPlanSubview()}"]`)?.click();
-      return;
+      const planReady = activateCoherentPanel('plan');
+      const subviewReady = activateCoherentPlanSubview(selectedPlanSubview());
+      return planReady && subviewReady;
     }
-    document.querySelector(`[data-fitness-routine-view="${INITIAL_ROUTINE_SUBVIEW}"]`)?.click();
+    return activateCoherentPanel(INITIAL_ROUTINE_SUBVIEW);
+  }
+
+  function restoreCoherentRoutineSubviewAfterRenders() {
+    restoreTimers.forEach((timer) => global.clearTimeout(timer));
+    restoreTimers = [0,50,150,350,800,1600].map((delay) => global.setTimeout(restoreCoherentRoutineSubview, delay));
   }
 
   function selectMyRoutine() {
@@ -168,7 +203,10 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('load', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
-    global.addEventListener('pagehide', stopRouteStabiliser, { once:true });
+    global.addEventListener('pagehide', () => {
+      stopRouteStabiliser();
+      restoreTimers.forEach((timer) => global.clearTimeout(timer));
+    }, { once:true });
   }
 
   load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3')
@@ -182,13 +220,11 @@
     })
     .then(() => {
       normaliseRoutineLabels();
-      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_8');
+      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_9');
     })
+    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_2'))
     .then(() => {
-      restoreCoherentRoutineSubview();
-      return load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_1');
-    })
-    .then(() => {
+      restoreCoherentRoutineSubviewAfterRenders();
       stabiliseMyRoutineRoute();
       normaliseRoutineLabels();
       return load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1');
