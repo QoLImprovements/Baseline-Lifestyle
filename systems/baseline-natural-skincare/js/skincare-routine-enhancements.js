@@ -1,8 +1,8 @@
 /* Baseline Natural Skincare — load the reusable sitewide My Routine system without competing render loops. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V21__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V21__ = true;
+  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V22__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V22__ = true;
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -56,6 +56,6 @@
     .then(() => loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10'))
     .then(() => load('/sitewide/js/baseline-skincare-routine-state-bridge-v1.js?v=SKINCARE_ROUTINE_STATE_BRIDGE_20260806_3'))
     .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_5'))
-    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_4'))
+    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_6'))
     .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.', error); } catch (_error) {} });
 })(typeof window !== 'undefined' ? window : globalThis);
