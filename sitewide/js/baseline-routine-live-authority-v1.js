@@ -6,7 +6,8 @@
    renderers replace. No whole-page or whole-My-Routine observer is used. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V5__) return;
+  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V6__) return;
+  global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V6__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V5__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V4__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__ = true;
@@ -87,7 +88,7 @@
       label = document.createElement('span');
       control.insertBefore(label, control.firstChild);
     }
-    label.textContent = 'My Routine Visibility';
+    if (label.textContent !== 'My Routine Visibility') label.textContent = 'My Routine Visibility';
     return control;
   }
 
@@ -345,7 +346,8 @@
       badge.className = 'badge';
       meta.appendChild(badge);
     }
-    badge.textContent = `Next due: ${formatDate(next.scheduled_date)}`;
+    const text = `Next due: ${formatDate(next.scheduled_date)}`;
+    if (badge.textContent !== text) badge.textContent = text;
   }
 
   function ensureRoutineLogDueDate() {
@@ -366,7 +368,8 @@
         due.dataset.blCalisthenicsDue = 'true';
         host.appendChild(due);
       }
-      due.textContent = `Due ${formatDate(scheduledDate)}`;
+      const text = `Due ${formatDate(scheduledDate)}`;
+      if (due.textContent !== text) due.textContent = text;
     });
   }
 
@@ -426,7 +429,7 @@
   function boot() {
     attachOutputObservers();
     schedule();
-    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_5');
+    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_6');
   }
 
   global.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once:true });
