@@ -39,7 +39,7 @@ async function diagnosticState(page, phase) {
       activeSubview:activeSubview?.dataset.fitnessRoutineView || '',
       activePlanSubview:activePlanSubview?.dataset.fitnessPlanView || '',
       flags:{
-        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V8__),
+        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V9__),
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
         coherent:Boolean(window.__BASELINE_ROUTINE_COHERENCE_V4__),
         app:Boolean(window.BASELINE_FITNESS_DEBUG),
