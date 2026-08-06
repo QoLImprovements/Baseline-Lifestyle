@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const stabilityPath = new URL('../sitewide/js/baseline-live-stability.js', import.meta.url);
+const gamesCorePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
 const source = readFileSync(stabilityPath, 'utf8');
+const gamesCore = readFileSync(gamesCorePath, 'utf8');
 
 test('the final sitewide repair runtime remains valid JavaScript', () => {
   const checked = spawnSync(process.execPath, ['--check', stabilityPath.pathname], { encoding: 'utf8' });
@@ -41,4 +43,7 @@ test('Detect The Word tiles and key share explicit semantic feedback colours', (
   assert.match(source, /Correct place/);
   assert.match(source, /In word, different place/);
   assert.match(source, /Not in word/);
+  assert.match(gamesCore, /result\[idx\]\.state = 'correct'/);
+  assert.match(gamesCore, /result\[idx\]\.state = 'present'/);
+  assert.match(gamesCore, /secretPool\[poolIndex\] = null/);
 });
