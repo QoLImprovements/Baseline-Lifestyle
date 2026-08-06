@@ -1,8 +1,8 @@
 /* Baseline Lifestyle — expose and decorate the live Skincare routine state. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_STATE_BRIDGE_V2__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_STATE_BRIDGE_V2__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_STATE_BRIDGE_V3__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_STATE_BRIDGE_V3__ = true;
 
   const document = global.document;
   const app = document.documentElement.dataset.app || document.body?.dataset.app || '';
@@ -95,6 +95,45 @@
     });
   }
 
+  function decorateSummaryNumbers() {
+    const target = document.getElementById('routineSummary');
+    const snapshot = liveSnapshot();
+    const data = groupState();
+    if (!target || !snapshot) return;
+
+    const groupByTitle = new Map(data.groups.map((group, index) => [
+      String(group.title || '').trim().toLocaleLowerCase('en-GB'),
+      { group, number:index + 1 }
+    ]));
+    const ungroupedItems = snapshot.items.filter((item) => !data.assignments[item.id]);
+
+    target.querySelectorAll('.routine-summary-group').forEach((section) => {
+      const heading = section.querySelector('.routine-summary-group-head h3, :scope > h3');
+      const headingWrap = heading?.parentElement;
+      const title = heading?.textContent?.trim() || '';
+      const record = groupByTitle.get(title.toLocaleLowerCase('en-GB'));
+
+      if (record && headingWrap) {
+        headingWrap.classList.add('bl-v4-numbered-heading');
+        headingWrap.querySelectorAll(':scope > .bl-v4-number,:scope > .bl-routine-group-number').forEach((node) => node.remove());
+        heading.insertAdjacentElement('beforebegin', numberNode(record.number, record.group.title));
+        section.querySelectorAll('.routine-summary-title > span').forEach((node) => node.remove());
+        return;
+      }
+
+      if (!/ungrouped/i.test(title)) return;
+      section.querySelectorAll('.routine-summary-item').forEach((card, index) => {
+        const titleWrap = card.querySelector('.routine-summary-title');
+        const strong = titleWrap?.querySelector('strong');
+        if (!titleWrap || !strong) return;
+        titleWrap.querySelectorAll(':scope > span').forEach((node) => node.remove());
+        const item = ungroupedItems.find((candidate) => String(candidate.title || '').trim() === strong.textContent.trim()) || ungroupedItems[index];
+        const label = item?.title || strong.textContent.trim();
+        titleWrap.insertAdjacentElement('afterbegin', numberNode(data.groups.length + index + 1, label));
+      });
+    });
+  }
+
   function calendarMarkers(date) {
     const snapshot = liveSnapshot();
     const data = groupState();
@@ -169,6 +208,7 @@
 
   function decorateNow() {
     decoratePlanNumbers();
+    decorateSummaryNumbers();
     decorateCalendar();
   }
 
