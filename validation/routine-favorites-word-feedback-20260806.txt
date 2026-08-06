@@ -1,0 +1,1 @@
+Validation-only trigger for the updated grouped Routine Log, unified Favorites, Public Routines, Settings and Detect The Word feedback repairs.
