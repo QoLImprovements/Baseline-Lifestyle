@@ -43,6 +43,7 @@ jobs:
           target.write_text(source.replace(old, new, 1))
           PY
           python3 /tmp/apply_sitewide_routine_groups_settings.py
+          sed -i 's/SITEWIDE_MY_ROUTINE_SYSTEM_20260805_1/SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2/g' tests/fitness-routine-workspace.test.mjs
           rm -rf scripts
 
       - name: Install dependencies
