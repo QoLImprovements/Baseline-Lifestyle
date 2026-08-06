@@ -154,11 +154,11 @@
       stabiliseMyRoutineRoute();
       return load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2');
     })
+    .then(() => load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3'))
     .then(() => {
       stabiliseMyRoutineRoute();
       return loadStableRoutineGroupSettings();
     })
-    .then(() => load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3'))
     .then(() => {
       stabiliseMyRoutineRoute();
       return load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1');
