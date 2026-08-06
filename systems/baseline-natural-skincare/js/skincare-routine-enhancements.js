@@ -1,76 +1,49 @@
-/* Baseline Natural Skincare — load the reusable sitewide My Routine system. */
+/* Baseline Natural Skincare — deterministic Routine workspace loader. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V16__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V16__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V5__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V5__ = true;
 
-  function load(src) {
+  const BUILD = 'SKINCARE_ROUTINE_CANONICAL_20260806_1';
+
+  function ensureStyle(href, marker) {
+    if (document.querySelector(`link[${marker}]`)) return;
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = `${href}?v=${BUILD}`;
+    link.setAttribute(marker, 'true');
+    document.head.appendChild(link);
+  }
+
+  function loadScript(src, marker) {
+    const existing = document.querySelector(`script[${marker}]`);
+    if (existing) return existing.dataset.loaded === 'true'
+      ? Promise.resolve()
+      : new Promise((resolve) => existing.addEventListener('load', resolve, { once:true }));
     return new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = src;
+      script.src = `${src}?v=${BUILD}`;
       script.async = false;
-      script.onload = resolve;
-      script.onerror = reject;
+      script.setAttribute(marker, 'true');
+      script.addEventListener('load', () => { script.dataset.loaded = 'true'; resolve(); }, { once:true });
+      script.addEventListener('error', reject, { once:true });
       document.head.appendChild(script);
     });
   }
 
-  function withTemporaryMutationObserver(createObserver, src) {
-    const NativeObserver = global.MutationObserver;
-    if (typeof NativeObserver !== 'function') return load(src);
-    global.MutationObserver = createObserver(NativeObserver);
-    return load(src).finally(() => {
-      global.MutationObserver = NativeObserver;
-    });
+  function waitForRoutine(attempt = 0) {
+    if (global.BASELINE_SKINCARE_ROUTINE) {
+      return loadScript('/systems/baseline-natural-skincare/js/skincare-routine-canonical.js', 'data-skincare-routine-canonical');
+    }
+    if (attempt >= 80) return Promise.resolve();
+    return new Promise((resolve) => global.setTimeout(resolve, 50)).then(() => waitForRoutine(attempt + 1));
   }
 
-  function loadWithRoutineMutationObserver(src) {
-    const coreRenderRoots = new Set(['routineItems', 'routineSummary', 'routineLogItems']);
-    const relevantMutations = (mutations) => (mutations || []).filter((mutation) => {
-      const target = mutation && mutation.target;
-      return Boolean(target && target.nodeType === 1 && coreRenderRoots.has(target.id));
-    });
-
-    return withTemporaryMutationObserver((NativeObserver) => class BaselineRoutineRenderObserver {
-      constructor(callback) {
-        this.observer = new NativeObserver((mutations, observer) => {
-          const relevant = relevantMutations(mutations);
-          if (relevant.length) callback(relevant, observer);
-        });
-      }
-
-      observe(target, options) {
-        this.observer.observe(target, options);
-      }
-
-      disconnect() {
-        this.observer.disconnect();
-      }
-
-      takeRecords() {
-        return relevantMutations(this.observer.takeRecords());
-      }
-    }, src);
-  }
-
-  function loadWithoutMutationObserver(src) {
-    return withTemporaryMutationObserver(() => class BaselineQuietRoutineObserver {
-      observe() {}
-      disconnect() {}
-      takeRecords() { return []; }
-    }, src);
-  }
-
-  load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2')
-    /* The Skincare renderer must notice the base routine's delayed save render
-       so groups, summaries and logs are reattached. The filtered observer only
-       accepts replacements of the three base render roots, ignoring shared
-       numbers, captions and calendar decorations to prevent rebuild loops. */
-    .then(() => loadWithRoutineMutationObserver('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_8'))
-    /* The coherence layer remains event-driven. Its decorations must never own
-       a second subtree observer or trigger a visual rebuild while being used. */
-    .then(() => loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10'))
-    .then(() => load('/sitewide/js/baseline-skincare-routine-state-bridge-v1.js?v=SKINCARE_ROUTINE_STATE_BRIDGE_20260806_3'))
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_4'))
-    .catch(() => {});
+  ensureStyle('/sitewide/css/baseline-routine-canonical-v1.css', 'data-baseline-routine-canonical-style');
+  loadScript('/sitewide/js/baseline-routine-system.js', 'data-baseline-routine-system-script')
+    .then(() => document.readyState === 'loading'
+      ? new Promise((resolve) => document.addEventListener('DOMContentLoaded', resolve, { once:true }))
+      : undefined)
+    .then(() => waitForRoutine())
+    .catch((error) => { try { console.error('Skincare Routine failed to load.', error); } catch (_error) {} });
 })(typeof window !== 'undefined' ? window : globalThis);
