@@ -39,7 +39,7 @@ async function diagnosticState(page, phase) {
       activeSubview:activeSubview?.dataset.fitnessRoutineView || '',
       activePlanSubview:activePlanSubview?.dataset.fitnessPlanView || '',
       flags:{
-        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V9__),
+        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V9__ || window.__BASELINE_FITNESS_ROUTINE_LOADER_V12__),
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
         coherent:Boolean(window.__BASELINE_ROUTINE_COHERENCE_V4__),
         app:Boolean(window.BASELINE_FITNESS_DEBUG),
@@ -52,7 +52,7 @@ async function diagnosticState(page, phase) {
   return state;
 }
 
-test('Fitness saves and reloads a two-session plan without losing the nested Calisthenics DOM', async ({ page }) => {
+test('Fitness saves, summarises, reloads and creates another plan without unstable text', async ({ page }) => {
   let savedPlan = null;
   const pageErrors = [];
   const failedRequests = [];
@@ -67,6 +67,9 @@ test('Fitness saves and reloads a two-session plan without losing the nested Cal
     if (pathname.endsWith('/get_plan.php')) return fulfillJson(route, savedPlan
       ? { ok:true, hasPlan:true, planId:41, planJson:savedPlan, sessions:[], progress:null }
       : { ok:true, hasPlan:false });
+    if (pathname.endsWith('/list_plans.php')) return fulfillJson(route, savedPlan
+      ? { ok:true, plans:[{ planId:41, planJson:savedPlan, sessions:[], progress:{ done:0, total:Number(savedPlan.sessions || 2) } }] }
+      : { ok:true, plans:[] });
     if (pathname.endsWith('/save_plan.php')) {
       const payload = request.postDataJSON();
       savedPlan = payload.planJson;
@@ -86,6 +89,7 @@ test('Fitness saves and reloads a two-session plan without losing the nested Cal
   await page.locator('[data-fitness-routine-view="plan"]').click();
   await page.locator('[data-fitness-plan-view="calisthenics"]').click();
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
+  await page.locator('.ex-row').first().locator('.ex-select').selectOption('Knee Push-Ups');
   await page.locator('.ex-row').first().locator('.ex-baseline').fill('12');
   await page.locator('#sessions').fill('2');
   await page.locator('#genBtn').click();
@@ -107,4 +111,56 @@ test('Fitness saves and reloads a two-session plan without losing the nested Cal
   expect(failedRequests).toEqual([]);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
+
+  await page.locator('[data-fitness-routine-view="summary"]').click();
+  const kneeCard = page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item', { hasText:'Knee Push-Ups' });
+  await expect(kneeCard).toBeVisible();
+  await expect(kneeCard).toContainText('What this exercise develops');
+  await expect(kneeCard).toContainText('How to perform it');
+  await expect(kneeCard).toContainText('Progression and measurement');
+  await expect(kneeCard).toContainText('Keep a straight line from head to knees, lower with control and press back up.');
+  await expect(kneeCard).toContainText('Chest drives the body away from the floor.');
+  await page.waitForTimeout(500);
+
+  const stability = await kneeCard.evaluate(async (card) => {
+    const titleWrap = card.querySelector('.routine-summary-title');
+    const title = titleWrap?.querySelector('strong');
+    if (!titleWrap || !title) return { mutations:-1, text:'', xSpread:999, ySpread:999, widthSpread:999 };
+    let mutations = 0;
+    const observer = new MutationObserver((records) => { mutations += records.length; });
+    observer.observe(titleWrap, { childList:true, subtree:true, characterData:true });
+    const samples = [];
+    for (let index = 0; index < 24; index += 1) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const rect = title.getBoundingClientRect();
+      samples.push({ x:rect.x, y:rect.y, width:rect.width });
+    }
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    observer.disconnect();
+    const spread = (key) => Math.max(...samples.map((sample) => sample[key])) - Math.min(...samples.map((sample) => sample[key]));
+    return { mutations, text:title.textContent, xSpread:spread('x'), ySpread:spread('y'), widthSpread:spread('width') };
+  });
+  expect(stability.text).toBe('Knee Push-Ups');
+  expect(stability.mutations).toBe(0);
+  expect(stability.xSpread).toBeLessThanOrEqual(1);
+  expect(stability.ySpread).toBeLessThanOrEqual(1);
+  expect(stability.widthSpread).toBeLessThanOrEqual(1);
+
+  await page.locator('[data-fitness-routine-view="plan"]').click();
+  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
+  const createButton = page.locator('#createCalisthenicsPlan');
+  await expect(createButton).toBeVisible();
+  await Promise.all([
+    page.waitForURL((url) => url.pathname === '/baseline-fitness/my-routine' && url.searchParams.has('new-plan')),
+    createButton.click()
+  ]);
+  await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
+  const createMarker = await page.evaluate(() => {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index) || '';
+      if (key.startsWith('__bl_fitness_creating_plan_v1__::')) return localStorage.getItem(key);
+    }
+    return null;
+  });
+  expect(createMarker).toBe('1');
 });
