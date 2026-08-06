@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V11__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V11__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V12__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V12__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -235,9 +235,10 @@
     })
     .then(() => {
       normaliseRoutineLabels();
-      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_9');
+      return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10');
     })
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_3'))
+    .then(() => load('/sitewide/js/baseline-fitness-routine-summary-bridge-v1.js?v=FITNESS_ROUTINE_SUMMARY_BRIDGE_20260806_1'))
+    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_4'))
     .then(() => {
       restoreCoherentRoutineSubviewAfterRenders();
       stabiliseMyRoutineRoute();
