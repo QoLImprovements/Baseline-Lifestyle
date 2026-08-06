@@ -1,6 +1,6 @@
 // Repository-authored verification refresh for the final sitewide My Routine branch.
 // Final browser-stability verification after replacing the continuous observer loop.
-// This synchronization is validated through the trusted Website checks publisher.
+// This synchronization is validated through the normal Website checks workflow.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -58,4 +58,11 @@ test('shared layout guards alignment and banner containment', () => {
 test('both system loaders include the shared enhancement module', () => {
   assert.match(skinLoader, /baseline-routine-groups-settings\.js/);
   assert.match(fitnessLoader, /baseline-routine-groups-settings\.js/);
+});
+
+test('both loaders isolate the enhancement observer and dispatch controlled refreshes', () => {
+  assert.match(skinLoader, /BaselineQuietRoutineObserver/);
+  assert.match(fitnessLoader, /BaselineQuietRoutineObserver/);
+  assert.match(skinLoader, /baseline:routine-settings-changed/);
+  assert.match(fitnessLoader, /baseline:routine-settings-changed/);
 });
