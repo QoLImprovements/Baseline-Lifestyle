@@ -364,7 +364,7 @@
     function patchSettings(){
       document.querySelectorAll('[data-v4-settings-toggle]').forEach(function(button){
         button.type = 'button';
-        button.textContent = 'Settings';
+        if(String(button.textContent || '').trim() !== 'Settings') button.textContent = 'Settings';
         button.hidden = false;
         button.removeAttribute('aria-hidden');
       });
@@ -463,19 +463,34 @@
       setSkinGroupCompletion(safeJson(box.dataset.itemIds, []), Boolean(box.checked));
     }, true);
 
+    function rememberSettingsState(event){
+      const button = event.target && event.target.closest ? event.target.closest('[data-v4-settings-toggle]') : null;
+      if(!button) return;
+      const system = String(button.dataset.v4SettingsToggle || '');
+      const panel = document.querySelector('[data-v4-settings-panel="' + cssEscape(system) + '"]');
+      if(panel) button.dataset.finalSettingsBefore = panel.hidden ? 'hidden' : 'shown';
+    }
+
+    document.addEventListener('pointerdown', rememberSettingsState, true);
+    document.addEventListener('keydown', function(event){
+      if(event.key === 'Enter' || event.key === ' ') rememberSettingsState(event);
+    }, true);
     document.addEventListener('click', function(event){
       const button = event.target && event.target.closest ? event.target.closest('[data-v4-settings-toggle]') : null;
       if(!button) return;
       const system = String(button.dataset.v4SettingsToggle || '');
-      const before = button.getAttribute('aria-expanded');
+      const before = String(button.dataset.finalSettingsBefore || '');
       window.setTimeout(function(){
         const current = document.querySelector('[data-v4-settings-toggle="' + cssEscape(system) + '"]');
         const panel = document.querySelector('[data-v4-settings-panel="' + cssEscape(system) + '"]');
-        if(!current || !panel || current.getAttribute('aria-expanded') !== before) return;
+        if(!current || !panel || !before) return;
+        const unchanged = (panel.hidden ? 'hidden' : 'shown') === before;
+        delete current.dataset.finalSettingsBefore;
+        if(!unchanged) return;
         panel.hidden = !panel.hidden;
         current.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
       }, 0);
-    }, true);
+    });
 
     const observer = new MutationObserver(schedule);
     observer.observe(document.getElementById(String(document.body.dataset.app || '') === 'skin' ? 'routine' : 'my-plan') || document.body, { childList:true, subtree:true });
