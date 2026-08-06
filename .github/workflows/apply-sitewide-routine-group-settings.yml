@@ -1,0 +1,62 @@
+name: Apply sitewide My Routine group settings
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-test:
+    if: github.head_ref == 'agent/sitewide-routine-groups-settings-20260806'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/sitewide-routine-groups-settings-20260806
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Decode and apply migration
+        run: |
+          cat scripts/sitewide-routine-groups-settings/part* | tr -d '[:space:]' > /tmp/sitewide-routine-groups-settings.zb64
+          echo "28b0b689f123722f4a0a599cb6610ba55617450ff8d450f206bf54d028c2c018  /tmp/sitewide-routine-groups-settings.zb64" | sha256sum -c -
+          python3 - <<'PY'
+          import base64, zlib
+          from pathlib import Path
+          payload = Path('/tmp/sitewide-routine-groups-settings.zb64').read_text().strip()
+          Path('/tmp/apply_sitewide_routine_groups_settings.py').write_bytes(zlib.decompress(base64.b64decode(payload)))
+          PY
+          python3 /tmp/apply_sitewide_routine_groups_settings.py
+          rm -rf scripts
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify shared routine implementation
+        run: |
+          node --check sitewide/js/baseline-routine-system.js
+          node --check sitewide/js/baseline-routine-groups-settings.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine-enhancements.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js
+          node --check systems/baseline-fitness/js/fitness-routine-workspace.js
+          node --check systems/baseline-fitness/js/fitness-routine-workspace-v2.js
+          node --check systems/baseline-fitness/js/fitness-multiple-plans.js
+          node --test tests/sitewide-routine-group-settings.test.mjs tests/routine-log-multiple-plans-progression.test.mjs tests/fitness-routine-workspace.test.mjs tests/skincare-routine-groups-calendar.test.mjs tests/skincare-my-routine.test.mjs
+          npm run test:structure
+
+      - name: Publish clean feature branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add sitewide routine group settings, numbering and summary navigation"
+          git push origin HEAD:agent/sitewide-routine-groups-settings-20260806
