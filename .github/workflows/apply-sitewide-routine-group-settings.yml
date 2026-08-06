@@ -33,7 +33,14 @@ jobs:
           import base64, zlib
           from pathlib import Path
           payload = Path('/tmp/sitewide-routine-groups-settings.zb64').read_text().strip()
-          Path('/tmp/apply_sitewide_routine_groups_settings.py').write_bytes(zlib.decompress(base64.b64decode(payload)))
+          target = Path('/tmp/apply_sitewide_routine_groups_settings.py')
+          target.write_bytes(zlib.decompress(base64.b64decode(payload)))
+          source = target.read_text()
+          old = '''        anchor = '<link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css'\n        idx = html.find(anchor)\n        if idx < 0:\n            raise SystemExit(f'missing header css anchor in {html_path}')\n        end = html.find('>', idx) + 1\n        html = html[:end] + '<link rel="stylesheet" href="/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2">' + html[end:]\n'''
+          new = '''        match = re.search(r'<link[^>]+baseline-header-canonical\\.css[^>]*>', html, re.I)\n        if not match:\n            raise SystemExit(f'missing header css anchor in {html_path}')\n        end = match.end()\n        html = html[:end] + '<link rel="stylesheet" href="/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2">' + html[end:]\n'''
+          if old not in source:
+              raise SystemExit('stylesheet insertion migration anchor missing')
+          target.write_text(source.replace(old, new, 1))
           PY
           python3 /tmp/apply_sitewide_routine_groups_settings.py
           rm -rf scripts
