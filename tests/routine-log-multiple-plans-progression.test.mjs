@@ -21,6 +21,13 @@ test('sitewide Routine Log owns a clamped activity-performed date', () => {
   assert.match(skincare, /Activity performed date/);
 });
 
+test('changing Log Date reloads the independently dated Fitness and Skincare entries', () => {
+  assert.match(fitnessLog, /state\.selectedDate = clampLogDate\(event\.target\.value\)/);
+  assert.match(skincare, /state\.selectedDate = clampLogDate\(event\.currentTarget\.value\)/);
+  assert.match(fitnessLog, /event\.target\.value = state\.selectedDate;[\s\S]*?renderLog\(\);[\s\S]*?renderCalendar\(\);/);
+  assert.match(skincare, /event\.currentTarget\.value = state\.selectedDate;[\s\S]*?renderLog\(\);/);
+});
+
 test('log controls remain explicitly bound to the selected historical date', () => {
   assert.match(fitnessLog, /data-fitness-log-date/);
   assert.match(fitnessLog, /logDate = state\.selectedDate/);
