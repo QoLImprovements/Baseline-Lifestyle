@@ -6,7 +6,8 @@
    renderers replace. No whole-page or whole-My-Routine observer is used. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V2__) return;
+  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__) return;
+  global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V2__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V1__ = true;
 
@@ -179,13 +180,19 @@
       else if (/ungrouped|no routine group/i.test(title)) ungroupedSection = section;
     });
 
-    /* The Summary must follow the exact saved Routine Group order. Moving an
-       already-correct node is avoided so this cannot become a render loop. */
+    /* The Summary follows the exact saved Routine Group order. Reorder only
+       when the current sequence is actually different; an already-correct
+       summary causes no child mutation and therefore cannot shake/reloop. */
+    const currentSections = $$('.routine-summary-group', target);
     const desired = data.groups.map((group) => sectionByGroup.get(group.id)).filter(Boolean);
     if (ungroupedSection) desired.push(ungroupedSection);
-    desired.forEach((section) => {
-      if (target.lastElementChild !== section) target.appendChild(section);
-    });
+    currentSections.forEach((section) => { if (!desired.includes(section)) desired.push(section); });
+    const sameOrder = currentSections.length === desired.length && currentSections.every((section,index) => desired[index] === section);
+    if (!sameOrder) {
+      const fragment = document.createDocumentFragment();
+      desired.forEach((section) => fragment.appendChild(section));
+      target.appendChild(fragment);
+    }
 
     const selectedItemId = value.startsWith('item:') ? value.slice(5) : '';
     const selectedItem = selectedItemId ? routine.items.find((item) => String(item.id) === selectedItemId) : null;
@@ -368,7 +375,7 @@
   function boot() {
     attachOutputObservers();
     schedule();
-    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_2');
+    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_3');
   }
 
   global.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once:true });
