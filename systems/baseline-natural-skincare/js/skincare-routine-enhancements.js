@@ -1,8 +1,8 @@
 /* Baseline Natural Skincare — load the reusable sitewide My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V7__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V7__ = true;
+  if (global.__BASELINE_SKINCARE_ROUTINE_LOADER_V8__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V8__ = true;
 
   function load(src) {
     return new Promise((resolve, reject) => {
@@ -41,15 +41,13 @@
     });
   }
 
-  function loadStableSkincareWorkspace() {
-    return withQuietObserver(
-      '/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_4'
-    );
+  function loadSkincareWorkspace() {
+    return load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260806_5');
   }
 
   function loadStableCoherenceLayer() {
     return withQuietObserver(
-      '/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_4'
+      '/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_5'
     );
   }
 
@@ -61,7 +59,7 @@
   }
 
   load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2')
-    .then(loadStableSkincareWorkspace)
+    .then(loadSkincareWorkspace)
     .then(loadStableCoherenceLayer)
     .then(() => load('/sitewide/js/baseline-routine-coherence-events-v1.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_1'))
     .then(loadStableRoutineGroupSettings)
