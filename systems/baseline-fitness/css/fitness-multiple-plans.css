@@ -1,10 +1,149 @@
-/* Baseline Fitness — coherent multiple-plan and progression controls. */
-.fitness-calisthenics-plan-manager{grid-column:1/-1;margin-bottom:18px}
-.fitness-calisthenics-plan-manager .section-head-actions{align-items:flex-start}
-.fitness-calisthenics-plan-manager .field-stack{margin-top:14px}
-.calisthenics-plan-name-field{display:block;margin:0 0 18px}
-.ex-row{grid-template-columns:minmax(260px,1.55fr) minmax(150px,.75fr) minmax(120px,.55fr) minmax(210px,.9fr) auto}
-.ex-field-rep-increase .note{font-size:inherit;line-height:1.4;margin:6px 0 0}
-.fitness-calendar-day.future-date,.routine-calendar-day.future-date,.bl-routine-day-row.future-date{opacity:.48;cursor:not-allowed}
-@media (max-width:980px){.ex-row{grid-template-columns:1fr 1fr}.ex-remove-wrap{align-self:end}}
-@media (max-width:650px){.ex-row{grid-template-columns:1fr}.fitness-calisthenics-plan-manager .section-head-actions{display:grid}.fitness-calisthenics-plan-manager .action{width:100%}}
+/* Baseline Fitness — authoritative multiple-plan and generator layout. */
+.fitness-calisthenics-plan-manager{
+  display:grid;
+  gap:1rem;
+  grid-column:1/-1;
+  margin:0 0 1.25rem;
+}
+.fitness-calisthenics-plan-manager .section-head-actions{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.fitness-calisthenics-plan-manager .field-stack{margin:0}
+.calisthenics-plan-name-field{
+  display:grid!important;
+  gap:.55rem;
+  width:100%;
+  margin:0 0 1.25rem!important;
+}
+.calisthenics-plan-name-field>input{width:100%;min-width:0}
+
+#exerciseList{
+  display:grid!important;
+  gap:1rem!important;
+}
+#myPlanGeneratorWrap .ex-row,
+[data-fitness-routine-panel="calisthenics"] .ex-row{
+  display:grid!important;
+  grid-template-columns:minmax(340px,2.15fr) minmax(170px,.78fr) minmax(120px,.52fr) minmax(285px,1.15fr) 52px!important;
+  gap:1rem!important;
+  align-items:end!important;
+  width:100%;
+  min-width:0;
+  padding:1rem;
+  border:1px solid var(--border);
+  border-radius:20px;
+  background:var(--filter-bg,var(--card-bg));
+}
+.ex-row>*{min-width:0}
+.ex-exercise-block{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 44px!important;
+  gap:.55rem!important;
+  align-items:end!important;
+  min-width:0;
+}
+.ex-field-exercise,
+.ex-field-baseline,
+.ex-field-sets,
+.ex-field-rep-increase{
+  display:grid!important;
+  align-content:end!important;
+  gap:.5rem!important;
+  min-width:0;
+  margin:0!important;
+}
+.ex-field-exercise label,
+.ex-field-baseline label,
+.ex-field-sets label,
+.ex-field-rep-increase>span{
+  display:block;
+  min-height:1.5em;
+  margin:0;
+  font-weight:800;
+  line-height:1.35;
+}
+.ex-search-input,
+.ex-baseline,
+.ex-sets,
+.ex-rep-increase{
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px;
+  margin:0!important;
+}
+.ex-select-source[hidden]{display:none!important}
+.exercise-info-wrap{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  min-width:44px;
+}
+.exercise-info-button{
+  width:44px!important;
+  height:48px!important;
+  min-width:44px!important;
+  margin:0!important;
+}
+.ex-field-rep-increase .rep-increase-note{
+  display:block;
+  min-height:2.8em;
+  margin:.25rem 0 0!important;
+  font-size:.9rem!important;
+  line-height:1.4!important;
+}
+.ex-remove-wrap{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  min-width:52px;
+  margin:0!important;
+}
+.ex-remove{
+  width:52px!important;
+  min-width:52px!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0!important;
+}
+#addExerciseBtn{justify-self:start}
+#myPlanGeneratorWrap .row,
+#myPlanGeneratorWrap .row-2{align-items:end}
+#myPlanGeneratorWrap :is(input,select,textarea){max-width:100%}
+.fitness-calendar-day.future-date,
+.routine-calendar-day.future-date,
+.bl-routine-day-row.future-date{opacity:.48;cursor:not-allowed}
+
+@media (max-width:1260px){
+  #myPlanGeneratorWrap .ex-row,
+  [data-fitness-routine-panel="calisthenics"] .ex-row{
+    grid-template-columns:minmax(300px,1.7fr) minmax(165px,.8fr) minmax(120px,.6fr) 52px!important;
+  }
+  .ex-field-rep-increase{grid-column:1/-2}
+  .ex-remove-wrap{grid-column:-2/-1}
+}
+@media (max-width:900px){
+  #myPlanGeneratorWrap .ex-row,
+  [data-fitness-routine-panel="calisthenics"] .ex-row{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  }
+  .ex-exercise-block{grid-column:1/-1}
+  .ex-field-rep-increase{grid-column:1/-1}
+  .ex-remove-wrap{grid-column:2;justify-self:end}
+}
+@media (max-width:650px){
+  #myPlanGeneratorWrap .ex-row,
+  [data-fitness-routine-panel="calisthenics"] .ex-row{
+    grid-template-columns:1fr!important;
+    padding:.85rem;
+  }
+  .ex-exercise-block,
+  .ex-field-rep-increase,
+  .ex-remove-wrap{grid-column:1}
+  .ex-remove-wrap{justify-self:start}
+  .fitness-calisthenics-plan-manager .section-head-actions{display:grid}
+  .fitness-calisthenics-plan-manager .action{width:100%}
+}
