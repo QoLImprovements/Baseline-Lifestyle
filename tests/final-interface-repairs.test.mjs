@@ -10,10 +10,15 @@ const modules = [
   'sitewide/js/baseline-detect-word-feedback-v1.js',
   'sitewide/js/baseline-routine-group-completion-v1.js',
   'sitewide/js/baseline-public-routine-groups-v1.js',
-  'sitewide/js/baseline-fitness-plan-control-authority-v1.js'
+  'sitewide/js/baseline-fitness-plan-control-authority-v1.js',
+  'sitewide/js/baseline-routine-coherence-events-v4.js',
+  'sitewide/js/baseline-routine-live-authority-v1.js',
+  'systems/baseline-fitness/js/fitness-generator-progression-v1.js'
 ];
 const groupCompletion = read('sitewide/js/baseline-routine-group-completion-v1.js');
 const coherenceEvents = read('sitewide/js/baseline-routine-coherence-events-v4.js');
+const liveAuthority = read('sitewide/js/baseline-routine-live-authority-v1.js');
+const liveCss = read('sitewide/css/baseline-routine-live-authority-v1.css');
 const coherenceCss = read('sitewide/css/baseline-routine-coherence-v4.css');
 const favorites = read('sitewide/js/baseline-unified-favorites-v1.js');
 const detectWord = read('sitewide/js/baseline-detect-word-feedback-v1.js');
@@ -27,20 +32,42 @@ test('the isolated final repair modules remain valid JavaScript', () => {
   }
 });
 
-test('grouped Routine Logs keep one numbering owner and one group completion control', () => {
+test('grouped Routine Logs have stable group-owned numbering and checkbox-only group completion', () => {
   assert.match(groupCompletion, /data-final-group-complete/);
-  assert.match(groupCompletion, /Complete group/);
   assert.match(groupCompletion, /function setGroup/);
+  assert.match(groupCompletion, /observer\.observe\(target, \{ childList:true, subtree:false \}\)/);
+  assert.doesNotMatch(groupCompletion, /<span>Complete group<\/span>/);
   assert.doesNotMatch(groupCompletion, /bl-v4-number|data-final-group-number/);
-  assert.match(coherenceEvents, /function ensureNumber/);
-  assert.match(coherenceEvents, /decorateSkinLogNumbers/);
+  assert.match(liveCss, /counter-reset:bl-live-routine-number/);
+  assert.match(liveCss, /\.routine-log-item \.bl-v4-number/);
+  assert.match(liveCss, /display:none!important/);
 });
 
-test('Public Routines and Routine Settings keep the compact coherence layout', () => {
+test('the compatibility event bridge no longer performs a second My Routine render/repair pass', () => {
+  assert.match(coherenceEvents, /SITEWIDE_ROUTINE_EVENTS_20260806_5/);
+  assert.doesNotMatch(coherenceEvents, /decorateSkinLogNumbers/);
+  assert.doesNotMatch(coherenceEvents, /decorateFitnessLogNumbers/);
+  assert.doesNotMatch(coherenceEvents, /startAnotherPlan|createAnotherPlan/);
+  assert.doesNotMatch(coherenceEvents, /global\.addEventListener\('input'/);
+  assert.match(liveAuthority, /final sitewide authority/);
+  assert.match(liveAuthority, /applySkinSummaryFilter/);
+  assert.match(liveAuthority, /applyFitnessSummaryFilter/);
+});
+
+test('Public Routines and Routine Settings keep compact coherent layout', () => {
   assert.match(coherenceCss, /\.bl-v4-public-card\{/);
   assert.match(coherenceCss, /\.bl-v4-public-controls\{/);
   assert.match(coherenceCss, /\.bl-v4-settings-button\{/);
   assert.match(coherenceCss, /\.bl-v4-settings-panel\{/);
+  assert.match(liveCss, /\.bl-live-public-head\{/);
+  assert.match(liveCss, /justify-content:space-between/);
+});
+
+test('Skincare searchable controls stay inside the Skincare palette', () => {
+  assert.match(liveCss, /#routineActionSearch::-webkit-search-cancel-button/);
+  assert.match(liveCss, /-webkit-appearance:none!important/);
+  assert.match(liveCss, /#routineActionToggle/);
+  assert.match(liveCss, /var\(--bl-routine-accent\)/);
 });
 
 test('Account exposes one Favorites dropdown with Food and Natural Skincare categories', () => {
