@@ -51,6 +51,18 @@ function bl_fitness_ensure_schema(PDO $db): void {
       FOREIGN KEY(user_id) REFERENCES users(id)
     )');
   });
+
+  bl_apply_schema_migration($db, 'fitness', 3, static function(PDO $db): void {
+    $columns = $db->query('PRAGMA table_info(fitness_routine_state)');
+    $names = [];
+    foreach(($columns ? $columns->fetchAll() : []) as $column){
+      $names[] = strtolower((string)($column['name'] ?? ''));
+    }
+    if(!in_array('visibility', $names, true)){
+      $db->exec('ALTER TABLE fitness_routine_state ADD COLUMN visibility TEXT NOT NULL DEFAULT "private"');
+    }
+    $db->exec('CREATE INDEX IF NOT EXISTS idx_fitness_routine_visibility ON fitness_routine_state(visibility)');
+  });
 }
 
 function bl_fitness_db(): PDO {
