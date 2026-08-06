@@ -33,7 +33,7 @@ const planPayload = {
   progress: { done: 0, total: 1, nextIndex: 1, startDate: "2026-07-01" },
 };
 
-test("voice workout can be started from the Calisthenics routine subtab", async ({ page }) => {
+test("voice workout can be started from the Calisthenics Routine Plan subtab", async ({ page }) => {
   await page.addInitScript(() => {
     window.__realtimeChannels = [];
     const makeStream = () => {
@@ -167,7 +167,7 @@ test("voice workout can be started from the Calisthenics routine subtab", async 
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ ok: true, hasRoutine: false, activities: [], logs: {} }),
+      body: JSON.stringify({ ok: true, hasRoutine: false, visibility: "private", activities: [], logs: {} }),
     }),
   );
   await page.route("**/sitewide/api/voice_settings.php", (route) =>
@@ -198,7 +198,10 @@ test("voice workout can be started from the Calisthenics routine subtab", async 
   await expect(myRoutineTab).toBeVisible();
   await myRoutineTab.click();
 
-  const calisthenicsTab = page.locator('[data-fitness-routine-view="calisthenics"]');
+  const routinePlanTab = page.locator('[data-fitness-routine-view="plan"]');
+  await expect(routinePlanTab).toBeVisible();
+  await routinePlanTab.click();
+  const calisthenicsTab = page.locator('[data-fitness-plan-view="calisthenics"]');
   await expect(calisthenicsTab).toBeVisible();
   await calisthenicsTab.click();
 
