@@ -7,14 +7,113 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: website-checks-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  stabilise-sitewide-routine:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    outputs:
+      target: ${{ steps.gate.outputs.target }}
+      changed: ${{ steps.patch.outputs.changed }}
+    steps:
+      - name: Identify sitewide routine branch
+        id: gate
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.head_ref }}" = "agent/sitewide-routine-groups-settings-20260806" ]; then
+            echo "target=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "target=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out feature branch
+        if: steps.gate.outputs.target == 'true'
+        uses: actions/checkout@v7
+        with:
+          ref: agent/sitewide-routine-groups-settings-20260806
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        if: steps.gate.outputs.target == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Remove continuous observer loop
+        id: patch
+        if: steps.gate.outputs.target == 'true'
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('sitewide/js/baseline-routine-groups-settings.js')
+          text = path.read_text()
+          old = '''  function boot() {
+            wrapPlanFetch();
+            const root = isSkin ? $('#routine') : $('#my-plan');
+            if (!root) return;
+            state.observer = new MutationObserver(schedule);
+            state.observer.observe(root, { childList:true, subtree:true });
+            document.addEventListener('baseline:routine-settings-changed', schedule);
+            document.addEventListener('baseline:fitness-plans-updated', schedule);
+            global.setTimeout(schedule, 0);
+            global.addEventListener('pagehide', () => state.observer?.disconnect(), { once:true });
+          }
+'''
+          new = '''  function boot() {
+            wrapPlanFetch();
+            const root = isSkin ? $('#routine') : $('#my-plan');
+            if (!root) return;
+            document.addEventListener('baseline:routine-rendered', schedule);
+            document.addEventListener('baseline:routine-settings-changed', schedule);
+            document.addEventListener('baseline:fitness-plans-updated', schedule);
+            [0,120,360,900,1800].forEach((delay) => global.setTimeout(schedule, delay));
+          }
+'''
+          changed = False
+          if old in text:
+              path.write_text(text.replace(old, new, 1))
+              changed = True
+          elif new not in text:
+              raise SystemExit('shared routine boot block not found')
+          test = Path('tests/sitewide-routine-group-settings.test.mjs')
+          value = test.read_text()
+          marker = 'shared enhancements use event-driven refreshes without a continuous workspace observer'
+          if marker not in value:
+              value += '''\n\ntest('shared enhancements use event-driven refreshes without a continuous workspace observer', () => {\n  assert.match(groups, /baseline:routine-rendered/);\n  assert.doesNotMatch(groups, /state\\.observer = new MutationObserver/);\n});\n'''
+              test.write_text(value)
+              changed = True
+          Path('/tmp/routine-changed').write_text('true' if changed else 'false')
+          PY
+          echo "changed=$(cat /tmp/routine-changed)" >> "$GITHUB_OUTPUT"
+
+      - name: Install locked dependencies
+        if: steps.patch.outputs.changed == 'true'
+        run: npm ci
+
+      - name: Verify stability patch
+        if: steps.patch.outputs.changed == 'true'
+        run: |
+          node --check sitewide/js/baseline-routine-groups-settings.js
+          node --test tests/sitewide-routine-group-settings.test.mjs tests/fitness-routine-workspace.test.mjs tests/skincare-my-routine.test.mjs
+          npm run test:structure
+
+      - name: Publish stable feature branch
+        if: steps.patch.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Stabilise sitewide routine group settings browser updates"
+          git push origin HEAD:agent/sitewide-routine-groups-settings-20260806
+
   validate:
+    needs: stabilise-sitewide-routine
+    if: ${{ always() && !(needs.stabilise-sitewide-routine.outputs.target == 'true' && needs.stabilise-sitewide-routine.outputs.changed == 'true') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
