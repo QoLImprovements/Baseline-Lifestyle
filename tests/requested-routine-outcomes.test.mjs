@@ -72,7 +72,7 @@ test('summary filtering is final-authority controlled and Skincare follows saved
   assert.match(authority, /const desired = data\.groups\.map/);
   assert.match(authority, /const sameOrder =/);
   assert.match(authority, /value\.startsWith\('entity:'\)/);
-  assert.match(authority, /data\.blLiveFilterHidden/);
+  assert.match(authority, /dataset\.blLiveFilterHidden/);
   assert.match(css, /#routineSummary \[data-bl-live-filter-hidden=\"true\"\]/);
   assert.match(css, /#fitnessExerciseSummary \[data-bl-live-filter-hidden=\"true\"\]/);
 });
