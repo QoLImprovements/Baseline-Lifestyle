@@ -81,6 +81,18 @@
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
   }
 
+  function todayIso() {
+    return global.BASELINE_RoutineSystem?.todayIso?.() || isoDate(new Date());
+  }
+
+  function clampLogDate(value) {
+    return global.BASELINE_RoutineSystem?.clampLogDate?.(value) || (isoDate(value) > todayIso() ? todayIso() : isoDate(value));
+  }
+
+  function isFutureDate(value) {
+    return global.BASELINE_RoutineSystem?.isFutureDate?.(value) || isoDate(value) > todayIso();
+  }
+
   function firstOfMonth(value) {
     const date = localDate(value);
     return new Date(date.getFullYear(), date.getMonth(), 1);
@@ -320,7 +332,7 @@
         <div class="card fitness-routine-card">
           <div class="section-head-actions fitness-routine-log-head">
             <div><h2>Routine Log</h2><p class="note">Record calisthenics and other planned fitness activity for the selected date.</p></div>
-            <label class="field-stack fitness-log-date"><span>Log date</span><input id="fitnessRoutineLogDate" type="date"></label>
+            <label class="field-stack fitness-log-date"><span>Activity performed date</span><input id="fitnessRoutineLogDate" type="date" aria-label="Activity performed date"></label>
           </div>
           <div id="fitnessRoutineLogProgress" class="status"></div>
           <div id="fitnessRoutineLogItems"></div>
@@ -504,7 +516,7 @@
   }
 
   function metricInput(metric, value, itemId, context) {
-    const attributes = `${context === 'plan' ? `data-activity-id="${escapeHtml(itemId)}" data-target-metric="${escapeHtml(metric.key)}"` : `data-fitness-log-id="${escapeHtml(itemId)}" data-log-metric="${escapeHtml(metric.key)}"`}`;
+    const attributes = `${context === 'plan' ? `data-activity-id="${escapeHtml(itemId)}" data-target-metric="${escapeHtml(metric.key)}"` : `data-fitness-log-id="${escapeHtml(itemId)}" data-log-metric="${escapeHtml(metric.key)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"`}`;
     if (metric.type === 'select') {
       return `<select ${attributes}><option value="">Not recorded</option>${metric.options.map((option) => `<option value="${escapeHtml(option)}"${String(value || '') === option ? ' selected' : ''}>${escapeHtml(option)}</option>`).join('')}</select>`;
     }
@@ -582,6 +594,13 @@
   }
 
   function calisthenicsLogHtml() {
+    const planEntries = global.BASELINE_fitnessPlans?.getPlansForDate?.(state.selectedDate) || [];
+    if (planEntries.length) {
+      return `<section class="fitness-routine-log-group"><h3>Calisthenics</h3>${planEntries.map((entry) => `<article class="session-card fitness-calisthenics-log-card">
+        <div><strong class="session-title">${escapeHtml(entry.planName)}</strong><small>Session ${escapeHtml(entry.sessionIndex)} · ${escapeHtml(entry.detail)}</small></div>
+        <button type="button" class="tiny-btn" data-open-calisthenics-plan="${escapeHtml(entry.planId)}">Open plan</button>
+      </article>`).join('')}</section>`;
+    }
     const context = currentCalisthenicsContext();
     if (!context?.available || context.planComplete) return '';
     const title = context.sessionIndex ? `Session ${context.sessionIndex}` : 'Current workout';
@@ -603,16 +622,20 @@
       .join(' · ');
     return `<article class="session-card fitness-routine-log-item${entry.completed ? ' complete' : ''}">
       <div class="fitness-log-item-head">
-        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(timeLabel(item.timeOfDay))} · ${escapeHtml(due.detail)}${targetSummary ? ` · ${escapeHtml(targetSummary)}` : ''}</small></span></label>
+        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(timeLabel(item.timeOfDay))} · ${escapeHtml(due.detail)}${targetSummary ? ` · ${escapeHtml(targetSummary)}` : ''}</small></span></label>
       </div>
       ${metricFields(item, 'log', entry)}
-      <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>
+      <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>
     </article>`;
   }
 
   function renderLog() {
+    state.selectedDate = clampLogDate(state.selectedDate);
     const dateInput = $('#fitnessRoutineLogDate');
-    if (dateInput && dateInput.value !== state.selectedDate) dateInput.value = state.selectedDate;
+    if (dateInput) {
+      if (global.BASELINE_RoutineSystem?.configureLogDateInput) state.selectedDate = global.BASELINE_RoutineSystem.configureLogDateInput(dateInput, state.selectedDate);
+      else { dateInput.max = todayIso(); dateInput.value = state.selectedDate; }
+    }
     const target = $('#fitnessRoutineLogItems');
     const progress = $('#fitnessRoutineLogProgress');
     if (!target) return;
@@ -644,8 +667,9 @@
     const iso = isoDate(date);
     const count = completedActivityCount(iso);
     const selected = iso === state.selectedDate;
-    const today = iso === isoDate(new Date());
-    return `<button type="button" class="fitness-calendar-day${count ? ' has-completion' : ''}${selected ? ' selected' : ''}${today ? ' today' : ''}${inCurrentMonth ? '' : ' outside-month'}" data-calendar-date="${iso}" aria-label="${date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}${count ? `, ${count} completed activity${count === 1 ? '' : 'ies'}` : ''}"><span>${date.getDate()}</span>${count ? `<b>${count}</b>` : ''}</button>`;
+    const today = iso === todayIso();
+    const future = isFutureDate(iso);
+    return `<button type="button" class="fitness-calendar-day${count ? ' has-completion' : ''}${selected ? ' selected' : ''}${today ? ' today' : ''}${future ? ' future-date' : ''}${inCurrentMonth ? '' : ' outside-month'}" data-calendar-date="${iso}"${future ? ' disabled aria-disabled="true"' : ''} aria-label="${date.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}${count ? `, ${count} completed activity${count === 1 ? '' : 'ies'}` : ''}"><span>${date.getDate()}</span>${count ? `<b>${count}</b>` : ''}</button>`;
   }
 
   function renderCalendar() {
@@ -753,11 +777,13 @@
     renderAll();
   }
 
-  function updateLog(id, field, value, metricKey = '') {
+  function updateLog(id, field, value, metricKey = '', logDate = state.selectedDate) {
+    const date = clampLogDate(logDate);
+    if (isFutureDate(logDate)) return;
     const item = itemById(id);
     if (!item) return;
     const definition = definitionFor(item);
-    const entry = ensureLogDate(state.selectedDate)[id] || { completed:false, note:'', metrics:{}, completedAt:'' };
+    const entry = ensureLogDate(date)[id] || { completed:false, note:'', metrics:{}, completedAt:'' };
     if (field === 'completed') {
       entry.completed = Boolean(value);
       entry.completedAt = value ? new Date().toISOString() : '';
@@ -771,7 +797,7 @@
         else entry.metrics[metric.key] = normalised;
       }
     }
-    ensureLogDate(state.selectedDate)[id] = entry;
+    ensureLogDate(date)[id] = entry;
     scheduleSave();
   }
 
@@ -795,6 +821,11 @@
     if (!root) return;
 
     root.addEventListener('click', (event) => {
+      const planButton = event.target.closest('[data-open-calisthenics-plan]');
+      if (planButton) {
+        global.BASELINE_fitnessPlans?.openPlan?.(Number(planButton.dataset.openCalisthenicsPlan));
+        return;
+      }
       const tab = event.target.closest('[data-fitness-routine-view],[data-open-fitness-view]');
       if (tab) {
         activateView(tab.dataset.fitnessRoutineView || tab.dataset.openFitnessView, true);
@@ -859,7 +890,8 @@
       }
       const calendarDate = event.target.closest('[data-calendar-date]');
       if (calendarDate) {
-        state.selectedDate = isoDate(calendarDate.dataset.calendarDate);
+        if (isFutureDate(calendarDate.dataset.calendarDate)) return;
+        state.selectedDate = clampLogDate(calendarDate.dataset.calendarDate);
         state.calendarAnchor = localDate(state.selectedDate);
         renderLog();
         renderCalendar();
@@ -886,7 +918,7 @@
         return;
       }
       const field = event.target.closest('[data-activity-field]');
-      if (field && ['name','notes','timesPerWeek'].includes(field.dataset.activityField)) {
+      if (field && ['name','notes','timesPerWeek','timesPerMonth'].includes(field.dataset.activityField)) {
         updateActivityField(field);
         return;
       }
@@ -897,11 +929,11 @@
       }
       const logNote = event.target.closest('[data-fitness-log-note]');
       if (logNote) {
-        updateLog(logNote.dataset.fitnessLogNote, 'note', logNote.value);
+        updateLog(logNote.dataset.fitnessLogNote, 'note', logNote.value, '', logNote.dataset.fitnessLogDate);
         return;
       }
       const logMetric = event.target.closest('[data-log-metric]');
-      if (logMetric) updateLog(logMetric.dataset.fitnessLogId, 'metric', logMetric.value, logMetric.dataset.logMetric);
+      if (logMetric) updateLog(logMetric.dataset.fitnessLogId, 'metric', logMetric.value, logMetric.dataset.logMetric, logMetric.dataset.fitnessLogDate);
     });
 
     root.addEventListener('change', (event) => {
@@ -928,18 +960,19 @@
       }
       const complete = event.target.closest('[data-fitness-log-complete]');
       if (complete) {
-        updateLog(complete.dataset.fitnessLogComplete, 'completed', complete.checked);
+        updateLog(complete.dataset.fitnessLogComplete, 'completed', complete.checked, '', complete.dataset.fitnessLogDate);
         renderLog();
         renderCalendar();
         return;
       }
       const logMetric = event.target.closest('[data-log-metric]');
       if (logMetric) {
-        updateLog(logMetric.dataset.fitnessLogId, 'metric', logMetric.value, logMetric.dataset.logMetric);
+        updateLog(logMetric.dataset.fitnessLogId, 'metric', logMetric.value, logMetric.dataset.logMetric, logMetric.dataset.fitnessLogDate);
         return;
       }
       if (event.target?.id === 'fitnessRoutineLogDate') {
-        state.selectedDate = isoDate(event.target.value);
+        state.selectedDate = clampLogDate(event.target.value);
+        event.target.value = state.selectedDate;
         state.calendarAnchor = localDate(state.selectedDate);
         renderLog();
         renderCalendar();
@@ -1052,6 +1085,7 @@
     makeWorkspace();
     bindEvents();
     attachAuth();
+    document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
     renderAll();
     try {
       global.BASELINE_fitnessRoutine = Object.freeze({

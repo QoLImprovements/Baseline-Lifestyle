@@ -185,6 +185,8 @@
     LEGACY_TIMED: 'timed-hold'
   });
   const REP_INCREMENT = Object.freeze({ [TYPES.STANDARD]: 1, [TYPES.LEG]: 3 });
+  const EXERCISE_CATALOGUE = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
+  const EXERCISE_BY_NAME = new Map((EXERCISE_CATALOGUE?.EXERCISES || []).map((item) => [item.name, item]));
   const ANCHOR_SESSION = 6;
   const ANCHOR_VALUES = Object.freeze([44, 41, 47]);
 
@@ -332,10 +334,35 @@
     const increment = REP_INCREMENT[String(type || '')] || REP_INCREMENT[TYPES.STANDARD];
     return Array(sets).fill(increment);
   }
-  function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD) {
+  function progressedSetValues(baseline, count, sessionIndex, type = TYPES.STANDARD, customIncrement = null) {
     const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
-    const increments = progressionIncrements(type, count);
-    return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
+    const custom = Number(customIncrement);
+    const increments = Number.isFinite(custom) && custom >= 0
+      ? Array(setCount(count)).fill(custom)
+      : progressionIncrements(type, count);
+    return setValues(baseline, count).map((value, index) => Math.round(value + ((session - 1) * increments[index])));
+  }
+  function definitionForExercise(exercise) {
+    return EXERCISE_BY_NAME.get(canonicalExerciseName(exercise)) || null;
+  }
+  function defaultTotalRepIncrease(item) {
+    const source = item && typeof item === 'object' ? item : {};
+    const definition = definitionForExercise(source.exercise);
+    const perSet = String(source.progressionType || '') === TYPES.LEG ? REP_INCREMENT[TYPES.LEG] : REP_INCREMENT[TYPES.STANDARD];
+    return perSet * (definition?.laterality === 'per-side' ? 2 : 1);
+  }
+  function totalRepIncrease(item) {
+    const source = item && typeof item === 'object' ? item : {};
+    const definition = definitionForExercise(source.exercise);
+    const raw = Number(source.repIncrease);
+    let total = Number.isFinite(raw) && raw >= 0 ? Math.round(raw) : defaultTotalRepIncrease(source);
+    if (definition?.laterality === 'per-side' && total % 2 !== 0) total += 1;
+    return Math.max(0, Math.min(1000, total));
+  }
+  function perSetRepIncrease(item) {
+    const definition = definitionForExercise(item?.exercise);
+    const total = totalRepIncrease(item);
+    return definition?.laterality === 'per-side' ? total / 2 : total;
   }
   function holdValue(baseline, sessionIndex) {
     let seconds = Math.max(1, Math.round(Number(baseline) || 1));
@@ -351,11 +378,11 @@
     const type = String(source.progressionType || TYPES.STANDARD);
     if (isTimedType(type) || !Object.hasOwn(source, 'sets')) return [holdValue(baseline, session)];
 
-    if (exercise === 'Squats' && baseline === 40 && sets === 3 && session >= ANCHOR_SESSION) {
+    if (exercise === 'Squats' && baseline === 40 && sets === 3 && !Object.hasOwn(source, 'repIncrease') && session >= ANCHOR_SESSION) {
       const increase = (session - ANCHOR_SESSION) * REP_INCREMENT[TYPES.LEG];
       return ANCHOR_VALUES.map((value) => value + increase);
     }
-    return progressedSetValues(baseline, sets, session, type);
+    return progressedSetValues(baseline, sets, session, type, perSetRepIncrease(source));
   }
   function planForOwner(owner = ownerName()) {
     if (!global.localStorage || !owner) return null;
@@ -381,6 +408,8 @@
       if (!isTimedType(progressionType)) {
         const control = row.querySelector('.ex-sets');
         item.sets = setCount(control?.value || control?.dataset.lastSets || 3);
+        const increase = row.querySelector('.ex-rep-increase');
+        if (increase) item.repIncrease = Math.max(0, Math.min(1000, Math.round(Number(increase.value) || 0)));
       }
       return item;
     }).filter(Boolean);
@@ -490,6 +519,9 @@
     timedGuideFromAchievement,
     progressionIncrements,
     progressedSetValues,
+    defaultTotalRepIncrease,
+    totalRepIncrease,
+    perSetRepIncrease,
     targetsForExercise,
     adjustContext: adjustedContext
   });

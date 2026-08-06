@@ -1,0 +1,10 @@
+/* Baseline Fitness — coherent multiple-plan and progression controls. */
+.fitness-calisthenics-plan-manager{grid-column:1/-1;margin-bottom:18px}
+.fitness-calisthenics-plan-manager .section-head-actions{align-items:flex-start}
+.fitness-calisthenics-plan-manager .field-stack{margin-top:14px}
+.calisthenics-plan-name-field{display:block;margin:0 0 18px}
+.ex-row{grid-template-columns:minmax(260px,1.55fr) minmax(150px,.75fr) minmax(120px,.55fr) minmax(210px,.9fr) auto}
+.ex-field-rep-increase .note{font-size:inherit;line-height:1.4;margin:6px 0 0}
+.fitness-calendar-day.future-date,.routine-calendar-day.future-date,.bl-routine-day-row.future-date{opacity:.48;cursor:not-allowed}
+@media (max-width:980px){.ex-row{grid-template-columns:1fr 1fr}.ex-remove-wrap{align-self:end}}
+@media (max-width:650px){.ex-row{grid-template-columns:1fr}.fitness-calisthenics-plan-manager .section-head-actions{display:grid}.fitness-calisthenics-plan-manager .action{width:100%}}

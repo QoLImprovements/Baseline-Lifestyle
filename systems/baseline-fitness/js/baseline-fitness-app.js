@@ -134,7 +134,15 @@
     const rawType = String(source.progressionType || '');
     const type = rawType === LEGACY_TIMED_TYPE ? TYPES.TIMED : Object.values(TYPES).includes(rawType) ? rawType : definition.progressionType;
     const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type };
-    if (definition.unit === 'reps') item.sets = setCount(source.sets || 3);
+    if (definition.unit === 'reps') {
+      item.sets = setCount(source.sets || 3);
+      const defaultPerSet = type === TYPES.LEG ? 3 : 1;
+      const defaultTotal = defaultPerSet * (definition.laterality === 'per-side' ? 2 : 1);
+      const rawIncrease = Number(source.repIncrease);
+      let totalIncrease = Number.isFinite(rawIncrease) && rawIncrease >= 0 ? Math.round(rawIncrease) : defaultTotal;
+      if (definition.laterality === 'per-side' && totalIncrease % 2 !== 0) totalIncrease += 1;
+      item.repIncrease = Math.round(clamp(totalIncrease, 0, 1000));
+    }
     return item;
   }
   function normalisePlan(value) {
