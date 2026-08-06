@@ -8,10 +8,11 @@ async function diagnosticState(page, phase) {
   const state = await page.evaluate(() => {
     const section = document.querySelector('#my-plan');
     const shell = document.querySelector('.fitness-routine-shell');
-    const calisthenics = document.querySelector('[data-fitness-routine-panel="calisthenics"]');
+    const calisthenics = document.querySelector('[data-fitness-plan-panel="calisthenics"]');
     const saved = document.querySelector('#myPlanSavedWrap');
     const generator = document.querySelector('#myPlanGeneratorWrap');
-    const activeSubview = document.querySelector('[data-fitness-routine-view][aria-selected="true"]');
+    const activeSubview = document.querySelector('.fitness-routine-subtabs [data-fitness-routine-view][aria-selected="true"]');
+    const activePlanSubview = document.querySelector('[data-fitness-plan-view][aria-selected="true"]');
     const styles = (element) => {
       if (!element) return null;
       const style = getComputedStyle(element);
@@ -22,6 +23,7 @@ async function diagnosticState(page, phase) {
       href:location.href,
       readyState:document.readyState,
       sessionView:sessionStorage.getItem('__bl_fitness_routine_view_v2__'),
+      planView:sessionStorage.getItem('__bl_fitness_plan_view_v4__'),
       initialTab:document.documentElement.getAttribute('data-initial-fitness-tab'),
       section:Boolean(section),
       sectionState:styles(section),
@@ -35,21 +37,22 @@ async function diagnosticState(page, phase) {
       generator:Boolean(generator),
       generatorState:styles(generator),
       activeSubview:activeSubview?.dataset.fitnessRoutineView || '',
+      activePlanSubview:activePlanSubview?.dataset.fitnessPlanView || '',
       flags:{
-        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V4__),
+        loader:Boolean(window.__BASELINE_FITNESS_ROUTINE_LOADER_V8__),
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
-        coherent:Boolean(window.__BASELINE_FITNESS_ROUTINE_SITEWIDE_V3__),
+        coherent:Boolean(window.__BASELINE_ROUTINE_COHERENCE_V4__),
         app:Boolean(window.BASELINE_FITNESS_DEBUG),
         routineApi:Boolean(window.BASELINE_fitnessRoutine)
       },
-      scripts:Array.from(document.scripts).map((script) => script.src).filter((src) => src.includes('fitness'))
+      scripts:Array.from(document.scripts).map((script) => script.src).filter((src) => src.includes('fitness') || src.includes('routine-coherence'))
     };
   });
   console.log(`FITNESS_SAVE_RELOAD_${phase}=${JSON.stringify(state)}`);
   return state;
 }
 
-test('Fitness saves and reloads a two-session plan without losing the Calisthenics DOM', async ({ page }) => {
+test('Fitness saves and reloads a two-session plan without losing the nested Calisthenics DOM', async ({ page }) => {
   let savedPlan = null;
   const pageErrors = [];
   const failedRequests = [];
@@ -72,7 +75,7 @@ test('Fitness saves and reloads a two-session plan without losing the Calistheni
     if (pathname.endsWith('/list_profiles.php')) return fulfillJson(route, { ok:true, profiles:[] });
     if (pathname.endsWith('/achievements.php')) return fulfillJson(route, { ok:true, achievements:[] });
     if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route, { ok:true, settings:{} });
-    if (pathname.endsWith('/routine_state.php')) return fulfillJson(route, { ok:true, hasRoutine:false, activities:[], logs:[] });
+    if (pathname.endsWith('/routine_state.php')) return fulfillJson(route, { ok:true, hasRoutine:false, visibility:'private', activities:[], logs:{} });
     if (pathname.includes('/api/')) return fulfillJson(route, { ok:true });
     return route.continue();
   });
@@ -80,7 +83,8 @@ test('Fitness saves and reloads a two-session plan without losing the Calistheni
   await page.goto('/baseline-fitness/my-plan', { waitUntil:'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
   await page.locator('.tab[data-target="my-plan"]').click();
-  await page.locator('[data-fitness-routine-view="calisthenics"]').click();
+  await page.locator('[data-fitness-routine-view="plan"]').click();
+  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   await page.locator('.ex-row').first().locator('.ex-baseline').fill('12');
   await page.locator('#sessions').fill('2');
@@ -95,7 +99,10 @@ test('Fitness saves and reloads a two-session plan without losing the Calistheni
   await page.waitForTimeout(2500);
   const after = await diagnosticState(page, 'AFTER_RELOAD');
 
-  expect(after.sessionView).toBe('calisthenics');
+  expect(after.sessionView).toBe('plan');
+  expect(after.planView).toBe('calisthenics');
+  expect(after.activeSubview).toBe('plan');
+  expect(after.activePlanSubview).toBe('calisthenics');
   expect(pageErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
