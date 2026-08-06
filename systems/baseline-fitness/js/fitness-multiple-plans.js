@@ -1,10 +1,11 @@
-/* Baseline Fitness — multiple calisthenics plans and plan-specific progression controls. */
+/* Baseline Fitness — clean multiple-plan controller, searchable exercise fields and catalogue expansion. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS__) return;
+  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS_V2__) return;
+  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V2__ = true;
   global.__BASELINE_FITNESS_MULTIPLE_PLANS__ = true;
 
-  const API = '/systems/baseline-fitness/api';
+  const API_ROOT = '/systems/baseline-fitness/api';
   const SELECTED_PREFIX = '__bl_fitness_selected_plan_v1__::';
   const CREATE_PREFIX = '__bl_fitness_creating_plan_v1__::';
   const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
@@ -13,8 +14,7 @@
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
   let owner = 'guest';
-  let observer = null;
-  let patchFrame = 0;
+  let listObserver = null;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -26,7 +26,7 @@
   function authOwner() {
     try {
       const snapshot = global.BASELINE_auth?.get?.();
-      return snapshot?.authed ? normaliseOwner(snapshot.name || snapshot.user?.name || '') : 'guest';
+      return snapshot?.authed ? normaliseOwner(snapshot.name || snapshot.user?.name) : 'guest';
     } catch (_error) {
       return owner;
     }
@@ -71,6 +71,147 @@
     } catch (_error) {}
   }
 
+  function expandCatalogue() {
+    const base = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
+    if (!base || base.__comprehensiveExpansion) return;
+    const newFamilies = [
+      ['shoulder-pressing','Shoulder Pressing & Handstands'],
+      ['dips','Dips'],
+      ['calves-lower-leg','Calves & Lower Leg'],
+      ['hamstrings','Hamstrings'],
+      ['adductors','Adductors'],
+      ['locomotion','Crawling & Locomotion'],
+      ['conditioning','Bodyweight Conditioning'],
+      ['mobility-strength','Mobility Strength']
+    ];
+    const existingFamilyKeys = new Set(base.FAMILIES.map((family) => family.key));
+    const families = base.FAMILIES.concat(newFamilies.filter(([key]) => !existingFamilyKeys.has(key)).map(([key,label]) => Object.freeze({ key,label })));
+    const familyMap = new Map(families.map((family) => [family.key,family]));
+    const TYPES = base.TYPES;
+
+    function add(name, unit, type, baseline, familyKey, section, movement, laterality = 'bilateral', level = 'Standard', goodFor = '', how = '') {
+      const family = familyMap.get(familyKey);
+      return Object.freeze({
+        name, unit, progressionType:type, base:baseline, familyKey,
+        family:family?.label || familyKey,
+        section, movementCategory:movement, laterality, variationLevel:level,
+        category:section === 'Upper Body' ? 'upper' : section === 'Lower Body' ? 'lower' : section === 'Posterior Chain' ? 'posterior' : section === 'Full Body' ? 'full' : 'core',
+        goodFor:goodFor || `${movement} strength, control and bodyweight progression.`,
+        how:how || 'Move through a controlled range, keep stable alignment and stop when technique begins to break down.'
+      });
+    }
+
+    const additions = [
+      add('Side Lunges','reps',TYPES.LEG,8,'lunges','Lower Body','Lunge','per-side','Standard','Frontal-plane leg strength, inner-thigh mobility and hip control.','Step directly to the side, sit into the stepping hip, keep the other leg longer and return under control.'),
+      add('Cossack Squats','reps',TYPES.LEG,6,'squats','Lower Body','Squat','per-side','Advanced'),
+      add('Split Squats','reps',TYPES.LEG,10,'squats','Lower Body','Squat','per-side'),
+      add('Rear-Foot-Elevated Split Squats','reps',TYPES.LEG,8,'squats','Lower Body','Squat','per-side','Advanced'),
+      add('Shrimp Squat Progression','reps',TYPES.LEG,4,'squats','Lower Body','Squat','per-side','Advanced'),
+      add('Sissy Squat Progression','reps',TYPES.LEG,6,'squats','Lower Body','Knee-Dominant Squat','bilateral','Advanced'),
+      add('Wall Sit','seconds',TYPES.TIMED,30,'squats','Lower Body','Isometric Squat','bilateral'),
+      add('Single-Leg Wall Sit','seconds',TYPES.TIMED,15,'squats','Lower Body','Isometric Squat','separate-left-right','Advanced'),
+      add('Step-Ups','reps',TYPES.LEG,10,'squats','Lower Body','Step','per-side'),
+      add('Lateral Step-Ups','reps',TYPES.LEG,8,'squats','Lower Body','Step','per-side','Advanced'),
+      add('Step-Downs','reps',TYPES.LEG,8,'squats','Lower Body','Step','per-side','Advanced'),
+      add('Skater Squats','reps',TYPES.LEG,5,'squats','Lower Body','Squat','per-side','Advanced'),
+      add('Pike Push-Ups','reps',TYPES.STANDARD,6,'shoulder-pressing','Upper Body','Vertical Push','bilateral'),
+      add('Elevated Pike Push-Ups','reps',TYPES.STANDARD,5,'shoulder-pressing','Upper Body','Vertical Push','bilateral','Advanced'),
+      add('Wall Handstand Hold','seconds',TYPES.TIMED,20,'shoulder-pressing','Upper Body','Vertical Push','bilateral','Advanced'),
+      add('Chest-to-Wall Handstand Hold','seconds',TYPES.TIMED,15,'shoulder-pressing','Upper Body','Vertical Push','bilateral','Advanced'),
+      add('Wall Handstand Shoulder Taps','reps',TYPES.STANDARD,4,'shoulder-pressing','Upper Body','Vertical Push','per-side','Specialist'),
+      add('Handstand Push-Up Negative','reps',TYPES.STANDARD,3,'shoulder-pressing','Upper Body','Vertical Push','bilateral','Specialist'),
+      add('Wall Handstand Push-Ups','reps',TYPES.STANDARD,2,'shoulder-pressing','Upper Body','Vertical Push','bilateral','Specialist'),
+      add('Scapular Push-Ups','reps',TYPES.STANDARD,12,'push-ups','Upper Body','Scapular Push','bilateral'),
+      add('Pseudo Planche Push-Ups','reps',TYPES.STANDARD,4,'push-ups','Upper Body','Push','bilateral','Specialist'),
+      add('Hindu Push-Ups','reps',TYPES.STANDARD,6,'push-ups','Upper Body','Push','bilateral','Advanced'),
+      add('Dive-Bomber Push-Ups','reps',TYPES.STANDARD,5,'push-ups','Upper Body','Push','bilateral','Advanced'),
+      add('Explosive Push-Ups','reps',TYPES.STANDARD,5,'push-ups','Upper Body','Power Push','bilateral','Advanced'),
+      add('Clap Push-Ups','reps',TYPES.STANDARD,3,'push-ups','Upper Body','Power Push','bilateral','Specialist'),
+      add('Bench Dips','reps',TYPES.STANDARD,8,'dips','Upper Body','Dip','bilateral','Regression'),
+      add('Assisted Parallel-Bar Dips','reps',TYPES.STANDARD,5,'dips','Upper Body','Dip','bilateral','Regression'),
+      add('Parallel-Bar Dips','reps',TYPES.STANDARD,5,'dips','Upper Body','Dip','bilateral','Advanced'),
+      add('Straight-Bar Dips','reps',TYPES.STANDARD,3,'dips','Upper Body','Dip','bilateral','Specialist'),
+      add('Australian Pull-Ups','reps',TYPES.STANDARD,8,'pulling-rows','Upper Body','Horizontal Pull','bilateral'),
+      add('Feet-Elevated Inverted Rows','reps',TYPES.STANDARD,6,'pulling-rows','Upper Body','Horizontal Pull','bilateral','Advanced'),
+      add('Archer Inverted Rows','reps',TYPES.STANDARD,4,'pulling-rows','Upper Body','Horizontal Pull','per-side','Advanced'),
+      add('Towel Door Rows','reps',TYPES.STANDARD,8,'pulling-rows','Upper Body','Horizontal Pull','bilateral'),
+      add('Dead Hang','seconds',TYPES.TIMED,20,'pulling-pull-ups','Upper Body','Vertical Pull','bilateral'),
+      add('Flexed-Arm Hang','seconds',TYPES.TIMED,10,'pulling-pull-ups','Upper Body','Vertical Pull','bilateral','Advanced'),
+      add('Neutral-Grip Pull-Ups','reps',TYPES.STANDARD,3,'pulling-pull-ups','Upper Body','Vertical Pull','bilateral','Advanced'),
+      add('Wide-Grip Pull-Ups','reps',TYPES.STANDARD,2,'pulling-pull-ups','Upper Body','Vertical Pull','bilateral','Advanced'),
+      add('Commando Pull-Ups','reps',TYPES.STANDARD,3,'pulling-pull-ups','Upper Body','Vertical Pull','per-side','Advanced'),
+      add('Archer Pull-Ups','reps',TYPES.STANDARD,2,'pulling-pull-ups','Upper Body','Vertical Pull','per-side','Specialist'),
+      add('Glute Bridge Hold','seconds',TYPES.TIMED,30,'hip-glute-glute-bridges','Posterior Chain','Hip Extension','bilateral'),
+      add('Feet-Elevated Glute Bridge','reps',TYPES.LEG,12,'hip-glute-glute-bridges','Posterior Chain','Hip Extension','bilateral','Advanced'),
+      add('Hip Thrust','reps',TYPES.LEG,12,'hip-glute-glute-bridges','Posterior Chain','Hip Extension','bilateral'),
+      add('Single-Leg Hip Thrust','reps',TYPES.LEG,8,'hip-glute-glute-bridges','Posterior Chain','Hip Extension','per-side','Advanced'),
+      add('Frog Pumps','reps',TYPES.LEG,20,'hip-glute-glute-bridges','Posterior Chain','Hip Extension','bilateral'),
+      add('Hamstring Walkouts','reps',TYPES.LEG,8,'hamstrings','Posterior Chain','Knee Flexion','bilateral'),
+      add('Sliding Hamstring Curls','reps',TYPES.LEG,8,'hamstrings','Posterior Chain','Knee Flexion','bilateral','Advanced'),
+      add('Single-Leg Sliding Hamstring Curls','reps',TYPES.LEG,5,'hamstrings','Posterior Chain','Knee Flexion','per-side','Specialist'),
+      add('Assisted Nordic Curls','reps',TYPES.LEG,4,'hamstrings','Posterior Chain','Knee Flexion','bilateral','Advanced'),
+      add('Nordic Curl Negatives','reps',TYPES.LEG,3,'hamstrings','Posterior Chain','Knee Flexion','bilateral','Advanced'),
+      add('Bodyweight Romanian Deadlift','reps',TYPES.LEG,12,'hip-glute-hip-hinges','Posterior Chain','Hip Hinge','bilateral'),
+      add('Single-Leg Romanian Deadlift','reps',TYPES.LEG,8,'hip-glute-hip-hinges','Posterior Chain','Hip Hinge','per-side','Advanced'),
+      add('Reverse Hyperextension','reps',TYPES.LEG,12,'hip-glute-hip-hinges','Posterior Chain','Hip Extension','bilateral'),
+      add('Standing Calf Raises','reps',TYPES.LEG,20,'calves-lower-leg','Lower Body','Plantar Flexion','bilateral'),
+      add('Single-Leg Calf Raises','reps',TYPES.LEG,12,'calves-lower-leg','Lower Body','Plantar Flexion','per-side','Advanced'),
+      add('Bent-Knee Calf Raises','reps',TYPES.LEG,15,'calves-lower-leg','Lower Body','Plantar Flexion','bilateral'),
+      add('Tibialis Raises','reps',TYPES.LEG,20,'calves-lower-leg','Lower Body','Dorsiflexion','bilateral'),
+      add('Heel Walks','seconds',TYPES.TIMED,30,'calves-lower-leg','Lower Body','Dorsiflexion','bilateral'),
+      add('Copenhagen Plank - Short Lever','seconds',TYPES.TIMED,15,'adductors','Core','Adduction','separate-left-right','Advanced'),
+      add('Copenhagen Plank - Long Lever','seconds',TYPES.TIMED,8,'adductors','Core','Adduction','separate-left-right','Specialist'),
+      add('Side-Lying Hip Adduction','reps',TYPES.LEG,12,'adductors','Lower Body','Adduction','per-side'),
+      add('Adductor Slide-Outs','reps',TYPES.LEG,8,'adductors','Lower Body','Adduction','per-side','Advanced'),
+      add('Bear Crawl','seconds',TYPES.TIMED,30,'locomotion','Full Body','Crawl','bilateral'),
+      add('Backward Bear Crawl','seconds',TYPES.TIMED,20,'locomotion','Full Body','Crawl','bilateral','Advanced'),
+      add('Lateral Bear Crawl','seconds',TYPES.TIMED,20,'locomotion','Full Body','Crawl','bilateral','Advanced'),
+      add('Crab Walk','seconds',TYPES.TIMED,30,'locomotion','Full Body','Crawl','bilateral'),
+      add('Duck Walk','seconds',TYPES.TIMED,20,'locomotion','Lower Body','Locomotion','bilateral','Advanced'),
+      add('Inchworms','reps',TYPES.STANDARD,8,'locomotion','Full Body','Locomotion','bilateral'),
+      add('Burpees','reps',TYPES.STANDARD,8,'conditioning','Full Body','Conditioning','bilateral'),
+      add('Squat Thrusts','reps',TYPES.STANDARD,12,'conditioning','Full Body','Conditioning','bilateral'),
+      add('High Knees','seconds',TYPES.TIMED,30,'conditioning','Full Body','Conditioning','bilateral'),
+      add('Jumping Jacks','reps',TYPES.STANDARD,30,'conditioning','Full Body','Conditioning','bilateral'),
+      add('Skater Jumps','reps',TYPES.LEG,10,'conditioning','Full Body','Lateral Power','per-side','Advanced'),
+      add('Broad Jumps','reps',TYPES.LEG,5,'conditioning','Lower Body','Horizontal Power','bilateral','Advanced'),
+      add('Tuck Jumps','reps',TYPES.LEG,6,'conditioning','Lower Body','Vertical Power','bilateral','Advanced'),
+      add('Plank Jacks','reps',TYPES.STANDARD,20,'conditioning','Full Body','Conditioning','bilateral'),
+      add('Dead Bug Hold','seconds',TYPES.TIMED,20,'other-core','Core','Anterior Core','bilateral'),
+      add('Reverse Crunches','reps',TYPES.STANDARD,12,'other-core','Core','Anterior Core','bilateral'),
+      add('Bicycle Crunches','reps',TYPES.STANDARD,12,'other-core','Core','Rotation','per-side'),
+      add('V-Ups','reps',TYPES.STANDARD,8,'other-core','Core','Anterior Core','bilateral','Advanced'),
+      add('Flutter Kicks','seconds',TYPES.TIMED,30,'other-core','Core','Anterior Core','bilateral'),
+      add('Hanging Knee Raises','reps',TYPES.STANDARD,8,'other-core','Core','Anterior Core','bilateral','Advanced'),
+      add('Hanging Leg Raises','reps',TYPES.STANDARD,5,'other-core','Core','Anterior Core','bilateral','Specialist'),
+      add('L-Sit Tuck Hold','seconds',TYPES.TIMED,10,'other-core','Core','Compression','bilateral','Advanced'),
+      add('L-Sit Hold','seconds',TYPES.TIMED,8,'other-core','Core','Compression','bilateral','Specialist'),
+      add('Shoulder CARs','reps',TYPES.STANDARD,5,'mobility-strength','Upper Body','Mobility','per-side'),
+      add('Hip CARs','reps',TYPES.LEG,5,'mobility-strength','Lower Body','Mobility','per-side'),
+      add('Deep Squat Hold','seconds',TYPES.TIMED,30,'mobility-strength','Lower Body','Mobility','bilateral'),
+      add('90/90 Hip Switches','reps',TYPES.LEG,8,'mobility-strength','Lower Body','Mobility','per-side'),
+      add('Jefferson Curl - Bodyweight','reps',TYPES.STANDARD,8,'mobility-strength','Posterior Chain','Mobility','bilateral','Advanced')
+    ];
+
+    const names = new Set(base.EXERCISES.map((exercise) => exercise.name.toLocaleLowerCase('en-GB')));
+    const exercises = base.EXERCISES.concat(additions.filter((exercise) => {
+      const key = exercise.name.toLocaleLowerCase('en-GB');
+      if (names.has(key)) return false;
+      names.add(key);
+      return true;
+    }));
+    const expanded = Object.freeze(Object.assign({}, base, {
+      __comprehensiveExpansion:true,
+      FAMILIES:Object.freeze(families),
+      FAMILY_BY_KEY:familyMap,
+      FAMILY_ORDER:Object.freeze(families.map((family) => family.label)),
+      EXERCISES:Object.freeze(exercises)
+    }));
+    global.BASELINE_FITNESS_EXERCISE_CATALOGUE = expanded;
+  }
+
+  expandCatalogue();
+
   function planName(plan, index = 0) {
     const name = String(plan?.planJson?.name || plan?.name || '').trim();
     return name || `Calisthenics Plan ${index + 1}`;
@@ -82,24 +223,16 @@
   }
 
   function responseJson(payload, status = 200) {
-    return new Response(JSON.stringify(payload), {
-      status,
-      headers:{ 'Content-Type':'application/json', 'Cache-Control':'no-store' }
-    });
+    return new Response(JSON.stringify(payload), { status, headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } });
   }
 
   function urlFor(input) {
-    try {
-      if (input instanceof Request) return new URL(input.url, global.location.href);
-      return new URL(String(input), global.location.href);
-    } catch (_error) {
-      return null;
-    }
+    try { return new URL(input instanceof Request ? input.url : String(input), global.location.href); }
+    catch (_error) { return null; }
   }
 
   function withUrl(input, url) {
-    if (input instanceof Request) return new Request(url.toString(), input);
-    return url.toString();
+    return input instanceof Request ? new Request(url.toString(), input) : url.toString();
   }
 
   function readProgressionControls() {
@@ -107,15 +240,14 @@
     $$('#exerciseList .ex-row').forEach((row) => {
       const exercise = String(row.querySelector('.ex-select')?.value || '').trim();
       const field = row.querySelector('.ex-rep-increase');
-      if (exercise && field) values.set(exercise, Math.max(0, Math.min(1000, Math.round(Number(field.value) || 0))));
+      if (exercise && field) values.set(exercise, Math.max(0,Math.min(1000,Math.round(Number(field.value)||0))));
     });
     return values;
   }
 
   function enhancePlanJson(raw) {
     const plan = raw && typeof raw === 'object' ? Object.assign({}, raw) : {};
-    const name = String($('#calisthenicsPlanName')?.value || plan.name || '').trim().slice(0, 100);
-    plan.name = name || 'Calisthenics Plan';
+    plan.name = String($('#calisthenicsPlanName')?.value || plan.name || 'Calisthenics Plan').trim().slice(0,100) || 'Calisthenics Plan';
     const increases = readProgressionControls();
     plan.items = Array.isArray(plan.items) ? plan.items.map((item) => {
       const copy = item && typeof item === 'object' ? Object.assign({}, item) : item;
@@ -126,63 +258,117 @@
   }
 
   async function enhancedWrite(input, init, url) {
-    let nextInit = Object.assign({}, init || {});
-    let body = null;
+    const nextInit = Object.assign({}, init || {});
     if (typeof nextInit.body === 'string') {
-      try { body = JSON.parse(nextInit.body); } catch (_error) {}
-    }
-    if (body && typeof body === 'object') {
-      body.planJson = enhancePlanJson(body.planJson);
-      nextInit.body = JSON.stringify(body);
+      try {
+        const body = JSON.parse(nextInit.body);
+        if (body && typeof body === 'object') {
+          body.planJson = enhancePlanJson(body.planJson);
+          nextInit.body = JSON.stringify(body);
+        }
+      } catch (_error) {}
     }
     const response = await nativeFetch(input, nextInit);
     if (response.ok) {
-      let data = null;
-      try { data = await response.clone().json(); } catch (_error) {}
+      const data = await response.clone().json().catch(() => null);
       if (url.pathname.endsWith('/save_plan.php') && Number(data?.planId) > 0) setSelectedPlanId(data.planId);
       setCreatingPlan(false);
       clearPlanCaches();
-      global.setTimeout(refreshPlans, 50);
+      global.setTimeout(refreshPlans,50);
     }
     return response;
   }
 
   if (nativeFetch) {
-    global.fetch = async function (input, init = {}) {
+    global.fetch = async function(input, init = {}) {
       const url = urlFor(input);
-      if (!url) return nativeFetch(input, init);
-
+      if (!url) return nativeFetch(input,init);
       if (url.pathname.endsWith('/get_plan.php') && !url.searchParams.has('name')) {
-        if (isCreatingPlan()) return responseJson({ ok:true, hasPlan:false, has_plan:false, creatingPlan:true });
+        if (isCreatingPlan()) return responseJson({ ok:true,hasPlan:false,has_plan:false,creatingPlan:true });
         const selected = selectedPlanId();
-        if (selected) url.searchParams.set('planId', String(selected));
-        let response = await nativeFetch(withUrl(input, url), init);
+        if (selected) url.searchParams.set('planId',String(selected));
+        let response = await nativeFetch(withUrl(input,url),init);
         if (selected && response.status === 404) {
           setSelectedPlanId(0);
           clearPlanCaches();
           url.searchParams.delete('planId');
-          response = await nativeFetch(withUrl(input, url), init);
+          response = await nativeFetch(withUrl(input,url),init);
         }
         return response;
       }
-
-      if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) {
-        return enhancedWrite(input, init, url);
-      }
-
+      if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
       if (url.pathname.endsWith('/delete_plan.php')) {
-        const response = await nativeFetch(input, init);
+        const response = await nativeFetch(input,init);
         if (response.ok) {
-          setSelectedPlanId(0);
-          setCreatingPlan(false);
-          clearPlanCaches();
-          global.setTimeout(refreshPlans, 50);
+          setSelectedPlanId(0); setCreatingPlan(false); clearPlanCaches(); global.setTimeout(refreshPlans,50);
         }
         return response;
       }
-
-      return nativeFetch(input, init);
+      return nativeFetch(input,init);
     };
+  }
+
+  function ensureDatalist() {
+    let list = $('#calisthenicsExerciseOptions');
+    if (!list) {
+      list = document.createElement('datalist');
+      list.id = 'calisthenicsExerciseOptions';
+      document.body.appendChild(list);
+    }
+    const catalogue = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
+    const signature = catalogue.EXERCISES.map((exercise) => exercise.name).join('|');
+    if (list.dataset.signature !== signature) {
+      list.dataset.signature = signature;
+      list.innerHTML = catalogue.EXERCISES.map((exercise) => `<option value="${String(exercise.name).replace(/"/g,'&quot;')}"></option>`).join('');
+    }
+    return list;
+  }
+
+  function matchExercise(value) {
+    const text = String(value || '').trim();
+    return global.BASELINE_FITNESS_EXERCISE_CATALOGUE.EXERCISES.find((exercise) => exercise.name.localeCompare(text,'en-GB',{sensitivity:'base'}) === 0) || null;
+  }
+
+  function enhanceExerciseRow(row) {
+    if (!row || row.dataset.searchableExercise === 'true') return;
+    const select = row.querySelector('.ex-select');
+    if (!select) return;
+    row.dataset.searchableExercise = 'true';
+    ensureDatalist();
+    const input = document.createElement('input');
+    input.type = 'search';
+    input.className = 'ex-search-input field-input-fixed';
+    input.setAttribute('list','calisthenicsExerciseOptions');
+    input.setAttribute('autocomplete','off');
+    input.setAttribute('aria-label','Search or type an exercise');
+    input.placeholder = 'Type or choose an exercise…';
+    input.value = select.options[select.selectedIndex]?.textContent || select.value || '';
+    select.classList.add('ex-select-source');
+    select.hidden = true;
+    select.setAttribute('aria-hidden','true');
+    select.tabIndex = -1;
+    select.insertAdjacentElement('beforebegin',input);
+
+    function commit(showError = false) {
+      const match = matchExercise(input.value);
+      input.setCustomValidity(match || !showError ? '' : 'Choose an exercise from the list.');
+      if (!match || select.value === match.name) return match;
+      select.value = match.name;
+      select.dispatchEvent(new Event('change',{ bubbles:true }));
+      return match;
+    }
+    input.addEventListener('input',() => commit(false));
+    input.addEventListener('change',() => commit(true));
+    input.addEventListener('blur',() => {
+      const match = commit(true);
+      if (!match) input.reportValidity();
+    });
+    select.addEventListener('change',() => {
+      input.value = select.options[select.selectedIndex]?.textContent || select.value || '';
+      input.setCustomValidity('');
+      ensureRepIncrease(row);
+    });
+    ensureRepIncrease(row);
   }
 
   function defaultRepIncrease(row) {
@@ -196,134 +382,107 @@
   }
 
   function ensureRepIncrease(row) {
-    const definitionIsTimed = String(row.dataset.progressionType || '').includes('timed');
-    let fieldWrap = row.querySelector('.ex-field-rep-increase');
-    if (definitionIsTimed) {
-      fieldWrap?.remove();
-      return;
-    }
-    if (!fieldWrap) {
-      fieldWrap = document.createElement('div');
-      fieldWrap.className = 'field-stack ex-field-rep-increase';
-      fieldWrap.innerHTML = '<label class="rep-increase-label">Rep increase each session</label><input class="ex-rep-increase field-input-fixed" type="number" min="0" max="1000" step="1" inputmode="numeric"><p class="note rep-increase-note"></p>';
+    if (!row) return;
+    const timed = String(row.dataset.progressionType || '').includes('timed');
+    let wrap = row.querySelector('.ex-field-rep-increase');
+    if (timed) { wrap?.remove(); return; }
+    if (!wrap) {
+      wrap = document.createElement('label');
+      wrap.className = 'field-stack ex-field-rep-increase';
+      wrap.innerHTML = '<span class="rep-increase-label">Rep increase each session</span><input class="ex-rep-increase field-input-fixed" type="number" min="0" max="1000" step="1" inputmode="numeric"><small class="note rep-increase-note"></small>';
       const sets = row.querySelector('.ex-field-sets');
-      (sets || row.lastElementChild)?.insertAdjacentElement('afterend', fieldWrap);
+      (sets || row.lastElementChild)?.insertAdjacentElement('afterend',wrap);
     }
-    const label = fieldWrap.querySelector('.rep-increase-label');
-    const note = fieldWrap.querySelector('.rep-increase-note');
-    const input = fieldWrap.querySelector('.ex-rep-increase');
     const perSide = row.dataset.laterality === 'per-side';
-    if (label) label.textContent = perSide ? 'Total rep increase each session (both sides)' : 'Rep increase each session';
-    if (note) note.textContent = perSide ? 'For example, 10 means 5 additional repetitions on each side.' : 'Applied to every set after each successful session.';
-    if (input) {
-      input.step = perSide ? '2' : '1';
-      const exercise = String(row.querySelector('.ex-select')?.value || '');
-      const item = itemForRow(row);
-      const saved = Number(item?.repIncrease);
-      const next = Number.isFinite(saved) && saved >= 0 ? saved : defaultRepIncrease(row);
-      if (input.dataset.exercise !== exercise || !input.dataset.customised) input.value = String(next);
-      input.dataset.exercise = exercise;
+    const input = wrap.querySelector('.ex-rep-increase');
+    wrap.querySelector('.rep-increase-label').textContent = perSide ? 'Total rep increase each session (both sides)' : 'Rep increase each session';
+    wrap.querySelector('.rep-increase-note').textContent = perSide ? 'For example, 10 means 5 additional repetitions on each side.' : 'Applied after each successful session.';
+    input.step = perSide ? '2' : '1';
+    const exercise = String(row.querySelector('.ex-select')?.value || '');
+    const saved = Number(itemForRow(row)?.repIncrease);
+    const value = Number.isFinite(saved) && saved >= 0 ? saved : defaultRepIncrease(row);
+    if (input.dataset.exercise !== exercise || input.dataset.customised !== 'true') input.value = String(value);
+    input.dataset.exercise = exercise;
+  }
+
+  function enhanceExerciseList() {
+    const list = $('#exerciseList');
+    if (!list) return;
+    $$('.ex-row',list).forEach(enhanceExerciseRow);
+    if (!listObserver) {
+      listObserver = new MutationObserver(() => $$('.ex-row',list).forEach(enhanceExerciseRow));
+      listObserver.observe(list,{ childList:true });
     }
-  }
-
-  function ensureProgressionControls() {
-    $$('#exerciseList .ex-row').forEach(ensureRepIncrease);
-  }
-
-  function escapeHtml(value) {
-    return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
-  }
-
-  function managerShellHtml() {
-    return '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for different muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect" data-native-select="true"></select></label>';
-  }
-
-  function planOptionData() {
-    return plans.map((plan, index) => {
-      const progress = plan.progress || {};
-      return {
-        value:String(Number(plan.planId)),
-        label:`${planName(plan, index)} — ${Number(progress.done || 0)}/${Number(progress.total || plan.planJson?.sessions || 0)} sessions`
-      };
-    });
-  }
-
-  function syncPlanSelect(select) {
-    if (!select) return;
-    const optionData = planOptionData();
-    const signature = JSON.stringify(optionData);
-    if (select.dataset.planOptionsSignature !== signature) {
-      const fragment = document.createDocumentFragment();
-      const placeholder = document.createElement('option');
-      placeholder.value = '';
-      placeholder.textContent = optionData.length ? 'Choose a plan…' : 'No saved plans yet';
-      fragment.append(placeholder);
-      optionData.forEach((entry) => {
-        const option = document.createElement('option');
-        option.value = entry.value;
-        option.textContent = entry.label;
-        fragment.append(option);
-      });
-      select.replaceChildren(fragment);
-      select.dataset.planOptionsSignature = signature;
-    }
-    select.disabled = optionData.length === 0;
-    const selected = String(selectedPlanId() || '');
-    select.value = optionData.some((entry) => entry.value === selected) ? selected : '';
-  }
-
-  function ensureManager() {
-    const panel = $('[data-fitness-routine-panel="calisthenics"]');
-    if (!panel) return;
-    let manager = $('#calisthenicsPlanManager', panel);
-    if (!manager) {
-      manager = document.createElement('section');
-      manager.id = 'calisthenicsPlanManager';
-      manager.className = 'card fitness-calisthenics-plan-manager';
-      manager.innerHTML = managerShellHtml();
-      panel.prepend(manager);
-    } else if (!manager.querySelector('#createCalisthenicsPlan') || !manager.querySelector('#calisthenicsPlanSelect')) {
-      manager.innerHTML = managerShellHtml();
-    }
-    syncPlanSelect(manager.querySelector('#calisthenicsPlanSelect'));
   }
 
   function ensurePlanName() {
     const list = $('#exerciseList');
     if (!list) return;
-    let field = $('#calisthenicsPlanName');
-    if (!field) {
-      const wrap = document.createElement('label');
-      wrap.className = 'field-stack calisthenics-plan-name-field';
-      wrap.innerHTML = '<span>Plan name</span><input id="calisthenicsPlanName" class="field-input-fixed" type="text" maxlength="100" placeholder="For example: Lower Body, Upper Body or Badminton Preparation">';
-      list.insertAdjacentElement('beforebegin', wrap);
-      field = wrap.querySelector('input');
+    let input = $('#calisthenicsPlanName');
+    if (!input) {
+      const label = document.createElement('label');
+      label.className = 'field-stack calisthenics-plan-name-field';
+      label.innerHTML = '<span>Plan name</span><input id="calisthenicsPlanName" class="field-input-fixed" type="text" maxlength="100" placeholder="For example: Lower Body, Upper Body or Badminton Preparation">';
+      list.insertAdjacentElement('beforebegin',label);
+      input = label.querySelector('input');
     }
-    if (document.activeElement !== field) {
+    if (document.activeElement !== input) {
       const plan = selectedPlan();
-      const next = isCreatingPlan() ? '' : planName(plan, Math.max(0, plans.indexOf(plan)));
-      if (!field.value || field.dataset.planId !== String(plan?.planId || 'new')) field.value = next;
-      field.dataset.planId = String(plan?.planId || 'new');
+      const id = String(plan?.planId || 'new');
+      if (input.dataset.planId !== id) {
+        input.value = isCreatingPlan() ? '' : planName(plan,Math.max(0,plans.indexOf(plan)));
+        input.dataset.planId = id;
+      }
     }
+  }
+
+  function ensureManager() {
+    const panel = $('[data-fitness-routine-panel="calisthenics"]') || $('#my-plan');
+    if (!panel) return;
+    let manager = $('#calisthenicsPlanManager',panel);
+    if (!manager) {
+      manager = document.createElement('section');
+      manager.id = 'calisthenicsPlanManager';
+      manager.className = 'card fitness-calisthenics-plan-manager';
+      manager.innerHTML = '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';
+      panel.prepend(manager);
+    }
+    const select = manager.querySelector('#calisthenicsPlanSelect');
+    const data = plans.map((plan,index) => ({
+      value:String(Number(plan.planId)),
+      label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions`
+    }));
+    const signature = JSON.stringify(data);
+    if (select.dataset.signature !== signature) {
+      select.dataset.signature = signature;
+      select.innerHTML = `<option value="">${data.length ? 'Choose a plan…' : 'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`;
+    }
+    select.disabled = !data.length;
+    select.value = data.some((entry) => entry.value === String(selectedPlanId())) ? String(selectedPlanId()) : '';
   }
 
   function decorateSavedPlan() {
     const title = $('#myPlanOut .my-plan-saved-head h2');
     const plan = selectedPlan();
-    if (title && plan) title.textContent = `Saved plan — ${planName(plan, plans.indexOf(plan))}`;
+    if (title && plan) title.textContent = `Saved plan — ${planName(plan,plans.indexOf(plan))}`;
   }
 
-  function patch() {
-    patchFrame = 0;
+  function patchInterface() {
     ensureManager();
     ensurePlanName();
-    ensureProgressionControls();
+    enhanceExerciseList();
     decorateSavedPlan();
-  }
-
-  function schedulePatch() {
-    if (patchFrame) return;
-    patchFrame = global.requestAnimationFrame(patch);
+    const groupSelect = $('#exGroup');
+    if (groupSelect) {
+      const families = global.BASELINE_FITNESS_EXERCISE_CATALOGUE.FAMILIES;
+      const selected = groupSelect.value;
+      const signature = families.map((family) => family.label).join('|');
+      if (groupSelect.dataset.catalogueSignature !== signature) {
+        groupSelect.dataset.catalogueSignature = signature;
+        groupSelect.innerHTML = '<option value="all">All groups</option>' + families.map((family) => `<option value="${family.label}">${family.label}</option>`).join('');
+        groupSelect.value = Array.from(groupSelect.options).some((option) => option.value === selected) ? selected : 'all';
+      }
+    }
   }
 
   function createPlan() {
@@ -331,23 +490,23 @@
     setSelectedPlanId(0);
     clearPlanCaches();
     try {
-      global.sessionStorage?.setItem(VIEW_KEY, 'plan');
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY, 'calisthenics');
+      global.sessionStorage?.setItem(VIEW_KEY,'plan');
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
     } catch (_error) {}
-    const url = new URL('/baseline-fitness/my-routine', global.location.origin);
-    url.searchParams.set('new-plan', String(Date.now()));
+    const url = new URL('/baseline-fitness/my-routine',global.location.origin);
+    url.searchParams.set('new-plan',String(Date.now()));
     global.location.assign(url.toString());
   }
 
   function openPlan(planId) {
-    const id = Math.max(0, Number(planId) || 0);
+    const id = Math.max(0,Number(planId)||0);
     if (!id) return;
     setCreatingPlan(false);
     setSelectedPlanId(id);
     clearPlanCaches();
     try {
-      global.sessionStorage?.setItem(VIEW_KEY, 'plan');
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY, 'calisthenics');
+      global.sessionStorage?.setItem(VIEW_KEY,'plan');
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
     } catch (_error) {}
     global.location.reload();
   }
@@ -356,80 +515,77 @@
     const raw = Number(session?.completed_at);
     if (!raw) return '';
     const date = new Date(raw * 1000);
-    const pad = (number) => String(number).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    const pad = (number) => String(number).padStart(2,'0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
   }
 
   function todayIso() {
-    return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0, 10);
+    return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0,10);
   }
 
   function getPlansForDate(date) {
     const target = String(date || todayIso());
     if (target > todayIso()) return [];
     const output = [];
-    plans.forEach((plan, index) => {
+    plans.forEach((plan,index) => {
       const sessions = Array.isArray(plan.sessions) ? plan.sessions : [];
       sessions.filter((session) => session.status === 'done' && completedDate(session) === target).forEach((session) => {
-        output.push({ planId:Number(plan.planId), planName:planName(plan, index), sessionIndex:Number(session.session_index), detail:'Completed on this date', status:'done' });
+        output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(session.session_index),detail:'Completed on this date',status:'done' });
       });
       if (target === todayIso()) {
         const next = sessions.find((session) => session.status !== 'done');
         if (next && String(next.scheduled_date || '') <= target) {
-          output.push({ planId:Number(plan.planId), planName:planName(plan, index), sessionIndex:Number(next.session_index), detail:String(next.scheduled_date || '') < target ? 'Overdue and available today' : 'Due today', status:'due' });
+          output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(next.session_index),detail:String(next.scheduled_date || '') < target ? 'Overdue and available today' : 'Due today',status:'due' });
         }
       }
     });
     return output;
   }
 
+  function getPlans() {
+    return JSON.parse(JSON.stringify(plans));
+  }
+
   async function refreshPlans() {
     owner = authOwner();
     if (owner === 'guest' || !nativeFetch) {
       plans = [];
-      schedulePatch();
-      document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated', { detail:{ plans:[] } }));
+      patchInterface();
+      document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));
       return [];
     }
     try {
-      const response = await nativeFetch(`${API}/list_plans.php`, { credentials:'same-origin', headers:{ Accept:'application/json' } });
+      const response = await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
       const data = await response.json();
       plans = response.ok && Array.isArray(data?.plans) ? data.plans : [];
     } catch (_error) {
       plans = [];
     }
-    const selected = selectedPlanId();
     if (!isCreatingPlan()) {
+      const selected = selectedPlanId();
       if (selected && !plans.some((plan) => Number(plan.planId) === selected)) setSelectedPlanId(0);
       if (!selectedPlanId() && plans[0]) setSelectedPlanId(plans[0].planId);
     }
-    schedulePatch();
-    document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated', { detail:{ plans:getPlans() } }));
+    patchInterface();
+    document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));
     return getPlans();
   }
 
-  function getPlans() {
-    return JSON.parse(JSON.stringify(plans));
+  function bind() {
+    document.addEventListener('click',(event) => {
+      if (event.target.closest('#createCalisthenicsPlan')) createPlan();
+    });
+    document.addEventListener('change',(event) => {
+      const select = event.target.closest('#calisthenicsPlanSelect');
+      if (select?.value) { openPlan(select.value); return; }
+      const source = event.target.closest('#exerciseList .ex-select');
+      if (source) global.setTimeout(() => ensureRepIncrease(source.closest('.ex-row')),0);
+    },true);
+    document.addEventListener('input',(event) => {
+      const input = event.target.closest('.ex-rep-increase');
+      if (input) input.dataset.customised = 'true';
+    },true);
   }
-
-  document.addEventListener('click', (event) => {
-    if (event.target.closest('#createCalisthenicsPlan')) { createPlan(); return; }
-  });
-  document.addEventListener('change', (event) => {
-    const select = event.target.closest('#calisthenicsPlanSelect');
-    if (select?.value) { openPlan(select.value); return; }
-    const exercise = event.target.closest('#exerciseList .ex-select');
-    if (exercise) global.setTimeout(() => {
-      const row = exercise.closest('.ex-row');
-      const input = row?.querySelector('.ex-rep-increase');
-      if (input) { delete input.dataset.customised; input.dataset.exercise = ''; }
-      ensureRepIncrease(row);
-    }, 0);
-  }, true);
-  document.addEventListener('input', (event) => {
-    const input = event.target.closest('.ex-rep-increase');
-    if (input) input.dataset.customised = 'true';
-  }, true);
 
   function attachAuth() {
     let attempts = 0;
@@ -442,9 +598,16 @@
         return;
       }
       attempts += 1;
-      if (attempts < 80) global.setTimeout(connect, 100);
+      if (attempts < 80) global.setTimeout(connect,100);
     };
     connect();
+  }
+
+  function boot() {
+    ensureDatalist();
+    patchInterface();
+    bind();
+    attachAuth();
   }
 
   global.BASELINE_fitnessPlans = Object.freeze({
@@ -456,9 +619,7 @@
     createPlan
   });
 
-  observer = new MutationObserver(schedulePatch);
-  observer.observe(document.documentElement, { childList:true, subtree:true });
-  attachAuth();
-  schedulePatch();
-  global.addEventListener('pagehide', () => observer?.disconnect(), { once:true });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
+  else boot();
+  global.addEventListener('pagehide',() => listObserver?.disconnect(),{ once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
