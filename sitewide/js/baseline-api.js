@@ -63,4 +63,15 @@
     get:(path)=>json(path, { method:'GET' }),
     post:(path, body)=>json(path, { method:'POST', body }),
   };
+
+  function removeObsoleteUpdateFooter(){
+    const app = document.documentElement?.dataset?.app || document.body?.dataset?.app || '';
+    if(app !== 'skin' && app !== 'food') return;
+    document.querySelectorAll('footer.footer').forEach((footer) => {
+      if(/Baseline (?:Natural Skincare|Food Approach)\s*-\s*Updated/i.test(footer.textContent || '')) footer.remove();
+    });
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeObsoleteUpdateFooter, { once:true });
+  else removeObsoleteUpdateFooter();
 })(window);
