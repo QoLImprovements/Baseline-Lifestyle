@@ -65,6 +65,8 @@
   };
 
   function removeObsoleteUpdateFooter(){
+    const document = scope.document;
+    if(!document) return;
     const app = document.documentElement?.dataset?.app || document.body?.dataset?.app || '';
     if(app !== 'skin' && app !== 'food') return;
     document.querySelectorAll('footer.footer').forEach((footer) => {
@@ -72,6 +74,9 @@
     });
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeObsoleteUpdateFooter, { once:true });
-  else removeObsoleteUpdateFooter();
+  const document = scope.document;
+  if(document){
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeObsoleteUpdateFooter, { once:true });
+    else removeObsoleteUpdateFooter();
+  }
 })(window);
