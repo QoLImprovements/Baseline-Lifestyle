@@ -129,8 +129,22 @@
 /* Calendar markers live beside the day button, never nested inside it. */
 .bl-routine-calendar-cell{
   position:relative;
+  width:100%;
   min-width:0;
   min-height:100%;
+  box-sizing:border-box;
+}
+.bl-routine-week-list>.bl-routine-calendar-cell{
+  display:block;
+  width:100%;
+  min-width:100%;
+  grid-column:1/-1;
+}
+.bl-routine-week-list>.bl-routine-calendar-cell>.bl-routine-day-row{
+  display:grid;
+  width:100%;
+  min-width:100%;
+  box-sizing:border-box;
 }
 .bl-routine-calendar-cell>.routine-calendar-day,
 .bl-routine-calendar-cell>.fitness-calendar-day{
