@@ -27,15 +27,16 @@ jobs:
 
       - name: Decode and apply migration
         run: |
+          cat scripts/migration-payload/part* > /tmp/migration.zb64
+          echo "17c2de280cb0db0b4c91a2b0753dcb9b47a65347c5ba028cffef0cebf322d804  /tmp/migration.zb64" | sha256sum -c -
           python3 - <<'PY'
           import base64, zlib
           from pathlib import Path
-          payload = Path('scripts/apply_routine_log_multi_plans_progression_20260806.zb64').read_text().strip()
+          payload = Path('/tmp/migration.zb64').read_text().strip()
           Path('/tmp/apply_routine_log_multi_plans_progression_20260806.py').write_bytes(zlib.decompress(base64.b64decode(payload)))
           PY
           python3 /tmp/apply_routine_log_multi_plans_progression_20260806.py
-          rm -f scripts/apply_routine_log_multi_plans_progression_20260806.zb64
-          rmdir scripts 2>/dev/null || true
+          rm -rf scripts
 
       - name: Install dependencies
         run: npm ci
