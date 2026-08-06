@@ -10,6 +10,10 @@ function bl_fitness_routine_text($value, int $maximum): string {
   return $text;
 }
 
+function bl_fitness_routine_visibility($value): string {
+  return strtolower(bl_fitness_routine_text($value, 12)) === 'public' ? 'public' : 'private';
+}
+
 function bl_fitness_routine_frequency($value): array {
   $source = is_array($value) ? $value : [];
   $mode = strtolower(bl_fitness_routine_text($source['mode'] ?? 'weekly', 24));
@@ -122,43 +126,137 @@ function bl_fitness_routine_decode(string $json, array $fallback): array {
 }
 
 function bl_fitness_routine_row(PDO $db, int $userId): ?array {
-  $statement = $db->prepare('SELECT routine_json, logs_json, updated_at FROM fitness_routine_state WHERE user_id=:user_id LIMIT 1');
+  $statement = $db->prepare('SELECT visibility, routine_json, logs_json, updated_at FROM fitness_routine_state WHERE user_id=:user_id LIMIT 1');
   $statement->execute([':user_id'=>$userId]);
   $row = $statement->fetch();
   return $row ?: null;
 }
 
 function bl_fitness_routine_payload(?array $row): array {
-  if(!$row) return ['ok'=>true,'hasRoutine'=>false,'activities'=>[],'logs'=>[],'updatedAt'=>null];
+  if(!$row) return ['ok'=>true,'hasRoutine'=>false,'visibility'=>'private','activities'=>[],'logs'=>[],'updatedAt'=>null];
   return [
     'ok'=>true,
     'hasRoutine'=>true,
+    'visibility'=>bl_fitness_routine_visibility($row['visibility'] ?? 'private'),
     'activities'=>bl_fitness_routine_activities(bl_fitness_routine_decode((string)($row['routine_json'] ?? '[]'), [])),
     'logs'=>bl_fitness_routine_logs(bl_fitness_routine_decode((string)($row['logs_json'] ?? '{}'), [])),
     'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
   ];
 }
 
+function bl_fitness_public_plan_json($value): array {
+  $source = is_array($value) ? $value : [];
+  $items = [];
+  foreach(array_slice(is_array($source['items'] ?? null) ? $source['items'] : [], 0, 100) as $raw){
+    if(!is_array($raw)) continue;
+    $items[] = [
+      'exercise'=>bl_fitness_routine_text($raw['exercise'] ?? $raw['name'] ?? 'Exercise', 120),
+      'baseline'=>max(0, min(1000000, (int)($raw['baseline'] ?? 0))),
+      'sets'=>max(0, min(20, (int)($raw['sets'] ?? 0))),
+      'repIncrease'=>max(0, min(1000, (int)($raw['repIncrease'] ?? 0))),
+    ];
+  }
+  return [
+    'name'=>bl_fitness_routine_text($source['name'] ?? 'Calisthenics Plan', 100),
+    'frequency'=>bl_fitness_routine_text($source['frequency'] ?? '', 24),
+    'items'=>$items,
+  ];
+}
+
+function bl_fitness_public_plans(PDO $db, int $userId): array {
+  $statement = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE user_id=:user_id ORDER BY created_at ASC, id ASC LIMIT 50');
+  $statement->execute([':user_id'=>$userId]);
+  $plans = [];
+  foreach(($statement->fetchAll() ?: []) as $row){
+    $decoded = bl_fitness_routine_decode((string)($row['plan_json'] ?? '{}'), []);
+    $plans[] = [
+      'planId'=>(int)($row['id'] ?? 0),
+      'planJson'=>bl_fitness_public_plan_json($decoded),
+      'createdAt'=>gmdate('c', (int)($row['created_at'] ?? time())),
+    ];
+  }
+  return $plans;
+}
+
+function bl_fitness_public_profiles(PDO $db): array {
+  $statement = $db->query("SELECT u.name, r.routine_json, r.user_id
+    FROM users u
+    INNER JOIN fitness_routine_state r ON r.user_id=u.id
+    WHERE r.visibility='public'
+    ORDER BY lower(u.name), u.name
+    LIMIT 500");
+  $profiles = [];
+  foreach(($statement ? $statement->fetchAll() : []) as $row){
+    $name = bl_fitness_routine_text($row['name'] ?? '', BL_MAX_NAME_LEN);
+    $activities = bl_fitness_routine_activities(bl_fitness_routine_decode((string)($row['routine_json'] ?? '[]'), []));
+    $planStatement = $db->prepare('SELECT 1 FROM plans WHERE user_id=:user_id LIMIT 1');
+    $planStatement->execute([':user_id'=>(int)($row['user_id'] ?? 0)]);
+    if($name !== '' && (count($activities) > 0 || (bool)$planStatement->fetchColumn())) $profiles[] = $name;
+  }
+  usort($profiles, static function(string $left, string $right): int {
+    return strcasecmp($left, $right) ?: strcmp($left, $right);
+  });
+  return ['ok'=>true,'profiles'=>array_values(array_unique($profiles))];
+}
+
+function bl_fitness_public_payload(PDO $db, string $name): array {
+  if($name === '' || bl_str_len($name) > BL_MAX_NAME_LEN) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
+  $statement = $db->prepare('SELECT u.id, u.name, r.visibility, r.routine_json, r.updated_at
+    FROM users u
+    LEFT JOIN fitness_routine_state r ON r.user_id=u.id
+    WHERE lower(u.name)=lower(:name)
+    LIMIT 1');
+  $statement->execute([':name'=>$name]);
+  $row = $statement->fetch();
+  if(!$row || $row['routine_json'] === null) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
+  if(bl_fitness_routine_visibility($row['visibility'] ?? 'private') !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
+  $userId = (int)($row['id'] ?? 0);
+  return [
+    'ok'=>true,
+    'publicRoutine'=>[
+      'owner'=>(string)($row['name'] ?? $name),
+      'activities'=>bl_fitness_routine_activities(bl_fitness_routine_decode((string)($row['routine_json'] ?? '[]'), [])),
+      'plans'=>bl_fitness_public_plans($db, $userId),
+      'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
+    ],
+  ];
+}
+
 try{
   $db = bl_fitness_db();
-  $user = bl_require_user();
-  $userId = (int)$user['id'];
   $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
-  if($method === 'GET') bl_json(bl_fitness_routine_payload(bl_fitness_routine_row($db, $userId)));
+
+  if($method === 'GET'){
+    $requestedList = strtolower(bl_fitness_routine_text($_GET['list'] ?? '', 20));
+    if($requestedList === 'public') bl_json(bl_fitness_public_profiles($db));
+    $requestedName = bl_fitness_routine_text($_GET['name'] ?? '', BL_MAX_NAME_LEN);
+    if($requestedName !== '') bl_json(bl_fitness_public_payload($db, $requestedName));
+    $user = bl_require_user();
+    bl_json(bl_fitness_routine_payload(bl_fitness_routine_row($db, (int)$user['id'])));
+  }
+
   if($method !== 'POST') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
 
+  $user = bl_require_user();
+  $userId = (int)$user['id'];
   $input = bl_input_json();
+  $existing = bl_fitness_routine_row($db, $userId);
+  $visibility = array_key_exists('visibility', $input)
+    ? bl_fitness_routine_visibility($input['visibility'])
+    : bl_fitness_routine_visibility($existing['visibility'] ?? 'private');
   $activities = bl_fitness_routine_activities($input['activities'] ?? []);
   $logs = bl_fitness_routine_logs($input['logs'] ?? []);
   $updated = bl_now();
-  $statement = $db->prepare('INSERT INTO fitness_routine_state(user_id, routine_json, logs_json, updated_at)
-    VALUES(:user_id,:routine_json,:logs_json,:updated_at)
+  $statement = $db->prepare('INSERT INTO fitness_routine_state(user_id, visibility, routine_json, logs_json, updated_at)
+    VALUES(:user_id,:visibility,:routine_json,:logs_json,:updated_at)
     ON CONFLICT(user_id) DO UPDATE SET
+      visibility=excluded.visibility,
       routine_json=excluded.routine_json,
       logs_json=excluded.logs_json,
       updated_at=excluded.updated_at');
   $statement->execute([
     ':user_id'=>$userId,
+    ':visibility'=>$visibility,
     ':routine_json'=>json_encode($activities, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     ':logs_json'=>json_encode($logs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
     ':updated_at'=>$updated,
