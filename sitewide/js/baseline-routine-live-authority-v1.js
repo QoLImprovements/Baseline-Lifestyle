@@ -6,7 +6,8 @@
    renderers replace. No whole-page or whole-My-Routine observer is used. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V4__) return;
+  if (!global.document || global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V5__) return;
+  global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V5__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V4__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V3__ = true;
   global.__BASELINE_ROUTINE_LIVE_AUTHORITY_V2__ = true;
@@ -347,6 +348,28 @@
     badge.textContent = `Next due: ${formatDate(next.scheduled_date)}`;
   }
 
+  function ensureRoutineLogDueDate() {
+    if (app !== 'fitness') return;
+    let context = null;
+    try { context = global.BASELINE_fitnessWorkout?.getCurrentContext?.() || null; } catch (_error) {}
+    const scheduledDate = String(context?.scheduledDate || '');
+    if (!scheduledDate) return;
+    $$('#fitnessRoutineLogItems .fitness-calisthenics-log-card').forEach((card) => {
+      /* Cards with a direct plan link already describe a completed/due entry
+         for the selected log date. The current-workout fallback is the place
+         where weekly-count scheduling previously lacked a visible due date. */
+      if (card.querySelector('[data-open-calisthenics-plan]')) return;
+      const host = card.querySelector(':scope > div') || card;
+      let due = host.querySelector('[data-bl-calisthenics-due]');
+      if (!due) {
+        due = document.createElement('small');
+        due.dataset.blCalisthenicsDue = 'true';
+        host.appendChild(due);
+      }
+      due.textContent = `Due ${formatDate(scheduledDate)}`;
+    });
+  }
+
   function apply() {
     frame = 0;
     movePublicVisibility();
@@ -355,6 +378,7 @@
     applyFitnessSummaryFilter();
     enableStartDatePicker();
     ensureNextDueDate();
+    ensureRoutineLogDueDate();
   }
 
   function schedule() {
@@ -376,6 +400,7 @@
       watchOutput('#routineItems');
     } else {
       watchOutput('#fitnessExerciseSummary');
+      watchOutput('#fitnessRoutineLogItems');
       watchOutput('#myPlanOut');
     }
   }
@@ -401,7 +426,7 @@
   function boot() {
     attachOutputObservers();
     schedule();
-    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_4');
+    document.documentElement.setAttribute('data-baseline-routine-live-authority', 'SITEWIDE_ROUTINE_LIVE_AUTHORITY_20260806_5');
   }
 
   global.addEventListener('pagehide', () => observers.forEach((observer) => observer.disconnect()), { once:true });
