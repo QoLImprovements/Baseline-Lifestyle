@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V5__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V5__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V6__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V6__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
@@ -37,38 +37,11 @@
     });
   }
 
-  function refreshSharedRoutineEnhancements() {
-    [0, 120, 360, 900, 1800].forEach((delay) => {
-      global.setTimeout(() => {
-        document.dispatchEvent(new CustomEvent('baseline:routine-settings-changed'));
-      }, delay);
-    });
-  }
-
   function normaliseRoutineLabels() {
     const button = document.querySelector('[data-fitness-routine-view="summary"]');
     const heading = document.querySelector('[data-fitness-routine-panel="summary"] h2');
     if (button) button.textContent = 'Routine Summary';
     if (heading) heading.textContent = 'Routine Summary';
-  }
-
-  function loadStableRoutineGroupSettings() {
-    const NativeObserver = global.MutationObserver;
-    let replaced = false;
-    if (typeof NativeObserver === 'function') {
-      global.MutationObserver = class BaselineQuietRoutineObserver {
-        observe() {}
-        disconnect() {}
-        takeRecords() { return []; }
-      };
-      replaced = true;
-    }
-    return load('/sitewide/js/baseline-routine-groups-settings.js?v=SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_2')
-      .finally(() => {
-        if (replaced) global.MutationObserver = NativeObserver;
-        normaliseRoutineLabels();
-        refreshSharedRoutineEnhancements();
-      });
   }
 
   function correctRouteUrl() {
@@ -84,7 +57,7 @@
   function selectedRoutineSubview() {
     try {
       const remembered = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      if (['log','summary','public','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
+      if (['log','summary','public','plan','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
     } catch (_error) {}
     return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
   }
@@ -93,10 +66,11 @@
     if (initialSubviewApplied) return;
     const routine = global.BASELINE_fitnessRoutine;
     if (!routine || typeof routine.selectView !== 'function') return;
-    const view = selectedRoutineSubview();
-    if (view === 'public') return;
+    const remembered = selectedRoutineSubview();
+    if (remembered === 'public') return;
+    const baseView = remembered === 'plan' ? 'calisthenics' : remembered;
     initialSubviewApplied = true;
-    routine.selectView(view);
+    routine.selectView(baseView);
   }
 
   function selectMyRoutine() {
@@ -165,11 +139,7 @@
     })
     .then(() => {
       normaliseRoutineLabels();
-      return load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3');
-    })
-    .then(() => {
-      stabiliseMyRoutineRoute();
-      return loadStableRoutineGroupSettings();
+      return load('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_6');
     })
     .then(() => {
       stabiliseMyRoutineRoute();
