@@ -102,6 +102,7 @@
     .then(() => loadScript('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js','data-fitness-calisthenics-schedule'))
     .then(() => loadScript('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js','data-fitness-timed-hold-targets'))
     .then(() => loadScript('/systems/baseline-fitness/js/fitness-routine-canonical.js','data-fitness-routine-canonical'))
+    .then(() => loadScript('/systems/baseline-fitness/js/fitness-routine-visibility.js','data-fitness-routine-visibility'))
     .then(() => loadScript('/systems/baseline-fitness/js/fitness-exercise-family-filter.js','data-fitness-exercise-family-filter'))
     .then(() => selectRoutinePage())
     .catch((error) => {
