@@ -9,6 +9,7 @@
   const CREATE_PREFIX = '__bl_fitness_creating_plan_v1__::';
   const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
   const VIEW_KEY = '__bl_fitness_routine_view_v2__';
+  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
   let owner = 'guest';
@@ -229,19 +230,46 @@
     $$('#exerciseList .ex-row').forEach(ensureRepIncrease);
   }
 
-  function managerHtml() {
-    const selected = selectedPlanId();
-    const options = plans.map((plan, index) => {
-      const progress = plan.progress || {};
-      const label = `${planName(plan, index)} — ${Number(progress.done || 0)}/${Number(progress.total || plan.planJson?.sessions || 0)} sessions`;
-      return `<option value="${Number(plan.planId)}"${Number(plan.planId) === selected ? ' selected' : ''}>${escapeHtml(label)}</option>`;
-    }).join('');
-    return `<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for different muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div>
-      <label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect" data-native-select="true"${plans.length ? '' : ' disabled'}><option value="">${plans.length ? 'Choose a plan…' : 'No saved plans yet'}</option>${options}</select></label>`;
-  }
-
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
+  }
+
+  function managerShellHtml() {
+    return '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for different muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect" data-native-select="true"></select></label>';
+  }
+
+  function planOptionData() {
+    return plans.map((plan, index) => {
+      const progress = plan.progress || {};
+      return {
+        value:String(Number(plan.planId)),
+        label:`${planName(plan, index)} — ${Number(progress.done || 0)}/${Number(progress.total || plan.planJson?.sessions || 0)} sessions`
+      };
+    });
+  }
+
+  function syncPlanSelect(select) {
+    if (!select) return;
+    const optionData = planOptionData();
+    const signature = JSON.stringify(optionData);
+    if (select.dataset.planOptionsSignature !== signature) {
+      const fragment = document.createDocumentFragment();
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = optionData.length ? 'Choose a plan…' : 'No saved plans yet';
+      fragment.append(placeholder);
+      optionData.forEach((entry) => {
+        const option = document.createElement('option');
+        option.value = entry.value;
+        option.textContent = entry.label;
+        fragment.append(option);
+      });
+      select.replaceChildren(fragment);
+      select.dataset.planOptionsSignature = signature;
+    }
+    select.disabled = optionData.length === 0;
+    const selected = String(selectedPlanId() || '');
+    select.value = optionData.some((entry) => entry.value === selected) ? selected : '';
   }
 
   function ensureManager() {
@@ -252,10 +280,12 @@
       manager = document.createElement('section');
       manager.id = 'calisthenicsPlanManager';
       manager.className = 'card fitness-calisthenics-plan-manager';
+      manager.innerHTML = managerShellHtml();
       panel.prepend(manager);
+    } else if (!manager.querySelector('#createCalisthenicsPlan') || !manager.querySelector('#calisthenicsPlanSelect')) {
+      manager.innerHTML = managerShellHtml();
     }
-    const html = managerHtml();
-    if (manager.innerHTML !== html) manager.innerHTML = html;
+    syncPlanSelect(manager.querySelector('#calisthenicsPlanSelect'));
   }
 
   function ensurePlanName() {
@@ -300,7 +330,10 @@
     setCreatingPlan(true);
     setSelectedPlanId(0);
     clearPlanCaches();
-    try { global.sessionStorage?.setItem(VIEW_KEY, 'calisthenics'); } catch (_error) {}
+    try {
+      global.sessionStorage?.setItem(VIEW_KEY, 'plan');
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY, 'calisthenics');
+    } catch (_error) {}
     const url = new URL('/baseline-fitness/my-routine', global.location.origin);
     url.searchParams.set('new-plan', String(Date.now()));
     global.location.assign(url.toString());
@@ -312,7 +345,10 @@
     setCreatingPlan(false);
     setSelectedPlanId(id);
     clearPlanCaches();
-    try { global.sessionStorage?.setItem(VIEW_KEY, 'calisthenics'); } catch (_error) {}
+    try {
+      global.sessionStorage?.setItem(VIEW_KEY, 'plan');
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY, 'calisthenics');
+    } catch (_error) {}
     global.location.reload();
   }
 
