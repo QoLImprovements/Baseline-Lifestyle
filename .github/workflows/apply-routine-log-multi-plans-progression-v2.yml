@@ -35,6 +35,7 @@ jobs:
           payload = Path('/tmp/migration.zb64').read_text().strip()
           Path('/tmp/apply_routine_log_multi_plans_progression_20260806.py').write_bytes(zlib.decompress(base64.b64decode(payload)))
           PY
+          sed -i 's/BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_3/BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_4/g' /tmp/apply_routine_log_multi_plans_progression_20260806.py
           python3 /tmp/apply_routine_log_multi_plans_progression_20260806.py
           rm -rf scripts
 
