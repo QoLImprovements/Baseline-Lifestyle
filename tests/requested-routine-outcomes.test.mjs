@@ -13,6 +13,9 @@ test('Calisthenics multi-plan controls are searchable, scoped and include the ex
   assert.match(plans, /add\('Side Lunges'/);
   assert.match(plans, /add\('Cossack Squats'/);
   assert.match(plans, /add\('Split Squats'/);
+  assert.match(plans, /add\('Cross-Body Mountain Climbers'/);
+  assert.match(plans, /add\('Lateral Lunge with Rotational Reach'/);
+  assert.match(plans, /Dynamic Core & Climbers/);
   assert.match(plans, /function createPlan/);
   assert.match(plans, /function openPlan/);
   assert.match(plans, /listObserver\.observe\(list,\{ childList:true \}\)/);
@@ -28,6 +31,7 @@ test('Fitness My Routine loader uses the shared live authority and omits the com
   assert.match(loader, /baseline-public-routine-groups-v1\.js/);
   assert.match(loader, /baseline-routine-live-authority-v1\.js/);
   assert.match(loader, /fitness-generator-progression-v1\.js/);
+  assert.match(loader, /BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3/);
   assert.match(loader, /loadWithoutMutationObserver\('\/sitewide\/js\/baseline-routine-coherence-v4\.js/);
   assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-coherence-v4.js'));
   assert.ok(loader.indexOf('baseline-public-routine-groups-v1.js') < loader.indexOf('baseline-routine-coherence-v4.js'));
@@ -77,19 +81,29 @@ test('summary filtering is final-authority controlled and Skincare follows saved
   assert.match(css, /#fitnessExerciseSummary \[data-bl-live-filter-hidden=\"true\"\]/);
 });
 
-test('Calisthenics generator exposes explicit defaults including straight sets for lunges', () => {
+test('Calisthenics generator uses concise aligned controls, grouped picker and explicit linear rules', () => {
   const progression = read('systems/baseline-fitness/js/fitness-generator-progression-v1.js');
   const layout = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
-  assert.match(progression, /STRAIGHT:'straight-sets'/);
-  assert.match(progression, /Linear — percentage-based sets/);
+  assert.match(progression, /LINEAR:'linear-fixed'/);
+  assert.match(progression, /Linear — fixed set progression/);
   assert.match(progression, /Straight Sets — equal reps/);
   assert.match(progression, /definition\.familyKey === 'lunges'/);
   assert.match(progression, /Rep Increase Per Session/);
-  assert.match(progression, /100, 100, 100 → 110, 110, 110/);
+  assert.match(progression, /finalSet = Math\.max\(1, Math\.round\(max \* 0\.80\)\)/);
+  assert.match(progression, /3:\[-1,-2,0\]/);
+  assert.match(progression, /function progressedTargets/);
+  assert.match(progression, /ex-details-card/);
+  assert.match(progression, /ex-picker-group/);
+  assert.match(progression, /data-exercise-name/);
   assert.match(progression, /progressionMode/);
-  assert.match(progression, /__baselineStraightSetsFinalAuthority/);
+  assert.match(progression, /__baselineGeneratorProgressionV3/);
+  assert.doesNotMatch(progression, /percentage-based sets/);
+  assert.doesNotMatch(progression, /commonly called straight sets or sets across/);
   assert.match(layout, /grid-template-areas/);
-  assert.match(layout, /ex-field-progression-mode/);
+  assert.match(layout, /ex-details-card/);
+  assert.match(layout, /ex-picker-menu/);
+  assert.match(layout, /ex-picker-group-head/);
+  assert.match(layout, /exercise-info-wrap\{display:none!important\}/);
   assert.match(layout, /#startDate/);
 });
 
