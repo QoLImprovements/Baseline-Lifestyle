@@ -11,8 +11,8 @@ test('Skincare and Fitness load one shared My Routine coherence layer', () => {
 
   assert.match(skincare, new RegExp(shared.replaceAll('/', '\\/')));
   assert.match(fitness, new RegExp(shared.replaceAll('/', '\\/')));
-  assert.ok(fitness.indexOf(shared) < fitness.indexOf('/sitewide/js/baseline-routine-groups-settings.js'));
-  assert.ok(skincare.indexOf(shared) < skincare.indexOf('/sitewide/js/baseline-routine-groups-settings.js'));
+  assert.ok(fitness.indexOf(`load('${shared}`) < fitness.indexOf('return loadStableRoutineGroupSettings()'));
+  assert.ok(skincare.indexOf(`load('${shared}`) < skincare.indexOf('.then(loadStableRoutineGroupSettings)'));
 });
 
 test('Create Another Plan has canonical wording and forces a fresh route', () => {
@@ -32,7 +32,7 @@ test('Calendar markers are separate aligned controls with captions and long pres
 
   assert.match(js, /bl-routine-calendar-cell/);
   assert.match(js, /createElement\('span'\)/);
-  assert.match(js, /data-caption/);
+  assert.match(js, /dataset\.caption/);
   assert.match(js, /pointerdown/);
   assert.match(js, /550/);
   assert.match(js, /openSkinSummary/);
