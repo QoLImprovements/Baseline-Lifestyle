@@ -23,16 +23,18 @@
     const container = root();
     return Boolean(container && event.target && container.contains(event.target));
   }
-
-  document.addEventListener('click', (event) => {
+  function captureRoutineInteraction(event) {
     if (insideRoutine(event)) refreshAfterRender();
-  });
-  document.addEventListener('change', (event) => {
-    if (insideRoutine(event)) refreshAfterRender();
-  });
-  document.addEventListener('input', (event) => {
+  }
+  function captureRoutineInput(event) {
     if (insideRoutine(event) && event.target?.matches?.('select,input[type="checkbox"],input[type="radio"]')) refreshAfterRender();
-  });
+  }
+
+  /* Capture at window level so the refresh cannot be lost when a system-owned
+     button or disclosure stops propagation while rebuilding its panel. */
+  global.addEventListener('click', captureRoutineInteraction, true);
+  global.addEventListener('change', captureRoutineInteraction, true);
+  global.addEventListener('input', captureRoutineInput, true);
   document.addEventListener('baseline:skincare-routine-updated', refreshAfterRender);
   document.addEventListener('baseline:fitness-plans-updated', refreshAfterRender);
   document.addEventListener('baseline:fitness-workout-updated', refreshAfterRender);
