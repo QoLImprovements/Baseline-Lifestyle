@@ -187,7 +187,10 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   const mainRoutineTab = page.locator('.tab[data-target="my-plan"]');
   await expect(mainRoutineTab).toBeVisible();
   await mainRoutineTab.click();
-  const calisthenicsTab = page.locator('[data-fitness-routine-view="calisthenics"]');
+  const routinePlanTab = page.locator('[data-fitness-routine-view="plan"]');
+  await expect(routinePlanTab).toBeVisible();
+  await routinePlanTab.click();
+  const calisthenicsTab = page.locator('[data-fitness-plan-view="calisthenics"]');
   await expect(calisthenicsTab).toBeVisible();
   await calisthenicsTab.click();
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
@@ -201,6 +204,8 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   await expect(page.locator('#myPlanOut')).toContainText('Saved plan');
 
   await page.reload({ waitUntil: 'domcontentloaded' });
+  await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-fitness-plan-view="calisthenics"]')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
 });
