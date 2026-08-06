@@ -13,6 +13,7 @@ const paths = Object.freeze({
   fitnessPlans:new URL('../systems/baseline-fitness/js/fitness-multiple-plans.js', import.meta.url),
   fitnessFamilyFilter:new URL('../systems/baseline-fitness/js/fitness-exercise-family-filter.js', import.meta.url),
   fitnessVisibility:new URL('../systems/baseline-fitness/js/fitness-routine-visibility.js', import.meta.url),
+  fitnessVisibilityApi:new URL('../systems/baseline-fitness/api/routine_visibility.php', import.meta.url),
   fitnessCss:new URL('../systems/baseline-fitness/css/fitness-multiple-plans.css', import.meta.url)
 });
 
@@ -93,7 +94,10 @@ test('Calisthenics generator has one aligned responsive grid and hides only the 
   assert.match(source.fitnessCss,/@media \(max-width:650px\)/);
 });
 
-test('Skincare public API remains valid PHP', () => {
-  const checked = spawnSync('php',['-l',paths.skincareApi.pathname],{ encoding:'utf8' });
-  assert.equal(checked.status,0,checked.stderr || checked.stdout);
+test('Routine API changes remain valid PHP', () => {
+  [paths.skincareApi,paths.fitnessVisibilityApi].forEach((path) => {
+    const checked = spawnSync('php',['-l',path.pathname],{ encoding:'utf8' });
+    assert.equal(checked.status,0,checked.stderr || checked.stdout);
+  });
+  assert.match(source.fitnessVisibility,/routine_visibility\.php/);
 });
