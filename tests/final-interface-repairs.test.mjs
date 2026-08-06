@@ -12,13 +12,14 @@ const paths = Object.freeze({
   fitnessCanonical:new URL('../systems/baseline-fitness/js/fitness-routine-canonical.js', import.meta.url),
   fitnessPlans:new URL('../systems/baseline-fitness/js/fitness-multiple-plans.js', import.meta.url),
   fitnessFamilyFilter:new URL('../systems/baseline-fitness/js/fitness-exercise-family-filter.js', import.meta.url),
+  fitnessVisibility:new URL('../systems/baseline-fitness/js/fitness-routine-visibility.js', import.meta.url),
   fitnessCss:new URL('../systems/baseline-fitness/css/fitness-multiple-plans.css', import.meta.url)
 });
 
 const source = Object.fromEntries(Object.entries(paths).map(([key,path]) => [key,readFileSync(path,'utf8')]));
 
 test('canonical Routine JavaScript remains syntactically valid', () => {
-  ['stability','skincareLoader','skincareCanonical','fitnessLoader','fitnessCanonical','fitnessPlans','fitnessFamilyFilter'].forEach((key) => {
+  ['stability','skincareLoader','skincareCanonical','fitnessLoader','fitnessCanonical','fitnessPlans','fitnessFamilyFilter','fitnessVisibility'].forEach((key) => {
     const checked = spawnSync(process.execPath,['--check',paths[key].pathname],{ encoding:'utf8' });
     assert.equal(checked.status,0,`${key}: ${checked.stderr || checked.stdout}`);
   });
@@ -58,6 +59,8 @@ test('Fitness loads one canonical Routine Summary rather than competing coherenc
   assert.match(source.fitnessCanonical,/data-canonical-fitness-view/);
   assert.match(source.fitnessCanonical,/function stableHtml/);
   assert.match(source.fitnessCanonical,/function weeklyCalendar/);
+  assert.match(source.fitnessVisibility,/My Routine Visibility/);
+  assert.doesNotMatch(source.fitnessVisibility,/MutationObserver|setInterval/);
 });
 
 test('Calisthenics exercise selection is searchable and the catalogue includes Side Lunges plus broad bodyweight families', () => {
