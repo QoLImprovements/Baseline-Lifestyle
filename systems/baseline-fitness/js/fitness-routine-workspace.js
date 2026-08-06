@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V9__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V9__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V10__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V10__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -82,6 +82,7 @@
   }
 
   const INITIAL_ROUTINE_SUBVIEW = selectedRoutineSubview();
+  const NEEDS_NESTED_RESTORE = ['public','plan','calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW);
 
   function selectedPlanSubview() {
     if (['calisthenics','cardio','other','sports'].includes(INITIAL_ROUTINE_SUBVIEW)) return INITIAL_ROUTINE_SUBVIEW;
@@ -143,12 +144,19 @@
       const subviewReady = activateCoherentPlanSubview(selectedPlanSubview());
       return planReady && subviewReady;
     }
-    return activateCoherentPanel(INITIAL_ROUTINE_SUBVIEW);
+    return true;
   }
 
   function restoreCoherentRoutineSubviewAfterRenders() {
     restoreTimers.forEach((timer) => global.clearTimeout(timer));
+    restoreTimers = [];
+    if (!NEEDS_NESTED_RESTORE) return;
     restoreTimers = [0,50,150,350,800,1600].map((delay) => global.setTimeout(restoreCoherentRoutineSubview, delay));
+  }
+
+  function cancelDelayedRestore() {
+    restoreTimers.forEach((timer) => global.clearTimeout(timer));
+    restoreTimers = [];
   }
 
   function selectMyRoutine() {
@@ -203,9 +211,12 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('load', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
+    global.addEventListener('click', (event) => {
+      if (event.target?.closest?.('[data-fitness-routine-view],[data-fitness-plan-view]')) cancelDelayedRestore();
+    }, true);
     global.addEventListener('pagehide', () => {
       stopRouteStabiliser();
-      restoreTimers.forEach((timer) => global.clearTimeout(timer));
+      cancelDelayedRestore();
     }, { once:true });
   }
 
@@ -222,7 +233,7 @@
       normaliseRoutineLabels();
       return loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_9');
     })
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_2'))
+    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_3'))
     .then(() => {
       restoreCoherentRoutineSubviewAfterRenders();
       stabiliseMyRoutineRoute();
