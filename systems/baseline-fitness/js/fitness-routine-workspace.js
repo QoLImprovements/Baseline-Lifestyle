@@ -1,8 +1,8 @@
 /* Baseline Fitness — deterministic loader for the existing My Routine implementation. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V18__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V18__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V19__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V19__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -120,7 +120,7 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2', 'data-fitness-routine-sitewide-v3'))
     .then(() => loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10', 'data-baseline-routine-coherence-v4'))
     .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_5', 'data-baseline-routine-coherence-events-v4'))
-    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_4', 'data-baseline-routine-live-authority'))
+    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_6', 'data-baseline-routine-live-authority'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260806_2', 'data-fitness-generator-progression'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1', 'data-fitness-timed-hold-targets-v2'))
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1', 'data-fitness-exercise-family-filter'))
