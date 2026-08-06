@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V10__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V10__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V11__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V11__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -213,6 +213,10 @@
     global.addEventListener('pageshow', stabiliseMyRoutineRoute, { once:true });
     global.addEventListener('click', (event) => {
       if (event.target?.closest?.('[data-fitness-routine-view],[data-fitness-plan-view]')) cancelDelayedRestore();
+      if (event.target?.closest?.('.tab[data-target="my-plan"]')) {
+        global.setTimeout(correctRouteUrl, 0);
+        global.setTimeout(correctRouteUrl, 80);
+      }
     }, true);
     global.addEventListener('pagehide', () => {
       stopRouteStabiliser();
