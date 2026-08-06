@@ -1,8 +1,8 @@
 /* Baseline Fitness — load the expanded catalogue and shared My Routine system. */
 (function (global) {
   'use strict';
-  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V4__ = true;
+  if (global.__BASELINE_FITNESS_ROUTINE_LOADER_V5__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V5__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const CANONICAL_ROUTINE_PATH = '/baseline-fitness/my-routine';
@@ -76,7 +76,7 @@
   function selectedRoutineSubview() {
     try {
       const remembered = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      if (['log','summary','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
+      if (['log','summary','public','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
     } catch (_error) {}
     return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
   }
@@ -85,24 +85,21 @@
     if (initialSubviewApplied) return;
     const routine = global.BASELINE_fitnessRoutine;
     if (!routine || typeof routine.selectView !== 'function') return;
+    const view = selectedRoutineSubview();
+    if (view === 'public') return;
     initialSubviewApplied = true;
-    routine.selectView(selectedRoutineSubview());
+    routine.selectView(view);
   }
 
   function selectMyRoutine() {
     if (!OPEN_MY_ROUTINE) return false;
     document.documentElement.setAttribute('data-initial-fitness-tab', 'my-plan');
 
-    /* Keep the Fitness application's private activeTopTab in step with the
-       visible section. Silent history prevents the old /my-plan route writer
-       from appending another segment to the canonical /my-routine address. */
     const controllerReady = typeof global.BASELINE_selectTab === 'function';
     if (controllerReady) {
       try { global.BASELINE_selectTab('my-plan', { silentHistory:true }); } catch (_error) {}
     }
 
-    /* Direct selection remains as a first-paint fallback before the Fitness
-       application has installed its canonical tab controller. */
     document.querySelectorAll('.tab[data-target]').forEach((button) => {
       const active = button.dataset.target === 'my-plan';
       button.classList.toggle('active', active);
@@ -119,9 +116,6 @@
     const style = global.getComputedStyle ? global.getComputedStyle(section) : null;
     const visible = section.classList.contains('active') && (!style || (style.display !== 'none' && style.visibility !== 'hidden'));
     if (visible) applyInitialRoutineSubview();
-
-    /* Do not declare the route stable until the application controller has
-       also accepted My Routine. That internal state owns saved-plan loading. */
     return visible && controllerReady;
   }
 
@@ -164,6 +158,7 @@
       stabiliseMyRoutineRoute();
       return loadStableRoutineGroupSettings();
     })
+    .then(() => load('/sitewide/js/baseline-routine-coherence-v3.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_3'))
     .then(() => {
       stabiliseMyRoutineRoute();
       return load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1');
