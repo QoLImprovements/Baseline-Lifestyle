@@ -37,6 +37,32 @@
     });
   }
 
+  function refreshSharedRoutineEnhancements() {
+    [0, 120, 360, 900, 1800].forEach((delay) => {
+      global.setTimeout(() => {
+        document.dispatchEvent(new CustomEvent('baseline:routine-settings-changed'));
+      }, delay);
+    });
+  }
+
+  function loadStableRoutineGroupSettings() {
+    const NativeObserver = global.MutationObserver;
+    let replaced = false;
+    if (typeof NativeObserver === 'function') {
+      global.MutationObserver = class BaselineQuietRoutineObserver {
+        observe() {}
+        disconnect() {}
+        takeRecords() { return []; }
+      };
+      replaced = true;
+    }
+    return load('/sitewide/js/baseline-routine-groups-settings.js?v=SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_2')
+      .finally(() => {
+        if (replaced) global.MutationObserver = NativeObserver;
+        refreshSharedRoutineEnhancements();
+      });
+  }
+
   function correctRouteUrl() {
     if (!OPEN_MY_ROUTINE) return;
     try {
@@ -50,7 +76,7 @@
   function selectedRoutineSubview() {
     try {
       const remembered = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      if (['log','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
+      if (['log','summary','calisthenics','cardio','other','sports'].includes(remembered)) return remembered;
     } catch (_error) {}
     return LEGACY_CALISTHENICS_ROUTE ? 'calisthenics' : 'log';
   }
@@ -136,7 +162,7 @@
     })
     .then(() => {
       stabiliseMyRoutineRoute();
-      return load('/sitewide/js/baseline-routine-groups-settings.js?v=SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_1');
+      return loadStableRoutineGroupSettings();
     })
     .then(() => {
       stabiliseMyRoutineRoute();
