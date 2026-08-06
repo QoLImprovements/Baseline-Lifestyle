@@ -1,4 +1,5 @@
 // Repository-authored verification refresh for the final sitewide My Routine branch.
+// Final browser-stability verification after replacing the continuous observer loop.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
