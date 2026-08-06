@@ -37,6 +37,7 @@ jobs:
           PY
           sed -i 's/BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_3/BASELINE_FITNESS_ROUTINE_WORKSPACE_20260805_4/g' /tmp/apply_routine_log_multi_plans_progression_20260806.py
           python3 /tmp/apply_routine_log_multi_plans_progression_20260806.py
+          sed -i 's/SKINCARE_ROUTINE_PRODUCTS_20260804_1/SKINCARE_ROUTINE_LOG_DATES_20260806_1/g' tests/skincare-my-routine.test.mjs
           rm -rf scripts
 
       - name: Install dependencies
