@@ -27,7 +27,7 @@ html[data-app="skin"] #routineLogItems > .routine-log-group > .routine-log-group
   width:40px;
   height:40px;
   border-radius:50%;
-  background:var(--accent,#c8795f);
+  background:var(--bl-routine-accent,var(--accent,#c8795f));
   color:#fff;
   font:inherit;
   font-weight:950;
@@ -47,7 +47,7 @@ html[data-app="skin"] #routineLogItems > .routine-log-group > h3 ~ .routine-log-
   height:40px;
   margin-right:.65rem;
   border-radius:50%;
-  background:var(--accent,#c8795f);
+  background:var(--bl-routine-accent,var(--accent,#c8795f));
   color:#fff;
   font:inherit;
   font-weight:950;
@@ -56,7 +56,7 @@ html[data-app="skin"] #routineLogItems > .routine-log-group > h3 ~ .routine-log-
 }
 
 /* The group completion control is intentionally only a checkbox beside the
-   group title.  Its accessible label remains on the input. */
+   group title. Its accessible label remains on the input. */
 html[data-app="skin"] .bl-final-group-complete{
   display:inline-flex!important;
   align-items:center!important;
@@ -76,6 +76,37 @@ html[data-app="skin"] .bl-final-group-complete input{
   height:1.25rem!important;
   margin:0!important;
   flex:0 0 auto!important;
+  accent-color:var(--bl-routine-accent,var(--accent,#c8795f));
+}
+
+/* Skincare's searchable Routine Plan picker must stay inside the Skincare
+   palette. Chrome/Edge add a native white search-cancel X; remove that native
+   glyph and keep the existing palette-aware picker toggle as the only control. */
+html[data-app="skin"] #routineActionSearch::-webkit-search-cancel-button,
+html[data-app="skin"] #routineActionSearch::-webkit-search-decoration{
+  -webkit-appearance:none!important;
+  appearance:none!important;
+  display:none!important;
+}
+html[data-app="skin"] #routineActionSearch::-ms-clear{
+  display:none!important;
+  width:0!important;
+  height:0!important;
+}
+html[data-app="skin"] #routineActionToggle,
+html[data-app="skin"] .routine-action-combobox button{
+  border-color:var(--bl-routine-border)!important;
+  background:var(--bl-routine-surface-strong)!important;
+  color:var(--bl-routine-accent)!important;
+  box-shadow:none!important;
+}
+html[data-app="skin"] #routineActionToggle:hover,
+html[data-app="skin"] #routineActionToggle:focus-visible,
+html[data-app="skin"] .routine-action-combobox button:hover,
+html[data-app="skin"] .routine-action-combobox button:focus-visible{
+  border-color:var(--bl-routine-accent)!important;
+  box-shadow:0 0 0 4px var(--bl-routine-focus)!important;
+  outline:none!important;
 }
 
 /* Public Routines: compact card, heading and visibility share one row. */
@@ -115,8 +146,9 @@ html[data-app="skin"] .bl-final-group-complete input{
   margin-top:2px!important;
 }
 
-/* Once a Fitness Summary filter is active, hidden cards/sections stay hidden
-   even if an older renderer tries to restore its own display property. */
+/* Summary filters are one sitewide behaviour. Hidden cards stay hidden even
+   when a system-specific renderer refreshes its own content. */
+html[data-app="skin"] #routineSummary [data-bl-live-filter-hidden="true"],
 html[data-app="fitness"] #fitnessExerciseSummary [data-bl-live-filter-hidden="true"]{
   display:none!important;
 }
