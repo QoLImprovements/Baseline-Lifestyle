@@ -146,6 +146,7 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3','data-fitness-generator-progression'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260807_1','data-fitness-routine-coherence-v1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_2','data-fitness-live-policy'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-theme-guard-v1.js?v=BASELINE_FITNESS_THEME_GUARD_20260807_1','data-fitness-theme-guard-v1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1','data-fitness-timed-hold-targets-v2'))
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1','data-fitness-exercise-family-filter'))
     .then(() => { selectRoutinePage();restoreRequestedView();bindFitnessWeekRows();endPlanSwitch();releaseBootShield(); })
