@@ -6,25 +6,21 @@
    2. skincare-routine-sitewide-v4.js is the Skincare grouping/calendar adapter.
    3. baseline-public-routine-groups-v1.js is the one shared Public Routine viewer.
    4. baseline-routine-authority-v7.js is the one shared cross-system coherence layer.
+   5. skincare-routine-interactions-v1.js owns only Skin controls that must survive
+      core renders: group checkbox/order controls and calendar summary markers.
 
    Never load a second renderer for Log/Summary/Plan/Public and never start an
    adapter before BASELINE_SKINCARE_ROUTINE exists. The old race between the
    base renderer and enhancement renderers caused visible switching/shaking. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V24__) return;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V25__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V25__ = true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V24__ = true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V23__ = true;
 
   const document = global.document;
   const MAX_WAIT_MS = 6000;
-
-  /* TEMPORARY CI DIAGNOSTIC. Remove before merge. It writes no user-visible UI. */
-  const recordRuntimeError = (value) => {
-    try { document.documentElement.dataset.skincareRoutineRuntimeError = String(value || 'unknown').slice(0,500); } catch (_error) {}
-  };
-  global.addEventListener('error',(event) => recordRuntimeError(`${event.message || 'error'} @ ${event.filename || ''}:${event.lineno || 0}`));
-  global.addEventListener('unhandledrejection',(event) => recordRuntimeError(event.reason?.stack || event.reason?.message || event.reason || 'unhandled rejection'));
 
   function installBootShield() {
     document.documentElement.setAttribute('data-skincare-routine-booting','true');
@@ -91,9 +87,9 @@
     .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260807_10','data-skincare-routine-sitewide-v4'))
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
+    .then(() => load('/systems/baseline-natural-skincare/js/skincare-routine-interactions-v1.js?v=SKINCARE_ROUTINE_INTERACTIONS_20260807_1','data-skincare-routine-interactions-v1'))
     .then(releaseBootShield)
     .catch((error) => {
-      recordRuntimeError(error?.stack || error?.message || error);
       releaseBootShield();
       try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
     });
