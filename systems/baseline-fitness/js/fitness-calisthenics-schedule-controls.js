@@ -16,8 +16,13 @@
     const days = document.getElementById('specificDayControls');
     const start = document.getElementById('startDate');
     if (start) {
-      start.min = today();
-      if (!start.value || start.value < today()) start.value = today();
+      /* Start date is user-owned. New plans receive today as a default, while
+         existing/edited plans retain their saved date and any deliberate edit. */
+      start.disabled = false;
+      start.readOnly = false;
+      start.removeAttribute('aria-disabled');
+      start.removeAttribute('min');
+      if (!start.value) start.value = today();
     }
     if (!mode || !frequency || !days) return;
     const specific = mode.value === 'specific-days';
