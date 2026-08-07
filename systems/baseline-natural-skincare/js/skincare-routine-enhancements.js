@@ -31,7 +31,7 @@
     const escape=(value) => String(value==null?'':value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
     function allRecipes() {
       const seen=new Set();
-      return Array.from(document.querySelectorAll('#recipes .recipe-page[id],#recipes [data-recipe-slug]')).map((card,index) => {
+      return Array.from(document.querySelectorAll('#recipes .recipe-page,#recipes [data-recipe-slug]')).map((card,index) => {
         const title=String(card.querySelector('h3,h2')?.textContent || '').trim();
         const id=String(card.id || card.dataset.recipeSlug || `recipe-${index+1}`).trim();
         if (!id || !title || seen.has(id)) return null;
@@ -80,6 +80,30 @@
     }));
   }
 
+  function releaseBootShieldWhenStable() {
+    return new Promise((resolve) => {
+      const root=document.getElementById('routine');
+      if (!root || typeof MutationObserver==='undefined') { releaseBootShield();resolve();return; }
+      let quietTimer=0;
+      let maxTimer=0;
+      let finished=false;
+      const done=() => {
+        if (finished) return;
+        finished=true;
+        clearTimeout(quietTimer);clearTimeout(maxTimer);observer.disconnect();
+        releaseBootShield();resolve();
+      };
+      const settle=() => {
+        clearTimeout(quietTimer);
+        quietTimer=global.setTimeout(done,90);
+      };
+      const observer=new MutationObserver(settle);
+      observer.observe(root,{ childList:true,subtree:true });
+      maxTimer=global.setTimeout(done,500);
+      settle();
+    });
+  }
+
   function load(src,marker) {
     const existing=document.querySelector(`script[${marker}]`);
     if (existing) {
@@ -116,7 +140,7 @@
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
-    .then(releaseBootShield)
+    .then(releaseBootShieldWhenStable)
     .catch((error) => {
       releaseBootShield();
       try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
