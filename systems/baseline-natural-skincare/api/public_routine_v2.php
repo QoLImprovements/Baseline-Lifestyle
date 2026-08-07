@@ -128,6 +128,7 @@ try{
   if(strtolower((string)($row['visibility'] ?? 'private')) !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
 
   $userId = (int)($row['id'] ?? 0);
+  $logs = bl_public_skin_logs(bl_public_skin_decode((string)($row['logs_json'] ?? '{}'), []));
   $groupStatement = $db->prepare('SELECT groups_json, assignments_json FROM skincare_routine_groups WHERE user_id=:user_id LIMIT 1');
   $groupStatement->execute([':user_id'=>$userId]);
   $groupRow = $groupStatement->fetch() ?: [];
@@ -146,7 +147,7 @@ try{
     'publicRoutine'=>[
       'owner'=>(string)($row['name'] ?? $name),
       'routine'=>bl_public_skin_routine(bl_public_skin_decode((string)($row['routine_json'] ?? '[]'), [])),
-      'logs'=>bl_public_skin_logs(bl_public_skin_decode((string)($row['logs_json'] ?? '{}'), [])),
+      'logs'=>$logs,
       'groups'=>$groups,
       'assignments'=>$assignments,
       'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
