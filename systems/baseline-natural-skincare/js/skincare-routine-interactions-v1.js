@@ -61,10 +61,14 @@
       if (!label) {
         label=document.createElement('label');
         label.className='bl-routine-group-complete';
-        label.innerHTML='<input type="checkbox" data-v8-group-complete><span class="sr-only">Complete group</span>';
+        label.innerHTML='<input type="checkbox" data-v8-group-complete>';
         heading.appendChild(label);
       }
+      /* Accessibility belongs on the checkbox itself. Never reintroduce visible
+         or hidden "Complete group" wording beside the group title. */
+      label.querySelectorAll('.sr-only').forEach((node) => node.remove());
       const box=label.querySelector('[data-v8-group-complete]');
+      if (!box) return;
       const checked=boxes.filter((candidate) => candidate.checked).length;
       box.checked=checked===boxes.length;
       box.indeterminate=checked>0 && checked<boxes.length;
@@ -149,9 +153,13 @@
   }
 
   function ownMutation(mutation) {
+    const nodes=Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
+    /* The legacy authority can still recreate the checkbox shell before this
+       adapter settles. If that shell contains the retired wording, process the
+       mutation once so patch() strips it immediately. */
+    if (nodes.some((node) => node.nodeType===1 && /Complete group/i.test(String(node.textContent || '')))) return false;
     const target=mutation.target?.nodeType===1 ? mutation.target : mutation.target?.parentElement;
     if (target?.closest?.(OWN_SELECTOR)) return true;
-    const nodes=Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
     return nodes.length>0 && nodes.every((node) => {
       if (node.nodeType===3) return !String(node.textContent || '').trim();
       return node.nodeType!==1 || node.matches?.(OWN_SELECTOR) || node.closest?.(OWN_SELECTOR);
