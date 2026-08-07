@@ -8,11 +8,10 @@ require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
 const catalogue = require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
 const workspaceLoader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
 const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js', import.meta.url), 'utf8');
-const coherent = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-sitewide-v3.js', import.meta.url), 'utf8');
-const cssEntry = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace.css', import.meta.url), 'utf8');
+const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js', import.meta.url), 'utf8');
+const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
-const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-system.css', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
 const schema = fs.readFileSync(new URL('../systems/baseline-fitness/api/schema.php', import.meta.url), 'utf8');
@@ -22,23 +21,34 @@ test('Fitness main navigation remains My Routine with refresh-safe routing', () 
   assert.match(html, /data-target="my-plan">My Routine<\/button>/);
   assert.match(html, /my-routine\|my-plan/);
   assert.match(htaccess, /baseline-fitness\/my-routine/);
+  assert.match(workspaceLoader, /restoreRequestedView/);
 });
 
-test('Exercise Summary is inserted directly between Routine Log and Calisthenics', () => {
-  assert.match(coherent, /textContent = 'Exercise Summary'/);
-  assert.match(coherent, /logButton\?\.insertAdjacentElement\('afterend', button\)/);
-  assert.match(coherent, /panel\.dataset\.fitnessRoutinePanel = 'summary'/);
-  assert.match(coherent, /activateSummary/);
+test('Fitness My Routine has four top-level views and four nested Routine Plan types', () => {
+  assert.match(structure, /TOP_VIEWS = Object\.freeze\(\['log','summary','plan','public'\]\)/);
+  assert.match(structure, /PLAN_VIEWS = Object\.freeze\(\['calisthenics','cardio','other','sports'\]\)/);
+  assert.match(structure, /ensureTopButton\(nav,'log','Routine Log'\)/);
+  assert.match(structure, /ensureTopButton\(nav,'summary','Routine Summary'\)/);
+  assert.match(structure, /ensureTopButton\(nav,'plan','Routine Plan'\)/);
+  assert.match(structure, /ensureTopButton\(nav,'public','Public Routines'\)/);
+  assert.match(structure, /data-fitness-plan-view/);
+  assert.match(structure, /fitness-routine-plan-panel/);
+});
+
+test('Routine view and nested Plan view are independently remembered across refresh', () => {
+  assert.match(structure, /__bl_fitness_routine_view_v2__/);
+  assert.match(structure, /__bl_fitness_plan_view_v4__/);
+  assert.match(structure, /function restoreRemembered/);
+  assert.match(structure, /sessionStorage\?\.setItem\(VIEW_KEY/);
+  assert.match(structure, /sessionStorage\?\.setItem\(PLAN_VIEW_KEY/);
 });
 
 test('catalogue provides expanded searchable cardio, activity and sports lists', () => {
   assert.deepEqual(catalogue.SECTIONS.map((item) => item.label), ['Cardio','Other Fitness Activity','Sports']);
   assert.ok(catalogue.ACTIVITIES.length >= 180, `expected at least 180 activities, got ${catalogue.ACTIVITIES.length}`);
   const ids = new Set(catalogue.ACTIVITIES.map((item) => item.id));
-  [
-    'road-running','road-cycling','pool-swimming','rowing-erg','hatha-yoga','aerial-yoga','tai-chi',
-    'mma','bouldering','weight-training','badminton','association-football','tennis','squash','cricket'
-  ].forEach((id) => assert.ok(ids.has(id), `${id} should exist`));
+  ['road-running','road-cycling','pool-swimming','rowing-erg','hatha-yoga','aerial-yoga','tai-chi','mma','bouldering','weight-training','badminton','association-football','tennis','squash','cricket']
+    .forEach((id) => assert.ok(ids.has(id), `${id} should exist`));
   assert.ok(catalogue.search('other','yoga').some((item) => item.id === 'aerial-yoga'));
 });
 
@@ -64,35 +74,29 @@ test('activity pickers remain searchable, keyboard navigable and fully opaque', 
   assert.match(css, /opacity:1!important/);
 });
 
-test('Fitness Week calendar uses one full-width row for every day', () => {
-  assert.match(workspace, /data-calendar-view="week"/);
-  assert.match(workspace, /data-calendar-view="month"/);
-  assert.match(coherent, /makeWeekRows/);
-  assert.match(coherent, /UI\.weekRow/);
-  assert.match(coherent, /bl-routine-week-list/);
-  assert.match(sharedCss, /grid-template-columns:minmax\(185px/);
+test('Routine Summary groups plan and activity entities in saved group order', () => {
+  assert.match(structure, /function groupedEntities/);
+  assert.match(structure, /fitnessRoutineGroups/);
+  assert.match(structure, /fitnessRoutineAssignments/);
+  assert.match(structure, /fitnessSummaryGroupFilter/);
+  assert.match(structure, /data-v4-entity/);
+  assert.match(structure, /Ungrouped routine items/);
 });
 
-test('activity, log and generated session details are collapsed and expandable', () => {
-  assert.match(coherent, /decorateActivityCards/);
-  assert.match(coherent, /decorateLogCards/);
-  assert.match(coherent, /decorateSessionCards/);
-  assert.match(coherent, /Show session details/);
-  assert.match(coherent, /Session details/);
-  assert.match(coherent, /Edit details/);
-  assert.match(coherent, /card\.dataset\.sitewideDisclosure = 'true'/);
+test('Public Routines panel is native to the Fitness structure and exposes shared viewer hooks', () => {
+  assert.match(structure, /fitnessRoutineVisibility/);
+  assert.match(structure, /fitnessPublicRoutineName/);
+  assert.match(structure, /fitnessViewPublicRoutine/);
+  assert.match(structure, /fitnessPublicRoutineResult/);
+  assert.match(structure, /\?list=public/);
+  assert.match(structure, /saveVisibility/);
 });
 
-test('every current-plan exercise receives a comprehensive structured summary', () => {
-  assert.match(coherent, /plannedExerciseNames/);
-  assert.match(coherent, /global\.BASELINE_FITNESS_DEBUG\?\.EXERCISES/);
-  assert.match(coherent, /Exercise family/);
-  assert.match(coherent, /Movement category/);
-  assert.match(coherent, /Variation level/);
-  assert.match(coherent, /Progression rule/);
-  assert.match(coherent, /Benefits and practical role/);
-  assert.match(coherent, /How to perform it/);
-  assert.match(coherent, /activitySummaryCard/);
+test('weekly-count frequency and start access are governed by the flexible scheduling policy', () => {
+  assert.match(policy, /frequencyRangeMax/);
+  assert.match(policy, /flexibleWeekly/);
+  assert.match(policy, /Current workout available within your weekly frequency/);
+  assert.match(policy, /Start Early\?/);
 });
 
 test('text and numeric fields save without activity-list replacement per character', () => {
@@ -110,13 +114,14 @@ test('Fitness activity state persists activity-specific target and result metric
   assert.match(api, /'metrics'=>bl_fitness_metric_values/);
 });
 
-test('Fitness entry point loads catalogue, shared system, workspace and coherence layer in order', () => {
+test('Fitness entry point loads catalogue, shared data workspace, one structure adapter, shared authority and policy in order', () => {
   const catalogueIndex = workspaceLoader.indexOf('fitness-activity-catalogue-v2.js');
   const sharedIndex = workspaceLoader.indexOf('baseline-routine-system.js');
   const workspaceIndex = workspaceLoader.indexOf('fitness-routine-workspace-v2.js');
-  const coherentIndex = workspaceLoader.indexOf('fitness-routine-sitewide-v3.js');
-  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && coherentIndex > workspaceIndex);
-  assert.match(cssEntry, /baseline-routine-system\.css/);
-  assert.match(cssEntry, /fitness-routine-sitewide-v3\.css/);
+  const structureIndex = workspaceLoader.indexOf('fitness-routine-structure-v4.js');
+  const authorityIndex = workspaceLoader.indexOf('baseline-routine-authority-v7.js');
+  const policyIndex = workspaceLoader.indexOf('fitness-live-policy-v1.js');
+  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && authorityIndex > structureIndex && policyIndex > authorityIndex);
+  assert.doesNotMatch(workspaceLoader, /fitness-routine-sitewide-v3\.js/);
   assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2/);
 });
