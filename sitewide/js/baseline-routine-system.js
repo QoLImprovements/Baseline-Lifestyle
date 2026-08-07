@@ -1,11 +1,19 @@
-/* Baseline Lifestyle — reusable My Routine structure and interaction framework. */
+/* Baseline Lifestyle — reusable My Routine structure and interaction framework.
+
+   RENDER STABILITY CONTRACT
+   -------------------------
+   System data owners may update their base DOM, then a My Routine adapter may
+   group/decorate it. Adapter mutation correction is queued as a microtask, not
+   a requestAnimationFrame, so the browser never paints an intermediate base
+   layout before the final sitewide structure is restored. Do not change this
+   back to a frame-delayed observer: that caused visible shaking and view swaps. */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_ROUTINE_SYSTEM__) return;
   global.__BASELINE_ROUTINE_SYSTEM__ = true;
 
   const document = global.document;
-  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2';
+  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_3';
   const observers = new WeakMap();
 
   function escapeHtml(value) {
@@ -54,7 +62,6 @@
     input.setAttribute('aria-label', input.getAttribute('aria-label') || 'Activity performed date');
     return date;
   }
-
 
   const SETTINGS_PREFIX = '__bl_sitewide_routine_settings_v1__::';
   const DAY_NAMES = Object.freeze(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
@@ -193,30 +200,41 @@
     if (!root || typeof MutationObserver === 'undefined' || typeof callback !== 'function') return null;
     const previous = observers.get(root);
     if (previous) previous.disconnect();
-    let frame = 0;
+    let queued = false;
     let running = false;
-    const observer = new MutationObserver(() => {
-      if (running || frame) return;
-      frame = global.requestAnimationFrame(run);
-    });
+    let active = true;
+
+    const queueRun = () => {
+      if (!active || running || queued) return;
+      queued = true;
+      const enqueue = typeof global.queueMicrotask === 'function'
+        ? global.queueMicrotask.bind(global)
+        : (fn) => Promise.resolve().then(fn);
+      enqueue(run);
+    };
+
+    const observer = new MutationObserver(queueRun);
+
     function run() {
-      frame = 0;
-      if (running) return;
+      queued = false;
+      if (!active || running) return;
       running = true;
       observer.disconnect();
       try { callback(); }
       finally {
         running = false;
-        observer.observe(root, { childList:true, subtree:true });
+        if (active) observer.observe(root, { childList:true, subtree:true });
       }
     }
+
     observer.observe(root, { childList:true, subtree:true });
     observers.set(root, observer);
     run();
     return {
       refresh:run,
       disconnect() {
-        if (frame) global.cancelAnimationFrame(frame);
+        active = false;
+        queued = false;
         observer.disconnect();
         observers.delete(root);
       }
