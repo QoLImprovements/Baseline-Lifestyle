@@ -18,6 +18,12 @@
   let allowingBaseGroupMove = false;
   let completingGroup = false;
 
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[character]));
+  }
+
   function owner() {
     try {
       const snapshot = global.BASELINE_auth?.get?.();
@@ -56,8 +62,6 @@
     const style = document.createElement('style');
     style.id = 'baselineRoutineAuthorityV7Style';
     style.textContent = `
-      /* Stable numbering is CSS-owned. It therefore cannot disappear while
-         a renderer replaces cards or a completion checkbox is saved. */
       #routineItems{counter-reset:blPlanNumber}
       #routineItems>.routine-plan-group:not(.routine-plan-group-ungrouped){counter-increment:blPlanNumber}
       #routineItems>.routine-plan-group:not(.routine-plan-group-ungrouped)>.routine-plan-group-head>div:first-child{display:flex;align-items:center;gap:12px}
@@ -68,9 +72,8 @@
       #routineItems>.routine-plan-group:not(.routine-plan-group-ungrouped) .routine-item .routine-order,
       #routineItems>.routine-plan-group:not(.routine-plan-group-ungrouped) .routine-item .bl-v4-number{display:none!important}
       #routineItems>.routine-plan-group-ungrouped .routine-item{counter-increment:blPlanNumber}
-      #routineItems>.routine-plan-group-ungrouped .routine-item .routine-order{display:grid!important;place-items:center!important}
-      #routineItems>.routine-plan-group-ungrouped .routine-item .routine-order::before{content:counter(blPlanNumber);font-size:inherit}
-      #routineItems>.routine-plan-group-ungrouped .routine-item .routine-order{font-size:0!important}
+      #routineItems>.routine-plan-group-ungrouped .routine-item .routine-order{display:grid!important;place-items:center!important;font-size:0!important}
+      #routineItems>.routine-plan-group-ungrouped .routine-item .routine-order::before{content:counter(blPlanNumber);font-size:1rem}
 
       #routineLogItems{counter-reset:blLogNumber}
       #routineLogItems>.routine-log-group:not([data-bl-ungrouped="true"]){counter-increment:blLogNumber}
@@ -87,8 +90,6 @@
 
       #routineSummary{counter-reset:blSummaryNumber}
       #routineSummary>.routine-summary-group{counter-increment:blSummaryNumber}
-      #routineSummary>.routine-summary-group>.routine-summary-group-head,
-      #routineSummary>.routine-summary-group>h3{position:relative}
       #routineSummary>.routine-summary-group>.routine-summary-group-head{display:flex;align-items:center;gap:12px}
       #routineSummary>.routine-summary-group>.routine-summary-group-head::before{
         content:counter(blSummaryNumber);display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:999px;
@@ -98,14 +99,12 @@
 
       .bl-routine-group-complete{display:inline-flex!important;align-items:center!important;margin:0!important;padding:0!important}
       .bl-routine-group-complete input{margin:0!important}
-      .bl-v4-number,.bl-routine-group-number{display:none!important}
+      .bl-routine-group-number{display:none!important}
+      .bl-routine-summary-filter{display:grid;gap:6px;margin:0 0 14px}
+      .bl-routine-summary-filter select{width:100%}
 
-      /* Prevent cosmetic movement effects inside My Routine while state is
-         being committed. A tick/order change should look stationary. */
       #routine :is(.routine-item,.routine-log-item,.routine-summary-item,.routine-plan-group,.routine-log-group),
-      #my-plan :is(.fitness-routine-card,.fitness-summary-group,.fitness-exercise-summary-item){
-        transition:none!important;animation:none!important
-      }
+      #my-plan :is(.fitness-routine-card,.fitness-summary-group,.fitness-exercise-summary-item){transition:none!important;animation:none!important}
 
       [data-routine-panel="public"] .routine-card,
       [data-fitness-routine-panel="public"] .fitness-routine-card{padding:18px!important}
@@ -123,17 +122,11 @@
     const select = document.getElementById(app === 'skin' ? 'routineVisibility' : 'fitnessRoutineVisibility');
     if (!select) return;
     let control = select.closest('.bl-release-public-visibility,.bl-v4-visibility,.routine-visibility-control,label');
-    if (!control) {
-      control = document.createElement('label');
-      control.appendChild(select);
-    }
+    if (!control) { control=document.createElement('label');control.appendChild(select); }
     control.classList.add('bl-release-public-visibility');
     control.hidden = false;
     let text = control.querySelector(':scope>span');
-    if (!text) {
-      text = document.createElement('span');
-      control.insertBefore(text,control.firstChild);
-    }
+    if (!text) { text=document.createElement('span');control.insertBefore(text,control.firstChild); }
     text.textContent = 'My Routine Visibility';
 
     let row = card.querySelector(':scope>.bl-authority-public-head');
@@ -146,9 +139,7 @@
         const next = heading.nextElementSibling;
         title.appendChild(heading);
         if (next && next.matches?.('p,.note')) title.appendChild(next);
-      } else {
-        title.appendChild(heading);
-      }
+      } else title.appendChild(heading);
       row = document.createElement('div');
       row.className = 'bl-authority-public-head';
       card.insertBefore(row,card.firstChild);
@@ -174,8 +165,8 @@
       if (select.dataset.blFullProductCatalogue === signature) return;
       const selected = String(select.value || '');
       const currentOptions = Array.from(select.querySelectorAll('optgroup[label="My Recipes"] option')).map((option) => ({ value:option.value,text:option.textContent }));
-      const recipes = currentOptions.length ? `<optgroup label="My Recipes">${currentOptions.map((option) => `<option value="${option.value.replace(/"/g,'&quot;')}">${String(option.text).replace(/</g,'&lt;')}</option>`).join('')}</optgroup>` : '';
-      const catalogue = brands.map((brand) => `<optgroup label="${brand.replace(/"/g,'&quot;')}">${byBrand.get(brand).slice().sort((a,b) => String(a.name).localeCompare(String(b.name),'en-GB',{ sensitivity:'base' })).map((product) => `<option value="product:${String(product.id).replace(/"/g,'&quot;')}">${String(product.name).replace(/</g,'&lt;')}</option>`).join('')}</optgroup>`).join('');
+      const recipes = currentOptions.length ? `<optgroup label="My Recipes">${currentOptions.map((option) => `<option value="${esc(option.value)}">${esc(option.text)}</option>`).join('')}</optgroup>` : '';
+      const catalogue = brands.map((brand) => `<optgroup label="${esc(brand)}">${byBrand.get(brand).slice().sort((a,b) => String(a.name).localeCompare(String(b.name),'en-GB',{ sensitivity:'base' })).map((product) => `<option value="product:${esc(product.id)}">${esc(product.name)}</option>`).join('')}</optgroup>`).join('');
       select.innerHTML = `<option value="">No product selected</option>${recipes}${catalogue}<optgroup label="Other"><option value="custom">Custom product…</option></optgroup>`;
       if (Array.from(select.options).some((option) => option.value === selected)) select.value = selected;
       select.dataset.blFullProductCatalogue = signature;
@@ -192,9 +183,37 @@
     if (visible) node.style.removeProperty('display');
   }
 
+  function ensureSkinSummaryFilter() {
+    if (app !== 'skin') return null;
+    const target = $('#routineSummary');
+    const panel = $('[data-routine-panel="summary"]');
+    if (!target || !panel) return null;
+    let select = $('#skinRoutineSummaryFilter');
+    if (!select) {
+      const control = document.createElement('label');
+      control.className = 'bl-routine-summary-filter';
+      control.innerHTML = '<span>Show</span><select id="skinRoutineSummaryFilter" aria-label="Filter routine summary"></select>';
+      target.insertAdjacentElement('beforebegin',control);
+      select = control.querySelector('select');
+    }
+    const old = String(select.value || 'all');
+    const data = skinGroups();
+    const routine = skinRoutine();
+    const grouped = new Set(Object.keys(data.assignments));
+    const groups = data.groups.map((group) => `<option value="group:${esc(group.id)}">${esc(group.title)}</option>`).join('');
+    const items = routine.map((item) => `<option value="item:${esc(item.id)}">${esc(item.title || 'Routine action')}</option>`).join('');
+    const signature = JSON.stringify({ groups:data.groups.map((group) => [group.id,group.title]),items:routine.map((item) => [item.id,item.title]),ungrouped:routine.filter((item) => !grouped.has(String(item.id))).map((item) => item.id) });
+    if (select.dataset.signature !== signature) {
+      select.innerHTML = `<option value="all">All routine items</option>${groups ? `<optgroup label="Routine groups">${groups}</optgroup>` : ''}${items ? `<optgroup label="Individual routine items">${items}</optgroup>` : ''}`;
+      select.dataset.signature = signature;
+      if (Array.from(select.options).some((option) => option.value === old)) select.value = old;
+    }
+    return select;
+  }
+
   function applySkinSummaryFilter() {
     if (app !== 'skin') return;
-    const select = $('#skinRoutineSummaryFilter');
+    const select = ensureSkinSummaryFilter();
     const target = $('#routineSummary');
     if (!select || !target) return;
     const value = String(select.value || 'all');
@@ -257,11 +276,12 @@
 
   function fitnessEntityKey(card,activities) {
     const explicit = String(card?.dataset?.v4Entity || '');
+    if (explicit) return explicit;
     const title = String(card?.querySelector?.('.routine-summary-title strong,.fitness-summary-title strong,h3,h4')?.textContent || '').trim();
     const badge = String(card?.querySelector?.('.badge')?.textContent || '').toLocaleLowerCase('en-GB');
-    if (badge.includes('calisthenics')) return selectedPlanId() ? `plan:${selectedPlanId()}` : explicit;
+    if (badge.includes('calisthenics')) return selectedPlanId() ? `plan:${selectedPlanId()}` : '';
     const activity = activities.find((item) => String(item?.name || '').trim().localeCompare(title,'en-GB',{ sensitivity:'base' }) === 0);
-    return activity ? `activity:${String(activity.id)}` : explicit;
+    return activity ? `activity:${String(activity.id)}` : '';
   }
 
   function applyFitnessSummaryFilter() {
@@ -382,11 +402,7 @@
       const signature = markers.map((marker) => `${marker.number}:${marker.caption}`).join('|');
       let wrap = day.querySelector(':scope>.bl-v7-calendar-markers');
       if (!markers.length) { wrap?.remove(); return; }
-      if (!wrap) {
-        wrap = document.createElement('span');
-        wrap.className = 'bl-v7-calendar-markers';
-        day.appendChild(wrap);
-      }
+      if (!wrap) { wrap=document.createElement('span');wrap.className='bl-v7-calendar-markers';day.appendChild(wrap); }
       if (wrap.dataset.signature === signature) return;
       wrap.dataset.signature = signature;
       wrap.replaceChildren(...markers.map((marker) => {
@@ -424,9 +440,7 @@
     const direction = button.dataset.move === 'up' ? 'up' : 'down';
     const distance = groupedMoveDistance(itemId,direction);
     if (distance <= 0) return false;
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
     allowingBaseGroupMove = true;
     try {
       for (let step=0; step<distance; step+=1) {
@@ -434,9 +448,7 @@
         if (!current || current.disabled) break;
         current.click();
       }
-    } finally {
-      allowingBaseGroupMove = false;
-    }
+    } finally { allowingBaseGroupMove=false; }
     try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-updated',{ detail:{ source:'group-aware-reorder',itemId,direction } })); } catch (_error) {}
     schedule();
     return true;
@@ -449,6 +461,7 @@
       expandSkinProducts();
       decorateSkinSections();
       ensureGroupCheckboxes();
+      ensureSkinSummaryFilter();
       applySkinSummaryFilter();
       decorateSkinCalendar();
     } else {
@@ -478,9 +491,7 @@
     document.addEventListener('change',(event) => {
       const groupBox = event.target?.closest?.('[data-v7-group-complete]');
       if (groupBox && !completingGroup) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
         let ids = [];
         try { ids = JSON.parse(groupBox.dataset.itemIds || '[]'); } catch (_error) {}
         completingGroup = true;
@@ -492,9 +503,8 @@
               box.dispatchEvent(new Event('change',{ bubbles:true }));
             }
           });
-        } finally { completingGroup = false; }
-        schedule();
-        return;
+        } finally { completingGroup=false; }
+        schedule();return;
       }
       if (['skinRoutineSummaryFilter','fitnessSummaryGroupFilter'].includes(event.target?.id)
         || event.target?.closest?.('#routineItems [data-field="productSelection"],#routineLogItems [data-log-complete]')) global.setTimeout(schedule,0);
@@ -509,15 +519,9 @@
   function boot() {
     injectStyles();
     if (app === 'skin') {
-      watch('#routineItems');
-      watch('#routineSummary');
-      watch('#routineLogItems');
-      watch('#routineCalendarGrid');
-    } else {
-      watch('#fitnessExerciseSummary');
-    }
-    bindEvents();
-    schedule();
+      watch('#routineItems');watch('#routineSummary');watch('#routineLogItems');watch('#routineCalendarGrid');
+    } else watch('#fitnessExerciseSummary');
+    bindEvents();schedule();
     document.documentElement.setAttribute('data-baseline-routine-authority','v7');
   }
 
