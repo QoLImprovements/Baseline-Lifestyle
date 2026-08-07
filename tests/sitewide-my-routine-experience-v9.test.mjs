@@ -29,9 +29,11 @@ test('calendar presentation removes obsolete aggregate badges but keeps function
   assert.match(experience, /bl-calendar-marker-caption/);
   assert.match(experience, /data-calendar-summary-filter/);
   assert.match(experience, /openSummaryForMarker/);
+  assert.match(experience, /bl-routine-calendar-toggle/);
   assert.match(experienceCss, /\.routine-calendar-count/);
   assert.match(experienceCss, /\.fitness-calendar-day>b/);
-  assert.match(experienceCss, /bl-routine-calendar-toggle/);
+  assert.match(experienceCss, /routine-calendar-view-tabs/);
+  assert.match(experienceCss, /fitness-calendar-view-tabs/);
   assert.match(experienceCss, /aria-selected="true"/);
 });
 
