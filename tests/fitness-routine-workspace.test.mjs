@@ -115,13 +115,14 @@ test('Fitness activity state persists activity-specific target and result metric
 });
 
 test('Fitness entry point loads catalogue, shared data workspace, one structure adapter, shared authority and policy in order', () => {
-  const catalogueIndex = workspaceLoader.indexOf('fitness-activity-catalogue-v2.js');
-  const sharedIndex = workspaceLoader.indexOf('baseline-routine-system.js');
-  const workspaceIndex = workspaceLoader.indexOf('fitness-routine-workspace-v2.js');
-  const structureIndex = workspaceLoader.indexOf('fitness-routine-structure-v4.js');
-  const authorityIndex = workspaceLoader.indexOf('baseline-routine-authority-v7.js');
-  const policyIndex = workspaceLoader.indexOf('fitness-live-policy-v1.js');
+  const chain = workspaceLoader.slice(workspaceLoader.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
+  const catalogueIndex = chain.indexOf('fitness-activity-catalogue-v2.js');
+  const sharedIndex = chain.indexOf('baseline-routine-system.js');
+  const workspaceIndex = chain.indexOf('fitness-routine-workspace-v2.js');
+  const structureIndex = chain.indexOf('fitness-routine-structure-v4.js');
+  const authorityIndex = chain.indexOf('baseline-routine-authority-v7.js');
+  const policyIndex = chain.indexOf('fitness-live-policy-v1.js');
   assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && authorityIndex > structureIndex && policyIndex > authorityIndex);
   assert.doesNotMatch(workspaceLoader, /fitness-routine-sitewide-v3\.js/);
-  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2/);
+  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5/);
 });

@@ -1,12 +1,47 @@
-/* Baseline Lifestyle — reusable My Routine structure and interaction framework. */
+/* Baseline Lifestyle — reusable My Routine structure and interaction framework.
+
+   RENDER STABILITY CONTRACT
+   -------------------------
+   System data owners may update their base DOM, then a My Routine adapter may
+   group/decorate it. The adapter observer must react only when core routine
+   content is replaced. Presentation-only children (group completion controls,
+   calendar markers, reorder controls, public-header alignment and completed
+   disclosures) must NEVER wake a core renderer.
+
+   This boundary prevents the feedback loop where a renderer removes a
+   decoration and a decoration owner adds it back, producing visible shaking.
+*/
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_ROUTINE_SYSTEM__) return;
   global.__BASELINE_ROUTINE_SYSTEM__ = true;
 
   const document = global.document;
-  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2';
+  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5';
   const observers = new WeakMap();
+  const AUTHORITY_DECORATION_SELECTOR = [
+    '.bl-routine-group-complete',
+    '.bl-calendar-markers',
+    '.bl-calendar-marker',
+    '.bl-skin-group-order',
+    '.bl-exercise-order',
+    '.bl-log-detail-toggle',
+    '.bl-completed-routines',
+    '.bl-completed-routines-list',
+    '.bl-completed-routine-row',
+    '.bl-routine-summary-filter',
+    '.bl-authority-public-head',
+    '.bl-authority-public-title',
+    '.bl-release-public-visibility'
+  ].join(',');
+  const SKIN_CORE_SELECTOR = [
+    '.routine-item',
+    '.routine-log-item',
+    '.routine-summary-item',
+    '.routine-group-row',
+    '.routine-empty'
+  ].join(',');
+  const SKIN_CORE_HOST_SELECTOR = '#routineItems,#routineLogItems,#routineSummary,#routineGroupList';
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({
@@ -54,7 +89,6 @@
     input.setAttribute('aria-label', input.getAttribute('aria-label') || 'Activity performed date');
     return date;
   }
-
 
   const SETTINGS_PREFIX = '__bl_sitewide_routine_settings_v1__::';
   const DAY_NAMES = Object.freeze(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
@@ -189,34 +223,72 @@
     try { document.dispatchEvent(new CustomEvent('baseline:routine-rendered', { detail:payload })); } catch (_error) {}
   }
 
+  function authorityDecorationNode(node) {
+    if (!node) return true;
+    if (node.nodeType === 3) return !String(node.textContent || '').trim();
+    if (node.nodeType !== 1) return true;
+    return Boolean(node.matches?.(AUTHORITY_DECORATION_SELECTOR) || node.closest?.(AUTHORITY_DECORATION_SELECTOR));
+  }
+
+  function authorityDecorationMutation(mutation) {
+    const target = mutation.target?.nodeType === 1 ? mutation.target : mutation.target?.parentElement;
+    if (target?.closest?.(AUTHORITY_DECORATION_SELECTOR)) return true;
+    const changed = Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
+    return changed.length > 0 && changed.every(authorityDecorationNode);
+  }
+
+  function skinCoreMutation(root, mutation) {
+    if (root?.id !== 'routine') return !authorityDecorationMutation(mutation);
+    if (authorityDecorationMutation(mutation)) return false;
+    const target = mutation.target?.nodeType === 1 ? mutation.target : mutation.target?.parentElement;
+    const changed = Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
+    if (!changed.length) return false;
+    if (target?.matches?.(SKIN_CORE_HOST_SELECTOR)) {
+      return changed.some((node) => node?.nodeType === 1 && (node.matches?.(SKIN_CORE_SELECTOR) || node.querySelector?.(SKIN_CORE_SELECTOR)));
+    }
+    return changed.some((node) => node?.nodeType === 1 && (node.matches?.(SKIN_CORE_SELECTOR) || node.querySelector?.(SKIN_CORE_SELECTOR)));
+  }
+
   function observe(root, callback) {
     if (!root || typeof MutationObserver === 'undefined' || typeof callback !== 'function') return null;
     const previous = observers.get(root);
     if (previous) previous.disconnect();
-    let frame = 0;
+    let queued = false;
     let running = false;
-    const observer = new MutationObserver(() => {
-      if (running || frame) return;
-      frame = global.requestAnimationFrame(run);
-    });
+    let active = true;
+
+    const queueRun = (mutations = []) => {
+      if (!active || running || queued) return;
+      if (mutations.length && !mutations.some((mutation) => skinCoreMutation(root, mutation))) return;
+      queued = true;
+      const enqueue = typeof global.queueMicrotask === 'function'
+        ? global.queueMicrotask.bind(global)
+        : (fn) => Promise.resolve().then(fn);
+      enqueue(run);
+    };
+
+    const observer = new MutationObserver(queueRun);
+
     function run() {
-      frame = 0;
-      if (running) return;
+      queued = false;
+      if (!active || running) return;
       running = true;
       observer.disconnect();
       try { callback(); }
       finally {
         running = false;
-        observer.observe(root, { childList:true, subtree:true });
+        if (active) observer.observe(root, { childList:true, subtree:true });
       }
     }
+
     observer.observe(root, { childList:true, subtree:true });
     observers.set(root, observer);
     run();
     return {
       refresh:run,
       disconnect() {
-        if (frame) global.cancelAnimationFrame(frame);
+        active = false;
+        queued = false;
         observer.disconnect();
         observers.delete(root);
       }
