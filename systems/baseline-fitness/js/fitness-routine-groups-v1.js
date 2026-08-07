@@ -7,9 +7,9 @@
   if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__) return;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V1__ = true;
+  const document = global.document;
   if ((document.documentElement.dataset.app || document.body?.dataset.app) !== 'fitness') return;
 
-  const document = global.document;
   const UI = global.BASELINE_RoutineSystem;
   if (!UI) return;
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
