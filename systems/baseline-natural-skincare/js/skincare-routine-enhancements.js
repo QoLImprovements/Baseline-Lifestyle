@@ -13,7 +13,8 @@
    remains sitewide and reusable by Fitness and future systems. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V26__) return;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V27__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V27__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V26__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V25__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V24__=true;
@@ -21,6 +22,7 @@
 
   const document=global.document;
   const MAX_WAIT_MS=6000;
+  let recipeOptionObserver=null;
 
   /* Product / recipe data is part of the Skincare adapter, not the shared UI.
      Replace the product-library facade synchronously, before skincare-routine.js
@@ -61,6 +63,47 @@
     }));
   }
 
+  /* The older product-catalogue expander groups commercial products by brand.
+     Preserve that behaviour, but restore the complete Baseline recipe group
+     after any editor rerender. This adapter changes only product options; it
+     never rebuilds a Routine view or competes with the sitewide authority. */
+  function normaliseRecipeOptions() {
+    const library=global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
+    const recipes=typeof library?.recipeProducts==='function' ? library.recipeProducts() : [];
+    if (!Array.isArray(recipes) || !recipes.length) return;
+    const signature=recipes.map((item) => `${item.id}:${item.title}`).join('|');
+    document.querySelectorAll('#routineItems [data-field="productSelection"]').forEach((select) => {
+      const selected=String(select.value || '');
+      let group=select.querySelector('optgroup[label="Baseline Skincare Recipes"],optgroup[label="My Recipes"]');
+      if (!group) {
+        group=document.createElement('optgroup');
+        const firstGroup=select.querySelector('optgroup');
+        if (firstGroup) select.insertBefore(group,firstGroup); else select.appendChild(group);
+      }
+      group.label='Baseline Skincare Recipes';
+      if (group.dataset.recipeSignature!==signature) {
+        group.dataset.recipeSignature=signature;
+        group.replaceChildren(...recipes.map((item) => {
+          const option=document.createElement('option');
+          option.value=`recipe:${item.id}`;option.textContent=item.title;
+          return option;
+        }));
+      }
+      if (Array.from(select.options).some((option) => option.value===selected)) select.value=selected;
+    });
+  }
+
+  function bindRecipeOptionNormaliser() {
+    normaliseRecipeOptions();
+    document.addEventListener('baseline:routine-rendered',normaliseRecipeOptions);
+    const items=document.getElementById('routineItems');
+    if (items && typeof MutationObserver!=='undefined') {
+      recipeOptionObserver?.disconnect();
+      recipeOptionObserver=new MutationObserver(normaliseRecipeOptions);
+      recipeOptionObserver.observe(items,{ childList:true,subtree:true });
+    }
+  }
+
   function installBootShield() {
     document.documentElement.setAttribute('data-skincare-routine-booting','true');
     if (document.getElementById('skincareRoutineBootShieldStyle')) return;
@@ -91,7 +134,7 @@
         if (finished) return;
         finished=true;
         clearTimeout(quietTimer);clearTimeout(maxTimer);observer.disconnect();
-        releaseBootShield();resolve();
+        normaliseRecipeOptions();releaseBootShield();resolve();
       };
       const settle=() => {
         clearTimeout(quietTimer);
@@ -140,9 +183,11 @@
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
-    .then(releaseBootShieldWhenStable)
+    .then(() => { bindRecipeOptionNormaliser();return releaseBootShieldWhenStable(); })
     .catch((error) => {
       releaseBootShield();
       try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
     });
+
+  global.addEventListener('pagehide',() => recipeOptionObserver?.disconnect(),{ once:true });
 })(typeof window!=='undefined'?window:globalThis);
