@@ -161,10 +161,12 @@ test('the same exercise shares progression across multiple Calisthenics plans fr
 test('Fitness Routine Summary becomes comprehensive rather than a shallow list', () => {
   const coherence = read('systems/baseline-fitness/js/fitness-routine-coherence-v1.js');
   assert.match(coherence, /function enrichSummary/);
-  assert.match(coherence, /Purpose:/);
+  assert.match(coherence, /Benefits \/ purpose:/);
   assert.match(coherence, /Technique:/);
   assert.match(coherence, /Relevant session measures/);
   assert.match(coherence, /Progression:/);
+  assert.match(coherence, /Energy demand/);
+  assert.match(coherence, /Primary muscle involvement/);
 });
 
 test('Routine Logs start compact and completed exercises/routines have a collapsed disclosure', () => {

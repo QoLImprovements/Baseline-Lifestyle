@@ -3,7 +3,7 @@
    OWNERSHIP CONTRACT — DO NOT DUPLICATE RUNTIME PROGRESSION OR RENDERERS HERE
    --------------------------------------------------------------------------
    This module does two Fitness-specific jobs only:
-     1. enrich the owner-visible Routine Summary with comprehensive details;
+     1. supply comprehensive Fitness content inside the shared Summary structure;
      2. perform one delayed initial Log refresh after all authorities have loaded.
 
    Cross-plan progression belongs to fitness-live-policy-v1.js. Group and plan
@@ -12,7 +12,8 @@
    was applied, so this adapter deliberately does not render on those events. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V3__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V4__) return;
+  global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V4__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V3__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V2__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V1__=true;
@@ -42,13 +43,126 @@
   }
 
   function progressionText(item,definition) {
-    if (definition?.unit==='seconds' || item?.progressionMode==='timed-hold') return 'Timed hold progression. The exercise advances across every plan that contains it.';
+    if (definition?.unit==='seconds' || item?.progressionMode==='timed-hold') return 'Timed isometric progression: the hold target advances after successful sessions and is shared across plans containing the same exercise.';
     if (item?.progressionMode==='straight-sets') {
       const increase=Number(item.repIncrease || 0);
-      return `Straight sets: equal starting sets; +${increase} rep${increase===1?'':'s'} to every set after a successful session.`;
+      return `Straight sets: equal working sets begin from the Max Baseline calculation; +${increase} rep${increase===1?'':'s'} is added to every set after a successful session.`;
     }
     const increase=Number(item?.repIncrease || 0);
-    return `Linear fixed progression: initial sets are calculated from the max baseline; +${increase} rep${increase===1?'':'s'} to every set after a successful session.`;
+    return `Linear fixed progression: the working sets are calculated from Max Baseline with a deliberate within-session rise; +${increase} rep${increase===1?'':'s'} is added after a successful session.`;
+  }
+
+  function exerciseMuscles(definition) {
+    const text=`${definition?.family || ''} ${definition?.movementCategory || ''} ${definition?.name || ''}`.toLocaleLowerCase('en-GB');
+    if (/reverse plank|posterior core/.test(text)) return 'Glutes, hamstrings, spinal extensors and posterior shoulder stabilisers, with trunk bracing throughout.';
+    if (/plank|core|climber|hollow|side/.test(text)) return 'Abdominals, obliques and deep trunk stabilisers, with shoulder and hip stabilisers according to the variation.';
+    if (/lunge|squat|leg|cossack|step/.test(text)) return 'Quadriceps, glutes, hamstrings and adductors, with calves and trunk stabilisers supporting balance and control.';
+    if (/push|dip|chest/.test(text)) return 'Chest, triceps and anterior shoulders, with the trunk maintaining body position.';
+    if (/pull|row|chin|back/.test(text)) return 'Latissimus dorsi, upper back, biceps and grip, with trunk stabilisers resisting unwanted movement.';
+    if (/calf/.test(text)) return 'Calves and ankle stabilisers, with the rest of the leg contributing to balance.';
+    return 'Exercise-specific prime movers plus the trunk and joint stabilisers required to control the bodyweight movement.';
+  }
+
+  function exerciseDemand(item,definition) {
+    if (definition?.unit==='seconds' || item?.progressionMode==='timed-hold') return 'Predominantly anaerobic / isometric muscular endurance';
+    const text=`${definition?.family || ''} ${definition?.movementCategory || ''}`.toLocaleLowerCase('en-GB');
+    if (/climber|burpee|dynamic/.test(text)) return 'Mixed anaerobic muscular work with increasing aerobic demand at sustained pace';
+    return 'Predominantly anaerobic resistance and muscular-endurance work';
+  }
+
+  function planMuscleSummary(items) {
+    const movementNames=Array.from(new Set(items.map((item) => exerciseDefinition(item.exercise)?.movementCategory).filter(Boolean)));
+    if (!movementNames.length) return 'Whole-body involvement depends on the exercises saved in this plan.';
+    return `${movementNames.join(', ')} movements; individual exercise cards below identify the principal muscle involvement.`;
+  }
+
+  function planBenefits(items) {
+    const timed=items.some((item) => exerciseDefinition(item.exercise)?.unit==='seconds' || item.progressionMode==='timed-hold');
+    const unilateral=items.some((item) => /lunge|split|side/i.test(String(item.exercise || '')));
+    const parts=['Builds progressive bodyweight strength and muscular endurance while preserving an exercise-by-exercise progression record.'];
+    if (timed) parts.push('Timed holds add isometric strength-endurance and positional control.');
+    if (unilateral) parts.push('Unilateral and lateral movements add balance, hip control and side-to-side strength exposure.');
+    return parts.join(' ');
+  }
+
+  function activityProfile(definition,activity) {
+    const profile=String(definition?.metricProfile || 'duration');
+    const classification=profile==='running'||profile==='walking'||profile==='cycling'||profile==='swimming'||profile==='cardioMachine'
+      ? 'Predominantly aerobic / cardiorespiratory'
+      : profile==='intervals'
+        ? 'Mixed aerobic and anaerobic interval conditioning'
+        : profile==='strength'||profile==='climbing'
+          ? 'Resistance / predominantly anaerobic strength work'
+          : profile==='martial'||profile==='racket'||profile==='teamSport'||profile==='batBall'
+            ? 'Mixed aerobic and anaerobic skill-based activity'
+            : profile==='yoga'||profile==='mindful'||profile==='mobility'
+              ? 'Mobility, control, balance and low-to-moderate intensity conditioning'
+              : 'General physical activity / conditioning';
+    const muscles=profile==='running'||profile==='walking'
+      ? 'Glutes, quadriceps, hamstrings, calves, hip stabilisers and trunk.'
+      : profile==='cycling'
+        ? 'Quadriceps, glutes, hamstrings and calves, with trunk stabilisers supporting posture.'
+        : profile==='swimming'
+          ? 'Shoulders, upper back, chest, arms and trunk, with hips and legs contributing according to stroke.'
+          : profile==='racket'
+            ? 'Legs and hips for court movement; trunk rotation; shoulder, forearm and grip for racket control.'
+            : profile==='martial'
+              ? 'Full body: legs and hips, trunk, shoulders, arms and grip according to the discipline.'
+              : profile==='strength'||profile==='climbing'
+                ? 'Exercise-dependent whole-body musculature, with substantial trunk, grip and joint-stabiliser involvement.'
+                : profile==='yoga'||profile==='mindful'||profile==='mobility'
+                  ? 'Trunk and postural stabilisers plus the muscles surrounding the joints trained through the selected positions.'
+                  : 'Whole-body contribution varies with the selected activity.';
+    const benefit=profile==='running'||profile==='walking'||profile==='cycling'||profile==='swimming'||profile==='cardioMachine'
+      ? 'Builds cardiovascular capacity, repeatable endurance and local muscular endurance through sustained cyclical work.'
+      : profile==='racket'
+        ? 'Combines acceleration, deceleration and direction change with reaction speed, coordination and sport-specific skill.'
+        : profile==='yoga'||profile==='mindful'||profile==='mobility'
+          ? 'Develops usable range, positional control, balance and body awareness while providing lower-load movement practice.'
+          : profile==='strength'||profile==='climbing'
+            ? 'Builds force production, muscular endurance and movement control, with progression determined by the specific exercise or route demands.'
+            : profile==='martial'||profile==='teamSport'||profile==='batBall'
+              ? 'Combines conditioning with coordination, reaction, movement skill and repeated changes in intensity.'
+              : 'Develops the physical capacities and movement skills specific to the activity while contributing to overall weekly training volume.';
+    return {
+      activityType:String(definition?.group || activity.section || 'Fitness activity'),
+      energyDemand:classification,
+      muscles,
+      benefit
+    };
+  }
+
+  function summaryRows(rows) {
+    return `<dl class="bl-routine-summary-rows">${rows.filter((row) => row.value).map((row) => `<div><dt>${esc(row.label)}</dt><dd>${esc(row.value)}</dd></div>`).join('')}</dl>`;
+  }
+
+  function planHtml(plan) {
+    const items=Array.isArray(plan.planJson?.items) ? plan.planJson.items : [];
+    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Training profile</h4>${summaryRows([
+      { label:'Activity type',value:'Calisthenics / bodyweight resistance plan' },
+      { label:'Energy demand',value:'Predominantly anaerobic strength and muscular endurance, with aerobic demand increasing as session density rises.' },
+      { label:'Primary movement emphasis',value:planMuscleSummary(items) },
+      { label:'Exercises',value:`${items.length} saved exercise${items.length===1?'':'s'}` }
+    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and training role</h4><p>${esc(planBenefits(items))}</p></section></div><div class="bl-public-v3-exercises">${items.map((item,index) => {
+      const definition=exerciseDefinition(item.exercise);
+      return `<section class="bl-public-v3-exercise bl-routine-summary-section"><strong>${index+1}. ${esc(item.exercise || 'Exercise')}</strong>${summaryRows([
+        { label:'Movement',value:definition?.movementCategory || definition?.family || 'Bodyweight' },
+        { label:'Exercise demand',value:exerciseDemand(item,definition) },
+        { label:'Muscle involvement',value:exerciseMuscles(definition) }
+      ])}${definition?.goodFor?`<p><b>Benefits / purpose:</b> ${esc(definition.goodFor)}</p>`:''}${definition?.how?`<p><b>Technique:</b> ${esc(definition.how)}</p>`:''}<p><b>Progression:</b> ${esc(progressionText(item,definition))}</p></section>`;
+    }).join('')}</div>`;
+  }
+
+  function activityHtml(activity) {
+    const definition=activityDefinition(activity.activityId);
+    const metrics=(definition?.metrics || []).map((metric) => `${metric.label}${metric.unit?` (${metric.unit})`:''}`).join(', ');
+    const profile=activityProfile(definition,activity);
+    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Activity profile</h4>${summaryRows([
+      { label:'Activity type',value:profile.activityType },
+      { label:'Energy demand',value:profile.energyDemand },
+      { label:'Primary muscle involvement',value:profile.muscles },
+      { label:'Relevant session measures',value:metrics || 'Duration, quality and activity-specific session details.' }
+    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and training role</h4><p>${esc(profile.benefit)}</p>${activity.notes?`<p><strong>Your notes:</strong> ${esc(activity.notes)}</p>`:''}</section></div>`;
   }
 
   function enrichSummary() {
@@ -69,10 +183,7 @@
         const signature=JSON.stringify(items.map((item) => [item.exercise,item.baseline,item.sets,item.progressionMode,item.repIncrease]));
         if (panel.dataset.signature===signature) return;
         panel.dataset.signature=signature;
-        panel.innerHTML=`<div class="bl-public-v3-exercises">${items.map((item,index) => {
-          const definition=exerciseDefinition(item.exercise);
-          return `<section class="bl-public-v3-exercise"><strong>${index+1}. ${esc(item.exercise || 'Exercise')}</strong><div class="fitness-summary-meta"><span>${esc(definition?.family || 'Calisthenics')}</span><span>${esc(definition?.movementCategory || 'Bodyweight')}</span></div>${definition?.goodFor?`<p><b>Purpose:</b> ${esc(definition.goodFor)}</p>`:''}${definition?.how?`<p><b>Technique:</b> ${esc(definition.how)}</p>`:''}<p><b>Progression:</b> ${esc(progressionText(item,definition))}</p></section>`;
-        }).join('')}</div>`;
+        panel.innerHTML=planHtml(plan);
         return;
       }
 
@@ -83,7 +194,7 @@
       const signature=JSON.stringify([activity.activityId,activity.name,activity.notes,metrics]);
       if (panel.dataset.signature===signature) return;
       panel.dataset.signature=signature;
-      panel.innerHTML=`<div class="bl-public-v3-detail-grid"><section class="bl-public-v3-detail"><h5>Activity classification</h5><p>${esc(definition?.group || activity.section || 'Fitness activity')}</p>${activity.notes?`<p>${esc(activity.notes)}</p>`:''}</section><section class="bl-public-v3-detail"><h5>Relevant session measures</h5><p>${esc(metrics || 'Duration, quality and activity-specific session details.')}</p></section></div>`;
+      panel.innerHTML=activityHtml(activity);
     });
   }
 
@@ -113,7 +224,7 @@
     document.addEventListener('baseline:fitness-workout-updated',schedule);
     [0,120,350,800].forEach((delay) => global.setTimeout(schedule,delay));
     initialLogRefresh();
-    document.documentElement.setAttribute('data-fitness-routine-coherence','v3-noncompetitive');
+    document.documentElement.setAttribute('data-fitness-routine-coherence','v4-comprehensive');
   }
 
   global.addEventListener('pagehide',() => { if (frame) global.cancelAnimationFrame(frame);clearTimeout(initialRefreshTimer); },{ once:true });

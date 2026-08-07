@@ -187,6 +187,9 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await page.locator('[data-fitness-plan-view="other"]').click();
   const groupCard = page.locator('[data-fitness-plan-panel="other"] .bl-v4-group-card');
   await expect(groupCard).toBeVisible();
+  await expect(groupCard).not.toHaveAttribute('open','');
+  await groupCard.locator('summary').click();
+  await expect(groupCard).toHaveAttribute('open','');
   await groupCard.locator('[data-v4-group-name="other"]').fill('Recovery and Mobility');
   await groupCard.locator('[data-v4-create-group="other"]').click();
   await expect(groupCard.locator('.bl-v4-group-row')).toContainText('Recovery and Mobility');
