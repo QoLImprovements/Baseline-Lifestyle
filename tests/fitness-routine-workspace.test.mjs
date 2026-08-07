@@ -124,5 +124,5 @@ test('Fitness entry point loads catalogue, shared data workspace, one structure 
   const policyIndex = chain.indexOf('fitness-live-policy-v1.js');
   assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && authorityIndex > structureIndex && policyIndex > authorityIndex);
   assert.doesNotMatch(workspaceLoader, /fitness-routine-sitewide-v3\.js/);
-  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260807_3/);
+  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260807_4/);
 });
