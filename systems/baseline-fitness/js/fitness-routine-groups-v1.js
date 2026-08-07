@@ -192,9 +192,14 @@
     return cards;
   }
 
+  function logAlreadyArranged(target) {
+    const direct = Array.from(target?.children || []);
+    return direct.length > 0 && direct.every((child) => child.matches?.('.bl-fitness-log-group,.bl-fitness-log-ungrouped'));
+  }
+
   function arrangeRoutineLog() {
     const target = $('#fitnessRoutineLogItems');
-    if (!target || arrangingLog) return;
+    if (!target || arrangingLog || logAlreadyArranged(target)) return;
     const cards = logCards(target);
     if (!cards.length) return;
     const keyed = cards.map((node,index) => ({ node,key:logEntityForNode(node),index })).filter((entry) => entry.key);
@@ -214,6 +219,7 @@
         members.forEach((entry) => {
           assigned.add(entry.key);
           entry.node.classList.add('bl-fitness-log-member');
+          entry.node.classList.remove('bl-fitness-log-ungrouped-item');
           entry.node.querySelectorAll(':scope .bl-fitness-log-isolated-number').forEach((number) => number.remove());
           section.appendChild(entry.node);
         });
@@ -245,6 +251,19 @@
     } finally { arrangingLog = false; }
   }
 
+  function invalidateRoutineLogLayout() {
+    const target = $('#fitnessRoutineLogItems');
+    if (!target) return;
+    delete target.dataset.fitnessRoutineLogGrouped;
+    const cards = logCards(target);
+    if (!cards.length) return;
+    const fragment = document.createDocumentFragment();
+    cards.forEach((card) => fragment.appendChild(card));
+    arrangingLog = true;
+    try { target.replaceChildren(fragment); }
+    finally { arrangingLog = false; }
+  }
+
   function createGroup(section) {
     const input = $(`[data-v4-group-name="${CSS.escape(section)}"]`);
     const title = String(input?.value || '').trim();
@@ -254,22 +273,21 @@
     data.groups.push({ id:uniqueId(),title });
     save(data);
     if (input) input.value='';
-    schedule();
-    arrangeRoutineLog();
+    invalidateRoutineLogLayout();schedule();
   }
 
   function removeGroup(id) {
     const data = groupData();
     data.groups = data.groups.filter((group) => group.id !== id);
     Object.keys(data.assignments).forEach((key) => { if (data.assignments[key] === id) delete data.assignments[key]; });
-    save(data);schedule();arrangeRoutineLog();
+    save(data);invalidateRoutineLogLayout();schedule();
   }
 
   function assign(key,groupId) {
     const data = groupData();
     if (groupId && data.groups.some((group) => group.id === groupId)) data.assignments[key]=groupId;
     else delete data.assignments[key];
-    save(data);schedule();arrangeRoutineLog();
+    save(data);invalidateRoutineLogLayout();schedule();
   }
 
   function schedule() {
@@ -281,7 +299,7 @@
     const target = $('#fitnessRoutineLogItems');
     if (!target || logObserver || typeof MutationObserver === 'undefined') return;
     logObserver = new MutationObserver(() => {
-      if (!arrangingLog) arrangeRoutineLog();
+      if (!arrangingLog && !logAlreadyArranged(target)) arrangeRoutineLog();
     });
     logObserver.observe(target,{ childList:true,subtree:false });
   }
