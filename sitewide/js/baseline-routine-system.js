@@ -5,16 +5,33 @@
    System data owners may update their base DOM, then a My Routine adapter may
    group/decorate it. Adapter mutation correction is queued as a microtask, not
    a requestAnimationFrame, so the browser never paints an intermediate base
-   layout before the final sitewide structure is restored. Do not change this
-   back to a frame-delayed observer: that caused visible shaking and view swaps. */
+   layout before the final sitewide structure is restored.
+
+   Authority-only decorations (group checkboxes, calendar summary markers,
+   reorder controls and completed-item disclosures) are explicitly ignored by
+   adapter observers. If those decorations caused an adapter render, the adapter
+   would remove them and the authority would put them back forever — the exact
+   feedback loop that previously produced shaking/flicker. */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_ROUTINE_SYSTEM__) return;
   global.__BASELINE_ROUTINE_SYSTEM__ = true;
 
   const document = global.document;
-  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_3';
+  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_4';
   const observers = new WeakMap();
+  const AUTHORITY_DECORATION_SELECTOR = [
+    '.bl-routine-group-complete',
+    '.bl-calendar-markers',
+    '.bl-calendar-marker',
+    '.bl-skin-group-order',
+    '.bl-exercise-order',
+    '.bl-log-detail-toggle',
+    '.bl-completed-routines',
+    '.bl-completed-routines-list',
+    '.bl-completed-routine-row',
+    '.bl-routine-summary-filter'
+  ].join(',');
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({
@@ -196,6 +213,20 @@
     try { document.dispatchEvent(new CustomEvent('baseline:routine-rendered', { detail:payload })); } catch (_error) {}
   }
 
+  function authorityDecorationNode(node) {
+    if (!node) return true;
+    if (node.nodeType === 3) return !String(node.textContent || '').trim();
+    if (node.nodeType !== 1) return true;
+    return Boolean(node.matches?.(AUTHORITY_DECORATION_SELECTOR) || node.closest?.(AUTHORITY_DECORATION_SELECTOR));
+  }
+
+  function authorityDecorationMutation(mutation) {
+    const target = mutation.target?.nodeType === 1 ? mutation.target : mutation.target?.parentElement;
+    if (target?.closest?.(AUTHORITY_DECORATION_SELECTOR)) return true;
+    const changed = Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
+    return changed.length > 0 && changed.every(authorityDecorationNode);
+  }
+
   function observe(root, callback) {
     if (!root || typeof MutationObserver === 'undefined' || typeof callback !== 'function') return null;
     const previous = observers.get(root);
@@ -204,8 +235,9 @@
     let running = false;
     let active = true;
 
-    const queueRun = () => {
+    const queueRun = (mutations = []) => {
       if (!active || running || queued) return;
+      if (mutations.length && mutations.every(authorityDecorationMutation)) return;
       queued = true;
       const enqueue = typeof global.queueMicrotask === 'function'
         ? global.queueMicrotask.bind(global)
