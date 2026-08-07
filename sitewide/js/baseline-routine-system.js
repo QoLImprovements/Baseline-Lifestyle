@@ -3,22 +3,21 @@
    RENDER STABILITY CONTRACT
    -------------------------
    System data owners may update their base DOM, then a My Routine adapter may
-   group/decorate it. Adapter mutation correction is queued as a microtask, not
-   a requestAnimationFrame, so the browser never paints an intermediate base
-   layout before the final sitewide structure is restored.
+   group/decorate it. The adapter observer must react only when core routine
+   content is replaced. Presentation-only children (group completion controls,
+   calendar markers, reorder controls, public-header alignment and completed
+   disclosures) must NEVER wake a core renderer.
 
-   Authority-only decorations (group checkboxes, calendar summary markers,
-   reorder controls and completed-item disclosures) are explicitly ignored by
-   adapter observers. If those decorations caused an adapter render, the adapter
-   would remove them and the authority would put them back forever — the exact
-   feedback loop that previously produced shaking/flicker. */
+   This boundary prevents the feedback loop where a renderer removes a
+   decoration and a decoration owner adds it back, producing visible shaking.
+*/
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_ROUTINE_SYSTEM__) return;
   global.__BASELINE_ROUTINE_SYSTEM__ = true;
 
   const document = global.document;
-  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_4';
+  const BUILD = 'SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5';
   const observers = new WeakMap();
   const AUTHORITY_DECORATION_SELECTOR = [
     '.bl-routine-group-complete',
@@ -30,8 +29,19 @@
     '.bl-completed-routines',
     '.bl-completed-routines-list',
     '.bl-completed-routine-row',
-    '.bl-routine-summary-filter'
+    '.bl-routine-summary-filter',
+    '.bl-authority-public-head',
+    '.bl-authority-public-title',
+    '.bl-release-public-visibility'
   ].join(',');
+  const SKIN_CORE_SELECTOR = [
+    '.routine-item',
+    '.routine-log-item',
+    '.routine-summary-item',
+    '.routine-group-row',
+    '.routine-empty'
+  ].join(',');
+  const SKIN_CORE_HOST_SELECTOR = '#routineItems,#routineLogItems,#routineSummary,#routineGroupList';
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (character) => ({
@@ -227,6 +237,18 @@
     return changed.length > 0 && changed.every(authorityDecorationNode);
   }
 
+  function skinCoreMutation(root, mutation) {
+    if (root?.id !== 'routine') return !authorityDecorationMutation(mutation);
+    if (authorityDecorationMutation(mutation)) return false;
+    const target = mutation.target?.nodeType === 1 ? mutation.target : mutation.target?.parentElement;
+    const changed = Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
+    if (!changed.length) return false;
+    if (target?.matches?.(SKIN_CORE_HOST_SELECTOR)) {
+      return changed.some((node) => node?.nodeType === 1 && (node.matches?.(SKIN_CORE_SELECTOR) || node.querySelector?.(SKIN_CORE_SELECTOR)));
+    }
+    return changed.some((node) => node?.nodeType === 1 && (node.matches?.(SKIN_CORE_SELECTOR) || node.querySelector?.(SKIN_CORE_SELECTOR)));
+  }
+
   function observe(root, callback) {
     if (!root || typeof MutationObserver === 'undefined' || typeof callback !== 'function') return null;
     const previous = observers.get(root);
@@ -237,7 +259,7 @@
 
     const queueRun = (mutations = []) => {
       if (!active || running || queued) return;
-      if (mutations.length && mutations.every(authorityDecorationMutation)) return;
+      if (mutations.length && !mutations.some((mutation) => skinCoreMutation(root, mutation))) return;
       queued = true;
       const enqueue = typeof global.queueMicrotask === 'function'
         ? global.queueMicrotask.bind(global)
