@@ -11,7 +11,7 @@
     if (document.getElementById('skincareRoutineBootShieldStyle')) return;
     const style = document.createElement('style');
     style.id = 'skincareRoutineBootShieldStyle';
-    style.textContent = 'html[data-skincare-routine-booting="true"] #routine{visibility:hidden!important}';
+    style.textContent = 'html[data-skincare-routine-booting="true"] #routine{visibility:hidden!important}#routineSummary .routine-summary-group[hidden],#routineSummary .routine-summary-item[hidden]{display:none!important}';
     document.head.appendChild(style);
   }
 
