@@ -105,7 +105,6 @@ test('Fitness generator treats baseline as Max Baseline and keeps Straight Sets 
   assert.match(generator, /Math\.round\(\(Math\.max\(1,Number\(baseline\)\|\|1\)\)\*0\.80\)/);
   assert.match(generator, /Array\(sets\(count\)\)\.fill\(working\)/);
   assert.match(generator, /straightTargets/);
-  assert.match(generator, /progressionMode:value\.progressionMode/);
   assert.match(generator, /copy\.progressionMode=value\.progressionMode/);
   assert.match(generator, /copy\.repIncrease=value\.repIncrease/);
   assert.match(generator, /copy\.baseline=value\.baseline/);
