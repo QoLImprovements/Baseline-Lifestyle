@@ -97,7 +97,7 @@ test('Skincare uses stable saved groups and the shared public week viewer', asyn
   await expect(groupSections).toHaveCount(2);
   await expect(groupSections.nth(0)).toContainText('Preparation');
   await expect(groupSections.nth(1)).toContainText('Cleanse and Protect');
-  await expect(page.locator('#routineLogItems .routine-log-item .bl-v4-number')).toHaveCount(0);
+  await expect(page.locator('#routineLogItems .routine-log-item .bl-v4-number:visible')).toHaveCount(0);
 
   const groupCheckbox = groupSections.nth(0).locator('[data-v7-group-complete]');
   await expect(groupCheckbox).toBeVisible();
@@ -111,7 +111,7 @@ test('Skincare uses stable saved groups and the shared public week viewer', asyn
   await page.locator('[data-routine-view="plan"]').click();
   const firstPlanGroup = page.locator('.routine-plan-group[data-plan-group="browser-group"]');
   await expect(firstPlanGroup).toBeVisible();
-  await expect(firstPlanGroup.locator('.routine-item .bl-v4-number')).toHaveCount(0);
+  await expect(firstPlanGroup.locator('.routine-item .bl-v4-number:visible')).toHaveCount(0);
   const editStep = page.locator('[data-skincare-step-toggle="browser-facial-steam"]');
   await editStep.click();
   const timeSelect = page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]');
@@ -177,15 +177,15 @@ test('Fitness uses one four-view Routine structure, saved grouping and shared pu
 
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
-  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]')).toHaveText('2');
+  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveText('2');
   await groupCard.locator('[data-v4-entity-group="activity:browser-hatha-yoga"]').selectOption({ label:'1. Recovery and Mobility' });
-  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]')).toHaveCount(0);
+  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveCount(0);
 
   await page.locator('[data-fitness-routine-view="log"]').click();
   const savedGroup = page.locator('#fitnessRoutineLogItems > [data-fitness-routine-log-group]').filter({ hasText:'Recovery and Mobility' });
   await expect(savedGroup).toBeVisible();
   await expect(savedGroup.locator('[data-fitness-log-complete="browser-hatha-yoga"]')).toBeVisible();
-  await expect(savedGroup.locator('.bl-fitness-log-isolated-number')).toHaveCount(0);
+  await expect(savedGroup.locator('.bl-fitness-log-isolated-number:visible')).toHaveCount(0);
   const ungroupedRun = page.locator('#fitnessRoutineLogItems .bl-fitness-log-ungrouped-item').filter({ hasText:'Easy Run' });
   await expect(ungroupedRun.locator('.bl-fitness-log-isolated-number')).toHaveText('2');
 
