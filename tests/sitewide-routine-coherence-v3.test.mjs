@@ -36,12 +36,13 @@ test('deterministic loaders hide intermediate views and document ownership bound
 test('Create Another Plan and Open Plan retain one capture-level controller before presentation authority', () => {
   const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
   const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
+  const chain = fitness.slice(fitness.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
   assert.match(multiplePlans, />Create Another Plan<\/button>/);
   assert.match(authority, /#createCalisthenicsPlan/);
   assert.match(authority, /calisthenicsPlanSelect/);
   assert.match(authority, /stopImmediatePropagation/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
-  assert.ok(fitness.indexOf('baseline-fitness-plan-control-authority-v1.js') < fitness.indexOf('baseline-routine-authority-v7.js'));
+  assert.ok(chain.indexOf('baseline-fitness-plan-control-authority-v1.js') < chain.indexOf('baseline-routine-authority-v7.js'));
 });
 
 test('shared authority owns view persistence, stable numbering and non-destructive decoration', () => {
