@@ -7,13 +7,16 @@
    fitness-routine-groups-v1.js     -> Fitness group assignment adapter
    baseline-public-routine-groups-v1.js -> shared read-only Public Routine viewer
    baseline-routine-authority-v7.js -> shared cross-system coherence rules
+   baseline-routine-experience-v9.js -> same presentation/interaction contract as Skincare
+   fitness-plan-generator-coherence-v4.js -> Fitness-only plan semantics
    fitness-routine-coherence-v1.js  -> Fitness Summary enrichment only
    fitness-live-policy-v1.js        -> weekly access, Start Early and cross-plan progression
 
    View switching stays hidden until the selected view is fully restored. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V26__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V27__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V27__=true;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V26__=true;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V25__=true;
 
@@ -138,7 +141,7 @@
   load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3','data-fitness-activity-catalogue-v2')
     .then(() => load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5','data-baseline-routine-system'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2','data-fitness-routine-workspace-v2'))
-    .then(() => load('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260805_1','data-fitness-calisthenics-schedule'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260807_2','data-fitness-calisthenics-schedule'))
     .then(() => load('/sitewide/js/baseline-fitness-plan-control-authority-v1.js?v=BASELINE_FITNESS_PLAN_CONTROL_AUTHORITY_20260806_1','data-baseline-fitness-plan-control-authority'))
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260807_1','data-fitness-routine-structure-v4'))
@@ -150,6 +153,8 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-theme-guard-v1.js?v=BASELINE_FITNESS_THEME_GUARD_20260807_1','data-fitness-theme-guard-v1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1','data-fitness-timed-hold-targets-v2'))
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1','data-fitness-exercise-family-filter'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1','data-fitness-plan-generator-coherence-v4'))
+    .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
     .then(() => { selectRoutinePage();restoreRequestedView();bindFitnessWeekRows();endPlanSwitch();releaseBootShield(); })
     .catch((error) => { endPlanSwitch();releaseBootShield();try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {} });
 })(typeof window!=='undefined'?window:globalThis);
