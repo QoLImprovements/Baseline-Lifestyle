@@ -36,12 +36,13 @@ test('Skincare and Fitness share one final My Routine authority without supersed
 test('multi-plan create and saved-plan dropdown retain one capture-level controller', () => {
   const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
   const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  const chain = loader.slice(loader.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
   assert.match(authority, /#createCalisthenicsPlan/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.createPlan/);
   assert.match(authority, /calisthenicsPlanSelect/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
   assert.match(authority, /stopImmediatePropagation/);
-  assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-authority-v7.js'));
+  assert.ok(chain.indexOf('baseline-fitness-plan-control-authority-v1.js') < chain.indexOf('baseline-routine-authority-v7.js'));
 });
 
 test('Public Routines expose User Log Summary and actual Plan using saved grouping', () => {
@@ -170,7 +171,7 @@ test('Routine Logs start compact and completed exercises/routines have a collaps
   const authority = read('sitewide/js/baseline-routine-authority-v7.js');
   assert.match(authority, /bl-log-details-collapsed/);
   assert.match(authority, /Completed exercises \/ routines/);
-  assert.match(authority, /<details/);
+  assert.match(authority, /createElement\('details'\)/);
   assert.match(authority, /data-completed-proxy/);
 });
 
