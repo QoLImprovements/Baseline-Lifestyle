@@ -356,43 +356,6 @@
     });
   }
 
-  function enrichFitnessSummary() {
-    if (app!=='fitness') return;
-    const panel=$('[data-fitness-routine-panel="summary"]',root);if (!panel) return;
-    $$('.fitness-exercise-summary-item',panel).forEach((card) => {
-      card.classList.add('bl-routine-summary-card');
-      const key=String(card.dataset.v4Entity || '');
-      if (!key.startsWith('activity:') || card.querySelector('.bl-fitness-comprehensive-summary')) return;
-      const id=key.slice(9);
-      const state=global.BASELINE_fitnessRoutine?.getState?.() || {};
-      const activity=(state.activities || []).find((item) => String(item.id)===id);if (!activity) return;
-      const definition=global.BASELINE_FITNESS_ACTIVITY_CATALOGUE?.ACTIVITY_BY_ID?.get?.(String(activity.activityId || ''));
-      const profile=String(definition?.metricProfile || 'duration');const group=String(definition?.group || activity.section || 'Fitness activity');
-      const classification=profile==='running'||profile==='walking'||profile==='cycling'||profile==='swimming'||profile==='cardioMachine' ? 'Predominantly aerobic / cardiorespiratory'
-        : profile==='intervals' ? 'Mixed aerobic and anaerobic interval conditioning'
-        : profile==='strength'||profile==='climbing' ? 'Resistance / predominantly anaerobic strength work'
-        : profile==='martial'||profile==='racket'||profile==='teamSport'||profile==='batBall' ? 'Mixed aerobic and anaerobic skill-based activity'
-        : profile==='yoga'||profile==='mindful'||profile==='mobility' ? 'Mobility, control, balance and low-to-moderate intensity conditioning'
-        : 'General physical activity / conditioning';
-      const muscles=profile==='running'||profile==='walking' ? 'Glutes, quadriceps, hamstrings, calves, hip stabilisers and trunk'
-        : profile==='cycling' ? 'Quadriceps, glutes, hamstrings, calves and trunk stabilisers'
-        : profile==='swimming' ? 'Shoulders, upper back, chest, arms, trunk, hips and legs'
-        : profile==='racket' ? 'Legs and hips for court movement; trunk rotation; shoulder, forearm and grip for racket control'
-        : profile==='martial' ? 'Full body: legs and hips, trunk, shoulders, arms and grip depending on discipline'
-        : profile==='strength'||profile==='climbing' ? 'Exercise-dependent whole-body musculature, with substantial trunk and stabiliser involvement'
-        : profile==='yoga'||profile==='mindful'||profile==='mobility' ? 'Trunk and postural stabilisers with the muscles surrounding the joints trained through the selected positions'
-        : 'Whole-body contribution varies with the selected activity';
-      const benefit=profile==='running'||profile==='walking'||profile==='cycling'||profile==='swimming'||profile==='cardioMachine' ? 'Builds cardiovascular capacity, work tolerance and repeatable endurance while the movement pattern develops local muscular endurance.'
-        : profile==='racket' ? 'Combines repeated acceleration, deceleration and direction change with reaction speed, coordination and racket-specific skill.'
-        : profile==='yoga'||profile==='mindful'||profile==='mobility' ? 'Develops usable range, positional control, balance and body awareness while providing lower-load movement practice.'
-        : profile==='strength'||profile==='climbing' ? 'Builds force production, muscular endurance and movement control, with progression determined by the specific exercise or route demands.'
-        : 'Develops the physical capacities and movement skills specific to the activity while contributing to overall weekly training volume.';
-      const block=document.createElement('div');block.className='bl-fitness-comprehensive-summary bl-routine-summary-grid';
-      block.innerHTML=`<section class="bl-routine-summary-section"><h4>Activity profile</h4><dl class="bl-routine-summary-rows"><div><dt>Activity type</dt><dd>${esc(group)}</dd></div><div><dt>Energy demand</dt><dd>${esc(classification)}</dd></div><div><dt>Primary muscle involvement</dt><dd>${esc(muscles)}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and training role</h4><p>${esc(benefit)}</p>${activity.notes?`<p><strong>Your notes:</strong> ${esc(activity.notes)}</p>`:''}</section>`;
-      card.appendChild(block);
-    });
-  }
-
   function normaliseFitnessLog() {
     if (app!=='fitness') return;
     const progress=$('#fitnessRoutineLogProgress',root);
@@ -415,7 +378,6 @@
       collapseFitnessGroupEditors();
       mergeCalisthenicsPlanCards();
       singleOptionSelects();
-      enrichFitnessSummary();
       normaliseFitnessLog();
       document.documentElement.setAttribute('data-baseline-routine-experience','v9');
     } finally { patching=false; }
