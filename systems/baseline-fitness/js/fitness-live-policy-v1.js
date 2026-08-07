@@ -7,9 +7,9 @@
   if (!global.document || global.__BASELINE_FITNESS_LIVE_POLICY_V2__) return;
   global.__BASELINE_FITNESS_LIVE_POLICY_V2__ = true;
   global.__BASELINE_FITNESS_LIVE_POLICY_V1__ = true;
+  const document = global.document;
   if ((document.documentElement.dataset.app || document.body?.dataset.app) !== 'fitness') return;
 
-  const document = global.document;
   const RANGE_ID = 'frequencyRangeMax';
   const EARLY_PREFIX = '__bl_fitness_start_early_v2__::';
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
