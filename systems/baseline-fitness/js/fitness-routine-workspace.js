@@ -1,12 +1,27 @@
 /* Baseline Fitness — deterministic loader for the existing My Routine implementation. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V20__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V20__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V21__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V21__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const CANONICAL_PATH = '/baseline-fitness/my-routine';
+
+  function installBootShield() {
+    document.documentElement.setAttribute('data-fitness-routine-booting','true');
+    if (document.getElementById('fitnessRoutineBootShieldStyle')) return;
+    const style = document.createElement('style');
+    style.id = 'fitnessRoutineBootShieldStyle';
+    style.textContent = 'html[data-fitness-routine-booting="true"] #my-plan{visibility:hidden!important}';
+    document.head.appendChild(style);
+  }
+
+  function releaseBootShield() {
+    global.requestAnimationFrame(() => global.requestAnimationFrame(() => {
+      document.documentElement.removeAttribute('data-fitness-routine-booting');
+    }));
+  }
 
   function navigationPath() {
     try {
@@ -21,6 +36,8 @@
     || document.documentElement.getAttribute('data-initial-fitness-tab') === 'my-plan';
   const legacyPlanRoute = /\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(path);
   const newPlanRequest = (() => { try { return new URL(global.location.href).searchParams.has('new-plan'); } catch (_error) { return false; } })();
+
+  if (openRoutine) installBootShield();
 
   function load(src, marker) {
     const existing = document.querySelector(`script[${marker}]`);
@@ -40,17 +57,6 @@
       script.addEventListener('error', reject, { once:true });
       document.head.appendChild(script);
     });
-  }
-
-  function loadWithoutMutationObserver(src, marker) {
-    const NativeObserver = global.MutationObserver;
-    if (typeof NativeObserver !== 'function') return load(src, marker);
-    global.MutationObserver = class BaselineQuietRoutineObserver {
-      observe() {}
-      disconnect() {}
-      takeRecords() { return []; }
-    };
-    return load(src, marker).finally(() => { global.MutationObserver = NativeObserver; });
   }
 
   function selectRoutinePage() {
@@ -116,14 +122,20 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2', 'data-fitness-routine-workspace-v2'))
     .then(() => load('/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260805_1', 'data-fitness-calisthenics-schedule'))
     .then(() => load('/sitewide/js/baseline-fitness-plan-control-authority-v1.js?v=BASELINE_FITNESS_PLAN_CONTROL_AUTHORITY_20260806_1', 'data-baseline-fitness-plan-control-authority'))
-    .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260806_1', 'data-baseline-public-routine-groups'))
+    .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_2', 'data-baseline-public-routine-groups'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2', 'data-fitness-routine-sitewide-v3'))
-    .then(() => loadWithoutMutationObserver('/sitewide/js/baseline-routine-coherence-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_20260806_10', 'data-baseline-routine-coherence-v4'))
-    .then(() => load('/sitewide/js/baseline-routine-coherence-events-v4.js?v=SITEWIDE_ROUTINE_COHERENCE_EVENTS_20260806_5', 'data-baseline-routine-coherence-events-v4'))
-    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_6', 'data-baseline-routine-live-authority'))
+    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260807_7', 'data-baseline-routine-live-authority'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3', 'data-fitness-generator-progression'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_1', 'data-fitness-live-policy'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1', 'data-fitness-timed-hold-targets-v2'))
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1', 'data-fitness-exercise-family-filter'))
-    .then(() => { selectRoutinePage(); restoreRequestedView(); })
-    .catch((error) => { try { console.error('Fitness My Routine failed to load.', error); } catch (_error) {} });
+    .then(() => {
+      selectRoutinePage();
+      restoreRequestedView();
+      releaseBootShield();
+    })
+    .catch((error) => {
+      releaseBootShield();
+      try { console.error('Fitness My Routine failed to load.', error); } catch (_error) {}
+    });
 })(typeof window !== 'undefined' ? window : globalThis);
