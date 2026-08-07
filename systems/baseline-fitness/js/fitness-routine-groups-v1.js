@@ -1,9 +1,11 @@
 /* Baseline Fitness — single owner for Fitness Routine group editing.
-   This module edits group data only. It does not render Routine Log/Summary/
-   Public views and therefore cannot compete with the shared Routine authority. */
+   This module edits group assignments and arranges the existing Fitness Log
+   cards under those saved groups. It never creates a second Log/Summary/Public
+   renderer, so the sitewide My Routine authority remains the presentation owner. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V1__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__) return;
+  global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V1__ = true;
   if ((document.documentElement.dataset.app || document.body?.dataset.app) !== 'fitness') return;
 
@@ -14,6 +16,8 @@
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
   let frame = 0;
+  let logObserver = null;
+  let arrangingLog = false;
 
   function owner() {
     try {
@@ -70,6 +74,32 @@
     return global.crypto?.randomUUID ? `fitness-group-${global.crypto.randomUUID()}` : `fitness-group-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   }
 
+  function injectStyles() {
+    if ($('#fitnessRoutineGroupsV2Style')) return;
+    const style = document.createElement('style');
+    style.id = 'fitnessRoutineGroupsV2Style';
+    style.textContent = `
+      #fitnessRoutineLogItems{counter-reset:blFitnessLogGroup}
+      #fitnessRoutineLogItems>.bl-fitness-log-group{counter-increment:blFitnessLogGroup;display:grid;gap:10px}
+      #fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head{display:flex;align-items:center;gap:11px;margin:2px 0}
+      #fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head::before{
+        content:counter(blFitnessLogGroup);display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:999px;
+        border:1px solid color-mix(in srgb,currentColor 24%,transparent);background:color-mix(in srgb,currentColor 9%,transparent);font-weight:900
+      }
+      #fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head h3{margin:0}
+      #fitnessRoutineLogItems>.bl-fitness-log-group .bl-fitness-log-member-number{display:none!important}
+      #fitnessRoutineLogItems>.bl-fitness-log-ungrouped{display:grid;gap:10px}
+      #fitnessRoutineLogItems>.bl-fitness-log-ungrouped>.bl-fitness-log-ungrouped-item{position:relative;padding-left:48px}
+      #fitnessRoutineLogItems>.bl-fitness-log-ungrouped>.bl-fitness-log-ungrouped-item>.bl-fitness-log-isolated-number{
+        position:absolute;left:6px;top:11px;display:grid;place-items:center;width:34px;height:34px;border-radius:999px;
+        border:1px solid color-mix(in srgb,currentColor 24%,transparent);background:color-mix(in srgb,currentColor 9%,transparent);font-weight:900
+      }
+      .bl-v4-assignment-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,280px);gap:12px;align-items:center}
+      @media(max-width:700px){.bl-v4-assignment-row{grid-template-columns:1fr}}
+    `;
+    document.head.appendChild(style);
+  }
+
   function normalisePlanPanels() {
     const plan = $('[data-fitness-routine-panel="plan"]');
     if (!plan) return;
@@ -120,13 +150,13 @@
         : `<p class="note">No ${esc(labels[section].toLocaleLowerCase('en-GB'))} are currently saved.</p>`;
       if (assignments && assignments.innerHTML !== assignmentHtml && !assignments.contains(document.activeElement)) assignments.innerHTML = assignmentHtml;
     });
-    decorateUngroupedNumbers(data,entities);
+    decoratePlanItemNumbers(data,entities);
   }
 
-  function decorateUngroupedNumbers(data,entities) {
+  function decoratePlanItemNumbers(data,entities) {
     const ungrouped = entities.filter((entity) => !data.assignments[entity.key]);
     const numberByKey = new Map(ungrouped.map((entity,index) => [entity.key,data.groups.length+index+1]));
-    $$('.fitness-activity-card[data-activity-card]').forEach((card) => {
+    $$('.fitness-activity-item[data-activity-card]').forEach((card) => {
       const key = `activity:${String(card.dataset.activityCard || '')}`;
       let number = card.querySelector(':scope .bl-v4-number[data-v4-ungrouped-number]');
       if (data.assignments[key]) { number?.remove();card.dataset.v4RoutineGroup=data.assignments[key];return; }
@@ -137,7 +167,7 @@
         number = document.createElement('span');
         number.className = 'bl-v4-number';
         number.dataset.v4UngroupedNumber = 'true';
-        const head = card.querySelector('.fitness-activity-head,.section-head-actions') || card;
+        const head = card.querySelector('.fitness-activity-item-head,.section-head-actions') || card;
         head.prepend(number);
       }
       number.textContent = String(value);
@@ -145,37 +175,115 @@
     });
   }
 
+  function logEntityForNode(node) {
+    const planButton = node.querySelector?.('[data-open-calisthenics-plan]');
+    if (planButton) return `plan:${Number(planButton.dataset.openCalisthenicsPlan || 0)}`;
+    const activityId = node.getAttribute?.('data-log-activity') || node.querySelector?.('[data-fitness-log-complete]')?.dataset.fitnessLogComplete || '';
+    return activityId ? `activity:${String(activityId)}` : '';
+  }
+
+  function logCards(target) {
+    const cards = [];
+    $$('.fitness-calisthenics-log-card,.fitness-routine-log-item',target).forEach((node) => {
+      if (cards.includes(node)) return;
+      const nestedInCard = node.parentElement?.closest?.('.fitness-calisthenics-log-card,.fitness-routine-log-item');
+      if (!nestedInCard) cards.push(node);
+    });
+    return cards;
+  }
+
+  function arrangeRoutineLog() {
+    const target = $('#fitnessRoutineLogItems');
+    if (!target || arrangingLog) return;
+    const cards = logCards(target);
+    if (!cards.length) return;
+    const keyed = cards.map((node,index) => ({ node,key:logEntityForNode(node),index })).filter((entry) => entry.key);
+    if (!keyed.length) return;
+    const data = groupData();
+    const assigned = new Set();
+    const fragment = document.createDocumentFragment();
+    arrangingLog = true;
+    try {
+      data.groups.forEach((group) => {
+        const members = keyed.filter((entry) => data.assignments[entry.key] === group.id);
+        if (!members.length) return;
+        const section = document.createElement('section');
+        section.className = 'bl-fitness-log-group';
+        section.dataset.fitnessRoutineLogGroup = group.id;
+        section.innerHTML = `<div class="bl-fitness-log-group-head"><h3>${esc(group.title)}</h3></div>`;
+        members.forEach((entry) => {
+          assigned.add(entry.key);
+          entry.node.classList.add('bl-fitness-log-member');
+          entry.node.querySelectorAll(':scope .bl-fitness-log-isolated-number').forEach((number) => number.remove());
+          section.appendChild(entry.node);
+        });
+        fragment.appendChild(section);
+      });
+
+      const ungrouped = keyed.filter((entry) => !assigned.has(entry.key));
+      if (ungrouped.length) {
+        const section = document.createElement('section');
+        section.className = 'bl-fitness-log-ungrouped';
+        section.dataset.fitnessRoutineLogGroup = 'ungrouped';
+        ungrouped.forEach((entry,index) => {
+          entry.node.classList.remove('bl-fitness-log-member');
+          entry.node.classList.add('bl-fitness-log-ungrouped-item');
+          let number = entry.node.querySelector(':scope>.bl-fitness-log-isolated-number');
+          if (!number) {
+            number = document.createElement('span');
+            number.className = 'bl-fitness-log-isolated-number';
+            number.setAttribute('aria-hidden','true');
+            entry.node.prepend(number);
+          }
+          number.textContent = String(data.groups.length+index+1);
+          section.appendChild(entry.node);
+        });
+        fragment.appendChild(section);
+      }
+      target.replaceChildren(fragment);
+      target.dataset.fitnessRoutineLogGrouped = 'true';
+    } finally { arrangingLog = false; }
+  }
+
   function createGroup(section) {
     const input = $(`[data-v4-group-name="${CSS.escape(section)}"]`);
     const title = String(input?.value || '').trim();
     if (!title) { input?.focus();return; }
     const data = groupData();
-    if (data.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' }) === 0)) {
-      input?.focus();return;
-    }
+    if (data.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' }) === 0)) { input?.focus();return; }
     data.groups.push({ id:uniqueId(),title });
     save(data);
     if (input) input.value='';
     schedule();
+    arrangeRoutineLog();
   }
 
   function removeGroup(id) {
     const data = groupData();
     data.groups = data.groups.filter((group) => group.id !== id);
     Object.keys(data.assignments).forEach((key) => { if (data.assignments[key] === id) delete data.assignments[key]; });
-    save(data);schedule();
+    save(data);schedule();arrangeRoutineLog();
   }
 
   function assign(key,groupId) {
     const data = groupData();
     if (groupId && data.groups.some((group) => group.id === groupId)) data.assignments[key]=groupId;
     else delete data.assignments[key];
-    save(data);schedule();
+    save(data);schedule();arrangeRoutineLog();
   }
 
   function schedule() {
     if (frame) return;
-    frame = global.requestAnimationFrame(() => { frame=0;ensureGroupCards(); });
+    frame = global.requestAnimationFrame(() => { frame=0;ensureGroupCards();arrangeRoutineLog(); });
+  }
+
+  function watchLog() {
+    const target = $('#fitnessRoutineLogItems');
+    if (!target || logObserver || typeof MutationObserver === 'undefined') return;
+    logObserver = new MutationObserver(() => {
+      if (!arrangingLog) arrangeRoutineLog();
+    });
+    logObserver.observe(target,{ childList:true,subtree:false });
   }
 
   function bind() {
@@ -200,9 +308,10 @@
   }
 
   function boot() {
-    bind();schedule();
-    [100,300,700].forEach((delay) => global.setTimeout(schedule,delay));
+    injectStyles();bind();watchLog();schedule();
+    [100,300,700].forEach((delay) => global.setTimeout(() => { watchLog();schedule(); },delay));
   }
+  global.addEventListener('pagehide',() => logObserver?.disconnect(),{ once:true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
   else boot();
 })(typeof window !== 'undefined' ? window : globalThis);
