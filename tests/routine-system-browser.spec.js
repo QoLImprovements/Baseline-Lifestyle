@@ -4,6 +4,10 @@ function fulfillJson(route, payload, status = 200) {
   return route.fulfill({ status, contentType:'application/json', body:JSON.stringify(payload) });
 }
 
+function todayIso() {
+  return new Date().toISOString().slice(0,10);
+}
+
 async function mockGuestApis(page) {
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -14,19 +18,22 @@ async function mockGuestApis(page) {
     if (pathname.endsWith('/routine_state.php') && url.searchParams.get('list') === 'public') {
       return fulfillJson(route, { ok:true, profiles:['Public Peter'] });
     }
-    if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/routine_state.php') && url.searchParams.get('name') === 'Public Peter') {
+    if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/public_routine_v2.php') && url.searchParams.get('name') === 'Public Peter') {
       return fulfillJson(route, {
         ok:true,
         publicRoutine:{
           owner:'Public Peter',
           routine:[{
             id:'public-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'morning',
-            frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefit:'Supports controlled preparation before later skincare steps.', notes:''
-          }]
+            frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefit:'Preparation before later skincare steps.'
+          }],
+          logs:{ [todayIso()]:{ 'public-facial-steam':{ completed:true, completedAt:new Date().toISOString() } } },
+          groups:[{ id:'public-prep', title:'Preparation', applyFrequency:false, applyTime:false }],
+          assignments:{ 'public-facial-steam':'public-prep' }
         }
       });
     }
-    if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/routine_state.php') && url.searchParams.get('name') === 'Public Peter') {
+    if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/public_routine_v2.php') && url.searchParams.get('name') === 'Public Peter') {
       return fulfillJson(route, {
         ok:true,
         publicRoutine:{
@@ -35,7 +42,10 @@ async function mockGuestApis(page) {
           activities:[{
             id:'public-hatha-yoga', activityId:'hatha-yoga', name:'Hatha Yoga', section:'other',
             timeOfDay:'evening', frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, notes:'Mobility and controlled breathing'
-          }]
+          }],
+          logs:{ [todayIso()]:{ 'public-hatha-yoga':{ completed:true, completedAt:new Date().toISOString() } } },
+          groups:[{ id:'public-recovery', title:'Recovery and Mobility' }],
+          assignments:{ 'activity:public-hatha-yoga':'public-recovery' }
         }
       });
     }
@@ -56,27 +66,17 @@ async function expectFullWidthWeekRows(page, selector) {
   expect(widths[0]).toBeGreaterThan(500);
 }
 
-test('Skincare filters groups, numbers its log and opens public routines', async ({ page }) => {
+test('Skincare uses stable saved groups and the shared public week viewer', async ({ page }) => {
   await mockGuestApis(page);
   await page.addInitScript(() => {
     localStorage.setItem('__bl_skincare_routine_v1__::guest', JSON.stringify({
       visibility:'private',
       items:[{
-        id:'browser-facial-steam',
-        actionId:'facial-steam',
-        title:'Facial Steam',
-        timeOfDay:'anytime',
-        frequency:{ mode:'daily', days:[], timesPerWeek:1 },
-        benefitMode:'comprehensive',
-        notes:''
+        id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
+        frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
       },{
-        id:'browser-oil-cleanse',
-        actionId:'anhydrous-oil-cleanse',
-        title:'Anhydrous Oil Cleanse',
-        timeOfDay:'evening',
-        frequency:{ mode:'daily', days:[], timesPerWeek:1 },
-        benefitMode:'comprehensive',
-        notes:''
+        id:'browser-oil-cleanse', actionId:'anhydrous-oil-cleanse', title:'Anhydrous Oil Cleanse', timeOfDay:'evening',
+        frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
       }],
       logs:{}
     }));
@@ -91,101 +91,83 @@ test('Skincare filters groups, numbers its log and opens public routines', async
 
   await page.goto('/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=routine', { waitUntil:'domcontentloaded' });
   await expect(page.locator('#routine')).toHaveClass(/active/);
+  await expect(page.locator('html')).not.toHaveAttribute('data-skincare-routine-booting','true');
+
+  const groupSections = page.locator('#routineLogItems > .routine-log-group');
+  await expect(groupSections).toHaveCount(2);
+  await expect(groupSections.nth(0)).toContainText('Preparation');
+  await expect(groupSections.nth(1)).toContainText('Cleanse and Protect');
+  await expect(page.locator('#routineLogItems .routine-log-item .bl-v4-number:visible')).toHaveCount(0);
+
+  const groupCheckbox = groupSections.nth(0).locator('[data-v7-group-complete]');
+  await expect(groupCheckbox).toBeVisible();
+  await expect(groupSections.nth(0).locator('.routine-log-group-head')).not.toContainText(/Complete group/i);
 
   const checkbox = page.locator('[data-log-complete="browser-facial-steam"]');
-  await expect(checkbox).toBeVisible();
-  await expect(page.locator('[data-log-complete="browser-facial-steam"] + span > .bl-v4-number')).toHaveText('1');
-  await expect(page.locator('[data-log-complete="browser-oil-cleanse"] + span > .bl-v4-number')).toHaveText('2');
   await checkbox.check();
   await expect(page.locator('[data-log-complete="browser-facial-steam"]')).toBeChecked();
-
-  const note = page.locator('[data-log-note="browser-facial-steam"]');
-  await note.fill('Steam completed comfortably');
-  await page.waitForTimeout(300);
-  await expect(page.locator('[data-log-note="browser-facial-steam"]')).toHaveValue('Steam completed comfortably');
-
-  const settingsButton = page.locator('[data-v4-settings-toggle="skin"]');
-  await expect(settingsButton).toBeVisible();
-  await settingsButton.click();
-  await expect(page.locator('[data-v4-settings-panel="skin"]')).toBeVisible();
-  await page.locator('[data-v4-start-day="skin"]').selectOption('Sunday');
-  await expect(page.locator('[data-v4-start-day="skin"]')).toHaveValue('Sunday');
+  await expect(groupSections.nth(0)).toContainText('Preparation');
 
   await page.locator('[data-routine-view="plan"]').click();
-  await expect(page.locator('.routine-plan-group[data-plan-group="browser-group"] .bl-v4-number')).toHaveText('1');
+  const firstPlanGroup = page.locator('.routine-plan-group[data-plan-group="browser-group"]');
+  await expect(firstPlanGroup).toBeVisible();
+  await expect(firstPlanGroup.locator('.routine-item .bl-v4-number:visible')).toHaveCount(0);
   const editStep = page.locator('[data-skincare-step-toggle="browser-facial-steam"]');
-  await expect(editStep).toHaveText('Edit step');
   await editStep.click();
-  await expect(editStep).toHaveText('Close step');
-
   const timeSelect = page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]');
   await timeSelect.selectOption('evening');
-  await expect(page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]')).toHaveValue('evening');
+  await expect(timeSelect).toHaveValue('evening');
 
   await page.locator('[data-routine-view="summary"]').click();
   const filter = page.locator('#skinRoutineSummaryFilter');
-  await expect(filter).toBeVisible();
   await filter.selectOption('group:browser-group');
   await expect(page.locator('#routineSummary .routine-summary-group:visible')).toHaveCount(1);
-  await expect(page.locator('#routineSummary .routine-summary-item:visible')).toHaveCount(1);
   await expect(page.locator('#routineSummary .routine-summary-item:visible strong').first()).toHaveText('Facial Steam');
-  await expect(page.locator('#routineVisibility')).toBeHidden();
 
   await page.locator('[data-routine-view="public"]').click();
-  await expect(page.locator('#publicRoutineVisibility')).toBeVisible();
-  await expect(page.locator('#publicRoutineName')).toBeEnabled();
+  await expect(page.locator('#routineVisibility')).toBeVisible();
   await page.locator('#publicRoutineName').selectOption('Public Peter');
-  await expect(page.locator('#publicRoutineResult')).toContainText('Public Peter’s Routine');
+  await expect(page.locator('#publicRoutineResult .bl-public-v2-tab')).toHaveCount(3);
+  await expect(page.locator('#publicRoutineResult')).toContainText("User's Log");
+  await expect(page.locator('#publicRoutineResult')).toContainText("User's Routine Summary");
+  await expect(page.locator('#publicRoutineResult')).toContainText("User's Plan");
+  await expect(page.locator('#publicRoutineResult .bl-public-v2-calendar')).toBeVisible();
+  await expect(page.locator('#publicRoutineResult')).toContainText('Preparation');
   await expect(page.locator('#publicRoutineResult')).toContainText('Facial Steam');
 
   await page.locator('[data-routine-view="log"]').click();
   await page.locator('[data-skincare-calendar-view="week"]').click();
   await expectFullWidthWeekRows(page, '#routineCalendarGrid.bl-routine-week-list .bl-routine-day-row');
-  const marker = page.locator('#routineCalendarGrid .bl-v4-calendar-marker').first();
-  await expect(marker).toBeVisible();
-  await marker.hover();
-  await expect(page.locator('.bl-v4-calendar-tooltip')).toBeVisible();
-  await expect(page.locator('.bl-v4-calendar-tooltip')).toHaveText('Preparation');
 });
 
-test('Fitness filters groups, numbers its log and opens public routines', async ({ page }) => {
+test('Fitness uses one four-view Routine structure, saved grouping and shared public viewer', async ({ page }) => {
   await mockGuestApis(page);
   await page.addInitScript(() => {
     localStorage.setItem('__bl_fitness_routine_v2__::guest', JSON.stringify({
       activities:[{
-        id:'browser-hatha-yoga',
-        activityId:'hatha-yoga',
-        name:'Hatha Yoga',
-        section:'other',
-        timeOfDay:'anytime',
-        frequency:{ mode:'weekly', days:[], timesPerWeek:1 },
-        targetMetrics:{ durationMinutes:30, intensity:'Moderate' },
-        notes:'Mobility and controlled breathing'
+        id:'browser-hatha-yoga', activityId:'hatha-yoga', name:'Hatha Yoga', section:'other', timeOfDay:'anytime',
+        frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:30, intensity:'Moderate' }, notes:'Mobility and controlled breathing'
       },{
-        id:'browser-easy-run',
-        activityId:'outdoor-running',
-        name:'Easy Run',
-        section:'cardio',
-        timeOfDay:'morning',
-        frequency:{ mode:'weekly', days:[], timesPerWeek:1 },
-        targetMetrics:{ durationMinutes:20 },
-        notes:'Easy aerobic work'
+        id:'browser-easy-run', activityId:'outdoor-running', name:'Easy Run', section:'cardio', timeOfDay:'morning',
+        frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:20 }, notes:'Easy aerobic work'
       }],
       logs:{}
     }));
   });
 
   await page.goto('/baseline-fitness/my-routine', { waitUntil:'domcontentloaded' });
-  const summaryTab = page.locator('[data-fitness-routine-view="summary"]');
-  await expect(summaryTab).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-fitness-routine-booting','true');
   await expect(page).toHaveURL(/\/baseline-fitness\/my-routine/);
-  await expect(page.locator('.fitness-routine-subtabs [data-fitness-routine-view]')).toHaveCount(4);
-  const tabLabels = await page.locator('.fitness-routine-subtabs [data-fitness-routine-view]').allTextContents();
-  expect(tabLabels).toEqual(['Routine Log', 'Routine Summary', 'Routine Plan', 'Public Routines']);
+
+  const topTabs = page.locator('.fitness-routine-subtabs > [data-fitness-routine-view]');
+  await expect(topTabs).toHaveCount(4);
+  expect(await topTabs.allTextContents()).toEqual(['Routine Log','Routine Summary','Routine Plan','Public Routines']);
 
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  const planLabels = await page.locator('.bl-v4-plan-tabs [data-fitness-plan-view]').allTextContents();
-  expect(planLabels).toEqual(['Calisthenics', 'Cardio', 'Other Fitness Activities', 'Sports']);
+  const planTabs = page.locator('.bl-v4-plan-tabs [data-fitness-plan-view]');
+  await expect(planTabs).toHaveCount(4);
+  expect(await planTabs.allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activities','Sports']);
+
   await page.locator('[data-fitness-plan-view="other"]').click();
   const groupCard = page.locator('[data-fitness-plan-panel="other"] .bl-v4-group-card');
   await expect(groupCard).toBeVisible();
@@ -195,39 +177,36 @@ test('Fitness filters groups, numbers its log and opens public routines', async 
 
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
-  await expect(activityCard.locator('.bl-v4-number')).toHaveText('2');
+  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveText('2');
   await groupCard.locator('[data-v4-entity-group="activity:browser-hatha-yoga"]').selectOption({ label:'1. Recovery and Mobility' });
-  await expect(activityCard.locator('.bl-v4-number')).toHaveText('1');
+  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveCount(0);
 
-  const disclosure = activityCard.locator('[data-fitness-disclosure-key]');
-  await expect(disclosure).toHaveText('Edit details');
-  await expect(activityCard.locator('.fitness-collapsible-details')).toBeHidden();
-  await disclosure.click();
-  await expect(activityCard.locator('.fitness-collapsible-details')).toBeVisible();
-
-  const activityTime = activityCard.locator('[data-activity-field="timeOfDay"]');
-  await activityTime.selectOption('evening');
-  await expect(page.locator('[data-activity-card="browser-hatha-yoga"] [data-activity-field="timeOfDay"]')).toHaveValue('evening');
+  await page.locator('[data-fitness-routine-view="log"]').click();
+  const savedGroup = page.locator('#fitnessRoutineLogItems > [data-fitness-routine-log-group]').filter({ hasText:'Recovery and Mobility' });
+  await expect(savedGroup).toBeVisible();
+  await expect(savedGroup.locator('[data-fitness-log-complete="browser-hatha-yoga"]')).toBeVisible();
+  await expect(savedGroup.locator('.bl-fitness-log-isolated-number:visible')).toHaveCount(0);
+  const ungroupedRun = page.locator('#fitnessRoutineLogItems .bl-fitness-log-ungrouped-item').filter({ hasText:'Easy Run' });
+  await expect(ungroupedRun.locator('.bl-fitness-log-isolated-number')).toHaveText('2');
 
   await page.locator('[data-fitness-routine-view="summary"]').click();
   const summaryFilter = page.locator('#fitnessSummaryGroupFilter');
-  await expect(summaryFilter).toBeVisible();
-  await summaryFilter.selectOption({ label:'1. Recovery and Mobility' });
+  await summaryFilter.selectOption({ label:'Recovery and Mobility' });
   await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toHaveCount(1);
   await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toContainText('Hatha Yoga');
-  await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toContainText('Everyday activities this supports');
-  await expect(page.locator('#fitnessRoutineVisibility')).toBeHidden();
+  await expect(page.locator('#fitnessExerciseSummary')).not.toContainText('Everyday activities this supports');
 
   await page.locator('[data-fitness-routine-view="public"]').click();
-  await expect(page.locator('#fitnessPublicRoutineVisibility')).toBeVisible();
+  await expect(page.locator('#fitnessRoutineVisibility')).toBeVisible();
   await expect(page.locator('#fitnessPublicRoutineName')).toBeEnabled();
   await page.locator('#fitnessPublicRoutineName').selectOption('Public Peter');
-  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Public Peter’s Routine');
+  await page.locator('#fitnessViewPublicRoutine').click();
+  await expect(page.locator('#fitnessPublicRoutineResult .bl-public-v2-tab')).toHaveCount(3);
+  await expect(page.locator('#fitnessPublicRoutineResult .bl-public-v2-calendar')).toBeVisible();
+  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Recovery and Mobility');
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Hatha Yoga');
 
   await page.locator('[data-fitness-routine-view="log"]').click();
-  await expect(page.locator('[data-fitness-log-complete="browser-hatha-yoga"] + span > .bl-v4-number')).toHaveText('1');
-  await expect(page.locator('[data-fitness-log-complete="browser-easy-run"] + span > .bl-v4-number')).toHaveText('2');
   await page.locator('[data-calendar-view="week"]').click();
   await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.bl-routine-week-list .bl-routine-day-row');
 });

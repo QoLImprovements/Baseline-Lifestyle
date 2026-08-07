@@ -2,150 +2,99 @@
 declare(strict_types=1);
 require __DIR__ . '/fitness_resource.php';
 
-const BL_FITNESS_PLAN_API_BUILD = 'BASELINE_FITNESS_PLAN_PAYLOAD_20260713_2';
-const BL_FITNESS_MAX_PLAN_JSON_BYTES = 1048576;
-const BL_FITNESS_MAX_SESSIONS = 120;
-
-header('X-Baseline-Fitness-API-Build: ' . BL_FITNESS_PLAN_API_BUILD);
-
-$requestedName = trim((string)($_GET['name'] ?? ''));
-$requestedPlanId = max(0, (int)($_GET['planId'] ?? ($_GET['plan_id'] ?? 0)));
-$legacyPayload = ((string)($_GET['legacy'] ?? '')) === '1';
-
-function bl_fitness_plan_payload(string $name, array $record, int $revision=0, bool $legacy=false): array {
-  $planJson = bl_fitness_plan_json($record);
-  $encoded = json_encode($planJson, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-  if($encoded === false || strlen($encoded) > BL_FITNESS_MAX_PLAN_JSON_BYTES){
-    bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_payload_too_large'], 422);
+function bl_fitness_client_sessions(array $sessions, array $planJson): array {
+  if(($planJson['scheduleMode'] ?? 'weekly-count') === 'specific-days') return $sessions;
+  foreach($sessions as &$session){
+    if(!is_array($session)) continue;
+    $session['scheduled_date'] = '';
+    if(array_key_exists('scheduledDate', $session)) $session['scheduledDate'] = '';
   }
-  $sessions = bl_fitness_public_sessions($record);
-  $payload = [
-    'ok'=>true,
-    'build'=>BL_FITNESS_PLAN_API_BUILD,
-    'name'=>$name,
-    'planId'=>bl_fitness_plan_id($record),
-    'hasPlan'=>true,
-    'has_plan'=>true,
-    'createdAt'=>bl_fitness_plan_created_timestamp($record),
-    'planJson'=>$planJson,
-    'sessions'=>$sessions,
-    'progress'=>bl_fitness_progress($sessions, $planJson),
-  ];
-  if($revision > 0) $payload['revision'] = $revision;
-  if($legacy){
-    $legacyText = (string)($record['legacyPlanText'] ?? '');
-    $payload['planText'] = $legacyText;
-    $payload['plan_text'] = $legacyText;
-    $payload['plan_json'] = $planJson;
-    $payload['created_at'] = bl_fitness_plan_created_timestamp($record);
-  }
-  return $payload;
+  unset($session);
+  return $sessions;
 }
 
 try{
   $mode = bl_resource_authority();
+  $requestedName = trim((string)($_GET['name'] ?? ''));
+  $requestedPlanId = max(0, (int)($_GET['planId'] ?? $_GET['plan_id'] ?? 0));
+  if($requestedName !== ''){
+    if(strlen($requestedName) > 80) bl_json(['ok'=>false,'error'=>'not_found'],404);
+    if($mode === 'saved-data'){
+      $account = bl_fitness_account_by_name($requestedName);
+      if(!$account) bl_json(['ok'=>false,'error'=>'not_found'],404);
+      $resource = bl_fitness_resource_read((int)$account['id']);
+      $index = bl_fitness_latest_plan_index($resource['data']);
+      if($index === null) bl_json(['ok'=>false,'error'=>'not_found'],404);
+      $record = $resource['data']['plans'][$index];
+      $planJson = bl_fitness_plan_json($record);
+      $sessions = bl_fitness_client_sessions(bl_fitness_public_sessions($record), $planJson);
+      bl_json([
+        'ok'=>true,
+        'hasPlan'=>true,
+        'planId'=>bl_fitness_plan_id($record),
+        'name'=>(string)$account['name'],
+        'planText'=>(string)($record['legacyPlanText'] ?? ''),
+        'planJson'=>$planJson,
+        'sessions'=>$sessions,
+        'progress'=>bl_fitness_progress($sessions, $planJson),
+      ]);
+    }
+    $db=bl_fitness_db();
+    $stmt=$db->prepare('SELECT id,name FROM users WHERE lower(name)=lower(:n) LIMIT 1');
+    $stmt->execute([':n'=>$requestedName]);
+    $u=$stmt->fetch();
+    if(!$u) bl_json(['ok'=>false,'error'=>'not_found'],404);
+    $p=$db->prepare('SELECT id,plan_text,plan_json FROM plans WHERE user_id=:u ORDER BY created_at DESC, id DESC LIMIT 1');
+    $p->execute([':u'=>(int)$u['id']]);
+    $plan=$p->fetch();
+    if(!$plan) bl_json(['ok'=>false,'error'=>'not_found'],404);
+    $planJson=json_decode((string)$plan['plan_json'],true);
+    if(!is_array($planJson)) $planJson=[];
+    $s=$db->prepare('SELECT session_index,scheduled_date,status,completed_at,updated_at FROM plan_sessions WHERE plan_id=:p ORDER BY session_index ASC');
+    $s->execute([':p'=>(int)$plan['id']]);
+    $sessions=bl_fitness_client_sessions($s->fetchAll() ?: [], $planJson);
+    bl_json(['ok'=>true,'hasPlan'=>true,'planId'=>(int)$plan['id'],'name'=>(string)$u['name'],'planText'=>(string)$plan['plan_text'],'planJson'=>$planJson,'sessions'=>$sessions,'progress'=>bl_fitness_progress($sessions,$planJson)]);
+  }
 
+  $uid=bl_require_user_id();
   if($mode === 'saved-data'){
-    if($requestedName === ''){
-      $user = bl_require_user();
-      $userId = (int)($user['id'] ?? 0);
-      $name = trim((string)($user['name'] ?? ''));
-      if($userId <= 0) bl_json(['ok'=>false,'error'=>'missing_user'], 400);
-    }else{
-      $user = bl_fitness_account_by_name($requestedName);
-      if($user === null) bl_json(['ok'=>false,'error'=>'not_found'], 404);
-      $userId = (int)$user['id'];
-      $name = (string)$user['name'];
-    }
-    $resource = bl_fitness_resource_read($userId);
-    $index = $requestedPlanId > 0 ? bl_fitness_find_plan_index($resource['data'], $requestedPlanId) : bl_fitness_latest_plan_index($resource['data']);
-    if($index === null){
-      if($requestedPlanId > 0) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_not_found'], 404);
-      bl_json(['ok'=>true,'build'=>BL_FITNESS_PLAN_API_BUILD,'name'=>$name,'hasPlan'=>false,'has_plan'=>false,'revision'=>$resource['revision']]);
-    }
-    $record = $resource['data']['plans'][$index] ?? null;
-    if(!is_array($record)) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'invalid_plan_json'], 422);
-    bl_json(bl_fitness_plan_payload($name, $record, $resource['revision'], $legacyPayload));
+    $resource = bl_fitness_resource_read($uid);
+    $index = $requestedPlanId > 0
+      ? bl_fitness_find_plan_index($resource['data'], $requestedPlanId)
+      : bl_fitness_latest_plan_index($resource['data']);
+    if($index === null) bl_json(['ok'=>true,'hasPlan'=>false,'has_plan'=>false,'revision'=>$resource['revision']]);
+    $record = $resource['data']['plans'][$index];
+    $planJson = bl_fitness_plan_json($record);
+    $sessions = bl_fitness_client_sessions(bl_fitness_public_sessions($record), $planJson);
+    bl_json([
+      'ok'=>true,
+      'hasPlan'=>true,
+      'planId'=>bl_fitness_plan_id($record),
+      'planText'=>(string)($record['legacyPlanText'] ?? ''),
+      'planJson'=>$planJson,
+      'sessions'=>$sessions,
+      'progress'=>bl_fitness_progress($sessions, $planJson),
+      'revision'=>$resource['revision'],
+    ]);
   }
 
-  $db = bl_fitness_db();
-  if($requestedName === ''){
-    $user = bl_require_user();
-    $userId = (int)($user['id'] ?? 0);
-    $name = trim((string)($user['name'] ?? ''));
-    if($userId <= 0) bl_json(['ok'=>false,'error'=>'missing_user'], 400);
-  }else{
-    $u = $db->prepare('SELECT id, name FROM users WHERE lower(name)=lower(:n) LIMIT 1');
-    $u->execute([':n'=>$requestedName]);
-    $user = $u->fetch();
-    if(!$user) bl_json(['ok'=>false,'error'=>'not_found'], 404);
-    $userId = (int)$user['id'];
-    $name = (string)$user['name'];
-  }
-
+  $db=bl_fitness_db();
   if($requestedPlanId > 0){
-    $p = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE id=:p AND user_id=:u LIMIT 1');
-    $p->execute([':p'=>$requestedPlanId, ':u'=>$userId]);
+    $p=$db->prepare('SELECT id,plan_text,plan_json FROM plans WHERE id=:p AND user_id=:u LIMIT 1');
+    $p->execute([':p'=>$requestedPlanId,':u'=>$uid]);
   }else{
-    $p = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE user_id=:u ORDER BY created_at DESC, id DESC LIMIT 1');
-    $p->execute([':u'=>$userId]);
+    $p=$db->prepare('SELECT id,plan_text,plan_json FROM plans WHERE user_id=:u ORDER BY created_at DESC, id DESC LIMIT 1');
+    $p->execute([':u'=>$uid]);
   }
-  $planRow = $p->fetch();
-  if(!$planRow){
-    if($requestedPlanId > 0) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_not_found'], 404);
-    if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $userId);
-    bl_json(['ok'=>true,'build'=>BL_FITNESS_PLAN_API_BUILD,'name'=>$name,'hasPlan'=>false,'has_plan'=>false]);
-  }
-
-  $planId = (int)$planRow['id'];
-  $planJsonRaw = (string)($planRow['plan_json'] ?? '');
-  if(strlen($planJsonRaw) > BL_FITNESS_MAX_PLAN_JSON_BYTES) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'plan_payload_too_large'], 422);
-  $planJson = json_decode($planJsonRaw, true);
-  if(!is_array($planJson)) bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'invalid_plan_json'], 422);
-  $declaredSessions = (int)($planJson['sessions'] ?? 18);
-  $sessionLimit = max(1, min(BL_FITNESS_MAX_SESSIONS, $declaredSessions > 0 ? $declaredSessions : 18));
-  $sessStmt = $db->prepare('SELECT session_index, scheduled_date, status, completed_at, updated_at FROM plan_sessions WHERE plan_id=:p AND session_index BETWEEN 1 AND :max_session ORDER BY session_index ASC LIMIT 120');
-  $sessStmt->bindValue(':p', $planId, PDO::PARAM_INT);
-  $sessStmt->bindValue(':max_session', $sessionLimit, PDO::PARAM_INT);
-  $sessStmt->execute();
-  $sessions = [];
-  $seen = [];
-  foreach(($sessStmt->fetchAll() ?: []) as $row){
-    $index = (int)($row['session_index'] ?? 0);
-    if($index < 1 || $index > $sessionLimit || isset($seen[$index])) continue;
-    $seen[$index] = true;
-    $sessions[] = [
-      'session_index'=>$index,
-      'scheduled_date'=>(string)($row['scheduled_date'] ?? ''),
-      'status'=>in_array((string)($row['status'] ?? ''), ['done','rescheduled'], true) ? (string)$row['status'] : 'planned',
-      'completed_at'=>$row['completed_at'] ?? null,
-      'updated_at'=>$row['updated_at'] ?? null,
-    ];
-  }
-  $progress = bl_fitness_progress($sessions, $planJson);
-  $payload = [
-    'ok'=>true,
-    'build'=>BL_FITNESS_PLAN_API_BUILD,
-    'name'=>$name,
-    'planId'=>$planId,
-    'hasPlan'=>true,
-    'has_plan'=>true,
-    'createdAt'=>(int)$planRow['created_at'],
-    'planJson'=>$planJson,
-    'sessions'=>$sessions,
-    'progress'=>$progress,
-  ];
-  if($legacyPayload){
-    $legacy = $db->prepare('SELECT plan_text FROM plans WHERE id=:p AND user_id=:u LIMIT 1');
-    $legacy->execute([':p'=>$planId, ':u'=>$userId]);
-    $legacyText = (string)(($legacy->fetch()['plan_text'] ?? ''));
-    $payload['planText'] = $legacyText;
-    $payload['plan_text'] = $legacyText;
-    $payload['plan_json'] = $planJson;
-    $payload['created_at'] = (int)$planRow['created_at'];
-  }
-  if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $userId);
-  bl_json($payload);
+  $plan=$p->fetch();
+  if(!$plan) bl_json(['ok'=>true,'hasPlan'=>false,'has_plan'=>false]);
+  $planJson=json_decode((string)$plan['plan_json'],true);
+  if(!is_array($planJson)) $planJson=[];
+  $s=$db->prepare('SELECT session_index,scheduled_date,status,completed_at,updated_at FROM plan_sessions WHERE plan_id=:p ORDER BY session_index ASC');
+  $s->execute([':p'=>(int)$plan['id']]);
+  $sessions=bl_fitness_client_sessions($s->fetchAll() ?: [], $planJson);
+  if($mode === 'mirror') bl_fitness_mirror_sqlite($db,$uid);
+  bl_json(['ok'=>true,'hasPlan'=>true,'planId'=>(int)$plan['id'],'planText'=>(string)$plan['plan_text'],'planJson'=>$planJson,'sessions'=>$sessions,'progress'=>bl_fitness_progress($sessions,$planJson)]);
 }catch(Throwable $e){
-  bl_json(['ok'=>false,'build'=>BL_FITNESS_PLAN_API_BUILD,'error'=>'get_failed'], 500);
+  bl_json(['ok'=>false,'error'=>'get_failed'],500);
 }

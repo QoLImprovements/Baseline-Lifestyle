@@ -4,127 +4,104 @@ import { readFileSync } from 'node:fs';
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
-test('Skincare and Fitness load one shared stable My Routine layer', () => {
+test('Skincare and Fitness load one shared stable My Routine authority', () => {
   const skincare = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
   const fitness = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
-  const shared = '/sitewide/js/baseline-routine-coherence-v4.js';
-  const events = '/sitewide/js/baseline-routine-coherence-events-v4.js';
+  const shared = '/sitewide/js/baseline-routine-authority-v7.js';
 
   assert.match(skincare, new RegExp(shared.replaceAll('/', '\\/')));
   assert.match(fitness, new RegExp(shared.replaceAll('/', '\\/')));
-  assert.match(skincare, new RegExp(events.replaceAll('/', '\\/')));
-  assert.match(fitness, new RegExp(events.replaceAll('/', '\\/')));
-  assert.match(skincare, /loadWithoutMutationObserver/);
-  assert.match(fitness, /loadWithoutMutationObserver/);
-  assert.doesNotMatch(skincare, /baseline-routine-coherence-v3\.js/);
-  assert.doesNotMatch(fitness, /baseline-routine-coherence-v3\.js/);
-  assert.doesNotMatch(fitness, /fitness-routine-canonical|baseline-routine-canonical-v1/);
+  assert.match(skincare, /baseline-public-routine-groups-v1\.js/);
+  assert.match(fitness, /baseline-public-routine-groups-v1\.js/);
+  assert.doesNotMatch(skincare, /baseline-routine-coherence-v4\.js|baseline-routine-coherence-events-v4\.js|baseline-routine-live-authority-v1\.js/);
+  assert.doesNotMatch(fitness, /baseline-routine-coherence-v4\.js|baseline-routine-coherence-events-v4\.js|baseline-routine-live-authority-v1\.js/);
+  assert.doesNotMatch(skincare, /baseline-skincare-routine-state-bridge-v1\.js/);
+  assert.doesNotMatch(fitness, /fitness-routine-canonical|baseline-routine-canonical-v1|baseline-fitness-routine-summary-bridge-v1\.js/);
 });
 
-test('Fitness has a nested Routine Plan layer with shared cross-section groups', () => {
-  const shared = read('sitewide/js/baseline-routine-coherence-v4.js');
-
-  assert.match(shared, /Routine Plan/);
-  assert.match(shared, /data-fitness-plan-view/);
-  assert.match(shared, /Other Fitness Activities/);
-  assert.match(shared, /Create Routine Group/);
-  assert.match(shared, /fitnessRoutineGroups/);
-  assert.match(shared, /fitnessRoutineAssignments/);
-  assert.match(shared, /data-v4-entity-group/);
+test('My Routine is hidden during deterministic loader restoration so intermediate views do not flash', () => {
+  const skincare = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
+  const fitness = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  assert.match(skincare, /data-skincare-routine-booting/);
+  assert.match(skincare, /releaseBootShield/);
+  assert.match(fitness, /data-fitness-routine-booting/);
+  assert.match(fitness, /releaseBootShield/);
+  assert.match(fitness, /restoreRequestedView/);
 });
 
-test('Create Another Plan and Open Plan have one authoritative handler before coherence fallbacks', () => {
+test('Create Another Plan and Open Plan have one authoritative handler before shared presentation authority', () => {
   const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
   const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
   const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
   assert.match(multiplePlans, />Create Another Plan<\/button>/);
-  assert.doesNotMatch(multiplePlans, />Create another plan<\/button>/);
-  assert.match(multiplePlans, /url\.searchParams\.set\('new-plan',\s*String\(Date\.now\(\)\)\)/);
   assert.match(authority, /#createCalisthenicsPlan/);
   assert.match(authority, /calisthenicsPlanSelect/);
   assert.match(authority, /stopImmediatePropagation/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
-  assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-coherence-v4.js'));
+  assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-authority-v7.js'));
 });
 
-test('Calendar numbers use one aligned layer with a real hover and long-press caption portal', () => {
-  const js = read('sitewide/js/baseline-routine-coherence-v4.js');
-  const css = read('sitewide/css/baseline-routine-coherence-v4.css');
-
-  assert.match(js, /bl-v4-calendar-cell/);
-  assert.match(js, /bl-v4-calendar-tooltip/);
-  assert.match(js, /pointerover/);
-  assert.match(js, /pointerdown/);
-  assert.match(js, /550/);
-  assert.match(js, /openSummaryTarget/);
-  assert.match(js, /querySelectorAll\(':scope > b/);
-  assert.match(css, /\.bl-v4-calendar-marker\{/);
-  assert.match(css, /justify-content:center/);
-  assert.match(css, /position:fixed/);
-  assert.match(css, /#8f1828/);
+test('shared authority owns stable group numbering and Skincare grouped movement without repaint loops', () => {
+  const shared = read('sitewide/js/baseline-routine-authority-v7.js');
+  assert.match(shared, /counter-reset:blPlanNumber/);
+  assert.match(shared, /counter-reset:blLogNumber/);
+  assert.match(shared, /routine-plan-group-ungrouped/);
+  assert.match(shared, /function groupedMoveDistance/);
+  assert.match(shared, /function handleGroupedMove/);
+  assert.match(shared, /data-v7-group-complete/);
+  assert.match(shared, /observer\.observe\(target,\{ childList:true,subtree:false \}\)/);
+  assert.doesNotMatch(shared, /setInterval/);
+  assert.doesNotMatch(shared, /observe\(document\.documentElement|observe\(document\.body/);
 });
 
-test('Routine summaries use readable system text and content-preserving bullet lists', () => {
-  const js = read('sitewide/js/baseline-routine-coherence-v4.js');
-  const css = read('sitewide/css/baseline-routine-coherence-v4.css');
-
-  assert.match(js, /bulletiseSummary/);
-  assert.match(js, /Muscles worked — and how they contribute/);
-  assert.match(js, /Everyday activities this supports/);
-  assert.match(css, /font-size:1\.125rem/);
-  assert.match(css, /\.bl-v4-summary-list/);
-  assert.match(css, /font-size:inherit!important/);
-});
-
-test('Visibility is compact and Routine Group filtering is wired in both systems', () => {
-  const shared = read('sitewide/js/baseline-routine-coherence-v4.js');
-  const css = read('sitewide/css/baseline-routine-coherence-v4.css');
-
-  assert.match(shared, /My Routine Visibility/);
+test('Routine Summary filtering is shared while Skincare follows its saved group order', () => {
+  const shared = read('sitewide/js/baseline-routine-authority-v7.js');
   assert.match(shared, /skinRoutineSummaryFilter/);
   assert.match(shared, /fitnessSummaryGroupFilter/);
-  assert.match(shared, /applySkinSummaryFilter/);
-  assert.match(shared, /applyFitnessSummaryFilter/);
-  assert.match(css, /max-width:140px/);
-  assert.match(css, /routine-visibility-control/);
+  assert.match(shared, /function applySkinSummaryFilter/);
+  assert.match(shared, /function applyFitnessSummaryFilter/);
+  assert.match(shared, /const desired = data\.groups\.map/);
+  assert.match(shared, /value\.startsWith\('entity:'\)/);
 });
 
-test('Group numbers attach to Skincare groups and Fitness activities rather than category headings', () => {
-  const shared = read('sitewide/js/baseline-routine-coherence-v4.js');
-
-  assert.match(shared, /decorateSkinNumbers/);
-  assert.match(shared, /routine-plan-group\[data-plan-group\]/);
-  assert.match(shared, /routine-plan-group-ungrouped/);
-  assert.match(shared, /decorateFitnessEntityNumbers/);
-  assert.match(shared, /fitness-activity-item-head>div:first-child/);
-  assert.doesNotMatch(shared, /fitness-routine-group-bar[\s\S]{0,120}bl-v4-number/);
+test('Public Routine presentation uses shared themed subtabs and public week completion data', () => {
+  const publicViewer = read('sitewide/js/baseline-public-routine-groups-v1.js');
+  const fitnessApi = read('systems/baseline-fitness/api/public_routine_v2.php');
+  const skinApi = read('systems/baseline-natural-skincare/api/public_routine_v2.php');
+  assert.match(publicViewer, /User's Log/);
+  assert.match(publicViewer, /User's Routine Summary/);
+  assert.match(publicViewer, /User's Plan/);
+  assert.match(publicViewer, /bl-public-v2-calendar/);
+  assert.match(publicViewer, /normaliseGroups\(data\.groups\)/);
+  assert.match(publicViewer, /normaliseAssignments\(data\.assignments/);
+  assert.match(fitnessApi, /'logs'=>\$logs/);
+  assert.match(fitnessApi, /'sessions'=>\$sessions/);
+  assert.match(skinApi, /'logs'=>\$logs/);
+  assert.match(skinApi, /'groups'=>\$groups/);
 });
 
-test('Settings, Public Routines and completion display follow the coherent contract', () => {
-  const shared = read('sitewide/js/baseline-routine-coherence-v4.js');
-  const css = read('sitewide/css/baseline-routine-coherence-v4.css');
-  const fitnessApi = read('systems/baseline-fitness/api/routine_state.php');
-  const fitnessSchema = read('systems/baseline-fitness/api/schema.php');
-  const groupedPublic = read('sitewide/js/baseline-public-routine-groups-v1.js');
+test('weekly-count Fitness is frequency based, while specific-day sessions may be started early', () => {
+  const policy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
+  assert.match(policy, /Range<\/label>/);
+  assert.match(policy, /Not Selected/);
+  assert.match(policy, /frequencyRangeMax/);
+  assert.match(policy, /Current workout available within your weekly frequency/);
+  assert.match(policy, /next\.access\.can = true/);
+  assert.match(policy, /Start Early\?/);
+  assert.match(policy, /data-start-early="yes"/);
+  assert.match(policy, /data-start-early="no"/);
+  assert.match(policy, /getPlansForDate\(date\)/);
+  assert.match(policy, /specific-days/);
+});
 
-  assert.match(shared, /data-v4-settings-toggle/);
-  assert.match(shared, /data-v4-settings-panel/);
-  assert.match(shared, /Public Routines/);
-  assert.match(shared, /fitnessPublicRoutineName/);
-  assert.match(css, /#completedWorkoutOut \.session-card>\.top>\.badge/);
-  assert.match(fitnessApi, /requestedList/);
-  assert.match(fitnessApi, /publicRoutine/);
-  assert.match(fitnessApi, /'plans'=>bl_fitness_public_plans/);
-  assert.match(fitnessSchema, /visibility TEXT NOT NULL DEFAULT/);
-  assert.match(groupedPublic, /publicRoutine\.groups/);
-  assert.match(groupedPublic, /publicRoutine\.assignments/);
-
-  const publicPayload = fitnessApi.slice(
-    fitnessApi.indexOf('function bl_fitness_public_payload'),
-    fitnessApi.indexOf("try{\n  $db = bl_fitness_db()")
-  );
-  assert.doesNotMatch(publicPayload, /'logs'/);
+test('Visibility is compact and the full Skincare catalogue is available in Routine Plan', () => {
+  const shared = read('sitewide/js/baseline-routine-authority-v7.js');
+  assert.match(shared, /My Routine Visibility/);
+  assert.match(shared, /bl-authority-public-head/);
+  assert.match(shared, /BASELINE_SKINCARE_PRODUCT_LIBRARY/);
+  assert.match(shared, /const byBrand = new Map/);
+  assert.match(shared, /Custom product…/);
 });
 
 test('Obsolete dated Skincare and Food footers remain removed', () => {
