@@ -7,6 +7,8 @@ const fitnessLog = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitne
 const skincare = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js', import.meta.url), 'utf8');
 const skincareSitewide = fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js', import.meta.url), 'utf8');
 const plansRuntime = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-multiple-plans.js', import.meta.url), 'utf8');
+const progression = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-generator-progression-v1.js', import.meta.url), 'utf8');
+const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url), 'utf8');
 const bridge = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-saved-data-bridge.js', import.meta.url), 'utf8');
 const app = fs.readFileSync(new URL('../systems/baseline-fitness/js/baseline-fitness-app.js', import.meta.url), 'utf8');
 const getPlan = fs.readFileSync(new URL('../systems/baseline-fitness/api/get_plan.php', import.meta.url), 'utf8');
@@ -53,11 +55,22 @@ test('multiple calisthenics plans can be listed, selected and created independen
   assert.ok(fitnessHtml.indexOf('fitness-multiple-plans.js') < fitnessHtml.indexOf('baseline-fitness-app.js'));
 });
 
-test('each rep exercise stores a configurable session increase with coherent per-side totals', () => {
+test('rep exercises expose a concise configurable per-session increase', () => {
   assert.match(app, /item\.repIncrease/);
-  assert.match(plansRuntime, /Total rep increase each session \(both sides\)/);
-  assert.match(plansRuntime, /10 means 5 additional repetitions on each side/);
+  assert.match(progression, /Rep Increase Per Session/);
+  assert.match(progression, /function repIncreaseForRow/);
+  assert.match(progression, /function progressedTargets/);
+  assert.match(progression, /definition\?\.progressionType.*leg-reps.*3/s);
   assert.match(bridge, /function totalRepIncrease/);
   assert.match(bridge, /function perSetRepIncrease/);
   assert.match(bridge, /source\.repIncrease/);
+});
+
+test('the same exercise advances from completed sessions across all plans that contain it', () => {
+  assert.match(policy, /function plansContaining/);
+  assert.match(policy, /function completedSharedSessions/);
+  assert.match(policy, /completedSharedSessions\(exercise\)\+1/);
+  assert.match(policy, /function applySharedProgression/);
+  assert.match(policy, /progressedTargets/);
+  assert.match(policy, /holdTarget/);
 });
