@@ -1,8 +1,8 @@
 /* Baseline Fitness — deterministic loader for the existing My Routine implementation. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V22__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V22__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V23__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V23__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -120,6 +120,7 @@
     .then(() => load('/sitewide/js/baseline-fitness-plan-control-authority-v1.js?v=BASELINE_FITNESS_PLAN_CONTROL_AUTHORITY_20260806_1', 'data-baseline-fitness-plan-control-authority'))
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_2', 'data-baseline-public-routine-groups'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260807_1', 'data-fitness-routine-structure-v4'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-routine-groups-v1.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260807_1', 'data-fitness-routine-groups-v1'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_1', 'data-baseline-routine-authority-v7'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3', 'data-fitness-generator-progression'))
     .then(() => load('/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_2', 'data-fitness-live-policy'))
