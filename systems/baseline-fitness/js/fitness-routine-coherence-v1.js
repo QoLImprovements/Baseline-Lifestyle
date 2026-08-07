@@ -1,16 +1,19 @@
 /* Baseline Fitness — system adapter for the shared My Routine contract.
 
-   OWNERSHIP CONTRACT — DO NOT DUPLICATE RUNTIME PROGRESSION HERE
-   --------------------------------------------------------------
+   OWNERSHIP CONTRACT — DO NOT DUPLICATE RUNTIME PROGRESSION OR RENDERERS HERE
+   --------------------------------------------------------------------------
    This module does two Fitness-specific jobs only:
      1. enrich the owner-visible Routine Summary with comprehensive details;
-     2. ask the Fitness data owner to re-render after plans/groups change.
+     2. perform one delayed initial Log refresh after all authorities have loaded.
 
-   Cross-plan exercise progression belongs to fitness-live-policy-v1.js. Keeping
-   it in one place prevents two progression wrappers from fighting over targets. */
+   Cross-plan progression belongs to fitness-live-policy-v1.js. Group and plan
+   change events already have their own data-owner render paths. Re-rendering the
+   whole workspace from here used to replace activity cards after group numbering
+   was applied, so this adapter deliberately does not render on those events. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V2__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V3__) return;
+  global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V3__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V2__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V1__=true;
 
@@ -21,7 +24,8 @@
   const $$=(selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc=(value) => String(value==null?'':value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
   let frame=0;
-  let refreshTimer=0;
+  let initialRefreshTimer=0;
+  let initialRefreshDone=false;
 
   function plans() {
     try { return global.BASELINE_fitnessPlans?.getPlans?.() || []; }
@@ -38,9 +42,7 @@
   }
 
   function progressionText(item,definition) {
-    if (definition?.unit==='seconds' || item?.progressionMode==='timed-hold') {
-      return 'Timed hold progression. The exercise advances across every plan that contains it.';
-    }
+    if (definition?.unit==='seconds' || item?.progressionMode==='timed-hold') return 'Timed hold progression. The exercise advances across every plan that contains it.';
     if (item?.progressionMode==='straight-sets') {
       const increase=Number(item.repIncrease || 0);
       return `Straight sets: equal starting sets; +${increase} rep${increase===1?'':'s'} to every set after a successful session.`;
@@ -59,11 +61,7 @@
     $$('.fitness-exercise-summary-item',root).forEach((card) => {
       const key=String(card.dataset.v4Entity || '');
       let panel=card.querySelector(':scope>.bl-fitness-summary-comprehensive');
-      if (!panel) {
-        panel=document.createElement('div');
-        panel.className='bl-fitness-summary-comprehensive';
-        card.appendChild(panel);
-      }
+      if (!panel) { panel=document.createElement('div');panel.className='bl-fitness-summary-comprehensive';card.appendChild(panel); }
 
       const plan=planMap.get(key);
       if (plan) {
@@ -79,10 +77,7 @@
       }
 
       const activity=activityMap.get(key);
-      if (!activity) {
-        panel.remove();
-        return;
-      }
+      if (!activity) { panel.remove();return; }
       const definition=activityDefinition(activity.activityId);
       const metrics=(definition?.metrics || []).map((metric) => `${metric.label}${metric.unit?` (${metric.unit})`:''}`).join(', ');
       const signature=JSON.stringify([activity.activityId,activity.name,activity.notes,metrics]);
@@ -92,11 +87,18 @@
     });
   }
 
-  function refreshRoutineLog() {
-    clearTimeout(refreshTimer);
-    refreshTimer=global.setTimeout(() => {
+  function initialLogRefresh() {
+    if (initialRefreshDone) return;
+    clearTimeout(initialRefreshTimer);
+    initialRefreshTimer=global.setTimeout(() => {
+      if (initialRefreshDone) return;
+      initialRefreshDone=true;
+      /* One boot-time refresh is needed because the shared authority that makes
+         weekly-count plans available loads after the Fitness workspace. Never
+         repeat this on later group/settings events. */
       try { global.BASELINE_fitnessRoutine?.render?.(); } catch (_error) {}
-    },40);
+      try { document.dispatchEvent(new CustomEvent('baseline:fitness-coherence-initialised')); } catch (_error) {}
+    },420);
   }
 
   function schedule() {
@@ -104,22 +106,16 @@
     frame=global.requestAnimationFrame(() => { frame=0;enrichSummary(); });
   }
 
-  function onPlansOrGroupsChanged() {
-    schedule();
-    /* Let the shared authority install/update availability first, then ask the
-       single Fitness data owner to render once from the final state. */
-    refreshRoutineLog();
-  }
-
   function boot() {
     document.addEventListener('baseline:fitness-summary-rendered',schedule);
-    document.addEventListener('baseline:fitness-plans-updated',onPlansOrGroupsChanged);
-    document.addEventListener('baseline:routine-settings-changed',onPlansOrGroupsChanged);
+    document.addEventListener('baseline:fitness-plans-updated',schedule);
+    document.addEventListener('baseline:routine-settings-changed',schedule);
     document.addEventListener('baseline:fitness-workout-updated',schedule);
-    [0,120,350,800].forEach((delay) => global.setTimeout(() => { schedule();if (delay>=350) refreshRoutineLog(); },delay));
-    document.documentElement.setAttribute('data-fitness-routine-coherence','v2-noncompetitive');
+    [0,120,350,800].forEach((delay) => global.setTimeout(schedule,delay));
+    initialLogRefresh();
+    document.documentElement.setAttribute('data-fitness-routine-coherence','v3-noncompetitive');
   }
 
-  global.addEventListener('pagehide',() => { if (frame) global.cancelAnimationFrame(frame);clearTimeout(refreshTimer); },{ once:true });
+  global.addEventListener('pagehide',() => { if (frame) global.cancelAnimationFrame(frame);clearTimeout(initialRefreshTimer); },{ once:true });
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
 })(typeof window!=='undefined'?window:globalThis);
