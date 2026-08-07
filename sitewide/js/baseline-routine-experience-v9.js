@@ -156,6 +156,19 @@
     ensureSearchableSelect(canonical,'Filter Routine Summary');
   }
 
+  function cleanGroupCompletionControls() {
+    $$('.bl-routine-group-complete',root).forEach((label) => {
+      const checkbox=label.querySelector('[data-v8-group-complete]');
+      if (checkbox) {
+        checkbox.setAttribute('aria-label',checkbox.getAttribute('aria-label') || 'Mark routine group complete');
+        checkbox.setAttribute('title',checkbox.getAttribute('title') || 'Mark routine group complete');
+      }
+      label.querySelectorAll('.sr-only').forEach((node) => {
+        if (/Complete group/i.test(String(node.textContent || ''))) node.remove();
+      });
+    });
+  }
+
   function markerCaption(button) {
     const raw=button.getAttribute('title') || button.getAttribute('aria-label') || '';
     return raw.replace(/^Open Routine Summary:\s*/i,'').replace(/^Open .*Routine Summary:\s*/i,'').trim();
@@ -221,8 +234,6 @@
       (head || panel).appendChild(slot);
     }
     if (keep.parentElement!==slot) slot.appendChild(keep);
-    const old=keep.closest('.routine-visibility-control,.field-stack,.bl-release-public-visibility');
-    if (old && old!==slot && old.contains(keep)) slot.appendChild(keep);
   }
 
   function normalisePublic() {
@@ -395,6 +406,7 @@
     try {
       root.classList.add('bl-routine-experience');
       dedupeSummaryControls();
+      cleanGroupCompletionControls();
       normaliseCalendar();
       normalisePublic();
       normaliseSkinPlanOrder();
