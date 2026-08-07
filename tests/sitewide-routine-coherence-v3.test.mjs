@@ -87,11 +87,12 @@ test('Public Routine viewer mirrors Log Summary and Plan using public completion
   assert.match(skinApi, /'groups'=>\$groups/);
 });
 
-test('Fitness coherence adapter enriches Summary but does not duplicate cross-plan progression', () => {
+test('Fitness coherence adapter enriches Summary without duplicating progression or later group renders', () => {
   assert.match(coherence, /enrichSummary/);
-  assert.match(coherence, /refreshRoutineLog/);
-  assert.match(coherence, /DO NOT DUPLICATE RUNTIME PROGRESSION HERE/);
+  assert.match(coherence, /initialLogRefresh/);
+  assert.match(coherence, /DO NOT DUPLICATE RUNTIME PROGRESSION OR RENDERERS HERE/);
   assert.doesNotMatch(coherence, /applyCrossPlanProgression|completedSessionsForExercise|wrapWorkout/);
+  assert.doesNotMatch(coherence, /baseline:routine-settings-changed[^\n]+refreshRoutineLog/);
   const policy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
   assert.match(policy, /function applySharedProgression/);
   assert.match(policy, /function completedSharedSessions/);
