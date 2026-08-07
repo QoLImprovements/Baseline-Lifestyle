@@ -19,6 +19,13 @@
   const document = global.document;
   const MAX_WAIT_MS = 6000;
 
+  /* TEMPORARY CI DIAGNOSTIC. Remove before merge. It writes no user-visible UI. */
+  const recordRuntimeError = (value) => {
+    try { document.documentElement.dataset.skincareRoutineRuntimeError = String(value || 'unknown').slice(0,500); } catch (_error) {}
+  };
+  global.addEventListener('error',(event) => recordRuntimeError(`${event.message || 'error'} @ ${event.filename || ''}:${event.lineno || 0}`));
+  global.addEventListener('unhandledrejection',(event) => recordRuntimeError(event.reason?.stack || event.reason?.message || event.reason || 'unhandled rejection'));
+
   function installBootShield() {
     document.documentElement.setAttribute('data-skincare-routine-booting','true');
     if (document.getElementById('skincareRoutineBootShieldStyle')) return;
@@ -86,6 +93,7 @@
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(releaseBootShield)
     .catch((error) => {
+      recordRuntimeError(error?.stack || error?.message || error);
       releaseBootShield();
       try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
     });
