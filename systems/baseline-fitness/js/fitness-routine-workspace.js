@@ -1,13 +1,14 @@
 /* Baseline Fitness — deterministic loader for the existing My Routine implementation. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V24__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V24__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V25__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V25__ = true;
 
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const CANONICAL_PATH = '/baseline-fitness/my-routine';
   let planSwitchTimer = 0;
+  let calendarObserver = null;
 
   function installBootShield() {
     document.documentElement.setAttribute('data-fitness-routine-booting','true');
@@ -108,6 +109,48 @@
     } catch (_error) {}
   }
 
+  function bindCanonicalRoutineRoute() {
+    if (!openRoutine || document.documentElement.dataset.fitnessRoutineRouteGuard === 'true') return;
+    document.documentElement.dataset.fitnessRoutineRouteGuard = 'true';
+    document.addEventListener('click',(event) => {
+      if (!event.target?.closest?.('.tab[data-target="my-plan"]')) return;
+      global.setTimeout(selectRoutinePage,0);
+    },true);
+    global.addEventListener('pageshow',() => global.setTimeout(selectRoutinePage,0));
+  }
+
+  function normaliseFitnessWeekRows() {
+    const grid = document.getElementById('fitnessCalendarGrid');
+    const weekdays = document.querySelector('.fitness-calendar-weekdays');
+    if (!grid) return;
+    const weekSelected = document.querySelector('[data-calendar-view="week"][aria-selected="true"]');
+    const weekView = Boolean(weekSelected && grid.classList.contains('week-view'));
+    if (!weekView) {
+      grid.classList.remove('bl-routine-week-list');
+      grid.querySelectorAll(':scope > .bl-routine-day-row').forEach((row) => row.classList.remove('bl-routine-day-row'));
+      if (weekdays) weekdays.hidden = false;
+      return;
+    }
+    const rows = Array.from(grid.querySelectorAll(':scope > [data-calendar-date]'));
+    if (rows.length !== 7) return;
+    grid.classList.add('bl-routine-week-list');
+    rows.forEach((row) => row.classList.add('bl-routine-day-row'));
+    if (weekdays) weekdays.hidden = true;
+  }
+
+  function bindFitnessWeekRows() {
+    const grid = document.getElementById('fitnessCalendarGrid');
+    if (!grid) return;
+    if (!calendarObserver && typeof MutationObserver !== 'undefined') {
+      calendarObserver = new MutationObserver(() => global.requestAnimationFrame(normaliseFitnessWeekRows));
+      calendarObserver.observe(grid,{ childList:true });
+    }
+    document.addEventListener('click',(event) => {
+      if (event.target?.closest?.('[data-calendar-view],[data-calendar-move],[data-calendar-today]')) global.setTimeout(normaliseFitnessWeekRows,0);
+    });
+    normaliseFitnessWeekRows();
+  }
+
   function requestedViews() {
     let main = 'log';
     let plan = 'calisthenics';
@@ -140,6 +183,7 @@
     } catch (_error) {}
   }
   selectRoutinePage();
+  bindCanonicalRoutineRoute();
 
   load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3', 'data-fitness-activity-catalogue-v2')
     .then(() => load('/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2', 'data-baseline-routine-system'))
@@ -157,6 +201,7 @@
     .then(() => {
       selectRoutinePage();
       restoreRequestedView();
+      bindFitnessWeekRows();
       endPlanSwitch();
       releaseBootShield();
     })
