@@ -124,7 +124,7 @@
     .then(() => load('/sitewide/js/baseline-fitness-plan-control-authority-v1.js?v=BASELINE_FITNESS_PLAN_CONTROL_AUTHORITY_20260806_1', 'data-baseline-fitness-plan-control-authority'))
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_2', 'data-baseline-public-routine-groups'))
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-sitewide-v3.js?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260806_2', 'data-fitness-routine-sitewide-v3'))
-    .then(() => load('/sitewide/js/baseline-routine-live-authority-v1.js?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260807_7', 'data-baseline-routine-live-authority'))
+    .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_1', 'data-baseline-routine-authority-v7'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3', 'data-fitness-generator-progression'))
     .then(() => load('/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_1', 'data-fitness-live-policy'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1', 'data-fitness-timed-hold-targets-v2'))
