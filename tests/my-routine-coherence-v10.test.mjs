@@ -7,6 +7,9 @@ const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8'
 const v10 = read('sitewide/js/baseline-routine-experience-v10.js');
 const v10Css = read('sitewide/css/baseline-routine-experience-v10.css');
 const v9Css = read('sitewide/css/baseline-routine-experience-v9.css');
+const routineBaseCss = read('sitewide/css/baseline-routine-system.css');
+const skinWorkspaceCss = read('systems/baseline-natural-skincare/css/skincare-routine.css');
+const skinAdapterCss = read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
 const fitnessWorkspaceCss = read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const fitnessAdapterCss = read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
 const fitnessPlansCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
@@ -14,7 +17,7 @@ const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-e
 const fitnessLoader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const publicViewer = read('sitewide/js/baseline-public-routine-groups-v1.js');
 
-const routineCss = [v9Css,v10Css,fitnessWorkspaceCss,fitnessAdapterCss,fitnessPlansCss].join('\n');
+const routineCss = [routineBaseCss,v9Css,v10Css,skinWorkspaceCss,skinAdapterCss,fitnessWorkspaceCss,fitnessAdapterCss,fitnessPlansCss].join('\n');
 
 test('My Routine v10 parses and is the final authority in both systems', () => {
   assert.doesNotThrow(() => new Function(v10));
@@ -25,9 +28,12 @@ test('My Routine v10 parses and is the final authority in both systems', () => {
   }
 });
 
-test('My Routine has no legacy tiny 12–16px type in the active shared/Fitness routine styles', () => {
+test('My Routine has no legacy tiny 12–16px type in active shared, Skincare or Fitness routine styles', () => {
   assert.doesNotMatch(routineCss,/font-size\s*:\s*(?:12|13|14|15|16)px/i);
   assert.ok(v10Css.includes('--bl-routine-font-size:18px'));
+  assert.ok(routineBaseCss.includes('font-size:18px'));
+  assert.ok(skinWorkspaceCss.includes('common minimum is'));
+  assert.ok(skinAdapterCss.includes('sitewide 18px My Routine minimum'));
 });
 
 test('Fitness My Routine does not reintroduce the former outsider pink UI colours', () => {
