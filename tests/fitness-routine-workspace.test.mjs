@@ -13,6 +13,7 @@ const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-l
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js', import.meta.url),'utf8');
 const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css', import.meta.url),'utf8');
 const publicViewer = fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js', import.meta.url),'utf8');
+const updateSession = fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php', import.meta.url),'utf8');
 
 test('Fitness loader keeps route restoration but has no artificial loading screen', () => {
   assert.match(loader,/restoreRequestedView/);
@@ -35,6 +36,16 @@ test('checking and unchecking are the Routine Log calendar add/remove mechanism'
   assert.doesNotMatch(shared,/data-v11-remove|data-v12-remove|textContent\s*=\s*['\"]Remove['\"]/);
 });
 
+test('Calisthenics Routine Log completion is a real reversible checkbox backed by session status', () => {
+  assert.match(shared,/data-fitness-plan-log-complete/);
+  assert.match(shared,/\/systems\/baseline-fitness\/api\/update_session\.php/);
+  assert.match(shared,/action:'set_status'/);
+  assert.match(shared,/status:desired\?'done':'planned'/);
+  assert.match(updateSession,/\$action === 'set_status'/);
+  assert.match(updateSession,/in_array\(\$status, \['planned','done'\]/);
+  assert.match(updateSession,/completed_at=NULL/);
+});
+
 test('Fitness Summary retains its one filter and shared terminology', () => {
   assert.match(structure,/fitnessSummaryGroupFilter/);
   assert.match(shared,/fitnessSummaryGroupFilter/);
@@ -47,6 +58,13 @@ test('Days Per Week range stays valid and is displayed as compact min dash max',
   assert.match(policy,/Not Selected/);
   assert.match(shared,/Days Per Week/);
   assert.match(sharedCss,/\.bl-frequency-range-dash/);
+});
+
+test('flexible weekly policy stays in Fitness colours and leaves due plan entries in Routine Log', () => {
+  assert.doesNotMatch(policy,/Current workout available within your weekly frequency\./);
+  assert.doesNotMatch(policy,/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
+  assert.match(policy,/getPlansForDate\(date\) \{\s*return original\.getPlansForDate\?\.\(date\) \|\| \[\];/s);
+  assert.doesNotMatch(policy,/getPlansForDate\(date\)[\s\S]{0,400}\.filter\(/);
 });
 
 test('Public Fitness routine is the same owner-facing structure in View Only form', () => {
