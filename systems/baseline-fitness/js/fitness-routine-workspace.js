@@ -46,8 +46,6 @@
     global.requestAnimationFrame(() => global.requestAnimationFrame(() => document.documentElement.removeAttribute('data-fitness-routine-booting')));
   }
 
-  /* Atomic My Routine paint. This prevents native controls or an intermediate
-     Fitness-only layout appearing before v10 has applied the shared structure. */
   function releaseBootShieldWhenStable() {
     return new Promise((resolve) => {
       const root=document.getElementById('my-plan');
@@ -179,7 +177,8 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1','data-fitness-exercise-family-filter'))
     .then(() => load('/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1','data-fitness-plan-generator-coherence-v4'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
-    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_1','data-baseline-routine-experience-v10'))
+    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_2','data-baseline-routine-experience-v10'))
+    .then(() => global.BASELINE_RoutineExperienceV10Ready || Promise.resolve())
     .then(() => { selectRoutinePage();restoreRequestedView();bindFitnessWeekRows();endPlanSwitch();return releaseBootShieldWhenStable(); })
     .catch((error) => { endPlanSwitch();releaseBootShield();try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {} });
 })(typeof window!=='undefined'?window:globalThis);
