@@ -1,19 +1,19 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v30.
+/* Baseline Natural Skincare — deterministic My Routine loader v31.
 
    PERFORMANCE / OWNERSHIP CONTRACT
    --------------------------------
    - No loading screen and no hidden/placeholder My Routine page.
    - Base Skincare owns data and native controls.
-   - skincare-routine-sitewide-v4.js owns Skincare grouping/calendar structure.
+   - skincare-routine-sitewide-v5.js is the single Skincare grouping/calendar owner.
    - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
-   - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
+   - baseline-routine-coherence-v12.js is the sole shared behaviour/state finisher.
    - No boot polling: parser-loaded prerequisites are available by DOMContentLoaded.
    - Dependencies start fetching together and execute in dependency order.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V31__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V31__ = true;
   const document = global.document;
   let recipeOptionObserver = null;
   let started = false;
@@ -149,9 +149,9 @@
     }
     loadOrderedParallel([
       { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260808_12',marker:'data-skincare-routine-sitewide-v4' },
-      { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-viewonly-v4' },
-      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_4',marker:'data-baseline-routine-coherence-v12' }
+      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_1',marker:'data-skincare-routine-sitewide-v5' },
+      { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
+      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_5',marker:'data-baseline-routine-coherence-v12' }
     ])
       .then(bindRecipeOptionNormaliser)
       .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
