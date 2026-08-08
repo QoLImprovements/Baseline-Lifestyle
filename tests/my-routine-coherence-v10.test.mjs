@@ -13,15 +13,18 @@ const skinAdapterCss = read('systems/baseline-natural-skincare/css/skincare-rout
 const fitnessWorkspaceCss = read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const fitnessAdapterCss = read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
 const fitnessPlansCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
+const fitnessCoherence = read('systems/baseline-fitness/js/fitness-routine-coherence-v1.js');
 const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
 const fitnessLoader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const publicViewer = read('sitewide/js/baseline-public-routine-groups-v1.js');
 
 const routineCss = [routineBaseCss,v9Css,v10Css,skinWorkspaceCss,skinAdapterCss,fitnessWorkspaceCss,fitnessAdapterCss,fitnessPlansCss].join('\n');
 
-test('My Routine v10 parses and is the final authority in both systems', () => {
+test('My Routine v10 and the Fitness Summary adapter parse and use one final authority chain', () => {
   assert.doesNotThrow(() => new Function(v10));
+  assert.doesNotThrow(() => new Function(fitnessCoherence));
   assert.ok(v10.includes('SITEWIDE CONTRACT — DO NOT ADD SYSTEM-SPECIFIC COPIES'));
+  assert.ok(fitnessCoherence.includes('Skincare is the visual/structural template for Routine Summary sitewide.'));
   for (const loader of [skinLoader,fitnessLoader]) {
     assert.ok(loader.indexOf('baseline-routine-experience-v10.js') > loader.indexOf('baseline-routine-experience-v9.js'));
     assert.ok(loader.includes('BASELINE_RoutineExperienceV10Ready'));
@@ -55,6 +58,11 @@ test('Skincare group completion, calendar Summary filtering and Fitness marker d
 test('Routine Summary and Public Routine use the same shared card/detail geometry', () => {
   assert.ok(v10Css.includes('.routine-summary-grid,.fitness-summary-detail-grid,.bl-routine-summary-grid,.bl-public-v3-detail-grid'));
   assert.ok(v10Css.includes('.routine-summary-item,.fitness-exercise-summary-item,.bl-routine-summary-card,.bl-public-v3-item'));
+  assert.ok(fitnessCoherence.includes('routine-summary-title'));
+  assert.ok(fitnessCoherence.includes('<h4>Routine details</h4>'));
+  assert.ok(fitnessCoherence.includes('<h4>Benefits and practical role</h4>'));
+  assert.ok(fitnessCoherence.includes("card.querySelector(':scope>.fitness-summary-meta')?.remove()"));
+  assert.ok(fitnessCoherence.includes("card.querySelector(':scope>.fitness-summary-exercises')?.remove()"));
   assert.ok(v10.includes('function normalisePublicViewer'));
   assert.ok(publicViewer.includes("User's Log"));
   assert.ok(publicViewer.includes("User's Routine Summary"));
