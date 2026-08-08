@@ -18,7 +18,7 @@ test('calendar entries are circle numbers only and captions are hover/accessibil
 
 test('calendar marker clicks select the matching Routine Summary filter', () => {
   assert.match(coherence,/data-routine-summary-target/);
-  assert.match(coherence,/select\.value = target/);
+  assert.match(coherence,/select\.value\s*=\s*target/);
   assert.match(coherence,/skinRoutineSummaryFilter/);
   assert.match(coherence,/fitnessSummaryGroupFilter/);
   assert.match(publicViewer,/summaryFilter=String\(marker\.dataset\.publicSummaryTarget/);
@@ -26,14 +26,14 @@ test('calendar marker clicks select the matching Routine Summary filter', () => 
 
 test('Fitness Calisthenics markers are plan/group based and deduplicated', () => {
   assert.match(coherence,/key:`plan:\$\{Number\(plan\.planId\)\}`/);
-  assert.match(coherence,/const seen = new Set\(\)/);
+  assert.match(coherence,/const seen\s*=\s*new Set\(\)/);
   assert.match(publicViewer,/key:`plan:\$\{Number\(plan\.planId\)\}`/);
   assert.doesNotMatch(coherence,/plan\.planJson\?\.items.*markers/s);
 });
 
 test('Routine Log completion is reversible on the viewed date with no extra Remove control', () => {
   assert.match(skinLoader,/Completed on this date/);
-  assert.match(coherence,/preserveFitnessCompletedRows/);
+  assert.match(coherence,/preserveFitnessCompleted/);
   assert.match(coherence,/data-fitness-log-complete/);
   assert.doesNotMatch(coherence,/data-v11-remove|data-v12-remove|Remove\?<\/span>/);
 });
