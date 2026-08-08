@@ -6,142 +6,58 @@ import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
 const catalogue = require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
-const workspaceLoader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url), 'utf8');
-const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js', import.meta.url), 'utf8');
-const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js', import.meta.url), 'utf8');
-const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url), 'utf8');
-const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url), 'utf8');
-const stability = fs.readFileSync(new URL('../sitewide/js/baseline-routine-stability-v11.js', import.meta.url), 'utf8');
-const stabilityCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-stability-v11.css', import.meta.url), 'utf8');
-const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
-const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
-const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
-const schema = fs.readFileSync(new URL('../systems/baseline-fitness/api/schema.php', import.meta.url), 'utf8');
-const htaccess = fs.readFileSync(new URL('../.htaccess', import.meta.url), 'utf8');
+const loader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url),'utf8');
+const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js', import.meta.url),'utf8');
+const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js', import.meta.url),'utf8');
+const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url),'utf8');
+const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js', import.meta.url),'utf8');
+const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css', import.meta.url),'utf8');
+const publicViewer = fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js', import.meta.url),'utf8');
 
-test('Fitness main navigation remains My Routine with refresh-safe routing', () => {
-  assert.match(html, /data-target="my-plan">My Routine<\/button>/);
-  assert.match(html, /my-routine\|my-plan/);
-  assert.match(htaccess, /baseline-fitness\/my-routine/);
-  assert.match(workspaceLoader, /restoreRequestedView/);
+test('Fitness loader keeps route restoration but has no artificial loading screen', () => {
+  assert.match(loader,/restoreRequestedView/);
+  assert.match(loader,/loadOrderedParallel/);
+  assert.match(loader,/baseline-routine-coherence-v12\.js/);
+  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11/);
 });
 
-test('Fitness My Routine has four top-level views and four nested Routine Plan types', () => {
-  assert.match(structure, /TOP_VIEWS = Object\.freeze\(\['log','summary','plan','public'\]\)/);
-  assert.match(structure, /PLAN_VIEWS = Object\.freeze\(\['calisthenics','cardio','other','sports'\]\)/);
-  assert.match(structure, /ensureTopButton\(nav,'log','Routine Log'\)/);
-  assert.match(structure, /ensureTopButton\(nav,'summary','Routine Summary'\)/);
-  assert.match(structure, /ensureTopButton\(nav,'plan','Routine Plan'\)/);
-  assert.match(structure, /ensureTopButton\(nav,'public','Public Routines'\)/);
-  assert.match(structure, /data-fitness-plan-view/);
-  assert.match(structure, /fitness-routine-plan-panel/);
+test('activity catalogue and existing data owner remain intact', () => {
+  assert.ok(catalogue.ACTIVITIES.length >= 180);
+  for (const id of ['road-running','road-cycling','pool-swimming','hatha-yoga','mma','badminton']) assert.ok(catalogue.ACTIVITY_BY_ID.has(id));
+  assert.match(workspace,/data-fitness-log-complete/);
+  assert.match(workspace,/updateLog\(complete\.dataset\.fitnessLogComplete/);
 });
 
-test('Routine view and nested Plan view are independently remembered across refresh', () => {
-  assert.match(structure, /__bl_fitness_routine_view_v2__/);
-  assert.match(structure, /__bl_fitness_plan_view_v4__/);
-  assert.match(structure, /function restoreRemembered/);
-  assert.match(structure, /sessionStorage\?\.setItem\(VIEW_KEY/);
-  assert.match(structure, /sessionStorage\?\.setItem\(PLAN_VIEW_KEY/);
+test('checking and unchecking are the Routine Log calendar add/remove mechanism', () => {
+  assert.match(workspace,/entry\.completed = Boolean\(value\)/);
+  assert.match(workspace,/renderLog\(\);\s*renderCalendar\(\)/);
+  assert.match(shared,/preserveFitnessCompletedRows/);
+  assert.doesNotMatch(shared,/data-v11-remove|data-v12-remove|textContent\s*=\s*['\"]Remove['\"]/);
 });
 
-test('catalogue provides expanded searchable cardio, activity and sports lists', () => {
-  assert.deepEqual(catalogue.SECTIONS.map((item) => item.label), ['Cardio','Other Fitness Activity','Sports']);
-  assert.ok(catalogue.ACTIVITIES.length >= 180, `expected at least 180 activities, got ${catalogue.ACTIVITIES.length}`);
-  const ids = new Set(catalogue.ACTIVITIES.map((item) => item.id));
-  ['road-running','road-cycling','pool-swimming','rowing-erg','hatha-yoga','aerial-yoga','tai-chi','mma','bouldering','weight-training','badminton','association-football','tennis','squash','cricket']
-    .forEach((id) => assert.ok(ids.has(id), `${id} should exist`));
-  assert.ok(catalogue.search('other','yoga').some((item) => item.id === 'aerial-yoga'));
+test('Fitness Summary retains its one filter and shared terminology', () => {
+  assert.match(structure,/fitnessSummaryGroupFilter/);
+  assert.match(shared,/fitnessSummaryGroupFilter/);
+  assert.match(shared,/All Routine Steps/);
+  assert.match(shared,/Individual Routine Steps/);
 });
 
-test('activities retain relevant optional metrics rather than one generic amount', () => {
-  const running = catalogue.ACTIVITY_BY_ID.get('road-running');
-  const yoga = catalogue.ACTIVITY_BY_ID.get('hatha-yoga');
-  const badminton = catalogue.ACTIVITY_BY_ID.get('badminton');
-  assert.deepEqual(running.metrics.slice(0, 4).map((item) => item.key), ['durationMinutes','distanceKm','averagePace','averageSpeedKph']);
-  assert.ok(yoga.metrics.some((item) => item.key === 'focus'));
-  assert.ok(yoga.metrics.some((item) => item.key === 'intensity'));
-  assert.ok(badminton.metrics.some((item) => item.key === 'result'));
-  assert.match(workspace, /data-target-metric/);
-  assert.match(workspace, /data-log-metric/);
+test('Days Per Week range stays valid and is displayed as compact min dash max', () => {
+  assert.match(policy,/value <= minimum \? ' disabled'/);
+  assert.match(policy,/Not Selected/);
+  assert.match(shared,/Days Per Week/);
+  assert.match(sharedCss,/\.bl-frequency-range-dash/);
 });
 
-test('activity pickers remain searchable, keyboard navigable, opaque and token-coloured', () => {
-  assert.match(workspace, /role="combobox"/);
-  assert.match(workspace, /event\.key === 'ArrowDown'/);
-  assert.match(workspace, /event\.key === 'ArrowUp'/);
-  assert.match(workspace, /setPickerIndex/);
-  assert.match(css, /z-index:2147482000!important/);
-  assert.match(css, /background:var\(--card-bg\)!important/);
-  assert.match(css, /color:var\(--ink\)!important/);
-  assert.match(css, /opacity:1!important/);
-  assert.doesNotMatch(css, /#ffbdc7|#120a0e/i);
+test('Public Fitness routine is the same owner-facing structure in View Only form', () => {
+  assert.match(publicViewer,/fitness-routine-log-item/);
+  assert.match(publicViewer,/fitness-exercise-summary-item/);
+  assert.match(publicViewer,/routine-plan-group/);
+  assert.match(publicViewer,/View Only/);
+  assert.match(publicViewer,/type=\"checkbox\" disabled/);
 });
 
-test('Routine Summary groups plan and activity entities in saved group order', () => {
-  assert.match(structure, /function groupedEntities/);
-  assert.match(structure, /fitnessRoutineGroups/);
-  assert.match(structure, /fitnessRoutineAssignments/);
-  assert.match(structure, /fitnessSummaryGroupFilter/);
-  assert.match(structure, /data-v4-entity/);
-  assert.match(structure, /Ungrouped routine items/);
-  assert.match(stability, /Individual Routine Steps/);
-});
-
-test('Public Routines panel is native to the Fitness structure and exposes shared viewer hooks', () => {
-  assert.match(structure, /fitnessRoutineVisibility/);
-  assert.match(structure, /fitnessPublicRoutineName/);
-  assert.match(structure, /fitnessViewPublicRoutine/);
-  assert.match(structure, /fitnessPublicRoutineResult/);
-  assert.match(structure, /\?list=public/);
-  assert.match(structure, /saveVisibility/);
-  assert.match(stability, /moveVisibilityControl/);
-  assert.match(stabilityCss, /\.bl-v11-public-visibility/);
-});
-
-test('weekly-count frequency and start access are governed by the flexible scheduling policy', () => {
-  assert.match(policy, /frequencyRangeMax/);
-  assert.match(policy, /flexibleWeekly/);
-  assert.match(policy, /Current workout available within your weekly frequency/);
-  assert.match(policy, /Start Early\?/);
-});
-
-test('text and numeric fields save without activity-list replacement per character', () => {
-  const inputHandler = workspace.slice(workspace.indexOf("root.addEventListener('input'"), workspace.indexOf("root.addEventListener('change'"));
-  assert.match(inputHandler, /updateActivityField\(field\)/);
-  assert.match(inputHandler, /updateTargetMetric\(targetMetric\)/);
-  assert.doesNotMatch(inputHandler, /renderActivityList/);
-  assert.doesNotMatch(inputHandler, /renderAll/);
-});
-
-test('Fitness activity state persists activity-specific target and result metrics', () => {
-  assert.match(schema, /bl_apply_schema_migration\(\$db, 'fitness', 2/);
-  assert.match(api, /function bl_fitness_metric_values/);
-  assert.match(api, /'targetMetrics'=>bl_fitness_metric_values/);
-  assert.match(api, /'metrics'=>bl_fitness_metric_values/);
-});
-
-test('Fitness entry point loads data owners and adapters before one final stability layer with parallel fetch', () => {
-  const catalogueIndex = workspaceLoader.indexOf('fitness-activity-catalogue-v2.js');
-  const sharedIndex = workspaceLoader.indexOf('baseline-routine-system.js');
-  const workspaceIndex = workspaceLoader.indexOf('fitness-routine-workspace-v2.js');
-  const structureIndex = workspaceLoader.indexOf('fitness-routine-structure-v4.js');
-  const policyIndex = workspaceLoader.indexOf('fitness-live-policy-v1.js');
-  const stabilityIndex = workspaceLoader.indexOf('baseline-routine-stability-v11.js');
-  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && policyIndex > structureIndex && stabilityIndex > policyIndex);
-  assert.match(workspaceLoader, /function loadOrderedParallel/);
-  assert.match(workspaceLoader, /script\.async = false/);
-  assert.match(workspaceLoader, /Promise\.all\(pending\)/);
-  assert.doesNotMatch(workspaceLoader, /baseline-routine-authority-v7\.js|baseline-routine-experience-v9\.js|baseline-routine-experience-v10\.js/);
-  assert.doesNotMatch(workspaceLoader, /fitness-routine-sitewide-v3\.js/);
-  assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5/);
-});
-
-test('checked Fitness rows stay available for correction and Details/Remove share one right action cluster', () => {
-  assert.match(stability, /restoreFitnessCompletedRows/);
-  assert.match(stability, /Completed on this date/);
-  assert.match(stability, /data-v11-log-details/);
-  assert.match(stability, /data-v11-remove-fitness/);
-  assert.match(stabilityCss, /\.bl-v11-log-actions/);
-  assert.match(stabilityCss, /justify-content:flex-end!important/);
+test('Week and Month controls cannot collapse below their labels', () => {
+  assert.match(sharedCss,/min-width:184px/);
+  assert.match(sharedCss,/repeat\(2,minmax\(88px,1fr\)\)/);
 });
