@@ -6,14 +6,17 @@
    2. skincare-routine-sitewide-v4.js maps Skincare data into shared My Routine.
    3. baseline-public-routine-groups-v1.js is the one shared read-only viewer.
    4. baseline-routine-authority-v7.js owns shared coherence/state decoration.
-   5. baseline-routine-experience-v9.js owns shared presentation/interactions.
+   5. baseline-routine-experience-v9.js remains the compatibility normaliser.
+   6. baseline-routine-experience-v10.js is the FINAL sitewide presentation rule.
 
    There is deliberately NO Skincare-only interaction renderer after the shared
-   authorities. Skincare contributes its data and palette; My Routine behaviour
-   remains sitewide and reusable by Fitness and future systems. */
+   authorities. Skincare contributes its data and palette; My Routine behaviour,
+   typography, dropdowns, calendar markers, summaries and public views remain
+   sitewide and reusable by Fitness and future systems. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V27__) return;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V28__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V28__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V27__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V26__=true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V25__=true;
@@ -123,6 +126,9 @@
     }));
   }
 
+  /* Atomic first paint: the old 90ms/500ms window could reveal native checkboxes
+     before the shared group/summary/dropdown layers finished. v10 waits for a
+     materially quiet DOM after the final sitewide normaliser has run. */
   function releaseBootShieldWhenStable() {
     return new Promise((resolve) => {
       const root=document.getElementById('routine');
@@ -138,11 +144,11 @@
       };
       const settle=() => {
         clearTimeout(quietTimer);
-        quietTimer=global.setTimeout(done,90);
+        quietTimer=global.setTimeout(done,180);
       };
       const observer=new MutationObserver(settle);
       observer.observe(root,{ childList:true,subtree:true });
-      maxTimer=global.setTimeout(done,500);
+      maxTimer=global.setTimeout(done,1400);
       settle();
     });
   }
@@ -183,6 +189,7 @@
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
+    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_1','data-baseline-routine-experience-v10'))
     .then(() => { bindRecipeOptionNormaliser();return releaseBootShieldWhenStable(); })
     .catch((error) => {
       releaseBootShield();
