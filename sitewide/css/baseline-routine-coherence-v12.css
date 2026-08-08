@@ -4,18 +4,22 @@
    ------------------------
    Skincare and Fitness supply their own palette tokens. This file supplies
    geometry/interaction only. Never hard-code a new feature palette here.
-   Dropdowns are one native/shared control with one CSS chevron. Do not wrap a
-   select to add another arrow. Public Routines reuse owner My Routine classes.
+   Dropdowns are one shared geometry: one box, one centred chevron, one opaque
+   top-layer menu. Do not wrap a select to add another arrow. Public Routines
+   reuse owner My Routine classes and inherit the active system theme.
 */
 
-/* Shared dropdown geometry: one box, one centred chevron, system-owned colour. */
+/* ONE shared dropdown geometry: same shape/height/spacing, system-owned colour. */
 :where(#routine,#my-plan) select:not(.routine-action-native){
   -webkit-appearance:none!important;
   appearance:none!important;
-  min-height:48px!important;
+  min-height:50px!important;
   max-width:100%;
   box-sizing:border-box;
   padding:10px 44px 10px 12px!important;
+  border-radius:14px!important;
+  font:inherit!important;
+  font-size:18px!important;
   line-height:1.25!important;
   background-image:
     linear-gradient(45deg,transparent 50%,var(--bl-routine-text,currentColor) 50%),
@@ -28,13 +32,31 @@
 }
 :where(#routine,#my-plan) select:not(.routine-action-native)::-ms-expand{display:none}
 
-/* Custom searchable pickers use the same chevron without a second glyph. */
+/* Searchable dropdowns use the same 50px toggle and 14px outer radius. */
+:where(#routine,#my-plan) :is(.routine-action-input-wrap,.fitness-activity-combobox,.ex-picker-control){
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 50px!important;
+  align-items:stretch!important;
+  min-width:0!important;
+}
+:where(#routine,#my-plan) .routine-action-input-wrap>input,
+:where(#routine,#my-plan) .fitness-activity-combobox>[data-activity-search],
+:where(#routine,#my-plan) .ex-picker-control>.ex-search-input{
+  min-width:0!important;
+  min-height:50px!important;
+  border-radius:14px 0 0 14px!important;
+  border-right:0!important;
+  box-sizing:border-box!important;
+}
 :where(#routine,#my-plan) :is(.routine-action-toggle,[data-activity-toggle],.ex-picker-toggle){
   display:grid!important;
   place-items:center!important;
-  min-width:48px!important;
-  min-height:48px!important;
+  width:50px!important;
+  min-width:50px!important;
+  min-height:50px!important;
   padding:0!important;
+  border-radius:0 14px 14px 0!important;
   font-size:0!important;
   line-height:1!important;
 }
@@ -270,10 +292,11 @@
   gap:8px!important;
 }
 #my-plan .fitness-frequency-grid>.field-stack{min-width:0!important;margin:0!important}
+#my-plan .fitness-frequency-grid .field-stack:has(#frequencyRangeMax)>span{display:none!important}
 #my-plan .fitness-frequency-grid .bl-frequency-range-dash{
   display:grid!important;
   place-items:center!important;
-  min-height:48px!important;
+  min-height:50px!important;
   font-size:20px!important;
   font-weight:850!important;
 }
@@ -296,10 +319,30 @@
   color:var(--bl-routine-text,var(--ink,currentColor))!important;
   box-sizing:border-box!important;
 }
-#my-plan .bl-v4-group-card>div:first-child{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important}
+#my-plan .bl-v4-group-card>div:first-child{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+}
 #my-plan .bl-v4-group-card>div:first-child :is(h2,h3,h4,p){margin:0!important}
-#my-plan .bl-v4-group-create{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:end!important}
+#my-plan .bl-v4-group-create{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:10px!important;
+  align-items:end!important;
+}
 #my-plan .bl-v4-group-list,#my-plan .bl-v4-assignment-list{display:grid!important;gap:8px!important}
-#my-plan .bl-v4-group-row{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding:9px 10px!important;border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;border-radius:13px!important;background:var(--bl-routine-surface-strong,var(--card-bg,transparent))!important}
+#my-plan .bl-v4-group-row{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:9px 10px!important;
+  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+  border-radius:13px!important;
+  background:var(--bl-routine-surface-strong,var(--card-bg,transparent))!important;
+}
 #my-plan .bl-v4-assignment-row{padding:8px 0!important}
 @media(max-width:700px){#my-plan .bl-v4-group-create{grid-template-columns:1fr!important}}
