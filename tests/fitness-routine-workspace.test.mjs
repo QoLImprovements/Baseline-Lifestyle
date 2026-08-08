@@ -31,7 +31,7 @@ test('activity catalogue and existing data owner remain intact', () => {
 test('checking and unchecking are the Routine Log calendar add/remove mechanism', () => {
   assert.match(workspace,/entry\.completed = Boolean\(value\)/);
   assert.match(workspace,/renderLog\(\);\s*renderCalendar\(\)/);
-  assert.match(shared,/preserveFitnessCompletedRows/);
+  assert.match(shared,/preserveFitnessCompleted/);
   assert.doesNotMatch(shared,/data-v11-remove|data-v12-remove|textContent\s*=\s*['\"]Remove['\"]/);
 });
 
