@@ -60,7 +60,7 @@ test('Calisthenics exercise cards use the requested centred header plus left con
   assert.match(exerciseCss,/grid-template-areas:[\s\S]*"exercise exercise"[\s\S]*"progression details"[\s\S]*"baseline details"[\s\S]*"sets details"/);
   assert.match(exerciseCss,/\.ex-field-exercise[\s\S]*justify-self:center!important/);
   assert.match(exerciseCss,/\.ex-details-card::before[\s\S]*content:"Details"/);
-  assert.match(exerciseCss,/Do not restore the old horizontal/);
+  assert.match(exerciseCss,/Do not restore the\s+old horizontal/);
   assert.doesNotMatch(exerciseCss,/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
 });
 
