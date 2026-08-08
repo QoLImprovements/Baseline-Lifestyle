@@ -28,7 +28,6 @@
   const $$=(selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   let rangeDirty=false;
   let pendingEarlyAction='manual';
-  let refreshTimer=0;
 
   function canonicalExercise(value) { return String(value || '').replace(/\s+\(L\/R\)$/i,'').replace(/\s+(Left|Right)$/i,'').trim(); }
   function owner() {
@@ -257,7 +256,12 @@
       validateExerciseRows(event);
       const start=event.target?.closest?.('#startWorkoutBtn,#startVoiceWorkoutBtn');if (start) { const context=applyPolicy(global.BASELINE_fitnessWorkout?.getCurrentContext?.());if (context?.startEarlyRequired && !hasEarlyPermission(context)) { event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();openEarly(context,start.id==='startVoiceWorkoutBtn'?'voice':'manual');return; } }
       const early=event.target?.closest?.('[data-start-early]');if (early) { event.preventDefault();if (early.dataset.startEarly==='yes') approveEarly();else closeEarly();return; }
-      if (event.target?.closest?.('#finishWorkout')) { clearTimeout(refreshTimer);refreshTimer=global.setTimeout(() => global.BASELINE_fitnessPlans?.refresh?.(),500); }
+      const finish=event.target?.closest?.('#finishWorkout');
+      if (finish && !finish.disabled) {
+        event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
+        global.BASELINE_fitnessWorkout?.finishSession?.();
+        return;
+      }
       if (event.target?.closest?.('.tab[data-target],#cancelEditPlanBtn')) { $$('.ex-search-input').forEach((input) => input.setCustomValidity(''));$$('.ex-picker-inline-status').forEach((node) => node.remove()); }
       if (event.target?.closest?.('#genBtn,#editOptionsBtn')) global.requestAnimationFrame(patchUi);
     },true);
