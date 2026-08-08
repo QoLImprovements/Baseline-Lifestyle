@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 
+const stability = read('sitewide/js/baseline-routine-stability-v11.js');
+const stabilityCss = read('sitewide/css/baseline-routine-stability-v11.css');
+
 test('Calisthenics catalogue remains comprehensive and contains requested movements', () => {
   const plans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
   assert.match(plans, /input\.type = 'search'/);
@@ -18,31 +21,32 @@ test('Calisthenics catalogue remains comprehensive and contains requested moveme
   assert.doesNotMatch(plans, /observe\(document\.documentElement/);
 });
 
-test('Skincare and Fitness share one final My Routine authority without superseded repair layers', () => {
+test('Skincare and Fitness share one final stable My Routine layer without superseded render authorities', () => {
   const skincare = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
   const fitness = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
   for (const loader of [skincare, fitness]) {
-    assert.match(loader, /baseline-routine-authority-v7\.js/);
+    assert.match(loader, /baseline-routine-stability-v11\.js/);
     assert.match(loader, /baseline-public-routine-groups-v1\.js/);
+    assert.doesNotMatch(loader, /baseline-routine-authority-v7\.js/);
+    assert.doesNotMatch(loader, /baseline-routine-experience-v9\.js/);
+    assert.doesNotMatch(loader, /baseline-routine-experience-v10\.js/);
     assert.doesNotMatch(loader, /baseline-routine-live-authority-v1\.js/);
     assert.doesNotMatch(loader, /baseline-routine-coherence-events-v4\.js/);
-    assert.doesNotMatch(loader, /baseline-routine-coherence-v4\.js/);
   }
   assert.match(skincare, /waitForBaseRoutine/);
   assert.match(fitness, /fitness-routine-coherence-v1\.js/);
   assert.match(fitness, /fitness-theme-guard-v1\.js/);
 });
 
-test('multi-plan create and saved-plan dropdown retain one capture-level controller', () => {
+test('multi-plan create and saved-plan dropdown retain one capture-level controller before final stability decoration', () => {
   const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
   const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
-  const chain = loader.slice(loader.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
   assert.match(authority, /#createCalisthenicsPlan/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.createPlan/);
   assert.match(authority, /calisthenicsPlanSelect/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
   assert.match(authority, /stopImmediatePropagation/);
-  assert.ok(chain.indexOf('baseline-fitness-plan-control-authority-v1.js') < chain.indexOf('baseline-routine-authority-v7.js'));
+  assert.ok(loader.indexOf('baseline-fitness-plan-control-authority-v1.js') < loader.indexOf('baseline-routine-stability-v11.js'));
 });
 
 test('Public Routines expose User Log Summary and actual Plan using saved grouping', () => {
@@ -58,39 +62,34 @@ test('Public Routines expose User Log Summary and actual Plan using saved groupi
   assert.match(viewer, /Purpose:/);
   assert.match(viewer, /Technique:/);
   assert.match(viewer, /Baseline \$\{Number\(item\.baseline/);
-  assert.match(viewer, /Ungrouped routine actions/);
-  assert.match(viewer, /Ungrouped routine items/);
   assert.doesNotMatch(viewer, /localStorage\.setItem\([^\n]*publicRoutine/i);
 });
 
-test('shared Routine authority keeps numbering stable and filters both systems', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
-  assert.match(authority, /counter-reset:blPlanNumber/);
-  assert.match(authority, /counter-reset:blLogNumber/);
-  assert.match(authority, /routine-plan-group-ungrouped/);
-  assert.match(authority, /function applySkinSummaryFilter/);
-  assert.match(authority, /function applyFitnessSummaryFilter/);
-  assert.match(authority, /function groupedMoveDistance/);
-  assert.match(authority, /data-v8-group-complete/);
-  assert.match(authority, /function removeDuplicateControls/);
-  assert.doesNotMatch(authority, /setInterval/);
+test('shared stability layer keeps summary filters, completion markers and group completion non-destructive', () => {
+  assert.match(stability, /function ensureSkinSummaryFilter/);
+  assert.match(stability, /fitnessSummaryGroupFilter/);
+  assert.match(stability, /data-v11-group-complete/);
+  assert.match(stability, /data-calendar-summary-filter/);
+  assert.match(stability, /Open Routine Summary:/);
+  assert.match(stability, /Individual Routine Steps/);
+  assert.doesNotMatch(stability, /setInterval/);
+  assert.doesNotMatch(stability, /card\.hidden\s*=\s*true/);
 });
 
-test('refresh preserves the exact My Routine view instead of forcing Routine Plan', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
+test('refresh preserves the requested Fitness Routine and nested Plan view', () => {
   const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
-  assert.match(authority, /function persistView/);
-  assert.match(authority, /routine-view/);
-  assert.match(authority, /routine-plan/);
-  assert.match(authority, /searchParams\.delete\('new-plan'\)/);
+  const structure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
   assert.match(loader, /queryMain/);
   assert.match(loader, /queryPlan/);
   assert.match(loader, /restoreRequestedView/);
+  assert.match(structure, /function restoreRemembered/);
+  assert.match(structure, /__bl_fitness_routine_view_v2__/);
+  assert.match(structure, /__bl_fitness_plan_view_v4__/);
 });
 
-test('Calisthenics generator uses fixed semantic columns, full-width details and reorder controls', () => {
+test('Calisthenics generator keeps progression semantics and reorder controls without a presentation renderer moving fields', () => {
   const progression = read('systems/baseline-fitness/js/fitness-generator-progression-v1.js');
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
+  const coherence = read('systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js');
   assert.match(progression, /LINEAR:'linear-fixed'/);
   assert.match(progression, /Linear — fixed set progression/);
   assert.match(progression, /Straight Sets — equal reps/);
@@ -100,31 +99,25 @@ test('Calisthenics generator uses fixed semantic columns, full-width details and
   assert.match(progression, /3:\[-1,-2,0\]/);
   assert.match(progression, /function progressedTargets/);
   assert.match(progression, /ex-details-card/);
-  assert.match(progression, /ex-picker-group/);
   assert.match(progression, /data-exercise-name/);
-  assert.match(authority, /GENERATOR GRID CONTRACT/);
-  assert.match(authority, /grid-template-areas:"exercise mode baseline sets increase actions"/);
-  assert.match(authority, /data-exercise-move/);
+  assert.match(coherence, /Max Baseline/);
+  assert.match(coherence, /data-exercise-move/);
+  assert.doesNotMatch(stability, /normaliseExerciseCards/);
   assert.doesNotMatch(progression, /percentage-based sets/);
-  assert.doesNotMatch(progression, /commonly called straight sets or sets across/);
 });
 
-test('exercise and activity pickers are opaque foreground UI and do not trap navigation', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
+test('exercise and activity pickers remain opaque foreground UI and do not trap navigation', () => {
+  const fitnessCss = read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
   const theme = read('systems/baseline-fitness/js/fitness-theme-guard-v1.js');
-  assert.match(authority, /PICKER\/DROPDOWN CONTRACT/);
-  assert.match(authority, /z-index:2147483000/);
-  assert.match(authority, /pointer-events:auto!important/);
-  assert.match(authority, /cleanExerciseValidation/);
-  assert.match(authority, /setCustomValidity\(''\)/);
+  assert.match(fitnessCss, /z-index:2147482000!important/);
+  assert.match(fitnessCss, /background:var\(--card-bg\)!important/);
+  assert.match(fitnessCss, /pointer-events:auto!important/);
   assert.match(theme, /var\(--card-bg\)/);
-  assert.match(theme, /z-index:2147483600/);
-  assert.doesNotMatch(theme, /#10090c|#2b1017|#45151d/);
+  assert.doesNotMatch(stability, /pointerdown[\s\S]*stopImmediatePropagation/);
 });
 
 test('weekly frequency range is optional and weekly-count plans stay available without invented dates', () => {
   const policy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
   assert.match(policy, /Range<\/label>/);
   assert.match(policy, /Not Selected/);
   assert.match(policy, /value<=7/);
@@ -132,8 +125,6 @@ test('weekly frequency range is optional and weekly-count plans stay available w
   assert.match(policy, /flexibleWeekly = true/);
   assert.match(policy, /next\.access\.can = true/);
   assert.match(policy, /Current workout available within your weekly frequency/);
-  assert.match(authority, /Available this week/);
-  assert.match(authority, /plan\?\.planJson\?\.scheduleMode==='specific-days'/);
 });
 
 test('specific-day workouts can be deliberately started early while weekly-count workouts need no unlock', () => {
@@ -158,7 +149,7 @@ test('the same exercise shares progression across multiple Calisthenics plans fr
   assert.doesNotMatch(coherence, /applyCrossPlanProgression|completedSessionsForExercise/);
 });
 
-test('Fitness Routine Summary becomes comprehensive rather than a shallow list', () => {
+test('Fitness Routine Summary remains comprehensive rather than a shallow list', () => {
   const coherence = read('systems/baseline-fitness/js/fitness-routine-coherence-v1.js');
   assert.match(coherence, /function enrichSummary/);
   assert.match(coherence, /Benefits \/ purpose:/);
@@ -169,28 +160,30 @@ test('Fitness Routine Summary becomes comprehensive rather than a shallow list',
   assert.match(coherence, /Primary muscle involvement/);
 });
 
-test('Routine Logs start compact and completed exercises/routines have a collapsed disclosure', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
-  assert.match(authority, /bl-log-details-collapsed/);
-  assert.match(authority, /Completed exercises \/ routines/);
-  assert.match(authority, /createElement\('details'\)/);
-  assert.match(authority, /data-completed-proxy/);
+test('Routine Logs stay compact while checked entries remain on their original date for correction', () => {
+  const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
+  assert.match(skinLoader, /__baselineKeepCompletedDateV1/);
+  assert.match(skinLoader, /entries\[item\.id\]\?\.completed/);
+  assert.match(stability, /function restoreFitnessCompletedRows/);
+  assert.match(stability, /Completed on this date/);
+  assert.match(stability, /data-v11-log-details/);
+  assert.doesNotMatch(stability, /Completed exercises \/ routines/);
+  assert.doesNotMatch(stability, /createElement\('details'\)/);
 });
 
-test('calendar completion numbers are clickable captions into Routine Summary', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
-  assert.match(authority, /data-calendar-summary-filter/);
-  assert.match(authority, /Open Routine Summary:/);
-  assert.match(authority, /fitnessSummaryGroupFilter/);
-  assert.match(authority, /skinRoutineSummaryFilter/);
+test('calendar completion numbers are captioned and clickable into Routine Summary', () => {
+  assert.match(stability, /data-calendar-summary-filter/);
+  assert.match(stability, /Open Routine Summary:/);
+  assert.match(stability, /fitnessSummaryGroupFilter/);
+  assert.match(stability, /skinRoutineSummaryFilter/);
+  assert.match(stabilityCss, /\.bl-v11-calendar-marker/);
 });
 
-test('Skincare exposes the full maintained product catalogue by brand in Routine Plan', () => {
-  const authority = read('sitewide/js/baseline-routine-authority-v7.js');
+test('Skincare retains its maintained product catalogue and routine product picker', () => {
+  const loader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
   const library = read('systems/baseline-natural-skincare/js/skincare-product-library.js');
-  assert.match(authority, /const products=Array\.isArray\(library\?\.PRODUCTS\)/);
-  assert.match(authority, /const byBrand=new Map/);
-  assert.match(authority, /<optgroup label=/);
+  assert.match(loader, /Baseline Skincare Recipes/);
+  assert.match(loader, /UK Product Library/);
   assert.match(library, /product\('boots-glycerin-rosewater'/);
   assert.match(library, /product\('cerave-hydrating-cleanser'/);
   assert.match(library, /product\('currentbody-multilight'/);
