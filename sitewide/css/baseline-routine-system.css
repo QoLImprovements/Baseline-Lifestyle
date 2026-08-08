@@ -1,17 +1,26 @@
 /* Baseline Lifestyle — shared My Routine template.
-   System pages supply palette variables; structure and interaction remain identical. */
+   System pages supply palette variables; structure and interaction remain identical.
+
+   SITEWIDE MY ROUTINE BASE CONTRACT
+   ---------------------------------
+   This is the reusable base for every My Routine system. Do not introduce a
+   system-specific palette, small 12–17px interface text, or a second dropdown
+   language here. Active systems supply their existing palette tokens; the v10
+   experience layer owns final presentation details. */
 .bl-routine-root{
-  --bl-routine-surface:rgba(255,255,255,.08);
-  --bl-routine-surface-strong:rgba(255,255,255,.13);
-  --bl-routine-border:rgba(255,255,255,.18);
+  --bl-routine-surface:var(--filter-bg,var(--card-bg,transparent));
+  --bl-routine-surface-strong:var(--card-bg,var(--filter-bg,transparent));
+  --bl-routine-border:var(--border,var(--border-2,currentColor));
   --bl-routine-text:var(--ink,currentColor);
-  --bl-routine-muted:var(--muted,currentColor);
-  --bl-routine-accent:var(--accent,#b11226);
-  --bl-routine-focus:var(--ring,rgba(177,18,38,.24));
-  --bl-routine-menu:#171014;
-  --bl-routine-menu-text:#fff;
+  --bl-routine-muted:var(--muted,var(--ink,currentColor));
+  --bl-routine-accent:var(--accent,currentColor);
+  --bl-routine-focus:var(--ring,transparent);
+  --bl-routine-menu:var(--card-bg,var(--filter-bg,Canvas));
+  --bl-routine-menu-text:var(--ink,currentColor);
   position:relative;
   isolation:isolate;
+  font-size:18px;
+  line-height:1.5;
 }
 .bl-routine-shell{display:grid;gap:16px;min-width:0;width:100%}
 .bl-routine-tabs{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0;padding:0}
@@ -33,7 +42,7 @@
   color:var(--bl-routine-text);
   padding:8px 12px;
   font:inherit;
-  font-size:15px;
+  font-size:18px;
   font-weight:850;
   line-height:1.1;
   cursor:pointer;
@@ -57,7 +66,7 @@
 }
 .bl-routine-entry-title{display:flex;align-items:flex-start;gap:10px;min-width:0;flex:1}
 .bl-routine-entry-title>span{display:grid;gap:4px;min-width:0}
-.bl-routine-entry-title small{color:var(--bl-routine-muted);line-height:1.45}
+.bl-routine-entry-title small{color:var(--bl-routine-muted);font-size:18px;line-height:1.45}
 .bl-routine-entry-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .bl-routine-preview-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
 .bl-routine-preview-chips>span{
@@ -69,7 +78,7 @@
   border-radius:999px;
   background:var(--bl-routine-surface);
   color:var(--bl-routine-text);
-  font-size:14px;
+  font-size:18px;
   line-height:1.25;
 }
 
@@ -97,9 +106,9 @@
   border-radius:15px;
   background:var(--bl-routine-surface);
 }
-.bl-routine-summary-section h4{margin:0 0 9px;font-size:19px}
+.bl-routine-summary-section h4{margin:0 0 9px;font-size:20px}
 .bl-routine-summary-section p:last-child{margin-bottom:0}
-.bl-routine-summary-rows{display:grid;gap:8px;margin:0}
+.bl-routine-summary-rows{display:grid;gap:8px;margin:0;font-size:18px}
 .bl-routine-summary-rows>div{
   display:grid;
   grid-template-columns:minmax(120px,.55fr) minmax(0,1fr);
@@ -139,6 +148,7 @@
   background:var(--bl-routine-surface);
   color:var(--bl-routine-text);
   font:inherit;
+  font-size:18px;
   text-align:left;
   cursor:pointer;
 }
@@ -153,7 +163,7 @@
 .bl-routine-day-date{display:grid;gap:3px}
 .bl-routine-day-date strong{font-size:18px}
 .bl-routine-day-date span,
-.bl-routine-day-details{color:var(--bl-routine-muted)}
+.bl-routine-day-details{color:var(--bl-routine-muted);font-size:18px}
 .bl-routine-day-details{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
 .bl-routine-day-details>span{
   display:inline-flex;
@@ -161,7 +171,7 @@
   border:1px solid var(--bl-routine-border);
   border-radius:999px;
   background:var(--bl-routine-surface);
-  font-size:14px;
+  font-size:18px;
   overflow-wrap:anywhere;
 }
 .bl-routine-day-count{
@@ -172,7 +182,8 @@
   padding:0 9px;
   border-radius:999px;
   background:var(--bl-routine-accent);
-  color:#fff;
+  color:var(--accent-contrast,var(--bl-routine-text));
+  font-size:18px;
   font-weight:900;
 }
 
@@ -184,6 +195,7 @@
 .bl-routine-root label{
   pointer-events:auto!important;
   position:relative;
+  font-size:18px;
 }
 .bl-routine-root input,
 .bl-routine-root textarea,
@@ -200,7 +212,7 @@
 .bl-routine-root select option,
 .bl-routine-root select optgroup{opacity:1!important}
 .bl-routine-root [role="listbox"]{
-  z-index:10000!important;
+  z-index:2147483000!important;
   opacity:1!important;
   background-color:var(--bl-routine-menu)!important;
   background-image:none!important;
@@ -211,6 +223,7 @@
   mix-blend-mode:normal!important;
   isolation:isolate!important;
   pointer-events:auto!important;
+  font-size:18px!important;
 }
 .bl-routine-root [role="listbox"] [role="option"],
 .bl-routine-root [role="listbox"] [role="group"]{
@@ -218,6 +231,7 @@
   background-color:var(--bl-routine-menu)!important;
   color:var(--bl-routine-menu-text)!important;
   pointer-events:auto!important;
+  font-size:18px!important;
 }
 
 @media(max-width:820px){
@@ -229,22 +243,21 @@
 @media(max-width:560px){
   .bl-routine-tabs{gap:7px}
   .bl-routine-day-row{min-height:74px;padding:11px 12px}
-  .bl-routine-day-date strong{font-size:17px}
+  .bl-routine-day-date strong{font-size:18px}
   .bl-routine-summary-rows>div{grid-template-columns:1fr;gap:3px}
 }
-
 
 /* SITEWIDE_ROUTINE_GROUP_SETTINGS_20260806_1
    One group-first My Routine language for Skincare, Fitness and later systems. */
 .bl-routine-group-number{
   display:inline-grid;place-items:center;flex:0 0 auto;
   min-width:38px;height:38px;padding:0 9px;border-radius:999px;
-  background:var(--bl-routine-accent);color:#fff;font:inherit;font-weight:950;line-height:1;
+  background:var(--bl-routine-accent);color:var(--accent-contrast,var(--bl-routine-text));font:inherit;font-size:18px;font-weight:950;line-height:1;
 }
 .bl-routine-group-headline{display:flex;align-items:center;gap:12px;min-width:0;flex:1}
 .bl-routine-group-headline h3{margin:0;min-width:0;overflow-wrap:anywhere}
 .bl-routine-group-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-left:auto}
-.bl-routine-group-settings-button{font-size:16px!important;padding:9px 13px!important}
+.bl-routine-group-settings-button{font-size:18px!important;padding:9px 13px!important}
 .bl-routine-group-settings-panel{
   display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:14px;
   width:100%;padding:16px;border:1px solid var(--bl-routine-border);border-radius:16px;
@@ -255,7 +268,7 @@
 .bl-routine-group-settings-panel .routine-field{min-width:0;width:100%}
 .bl-routine-group-settings-panel input,
 .bl-routine-group-settings-panel select{width:100%;box-sizing:border-box}
-.bl-routine-group-setting-toggle{display:flex;align-items:center;gap:10px;min-height:48px;font-weight:850}
+.bl-routine-group-setting-toggle{display:flex;align-items:center;gap:10px;min-height:48px;font-size:18px;font-weight:850}
 .bl-routine-group-setting-toggle input{width:auto!important;flex:0 0 auto}
 .bl-routine-group-order-list{display:grid;gap:10px}
 .bl-routine-group-order-row{
@@ -265,17 +278,17 @@
 .bl-routine-group-order-row strong{font-size:18px;overflow-wrap:anywhere}
 .bl-routine-summary-filter{display:grid;grid-template-columns:minmax(220px,520px);gap:7px;margin:0 0 16px}
 .bl-routine-summary-filter select{width:100%}
-.bl-routine-summary-filter label,.bl-routine-summary-filter>span{font-weight:900}
+.bl-routine-summary-filter label,.bl-routine-summary-filter>span{font-size:18px;font-weight:900}
 .bl-routine-log-settings{margin-top:14px;padding:14px;border:1px solid var(--bl-routine-border);border-radius:16px;background:var(--bl-routine-surface)}
 .bl-routine-log-settings[hidden]{display:none!important}
 .bl-routine-log-settings-row{display:grid;grid-template-columns:minmax(220px,420px);gap:8px}
-.bl-routine-log-settings-row label{font-weight:900}
+.bl-routine-log-settings-row label{font-size:18px;font-weight:900}
 .bl-routine-log-settings-row select{width:100%}
 .bl-routine-calendar-markers{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:7px;position:relative;z-index:5}
 .bl-routine-calendar-marker{
-  appearance:none;display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 7px;
+  appearance:none;display:inline-grid;place-items:center;min-width:30px;height:30px;padding:0 7px;
   border:1px solid var(--bl-routine-border);border-radius:999px;background:var(--bl-routine-accent)!important;
-  color:#fff!important;font:inherit;font-size:14px;font-weight:950;line-height:1;cursor:pointer;opacity:1!important
+  color:var(--accent-contrast,var(--bl-routine-text))!important;font:inherit;font-size:18px;font-weight:950;line-height:1;cursor:pointer;opacity:1!important
 }
 .bl-routine-calendar-marker:hover,.bl-routine-calendar-marker:focus-visible{outline:none;box-shadow:0 0 0 4px var(--bl-routine-focus)}
 .bl-routine-week-marker-wrap{display:flex;gap:6px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
