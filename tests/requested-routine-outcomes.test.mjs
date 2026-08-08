@@ -7,6 +7,7 @@ const coherence = read('sitewide/js/baseline-routine-coherence-v12.js');
 const css = read('sitewide/css/baseline-routine-coherence-v12.css');
 const publicViewer = read('sitewide/js/baseline-public-routine-viewonly-v4.js');
 const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
+const exerciseCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
 test('calendar entries are circle numbers only and captions are hover/accessibility metadata', () => {
   assert.match(coherence,/title=\"\$\{esc\(marker\.label\)\}\"/);
@@ -45,6 +46,22 @@ test('sitewide terminology and compact Fitness frequency range follow the reques
   assert.match(coherence,/Workout Date:/);
   assert.match(css,/\.bl-frequency-range-dash/);
   assert.match(css,/minmax\(88px,130px\)/);
+  assert.match(css,/field-stack:has\(#frequencyRangeMax\)>span\{display:none!important\}/);
+});
+
+test('every My Routine dropdown uses one shared shape and centred chevron geometry', () => {
+  assert.match(css,/border-radius:14px!important/);
+  assert.match(css,/min-height:50px!important/);
+  assert.match(css,/grid-template-columns:minmax\(0,1fr\) 50px!important/);
+  assert.match(css,/calc\(50% - 2px\)/);
+});
+
+test('Calisthenics exercise cards use the requested centred header plus left controls and right Details', () => {
+  assert.match(exerciseCss,/grid-template-areas:[\s\S]*"exercise exercise"[\s\S]*"progression details"[\s\S]*"baseline details"[\s\S]*"sets details"/);
+  assert.match(exerciseCss,/\.ex-field-exercise[\s\S]*justify-self:center!important/);
+  assert.match(exerciseCss,/\.ex-details-card::before[\s\S]*content:"Details"/);
+  assert.match(exerciseCss,/Do not restore the old horizontal/);
+  assert.doesNotMatch(exerciseCss,/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
 });
 
 test('Public Routines expose Log Summary Plan and calendar as View Only My Routine', () => {
