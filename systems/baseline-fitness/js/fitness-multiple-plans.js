@@ -489,7 +489,7 @@
       manager = document.createElement('section');
       manager.id = 'calisthenicsPlanManager';
       manager.className = 'card fitness-calisthenics-plan-manager';
-      manager.innerHTML = '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2><p class="note">Keep separate plans for muscle groups, sports preparation or training days.</p></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';
+      manager.innerHTML = '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';
       panel.prepend(manager);
     }
     const select = manager.querySelector('#calisthenicsPlanSelect');
@@ -509,7 +509,7 @@
   function decorateSavedPlan() {
     const title = $('#myPlanOut .my-plan-saved-head h2');
     const plan = selectedPlan();
-    if (title && plan) title.textContent = `Saved plan — ${planName(plan,plans.indexOf(plan))}`;
+    if (title && plan) title.textContent = planName(plan,plans.indexOf(plan));
   }
 
   function patchInterface() {
