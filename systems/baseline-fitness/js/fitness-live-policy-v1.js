@@ -1,7 +1,13 @@
 /* Baseline Fitness — live policy for flexible weekly scheduling and shared progression.
    Weekly-count plans are frequency targets, not appointments: they never lock
    a workout to a generated weekday. Specific-weekday plans may be started
-   early after an explicit Yes/No prompt. */
+   early after an explicit Yes/No prompt.
+
+   MY ROUTINE THEME CONTRACT
+   -------------------------
+   All UI created here inherits Baseline Fitness tokens. Do not hard-code a
+   separate red/pink/black palette. Flexible-weekly plans remain available in
+   today's Routine Log; frequency does not mean they disappear from the log. */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_FITNESS_LIVE_POLICY_V2__) return;
@@ -68,19 +74,19 @@
       #exerciseList .ex-row{position:relative!important}
       #exerciseList .ex-row:has(.ex-picker-menu:not([hidden])){z-index:100000!important}
       #exerciseList .ex-row:has(.ex-picker-menu:not([hidden])) .ex-field-exercise{z-index:100001!important}
-      #exerciseList .ex-picker-menu{z-index:100002!important;opacity:1!important;background:#10090c!important;background-color:#10090c!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important;isolation:isolate!important}
+      #exerciseList .ex-picker-menu{z-index:100002!important;opacity:1!important;background:var(--card-bg)!important;background-color:var(--card-bg)!important;color:var(--ink)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;pointer-events:auto!important;isolation:isolate!important}
       #exerciseList .ex-picker-menu *{pointer-events:auto!important}
-      .ex-picker-inline-status{margin-top:7px;padding:8px 10px;border:1px solid rgba(177,18,38,.48);border-radius:10px;background:#2b1017;color:rgba(255,255,255,.92);font-size:.86rem;line-height:1.3}
+      .ex-picker-inline-status{margin-top:7px;padding:8px 10px;border:1px solid var(--border-2,var(--border))!important;border-radius:10px;background:var(--filter-bg)!important;color:var(--ink)!important;font-size:18px;line-height:1.3}
       .fitness-frequency-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
       .fitness-frequency-grid>.field-stack{margin:0!important;min-width:0}
       .fitness-frequency-grid label{min-height:24px;display:flex;align-items:end;font-weight:800}
       html[data-flex-weekly-count="true"] #currentWorkoutOut .session-plan-meta .badge:first-child,
       html[data-flex-weekly-count="true"] #futureWorkoutOut .session-card .muted,
       html[data-flex-weekly-count-preview="true"] #planOut .session-card .muted{display:none!important}
-      .fitness-start-early-overlay{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:rgba(0,0,0,.66)}
+      .fitness-start-early-overlay{position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:20px;background:color-mix(in srgb,var(--bg) 78%,transparent)}
       .fitness-start-early-overlay[hidden]{display:none!important}
-      .fitness-start-early-dialog{width:min(430px,calc(100vw - 40px));padding:22px;border:1px solid rgba(188,42,63,.52);border-radius:20px;background:#10090c;color:rgba(255,255,255,.94);box-shadow:0 28px 80px rgba(0,0,0,.65)}
-      .fitness-start-early-dialog h3{margin:0 0 8px;font-size:1.35rem}.fitness-start-early-dialog p{margin:0 0 18px;color:rgba(255,255,255,.72)}
+      .fitness-start-early-dialog{width:min(430px,calc(100vw - 40px));padding:22px;border:1px solid var(--border-2,var(--border));border-radius:20px;background:var(--card-bg);color:var(--ink);box-shadow:var(--shadow)}
+      .fitness-start-early-dialog h3{margin:0 0 8px;font-size:1.35rem}.fitness-start-early-dialog p{margin:0 0 18px;color:var(--muted)}
       .fitness-start-early-actions{display:flex;justify-content:flex-end;gap:10px}.fitness-start-early-actions button{min-width:88px}
       @media(max-width:680px){.fitness-frequency-grid{grid-template-columns:1fr}}
     `;
@@ -107,6 +113,7 @@
     let range = $('#'+RANGE_ID);
     if (!range) {
       const label = host.querySelector('label[for="freq"]');
+      if (label) label.textContent = 'Days Per Week';
       const grid = document.createElement('div');
       grid.className = 'fitness-frequency-grid';
       const minField = document.createElement('div');
@@ -115,7 +122,7 @@
       minField.appendChild(freq);
       const maxField = document.createElement('div');
       maxField.className = 'field-stack';
-      maxField.innerHTML = `<label for="${RANGE_ID}">Range</label><select id="${RANGE_ID}" class="field-select-fixed" aria-label="Maximum days each week"><option value="">Not Selected</option></select>`;
+      maxField.innerHTML = `<select id="${RANGE_ID}" class="field-select-fixed" aria-label="Maximum days per week"><option value="">Not Selected</option></select>`;
       grid.append(minField,maxField);
       host.replaceChildren(grid);
       range = maxField.querySelector('select');
@@ -337,7 +344,7 @@
     if (voice) { voice.disabled = !context.canStart; voice.setAttribute('aria-disabled',context.canStart ? 'false' : 'true'); }
     const status = $('#myPlanStatus');
     if (status) {
-      if (weekly) status.textContent = 'Current workout available within your weekly frequency.';
+      if (weekly) status.textContent = '';
       else if (context.startEarlyRequired) status.textContent = 'This session is scheduled for later. You can start it early.';
     }
     document.documentElement.setAttribute('data-flex-weekly-count',weekly ? 'true' : 'false');
@@ -394,13 +401,7 @@
     global.BASELINE_fitnessPlans = Object.freeze(Object.assign({},original,{
       __baselineFlexibleWeeklyV2:true,
       getPlansForDate(date) {
-        const entries = original.getPlansForDate?.(date) || [];
-        const byId = new Map((original.getPlans?.() || []).map((plan) => [Number(plan.planId),plan]));
-        return entries.filter((entry) => {
-          if (entry?.status !== 'due') return true;
-          const plan = byId.get(Number(entry.planId));
-          return String(plan?.planJson?.scheduleMode || 'weekly-count') === 'specific-days';
-        });
+        return original.getPlansForDate?.(date) || [];
       }
     }));
   }
