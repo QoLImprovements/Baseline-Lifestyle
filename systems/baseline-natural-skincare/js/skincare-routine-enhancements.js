@@ -5,7 +5,7 @@
    - No loading screen and no hidden/placeholder My Routine page.
    - Base Skincare owns data and native controls.
    - skincare-routine-sitewide-v4.js owns Skincare grouping/calendar structure.
-   - baseline-public-routine-groups-v1.js renders Public Routines as View Only My Routine.
+   - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
    - baseline-routine-coherence-v12.js supplies only shared sitewide behaviour.
    - Dependencies start fetching together and execute in dependency order.
 */
@@ -57,9 +57,6 @@
     }));
   }
 
-  /* Weekly completion must remain visible on the exact logged date so it can
-     be unticked if it was entered by mistake. This changes due-visibility only;
-     checking/unchecking remains owned by the normal Skincare log handler. */
   function preserveCompletedLogDates() {
     const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
     if (!base || base.__baselineKeepCompletedDateV2) return;
@@ -160,7 +157,7 @@
     .then(() => loadOrderedParallel([
       { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5',marker:'data-baseline-routine-system' },
       { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260808_12',marker:'data-skincare-routine-sitewide-v4' },
-      { src:'/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-groups' },
+      { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-viewonly-v4' },
       { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_1',marker:'data-baseline-routine-coherence-v12' }
     ]))
     .then(bindRecipeOptionNormaliser)
