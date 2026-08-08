@@ -11,6 +11,8 @@ const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitnes
 const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js', import.meta.url), 'utf8');
 const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url), 'utf8');
 const css = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url), 'utf8');
+const stability = fs.readFileSync(new URL('../sitewide/js/baseline-routine-stability-v11.js', import.meta.url), 'utf8');
+const stabilityCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-stability-v11.css', import.meta.url), 'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-system.js', import.meta.url), 'utf8');
 const html = fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html', import.meta.url), 'utf8');
 const api = fs.readFileSync(new URL('../systems/baseline-fitness/api/routine_state.php', import.meta.url), 'utf8');
@@ -83,6 +85,7 @@ test('Routine Summary groups plan and activity entities in saved group order', (
   assert.match(structure, /fitnessSummaryGroupFilter/);
   assert.match(structure, /data-v4-entity/);
   assert.match(structure, /Ungrouped routine items/);
+  assert.match(stability, /Individual Routine Steps/);
 });
 
 test('Public Routines panel is native to the Fitness structure and exposes shared viewer hooks', () => {
@@ -92,6 +95,8 @@ test('Public Routines panel is native to the Fitness structure and exposes share
   assert.match(structure, /fitnessPublicRoutineResult/);
   assert.match(structure, /\?list=public/);
   assert.match(structure, /saveVisibility/);
+  assert.match(stability, /moveVisibilityControl/);
+  assert.match(stabilityCss, /\.bl-v11-public-visibility/);
 });
 
 test('weekly-count frequency and start access are governed by the flexible scheduling policy', () => {
@@ -116,15 +121,27 @@ test('Fitness activity state persists activity-specific target and result metric
   assert.match(api, /'metrics'=>bl_fitness_metric_values/);
 });
 
-test('Fitness entry point loads catalogue, shared data workspace, one structure adapter, shared authority and policy in order', () => {
-  const chain = workspaceLoader.slice(workspaceLoader.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
-  const catalogueIndex = chain.indexOf('fitness-activity-catalogue-v2.js');
-  const sharedIndex = chain.indexOf('baseline-routine-system.js');
-  const workspaceIndex = chain.indexOf('fitness-routine-workspace-v2.js');
-  const structureIndex = chain.indexOf('fitness-routine-structure-v4.js');
-  const authorityIndex = chain.indexOf('baseline-routine-authority-v7.js');
-  const policyIndex = chain.indexOf('fitness-live-policy-v1.js');
-  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && authorityIndex > structureIndex && policyIndex > authorityIndex);
+test('Fitness entry point loads data owners and adapters before one final stability layer with parallel fetch', () => {
+  const catalogueIndex = workspaceLoader.indexOf('fitness-activity-catalogue-v2.js');
+  const sharedIndex = workspaceLoader.indexOf('baseline-routine-system.js');
+  const workspaceIndex = workspaceLoader.indexOf('fitness-routine-workspace-v2.js');
+  const structureIndex = workspaceLoader.indexOf('fitness-routine-structure-v4.js');
+  const policyIndex = workspaceLoader.indexOf('fitness-live-policy-v1.js');
+  const stabilityIndex = workspaceLoader.indexOf('baseline-routine-stability-v11.js');
+  assert.ok(catalogueIndex >= 0 && sharedIndex > catalogueIndex && workspaceIndex > sharedIndex && structureIndex > workspaceIndex && policyIndex > structureIndex && stabilityIndex > policyIndex);
+  assert.match(workspaceLoader, /function loadOrderedParallel/);
+  assert.match(workspaceLoader, /script\.async = false/);
+  assert.match(workspaceLoader, /Promise\.all\(pending\)/);
+  assert.doesNotMatch(workspaceLoader, /baseline-routine-authority-v7\.js|baseline-routine-experience-v9\.js|baseline-routine-experience-v10\.js/);
   assert.doesNotMatch(workspaceLoader, /fitness-routine-sitewide-v3\.js/);
   assert.match(shared, /SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5/);
+});
+
+test('checked Fitness rows stay available for correction and Details/Remove share one right action cluster', () => {
+  assert.match(stability, /restoreFitnessCompletedRows/);
+  assert.match(stability, /Completed on this date/);
+  assert.match(stability, /data-v11-log-details/);
+  assert.match(stability, /data-v11-remove-fitness/);
+  assert.match(stabilityCss, /\.bl-v11-log-actions/);
+  assert.match(stabilityCss, /justify-content:flex-end!important/);
 });
