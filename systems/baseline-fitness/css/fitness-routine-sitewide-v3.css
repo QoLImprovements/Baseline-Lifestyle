@@ -42,6 +42,12 @@ html[data-app="fitness"] #my-plan :is(input,select,textarea,.ex-picker-control,.
   color:var(--ink)!important;
   border-color:var(--border-2)!important;
 }
+/* Baseline Fitness uses a dark field surface, so date glyphs need the light icon. */
+html[data-app="fitness"] #my-plan input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(1) brightness(2)!important;
+  opacity:1!important;
+  cursor:pointer;
+}
 
 /* Opaque picker/menu foreground. One CSS owner; no JS style injection. */
 #my-plan .fitness-activity-add{position:relative;z-index:300;isolation:isolate;overflow:visible}
