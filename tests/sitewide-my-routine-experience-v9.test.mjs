@@ -35,10 +35,11 @@ test('regression: shared coherence never takes ownership of page scrolling', () 
 });
 
 test('regression: duplicate dropdown shells are actively removed rather than multiplied', () => {
-  assert.match(shared,/removeLegacyDropdownCopies/);
+  assert.match(shared,/removeDuplicateControls/);
   assert.match(shared,/\.bl-search-select/);
   assert.match(shared,/\.bl-routine-select-shell/);
-  assert.match(shared,/matches\.slice\(1\)/);
+  assert.match(shared,/matches\.length<2/);
+  assert.match(shared,/const keep=matches\.find/);
 });
 
 test('regression: old loading screen text is absent', () => {
