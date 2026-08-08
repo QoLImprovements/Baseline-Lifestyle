@@ -1,3 +1,4 @@
+// Validation branch: run the current My Routine structural suite without changing behavior.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
