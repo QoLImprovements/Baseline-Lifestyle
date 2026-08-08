@@ -7,67 +7,69 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), 'utf
 
 const skincare = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
 const fitness = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
-const shared = read('sitewide/js/baseline-routine-authority-v7.js');
+const shared = read('sitewide/js/baseline-routine-stability-v11.js');
+const sharedCss = read('sitewide/css/baseline-routine-stability-v11.css');
 const publicViewer = read('sitewide/js/baseline-public-routine-groups-v1.js');
 const coherence = read('systems/baseline-fitness/js/fitness-routine-coherence-v1.js');
 const themeGuard = read('systems/baseline-fitness/js/fitness-theme-guard-v1.js');
 
-test('Skincare and Fitness load one shared stable My Routine authority', () => {
+test('Skincare and Fitness load one shared stable My Routine final layer', () => {
   for (const loader of [skincare, fitness]) {
-    assert.match(loader, /baseline-routine-authority-v7\.js/);
+    assert.match(loader, /baseline-routine-stability-v11\.js/);
     assert.match(loader, /baseline-public-routine-groups-v1\.js/);
+    assert.doesNotMatch(loader, /baseline-routine-authority-v7\.js|baseline-routine-experience-v9\.js|baseline-routine-experience-v10\.js/);
     assert.doesNotMatch(loader, /baseline-routine-coherence-v4\.js|baseline-routine-coherence-events-v4\.js|baseline-routine-live-authority-v1\.js/);
   }
   assert.doesNotMatch(skincare, /baseline-skincare-routine-state-bridge-v1\.js/);
   assert.doesNotMatch(fitness, /fitness-routine-canonical|baseline-routine-canonical-v1|baseline-fitness-routine-summary-bridge-v1\.js/);
 });
 
-test('deterministic loaders hide intermediate views and document ownership boundaries', () => {
+test('deterministic loaders show one loading surface and fetch dependencies without a serial waterfall', () => {
   assert.match(skincare, /data-skincare-routine-booting/);
   assert.match(skincare, /waitForBaseRoutine/);
-  assert.match(skincare, /OWNERSHIP CONTRACT/);
+  assert.match(skincare, /PERFORMANCE \/ OWNERSHIP CONTRACT/);
   assert.match(fitness, /data-fitness-routine-booting/);
   assert.match(fitness, /restoreRequestedView/);
-  assert.match(fitness, /OWNERSHIP CONTRACT/);
-  assert.match(fitness, /fitness-routine-coherence-v1\.js/);
-  assert.match(fitness, /fitness-theme-guard-v1\.js/);
+  assert.match(fitness, /PERFORMANCE \/ OWNERSHIP CONTRACT/);
+  for (const loader of [skincare,fitness]) {
+    assert.match(loader, /function loadOrderedParallel/);
+    assert.match(loader, /script\.async = false/);
+    assert.match(loader, /Promise\.all\(pending\)/);
+    assert.match(loader, /Loading My Routine…/);
+    assert.doesNotMatch(loader, /releaseBootShieldWhenStable/);
+  }
 });
 
-test('Create Another Plan and Open Plan retain one capture-level controller before presentation authority', () => {
+test('Create Another Plan and Open Plan retain one capture-level controller before stability decoration', () => {
   const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
   const authority = read('sitewide/js/baseline-fitness-plan-control-authority-v1.js');
-  const chain = fitness.slice(fitness.indexOf("load('/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js"));
   assert.match(multiplePlans, />Create Another Plan<\/button>/);
   assert.match(authority, /#createCalisthenicsPlan/);
   assert.match(authority, /calisthenicsPlanSelect/);
   assert.match(authority, /stopImmediatePropagation/);
   assert.match(authority, /BASELINE_fitnessPlans\?\.openPlan/);
-  assert.ok(chain.indexOf('baseline-fitness-plan-control-authority-v1.js') < chain.indexOf('baseline-routine-authority-v7.js'));
+  assert.ok(fitness.indexOf('baseline-fitness-plan-control-authority-v1.js') < fitness.indexOf('baseline-routine-stability-v11.js'));
 });
 
-test('shared authority owns view persistence, stable numbering and non-destructive decoration', () => {
-  assert.match(shared, /SITEWIDE CONTRACT/);
-  assert.match(shared, /counter-reset:blPlanNumber/);
-  assert.match(shared, /counter-reset:blLogNumber/);
-  assert.match(shared, /routine-plan-group-ungrouped/);
-  assert.match(shared, /function persistView/);
-  assert.match(shared, /routine-view/);
-  assert.match(shared, /url\.searchParams\.delete\('new-plan'\)/);
-  assert.match(shared, /function groupedMoveDistance/);
-  assert.match(shared, /data-v8-group-complete/);
-  assert.match(shared, /One observer only/);
+test('shared stability layer owns bounded decoration without moving renderer-owned controls', () => {
+  assert.match(shared, /must not re-parent renderer-owned/);
+  assert.match(shared, /function ensureSkinSummaryFilter/);
+  assert.match(shared, /function restoreFitnessCompletedRows/);
+  assert.match(shared, /data-v11-group-complete/);
+  assert.match(shared, /data-calendar-summary-filter/);
+  assert.doesNotMatch(shared, /ensureSelectShell|normaliseExerciseCards/);
   assert.doesNotMatch(shared, /setInterval/);
   assert.doesNotMatch(shared, /observe\(document\.documentElement|observe\(document\.body/);
+  assert.doesNotMatch(shared, /scrollTop\s*=|document\.body\.style\.overflow/);
 });
 
-test('Routine Summary filtering is shared and duplicate Skincare controls are removed', () => {
+test('Routine Summary filtering is stable and uses sitewide terminology', () => {
   assert.match(shared, /skinRoutineSummaryFilter/);
   assert.match(shared, /fitnessSummaryGroupFilter/);
   assert.match(shared, /function applySkinSummaryFilter/);
-  assert.match(shared, /function applyFitnessSummaryFilter/);
-  assert.match(shared, /function removeDuplicateControls/);
-  assert.match(shared, /Individual routine items/);
-  assert.match(shared, /value\.startsWith\('entity:'\)/);
+  assert.match(shared, /Individual Routine Steps/);
+  assert.match(shared, /All Routine Steps/);
+  assert.match(sharedCss, /\.bl-routine-summary-filter/);
 });
 
 test('Public Routine viewer mirrors Log Summary and Plan using public completion data', () => {
@@ -81,6 +83,8 @@ test('Public Routine viewer mirrors Log Summary and Plan using public completion
   assert.match(publicViewer, /skinBenefit/);
   assert.match(publicViewer, /fitnessSummaryHtml/);
   assert.match(publicViewer, /fitnessPlanHtml/);
+  assert.match(shared, /moveVisibilityControl/);
+  assert.match(sharedCss, /\.bl-v11-public-visibility/);
   assert.match(fitnessApi, /'logs'=>\$logs/);
   assert.match(fitnessApi, /'sessions'=>\$sessions/);
   assert.match(skinApi, /'logs'=>\$logs/);
@@ -98,14 +102,12 @@ test('Fitness coherence adapter enriches Summary without duplicating progression
   assert.match(policy, /function completedSharedSessions/);
 });
 
-test('Fitness generator has a documented fixed layout and opaque theme-owned picker', () => {
-  assert.match(shared, /GENERATOR GRID CONTRACT/);
-  assert.match(shared, /grid-template-areas:"exercise mode baseline sets increase actions"/);
-  assert.match(shared, /data-exercise-move/);
+test('Fitness generator keeps opaque theme-owned pickers and final stability does not rebuild its field grid', () => {
   assert.match(themeGuard, /FUTURE EDIT RULE/);
   assert.match(themeGuard, /var\(--card-bg\)/);
   assert.match(themeGuard, /z-index:2147483600/);
   assert.doesNotMatch(themeGuard, /#45151d|#2b1017|#10090c/);
+  assert.doesNotMatch(shared, /normaliseExerciseCards|bl-v10-exercise-columns/);
 });
 
 test('weekly-count Fitness remains frequency based while specific-day sessions may start early', () => {
@@ -115,14 +117,12 @@ test('weekly-count Fitness remains frequency based while specific-day sessions m
   assert.match(policy, /frequencyRangeMax/);
   assert.match(policy, /Current workout available within your weekly frequency/);
   assert.match(policy, /Start Early\?/);
-  assert.match(shared, /Available this week/);
-  assert.match(shared, /scheduleMode==='specific-days'/);
 });
 
 test('new coherence files remain valid JavaScript', () => {
   for (const path of [
     'sitewide/js/baseline-public-routine-groups-v1.js',
-    'sitewide/js/baseline-routine-authority-v7.js',
+    'sitewide/js/baseline-routine-stability-v11.js',
     'systems/baseline-fitness/js/fitness-routine-coherence-v1.js',
     'systems/baseline-fitness/js/fitness-theme-guard-v1.js',
     'systems/baseline-fitness/js/fitness-routine-workspace.js',
