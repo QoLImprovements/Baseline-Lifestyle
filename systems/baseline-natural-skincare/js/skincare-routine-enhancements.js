@@ -27,9 +27,6 @@
   const MAX_WAIT_MS=6000;
   let recipeOptionObserver=null;
 
-  /* Product / recipe data is part of the Skincare adapter, not the shared UI.
-     Replace the product-library facade synchronously, before skincare-routine.js
-     captures it, so every Baseline recipe is available to every routine step. */
   function exposeAllBaselineRecipes() {
     const base=global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
     if (!base || base.__baselineAllRecipesV2) return;
@@ -66,10 +63,6 @@
     }));
   }
 
-  /* The older product-catalogue expander groups commercial products by brand.
-     Preserve that behaviour, but restore the complete Baseline recipe group
-     after any editor rerender. This adapter changes only product options; it
-     never rebuilds a Routine view or competes with the sitewide authority. */
   function normaliseRecipeOptions() {
     const library=global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
     const recipes=typeof library?.recipeProducts==='function' ? library.recipeProducts() : [];
@@ -121,31 +114,20 @@
   }
 
   function releaseBootShield() {
-    global.requestAnimationFrame(() => global.requestAnimationFrame(() => {
-      document.documentElement.removeAttribute('data-skincare-routine-booting');
-    }));
+    global.requestAnimationFrame(() => global.requestAnimationFrame(() => document.documentElement.removeAttribute('data-skincare-routine-booting')));
   }
 
-  /* Atomic first paint: the old 90ms/500ms window could reveal native checkboxes
-     before the shared group/summary/dropdown layers finished. v10 waits for a
-     materially quiet DOM after the final sitewide normaliser has run. */
   function releaseBootShieldWhenStable() {
     return new Promise((resolve) => {
       const root=document.getElementById('routine');
       if (!root || typeof MutationObserver==='undefined') { releaseBootShield();resolve();return; }
-      let quietTimer=0;
-      let maxTimer=0;
-      let finished=false;
+      let quietTimer=0;let maxTimer=0;let finished=false;
       const done=() => {
-        if (finished) return;
-        finished=true;
+        if (finished) return;finished=true;
         clearTimeout(quietTimer);clearTimeout(maxTimer);observer.disconnect();
         normaliseRecipeOptions();releaseBootShield();resolve();
       };
-      const settle=() => {
-        clearTimeout(quietTimer);
-        quietTimer=global.setTimeout(done,180);
-      };
+      const settle=() => { clearTimeout(quietTimer);quietTimer=global.setTimeout(done,180); };
       const observer=new MutationObserver(settle);
       observer.observe(root,{ childList:true,subtree:true });
       maxTimer=global.setTimeout(done,1400);
@@ -157,9 +139,7 @@
     const existing=document.querySelector(`script[${marker}]`);
     if (existing) {
       if (existing.dataset.loaded==='true') return Promise.resolve();
-      return new Promise((resolve,reject) => {
-        existing.addEventListener('load',resolve,{ once:true });existing.addEventListener('error',reject,{ once:true });
-      });
+      return new Promise((resolve,reject) => { existing.addEventListener('load',resolve,{ once:true });existing.addEventListener('error',reject,{ once:true }); });
     }
     return new Promise((resolve,reject) => {
       const script=document.createElement('script');script.src=src;script.async=false;script.setAttribute(marker,'true');
@@ -189,12 +169,10 @@
     .then(() => load('/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3','data-baseline-public-routine-groups'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
-    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_1','data-baseline-routine-experience-v10'))
+    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_2','data-baseline-routine-experience-v10'))
+    .then(() => global.BASELINE_RoutineExperienceV10Ready || Promise.resolve())
     .then(() => { bindRecipeOptionNormaliser();return releaseBootShieldWhenStable(); })
-    .catch((error) => {
-      releaseBootShield();
-      try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
-    });
+    .catch((error) => { releaseBootShield();try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
 
   global.addEventListener('pagehide',() => recipeOptionObserver?.disconnect(),{ once:true });
 })(typeof window!=='undefined'?window:globalThis);
