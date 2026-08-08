@@ -5,14 +5,14 @@
    - No loading screen and no hidden/placeholder My Routine page.
    - Fitness data/plan modules keep their existing ownership.
    - Public Routines render the same My Routine structure in View Only form.
-   - baseline-routine-coherence-v12.js supplies shared, bounded behaviour only.
+   - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
+   - Theme/stacking rules live in CSS, never a runtime style-injection guard.
    - Dependencies start fetching together and execute in dependency order.
 */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V30__) return;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V30__ = true;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V29__ = true;
   const document = global.document;
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
@@ -172,7 +172,6 @@
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3',marker:'data-fitness-generator-progression' },
     { src:'/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260808_1',marker:'data-fitness-routine-coherence-v1' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_2',marker:'data-fitness-live-policy' },
-    { src:'/systems/baseline-fitness/js/fitness-theme-guard-v1.js?v=BASELINE_FITNESS_THEME_GUARD_20260807_1',marker:'data-fitness-theme-guard-v1' },
     { src:'/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1',marker:'data-fitness-timed-hold-targets-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1',marker:'data-fitness-exercise-family-filter' },
     { src:'/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1',marker:'data-fitness-plan-generator-coherence-v4' },
