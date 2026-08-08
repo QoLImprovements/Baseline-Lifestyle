@@ -1,127 +1,108 @@
-/* Baseline Fitness — deterministic My Routine loader v30.
+/* Baseline Fitness — canonical My Routine dependency loader.
 
-   PERFORMANCE / OWNERSHIP CONTRACT
-   --------------------------------
-   - No loading screen and no hidden/placeholder My Routine page.
-   - Fitness data/plan modules keep their existing ownership.
-   - fitness-multiple-plans.js owns Create/Open Plan controls directly.
-   - fitness-routine-groups-v2.js is the single Fitness group owner.
-   - fitness-generator-progression-v1.js is the single generator progression/picker owner.
-   - timed-hold-targets specializes timed failure/target behaviour.
-   - fitness-live-policy-v1.js is the FINAL live-workout wrapper for shared progression/access.
-   - fitness-routine-structure-v4.js renders the comprehensive Summary directly.
-   - Public Routines render the same My Routine structure in View Only form.
-   - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
-   - Theme/stacking/week-view layout lives in CSS, not runtime observers.
-   - Dependencies start fetching together and execute in dependency order.
+   OWNERSHIP ORDER
+   ---------------
+   data/catalogue -> base Routine workspace -> schedule -> groups -> generator
+   progression -> timed specialization -> final live policy -> view structure ->
+   Public View Only -> shared v12 finisher.
+
+   Keep this loader declarative. No loading screen, polling observer, visual patch,
+   duplicate controller or retired compatibility module belongs here.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V30__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V30__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V31__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V31__ = true;
+
   const document = global.document;
-  const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
-  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
-  const CANONICAL_PATH = '/baseline-fitness/my-routine';
+  const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
+  const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
+  const PLAN_VIEWS=['calisthenics','cardio','other','sports'];
+  const MAIN_VIEWS=['log','summary','public','plan'];
+  const CANONICAL_PATH='/baseline-fitness/my-routine';
 
-  function navigationPath() {
+  function routePath() {
     try {
-      const entry = global.performance?.getEntriesByType?.('navigation')?.[0];
-      if (entry?.name) return new URL(entry.name,global.location.href).pathname;
-    } catch (_error) {}
-    return String(global.location?.pathname || '');
+      const entry=global.performance?.getEntriesByType?.('navigation')?.[0];
+      return entry?.name ? new URL(entry.name,global.location.href).pathname : String(global.location?.pathname || '');
+    } catch (_error) { return String(global.location?.pathname || ''); }
   }
-
-  const path = navigationPath();
-  const openRoutine = /\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(path)
-    || document.documentElement.getAttribute('data-initial-fitness-tab') === 'my-plan';
-  const legacyPlanRoute = /\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(path);
-  const newPlanRequest = (() => {
-    try { return new URL(global.location.href).searchParams.has('new-plan'); }
-    catch (_error) { return false; }
-  })();
-
-  function loadOrderedParallel(entries) {
-    const pending = entries.map(({ src,marker }) => {
-      const existing = document.querySelector(`script[${marker}]`);
-      if (existing) {
-        if (existing.dataset.loaded === 'true' || existing.readyState === 'complete') return Promise.resolve();
-        return new Promise((resolve,reject) => {
-          existing.addEventListener('load',resolve,{ once:true });
-          existing.addEventListener('error',reject,{ once:true });
-        });
-      }
-      return new Promise((resolve,reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = false;
-        script.setAttribute(marker,'true');
-        script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
-        script.addEventListener('error',reject,{ once:true });
-        document.head.appendChild(script);
-      });
-    });
-    return Promise.all(pending);
-  }
+  const path=routePath();
+  const openRoutine=/\/baseline-fitness\/(?:my-routine|my-plan|workout-routine)\/?$/.test(path)
+    || document.documentElement.getAttribute('data-initial-fitness-tab')==='my-plan';
+  const legacyPlanRoute=/\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/.test(path);
+  let newPlanRequest=false;
+  try { newPlanRequest=new URL(global.location.href).searchParams.has('new-plan'); } catch (_error) {}
 
   function selectRoutinePage() {
     if (!openRoutine) return;
     document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
     try { global.BASELINE_selectTab?.('my-plan',{ silentHistory:true }); } catch (_error) {}
     document.querySelectorAll('.tab[data-target]').forEach((button) => {
-      const active = button.dataset.target === 'my-plan';
-      button.classList.toggle('active',active);
-      button.setAttribute('aria-selected',active ? 'true' : 'false');
+      const selected=button.dataset.target==='my-plan';
+      button.classList.toggle('active',selected);
+      button.setAttribute('aria-selected',selected?'true':'false');
     });
-    document.querySelectorAll('main.wrap > .section').forEach((section) => section.classList.toggle('active',section.id === 'my-plan'));
-    const section = document.getElementById('my-plan');
-    if (section) section.hidden = false;
+    document.querySelectorAll('main.wrap>.section').forEach((section) => section.classList.toggle('active',section.id==='my-plan'));
+    const section=document.getElementById('my-plan');
+    if (section) section.hidden=false;
     try {
-      const current = new URL(global.location.href);
-      if (current.pathname !== CANONICAL_PATH) {
-        current.pathname = CANONICAL_PATH;
-        global.history.replaceState(global.history.state,'',current.pathname + current.search + current.hash);
+      const url=new URL(global.location.href);
+      if (url.pathname!==CANONICAL_PATH) {
+        url.pathname=CANONICAL_PATH;
+        global.history.replaceState(global.history.state,'',url.pathname+url.search+url.hash);
       }
     } catch (_error) {}
   }
 
-  function bindCanonicalRoutineRoute() {
-    if (!openRoutine || document.documentElement.dataset.fitnessRoutineRouteGuard === 'true') return;
-    document.documentElement.dataset.fitnessRoutineRouteGuard = 'true';
-    document.addEventListener('click',(event) => {
-      if (event.target?.closest?.('.tab[data-target="my-plan"]')) global.requestAnimationFrame(selectRoutinePage);
-    },true);
-    global.addEventListener('pageshow',selectRoutinePage);
-  }
-
   function requestedViews() {
-    let main = 'log';
-    let plan = 'calisthenics';
+    let main='log';
+    let plan='calisthenics';
     try {
-      const url = new URL(global.location.href);
-      const queryMain = String(url.searchParams.get('routine-view') || '');
-      const queryPlan = String(url.searchParams.get('routine-plan') || '');
-      const rememberedMain = String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      const rememberedPlan = String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
-      if (['log','summary','public','plan'].includes(queryMain)) main = queryMain;
-      else if (['log','summary','public','plan','calisthenics','cardio','other','sports'].includes(rememberedMain)) main = rememberedMain;
-      if (['calisthenics','cardio','other','sports'].includes(queryPlan)) plan = queryPlan;
-      else if (['calisthenics','cardio','other','sports'].includes(rememberedPlan)) plan = rememberedPlan;
+      const url=new URL(global.location.href);
+      const queryMain=String(url.searchParams.get('routine-view') || '');
+      const queryPlan=String(url.searchParams.get('routine-plan') || '');
+      const savedMain=String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
+      const savedPlan=String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
+      if (MAIN_VIEWS.includes(queryMain)) main=queryMain;
+      else if (MAIN_VIEWS.includes(savedMain)) main=savedMain;
+      else if (PLAN_VIEWS.includes(savedMain)) { main='plan';plan=savedMain; }
+      if (PLAN_VIEWS.includes(queryPlan)) plan=queryPlan;
+      else if (PLAN_VIEWS.includes(savedPlan)) plan=savedPlan;
     } catch (_error) {}
-    if (['calisthenics','cardio','other','sports'].includes(main)) { plan=main;main='plan'; }
     if (legacyPlanRoute || newPlanRequest) { main='plan';plan='calisthenics'; }
     return { main,plan };
   }
-
   function restoreRequestedView() {
     if (!openRoutine) return;
-    const requested = requestedViews();
-    const mainButton = document.querySelector(`[data-fitness-routine-view="${requested.main}"]`);
-    if (mainButton) mainButton.click();
-    if (requested.main === 'plan') {
-      const planButton = document.querySelector(`[data-fitness-plan-view="${requested.plan}"]`);
-      if (planButton) planButton.click();
+    const requested=requestedViews();
+    document.querySelector(`[data-fitness-routine-view="${requested.main}"]`)?.click();
+    if (requested.main==='plan') document.querySelector(`[data-fitness-plan-view="${requested.plan}"]`)?.click();
+  }
+
+  function loadScript({ src,marker }) {
+    const existing=document.querySelector(`script[${marker}]`);
+    if (existing) {
+      if (existing.dataset.loaded==='true' || existing.readyState==='complete') return Promise.resolve();
+      return new Promise((resolve,reject) => {
+        existing.addEventListener('load',resolve,{ once:true });
+        existing.addEventListener('error',reject,{ once:true });
+      });
     }
+    return new Promise((resolve,reject) => {
+      const script=document.createElement('script');
+      script.src=src;
+      script.async=false;
+      script.setAttribute(marker,'true');
+      script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
+      script.addEventListener('error',reject,{ once:true });
+      document.head.appendChild(script);
+    });
+  }
+  function loadOrderedParallel(entries) {
+    /* async=false preserves insertion execution order while network fetches start
+       together, avoiding a serial request waterfall. */
+    return Promise.all(entries.map(loadScript));
   }
 
   if (newPlanRequest) {
@@ -131,8 +112,13 @@
     } catch (_error) {}
   }
 
-  selectRoutinePage();
-  bindCanonicalRoutineRoute();
+  if (openRoutine) {
+    selectRoutinePage();
+    document.addEventListener('click',(event) => {
+      if (event.target?.closest?.('.tab[data-target="my-plan"]')) global.requestAnimationFrame(selectRoutinePage);
+    },true);
+    global.addEventListener('pageshow',selectRoutinePage);
+  }
 
   loadOrderedParallel([
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
@@ -144,13 +130,9 @@
     { src:'/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1',marker:'data-fitness-timed-hold-targets-v2' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260808_3',marker:'data-fitness-live-policy' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260808_2',marker:'data-fitness-routine-structure-v4' },
-    { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-viewonly-v4' },
     { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_4',marker:'data-baseline-routine-coherence-v12' }
   ])
-    .then(() => {
-      selectRoutinePage();
-      restoreRequestedView();
-    })
-    .catch((error) => { try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {} });
-})(typeof window !== 'undefined' ? window : globalThis);
+    .then(() => { selectRoutinePage();restoreRequestedView(); })
+    .catch((error) => { try { console.error('Fitness My Routine dependency load failed.',error); } catch (_error) {} });
+})(typeof window!=='undefined'?window:globalThis);
