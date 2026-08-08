@@ -10,7 +10,7 @@
    baseline-routine-experience-v9.js -> compatibility normaliser shared with Skincare
    baseline-routine-experience-v10.js -> FINAL sitewide presentation/interaction contract
    fitness-plan-generator-coherence-v4.js -> Fitness-only plan semantics
-   fitness-routine-coherence-v1.js  -> Fitness Summary enrichment only
+   fitness-routine-coherence-v1.js  -> Fitness content inside the shared Skincare-shaped Summary
    fitness-live-policy-v1.js        -> weekly access, Start Early and cross-plan progression
 
    View switching stays hidden until the selected view is fully restored and the
@@ -170,7 +170,7 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-routine-groups-v1.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260807_2','data-fitness-routine-groups-v1'))
     .then(() => load('/sitewide/js/baseline-routine-authority-v7.js?v=BASELINE_ROUTINE_AUTHORITY_20260807_3','data-baseline-routine-authority-v7'))
     .then(() => load('/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3','data-fitness-generator-progression'))
-    .then(() => load('/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260807_3','data-fitness-routine-coherence-v1'))
+    .then(() => load('/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260808_1','data-fitness-routine-coherence-v1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_2','data-fitness-live-policy'))
     .then(() => load('/systems/baseline-fitness/js/fitness-theme-guard-v1.js?v=BASELINE_FITNESS_THEME_GUARD_20260807_1','data-fitness-theme-guard-v1'))
     .then(() => load('/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1','data-fitness-timed-hold-targets-v2'))
