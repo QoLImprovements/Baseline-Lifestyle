@@ -7,15 +7,18 @@
    fitness-routine-groups-v1.js     -> Fitness group assignment adapter
    baseline-public-routine-groups-v1.js -> shared read-only Public Routine viewer
    baseline-routine-authority-v7.js -> shared cross-system coherence rules
-   baseline-routine-experience-v9.js -> same presentation/interaction contract as Skincare
+   baseline-routine-experience-v9.js -> compatibility normaliser shared with Skincare
+   baseline-routine-experience-v10.js -> FINAL sitewide presentation/interaction contract
    fitness-plan-generator-coherence-v4.js -> Fitness-only plan semantics
    fitness-routine-coherence-v1.js  -> Fitness Summary enrichment only
    fitness-live-policy-v1.js        -> weekly access, Start Early and cross-plan progression
 
-   View switching stays hidden until the selected view is fully restored. */
+   View switching stays hidden until the selected view is fully restored and the
+   final shared My Routine layer has reached a quiet DOM. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V27__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V28__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V28__=true;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V27__=true;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V26__=true;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V25__=true;
@@ -42,6 +45,27 @@
   function releaseBootShield() {
     global.requestAnimationFrame(() => global.requestAnimationFrame(() => document.documentElement.removeAttribute('data-fitness-routine-booting')));
   }
+
+  /* Atomic My Routine paint. This prevents native controls or an intermediate
+     Fitness-only layout appearing before v10 has applied the shared structure. */
+  function releaseBootShieldWhenStable() {
+    return new Promise((resolve) => {
+      const root=document.getElementById('my-plan');
+      if (!root || typeof MutationObserver==='undefined') { releaseBootShield();resolve();return; }
+      let quietTimer=0;let maxTimer=0;let finished=false;
+      const done=() => {
+        if (finished) return;finished=true;
+        clearTimeout(quietTimer);clearTimeout(maxTimer);observer.disconnect();
+        releaseBootShield();resolve();
+      };
+      const settle=() => { clearTimeout(quietTimer);quietTimer=global.setTimeout(done,180); };
+      const observer=new MutationObserver(settle);
+      observer.observe(root,{ childList:true,subtree:true });
+      maxTimer=global.setTimeout(done,1500);
+      settle();
+    });
+  }
+
   function beginPlanSwitch() { clearTimeout(planSwitchTimer);document.documentElement.setAttribute('data-fitness-plan-switching','true');planSwitchTimer=global.setTimeout(endPlanSwitch,1600); }
   function endPlanSwitch() { clearTimeout(planSwitchTimer);global.requestAnimationFrame(() => global.requestAnimationFrame(() => document.documentElement.removeAttribute('data-fitness-plan-switching'))); }
 
@@ -155,6 +179,7 @@
     .then(() => load('/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1','data-fitness-exercise-family-filter'))
     .then(() => load('/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1','data-fitness-plan-generator-coherence-v4'))
     .then(() => load('/sitewide/js/baseline-routine-experience-v9.js?v=BASELINE_ROUTINE_EXPERIENCE_20260807_1','data-baseline-routine-experience-v9'))
-    .then(() => { selectRoutinePage();restoreRequestedView();bindFitnessWeekRows();endPlanSwitch();releaseBootShield(); })
+    .then(() => load('/sitewide/js/baseline-routine-experience-v10.js?v=BASELINE_ROUTINE_EXPERIENCE_20260808_1','data-baseline-routine-experience-v10'))
+    .then(() => { selectRoutinePage();restoreRequestedView();bindFitnessWeekRows();endPlanSwitch();return releaseBootShieldWhenStable(); })
     .catch((error) => { endPlanSwitch();releaseBootShield();try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {} });
 })(typeof window!=='undefined'?window:globalThis);
