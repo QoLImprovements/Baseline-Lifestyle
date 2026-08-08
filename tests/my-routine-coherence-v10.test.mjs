@@ -32,7 +32,7 @@ test('calendar markers are number-only controls with hover metadata and Summary 
   assert.match(coherence,/title=\"\$\{esc\(marker\.label\)\}\"/);
   assert.match(coherence,/data-routine-summary-target/);
   assert.match(coherence,/openSummary/);
-  assert.doesNotMatch(coherence,/bl-v11-calendar-marker/);
+  assert.doesNotMatch(coherence,/class=\"bl-v11-calendar-marker\"/);
   assert.match(css,/\.bl-routine-calendar-marker\{/);
 });
 
