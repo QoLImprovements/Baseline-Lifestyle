@@ -64,14 +64,16 @@ test('activities retain relevant optional metrics rather than one generic amount
   assert.match(workspace, /data-log-metric/);
 });
 
-test('activity pickers remain searchable, keyboard navigable and fully opaque', () => {
+test('activity pickers remain searchable, keyboard navigable, opaque and token-coloured', () => {
   assert.match(workspace, /role="combobox"/);
   assert.match(workspace, /event\.key === 'ArrowDown'/);
   assert.match(workspace, /event\.key === 'ArrowUp'/);
   assert.match(workspace, /setPickerIndex/);
-  assert.match(css, /z-index:10000!important/);
-  assert.match(css, /background:#120a0e!important/);
+  assert.match(css, /z-index:2147482000!important/);
+  assert.match(css, /background:var\(--card-bg\)!important/);
+  assert.match(css, /color:var\(--ink\)!important/);
   assert.match(css, /opacity:1!important/);
+  assert.doesNotMatch(css, /#ffbdc7|#120a0e/i);
 });
 
 test('Routine Summary groups plan and activity entities in saved group order', () => {
