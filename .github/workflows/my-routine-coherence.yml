@@ -1,0 +1,45 @@
+name: My Routine coherence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sitewide/js/baseline-routine-*.js'
+      - 'sitewide/css/baseline-routine-*.css'
+      - 'sitewide/js/baseline-public-routine-*.js'
+      - 'systems/baseline-natural-skincare/js/skincare-routine*.js'
+      - 'systems/baseline-natural-skincare/css/skincare-routine*.css'
+      - 'systems/baseline-fitness/js/fitness-routine*.js'
+      - 'systems/baseline-fitness/js/fitness-*-policy*.js'
+      - 'systems/baseline-fitness/css/fitness-routine*.css'
+      - 'systems/baseline-fitness/css/fitness-multiple-plans.css'
+      - 'tests/*routine*.test.mjs'
+      - '.github/workflows/my-routine-coherence.yml'
+  pull_request:
+    paths:
+      - 'sitewide/js/baseline-routine-*.js'
+      - 'sitewide/css/baseline-routine-*.css'
+      - 'sitewide/js/baseline-public-routine-*.js'
+      - 'systems/baseline-natural-skincare/js/skincare-routine*.js'
+      - 'systems/baseline-natural-skincare/css/skincare-routine*.css'
+      - 'systems/baseline-fitness/js/fitness-routine*.js'
+      - 'systems/baseline-fitness/js/fitness-*-policy*.js'
+      - 'systems/baseline-fitness/css/fitness-routine*.css'
+      - 'systems/baseline-fitness/css/fitness-multiple-plans.css'
+      - 'tests/*routine*.test.mjs'
+      - '.github/workflows/my-routine-coherence.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  structure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run My Routine structural and interaction contracts
+        run: npm run test:structure
