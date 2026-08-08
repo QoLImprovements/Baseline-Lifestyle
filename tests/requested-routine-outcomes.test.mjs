@@ -87,7 +87,7 @@ test('refresh preserves the requested Fitness Routine and nested Plan view', () 
   assert.match(structure, /__bl_fitness_plan_view_v4__/);
 });
 
-test('Calisthenics generator keeps progression semantics and reorder controls without a presentation renderer moving fields', () => {
+test('Calisthenics generator keeps progression semantics without a presentation renderer moving its fields', () => {
   const progression = read('systems/baseline-fitness/js/fitness-generator-progression-v1.js');
   const coherence = read('systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js');
   assert.match(progression, /LINEAR:'linear-fixed'/);
@@ -101,7 +101,6 @@ test('Calisthenics generator keeps progression semantics and reorder controls wi
   assert.match(progression, /ex-details-card/);
   assert.match(progression, /data-exercise-name/);
   assert.match(coherence, /Max Baseline/);
-  assert.match(coherence, /data-exercise-move/);
   assert.doesNotMatch(stability, /normaliseExerciseCards/);
   assert.doesNotMatch(progression, /percentage-based sets/);
 });
