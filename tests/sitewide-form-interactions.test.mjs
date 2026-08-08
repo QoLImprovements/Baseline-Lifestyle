@@ -36,7 +36,7 @@ test('Skincare typing no longer triggers input-time full-card replacement', () =
 
 test('Skincare picker and controls are foreground, opaque and clickable', () => {
   assert.match(skincareEntryCss, /skincare-routine-sitewide-v4\.css/);
-  assert.match(skincareCss, /z-index:10000!important/);
+  assert.match(skincareCss, /z-index:2147483000!important/);
   assert.match(skincareCss, /background:var\(--skin-cream\)!important/);
   assert.match(skincareCss, /pointer-events:auto!important/);
   assert.match(routineCss, /appearance:auto!important/);
