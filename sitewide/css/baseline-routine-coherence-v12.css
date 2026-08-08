@@ -1,15 +1,14 @@
-/* Baseline Lifestyle — My Routine coherence v12.
+/* Baseline Lifestyle — canonical shared My Routine geometry v12.
 
-   SITEWIDE VISUAL CONTRACT
-   ------------------------
-   Skincare and Fitness supply their own palette tokens. This file supplies
-   geometry/interaction only. Never hard-code a new feature palette here.
-   Dropdowns are one shared geometry: one box, one centred chevron, one opaque
-   top-layer menu. Do not wrap a select to add another arrow. Public Routines
-   reuse owner My Routine classes and inherit the active system theme.
+   VISUAL OWNERSHIP CONTRACT
+   -------------------------
+   Skincare and Fitness supply palette tokens and system-specific surfaces.
+   This file owns only common component geometry/interaction. It loads after the
+   system adapter and therefore must not contain compatibility selectors for
+   retired versions or any page-scroll rule.
 */
 
-/* ONE shared dropdown geometry: same shape/height/spacing, system-owned colour. */
+/* One shared native-select geometry and one centred chevron. */
 :where(#routine,#my-plan) select:not(.routine-action-native){
   -webkit-appearance:none!important;
   appearance:none!important;
@@ -32,7 +31,7 @@
 }
 :where(#routine,#my-plan) select:not(.routine-action-native)::-ms-expand{display:none}
 
-/* Searchable dropdowns use the same 50px toggle and 14px outer radius. */
+/* Searchable pickers use the same 50px/14px control geometry. */
 :where(#routine,#my-plan) :is(.routine-action-input-wrap,.fitness-activity-combobox,.ex-picker-control){
   position:relative!important;
   display:grid!important;
@@ -69,8 +68,6 @@
   transform:rotate(45deg) translate(-1px,-1px);
   transform-origin:center;
 }
-
-/* Dropdown/listbox menus always sit above cards and stay opaque using the parent theme. */
 :where(#routine,#my-plan) :is(.routine-action-menu,.fitness-activity-menu,.ex-picker-menu,[role="listbox"]){
   z-index:2147483000!important;
   opacity:1!important;
@@ -82,9 +79,7 @@
   filter:none!important;
 }
 
-/* Calendar view selector: Week and Month always have enough width/height for
-   the full 18px labels. This intentionally overrides old circular .routine-mini
-   dimensions that previously clipped the words. */
+/* Week / Month is a two-control selector, never two undersized circles. */
 :where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs){
   display:grid!important;
   grid-template-columns:repeat(2,minmax(96px,1fr))!important;
@@ -112,11 +107,9 @@
   border-radius:999px!important;
   font-size:18px!important;
 }
-:where(#routine,#my-plan) :is(.routine-calendar-controls,.fitness-calendar-controls,.bl-routine-calendar-controls){
-  min-width:0!important;
-}
+:where(#routine,#my-plan) :is(.routine-calendar-controls,.fitness-calendar-controls,.bl-routine-calendar-controls){min-width:0!important}
 
-/* Calendar entries contain only circled numbers. Caption lives in title/aria-label. */
+/* Calendar completion identity: circled number only; title/aria-label is caption. */
 :where(#routine,#my-plan) .bl-routine-calendar-markers{
   display:flex!important;
   align-items:center!important;
@@ -151,43 +144,15 @@
   outline:none!important;
   box-shadow:0 0 0 4px var(--bl-routine-focus,var(--ring,transparent))!important;
 }
-/* Hide legacy raw completion totals/details once grouped markers exist. */
-#routine [data-calendar-date]:has(>.bl-routine-calendar-markers)>.routine-calendar-count,
-#routine [data-calendar-date]:has(>.bl-routine-calendar-markers)>.bl-routine-day-count,
-#routine [data-calendar-date]:has(>.bl-routine-calendar-markers)>.bl-routine-day-details,
-#my-plan #fitnessCalendarGrid [data-calendar-date]:has(>.bl-routine-calendar-markers)>b{
-  display:none!important;
-}
 
-/* One compact group checkbox beside the Skincare group heading. */
-#routine .routine-log-group-head{
-  display:flex!important;
-  align-items:center!important;
-  gap:12px!important;
-}
+/* Skincare group completion. */
+#routine .routine-log-group-head{display:flex!important;align-items:center!important;gap:12px!important}
 #routine .routine-log-group-head>h3{margin:0!important;flex:1 1 auto!important}
-#routine .bl-routine-group-complete{
-  display:inline-grid!important;
-  place-items:center!important;
-  flex:0 0 auto!important;
-  margin-left:auto!important;
-  padding:0!important;
-}
-#routine .bl-routine-group-complete input{
-  width:24px!important;
-  height:24px!important;
-  margin:0!important;
-  cursor:pointer!important;
-}
+#routine .bl-routine-group-complete{display:inline-grid!important;place-items:center!important;flex:0 0 auto!important;margin-left:auto!important;padding:0!important}
+#routine .bl-routine-group-complete input{width:24px!important;height:24px!important;margin:0!important;cursor:pointer!important}
 
-/* Routine Plan alignment is sitewide, not system-specific. */
-:where(#routine,#my-plan) :is(
-  .routine-plan-group-head,
-  .routine-group-row-head,
-  .fitness-routine-group-bar,
-  .fitness-activity-item-head,
-  .bl-routine-entry-head
-){
+/* Routine Plan header alignment is shared. */
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.routine-group-row-head,.fitness-routine-group-bar,.fitness-activity-item-head,.bl-routine-entry-head){
   display:flex!important;
   align-items:center!important;
   justify-content:space-between!important;
@@ -195,22 +160,14 @@
   flex-wrap:wrap!important;
   min-width:0!important;
 }
-:where(#routine,#my-plan) :is(
-  .routine-plan-group-head,
-  .routine-group-row-head,
-  .fitness-routine-group-bar,
-  .fitness-activity-item-head,
-  .bl-routine-entry-head
-) :is(h2,h3,h4,p,strong,span,label,button){
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.routine-group-row-head,.fitness-routine-group-bar,.fitness-activity-item-head,.bl-routine-entry-head) :is(h2,h3,h4,p,strong,span,label,button){
   margin-top:0!important;
   margin-bottom:0!important;
   align-self:center;
 }
-:where(#routine,#my-plan) :is(.routine-plan-group-body,.fitness-routine-plan-panel,.fitness-activity-list){
-  min-width:0!important;
-}
+:where(#routine,#my-plan) :is(.routine-plan-group-body,.fitness-routine-plan-panel,.fitness-activity-list){min-width:0!important}
 
-/* Summary filters are shared and aligned; no duplicate wrapper control. */
+/* Summary filters. */
 :where(#routine,#my-plan) .bl-routine-summary-filter,
 #my-plan [data-fitness-routine-panel="summary"] label:has(#fitnessSummaryGroupFilter){
   display:grid!important;
@@ -220,7 +177,7 @@
   margin:0 0 16px!important;
 }
 
-/* Visibility is one normal themed control aligned with the Public Routines header. */
+/* One themed visibility control in the Public Routines header. */
 :where(#routine,#my-plan) .bl-routine-visibility-control{
   display:grid!important;
   grid-template-columns:auto minmax(150px,210px)!important;
@@ -232,71 +189,19 @@
   border:0!important;
   background:transparent!important;
 }
-:where(#routine,#my-plan) .bl-routine-visibility-control>span{
-  font-weight:850!important;
-  white-space:nowrap!important;
-}
+:where(#routine,#my-plan) .bl-routine-visibility-control>span{font-weight:850!important;white-space:nowrap!important}
 
-/* Public Routine is a read-only copy of My Routine, using the same cards/classes. */
-:where(#routine,#my-plan) .bl-public-routine-viewonly{
-  display:grid!important;
-  gap:16px!important;
-  margin-top:16px!important;
-  min-width:0!important;
-}
-:where(#routine,#my-plan) .bl-public-routine-viewonly-nav{
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  flex-wrap:wrap!important;
-}
-:where(#routine,#my-plan) .bl-public-routine-viewonly-panel{
-  display:grid!important;
-  gap:16px!important;
-  min-width:0!important;
-}
-:where(#routine,#my-plan) .bl-public-profile-row{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
-  gap:10px!important;
-  align-items:end!important;
-}
-:where(#routine,#my-plan) .bl-public-readonly-check input[type="checkbox"]{
-  opacity:1!important;
-  pointer-events:none!important;
-  cursor:default!important;
-}
-:where(#routine,#my-plan) .bl-public-readonly-field :is(input,textarea,select){
-  pointer-events:none!important;
-}
+/* Public Routine reuses owner-facing My Routine classes in View Only mode. */
+:where(#routine,#my-plan) .bl-public-routine-viewonly{display:grid!important;gap:16px!important;margin-top:16px!important;min-width:0!important}
+:where(#routine,#my-plan) .bl-public-routine-viewonly-nav{display:flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important}
+:where(#routine,#my-plan) .bl-public-routine-viewonly-panel{display:grid!important;gap:16px!important;min-width:0!important}
+:where(#routine,#my-plan) .bl-public-profile-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:end!important}
+:where(#routine,#my-plan) .bl-public-readonly-check input[type="checkbox"]{opacity:1!important;pointer-events:none!important;cursor:default!important}
+:where(#routine,#my-plan) .bl-public-readonly-field :is(input,textarea,select){pointer-events:none!important}
 
-/* Reversible Fitness completions use the original Routine Log visual language. */
 #my-plan .bl-routine-preserved-log{display:grid;gap:10px}
 
-/* Never let this layer become a scroll owner or hide cards/backgrounds. */
-:where(#routine,#my-plan).bl-routine-coherence-v12,
-:where(#routine,#my-plan).bl-routine-coherence-v12 *{
-  scroll-behavior:auto!important;
-}
-
-@media(max-width:760px){
-  :where(#routine,#my-plan) .bl-routine-visibility-control{grid-template-columns:1fr!important;margin-left:0!important;width:100%!important}
-  :where(#routine,#my-plan) .bl-public-profile-row{grid-template-columns:1fr!important}
-}
-@media(max-width:520px){
-  :where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs){
-    width:190px!important;
-    min-width:190px!important;
-    max-width:190px!important;
-    grid-template-columns:repeat(2,minmax(89px,1fr))!important;
-  }
-  :where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs)>button{
-    min-width:89px!important;
-    padding-inline:10px!important;
-  }
-}
-
-/* Fitness Days Per Week range uses two compact values with one dash and no Range label. */
+/* Fitness Days Per Week range. */
 #my-plan .fitness-frequency-grid{
   display:grid!important;
   grid-template-columns:minmax(88px,130px) 22px minmax(120px,170px)!important;
@@ -306,19 +211,10 @@
 }
 #my-plan .fitness-frequency-grid>.field-stack{min-width:0!important;margin:0!important}
 #my-plan .fitness-frequency-grid .field-stack:has(#frequencyRangeMax)>span{display:none!important}
-#my-plan .fitness-frequency-grid .bl-frequency-range-dash{
-  display:grid!important;
-  place-items:center!important;
-  min-height:50px!important;
-  font-size:20px!important;
-  font-weight:850!important;
-}
+#my-plan .fitness-frequency-grid .bl-frequency-range-dash{display:grid!important;place-items:center!important;min-height:50px!important;font-size:20px!important;font-weight:850!important}
 #my-plan .fitness-frequency-grid select{width:100%!important}
-@media(max-width:520px){
-  #my-plan .fitness-frequency-grid{grid-template-columns:minmax(82px,1fr) 18px minmax(112px,1.3fr)!important}
-}
 
-/* Fitness Routine Groups: compact shared-card geometry, system theme only. */
+/* Fitness Routine Groups use shared surfaces and the Fitness palette. */
 #my-plan .bl-v4-group-card{
   display:grid!important;
   gap:12px!important;
@@ -332,30 +228,25 @@
   color:var(--bl-routine-text,var(--ink,currentColor))!important;
   box-sizing:border-box!important;
 }
-#my-plan .bl-v4-group-card>div:first-child{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:10px!important;
-  flex-wrap:wrap!important;
-}
+#my-plan .bl-v4-group-card>div:first-child{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important}
 #my-plan .bl-v4-group-card>div:first-child :is(h2,h3,h4,p){margin:0!important}
-#my-plan .bl-v4-group-create{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
-  gap:10px!important;
-  align-items:end!important;
-}
+#my-plan .bl-v4-group-create{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:end!important}
 #my-plan .bl-v4-group-list,#my-plan .bl-v4-assignment-list{display:grid!important;gap:8px!important}
-#my-plan .bl-v4-group-row{
-  display:grid!important;
-  grid-template-columns:auto minmax(0,1fr) auto!important;
-  align-items:center!important;
-  gap:10px!important;
-  padding:9px 10px!important;
-  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
-  border-radius:13px!important;
-  background:var(--bl-routine-surface-strong,var(--card-bg,transparent))!important;
-}
+#my-plan .bl-v4-group-row{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;align-items:center!important;gap:10px!important;padding:9px 10px!important;border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;border-radius:13px!important;background:var(--bl-routine-surface-strong,var(--card-bg,transparent))!important}
 #my-plan .bl-v4-assignment-row{padding:8px 0!important}
+
+@media(max-width:760px){
+  :where(#routine,#my-plan) .bl-routine-visibility-control{grid-template-columns:1fr!important;margin-left:0!important;width:100%!important}
+  :where(#routine,#my-plan) .bl-public-profile-row{grid-template-columns:1fr!important}
+}
 @media(max-width:700px){#my-plan .bl-v4-group-create{grid-template-columns:1fr!important}}
+@media(max-width:520px){
+  :where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs){
+    width:190px!important;
+    min-width:190px!important;
+    max-width:190px!important;
+    grid-template-columns:repeat(2,minmax(89px,1fr))!important;
+  }
+  :where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs)>button{min-width:89px!important;padding-inline:10px!important}
+  #my-plan .fitness-frequency-grid{grid-template-columns:minmax(82px,1fr) 18px minmax(112px,1.3fr)!important}
+}
