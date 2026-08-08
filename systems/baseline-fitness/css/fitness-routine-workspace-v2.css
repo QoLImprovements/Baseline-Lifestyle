@@ -55,6 +55,16 @@
 #my-plan .fitness-calisthenics-log-card>div{display:grid;gap:4px}
 #my-plan .fitness-calisthenics-log-card small{color:var(--muted);font-size:18px}
 
+/* Week view is pure CSS. Do not add a MutationObserver just to toggle layout. */
+#my-plan .fitness-calendar-card:has(.fitness-calendar-grid.week-view) .fitness-calendar-weekdays{display:none!important}
+#my-plan .fitness-calendar-grid.week-view{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+#my-plan .fitness-calendar-grid.week-view>.fitness-calendar-day{
+  width:100%!important;
+  min-height:74px!important;
+  align-items:center!important;
+  padding:12px 14px!important;
+}
+
 @media(max-width:820px){
   #my-plan .fitness-activity-add{grid-template-columns:1fr}
 }
