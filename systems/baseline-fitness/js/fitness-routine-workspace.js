@@ -2,9 +2,9 @@
 
    OWNERSHIP ORDER
    ---------------
-   data/catalogue -> base Routine workspace -> schedule -> groups -> generator
-   progression -> timed specialization -> final live policy -> view structure ->
-   Public View Only -> shared v12 finisher.
+   catalogue/family filter -> base Routine workspace -> schedule -> groups ->
+   generator progression -> timed specialization -> final live policy -> view
+   structure -> Public View Only -> shared v12 finisher.
 
    Keep this loader declarative. No loading screen, polling observer, visual patch,
    duplicate controller or retired compatibility module belongs here.
@@ -14,7 +14,7 @@
   if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V31__) return;
   global.__BASELINE_FITNESS_ROUTINE_LOADER_V31__ = true;
 
-  const document = global.document;
+  const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
   const PLAN_VIEWS=['calisthenics','cardio','other','sports'];
@@ -54,7 +54,6 @@
       }
     } catch (_error) {}
   }
-
   function requestedViews() {
     let main='log';
     let plan='calisthenics';
@@ -79,7 +78,6 @@
     document.querySelector(`[data-fitness-routine-view="${requested.main}"]`)?.click();
     if (requested.main==='plan') document.querySelector(`[data-fitness-plan-view="${requested.plan}"]`)?.click();
   }
-
   function loadScript({ src,marker }) {
     const existing=document.querySelector(`script[${marker}]`);
     if (existing) {
@@ -100,8 +98,6 @@
     });
   }
   function loadOrderedParallel(entries) {
-    /* async=false preserves insertion execution order while network fetches start
-       together, avoiding a serial request waterfall. */
     return Promise.all(entries.map(loadScript));
   }
 
@@ -111,7 +107,6 @@
       global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
     } catch (_error) {}
   }
-
   if (openRoutine) {
     selectRoutinePage();
     document.addEventListener('click',(event) => {
@@ -122,6 +117,7 @@
 
   loadOrderedParallel([
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
+    { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260807_2',marker:'data-fitness-calisthenics-schedule' },
