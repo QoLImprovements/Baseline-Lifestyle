@@ -5,6 +5,8 @@
    - No loading screen and no hidden/placeholder My Routine page.
    - Fitness data/plan modules keep their existing ownership.
    - fitness-multiple-plans.js owns Create/Open Plan controls directly.
+   - fitness-live-policy-v1.js loads before the structure's first Log render.
+   - fitness-routine-structure-v4.js renders the comprehensive Summary directly.
    - Public Routines render the same My Routine structure in View Only form.
    - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
    - Theme/stacking/week-view layout lives in CSS, not runtime observers.
@@ -134,11 +136,10 @@
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260807_2',marker:'data-fitness-calisthenics-schedule' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260807_1',marker:'data-fitness-routine-structure-v4' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v1.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260807_2',marker:'data-fitness-routine-groups-v1' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3',marker:'data-fitness-generator-progression' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260808_1',marker:'data-fitness-routine-coherence-v1' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260808_3',marker:'data-fitness-live-policy' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260808_2',marker:'data-fitness-routine-structure-v4' },
     { src:'/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1',marker:'data-fitness-timed-hold-targets-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1',marker:'data-fitness-exercise-family-filter' },
     { src:'/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1',marker:'data-fitness-plan-generator-coherence-v4' },
