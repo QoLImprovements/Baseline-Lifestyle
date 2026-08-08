@@ -6,13 +6,21 @@
      1. supply comprehensive Fitness content inside the shared Summary structure;
      2. perform one delayed initial Log refresh after all authorities have loaded.
 
+   ROUTINE SUMMARY CONTRACT
+   ------------------------
+   Skincare is the visual/structural template for Routine Summary sitewide.
+   Fitness therefore uses the same numbered title, two-column "Routine details"
+   + "Benefits and practical role" silhouette. Fitness may add exercise-specific
+   detail beneath that shared shell, but must not introduce a parallel summary UI.
+
    Cross-plan progression belongs to fitness-live-policy-v1.js. Group and plan
    change events already have their own data-owner render paths. Re-rendering the
    whole workspace from here used to replace activity cards after group numbering
    was applied, so this adapter deliberately does not render on those events. */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V4__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V5__) return;
+  global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V5__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V4__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V3__=true;
   global.__BASELINE_FITNESS_ROUTINE_COHERENCE_V2__=true;
@@ -40,6 +48,26 @@
 
   function activityDefinition(id) {
     return global.BASELINE_FITNESS_ACTIVITY_CATALOGUE?.ACTIVITY_BY_ID?.get?.(String(id || '')) || null;
+  }
+
+  function frequencyText(frequency) {
+    const value=frequency && typeof frequency==='object' ? frequency : {};
+    if (value.mode==='daily') return 'Every day';
+    if (value.mode==='days') return Array.isArray(value.days) && value.days.length ? value.days.join(', ') : 'Specific days';
+    if (value.mode==='weekly') return `${Math.max(1,Number(value.timesPerWeek || 1))}× each week`;
+    if (value.mode==='monthly') return `${Math.max(1,Number(value.timesPerMonth || 1))}× each month`;
+    return 'As needed';
+  }
+
+  function planFrequencyText(plan) {
+    const value=plan?.planJson || {};
+    if (value.scheduleMode==='specific-days') {
+      const days=Array.isArray(value.days) ? value.days.filter(Boolean) : [];
+      return days.length ? days.join(', ') : 'Specific weekdays';
+    }
+    const min=Math.max(1,Math.min(7,Number(value.frequencyMin || String(value.frequency || '1x').replace(/\D/g,'')) || 1));
+    const max=Math.max(0,Math.min(7,Number(value.frequencyRangeMax || 0)));
+    return max>min ? `${min}–${max} days each week` : `${min} day${min===1?'':'s'} each week`;
   }
 
   function progressionText(item,definition) {
@@ -138,31 +166,53 @@
 
   function planHtml(plan) {
     const items=Array.isArray(plan.planJson?.items) ? plan.planJson.items : [];
-    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Training profile</h4>${summaryRows([
-      { label:'Activity type',value:'Calisthenics / bodyweight resistance plan' },
+    const date=String(plan.planJson?.startDate || plan.planJson?.start_date || '').trim();
+    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4>${summaryRows([
+      { label:'Routine type',value:'Calisthenics / bodyweight resistance plan' },
+      { label:'Days per week',value:planFrequencyText(plan) },
+      { label:'Workout date',value:date },
+      { label:'Exercises',value:`${items.length} saved exercise${items.length===1?'':'s'}` },
       { label:'Energy demand',value:'Predominantly anaerobic strength and muscular endurance, with aerobic demand increasing as session density rises.' },
-      { label:'Primary movement emphasis',value:planMuscleSummary(items) },
-      { label:'Exercises',value:`${items.length} saved exercise${items.length===1?'':'s'}` }
-    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and training role</h4><p>${esc(planBenefits(items))}</p></section></div><div class="bl-public-v3-exercises">${items.map((item,index) => {
+      { label:'Movement emphasis',value:planMuscleSummary(items) }
+    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(planBenefits(items))}</p></section></div>${items.length ? `<div class="bl-fitness-summary-exercise-details">${items.map((item,index) => {
       const definition=exerciseDefinition(item.exercise);
       return `<section class="bl-public-v3-exercise bl-routine-summary-section"><strong>${index+1}. ${esc(item.exercise || 'Exercise')}</strong>${summaryRows([
         { label:'Movement',value:definition?.movementCategory || definition?.family || 'Bodyweight' },
         { label:'Exercise demand',value:exerciseDemand(item,definition) },
         { label:'Muscle involvement',value:exerciseMuscles(definition) }
       ])}${definition?.goodFor?`<p><b>Benefits / purpose:</b> ${esc(definition.goodFor)}</p>`:''}${definition?.how?`<p><b>Technique:</b> ${esc(definition.how)}</p>`:''}<p><b>Progression:</b> ${esc(progressionText(item,definition))}</p></section>`;
-    }).join('')}</div>`;
+    }).join('')}</div>` : ''}`;
   }
 
   function activityHtml(activity) {
     const definition=activityDefinition(activity.activityId);
     const metrics=(definition?.metrics || []).map((metric) => `${metric.label}${metric.unit?` (${metric.unit})`:''}`).join(', ');
     const profile=activityProfile(definition,activity);
-    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Activity profile</h4>${summaryRows([
-      { label:'Activity type',value:profile.activityType },
+    return `<div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4>${summaryRows([
+      { label:'Routine type',value:profile.activityType },
+      { label:'Time of day',value:String(activity.timeOfDay || 'Any time') },
+      { label:'Frequency',value:frequencyText(activity.frequency) },
       { label:'Energy demand',value:profile.energyDemand },
       { label:'Primary muscle involvement',value:profile.muscles },
       { label:'Relevant session measures',value:metrics || 'Duration, quality and activity-specific session details.' }
-    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and training role</h4><p>${esc(profile.benefit)}</p>${activity.notes?`<p><strong>Your notes:</strong> ${esc(activity.notes)}</p>`:''}</section></div>`;
+    ])}</section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(profile.benefit)}</p>${activity.notes?`<p><strong>Your notes:</strong> ${esc(activity.notes)}</p>`:''}</section></div>`;
+  }
+
+  function makeSharedSummaryTitle(card) {
+    let head=card.querySelector(':scope>.fitness-summary-head');
+    if (!head) {
+      head=document.createElement('div');head.className='fitness-summary-head';card.prepend(head);
+    }
+    const currentName=String(head.querySelector('strong')?.textContent || card.dataset.v4Entity || 'Routine').trim();
+    const siblings=Array.from(card.parentElement?.querySelectorAll?.(':scope>.fitness-exercise-summary-item') || []);
+    const index=Math.max(0,siblings.indexOf(card));
+    head.className='fitness-summary-head routine-summary-title';
+    head.innerHTML=`<span>${index+1}</span><strong>${esc(currentName)}</strong>`;
+
+    /* These strips belonged to the previous Fitness-only Summary design. Their
+       information now lives in the same Routine details panel used by Skincare. */
+    card.querySelector(':scope>.fitness-summary-meta')?.remove();
+    card.querySelector(':scope>.fitness-summary-exercises')?.remove();
   }
 
   function enrichSummary() {
@@ -173,6 +223,7 @@
     const activityMap=new Map((routine.activities || []).map((activity) => [`activity:${String(activity.id)}`,activity]));
 
     $$('.fitness-exercise-summary-item',root).forEach((card) => {
+      makeSharedSummaryTitle(card);
       const key=String(card.dataset.v4Entity || '');
       let panel=card.querySelector(':scope>.bl-fitness-summary-comprehensive');
       if (!panel) { panel=document.createElement('div');panel.className='bl-fitness-summary-comprehensive';card.appendChild(panel); }
@@ -180,7 +231,7 @@
       const plan=planMap.get(key);
       if (plan) {
         const items=Array.isArray(plan.planJson?.items) ? plan.planJson.items : [];
-        const signature=JSON.stringify(items.map((item) => [item.exercise,item.baseline,item.sets,item.progressionMode,item.repIncrease]));
+        const signature=JSON.stringify([plan.planJson?.startDate,plan.planJson?.frequencyMin,plan.planJson?.frequencyRangeMax,...items.map((item) => [item.exercise,item.baseline,item.sets,item.progressionMode,item.repIncrease])]);
         if (panel.dataset.signature===signature) return;
         panel.dataset.signature=signature;
         panel.innerHTML=planHtml(plan);
@@ -191,7 +242,7 @@
       if (!activity) { panel.remove();return; }
       const definition=activityDefinition(activity.activityId);
       const metrics=(definition?.metrics || []).map((metric) => `${metric.label}${metric.unit?` (${metric.unit})`:''}`).join(', ');
-      const signature=JSON.stringify([activity.activityId,activity.name,activity.notes,metrics]);
+      const signature=JSON.stringify([activity.activityId,activity.name,activity.notes,activity.timeOfDay,activity.frequency,metrics]);
       if (panel.dataset.signature===signature) return;
       panel.dataset.signature=signature;
       panel.innerHTML=activityHtml(activity);
@@ -224,7 +275,7 @@
     document.addEventListener('baseline:fitness-workout-updated',schedule);
     [0,120,350,800].forEach((delay) => global.setTimeout(schedule,delay));
     initialLogRefresh();
-    document.documentElement.setAttribute('data-fitness-routine-coherence','v4-comprehensive');
+    document.documentElement.setAttribute('data-fitness-routine-coherence','v5-shared-summary');
   }
 
   global.addEventListener('pagehide',() => { if (frame) global.cancelAnimationFrame(frame);clearTimeout(initialRefreshTimer); },{ once:true });
