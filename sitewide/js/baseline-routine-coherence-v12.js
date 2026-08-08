@@ -12,6 +12,8 @@
    - System palettes own colour. Shared code never invents outsider colours.
    - Routine Log completion is reversible on the exact date being viewed.
    - Routine Log has no extra Remove button: checking/unchecking controls completion.
+   - Fitness Calisthenics completion is also a real checkbox backed by update_session.php;
+     checking adds that plan completion to the viewed day and unchecking removes it.
    - This layer never hides the page behind a loading screen and never owns page scroll.
    - Renderer-owned cards/fields are never re-parented merely for presentation.
 */
@@ -29,6 +31,7 @@
   const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
   const cssEscape = (value) => global.CSS?.escape ? global.CSS.escape(String(value)) : String(value).replace(/[^a-zA-Z0-9_-]/g,'\\$&');
   const observers = [];
+  const fitnessPlanCompletionBusy = new Set();
   let frame = 0;
   let patching = false;
   let groupBusy = false;
@@ -148,6 +151,34 @@
     try { for (const id of ids) { const child=document.querySelector(`#routineLogItems [data-log-complete="${cssEscape(id)}"]`);if (!child || child.checked===checked) continue;child.checked=checked;child.dispatchEvent(new Event('change',{ bubbles:true }));await new Promise((resolve) => global.setTimeout(resolve,0)); } } finally { groupBusy=false;schedule(); }
   }
 
+  function decorateFitnessPlanCompletion(root) {
+    if (app!=='fitness') return;
+    $$('#fitnessRoutineLogItems [data-fitness-plan-log]',root).forEach((card) => {
+      const identity=String(card.dataset.fitnessPlanLog || '');const [planIdRaw,sessionIndexRaw]=identity.split(':');const planId=Number(planIdRaw || 0);const sessionIndex=Number(sessionIndexRaw || 0);if (!planId || !sessionIndex) return;
+      const title=card.querySelector('.bl-routine-entry-title');if (!title) return;
+      let box=title.querySelector(':scope>[data-fitness-plan-log-complete]');
+      if (!box) { box=document.createElement('input');box.type='checkbox';box.dataset.fitnessPlanLogComplete=identity;box.className='bl-fitness-plan-log-complete';title.prepend(box); }
+      const plan=fitnessPlans().find((candidate) => Number(candidate.planId)===planId);const session=(plan?.sessions || []).find((candidate) => Number(candidate.sessionIndex ?? candidate.session_index)===sessionIndex);const done=String(session?.status || '')==='done';
+      if (!fitnessPlanCompletionBusy.has(identity)) box.checked=done;
+      box.disabled=fitnessPlanCompletionBusy.has(identity);
+      const name=String(plan?.planJson?.name || plan?.name || 'Calisthenics plan');box.title=done?'Uncheck to remove this completion from the calendar':'Check to add this completion to the calendar';box.setAttribute('aria-label',`${done?'Undo':'Complete'} ${name}, Session ${sessionIndex}`);
+    });
+  }
+  async function setFitnessPlanCompletion(box) {
+    const identity=String(box?.dataset.fitnessPlanLogComplete || '');const [planIdRaw,sessionIndexRaw]=identity.split(':');const planId=Number(planIdRaw || 0);const sessionIndex=Number(sessionIndexRaw || 0);if (!identity || !planId || !sessionIndex || fitnessPlanCompletionBusy.has(identity)) return;
+    const desired=Boolean(box.checked);fitnessPlanCompletionBusy.add(identity);box.disabled=true;
+    try {
+      const response=await fetch('/systems/baseline-fitness/api/update_session.php',{ method:'POST',credentials:'same-origin',headers:{ 'Content-Type':'application/json',Accept:'application/json' },body:JSON.stringify({ planId,sessionIndex,action:'set_status',status:desired?'done':'planned' }) });
+      const result=await response.json().catch(() => null);if (!response.ok || !result?.ok) throw new Error(result?.error || `http_${response.status}`);
+      await global.BASELINE_fitnessPlans?.refresh?.();
+      try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated',{ detail:{ planId,sessionIndex,completed:desired,source:'routine-log' } })); } catch (_error) {}
+    } catch (_error) {
+      box.checked=!desired;
+    } finally {
+      fitnessPlanCompletionBusy.delete(identity);box.disabled=false;schedule();
+    }
+  }
+
   function preserveFitnessCompleted(root) {
     if (app!=='fitness') return;const host=$('#fitnessRoutineLogItems',root);if (!host) return;const state=fitnessState();const date=selectedDate();const log=state.logs?.[date] || {};const visible=new Set($$('[data-fitness-log-complete]',host).map((box) => String(box.dataset.fitnessLogComplete || '')));const missing=(state.activities || []).filter((item) => log[item.id]?.completed && !visible.has(String(item.id)));
     let section=host.querySelector(':scope>.bl-routine-preserved-log');if (!missing.length) { section?.remove();return; }const signature=missing.map((item) => `${item.id}:${item.name}`).join('|');if (!section) { section=document.createElement('section');section.className='fitness-routine-log-group bl-routine-preserved-log';host.appendChild(section); }if (section.dataset.signature===signature) return;section.dataset.signature=signature;section.innerHTML=`<h3>Completed on this date</h3>${missing.map((item) => `<article class="session-card fitness-routine-log-item complete"><div class="fitness-log-item-head"><label class="fitness-log-completion"><input type="checkbox" checked data-fitness-log-complete="${esc(item.id)}" data-fitness-log-date="${esc(date)}"><span><strong>${esc(item.name || 'Fitness activity')}</strong><small>Completed on this date</small></span></label></div></article>`).join('')}`;
@@ -174,16 +205,16 @@
 
   function patch() {
     frame=0;if (patching) return;const root=$(rootSelector);if (!root) return;patching=true;
-    try { root.classList.add('bl-routine-coherence-v12');removeDuplicateControls(root);normaliseText(root);fitnessFrequency(root);dedupeRoutineGroupHeadings(root);savedPlanHeading(root);visibility(root);if (app==='skin') { skinSummaryFilter(root);applySkinSummary(root);skinGroupCheckboxes(root); } else { fitnessSummaryFilter(root);applyFitnessSummary(root);preserveFitnessCompleted(root); }calendarMarkers(root);document.documentElement.setAttribute('data-baseline-routine-coherence','v12'); } finally { patching=false; }
+    try { root.classList.add('bl-routine-coherence-v12');removeDuplicateControls(root);normaliseText(root);fitnessFrequency(root);dedupeRoutineGroupHeadings(root);savedPlanHeading(root);visibility(root);if (app==='skin') { skinSummaryFilter(root);applySkinSummary(root);skinGroupCheckboxes(root); } else { fitnessSummaryFilter(root);applyFitnessSummary(root);decorateFitnessPlanCompletion(root);preserveFitnessCompleted(root); }calendarMarkers(root);document.documentElement.setAttribute('data-baseline-routine-coherence','v12'); } finally { patching=false; }
   }
   function schedule() { if (!frame) frame=global.requestAnimationFrame(patch); }
   function observe(root) {
-    if (typeof MutationObserver==='undefined') return;['#routineCalendarGrid','#fitnessCalendarGrid','#routineLogItems','#fitnessRoutineLogItems','#routineSummary','#fitnessExerciseSummary'].forEach((selector) => { const node=$(selector,root);if (!node) return;const observer=new MutationObserver((mutations) => { if (patching) return;const relevant=mutations.some((mutation) => Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || [])).some((changed) => changed?.nodeType===1 && !changed.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log') && !changed.closest?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log')));if (relevant) schedule(); });observer.observe(node,{ childList:true,subtree:true });observers.push(observer); });
+    if (typeof MutationObserver==='undefined') return;['#routineCalendarGrid','#fitnessCalendarGrid','#routineLogItems','#fitnessRoutineLogItems','#routineSummary','#fitnessExerciseSummary'].forEach((selector) => { const node=$(selector,root);if (!node) return;const observer=new MutationObserver((mutations) => { if (patching) return;const relevant=mutations.some((mutation) => Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || [])).some((changed) => changed?.nodeType===1 && !changed.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-fitness-plan-log-complete') && !changed.closest?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log')));if (relevant) schedule(); });observer.observe(node,{ childList:true,subtree:true });observers.push(observer); });
   }
   function bind(root) {
     root.addEventListener('click',(event) => { const marker=event.target?.closest?.('[data-routine-summary-target]');if (marker) { event.preventDefault();event.stopPropagation();openSummary(String(marker.dataset.routineSummaryTarget || ''),root); } },true);
     root.addEventListener('keydown',(event) => { const marker=event.target?.closest?.('[data-routine-summary-target]');if (marker && (event.key==='Enter' || event.key===' ')) { event.preventDefault();event.stopPropagation();openSummary(String(marker.dataset.routineSummaryTarget || ''),root); } },true);
-    root.addEventListener('change',(event) => { if (event.target?.matches?.('[data-routine-group-complete]')) { event.stopPropagation();setSkinGroup(event.target);return; }if (event.target?.id==='skinRoutineSummaryFilter') applySkinSummary(root);if (event.target?.id==='fitnessSummaryGroupFilter') applyFitnessSummary(root);global.setTimeout(schedule,0); },true);
+    root.addEventListener('change',(event) => { if (event.target?.matches?.('[data-routine-group-complete]')) { event.stopPropagation();setSkinGroup(event.target);return; }if (event.target?.matches?.('[data-fitness-plan-log-complete]')) { event.stopPropagation();setFitnessPlanCompletion(event.target);return; }if (event.target?.id==='skinRoutineSummaryFilter') applySkinSummary(root);if (event.target?.id==='fitnessSummaryGroupFilter') applyFitnessSummary(root);global.setTimeout(schedule,0); },true);
     ['baseline:routine-rendered','baseline:skincare-routine-updated','baseline:fitness-routine-updated','baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:routine-settings-changed','baseline:fitness-summary-rendered','baseline:fitness-routine-view-changed'].forEach((name) => document.addEventListener(name,schedule));
   }
   function boot() { const root=$(rootSelector);if (!root) return;bind(root);observe(root);patch();global.setTimeout(schedule,40);global.setTimeout(schedule,180); }
