@@ -7,6 +7,9 @@
    classes as the owner-facing My Routine. The only difference is authority:
    controls which would alter their data are disabled/read-only.
 
+   Fitness User's Plan also mirrors the owner's nested Plan views:
+   Calisthenics, Cardio, Other Fitness Activity and Sports.
+
    Do not add component colours here. Do not add a second profile dropdown.
 */
 (function (global) {
@@ -21,6 +24,7 @@
   const PUBLIC_API = app === 'skin' ? '/systems/baseline-natural-skincare/api/public_routine_v2.php' : '/systems/baseline-fitness/api/public_routine_v2.php';
   const GROUP_API = '/systems/baseline-fitness/api/routine_groups.php';
   const VIEW_KEY = `__bl_public_routine_viewonly_v4__::${app}`;
+  const PLAN_VIEW_KEY = `__bl_public_routine_plan_view_v4__::${app}`;
   const CAL_KEY = `__bl_public_routine_calendar_v4__::${app}`;
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
@@ -28,6 +32,7 @@
 
   let routine = null;
   let activeView = 'log';
+  let activePlanView = 'calisthenics';
   let selectedDate = todayIso();
   let calendarAnchor = localDate(selectedDate);
   let calendarView = 'month';
@@ -108,6 +113,12 @@
     return { ...grouping,entities,sections };
   }
   function entityName(entity) { return entity.type==='plan' ? String(entity.value?.planJson?.name || entity.value?.name || 'Calisthenics Plan') : String(entity.value?.name || 'Fitness activity'); }
+  function activityPlanView(activity) {
+    const section=String(activity?.section || '').trim().toLocaleLowerCase('en-GB');
+    if (section.includes('cardio')) return 'cardio';
+    if (section.includes('sport')) return 'sports';
+    return 'other';
+  }
   function effectiveSkin(item,group) { const copy=Object.assign({},item);if (group?.applyFrequency && group.frequency) copy.frequency=group.frequency;if (group?.applyTime) copy.timeOfDay=group.timeOfDay;return copy; }
 
   function completedThisWeek(id,date) { const dates=new Set(weekDates(date).map(isoDate));return Object.entries(routine?.logs || {}).reduce((count,[logDate,entries]) => count+(dates.has(logDate) && entries?.[id]?.completed ? 1:0),0); }
@@ -168,13 +179,32 @@
     return sections.map((section) => ({ ...section,items:section.items.filter((item) => app==='skin'?String(item.id)===id:item.key===id) })).filter((section) => section.items.length);
   }
   function skinSummary() {
-    const model=skinModel();return `<section class="card routine-card routine-card-full bl-routine-card"><div class="routine-summary-head"><div><h2>Routine Summary</h2></div></div><label class="bl-routine-summary-filter"><span>Show</span><select data-public-summary-filter>${summaryOptions()}</select></label><div class="routine-summary">${filteredSections(model).map((section) => `<section class="routine-summary-group bl-routine-group"><div class="routine-summary-group-head"><h3>${esc(section.title)}</h3></div><div class="bl-routine-summary-list">${section.items.map((item,index) => { const effective=effectiveSkin(item,section.group);let benefit=item.benefit || '';try { benefit=global.BASELINE_SKINCARE_ROUTINE_MODEL?.benefitText?.(item,'comprehensive') || benefit; } catch (_error) {}return `<article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(item.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl class="bl-routine-summary-rows"><div><dt>Routine group</dt><dd>${esc(section.group?.title || 'Individual Routine Steps')}</dd></div><div><dt>Time of day</dt><dd>${esc(effective.timeOfDay || 'Any time')}</dd></div><div><dt>Frequency</dt><dd>${esc(frequencyText(effective.frequency))}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit || 'No description has been recorded.')}</p></section></div></article>`; }).join('')}</div></section>`).join('')}</div></section>`;
+    const model=skinModel();return `<section class="card routine-card routine-card-full bl-routine-card"><div class="routine-summary-head"><div><h2>Routine Summary</h2></div></div><label class="bl-routine-summary-filter"><span>Show</span><select data-public-summary-filter>${summaryOptions()}</select></label><div class="routine-summary">${filteredSections(model).map((section) => `<section class="routine-summary-group bl-routine-group"><div class="routine-summary-group-head"><h3>${esc(section.title)}</h3></div><div class="bl-routine-summary-list">${section.items.map((item,index) => { const effective=effectiveSkin(item,section.group);let benefit=item.benefit || '';try { benefit=global.BASELINE_SKINCARE_ROUTINE_MODEL?.benefitText?.(item,'comprehensive') || benefit; } catch (_error) {}return `<article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(item.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl class="bl-routine-summary-rows"><div><dt>Routine group</dt><dd>${esc(section.group?.title || 'Individual Routine Steps')}</dd></div><div><dt>Time of day</dt><dd>${esc(effective.timeOfDay || 'Any time')}</dd></div><div><dt>Frequency</dt><dd>${esc(frequencyText(effective.frequency))}</dd></div>${item.productName?`<div><dt>Product / recipe</dt><dd>${esc(item.productName)}</dd></div>`:''}</dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit || 'No description has been recorded.')}</p>${item.notes?`<p class="routine-summary-notes"><strong>Personal notes:</strong> ${esc(item.notes)}</p>`:''}</section></div></article>`; }).join('')}</div></section>`).join('')}</div></section>`;
   }
   function fitnessSummary() {
     const model=fitnessModel();return `<section class="card fitness-routine-card bl-routine-card"><div class="section-head-actions"><div><h2>Routine Summary</h2></div></div><label class="bl-routine-summary-filter"><span>Show</span><select data-public-summary-filter>${summaryOptions()}</select></label>${filteredSections(model).map((section) => `<section class="fitness-summary-group routine-summary-group bl-routine-group"><h3>${esc(section.title)}</h3>${section.items.map((entity,index) => { const name=entityName(entity);const plan=entity.type==='plan'?entity.value:null;const activity=entity.type==='activity'?entity.value:null;const sessions=plan?.sessions || [];const items=plan?.planJson?.items || [];return `<article class="fitness-exercise-summary-item routine-summary-item bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(name)}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl class="bl-routine-summary-rows"><div><dt>Routine type</dt><dd>${plan?'Calisthenics Plan':esc(activity?.section || 'Fitness Activity')}</dd></div><div><dt>Frequency</dt><dd>${esc(plan?planFrequency(plan):frequencyText(activity?.frequency))}</dd></div>${plan?`<div><dt>Progress</dt><dd>${sessions.filter((session) => String(session.status || '')==='done').length}/${sessions.length} sessions completed</dd></div><div><dt>Exercises</dt><dd>${items.length}</dd></div>`:`<div><dt>Time of day</dt><dd>${esc(activity?.timeOfDay || 'Any time')}</dd></div>`}</dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(activity?.notes || (plan?'Progressive bodyweight training using the saved exercise plan.':'Fitness activity within the saved routine.'))}</p></section></div>${plan?`<div class="fitness-summary-exercises">${items.map((item) => `<span>${esc(item.exercise || 'Exercise')}</span>`).join('')}</div>`:''}</article>`; }).join('')}</section>`).join('')}</section>`;
   }
-  function skinPlan() { const model=skinModel();return `<section class="card routine-card routine-card-full bl-routine-card"><div class="routine-builder-head"><div><h2>Routine Plan</h2></div></div><div class="routine-items">${model.sections.map((section) => `<section class="routine-plan-group bl-routine-group"><div class="routine-plan-group-head bl-routine-entry-head"><h3>${esc(section.title)}</h3><span>${section.items.length} action${section.items.length===1?'':'s'}</span></div><div class="routine-plan-group-body">${section.items.map((item) => `<article class="routine-item bl-routine-summary-card"><div class="routine-item-head"><strong>${esc(item.title || 'Routine Step')}</strong></div></article>`).join('')}</div></section>`).join('')}</div></section>`; }
-  function fitnessPlan() { const model=fitnessModel();return `<section class="card fitness-routine-card bl-routine-card"><div class="section-head-actions"><div><h2>Routine Plan</h2></div></div>${model.sections.map((section) => `<section class="routine-plan-group bl-routine-group"><div class="routine-plan-group-head bl-routine-entry-head"><h3>${esc(section.title)}</h3><span>${section.items.length} routine${section.items.length===1?'':'s'}</span></div><div class="routine-plan-group-body">${section.items.map((entity) => { if (entity.type==='activity') return `<article class="session-card fitness-activity-item"><div class="fitness-activity-item-head"><strong>${esc(entityName(entity))}</strong></div></article>`;const plan=entity.value;return `<article class="session-card fitness-activity-item"><div class="fitness-activity-item-head"><strong>${esc(entityName(entity))}</strong></div><div class="bl-routine-preview-chips"><span>${esc(planFrequency(plan))}</span><span>${(plan.sessions || []).filter((session) => String(session.status || '')==='done').length}/${(plan.sessions || []).length} sessions completed</span></div><div class="bl-routine-details">${(plan.planJson?.items || []).map((item,index) => `<div class="bl-routine-summary-card"><strong>${index+1}. ${esc(item.exercise || 'Exercise')}</strong></div>`).join('')}</div></article>`; }).join('')}</div></section>`).join('')}</section>`; }
+  function skinPlan() {
+    const model=skinModel();return `<section class="card routine-card routine-card-full bl-routine-card"><div class="routine-builder-head"><div><h2>Routine Plan</h2></div></div><div class="routine-items">${model.sections.map((section) => `<section class="routine-plan-group bl-routine-group"><div class="routine-plan-group-head bl-routine-entry-head"><h3>${esc(section.title)}</h3><span>${section.items.length} action${section.items.length===1?'':'s'}</span></div><div class="routine-plan-group-body">${section.items.map((item) => { const effective=effectiveSkin(item,section.group);const product=String(item.productName || item.customProductName || '').trim();return `<article class="routine-item bl-routine-summary-card"><div class="routine-item-head"><strong>${esc(item.title || 'Routine Step')}</strong></div><div class="bl-routine-preview-chips"><span>${esc(effective.timeOfDay || 'Any time')}</span><span>${esc(frequencyText(effective.frequency))}</span>${product?`<span>Product / Recipe: ${esc(product)}</span>`:''}</div></article>`; }).join('')}</div></section>`).join('')}</div></section>`;
+  }
+  function fitnessPlanSections(view) {
+    const model=fitnessModel();
+    return model.sections.map((section) => ({ ...section,items:section.items.filter((entity) => view==='calisthenics' ? entity.type==='plan' : entity.type==='activity' && activityPlanView(entity.value)===view) })).filter((section) => section.items.length);
+  }
+  function fitnessPlanTab(view,label) {
+    return `<button type="button" class="tab fitness-routine-plan-tab bl-routine-tab" role="tab" data-public-plan-view="${view}" aria-selected="${activePlanView===view}">${label}</button>`;
+  }
+  function fitnessPlanEntity(entity) {
+    if (entity.type==='activity') {
+      const activity=entity.value;return `<article class="session-card fitness-activity-item"><div class="fitness-activity-item-head"><strong>${esc(entityName(entity))}</strong></div><div class="bl-routine-preview-chips"><span>${esc(frequencyText(activity.frequency))}</span><span>${esc(activity.timeOfDay || 'Any time')}</span></div></article>`;
+    }
+    const plan=entity.value;const sessions=plan.sessions || [];const completed=sessions.filter((session) => String(session.status || '')==='done').length;return `<article class="session-card fitness-activity-item"><div class="fitness-activity-item-head"><strong>${esc(entityName(entity))}</strong></div><div class="bl-routine-preview-chips"><span>${esc(planFrequency(plan))}</span><span>${completed}/${sessions.length} sessions completed</span></div><div class="bl-routine-details">${(plan.planJson?.items || []).map((item,index) => `<div class="bl-routine-summary-card"><strong>${index+1}. ${esc(item.exercise || 'Exercise')}</strong></div>`).join('')}</div></article>`;
+  }
+  function fitnessPlan() {
+    const sections=fitnessPlanSections(activePlanView);const label={ calisthenics:'Calisthenics',cardio:'Cardio',other:'Other Fitness Activity',sports:'Sports' }[activePlanView] || 'Routine Plan';
+    const content=sections.length ? sections.map((section) => `<section class="routine-plan-group bl-routine-group"><div class="routine-plan-group-head bl-routine-entry-head"><h3>${esc(section.title)}</h3><span>${section.items.length} routine${section.items.length===1?'':'s'}</span></div><div class="routine-plan-group-body">${section.items.map(fitnessPlanEntity).join('')}</div></section>`).join('') : `<div class="fitness-routine-empty">No ${esc(label)} routine has been added.</div>`;
+    return `<section class="card fitness-routine-card bl-routine-card"><div class="section-head-actions"><div><h2>Routine Plan</h2></div></div><nav class="fitness-routine-plan-tabs bl-routine-tabs" role="tablist" aria-label="Routine Plan type">${fitnessPlanTab('calisthenics','Calisthenics')}${fitnessPlanTab('cardio','Cardio')}${fitnessPlanTab('other','Other Fitness Activity')}${fitnessPlanTab('sports','Sports')}</nav><div class="fitness-routine-plan-panels"><section class="fitness-routine-plan-panel" data-fitness-plan-panel="${activePlanView}"><div class="section-head-actions"><h3>${esc(label)}</h3></div>${content}</section></div></section>`;
+  }
 
   function body() { return activeView==='summary'?(app==='skin'?skinSummary():fitnessSummary()):activeView==='plan'?(app==='skin'?skinPlan():fitnessPlan()):(app==='skin'?skinLog():fitnessLog()); }
   function tab(view,label) { return `<button type="button" class="${app==='skin'?'routine-subtab bl-routine-tab':'tab fitness-routine-subtab bl-routine-tab'}" role="tab" data-public-view="${view}" aria-selected="${activeView===view}">${label}</button>`; }
@@ -186,14 +216,15 @@
   async function loadPublic() {
     const input=field();const name=String(input?.value || '').trim();if (!name) { input?.focus();return; }const host=target();host?.setAttribute('aria-busy','true');const response=await request(`${PUBLIC_API}?name=${encodeURIComponent(name)}`);host?.removeAttribute('aria-busy');
     if (!response?.ok || !response.publicRoutine) { routine=null;if (host) host.innerHTML=`<p>${esc(response?.error==='routine_private'?'That routine is private.':'The public routine could not be loaded.')}</p>`;return; }
-    routine=response.publicRoutine;selectedDate=todayIso();calendarAnchor=localDate(selectedDate);summaryFilter='all';try { const view=global.sessionStorage?.getItem(VIEW_KEY);const cal=global.sessionStorage?.getItem(CAL_KEY);activeView=['log','summary','plan'].includes(view)?view:'log';calendarView=['week','month'].includes(cal)?cal:'month'; } catch (_error) {}render();
+    routine=response.publicRoutine;selectedDate=todayIso();calendarAnchor=localDate(selectedDate);summaryFilter='all';try { const view=global.sessionStorage?.getItem(VIEW_KEY);const planView=global.sessionStorage?.getItem(PLAN_VIEW_KEY);const cal=global.sessionStorage?.getItem(CAL_KEY);activeView=['log','summary','plan'].includes(view)?view:'log';activePlanView=['calisthenics','cardio','other','sports'].includes(planView)?planView:'calisthenics';calendarView=['week','month'].includes(cal)?cal:'month'; } catch (_error) {}render();
   }
-  function remember() { try { global.sessionStorage?.setItem(VIEW_KEY,activeView);global.sessionStorage?.setItem(CAL_KEY,calendarView); } catch (_error) {} }
+  function remember() { try { global.sessionStorage?.setItem(VIEW_KEY,activeView);global.sessionStorage?.setItem(PLAN_VIEW_KEY,activePlanView);global.sessionStorage?.setItem(CAL_KEY,calendarView); } catch (_error) {} }
   function moveCalendar(direction) { const anchor=localDate(calendarAnchor);if (calendarView==='week') anchor.setDate(anchor.getDate()+(direction==='next'?7:-7));else anchor.setMonth(anchor.getMonth()+(direction==='next'?1:-1),1);calendarAnchor=anchor;render(); }
 
   function activateMarker(marker) { activeView='summary';summaryFilter=String(marker.dataset.publicSummaryTarget || 'all');remember();render(); }
   function click(event) {
     const view=event.target?.closest?.('[data-public-view]');if (view) { event.preventDefault();event.stopPropagation();activeView=view.dataset.publicView;remember();render();return; }
+    const planView=event.target?.closest?.('[data-public-plan-view]');if (planView) { event.preventDefault();event.stopPropagation();activePlanView=['calisthenics','cardio','other','sports'].includes(planView.dataset.publicPlanView)?planView.dataset.publicPlanView:'calisthenics';remember();render();return; }
     const marker=event.target?.closest?.('[data-public-summary-target]');if (marker) { event.preventDefault();event.stopPropagation();activateMarker(marker);return; }
     const cal=event.target?.closest?.('[data-public-calendar-view]');if (cal) { event.preventDefault();event.stopPropagation();calendarView=cal.dataset.publicCalendarView==='week'?'week':'month';remember();render();return; }
     const move=event.target?.closest?.('[data-public-calendar-move]');if (move) { event.preventDefault();event.stopPropagation();moveCalendar(move.dataset.publicCalendarMove);return; }
