@@ -91,11 +91,13 @@
 #my-plan .fitness-summary-group{display:grid;gap:13px}
 #my-plan .fitness-summary-group>h3{margin:0;font-size:25px}
 #my-plan .routine-summary-title{display:flex;align-items:center;gap:9px}
-#my-plan .routine-summary-title>span{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:var(--accent);color:var(--ink);font-weight:900}
+#my-plan .routine-summary-title>span{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:var(--accent);color:var(--accent-contrast,var(--ink));font-weight:900}
 #my-plan .bl-routine-summary-section{background:var(--card-bg)}
 #my-plan .bl-routine-summary-section h4{color:var(--ink)}
 #my-plan .bl-routine-summary-rows dt{color:var(--muted);font-size:18px}
 #my-plan .bl-routine-summary-rows dd{font-size:18px}
+#my-plan .bl-fitness-summary-exercise-details{display:grid;gap:12px;margin-top:14px}
+#my-plan .bl-fitness-summary-exercise-details>.bl-routine-summary-section{display:grid;gap:9px}
 
 /* Calendar coherence: Month is a grid; Week is one full-width row for each day. */
 #my-plan .fitness-calendar-card{display:grid;gap:14px}
@@ -106,7 +108,7 @@
 #my-plan .fitness-calendar-day.has-completion{background:var(--filter-bg);border-color:var(--border-2);box-shadow:inset 0 0 0 1px var(--ring)}
 #my-plan .fitness-calendar-day.selected{box-shadow:0 0 0 3px var(--ring) inset}
 #my-plan .fitness-calendar-day.outside-month{opacity:.48}
-#my-plan .fitness-calendar-day b{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--ink);font-size:18px}
+#my-plan .fitness-calendar-day b{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--accent-contrast,var(--ink));font-size:18px}
 #my-plan .bl-routine-day-row{background:var(--filter-bg)}
 #my-plan .bl-routine-day-row.has-completion{background:var(--filter-bg);box-shadow:inset 0 0 0 1px var(--ring)}
 #my-plan .bl-routine-day-details>span{background:var(--card-bg)}
