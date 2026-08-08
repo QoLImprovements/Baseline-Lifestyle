@@ -1,22 +1,19 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v29.
+/* Baseline Natural Skincare — deterministic My Routine loader v30.
 
    PERFORMANCE / OWNERSHIP CONTRACT
    --------------------------------
-   1. skincare-routine.js owns routine data and its base controls.
-   2. skincare-routine-sitewide-v4.js owns Skincare grouping/calendar mapping.
-   3. baseline-public-routine-groups-v1.js owns the shared read-only viewer.
-   4. baseline-routine-stability-v11.js is the only final shared interaction layer.
-
-   Scripts are inserted together with async=false. Browsers can fetch them in
-   parallel while still executing them in insertion order. Do not restore the
-   former serial promise waterfall or the v7/v9/v10 competing DOM normalisers.
+   - No loading screen and no hidden/placeholder My Routine page.
+   - Base Skincare owns data and native controls.
+   - skincare-routine-sitewide-v4.js owns Skincare grouping/calendar structure.
+   - baseline-public-routine-groups-v1.js renders Public Routines as View Only My Routine.
+   - baseline-routine-coherence-v12.js supplies only shared sitewide behaviour.
+   - Dependencies start fetching together and execute in dependency order.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V29__) return;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__ = true;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V29__ = true;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V28__ = true;
-
   const document = global.document;
   const MAX_WAIT_MS = 3000;
   let recipeOptionObserver = null;
@@ -60,23 +57,23 @@
     }));
   }
 
-  /* A completed weekly/specific-day entry must stay due on the date it was
-     logged, otherwise checking it makes its own checkbox disappear and it can
-     never be corrected later. Patch the model before skincare-routine.js boots. */
+  /* Weekly completion must remain visible on the exact logged date so it can
+     be unticked if it was entered by mistake. This changes due-visibility only;
+     checking/unchecking remains owned by the normal Skincare log handler. */
   function preserveCompletedLogDates() {
     const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
-    if (!base || base.__baselineKeepCompletedDateV1) return;
+    if (!base || base.__baselineKeepCompletedDateV2) return;
     const originalDueStatus = base.dueStatus?.bind(base);
     if (typeof originalDueStatus !== 'function') return;
     global.BASELINE_SKINCARE_ROUTINE_MODEL = Object.freeze(Object.assign({},base,{
-      __baselineKeepCompletedDateV1:true,
+      __baselineKeepCompletedDateV2:true,
       dueStatus(itemValue,value,logs) {
         const status = originalDueStatus(itemValue,value,logs);
         try {
           const item = base.normaliseItem(itemValue);
           const date = base.isoDate(value);
           const entries = base.normaliseLogs(logs)?.[date] || {};
-          if (entries[item.id]?.completed) return Object.assign({},status,{ due:true });
+          if (entries[item.id]?.completed) return Object.assign({},status,{ due:true,detail:'Completed on this date' });
         } catch (_error) {}
         return status;
       }
@@ -121,49 +118,12 @@
     }
   }
 
-  function installBootShield() {
-    document.documentElement.setAttribute('data-skincare-routine-booting','true');
-    if (document.getElementById('skincareRoutineBootShieldStyle')) return;
-    const style = document.createElement('style');
-    style.id = 'skincareRoutineBootShieldStyle';
-    style.textContent = `
-      html[data-skincare-routine-booting="true"] #routine{position:relative!important;min-height:240px!important}
-      html[data-skincare-routine-booting="true"] #routine>*{visibility:hidden!important}
-      html[data-skincare-routine-booting="true"] #routine::before{
-        content:"Loading My Routine…";visibility:visible!important;position:absolute;inset:22px auto auto 50%;transform:translateX(-50%);
-        width:min(90%,760px);box-sizing:border-box;padding:20px 24px;border:1px solid var(--border,var(--border-2,currentColor));
-        border-radius:18px;background:var(--card-bg,var(--filter-bg,Canvas));color:var(--ink,currentColor);font:inherit;font-size:18px;font-weight:800;text-align:center
-      }
-      #routine :is(.routine-item,.routine-log-item,.routine-summary-item,.routine-plan-group,.routine-log-group){transition:none!important;animation:none!important}
-    `;
-    document.head.appendChild(style);
-  }
-
-  function releaseBootShield() {
-    global.requestAnimationFrame(() => global.requestAnimationFrame(() => document.documentElement.removeAttribute('data-skincare-routine-booting')));
-  }
-
-  function ensureStyle() {
-    const href = '/sitewide/css/baseline-routine-stability-v11.css?v=BASELINE_ROUTINE_STABILITY_20260808_1';
-    const existing = document.querySelector('link[data-baseline-routine-stability-v11]');
-    if (existing) return Promise.resolve();
-    return new Promise((resolve) => {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      link.dataset.baselineRoutineStabilityV11 = 'true';
-      link.addEventListener('load',resolve,{ once:true });
-      link.addEventListener('error',resolve,{ once:true });
-      document.head.appendChild(link);
-    });
-  }
-
   function waitForBaseRoutine() {
     const started = Date.now();
     return new Promise((resolve,reject) => {
       const check = () => {
-        if (global.BASELINE_SKINCARE_ROUTINE && global.BASELINE_SKINCARE_ROUTINE_MODEL) { resolve(); return; }
-        if (Date.now() - started >= MAX_WAIT_MS) { reject(new Error('Skincare base routine did not initialise.')); return; }
+        if (global.BASELINE_SKINCARE_ROUTINE && global.BASELINE_SKINCARE_ROUTINE_MODEL) { resolve();return; }
+        if (Date.now()-started >= MAX_WAIT_MS) { reject(new Error('Skincare base routine did not initialise.'));return; }
         global.setTimeout(check,16);
       };
       check();
@@ -185,7 +145,7 @@
         script.src = src;
         script.async = false;
         script.setAttribute(marker,'true');
-        script.addEventListener('load',() => { script.dataset.loaded = 'true'; resolve(); },{ once:true });
+        script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
         script.addEventListener('error',reject,{ once:true });
         document.head.appendChild(script);
       });
@@ -195,25 +155,16 @@
 
   exposeAllBaselineRecipes();
   preserveCompletedLogDates();
-  installBootShield();
-  const styleReady = ensureStyle();
 
   waitForBaseRoutine()
     .then(() => loadOrderedParallel([
-      { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5', marker:'data-baseline-routine-system' },
-      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260808_11', marker:'data-skincare-routine-sitewide-v4' },
-      { src:'/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_GROUPS_20260807_3', marker:'data-baseline-public-routine-groups' },
-      { src:'/sitewide/js/baseline-routine-stability-v11.js?v=BASELINE_ROUTINE_STABILITY_20260808_1', marker:'data-baseline-routine-stability-v11' }
+      { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5',marker:'data-baseline-routine-system' },
+      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260808_12',marker:'data-skincare-routine-sitewide-v4' },
+      { src:'/sitewide/js/baseline-public-routine-groups-v1.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-groups' },
+      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_1',marker:'data-baseline-routine-coherence-v12' }
     ]))
-    .then(() => styleReady)
-    .then(() => {
-      bindRecipeOptionNormaliser();
-      releaseBootShield();
-    })
-    .catch((error) => {
-      releaseBootShield();
-      try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
-    });
+    .then(bindRecipeOptionNormaliser)
+    .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
 
   global.addEventListener('pagehide',() => recipeOptionObserver?.disconnect(),{ once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
