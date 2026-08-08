@@ -6,7 +6,7 @@
    - Fitness data/plan modules keep their existing ownership.
    - Public Routines render the same My Routine structure in View Only form.
    - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
-   - Theme/stacking rules live in CSS, never a runtime style-injection guard.
+   - Theme/stacking/week-view layout lives in CSS, not runtime observers.
    - Dependencies start fetching together and execute in dependency order.
 */
 (function (global) {
@@ -17,7 +17,6 @@
   const ROUTINE_VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const CANONICAL_PATH = '/baseline-fitness/my-routine';
-  let calendarObserver = null;
 
   function navigationPath() {
     try {
@@ -84,9 +83,9 @@
     if (!openRoutine || document.documentElement.dataset.fitnessRoutineRouteGuard === 'true') return;
     document.documentElement.dataset.fitnessRoutineRouteGuard = 'true';
     document.addEventListener('click',(event) => {
-      if (event.target?.closest?.('.tab[data-target="my-plan"]')) global.setTimeout(selectRoutinePage,0);
+      if (event.target?.closest?.('.tab[data-target="my-plan"]')) global.requestAnimationFrame(selectRoutinePage);
     },true);
-    global.addEventListener('pageshow',() => global.setTimeout(selectRoutinePage,0));
+    global.addEventListener('pageshow',selectRoutinePage);
   }
 
   function requestedViews() {
@@ -119,38 +118,6 @@
     }
   }
 
-  function normaliseFitnessWeekRows() {
-    const grid = document.getElementById('fitnessCalendarGrid');
-    const weekdays = document.querySelector('.fitness-calendar-weekdays');
-    if (!grid) return;
-    const weekSelected = document.querySelector('[data-calendar-view="week"][aria-selected="true"]');
-    const weekView = Boolean(weekSelected && grid.classList.contains('week-view'));
-    if (!weekView) {
-      grid.classList.remove('bl-routine-week-list');
-      grid.querySelectorAll(':scope > .bl-routine-day-row').forEach((row) => row.classList.remove('bl-routine-day-row'));
-      if (weekdays) weekdays.hidden = false;
-      return;
-    }
-    const rows = Array.from(grid.querySelectorAll(':scope > [data-calendar-date]'));
-    if (rows.length !== 7) return;
-    grid.classList.add('bl-routine-week-list');
-    rows.forEach((row) => row.classList.add('bl-routine-day-row'));
-    if (weekdays) weekdays.hidden = true;
-  }
-
-  function bindFitnessWeekRows() {
-    const grid = document.getElementById('fitnessCalendarGrid');
-    if (!grid) return;
-    if (!calendarObserver && typeof MutationObserver !== 'undefined') {
-      calendarObserver = new MutationObserver(() => global.requestAnimationFrame(normaliseFitnessWeekRows));
-      calendarObserver.observe(grid,{ childList:true });
-    }
-    document.addEventListener('click',(event) => {
-      if (event.target?.closest?.('[data-calendar-view],[data-calendar-move],[data-calendar-today]')) global.setTimeout(normaliseFitnessWeekRows,0);
-    });
-    normaliseFitnessWeekRows();
-  }
-
   if (newPlanRequest) {
     try {
       global.sessionStorage?.setItem(ROUTINE_VIEW_KEY,'plan');
@@ -163,7 +130,7 @@
 
   loadOrderedParallel([
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
-    { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5',marker:'data-baseline-routine-system' },
+    { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js?v=BASELINE_CALISTHENICS_SCHEDULE_20260807_2',marker:'data-fitness-calisthenics-schedule' },
     { src:'/sitewide/js/baseline-fitness-plan-control-authority-v1.js?v=BASELINE_FITNESS_PLAN_CONTROL_AUTHORITY_20260806_1',marker:'data-baseline-fitness-plan-control-authority' },
@@ -171,19 +138,16 @@
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v1.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260807_2',marker:'data-fitness-routine-groups-v1' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260807_3',marker:'data-fitness-generator-progression' },
     { src:'/systems/baseline-fitness/js/fitness-routine-coherence-v1.js?v=BASELINE_FITNESS_ROUTINE_COHERENCE_20260808_1',marker:'data-fitness-routine-coherence-v1' },
-    { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260807_2',marker:'data-fitness-live-policy' },
+    { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260808_3',marker:'data-fitness-live-policy' },
     { src:'/systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js?v=BASELINE_FITNESS_TIMED_TARGETS_20260805_1',marker:'data-fitness-timed-hold-targets-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260806_1',marker:'data-fitness-exercise-family-filter' },
     { src:'/systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js?v=BASELINE_FITNESS_PLAN_GENERATOR_COHERENCE_20260807_1',marker:'data-fitness-plan-generator-coherence-v4' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-viewonly-v4' },
-    { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_1',marker:'data-baseline-routine-coherence-v12' }
+    { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_4',marker:'data-baseline-routine-coherence-v12' }
   ])
     .then(() => {
       selectRoutinePage();
       restoreRequestedView();
-      bindFitnessWeekRows();
     })
     .catch((error) => { try { console.error('Fitness My Routine failed to load.',error); } catch (_error) {} });
-
-  global.addEventListener('pagehide',() => calendarObserver?.disconnect(),{ once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
