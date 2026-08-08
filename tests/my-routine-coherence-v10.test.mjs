@@ -23,13 +23,11 @@ test('v12 is the active bounded sitewide My Routine coherence layer', () => {
 });
 
 test('My Routine never hides behind an artificial loading screen', () => {
-  for (const loader of [skinLoader,fitnessLoader]) {
-    assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|visibility:hidden/);
-  }
+  for (const loader of [skinLoader,fitnessLoader]) assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|visibility:hidden/);
   assert.match(coherence,/never hides the page behind a loading screen/);
 });
 
-test('calendar markers are one number-only control with hover metadata and Summary linking', () => {
+test('calendar markers are number-only controls with hover metadata and Summary linking', () => {
   assert.match(coherence,/class=\"bl-routine-calendar-marker\"/);
   assert.match(coherence,/title=\"\$\{esc\(marker\.label\)\}\"/);
   assert.match(coherence,/data-routine-summary-target/);
@@ -40,7 +38,7 @@ test('calendar markers are one number-only control with hover metadata and Summa
 
 test('Routine Log uses reversible completion instead of added Remove buttons', () => {
   assert.match(skinLoader,/Completed on this date/);
-  assert.match(coherence,/preserveFitnessCompletedRows/);
+  assert.match(coherence,/preserveFitnessCompleted/);
   assert.doesNotMatch(coherence,/data-v11-remove|data-v12-remove|>Remove<|textContent\s*=\s*['\"]Remove['\"]/);
 });
 
@@ -48,7 +46,7 @@ test('one shared dropdown rule is centred, opaque and system-themed', () => {
   assert.match(css,/select:not\(\.routine-action-native\)/);
   assert.match(css,/calc\(50% - 2px\)/);
   assert.match(css,/background-color:var\(--bl-routine-menu/);
-  assert.match(coherence,/removeLegacyDropdownCopies/);
+  assert.match(coherence,/removeDuplicateControls/);
   assert.doesNotMatch(css,/--bl-routine-surface:/);
 });
 
