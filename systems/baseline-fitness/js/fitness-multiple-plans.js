@@ -1,10 +1,19 @@
-/* Baseline Fitness — clean multiple-plan controller, searchable exercise fields and catalogue expansion. */
+/* Baseline Fitness — multiple-plan controller and catalogue expansion.
+
+   OWNERSHIP CONTRACT
+   ------------------
+   This module owns saved Calisthenics plan selection/creation, plan naming and
+   the extended catalogue data. It does NOT own exercise-picker rendering,
+   progression fields or generator layout; fitness-generator-progression-v1.js
+   is the single owner of those controls.
+
+   The authentication runtime is an earlier deferred dependency, so this module
+   attaches once rather than polling the page for several seconds.
+*/
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS_V3__) return;
-  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V3__ = true;
-  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V2__ = true;
-  global.__BASELINE_FITNESS_MULTIPLE_PLANS__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS_V4__) return;
+  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V4__ = true;
 
   const API_ROOT = '/systems/baseline-fitness/api';
   const SELECTED_PREFIX = '__bl_fitness_selected_plan_v1__::';
@@ -15,32 +24,24 @@
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
   let owner = 'guest';
-  let listObserver = null;
 
   const $ = (selector, root = document) => root.querySelector(selector);
-  const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
   function normaliseOwner(value) {
     return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest';
   }
-
   function authOwner() {
     try {
       const snapshot = global.BASELINE_auth?.get?.();
       return snapshot?.authed ? normaliseOwner(snapshot.name || snapshot.user?.name) : 'guest';
-    } catch (_error) {
-      return owner;
-    }
+    } catch (_error) { return owner; }
   }
-
   function selectedKey() { return `${SELECTED_PREFIX}${normaliseOwner(owner)}`; }
   function createKey() { return `${CREATE_PREFIX}${normaliseOwner(owner)}`; }
-
   function selectedPlanId() {
     try { return Math.max(0, Number(global.localStorage?.getItem(selectedKey())) || 0); }
     catch (_error) { return 0; }
   }
-
   function setSelectedPlanId(value) {
     const id = Math.max(0, Number(value) || 0);
     try {
@@ -48,19 +49,16 @@
       else global.localStorage?.removeItem(selectedKey());
     } catch (_error) {}
   }
-
   function isCreatingPlan() {
     try { return global.localStorage?.getItem(createKey()) === '1'; }
     catch (_error) { return false; }
   }
-
   function setCreatingPlan(value) {
     try {
       if (value) global.localStorage?.setItem(createKey(), '1');
       else global.localStorage?.removeItem(createKey());
     } catch (_error) {}
   }
-
   function clearPlanCaches() {
     try {
       const keys = [];
@@ -195,7 +193,6 @@
       add('Deep Squat Hold','seconds',TYPES.TIMED,30,'mobility-strength','Lower Body','Mobility','bilateral'),
       add('90/90 Hip Switches','reps',TYPES.LEG,8,'mobility-strength','Lower Body','Mobility','per-side'),
       add('Jefferson Curl - Bodyweight','reps',TYPES.STANDARD,8,'mobility-strength','Posterior Chain','Mobility','bilateral','Advanced'),
-
       add('Cross-Body Mountain Climbers','reps',TYPES.STANDARD,20,'dynamic-core','Full Body','Cross-Body Core','per-side','Standard','Dynamic trunk rotation, hip flexion and shoulder-supported conditioning.','From a high plank, drive one knee toward the opposite elbow without letting the hips twist excessively.'),
       add('Mountain Climbers','reps',TYPES.STANDARD,20,'dynamic-core','Full Body','Core Conditioning','per-side'),
       add('Slow Mountain Climbers','reps',TYPES.STANDARD,12,'dynamic-core','Core','Anterior Core','per-side'),
@@ -209,7 +206,6 @@
       add('Hollow Rocks','reps',TYPES.STANDARD,10,'dynamic-core','Core','Anterior Core','bilateral','Advanced'),
       add('Superman Hold','seconds',TYPES.TIMED,20,'dynamic-core','Posterior Chain','Posterior Core','bilateral'),
       add('Superman Raises','reps',TYPES.STANDARD,12,'dynamic-core','Posterior Chain','Posterior Core','bilateral'),
-
       add('Lateral Lunge with Rotational Reach','reps',TYPES.LEG,8,'lunges','Lower Body','Lateral Lunge + Rotation','per-side','Standard','Lateral leg strength with controlled trunk rotation and reach.','Step into a lateral lunge, rotate and reach toward the working side, then return to standing under control.'),
       add('Reverse Lunge to Knee Drive','reps',TYPES.LEG,8,'lunges','Lower Body','Lunge + Balance','per-side'),
       add('Curtsy Lunges','reps',TYPES.LEG,8,'lunges','Lower Body','Diagonal Lunge','per-side'),
@@ -220,13 +216,11 @@
       add('Squat to Calf Raise','reps',TYPES.LEG,12,'squats','Lower Body','Squat + Plantar Flexion','bilateral'),
       add('Single-Leg Sit-to-Stand','reps',TYPES.LEG,5,'squats','Lower Body','Single-Leg Squat','per-side','Advanced'),
       add('Single-Leg Box Squats','reps',TYPES.LEG,5,'squats','Lower Body','Single-Leg Squat','per-side','Advanced'),
-
       add('Glute Bridge March','reps',TYPES.LEG,10,'glute-accessory','Posterior Chain','Hip Extension + Anti-Rotation','per-side'),
       add('Donkey Kicks','reps',TYPES.LEG,12,'glute-accessory','Posterior Chain','Hip Extension','per-side'),
       add('Fire Hydrants','reps',TYPES.LEG,12,'glute-accessory','Lower Body','Hip Abduction','per-side'),
       add('Side-Lying Leg Raises','reps',TYPES.LEG,15,'glute-accessory','Lower Body','Hip Abduction','per-side'),
       add('Standing Hip Abduction','reps',TYPES.LEG,15,'glute-accessory','Lower Body','Hip Abduction','per-side'),
-
       add('Scapular Pull-Ups','reps',TYPES.STANDARD,8,'scapular-control','Upper Body','Scapular Pull','bilateral'),
       add('Scapular Wall Slides','reps',TYPES.STANDARD,10,'scapular-control','Upper Body','Scapular Control','bilateral'),
       add('Prone Y Raises','reps',TYPES.STANDARD,10,'scapular-control','Upper Body','Scapular Control','bilateral'),
@@ -249,7 +243,7 @@
       names.add(key);
       return true;
     }));
-    const expanded = Object.freeze(Object.assign({}, base, {
+    global.BASELINE_FITNESS_EXERCISE_CATALOGUE = Object.freeze(Object.assign({}, base, {
       __comprehensiveExpansion:true,
       __comprehensiveExpansionV3:true,
       FAMILIES:Object.freeze(families),
@@ -257,7 +251,6 @@
       FAMILY_ORDER:Object.freeze(families.map((family) => family.label)),
       EXERCISES:Object.freeze(exercises)
     }));
-    global.BASELINE_FITNESS_EXERCISE_CATALOGUE = expanded;
   }
 
   expandCatalogue();
@@ -266,47 +259,25 @@
     const name = String(plan?.planJson?.name || plan?.name || '').trim();
     return name || `Calisthenics Plan ${index + 1}`;
   }
-
   function selectedPlan() {
     const id = selectedPlanId();
     return plans.find((plan) => Number(plan.planId) === id) || plans[0] || null;
   }
-
   function responseJson(payload, status = 200) {
     return new Response(JSON.stringify(payload), { status, headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } });
   }
-
   function urlFor(input) {
     try { return new URL(input instanceof Request ? input.url : String(input), global.location.href); }
     catch (_error) { return null; }
   }
-
   function withUrl(input, url) {
     return input instanceof Request ? new Request(url.toString(), input) : url.toString();
   }
-
-  function readProgressionControls() {
-    const values = new Map();
-    $$('#exerciseList .ex-row').forEach((row) => {
-      const exercise = String(row.querySelector('.ex-select')?.value || '').trim();
-      const field = row.querySelector('.ex-rep-increase');
-      if (exercise && field) values.set(exercise, Math.max(0,Math.min(1000,Math.round(Number(field.value)||0))));
-    });
-    return values;
-  }
-
   function enhancePlanJson(raw) {
     const plan = raw && typeof raw === 'object' ? Object.assign({}, raw) : {};
     plan.name = String($('#calisthenicsPlanName')?.value || plan.name || 'Calisthenics Plan').trim().slice(0,100) || 'Calisthenics Plan';
-    const increases = readProgressionControls();
-    plan.items = Array.isArray(plan.items) ? plan.items.map((item) => {
-      const copy = item && typeof item === 'object' ? Object.assign({}, item) : item;
-      if (copy && increases.has(String(copy.exercise || ''))) copy.repIncrease = increases.get(String(copy.exercise || ''));
-      return copy;
-    }) : [];
     return plan;
   }
-
   async function enhancedWrite(input, init, url) {
     const nextInit = Object.assign({}, init || {});
     if (typeof nextInit.body === 'string') {
@@ -350,114 +321,15 @@
       if (url.pathname.endsWith('/delete_plan.php')) {
         const response = await nativeFetch(input,init);
         if (response.ok) {
-          setSelectedPlanId(0); setCreatingPlan(false); clearPlanCaches(); global.setTimeout(refreshPlans,50);
+          setSelectedPlanId(0);
+          setCreatingPlan(false);
+          clearPlanCaches();
+          global.setTimeout(refreshPlans,50);
         }
         return response;
       }
       return nativeFetch(input,init);
     };
-  }
-
-  function ensureDatalist() {
-    let list = $('#calisthenicsExerciseOptions');
-    if (!list) {
-      list = document.createElement('datalist');
-      list.id = 'calisthenicsExerciseOptions';
-      document.body.appendChild(list);
-    }
-    const catalogue = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
-    const signature = catalogue.EXERCISES.map((exercise) => exercise.name).join('|');
-    if (list.dataset.signature !== signature) {
-      list.dataset.signature = signature;
-      list.innerHTML = catalogue.EXERCISES.map((exercise) => `<option value="${String(exercise.name).replace(/"/g,'&quot;')}"></option>`).join('');
-    }
-    return list;
-  }
-
-  function matchExercise(value) {
-    const text = String(value || '').trim();
-    return global.BASELINE_FITNESS_EXERCISE_CATALOGUE.EXERCISES.find((exercise) => exercise.name.localeCompare(text,'en-GB',{sensitivity:'base'}) === 0) || null;
-  }
-
-  function enhanceExerciseRow(row) {
-    if (!row || row.dataset.searchableExercise === 'true') return;
-    const select = row.querySelector('.ex-select');
-    if (!select) return;
-    row.dataset.searchableExercise = 'true';
-    ensureDatalist();
-    const input = document.createElement('input');
-    input.type = 'search';
-    input.className = 'ex-search-input field-input-fixed';
-    input.setAttribute('list','calisthenicsExerciseOptions');
-    input.setAttribute('autocomplete','off');
-    input.setAttribute('aria-label','Search or choose an exercise');
-    input.placeholder = 'Search or choose an exercise…';
-    input.value = select.options[select.selectedIndex]?.textContent || select.value || '';
-    select.classList.add('ex-select-source');
-    select.hidden = true;
-    select.setAttribute('aria-hidden','true');
-    select.tabIndex = -1;
-    select.insertAdjacentElement('beforebegin',input);
-
-    function commit(showError = false) {
-      const match = matchExercise(input.value);
-      input.setCustomValidity(match || !showError ? '' : 'Choose an exercise from the list.');
-      if (!match || select.value === match.name) return match;
-      select.value = match.name;
-      select.dispatchEvent(new Event('change',{ bubbles:true }));
-      return match;
-    }
-    input.addEventListener('input',() => commit(false));
-    input.addEventListener('change',() => commit(true));
-    input.addEventListener('blur',() => {
-      const match = commit(true);
-      if (!match) input.reportValidity();
-    });
-    select.addEventListener('change',() => {
-      input.value = select.options[select.selectedIndex]?.textContent || select.value || '';
-      input.setCustomValidity('');
-      ensureRepIncrease(row);
-    });
-    ensureRepIncrease(row);
-  }
-
-  function defaultRepIncrease(row) {
-    return row.dataset.progressionType === 'leg-reps' ? 3 : 1;
-  }
-
-  function itemForRow(row) {
-    const exercise = String(row.querySelector('.ex-select')?.value || '').trim();
-    return selectedPlan()?.planJson?.items?.find((item) => String(item?.exercise || '') === exercise) || null;
-  }
-
-  function ensureRepIncrease(row) {
-    if (!row) return;
-    const timed = String(row.dataset.progressionType || '').includes('timed');
-    let wrap = row.querySelector('.ex-field-rep-increase');
-    if (timed) { wrap?.remove(); return; }
-    if (!wrap) {
-      wrap = document.createElement('label');
-      wrap.className = 'field-stack ex-field-rep-increase';
-      wrap.innerHTML = '<span class="rep-increase-label">Rep Increase Per Session</span><input class="ex-rep-increase field-input-fixed" type="number" min="0" max="1000" step="1" inputmode="numeric">';
-      const sets = row.querySelector('.ex-field-sets');
-      (sets || row.lastElementChild)?.insertAdjacentElement('afterend',wrap);
-    }
-    const input = wrap.querySelector('.ex-rep-increase');
-    const exercise = String(row.querySelector('.ex-select')?.value || '');
-    const saved = Number(itemForRow(row)?.repIncrease);
-    const value = Number.isFinite(saved) && saved >= 0 ? saved : defaultRepIncrease(row);
-    if (input.dataset.exercise !== exercise || input.dataset.customised !== 'true') input.value = String(value);
-    input.dataset.exercise = exercise;
-  }
-
-  function enhanceExerciseList() {
-    const list = $('#exerciseList');
-    if (!list) return;
-    $$('.ex-row',list).forEach(enhanceExerciseRow);
-    if (!listObserver) {
-      listObserver = new MutationObserver(() => $$('.ex-row',list).forEach(enhanceExerciseRow));
-      listObserver.observe(list,{ childList:true });
-    }
   }
 
   function ensurePlanName() {
@@ -507,15 +379,47 @@
   }
 
   function decorateSavedPlan() {
-    const title = $('#myPlanOut .my-plan-saved-head h2');
     const plan = selectedPlan();
-    if (title && plan) title.textContent = planName(plan,plans.indexOf(plan));
+    const wrap = $('#myPlanSavedWrap');
+    const target = $('#myPlanOut');
+    if (!plan || !wrap || !target) return;
+    const shell = wrap.querySelector(':scope>.card') || wrap.querySelector('.card');
+    if (!shell) return;
+    const generated = target.querySelector(':scope>.card');
+    const generatedHead = generated?.querySelector('.my-plan-saved-head');
+    const generatedActions = generatedHead?.querySelector('.saved-plan-actions');
+    const generatedMeta = generatedHead?.querySelector('.session-plan-meta');
+
+    let head = shell.querySelector(':scope>.calisthenics-saved-plan-head');
+    if (!head) {
+      head = document.createElement('div');
+      head.className = 'calisthenics-saved-plan-head';
+      shell.prepend(head);
+    }
+    head.querySelector(':scope>.saved-plan-actions')?.remove();
+    let title = head.querySelector('h2');
+    if (!title) { title = document.createElement('h2');head.prepend(title); }
+    title.textContent = planName(plan,plans.indexOf(plan));
+    if (generatedActions) head.appendChild(generatedActions);
+
+    let summary = shell.querySelector(':scope>.calisthenics-saved-plan-summary');
+    if (!summary) {
+      summary = document.createElement('div');
+      summary.className = 'calisthenics-saved-plan-summary session-plan-meta';
+      head.insertAdjacentElement('afterend',summary);
+    }
+    if (generatedMeta) summary.replaceChildren(...Array.from(generatedMeta.children));
+
+    const originalTitle = Array.from(shell.children).find((node) => node.tagName === 'H2' && node !== title);
+    originalTitle?.remove();
+    const intro = Array.from(shell.children).find((node) => node.matches?.('p.note'));
+    intro?.remove();
+    generated?.remove();
   }
 
   function patchInterface() {
     ensureManager();
     ensurePlanName();
-    enhanceExerciseList();
     decorateSavedPlan();
     const groupSelect = $('#exGroup');
     if (groupSelect) {
@@ -542,7 +446,6 @@
     url.searchParams.set('new-plan',String(Date.now()));
     global.location.assign(url.toString());
   }
-
   function openPlan(planId) {
     const id = Math.max(0,Number(planId)||0);
     if (!id) return;
@@ -553,7 +456,12 @@
       global.sessionStorage?.setItem(VIEW_KEY,'plan');
       global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
     } catch (_error) {}
-    global.location.reload();
+    const url = new URL(global.location.href);
+    url.pathname = '/baseline-fitness/my-routine';
+    url.searchParams.set('routine-view','plan');
+    url.searchParams.set('routine-plan','calisthenics');
+    url.searchParams.delete('new-plan');
+    global.location.assign(url.toString());
   }
 
   function completedDate(session) {
@@ -563,11 +471,9 @@
     const pad = (number) => String(number).padStart(2,'0');
     return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
   }
-
   function todayIso() {
     return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0,10);
   }
-
   function getPlansForDate(date) {
     const target = String(date || todayIso());
     if (target > todayIso()) return [];
@@ -586,10 +492,7 @@
     });
     return output;
   }
-
-  function getPlans() {
-    return JSON.parse(JSON.stringify(plans));
-  }
+  function getPlans() { return JSON.parse(JSON.stringify(plans)); }
 
   async function refreshPlans() {
     owner = authOwner();
@@ -603,9 +506,7 @@
       const response = await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
       const data = await response.json();
       plans = response.ok && Array.isArray(data?.plans) ? data.plans : [];
-    } catch (_error) {
-      plans = [];
-    }
+    } catch (_error) { plans = []; }
     if (!isCreatingPlan()) {
       const selected = selectedPlanId();
       if (selected && !plans.some((plan) => Number(plan.planId) === selected)) setSelectedPlanId(0);
@@ -622,34 +523,24 @@
     });
     document.addEventListener('change',(event) => {
       const select = event.target.closest('#calisthenicsPlanSelect');
-      if (select?.value) { openPlan(select.value); return; }
-      const source = event.target.closest('#exerciseList .ex-select');
-      if (source) global.setTimeout(() => ensureRepIncrease(source.closest('.ex-row')),0);
+      if (select?.value) openPlan(select.value);
     },true);
-    document.addEventListener('input',(event) => {
-      const input = event.target.closest('.ex-rep-increase');
-      if (input) input.dataset.customised = 'true';
-    },true);
+    document.addEventListener('baseline:fitness-workout-updated',decorateSavedPlan);
   }
 
   function attachAuth() {
-    let attempts = 0;
-    const connect = () => {
-      const auth = global.BASELINE_auth;
-      if (auth && typeof auth.get === 'function') {
-        owner = authOwner();
-        refreshPlans();
-        if (typeof auth.onChange === 'function') auth.onChange(() => { owner = authOwner(); refreshPlans(); });
-        return;
-      }
-      attempts += 1;
-      if (attempts < 80) global.setTimeout(connect,100);
-    };
-    connect();
+    const auth = global.BASELINE_auth;
+    if (!auth || typeof auth.get !== 'function') {
+      owner = 'guest';
+      refreshPlans();
+      return;
+    }
+    owner = authOwner();
+    refreshPlans();
+    if (typeof auth.onChange === 'function') auth.onChange(() => { owner = authOwner();refreshPlans(); });
   }
 
   function boot() {
-    ensureDatalist();
     patchInterface();
     bind();
     attachAuth();
@@ -666,5 +557,4 @@
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
   else boot();
-  global.addEventListener('pagehide',() => listObserver?.disconnect(),{ once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
