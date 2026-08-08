@@ -2,18 +2,18 @@
 
    OWNERSHIP CONTRACT
    ------------------
-   This module owns saved Calisthenics plan selection/creation, plan naming and
-   the extended catalogue data. It does NOT own exercise-picker rendering,
-   progression fields or generator layout; fitness-generator-progression-v1.js
-   is the single owner of those controls.
+   This module owns saved Calisthenics plan selection/creation, plan naming,
+   one plan-save interception and the extended catalogue data. Generator and
+   live-policy modules expose pure augmentPlanJson functions; this controller
+   calls them here so there is only one save wrapper.
 
-   The authentication runtime is an earlier deferred dependency, so this module
-   attaches once rather than polling the page for several seconds.
+   Exercise picker rendering, progression fields and generator layout belong to
+   fitness-generator-progression-v1.js. Authentication is attached once.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS_V4__) return;
-  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V4__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_MULTIPLE_PLANS_V5__) return;
+  global.__BASELINE_FITNESS_MULTIPLE_PLANS_V5__ = true;
 
   const API_ROOT = '/systems/baseline-fitness/api';
   const SELECTED_PREFIX = '__bl_fitness_selected_plan_v1__::';
@@ -27,45 +27,33 @@
 
   const $ = (selector, root = document) => root.querySelector(selector);
 
-  function normaliseOwner(value) {
-    return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest';
-  }
+  function normaliseOwner(value) { return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest'; }
   function authOwner() {
-    try {
-      const snapshot = global.BASELINE_auth?.get?.();
-      return snapshot?.authed ? normaliseOwner(snapshot.name || snapshot.user?.name) : 'guest';
-    } catch (_error) { return owner; }
+    try { const snapshot=global.BASELINE_auth?.get?.();return snapshot?.authed?normaliseOwner(snapshot.name || snapshot.user?.name):'guest'; }
+    catch (_error) { return owner; }
   }
   function selectedKey() { return `${SELECTED_PREFIX}${normaliseOwner(owner)}`; }
   function createKey() { return `${CREATE_PREFIX}${normaliseOwner(owner)}`; }
   function selectedPlanId() {
-    try { return Math.max(0, Number(global.localStorage?.getItem(selectedKey())) || 0); }
+    try { return Math.max(0,Number(global.localStorage?.getItem(selectedKey())) || 0); }
     catch (_error) { return 0; }
   }
   function setSelectedPlanId(value) {
-    const id = Math.max(0, Number(value) || 0);
-    try {
-      if (id) global.localStorage?.setItem(selectedKey(), String(id));
-      else global.localStorage?.removeItem(selectedKey());
-    } catch (_error) {}
+    const id=Math.max(0,Number(value) || 0);
+    try { if (id) global.localStorage?.setItem(selectedKey(),String(id));else global.localStorage?.removeItem(selectedKey()); }
+    catch (_error) {}
   }
   function isCreatingPlan() {
-    try { return global.localStorage?.getItem(createKey()) === '1'; }
+    try { return global.localStorage?.getItem(createKey())==='1'; }
     catch (_error) { return false; }
   }
   function setCreatingPlan(value) {
-    try {
-      if (value) global.localStorage?.setItem(createKey(), '1');
-      else global.localStorage?.removeItem(createKey());
-    } catch (_error) {}
+    try { if (value) global.localStorage?.setItem(createKey(),'1');else global.localStorage?.removeItem(createKey()); }
+    catch (_error) {}
   }
   function clearPlanCaches() {
     try {
-      const keys = [];
-      for (let index = 0; index < global.localStorage.length; index += 1) {
-        const key = global.localStorage.key(index) || '';
-        if (key.startsWith(PLAN_CACHE_PREFIX)) keys.push(key);
-      }
+      const keys=[];for (let index=0;index<global.localStorage.length;index+=1) { const key=global.localStorage.key(index) || '';if (key.startsWith(PLAN_CACHE_PREFIX)) keys.push(key); }
       keys.forEach((key) => global.localStorage.removeItem(key));
     } catch (_error) {}
   }
@@ -74,33 +62,16 @@
     const base = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
     if (!base || base.__comprehensiveExpansionV3) return;
     const newFamilies = [
-      ['shoulder-pressing','Shoulder Pressing & Handstands'],
-      ['dips','Dips'],
-      ['calves-lower-leg','Calves & Lower Leg'],
-      ['hamstrings','Hamstrings'],
-      ['adductors','Adductors'],
-      ['locomotion','Crawling & Locomotion'],
-      ['conditioning','Bodyweight Conditioning'],
-      ['mobility-strength','Mobility Strength'],
-      ['dynamic-core','Dynamic Core & Climbers'],
-      ['scapular-control','Scapular Control'],
-      ['glute-accessory','Glute & Hip Accessory']
+      ['shoulder-pressing','Shoulder Pressing & Handstands'],['dips','Dips'],['calves-lower-leg','Calves & Lower Leg'],['hamstrings','Hamstrings'],['adductors','Adductors'],['locomotion','Crawling & Locomotion'],['conditioning','Bodyweight Conditioning'],['mobility-strength','Mobility Strength'],['dynamic-core','Dynamic Core & Climbers'],['scapular-control','Scapular Control'],['glute-accessory','Glute & Hip Accessory']
     ];
-    const existingFamilyKeys = new Set(base.FAMILIES.map((family) => family.key));
-    const families = base.FAMILIES.concat(newFamilies.filter(([key]) => !existingFamilyKeys.has(key)).map(([key,label]) => Object.freeze({ key,label })));
-    const familyMap = new Map(families.map((family) => [family.key,family]));
-    const TYPES = base.TYPES;
+    const existingFamilyKeys=new Set(base.FAMILIES.map((family) => family.key));
+    const families=base.FAMILIES.concat(newFamilies.filter(([key]) => !existingFamilyKeys.has(key)).map(([key,label]) => Object.freeze({ key,label })));
+    const familyMap=new Map(families.map((family) => [family.key,family]));
+    const TYPES=base.TYPES;
 
-    function add(name, unit, type, baseline, familyKey, section, movement, laterality = 'bilateral', level = 'Standard', goodFor = '', how = '') {
-      const family = familyMap.get(familyKey);
-      return Object.freeze({
-        name, unit, progressionType:type, base:baseline, familyKey,
-        family:family?.label || familyKey,
-        section, movementCategory:movement, laterality, variationLevel:level,
-        category:section === 'Upper Body' ? 'upper' : section === 'Lower Body' ? 'lower' : section === 'Posterior Chain' ? 'posterior' : section === 'Full Body' ? 'full' : 'core',
-        goodFor:goodFor || `${movement} strength and control.`,
-        how:how || 'Use a controlled range and keep the working joints aligned.'
-      });
+    function add(name,unit,type,baseline,familyKey,section,movement,laterality='bilateral',level='Standard',goodFor='',how='') {
+      const family=familyMap.get(familyKey);
+      return Object.freeze({ name,unit,progressionType:type,base:baseline,familyKey,family:family?.label || familyKey,section,movementCategory:movement,laterality,variationLevel:level,category:section==='Upper Body'?'upper':section==='Lower Body'?'lower':section==='Posterior Chain'?'posterior':section==='Full Body'?'full':'core',goodFor:goodFor || `${movement} strength and control.`,how:how || 'Use a controlled range and keep the working joints aligned.' });
     }
 
     const additions = [
@@ -236,325 +207,139 @@
       add('Single-Leg Pogo Hops','reps',TYPES.LEG,12,'calves-lower-leg','Lower Body','Elastic Plantar Flexion','per-side','Specialist')
     ];
 
-    const names = new Set(base.EXERCISES.map((exercise) => exercise.name.toLocaleLowerCase('en-GB')));
-    const exercises = base.EXERCISES.concat(additions.filter((exercise) => {
-      const key = exercise.name.toLocaleLowerCase('en-GB');
-      if (names.has(key)) return false;
-      names.add(key);
-      return true;
-    }));
-    global.BASELINE_FITNESS_EXERCISE_CATALOGUE = Object.freeze(Object.assign({}, base, {
-      __comprehensiveExpansion:true,
-      __comprehensiveExpansionV3:true,
-      FAMILIES:Object.freeze(families),
-      FAMILY_BY_KEY:familyMap,
-      FAMILY_ORDER:Object.freeze(families.map((family) => family.label)),
-      EXERCISES:Object.freeze(exercises)
-    }));
+    const names=new Set(base.EXERCISES.map((exercise) => exercise.name.toLocaleLowerCase('en-GB')));
+    const exercises=base.EXERCISES.concat(additions.filter((exercise) => { const key=exercise.name.toLocaleLowerCase('en-GB');if (names.has(key)) return false;names.add(key);return true; }));
+    global.BASELINE_FITNESS_EXERCISE_CATALOGUE=Object.freeze(Object.assign({},base,{ __comprehensiveExpansion:true,__comprehensiveExpansionV3:true,FAMILIES:Object.freeze(families),FAMILY_BY_KEY:familyMap,FAMILY_ORDER:Object.freeze(families.map((family) => family.label)),EXERCISES:Object.freeze(exercises) }));
   }
 
   expandCatalogue();
 
-  function planName(plan, index = 0) {
-    const name = String(plan?.planJson?.name || plan?.name || '').trim();
-    return name || `Calisthenics Plan ${index + 1}`;
-  }
-  function selectedPlan() {
-    const id = selectedPlanId();
-    return plans.find((plan) => Number(plan.planId) === id) || plans[0] || null;
-  }
-  function responseJson(payload, status = 200) {
-    return new Response(JSON.stringify(payload), { status, headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } });
-  }
-  function urlFor(input) {
-    try { return new URL(input instanceof Request ? input.url : String(input), global.location.href); }
-    catch (_error) { return null; }
-  }
-  function withUrl(input, url) {
-    return input instanceof Request ? new Request(url.toString(), input) : url.toString();
-  }
+  function planName(plan,index=0) { const name=String(plan?.planJson?.name || plan?.name || '').trim();return name || `Calisthenics Plan ${index+1}`; }
+  function selectedPlan() { const id=selectedPlanId();return plans.find((plan) => Number(plan.planId)===id) || plans[0] || null; }
+  function responseJson(payload,status=200) { return new Response(JSON.stringify(payload),{ status,headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } }); }
+  function urlFor(input) { try { return new URL(input instanceof Request?input.url:String(input),global.location.href); }catch (_error) { return null; } }
+  function withUrl(input,url) { return input instanceof Request?new Request(url.toString(),input):url.toString(); }
   function enhancePlanJson(raw) {
-    const plan = raw && typeof raw === 'object' ? Object.assign({}, raw) : {};
-    plan.name = String($('#calisthenicsPlanName')?.value || plan.name || 'Calisthenics Plan').trim().slice(0,100) || 'Calisthenics Plan';
+    let plan=raw && typeof raw==='object'?Object.assign({},raw):{};
+    const progression=global.BASELINE_FITNESS_EXERCISE_PROGRESSION?.augmentPlanJson;
+    const livePolicy=global.BASELINE_FITNESS_LIVE_POLICY?.augmentPlanJson;
+    if (typeof progression==='function') plan=progression(plan) || plan;
+    if (typeof livePolicy==='function') plan=livePolicy(plan) || plan;
+    plan.name=String($('#calisthenicsPlanName')?.value || plan.name || 'Calisthenics Plan').trim().slice(0,100) || 'Calisthenics Plan';
     return plan;
   }
-  async function enhancedWrite(input, init, url) {
-    const nextInit = Object.assign({}, init || {});
-    if (typeof nextInit.body === 'string') {
-      try {
-        const body = JSON.parse(nextInit.body);
-        if (body && typeof body === 'object') {
-          body.planJson = enhancePlanJson(body.planJson);
-          nextInit.body = JSON.stringify(body);
-        }
-      } catch (_error) {}
+  async function enhancedWrite(input,init,url) {
+    const nextInit=Object.assign({},init || {});
+    if (typeof nextInit.body==='string') {
+      try { const body=JSON.parse(nextInit.body);if (body && typeof body==='object') { body.planJson=enhancePlanJson(body.planJson);nextInit.body=JSON.stringify(body); } }catch (_error) {}
     }
-    const response = await nativeFetch(input, nextInit);
+    const response=await nativeFetch(input,nextInit);
     if (response.ok) {
-      const data = await response.clone().json().catch(() => null);
-      if (url.pathname.endsWith('/save_plan.php') && Number(data?.planId) > 0) setSelectedPlanId(data.planId);
-      setCreatingPlan(false);
-      clearPlanCaches();
-      global.setTimeout(refreshPlans,50);
+      const data=await response.clone().json().catch(() => null);if (url.pathname.endsWith('/save_plan.php') && Number(data?.planId)>0) setSelectedPlanId(data.planId);setCreatingPlan(false);clearPlanCaches();global.setTimeout(refreshPlans,50);
     }
     return response;
   }
 
   if (nativeFetch) {
-    global.fetch = async function(input, init = {}) {
-      const url = urlFor(input);
-      if (!url) return nativeFetch(input,init);
+    global.fetch=async function(input,init={}) {
+      const url=urlFor(input);if (!url) return nativeFetch(input,init);
       if (url.pathname.endsWith('/get_plan.php') && !url.searchParams.has('name')) {
         if (isCreatingPlan()) return responseJson({ ok:true,hasPlan:false,has_plan:false,creatingPlan:true });
-        const selected = selectedPlanId();
-        if (selected) url.searchParams.set('planId',String(selected));
-        let response = await nativeFetch(withUrl(input,url),init);
-        if (selected && response.status === 404) {
-          setSelectedPlanId(0);
-          clearPlanCaches();
-          url.searchParams.delete('planId');
-          response = await nativeFetch(withUrl(input,url),init);
-        }
+        const selected=selectedPlanId();if (selected) url.searchParams.set('planId',String(selected));let response=await nativeFetch(withUrl(input,url),init);
+        if (selected && response.status===404) { setSelectedPlanId(0);clearPlanCaches();url.searchParams.delete('planId');response=await nativeFetch(withUrl(input,url),init); }
         return response;
       }
       if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
-      if (url.pathname.endsWith('/delete_plan.php')) {
-        const response = await nativeFetch(input,init);
-        if (response.ok) {
-          setSelectedPlanId(0);
-          setCreatingPlan(false);
-          clearPlanCaches();
-          global.setTimeout(refreshPlans,50);
-        }
-        return response;
-      }
+      if (url.pathname.endsWith('/delete_plan.php')) { const response=await nativeFetch(input,init);if (response.ok) { setSelectedPlanId(0);setCreatingPlan(false);clearPlanCaches();global.setTimeout(refreshPlans,50); }return response; }
       return nativeFetch(input,init);
     };
   }
 
   function ensurePlanName() {
-    const list = $('#exerciseList');
-    if (!list) return;
-    let input = $('#calisthenicsPlanName');
-    if (!input) {
-      const label = document.createElement('label');
-      label.className = 'field-stack calisthenics-plan-name-field';
-      label.innerHTML = '<span>Plan name</span><input id="calisthenicsPlanName" class="field-input-fixed" type="text" maxlength="100" placeholder="For example: Lower Body, Upper Body or Badminton Preparation">';
-      list.insertAdjacentElement('beforebegin',label);
-      input = label.querySelector('input');
-    }
-    if (document.activeElement !== input) {
-      const plan = selectedPlan();
-      const id = String(plan?.planId || 'new');
-      if (input.dataset.planId !== id) {
-        input.value = isCreatingPlan() ? '' : planName(plan,Math.max(0,plans.indexOf(plan)));
-        input.dataset.planId = id;
-      }
-    }
+    const list=$('#exerciseList');if (!list) return;let input=$('#calisthenicsPlanName');
+    if (!input) { const label=document.createElement('label');label.className='field-stack calisthenics-plan-name-field';label.innerHTML='<span>Plan name</span><input id="calisthenicsPlanName" class="field-input-fixed" type="text" maxlength="100" placeholder="For example: Lower Body, Upper Body or Badminton Preparation">';list.insertAdjacentElement('beforebegin',label);input=label.querySelector('input'); }
+    if (document.activeElement!==input) { const plan=selectedPlan();const id=String(plan?.planId || 'new');if (input.dataset.planId!==id) { input.value=isCreatingPlan()?'':planName(plan,Math.max(0,plans.indexOf(plan)));input.dataset.planId=id; } }
   }
 
   function ensureManager() {
-    const panel = $('[data-fitness-routine-panel="calisthenics"]') || $('#my-plan');
-    if (!panel) return;
-    let manager = $('#calisthenicsPlanManager',panel);
-    if (!manager) {
-      manager = document.createElement('section');
-      manager.id = 'calisthenicsPlanManager';
-      manager.className = 'card fitness-calisthenics-plan-manager';
-      manager.innerHTML = '<div class="section-head-actions"><div><h2>Calisthenics Plans</h2></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';
-      panel.prepend(manager);
-    }
-    const select = manager.querySelector('#calisthenicsPlanSelect');
-    const data = plans.map((plan,index) => ({
-      value:String(Number(plan.planId)),
-      label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions`
-    }));
-    const signature = JSON.stringify(data);
-    if (select.dataset.signature !== signature) {
-      select.dataset.signature = signature;
-      select.innerHTML = `<option value="">${data.length ? 'Choose a plan…' : 'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`;
-    }
-    select.disabled = !data.length;
-    select.value = data.some((entry) => entry.value === String(selectedPlanId())) ? String(selectedPlanId()) : '';
+    const panel=$('[data-fitness-routine-panel="calisthenics"]') || $('#my-plan');if (!panel) return;let manager=$('#calisthenicsPlanManager',panel);
+    if (!manager) { manager=document.createElement('section');manager.id='calisthenicsPlanManager';manager.className='card fitness-calisthenics-plan-manager';manager.innerHTML='<div class="section-head-actions"><div><h2>Calisthenics Plans</h2></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';panel.prepend(manager); }
+    const select=manager.querySelector('#calisthenicsPlanSelect');const data=plans.map((plan,index) => ({ value:String(Number(plan.planId)),label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions` }));const signature=JSON.stringify(data);
+    if (select.dataset.signature!==signature) { select.dataset.signature=signature;select.innerHTML=`<option value="">${data.length?'Choose a plan…':'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`; }
+    select.disabled=!data.length;select.value=data.some((entry) => entry.value===String(selectedPlanId()))?String(selectedPlanId()):'';
   }
 
+  function prettyDate(value) {
+    const text=String(value || '');if (!text) return 'Not specified';const date=new Date(`${text.slice(0,10)}T12:00:00`);return Number.isNaN(date.getTime())?text:date.toLocaleDateString('en-GB',{ weekday:'short',month:'short',day:'2-digit',year:'numeric' });
+  }
+  function frequencyText(plan) {
+    const value=plan?.planJson || {};
+    if (value.scheduleMode==='specific-days') { const days=Array.isArray(value.days)?value.days.filter(Boolean):[];return days.length?days.join(', '):'Specific weekdays'; }
+    const min=Math.max(1,Math.min(6,Number(value.frequencyMin || String(value.frequency || '1x').replace(/\D/g,'')) || 1));const max=Math.max(0,Math.min(7,Number(value.frequencyRangeMax || 0)));return max>min?`${min}–${max} days each week`:`${min} day${min===1?'':'s'} each week`;
+  }
+  function displayExerciseName(value) {
+    const name=String(value || '').replace(/\s+\(L\/R\)$/i,'').trim();const definition=(global.BASELINE_FITNESS_EXERCISE_CATALOGUE?.EXERCISES || []).find((item) => String(item.name || '').localeCompare(name,'en-GB',{ sensitivity:'base' })===0);return definition?.unit==='seconds' && definition?.laterality==='separate-left-right'?`${name} (L/R)`:name;
+  }
+  function decorateExerciseNames(root=document) {
+    root.querySelectorAll?.('.plan-exercise-row>b').forEach((node) => { const display=displayExerciseName(node.textContent);if (display) node.textContent=display; });
+  }
   function decorateSavedPlan() {
-    const plan = selectedPlan();
-    const wrap = $('#myPlanSavedWrap');
-    const target = $('#myPlanOut');
-    if (!plan || !wrap || !target) return;
-    const shell = wrap.querySelector(':scope>.card') || wrap.querySelector('.card');
-    if (!shell) return;
-    const generated = target.querySelector(':scope>.card');
-    const generatedHead = generated?.querySelector('.my-plan-saved-head');
-    const generatedActions = generatedHead?.querySelector('.saved-plan-actions');
-    const generatedMeta = generatedHead?.querySelector('.session-plan-meta');
-
-    let head = shell.querySelector(':scope>.calisthenics-saved-plan-head');
-    if (!head) {
-      head = document.createElement('div');
-      head.className = 'calisthenics-saved-plan-head';
-      shell.prepend(head);
-    }
-    head.querySelector(':scope>.saved-plan-actions')?.remove();
-    let title = head.querySelector('h2');
-    if (!title) { title = document.createElement('h2');head.prepend(title); }
-    title.textContent = planName(plan,plans.indexOf(plan));
-    if (generatedActions) head.appendChild(generatedActions);
-
-    let summary = shell.querySelector(':scope>.calisthenics-saved-plan-summary');
-    if (!summary) {
-      summary = document.createElement('div');
-      summary.className = 'calisthenics-saved-plan-summary session-plan-meta';
-      head.insertAdjacentElement('afterend',summary);
-    }
-    if (generatedMeta) summary.replaceChildren(...Array.from(generatedMeta.children));
-
-    const originalTitle = Array.from(shell.children).find((node) => node.tagName === 'H2' && node !== title);
-    originalTitle?.remove();
-    const intro = Array.from(shell.children).find((node) => node.matches?.('p.note'));
-    intro?.remove();
-    generated?.remove();
+    const plan=selectedPlan();const wrap=$('#myPlanSavedWrap');const target=$('#myPlanOut');if (!plan || !wrap || !target) return;const shell=wrap.querySelector(':scope>.card') || wrap.querySelector('.card');if (!shell) return;
+    const generated=target.querySelector(':scope>.card');const generatedHead=generated?.querySelector('.my-plan-saved-head');const generatedActions=generatedHead?.querySelector('.saved-plan-actions');
+    let head=shell.querySelector(':scope>.calisthenics-saved-plan-head');if (!head) { head=document.createElement('div');head.className='calisthenics-saved-plan-head';shell.prepend(head); }
+    head.querySelector(':scope>.saved-plan-actions')?.remove();let title=head.querySelector('h2');if (!title) { title=document.createElement('h2');head.prepend(title); }title.textContent=planName(plan,plans.indexOf(plan));if (generatedActions) head.appendChild(generatedActions);
+    let summary=shell.querySelector(':scope>.calisthenics-saved-plan-summary');if (!summary) { summary=document.createElement('div');summary.className='calisthenics-saved-plan-summary session-plan-meta';head.insertAdjacentElement('afterend',summary); }
+    const total=Number(plan.progress?.total || plan.planJson?.sessions || (plan.sessions || []).length || 0);const done=Number(plan.progress?.done || (plan.sessions || []).filter((session) => session.status==='done').length || 0);
+    summary.innerHTML=`<span class="badge">Start: ${prettyDate(plan.planJson?.startDate || plan.planJson?.start_date)}</span><span class="badge">Frequency: ${frequencyText(plan)}</span><span class="badge">Sessions: ${total}</span><span class="badge">Progress: ${done}/${total}</span>`;
+    Array.from(shell.children).find((node) => node.tagName==='H2' && node!==title)?.remove();Array.from(shell.children).find((node) => node.matches?.('p.note'))?.remove();generated?.remove();decorateExerciseNames(shell);
   }
 
   function patchInterface() {
-    ensureManager();
-    ensurePlanName();
-    decorateSavedPlan();
-    const groupSelect = $('#exGroup');
-    if (groupSelect) {
-      const families = global.BASELINE_FITNESS_EXERCISE_CATALOGUE.FAMILIES;
-      const selected = groupSelect.value;
-      const signature = families.map((family) => family.label).join('|');
-      if (groupSelect.dataset.catalogueSignature !== signature) {
-        groupSelect.dataset.catalogueSignature = signature;
-        groupSelect.innerHTML = '<option value="all">All groups</option>' + families.map((family) => `<option value="${family.label}">${family.label}</option>`).join('');
-        groupSelect.value = Array.from(groupSelect.options).some((option) => option.value === selected) ? selected : 'all';
-      }
-    }
+    ensureManager();ensurePlanName();decorateSavedPlan();decorateExerciseNames(document);
+    const groupSelect=$('#exGroup');if (groupSelect) { const families=global.BASELINE_FITNESS_EXERCISE_CATALOGUE.FAMILIES;const selected=groupSelect.value;const signature=families.map((family) => family.label).join('|');if (groupSelect.dataset.catalogueSignature!==signature) { groupSelect.dataset.catalogueSignature=signature;groupSelect.innerHTML='<option value="all">All groups</option>'+families.map((family) => `<option value="${family.label}">${family.label}</option>`).join('');groupSelect.value=Array.from(groupSelect.options).some((option) => option.value===selected)?selected:'all'; } }
   }
 
   function createPlan() {
-    setCreatingPlan(true);
-    setSelectedPlanId(0);
-    clearPlanCaches();
-    try {
-      global.sessionStorage?.setItem(VIEW_KEY,'plan');
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
-    } catch (_error) {}
-    const url = new URL('/baseline-fitness/my-routine',global.location.origin);
-    url.searchParams.set('new-plan',String(Date.now()));
-    global.location.assign(url.toString());
+    setCreatingPlan(true);setSelectedPlanId(0);clearPlanCaches();try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics'); }catch (_error) {}
+    const url=new URL('/baseline-fitness/my-routine',global.location.origin);url.searchParams.set('new-plan',String(Date.now()));global.location.assign(url.toString());
   }
   function openPlan(planId) {
-    const id = Math.max(0,Number(planId)||0);
-    if (!id) return;
-    setCreatingPlan(false);
-    setSelectedPlanId(id);
-    clearPlanCaches();
-    try {
-      global.sessionStorage?.setItem(VIEW_KEY,'plan');
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
-    } catch (_error) {}
-    const url = new URL(global.location.href);
-    url.pathname = '/baseline-fitness/my-routine';
-    url.searchParams.set('routine-view','plan');
-    url.searchParams.set('routine-plan','calisthenics');
-    url.searchParams.delete('new-plan');
-    global.location.assign(url.toString());
+    const id=Math.max(0,Number(planId)||0);if (!id) return;setCreatingPlan(false);setSelectedPlanId(id);clearPlanCaches();try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics'); }catch (_error) {}
+    const url=new URL(global.location.href);url.pathname='/baseline-fitness/my-routine';url.searchParams.set('routine-view','plan');url.searchParams.set('routine-plan','calisthenics');url.searchParams.delete('new-plan');global.location.assign(url.toString());
   }
 
   function completedDate(session) {
-    const raw = Number(session?.completed_at);
-    if (!raw) return '';
-    const date = new Date(raw * 1000);
-    const pad = (number) => String(number).padStart(2,'0');
-    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+    const raw=Number(session?.completed_at);if (!raw) return '';const date=new Date(raw*1000);const pad=(number) => String(number).padStart(2,'0');return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
   }
-  function todayIso() {
-    return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0,10);
-  }
+  function todayIso() { return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0,10); }
   function getPlansForDate(date) {
-    const target = String(date || todayIso());
-    if (target > todayIso()) return [];
-    const output = [];
+    const target=String(date || todayIso());if (target>todayIso()) return [];const output=[];
     plans.forEach((plan,index) => {
-      const sessions = Array.isArray(plan.sessions) ? plan.sessions : [];
-      sessions.filter((session) => session.status === 'done' && completedDate(session) === target).forEach((session) => {
-        output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(session.session_index),detail:'Completed on this date',status:'done' });
-      });
-      if (target === todayIso()) {
-        const next = sessions.find((session) => session.status !== 'done');
-        if (next && String(next.scheduled_date || '') <= target) {
-          output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(next.session_index),detail:String(next.scheduled_date || '') < target ? 'Overdue and available today' : 'Due today',status:'due' });
-        }
-      }
+      const sessions=Array.isArray(plan.sessions)?plan.sessions:[];
+      sessions.filter((session) => session.status==='done' && completedDate(session)===target).forEach((session) => { output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(session.session_index),detail:'Completed on this date',status:'done' }); });
+      if (target===todayIso()) { const next=sessions.find((session) => session.status!=='done');if (next && String(next.scheduled_date || '')<=target) output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(next.session_index),detail:String(next.scheduled_date || '')<target?'Overdue and available today':'Due today',status:'due' }); }
     });
     return output;
   }
   function getPlans() { return JSON.parse(JSON.stringify(plans)); }
 
   async function refreshPlans() {
-    owner = authOwner();
-    if (owner === 'guest' || !nativeFetch) {
-      plans = [];
-      patchInterface();
-      document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));
-      return [];
-    }
-    try {
-      const response = await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
-      const data = await response.json();
-      plans = response.ok && Array.isArray(data?.plans) ? data.plans : [];
-    } catch (_error) { plans = []; }
-    if (!isCreatingPlan()) {
-      const selected = selectedPlanId();
-      if (selected && !plans.some((plan) => Number(plan.planId) === selected)) setSelectedPlanId(0);
-      if (!selectedPlanId() && plans[0]) setSelectedPlanId(plans[0].planId);
-    }
-    patchInterface();
-    document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));
-    return getPlans();
+    owner=authOwner();if (owner==='guest' || !nativeFetch) { plans=[];patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));return []; }
+    try { const response=await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });const data=await response.json();plans=response.ok && Array.isArray(data?.plans)?data.plans:[]; }catch (_error) { plans=[]; }
+    if (!isCreatingPlan()) { const selected=selectedPlanId();if (selected && !plans.some((plan) => Number(plan.planId)===selected)) setSelectedPlanId(0);if (!selectedPlanId() && plans[0]) setSelectedPlanId(plans[0].planId); }
+    patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));return getPlans();
   }
 
   function bind() {
-    document.addEventListener('click',(event) => {
-      if (event.target.closest('#createCalisthenicsPlan')) createPlan();
-    });
-    document.addEventListener('change',(event) => {
-      const select = event.target.closest('#calisthenicsPlanSelect');
-      if (select?.value) openPlan(select.value);
-    },true);
+    document.addEventListener('click',(event) => { if (event.target.closest('#createCalisthenicsPlan')) createPlan(); });
+    document.addEventListener('change',(event) => { const select=event.target.closest('#calisthenicsPlanSelect');if (select?.value) openPlan(select.value); },true);
     document.addEventListener('baseline:fitness-workout-updated',decorateSavedPlan);
   }
-
   function attachAuth() {
-    const auth = global.BASELINE_auth;
-    if (!auth || typeof auth.get !== 'function') {
-      owner = 'guest';
-      refreshPlans();
-      return;
-    }
-    owner = authOwner();
-    refreshPlans();
-    if (typeof auth.onChange === 'function') auth.onChange(() => { owner = authOwner();refreshPlans(); });
+    const auth=global.BASELINE_auth;if (!auth || typeof auth.get!=='function') { owner='guest';refreshPlans();return; }owner=authOwner();refreshPlans();if (typeof auth.onChange==='function') auth.onChange(() => { owner=authOwner();refreshPlans(); });
   }
+  function boot() { patchInterface();bind();attachAuth(); }
 
-  function boot() {
-    patchInterface();
-    bind();
-    attachAuth();
-  }
-
-  global.BASELINE_fitnessPlans = Object.freeze({
-    refresh:refreshPlans,
-    getPlans,
-    getSelectedPlanId:selectedPlanId,
-    getPlansForDate,
-    openPlan,
-    createPlan
-  });
-
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
-  else boot();
-})(typeof window !== 'undefined' ? window : globalThis);
+  global.BASELINE_fitnessPlans=Object.freeze({ refresh:refreshPlans,getPlans,getSelectedPlanId:selectedPlanId,getPlansForDate,openPlan,createPlan });
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
+})(typeof window!=='undefined'?window:globalThis);
