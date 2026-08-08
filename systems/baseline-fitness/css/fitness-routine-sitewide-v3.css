@@ -133,6 +133,57 @@ html[data-app="fitness"] #my-plan .fitness-activity-menu :is(button,[role="optio
 #my-plan .session-card>.session-head>.bl-routine-entry-actions,
 #my-plan .session-card>.section-head-actions>.bl-routine-entry-actions{margin-left:auto}
 
+/* Routine Groups and grouped Log presentation. The JS owner only moves cards. */
+#my-plan .bl-v4-number{
+  display:grid;
+  place-items:center;
+  flex:0 0 34px;
+  min-width:34px;
+  height:34px;
+  padding:0 7px;
+  border:1px solid var(--border-2);
+  border-radius:999px;
+  background:var(--filter-bg);
+  color:var(--ink);
+  font-size:18px;
+  font-weight:900;
+  box-sizing:border-box;
+}
+#my-plan .bl-v4-assignment-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,280px);gap:12px;align-items:center}
+#fitnessRoutineLogItems{counter-reset:blFitnessLogGroup}
+#fitnessRoutineLogItems>.bl-fitness-log-group{counter-increment:blFitnessLogGroup;display:grid;gap:10px}
+#fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head{display:flex;align-items:center;gap:11px;margin:2px 0}
+#fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head::before{
+  content:counter(blFitnessLogGroup);
+  display:grid;
+  place-items:center;
+  flex:0 0 38px;
+  width:38px;
+  height:38px;
+  border:1px solid var(--border-2);
+  border-radius:999px;
+  background:var(--filter-bg);
+  color:var(--ink);
+  font-weight:900;
+}
+#fitnessRoutineLogItems>.bl-fitness-log-group>.bl-fitness-log-group-head h3{margin:0}
+#fitnessRoutineLogItems>.bl-fitness-log-individual{display:grid;gap:10px}
+#fitnessRoutineLogItems>.bl-fitness-log-individual>.bl-fitness-log-individual-item{position:relative;padding-left:48px}
+#fitnessRoutineLogItems>.bl-fitness-log-individual>.bl-fitness-log-individual-item>.bl-fitness-log-isolated-number{
+  position:absolute;
+  left:6px;
+  top:11px;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border:1px solid var(--border-2);
+  border-radius:999px;
+  background:var(--filter-bg);
+  color:var(--ink);
+  font-weight:900;
+}
+
 /* Fitness Summary is rendered directly in the shared Skincare-shaped shell. */
 #my-plan .fitness-routine-summary-list{display:grid;gap:20px}
 #my-plan .fitness-summary-group{display:grid;gap:13px}
@@ -183,6 +234,7 @@ html[data-app="fitness"] .fitness-start-early-actions button{min-width:88px}
   #my-plan .fitness-calendar-controls{justify-items:start}
   #my-plan .fitness-calendar-navigation{justify-content:flex-start}
 }
+@media(max-width:700px){#my-plan .bl-v4-assignment-row{grid-template-columns:1fr}}
 @media(max-width:680px){.fitness-frequency-grid{grid-template-columns:1fr}}
 @media(max-width:620px){
   #my-plan .fitness-metric-grid{grid-template-columns:1fr}
