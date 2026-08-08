@@ -1,3 +1,4 @@
+// Validation branch only: execute the current main-branch My Routine structural suite.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
