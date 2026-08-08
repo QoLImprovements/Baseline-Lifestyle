@@ -32,9 +32,12 @@
 }
 
 /* One readable type scale. There is deliberately no 14/15/16px Routine UI. */
-:where(#routine,#my-plan) :is(p,.note,.status,small,label,input,textarea,select,button,.bl-routine-muted,
-  .routine-summary-item,.fitness-exercise-summary-item,.bl-routine-summary-card,.bl-public-v3-item,
-  .bl-public-v3-meta,.bl-public-v3-day,.bl-public-v3-session,.bl-search-select-option,.bl-search-select-group){
+:where(#routine,#my-plan) :is(p,.note,.status,small,label,input,textarea,select,button,.badge,
+  .bl-routine-muted,.routine-summary-item,.fitness-exercise-summary-item,.bl-routine-summary-card,.bl-public-v3-item,
+  .bl-public-v3-meta,.bl-public-v3-day,.bl-public-v3-session,.bl-search-select-option,.bl-search-select-group,
+  .fitness-summary-meta,.fitness-summary-exercises span,.bl-routine-summary-rows,.bl-routine-summary-rows dt,
+  .bl-routine-summary-rows dd,.bl-public-v3-exercise,.bl-public-v3-exercise p,.bl-public-v3-exercise b,
+  [class*="routine-meta"],[class*="routine-status"],[class*="routine-caption"]){
   font-size:var(--bl-routine-font-size)!important;
   line-height:1.48!important;
 }
@@ -130,7 +133,7 @@
   background-image:none!important;
   color:var(--bl-routine-menu-text)!important;
   border:1px solid var(--bl-routine-border)!important;
-  box-shadow:0 18px 46px rgba(0,0,0,.34)!important;
+  box-shadow:var(--shadow,0 18px 46px color-mix(in srgb,currentColor 22%,transparent))!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
   filter:none!important;
@@ -185,23 +188,30 @@
   background:var(--bl-routine-surface-strong)!important;
 }
 :where(#routine,#my-plan) .bl-routine-summary-filter{position:relative!important;z-index:250000!important;margin:0 0 18px!important;gap:9px!important}
+:where(#routine,#my-plan) .fitness-summary-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;flex-wrap:wrap!important}
+:where(#routine,#my-plan) .fitness-summary-head strong{font-size:22px!important}
+:where(#routine,#my-plan) .fitness-summary-meta{display:flex!important;gap:10px!important;flex-wrap:wrap!important;opacity:1!important;color:var(--bl-routine-muted)!important}
+:where(#routine,#my-plan) .fitness-summary-exercises{display:flex!important;gap:8px!important;flex-wrap:wrap!important}
+:where(#routine,#my-plan) .bl-routine-summary-rows{display:grid!important;gap:0!important;margin:0!important}
+:where(#routine,#my-plan) .bl-routine-summary-rows>div{display:grid!important;grid-template-columns:minmax(150px,.65fr) minmax(0,1.35fr)!important;gap:12px!important;padding:8px 0!important;border-bottom:1px solid var(--bl-routine-border)!important}
+:where(#routine,#my-plan) .bl-routine-summary-rows>div:last-child{border-bottom:0!important}
 
 /* Calendar groups own one marker each. Captions are readable and never become
    click targets themselves. */
 :where(#routine,#my-plan) :is(.bl-calendar-markers,.bl-routine-calendar-markers){position:relative!important;z-index:20!important;display:flex!important;gap:7px!important;flex-wrap:wrap!important}
 :where(#routine,#my-plan) :is(.bl-calendar-marker,.bl-routine-calendar-marker){
   width:32px!important;min-width:32px!important;height:32px!important;min-height:32px!important;padding:0!important;
-  display:grid!important;place-items:center!important;border-radius:999px!important;font-size:17px!important;font-weight:900!important;
-  background:var(--bl-routine-accent)!important;color:var(--bl-routine-accent-text,#fff)!important;border:1px solid var(--bl-routine-border)!important;
+  display:grid!important;place-items:center!important;border-radius:999px!important;font-size:18px!important;font-weight:900!important;
+  background:var(--bl-routine-accent)!important;color:var(--accent-contrast,var(--bl-routine-text))!important;border:1px solid var(--bl-routine-border)!important;
 }
-:where(#routine,#my-plan) .bl-calendar-marker-caption{font-size:17px!important;line-height:1.3!important;background:var(--bl-routine-menu)!important;color:var(--bl-routine-menu-text)!important;z-index:2147483000!important}
+:where(#routine,#my-plan) .bl-calendar-marker-caption{font-size:18px!important;line-height:1.3!important;background:var(--bl-routine-menu)!important;color:var(--bl-routine-menu-text)!important;z-index:2147483000!important}
 
 /* Group completion is intentionally obvious: one checkbox in the group header,
    then individual step checkboxes beneath it. */
 #routine .routine-log-group-head{display:flex!important;align-items:center!important;gap:12px!important;min-height:46px!important}
 #routine .routine-log-group-head h3{margin:0!important;flex:1!important}
-#routine .bl-routine-group-complete{margin-left:auto!important;display:grid!important;place-items:center!important;width:34px!important;height:34px!important;cursor:pointer!important}
-#routine .bl-routine-group-complete input{width:22px!important;height:22px!important;margin:0!important;cursor:pointer!important}
+#routine .bl-routine-group-complete{margin-left:auto!important;display:grid!important;place-items:center!important;width:38px!important;height:38px!important;cursor:pointer!important}
+#routine .bl-routine-group-complete input{width:24px!important;height:24px!important;margin:0!important;cursor:pointer!important}
 
 /* Compact coherent visibility control: title at left, selector at right. */
 :where(#routine,#my-plan) .bl-authority-public-head,
@@ -213,19 +223,24 @@
   display:flex!important;align-items:center!important;gap:10px!important;margin-left:auto!important;padding:0!important;border:0!important;background:transparent!important;
 }
 :where(#routine,#my-plan) :is(.bl-public-visibility-slot,.bl-release-public-visibility)>span{font-size:var(--bl-routine-font-size)!important;font-weight:800!important;white-space:nowrap}
-:where(#routine,#my-plan) :is(.bl-public-visibility-slot,.bl-release-public-visibility) select{min-width:150px!important}
+:where(#routine,#my-plan) :is(.bl-public-visibility-slot,.bl-release-public-visibility) .bl-routine-select-shell,
+:where(#routine,#my-plan) :is(.bl-public-visibility-slot,.bl-release-public-visibility) select{min-width:170px!important}
 
 /* Public Routine is the same read-only My Routine silhouette, not a mini UI. */
 :where(#routine,#my-plan) .bl-public-v3{display:grid!important;gap:16px!important;margin-top:18px!important;font-size:var(--bl-routine-font-size)!important}
 :where(#routine,#my-plan) .bl-public-v3-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;flex-wrap:wrap!important}
 :where(#routine,#my-plan) .bl-public-v3-head h3{margin:0!important;font-size:28px!important;line-height:1.2!important}
 :where(#routine,#my-plan) .bl-public-v3-tabs{display:flex!important;gap:9px!important;flex-wrap:wrap!important}
-:where(#routine,#my-plan) .bl-public-v3-tab{min-height:46px!important;padding:9px 14px!important;font-size:var(--bl-routine-font-size)!important}
+:where(#routine,#my-plan) .bl-public-v3-tab{min-height:46px!important;padding:9px 14px!important;font-size:var(--bl-routine-font-size)!important;pointer-events:auto!important}
 :where(#routine,#my-plan) .bl-public-v3-panel{display:grid!important;gap:16px!important}
 :where(#routine,#my-plan) .bl-public-v3-calendar{display:grid!important;grid-template-columns:repeat(7,minmax(0,1fr))!important;gap:9px!important}
 :where(#routine,#my-plan) .bl-public-v3-day{min-width:0!important;padding:12px!important;border:1px solid var(--bl-routine-border)!important;border-radius:14px!important;background:var(--bl-routine-surface)!important}
 :where(#routine,#my-plan) .bl-public-v3-day strong,
 :where(#routine,#my-plan) .bl-public-v3-day span{font-size:var(--bl-routine-font-size)!important;line-height:1.4!important}
+
+/* Routine Plan panels share predictable rhythm after explanatory copy is removed. */
+:where(#routine,#my-plan) :is([data-routine-panel="plan"],[data-fitness-routine-panel="plan"]) :is(.routine-card,.fitness-routine-card,.card){gap:16px!important}
+:where(#routine,#my-plan) :is([data-routine-panel="plan"],[data-fitness-routine-panel="plan"]) :is(h2,h3,h4,p){margin-top:0!important}
 
 /* Routine Groups: one compact disclosure, one heading, no nested empty cavern. */
 #my-plan .bl-routine-group-editor{margin:0 0 16px!important;border:1px solid var(--bl-routine-border)!important;border-radius:18px!important;background:var(--bl-routine-surface-strong)!important;overflow:visible!important}
@@ -266,19 +281,27 @@
 }
 #my-plan #exerciseList>.ex-row.bl-v10-exercise-card>.ex-field-exercise{
   grid-area:exercise-header!important;
-  width:min(100%,720px)!important;
-  justify-self:center!important;
+  width:100%!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
   margin:0!important;
 }
 #my-plan .bl-v10-exercise-card>.ex-field-exercise>label,
 #my-plan .bl-v10-exercise-card>.ex-field-exercise>.field-label,
-#my-plan .bl-v10-exercise-card .ex-search-input{display:none!important}
+#my-plan .bl-v10-exercise-card .ex-search-input,
+#my-plan .bl-v10-exercise-card .ex-picker-control{display:none!important}
+#my-plan .bl-v10-exercise-card>.ex-field-exercise>.bl-routine-select-shell,
+#my-plan .bl-v10-exercise-card>.ex-field-exercise .bl-routine-select-shell{width:auto!important;max-width:100%!important;display:inline-block!important}
+#my-plan .bl-v10-exercise-card>.ex-field-exercise .bl-routine-select-shell::after{right:5px!important}
 #my-plan .bl-v10-exercise-card .ex-select-source,
 #my-plan .bl-v10-exercise-card .ex-select{
   display:block!important;
   position:relative!important;
-  width:100%!important;
-  min-height:58px!important;
+  width:auto!important;
+  max-width:100%!important;
+  min-height:48px!important;
+  padding:0 32px 0 8px!important;
   opacity:1!important;
   visibility:visible!important;
   pointer-events:auto!important;
@@ -287,14 +310,17 @@
   font-size:26px!important;
   font-weight:900!important;
   color:var(--bl-routine-text)!important;
-  background:var(--bl-routine-surface)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  cursor:pointer!important;
 }
 #my-plan .bl-v10-exercise-columns{grid-area:exercise-columns;display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:18px!important;align-items:start!important}
 #my-plan .bl-v10-exercise-controls,
 #my-plan .bl-v10-exercise-details{display:grid!important;gap:14px!important;min-width:0!important;padding:16px!important;border:1px solid var(--bl-routine-border)!important;border-radius:16px!important;background:var(--bl-routine-surface)!important}
-#my-plan .bl-v10-exercise-details>h4{margin:0!important;text-align:center!important;font-size:22px!important}
+#my-plan .bl-v10-exercise-details>h4{margin:0!important;text-align:center!important;font-size:22px!important;color:var(--bl-routine-text)!important}
 #my-plan .bl-v10-exercise-details .ex-details-card{display:grid!important;grid-template-columns:1fr!important;gap:10px!important;width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}
-#my-plan .bl-v10-exercise-details .ex-details-card>span{display:grid!important;grid-template-columns:minmax(130px,.55fr) minmax(0,1fr)!important;gap:10px!important;align-items:start!important;padding:8px 0!important;border-bottom:1px solid var(--bl-routine-border)!important;font-size:var(--bl-routine-font-size)!important}
+#my-plan .bl-v10-exercise-details .ex-details-card>span{display:grid!important;grid-template-columns:minmax(130px,.55fr) minmax(0,1fr)!important;gap:10px!important;align-items:start!important;padding:8px 0!important;border-bottom:1px solid var(--bl-routine-border)!important;font-size:var(--bl-routine-font-size)!important;color:var(--bl-routine-text)!important}
 #my-plan .bl-v10-exercise-details .ex-details-card>span:last-child{border-bottom:0!important}
 #my-plan .bl-v10-exercise-details .ex-details-card b{display:block!important;margin:0!important;color:var(--bl-routine-muted)!important;font-size:var(--bl-routine-font-size)!important;letter-spacing:0!important;text-transform:none!important}
 #my-plan .bl-v10-exercise-card :is(.ex-field-progression-mode,.ex-field-baseline,.ex-field-sets,.ex-field-rep-increase){width:100%!important;min-width:0!important}
@@ -311,8 +337,10 @@
 :where(#routine,#my-plan) input[type="date"]{min-height:52px!important;font-size:var(--bl-routine-font-size)!important;background:var(--bl-routine-surface)!important;color:var(--bl-routine-text)!important}
 html[data-app="fitness"] #my-plan input[type="date"]{color-scheme:dark}
 
-/* Exact-text helper paragraphs removed by JS leave no spacer behind. */
-:where(#routine,#my-plan) .bl-v10-empty-copy{display:none!important;margin:0!important;padding:0!important}
+/* Removal is available from the Plan and Log; confirmation stays in the card. */
+:where(#routine,#my-plan) :is(.fitness-log-item-head,.routine-log-item-head){display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+:where(#routine,#my-plan) .bl-v10-inline-remove-confirm{display:inline-flex!important;align-items:center!important;gap:8px!important;flex-wrap:wrap!important;margin-left:auto!important}
+:where(#routine,#my-plan) .bl-v10-remove-log-entry{margin-left:auto!important}
 
 @media(max-width:900px){
   :where(#routine,#my-plan) :is(.routine-summary-grid,.fitness-summary-detail-grid,.bl-routine-summary-grid,.bl-public-v3-detail-grid),
@@ -320,7 +348,7 @@ html[data-app="fitness"] #my-plan input[type="date"]{color-scheme:dark}
   :where(#routine,#my-plan) .bl-public-v3-calendar{grid-template-columns:1fr!important}
 }
 @media(max-width:620px){
-  :where(#routine,#my-plan){--bl-routine-font-size:17px;--bl-routine-meta-size:17px}
   :where(#routine,#my-plan) :is(.routine-log-head,.fitness-routine-log-head){flex-direction:column!important}
   :where(#routine,#my-plan) :is(.bl-public-visibility-slot,.bl-release-public-visibility){margin-left:0!important;width:100%!important;justify-content:space-between!important}
+  :where(#routine,#my-plan) .bl-routine-summary-rows>div{grid-template-columns:1fr!important;gap:4px!important}
 }
