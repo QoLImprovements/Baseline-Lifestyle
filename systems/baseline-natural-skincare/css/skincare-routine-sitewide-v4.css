@@ -1,4 +1,10 @@
-/* Baseline Natural Skincare — palette adapter for the sitewide My Routine template. */
+/* Baseline Natural Skincare — palette adapter for the sitewide My Routine template.
+
+   SITEWIDE COHERENCE RULE
+   -----------------------
+   Skincare supplies only its existing palette tokens and local surface texture.
+   My Routine typography, dropdown stacking and control language remain shared.
+   Do not introduce interface text below the sitewide 18px My Routine minimum. */
 #routine.bl-routine-root{
   --bl-routine-surface:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));
   --bl-routine-surface-strong:linear-gradient(180deg,var(--skin-wash),var(--skin-peach));
@@ -10,7 +16,7 @@
   --bl-routine-menu:var(--skin-cream);
   --bl-routine-menu-text:var(--ink);
 }
-#routine .routine-subtab{font-size:16px;padding:10px 14px}
+#routine .routine-subtab{font-size:18px;padding:10px 14px}
 #routine .routine-panel[hidden]{display:none!important}
 #routine .routine-card{overflow:visible!important}
 
@@ -33,7 +39,7 @@
 #routine textarea,
 #routine select,
 #routine button,
-#routine label{pointer-events:auto!important}
+#routine label{pointer-events:auto!important;font-size:18px}
 #routine input[type="checkbox"],
 #routine input[type="radio"]{width:20px!important;height:20px!important;min-width:20px!important;margin:0;accent-color:var(--skin-deep)}
 #routine .routine-log-note{width:100%;min-height:50px;z-index:4!important}
@@ -45,16 +51,17 @@
 #routine .routine-action-combobox{position:relative;z-index:301;overflow:visible}
 #routine .routine-action-menu{
   position:absolute!important;
-  z-index:10000!important;
+  z-index:2147483000!important;
   background:var(--skin-cream)!important;
   color:var(--ink)!important;
   opacity:1!important;
   box-shadow:0 26px 60px -18px rgba(91,44,31,.72)!important;
+  pointer-events:auto!important;
 }
 #routine .routine-action-group,
 #routine .routine-action-group-label,
 #routine .routine-action-option,
-#routine .routine-action-no-results{background:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important}
+#routine .routine-action-no-results{background:var(--skin-cream)!important;color:var(--ink)!important;opacity:1!important;font-size:18px!important}
 #routine .routine-action-group-label{background:var(--skin-milk)!important;color:var(--accent-2)!important}
 #routine .routine-action-option:hover,
 #routine .routine-action-option:focus,
@@ -86,6 +93,7 @@
   background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));
   color:var(--ink);
   font:inherit;
+  font-size:18px;
   font-weight:850;
   padding:8px 12px;
   cursor:pointer;
@@ -96,7 +104,7 @@
 #routine .routine-group-row-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:10px;align-items:center}
 #routine .routine-group-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding-top:12px;border-top:1px solid var(--skin-peach)}
 #routine .routine-group-settings[hidden]{display:none!important}
-#routine .routine-group-toggle{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-milk);font-weight:800}
+#routine .routine-group-toggle{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-milk);font-size:18px;font-weight:800}
 #routine .routine-group-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border:1px solid var(--skin-peach);border-radius:13px}
 #routine .routine-group-days label{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:var(--skin-cream)}
 #routine .routine-plan-group{display:grid;gap:0;margin-bottom:16px;border:1px solid var(--skin-peach);border-radius:20px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));overflow:visible}
@@ -109,7 +117,7 @@
 #routine .routine-item .bl-routine-preview-chips{margin:0 0 0 40px}
 #routine .routine-product-preview-button{
   border:1px solid var(--skin-peach);border-radius:999px;background:var(--skin-cream);color:var(--ink);
-  font:inherit;font-size:14px;font-weight:850;min-height:32px;padding:5px 9px;cursor:pointer
+  font:inherit;font-size:18px;font-weight:850;min-height:32px;padding:5px 9px;cursor:pointer
 }
 #routine .routine-item>.bl-routine-details{margin-top:2px}
 #routine .routine-product-field{grid-column:1/-1;padding:14px;border:2px solid var(--skin-peach);border-radius:16px;background:var(--skin-cream)}
@@ -131,7 +139,7 @@
 #routine .routine-log-check{display:flex;align-items:flex-start;gap:11px;cursor:pointer}
 #routine .routine-log-check span{display:grid;gap:4px}
 #routine .routine-log-check strong{font-size:19px}
-#routine .routine-log-check small{color:var(--muted);line-height:1.45}
+#routine .routine-log-check small{color:var(--muted);font-size:18px;line-height:1.45}
 
 /* Comprehensive summaries now use the same two-part template as Fitness. */
 #routine .routine-summary-group{display:grid;gap:13px}
@@ -139,7 +147,7 @@
 #routine .routine-summary-group-head h3{margin:0;font-size:24px}
 #routine .routine-summary-item{border-left:0!important}
 #routine .routine-summary-title{display:flex;align-items:center;gap:9px}
-#routine .routine-summary-title span{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:var(--skin-peach);font-weight:900}
+#routine .routine-summary-title span{display:grid;place-items:center;min-width:30px;height:30px;border-radius:999px;background:var(--skin-peach);font-size:18px;font-weight:900}
 #routine .bl-routine-summary-section{background:var(--skin-cream)}
 #routine .routine-summary-notes{margin-top:12px!important;padding:11px 13px;border-left:4px solid var(--skin-deep);background:var(--skin-milk)}
 
@@ -148,16 +156,16 @@
 #routine .routine-calendar-weekdays,
 #routine .routine-calendar-grid.month-view{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:7px}
 #routine .routine-calendar-weekdays{margin-bottom:7px}
-#routine .routine-calendar-weekdays span{text-align:center;font-weight:850;color:var(--muted)}
-#routine .routine-calendar-day{min-height:68px;border:1px solid var(--skin-peach);border-radius:14px;background:var(--skin-cream);color:var(--ink);padding:9px;font:inherit;text-align:left;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
+#routine .routine-calendar-weekdays span{text-align:center;font-size:18px;font-weight:850;color:var(--muted)}
+#routine .routine-calendar-day{min-height:68px;border:1px solid var(--skin-peach);border-radius:14px;background:var(--skin-cream);color:var(--ink);padding:9px;font:inherit;font-size:18px;text-align:left;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:6px}
 #routine .routine-calendar-day:hover,#routine .routine-calendar-day:focus-visible{border-color:var(--skin-deep);background:var(--skin-milk);outline:none}
 #routine .routine-calendar-day.has-routine{background:var(--skin-wash);border-color:var(--skin-deep)}
 #routine .routine-calendar-day.selected{box-shadow:0 0 0 3px rgba(184,100,77,.26) inset;border-color:var(--skin-deep)}
 #routine .routine-calendar-day.outside-month{opacity:.48}
-#routine .routine-calendar-count{display:grid;place-items:center;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:var(--skin-deep);color:#fff;font-size:12px;font-weight:900}
+#routine .routine-calendar-count{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--skin-deep);color:#fff8f4;font-size:18px;font-weight:900}
 #routine .bl-routine-day-row{background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk))}
 #routine .bl-routine-day-row.has-completion{background:linear-gradient(180deg,var(--skin-wash),var(--skin-peach))}
-#routine .bl-routine-day-details>span{background:var(--skin-cream)}
+#routine .bl-routine-day-details>span{background:var(--skin-cream);font-size:18px}
 
 @media(max-width:820px){
   #routine .routine-group-settings{grid-template-columns:1fr}
