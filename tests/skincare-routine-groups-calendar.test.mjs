@@ -45,7 +45,7 @@ test('Skincare log controls remain native and connected to the original data han
 });
 
 test('Skincare action menu is opaque, foreground and keyboard-compatible', () => {
-  assert.match(css, /z-index:10000!important/);
+  assert.match(css, /z-index:2147483000!important/);
   assert.match(css, /background:var\(--skin-cream\)!important/);
   assert.match(css, /opacity:1!important/);
   assert.match(cssEntry, /baseline-routine-system\.css/);
