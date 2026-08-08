@@ -6,17 +6,17 @@
    - Base Skincare owns data and native controls.
    - skincare-routine-sitewide-v4.js owns Skincare grouping/calendar structure.
    - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
-   - baseline-routine-coherence-v12.js supplies only shared sitewide behaviour.
+   - baseline-routine-coherence-v12.js is the sole shared behaviour finisher.
+   - No boot polling: parser-loaded prerequisites are available by DOMContentLoaded.
    - Dependencies start fetching together and execute in dependency order.
 */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__) return;
   global.__BASELINE_SKINCARE_ROUTINE_LOADER_V30__ = true;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V29__ = true;
   const document = global.document;
-  const MAX_WAIT_MS = 3000;
   let recipeOptionObserver = null;
+  let started = false;
 
   function exposeAllBaselineRecipes() {
     const base = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
@@ -115,18 +115,6 @@
     }
   }
 
-  function waitForBaseRoutine() {
-    const started = Date.now();
-    return new Promise((resolve,reject) => {
-      const check = () => {
-        if (global.BASELINE_SKINCARE_ROUTINE && global.BASELINE_SKINCARE_ROUTINE_MODEL) { resolve();return; }
-        if (Date.now()-started >= MAX_WAIT_MS) { reject(new Error('Skincare base routine did not initialise.'));return; }
-        global.setTimeout(check,16);
-      };
-      check();
-    });
-  }
-
   function loadOrderedParallel(entries) {
     const pending = entries.map(({ src,marker }) => {
       const existing = document.querySelector(`script[${marker}]`);
@@ -150,18 +138,26 @@
     return Promise.all(pending);
   }
 
-  exposeAllBaselineRecipes();
-  preserveCompletedLogDates();
-
-  waitForBaseRoutine()
-    .then(() => loadOrderedParallel([
-      { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260807_5',marker:'data-baseline-routine-system' },
+  function start() {
+    if (started) return;
+    started = true;
+    exposeAllBaselineRecipes();
+    preserveCompletedLogDates();
+    if (!global.BASELINE_SKINCARE_ROUTINE || !global.BASELINE_SKINCARE_ROUTINE_MODEL) {
+      try { console.error('Skincare My Routine prerequisites were not available at DOM readiness.'); } catch (_error) {}
+      return;
+    }
+    loadOrderedParallel([
+      { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
       { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js?v=SKINCARE_SITEWIDE_ROUTINE_20260808_12',marker:'data-skincare-routine-sitewide-v4' },
       { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260808_1',marker:'data-baseline-public-routine-viewonly-v4' },
-      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_1',marker:'data-baseline-routine-coherence-v12' }
-    ]))
-    .then(bindRecipeOptionNormaliser)
-    .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
+      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260808_4',marker:'data-baseline-routine-coherence-v12' }
+    ])
+      .then(bindRecipeOptionNormaliser)
+      .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
+  }
 
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{ once:true });
+  else start();
   global.addEventListener('pagehide',() => recipeOptionObserver?.disconnect(),{ once:true });
 })(typeof window !== 'undefined' ? window : globalThis);
