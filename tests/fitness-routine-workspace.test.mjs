@@ -12,14 +12,15 @@ const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitnes
 const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url),'utf8');
 const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js', import.meta.url),'utf8');
 const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css', import.meta.url),'utf8');
+const fitnessCss = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url),'utf8');
 const publicViewer = fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js', import.meta.url),'utf8');
 const updateSession = fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php', import.meta.url),'utf8');
 
-test('Fitness loader keeps route restoration but has no artificial loading screen', () => {
+test('Fitness loader restores the requested view without artificial loading or retired guards', () => {
   assert.match(loader,/restoreRequestedView/);
   assert.match(loader,/loadOrderedParallel/);
   assert.match(loader,/baseline-routine-coherence-v12\.js/);
-  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11/);
+  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1/);
 });
 
 test('activity catalogue and existing data owner remain intact', () => {
@@ -46,7 +47,7 @@ test('Calisthenics Routine Log completion is a real reversible checkbox backed b
   assert.match(updateSession,/completed_at=NULL/);
 });
 
-test('Fitness Summary retains its one filter and shared terminology', () => {
+test('Fitness Summary retains one filter and shared terminology', () => {
   assert.match(structure,/fitnessSummaryGroupFilter/);
   assert.match(shared,/fitnessSummaryGroupFilter/);
   assert.match(shared,/All Routine Steps/);
@@ -54,20 +55,23 @@ test('Fitness Summary retains its one filter and shared terminology', () => {
 });
 
 test('Days Per Week range stays valid and is displayed as compact min dash max', () => {
-  assert.match(policy,/value <= minimum \? ' disabled'/);
+  assert.match(policy,/value<=minimum\?' disabled':''/);
   assert.match(policy,/Not Selected/);
-  assert.match(shared,/Days Per Week/);
+  assert.match(policy,/Days Per Week/);
+  assert.match(policy,/bl-frequency-range-dash/);
   assert.match(sharedCss,/\.bl-frequency-range-dash/);
 });
 
-test('flexible weekly policy stays in Fitness colours and leaves due plan entries in Routine Log', () => {
+test('flexible weekly policy owns behaviour only, not a runtime visual layer', () => {
   assert.doesNotMatch(policy,/Current workout available within your weekly frequency\./);
-  assert.doesNotMatch(policy,/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
-  assert.match(policy,/getPlansForDate\(date\) \{\s*return original\.getPlansForDate\?\.\(date\) \|\| \[\];/s);
-  assert.doesNotMatch(policy,/getPlansForDate\(date\)[\s\S]{0,400}\.filter\(/);
+  assert.doesNotMatch(policy,/createElement\(['\"]style['\"]\)|function injectStyles|baselineFitnessLivePolicyStyle/);
+  assert.doesNotMatch(policy,/wrapPlanCalendar|__baselineFlexibleWeeklyV2/);
+  assert.doesNotMatch(policy,/\[80,220,500,1000,1800\]/);
+  assert.match(fitnessCss,/fitness-start-early-overlay/);
+  assert.match(fitnessCss,/ex-picker-menu/);
 });
 
-test('Public Fitness routine is the same owner-facing structure in View Only form', () => {
+test('Public Fitness routine is the owner-facing structure in View Only form', () => {
   assert.match(publicViewer,/fitness-routine-log-item/);
   assert.match(publicViewer,/fitness-exercise-summary-item/);
   assert.match(publicViewer,/routine-plan-group/);
@@ -76,6 +80,6 @@ test('Public Fitness routine is the same owner-facing structure in View Only for
 });
 
 test('Week and Month controls cannot collapse below their labels', () => {
-  assert.match(sharedCss,/min-width:184px/);
-  assert.match(sharedCss,/repeat\(2,minmax\(88px,1fr\)\)/);
+  assert.match(sharedCss,/width:204px/);
+  assert.match(sharedCss,/repeat\(2,minmax\(96px,1fr\)\)/);
 });
