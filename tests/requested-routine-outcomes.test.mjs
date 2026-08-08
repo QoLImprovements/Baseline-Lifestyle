@@ -7,6 +7,7 @@ const coherence = read('sitewide/js/baseline-routine-coherence-v12.js');
 const css = read('sitewide/css/baseline-routine-coherence-v12.css');
 const publicViewer = read('sitewide/js/baseline-public-routine-viewonly-v4.js');
 const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
+const livePolicy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const exerciseCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
 test('calendar entries are circle numbers only and captions are hover/accessibility metadata', () => {
@@ -19,7 +20,7 @@ test('calendar entries are circle numbers only and captions are hover/accessibil
 
 test('calendar marker clicks select the matching Routine Summary filter', () => {
   assert.match(coherence,/data-routine-summary-target/);
-  assert.match(coherence,/select\.value\s*=\s*target/);
+  assert.match(coherence,/select\.value=target/);
   assert.match(coherence,/skinRoutineSummaryFilter/);
   assert.match(coherence,/fitnessSummaryGroupFilter/);
   assert.match(publicViewer,/summaryFilter=String\(marker\.dataset\.publicSummaryTarget/);
@@ -27,7 +28,7 @@ test('calendar marker clicks select the matching Routine Summary filter', () => 
 
 test('Fitness Calisthenics markers are plan/group based and deduplicated', () => {
   assert.match(coherence,/key:`plan:\$\{Number\(plan\.planId\)\}`/);
-  assert.match(coherence,/const seen\s*=\s*new Set\(\)/);
+  assert.match(coherence,/const seen=new Set\(\)/);
   assert.match(publicViewer,/key:`plan:\$\{Number\(plan\.planId\)\}`/);
   assert.doesNotMatch(coherence,/plan\.planJson\?\.items.*markers/s);
 });
@@ -42,8 +43,8 @@ test('Routine Log completion is reversible on the viewed date with no extra Remo
 test('sitewide terminology and compact Fitness frequency range follow the requested language', () => {
   assert.match(coherence,/Individual Routine Steps/);
   assert.match(coherence,/All Routine Steps/);
-  assert.match(coherence,/Days Per Week/);
-  assert.match(coherence,/Workout Date:/);
+  assert.match(livePolicy,/Days Per Week/);
+  assert.match(livePolicy,/Not Selected/);
   assert.match(css,/\.bl-frequency-range-dash/);
   assert.match(css,/minmax\(88px,130px\)/);
   assert.match(css,/field-stack:has\(#frequencyRangeMax\)>span\{display:none!important\}/);
