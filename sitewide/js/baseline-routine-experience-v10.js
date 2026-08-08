@@ -24,6 +24,8 @@
   let frame=0;
   let observer=null;
   let removing=false;
+  let resolveReady=null;
+  global.BASELINE_RoutineExperienceV10Ready=new Promise((resolve) => { resolveReady=resolve; });
 
   const COPY_TO_REMOVE=new Set([
     'Record calisthenics and other planned fitness activity for the selected date.',
@@ -35,12 +37,23 @@
   ]);
 
   function loadCss() {
-    if (document.querySelector('link[data-baseline-routine-experience-v10-css]')) return;
-    const link=document.createElement('link');
-    link.rel='stylesheet';
-    link.href='/sitewide/css/baseline-routine-experience-v10.css?v=BASELINE_ROUTINE_EXPERIENCE_20260808_1';
-    link.setAttribute('data-baseline-routine-experience-v10-css','true');
-    document.head.appendChild(link);
+    const existing=document.querySelector('link[data-baseline-routine-experience-v10-css]');
+    if (existing) {
+      if (existing.dataset.loaded==='true' || existing.sheet) return Promise.resolve();
+      return new Promise((resolve) => {
+        existing.addEventListener('load',() => { existing.dataset.loaded='true';resolve(); },{ once:true });
+        existing.addEventListener('error',resolve,{ once:true });
+      });
+    }
+    return new Promise((resolve) => {
+      const link=document.createElement('link');
+      link.rel='stylesheet';
+      link.href='/sitewide/css/baseline-routine-experience-v10.css?v=BASELINE_ROUTINE_EXPERIENCE_20260808_2';
+      link.setAttribute('data-baseline-routine-experience-v10-css','true');
+      link.addEventListener('load',() => { link.dataset.loaded='true';resolve(); },{ once:true });
+      link.addEventListener('error',resolve,{ once:true });
+      document.head.appendChild(link);
+    });
   }
 
   function todayIso() {
@@ -66,13 +79,16 @@
     const walker=document.createTreeWalker(node,NodeFilter.SHOW_TEXT);
     const nodes=[];let current=null;
     while ((current=walker.nextNode())) nodes.push(current);
-    nodes.forEach((textNode) => { const next=callback(String(textNode.nodeValue || ''));if (typeof next==='string' && next!==textNode.nodeValue) textNode.nodeValue=next; });
+    nodes.forEach((textNode) => {
+      const next=callback(String(textNode.nodeValue || ''));
+      if (typeof next==='string' && next!==textNode.nodeValue) textNode.nodeValue=next;
+    });
   }
 
   function removeUnwantedCopy(root) {
     $$('p,.note,.status',root).forEach((node) => {
       const text=String(node.textContent || '').replace(/\s+/g,' ').trim();
-      if (COPY_TO_REMOVE.has(text)) { node.classList.add('bl-v10-empty-copy');node.remove(); }
+      if (COPY_TO_REMOVE.has(text)) node.remove();
     });
   }
 
@@ -89,13 +105,15 @@
       ['No matching routine item.','No matching Routine Step.'],
       ['No matching routine items.','No matching Routine Steps.']
     ]);
-    $$('h1,h2,h3,h4,h5,span,div,option,optgroup,label,button',root).forEach((node) => {
-      if (node.children.length && !node.matches('option,optgroup')) return;
+    $$('optgroup',root).forEach((group) => { const text=String(group.label || '').trim();if (exact.has(text)) group.label=exact.get(text); });
+    $$('h1,h2,h3,h4,h5,span,div,option,label,button',root).forEach((node) => {
+      if (node.children.length) return;
       const text=String(node.textContent || '').trim();
       if (exact.has(text)) node.textContent=exact.get(text);
     });
-    const searchInput=$('#skinRoutineSummaryFilterSearch',root) || $('.bl-search-select input',root);
-    if (searchInput && /All routine items/i.test(searchInput.value || '')) searchInput.value='All Routine Steps';
+    $$('.bl-search-select input',root).forEach((input) => {
+      if (/^All routine items$/i.test(String(input.value || '').trim())) input.value='All Routine Steps';
+    });
   }
 
   function ensureSelectShell(select) {
@@ -287,9 +305,7 @@
         ensureSelectShell(select);
       }
       let columns=row.querySelector(':scope>.bl-v10-exercise-columns');
-      if (!columns) {
-        columns=document.createElement('div');columns.className='bl-v10-exercise-columns';row.appendChild(columns);
-      }
+      if (!columns) { columns=document.createElement('div');columns.className='bl-v10-exercise-columns';row.appendChild(columns); }
       let controls=columns.querySelector(':scope>.bl-v10-exercise-controls');
       if (!controls) { controls=document.createElement('section');controls.className='bl-v10-exercise-controls';columns.appendChild(controls); }
       let details=columns.querySelector(':scope>.bl-v10-exercise-details');
@@ -320,11 +336,11 @@
   }
 
   function startExistingRemoval(id,type,card) {
-    if (removing) return;
-    let confirm=card.querySelector('.bl-v10-inline-remove-confirm');
-    if (confirm) return;
-    confirm=document.createElement('span');confirm.className='bl-v10-inline-remove-confirm';confirm.innerHTML='<span>Remove?</span><button type="button" class="tiny-btn" data-v10-remove-confirm>Yes</button><button type="button" class="tiny-btn" data-v10-remove-cancel>Cancel</button>';
-    const trigger=card.querySelector(type==='fitness'?'[data-v10-remove-activity]':'[data-v10-remove-skin-step]');trigger?.insertAdjacentElement('afterend',confirm);if (trigger) trigger.hidden=true;
+    if (removing || !card || card.querySelector('.bl-v10-inline-remove-confirm')) return;
+    const confirm=document.createElement('span');confirm.className='bl-v10-inline-remove-confirm';
+    confirm.innerHTML='<span>Remove?</span><button type="button" class="tiny-btn" data-v10-remove-confirm>Yes</button><button type="button" class="tiny-btn" data-v10-remove-cancel>Cancel</button>';
+    const trigger=card.querySelector(type==='fitness'?'[data-v10-remove-activity]':'[data-v10-remove-skin-step]');
+    trigger?.insertAdjacentElement('afterend',confirm);if (trigger) trigger.hidden=true;
     confirm.dataset.removeId=id;confirm.dataset.removeType=type;
   }
 
@@ -333,16 +349,17 @@
     removing=true;
     try {
       if (type==='fitness') {
-        const request=document.querySelector(`[data-activity-remove-request="${CSS.escape(id)}"]`);
-        request?.click();
+        document.querySelector(`[data-activity-remove-request="${CSS.escape(id)}"]`)?.click();
         global.requestAnimationFrame(() => {
           document.querySelector(`[data-activity-remove-confirm="${CSS.escape(id)}"]`)?.click();
           removing=false;schedule();
         });
       } else {
-        const item=document.querySelector(`#routineItems [data-routine-item="${CSS.escape(id)}"]`);
-        const request=item?.querySelector('[data-remove-request]');request?.click();
-        global.requestAnimationFrame(() => { item?.querySelector('[data-remove-confirm]')?.click();removing=false;schedule(); });
+        document.querySelector(`#routineItems [data-routine-item="${CSS.escape(id)}"] [data-remove-request]`)?.click();
+        global.requestAnimationFrame(() => {
+          document.querySelector(`#routineItems [data-routine-item="${CSS.escape(id)}"] [data-remove-confirm]`)?.click();
+          removing=false;schedule();
+        });
       }
     } catch (_error) { removing=false; }
   }
@@ -410,7 +427,7 @@
     },true);
 
     document.addEventListener('change',(event) => {
-      if (event.target?.id==='freq') global.setTimeout(() => { normaliseFrequencyRange($(rootSelector));schedule(); },0);
+      if (event.target?.id==='freq') global.setTimeout(() => { const root=$(rootSelector);if (root) normaliseFrequencyRange(root);schedule(); },0);
       if (event.target?.matches?.(`${rootSelector} input[data-v10-group-complete]`)) {
         const box=event.target;let ids=[];try { ids=JSON.parse(box.dataset.v10GroupIds || '[]'); } catch (_error) {}
         ids.forEach((id) => {
@@ -424,17 +441,20 @@
     ['baseline:skincare-routine-updated','baseline:fitness-routine-updated','baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:routine-settings-changed','baseline:fitness-summary-rendered','baseline:routine-rendered'].forEach((name) => document.addEventListener(name,schedule));
   }
 
-  function boot() {
-    loadCss();bind();
+  async function boot() {
+    await loadCss();
+    bind();
     const root=$(rootSelector);
     if (root && typeof MutationObserver!=='undefined') {
       observer=new MutationObserver((mutations) => { if (mutations.some((mutation) => mutation.type==='childList')) schedule(); });
       observer.observe(root,{ childList:true,subtree:true });
     }
-    schedule();
+    patch();
     [80,220,500,900].forEach((delay) => global.setTimeout(schedule,delay));
+    resolveReady?.();
   }
 
   global.addEventListener('pagehide',() => observer?.disconnect(),{ once:true });
-  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',() => { boot().catch(() => resolveReady?.()); },{ once:true });
+  else boot().catch(() => resolveReady?.());
 })(typeof window!=='undefined'?window:globalThis);
