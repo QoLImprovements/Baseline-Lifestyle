@@ -1,13 +1,12 @@
-/* Baseline Fitness — Calisthenics schedule-mode owner.
+/* Baseline Fitness — Calisthenics schedule-mode owner v2.
 
-   This module owns only weekly-count vs specific-weekday behaviour. Start Date
-   is owned by the canonical generator module; do not duplicate its defaulting or
-   editability here.
+   Owns only the Number Of Days vs Specify Weekdays choice and conditional
+   visibility. Generator layout and frequency range content are owned elsewhere.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_CALISTHENICS_SCHEDULE_CONTROLS__) return;
-  global.__BASELINE_CALISTHENICS_SCHEDULE_CONTROLS__ = true;
+  if (!global.document || global.__BASELINE_CALISTHENICS_SCHEDULE_CONTROLS_V2__) return;
+  global.__BASELINE_CALISTHENICS_SCHEDULE_CONTROLS_V2__ = true;
 
   function sync() {
     const mode=document.getElementById('scheduleMode');
@@ -15,14 +14,19 @@
     const days=document.getElementById('specificDayControls');
     if (!mode || !frequency || !days) return;
 
+    Array.from(mode.options || []).forEach((option) => {
+      if (option.value==='weekly-count') option.textContent='Number Of Days';
+      if (option.value==='specific-days') option.textContent='Specify Weekdays';
+    });
     const specific=mode.value==='specific-days';
     days.hidden=!specific;
     frequency.disabled=specific;
-    const frequencyField=frequency.closest('.field-stack');
+    const range=frequency.closest('.fitness-frequency-grid');
+    const frequencyField=range || frequency.closest('.field-stack');
     if (frequencyField) frequencyField.hidden=specific;
     if (specific) {
       const count=days.querySelectorAll('input[data-plan-day]:checked').length;
-      frequency.value=`${Math.max(1,count)}x`;
+      frequency.value=`${Math.max(1,Math.min(6,count || 1))}x`;
     }
   }
 
