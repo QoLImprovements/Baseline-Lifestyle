@@ -163,6 +163,14 @@
   white-space:nowrap;
   font-size:16px!important;
 }
+/* The original calendars exposed raw per-item totals. Once v11 has a grouped
+   marker, suppress those old totals so one group produces one visible circle. */
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.routine-calendar-count,
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.bl-routine-day-count,
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.bl-routine-day-details,
+#my-plan #fitnessCalendarGrid [data-calendar-date]:has(>.bl-v11-calendar-markers)>b{
+  display:none!important;
+}
 
 /* Skincare group completion is a single compact checkbox in the group header. */
 #routine .routine-log-group-head{display:flex!important;align-items:center!important;gap:12px!important}
