@@ -105,10 +105,12 @@ test('Public Routine presentation is shared, interactive and mapped to the same 
   assert.ok(experienceCssV10.includes('.bl-public-visibility-slot'));
 });
 
-test('Fitness Summary content stays comprehensive while v10 supplies the Skincare-shaped layout', () => {
-  for (const phrase of ['Activity profile','Energy demand','Primary muscle involvement','Benefits and training role','exerciseMuscles','exerciseDemand','Relevant session measures','Technique:','Progression:','bl-routine-summary-grid']) {
+test('Fitness Summary content stays comprehensive inside the exact Skincare-shaped shell', () => {
+  for (const phrase of ['Routine details','Energy demand','Primary muscle involvement','Benefits and practical role','exerciseMuscles','exerciseDemand','Relevant session measures','Technique:','Progression:','bl-routine-summary-grid','function makeSharedSummaryTitle','routine-summary-title']) {
     assert.ok(fitnessCoherence.includes(phrase));
   }
+  assert.ok(fitnessCoherence.includes("card.querySelector(':scope>.fitness-summary-meta')?.remove()"));
+  assert.ok(fitnessCoherence.includes("card.querySelector(':scope>.fitness-summary-exercises')?.remove()"));
   assert.doesNotMatch(experienceV10, /function activityProfile|function exerciseMuscles|function exerciseDemand/);
 });
 
