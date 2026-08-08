@@ -22,9 +22,13 @@
   --bl-routine-menu-text:var(--ink);
 }
 #my-plan .fitness-routine-shell{display:grid;gap:16px;min-width:0}
-#my-plan .fitness-routine-panel[hidden]{display:none!important}
+#my-plan .fitness-routine-panel[hidden],
+#my-plan .fitness-routine-plan-panel[hidden]{display:none!important}
 #my-plan .fitness-routine-subtab{font-size:18px;padding:10px 14px}
 #my-plan .fitness-routine-card{overflow:visible!important}
+#my-plan .fitness-routine-plan-tabs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 14px;padding:0}
+#my-plan .fitness-routine-plan-tab{border-radius:999px;font-size:18px}
+#my-plan .fitness-routine-plan-panels{display:grid;gap:14px;min-width:0}
 
 /* All Fitness cards and fields stay inside the existing Fitness theme. */
 html[data-app="fitness"] #my-plan :is(.card,.fitness-routine-card,.session-card,#exerciseList>.ex-row,.ex-details-card){
@@ -129,8 +133,8 @@ html[data-app="fitness"] #my-plan .fitness-activity-menu :is(button,[role="optio
 #my-plan .session-card>.session-head>.bl-routine-entry-actions,
 #my-plan .session-card>.section-head-actions>.bl-routine-entry-actions{margin-left:auto}
 
-/* Fitness Summary fills the same shared two-column summary shell as Skincare. */
-#my-plan .fitness-exercise-summary{display:grid;gap:20px}
+/* Fitness Summary is rendered directly in the shared Skincare-shaped shell. */
+#my-plan .fitness-routine-summary-list{display:grid;gap:20px}
 #my-plan .fitness-summary-group{display:grid;gap:13px}
 #my-plan .fitness-summary-group>h3{margin:0;font-size:25px}
 #my-plan .routine-summary-title{display:flex;align-items:center;gap:9px}
