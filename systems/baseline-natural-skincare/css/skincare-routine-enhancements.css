@@ -1,5 +1,7 @@
-/* Baseline Natural Skincare — shared My Routine structure entry point. */
-@import url('/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_ROUTINE_WORKSPACE_20260808_1');
-@import url('/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_1');
-@import url('/sitewide/css/baseline-routine-live-authority-v1.css?v=BASELINE_ROUTINE_LIVE_AUTHORITY_20260806_3');
-@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260808_2');
+/* Baseline Natural Skincare — My Routine shared finishing layer.
+
+   The page already loads baseline-routine-system.css, skincare-routine.css and
+   skincare-routine-workspace-v2.css directly. Do not import them again here.
+   v12 is the only shared coherence layer after the system-owned styles.
+*/
+@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260808_3');
