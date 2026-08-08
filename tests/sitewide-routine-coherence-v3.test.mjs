@@ -9,13 +9,13 @@ const fitnessLoader = read('systems/baseline-fitness/js/fitness-routine-workspac
 const shared = read('sitewide/js/baseline-routine-coherence-v12.js');
 const publicViewer = read('sitewide/js/baseline-public-routine-viewonly-v4.js');
 const css = read('sitewide/css/baseline-routine-coherence-v12.css');
-const themeGuard = read('systems/baseline-fitness/js/fitness-theme-guard-v1.js');
+const fitnessCss = read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 
 test('Skincare and Fitness finish on the same shared My Routine behaviour', () => {
   for (const loader of [skinLoader,fitnessLoader]) {
     assert.match(loader,/baseline-routine-coherence-v12\.js/);
     assert.match(loader,/baseline-public-routine-viewonly-v4\.js/);
-    assert.doesNotMatch(loader,/baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-authority-v7/);
+    assert.doesNotMatch(loader,/baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-authority-v7|fitness-theme-guard-v1/);
   }
 });
 
@@ -29,11 +29,11 @@ test('Public Routine uses owner-facing class families and never injects a foreig
   assert.doesNotMatch(publicViewer,/injectStyles|createElement\(['\"]style['\"]\)|bl-public-v3/);
 });
 
-test('shared CSS owns geometry but does not redefine system palette tokens', () => {
+test('shared CSS owns geometry while system CSS owns palette', () => {
   assert.match(css,/SITEWIDE VISUAL CONTRACT/);
   assert.doesNotMatch(css,/--bl-routine-(?:surface|surface-strong|border|text|accent)\s*:/);
   assert.doesNotMatch(css,/#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/);
-  assert.match(themeGuard,/Do not hard-code a new colour/);
+  assert.match(fitnessCss,/Do not add hard-coded pink\/red\/black\/white UI colours here/);
 });
 
 test('public completion controls are visible but read-only', () => {
@@ -42,7 +42,7 @@ test('public completion controls are visible but read-only', () => {
   assert.doesNotMatch(publicViewer,/updateLog\(|removeActivity\(/);
 });
 
-test('new active shared files remain valid JavaScript', () => {
+test('active shared files remain valid JavaScript', () => {
   for (const path of [
     'sitewide/js/baseline-routine-coherence-v12.js',
     'sitewide/js/baseline-public-routine-viewonly-v4.js',
