@@ -1,7 +1,11 @@
-/* Baseline Natural Skincare — My Routine shared finishing layer.
+/* Retained only because the legacy HTML still links this path.
+   It intentionally contains no rules/imports.
 
-   The page already loads baseline-routine-system.css, skincare-routine.css and
-   skincare-routine-workspace-v2.css directly. Do not import them again here.
-   v12 is the only shared coherence layer after the system-owned styles.
+   Active My Routine CSS ownership is:
+   1. baseline-routine-system.css
+   2. skincare-routine.css
+   3. skincare-routine-workspace-v2.css -> Skincare v4 + shared v12
+
+   Remove this link and file together when the large legacy HTML is next
+   structurally rewritten; do not put active styling back here.
 */
-@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260808_3');
