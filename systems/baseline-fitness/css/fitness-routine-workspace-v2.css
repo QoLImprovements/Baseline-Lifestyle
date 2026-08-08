@@ -1,25 +1,33 @@
-/* Baseline Fitness — routine workspace aligned with the existing Fitness design system. */
+/* Baseline Fitness — routine workspace aligned with the existing Fitness design system.
+
+   MY ROUTINE COHERENCE RULE
+   -------------------------
+   This is a Fitness data/layout adapter, not an independent visual system.
+   Do not add hard-coded pink/red/black/white UI colours here. My Routine must
+   inherit the active Fitness palette tokens and the shared sitewide Routine
+   typography/dropdown rules. Keep visible Routine text at the common 18px
+   minimum; the v10 sitewide authority owns the final presentation. */
 #my-plan .fitness-routine-shell{display:grid;gap:16px;min-width:0}
 #my-plan .fitness-routine-subtabs{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0;padding:0}
-#my-plan .fitness-routine-subtab{font-size:16px;padding:10px 14px}
+#my-plan .fitness-routine-subtab{font-size:18px;padding:10px 14px}
 #my-plan .fitness-routine-panel{min-width:0}
 #my-plan .fitness-routine-panel[hidden]{display:none!important}
 #my-plan .fitness-routine-card{width:100%;box-sizing:border-box}
 #my-plan .fitness-routine-log-head{align-items:flex-start}
 #my-plan .fitness-log-date{min-width:190px}
 
-/* Searchable activity picker: fully opaque and always above following content. */
+/* Searchable activity picker: opaque, token-coloured and above following content. */
 #my-plan .fitness-activity-add{position:relative;z-index:120;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start;margin:18px 0;overflow:visible;isolation:isolate}
 #my-plan .fitness-activity-combobox{position:relative;z-index:125;display:grid;grid-template-columns:minmax(0,1fr) 52px;overflow:visible;isolation:isolate}
 #my-plan .fitness-activity-combobox>input{border-radius:14px 0 0 14px;min-width:0;position:relative;z-index:2}
 #my-plan .fitness-activity-combobox>[data-activity-toggle]{width:52px;height:auto;border-radius:0 14px 14px 0;border-left:0;position:relative;z-index:3}
-#my-plan .fitness-activity-menu{position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:9999;max-height:420px;overflow:auto;border:1px solid rgba(224,56,79,.7);border-radius:15px;background-color:#120a0e!important;background-image:none!important;color:#fff!important;opacity:1!important;filter:none!important;mix-blend-mode:normal!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:0 26px 60px -18px rgba(0,0,0,.92);isolation:isolate;pointer-events:auto!important}
+#my-plan .fitness-activity-menu{position:absolute;top:calc(100% + 7px);left:0;right:0;z-index:2147482000;max-height:420px;overflow:auto;border:1px solid var(--border-2);border-radius:15px;background-color:var(--card-bg)!important;background-image:none!important;color:var(--ink)!important;opacity:1!important;filter:none!important;mix-blend-mode:normal!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--shadow);isolation:isolate;pointer-events:auto!important}
 #my-plan .fitness-activity-menu[hidden]{display:none!important}
-#my-plan .fitness-activity-group,#my-plan .fitness-activity-group-label,#my-plan .fitness-activity-group button,#my-plan .fitness-activity-no-results{background-color:#120a0e!important;background-image:none!important;color:#fff!important;opacity:1!important;filter:none!important;mix-blend-mode:normal!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:auto!important}
-#my-plan .fitness-activity-group-label{position:sticky;top:0;z-index:2;padding:10px 14px;background-color:#35131c!important;color:#ffbdc7!important;font-size:14px;font-weight:900;text-transform:uppercase;letter-spacing:.04em}
-#my-plan .fitness-activity-group button{display:block;width:100%;border:0;border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;text-align:left;font:inherit;font-size:16px;cursor:pointer}
-#my-plan .fitness-activity-group button:hover,#my-plan .fitness-activity-group button:focus,#my-plan .fitness-activity-group button.is-keyboard-active,#my-plan .fitness-activity-group button[aria-selected="true"]{background-color:#741629!important;outline:none}
-#my-plan .fitness-activity-no-results{padding:17px;color:rgba(255,255,255,.78)!important}
+#my-plan .fitness-activity-group,#my-plan .fitness-activity-group-label,#my-plan .fitness-activity-group button,#my-plan .fitness-activity-no-results{background-color:var(--card-bg)!important;background-image:none!important;color:var(--ink)!important;opacity:1!important;filter:none!important;mix-blend-mode:normal!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;pointer-events:auto!important}
+#my-plan .fitness-activity-group-label{position:sticky;top:0;z-index:2;padding:10px 14px;background-color:var(--filter-bg)!important;color:var(--ink)!important;font-size:18px;font-weight:900;letter-spacing:.01em}
+#my-plan .fitness-activity-group button{display:block;width:100%;border:0;border-top:1px solid var(--border);padding:12px 14px;text-align:left;font:inherit;font-size:18px;cursor:pointer}
+#my-plan .fitness-activity-group button:hover,#my-plan .fitness-activity-group button:focus,#my-plan .fitness-activity-group button.is-keyboard-active,#my-plan .fitness-activity-group button[aria-selected="true"]{background-color:var(--filter-bg)!important;outline:none}
+#my-plan .fitness-activity-no-results{padding:17px;color:var(--muted)!important;font-size:18px}
 #my-plan .fitness-activity-list{position:relative;z-index:1;display:grid;gap:14px}
 
 /* Activity plan cards use existing session-card and field patterns. */
@@ -29,55 +37,55 @@
 #my-plan .fitness-activity-fields{align-items:end}
 #my-plan .fitness-activity-notes{display:grid;gap:8px}
 #my-plan .fitness-activity-notes textarea,#my-plan .fitness-log-note textarea{width:100%;resize:vertical}
-#my-plan .fitness-activity-days{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:12px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:rgba(255,255,255,.04)}
+#my-plan .fitness-activity-days{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:12px;border:1px solid var(--border);border-radius:16px;background:var(--filter-bg)}
 #my-plan .fitness-activity-days legend{padding:0 7px;font-weight:900}
-#my-plan .fitness-activity-days label{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.07);cursor:pointer}
-#my-plan .fitness-activity-days input,#my-plan .fitness-log-completion input{width:20px!important;height:20px!important;min-width:20px;accent-color:#b11226;pointer-events:auto!important;opacity:1!important;position:relative!important;z-index:3!important}
+#my-plan .fitness-activity-days label{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;background:var(--filter-bg);cursor:pointer}
+#my-plan .fitness-activity-days input,#my-plan .fitness-log-completion input{width:20px!important;height:20px!important;min-width:20px;accent-color:var(--accent);pointer-events:auto!important;opacity:1!important;position:relative!important;z-index:3!important}
 #my-plan .fitness-remove-confirm{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-#my-plan .fitness-routine-empty{border:1px dashed rgba(255,255,255,.17);border-radius:16px;padding:18px;color:var(--muted)}
+#my-plan .fitness-routine-empty{border:1px dashed var(--border);border-radius:16px;padding:18px;color:var(--muted)}
 
 /* Activity-specific optional measurements. */
-#my-plan .fitness-metric-fieldset{margin:0;padding:14px;border:1px solid rgba(255,255,255,.12);border-radius:17px;background:rgba(255,255,255,.04)}
+#my-plan .fitness-metric-fieldset{margin:0;padding:14px;border:1px solid var(--border);border-radius:17px;background:var(--filter-bg)}
 #my-plan .fitness-metric-fieldset legend{padding:0 8px;font-size:18px;font-weight:900;color:var(--ink)}
 #my-plan .fitness-metric-guidance{margin:0 0 12px}
 #my-plan .fitness-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-#my-plan .fitness-metric-grid label>span,#my-plan .fitness-activity-fields label>span,#my-plan .fitness-log-note>span{font-size:15px;color:var(--muted);font-weight:760}
+#my-plan .fitness-metric-grid label>span,#my-plan .fitness-activity-fields label>span,#my-plan .fitness-log-note>span{font-size:18px;color:var(--muted);font-weight:760}
 
 /* Routine Log alignment. */
 #my-plan .fitness-routine-log-group{display:grid;gap:12px;margin-top:22px}
 #my-plan .fitness-routine-log-group>h3{margin:0}
 #my-plan .fitness-calisthenics-log-card{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 #my-plan .fitness-calisthenics-log-card>div{display:grid;gap:4px}
-#my-plan .fitness-calisthenics-log-card small{color:var(--muted)}
+#my-plan .fitness-calisthenics-log-card small{color:var(--muted);font-size:18px}
 #my-plan .fitness-routine-log-item{display:grid;gap:14px}
 #my-plan .fitness-log-item-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
 #my-plan .fitness-log-completion{display:flex!important;align-items:flex-start!important;gap:12px!important;cursor:pointer;min-width:0}
 #my-plan .fitness-log-completion>span{display:grid;gap:5px;min-width:0}
 #my-plan .fitness-log-completion strong{font-size:18px}
-#my-plan .fitness-log-completion small{color:var(--muted);line-height:1.45}
-#my-plan .fitness-routine-log-item.complete{border-color:rgba(224,56,79,.55);background:rgba(177,18,38,.12)}
+#my-plan .fitness-log-completion small{color:var(--muted);font-size:18px;line-height:1.45}
+#my-plan .fitness-routine-log-item.complete{border-color:var(--border-2);background:var(--filter-bg)}
 
-/* Fitness calendar reuses only the Fitness black/red palette. */
+/* Fitness calendar uses only the active Fitness palette tokens. */
 #my-plan .fitness-calendar-head{align-items:flex-start}
 #my-plan .fitness-calendar-controls{display:grid;gap:10px;justify-items:end}
 #my-plan .fitness-calendar-view-tabs{display:flex;gap:8px;flex-wrap:wrap}
-#my-plan .fitness-calendar-view{padding:8px 12px;font-size:15px}
+#my-plan .fitness-calendar-view{padding:8px 12px;font-size:18px}
 #my-plan .fitness-calendar-navigation{justify-content:flex-end}
 #my-plan .fitness-calendar-navigation strong{min-width:170px;text-align:center}
-#my-plan .fitness-calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:18px 0 8px;color:var(--muted);font-weight:850;text-align:center}
+#my-plan .fitness-calendar-weekdays{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:18px 0 8px;color:var(--muted);font-size:18px;font-weight:850;text-align:center}
 #my-plan .fitness-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-#my-plan .fitness-calendar-day{appearance:none;min-height:78px;padding:10px;border:1px solid rgba(255,255,255,.13);border-radius:16px;background:rgba(0,0,0,.25);color:var(--ink);font:inherit;font-weight:850;text-align:left;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;position:relative}
-#my-plan .fitness-calendar-day:hover,#my-plan .fitness-calendar-day:focus-visible{background:rgba(177,18,38,.17);border-color:rgba(224,56,79,.55);outline:none}
-#my-plan .fitness-calendar-day.has-completion{background:linear-gradient(135deg,rgba(103,17,31,.78),rgba(177,18,38,.42));border-color:rgba(224,56,79,.72)}
-#my-plan .fitness-calendar-day.selected{box-shadow:0 0 0 3px rgba(224,56,79,.72) inset}
-#my-plan .fitness-calendar-day.today::after{content:"Today";position:absolute;left:10px;bottom:8px;font-size:12px;color:#ffbdc7}
+#my-plan .fitness-calendar-day{appearance:none;min-height:78px;padding:10px;border:1px solid var(--border);border-radius:16px;background:var(--filter-bg);color:var(--ink);font:inherit;font-size:18px;font-weight:850;text-align:left;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;position:relative}
+#my-plan .fitness-calendar-day:hover,#my-plan .fitness-calendar-day:focus-visible{background:var(--card-bg);border-color:var(--border-2);outline:none}
+#my-plan .fitness-calendar-day.has-completion{background:var(--filter-bg);border-color:var(--border-2);box-shadow:inset 0 0 0 1px var(--ring)}
+#my-plan .fitness-calendar-day.selected{box-shadow:0 0 0 3px var(--ring) inset}
+#my-plan .fitness-calendar-day.today::after{content:"Today";position:absolute;left:10px;bottom:8px;font-size:18px;color:var(--muted)}
 #my-plan .fitness-calendar-day.outside-month{opacity:.48}
-#my-plan .fitness-calendar-day b{display:grid;place-items:center;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:#b11226;color:#fff;font-size:13px}
+#my-plan .fitness-calendar-day b{display:grid;place-items:center;min-width:30px;height:30px;padding:0 7px;border-radius:999px;background:var(--accent);color:var(--ink);font-size:18px}
 #my-plan .fitness-calendar-grid.week-view .fitness-calendar-day{min-height:116px}
 
-/* Make native controls reliably interactive. */
+/* Make native controls reliably interactive without inventing another palette. */
 #my-plan input,#my-plan select,#my-plan textarea,#my-plan button{pointer-events:auto!important}
-#my-plan select,#my-plan select option,#my-plan select optgroup{background-color:#120a0e!important;color:#fff!important;opacity:1!important}
+#my-plan select,#my-plan select option,#my-plan select optgroup{background-color:var(--card-bg)!important;color:var(--ink)!important;opacity:1!important}
 #my-plan input[type="checkbox"]{appearance:auto!important}
 
 @media(max-width:980px){
@@ -91,7 +99,7 @@
 }
 @media(max-width:620px){
   #my-plan .fitness-metric-grid{grid-template-columns:1fr}
-  #my-plan .fitness-calendar-weekdays{gap:4px;font-size:12px}
+  #my-plan .fitness-calendar-weekdays{gap:4px;font-size:18px}
   #my-plan .fitness-calendar-grid{gap:4px}
   #my-plan .fitness-calendar-day{min-height:58px;padding:7px;border-radius:12px}
   #my-plan .fitness-calendar-day.today::after{display:none}
