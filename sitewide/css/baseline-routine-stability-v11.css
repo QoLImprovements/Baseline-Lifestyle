@@ -1,0 +1,255 @@
+/* Baseline Lifestyle — shared My Routine coherence CSS v11.
+
+   RULES THAT MUST NOT DRIFT
+   -------------------------
+   - This file owns geometry/interaction consistency, NOT system colours.
+   - Skincare and Fitness keep their own existing palette variables/backgrounds.
+   - Do not replace card backgrounds with transparent generic surfaces.
+   - All dropdowns use the same sizing/alignment rule; never stack duplicate fields.
+   - Week/Month labels must fit at the approved readable type size.
+   - Calendar entries show circled numbers only; captions belong in hover/title text.
+   - Routine Plan headers/actions remain vertically aligned sitewide.
+   - Public Routine reuses owner My Routine classes in read-only mode.
+*/
+
+:where(#routine,#my-plan){
+  --bl-routine-font-size:18px;
+  font-size:var(--bl-routine-font-size)!important;
+  line-height:1.5;
+}
+:where(#routine,#my-plan) :is(p,.note,.status,small,label,input,textarea,select,button,.badge,
+  .routine-summary-item,.fitness-exercise-summary-item,.bl-routine-summary-card,
+  .fitness-summary-meta,.fitness-summary-exercises span,.bl-routine-summary-rows){
+  font-size:var(--bl-routine-font-size)!important;
+  line-height:1.45!important;
+}
+
+/* ONE dropdown language. Native/select-owner geometry remains intact. */
+:where(#routine,#my-plan) select{
+  min-height:50px!important;
+  height:auto!important;
+  max-width:100%!important;
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+  line-height:1.25!important;
+  vertical-align:middle!important;
+}
+:where(#routine,#my-plan) .bl-search-select,
+:where(#routine,#my-plan) .bl-routine-select-shell{display:none!important}
+
+/* Shared Summary shell — Skincare remains the visual structure template. */
+:where(#routine,#my-plan) :is(.bl-routine-summary-grid,.routine-summary-grid,.fitness-summary-detail-grid){
+  display:grid!important;
+  grid-template-columns:minmax(260px,.8fr) minmax(0,1.4fr)!important;
+  gap:16px!important;
+  align-items:stretch!important;
+}
+:where(#routine,#my-plan) :is(.bl-routine-summary-section,.routine-summary-section,.fitness-summary-section){
+  min-width:0!important;
+}
+:where(#routine,#my-plan) .bl-routine-summary-filter{
+  display:grid!important;
+  gap:7px!important;
+  width:min(100%,620px)!important;
+  margin:0 0 18px!important;
+}
+
+/* Calendar controls. The pair receives enough width for full Week / Month text. */
+:where(#routine,#my-plan) :is(.routine-calendar-head,.fitness-calendar-head,.bl-routine-calendar-head){
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  flex-wrap:wrap!important;
+}
+:where(#routine,#my-plan) :is(.routine-calendar-controls,.fitness-calendar-controls,.bl-routine-calendar-controls){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:12px!important;
+  flex:1 1 500px!important;
+  flex-wrap:wrap!important;
+  min-width:0!important;
+}
+:where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs){
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  flex:0 0 auto!important;
+  width:190px!important;
+  min-width:190px!important;
+  max-width:190px!important;
+  padding:3px!important;
+  gap:3px!important;
+  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+  border-radius:999px!important;
+  overflow:visible!important;
+}
+:where(#routine,#my-plan) :is(.routine-calendar-view-tabs,.fitness-calendar-view-tabs,.bl-routine-calendar-view-tabs)>button{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:44px!important;
+  height:auto!important;
+  padding:8px 12px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  line-height:1.2!important;
+  text-align:center!important;
+  border-radius:999px!important;
+}
+:where(#routine,#my-plan) :is(.routine-calendar-nav,.fitness-calendar-nav,.bl-routine-calendar-nav){
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  flex-wrap:wrap!important;
+  min-width:0!important;
+}
+
+/* Calendar markers are ONLY circles. The button title/aria-label carries the caption. */
+:where(#routine,#my-plan) [data-calendar-date]{position:relative}
+:where(#routine,#my-plan) .bl-v11-calendar-markers{
+  display:flex!important;
+  gap:6px!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  margin-top:7px!important;
+  position:relative!important;
+  z-index:5!important;
+  pointer-events:auto!important;
+}
+:where(#routine,#my-plan) .bl-v11-calendar-marker{
+  appearance:none!important;
+  display:inline-grid!important;
+  place-items:center!important;
+  flex:0 0 32px!important;
+  width:32px!important;
+  min-width:32px!important;
+  height:32px!important;
+  min-height:32px!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+  border-radius:50%!important;
+  background:var(--bl-routine-accent,var(--accent,currentColor))!important;
+  color:var(--accent-contrast,var(--ink,currentColor))!important;
+  font-size:18px!important;
+  font-weight:950!important;
+  line-height:1!important;
+  cursor:pointer!important;
+  text-align:center!important;
+}
+/* Suppress old raw item/session totals whenever the grouped v11 marker exists. */
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.routine-calendar-count,
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.bl-routine-day-count,
+#routine [data-calendar-date]:has(>.bl-v11-calendar-markers)>.bl-routine-day-details,
+#my-plan #fitnessCalendarGrid [data-calendar-date]:has(>.bl-v11-calendar-markers)>b{
+  display:none!important;
+}
+
+/* Skincare group completion: one compact checkbox aligned with group heading. */
+#routine .routine-log-group-head{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  flex-wrap:wrap!important;
+}
+#routine .routine-log-group-head h3{margin:0!important;flex:1 1 auto!important}
+#routine .bl-routine-group-complete{
+  display:grid!important;
+  place-items:center!important;
+  flex:0 0 40px!important;
+  width:40px!important;
+  height:40px!important;
+  margin-left:auto!important;
+}
+#routine .bl-routine-group-complete input{width:24px!important;height:24px!important;margin:0!important;cursor:pointer!important}
+
+/* Routine Log: completion controls remain the data control. No log Remove buttons. */
+:where(#routine,#my-plan) [data-v11-remove-skin],
+:where(#routine,#my-plan) [data-v11-remove-fitness],
+:where(#routine,#my-plan) .bl-v11-remove-confirm{display:none!important}
+#my-plan .fitness-log-item-head{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:start!important;
+  gap:14px!important;
+}
+#my-plan .fitness-log-item-head>.fitness-log-completion{min-width:0!important}
+:where(#routine,#my-plan) .bl-v11-log-actions{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  justify-self:end!important;
+  align-self:start!important;
+  margin-left:auto!important;
+}
+#my-plan .fitness-routine-log-item.bl-v11-log-details-collapsed :is(.fitness-metric-fieldset,.fitness-log-note){display:none!important}
+
+/* SITEWIDE Routine Plan alignment. Titles/counts/actions remain on one baseline. */
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar,.fitness-activity-item-head,.routine-item-head,.routine-group-row-head){
+  box-sizing:border-box!important;
+  align-items:center!important;
+  min-height:54px!important;
+  gap:12px!important;
+}
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar){
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto auto!important;
+}
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar) :is(h2,h3,h4,p){
+  margin-top:0!important;
+  margin-bottom:0!important;
+  line-height:1.25!important;
+}
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar)>button,
+:where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar)>.bl-routine-group-actions{
+  justify-self:end!important;
+  align-self:center!important;
+}
+:where(#routine,#my-plan) :is(.routine-group-create,.routine-add-row,.fitness-activity-add,.fitness-public-select-row,.routine-public-select){
+  align-items:center!important;
+}
+
+/* Public Routines and visibility inherit each parent system's existing card/theme. */
+:where(#routine,#my-plan) :is(.routine-public-head,[data-fitness-routine-panel="public"] .section-head-actions){
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  flex-wrap:wrap!important;
+}
+:where(#routine,#my-plan) .bl-v11-public-visibility{
+  display:grid!important;
+  grid-template-columns:auto minmax(150px,210px)!important;
+  align-items:center!important;
+  gap:10px!important;
+  margin-left:auto!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+}
+:where(#routine,#my-plan) .bl-v11-public-visibility>span{font-weight:850!important;white-space:nowrap!important}
+:where(#routine,#my-plan) .bl-public-readonly-shell{display:grid!important;gap:16px!important;margin-top:16px!important}
+:where(#routine,#my-plan) .bl-public-readonly-shell [disabled]{opacity:1!important;cursor:default!important}
+:where(#routine,#my-plan) .bl-public-readonly-shell input[type="checkbox"]{pointer-events:none!important}
+
+/* Menus stay opaque/top-layer, but keep their parent system colours. */
+:where(#routine,#my-plan) :is(.ex-picker-menu,.fitness-activity-menu,.routine-action-menu){
+  z-index:2147483000!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+
+@media(max-width:900px){
+  :where(#routine,#my-plan) :is(.bl-routine-summary-grid,.routine-summary-grid,.fitness-summary-detail-grid){grid-template-columns:1fr!important}
+  :where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar){grid-template-columns:minmax(0,1fr) auto!important}
+}
+@media(max-width:680px){
+  :where(#routine,#my-plan) :is(.routine-calendar-controls,.fitness-calendar-controls,.bl-routine-calendar-controls){justify-content:flex-start!important;flex-basis:100%!important}
+  :where(#routine,#my-plan) :is(.routine-calendar-nav,.fitness-calendar-nav,.bl-routine-calendar-nav){justify-content:flex-start!important;width:100%!important}
+  :where(#routine,#my-plan) .bl-v11-public-visibility{grid-template-columns:1fr!important;margin-left:0!important;width:100%!important}
+  :where(#routine,#my-plan) :is(.routine-plan-group-head,.fitness-routine-group-bar){display:flex!important;align-items:center!important;flex-wrap:wrap!important}
+}
