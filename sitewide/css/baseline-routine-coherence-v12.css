@@ -7,6 +7,20 @@
    either system's palette and contains no page-scroll or runtime-override rules.
 */
 
+/* Enhanced sitewide selects intentionally retain their native select for value,
+   sizing and accessibility. Only the themed button is painted. This final My
+   Routine rule must outrank system rules such as Fitness opacity:1!important,
+   otherwise refresh can expose the native select and make one control look like
+   two duplicate dropdown boxes. */
+:where(#routine,#my-plan) .bl-select[data-bl-enhanced="1"]>select{
+  opacity:0!important;
+  pointer-events:none!important;
+}
+:where(#routine,#my-plan) .bl-routine-summary-filter>.bl-select{
+  width:100%!important;
+  max-width:100%!important;
+}
+
 /* One shared native-select geometry and one centred chevron. */
 :where(#routine,#my-plan) select:not(.routine-action-native){
   -webkit-appearance:none!important;
