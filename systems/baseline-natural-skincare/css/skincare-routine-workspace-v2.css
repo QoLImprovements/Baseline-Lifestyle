@@ -6,5 +6,5 @@
      CSS entry point and is not a competing JavaScript authority.
    - shared v12 loads last and owns common geometry/interaction only.
 */
-@import url('/systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css?v=SKINCARE_SITEWIDE_ROUTINE_20260808_4');
-@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_5');
+@import url('/systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css?v=SKINCARE_SITEWIDE_ROUTINE_20260809_5');
+@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_6');
