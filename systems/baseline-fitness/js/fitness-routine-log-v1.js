@@ -1,0 +1,286 @@
+/* Baseline Fitness — canonical Routine Log interaction owner v1.
+
+   OWNERSHIP CONTRACT
+   ------------------
+   The base Fitness workspace owns routine/activity data and renders Log/Calendar.
+   This module owns Fitness-only Routine Log interactions that sit on that output:
+   - collapsible Session details + Optional note for non-calisthenics activities;
+   - a second, synchronised Log Date control in the Fitness Calendar header;
+   - reversible removal of a completed Calisthenics session from the viewed date.
+
+   Shared My Routine coherence must not create these Fitness-specific controls.
+*/
+(function (global) {
+  'use strict';
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOG_V1__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOG_V1__ = true;
+
+  const document = global.document;
+  const SESSION_API = '/systems/baseline-fitness/api/update_session.php';
+  const expandedDetails = new Set();
+  const removeBusy = new Set();
+  let pendingRemove = '';
+  let removeError = '';
+  let observer = null;
+  let frame = 0;
+  let patching = false;
+
+  const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
+  const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
+  const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
+  }[character]));
+
+  function root() { return document.getElementById('my-plan'); }
+  function todayIso() {
+    try { return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toLocaleDateString('sv-SE'); }
+    catch (_error) { return new Date().toISOString().slice(0,10); }
+  }
+  function clampDate(value) {
+    try { return global.BASELINE_RoutineSystem?.clampLogDate?.(value) || (String(value || '') > todayIso() ? todayIso() : String(value || todayIso())); }
+    catch (_error) { return String(value || todayIso()); }
+  }
+  function selectedDate() { return String($('#fitnessRoutineLogDate',root())?.value || todayIso()); }
+  function detailsKey(id) { return `${selectedDate()}::${String(id || '')}`; }
+  function safeId(value) { return String(value || '').replace(/[^a-zA-Z0-9_-]/g,'-'); }
+
+  function schedule() {
+    if (!frame) frame=global.requestAnimationFrame(patch);
+  }
+
+  function ensureCalendarLogDate(host) {
+    const controls=$('.fitness-calendar-controls',host);
+    const primary=$('#fitnessRoutineLogDate',host);
+    if (!controls || !primary) return;
+    let label=$('.fitness-calendar-log-date',controls);
+    if (!label) {
+      label=document.createElement('label');
+      label.className='field-stack fitness-calendar-log-date';
+      label.innerHTML='<span>Log Date</span><input id="fitnessCalendarLogDate" type="date" aria-label="Log Date">';
+      controls.appendChild(label);
+    }
+    const mirror=$('#fitnessCalendarLogDate',controls);
+    if (!mirror) return;
+    mirror.max=primary.max || todayIso();
+    if (mirror.value!==primary.value) mirror.value=primary.value || selectedDate();
+  }
+
+  function ensureLogDetails(host) {
+    $$('#fitnessRoutineLogItems .fitness-routine-log-item',host).forEach((card) => {
+      const complete=card.querySelector('[data-fitness-log-complete]');
+      const itemId=String(complete?.dataset.fitnessLogComplete || '');
+      if (!itemId) return;
+      const head=card.querySelector(':scope>.fitness-log-item-head');
+      const metric=card.querySelector(':scope>.fitness-metric-fieldset');
+      const note=card.querySelector(':scope>.fitness-log-note');
+      if (!head || (!metric && !note)) return;
+
+      const panelId=`fitnessLogDetails-${safeId(itemId)}`;
+      let panel=card.querySelector(':scope>.fitness-log-details-panel');
+      if (!panel) {
+        panel=document.createElement('div');
+        panel.className='fitness-log-details-panel';
+        panel.id=panelId;
+        if (metric) card.insertBefore(panel,metric); else card.appendChild(panel);
+      }
+      panel.id=panelId;
+      if (metric && metric.parentElement!==panel) panel.appendChild(metric);
+      if (note && note.parentElement!==panel) panel.appendChild(note);
+
+      let actions=head.querySelector(':scope>.bl-routine-entry-actions');
+      if (!actions) {
+        actions=document.createElement('span');
+        actions.className='bl-routine-entry-actions';
+        head.appendChild(actions);
+      }
+      let toggle=actions.querySelector('[data-fitness-log-details-toggle]');
+      if (!toggle) {
+        toggle=document.createElement('button');
+        toggle.type='button';
+        toggle.className='tiny-btn fitness-log-details-toggle';
+        toggle.dataset.fitnessLogDetailsToggle=itemId;
+        actions.appendChild(toggle);
+      }
+      const open=expandedDetails.has(detailsKey(itemId));
+      panel.hidden=!open;
+      toggle.setAttribute('aria-controls',panelId);
+      toggle.setAttribute('aria-expanded',open?'true':'false');
+      toggle.textContent=open?'Close details':'Details';
+    });
+  }
+
+  function calisthenicsContext(card) {
+    const open=card.querySelector('[data-open-calisthenics-plan]');
+    const planId=Number(open?.dataset.openCalisthenicsPlan || 0);
+    const match=String(card.querySelector('small')?.textContent || '').match(/Session\s+(\d+)/i);
+    const sessionIndex=match?Number(match[1]):0;
+    if (!planId || !sessionIndex) return null;
+    const entry=(global.BASELINE_fitnessPlans?.getPlansForDate?.(selectedDate()) || [])
+      .find((candidate) => Number(candidate.planId)===planId && Number(candidate.sessionIndex)===sessionIndex);
+    const status=String(entry?.status || '').toLowerCase();
+    return { planId,sessionIndex,status,identity:`${planId}:${sessionIndex}` };
+  }
+
+  function ensureCalisthenicsActions(host) {
+    $$('#fitnessRoutineLogItems .fitness-calisthenics-log-card',host).forEach((card) => {
+      const context=calisthenicsContext(card);
+      if (!context) return;
+      const open=card.querySelector('[data-open-calisthenics-plan]');
+      let actions=card.querySelector(':scope>.bl-routine-entry-actions');
+      if (!actions) {
+        actions=document.createElement('span');
+        actions.className='bl-routine-entry-actions';
+        card.appendChild(actions);
+      }
+      if (open && open.parentElement!==actions) actions.appendChild(open);
+      actions.querySelector('[data-fitness-log-remove-request],.fitness-log-remove-confirm,.fitness-log-remove-status')?.remove();
+      if (context.status!=='done') return;
+
+      if (pendingRemove===context.identity) {
+        const confirm=document.createElement('span');
+        confirm.className='fitness-log-remove-confirm';
+        confirm.innerHTML=`<span>Remove entry?</span><button type="button" class="tiny-btn" data-fitness-log-remove-confirm="${esc(context.identity)}"${removeBusy.has(context.identity)?' disabled':''}>Yes</button><button type="button" class="tiny-btn" data-fitness-log-remove-cancel="${esc(context.identity)}"${removeBusy.has(context.identity)?' disabled':''}>Cancel</button>`;
+        actions.appendChild(confirm);
+        if (removeError===context.identity) {
+          const status=document.createElement('span');
+          status.className='fitness-log-remove-status';
+          status.setAttribute('role','status');
+          status.textContent='Could not remove entry. Try again.';
+          actions.appendChild(status);
+        }
+      } else {
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='tiny-btn';
+        button.dataset.fitnessLogRemoveRequest=context.identity;
+        button.textContent='Remove Entry';
+        actions.appendChild(button);
+      }
+    });
+  }
+
+  async function removeCalisthenicsEntry(identity) {
+    const [planRaw,sessionRaw]=String(identity || '').split(':');
+    const planId=Number(planRaw || 0);
+    const sessionIndex=Number(sessionRaw || 0);
+    if (!planId || !sessionIndex || removeBusy.has(identity)) return;
+    removeBusy.add(identity);
+    removeError='';
+    schedule();
+    try {
+      const response=await global.fetch(SESSION_API,{
+        method:'POST',
+        credentials:'same-origin',
+        headers:{ 'Content-Type':'application/json',Accept:'application/json' },
+        body:JSON.stringify({ planId,sessionIndex,action:'set_status',status:'planned' })
+      });
+      const result=await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) throw new Error(result?.error || `http_${response.status}`);
+      pendingRemove='';
+      removeError='';
+      await global.BASELINE_fitnessPlans?.refresh?.();
+      global.BASELINE_fitnessRoutine?.render?.();
+      try {
+        document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated',{
+          detail:{ planId,sessionIndex,completed:false,source:'fitness-routine-log-remove' }
+        }));
+      } catch (_error) {}
+    } catch (_error) {
+      removeError=identity;
+    } finally {
+      removeBusy.delete(identity);
+      schedule();
+    }
+  }
+
+  function patch() {
+    frame=0;
+    if (patching) return;
+    const host=root();
+    if (!host) return;
+    patching=true;
+    try {
+      ensureCalendarLogDate(host);
+      ensureLogDetails(host);
+      ensureCalisthenicsActions(host);
+    } finally { patching=false; }
+  }
+
+  function relevantMutation(mutation) {
+    const target=mutation.target?.nodeType===1?mutation.target:mutation.target?.parentElement;
+    if (!target?.closest?.('#fitnessRoutineLogItems,.fitness-calendar-controls,.fitness-routine-log-head')) return false;
+    const nodes=[...Array.from(mutation.addedNodes || []),...Array.from(mutation.removedNodes || [])];
+    return nodes.some((node) => node?.nodeType===1 && !node.matches?.('.fitness-log-details-panel,.fitness-calendar-log-date,.fitness-log-remove-confirm,.fitness-log-remove-status,.bl-routine-entry-actions'));
+  }
+
+  function bind(host) {
+    host.addEventListener('click',(event) => {
+      const details=event.target?.closest?.('[data-fitness-log-details-toggle]');
+      if (details) {
+        event.preventDefault();
+        const key=detailsKey(details.dataset.fitnessLogDetailsToggle);
+        if (expandedDetails.has(key)) expandedDetails.delete(key); else expandedDetails.add(key);
+        patch();
+        return;
+      }
+      const remove=event.target?.closest?.('[data-fitness-log-remove-request]');
+      if (remove) {
+        event.preventDefault();
+        pendingRemove=String(remove.dataset.fitnessLogRemoveRequest || '');
+        removeError='';
+        patch();
+        return;
+      }
+      const confirm=event.target?.closest?.('[data-fitness-log-remove-confirm]');
+      if (confirm) {
+        event.preventDefault();
+        removeCalisthenicsEntry(String(confirm.dataset.fitnessLogRemoveConfirm || ''));
+        return;
+      }
+      const cancel=event.target?.closest?.('[data-fitness-log-remove-cancel]');
+      if (cancel) {
+        event.preventDefault();
+        pendingRemove='';
+        removeError='';
+        patch();
+      }
+    });
+
+    host.addEventListener('change',(event) => {
+      if (event.target?.id==='fitnessCalendarLogDate') {
+        const primary=$('#fitnessRoutineLogDate',host);
+        if (!primary) return;
+        const value=clampDate(event.target.value);
+        event.target.value=value;
+        primary.value=value;
+        primary.dispatchEvent(new Event('change',{ bubbles:true }));
+        return;
+      }
+      if (event.target?.id==='fitnessRoutineLogDate') schedule();
+    });
+
+    [
+      'baseline:fitness-plans-updated',
+      'baseline:fitness-workout-updated',
+      'baseline:fitness-routine-updated',
+      'baseline:fitness-routine-view-changed'
+    ].forEach((name) => document.addEventListener(name,schedule));
+  }
+
+  function boot() {
+    const host=root();
+    if (!host) return;
+    bind(host);
+    if (typeof MutationObserver!=='undefined') {
+      observer=new MutationObserver((mutations) => {
+        if (!patching && mutations.some(relevantMutation)) schedule();
+      });
+      observer.observe(host,{ childList:true,subtree:true });
+    }
+    patch();
+  }
+
+  global.addEventListener('pagehide',() => observer?.disconnect(),{ once:true });
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
+  else boot();
+})(typeof window!=='undefined'?window:globalThis);
