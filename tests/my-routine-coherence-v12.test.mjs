@@ -18,7 +18,6 @@ const generator = read('systems/baseline-fitness/js/fitness-generator-progressio
 const livePolicy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const structure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
-const schedule = read('systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js');
 const fitnessCss = read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
 const generatorCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
@@ -32,7 +31,7 @@ test('one active shared My Routine coherence layer remains', () => {
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
 });
 
-test('retired repair layers are physically absent', () => {
+test('retired repair layers and duplicate controllers are physically absent', () => {
   [
     'sitewide/js/baseline-routine-authority-v7.js',
     'sitewide/js/baseline-routine-experience-v9.js',
@@ -49,7 +48,8 @@ test('retired repair layers are physically absent', () => {
     'systems/baseline-fitness/js/fitness-routine-coherence-v1.js',
     'systems/baseline-fitness/js/fitness-routine-groups-v1.js',
     'systems/baseline-fitness/js/fitness-plan-generator-coherence-v4.js',
-    'systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js'
+    'systems/baseline-fitness/js/fitness-timed-hold-targets-v2.js',
+    'systems/baseline-fitness/js/fitness-calisthenics-schedule-controls.js'
   ].forEach(path => assert.equal(existsSync(url(path)),false,`${path} should stay deleted`));
 });
 
@@ -114,7 +114,8 @@ test('completed Calisthenics Log entries have explicit reversible removal', () =
   assert.match(css,/\.bl-fitness-remove-confirm/);
 });
 
-test('generator schedule and plan length are two-column conditional controls', () => {
+test('generator owns schedule choice and two-column conditional plan length while live policy owns only the range', () => {
+  assert.doesNotMatch(fitnessLoader,/fitness-calisthenics-schedule-controls/);
   assert.match(generatorCss,/\.bl-generator-settings-grid/);
   assert.match(generatorCss,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(generator,/Number Of Days/);
@@ -127,7 +128,6 @@ test('generator schedule and plan length are two-column conditional controls', (
   assert.match(generator,/Goal Amount \(reps\)/);
   assert.match(generator,/syncScheduleMode/);
   assert.match(generator,/syncLengthMode/);
-  assert.doesNotMatch(schedule,/startDate|Plan Length|goalAmount|goalExercise/);
 });
 
 test('generator Details owns progression and muscle focus without duplicate Type', () => {
