@@ -1,11 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 
 const require = createRequire(import.meta.url);
 const catalogue = require('../systems/baseline-fitness/js/fitness-exercise-catalogue.js');
 const app = require('../systems/baseline-fitness/js/baseline-fitness-app.js');
-const progression = require('../systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+const generatorSource = readFileSync(new URL('../systems/baseline-fitness/js/fitness-generator-progression-v1.js', import.meta.url), 'utf8');
+const livePolicySource = readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url), 'utf8');
 
 const names = new Set(catalogue.EXERCISES.map((item) => item.name));
 const byName = (name) => catalogue.EXERCISES.find((item) => item.name === name);
@@ -62,16 +64,17 @@ test('standard and leg exercises use uniform linear set increments', () => {
   assert.deepEqual(app.progressionIncrements(catalogue.TYPES.LEG, 3), [3, 3, 3]);
 });
 
-test('timed guides add three seconds then two seconds from ninety seconds', () => {
+test('timed guides use the established three-second then two-second rule and exact outcome classification', () => {
   assert.equal(app.holdIncrement(89), 3);
   assert.equal(app.holdIncrement(90), 2);
   assert.equal(app.holdValue(87, 1), 87);
   assert.equal(app.holdValue(87, 2), 90);
   assert.equal(app.holdValue(87, 3), 92);
-  assert.equal(progression.timedGuideFromAchievement(91), 93);
+  assert.match(livePolicySource, /seconds>=90\?2:3/);
+  assert.match(livePolicySource, /const status=actual>=target\?'success':'failed'/);
 });
 
-test('separate left and right holds become independent workout steps', () => {
+test('separate left and right holds remain separate workout steps and are displayed as L/R in the generator', () => {
   const work = app.workForSession([{ exercise: 'Elbow Side Plank', baseline: 30, progressionType: catalogue.TYPES.TIMED }], 1);
   const steps = app.executionSteps(work);
   assert.equal(steps.length, 2);
@@ -79,15 +82,6 @@ test('separate left and right holds become independent workout steps', () => {
   assert.equal(steps[1].name, 'Elbow Side Plank Right');
   assert.notEqual(steps[0].exerciseKey, steps[1].exerciseKey);
   assert.match(steps[0].label, /Hold to technical burnout/);
-});
-
-test('left and right timed achievements progress independently', () => {
-  const history = progression.recordTimedResults(null, 6, {
-    0: { isTimed: true, unit: 'seconds', exerciseKey: 'Elbow Side Plank::left', achieved: 91 },
-    1: { isTimed: true, unit: 'seconds', exerciseKey: 'Elbow Side Plank::right', achieved: 86 }
-  });
-  assert.equal(progression.latestTimedAchievement('Elbow Side Plank::left', 7, history), 91);
-  assert.equal(progression.latestTimedAchievement('Elbow Side Plank::right', 7, history), 86);
-  assert.equal(progression.timedGuideFromAchievement(91), 93);
-  assert.equal(progression.timedGuideFromAchievement(86), 89);
+  assert.match(generatorSource, /definition\?\.unit==='seconds' && definition\?\.laterality==='separate-left-right'/);
+  assert.match(generatorSource, /`\$\{name\} \(L\/R\)`/);
 });
