@@ -7,6 +7,7 @@ const url = path => new URL(`../${path}`, import.meta.url);
 const read = path => readFileSync(url(path), 'utf8');
 
 const groups = read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
+const groupApi = read('systems/baseline-natural-skincare/api/routine_groups.php');
 const coherence = read('sitewide/js/baseline-routine-coherence-v12.js');
 const css = read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
 
@@ -14,6 +15,7 @@ test('group settings expose only direct time and frequency schedule controls', (
   assert.match(groups,/<span>Group time<\/span><select data-group-field=\"timeOfDay\"/);
   assert.match(groups,/<span>Group frequency<\/span><select data-group-field=\"frequencyMode\"/);
   assert.doesNotMatch(groups,/Set time for this group|Set “How often” for this group|data-group-title|groupSettingEnabled|applyTime|applyFrequency/);
+  assert.doesNotMatch(groupApi,/applyTime|applyFrequency/);
 });
 
 test('group schedule is always the effective schedule for grouped routine steps', () => {
