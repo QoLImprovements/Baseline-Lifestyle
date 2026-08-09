@@ -46,15 +46,13 @@
 #routine .routine-plan-group{display:grid;gap:0;margin-bottom:16px;border:1px solid var(--skin-peach);border-radius:20px;background:linear-gradient(180deg,var(--skin-cream),var(--skin-milk));overflow:visible}
 #routine .routine-plan-group-head{padding:14px 16px;background:linear-gradient(90deg,var(--skin-wash),var(--skin-peach),var(--skin-wash));border-radius:19px 19px 0 0}
 #routine .routine-plan-group-head h3,#routine .routine-plan-group-head p{margin:0}
-#routine .routine-plan-group-settings{display:grid;gap:12px;padding:14px 16px;border-top:1px solid var(--skin-peach);background:var(--skin-milk)}
-#routine .routine-plan-group-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
-#routine .routine-plan-group-settings .routine-group-setting{display:grid;grid-template-columns:minmax(0,1fr) 54px;align-items:center;gap:10px;min-height:50px;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-cream);font-size:18px;font-weight:400}
-#routine .routine-plan-group-settings .routine-group-setting>span{font-weight:400}
-#routine .routine-plan-group-settings .routine-group-setting>input{width:54px!important;min-width:54px!important;max-width:54px!important;min-height:42px!important;margin:0!important;padding:7px 8px!important;border:1px solid var(--skin-peach)!important;border-radius:11px!important;background:var(--skin-milk)!important;color:var(--ink)!important;font:inherit!important;font-size:18px!important;text-align:center!important;box-sizing:border-box!important}
-#routine .routine-plan-group-settings .routine-group-setting>input:focus{outline:none!important;box-shadow:0 0 0 3px var(--bl-routine-focus)!important;border-color:var(--skin-deep)!important}
-#routine .routine-plan-group-settings .routine-group-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:10px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-cream)}
-#routine .routine-plan-group-settings .routine-group-days label{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;background:var(--skin-milk)}
-#routine .routine-plan-group-settings-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+#routine .routine-plan-group-settings{display:grid;gap:10px;padding:11px 14px 12px;border-top:1px solid var(--skin-peach);background:var(--skin-milk)}
+#routine .routine-plan-group-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end}
+#routine .routine-plan-group-settings .routine-field{margin:0!important;min-width:0}
+#routine .routine-plan-group-settings .routine-group-weekly{grid-column:1/-1}
+#routine .routine-plan-group-settings .routine-group-days{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:7px;margin:0;padding:8px 9px;border:1px solid var(--skin-peach);border-radius:13px;background:var(--skin-cream)}
+#routine .routine-plan-group-settings .routine-group-days label{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:999px;background:var(--skin-milk)}
+#routine .routine-plan-group-settings-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin:0;padding:0}
 #routine .routine-group-remove-confirm{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
 #routine .routine-plan-group-body{display:grid;gap:14px;padding:14px}
 #routine .routine-plan-group-body[hidden]{display:none!important}
@@ -79,6 +77,7 @@
 
 /* Comprehensive Summary uses the shared shell with Skincare surfaces. */
 #routine .routine-summary-group{display:grid;gap:13px}
+#routine .routine-summary-group[hidden]{display:none!important}
 #routine .routine-summary-group+.routine-summary-group{margin-top:20px}
 #routine .routine-summary-group-head h3{margin:0;font-size:24px}
 #routine .routine-summary-item{border-left:0!important}
@@ -103,6 +102,7 @@
 
 @media(max-width:820px){
   #routine .routine-plan-group-settings-grid{grid-template-columns:1fr}
+  #routine .routine-plan-group-settings .routine-group-weekly{grid-column:auto}
   #routine .routine-log-item{grid-template-columns:1fr}
   #routine .routine-item .bl-routine-preview-chips{margin-left:0}
 }
