@@ -57,6 +57,11 @@
 .ex-field-progression-mode,.ex-field-baseline,.ex-field-sets,.ex-field-rep-increase{display:grid!important;align-content:start!important;gap:7px!important;min-width:0;width:100%!important;margin:0!important}
 .ex-field-progression-mode>span,.ex-field-baseline>label,.ex-field-sets>label,.ex-field-rep-increase>span{display:flex!important;align-items:center!important;min-height:27px!important;margin:0!important;font-weight:850!important;line-height:1.25!important;color:var(--ink)!important}
 .ex-search-input,.ex-progression-mode,.ex-baseline,.ex-sets,.ex-rep-increase{width:100%!important;min-width:0!important;min-height:52px!important;margin:0!important}
+/* Once the searchable picker exists, the original native exercise select is never a second visible control. */
+#myPlanGeneratorWrap .ex-field-exercise>.ex-select,
+#myPlanGeneratorWrap .ex-field-exercise>.ex-select-source,
+[data-fitness-routine-panel="calisthenics"] .ex-field-exercise>.ex-select,
+[data-fitness-routine-panel="calisthenics"] .ex-field-exercise>.ex-select-source{display:none!important}
 .ex-select-source[hidden]{display:none!important}
 .exercise-info-wrap,.ex-progression-note,.rep-increase-note{display:none!important}
 
