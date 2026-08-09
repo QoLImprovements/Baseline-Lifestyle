@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v32.
+/* Baseline Natural Skincare — deterministic My Routine loader v33.
 
    PERFORMANCE / OWNERSHIP CONTRACT
    --------------------------------
@@ -12,11 +12,73 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V32__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V32__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V33__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V33__ = true;
   const document = global.document;
   let recipeOptionObserver = null;
   let started = false;
+
+  function ensureRoutineModelContract() {
+    const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
+    if (!base || base.__baselineRoutineContractV3) return;
+    const shavingIds = Object.freeze(['shave','electric-shave','beard-trim','nose-ear-hair-trim']);
+    const shavingMethods = Object.freeze(Array.from(base.SHAVING_METHODS || []));
+    const actions = Array.from(base.ACTIONS || []);
+    const groups = Array.from(base.GROUPS || []);
+    const actionById = (value) => base.ACTION_BY_ID?.get?.(String(value || '')) || actions.find((item) => String(item?.id || '') === String(value || '')) || null;
+    const actionGroups = Object.freeze(groups.map((entry) => {
+      const label = typeof entry === 'string' ? entry : String(entry?.label || entry?.name || '');
+      return Object.freeze({ label,ids:Object.freeze(actions.filter((action) => String(action?.group || '') === label).map((action) => String(action.id))) });
+    }).filter((entry) => entry.label && entry.ids.length));
+    const cleanText = (value,maximum=1200) => String(value == null ? '' : value).trim().slice(0,Math.max(0,Number(maximum) || 0));
+    const localDate = (value) => {
+      if (value instanceof Date) return new Date(value.getFullYear(),value.getMonth(),value.getDate());
+      const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
+      if (match) return new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
+      const parsed=new Date(value || Date.now());
+      return Number.isNaN(parsed.getTime()) ? new Date() : new Date(parsed.getFullYear(),parsed.getMonth(),parsed.getDate());
+    };
+    const todayIso = () => base.isoDate(new Date());
+    const isFutureDate = (value) => base.isoDate(value) > todayIso();
+    const clampLogDate = (value) => {
+      const next=base.isoDate(value || new Date());
+      return next > todayIso() ? todayIso() : next;
+    };
+    const configureLogDateInput = (input,value) => {
+      const next=clampLogDate(value || input?.value || todayIso());
+      if (input) { input.max=todayIso();input.value=next; }
+      return next;
+    };
+    const normaliseTime = (value) => (base.TIMES || []).some((entry) => entry.value===value) ? value : 'anytime';
+    const normaliseShavingMethod = (value) => shavingMethods.some((entry) => entry.value===value) ? value : 'wet-cartridge';
+    const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
+    const createItem = (actionId) => {
+      const definition=actionById(actionId) || actionById('custom') || actions[0];
+      const id=global.crypto?.randomUUID ? `routine-${global.crypto.randomUUID()}` : `routine-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+      return base.normaliseItem({ id,actionId:definition?.id || 'custom',title:definition?.title || 'Self-Care Action' });
+    };
+    global.BASELINE_SKINCARE_ROUTINE_MODEL = Object.freeze(Object.assign({},base,{
+      __baselineRoutineContractV3:true,
+      TIME_OPTIONS:base.TIMES || [],
+      FREQUENCY_OPTIONS:base.FREQUENCIES || [],
+      SHAVING_ACTION_IDS:shavingIds,
+      SHAVING_METHOD_OPTIONS:shavingMethods,
+      ACTION_GROUPS:actionGroups,
+      actionById,
+      cleanText,
+      escapeHtml,
+      localDate,
+      todayIso,
+      isFutureDate,
+      clampLogDate,
+      configureLogDateInput,
+      normaliseTime,
+      normaliseShavingMethod,
+      createItem
+    }));
+  }
+
+  ensureRoutineModelContract();
 
   function exposeAllBaselineRecipes() {
     const base = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
@@ -150,7 +212,7 @@
     }
     loadOrdered([
       { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_2',marker:'data-skincare-routine-sitewide-v5' },
+      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_3',marker:'data-skincare-routine-sitewide-v5' },
       { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
       { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_5',marker:'data-baseline-routine-coherence-v12' }
     ])
