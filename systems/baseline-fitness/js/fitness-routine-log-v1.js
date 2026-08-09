@@ -6,7 +6,7 @@
    This module owns Fitness-only Routine Log interactions that sit on that output:
    - collapsible Session details + Optional note for non-calisthenics activities;
    - a second, synchronised Log Date control in the Fitness Calendar header;
-   - reversible removal of a completed Calisthenics session from the viewed date.
+   - Open Plan and reversible removal for completed Calisthenics sessions.
 
    Shared My Routine coherence must not create these Fitness-specific controls.
 */
@@ -110,8 +110,8 @@
   }
 
   function calisthenicsContext(card) {
-    const open=card.querySelector('[data-open-calisthenics-plan]');
-    const planId=Number(open?.dataset.openCalisthenicsPlan || 0);
+    const open=card.querySelector('[data-fitness-log-open-plan],[data-open-calisthenics-plan]');
+    const planId=Number(open?.dataset.fitnessLogOpenPlan || open?.dataset.openCalisthenicsPlan || 0);
     const match=String(card.querySelector('small')?.textContent || '').match(/Session\s+(\d+)/i);
     const sessionIndex=match?Number(match[1]):0;
     if (!planId || !sessionIndex) return null;
@@ -125,7 +125,11 @@
     $$('#fitnessRoutineLogItems .fitness-calisthenics-log-card',host).forEach((card) => {
       const context=calisthenicsContext(card);
       if (!context) return;
-      const open=card.querySelector('[data-open-calisthenics-plan]');
+      const open=card.querySelector('[data-fitness-log-open-plan],[data-open-calisthenics-plan]');
+      if (open?.hasAttribute('data-open-calisthenics-plan')) {
+        open.dataset.fitnessLogOpenPlan=String(context.planId);
+        open.removeAttribute('data-open-calisthenics-plan');
+      }
       let actions=card.querySelector(':scope>.bl-routine-entry-actions');
       if (!actions) {
         actions=document.createElement('span');
@@ -133,7 +137,7 @@
         card.appendChild(actions);
       }
       if (open && open.parentElement!==actions) actions.appendChild(open);
-      actions.querySelectorAll('[data-fitness-log-remove-request],.fitness-log-remove-confirm,.fitness-log-remove-status').forEach((node) => node.remove());
+      actions.querySelectorAll('[data-fitness-log-remove-request],.fitness-log-remove-confirm,.fitness-log-remove-status,[data-fitness-remove-entry],.bl-fitness-remove-confirm').forEach((node) => node.remove());
       if (context.status!=='done') return;
 
       if (pendingRemove===context.identity) {
@@ -215,6 +219,12 @@
 
   function bind(host) {
     host.addEventListener('click',(event) => {
+      const open=event.target?.closest?.('[data-fitness-log-open-plan]');
+      if (open) {
+        event.preventDefault();
+        global.BASELINE_fitnessPlans?.openPlan?.(Number(open.dataset.fitnessLogOpenPlan || 0));
+        return;
+      }
       const details=event.target?.closest?.('[data-fitness-log-details-toggle]');
       if (details) {
         event.preventDefault();
