@@ -138,14 +138,24 @@
   }
 
   function dedupeCanonicalControls(root) {
-    [
+    const controls=[
       ['routineVisibility','[data-routine-panel="public"]'],
       ['publicRoutineName','[data-routine-panel="public"]'],
       ['skinRoutineSummaryFilter','[data-routine-panel="summary"]'],
       ['fitnessRoutineVisibility','[data-fitness-routine-panel="public"]'],
       ['fitnessPublicRoutineName','[data-fitness-routine-panel="public"]'],
       ['fitnessSummaryGroupFilter','[data-fitness-routine-panel="summary"]']
-    ].forEach(([id,scope]) => {
+    ];
+    if (app==='fitness') controls.push(
+      ['scheduleMode','#myPlanGeneratorWrap'],
+      ['freq','#myPlanGeneratorWrap'],
+      ['frequencyRangeMax','#myPlanGeneratorWrap'],
+      ['lengthMode','#myPlanGeneratorWrap'],
+      ['sessions','#myPlanGeneratorWrap'],
+      ['goalExercise','#myPlanGeneratorWrap'],
+      ['goalAmount','#myPlanGeneratorWrap']
+    );
+    controls.forEach(([id,scope]) => {
       const matches=$$(`#${cssEscape(id)}`,root);
       if (matches.length<2) return;
       const keep=matches.find((node) => node.closest(scope)) || matches[0];
@@ -181,12 +191,26 @@
   function ensureLogDateLabel(root) {
     const input=$(app==='skin'?'#routineLogDate':'#fitnessRoutineLogDate',root);
     if (!input) return;
-    const label=input.closest('label');
-    if (label) {
-      label.classList.add('bl-routine-log-date');
-      let span=label.querySelector(':scope>span');
-      if (!span) { span=document.createElement('span');label.prepend(span); }
+    const nestedLabel=input.closest('label');
+    if (nestedLabel) {
+      nestedLabel.classList.add('bl-routine-log-date');
+      let span=nestedLabel.querySelector(':scope>span');
+      if (!span) { span=document.createElement('span');nestedLabel.prepend(span); }
       span.textContent='Log Date';
+    } else {
+      const holder=input.parentElement;
+      const externalLabel=input.id ? root.querySelector(`label[for="${cssEscape(input.id)}"]`) : null;
+      if (holder) {
+        holder.classList.add('bl-routine-log-date');
+        let span=holder.querySelector(':scope>.bl-routine-log-date-text');
+        if (!span) {
+          span=document.createElement('span');
+          span.className='bl-routine-log-date-text';
+          holder.insertBefore(span,input);
+        }
+        span.textContent='Log Date';
+      }
+      externalLabel?.remove();
     }
     input.setAttribute('aria-label','Log Date');
   }
