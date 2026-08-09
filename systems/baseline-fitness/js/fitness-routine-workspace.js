@@ -1,20 +1,23 @@
-/* Baseline Fitness — canonical My Routine dependency loader v35.
+/* Baseline Fitness — canonical My Routine dependency loader v36.
 
    OWNERSHIP ORDER
    ---------------
    catalogue/family filter -> shared Routine system -> base Routine workspace ->
    Fitness Routine Log interactions -> groups -> generator -> final live policy ->
-   view structure -> Public View Only -> shared v12 finisher.
+   view structure -> Fitness Routine Summary coherence -> Public View Only ->
+   shared v12 finisher.
 
    The base workspace owns routine/activity state and rendering. The dedicated
    Routine Log module owns Fitness-only log controls such as collapsible activity
    details, the calendar Log Date mirror and reversible Calisthenics log removal.
+   The dedicated Routine Summary module owns Fitness Summary hierarchy/grouping
+   and functional filtering after the structure adapter builds the shared shell.
    Shared coherence must not recreate those Fitness-specific controls.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V35__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V35__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V36__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V36__ = true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -126,6 +129,7 @@
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260809_5',marker:'data-fitness-live-policy-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260808_2',marker:'data-fitness-routine-structure-v4' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-summary-v1.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260809_1',marker:'data-fitness-routine-summary-v1' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
     { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_9',marker:'data-baseline-routine-coherence-v12' }
   ])
