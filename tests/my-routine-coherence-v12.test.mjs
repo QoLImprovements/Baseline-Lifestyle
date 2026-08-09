@@ -155,7 +155,7 @@ test('timed outcome uses actual versus target and failed exercises repeat progre
   assert.match(livePolicy,/sessionExerciseOutcomes/);
   assert.match(livePolicy,/indexes\.every/);
   assert.match(livePolicy,/storeSessionOutcomes\(before\)/);
-  assert.match(livePolicy,/event\.target\?\.closest\?\('#finishWorkout'\)/);
+  assert.match(livePolicy,/const finish=event\.target\?\.closest\?\.\('#finishWorkout'\)/);
   assert.match(livePolicy,/stopImmediatePropagation\(\)/);
 });
 
