@@ -115,12 +115,20 @@ test('Fitness Summary uses the comprehensive Skincare-shaped sitewide shell', ()
   assert.match(coherence,/normaliseFitnessSummaryStructure/);
 });
 
-test('both systems use Log Date and Fitness date icons are legible', () => {
+test('both systems use visible Log Date structure and Fitness date icons are legible', () => {
   assert.match(coherence,/span\.textContent='Log Date'/);
+  assert.match(coherence,/externalLabel/);
+  assert.match(coherence,/holder\.classList\.add\('bl-routine-log-date'\)/);
   assert.match(coherence,/aria-label','Log Date/);
   assert.match(css,/\.bl-routine-log-date/);
   assert.match(fitnessCss,/calendar-picker-indicator/);
   assert.match(fitnessCss,/filter:invert\(1\) brightness\(2\)/);
+});
+
+test('shared coherence removes duplicate Fitness generator IDs before presentation', () => {
+  for (const id of ['scheduleMode','freq','frequencyRangeMax','lengthMode','sessions','goalExercise','goalAmount']) {
+    assert.ok(coherence.includes(`['${id}','#myPlanGeneratorWrap']`),`missing generator dedupe for ${id}`);
+  }
 });
 
 test('completed Calisthenics Log entries have explicit reversible removal', () => {
@@ -147,9 +155,13 @@ test('generator owns schedule choice and two-column conditional plan length whil
   assert.match(generator,/syncLengthMode/);
 });
 
-test('enhanced exercise picker cannot expose its native source select as a duplicate dropdown', () => {
+test('enhanced exercise picker cannot expose its native source select or inactive alternative fields as duplicate controls', () => {
   assert.match(generatorCss,/#myPlanGeneratorWrap \.ex-field-exercise>\.ex-select/);
   assert.match(generatorCss,/\.ex-select-source\{display:none!important\}/);
+  assert.match(generatorCss,/#sessions:disabled/);
+  assert.match(generatorCss,/#goalExercise:disabled/);
+  assert.match(generatorCss,/#goalAmount:disabled/);
+  assert.match(generatorCss,/#freq:disabled/);
 });
 
 test('generator Details owns progression and muscle focus without duplicate Type', () => {
