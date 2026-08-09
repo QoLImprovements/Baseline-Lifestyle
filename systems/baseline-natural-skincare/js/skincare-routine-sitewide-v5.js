@@ -51,7 +51,7 @@
     const title=cleanText(source.title,80);
     if (!id || !title) return null;
     return {
-      id,title,collapsed:Boolean(source.collapsed),applyFrequency:Boolean(source.applyFrequency),
+      id,title,collapsed:true,applyFrequency:Boolean(source.applyFrequency),
       frequency:MODEL.normaliseFrequency(source.frequency),applyTime:Boolean(source.applyTime),
       timeOfDay:MODEL.TIMES.some((entry) => entry.value===source.timeOfDay)?source.timeOfDay:'anytime'
     };
@@ -245,7 +245,7 @@
 
   function createGroup() {
     const field=$('#routineGroupName');const title=cleanText(field?.value,80);if (!title || state.groups.length>=MAX_GROUPS || state.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' })===0)) { field?.focus();return; }
-    const group=normaliseGroup({ id:uniqueId('routine-group'),title },state.groups.length);state.groups.push(group);state.openGroupSettings.add(group.id);if (field) field.value='';scheduleGroupSave();schedulePatch();
+    const group=normaliseGroup({ id:uniqueId('routine-group'),title },state.groups.length);state.groups.push(group);if (field) field.value='';scheduleGroupSave();schedulePatch();
   }
   function updateGroup(id,field,value,checked) {
     const group=groupById(id);if (!group) return;
