@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v31.
+/* Baseline Natural Skincare — deterministic My Routine loader v32.
 
    PERFORMANCE / OWNERSHIP CONTRACT
    --------------------------------
@@ -8,12 +8,12 @@
    - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
    - baseline-routine-coherence-v12.js is the sole shared behaviour/state finisher.
    - No boot polling: parser-loaded prerequisites are available by DOMContentLoaded.
-   - Dependencies start fetching together and execute in dependency order.
+   - Runtime dependencies execute strictly in declared dependency order.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V31__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V31__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V32__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V32__ = true;
   const document = global.document;
   let recipeOptionObserver = null;
   let started = false;
@@ -115,27 +115,28 @@
     }
   }
 
-  function loadOrderedParallel(entries) {
-    const pending = entries.map(({ src,marker }) => {
-      const existing = document.querySelector(`script[${marker}]`);
-      if (existing) {
-        if (existing.dataset.loaded === 'true' || existing.readyState === 'complete') return Promise.resolve();
-        return new Promise((resolve,reject) => {
-          existing.addEventListener('load',resolve,{ once:true });
-          existing.addEventListener('error',reject,{ once:true });
-        });
-      }
+  function loadScript({ src,marker }) {
+    const existing = document.querySelector(`script[${marker}]`);
+    if (existing) {
+      if (existing.dataset.loaded === 'true' || existing.readyState === 'complete') return Promise.resolve();
       return new Promise((resolve,reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = false;
-        script.setAttribute(marker,'true');
-        script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
-        script.addEventListener('error',reject,{ once:true });
-        document.head.appendChild(script);
+        existing.addEventListener('load',resolve,{ once:true });
+        existing.addEventListener('error',reject,{ once:true });
       });
+    }
+    return new Promise((resolve,reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = false;
+      script.setAttribute(marker,'true');
+      script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
+      script.addEventListener('error',reject,{ once:true });
+      document.head.appendChild(script);
     });
-    return Promise.all(pending);
+  }
+
+  function loadOrdered(entries) {
+    return entries.reduce((chain,entry) => chain.then(() => loadScript(entry)),Promise.resolve());
   }
 
   function start() {
@@ -147,9 +148,9 @@
       try { console.error('Skincare My Routine prerequisites were not available at DOM readiness.'); } catch (_error) {}
       return;
     }
-    loadOrderedParallel([
+    loadOrdered([
       { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_1',marker:'data-skincare-routine-sitewide-v5' },
+      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_2',marker:'data-skincare-routine-sitewide-v5' },
       { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
       { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_5',marker:'data-baseline-routine-coherence-v12' }
     ])
