@@ -330,6 +330,9 @@
     }
     const model=global.BASELINE_SKINCARE_ROUTINE_MODEL;
     const benefit=model?.benefitText?.(action,'comprehensive') || action.benefitComprehensive || action.benefit || '';
+    const signature=JSON.stringify([action.id,action.title,action.group,benefit]);
+    if (preview.dataset.signature===signature) return;
+    preview.dataset.signature=signature;
     preview.innerHTML=`<div class="routine-summary-group-head"><h3>${esc(action.title || 'Routine Step')}</h3></div><article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>+</span><strong>${esc(action.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl><div><dt>Status</dt><dd>Not in My Routine</dd></div><div><dt>Routine category</dt><dd>${esc(action.group || 'Other')}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit)}</p></section></div></article>`;
   }
   function applySkinSummary(root) {
@@ -690,6 +693,7 @@
   function relevantMutation(mutation) {
     const target=mutation.target?.nodeType===1?mutation.target:mutation.target?.parentElement;
     if (!target) return false;
+    if (target.closest?.('.bl-routine-summary-catalogue')) return false;
     if (!target.closest?.('#routineCalendarGrid,#fitnessCalendarGrid,#routineLogItems,#fitnessRoutineLogItems,#routineSummary,#fitnessExerciseSummary,[data-routine-panel="public"],[data-fitness-routine-panel="public"],#myPlanGeneratorWrap,#myPlanSavedWrap')) return false;
     const changed=Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
     return changed.some((node) => node?.nodeType===1 && !node.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-routine-entry-actions,.bl-fitness-remove-confirm,.bl-routine-summary-catalogue'));
