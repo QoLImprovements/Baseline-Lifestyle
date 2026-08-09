@@ -44,6 +44,7 @@
   }
   function routineStorageKey(owner=state.owner) { return `${ROUTINE_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
   function groupStorageKey(owner=state.owner) { return `${GROUP_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
+  function groupSettingEnabled(value) { return Number(value) > 0; }
 
   function normaliseGroup(raw,index=0) {
     const source=raw && typeof raw==='object' ? raw : {};
@@ -153,7 +154,7 @@
   function groupSettingsHtml(group) {
     if (!state.openGroupSettings.has(group.id)) return '';
     const removing=state.pendingRemoveGroupId===group.id;
-    return `<div class="routine-plan-group-settings bl-routine-details"><div class="routine-plan-group-settings-grid"><label class="routine-field"><span>Group name</span><input type="text" maxlength="80" value="${esc(group.title)}" data-group-title="${esc(group.id)}"></label><label class="routine-group-toggle"><input type="checkbox" data-group-field="applyTime" data-group-id="${esc(group.id)}"${group.applyTime?' checked':''}><span>Set time for this group</span></label><label class="routine-field"><span>Group time</span><select data-group-field="timeOfDay" data-group-id="${esc(group.id)}"${group.applyTime?'':' disabled'}>${selectOptions(MODEL.TIMES,group.timeOfDay)}</select></label><label class="routine-group-toggle"><input type="checkbox" data-group-field="applyFrequency" data-group-id="${esc(group.id)}"${group.applyFrequency?' checked':''}><span>Set “How often” for this group</span></label><label class="routine-field"><span>Group frequency</span><select data-group-field="frequencyMode" data-group-id="${esc(group.id)}"${group.applyFrequency?'':' disabled'}>${selectOptions(MODEL.FREQUENCIES,group.frequency.mode)}</select></label>${groupWeeklyControl(group)}</div>${groupDayControls(group)}<div class="routine-plan-group-settings-actions">${removing?`<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${esc(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`:`<button type="button" class="routine-group-remove" data-group-remove-request="${esc(group.id)}">Remove group</button>`}</div></div>`;
+    return `<div class="routine-plan-group-settings bl-routine-details"><div class="routine-plan-group-settings-grid"><label class="routine-field"><span>Group name</span><input type="text" maxlength="80" value="${esc(group.title)}" data-group-title="${esc(group.id)}"></label><label class="routine-group-setting"><span>Set time for this group</span><input type="text" inputmode="numeric" pattern="[01]" maxlength="1" value="${group.applyTime?'1':'0'}" data-group-field="applyTime" data-group-id="${esc(group.id)}" aria-label="Set time for this group, 1 on, 0 off"></label><label class="routine-field"><span>Group time</span><select data-group-field="timeOfDay" data-group-id="${esc(group.id)}"${group.applyTime?'':' disabled'}>${selectOptions(MODEL.TIMES,group.timeOfDay)}</select></label><label class="routine-group-setting"><span>Set “How often” for this group</span><input type="text" inputmode="numeric" pattern="[01]" maxlength="1" value="${group.applyFrequency?'1':'0'}" data-group-field="applyFrequency" data-group-id="${esc(group.id)}" aria-label="Set how often for this group, 1 on, 0 off"></label><label class="routine-field"><span>Group frequency</span><select data-group-field="frequencyMode" data-group-id="${esc(group.id)}"${group.applyFrequency?'':' disabled'}>${selectOptions(MODEL.FREQUENCIES,group.frequency.mode)}</select></label>${groupWeeklyControl(group)}</div>${groupDayControls(group)}<div class="routine-plan-group-settings-actions">${removing?`<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${esc(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`:`<button type="button" class="routine-group-remove" data-group-remove-request="${esc(group.id)}">Remove group</button>`}</div></div>`;
   }
 
   function enhanceRoutineItems() {
@@ -167,10 +168,17 @@
       if (!groupField) { groupField=document.createElement('label');groupField.className='routine-field routine-group-field';groupField.dataset.routineGroupField=itemId;groupField.innerHTML=`<span>Routine group</span><select data-routine-group-select="${esc(itemId)}"></select>`;grid.prepend(groupField); }
       const groupSelect=groupField.querySelector('select');if (groupSelect) { const options=groupOptions(state.assignments[itemId] || '');if (groupSelect.innerHTML!==options) groupSelect.innerHTML=options;groupSelect.value=state.assignments[itemId] || ''; }
       const group=groupForItem(itemId);const frequencySelect=grid.querySelector('[data-field="frequencyMode"]');const timeSelect=grid.querySelector('[data-field="timeOfDay"]');
-      if (frequencySelect) frequencySelect.disabled=Boolean(group?.applyFrequency);if (timeSelect) timeSelect.disabled=Boolean(group?.applyTime);
+      const frequencyField=frequencySelect?.closest('.routine-field');const timeField=timeSelect?.closest('.routine-field');
+      const itemFrequency=MODEL.normaliseFrequency(item.frequency);
+      const days=article.querySelector(':scope>.routine-days,:scope>.bl-routine-details>.routine-days');
+      const weekly=article.querySelector(':scope>.routine-weekly,:scope>.bl-routine-details>.routine-weekly');
+      if (frequencySelect) frequencySelect.disabled=Boolean(group);if (timeSelect) timeSelect.disabled=Boolean(group);
+      if (frequencyField) frequencyField.hidden=Boolean(group);if (timeField) timeField.hidden=Boolean(group);
+      if (days) days.hidden=Boolean(group) || itemFrequency.mode!=='days';
+      if (weekly) weekly.hidden=Boolean(group) || itemFrequency.mode!=='weekly';
       const header=article.querySelector('.routine-item-head');const actions=article.querySelector('.routine-item-actions');if (!header || !actions) return;
       const detailId=`skincareRoutineDetails-${itemId.replace(/[^a-zA-Z0-9_-]/g,'-')}`;let body=article.querySelector(':scope>.bl-routine-details');
-      if (!body) { body=document.createElement('div');body.className='bl-routine-details';body.id=detailId;header.insertAdjacentElement('afterend',body);body.append(grid);const days=article.querySelector(':scope>.routine-days');if (days) body.append(days); }
+      if (!body) { body=document.createElement('div');body.className='bl-routine-details';body.id=detailId;header.insertAdjacentElement('afterend',body);body.append(grid);const directDays=article.querySelector(':scope>.routine-days');if (directDays) body.append(directDays);const directWeekly=article.querySelector(':scope>.routine-weekly');if (directWeekly) body.append(directWeekly); }
       body.id=detailId;body.hidden=!state.expandedSteps.has(itemId);
       let toggle=actions.querySelector('[data-skincare-step-toggle]');if (!toggle) { toggle=document.createElement('button');toggle.type='button';toggle.className='bl-routine-disclosure';toggle.dataset.skincareStepToggle=itemId;actions.prepend(toggle); }
       toggle.setAttribute('aria-controls',detailId);toggle.setAttribute('aria-expanded',state.expandedSteps.has(itemId)?'true':'false');toggle.textContent=state.expandedSteps.has(itemId)?'Close step':'Edit step';
@@ -207,8 +215,8 @@
   }
   function renderSummary() {
     const target=$('#routineSummary');if (!target) return;const items=readRoutineLocal().items;if (!items.length) return;const used=new Set();const sections=[];
-    state.groups.forEach((group) => { const groupItems=items.filter((item) => state.assignments[item.id]===group.id);if (!groupItems.length) return;groupItems.forEach((item) => used.add(item.id));sections.push(`<section class="routine-summary-group bl-routine-group"><div class="routine-summary-group-head"><h3>${esc(group.title)}</h3></div><div class="bl-routine-summary-list">${groupItems.map(summaryCard).join('')}</div></section>`); });
-    const ungrouped=items.filter((item) => !used.has(item.id));if (ungrouped.length) sections.push(`<section class="routine-summary-group bl-routine-group"><div class="routine-summary-group-head"><h3>Individual Routine Steps</h3></div><div class="bl-routine-summary-list">${ungrouped.map(summaryCard).join('')}</div></section>`);
+    state.groups.forEach((group) => { const groupItems=items.filter((item) => state.assignments[item.id]===group.id);if (!groupItems.length) return;groupItems.forEach((item) => used.add(item.id));sections.push(`<section class="routine-summary-group bl-routine-group" data-summary-group="${esc(group.id)}"><div class="routine-summary-group-head"><h3>${esc(group.title)}</h3></div><div class="bl-routine-summary-list">${groupItems.map(summaryCard).join('')}</div></section>`); });
+    const ungrouped=items.filter((item) => !used.has(item.id));if (ungrouped.length) sections.push(`<section class="routine-summary-group bl-routine-group" data-summary-group="individual"><div class="routine-summary-group-head"><h3>Individual Routine Steps</h3></div><div class="bl-routine-summary-list">${ungrouped.map(summaryCard).join('')}</div></section>`);
     UI.renderHtml(target,sections.join(''));
   }
   function logItem(item,status,entry,selectedDate) {
@@ -245,13 +253,13 @@
 
   function createGroup() {
     const field=$('#routineGroupName');const title=cleanText(field?.value,80);if (!title || state.groups.length>=MAX_GROUPS || state.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' })===0)) { field?.focus();return; }
-    const group=normaliseGroup({ id:uniqueId('routine-group'),title },state.groups.length);state.groups.push(group);if (field) field.value='';scheduleGroupSave();schedulePatch();
+    const group=normaliseGroup({ id:uniqueId('routine-group'),title,applyTime:true,applyFrequency:true,frequency:{ mode:'daily',days:[],timesPerWeek:1 } },state.groups.length);state.groups.push(group);if (field) field.value='';scheduleGroupSave();schedulePatch();
   }
   function updateGroup(id,field,value,checked) {
     const group=groupById(id);if (!group) return;
     if (field==='title') group.title=cleanText(value,80) || group.title;
-    if (field==='applyFrequency') group.applyFrequency=Boolean(checked);
-    if (field==='applyTime') group.applyTime=Boolean(checked);
+    if (field==='applyFrequency') group.applyFrequency=groupSettingEnabled(value);
+    if (field==='applyTime') group.applyTime=groupSettingEnabled(value);
     if (field==='frequencyMode') group.frequency.mode=MODEL.FREQUENCIES.some((entry) => entry.value===value)?value:'daily';
     if (field==='timesPerWeek') group.frequency.timesPerWeek=Math.max(1,Math.min(14,Math.round(Number(value) || 1)));
     if (field==='timeOfDay') group.timeOfDay=MODEL.TIMES.some((entry) => entry.value===value)?value:'anytime';
