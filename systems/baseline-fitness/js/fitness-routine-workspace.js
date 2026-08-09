@@ -1,19 +1,20 @@
-/* Baseline Fitness — canonical My Routine dependency loader v33.
+/* Baseline Fitness — canonical My Routine dependency loader v34.
 
    OWNERSHIP ORDER
    ---------------
-   catalogue/family filter -> base Routine workspace -> groups -> generator ->
-   final live policy -> view structure -> Public View Only -> shared v12 finisher.
+   catalogue/family filter -> shared Routine system -> base Routine workspace ->
+   groups -> generator -> final live policy -> view structure -> Public View Only
+   -> shared v12 finisher.
 
-   Generator owns the primary schedule-mode controls and two-column generator
-   layout. Live policy owns only the optional weekly range, scheduling access and
-   workout progression. Keep this loader declarative: no loading screen, polling
-   observer, visual patch, duplicate controller or retired compatibility module.
+   Generator owns the primary schedule controls and two-column generator layout.
+   Live policy owns only the optional weekly range, scheduling access and workout
+   progression. Dependencies execute strictly in this declared order so a partial
+   enhancement cannot expose duplicate native controls or the unenhanced shell.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V33__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V33__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V34__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V34__ = true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -97,7 +98,9 @@
       document.head.appendChild(script);
     });
   }
-  function loadOrderedParallel(entries) { return Promise.all(entries.map(loadScript)); }
+  function loadOrdered(entries) {
+    return entries.reduce((chain,entry) => chain.then(() => loadScript(entry)),Promise.resolve());
+  }
 
   if (newPlanRequest) {
     try {
@@ -113,7 +116,7 @@
     global.addEventListener('pageshow',selectRoutinePage);
   }
 
-  loadOrderedParallel([
+  loadOrdered([
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
