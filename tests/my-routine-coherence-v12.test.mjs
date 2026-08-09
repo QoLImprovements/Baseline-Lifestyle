@@ -31,6 +31,21 @@ test('one active shared My Routine coherence layer remains', () => {
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
 });
 
+test('My Routine dependency loaders execute strictly in declared order', () => {
+  for (const loader of [skinLoader,fitnessLoader]) {
+    assert.match(loader,/function loadOrdered\(entries\)/);
+    assert.match(loader,/entries\.reduce\(\(chain,entry\) => chain\.then\(\(\) => loadScript\(entry\)\),Promise\.resolve\(\)\)/);
+    assert.doesNotMatch(loader,/loadOrderedParallel|Promise\.all\(entries\.map\(loadScript\)\)/);
+  }
+});
+
+test('Skincare base Routine model contract is repaired before the base workspace captures it', () => {
+  assert.match(skinLoader,/ensureRoutineModelContract\(\);/);
+  for (const member of ['TIME_OPTIONS','FREQUENCY_OPTIONS','SHAVING_ACTION_IDS','SHAVING_METHOD_OPTIONS','ACTION_GROUPS','actionById','createItem','configureLogDateInput','todayIso','isFutureDate']) {
+    assert.ok(skinLoader.includes(member),`missing ${member}`);
+  }
+});
+
 test('retired repair layers and duplicate controllers are physically absent', () => {
   [
     'sitewide/js/baseline-routine-authority-v7.js',
@@ -79,13 +94,15 @@ test('calendar markers are number-only with hover captions and Summary navigatio
   assert.doesNotMatch(css,/\.bl-routine-calendar-marker>span/);
 });
 
-test('Skincare group creation has one manager and settings live on the group row', () => {
+test('Skincare group creation has one manager settings on the group row and starts collapsed', () => {
   assert.match(skinGroups,/Create Routine Group/);
   assert.match(skinGroups,/Configure its time and frequency from Settings on the group itself/);
   assert.match(skinGroups,/data-plan-group-settings/);
   assert.match(skinGroups,/Set time for this group/);
   assert.match(skinGroups,/Set “How often” for this group/);
   assert.ok(skinGroups.indexOf('data-plan-group-settings') < skinGroups.indexOf('data-plan-group-collapse'));
+  assert.match(skinGroups,/id,title,collapsed:true/);
+  assert.doesNotMatch(skinGroups,/state\.openGroupSettings\.add\(group\.id\).*createGroup/);
   assert.doesNotMatch(skinGroups,/routine-group-list/);
   assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(92px,auto\) auto/);
   assert.match(skinCss,/\.routine-plan-group-settings-grid/);
@@ -128,6 +145,11 @@ test('generator owns schedule choice and two-column conditional plan length whil
   assert.match(generator,/Goal Amount \(reps\)/);
   assert.match(generator,/syncScheduleMode/);
   assert.match(generator,/syncLengthMode/);
+});
+
+test('enhanced exercise picker cannot expose its native source select as a duplicate dropdown', () => {
+  assert.match(generatorCss,/#myPlanGeneratorWrap \.ex-field-exercise>\.ex-select/);
+  assert.match(generatorCss,/\.ex-select-source\{display:none!important\}/);
 });
 
 test('generator Details owns progression and muscle focus without duplicate Type', () => {
