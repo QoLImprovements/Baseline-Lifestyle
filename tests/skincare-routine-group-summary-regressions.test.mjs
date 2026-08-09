@@ -10,16 +10,18 @@ const groups = read('systems/baseline-natural-skincare/js/skincare-routine-sitew
 const coherence = read('sitewide/js/baseline-routine-coherence-v12.js');
 const css = read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
 
-test('group schedule enable controls use themed 1/0 text fields, not native checkboxes', () => {
-  assert.match(groups,/type=\"text\" inputmode=\"numeric\" pattern=\"\[01\]\" maxlength=\"1\" value=\"\$\{group\.applyTime\?'1':'0'\}\" data-group-field=\"applyTime\"/);
-  assert.match(groups,/type=\"text\" inputmode=\"numeric\" pattern=\"\[01\]\" maxlength=\"1\" value=\"\$\{group\.applyFrequency\?'1':'0'\}\" data-group-field=\"applyFrequency\"/);
-  assert.doesNotMatch(groups,/type=\"checkbox\" data-group-field=\"(?:applyTime|applyFrequency)\"/);
-  assert.match(groups,/groupSettingEnabled\(value\)/);
-  assert.match(css,/\.routine-group-setting>span\{font-weight:400\}/);
+test('group settings expose only direct time and frequency schedule controls', () => {
+  assert.match(groups,/<span>Group time<\/span><select data-group-field=\"timeOfDay\"/);
+  assert.match(groups,/<span>Group frequency<\/span><select data-group-field=\"frequencyMode\"/);
+  assert.doesNotMatch(groups,/Set time for this group|Set “How often” for this group|data-group-title|groupSettingEnabled|applyTime|applyFrequency/);
 });
 
-test('new groups default their group schedule controls to 1', () => {
-  assert.match(groups,/applyTime:true,applyFrequency:true,frequency:\{ mode:'daily',days:\[\],timesPerWeek:1 \}/);
+test('group schedule is always the effective schedule for grouped routine steps', () => {
+  assert.match(groups,/copy\.frequency=MODEL\.normaliseFrequency\(group\.frequency\)/);
+  assert.match(groups,/copy\.timeOfDay=group\.timeOfDay/);
+  assert.match(groups,/if \(group\.frequency\.mode!=='days'\) return ''/);
+  assert.match(groups,/if \(group\.frequency\.mode!=='weekly'\) return ''/);
+  assert.match(groups,/frequency:\{ mode:'daily',days:\[\],timesPerWeek:1 \}/);
 });
 
 test('a grouped routine step cannot expose its own time, frequency, days or weekly count', () => {
@@ -31,6 +33,12 @@ test('a grouped routine step cannot expose its own time, frequency, days or week
   assert.match(css,/:is\(\.routine-field,\.routine-days,\.routine-weekly\)\[hidden\]\{display:none!important\}/);
 });
 
+test('expanded group settings stay compact', () => {
+  assert.match(css,/\.routine-plan-group-settings\{display:grid;gap:10px;padding:11px 14px 12px/);
+  assert.match(css,/\.routine-plan-group-settings-grid\{display:grid;grid-template-columns:repeat\(2,minmax\(0,1fr\)\);gap:10px/);
+  assert.doesNotMatch(css,/\.routine-group-setting/);
+});
+
 test('Skincare Summary has one canonical selector with requested option order', () => {
   assert.match(coherence,/removeDuplicateSkinSummarySelectors/);
   assert.match(coherence,/if \(select===keep\) return/);
@@ -40,11 +48,15 @@ test('Skincare Summary has one canonical selector with requested option order', 
   assert.ok(groupsAt>=0 && individualAt>groupsAt && catalogueAt>individualAt);
 });
 
-test('Skincare Summary group filtering uses stable group IDs and catalogue excludes owned actions', () => {
+test('Skincare Summary group filtering uses stable group IDs and hidden groups are actually removed from layout', () => {
   assert.match(groups,/data-summary-group=\"\$\{esc\(group\.id\)\}\"/);
   assert.match(groups,/data-summary-group=\"individual\"/);
   assert.match(coherence,/const stableId=String\(section\.dataset\.summaryGroup \|\| ''\)/);
   assert.match(coherence,/visible=stableId===value\.slice\(6\)/);
+  assert.match(css,/\.routine-summary-group\[hidden\]\{display:none!important\}/);
+});
+
+test('Skincare Summary catalogue excludes owned actions', () => {
   assert.match(coherence,/!ownedActionIds\.has\(String\(action\.id\)\)/);
   assert.match(coherence,/Not in My Routine/);
 });
