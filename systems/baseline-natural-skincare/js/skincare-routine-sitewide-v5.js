@@ -44,7 +44,6 @@
   }
   function routineStorageKey(owner=state.owner) { return `${ROUTINE_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
   function groupStorageKey(owner=state.owner) { return `${GROUP_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
-  function groupSettingEnabled(value) { return Number(value) > 0; }
 
   function normaliseGroup(raw,index=0) {
     const source=raw && typeof raw==='object' ? raw : {};
@@ -52,8 +51,8 @@
     const title=cleanText(source.title,80);
     if (!id || !title) return null;
     return {
-      id,title,collapsed:true,applyFrequency:Boolean(source.applyFrequency),
-      frequency:MODEL.normaliseFrequency(source.frequency),applyTime:Boolean(source.applyTime),
+      id,title,collapsed:true,
+      frequency:MODEL.normaliseFrequency(source.frequency),
       timeOfDay:MODEL.TIMES.some((entry) => entry.value===source.timeOfDay)?source.timeOfDay:'anytime'
     };
   }
@@ -110,7 +109,10 @@
   function groupForItem(itemId) { return groupById(state.assignments[itemId]); }
   function effectiveItem(item) {
     const group=groupForItem(item.id);if (!group) return item;
-    const copy=Object.assign({},item);if (group.applyFrequency) copy.frequency=MODEL.normaliseFrequency(group.frequency);if (group.applyTime) copy.timeOfDay=group.timeOfDay;return copy;
+    const copy=Object.assign({},item);
+    copy.frequency=MODEL.normaliseFrequency(group.frequency);
+    copy.timeOfDay=group.timeOfDay;
+    return copy;
   }
   function groupOptions(selected='') { return `<option value="">No routine group</option>${state.groups.map((group) => `<option value="${esc(group.id)}"${group.id===selected?' selected':''}>${esc(group.title)}</option>`).join('')}`; }
   function selectOptions(values,selected) { return (values || []).map((entry) => `<option value="${esc(entry.value)}"${entry.value===selected?' selected':''}>${esc(entry.label)}</option>`).join(''); }
@@ -144,17 +146,17 @@
   }
 
   function groupDayControls(group) {
-    if (!group.applyFrequency || group.frequency.mode!=='days') return '';
+    if (group.frequency.mode!=='days') return '';
     return `<fieldset class="routine-group-days"><legend>Group days</legend>${DAYS.map((day) => `<label><input type="checkbox" data-group-day="${esc(day)}" data-group-id="${esc(group.id)}"${group.frequency.days.includes(day)?' checked':''}><span>${esc(day.slice(0,3))}</span></label>`).join('')}</fieldset>`;
   }
   function groupWeeklyControl(group) {
-    if (!group.applyFrequency || group.frequency.mode!=='weekly') return '';
-    return `<label class="routine-field"><span>Times each week</span><input type="number" min="1" max="14" value="${group.frequency.timesPerWeek}" data-group-field="timesPerWeek" data-group-id="${esc(group.id)}"></label>`;
+    if (group.frequency.mode!=='weekly') return '';
+    return `<label class="routine-field routine-group-weekly"><span>Times each week</span><input type="number" min="1" max="14" value="${group.frequency.timesPerWeek}" data-group-field="timesPerWeek" data-group-id="${esc(group.id)}"></label>`;
   }
   function groupSettingsHtml(group) {
     if (!state.openGroupSettings.has(group.id)) return '';
     const removing=state.pendingRemoveGroupId===group.id;
-    return `<div class="routine-plan-group-settings bl-routine-details"><div class="routine-plan-group-settings-grid"><label class="routine-field"><span>Group name</span><input type="text" maxlength="80" value="${esc(group.title)}" data-group-title="${esc(group.id)}"></label><label class="routine-group-setting"><span>Set time for this group</span><input type="text" inputmode="numeric" pattern="[01]" maxlength="1" value="${group.applyTime?'1':'0'}" data-group-field="applyTime" data-group-id="${esc(group.id)}" aria-label="Set time for this group, 1 on, 0 off"></label><label class="routine-field"><span>Group time</span><select data-group-field="timeOfDay" data-group-id="${esc(group.id)}"${group.applyTime?'':' disabled'}>${selectOptions(MODEL.TIMES,group.timeOfDay)}</select></label><label class="routine-group-setting"><span>Set “How often” for this group</span><input type="text" inputmode="numeric" pattern="[01]" maxlength="1" value="${group.applyFrequency?'1':'0'}" data-group-field="applyFrequency" data-group-id="${esc(group.id)}" aria-label="Set how often for this group, 1 on, 0 off"></label><label class="routine-field"><span>Group frequency</span><select data-group-field="frequencyMode" data-group-id="${esc(group.id)}"${group.applyFrequency?'':' disabled'}>${selectOptions(MODEL.FREQUENCIES,group.frequency.mode)}</select></label>${groupWeeklyControl(group)}</div>${groupDayControls(group)}<div class="routine-plan-group-settings-actions">${removing?`<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${esc(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`:`<button type="button" class="routine-group-remove" data-group-remove-request="${esc(group.id)}">Remove group</button>`}</div></div>`;
+    return `<div class="routine-plan-group-settings bl-routine-details"><div class="routine-plan-group-settings-grid"><label class="routine-field"><span>Group time</span><select data-group-field="timeOfDay" data-group-id="${esc(group.id)}">${selectOptions(MODEL.TIMES,group.timeOfDay)}</select></label><label class="routine-field"><span>Group frequency</span><select data-group-field="frequencyMode" data-group-id="${esc(group.id)}">${selectOptions(MODEL.FREQUENCIES,group.frequency.mode)}</select></label>${groupWeeklyControl(group)}</div>${groupDayControls(group)}<div class="routine-plan-group-settings-actions">${removing?`<span class="routine-group-remove-confirm"><span>Remove group?</span><button type="button" data-group-remove-confirm="${esc(group.id)}">Yes</button><button type="button" data-group-remove-cancel>Cancel</button></span>`:`<button type="button" class="routine-group-remove" data-group-remove-request="${esc(group.id)}">Remove group</button>`}</div></div>`;
   }
 
   function enhanceRoutineItems() {
@@ -189,7 +191,7 @@
   }
 
   function planGroupHeader(group,count) {
-    const schedule=[];if (group?.applyTime) schedule.push(MODEL.timeLabel(group.timeOfDay));if (group?.applyFrequency) schedule.push(MODEL.frequencyText(group.frequency));
+    const schedule=group?[MODEL.timeLabel(group.timeOfDay),MODEL.frequencyText(group.frequency)]:[];
     if (!group) return `<div class="routine-plan-group-head bl-routine-entry-head"><div><h3>Individual Routine Steps</h3></div><span class="routine-group-count">${count} action${count===1?'':'s'}</span><span></span></div>`;
     return `<div class="routine-plan-group-head bl-routine-entry-head"><div><h3>${esc(group.title)}</h3>${schedule.length?`<p>${esc(schedule.join(' · '))}</p>`:''}</div><span class="routine-group-count">${count} action${count===1?'':'s'}</span><span class="bl-routine-entry-actions"><button type="button" class="bl-routine-disclosure" data-plan-group-settings="${esc(group.id)}" aria-expanded="${state.openGroupSettings.has(group.id)?'true':'false'}">${state.openGroupSettings.has(group.id)?'Close settings':'Settings'}</button><button type="button" class="bl-routine-disclosure" data-plan-group-collapse="${esc(group.id)}" aria-expanded="${group.collapsed?'false':'true'}">${group.collapsed?'Expand group':'Collapse group'}</button></span></div>`;
   }
@@ -253,13 +255,10 @@
 
   function createGroup() {
     const field=$('#routineGroupName');const title=cleanText(field?.value,80);if (!title || state.groups.length>=MAX_GROUPS || state.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' })===0)) { field?.focus();return; }
-    const group=normaliseGroup({ id:uniqueId('routine-group'),title,applyTime:true,applyFrequency:true,frequency:{ mode:'daily',days:[],timesPerWeek:1 } },state.groups.length);state.groups.push(group);if (field) field.value='';scheduleGroupSave();schedulePatch();
+    const group=normaliseGroup({ id:uniqueId('routine-group'),title,frequency:{ mode:'daily',days:[],timesPerWeek:1 } },state.groups.length);state.groups.push(group);if (field) field.value='';scheduleGroupSave();schedulePatch();
   }
-  function updateGroup(id,field,value,checked) {
+  function updateGroup(id,field,value) {
     const group=groupById(id);if (!group) return;
-    if (field==='title') group.title=cleanText(value,80) || group.title;
-    if (field==='applyFrequency') group.applyFrequency=groupSettingEnabled(value);
-    if (field==='applyTime') group.applyTime=groupSettingEnabled(value);
     if (field==='frequencyMode') group.frequency.mode=MODEL.FREQUENCIES.some((entry) => entry.value===value)?value:'daily';
     if (field==='timesPerWeek') group.frequency.timesPerWeek=Math.max(1,Math.min(14,Math.round(Number(value) || 1)));
     if (field==='timeOfDay') group.timeOfDay=MODEL.TIMES.some((entry) => entry.value===value)?value:'anytime';
@@ -293,12 +292,11 @@
     },true);
     document.addEventListener('change',(event) => {
       const groupSelect=event.target.closest('[data-routine-group-select]');if (groupSelect) { assignItem(groupSelect.dataset.routineGroupSelect,groupSelect.value);return; }
-      const groupField=event.target.closest('[data-group-field]');if (groupField) { updateGroup(groupField.dataset.groupId,groupField.dataset.groupField,groupField.value,groupField.checked);return; }
+      const groupField=event.target.closest('[data-group-field]');if (groupField) { updateGroup(groupField.dataset.groupId,groupField.dataset.groupField,groupField.value);return; }
       const groupDay=event.target.closest('[data-group-day]');if (groupDay) { updateGroupDay(groupDay.dataset.groupId,groupDay.dataset.groupDay,groupDay.checked);return; }
       if (event.target?.id==='routineLogDate') { event.target.value=UI.configureLogDateInput(event.target,event.target.value);state.calendarAnchor=UI.localDate(event.target.value);global.setTimeout(schedulePatch,0); }
       if (event.target.closest('#routineItems [data-field],#routineLogItems [data-log-complete],#routineLogItems [data-log-note]')) global.setTimeout(schedulePatch,0);
     });
-    document.addEventListener('blur',(event) => { const title=event.target.closest('[data-group-title]');if (title) updateGroup(title.dataset.groupTitle,'title',title.value,false); },true);
     document.addEventListener('keydown',(event) => { if (event.target?.id==='routineGroupName' && event.key==='Enter') { event.preventDefault();createGroup(); } });
   }
 
