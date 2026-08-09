@@ -7,6 +7,7 @@
    - Public Routines are read-only My Routine views, not a second mini interface.
    - System renderers own their data and renderer-owned cards/fields.
    - System palette adapters own colour; this file never invents a palette.
+   - Fitness-only Routine Log interactions belong to fitness-routine-log-v1.js.
    - This file owns only genuinely shared live behaviour/state.
 */
 (function (global) {
@@ -25,8 +26,6 @@
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
   const cssEscape = (value) => global.CSS?.escape ? global.CSS.escape(String(value)) : String(value).replace(/[^a-zA-Z0-9_-]/g,'\\$&');
-  const fitnessPlanBusy = new Set();
-  const fitnessRemoveConfirm = new Set();
   let observer = null;
   let frame = 0;
   let patching = false;
@@ -438,70 +437,6 @@
     } finally { groupBusy=false;schedule(); }
   }
 
-  function calisthenicsIdentity(card) {
-    const open=card?.querySelector?.('[data-open-calisthenics-plan]');
-    const planId=Number(open?.dataset.openCalisthenicsPlan || 0);
-    const match=String(card?.querySelector?.('small')?.textContent || '').match(/Session\s+(\d+)/i);
-    const sessionIndex=match?Number(match[1]):0;
-    return planId && sessionIndex ? `${planId}:${sessionIndex}` : '';
-  }
-  function decorateFitnessCalisthenicsLog(root) {
-    if (app!=='fitness') return;
-    $$('#fitnessRoutineLogItems .fitness-calisthenics-log-card',root).forEach((card) => {
-      const identity=calisthenicsIdentity(card);
-      if (!identity) return;
-      card.dataset.fitnessPlanLog=identity;
-      const [planIdRaw,sessionIndexRaw]=identity.split(':');
-      const planId=Number(planIdRaw);
-      const sessionIndex=Number(sessionIndexRaw);
-      const plan=fitnessPlans().find((candidate) => Number(candidate.planId)===planId);
-      const session=(plan?.sessions || []).find((candidate) => Number(candidate.sessionIndex ?? candidate.session_index)===sessionIndex);
-      const done=String(session?.status || '')==='done';
-      let actions=card.querySelector(':scope>.bl-routine-entry-actions');
-      const open=card.querySelector('[data-open-calisthenics-plan]');
-      if (!actions) {
-        actions=document.createElement('span');
-        actions.className='bl-routine-entry-actions';
-        card.appendChild(actions);
-      }
-      if (open && open.parentElement!==actions) actions.appendChild(open);
-      actions.querySelector('[data-fitness-remove-entry],.bl-fitness-remove-confirm')?.remove();
-      if (!done) return;
-      if (fitnessRemoveConfirm.has(identity)) {
-        const confirm=document.createElement('span');
-        confirm.className='bl-fitness-remove-confirm';
-        confirm.innerHTML=`<span>Remove entry?</span><button type="button" class="tiny-btn" data-fitness-remove-entry-confirm="${esc(identity)}">Yes</button><button type="button" class="tiny-btn" data-fitness-remove-entry-cancel="${esc(identity)}">Cancel</button>`;
-        actions.appendChild(confirm);
-      } else {
-        const button=document.createElement('button');
-        button.type='button';
-        button.className='tiny-btn';
-        button.dataset.fitnessRemoveEntry=identity;
-        button.textContent='Remove Entry';
-        actions.appendChild(button);
-      }
-    });
-  }
-  async function removeFitnessPlanEntry(identity) {
-    const [planIdRaw,sessionIndexRaw]=String(identity || '').split(':');
-    const planId=Number(planIdRaw || 0);
-    const sessionIndex=Number(sessionIndexRaw || 0);
-    if (!planId || !sessionIndex || fitnessPlanBusy.has(identity)) return;
-    fitnessPlanBusy.add(identity);
-    try {
-      const response=await fetch('/systems/baseline-fitness/api/update_session.php',{
-        method:'POST',credentials:'same-origin',headers:{ 'Content-Type':'application/json',Accept:'application/json' },
-        body:JSON.stringify({ planId,sessionIndex,action:'set_status',status:'planned' })
-      });
-      const result=await response.json().catch(() => null);
-      if (!response.ok || !result?.ok) throw new Error(result?.error || `http_${response.status}`);
-      fitnessRemoveConfirm.delete(identity);
-      await global.BASELINE_fitnessPlans?.refresh?.();
-      try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated',{ detail:{ planId,sessionIndex,completed:false,source:'routine-log-remove' } })); } catch (_error) {}
-    } catch (_error) {}
-    finally { fitnessPlanBusy.delete(identity);schedule(); }
-  }
-
   function preserveFitnessCompleted(root) {
     if (app!=='fitness') return;
     const host=$('#fitnessRoutineLogItems',root);
@@ -679,7 +614,6 @@
         normaliseFitnessSummaryStructure(root);
         fitnessSummaryFilter(root);
         applyFitnessSummary(root);
-        decorateFitnessCalisthenicsLog(root);
         preserveFitnessCompleted(root);
       }
       calendarMarkers(root);
@@ -696,7 +630,7 @@
     if (target.closest?.('.bl-routine-summary-catalogue')) return false;
     if (!target.closest?.('#routineCalendarGrid,#fitnessCalendarGrid,#routineLogItems,#fitnessRoutineLogItems,#routineSummary,#fitnessExerciseSummary,[data-routine-panel="public"],[data-fitness-routine-panel="public"],#myPlanGeneratorWrap,#myPlanSavedWrap')) return false;
     const changed=Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
-    return changed.some((node) => node?.nodeType===1 && !node.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-routine-entry-actions,.bl-fitness-remove-confirm,.bl-routine-summary-catalogue'));
+    return changed.some((node) => node?.nodeType===1 && !node.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-routine-entry-actions,.bl-routine-summary-catalogue'));
   }
   function observe(root) {
     if (typeof MutationObserver==='undefined') return;
@@ -712,24 +646,6 @@
         event.preventDefault();event.stopPropagation();
         openSummary(String(marker.dataset.routineSummaryTarget || ''),root);
         return;
-      }
-      const remove=event.target?.closest?.('[data-fitness-remove-entry]');
-      if (remove) {
-        event.preventDefault();event.stopPropagation();
-        fitnessRemoveConfirm.add(String(remove.dataset.fitnessRemoveEntry || ''));
-        schedule();return;
-      }
-      const confirm=event.target?.closest?.('[data-fitness-remove-entry-confirm]');
-      if (confirm) {
-        event.preventDefault();event.stopPropagation();
-        removeFitnessPlanEntry(String(confirm.dataset.fitnessRemoveEntryConfirm || ''));
-        return;
-      }
-      const cancel=event.target?.closest?.('[data-fitness-remove-entry-cancel]');
-      if (cancel) {
-        event.preventDefault();event.stopPropagation();
-        fitnessRemoveConfirm.delete(String(cancel.dataset.fitnessRemoveEntryCancel || ''));
-        schedule();return;
       }
       const skinView=event.target?.closest?.('[data-routine-view]');
       if (skinView && app==='skin') setUrlValues({ 'routine-view':String(skinView.dataset.routineView || 'log') });
