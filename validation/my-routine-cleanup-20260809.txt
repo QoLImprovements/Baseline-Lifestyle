@@ -1,0 +1,1 @@
+Validation-only branch marker. Product code is inherited from current main; this file exists only to trigger the pull-request checks for the 2026-08-09 My Routine cleanup and coherence repair.
