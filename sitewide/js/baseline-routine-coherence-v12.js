@@ -8,7 +8,8 @@
    - System renderers own their data and renderer-owned cards/fields.
    - System palette adapters own colour; this file never invents a palette.
    - Fitness-only Routine Log interactions belong to fitness-routine-log-v1.js.
-   - This file owns only genuinely shared live behaviour/state.
+   - Fitness Routine Summary contents/filtering belong only to fitness-routine-summary-v2.js.
+   - This file owns only genuinely shared live behaviour/state plus the Skincare Summary filter.
 */
 (function (global) {
   'use strict';
@@ -153,7 +154,12 @@
       const matches=$$(`#${cssEscape(id)}`,root);
       if (matches.length<2) return;
       const keep=matches.find((node) => node.closest(scope)) || matches[0];
-      matches.forEach((node) => { if (node!==keep) node.remove(); });
+      matches.forEach((node) => {
+        if (node===keep) return;
+        const wrapper=node.closest('.bl-select,label,.bl-routine-summary-filter');
+        if (wrapper && !wrapper.contains(keep)) wrapper.remove();
+        else node.remove();
+      });
     });
   }
 
@@ -272,15 +278,30 @@
   function removeDuplicateSkinSummarySelectors(summary,keep) {
     const panel=summary?.closest?.('[data-routine-panel="summary"]');
     if (!panel || !keep) return;
+    const keepLabel=keep.closest('label');
     $$('select',panel).forEach((select) => {
       if (select===keep) return;
-      const wrapper=select.closest('label,.bl-routine-summary-filter,.routine-summary-filter');
-      if (wrapper && wrapper!==keep.closest('label')) wrapper.remove();
+      const wrapper=select.closest('.bl-select,label,.bl-routine-summary-filter,.routine-summary-filter');
+      if (wrapper && wrapper!==keepLabel && !wrapper.contains(keep)) wrapper.remove();
       else select.remove();
     });
     $$('.bl-routine-summary-filter',panel).forEach((wrapper) => {
       if (!wrapper.contains(keep)) wrapper.remove();
     });
+  }
+  function skinLibraryGroups() {
+    const groups=new Map();
+    skinCatalogueActions().filter((action) => action?.id).forEach((action) => {
+      const category=String(action.group || 'Other').trim() || 'Other';
+      if (!groups.has(category)) groups.set(category,[]);
+      groups.get(category).push(action);
+    });
+    return Array.from(groups.entries())
+      .sort((a,b) => a[0].localeCompare(b[0],'en-GB',{ sensitivity:'base' }))
+      .map(([category,actions]) => ({
+        category,
+        actions:actions.slice().sort((a,b) => String(a.title || '').localeCompare(String(b.title || ''),'en-GB',{ sensitivity:'base' }))
+      }));
   }
   function skinSummaryFilter(root) {
     if (app!=='skin') return null;
@@ -290,6 +311,7 @@
     if (!select) {
       const label=document.createElement('label');
       label.className='bl-routine-summary-filter';
+      label.dataset.summaryFilterOwner='skincare';
       label.innerHTML='<span>Show</span><select id="skinRoutineSummaryFilter" aria-label="Filter Routine Summary"></select>';
       summary.before(label);
       select=label.querySelector('select');
@@ -297,27 +319,23 @@
     removeDuplicateSkinSummarySelectors(summary,select);
     const state=skinState();
     const grouping=skinGroups();
-    const ownedActionIds=new Set(state.items.map((item) => String(item.actionId || '')));
-    const individual=state.items.filter((item) => !grouping.assignments[item.id]);
-    const catalogue=skinCatalogueActions().filter((action) => action?.id && !ownedActionIds.has(String(action.id))).slice().sort((a,b) => String(a.title || '').localeCompare(String(b.title || ''),'en-GB',{ sensitivity:'base' }));
+    const mySteps=state.items.slice().sort((a,b) => String(a.title || '').localeCompare(String(b.title || ''),'en-GB',{ sensitivity:'base' }));
+    const libraryGroups=skinLibraryGroups();
     const signature=JSON.stringify([
       grouping.groups.map((group) => [group.id,group.title]),
-      individual.map((item) => [item.id,item.title]),
-      catalogue.map((action) => [action.id,action.title])
+      mySteps.map((item) => [item.id,item.title,grouping.assignments[item.id] || '']),
+      libraryGroups.map((group) => [group.category,group.actions.map((action) => [action.id,action.title])])
     ]);
     if (select.dataset.signature!==signature) {
       const old=String(select.value || preferredSummaryFilter() || 'all');
       const groupOptions=grouping.groups.map((group) => `<option value="group:${esc(group.id)}">${esc(group.title)}</option>`).join('');
-      const individualOptions=individual.map((item) => `<option value="item:${esc(item.id)}">${esc(item.title || 'Routine Step')}</option>`).join('');
-      const catalogueOptions=catalogue.map((action) => `<option value="catalogue:${esc(action.id)}">${esc(action.title || 'Routine Step')}</option>`).join('');
-      select.innerHTML=`<option value="all">All My Routine Steps</option>${groupOptions?`<optgroup label="Routine Groups">${groupOptions}</optgroup>`:''}${individualOptions?`<optgroup label="Individual Routine Steps">${individualOptions}</optgroup>`:''}${catalogueOptions?`<optgroup label="All Routine Steps Not In My Routine">${catalogueOptions}</optgroup>`:''}`;
+      const stepOptions=mySteps.map((item) => `<option value="item:${esc(item.id)}">${esc(item.title || 'Routine Step')}</option>`).join('');
+      const libraryOptions=libraryGroups.map((group) => `<optgroup label="Routine Library — ${esc(group.category)}">${group.actions.map((action) => `<option value="catalogue:${esc(action.id)}">${esc(action.title || 'Routine Step')}</option>`).join('')}</optgroup>`).join('');
+      select.innerHTML=`<option value="all">All My Routine</option>${groupOptions?`<optgroup label="My Routine — Routine Groups">${groupOptions}</optgroup>`:''}${stepOptions?`<optgroup label="My Routine — Routine Steps">${stepOptions}</optgroup>`:''}${libraryOptions}`;
       select.dataset.signature=signature;
       select.value=Array.from(select.options).some((option) => option.value===old)?old:'all';
     }
     return select;
-  }
-  function normalTitle(value) {
-    return String(value || '').replace(/^\s*\d+\.?\s*/,'').trim().toLocaleLowerCase('en-GB');
   }
   function renderSkinCatalogueSummary(summary,action) {
     let preview=summary.querySelector(':scope>.bl-routine-summary-catalogue');
@@ -332,7 +350,7 @@
     const signature=JSON.stringify([action.id,action.title,action.group,benefit]);
     if (preview.dataset.signature===signature) return;
     preview.dataset.signature=signature;
-    preview.innerHTML=`<div class="routine-summary-group-head"><h3>${esc(action.title || 'Routine Step')}</h3></div><article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>+</span><strong>${esc(action.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl><div><dt>Status</dt><dd>Not in My Routine</dd></div><div><dt>Routine category</dt><dd>${esc(action.group || 'Other')}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit)}</p></section></div></article>`;
+    preview.innerHTML=`<div class="routine-summary-group-head"><h3>${esc(action.title || 'Routine Step')}</h3></div><article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>+</span><strong>${esc(action.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl><div><dt>Source</dt><dd>Routine Library</dd></div><div><dt>Routine category</dt><dd>${esc(action.group || 'Other')}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit)}</p></section></div></article>`;
   }
   function applySkinSummary(root) {
     const select=skinSummaryFilter(root);
@@ -346,52 +364,18 @@
     renderSkinCatalogueSummary(summary,catalogueAction || null);
     const itemId=value.startsWith('item:')?value.slice(5):'';
     const item=itemId?state.items.find((candidate) => String(candidate.id)===itemId):null;
+    const itemGroupId=item?String(grouping.assignments[item.id] || ''):'';
     $$('.routine-summary-group:not(.bl-routine-summary-catalogue)',summary).forEach((section) => {
       const stableId=String(section.dataset.summaryGroup || '');
-      const heading=normalTitle(section.querySelector('h3')?.textContent);
       let visible=value==='all';
       if (value.startsWith('group:')) visible=stableId===value.slice(6);
-      if (item) visible=stableId==='individual' || (!stableId && ['individual routine steps','ungrouped routine actions'].includes(heading));
+      if (item) visible=itemGroupId ? stableId===itemGroupId : stableId==='individual';
       if (catalogueAction) visible=false;
       section.hidden=!visible;
       $$('.routine-summary-item',section).forEach((card) => {
         if (!item) { card.hidden=!visible;return; }
         const title=String(card.querySelector('.routine-summary-title strong')?.textContent || card.querySelector('strong')?.textContent || '').trim();
         card.hidden=!(visible && title.localeCompare(String(item.title || '').trim(),'en-GB',{ sensitivity:'base' })===0);
-      });
-    });
-  }
-
-  function fitnessSummaryFilter(root) {
-    if (app!=='fitness') return null;
-    const select=$('#fitnessSummaryGroupFilter',root);
-    if (!select) return null;
-    Array.from(select.options || []).forEach((option) => { if (option.value==='all') option.textContent='All Routine Steps'; });
-    Array.from(select.querySelectorAll('optgroup')).forEach((group) => {
-      const label=String(group.label || '').toLocaleLowerCase('en-GB');
-      if (label.includes('routine group')) group.label='Routine Groups';
-      if (label.includes('individual') || label.includes('ungrouped')) group.label='Individual Routine Steps';
-    });
-    const preferred=preferredSummaryFilter();
-    if (!select.dataset.filterRestored && Array.from(select.options || []).some((option) => option.value===preferred)) {
-      select.value=preferred;
-      select.dataset.filterRestored='true';
-    }
-    return select;
-  }
-  function applyFitnessSummary(root) {
-    const select=fitnessSummaryFilter(root);
-    const summary=$('#fitnessExerciseSummary',root);
-    if (!select || !summary) return;
-    const value=String(select.value || 'all');
-    $$('.fitness-summary-group',summary).forEach((section) => {
-      const groupId=String(section.dataset.summaryGroup || '');
-      let visible=value==='all';
-      if (value.startsWith('group:')) visible=groupId===value.slice(6);
-      if (value.startsWith('entity:')) visible=Boolean(section.querySelector(`[data-v4-entity="${cssEscape(value.slice(7))}"]`));
-      section.hidden=!visible;
-      $$('[data-v4-entity]',section).forEach((card) => {
-        card.hidden=value.startsWith('entity:')?card.dataset.v4Entity!==value.slice(7):!visible;
       });
     });
   }
@@ -569,12 +553,13 @@
     }
     $('[data-fitness-routine-view="summary"]',root)?.click();
     global.requestAnimationFrame(() => {
-      const select=fitnessSummaryFilter(root);
-      if (select && Array.from(select.options).some((option) => option.value===target)) {
-        select.value=target;
-        applyFitnessSummary(root);
-        select.focus({ preventScroll:true });
-      }
+      const select=$('#fitnessSummaryGroupFilter',root);
+      if (!select) return;
+      const option=Array.from(select.options || []).find((candidate) => String(candidate.dataset.filterKey || candidate.value)===target);
+      if (!option) return;
+      option.selected=true;
+      select.dispatchEvent(new Event('change',{ bubbles:true }));
+      select.focus({ preventScroll:true });
     });
   }
 
@@ -612,8 +597,6 @@
       } else {
         ensureFitnessFrequency(root);
         normaliseFitnessSummaryStructure(root);
-        fitnessSummaryFilter(root);
-        applyFitnessSummary(root);
         preserveFitnessCompleted(root);
       }
       calendarMarkers(root);
@@ -664,7 +647,6 @@
     root.addEventListener('change',(event) => {
       if (event.target?.matches?.('[data-routine-group-complete]')) { event.stopPropagation();setSkinGroup(event.target);return; }
       if (event.target?.id==='skinRoutineSummaryFilter') { persistSummaryFilter(event.target.value);applySkinSummary(root);return; }
-      if (event.target?.id==='fitnessSummaryGroupFilter') { persistSummaryFilter(event.target.value);applyFitnessSummary(root);return; }
       if (event.target?.id==='routineLogDate' || event.target?.id==='fitnessRoutineLogDate') {
         const value=String(event.target.value || '');
         if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -676,7 +658,7 @@
     [
       'baseline:routine-rendered','baseline:skincare-routine-updated','baseline:fitness-routine-updated',
       'baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:routine-settings-changed',
-      'baseline:fitness-summary-rendered','baseline:fitness-routine-view-changed'
+      'baseline:fitness-routine-view-changed'
     ].forEach((name) => document.addEventListener(name,schedule));
   }
 
