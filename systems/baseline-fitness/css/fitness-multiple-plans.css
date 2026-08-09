@@ -33,7 +33,8 @@
 #myPlanGeneratorWrap #specificDayControls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 0 0}
 #myPlanGeneratorWrap #specificDayControls[hidden]{display:none!important}
 #myPlanGeneratorWrap #specificDayControls label{display:inline-flex;align-items:center;gap:6px;min-width:0}
-#myPlanGeneratorWrap .bl-generator-mode-hidden{display:none!important}
+#myPlanGeneratorWrap .bl-generator-settings-grid .bl-generator-mode-hidden{display:none!important}
+#myPlanGeneratorWrap .ex-field-progression-mode.bl-generator-mode-hidden{display:grid!important}
 
 #exerciseList{display:grid!important;gap:1rem!important}
 #myPlanGeneratorWrap .ex-row,[data-fitness-routine-panel="calisthenics"] .ex-row{
