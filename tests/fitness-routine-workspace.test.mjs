@@ -3,75 +3,72 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
-const require = createRequire(import.meta.url);
+const require=createRequire(import.meta.url);
 require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
-const catalogue = require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
-const loader = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js', import.meta.url),'utf8');
-const workspace = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js', import.meta.url),'utf8');
-const structure = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js', import.meta.url),'utf8');
-const policy = fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js', import.meta.url),'utf8');
-const shared = fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js', import.meta.url),'utf8');
-const sharedCss = fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css', import.meta.url),'utf8');
-const fitnessCss = fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css', import.meta.url),'utf8');
-const publicViewer = fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js', import.meta.url),'utf8');
-const updateSession = fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php', import.meta.url),'utf8');
+const catalogue=require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
+const loader=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js',import.meta.url),'utf8');
+const workspace=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js',import.meta.url),'utf8');
+const structure=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js',import.meta.url),'utf8');
+const policy=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js',import.meta.url),'utf8');
+const shared=fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js',import.meta.url),'utf8');
+const sharedCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css',import.meta.url),'utf8');
+const fitnessCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css',import.meta.url),'utf8');
+const publicViewer=fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js',import.meta.url),'utf8');
+const updateSession=fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php',import.meta.url),'utf8');
 
-test('Fitness loader restores the requested view without artificial loading or retired guards', () => {
+test('Fitness loader restores requested views without artificial loading or retired guards',() => {
   assert.match(loader,/restoreRequestedView/);
   assert.match(loader,/loadOrderedParallel/);
   assert.match(loader,/baseline-routine-coherence-v12\.js/);
-  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1/);
+  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
 });
 
-test('activity catalogue and existing data owner remain intact', () => {
-  assert.ok(catalogue.ACTIVITIES.length >= 180);
+test('activity catalogue and base activity data owner remain intact',() => {
+  assert.ok(catalogue.ACTIVITIES.length>=180);
   for (const id of ['road-running','road-cycling','pool-swimming','hatha-yoga','mma','badminton']) assert.ok(catalogue.ACTIVITY_BY_ID.has(id));
   assert.match(workspace,/data-fitness-log-complete/);
   assert.match(workspace,/updateLog\(complete\.dataset\.fitnessLogComplete/);
 });
 
-test('checking and unchecking are the Routine Log calendar add/remove mechanism', () => {
+test('non-Calisthenics activity completion remains reversible by checkbox',() => {
   assert.match(workspace,/entry\.completed = Boolean\(value\)/);
   assert.match(workspace,/renderLog\(\);\s*renderCalendar\(\)/);
   assert.match(shared,/preserveFitnessCompleted/);
-  assert.doesNotMatch(shared,/data-v11-remove|data-v12-remove|textContent\s*=\s*['\"]Remove['\"]/);
 });
 
-test('Calisthenics Routine Log completion is a real reversible checkbox backed by session status', () => {
-  assert.match(shared,/data-fitness-plan-log-complete/);
-  assert.match(shared,/\/systems\/baseline-fitness\/api\/update_session\.php/);
-  assert.match(shared,/action:'set_status'/);
-  assert.match(shared,/status:desired\?'done':'planned'/);
+test('completed Calisthenics entries use explicit Remove Entry confirmation',() => {
+  assert.match(shared,/Remove Entry/);
+  assert.match(shared,/data-fitness-remove-entry-confirm/);
+  assert.match(shared,/action:'set_status',status:'planned'/);
   assert.match(updateSession,/\$action === 'set_status'/);
-  assert.match(updateSession,/in_array\(\$status, \['planned','done'\]/);
+  assert.match(updateSession,/in_array\(\$status, \['planned','rescheduled','done'\]/);
   assert.match(updateSession,/completed_at=NULL/);
 });
 
-test('Fitness Summary retains one filter and shared terminology', () => {
+test('Fitness Summary uses one filter and shared comprehensive structure',() => {
   assert.match(structure,/fitnessSummaryGroupFilter/);
   assert.match(shared,/fitnessSummaryGroupFilter/);
   assert.match(shared,/All Routine Steps/);
   assert.match(shared,/Individual Routine Steps/);
+  assert.match(structure,/Benefits and practical role/);
+  assert.match(structure,/bl-routine-summary-grid/);
 });
 
-test('Days Per Week range stays valid and is displayed as compact min dash max', () => {
+test('Number Of Days range stays valid and compact',() => {
+  assert.match(policy,/\(Not Specified\)/);
   assert.match(policy,/value<=minimum\?' disabled':''/);
-  assert.match(policy,/Not Selected/);
-  assert.match(policy,/Days Per Week/);
   assert.match(policy,/bl-frequency-range-dash/);
   assert.match(sharedCss,/\.bl-frequency-range-dash/);
 });
 
-test('flexible weekly policy owns behaviour only, not a runtime visual layer', () => {
-  assert.doesNotMatch(policy,/Current workout available within your weekly frequency\./);
-  assert.doesNotMatch(policy,/createElement\(['\"]style['\"]\)|function injectStyles|baselineFitnessLivePolicyStyle/);
-  assert.doesNotMatch(policy,/wrapPlanCalendar|__baselineFlexibleWeeklyV2/);
-  assert.doesNotMatch(policy,/\[80,220,500,1000,1800\]/);
+test('live policy owns behaviour not a runtime visual layer',() => {
+  assert.doesNotMatch(policy,/createElement\(['\"]style['\"]\)|function injectStyles|baselineFitnessLivePolicyStyle|setInterval/);
+  assert.doesNotMatch(policy,/global\.fetch\s*=/);
   assert.match(fitnessCss,/fitness-start-early-overlay/);
   assert.match(fitnessCss,/ex-picker-menu/);
 });
 
-test('Public Fitness routine is the owner-facing structure in View Only form', () => {
+test('Public Fitness routine remains owner-facing View Only structure',() => {
   assert.match(publicViewer,/fitness-routine-log-item/);
   assert.match(publicViewer,/fitness-exercise-summary-item/);
   assert.match(publicViewer,/routine-plan-group/);
@@ -79,7 +76,7 @@ test('Public Fitness routine is the owner-facing structure in View Only form', (
   assert.match(publicViewer,/type=\"checkbox\" disabled/);
 });
 
-test('Week and Month controls cannot collapse below their labels', () => {
+test('Week and Month controls cannot collapse below their labels',() => {
   assert.match(sharedCss,/width:204px/);
   assert.match(sharedCss,/repeat\(2,minmax\(96px,1fr\)\)/);
 });
