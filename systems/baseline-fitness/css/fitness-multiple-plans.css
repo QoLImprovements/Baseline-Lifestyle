@@ -35,6 +35,11 @@
 #myPlanGeneratorWrap #specificDayControls label{display:inline-flex;align-items:center;gap:6px;min-width:0}
 #myPlanGeneratorWrap .bl-generator-settings-grid .bl-generator-mode-hidden{display:none!important}
 #myPlanGeneratorWrap .ex-field-progression-mode.bl-generator-mode-hidden{display:grid!important}
+/* The selected generator mode is authoritative. Disabled alternatives are not left visible as duplicate controls. */
+#myPlanGeneratorWrap .bl-generator-settings-grid .field-stack:has(#sessions:disabled),
+#myPlanGeneratorWrap .bl-generator-settings-grid .field-stack:has(#goalExercise:disabled),
+#myPlanGeneratorWrap .bl-generator-settings-grid .field-stack:has(#goalAmount:disabled),
+#myPlanGeneratorWrap .bl-generator-settings-grid .fitness-frequency-grid:has(#freq:disabled){display:none!important}
 
 #exerciseList{display:grid!important;gap:1rem!important}
 #myPlanGeneratorWrap .ex-row,[data-fitness-routine-panel="calisthenics"] .ex-row{
