@@ -1,20 +1,20 @@
-/* Baseline Fitness — canonical My Routine dependency loader v34.
+/* Baseline Fitness — canonical My Routine dependency loader v35.
 
    OWNERSHIP ORDER
    ---------------
    catalogue/family filter -> shared Routine system -> base Routine workspace ->
-   groups -> generator -> final live policy -> view structure -> Public View Only
-   -> shared v12 finisher.
+   Fitness Routine Log interactions -> groups -> generator -> final live policy ->
+   view structure -> Public View Only -> shared v12 finisher.
 
-   Generator owns the primary schedule controls and two-column generator layout.
-   Live policy owns only the optional weekly range, scheduling access and workout
-   progression. Dependencies execute strictly in this declared order so a partial
-   enhancement cannot expose duplicate native controls or the unenhanced shell.
+   The base workspace owns routine/activity state and rendering. The dedicated
+   Routine Log module owns Fitness-only log controls such as collapsible activity
+   details, the calendar Log Date mirror and reversible Calisthenics log removal.
+   Shared coherence must not recreate those Fitness-specific controls.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V34__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V34__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V35__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V35__ = true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -121,12 +121,13 @@
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260806_2',marker:'data-fitness-routine-workspace-v2' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260809_1',marker:'data-fitness-routine-log-v1' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260808_3',marker:'data-fitness-routine-groups-v2' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260809_5',marker:'data-fitness-live-policy-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260808_2',marker:'data-fitness-routine-structure-v4' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
-    { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_8',marker:'data-baseline-routine-coherence-v12' }
+    { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_9',marker:'data-baseline-routine-coherence-v12' }
   ])
     .then(() => { selectRoutinePage();restoreRequestedView(); })
     .catch((error) => { try { console.error('Fitness My Routine dependency load failed.',error); } catch (_error) {} });
