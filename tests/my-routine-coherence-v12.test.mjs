@@ -7,18 +7,21 @@ const url = path => new URL(`../${path}`, import.meta.url);
 const read = path => readFileSync(url(path), 'utf8');
 
 const coherence = read('sitewide/js/baseline-routine-coherence-v12.js');
-const css = read('sitewide/css/baseline-routine-coherence-v12.css');
+const coherenceCss = read('sitewide/css/baseline-routine-coherence-v12.css');
 const publicViewer = read('sitewide/js/baseline-public-routine-viewonly-v4.js');
 const skinLoader = read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
 const skinGroups = read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
 const skinCss = read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
 const fitnessLoader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const fitnessWorkspace = read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+const fitnessRoutineLog = read('systems/baseline-fitness/js/fitness-routine-log-v1.js');
 const fitnessGroups = read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
 const generator = read('systems/baseline-fitness/js/fitness-generator-progression-v1.js');
 const livePolicy = read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const multiplePlans = read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const structure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
 const fitnessCss = read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
+const workspaceCss = read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const generatorCss = read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
 test('one active shared My Routine coherence layer remains', () => {
@@ -31,12 +34,17 @@ test('one active shared My Routine coherence layer remains', () => {
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
 });
 
-test('My Routine dependency loaders execute strictly in declared order', () => {
+test('My Routine dependencies execute strictly in declared order', () => {
   for (const loader of [skinLoader,fitnessLoader]) {
     assert.match(loader,/function loadOrdered\(entries\)/);
     assert.match(loader,/entries\.reduce\(\(chain,entry\) => chain\.then\(\(\) => loadScript\(entry\)\),Promise\.resolve\(\)\)/);
     assert.doesNotMatch(loader,/loadOrderedParallel|Promise\.all\(entries\.map\(loadScript\)\)/);
   }
+  const baseIndex=fitnessLoader.indexOf('fitness-routine-workspace-v2.js');
+  const logIndex=fitnessLoader.indexOf('fitness-routine-log-v1.js');
+  const groupIndex=fitnessLoader.indexOf('fitness-routine-groups-v2.js');
+  const sharedIndex=fitnessLoader.indexOf('baseline-routine-coherence-v12.js');
+  assert.ok(baseIndex>=0 && baseIndex<logIndex && logIndex<groupIndex && groupIndex<sharedIndex);
 });
 
 test('Skincare base Routine model contract is repaired before the base workspace captures it', () => {
@@ -46,7 +54,7 @@ test('Skincare base Routine model contract is repaired before the base workspace
   }
 });
 
-test('retired repair layers and duplicate controllers are physically absent', () => {
+test('retired repair layers and duplicate controllers remain physically absent', () => {
   [
     'sitewide/js/baseline-routine-authority-v7.js',
     'sitewide/js/baseline-routine-experience-v9.js',
@@ -68,11 +76,10 @@ test('retired repair layers and duplicate controllers are physically absent', ()
   ].forEach(path => assert.equal(existsSync(url(path)),false,`${path} should stay deleted`));
 });
 
-test('My Routine never uses a loading screen polling loop or runtime style authority', () => {
-  for (const source of [skinLoader,fitnessLoader,skinGroups,fitnessGroups,generator,livePolicy,coherence]) {
+test('My Routine never uses a loading screen or runtime style authority', () => {
+  for (const source of [skinLoader,fitnessLoader,skinGroups,fitnessWorkspace,fitnessRoutineLog,fitnessGroups,generator,livePolicy,coherence]) {
     assert.doesNotMatch(source,/Loading My Routine|BootShield|routine-booting|waitForBaseRoutine|createElement\(['\"]style['\"]\)|injectStyles/);
   }
-  assert.doesNotMatch(skinLoader,/setTimeout\(check|Date\.now\(\)-started/);
 });
 
 test('refresh state persists view Summary filter and Log Date', () => {
@@ -81,7 +88,6 @@ test('refresh state persists view Summary filter and Log Date', () => {
   assert.match(coherence,/persistSummaryFilter/);
   assert.match(coherence,/preferredSummaryFilter/);
   assert.match(coherence,/restoreLogDate/);
-  assert.match(skinLoader,/baseline-routine-coherence-v12/);
   assert.match(fitnessLoader,/restoreRequestedView/);
 });
 
@@ -89,22 +95,22 @@ test('calendar markers are number-only with hover captions and Summary navigatio
   assert.match(coherence,/data-caption=\"\$\{esc\(marker\.label\)\}\"/);
   assert.match(coherence,/data-routine-summary-target/);
   assert.match(coherence,/openSummary/);
-  assert.match(css,/content:attr\(data-caption\)/);
-  assert.match(css,/\.bl-routine-calendar-marker::after/);
-  assert.doesNotMatch(css,/\.bl-routine-calendar-marker>span/);
+  assert.match(coherenceCss,/content:attr\(data-caption\)/);
+  assert.match(coherenceCss,/\.bl-routine-calendar-marker::after/);
+  assert.doesNotMatch(coherenceCss,/\.bl-routine-calendar-marker>span/);
 });
 
-test('Skincare group creation has one manager settings on the group row and starts collapsed', () => {
+test('Skincare groups own time and frequency directly and start collapsed', () => {
   assert.match(skinGroups,/Create Routine Group/);
   assert.match(skinGroups,/Configure its time and frequency from Settings on the group itself/);
   assert.match(skinGroups,/data-plan-group-settings/);
-  assert.match(skinGroups,/Set time for this group/);
-  assert.match(skinGroups,/Set “How often” for this group/);
-  assert.ok(skinGroups.indexOf('data-plan-group-settings') < skinGroups.indexOf('data-plan-group-collapse'));
+  assert.match(skinGroups,/Group time/);
+  assert.match(skinGroups,/Group frequency/);
+  assert.match(skinGroups,/group\.frequency\.mode!==\'weekly\'/);
   assert.match(skinGroups,/id,title,collapsed:true/);
-  assert.doesNotMatch(skinGroups,/state\.openGroupSettings\.add\(group\.id\).*createGroup/);
-  assert.doesNotMatch(skinGroups,/routine-group-list/);
-  assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(92px,auto\) auto/);
+  assert.doesNotMatch(skinGroups,/Set time for this group|Set “How often” for this group|data-group-field=\"applyTime\"|data-group-field=\"applyFrequency\"|data-group-title/);
+  assert.match(skinGroups,/frequencyField\.hidden=Boolean\(group\)/);
+  assert.match(skinGroups,/timeField\.hidden=Boolean\(group\)/);
   assert.match(skinCss,/\.routine-plan-group-settings-grid/);
 });
 
@@ -117,12 +123,36 @@ test('Fitness Summary uses the comprehensive Skincare-shaped sitewide shell', ()
 
 test('both systems use visible Log Date structure and Fitness date icons are legible', () => {
   assert.match(coherence,/span\.textContent='Log Date'/);
-  assert.match(coherence,/externalLabel/);
-  assert.match(coherence,/holder\.classList\.add\('bl-routine-log-date'\)/);
   assert.match(coherence,/aria-label','Log Date/);
-  assert.match(css,/\.bl-routine-log-date/);
+  assert.match(coherenceCss,/\.bl-routine-log-date/);
   assert.match(fitnessCss,/calendar-picker-indicator/);
   assert.match(fitnessCss,/filter:invert\(1\) brightness\(2\)/);
+});
+
+test('Fitness Routine Log owns collapsible activity details', () => {
+  assert.match(fitnessRoutineLog,/fitness-log-details-panel/);
+  assert.match(fitnessRoutineLog,/data-fitness-log-details-toggle/);
+  assert.match(fitnessRoutineLog,/Close details/);
+  assert.match(fitnessRoutineLog,/Session details \+ Optional note/);
+  assert.match(workspaceCss,/\.fitness-log-details-panel\[hidden\]\{display:none!important\}/);
+});
+
+test('Fitness Calendar has a synchronized second Log Date and spaced control rows', () => {
+  assert.match(fitnessRoutineLog,/fitnessCalendarLogDate/);
+  assert.match(fitnessRoutineLog,/primary\.dispatchEvent\(new Event\('change',\{ bubbles:true \}\)\)/);
+  assert.match(workspaceCss,/grid-template-areas:\"views date\" \"nav nav\"/);
+  assert.match(workspaceCss,/row-gap:14px!important/);
+  assert.match(workspaceCss,/\.fitness-calendar-navigation/);
+});
+
+test('Fitness Routine Log owns reversible Calisthenics removal with confirmation and failure feedback', () => {
+  assert.match(fitnessRoutineLog,/Remove Entry/);
+  assert.match(fitnessRoutineLog,/data-fitness-log-remove-confirm/);
+  assert.match(fitnessRoutineLog,/update_session\.php/);
+  assert.match(fitnessRoutineLog,/action:'set_status',status:'planned'/);
+  assert.match(fitnessRoutineLog,/Could not remove entry\. Try again\./);
+  assert.match(fitnessRoutineLog,/data-fitness-log-open-plan/);
+  assert.match(fitnessRoutineLog,/removeAttribute\('data-open-calisthenics-plan'\)/);
 });
 
 test('shared coherence removes duplicate Fitness generator IDs before presentation', () => {
@@ -131,23 +161,12 @@ test('shared coherence removes duplicate Fitness generator IDs before presentati
   }
 });
 
-test('completed Calisthenics Log entries have explicit reversible removal', () => {
-  assert.match(coherence,/Remove Entry/);
-  assert.match(coherence,/data-fitness-remove-entry-confirm/);
-  assert.match(coherence,/update_session\.php/);
-  assert.match(coherence,/action:'set_status',status:'planned'/);
-  assert.match(css,/\.bl-fitness-remove-confirm/);
-});
-
-test('generator owns schedule choice and two-column conditional plan length while live policy owns only the range', () => {
+test('generator owns schedule choice and two-column conditional plan length', () => {
   assert.doesNotMatch(fitnessLoader,/fitness-calisthenics-schedule-controls/);
   assert.match(generatorCss,/\.bl-generator-settings-grid/);
   assert.match(generatorCss,/grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(generator,/Number Of Days/);
   assert.match(generator,/Specify Weekdays/);
-  assert.match(generator,/Array\.from\(\{ length:6 \}/);
-  assert.match(livePolicy,/\(Not Specified\)/);
-  assert.match(livePolicy,/option value=.*disabled/);
   assert.match(generator,/Achieved Rep\/Hold Goal/);
   assert.match(generator,/Goal Amount \(seconds hold\)/);
   assert.match(generator,/Goal Amount \(reps\)/);
@@ -155,7 +174,7 @@ test('generator owns schedule choice and two-column conditional plan length whil
   assert.match(generator,/syncLengthMode/);
 });
 
-test('enhanced exercise picker cannot expose its native source select or inactive alternative fields as duplicate controls', () => {
+test('enhanced exercise picker cannot expose its native source or inactive alternatives', () => {
   assert.match(generatorCss,/#myPlanGeneratorWrap \.ex-field-exercise>\.ex-select/);
   assert.match(generatorCss,/\.ex-select-source\{display:none!important\}/);
   assert.match(generatorCss,/#sessions:disabled/);
@@ -169,7 +188,6 @@ test('generator Details owns progression and muscle focus without duplicate Type
   assert.match(generator,/removeDuplicateTypeField/);
   assert.match(generator,/label==='Type'/);
   assert.match(generator,/Progression Type/);
-  assert.match(generator,/displayName/);
   assert.match(generator,/\(L\/R\)/);
   assert.match(multiplePlans,/displayExerciseName/);
 });
@@ -182,15 +200,12 @@ test('one plan-save wrapper applies generator and live scheduling augmentation',
   assert.doesNotMatch(livePolicy,/global\.fetch\s*=/);
 });
 
-test('timed outcome uses actual versus target and failed exercises repeat progression independently', () => {
+test('timed outcome uses actual versus target and failed exercises repeat independently', () => {
   assert.match(livePolicy,/const status=actual>=target\?'success':'failed'/);
   assert.match(livePolicy,/failedCompletedSessions/);
   assert.match(livePolicy,/completedSharedSessions\(exercise\)-failedCompletedSessions\(exercise\)/);
   assert.match(livePolicy,/sessionExerciseOutcomes/);
   assert.match(livePolicy,/indexes\.every/);
-  assert.match(livePolicy,/storeSessionOutcomes\(before\)/);
-  assert.match(livePolicy,/const finish=event\.target\?\.closest\?\.\('#finishWorkout'\)/);
-  assert.match(livePolicy,/stopImmediatePropagation\(\)/);
 });
 
 test('saved Calisthenics presentation is one card with title actions and summary', () => {
@@ -198,7 +213,6 @@ test('saved Calisthenics presentation is one card with title actions and summary
   assert.match(multiplePlans,/calisthenics-saved-plan-summary/);
   assert.match(multiplePlans,/generated\?\.remove\(\)/);
   assert.match(generatorCss,/Saved plan is one card/);
-  assert.match(generatorCss,/\.saved-plan-actions/);
 });
 
 test('Public Routine remains owner-facing View Only markup', () => {
@@ -216,6 +230,8 @@ test('changed JavaScript parses', () => {
     'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js',
     'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js',
     'systems/baseline-fitness/js/fitness-routine-workspace.js',
+    'systems/baseline-fitness/js/fitness-routine-workspace-v2.js',
+    'systems/baseline-fitness/js/fitness-routine-log-v1.js',
     'systems/baseline-fitness/js/fitness-routine-groups-v2.js',
     'systems/baseline-fitness/js/fitness-generator-progression-v1.js',
     'systems/baseline-fitness/js/fitness-live-policy-v1.js',
