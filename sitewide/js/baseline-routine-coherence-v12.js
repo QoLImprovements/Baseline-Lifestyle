@@ -7,16 +7,7 @@
    - Public Routines are read-only My Routine views, not a second mini interface.
    - System renderers own their data and renderer-owned cards/fields.
    - System palette adapters own colour; this file never invents a palette.
-   - This file owns only genuinely shared live behaviour/state:
-       * one canonical control when a renderer accidentally duplicates an ID;
-       * persistent My Routine subview/filter/date state across refresh;
-       * shared Summary filtering and calendar -> Summary navigation;
-       * one group/plan marker identity per calendar day with hover captions;
-       * Skincare group completion;
-       * reversible Fitness activity completion and explicit Calisthenics log removal;
-       * compact visibility/frequency/log-date finishing where controls are shared.
-   - No loading screen, global scroll ownership, full-page renderer, style injector
-     or broad DOM re-parent pass belongs here.
+   - This file owns only genuinely shared live behaviour/state.
 */
 (function (global) {
   'use strict';
@@ -105,6 +96,10 @@
     const assignments={};
     Object.entries(value?.assignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
     return { groups,assignments };
+  }
+  function skinCatalogueActions() {
+    const actions=global.BASELINE_SKINCARE_ROUTINE_MODEL?.ACTIONS;
+    return Array.isArray(actions)?actions:[];
   }
   function fitnessState() {
     try { return global.BASELINE_fitnessRoutine?.getState?.() || { activities:[],logs:{} }; }
@@ -275,6 +270,19 @@
     setUrlValues({ 'routine-view':'summary','routine-filter':next==='all'?'':next });
   }
 
+  function removeDuplicateSkinSummarySelectors(summary,keep) {
+    const panel=summary?.closest?.('[data-routine-panel="summary"]');
+    if (!panel || !keep) return;
+    $$('select',panel).forEach((select) => {
+      if (select===keep) return;
+      const wrapper=select.closest('label,.bl-routine-summary-filter,.routine-summary-filter');
+      if (wrapper && wrapper!==keep.closest('label')) wrapper.remove();
+      else select.remove();
+    });
+    $$('.bl-routine-summary-filter',panel).forEach((wrapper) => {
+      if (!wrapper.contains(keep)) wrapper.remove();
+    });
+  }
   function skinSummaryFilter(root) {
     if (app!=='skin') return null;
     const summary=$('#routineSummary',root);
@@ -287,12 +295,23 @@
       summary.before(label);
       select=label.querySelector('select');
     }
+    removeDuplicateSkinSummarySelectors(summary,select);
     const state=skinState();
     const grouping=skinGroups();
-    const signature=JSON.stringify([grouping.groups.map((group) => [group.id,group.title]),state.items.map((item) => [item.id,item.title])]);
+    const ownedActionIds=new Set(state.items.map((item) => String(item.actionId || '')));
+    const individual=state.items.filter((item) => !grouping.assignments[item.id]);
+    const catalogue=skinCatalogueActions().filter((action) => action?.id && !ownedActionIds.has(String(action.id))).slice().sort((a,b) => String(a.title || '').localeCompare(String(b.title || ''),'en-GB',{ sensitivity:'base' }));
+    const signature=JSON.stringify([
+      grouping.groups.map((group) => [group.id,group.title]),
+      individual.map((item) => [item.id,item.title]),
+      catalogue.map((action) => [action.id,action.title])
+    ]);
     if (select.dataset.signature!==signature) {
       const old=String(select.value || preferredSummaryFilter() || 'all');
-      select.innerHTML=`<option value="all">All Routine Steps</option>${grouping.groups.length?`<optgroup label="Routine Groups">${grouping.groups.map((group) => `<option value="group:${esc(group.id)}">${esc(group.title)}</option>`).join('')}</optgroup>`:''}<optgroup label="Individual Routine Steps">${state.items.map((item) => `<option value="item:${esc(item.id)}">${esc(item.title || 'Routine Step')}</option>`).join('')}</optgroup>`;
+      const groupOptions=grouping.groups.map((group) => `<option value="group:${esc(group.id)}">${esc(group.title)}</option>`).join('');
+      const individualOptions=individual.map((item) => `<option value="item:${esc(item.id)}">${esc(item.title || 'Routine Step')}</option>`).join('');
+      const catalogueOptions=catalogue.map((action) => `<option value="catalogue:${esc(action.id)}">${esc(action.title || 'Routine Step')}</option>`).join('');
+      select.innerHTML=`<option value="all">All My Routine Steps</option>${groupOptions?`<optgroup label="Routine Groups">${groupOptions}</optgroup>`:''}${individualOptions?`<optgroup label="Individual Routine Steps">${individualOptions}</optgroup>`:''}${catalogueOptions?`<optgroup label="All Routine Steps Not In My Routine">${catalogueOptions}</optgroup>`:''}`;
       select.dataset.signature=signature;
       select.value=Array.from(select.options).some((option) => option.value===old)?old:'all';
     }
@@ -301,6 +320,18 @@
   function normalTitle(value) {
     return String(value || '').replace(/^\s*\d+\.?\s*/,'').trim().toLocaleLowerCase('en-GB');
   }
+  function renderSkinCatalogueSummary(summary,action) {
+    let preview=summary.querySelector(':scope>.bl-routine-summary-catalogue');
+    if (!action) { preview?.remove();return; }
+    if (!preview) {
+      preview=document.createElement('section');
+      preview.className='routine-summary-group bl-routine-group bl-routine-summary-catalogue';
+      summary.appendChild(preview);
+    }
+    const model=global.BASELINE_SKINCARE_ROUTINE_MODEL;
+    const benefit=model?.benefitText?.(action,'comprehensive') || action.benefitComprehensive || action.benefit || '';
+    preview.innerHTML=`<div class="routine-summary-group-head"><h3>${esc(action.title || 'Routine Step')}</h3></div><article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>+</span><strong>${esc(action.title || 'Routine Step')}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4><dl><div><dt>Status</dt><dd>Not in My Routine</dd></div><div><dt>Routine category</dt><dd>${esc(action.group || 'Other')}</dd></div></dl></section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(benefit)}</p></section></div></article>`;
+  }
   function applySkinSummary(root) {
     const select=skinSummaryFilter(root);
     const summary=$('#routineSummary',root);
@@ -308,16 +339,18 @@
     const value=String(select.value || 'all');
     const state=skinState();
     const grouping=skinGroups();
+    const catalogueId=value.startsWith('catalogue:')?value.slice(10):'';
+    const catalogueAction=catalogueId?skinCatalogueActions().find((action) => String(action.id)===catalogueId):null;
+    renderSkinCatalogueSummary(summary,catalogueAction || null);
     const itemId=value.startsWith('item:')?value.slice(5):'';
     const item=itemId?state.items.find((candidate) => String(candidate.id)===itemId):null;
-    const itemGroup=item?String(grouping.assignments[itemId] || ''):'';
-    $$('.routine-summary-group',summary).forEach((section) => {
+    $$('.routine-summary-group:not(.bl-routine-summary-catalogue)',summary).forEach((section) => {
+      const stableId=String(section.dataset.summaryGroup || '');
       const heading=normalTitle(section.querySelector('h3')?.textContent);
-      const group=grouping.groups.find((candidate) => normalTitle(candidate.title)===heading);
-      const groupId=String(group?.id || '');
       let visible=value==='all';
-      if (value.startsWith('group:')) visible=groupId===value.slice(6);
-      if (item) visible=itemGroup?groupId===itemGroup:['individual routine steps','ungrouped routine actions'].includes(heading);
+      if (value.startsWith('group:')) visible=stableId===value.slice(6);
+      if (item) visible=stableId==='individual' || (!stableId && ['individual routine steps','ungrouped routine actions'].includes(heading));
+      if (catalogueAction) visible=false;
       section.hidden=!visible;
       $$('.routine-summary-item',section).forEach((card) => {
         if (!item) { card.hidden=!visible;return; }
@@ -659,7 +692,7 @@
     if (!target) return false;
     if (!target.closest?.('#routineCalendarGrid,#fitnessCalendarGrid,#routineLogItems,#fitnessRoutineLogItems,#routineSummary,#fitnessExerciseSummary,[data-routine-panel="public"],[data-fitness-routine-panel="public"],#myPlanGeneratorWrap,#myPlanSavedWrap')) return false;
     const changed=Array.from(mutation.addedNodes || []).concat(Array.from(mutation.removedNodes || []));
-    return changed.some((node) => node?.nodeType===1 && !node.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-routine-entry-actions,.bl-fitness-remove-confirm'));
+    return changed.some((node) => node?.nodeType===1 && !node.matches?.('.bl-routine-calendar-markers,.bl-routine-group-complete,.bl-routine-preserved-log,.bl-routine-entry-actions,.bl-fitness-remove-confirm,.bl-routine-summary-catalogue'));
   }
   function observe(root) {
     if (typeof MutationObserver==='undefined') return;
