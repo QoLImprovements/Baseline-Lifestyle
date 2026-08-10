@@ -1,18 +1,28 @@
-/* Baseline Fitness — canonical My Routine structure adapter v5.
+/* Baseline Fitness — canonical My Routine structure adapter v6.
 
    OWNERSHIP CONTRACT
    ------------------
    The base Fitness workspace owns activity/log data. fitness-multiple-plans.js
    owns saved Calisthenics plans. This adapter owns only the four-view My Routine
-   shell, Plan subtabs, Public visibility/profile controls and canonical URL state.
+   shell, Plan subtabs, Public visibility/profile controls and canonical clean
+   path routing.
 
    Fitness Routine Summary contents and filtering belong exclusively to
    fitness-routine-summary-v2.js. No Summary renderer/filter is allowed here.
+
+   ROUTING CONTRACT
+   ----------------
+   Public URLs describe pages, not implementation state:
+   /baseline-fitness/my-routine/log
+   /baseline-fitness/my-routine/summary
+   /baseline-fitness/my-routine/plan[/calisthenics|cardio|other|sports]
+   /baseline-fitness/my-routine/public
+   Summary filters and Log Dates remain session-side and never pollute the URL.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V5__) return;
-  global.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V5__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V6__) return;
+  global.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V6__ = true;
 
   const document=global.document;
   const UI=global.BASELINE_RoutineSystem;
@@ -20,6 +30,7 @@
 
   const VIEW_KEY='__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
+  const ROUTE_BASE='/baseline-fitness/my-routine';
   const TOP_VIEWS=Object.freeze(['log','summary','plan','public']);
   const PLAN_VIEWS=Object.freeze(['calisthenics','cardio','other','sports']);
   const ROUTINE_API='/systems/baseline-fitness/api/routine_state.php';
@@ -38,7 +49,19 @@
   function directPanels(shell) {
     return Array.from(shell?.children || []).filter((child)=>child.classList?.contains('fitness-routine-panel'));
   }
+  function routeFromPath() {
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    let match=path.match(/^\/baseline-fitness\/my-routine\/(log|summary|public)$/i);
+    if (match) return { view:String(match[1]).toLowerCase(),plan:'calisthenics',clean:true };
+    match=path.match(/^\/baseline-fitness\/my-routine\/plan(?:\/(calisthenics|cardio|other|sports))?$/i);
+    if (match) return { view:'plan',plan:String(match[1] || 'calisthenics').toLowerCase(),clean:true };
+    if (/^\/baseline-fitness\/my-routine$/i.test(path)) return { view:'log',plan:'calisthenics',clean:false };
+    if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:'calisthenics',clean:false };
+    return null;
+  }
   function currentRoute() {
+    const pathRoute=routeFromPath();
+    if (pathRoute) return pathRoute;
     let view='';let plan='';
     try {
       const url=new URL(global.location.href);
@@ -53,16 +76,19 @@
       try { plan=String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || ''); } catch (_error) { plan=''; }
     }
     if (!PLAN_VIEWS.includes(plan)) plan='calisthenics';
-    return { view,plan };
+    return { view,plan,clean:false };
+  }
+  function cleanPath(view=activeView,plan=activePlanView) {
+    if (view==='plan') return `${ROUTE_BASE}/plan/${PLAN_VIEWS.includes(plan)?plan:'calisthenics'}`;
+    return `${ROUTE_BASE}/${TOP_VIEWS.includes(view)?view:'log'}`;
   }
   function writeRoute() {
     try {
       const url=new URL(global.location.href);
-      url.searchParams.set('routine-view',activeView);
-      if (activeView==='plan') url.searchParams.set('routine-plan',activePlanView);
-      else url.searchParams.delete('routine-plan');
-      if (activeView!=='summary') url.searchParams.delete('routine-filter');
-      global.history.replaceState(global.history.state,'',url.pathname+url.search+url.hash);
+      url.pathname=cleanPath();
+      ['routine-view','routine-plan','routine-filter','routine-date','new-plan'].forEach((key)=>url.searchParams.delete(key));
+      url.hash='';
+      global.history.replaceState(global.history.state,'',url.pathname+url.search);
     } catch (_error) {}
   }
 
@@ -190,7 +216,7 @@
     const publicPanel=ensurePublicPanel(shell,planPanel);
     [logPanel,summaryPanel,planPanel,publicPanel].forEach((panel)=>shell.appendChild(panel));
     UI.applyTemplate?.($('#my-plan'));
-    shell.dataset.fitnessRoutineStructure='v5';
+    shell.dataset.fitnessRoutineStructure='v6';
     return true;
   }
 
@@ -280,9 +306,9 @@
 
   function wrapRoutineApi() {
     const api=global.BASELINE_fitnessRoutine;
-    if (!api || api.__baselineRoutineStructureV5) return;
+    if (!api || api.__baselineRoutineStructureV6) return;
     global.BASELINE_fitnessRoutine=Object.freeze(Object.assign({},api,{
-      __baselineRoutineStructureV5:true,
+      __baselineRoutineStructureV6:true,
       getState() {
         const state=api.getState?.() || {};
         return Object.assign({},state,{ activeView,planView:activePlanView });
@@ -305,24 +331,42 @@
       }
       const plan=event.target?.closest?.('[data-fitness-plan-view]');
       if (plan) {
-        event.preventDefault();event.stopPropagation();activeView='plan';activateTopView('plan',true);activatePlanView(plan.dataset.fitnessPlanView,true);
+        event.preventDefault();event.stopPropagation();activeView='plan';activateTopView('plan',false);activatePlanView(plan.dataset.fitnessPlanView,true);return;
+      }
+      if (event.target?.closest?.('#fitnessViewPublicRoutine')) {
+        const name=String($('#fitnessPublicRoutineName')?.value || '').trim();
+        if (name) global.BASELINE_publicRoutineView?.render?.('fitness',name,$('#fitnessPublicRoutineResult'));
       }
     },true);
     root.addEventListener('change',(event)=>{
       if (event.target?.id==='fitnessRoutineVisibility') saveVisibility(event.target.value);
+      if (event.target?.id==='fitnessPublicRoutineName') {
+        const name=String(event.target.value || '').trim();
+        const target=$('#fitnessPublicRoutineResult');
+        if (target && !name) target.innerHTML='';
+      }
     });
-    global.addEventListener('popstate',restoreRoute);
+    global.addEventListener('popstate',()=>{
+      const route=currentRoute();activeView=route.view;activePlanView=route.plan;
+      activateTopView(activeView,false);if (activeView==='plan') activatePlanView(activePlanView,false);
+    });
   }
 
   function boot() {
-    if (!rebuildStructure()) {
-      try { console.error('Fitness My Routine structure could not find its ordered workspace dependency.'); } catch (_error) {}
-      return;
-    }
+    const route=currentRoute();
+    activeView=route.view;
+    activePlanView=route.plan;
+    if (!rebuildStructure()) return;
     bindEvents();
     wrapRoutineApi();
-    restoreRoute();
-    document.documentElement.setAttribute('data-fitness-routine-structure','v5');
+    try {
+      global.sessionStorage?.setItem(VIEW_KEY,activeView);
+      global.sessionStorage?.setItem(PLAN_VIEW_KEY,activePlanView);
+    } catch (_error) {}
+    activateTopView(activeView,false);
+    if (activeView==='plan') activatePlanView(activePlanView,false);
+    writeRoute();
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-structure-ready',{ detail:{ view:activeView,planView:activePlanView } })); } catch (_error) {}
   }
 
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
