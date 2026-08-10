@@ -1,9 +1,11 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v33.
+/* Baseline Natural Skincare — deterministic My Routine loader v34.
 
    PERFORMANCE / OWNERSHIP CONTRACT
    --------------------------------
    - No loading screen and no hidden/placeholder My Routine page.
-   - Base Skincare owns data and native controls.
+   - A clean My Routine route selects the outer Routine section synchronously,
+     before DOMContentLoaded and before the base workspace performs async loading.
+   - Base Skincare owns data, subview routing and native controls.
    - skincare-routine-sitewide-v5.js is the single Skincare grouping/calendar owner.
    - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
    - baseline-routine-coherence-v12.js is the sole shared behaviour/state finisher.
@@ -12,11 +14,63 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V33__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V33__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V34__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V34__ = true;
   const document = global.document;
+  const ROUTE_BASE='/baseline-natural-skincare/my-routine';
+  const VIEW_KEY='__bl_skincare_routine_view__';
+  const VIEWS=['log','summary','plan','public'];
   let recipeOptionObserver = null;
   let started = false;
+
+  function requestedRoutineView() {
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    const clean=path.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);
+    if (clean) return String(clean[1]).toLowerCase();
+    if (/^\/baseline-natural-skincare\/my-routine$/i.test(path)) return 'log';
+    try {
+      const url=new URL(global.location.href);
+      const legacy=String(url.searchParams.get('routine-view') || '');
+      if (VIEWS.includes(legacy)) return legacy;
+      if (String(url.hash || '').toLowerCase()==='#tab=routine') {
+        const saved=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
+        return VIEWS.includes(saved)?saved:'log';
+      }
+    } catch (_error) {}
+    return '';
+  }
+  function bootstrapCleanRoute() {
+    const view=requestedRoutineView();
+    if (!view) return;
+    try { global.sessionStorage?.setItem(VIEW_KEY,view); } catch (_error) {}
+    document.documentElement.setAttribute('data-initial-skincare-tab','routine');
+    document.documentElement.setAttribute('data-initial-routine-view',view);
+    try { global.BASELINE_selectTab?.('routine',{ silentHistory:true }); } catch (_error) {}
+    document.querySelectorAll('.tab[data-target]').forEach((button)=>{
+      const selected=button.dataset.target==='routine';
+      button.classList.toggle('active',selected);
+      button.setAttribute('aria-selected',selected?'true':'false');
+    });
+    const routine=document.getElementById('routine');
+    if (routine) { routine.hidden=false;routine.classList.add('active'); }
+    document.querySelectorAll('main.wrap>.section').forEach((section)=>{ if (section!==routine) section.classList.remove('active'); });
+    try {
+      const url=new URL(global.location.href);
+      const desired=`${ROUTE_BASE}/${view}`;
+      const legacy=url.searchParams.has('routine-view') || url.searchParams.has('routine-plan') || url.searchParams.has('routine-filter') || url.searchParams.has('routine-date') || Boolean(url.hash);
+      if (url.pathname!==desired || legacy) {
+        url.pathname=desired;
+        ['routine-view','routine-plan','routine-filter','routine-date'].forEach((key)=>url.searchParams.delete(key));
+        url.hash='';
+        global.history.replaceState(global.history.state,'',url.pathname+url.search);
+      }
+    } catch (_error) {}
+  }
+
+  /* This script is parser-loaded at the end of the Skincare document, before
+     skincare-routine.js. Route selection therefore happens synchronously in the
+     same parser task and cannot wait for account/routine network requests. */
+  bootstrapCleanRoute();
 
   function ensureRoutineModelContract() {
     const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
@@ -51,7 +105,7 @@
     };
     const normaliseTime = (value) => (base.TIMES || []).some((entry) => entry.value===value) ? value : 'anytime';
     const normaliseShavingMethod = (value) => shavingMethods.some((entry) => entry.value===value) ? value : 'wet-cartridge';
-    const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
+    const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;' }[character]));
     const createItem = (actionId) => {
       const definition=actionById(actionId) || actionById('custom') || actions[0];
       const id=global.crypto?.randomUUID ? `routine-${global.crypto.randomUUID()}` : `routine-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
@@ -214,7 +268,7 @@
       { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
       { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_5',marker:'data-skincare-routine-sitewide-v5' },
       { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
-      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260809_10',marker:'data-baseline-routine-coherence-v12' }
+      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260810_2',marker:'data-baseline-routine-coherence-v12' }
     ])
       .then(bindRecipeOptionNormaliser)
       .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
