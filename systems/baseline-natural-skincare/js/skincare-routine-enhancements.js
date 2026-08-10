@@ -75,7 +75,7 @@
       }
     } catch (_error) {}
   }
-  function bootstrapRoute() {
+  function bootstrapCleanRoute() {
     const view=requestedRoutineView();
     if (!view) return;
     selectOuterRoutine(view);
@@ -84,7 +84,7 @@
 
   /* Parser-loaded immediately before skincare-routine.js. This executes in the
      same parser task, before DOMContentLoaded and before routine_state.php waits. */
-  bootstrapRoute();
+  bootstrapCleanRoute();
 
   function ensureRoutineModelContract() {
     const base=global.BASELINE_SKINCARE_ROUTINE_MODEL;
