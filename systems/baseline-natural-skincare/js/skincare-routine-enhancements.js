@@ -1,51 +1,56 @@
-/* Baseline Natural Skincare — deterministic My Routine loader v34.
+/* Baseline Natural Skincare — canonical My Routine bootstrap v35.
 
-   PERFORMANCE / OWNERSHIP CONTRACT
-   --------------------------------
-   - No loading screen and no hidden/placeholder My Routine page.
-   - A clean My Routine route selects the outer Routine section synchronously,
-     before DOMContentLoaded and before the base workspace performs async loading.
-   - Base Skincare owns data, subview routing and native controls.
-   - skincare-routine-sitewide-v5.js is the single Skincare grouping/calendar owner.
-   - baseline-public-routine-viewonly-v4.js renders Public Routines as View Only My Routine.
-   - baseline-routine-coherence-v12.js is the sole shared behaviour/state finisher.
-   - No boot polling: parser-loaded prerequisites are available by DOMContentLoaded.
-   - Runtime dependencies execute strictly in declared dependency order.
+   OWNERSHIP / BOOT CONTRACT
+   -------------------------
+   1. Resolve the requested clean My Routine page synchronously.
+   2. Select the outer My Routine section before asynchronous routine/account work.
+   3. Repair only the small compatibility surface expected by the base workspace.
+   4. Load the remaining My Routine owners strictly in dependency order.
+
+   No loading screen, polling loop, route-after-render correction or competing
+   Summary/Plan renderer belongs in this file.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_LOADER_V34__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_LOADER_V34__ = true;
-  const document = global.document;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_BOOTSTRAP_V35__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_BOOTSTRAP_V35__=true;
+
+  const document=global.document;
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
   const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
-  let recipeOptionObserver = null;
-  let started = false;
+  let recipeObserver=null;
+  let started=false;
 
+  function sessionView() {
+    try {
+      const value=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
+      return VIEWS.includes(value)?value:'';
+    } catch (_error) { return ''; }
+  }
   function requestedRoutineView() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
     const clean=path.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);
     if (clean) return String(clean[1]).toLowerCase();
-    if (/^\/baseline-natural-skincare\/my-routine$/i.test(path)) return 'log';
+
     try {
       const url=new URL(global.location.href);
       const legacy=String(url.searchParams.get('routine-view') || '');
       if (VIEWS.includes(legacy)) return legacy;
-      if (String(url.hash || '').toLowerCase()==='#tab=routine') {
-        const saved=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
-        return VIEWS.includes(saved)?saved:'log';
-      }
     } catch (_error) {}
+
+    /* A bare /my-routine URL is a migration path, not a forced Log route.
+       Preserve the user's already-selected subview once, then canonicalise it. */
+    if (/^\/baseline-natural-skincare\/my-routine$/i.test(path)) return sessionView() || 'log';
+    if (String(global.location?.hash || '').toLowerCase()==='#tab=routine') return sessionView() || 'log';
     return '';
   }
-  function bootstrapCleanRoute() {
-    const view=requestedRoutineView();
-    if (!view) return;
+  function selectOuterRoutine(view) {
     try { global.sessionStorage?.setItem(VIEW_KEY,view); } catch (_error) {}
     document.documentElement.setAttribute('data-initial-skincare-tab','routine');
     document.documentElement.setAttribute('data-initial-routine-view',view);
     try { global.BASELINE_selectTab?.('routine',{ silentHistory:true }); } catch (_error) {}
+
     document.querySelectorAll('.tab[data-target]').forEach((button)=>{
       const selected=button.dataset.target==='routine';
       button.classList.toggle('active',selected);
@@ -53,11 +58,15 @@
     });
     const routine=document.getElementById('routine');
     if (routine) { routine.hidden=false;routine.classList.add('active'); }
-    document.querySelectorAll('main.wrap>.section').forEach((section)=>{ if (section!==routine) section.classList.remove('active'); });
+    document.querySelectorAll('main.wrap>.section').forEach((section)=>{
+      if (section!==routine) section.classList.remove('active');
+    });
+  }
+  function canonicaliseRoute(view) {
     try {
       const url=new URL(global.location.href);
       const desired=`${ROUTE_BASE}/${view}`;
-      const legacy=url.searchParams.has('routine-view') || url.searchParams.has('routine-plan') || url.searchParams.has('routine-filter') || url.searchParams.has('routine-date') || Boolean(url.hash);
+      const legacy=['routine-view','routine-plan','routine-filter','routine-date'].some((key)=>url.searchParams.has(key)) || Boolean(url.hash);
       if (url.pathname!==desired || legacy) {
         url.pathname=desired;
         ['routine-view','routine-plan','routine-filter','routine-date'].forEach((key)=>url.searchParams.delete(key));
@@ -66,126 +75,121 @@
       }
     } catch (_error) {}
   }
+  function bootstrapRoute() {
+    const view=requestedRoutineView();
+    if (!view) return;
+    selectOuterRoutine(view);
+    canonicaliseRoute(view);
+  }
 
-  /* This script is parser-loaded at the end of the Skincare document, before
-     skincare-routine.js. Route selection therefore happens synchronously in the
-     same parser task and cannot wait for account/routine network requests. */
-  bootstrapCleanRoute();
+  /* Parser-loaded immediately before skincare-routine.js. This executes in the
+     same parser task, before DOMContentLoaded and before routine_state.php waits. */
+  bootstrapRoute();
 
   function ensureRoutineModelContract() {
-    const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
+    const base=global.BASELINE_SKINCARE_ROUTINE_MODEL;
     if (!base || base.__baselineRoutineContractV3) return;
-    const shavingIds = Object.freeze(['shave','electric-shave','beard-trim','nose-ear-hair-trim']);
-    const shavingMethods = Object.freeze(Array.from(base.SHAVING_METHODS || []));
-    const actions = Array.from(base.ACTIONS || []);
-    const groups = Array.from(base.GROUPS || []);
-    const actionById = (value) => base.ACTION_BY_ID?.get?.(String(value || '')) || actions.find((item) => String(item?.id || '') === String(value || '')) || null;
-    const actionGroups = Object.freeze(groups.map((entry) => {
-      const label = typeof entry === 'string' ? entry : String(entry?.label || entry?.name || '');
-      return Object.freeze({ label,ids:Object.freeze(actions.filter((action) => String(action?.group || '') === label).map((action) => String(action.id))) });
-    }).filter((entry) => entry.label && entry.ids.length));
-    const cleanText = (value,maximum=1200) => String(value == null ? '' : value).trim().slice(0,Math.max(0,Number(maximum) || 0));
-    const localDate = (value) => {
+
+    const actions=Array.from(base.ACTIONS || []);
+    const groups=Array.from(base.GROUPS || []);
+    const shavingIds=Object.freeze(['shave','electric-shave','beard-trim','nose-ear-hair-trim']);
+    const shavingMethods=Object.freeze(Array.from(base.SHAVING_METHODS || []));
+    const actionById=(value)=>base.ACTION_BY_ID?.get?.(String(value || '')) || actions.find((item)=>String(item?.id || '')===String(value || '')) || null;
+    const actionGroups=Object.freeze(groups.map((entry)=>{
+      const label=typeof entry==='string'?entry:String(entry?.label || entry?.name || '');
+      return Object.freeze({ label,ids:Object.freeze(actions.filter((action)=>String(action?.group || '')===label).map((action)=>String(action.id))) });
+    }).filter((entry)=>entry.label && entry.ids.length));
+    const cleanText=(value,maximum=1200)=>String(value==null?'':value).trim().slice(0,Math.max(0,Number(maximum)||0));
+    const localDate=(value)=>{
       if (value instanceof Date) return new Date(value.getFullYear(),value.getMonth(),value.getDate());
       const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));
       if (match) return new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
       const parsed=new Date(value || Date.now());
-      return Number.isNaN(parsed.getTime()) ? new Date() : new Date(parsed.getFullYear(),parsed.getMonth(),parsed.getDate());
+      return Number.isNaN(parsed.getTime())?new Date():new Date(parsed.getFullYear(),parsed.getMonth(),parsed.getDate());
     };
-    const todayIso = () => base.isoDate(new Date());
-    const isFutureDate = (value) => base.isoDate(value) > todayIso();
-    const clampLogDate = (value) => {
+    const todayIso=()=>base.isoDate(new Date());
+    const isFutureDate=(value)=>base.isoDate(value)>todayIso();
+    const clampLogDate=(value)=>{
       const next=base.isoDate(value || new Date());
-      return next > todayIso() ? todayIso() : next;
+      return next>todayIso()?todayIso():next;
     };
-    const configureLogDateInput = (input,value) => {
+    const configureLogDateInput=(input,value)=>{
       const next=clampLogDate(value || input?.value || todayIso());
       if (input) { input.max=todayIso();input.value=next; }
       return next;
     };
-    const normaliseTime = (value) => (base.TIMES || []).some((entry) => entry.value===value) ? value : 'anytime';
-    const normaliseShavingMethod = (value) => shavingMethods.some((entry) => entry.value===value) ? value : 'wet-cartridge';
-    const escapeHtml = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;' }[character]));
-    const createItem = (actionId) => {
+    const normaliseTime=(value)=>(base.TIMES || []).some((entry)=>entry.value===value)?value:'anytime';
+    const normaliseShavingMethod=(value)=>shavingMethods.some((entry)=>entry.value===value)?value:'wet-cartridge';
+    const escapeHtml=(value)=>String(value==null?'':value).replace(/[&<>"']/g,(character)=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[character]));
+    const createItem=(actionId)=>{
       const definition=actionById(actionId) || actionById('custom') || actions[0];
-      const id=global.crypto?.randomUUID ? `routine-${global.crypto.randomUUID()}` : `routine-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
+      const id=global.crypto?.randomUUID?`routine-${global.crypto.randomUUID()}`:`routine-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
       return base.normaliseItem({ id,actionId:definition?.id || 'custom',title:definition?.title || 'Self-Care Action' });
     };
-    global.BASELINE_SKINCARE_ROUTINE_MODEL = Object.freeze(Object.assign({},base,{
+
+    global.BASELINE_SKINCARE_ROUTINE_MODEL=Object.freeze(Object.assign({},base,{
       __baselineRoutineContractV3:true,
       TIME_OPTIONS:base.TIMES || [],
       FREQUENCY_OPTIONS:base.FREQUENCIES || [],
       SHAVING_ACTION_IDS:shavingIds,
       SHAVING_METHOD_OPTIONS:shavingMethods,
       ACTION_GROUPS:actionGroups,
-      actionById,
-      cleanText,
-      escapeHtml,
-      localDate,
-      todayIso,
-      isFutureDate,
-      clampLogDate,
-      configureLogDateInput,
-      normaliseTime,
-      normaliseShavingMethod,
-      createItem
+      actionById,cleanText,escapeHtml,localDate,todayIso,isFutureDate,clampLogDate,
+      configureLogDateInput,normaliseTime,normaliseShavingMethod,createItem
     }));
   }
-
   ensureRoutineModelContract();
 
   function exposeAllBaselineRecipes() {
-    const base = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
+    const base=global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
     if (!base || base.__baselineAllRecipesV2) return;
-    const escape = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({
+    const escape=(value)=>String(value==null?'':value).replace(/[&<>"']/g,(character)=>({
       '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[character]));
     function allRecipes() {
-      const seen = new Set();
-      return Array.from(document.querySelectorAll('#recipes .recipe-page,#recipes [data-recipe-slug]')).map((card,index) => {
-        const title = String(card.querySelector('h3,h2')?.textContent || '').trim();
-        const id = String(card.id || card.dataset.recipeSlug || `recipe-${index + 1}`).trim();
+      const seen=new Set();
+      return Array.from(document.querySelectorAll('#recipes .recipe-page,#recipes [data-recipe-slug]')).map((card,index)=>{
+        const title=String(card.querySelector('h3,h2')?.textContent || '').trim();
+        const id=String(card.id || card.dataset.recipeSlug || `recipe-${index+1}`).trim();
         if (!id || !title || seen.has(id)) return null;
-        seen.add(id);
-        return { id,title };
-      }).filter(Boolean).sort((a,b) => a.title.localeCompare(b.title,'en-GB',{ sensitivity:'base' }));
+        seen.add(id);return { id,title };
+      }).filter(Boolean).sort((a,b)=>a.title.localeCompare(b.title,'en-GB',{ sensitivity:'base' }));
     }
     function selectionDetails(value,actionId) {
-      const selected = String(value || '');
+      const selected=String(value || '');
       if (selected.startsWith('recipe:')) {
-        const recipe = allRecipes().find((item) => item.id === selected.slice(7));
-        return recipe ? { source:'recipe',name:recipe.title } : { source:'recipe',name:'' };
+        const recipe=allRecipes().find((item)=>item.id===selected.slice(7));
+        return recipe?{ source:'recipe',name:recipe.title }:{ source:'recipe',name:'' };
       }
       return base.selectionDetails(value,actionId);
     }
     function optionsHtml(actionId,selected='') {
-      const recipes = allRecipes();
-      const products = base.relevantProducts(actionId);
-      const recipeOptions = recipes.map((item) => `<option value="recipe:${escape(item.id)}"${selected === `recipe:${item.id}` ? ' selected' : ''}>${escape(item.title)}</option>`).join('');
-      const productOptions = products.map((item) => `<option value="product:${escape(item.id)}"${selected === `product:${item.id}` ? ' selected' : ''}>${escape(item.brand)} — ${escape(item.name)}</option>`).join('');
-      return `<option value="">No product selected</option><optgroup label="Baseline Skincare Recipes">${recipeOptions}</optgroup><optgroup label="UK Product Library">${productOptions}</optgroup><optgroup label="Other"><option value="custom"${selected === 'custom' ? ' selected' : ''}>Custom product…</option></optgroup>`;
+      const recipes=allRecipes();
+      const products=base.relevantProducts(actionId);
+      const recipeOptions=recipes.map((item)=>`<option value="recipe:${escape(item.id)}"${selected===`recipe:${item.id}`?' selected':''}>${escape(item.title)}</option>`).join('');
+      const productOptions=products.map((item)=>`<option value="product:${escape(item.id)}"${selected===`product:${item.id}`?' selected':''}>${escape(item.brand)} — ${escape(item.name)}</option>`).join('');
+      return `<option value="">No product selected</option><optgroup label="Baseline Skincare Recipes">${recipeOptions}</optgroup><optgroup label="UK Product Library">${productOptions}</optgroup><optgroup label="Other"><option value="custom"${selected==='custom'?' selected':''}>Custom product…</option></optgroup>`;
     }
-    global.BASELINE_SKINCARE_PRODUCT_LIBRARY = Object.freeze(Object.assign({},base,{
-      __baselineAllRecipesV2:true,
-      recipeProducts:allRecipes,
-      selectionDetails,
-      optionsHtml
+    global.BASELINE_SKINCARE_PRODUCT_LIBRARY=Object.freeze(Object.assign({},base,{
+      __baselineAllRecipesV2:true,recipeProducts:allRecipes,selectionDetails,optionsHtml
     }));
   }
 
   function preserveCompletedLogDates() {
-    const base = global.BASELINE_SKINCARE_ROUTINE_MODEL;
+    const base=global.BASELINE_SKINCARE_ROUTINE_MODEL;
     if (!base || base.__baselineKeepCompletedDateV2) return;
-    const originalDueStatus = base.dueStatus?.bind(base);
-    if (typeof originalDueStatus !== 'function') return;
-    global.BASELINE_SKINCARE_ROUTINE_MODEL = Object.freeze(Object.assign({},base,{
+    const originalDueStatus=base.dueStatus?.bind(base);
+    if (typeof originalDueStatus!=='function') return;
+    global.BASELINE_SKINCARE_ROUTINE_MODEL=Object.freeze(Object.assign({},base,{
       __baselineKeepCompletedDateV2:true,
       dueStatus(itemValue,value,logs) {
-        const status = originalDueStatus(itemValue,value,logs);
+        const status=originalDueStatus(itemValue,value,logs);
         try {
-          const item = base.normaliseItem(itemValue);
-          const date = base.isoDate(value);
-          const entries = base.normaliseLogs(logs)?.[date] || {};
+          const item=base.normaliseItem(itemValue);
+          const date=base.isoDate(value);
+          const entries=base.normaliseLogs(logs)?.[date] || {};
           if (entries[item.id]?.completed) return Object.assign({},status,{ due:true,detail:'Completed on this date' });
         } catch (_error) {}
         return status;
@@ -194,70 +198,59 @@
   }
 
   function normaliseRecipeOptions() {
-    const library = global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
-    const recipes = typeof library?.recipeProducts === 'function' ? library.recipeProducts() : [];
+    const library=global.BASELINE_SKINCARE_PRODUCT_LIBRARY;
+    const recipes=typeof library?.recipeProducts==='function'?library.recipeProducts():[];
     if (!Array.isArray(recipes) || !recipes.length) return;
-    const signature = recipes.map((item) => `${item.id}:${item.title}`).join('|');
-    document.querySelectorAll('#routineItems [data-field="productSelection"]').forEach((select) => {
-      const selected = String(select.value || '');
-      let group = select.querySelector('optgroup[label="Baseline Skincare Recipes"],optgroup[label="My Recipes"]');
+    const signature=recipes.map((item)=>`${item.id}:${item.title}`).join('|');
+    document.querySelectorAll('#routineItems [data-field="productSelection"]').forEach((select)=>{
+      const selected=String(select.value || '');
+      let group=select.querySelector('optgroup[label="Baseline Skincare Recipes"],optgroup[label="My Recipes"]');
       if (!group) {
-        group = document.createElement('optgroup');
-        const firstGroup = select.querySelector('optgroup');
-        if (firstGroup) select.insertBefore(group,firstGroup); else select.appendChild(group);
+        group=document.createElement('optgroup');
+        const first=select.querySelector('optgroup');
+        if (first) select.insertBefore(group,first);else select.appendChild(group);
       }
-      group.label = 'Baseline Skincare Recipes';
-      if (group.dataset.recipeSignature !== signature) {
-        group.dataset.recipeSignature = signature;
-        group.replaceChildren(...recipes.map((item) => {
-          const option = document.createElement('option');
-          option.value = `recipe:${item.id}`;
-          option.textContent = item.title;
-          return option;
+      group.label='Baseline Skincare Recipes';
+      if (group.dataset.recipeSignature!==signature) {
+        group.dataset.recipeSignature=signature;
+        group.replaceChildren(...recipes.map((item)=>{
+          const option=document.createElement('option');option.value=`recipe:${item.id}`;option.textContent=item.title;return option;
         }));
       }
-      if (Array.from(select.options).some((option) => option.value === selected)) select.value = selected;
+      if (Array.from(select.options).some((option)=>option.value===selected)) select.value=selected;
     });
   }
-
   function bindRecipeOptionNormaliser() {
     normaliseRecipeOptions();
     document.addEventListener('baseline:routine-rendered',normaliseRecipeOptions);
-    const items = document.getElementById('routineItems');
-    if (items && typeof MutationObserver !== 'undefined') {
-      recipeOptionObserver?.disconnect();
-      recipeOptionObserver = new MutationObserver(() => global.requestAnimationFrame(normaliseRecipeOptions));
-      recipeOptionObserver.observe(items,{ childList:true,subtree:true });
+    const items=document.getElementById('routineItems');
+    if (items && typeof MutationObserver!=='undefined') {
+      recipeObserver?.disconnect();
+      recipeObserver=new MutationObserver(()=>global.requestAnimationFrame(normaliseRecipeOptions));
+      recipeObserver.observe(items,{ childList:true,subtree:true });
     }
   }
 
   function loadScript({ src,marker }) {
-    const existing = document.querySelector(`script[${marker}]`);
+    const existing=document.querySelector(`script[${marker}]`);
     if (existing) {
-      if (existing.dataset.loaded === 'true' || existing.readyState === 'complete') return Promise.resolve();
-      return new Promise((resolve,reject) => {
+      if (existing.dataset.loaded==='true' || existing.readyState==='complete') return Promise.resolve();
+      return new Promise((resolve,reject)=>{
         existing.addEventListener('load',resolve,{ once:true });
         existing.addEventListener('error',reject,{ once:true });
       });
     }
-    return new Promise((resolve,reject) => {
-      const script = document.createElement('script');
-      script.src = src;
-      script.async = false;
-      script.setAttribute(marker,'true');
-      script.addEventListener('load',() => { script.dataset.loaded='true';resolve(); },{ once:true });
-      script.addEventListener('error',reject,{ once:true });
-      document.head.appendChild(script);
+    return new Promise((resolve,reject)=>{
+      const script=document.createElement('script');script.src=src;script.async=false;script.setAttribute(marker,'true');
+      script.addEventListener('load',()=>{ script.dataset.loaded='true';resolve(); },{ once:true });
+      script.addEventListener('error',reject,{ once:true });document.head.appendChild(script);
     });
   }
-
   function loadOrdered(entries) {
-    return entries.reduce((chain,entry) => chain.then(() => loadScript(entry)),Promise.resolve());
+    return entries.reduce((chain,entry)=>chain.then(()=>loadScript(entry)),Promise.resolve());
   }
-
   function start() {
-    if (started) return;
-    started = true;
+    if (started) return;started=true;
     exposeAllBaselineRecipes();
     preserveCompletedLogDates();
     if (!global.BASELINE_SKINCARE_ROUTINE || !global.BASELINE_SKINCARE_ROUTINE_MODEL) {
@@ -269,12 +262,12 @@
       { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_5',marker:'data-skincare-routine-sitewide-v5' },
       { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
       { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260810_2',marker:'data-baseline-routine-coherence-v12' }
-    ])
-      .then(bindRecipeOptionNormaliser)
-      .catch((error) => { try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {} });
+    ]).then(bindRecipeOptionNormaliser).catch((error)=>{
+      try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
+    });
   }
 
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',start,{ once:true });
+  if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{ once:true });
   else start();
-  global.addEventListener('pagehide',() => recipeOptionObserver?.disconnect(),{ once:true });
-})(typeof window !== 'undefined' ? window : globalThis);
+  global.addEventListener('pagehide',()=>recipeObserver?.disconnect(),{ once:true });
+})(typeof window!=='undefined'?window:globalThis);
