@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — canonical My Routine data/workspace owner v2.
+/* Baseline Natural Skincare — canonical My Routine data/workspace owner v3.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -15,13 +15,17 @@
    Summary filters, Log Dates and other transient interface state remain in
    session storage. They are not public routing parameters.
 
+   This module is present on every Skincare page, but it owns navigation only
+   while the current location actually targets My Routine. It must never pull
+   System, Recipes, Ingredient Library or Skin Support into My Routine.
+
    It does NOT fetch or render another user's routine. Public routine content is
    owned exclusively by baseline-public-routine-viewonly-v4.js.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_V2__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_V2__=true;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_V3__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_V3__=true;
   global.__BASELINE_SKINCARE_ROUTINE__=true;
 
   const document=global.document;
@@ -53,6 +57,16 @@
   }
   function persistLocal() { writeLocal(); }
 
+  function locationTargetsRoutine() {
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    if (/^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/i.test(path)) return true;
+    try {
+      const url=new URL(global.location.href);
+      if (VIEWS.includes(String(url.searchParams.get('routine-view') || ''))) return true;
+      if (String(url.hash || '').toLowerCase()==='#tab=routine') return true;
+    } catch (_error) {}
+    return document.documentElement.getAttribute('data-initial-skincare-tab')==='routine';
+  }
   function routeViewFromLocation() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
     const clean=path.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);
@@ -162,6 +176,7 @@
     if (remember) writeViewRoute(next);
   }
   function restoreRoute() {
+    if (!locationTargetsRoutine()) return;
     const next=routeViewFromLocation();
     state.activeView=next;
     selectOuterRoutine();
@@ -268,6 +283,11 @@
   }
   function moveCalendar(direction) { const anchor=new Date(state.calendarAnchor);if (state.calendarView==='week') anchor.setDate(anchor.getDate()+(direction==='next'?7:-7));else anchor.setMonth(anchor.getMonth()+(direction==='next'?1:-1),1);state.calendarAnchor=anchor;renderCalendar(); }
 
+  function enterRoutineFromOuterTab() {
+    state.activeView=routeViewFromLocation();
+    selectOuterRoutine();
+    activateView(state.activeView,true);
+  }
   function bindEvents() {
     const root=$('#routine');if (!root || root.dataset.routineBound==='1') return;root.dataset.routineBound='1';
     root.addEventListener('click',(event)=>{
@@ -301,30 +321,37 @@
       if (event.target.id==='routineActionSearch' && event.key==='ArrowDown') { setActionPickerOpen(true);$('#routineActionMenu .routine-action-option')?.focus(); }
       if (event.key==='Escape' && !$('#routineActionMenu')?.hidden) { setActionPickerOpen(false);$('#routineActionSearch')?.focus(); }
     });
-    document.addEventListener('click',(event)=>{ if (!event.target.closest('.routine-action-combobox')) setActionPickerOpen(false); });
+    document.addEventListener('click',(event)=>{
+      if (!event.target.closest('.routine-action-combobox')) setActionPickerOpen(false);
+      if (event.target.closest('.tab[data-target="routine"]')) global.requestAnimationFrame(enterRoutineFromOuterTab);
+    });
     global.addEventListener('popstate',restoreRoute);
   }
 
   function renderAll() { renderPlan();renderSummary();renderLog();renderCalendar();renderPublicProfiles(); }
   async function init() {
-    /* Resolve and activate the requested page before the first asynchronous wait.
-       This is the key no-flicker rule: refresh must never paint Log/Plan first and
-       then replace it with the requested My Routine page. */
+    const routing=locationTargetsRoutine();
     state.activeView=routeViewFromLocation();
     try { global.sessionStorage?.setItem(VIEW_KEY,state.activeView); } catch (_error) {}
-    selectOuterRoutine();
+
     ensureShell();
     bindEvents();
-    activateView(state.activeView,false);
-    writeViewRoute(state.activeView);
+
+    /* On a My Routine route, activate the requested page before the first async
+       wait. On every other Skincare page, initialise the hidden workspace only. */
+    if (routing) {
+      selectOuterRoutine();
+      activateView(state.activeView,false);
+      writeViewRoute(state.activeView);
+    }
 
     await loadState();
 
     const visibility=$('#routineVisibility');if (visibility) visibility.value=state.visibility;
     renderAll();
-    activateView(state.activeView,false);
+    if (routing) activateView(state.activeView,false);
   }
-  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate }),selectView:activateView,refresh:renderAll });
+  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate }),selectView(view){ selectOuterRoutine();activateView(view,true); },refresh:renderAll });
   function boot() {
     init();
     try { global.BASELINE_auth?.onChange?.(()=>{ state.pendingRemoveId='';init(); }); } catch (_error) {}
