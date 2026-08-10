@@ -1,20 +1,27 @@
-/* Baseline Natural Skincare — canonical My Routine data/workspace owner.
+/* Baseline Natural Skincare — canonical My Routine data/workspace owner v2.
 
    OWNERSHIP CONTRACT
    ------------------
    This module owns the signed-in user's Skincare routine data, editable Plan,
    completion Log, base calendar, visibility setting, public-profile list and
-   canonical My Routine subview URL state.
+   canonical My Routine subview routing.
 
-   The outer Skincare page uses #tab=routine. My Routine's own view uses the
-   query parameter routine-view so Log/Summary/Plan/Public refresh in place.
+   Public My Routine URLs are clean page paths:
+   /baseline-natural-skincare/my-routine/log
+   /baseline-natural-skincare/my-routine/summary
+   /baseline-natural-skincare/my-routine/plan
+   /baseline-natural-skincare/my-routine/public
+
+   Summary filters, Log Dates and other transient interface state remain in
+   session storage. They are not public routing parameters.
 
    It does NOT fetch or render another user's routine. Public routine content is
    owned exclusively by baseline-public-routine-viewonly-v4.js.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE__) return;
+  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_V2__) return;
+  global.__BASELINE_SKINCARE_ROUTINE_V2__=true;
   global.__BASELINE_SKINCARE_ROUTINE__=true;
 
   const document=global.document;
@@ -23,6 +30,8 @@
 
   const STORAGE_PREFIX='__bl_skincare_routine_v1__::';
   const ROUTINE_API='/systems/baseline-natural-skincare/api/routine_state.php';
+  const ROUTE_BASE='/baseline-natural-skincare/my-routine';
+  const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
   const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),calendarView:'month',calendarAnchor:MODEL.localDate(MODEL.todayIso()),pendingRemoveId:'',saveTimer:0,profileLoading:false };
 
@@ -43,14 +52,47 @@
     try { global.localStorage?.setItem(storageKey(),JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility,updatedAt:new Date().toISOString() })); } catch (_error) {}
   }
   function persistLocal() { writeLocal(); }
+
+  function routeViewFromLocation() {
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    const clean=path.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);
+    if (clean) return String(clean[1]).toLowerCase();
+    try {
+      const url=new URL(global.location.href);
+      const legacy=String(url.searchParams.get('routine-view') || '');
+      if (VIEWS.includes(legacy)) return legacy;
+    } catch (_error) {}
+    try {
+      const saved=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
+      if (VIEWS.includes(saved)) return saved;
+    } catch (_error) {}
+    return 'log';
+  }
+  function cleanViewPath(view) {
+    return `${ROUTE_BASE}/${VIEWS.includes(view)?view:'log'}`;
+  }
   function writeViewRoute(view) {
     const next=VIEWS.includes(view)?view:'log';
     try {
       const url=new URL(global.location.href);
-      url.searchParams.set('routine-view',next);
-      url.hash='tab=routine';
-      global.history.replaceState(global.history.state,'',url.pathname+url.search+url.hash);
+      url.pathname=cleanViewPath(next);
+      ['routine-view','routine-plan','routine-filter','routine-date'].forEach((key)=>url.searchParams.delete(key));
+      url.hash='';
+      global.history.replaceState(global.history.state,'',url.pathname+url.search);
     } catch (_error) {}
+  }
+  function selectOuterRoutine() {
+    try { global.BASELINE_selectTab?.('routine',{ silentHistory:true }); } catch (_error) {}
+    $$('.tab[data-target]').forEach((button)=>{
+      const selected=button.dataset.target==='routine';
+      button.classList.toggle('active',selected);
+      button.setAttribute('aria-selected',selected?'true':'false');
+    });
+    const root=$('#routine');
+    if (root) { root.hidden=false;root.classList.add('active'); }
+    $$('main.wrap>.section').forEach((section)=>{ if (section!==root) section.classList.remove('active'); });
+    document.documentElement.setAttribute('data-initial-skincare-tab','routine');
+    document.documentElement.setAttribute('data-initial-routine-view',state.activeView);
   }
 
   function emit(scope='all') { try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-updated',{ detail:{ scope } })); } catch (_error) {} }
@@ -116,16 +158,15 @@
     if (next==='summary') renderSummary();
     if (next==='plan') renderPlan();
     if (next==='public') renderPublicProfiles();
-    try { global.sessionStorage?.setItem('__bl_skincare_routine_view__',next); } catch (_error) {}
+    try { global.sessionStorage?.setItem(VIEW_KEY,next); } catch (_error) {}
     if (remember) writeViewRoute(next);
   }
-  function restoreView() {
-    let next='log';
-    try {
-      const url=new URL(global.location.href);const query=String(url.searchParams.get('routine-view') || '');const saved=String(global.sessionStorage?.getItem('__bl_skincare_routine_view__') || '');
-      if (VIEWS.includes(query)) next=query;else if (VIEWS.includes(saved)) next=saved;
-    } catch (_error) {}
+  function restoreRoute() {
+    const next=routeViewFromLocation();
+    state.activeView=next;
+    selectOuterRoutine();
     activateView(next,false);
+    writeViewRoute(next);
   }
 
   function optionHtml(options,selected) { return options.map((option)=>`<option value="${esc(option.value)}"${option.value===selected?' selected':''}>${esc(option.label)}</option>`).join(''); }
@@ -261,12 +302,27 @@
       if (event.key==='Escape' && !$('#routineActionMenu')?.hidden) { setActionPickerOpen(false);$('#routineActionSearch')?.focus(); }
     });
     document.addEventListener('click',(event)=>{ if (!event.target.closest('.routine-action-combobox')) setActionPickerOpen(false); });
-    global.addEventListener('popstate',restoreView);
+    global.addEventListener('popstate',restoreRoute);
   }
 
   function renderAll() { renderPlan();renderSummary();renderLog();renderCalendar();renderPublicProfiles(); }
   async function init() {
-    ensureShell();bindEvents();await loadState();const visibility=$('#routineVisibility');if (visibility) visibility.value=state.visibility;renderAll();restoreView();
+    /* Resolve and activate the requested page before the first asynchronous wait.
+       This is the key no-flicker rule: refresh must never paint Log/Plan first and
+       then replace it with the requested My Routine page. */
+    state.activeView=routeViewFromLocation();
+    try { global.sessionStorage?.setItem(VIEW_KEY,state.activeView); } catch (_error) {}
+    selectOuterRoutine();
+    ensureShell();
+    bindEvents();
+    activateView(state.activeView,false);
+    writeViewRoute(state.activeView);
+
+    await loadState();
+
+    const visibility=$('#routineVisibility');if (visibility) visibility.value=state.visibility;
+    renderAll();
+    activateView(state.activeView,false);
   }
   global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate }),selectView:activateView,refresh:renderAll });
   function boot() {
