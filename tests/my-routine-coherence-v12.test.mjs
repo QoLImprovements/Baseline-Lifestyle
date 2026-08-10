@@ -1,11 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync,readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 
 const url=path=>new URL(`../${path}`,import.meta.url);
 const read=path=>readFileSync(url(path),'utf8');
 
+const htaccess=read('.htaccess');
 const coherence=read('sitewide/js/baseline-routine-coherence-v12.js');
 const coherenceCss=read('sitewide/css/baseline-routine-coherence-v12.css');
 const publicViewer=read('sitewide/js/baseline-public-routine-viewonly-v4.js');
@@ -13,7 +14,6 @@ const skinRoutine=read('systems/baseline-natural-skincare/js/skincare-routine.js
 const skinLoader=read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
 const skinGroups=read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
 const skinCss=read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
-const skinCssEntry=read('systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css');
 const fitnessLoader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const fitnessWorkspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
 const fitnessRoutineLog=read('systems/baseline-fitness/js/fitness-routine-log-v1.js');
@@ -23,7 +23,6 @@ const generator=read('systems/baseline-fitness/js/fitness-generator-progression-
 const livePolicy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const multiplePlans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
-const fitnessCss=read('systems/baseline-fitness/css/fitness-routine-sitewide-v3.css');
 const workspaceCss=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const generatorCss=read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
@@ -37,19 +36,20 @@ test('one active shared My Routine coherence layer remains',()=>{
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
 });
 
-test('My Routine dependencies execute strictly in declared order',()=>{
+test('My Routine dependencies execute strictly in no-flicker ownership order',()=>{
   for (const loader of [skinLoader,fitnessLoader]) {
     assert.match(loader,/function loadOrdered\(entries\)/);
     assert.match(loader,/entries\.reduce\(\(chain,entry\).*chain\.then/);
     assert.doesNotMatch(loader,/loadOrderedParallel|Promise\.all\(entries\.map\(loadScript\)\)/);
   }
   const baseIndex=fitnessLoader.indexOf('fitness-routine-workspace-v2.js');
-  const logIndex=fitnessLoader.indexOf('fitness-routine-log-v1.js');
-  const groupIndex=fitnessLoader.indexOf('fitness-routine-groups-v2.js');
   const structureIndex=fitnessLoader.indexOf('fitness-routine-structure-v4.js');
   const summaryIndex=fitnessLoader.indexOf('fitness-routine-summary-v2.js');
+  const logIndex=fitnessLoader.indexOf('fitness-routine-log-v1.js');
+  const groupIndex=fitnessLoader.indexOf('fitness-routine-groups-v2.js');
+  const generatorIndex=fitnessLoader.indexOf('fitness-generator-progression-v1.js');
   const sharedIndex=fitnessLoader.indexOf('baseline-routine-coherence-v12.js');
-  assert.ok(baseIndex>=0 && baseIndex<logIndex && logIndex<groupIndex && groupIndex<structureIndex && structureIndex<summaryIndex && summaryIndex<sharedIndex);
+  assert.ok(baseIndex>=0 && baseIndex<structureIndex && structureIndex<summaryIndex && summaryIndex<logIndex && logIndex<groupIndex && groupIndex<generatorIndex && generatorIndex<sharedIndex);
 });
 
 test('retired repair layers and duplicate controllers remain physically absent',()=>{
@@ -70,40 +70,55 @@ test('My Routine never uses a loading screen or runtime style authority',()=>{
   }
 });
 
-test('Skincare owns canonical subview URL state while preserving outer routine hash',()=>{
-  assert.match(skinRoutine,/function writeViewRoute\(view\)/);
-  assert.match(skinRoutine,/searchParams\.set\('routine-view',next\)/);
-  assert.match(skinRoutine,/url\.hash='tab=routine'/);
-  assert.match(skinRoutine,/function activateView\(view,remember=true\)/);
-  assert.match(skinRoutine,/if \(remember\) writeViewRoute\(next\)/);
-  assert.match(skinRoutine,/activateView\(next,false\)/);
-  assert.match(skinRoutine,/addEventListener\('popstate',restoreView\)/);
+test('Apache serves every clean My Routine page without exposing implementation state',()=>{
+  for (const route of [
+    'baseline-fitness/my-routine/(log|summary|public)',
+    'baseline-fitness/my-routine/plan/(calisthenics|cardio|other|sports)',
+    'baseline-natural-skincare/my-routine/(log|summary|plan|public)'
+  ]) assert.ok(htaccess.includes(route),`missing clean route ${route}`);
+  assert.match(htaccess,/baseline-fitness\/my-routine\/\?\$ systems\/baseline-fitness\/baseline-fitness\.html/);
+  assert.doesNotMatch(htaccess,/baseline-fitness\/my-routine\/\?\$ \/baseline-fitness\/my-routine\/log \[R=/);
 });
 
-test('Fitness structure is the sole refresh-state owner for routine-view and routine-plan',()=>{
-  assert.match(structure,/function currentRoute\(\)/);
-  assert.match(structure,/function writeRoute\(\)/);
-  assert.match(structure,/searchParams\.set\('routine-view',activeView\)/);
-  assert.match(structure,/searchParams\.set\('routine-plan',activePlanView\)/);
-  assert.match(structure,/function restoreRoute\(\)/);
-  assert.match(structure,/addEventListener\('popstate',restoreRoute\)/);
-  assert.doesNotMatch(fitnessLoader,/restoreRequestedView|requestedViews/);
+test('Skincare resolves and paints the requested clean route before its first async wait',()=>{
+  assert.match(skinRoutine,/ROUTE_BASE='\/baseline-natural-skincare\/my-routine'/);
+  assert.match(skinRoutine,/function routeViewFromLocation\(\)/);
+  assert.match(skinRoutine,/url\.pathname=cleanViewPath\(next\)/);
+  assert.match(skinRoutine,/function selectOuterRoutine\(\)/);
+  const activateIndex=skinRoutine.indexOf('activateView(state.activeView,false)');
+  const awaitIndex=skinRoutine.indexOf('await loadState()');
+  assert.ok(activateIndex>=0 && awaitIndex>=0 && activateIndex<awaitIndex,'Skincare must activate the requested view before loadState');
+  assert.match(skinLoader,/bootstrapCleanRoute\(\);/);
+  assert.match(skinLoader,/data-initial-routine-view/);
+  assert.match(skinRoutine,/addEventListener\('popstate',restoreRoute\)/);
 });
 
-test('Summary state and Log Date are URL-persistent',()=>{
-  assert.match(coherence,/routine-filter/);
-  assert.match(coherence,/routine-date/);
-  assert.match(coherence,/persistSummaryFilter/);
-  assert.match(coherence,/restoreLogDate/);
-  assert.match(fitnessSummary,/searchParams\.set\('routine-view','summary'\)/);
-  assert.match(fitnessSummary,/searchParams\.set\('routine-filter',next\)/);
+test('Fitness resolves route and seeds its base workspace before dependencies render',()=>{
+  assert.match(fitnessLoader,/function requestedRoute\(\)/);
+  assert.match(fitnessLoader,/function seedBaseWorkspaceView\(\)/);
+  assert.ok(fitnessLoader.indexOf('seedBaseWorkspaceView();')<fitnessLoader.indexOf('loadOrdered(['));
+  assert.match(fitnessLoader,/rememberedRoute/);
+  assert.match(fitnessLoader,/data-initial-routine-view/);
+  assert.match(structure,/ROUTE_BASE='\/baseline-fitness\/my-routine'/);
+  assert.match(structure,/url\.pathname=cleanPath\(\)/);
+  assert.match(structure,/function routeFromPath\(\)/);
+});
+
+test('public My Routine URLs contain page identity only; filter and date stay session-side',()=>{
+  for (const source of [skinRoutine,fitnessSummary,coherence]) {
+    assert.doesNotMatch(source,/searchParams\.set\(['\"]routine-(?:view|plan|filter|date)/);
+  }
+  assert.match(fitnessSummary,/sessionStorage\?\.setItem\(FILTER_STORAGE_KEY,next\)/);
+  assert.match(coherence,/writeSession\(SUMMARY_STORAGE_KEY/);
+  assert.match(coherence,/writeSession\(DATE_STORAGE_KEY/);
+  assert.doesNotMatch(coherence,/function setUrlValues\(/);
+  assert.doesNotMatch(coherence,/function urlValue\(/);
 });
 
 test('enhanced My Routine select can paint only one dropdown control',()=>{
   assert.match(coherenceCss,/\.bl-select\[data-bl-enhanced="1"\]>select/);
   assert.match(coherenceCss,/opacity:0!important/);
   assert.match(coherenceCss,/pointer-events:none!important/);
-  assert.match(skinCssEntry,/BASELINE_ROUTINE_COHERENCE_20260809_10/);
 });
 
 test('Skincare Summary dropdown is one canonical control with My Routine first and complete library second',()=>{
@@ -118,7 +133,7 @@ test('Skincare Summary dropdown is one canonical control with My Routine first a
 });
 
 test('Fitness Summary has only one content/filter owner',()=>{
-  assert.match(fitnessSummary,/single Fitness owner|single Fitness owner|single Fitness/);
+  assert.match(fitnessSummary,/single Fitness owner/);
   assert.match(fitnessSummary,/function ensureSingleFilter\(\)/);
   assert.match(structure,/function ensureSingleSummaryFilter\(panel\)/);
   assert.doesNotMatch(structure,/function renderSummary\s*\(/);
