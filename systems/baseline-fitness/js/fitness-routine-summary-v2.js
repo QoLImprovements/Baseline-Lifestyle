@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical Routine Summary owner v2.
+/* Baseline Fitness — canonical Routine Summary owner v3.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -20,11 +20,13 @@
    - A1/A2… = Cardio activities.
 
    Every Summary card uses the same two-column comprehensive shell.
+   The selected Summary filter is transient UI state and stays in sessionStorage;
+   the clean page URL remains /baseline-fitness/my-routine/summary.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_SUMMARY_V2__) return;
-  global.__BASELINE_FITNESS_ROUTINE_SUMMARY_V2__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_SUMMARY_V3__) return;
+  global.__BASELINE_FITNESS_ROUTINE_SUMMARY_V3__=true;
 
   const document=global.document;
   if ((document.documentElement.dataset.app || document.body?.dataset.app)!=='fitness') return;
@@ -334,17 +336,12 @@
   }
 
   function persistedFilter() {
-    try { const query=String(new URL(global.location.href).searchParams.get('routine-filter') || '');if (query) return query; } catch (_error) {}
-    try { return String(global.sessionStorage?.getItem(FILTER_STORAGE_KEY) || 'all'); } catch (_error) { return 'all'; }
+    try { return String(global.sessionStorage?.getItem(FILTER_STORAGE_KEY) || 'all'); }
+    catch (_error) { return 'all'; }
   }
   function persistFilter(value) {
     const next=String(value || 'all');
     try { global.sessionStorage?.setItem(FILTER_STORAGE_KEY,next); } catch (_error) {}
-    try {
-      const url=new URL(global.location.href);url.searchParams.set('routine-view','summary');
-      if (next==='all') url.searchParams.delete('routine-filter');else url.searchParams.set('routine-filter',next);
-      global.history.replaceState(global.history.state,'',url.pathname+url.search+url.hash);
-    } catch (_error) {}
   }
   function filterOption(value,filterKey,badge,label) {
     return `<option value="${esc(value)}" data-filter-key="${esc(filterKey)}">${badge?`${esc(badge)} · `:''}${esc(label)}</option>`;
