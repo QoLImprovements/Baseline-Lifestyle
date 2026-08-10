@@ -10,6 +10,8 @@
    - Fitness-only Routine Log interactions belong to fitness-routine-log-v1.js.
    - Fitness Routine Summary contents/filtering belong only to fitness-routine-summary-v2.js.
    - This file owns only genuinely shared live behaviour/state plus the Skincare Summary filter.
+   - Summary filters and Log Dates are transient session state; system routers alone
+     own public My Routine paths. This layer never writes routing query parameters.
 */
 (function (global) {
   'use strict';
@@ -51,20 +53,6 @@
     try {
       if (value) global.sessionStorage?.setItem(key,String(value));
       else global.sessionStorage?.removeItem(key);
-    } catch (_error) {}
-  }
-  function urlValue(key) {
-    try { return String(new URL(global.location.href).searchParams.get(key) || ''); }
-    catch (_error) { return ''; }
-  }
-  function setUrlValues(values) {
-    try {
-      const url = new URL(global.location.href);
-      Object.entries(values).forEach(([key,value]) => {
-        if (value == null || value === '') url.searchParams.delete(key);
-        else url.searchParams.set(key,String(value));
-      });
-      global.history.replaceState(global.history.state,'',url.pathname + url.search + url.hash);
     } catch (_error) {}
   }
   function todayIso() {
@@ -267,12 +255,10 @@
   }
 
   function preferredSummaryFilter() {
-    return urlValue('routine-filter') || readSession(SUMMARY_STORAGE_KEY,'all') || 'all';
+    return readSession(SUMMARY_STORAGE_KEY,'all') || 'all';
   }
   function persistSummaryFilter(value) {
-    const next=String(value || 'all');
-    writeSession(SUMMARY_STORAGE_KEY,next);
-    setUrlValues({ 'routine-view':'summary','routine-filter':next==='all'?'':next });
+    writeSession(SUMMARY_STORAGE_KEY,String(value || 'all'));
   }
 
   function removeDuplicateSkinSummarySelectors(summary,keep) {
@@ -565,7 +551,7 @@
 
   function restoreLogDate(root) {
     if (restoringState) return;
-    const wanted=urlValue('routine-date') || readSession(DATE_STORAGE_KEY,'');
+    const wanted=readSession(DATE_STORAGE_KEY,'');
     if (!/^\d{4}-\d{2}-\d{2}$/.test(wanted) || wanted>todayIso()) return;
     const input=$(app==='skin'?'#routineLogDate':'#fitnessRoutineLogDate',root);
     if (!input || input.dataset.routeDateRestored==='true' || input.value===wanted) return;
@@ -628,14 +614,7 @@
       if (marker) {
         event.preventDefault();event.stopPropagation();
         openSummary(String(marker.dataset.routineSummaryTarget || ''),root);
-        return;
       }
-      const skinView=event.target?.closest?.('[data-routine-view]');
-      if (skinView && app==='skin') setUrlValues({ 'routine-view':String(skinView.dataset.routineView || 'log') });
-      const fitnessView=event.target?.closest?.('[data-fitness-routine-view]');
-      if (fitnessView && app==='fitness') setUrlValues({ 'routine-view':String(fitnessView.dataset.fitnessRoutineView || 'log') });
-      const planView=event.target?.closest?.('[data-fitness-plan-view]');
-      if (planView && app==='fitness') setUrlValues({ 'routine-view':'plan','routine-plan':String(planView.dataset.fitnessPlanView || 'calisthenics') });
     },true);
     root.addEventListener('keydown',(event) => {
       const marker=event.target?.closest?.('[data-routine-summary-target]');
@@ -649,10 +628,7 @@
       if (event.target?.id==='skinRoutineSummaryFilter') { persistSummaryFilter(event.target.value);applySkinSummary(root);return; }
       if (event.target?.id==='routineLogDate' || event.target?.id==='fitnessRoutineLogDate') {
         const value=String(event.target.value || '');
-        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-          writeSession(DATE_STORAGE_KEY,value);
-          setUrlValues({ 'routine-date':value });
-        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) writeSession(DATE_STORAGE_KEY,value);
       }
     },true);
     [
