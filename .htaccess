@@ -293,8 +293,24 @@ Options -Indexes
   RewriteRule ^baseline-games-hub/games-hub/(games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
 </IfModule>
 
-# BASELINE-FITNESS-MY-ROUTINE-20260804
+# BASELINE-MY-ROUTINE-CLEAN-ROUTES-20260810
+# My Routine uses readable page paths. Filters, dates and other transient UI state
+# stay client-side/session-side and are not exposed as query-string instructions.
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteRule ^baseline-fitness/my-routine/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  Options -MultiViews
+
+  # Bare My Routine routes have one explicit default page.
+  RewriteCond %{THE_REQUEST} \s/+baseline-fitness/my-routine(?:[?\s]) [NC]
+  RewriteRule ^baseline-fitness/my-routine/?$ /baseline-fitness/my-routine/log [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+baseline-natural-skincare/my-routine(?:[?\s]) [NC]
+  RewriteRule ^baseline-natural-skincare/my-routine/?$ /baseline-natural-skincare/my-routine/log [R=302,L]
+
+  # Fitness My Routine pages and Plan subtabs.
+  RewriteRule ^baseline-fitness/my-routine/(log|summary|public)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  RewriteRule ^baseline-fitness/my-routine/plan/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  RewriteRule ^baseline-fitness/my-routine/plan/(calisthenics|cardio|other|sports)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+
+  # Skincare My Routine pages.
+  RewriteRule ^baseline-natural-skincare/my-routine/(log|summary|plan|public)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 </IfModule>
