@@ -296,21 +296,20 @@ Options -Indexes
 # BASELINE-MY-ROUTINE-CLEAN-ROUTES-20260810
 # My Routine uses readable page paths. Filters, dates and other transient UI state
 # stay client-side/session-side and are not exposed as query-string instructions.
+# Bare /my-routine is served without a forced redirect so the client can migrate
+# an existing remembered subview (for example an old Summary session) once, then
+# replace the address with its canonical clean subroute.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   Options -MultiViews
 
-  # Bare My Routine routes have one explicit default page.
-  RewriteCond %{THE_REQUEST} \s/+baseline-fitness/my-routine(?:[?\s]) [NC]
-  RewriteRule ^baseline-fitness/my-routine/?$ /baseline-fitness/my-routine/log [R=302,L]
-  RewriteCond %{THE_REQUEST} \s/+baseline-natural-skincare/my-routine(?:[?\s]) [NC]
-  RewriteRule ^baseline-natural-skincare/my-routine/?$ /baseline-natural-skincare/my-routine/log [R=302,L]
-
-  # Fitness My Routine pages and Plan subtabs.
+  # Fitness bare route plus clean pages / Plan subtabs.
+  RewriteRule ^baseline-fitness/my-routine/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
   RewriteRule ^baseline-fitness/my-routine/(log|summary|public)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
   RewriteRule ^baseline-fitness/my-routine/plan/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
   RewriteRule ^baseline-fitness/my-routine/plan/(calisthenics|cardio|other|sports)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
-  # Skincare My Routine pages.
+  # Skincare nested My Routine pages. The bare route is already served by the
+  # standard Skincare tab rule above and is migrated client-side the same way.
   RewriteRule ^baseline-natural-skincare/my-routine/(log|summary|plan|public)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 </IfModule>
