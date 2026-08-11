@@ -5,6 +5,17 @@
      Skincare-specific component surfaces; its filename is retained as a stable
      CSS entry point and is not a competing JavaScript authority.
    - shared v12 loads last and owns common geometry/interaction only.
+
+   FIRST-PAINT CONTRACT
+   --------------------
+   The head bootstrap sets the exact My Routine subview before body parsing.
+   These rules ensure System and non-requested Routine panels cannot become
+   visible intermediate pages while the routine data owners initialise.
 */
 @import url('/systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css?v=SKINCARE_SITEWIDE_ROUTINE_20260809_6');
 @import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_10');
+
+html[data-initial-skincare-tab="routine"] #system{display:none!important}
+html[data-initial-skincare-tab="routine"] #routine{display:block!important}
+html[data-initial-skincare-tab="routine"][data-initial-routine-view] #routine [data-routine-panel]{display:none!important}
+html[data-initial-skincare-tab="routine"][data-initial-routine-view="log"] #routine [data-routine-panel="log"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="summary"] #routine [data-routine-panel="summary"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="plan"] #routine [data-routine-panel="plan"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="public"] #routine [data-routine-panel="public"]{display:block!important}
