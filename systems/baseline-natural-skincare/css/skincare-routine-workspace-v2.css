@@ -9,13 +9,14 @@
    FIRST-PAINT CONTRACT
    --------------------
    The head bootstrap sets the exact My Routine subview before body parsing.
-   These rules ensure System and non-requested Routine panels cannot become
-   visible intermediate pages while the routine data owners initialise.
+   These selectors exist only while the canonical routine controller has not yet
+   bound the #routine root. Once data-routine-bound="1" exists, ordinary hidden/
+   active state from skincare-routine.js becomes the sole live view authority.
 */
 @import url('/systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css?v=SKINCARE_SITEWIDE_ROUTINE_20260809_6');
 @import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_10');
 
 html[data-initial-skincare-tab="routine"] #system{display:none!important}
 html[data-initial-skincare-tab="routine"] #routine{display:block!important}
-html[data-initial-skincare-tab="routine"][data-initial-routine-view] #routine [data-routine-panel]{display:none!important}
-html[data-initial-skincare-tab="routine"][data-initial-routine-view="log"] #routine [data-routine-panel="log"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="summary"] #routine [data-routine-panel="summary"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="plan"] #routine [data-routine-panel="plan"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="public"] #routine [data-routine-panel="public"]{display:block!important}
+html[data-initial-skincare-tab="routine"][data-initial-routine-view] #routine:not([data-routine-bound="1"]) [data-routine-panel]{display:none!important}
+html[data-initial-skincare-tab="routine"][data-initial-routine-view="log"] #routine:not([data-routine-bound="1"]) [data-routine-panel="log"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="summary"] #routine:not([data-routine-bound="1"]) [data-routine-panel="summary"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="plan"] #routine:not([data-routine-bound="1"]) [data-routine-panel="plan"],html[data-initial-skincare-tab="routine"][data-initial-routine-view="public"] #routine:not([data-routine-bound="1"]) [data-routine-panel="public"]{display:block!important}
