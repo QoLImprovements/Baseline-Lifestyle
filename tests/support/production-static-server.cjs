@@ -31,13 +31,19 @@ const CONTENT_TYPES = Object.freeze({
 
 const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm))?\/?$/;
 
+/* Keep this route table aligned with the public Apache clean-route contract.
+   Playwright must be able to refresh a virtual route directly; otherwise a
+   browser reload tests a 404 instead of the production application. */
 const STATIC_ROUTE_RULES = [
   [/^\/home\/(?:1|2)\/?$/, '/index.html'],
   [/^\/baseline-food-approach\/(?:system|recipes|ingredient-library|diet-log)\/?$/, '/systems/baseline-food-approach/baseline-food-approach.html'],
   [/^\/baseline-massage\/(?:system|library|planner)\/?$/, '/systems/baseline-massage/baseline-massage.html'],
-  [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
+  [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system|my-routine)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
+  [/^\/baseline-natural-skincare\/my-routine\/(?:log|summary|plan|public)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-badminton-session\/(?:system|game-plan|ratings-standings|players-pairs|session-history)\/?$/, '/systems/baseline-badminton-session/baseline-badminton-session.html'],
-  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
+  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
+  [/^\/baseline-fitness\/my-routine\/(?:log|summary|public)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
+  [/^\/baseline-fitness\/my-routine\/plan(?:\/(?:calisthenics|cardio|other|sports))?\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
 ];
 
 const DEFAULT_REDIRECTS = new Map([
@@ -177,7 +183,7 @@ const server = http.createServer((req, res) => {
 
   const redirect = DEFAULT_REDIRECTS.get(pathname);
   if (redirect) {
-    res.writeHead(302, { Location: redirect, 'Cache-Control': 'no-store' });
+    res.writeHead(302, { Location: redirect, 'Cache-Control':'no-store' });
     res.end();
     return;
   }
