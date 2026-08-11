@@ -369,6 +369,7 @@
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-structure-ready',{ detail:{ view:activeView,planView:activePlanView } })); } catch (_error) {}
   }
 
+  global.BASELINE_fitnessRoutineStructure=Object.freeze({ boot,rebuildStructure,activateTopView,activatePlanView });
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });
   else boot();
 })(typeof window!=='undefined'?window:globalThis);

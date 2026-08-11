@@ -128,13 +128,25 @@
   function scheduleSave() {
     writeLocal();clearTimeout(state.saveTimer);setStatus(authed()?'Saving…':'Saved on this device.');if (authed()) state.saveTimer=global.setTimeout(saveRemote,450);
   }
-  async function loadState() {
+  function loadLocalState() {
     const local=readLocal();
-    if (local) { state.routine=MODEL.normaliseRoutine(local.routine);state.logs=MODEL.normaliseLogs(local.logs);state.visibility=local.visibility==='public'?'public':'private'; }
-    if (authed()) {
-      const response=await request(ROUTINE_API);
-      if (response.ok && response.data?.ok) { state.routine=MODEL.normaliseRoutine(response.data.routine);state.logs=MODEL.normaliseLogs(response.data.logs);state.visibility=response.data.visibility==='public'?'public':'private';writeLocal(); }
+    if (!local) return;
+    state.routine=MODEL.normaliseRoutine(local.routine);
+    state.logs=MODEL.normaliseLogs(local.logs);
+    state.visibility=local.visibility==='public'?'public':'private';
+  }
+  async function loadRemoteState() {
+    if (!authed()) return false;
+    const before=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
+    const response=await request(ROUTINE_API);
+    if (response.ok && response.data?.ok) {
+      state.routine=MODEL.normaliseRoutine(response.data.routine);
+      state.logs=MODEL.normaliseLogs(response.data.logs);
+      state.visibility=response.data.visibility==='public'?'public':'private';
+      writeLocal();
     }
+    const after=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
+    return after!==before;
   }
 
   function ensureShell() {
@@ -336,20 +348,16 @@
 
     ensureShell();
     bindEvents();
+    loadLocalState();
 
-    /* On a My Routine route, activate the requested page before the first async
-       wait. On every other Skincare page, initialise the hidden workspace only. */
     if (routing) {
       selectOuterRoutine();
       activateView(state.activeView,false);
       writeViewRoute(state.activeView);
     }
 
-    await loadState();
-
-    const visibility=$('#routineVisibility');if (visibility) visibility.value=state.visibility;
-    renderAll();
-    if (routing) activateView(state.activeView,false);
+    const changed=await loadRemoteState();
+    if (changed && locationTargetsRoutine()) renderAll();
   }
   global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate }),selectView(view){ selectOuterRoutine();activateView(view,true); },refresh:renderAll });
   function boot() {

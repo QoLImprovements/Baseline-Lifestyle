@@ -1036,6 +1036,12 @@
     }, true);
   }
 
+  function renderStableState() {
+    renderAll();
+    try { global.BASELINE_fitnessRoutineSummary?.render?.(); } catch (_error) {}
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-updated',{ detail:{ source:'fitness-routine-state' } })); } catch (_error) {}
+  }
+
   async function loadForAuth(snapshot) {
     const authed = Boolean(snapshot?.authed);
     const owner = authed ? String(snapshot.name || snapshot.user?.name || '').trim() : 'guest';
@@ -1046,50 +1052,39 @@
     if (!changed && state.loaded) return;
 
     const local = readLocal(state.owner);
-    if (!authed) {
-      state.activities = local?.activities || [];
-      state.logs = normaliseLogs(local?.logs || {});
-      state.loaded = true;
-      renderAll();
-      return;
-    }
+    state.activities = local?.activities || [];
+    state.logs = normaliseLogs(local?.logs || {});
+    state.loaded = true;
+    renderStableState();
+    if (!authed) return;
 
+    const before = JSON.stringify({ activities:state.activities,logs:state.logs });
     const response = await request();
     if (response.ok && response.hasRoutine) {
       state.activities = normaliseActivities(response.activities);
       state.logs = normaliseLogs(response.logs);
       writeLocal();
-    } else {
-      state.activities = local?.activities || [];
-      state.logs = normaliseLogs(local?.logs || {});
-      if (state.activities.length || Object.keys(state.logs).length) saveNow();
+    } else if (state.activities.length || Object.keys(state.logs).length) {
+      saveNow();
     }
-    state.loaded = true;
-    renderAll();
+    const after = JSON.stringify({ activities:state.activities,logs:state.logs });
+    if (after !== before) renderStableState();
   }
 
   function attachAuth() {
-    let attempts = 0;
-    const connect = () => {
-      const auth = global.BASELINE_auth;
-      if (auth && typeof auth.get === 'function') {
-        loadForAuth(auth.get());
-        if (typeof auth.onChange === 'function') auth.onChange(loadForAuth);
-        return;
-      }
-      attempts += 1;
-      if (attempts < 80) global.setTimeout(connect, 100);
-      else loadForAuth(null);
-    };
-    connect();
+    const auth = global.BASELINE_auth;
+    if (auth && typeof auth.get === 'function') {
+      loadForAuth(auth.get());
+      if (typeof auth.onChange === 'function') auth.onChange(loadForAuth);
+      return;
+    }
+    loadForAuth(null);
   }
 
   function boot() {
     makeWorkspace();
     bindEvents();
-    attachAuth();
     document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
-    renderAll();
     try {
       global.BASELINE_fitnessRoutine = Object.freeze({
         getState:() => ({
@@ -1103,6 +1098,8 @@
         render:renderAll
       });
     } catch (_error) {}
+    global.BASELINE_fitnessRoutineStructure?.boot?.();
+    attachAuth();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once:true });
