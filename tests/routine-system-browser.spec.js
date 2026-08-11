@@ -213,7 +213,7 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
 
   await page.locator('[data-fitness-routine-view="summary"]').click();
   const summaryFilter = page.locator('#fitnessSummaryGroupFilter');
-  await summaryFilter.selectOption({ label:'Recovery and Mobility' });
+  await summaryFilter.selectOption({ label:'G1 · Recovery and Mobility' });
   await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toHaveCount(1);
   await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toContainText('Hatha Yoga');
   await expect(page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item:visible')).toContainText('Relevant session measures');
