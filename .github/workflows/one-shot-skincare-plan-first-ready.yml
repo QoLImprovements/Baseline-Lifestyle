@@ -1,0 +1,31 @@
+name: One-shot Skincare Plan first-ready
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply stable Plan boot cleanup
+        run: python tools/one_shot_skincare_plan_first_ready.py
+
+      - name: Parse changed JavaScript
+        run: node --check systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js
+
+      - name: Commit to main
+        run: |
+          git config user.name "Baseline Routine Cleanup"
+          git config user.email "actions@users.noreply.github.com"
+          git add systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js tests/routine-system-browser.spec.js
+          git commit -m "Apply Skincare Plan controls before first ready paint"
+          git push origin HEAD:main
