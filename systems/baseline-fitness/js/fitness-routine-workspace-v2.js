@@ -10,7 +10,7 @@
   const API = '/systems/baseline-fitness/api/routine_state.php';
   const STORAGE_PREFIX = '__bl_fitness_routine_v2__::';
   const LEGACY_STORAGE_PREFIX = '__bl_fitness_routine_v1__::';
-  const VIEW_KEY = '__bl_fitness_routine_view_v2__';
+  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const SAVE_DELAY = 500;
   const DAYS = Object.freeze(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
   const TIMES = Object.freeze([
@@ -370,8 +370,12 @@
     if (savedTitle) savedTitle.textContent = 'Calisthenics';
     ['cardio','other','sports'].forEach(buildActivityPanel);
 
-    const remembered = global.sessionStorage?.getItem(VIEW_KEY);
-    activateView(VIEWS.includes(remembered) ? remembered : 'log');
+    const initialTop=String(document.documentElement.dataset.initialRoutineView || '');
+    const initialPlan=String(document.documentElement.dataset.initialRoutinePlan || global.sessionStorage?.getItem(PLAN_VIEW_KEY) || 'calisthenics');
+    const initialView=initialTop==='plan' && VIEWS.includes(initialPlan)
+      ? initialPlan
+      : (initialTop==='summary' || initialTop==='public' ? 'summary' : 'log');
+    activateView(initialView,false);
   }
 
   function buildActivityPanel(section) {
@@ -728,9 +732,6 @@
       panel.hidden = !selected;
       panel.classList.toggle('active', selected);
     });
-    if (remember) {
-      try { global.sessionStorage?.setItem(VIEW_KEY, next); } catch (_error) {}
-    }
     if (next === 'log') {
       renderLog();
       renderCalendar();
@@ -831,7 +832,14 @@
       }
       const tab = event.target.closest('[data-fitness-routine-view],[data-open-fitness-view]');
       if (tab) {
-        activateView(tab.dataset.fitnessRoutineView || tab.dataset.openFitnessView, true);
+        const next=String(tab.dataset.fitnessRoutineView || tab.dataset.openFitnessView || '');
+        if (['calisthenics','cardio','other','sports'].includes(next) && global.BASELINE_fitnessRoutineStructure) {
+          event.preventDefault();
+          global.BASELINE_fitnessRoutineStructure.activateTopView('plan',true);
+          global.BASELINE_fitnessRoutineStructure.activatePlanView(next,true);
+        } else {
+          activateView(next,false);
+        }
         return;
       }
       const toggle = event.target.closest('[data-activity-toggle]');

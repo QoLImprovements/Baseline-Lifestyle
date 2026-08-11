@@ -295,7 +295,13 @@
       const groupField=event.target.closest('[data-group-field]');if (groupField) { updateGroup(groupField.dataset.groupId,groupField.dataset.groupField,groupField.value);return; }
       const groupDay=event.target.closest('[data-group-day]');if (groupDay) { updateGroupDay(groupDay.dataset.groupId,groupDay.dataset.groupDay,groupDay.checked);return; }
       if (event.target?.id==='routineLogDate') { event.target.value=UI.configureLogDateInput(event.target,event.target.value);state.calendarAnchor=UI.localDate(event.target.value);global.setTimeout(schedulePatch,0); }
-      if (event.target.closest('#routineItems [data-field],#routineLogItems [data-log-complete],#routineLogItems [data-log-note]')) global.setTimeout(schedulePatch,0);
+      if (event.target.closest('#routineLogItems [data-log-complete]')) {
+        /* Completion is a data/value change, not a structural Log change. Keep
+           the clicked checkbox node stable and refresh only calendar output. */
+        global.setTimeout(renderCalendar,0);
+        return;
+      }
+      if (event.target.closest('#routineItems [data-field],#routineLogItems [data-log-note]')) global.setTimeout(schedulePatch,0);
     });
     document.addEventListener('keydown',(event) => { if (event.target?.id==='routineGroupName' && event.key==='Enter') { event.preventDefault();createGroup(); } });
   }

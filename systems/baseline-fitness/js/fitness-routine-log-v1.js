@@ -228,9 +228,16 @@
       const details=event.target?.closest?.('[data-fitness-log-details-toggle]');
       if (details) {
         event.preventDefault();
-        const key=detailsKey(details.dataset.fitnessLogDetailsToggle);
-        if (expandedDetails.has(key)) expandedDetails.delete(key); else expandedDetails.add(key);
-        patch();
+        event.stopPropagation();
+        const itemId=String(details.dataset.fitnessLogDetailsToggle || '');
+        const key=detailsKey(itemId);
+        const open=!expandedDetails.has(key);
+        if (open) expandedDetails.add(key); else expandedDetails.delete(key);
+        const card=details.closest('.fitness-routine-log-item');
+        const panel=card?.querySelector(':scope>.fitness-log-details-panel');
+        if (panel) panel.hidden=!open;
+        details.setAttribute('aria-expanded',open?'true':'false');
+        details.textContent=open?'Close details':'Details';
         return;
       }
       const remove=event.target?.closest?.('[data-fitness-log-remove-request]');
@@ -254,7 +261,7 @@
         removeError='';
         patch();
       }
-    });
+    },true);
 
     host.addEventListener('change',(event) => {
       if (event.target?.id==='fitnessCalendarLogDate') {

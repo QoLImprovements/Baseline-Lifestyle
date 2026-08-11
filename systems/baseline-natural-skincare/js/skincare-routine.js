@@ -238,10 +238,27 @@
     const log=state.logs[date]?.[item.id] || { completed:false,note:'',completedAt:'' };const due=MODEL.dueStatus(item,date,state.logs);
     return `<article class="routine-log-item${log.completed?' complete':''}"><label class="routine-log-check"><input type="checkbox" data-log-complete="${esc(item.id)}" data-log-date="${esc(date)}"${log.completed?' checked':''}><span><strong>${esc(item.title)}</strong><small>${esc(timeText(item.timeOfDay))} · ${esc(due.detail)}</small></span></label><input type="text" class="routine-log-note" maxlength="500" value="${esc(log.note || '')}" data-log-note="${esc(item.id)}" data-log-date="${esc(date)}" placeholder="Optional note"></article>`;
   }
+  function refreshLogProgress() {
+    const progress=$('#routineLogProgress');if (!progress) return;
+    const due=state.routine.filter((item)=>MODEL.dueStatus(item,state.selectedDate,state.logs).due);
+    const entries=state.logs[state.selectedDate] || {};
+    const completed=due.filter((item)=>entries[item.id]?.completed).length;
+    progress.textContent=`${completed}/${due.length} completed`;
+  }
   function renderLog() {
-    state.selectedDate=MODEL.configureLogDateInput?.($('#routineLogDate'),state.selectedDate) || state.selectedDate;const target=$('#routineLogItems');const progress=$('#routineLogProgress');if (!target) return;
-    const due=state.routine.filter((item)=>MODEL.dueStatus(item,state.selectedDate,state.logs).due);const entries=state.logs[state.selectedDate] || {};const completed=due.filter((item)=>entries[item.id]?.completed).length;if (progress) progress.textContent=`${completed}/${due.length} completed`;
+    state.selectedDate=MODEL.configureLogDateInput?.($('#routineLogDate'),state.selectedDate) || state.selectedDate;const target=$('#routineLogItems');if (!target) return;
+    const due=state.routine.filter((item)=>MODEL.dueStatus(item,state.selectedDate,state.logs).due);
+    refreshLogProgress();
     target.innerHTML=due.length?due.map((item)=>logItem(item,state.selectedDate)).join(''):'<div class="routine-empty">There is no routine to log yet. Create one in <button type="button" class="routine-text-button" data-open-routine-plan>Routine Plan</button>.</div>';emit('log');
+  }
+  function updateCompletionInPlace(control) {
+    const itemId=String(control?.dataset.logComplete || '');
+    const date=String(control?.dataset.logDate || state.selectedDate);
+    if (!itemId) return;
+    updateLog(itemId,date,{ completed:Boolean(control.checked) });
+    control.closest('.routine-log-item')?.classList.toggle('complete',Boolean(control.checked));
+    refreshLogProgress();
+    emit('log');
   }
   function completedCount(date) { const entries=state.logs[date] || {};return Object.values(entries).filter((entry)=>entry?.completed).length; }
   function calendarButton(date,inMonth=true) {
@@ -325,7 +342,7 @@
     root.addEventListener('change',(event)=>{
       if (event.target.matches('[data-field]')) { updateItemField(event.target);renderPlan(); }
       if (event.target.matches('[data-day]')) toggleDay(event.target);
-      if (event.target.matches('[data-log-complete]')) { updateLog(event.target.dataset.logComplete,event.target.dataset.logDate,{ completed:event.target.checked });renderLog();renderCalendar(); }
+      if (event.target.matches('[data-log-complete]')) { updateCompletionInPlace(event.target); }
       if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);state.calendarAnchor=MODEL.localDate(state.selectedDate);renderLog();renderCalendar(); }
       if (event.target.id==='routineVisibility') { state.visibility=event.target.value==='public'?'public':'private';scheduleSave(); }
     });

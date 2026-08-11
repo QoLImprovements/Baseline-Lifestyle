@@ -66,14 +66,12 @@
   }
   function seedBaseWorkspaceView() {
     if (!requested) return;
-    try {
-      /* The base workspace knows Log and Plan activity panels but not Public.
-         For Summary/Public, seed "summary" so it synchronously hides its Log
-         panel instead of painting a wrong page while structure is loading. */
-      const baseView=requested.view==='plan'?requested.plan:(requested.view==='public'?'summary':requested.view);
-      global.sessionStorage?.setItem(ROUTINE_VIEW_KEY,baseView);
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY,requested.plan || 'calisthenics');
-    } catch (_error) {}
+    /* The final structure owns ROUTINE_VIEW_KEY. The base workspace receives
+       its temporary renderer hint through the initial-route data attributes,
+       never by overwriting the canonical top-level session state. */
+    document.documentElement.setAttribute('data-initial-routine-view',requested.view || 'log');
+    if (requested.view==='plan') document.documentElement.setAttribute('data-initial-routine-plan',requested.plan || 'calisthenics');
+    try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,requested.plan || 'calisthenics'); } catch (_error) {}
   }
   function selectRoutinePage() {
     if (!openRoutine) return;
