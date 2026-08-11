@@ -126,7 +126,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   expect(pageErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
-  await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
+  await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 
   await page.locator('[data-fitness-routine-view="summary"]').click();
   const planCard = page.locator('#fitnessExerciseSummary .fitness-exercise-summary-item', { hasText:'Knee Push-Ups' });
