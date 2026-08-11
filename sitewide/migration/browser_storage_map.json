@@ -370,6 +370,23 @@
       "decision": "expire-with-session",
       "target": null,
       "cutoverRule": "This remembers only the selected My Body subtab for the current browser session and is not Fitness account data."
+    },
+    {
+      "id": "my-routine-navigation-state",
+      "inventoryPatterns": [
+        "__bl_fitness_plan_view_v4__",
+        "__bl_fitness_routine_view_v2__",
+        "__bl_skincare_routine_view__"
+      ],
+      "knownKeys": [
+        "__bl_fitness_plan_view_v4__",
+        "__bl_fitness_routine_view_v2__",
+        "__bl_skincare_routine_view__"
+      ],
+      "classification": "session-navigation-state",
+      "decision": "expire-with-session",
+      "target": null,
+      "cutoverRule": "These values remember only the selected My Routine page or Fitness Plan subtab for the current browser session. They are navigation state, not routine content or account data, and must never become Saved Data resources."
     }
   ]
 }
