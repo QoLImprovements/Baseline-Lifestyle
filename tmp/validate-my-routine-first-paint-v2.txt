@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current main first-paint architecture.
-Run after mirroring nested My Routine clean routes in the production-static test server and updating browser assertions to canonical current controls.
+Trigger one-shot cleanup for remaining Fitness view-state conflict, Skincare checkbox replacement, and Fitness Details stability.
