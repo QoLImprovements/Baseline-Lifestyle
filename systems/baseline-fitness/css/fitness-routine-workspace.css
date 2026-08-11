@@ -5,7 +5,24 @@
    This entry loads only Fitness renderer geometry, Fitness palette/layout,
    the canonical Fitness Summary presentation, and the one final shared v12
    geometry layer, in that order.
+
+   FIRST-PAINT CONTRACT
+   --------------------
+   The head route bootstrap sets data-initial-fitness-tab / routine-view before
+   body parsing. These visibility rules therefore prevent System or the legacy
+   Calisthenics grid from becoming a visible intermediate page while the final
+   My Routine shell is constructed.
 */
+html[data-initial-fitness-tab="my-plan"] #system{display:none!important}
+html[data-initial-fitness-tab="my-plan"] #my-plan{display:block!important}
+html[data-initial-fitness-tab="my-body"] #system{display:none!important}
+html[data-initial-fitness-tab="my-body"] #my-body{display:block!important}
+html[data-initial-fitness-tab="library"] #system{display:none!important}
+html[data-initial-fitness-tab="library"] #library{display:block!important}
+html[data-initial-fitness-tab="achievements"] #system{display:none!important}
+html[data-initial-fitness-tab="achievements"] #achievements{display:block!important}
+html[data-initial-fitness-tab="my-plan"][data-initial-routine-view] #my-plan:not([data-routine-workspace-v2="true"])>.grid{display:none!important}
+
 @import url('/systems/baseline-fitness/css/fitness-routine-workspace-v2.css?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260809_3');
 @import url('/systems/baseline-fitness/css/fitness-routine-sitewide-v3.css?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260809_5');
 @import url('/systems/baseline-fitness/css/fitness-routine-summary-v2.css?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260809_2');
