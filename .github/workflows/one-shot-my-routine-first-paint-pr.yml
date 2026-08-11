@@ -1,0 +1,42 @@
+name: One-shot My Routine first-paint runner
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply first-paint consolidation
+        run: python tools/one_shot_my_routine_first_paint.py
+
+      - name: Parse changed JavaScript
+        run: |
+          node --check systems/baseline-fitness/js/fitness-routine-structure-v4.js
+          node --check systems/baseline-fitness/js/fitness-routine-workspace-v2.js
+          node --check systems/baseline-natural-skincare/js/skincare-routine.js
+
+      - name: Commit consolidation to main
+        run: |
+          if git diff --quiet; then
+            echo "No changes produced"
+            exit 1
+          fi
+          git config user.name "Baseline Routine Consolidation"
+          git config user.email "actions@users.noreply.github.com"
+          git add systems/baseline-fitness/baseline-fitness.html \
+                  systems/baseline-fitness/js/fitness-routine-structure-v4.js \
+                  systems/baseline-fitness/js/fitness-routine-workspace-v2.js \
+                  systems/baseline-natural-skincare/baseline-natural-skincare.html \
+                  systems/baseline-natural-skincare/js/skincare-routine.js
+          git commit -m "Consolidate My Routine first paint"
+          git push origin HEAD:main
