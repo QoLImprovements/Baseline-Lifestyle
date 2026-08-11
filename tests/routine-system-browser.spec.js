@@ -110,7 +110,7 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   await expect(groupSections.nth(1)).toContainText('Cleanse and Protect');
   await expect(page.locator('#routineLogItems .routine-log-item .bl-v4-number:visible')).toHaveCount(0);
 
-  const groupCheckbox = groupSections.nth(0).locator('[data-v8-group-complete]');
+  const groupCheckbox = groupSections.nth(0).locator('[data-routine-group-complete]');
   await expect(groupCheckbox).toBeVisible();
   await expect(groupSections.nth(0).locator('.routine-log-group-head')).not.toContainText(/Complete group/i);
 
@@ -139,8 +139,8 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   await expect(page.locator('#routineVisibility')).toHaveCount(1);
   await expect(page.locator('#publicRoutineName')).toHaveCount(1);
   await page.locator('#publicRoutineName').selectOption('Public Peter');
-  await expect(page.locator('#publicRoutineResult .bl-public-v3-tab')).toHaveCount(3);
-  await expect(page.locator('#publicRoutineResult .bl-public-v3-calendar')).toBeVisible();
+  await expect(page.locator('#publicRoutineResult .bl-public-routine-viewonly-nav [data-public-view]')).toHaveCount(3);
+  await expect(page.locator('#publicRoutineResult .routine-calendar-card')).toBeVisible();
   await page.locator('#publicRoutineResult [data-public-view="summary"]').click();
   await expect(page.locator('#publicRoutineResult')).toContainText('Benefits and practical role');
   await expect(page.locator('#publicRoutineResult')).toContainText('Facial Steam');
@@ -176,36 +176,39 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   expect(await topTabs.allTextContents()).toEqual(['Routine Log','Routine Summary','Routine Plan','Public Routines']);
 
   const yogaLog = page.locator('.fitness-routine-log-item').filter({ hasText:'Hatha Yoga' });
-  await expect(yogaLog).toHaveClass(/bl-log-details-collapsed/);
-  await expect(yogaLog.locator('.fitness-metric-fieldset')).toBeHidden();
+  const yogaDetails = yogaLog.locator('.fitness-log-details-panel');
+  const yogaToggle = yogaLog.locator('[data-fitness-log-details-toggle]');
+  await expect(yogaToggle).toBeVisible();
+  await expect(yogaDetails).toBeHidden();
+  await yogaToggle.click();
+  await expect(yogaDetails).toBeVisible();
+  await yogaToggle.click();
+  await expect(yogaDetails).toBeHidden();
 
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  const planTabs = page.locator('.bl-v4-plan-tabs [data-fitness-plan-view]');
+  const planTabs = page.locator('.fitness-routine-plan-tabs [data-fitness-plan-view]');
   await expect(planTabs).toHaveCount(4);
-  expect(await planTabs.allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activities','Sports']);
+  expect(await planTabs.allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activity','Sports']);
 
   await page.locator('[data-fitness-plan-view="other"]').click();
-  const groupCard = page.locator('[data-fitness-plan-panel="other"] .bl-v4-group-card');
+  const groupCard = page.locator('[data-fitness-routine-panel="other"] .bl-v4-group-card');
   await expect(groupCard).toBeVisible();
-  await expect(groupCard).not.toHaveAttribute('open','');
-  await groupCard.locator('summary').click();
-  await expect(groupCard).toHaveAttribute('open','');
   await groupCard.locator('[data-v4-group-name="other"]').fill('Recovery and Mobility');
   await groupCard.locator('[data-v4-create-group="other"]').click();
   await expect(groupCard.locator('.bl-v4-group-row')).toContainText('Recovery and Mobility');
 
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
-  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveText('2');
+  await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveText('2');
   await groupCard.locator('[data-v4-entity-group="activity:browser-hatha-yoga"]').selectOption({ label:'1. Recovery and Mobility' });
-  await expect(activityCard.locator('.bl-v4-number[data-v4-ungrouped-number]:visible')).toHaveCount(0);
+  await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveCount(0);
 
   await page.locator('[data-fitness-routine-view="log"]').click();
   const savedGroup = page.locator('#fitnessRoutineLogItems > [data-fitness-routine-log-group]').filter({ hasText:'Recovery and Mobility' });
   await expect(savedGroup).toBeVisible();
   await expect(savedGroup.locator('[data-fitness-log-complete="browser-hatha-yoga"]')).toBeVisible();
   await expect(savedGroup.locator('.bl-fitness-log-isolated-number:visible')).toHaveCount(0);
-  const ungroupedRun = page.locator('#fitnessRoutineLogItems .bl-fitness-log-ungrouped-item').filter({ hasText:'Easy Run' });
+  const ungroupedRun = page.locator('#fitnessRoutineLogItems .bl-fitness-log-individual-item').filter({ hasText:'Easy Run' });
   await expect(ungroupedRun.locator('.bl-fitness-log-isolated-number')).toHaveText('2');
 
   await page.locator('[data-fitness-routine-view="summary"]').click();
@@ -220,8 +223,8 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await expect(page.locator('#fitnessPublicRoutineName')).toBeEnabled();
   await page.locator('#fitnessPublicRoutineName').selectOption('Public Peter');
   await page.locator('#fitnessViewPublicRoutine').click();
-  await expect(page.locator('#fitnessPublicRoutineResult .bl-public-v3-tab')).toHaveCount(3);
-  await expect(page.locator('#fitnessPublicRoutineResult .bl-public-v3-calendar')).toBeVisible();
+  await expect(page.locator('#fitnessPublicRoutineResult .bl-public-routine-viewonly-nav [data-public-view]')).toHaveCount(3);
+  await expect(page.locator('#fitnessPublicRoutineResult .fitness-calendar-card')).toBeVisible();
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Recovery and Mobility');
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Training');
   await page.locator('#fitnessPublicRoutineResult [data-public-view="summary"]').click();
