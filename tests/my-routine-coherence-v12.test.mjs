@@ -15,6 +15,7 @@ const skinRoutine=read('systems/baseline-natural-skincare/js/skincare-routine.js
 const skinLoader=read('systems/baseline-natural-skincare/js/skincare-routine-enhancements.js');
 const skinGroups=read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
 const skinCss=read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
+const skinEntryCss=read('systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css');
 const fitnessHtml=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessLoader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const fitnessWorkspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
@@ -25,6 +26,7 @@ const generator=read('systems/baseline-fitness/js/fitness-generator-progression-
 const livePolicy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const multiplePlans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+const fitnessEntryCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
 const workspaceCss=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const generatorCss=read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
@@ -38,17 +40,22 @@ test('one active shared My Routine coherence layer remains',()=>{
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
 });
 
-test('first-paint route identity exists in the document head for both systems',()=>{
+test('first-paint route identity is in the head while system CSS owns visibility',()=>{
   assert.match(fitnessHtml,/id="baseline-fitness-first-paint"/);
   assert.match(fitnessHtml,/data-initial-fitness-tab','my-plan'/);
   assert.match(fitnessHtml,/data-initial-routine-view/);
   assert.match(fitnessHtml,/data-initial-routine-plan/);
-  assert.match(fitnessHtml,/#my-plan:not\(\[data-routine-workspace-v2="true"\]\)>\.grid\{display:none!important\}/);
+  assert.doesNotMatch(fitnessHtml,/id="baseline-fitness-first-paint-style"/);
+  assert.match(fitnessEntryCss,/#my-plan:not\(\[data-routine-workspace-v2="true"\]\)>\.grid\{display:none!important\}/);
+  assert.match(fitnessEntryCss,/html\[data-initial-fitness-tab="my-plan"\] #system\{display:none!important\}/);
 
   assert.match(skinHtml,/id="baseline-skincare-first-paint"/);
   assert.match(skinHtml,/data-initial-skincare-tab','routine'/);
   assert.match(skinHtml,/data-initial-routine-view/);
   assert.match(skinHtml,/id="baseline-skincare-initial-panel"/);
+  assert.doesNotMatch(skinHtml,/id="baseline-skincare-first-paint-style"/);
+  assert.match(skinEntryCss,/html\[data-initial-skincare-tab="routine"\] #system\{display:none!important\}/);
+  assert.match(skinEntryCss,/data-initial-routine-view="summary"/);
 });
 
 test('static My Routine owners load in a first-paint-safe order instead of a late network waterfall',()=>{
