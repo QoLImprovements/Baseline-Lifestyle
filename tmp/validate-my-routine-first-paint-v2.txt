@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current clean main.
-Run after releasing Skincare first-paint CSS once the canonical controller binds and aligning browser assertions with canonical saved-plan and numbered Summary controls.
+Trigger synchronous cached Skincare Plan/group enhancement before DOMContentLoaded settles, plus current Public Summary browser assertions.
