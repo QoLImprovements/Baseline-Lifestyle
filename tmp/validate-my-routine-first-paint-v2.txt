@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current main first-paint architecture.
-Run after resource-authority assertion was made formatting-insensitive so validation can reach Playwright.
+Run after classifying My Routine view keys as session-only navigation state so validation can reach Playwright.
