@@ -1,1 +1,2 @@
 Validation-only trigger for normal Website checks against the current main first-paint architecture.
+Retrigger after moving first-paint visibility into system-owned CSS.
