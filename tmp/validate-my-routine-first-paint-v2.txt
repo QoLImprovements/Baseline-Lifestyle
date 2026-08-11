@@ -1,0 +1,1 @@
+Validation-only trigger for normal Website checks against the current main first-paint architecture.
