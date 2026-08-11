@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current main first-paint architecture.
-Run after removing stale browser-storage inventory patterns so the suite can continue into Chromium and My Routine smoke tests.
+Run after mirroring nested My Routine clean routes in the production-static test server and updating browser assertions to canonical current controls.
