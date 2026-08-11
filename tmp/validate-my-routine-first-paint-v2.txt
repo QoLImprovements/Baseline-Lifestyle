@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current main first-paint architecture.
-Final run after moving visibility into system CSS, removing temporary runners, and aligning safeguards.
+Run after resource-authority assertion was made formatting-insensitive so validation can reach Playwright.
