@@ -219,9 +219,7 @@
     {
       "id": "fitness-active-workout",
       "inventoryPatterns": [
-        "[expression] stepStorageKey(current.planId",
-        "[expression] nextKey",
-        "[expression] stepKey(context.planId"
+        "[expression] stepStorageKey(current.planId"
       ],
       "knownKeys": [
         "__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"
@@ -233,9 +231,7 @@
     },
     {
       "id": "fitness-bridge-plan-lookups",
-      "inventoryPatterns": [
-        "{dynamic}{dynamic}"
-      ],
+      "inventoryPatterns": [],
       "knownKeys": [
         "__bl_fitness_plan_cache_v1__::{normalised-user}",
         "__bl_fitness_plan_v1__::{normalised-user}"
@@ -243,7 +239,7 @@
       "classification": "fitness-bridge-lookup-expressions",
       "decision": "no-independent-migration",
       "target": null,
-      "cutoverRule": "These dynamic bridge lookups read the already-reviewed Fitness server cache and file-protocol fallback keys. They create no additional browser resource and inherit the separate cache and fallback decisions."
+      "cutoverRule": "These known bridge lookup keys are already covered by the separate Fitness cache and file-protocol fallback decisions. They create no additional browser resource."
     },
     {
       "id": "fitness-plan-cache",
