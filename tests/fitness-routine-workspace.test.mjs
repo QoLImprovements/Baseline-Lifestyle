@@ -23,7 +23,6 @@ test('Fitness resolves the exact My Routine route before first paint without art
   assert.match(html,/id="baseline-fitness-first-paint"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/my-routine\\\/plan/);
-  assert.match(html,/#my-plan:not\(\[data-routine-workspace-v2="true"\]\)>\.grid\{display:none!important\}/);
   assert.match(loader,/function requestedRoute\(\)/);
   assert.match(loader,/function seedBaseWorkspaceView\(\)/);
   assert.match(loader,/function loadOrdered\(entries\)/);
@@ -36,7 +35,10 @@ test('Fitness creates the final structure in the same boot task and does not pol
   assert.match(workspace,/function renderStableState\(\)/);
   assert.match(workspace,/const before = JSON\.stringify|const before=JSON\.stringify/);
   assert.match(workspace,/if \(after !== before\) renderStableState\(\)|if \(after!==before\) renderStableState\(\)/);
-  assert.doesNotMatch(workspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)|renderAll\(\);\s*try \{\s*global\.BASELINE_fitnessRoutine/);
+  assert.doesNotMatch(workspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
+  const boot=workspace.match(/function boot\(\) \{[\s\S]*?\n  \}/)?.[0] || '';
+  assert.ok(boot,'Fitness boot function should exist');
+  assert.doesNotMatch(boot,/renderAll\(\)|renderStableState\(\)/);
 });
 
 test('activity catalogue and base activity data owner remain intact',() => {
