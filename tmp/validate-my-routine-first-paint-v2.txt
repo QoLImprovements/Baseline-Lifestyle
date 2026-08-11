@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current clean main.
-Run after removing the remaining Fitness top-level/subtype state conflict, stabilising Skincare completion controls in place, and making Fitness Details a direct persistent disclosure.
+Run after releasing Skincare first-paint CSS once the canonical controller binds and aligning browser assertions with canonical saved-plan and numbered Summary controls.
