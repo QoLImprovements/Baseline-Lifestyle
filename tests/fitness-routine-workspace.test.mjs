@@ -6,9 +6,12 @@ import { createRequire } from 'node:module';
 const require=createRequire(import.meta.url);
 require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
 const catalogue=require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
+const html=fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html',import.meta.url),'utf8');
 const loader=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js',import.meta.url),'utf8');
 const workspace=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js',import.meta.url),'utf8');
 const structure=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js',import.meta.url),'utf8');
+const summary=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-summary-v2.js',import.meta.url),'utf8');
+const routineLog=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-log-v1.js',import.meta.url),'utf8');
 const policy=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js',import.meta.url),'utf8');
 const shared=fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js',import.meta.url),'utf8');
 const sharedCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css',import.meta.url),'utf8');
@@ -16,11 +19,24 @@ const fitnessCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitnes
 const publicViewer=fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js',import.meta.url),'utf8');
 const updateSession=fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php',import.meta.url),'utf8');
 
-test('Fitness loader restores requested views without artificial loading or retired guards',() => {
-  assert.match(loader,/restoreRequestedView/);
-  assert.match(loader,/loadOrderedParallel/);
-  assert.match(loader,/baseline-routine-coherence-v12\.js/);
-  assert.doesNotMatch(loader,/Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
+test('Fitness resolves the exact My Routine route before first paint without artificial loading',() => {
+  assert.match(html,/id="baseline-fitness-first-paint"/);
+  assert.match(html,/data-initial-routine-view/);
+  assert.match(html,/my-routine\\\/plan/);
+  assert.match(html,/#my-plan:not\(\[data-routine-workspace-v2="true"\]\)>\.grid\{display:none!important\}/);
+  assert.match(loader,/function requestedRoute\(\)/);
+  assert.match(loader,/function seedBaseWorkspaceView\(\)/);
+  assert.match(loader,/function loadOrdered\(entries\)/);
+  assert.doesNotMatch(loader,/restoreRequestedView|loadOrderedParallel|Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
+});
+
+test('Fitness creates the final structure in the same boot task and does not poll auth before settling',() => {
+  assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
+  assert.match(workspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
+  assert.match(workspace,/function renderStableState\(\)/);
+  assert.match(workspace,/const before = JSON\.stringify|const before=JSON\.stringify/);
+  assert.match(workspace,/if \(after !== before\) renderStableState\(\)|if \(after!==before\) renderStableState\(\)/);
+  assert.doesNotMatch(workspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)|renderAll\(\);\s*try \{\s*global\.BASELINE_fitnessRoutine/);
 });
 
 test('activity catalogue and base activity data owner remain intact',() => {
@@ -36,22 +52,25 @@ test('non-Calisthenics activity completion remains reversible by checkbox',() =>
   assert.match(shared,/preserveFitnessCompleted/);
 });
 
-test('completed Calisthenics entries use explicit Remove Entry confirmation',() => {
-  assert.match(shared,/Remove Entry/);
-  assert.match(shared,/data-fitness-remove-entry-confirm/);
-  assert.match(shared,/action:'set_status',status:'planned'/);
+test('completed Calisthenics entries use explicit Remove Entry confirmation in the Fitness Log owner',() => {
+  assert.match(routineLog,/Remove Entry/);
+  assert.match(routineLog,/data-fitness-log-remove-confirm/);
+  assert.match(routineLog,/action:'set_status',status:'planned'/);
+  assert.doesNotMatch(shared,/data-fitness-log-remove-confirm/);
   assert.match(updateSession,/\$action === 'set_status'/);
   assert.match(updateSession,/in_array\(\$status, \['planned','rescheduled','done'\]/);
   assert.match(updateSession,/completed_at=NULL/);
 });
 
-test('Fitness Summary uses one filter and shared comprehensive structure',() => {
+test('Fitness Summary uses one shell/filter and one comprehensive content owner',() => {
   assert.match(structure,/fitnessSummaryGroupFilter/);
-  assert.match(shared,/fitnessSummaryGroupFilter/);
-  assert.match(shared,/All Routine Steps/);
-  assert.match(shared,/Individual Routine Steps/);
-  assert.match(structure,/Benefits and practical role/);
-  assert.match(structure,/bl-routine-summary-grid/);
+  assert.match(structure,/function ensureSingleSummaryFilter\(panel\)/);
+  assert.match(summary,/single Fitness owner/);
+  assert.match(summary,/function ensureSingleFilter\(\)/);
+  assert.match(summary,/Benefits and practical role/);
+  assert.match(summary,/bl-routine-summary-grid/);
+  assert.doesNotMatch(structure,/function renderSummary\s*\(/);
+  assert.doesNotMatch(shared,/function fitnessSummaryFilter\s*\(/);
 });
 
 test('Number Of Days range stays valid and compact',() => {
