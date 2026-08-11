@@ -308,9 +308,28 @@
 
   async function loadForAuth(snapshot) {
     const authed=Boolean(snapshot?.authed);const owner=authed?String(snapshot.name || snapshot.user?.name || '').trim():'guest';const changed=normaliseOwner(owner)!==normaliseOwner(state.owner);state.authed=authed;state.owner=owner || 'guest';if (!changed && state.loaded) return;
-    const local=readGroupLocal(state.owner);if (!authed) { state.groups=local.groups;state.assignments=local.assignments;state.loaded=true;schedulePatch();return; }
-    const response=await groupRequest();if (response.ok && response.hasGroups) { state.groups=normaliseGroups(response.groups);state.assignments=normaliseAssignments(response.assignments,state.groups);writeGroupLocal(); } else { state.groups=local.groups;state.assignments=local.assignments;if (state.groups.length || Object.keys(state.assignments).length) saveGroupsNow(); }
-    state.loaded=true;schedulePatch();
+
+    /* Cached group state is part of the first stable My Routine render. Apply it
+       synchronously instead of exposing the Plan and waiting for an animation
+       frame to attach group/step controls. */
+    const local=readGroupLocal(state.owner);
+    state.groups=local.groups;
+    state.assignments=local.assignments;
+    state.loaded=true;
+    patch();
+    if (!authed) return;
+
+    const before=JSON.stringify({ groups:state.groups,assignments:state.assignments });
+    const response=await groupRequest();
+    if (response.ok && response.hasGroups) {
+      state.groups=normaliseGroups(response.groups);
+      state.assignments=normaliseAssignments(response.assignments,state.groups);
+      writeGroupLocal();
+    } else if (state.groups.length || Object.keys(state.assignments).length) {
+      saveGroupsNow();
+    }
+    const after=JSON.stringify({ groups:state.groups,assignments:state.assignments });
+    if (after!==before) patch();
   }
   function attachAuth() {
     const auth=global.BASELINE_auth;
