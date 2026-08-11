@@ -15,7 +15,7 @@ async function diagnosticState(page, phase) {
   const state = await page.evaluate(() => {
     const section = document.querySelector('#my-plan');
     const shell = document.querySelector('.fitness-routine-shell');
-    const calisthenics = document.querySelector('[data-fitness-plan-panel="calisthenics"]');
+    const calisthenics = document.querySelector('[data-fitness-routine-panel="calisthenics"]');
     const saved = document.querySelector('#myPlanSavedWrap');
     const generator = document.querySelector('#myPlanGeneratorWrap');
     const activeSubview = document.querySelector('.fitness-routine-subtabs [data-fitness-routine-view][aria-selected="true"]');
@@ -39,9 +39,9 @@ async function diagnosticState(page, phase) {
       activePlanSubview:activePlanSubview?.dataset.fitnessPlanView || '',
       flags:{
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
-        structure:Boolean(window.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V4__),
-        authority:Boolean(window.__BASELINE_ROUTINE_AUTHORITY_V7__),
-        policy:Boolean(window.__BASELINE_FITNESS_LIVE_POLICY_V2__),
+        structure:Boolean(window.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V6__),
+        coherence:Boolean(window.__BASELINE_ROUTINE_COHERENCE_V12__),
+        policy:Boolean(window.__BASELINE_FITNESS_LIVE_POLICY_V3__),
         app:Boolean(window.BASELINE_FITNESS_DEBUG),
         routineApi:Boolean(window.BASELINE_fitnessRoutine)
       }
@@ -119,6 +119,10 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   expect(after.planView).toBe('calisthenics');
   expect(after.activeSubview).toBe('plan');
   expect(after.activePlanSubview).toBe('calisthenics');
+  expect(after.flags.workspace).toBe(true);
+  expect(after.flags.structure).toBe(true);
+  expect(after.flags.coherence).toBe(true);
+  expect(after.flags.policy).toBe(true);
   expect(pageErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
@@ -158,10 +162,8 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   await page.locator('[data-fitness-plan-view="calisthenics"]').click();
   const createButton = page.locator('#createCalisthenicsPlan');
   await expect(createButton).toBeVisible();
-  await Promise.all([
-    page.waitForURL((url) => url.pathname === '/baseline-fitness/my-routine' && url.searchParams.has('new-plan')),
-    createButton.click()
-  ]);
+  await createButton.click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/plan\/calisthenics$/);
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   const createMarker = await page.evaluate(() => {
     for (let index=0; index<localStorage.length; index+=1) {
@@ -217,8 +219,8 @@ test('weekly-count workout is immediately startable and has no unlock date', asy
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   const start = page.locator('#startWorkoutBtn');
   await expect(start).toBeEnabled();
-  await expect(page.locator('#myPlanStatus')).toContainText('weekly frequency');
-  await expect(page.locator('#myPlanStatus')).not.toContainText(/unlock/i);
+  await expect(page.locator('html')).toHaveAttribute('data-flex-weekly-count','true');
+  await expect(page.locator('#myPlanStatus')).not.toContainText(/unlock|scheduled for later/i);
   await expect(page.locator('#currentWorkoutOut .session-plan-meta .badge').first()).toBeHidden();
   await start.click();
   await expect(page.locator('#startWorkoutBtn')).toHaveText('Continue Workout');
