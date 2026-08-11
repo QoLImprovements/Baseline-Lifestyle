@@ -1,2 +1,2 @@
 Validation-only trigger for normal Website checks against the current clean main.
-Run after synchronous cached Skincare group/Plan enhancement was committed and temporary patch machinery removed.
+Run against the latest base after synchronous cached Skincare group/Plan enhancement and cleanup of temporary patch machinery.
