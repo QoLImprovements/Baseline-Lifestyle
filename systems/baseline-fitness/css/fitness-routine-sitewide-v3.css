@@ -89,10 +89,15 @@ html[data-app="fitness"] #my-plan .fitness-activity-menu :is(button,[role="optio
 #my-plan .fitness-activity-group button.is-keyboard-active,
 #my-plan .fitness-activity-group button[aria-selected="true"]{background:var(--filter-bg)!important}
 #my-plan .fitness-activity-group button{font-size:18px!important}
-#my-plan select,#my-plan select option,#my-plan select optgroup{color:var(--ink)!important;opacity:1!important}
+/* Native option text stays opaque, but the select itself does not force opacity:
+   enhanced selects must remain visually owned by the single themed button. */
+#my-plan select{color:var(--ink)!important}
+#my-plan select option,#my-plan select optgroup{color:var(--ink)!important;opacity:1!important}
 
-/* Native form controls remain the front interactive layer. */
-#my-plan input,#my-plan textarea,#my-plan select,#my-plan button,#my-plan label{pointer-events:auto!important}
+/* Native form controls remain interactive. Enhanced select interaction is owned
+   by the shared .bl-select button, so the native select must not override it. */
+#my-plan input,#my-plan textarea,#my-plan button,#my-plan label{pointer-events:auto!important}
+#my-plan select{pointer-events:auto}
 #my-plan input[type="checkbox"],#my-plan input[type="radio"]{
   appearance:auto!important;
   -webkit-appearance:auto!important;
