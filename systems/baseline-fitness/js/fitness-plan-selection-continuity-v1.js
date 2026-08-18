@@ -2,19 +2,18 @@
 
    ROUTING INVARIANT
    -----------------
-   Choosing another saved Calisthenics plan is a selection change INSIDE
-   My Routine > Routine Plan > Calisthenics. It must never activate Routine Log,
+   Choosing another saved Calisthenics plan is a selection change INSIDE the
+   single My Routine > Routine Plan page. It must never activate Routine Log,
    Plan Generator, or another top-level My Routine view.
 
-   This guard runs on window capture so it precedes the legacy document-level
-   select handler in fitness-multiple-plans.js. It persists the selected plan,
-   preserves the canonical Routine Plan session state, and reloads the clean
-   Calisthenics route so the existing plan renderer can load the newly selected
-   plan from its normal data source.
+   Routine Plan categories are collapsible cards, not nested pages. Selecting a
+   Calisthenics plan therefore reloads the canonical /plan page with the
+   Calisthenics card remembered/open, rather than navigating to a category URL.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V1__) return;
+  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V2__) return;
+  global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V2__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V1__=true;
 
   const document=global.document;
@@ -23,7 +22,7 @@
   const PLAN_CACHE_PREFIX='__bl_fitness_plan_cache_v1__::';
   const VIEW_KEY='__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
-  const CLEAN_ROUTE='/baseline-fitness/my-routine/plan/calisthenics';
+  const CLEAN_ROUTE='/baseline-fitness/my-routine/plan';
 
   function normaliseOwner(value) {
     return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest';
@@ -76,8 +75,6 @@
     if (!persistSelection(planId)) return;
     keepPlanVisible();
     const url=new URL(CLEAN_ROUTE,global.location.origin);
-    /* Reloading the canonical plan route is deliberate: the existing plan data
-       owner reads the newly persisted plan ID during its normal boot sequence. */
     global.location.assign(url.toString());
   }
 
