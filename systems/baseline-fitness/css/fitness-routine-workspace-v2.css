@@ -9,44 +9,30 @@
 #my-plan .fitness-routine-log-head{align-items:flex-start}
 #my-plan .fitness-log-date{min-width:190px}
 
-/* ROUTINE PLAN — ONE PAGE, ONE STATIC GROUP MANAGER, FOUR COLLAPSIBLE CARDS.
-   Routine Groups sits once at the top of the page and is never collapsible.
-   Do not put a Routine Groups editor inside Calisthenics/Cardio/Other/Sports.
-   Do not reintroduce those four categories as subtabs. */
+/* ROUTINE PLAN — ONE PAGE, ONE COMPACT STATIC GROUP MANAGER, FOUR COLLAPSIBLE CARDS.
+   Routine Groups sits once at the top and keeps the earlier compact presentation.
+   Do not turn it into four category management panels and do not make it collapsible. */
 #my-plan [data-fitness-routine-panel="plan"]>.fitness-routine-plan-tabs{display:none!important}
 #my-plan [data-fitness-routine-panel="plan"]>.bl-v4-group-card-global{
   display:grid!important;
-  gap:14px!important;
+  gap:12px!important;
   width:100%!important;
   min-width:0!important;
   margin:0 0 16px!important;
+  padding:14px 16px!important;
+  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+  border-radius:16px!important;
+  background:var(--bl-routine-surface,var(--filter-bg,var(--card-bg,transparent)))!important;
+  color:var(--bl-routine-text,var(--ink,currentColor))!important;
   box-sizing:border-box!important;
 }
-#my-plan .bl-v4-group-card-global .bl-v4-group-card-head{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:space-between!important;
-  gap:12px!important;
-}
-#my-plan .bl-v4-group-card-global .bl-v4-group-card-head h3{
-  margin:0!important;
-  font-size:24px!important;
-  line-height:1.25!important;
-}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-sections{
-  display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:14px!important;
-  min-width:0!important;
-}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-section{
-  display:grid!important;
-  gap:9px!important;
-  min-width:0!important;
-  padding-top:12px!important;
-  border-top:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
-}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-section>h4{margin:0!important}
+#my-plan .bl-v4-group-card-global>div:first-child h3{margin:0!important;font-size:22px!important;line-height:1.25!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-create{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:end!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-list{display:grid!important;gap:8px!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-row{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;padding:8px 0!important}
+#my-plan .bl-v4-group-card-global .bl-v4-assignment-block{display:grid!important;gap:8px!important;padding-top:10px!important;border-top:1px solid var(--bl-routine-border,var(--border,currentColor))!important}
+#my-plan .bl-v4-group-card-global .bl-v4-assignment-block>h4{margin:0!important;font-size:18px!important}
+#my-plan .bl-v4-group-card-global .bl-v4-assignment-list{display:grid!important;gap:8px!important}
 #my-plan .fitness-routine-plan-panels{
   display:grid!important;
   grid-template-columns:1fr!important;
@@ -238,7 +224,7 @@
 }
 
 @media(max-width:820px){
-  #my-plan .bl-v4-group-card-global .bl-v4-assignment-sections{grid-template-columns:1fr!important}
+  #my-plan .bl-v4-group-card-global .bl-v4-group-create{grid-template-columns:1fr!important}
   #my-plan .fitness-activity-add{grid-template-columns:1fr}
   #my-plan .fitness-calendar-controls{
     grid-template-columns:1fr!important;
