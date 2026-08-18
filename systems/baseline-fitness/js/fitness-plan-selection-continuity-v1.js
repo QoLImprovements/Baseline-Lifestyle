@@ -7,12 +7,15 @@
    Plan Generator, or another top-level My Routine view.
 
    Routine Plan categories are collapsible cards, not nested pages. Selecting a
-   Calisthenics plan therefore reloads the canonical /plan page with the
-   Calisthenics card remembered/open, rather than navigating to a category URL.
+   Calisthenics plan reloads the canonical /plan page while preserving the plan
+   selection. The disclosure state is deliberately NOT preserved: the shared
+   Routine Plan collapse authority requires Routine Groups and all four category
+   cards to begin collapsed after every page load/refresh.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V2__) return;
+  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V3__) return;
+  global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V3__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V2__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V1__=true;
 
@@ -67,7 +70,7 @@
   function keepPlanVisible() {
     try {
       global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false);
-      global.BASELINE_fitnessRoutineStructure?.activatePlanView?.('calisthenics',false);
+      global.BASELINE_fitnessRoutinePlanCollapse?.collapseAll?.();
     } catch (_error) {}
   }
 
