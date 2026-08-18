@@ -5,18 +5,24 @@ import { readFileSync } from 'node:fs';
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
 const css=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
+const collapseCss=read('systems/baseline-fitness/css/fitness-routine-groups-collapsible-v1.css');
+const entryCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
-test('Routine Groups remains one static compact manager above the four collapsible Routine Plan cards',()=>{
+test('Routine Groups remains one manager above the four Routine Plan cards and is collapsible',()=>{
   assert.doesNotThrow(()=>new Function(groups));
-  assert.match(groups,/Routine Groups appears ONCE, statically, above the four collapsible Routine/);
+  assert.match(groups,/Routine Groups appears ONCE above the four collapsible Routine Plan category/);
+  assert.match(groups,/is itself collapsible/);
+  assert.match(groups,/document\.createElement\('details'\)/);
+  assert.match(groups,/bl-v4-group-card-summary/);
+  assert.match(groups,/card\.open = true/);
   assert.match(groups,/data\.v4GroupCard = 'global'/);
   assert.match(groups,/planPanel\.insertBefore\(card,planCards\)/);
   assert.match(groups,/\$\$\('\.bl-v4-group-card',planPanel\)\.forEach/);
-  assert.doesNotMatch(groups,/document\.createElement\('details'\)/);
 });
 
-test('Routine Groups is group-first rather than a page-long activity assignment table',()=>{
+test('collapsing Routine Groups is presentation-only and preserves group-first behaviour',()=>{
+  assert.match(groups,/Collapsing Routine Groups must only hide\/reveal its editor/);
   assert.match(groups,/select one existing Routine Group from a dropdown/);
   assert.match(groups,/data-v4-group-select/);
   assert.match(groups,/Routine Activities/);
@@ -53,18 +59,23 @@ test('Routine Group creation and deletion remain available without a separate gr
   assert.doesNotMatch(groups,/data-v4-group-list=\"global\"/);
 });
 
-test('group-first editor has compact dropdown rows and Add Another Activity placement',()=>{
+test('group-first editor keeps compact rows while its disclosure matches Routine Plan cards',()=>{
   assert.match(css,/uses a group-first editor/);
   assert.match(css,/\.bl-v4-group-select-row/);
   assert.match(css,/\.bl-v4-activity-editor/);
   assert.match(css,/\.bl-v4-activity-row/);
   assert.match(css,/\.bl-v4-add-activity/);
   assert.match(css,/grid-template-columns:minmax\(0,1fr\) 48px/);
+  assert.match(collapseCss,/Routine Groups appears once above the four Routine Plan category cards and is/);
+  assert.match(collapseCss,/\.bl-v4-group-card-global>\.bl-v4-group-card-summary::after/);
+  assert.match(collapseCss,/\.bl-v4-group-card-global\[open\]>\.bl-v4-group-card-summary::after/);
+  assert.match(collapseCss,/\.bl-v4-group-card-global:not\(\[open\]\)>\.bl-v4-group-card-body/);
   assert.doesNotMatch(css,/\.bl-v4-assignment-block/);
 });
 
-test('Fitness loader cache-busts the group-first Routine Groups implementation',()=>{
-  assert.match(loader,/BASELINE_FITNESS_ROUTINE_GROUPS_20260818_3/);
-  assert.match(loader,/Routine Groups is one compact static manager at the/);
-  assert.match(loader,/Add Another Activity/);
+test('Fitness entry points cache-bust the collapsible group-first Routine Groups implementation',()=>{
+  assert.match(loader,/BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4/);
+  assert.match(loader,/Routine Groups appears once at the top as a/);
+  assert.match(loader,/collapsible, group-first card/);
+  assert.match(entryCss,/fitness-routine-groups-collapsible-v1\.css\?v=BASELINE_FITNESS_ROUTINE_GROUPS_COLLAPSIBLE_20260818_1/);
 });
