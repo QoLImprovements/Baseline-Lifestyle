@@ -40,7 +40,7 @@
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({
-    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
   }[character]));
 
   function root() { return document.getElementById('my-plan'); }
