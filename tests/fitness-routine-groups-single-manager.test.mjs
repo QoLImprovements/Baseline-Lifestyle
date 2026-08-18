@@ -79,7 +79,7 @@ test('Fitness entry points load the collapsible group manager and collapsed-entr
   assert.match(loader,/BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4/);
   assert.match(loader,/Routine Groups appears once at the top as a/);
   assert.match(loader,/collapsible, group-first card/);
-  assert.match(loader,/fitness-routine-plan-collapse-v1\.js\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_2/);
+  assert.match(loader,/fitness-routine-plan-collapse-v1\.js\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_3/);
   assert.match(entryCss,/fitness-routine-groups-collapsible-v1\.css\?v=BASELINE_FITNESS_ROUTINE_GROUPS_COLLAPSIBLE_20260818_1/);
   assert.match(entryCss,/fitness-routine-plan-collapse-v1\.css\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1/);
 });
