@@ -6,7 +6,8 @@
    other saved plans still exist. It must NOT put the user into Plan Generator.
 
    Behaviour:
-   - if another saved plan remains, select it and stay in Calisthenics Plan;
+   - if another saved plan remains, select it and stay in the Calisthenics card
+     on the single Routine Plan page;
    - prefer the plan that followed the deleted plan, otherwise the previous one;
    - only enter Plan Generator when the deleted plan was the LAST saved plan.
 
@@ -31,8 +32,6 @@
     const deletedIndex=(before || []).findIndex((plan) => planId(plan)===Number(deletedId));
 
     if (deletedIndex>=0) {
-      /* Natural list continuity: choose the plan immediately after the deleted
-         one. If the deleted plan was last, move back to the previous survivor. */
       for (let index=deletedIndex+1;index<before.length;index+=1) {
         const id=planId(before[index]);
         if (id && survivingIds.has(id)) return id;
@@ -100,16 +99,13 @@
         }
       }
 
-      /* Plan Generator is correct only when there are genuinely no saved plans
-         left. Use the multiple-plan controller's creation path, not the legacy
-         app reset, so the route and creation state remain coherent. */
       if (typeof controller.createPlan==='function') {
         setStatus('');
         controller.createPlan();
         return;
       }
 
-      global.location.assign('/baseline-fitness/my-routine/plan/calisthenics');
+      global.location.assign('/baseline-fitness/my-routine/plan');
     } catch (error) {
       setStatus('Could not delete the plan.');
       try { console.error('Calisthenics plan deletion failed.',error); } catch (_error) {}
