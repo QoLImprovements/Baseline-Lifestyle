@@ -54,21 +54,37 @@ test('non-Calisthenics activity completion remains reversible and Remove Entry c
   assert.match(shared,/preserveFitnessCompleted/);
   assert.match(routineLog,/function meaningfulActivityEntry\(/);
   assert.match(routineLog,/data-fitness-activity-log-remove-request/);
-  assert.match(routineLog,/data-fitness-activity-log-remove-confirm/);
   assert.match(routineLog,/function clearActivityLogEntry\(/);
   assert.match(routineLog,/field\.dispatchEvent\(new Event\('input'/);
   assert.match(routineLog,/checkbox\.dispatchEvent\(new Event\('change'/);
 });
 
-test('completed Calisthenics entries use explicit working Remove Entry confirmation in the Fitness Log owner',() => {
-  assert.match(routineLog,/Remove Entry/);
-  assert.match(routineLog,/data-fitness-log-remove-confirm/);
+test('completed Calisthenics Remove Entry bypasses stale root-capture conflicts and remains reversible',() => {
+  assert.match(routineLog,/__BASELINE_FITNESS_ROUTINE_LOG_V3__/);
+  assert.match(routineLog,/IMPORTANT COMPATIBILITY RULE/);
+  assert.match(routineLog,/document\.addEventListener\('pointerdown',interceptRemovePointer,true\)/);
+  assert.match(routineLog,/document\.addEventListener\('click',interceptRemoveClick,true\)/);
+  assert.match(routineLog,/event\.stopImmediatePropagation\(\)/);
+  assert.match(routineLog,/id='fitnessLogRemoveEntryModal'|id="fitnessLogRemoveEntryModal"|overlay\.id='fitnessLogRemoveEntryModal'/);
+  assert.match(routineLog,/data-fitness-log-modal-confirm/);
   assert.match(routineLog,/action:'set_status',status:'planned'/);
   assert.match(routineLog,/await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\)/);
-  assert.doesNotMatch(shared,/data-fitness-log-remove-confirm/);
+  assert.doesNotMatch(shared,/data-fitness-log-modal-confirm/);
   assert.match(updateSession,/\$action === 'set_status'/);
   assert.match(updateSession,/in_array\(\$status, \['planned','rescheduled','done'\]/);
   assert.match(updateSession,/completed_at=NULL/);
+});
+
+test('Remove Entry buttons are preserved across patches instead of being destroyed every frame',() => {
+  assert.match(routineLog,/let button=actions\.querySelector\('\[data-fitness-log-remove-request\]'\)/);
+  assert.match(routineLog,/if \(!button\) \{/);
+  assert.doesNotMatch(routineLog,/querySelectorAll\('\[data-fitness-log-remove-request\][^\n]*forEach\(\(node\)=>node\.remove\(\)\)/);
+});
+
+test('canonical loader force-loads Routine Log v3 even when the legacy direct marker exists',() => {
+  assert.match(loader,/ROUTINE LOG COMPATIBILITY CONTRACT/);
+  assert.match(loader,/BASELINE_FITNESS_ROUTINE_LOG_20260819_3/);
+  assert.match(loader,/marker:'data-fitness-routine-log-v3'/);
 });
 
 test('Fitness activity picker does not expose the brighter border as an isolated white rule',() => {
