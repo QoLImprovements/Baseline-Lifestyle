@@ -7,6 +7,15 @@
    classes as the owner-facing My Routine. The only difference is authority:
    controls which would alter their data are disabled/read-only.
 
+   PUBLIC CALENDAR INVARIANT
+   -------------------------
+   Fitness Public Routines must use the SAME calendar control geometry/classes
+   as the owner's Fitness Routine Log. Week/Month, Date and period navigation
+   therefore remain visually synchronised with the Fitness system palette and
+   navigation stays on one coherent row at desktop sizes. Calendar number
+   markers use only the shared data-caption tooltip; never add a native title
+   tooltip as a second competing caption.
+
    Fitness User's Plan also mirrors the owner's nested Plan views:
    Calisthenics, Cardio, Other Fitness Activity and Sports.
 
@@ -150,14 +159,22 @@
     (routine?.plans || []).forEach((plan) => { if ((plan.sessions || []).some((session) => String(session.status || '')==='done' && completionDate(session)===date)) completed.push({ key:`plan:${Number(plan.planId)}`,label:String(plan.planJson?.name || plan.name || 'Calisthenics') }); });
     const individual=model.entities.filter((entity) => !model.assignments[entity.key]);completed.forEach((entity) => { const groupId=model.assignments[entity.key];if (groupId) { const key=`group:${groupId}`;if (seen.has(key)) return;seen.add(key);const index=model.groups.findIndex((group) => group.id===groupId);if (index>=0) output.push({ number:index+1,label:model.groups[index].title,target:key }); } else { const key=`entity:${entity.key}`;if (seen.has(key)) return;seen.add(key);output.push({ number:model.groups.length+Math.max(0,individual.findIndex((candidate) => candidate.key===entity.key))+1,label:entity.label,target:key }); } });return output;
   }
-  function markerHtml(date) { const list=markers(date);return list.length ? `<span class="bl-routine-calendar-markers">${list.map((marker) => `<span role="button" tabindex="0" class="bl-routine-calendar-marker" data-public-summary-target="${esc(marker.target)}" title="${esc(marker.label)}" aria-label="Open User's Routine Summary: ${esc(marker.label)}">${marker.number}</span>`).join('')}</span>` : ''; }
+  function markerHtml(date) {
+    const list=markers(date);
+    return list.length ? `<span class="bl-routine-calendar-markers">${list.map((marker) => `<span role="button" tabindex="0" class="bl-routine-calendar-marker" data-public-summary-target="${esc(marker.target)}" data-caption="${esc(marker.label)}" aria-label="Open User's Routine Summary: ${esc(marker.label)}">${marker.number}</span>`).join('')}</span>` : '';
+  }
 
   function calendarHtml() {
     const anchor=localDate(calendarAnchor);const dates=calendarView==='week'?weekDates(anchor):monthDates(anchor);const month=anchor.getMonth();const prefix=app==='skin'?'routine':'fitness';const dayClass=app==='skin'?'routine-calendar-day':'fitness-calendar-day';
     const label=calendarView==='week'?`${dates[0].toLocaleDateString('en-GB',{ day:'numeric',month:'short' })} – ${dates[6].toLocaleDateString('en-GB',{ day:'numeric',month:'short',year:'numeric' })}`:anchor.toLocaleDateString('en-GB',{ month:'long',year:'numeric' });
     const weekdays=calendarView==='month'?`<div class="${prefix}-calendar-weekdays" aria-hidden="true">${(UI?.orderedDays?.(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']) || ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']).map((day) => `<span>${day.slice(0,3)}</span>`).join('')}</div>`:'';
     const days=dates.map((date) => { const iso=isoDate(date);const classes=[dayClass];if (iso===selectedDate) classes.push('selected');if (iso===todayIso()) classes.push('today');if (calendarView==='month' && date.getMonth()!==month) classes.push('outside-month');if (markers(iso).length) classes.push('has-completion');return `<button type="button" class="${classes.join(' ')}" data-public-calendar-date="${iso}"${isFuture(iso)?' disabled aria-disabled="true"':''}><span>${date.getDate()}</span>${markerHtml(iso)}</button>`; }).join('');
-    return `<section class="card ${app==='skin'?'routine-card routine-card-full routine-calendar-card':'fitness-routine-card fitness-calendar-card'} bl-routine-card"><div class="${prefix}-calendar-head bl-routine-calendar-head"><div><h2>${app==='skin'?'Skincare':'Fitness'} Calendar</h2></div><div class="${prefix}-calendar-controls bl-routine-calendar-controls"><div class="${prefix}-calendar-view-tabs bl-routine-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="${app==='skin'?'routine-mini routine-calendar-view':'tab fitness-calendar-view'}" data-public-calendar-view="week" aria-selected="${calendarView==='week'}">Week</button><button type="button" class="${app==='skin'?'routine-mini routine-calendar-view':'tab fitness-calendar-view'}" data-public-calendar-view="month" aria-selected="${calendarView==='month'}">Month</button></div><div class="${prefix}-calendar-nav bl-routine-calendar-nav"><button type="button" data-public-calendar-move="previous">←</button><strong>${esc(label)}</strong><button type="button" data-public-calendar-today>Today</button><button type="button" data-public-calendar-move="next">→</button></div></div></div>${weekdays}<div class="${prefix}-calendar-grid ${calendarView==='month'?'month-view':'bl-routine-week-list'}">${days}</div></section>`;
+
+    if (app==='fitness') {
+      return `<section class="card fitness-routine-card fitness-calendar-card bl-routine-card"><div class="section-head-actions fitness-calendar-head"><div><h2>Fitness Calendar</h2><p class="note">Completed fitness activity is highlighted. Select a day to open it in Routine Log.</p></div><div class="fitness-calendar-controls"><div class="fitness-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="tab fitness-calendar-view" data-public-calendar-view="week" aria-selected="${calendarView==='week'}">Week</button><button type="button" class="tab fitness-calendar-view" data-public-calendar-view="month" aria-selected="${calendarView==='month'}">Month</button></div><label class="field-stack fitness-calendar-log-date"><span>Date</span><input type="date" data-public-log-date max="${todayIso()}" value="${selectedDate}" aria-label="Date"></label><div class="actions-inline fitness-calendar-navigation"><button type="button" class="tiny-btn" data-public-calendar-move="previous" aria-label="Previous period">←</button><strong>${esc(label)}</strong><button type="button" class="tiny-btn" data-public-calendar-today>Today</button><button type="button" class="tiny-btn" data-public-calendar-move="next" aria-label="Next period">→</button></div></div></div>${weekdays}<div class="fitness-calendar-grid ${calendarView==='month'?'month-view':'week-view'}">${days}</div></section>`;
+    }
+
+    return `<section class="card routine-card routine-card-full routine-calendar-card bl-routine-card"><div class="routine-calendar-head bl-routine-calendar-head"><div><h2>Skincare Calendar</h2></div><div class="routine-calendar-controls bl-routine-calendar-controls"><div class="routine-calendar-view-tabs bl-routine-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="routine-mini routine-calendar-view" data-public-calendar-view="week" aria-selected="${calendarView==='week'}">Week</button><button type="button" class="routine-mini routine-calendar-view" data-public-calendar-view="month" aria-selected="${calendarView==='month'}">Month</button></div><div class="routine-calendar-nav bl-routine-calendar-nav"><button type="button" data-public-calendar-move="previous">←</button><strong>${esc(label)}</strong><button type="button" data-public-calendar-today>Today</button><button type="button" data-public-calendar-move="next">→</button></div></div></div>${weekdays}<div class="routine-calendar-grid ${calendarView==='month'?'month-view':'bl-routine-week-list'}">${days}</div></section>`;
   }
 
   function skinLog() {
