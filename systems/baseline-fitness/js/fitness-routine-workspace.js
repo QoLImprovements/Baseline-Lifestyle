@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v52.
+/* Baseline Fitness — canonical My Routine dependency loader v53.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -14,6 +14,14 @@
    group's Routine Activities through repeatable dropdowns and Add Another
    Activity. Calisthenics, Cardio, Other Fitness Activity and Sports follow as
    collapsible cards.
+
+   ROUTINE LOG COMPATIBILITY CONTRACT
+   ----------------------------------
+   baseline-fitness.html still contains an older directly-deferred Routine Log
+   script marker. The canonical loader deliberately uses a NEW v3 marker and a
+   fresh cache key for the same Log owner. This guarantees the v3 document-level
+   Remove Entry guard can load even when an older cached v1/v2 script has already
+   executed. Do not collapse this back onto the legacy marker.
 
    PUBLIC SUMMARY MIRROR CONTRACT
    ------------------------------
@@ -32,8 +40,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V52__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V52__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V53__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V53__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -159,7 +167,7 @@
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260810_1',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260810_2',marker:'data-fitness-routine-summary-v3' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260809_1',marker:'data-fitness-routine-log-v1' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260819_3',marker:'data-fitness-routine-log-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4',marker:'data-fitness-routine-groups-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_3',marker:'data-fitness-routine-plan-collapse-v1' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
