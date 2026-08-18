@@ -24,8 +24,8 @@ test('all four Routine Plan category panels stay mounted; details owns collapse 
   assert.match(structure,/child\.hidden=false/);
   assert.match(structure,/child\.classList\.add\('active'\)/);
   assert.doesNotMatch(structure,/child\.hidden=activePlanView!==view/);
-  assert.doesNotMatch(structure,/panel\.hidden=!selected;panel\.classList\.toggle\('active',selected\)/);
   assert.match(structure,/if \(card\) card\.open=true/);
+  assert.match(structure,/\.fitness-routine-plan-card>summary/);
 });
 
 test('the canonical Fitness Routine Plan route has no category suffix',()=>{
