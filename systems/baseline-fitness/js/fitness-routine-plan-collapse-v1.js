@@ -1,4 +1,4 @@
-/* Baseline Fitness — Routine Plan disclosure-state authority v1.
+/* Baseline Fitness — Routine Plan disclosure-state authority v2.
 
    ROUTINE PLAN COLLAPSE CONTRACT
    ------------------------------
@@ -21,12 +21,14 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V1__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V2__) return;
+  global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V2__=true;
   global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V1__=true;
 
   const document=global.document;
   const READY_ATTR='data-fitness-routine-plan-cards-ready';
   const PLAN_PANEL='[data-fitness-routine-panel="plan"]';
+  const CARD='details[data-v4-group-card="global"],details[data-fitness-plan-card]';
   const CARD_SELECTOR=`${PLAN_PANEL} details[data-v4-group-card="global"],${PLAN_PANEL} details[data-fitness-plan-card]`;
   let lastView='';
   let observer=null;
@@ -52,8 +54,8 @@
   function collapseAddedCards(nodes) {
     nodes.forEach((node) => {
       if (!(node instanceof Element)) return;
-      if (node.matches?.(CARD_SELECTOR)) node.open=false;
-      node.querySelectorAll?.('details[data-v4-group-card="global"],details[data-fitness-plan-card]').forEach((card) => {
+      if (node.matches?.(CARD) && node.closest(PLAN_PANEL)) node.open=false;
+      node.querySelectorAll?.(CARD).forEach((card) => {
         if (card.closest(PLAN_PANEL)) card.open=false;
       });
     });
