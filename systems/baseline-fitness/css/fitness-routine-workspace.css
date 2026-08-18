@@ -3,8 +3,8 @@
    baseline-fitness.html already loads baseline-routine-system.css and
    fitness-multiple-plans.css. Do not import either a second time here.
    This entry loads only Fitness renderer geometry, Fitness palette/layout,
-   the canonical Fitness Summary presentation, and the one final shared v12
-   geometry layer, in that order.
+   Routine Groups disclosure styling, the canonical Fitness Summary presentation,
+   and the one final shared v12 geometry layer, in that order.
 
    FIRST-PAINT CONTRACT
    --------------------
@@ -14,6 +14,7 @@
    final My Routine shell is constructed.
 */
 @import url('/systems/baseline-fitness/css/fitness-routine-workspace-v2.css?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260818_5');
+@import url('/systems/baseline-fitness/css/fitness-routine-groups-collapsible-v1.css?v=BASELINE_FITNESS_ROUTINE_GROUPS_COLLAPSIBLE_20260818_1');
 @import url('/systems/baseline-fitness/css/fitness-routine-sitewide-v3.css?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260816_1');
 @import url('/systems/baseline-fitness/css/fitness-routine-summary-v2.css?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260809_2');
 @import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_10');
