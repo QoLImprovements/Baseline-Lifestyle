@@ -6,10 +6,12 @@ const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const guard=read('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
-test('Calisthenics plan selection cannot leave Routine Plan',()=>{
+test('Calisthenics plan selection cannot leave the single Routine Plan page',()=>{
   assert.doesNotThrow(()=>new Function(guard));
-  assert.match(guard,/Choosing another saved Calisthenics plan is a selection change INSIDE/);
-  assert.match(guard,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan\/calisthenics'/);
+  assert.match(guard,/selection change INSIDE the/);
+  assert.match(guard,/single My Routine > Routine Plan page/);
+  assert.match(guard,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan'/);
+  assert.doesNotMatch(guard,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan\/calisthenics'/);
   assert.match(guard,/sessionStorage\?\.setItem\(VIEW_KEY,'plan'\)/);
   assert.match(guard,/sessionStorage\?\.setItem\(PLAN_VIEW_KEY,'calisthenics'\)/);
   assert.match(guard,/activateTopView\?\.\('plan',false\)/);
