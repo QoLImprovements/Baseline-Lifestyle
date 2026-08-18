@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const publicViewer=read('sitewide/js/baseline-public-routine-viewonly-v4.js');
+const publicApi=read('systems/baseline-fitness/api/public_routine_v2.php');
 const fitnessCss=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const html=read('systems/baseline-fitness/baseline-fitness.html');
@@ -33,6 +34,24 @@ test('owner and Public Fitness calendars share the same two-row geometry with on
   assert.match(fitnessCss,/grid-template-areas:\"views date\" \"nav nav\"/);
   assert.match(fitnessCss,/\.fitness-calendar-navigation\{[\s\S]*display:flex!important;[\s\S]*align-items:center!important;[\s\S]*gap:10px!important/);
   assert.match(fitnessCss,/\.fitness-calendar-grid\.week-view/);
+});
+
+test('Public Fitness calendar reads Calisthenics plans from the same authority as the owner',()=>{
+  assert.match(publicApi,/require_once __DIR__ \. '\/fitness_resource\.php'/);
+  assert.match(publicApi,/\$mode = bl_resource_authority\(\)/);
+  assert.match(publicApi,/if\(\$mode === 'saved-data'\)/);
+  assert.match(publicApi,/bl_fitness_resource_read\(\$userId\)/);
+  assert.match(publicApi,/bl_public_fitness_v2_resource_plans\(\$resource\['data'\]\)/);
+  assert.match(publicApi,/\$rawCompleted = \$session\['completedAt'\] \?\? \$session\['completed_at'\]/);
+  assert.match(publicApi,/Public Calendar markers can lag/);
+});
+
+test('Public Fitness saved-data plans preserve every completed session date for marker generation',()=>{
+  assert.match(publicApi,/foreach\(array_slice\(is_array\(\$record\['sessions'\]/);
+  assert.match(publicApi,/if\(\$status === 'done'\)/);
+  assert.match(publicApi,/strtotime\(\$rawCompleted\) !== false/);
+  assert.match(publicApi,/'completedAt'=>\$completedAt/);
+  assert.match(publicApi,/usort\(\$sessions/);
 });
 
 test('Fitness entry points cache-bust the synchronized Public Routine viewer',()=>{
