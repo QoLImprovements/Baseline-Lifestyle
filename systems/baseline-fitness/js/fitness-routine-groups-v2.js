@@ -1,4 +1,4 @@
-/* Baseline Fitness — single owner for Fitness Routine group editing v5.
+/* Baseline Fitness — single owner for Fitness Routine group editing v6.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -8,14 +8,18 @@
 
    ROUTINE PLAN GROUPS CONTRACT
    ----------------------------
-   Routine Groups appears ONCE, statically, above the four collapsible Routine
-   Plan category cards. The editor is group-first rather than a long assignment
-   table:
+   Routine Groups appears ONCE above the four collapsible Routine Plan category
+   cards and is itself collapsible. The editor is group-first rather than a long
+   assignment table:
      1. create a group when needed;
      2. select one existing Routine Group from a dropdown;
      3. manage that group's Routine Activities with activity dropdown rows;
      4. "Add Another Activity" adds another activity dropdown, matching the
         Plan Generator's add-another interaction language.
+
+   Collapsing Routine Groups must only hide/reveal its editor; it must not alter
+   group assignments, selected group state, Routine Log grouping or Routine Plan
+   navigation.
 
    Every saved Calisthenics plan / Cardio / Other Fitness Activity / Sport is a
    Routine Activity option. One activity can belong to only one Routine Group;
@@ -28,7 +32,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V5__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V6__) return;
+  global.__BASELINE_FITNESS_ROUTINE_GROUPS_V6__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V5__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V4__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V3__ = true;
@@ -172,23 +177,26 @@
     });
 
     if (!card) {
-      card = document.createElement('section');
+      card = document.createElement('details');
       card.className = 'bl-v4-group-card bl-v4-group-card-global bl-v4-group-card-compact';
       card.dataset.v4GroupCard = 'global';
-      card.innerHTML = `<div class="bl-v4-group-card-head"><h3>Routine Groups</h3></div>
-        <div class="bl-v4-group-create">
-          <label class="field-stack"><span>Group name</span><input type="text" maxlength="80" data-v4-group-name="global" placeholder="Name a routine group…"></label>
-          <button type="button" class="action secondary" data-v4-create-group="global">Create Group</button>
-        </div>
-        <div class="bl-v4-group-editor">
-          <div class="bl-v4-group-select-row">
-            <label class="field-stack bl-v4-group-select-field"><span>Routine Group</span><select data-v4-group-select></select></label>
-            <button type="button" class="tiny-btn bl-v4-selected-group-remove" data-v4-remove-selected-group aria-label="Remove selected Routine Group">×</button>
+      card.open = true;
+      card.innerHTML = `<summary class="bl-v4-group-card-summary">Routine Groups</summary>
+        <div class="bl-v4-group-card-body">
+          <div class="bl-v4-group-create">
+            <label class="field-stack"><span>Group name</span><input type="text" maxlength="80" data-v4-group-name="global" placeholder="Name a routine group…"></label>
+            <button type="button" class="action secondary" data-v4-create-group="global">Create Group</button>
           </div>
-          <div class="bl-v4-activity-editor" data-v4-activity-editor hidden>
-            <span class="bl-v4-activities-label">Routine Activities</span>
-            <div class="bl-v4-activity-list" data-v4-activity-list></div>
-            <button type="button" class="action secondary bl-v4-add-activity" data-v4-add-activity>Add Another Activity</button>
+          <div class="bl-v4-group-editor">
+            <div class="bl-v4-group-select-row">
+              <label class="field-stack bl-v4-group-select-field"><span>Routine Group</span><select data-v4-group-select></select></label>
+              <button type="button" class="tiny-btn bl-v4-selected-group-remove" data-v4-remove-selected-group aria-label="Remove selected Routine Group">×</button>
+            </div>
+            <div class="bl-v4-activity-editor" data-v4-activity-editor hidden>
+              <span class="bl-v4-activities-label">Routine Activities</span>
+              <div class="bl-v4-activity-list" data-v4-activity-list></div>
+              <button type="button" class="action secondary bl-v4-add-activity" data-v4-add-activity>Add Another Activity</button>
+            </div>
           </div>
         </div>`;
       planPanel.insertBefore(card,planCards);
