@@ -93,6 +93,18 @@
   margin:0!important;
 }
 #my-plan .fitness-routine-plan-card-body>.fitness-routine-plan-panel[hidden]{display:block!important}
+/* Cardio/Other/Sports used to be complete standalone pages with their own outer
+   title/card. The details summary is now the category title, so avoid a second
+   identical heading and a card-inside-card frame. */
+#my-plan .fitness-routine-plan-card-body>.fitness-routine-plan-panel>.fitness-routine-card{
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+#my-plan .fitness-routine-plan-card-body>.fitness-routine-plan-panel>.fitness-routine-card>h2:first-child{display:none!important}
 
 /* Activity search component structure. Colour/stacking is owned elsewhere. */
 #my-plan .fitness-activity-add{
