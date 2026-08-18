@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v42.
+/* Baseline Fitness — canonical My Routine dependency loader v43.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -8,13 +8,14 @@
    plan deletion continuity -> plan selection continuity -> live policy ->
    Public View Only -> shared v12.
 
-   This prevents the old Log/Plan-first paint followed by a later replacement.
-   The structure adapter owns canonical clean paths after boot.
+   Routine Plan is ONE page. Calisthenics, Cardio, Other Fitness Activity and
+   Sports are collapsible cards inside it. Legacy /plan/<category> URLs remain
+   readable only to open the appropriate card, then canonicalise to /plan.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V42__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V42__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V43__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V43__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -29,11 +30,17 @@
       return entry?.name?new URL(entry.name,global.location.href).pathname:String(global.location?.pathname || '');
     } catch (_error) { return String(global.location?.pathname || ''); }
   }
+  function rememberedPlan() {
+    try {
+      const savedPlan=String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
+      return PLAN_VIEWS.includes(savedPlan)?savedPlan:'calisthenics';
+    } catch (_error) { return 'calisthenics'; }
+  }
   function rememberedRoute(path) {
     try {
       const savedView=String(global.sessionStorage?.getItem(ROUTINE_VIEW_KEY) || '');
-      const savedPlan=String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
-      if (TOP_VIEWS.includes(savedView)) return { view:savedView,plan:PLAN_VIEWS.includes(savedPlan)?savedPlan:'calisthenics',path };
+      const savedPlan=rememberedPlan();
+      if (TOP_VIEWS.includes(savedView)) return { view:savedView,plan:savedPlan,path };
       if (PLAN_VIEWS.includes(savedView)) return { view:'plan',plan:savedView,path };
     } catch (_error) {}
     return { view:'log',plan:'calisthenics',path };
@@ -41,16 +48,16 @@
   function requestedRoute() {
     const path=routePath().replace(/\/+$/,'');
     let match=path.match(/^\/baseline-fitness\/my-routine\/(log|summary|public)$/i);
-    if (match) return { view:String(match[1]).toLowerCase(),plan:'calisthenics',path };
+    if (match) return { view:String(match[1]).toLowerCase(),plan:rememberedPlan(),path };
     match=path.match(/^\/baseline-fitness\/my-routine\/plan(?:\/(calisthenics|cardio|other|sports))?$/i);
-    if (match) return { view:'plan',plan:String(match[1] || 'calisthenics').toLowerCase(),path };
-    if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:'calisthenics',path };
+    if (match) return { view:'plan',plan:PLAN_VIEWS.includes(String(match[1] || '').toLowerCase())?String(match[1]).toLowerCase():rememberedPlan(),path };
+    if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:rememberedPlan(),path };
     if (/^\/baseline-fitness\/my-routine$/i.test(path)) {
       try {
         const url=new URL(global.location.href);
         const legacyView=String(url.searchParams.get('routine-view') || '');
         const legacyPlan=String(url.searchParams.get('routine-plan') || '');
-        if (TOP_VIEWS.includes(legacyView)) return { view:legacyView,plan:PLAN_VIEWS.includes(legacyPlan)?legacyPlan:'calisthenics',path };
+        if (TOP_VIEWS.includes(legacyView)) return { view:legacyView,plan:PLAN_VIEWS.includes(legacyPlan)?legacyPlan:rememberedPlan(),path };
       } catch (_error) {}
       return rememberedRoute(path);
     }
@@ -62,14 +69,11 @@
   const openRoutine=Boolean(requested) || document.documentElement.getAttribute('data-initial-fitness-tab')==='my-plan';
 
   function cleanPath(route=requested || { view:'log',plan:'calisthenics' }) {
-    if (route.view==='plan') return `${ROUTE_BASE}/plan/${PLAN_VIEWS.includes(route.plan)?route.plan:'calisthenics'}`;
+    if (route.view==='plan') return `${ROUTE_BASE}/plan`;
     return `${ROUTE_BASE}/${TOP_VIEWS.includes(route.view)?route.view:'log'}`;
   }
   function seedBaseWorkspaceView() {
     if (!requested) return;
-    /* The final structure owns ROUTINE_VIEW_KEY. The base workspace receives
-       its temporary renderer hint through the initial-route data attributes,
-       never by overwriting the canonical top-level session state. */
     document.documentElement.setAttribute('data-initial-routine-view',requested.view || 'log');
     if (requested.view==='plan') document.documentElement.setAttribute('data-initial-routine-plan',requested.plan || 'calisthenics');
     try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,requested.plan || 'calisthenics'); } catch (_error) {}
@@ -135,13 +139,13 @@
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260810_1',marker:'data-fitness-routine-workspace-v2' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260810_1',marker:'data-fitness-routine-structure-v6' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260810_2',marker:'data-fitness-routine-summary-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260809_1',marker:'data-fitness-routine-log-v1' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260808_3',marker:'data-fitness-routine-groups-v2' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
-    { src:'/systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js?v=BASELINE_FITNESS_PLAN_DELETE_CONTINUITY_20260818_1',marker:'data-fitness-plan-delete-continuity-v1' },
-    { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260818_1',marker:'data-fitness-plan-selection-continuity-v1' },
+    { src:'/systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js?v=BASELINE_FITNESS_PLAN_DELETE_CONTINUITY_20260818_2',marker:'data-fitness-plan-delete-continuity-v1' },
+    { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260818_2',marker:'data-fitness-plan-selection-continuity-v1' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260809_5',marker:'data-fitness-live-policy-v3' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
     { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260810_2',marker:'data-baseline-routine-coherence-v12' }
