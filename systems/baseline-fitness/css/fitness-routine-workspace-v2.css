@@ -1,13 +1,98 @@
 /* Baseline Fitness — Routine workspace component geometry.
 
    This file contains only geometry required by the Fitness activity/log
-   renderer itself. Fitness palette/card styling belongs to
-   fitness-routine-sitewide-v3.css; shared My Routine geometry belongs to
-   baseline-routine-system.css and baseline-routine-coherence-v12.css.
+   renderer itself. Fitness palette/card styling belongs to the active Fitness
+   theme; shared My Routine geometry belongs to baseline-routine-system.css and
+   baseline-routine-coherence-v12.css.
 */
 
 #my-plan .fitness-routine-log-head{align-items:flex-start}
 #my-plan .fitness-log-date{min-width:190px}
+
+/* ROUTINE PLAN — ONE PAGE, FOUR COLLAPSIBLE CATEGORY CARDS.
+   Do not reintroduce Calisthenics/Cardio/Other/Sports subtabs. The four category
+   panels stay mounted together and native <details> controls visibility. */
+#my-plan [data-fitness-routine-panel="plan"]>.fitness-routine-plan-tabs{display:none!important}
+#my-plan .fitness-routine-plan-panels{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:16px!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#my-plan .fitness-routine-plan-card{
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+  border-radius:20px!important;
+  background:var(--bl-routine-surface,var(--filter-bg,var(--card-bg,transparent)))!important;
+  color:var(--bl-routine-text,var(--ink,currentColor))!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#my-plan .fitness-routine-plan-card>summary{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  min-height:68px!important;
+  padding:16px 58px 16px 20px!important;
+  border-radius:19px!important;
+  list-style:none!important;
+  cursor:pointer!important;
+  font:inherit!important;
+  font-size:24px!important;
+  font-weight:900!important;
+  line-height:1.25!important;
+  color:var(--bl-routine-text,var(--ink,currentColor))!important;
+  background:var(--bl-routine-surface-strong,var(--card-bg,var(--filter-bg,transparent)))!important;
+  box-sizing:border-box!important;
+}
+#my-plan .fitness-routine-plan-card>summary::-webkit-details-marker{display:none!important}
+#my-plan .fitness-routine-plan-card>summary::after{
+  content:""!important;
+  position:absolute!important;
+  right:24px!important;
+  top:50%!important;
+  width:12px!important;
+  height:12px!important;
+  border-right:3px solid currentColor!important;
+  border-bottom:3px solid currentColor!important;
+  transform:translateY(-68%) rotate(45deg)!important;
+  transform-origin:center!important;
+  transition:transform .16s ease!important;
+  pointer-events:none!important;
+}
+#my-plan .fitness-routine-plan-card[open]>summary{
+  border-radius:19px 19px 0 0!important;
+  border-bottom:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
+}
+#my-plan .fitness-routine-plan-card[open]>summary::after{
+  transform:translateY(-32%) rotate(225deg)!important;
+}
+#my-plan .fitness-routine-plan-card>summary:hover,
+#my-plan .fitness-routine-plan-card>summary:focus-visible{
+  outline:none!important;
+  box-shadow:0 0 0 4px var(--bl-routine-focus,var(--ring,transparent))!important;
+}
+#my-plan .fitness-routine-plan-card-body{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  padding:16px!important;
+  box-sizing:border-box!important;
+}
+#my-plan .fitness-routine-plan-card:not([open])>.fitness-routine-plan-card-body{display:none!important}
+#my-plan .fitness-routine-plan-card-body>.fitness-routine-plan-panel{
+  display:block!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#my-plan .fitness-routine-plan-card-body>.fitness-routine-plan-panel[hidden]{display:block!important}
 
 /* Activity search component structure. Colour/stacking is owned elsewhere. */
 #my-plan .fitness-activity-add{
@@ -48,8 +133,7 @@
 #my-plan .fitness-activity-fields label>span,
 #my-plan .fitness-log-note>span{font-size:18px;color:var(--muted);font-weight:760}
 
-/* Routine Log activity details are collapsed by default. The header remains
-   compact; Session details and Optional note expand together when requested. */
+/* Routine Log activity details are collapsed by default. */
 #my-plan .fitness-log-item-head>.bl-routine-entry-actions{margin-left:auto}
 #my-plan .fitness-log-details-toggle{flex:0 0 auto}
 #my-plan .fitness-log-details-panel{
@@ -70,9 +154,7 @@
 #my-plan .fitness-calisthenics-log-card>div{display:grid;gap:4px}
 #my-plan .fitness-calisthenics-log-card small{color:var(--muted);font-size:18px}
 
-/* Calendar controls deliberately have two rows with a real vertical gap.
-   The mirrored Log Date is an accessibility/usability duplicate of the Log
-   Date at the top of Routine Log; both fields control the same selected date. */
+/* Calendar controls deliberately have two rows with a real vertical gap. */
 #my-plan .fitness-calendar-head{align-items:flex-start!important;gap:22px!important}
 #my-plan .fitness-calendar-controls{
   display:grid!important;
@@ -99,7 +181,7 @@
 }
 #my-plan .fitness-calendar-weekdays{margin-top:6px!important}
 
-/* Week view is pure CSS. Do not add a MutationObserver just to toggle layout. */
+/* Week view is pure CSS. */
 #my-plan .fitness-calendar-card:has(.fitness-calendar-grid.week-view) .fitness-calendar-weekdays{display:none!important}
 #my-plan .fitness-calendar-grid.week-view{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
 #my-plan .fitness-calendar-grid.week-view>.fitness-calendar-day{
@@ -122,5 +204,8 @@
   #my-plan .fitness-calendar-navigation{justify-content:flex-start!important;flex-wrap:wrap!important}
 }
 @media(max-width:620px){
+  #my-plan .fitness-routine-plan-card>summary{min-height:60px!important;padding:14px 50px 14px 16px!important;font-size:21px!important}
+  #my-plan .fitness-routine-plan-card>summary::after{right:20px!important}
+  #my-plan .fitness-routine-plan-card-body{padding:12px!important}
   #my-plan .fitness-routine-subtab{padding:9px 12px}
 }
