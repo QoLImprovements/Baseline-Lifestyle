@@ -1,24 +1,32 @@
-/* Baseline Fitness — canonical My Routine dependency loader v47.
+/* Baseline Fitness — canonical My Routine dependency loader v48.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
    Route is resolved synchronously before any My Routine renderer starts.
    catalogue/family filter -> shared Routine system -> base workspace ->
-   structure/router -> Summary owner -> Log owner -> groups -> generator ->
-   plan deletion continuity -> plan selection continuity -> live policy ->
-   Public View Only -> shared v12.
+   structure/router -> Summary owner -> Log owner -> groups -> disclosure-state
+   authority -> generator -> plan deletion continuity -> plan selection
+   continuity -> live policy -> Public View Only -> shared v12.
 
    Routine Plan is ONE page. Routine Groups appears once at the top as a
    collapsible, group-first card: select a Routine Group, then manage that
    group's Routine Activities through repeatable dropdowns and Add Another
    Activity. Calisthenics, Cardio, Other Fitness Activity and Sports follow as
-   collapsible cards. Legacy /plan/<category> URLs remain readable only to open
-   the appropriate card, then canonicalise to /plan.
+   collapsible cards.
+
+   DISCLOSURE RESET CONTRACT
+   -------------------------
+   Routine Groups + all four category cards begin COLLAPSED whenever Routine
+   Plan is entered, freshly loaded, refreshed or restored from browser history.
+   Disclosure state is never restored from the remembered category/plan. The
+   selected Calisthenics plan may persist, but it must not force its card open.
+   Legacy /plan/<category> URLs remain readable only for compatibility and are
+   canonicalised to /plan without overriding the collapsed-entry rule.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V47__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V47__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V48__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V48__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -146,6 +154,7 @@
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260810_2',marker:'data-fitness-routine-summary-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260809_1',marker:'data-fitness-routine-log-v1' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4',marker:'data-fitness-routine-groups-v2' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1',marker:'data-fitness-routine-plan-collapse-v1' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
     { src:'/systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js?v=BASELINE_FITNESS_PLAN_DELETE_CONTINUITY_20260818_2',marker:'data-fitness-plan-delete-continuity-v1' },
     { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260818_2',marker:'data-fitness-plan-selection-continuity-v1' },
