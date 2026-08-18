@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const css=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const collapseCss=read('systems/baseline-fitness/css/fitness-routine-groups-collapsible-v1.css');
 const entryCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
@@ -15,10 +16,11 @@ test('Routine Groups remains one manager above the four Routine Plan cards and i
   assert.match(groups,/is itself collapsible/);
   assert.match(groups,/document\.createElement\('details'\)/);
   assert.match(groups,/bl-v4-group-card-summary/);
-  assert.match(groups,/card\.open = true/);
   assert.match(groups,/data\.v4GroupCard = 'global'/);
   assert.match(groups,/planPanel\.insertBefore\(card,planCards\)/);
   assert.match(groups,/\$\$\('\.bl-v4-group-card',planPanel\)\.forEach/);
+  assert.match(collapse,/details\[data-v4-group-card="global"\]/);
+  assert.match(collapse,/card\.open=false/);
 });
 
 test('collapsing Routine Groups is presentation-only and preserves group-first behaviour',()=>{
@@ -73,9 +75,11 @@ test('group-first editor keeps compact rows while its disclosure matches Routine
   assert.doesNotMatch(css,/\.bl-v4-assignment-block/);
 });
 
-test('Fitness entry points cache-bust the collapsible group-first Routine Groups implementation',()=>{
+test('Fitness entry points load the collapsible group manager and collapsed-entry authority',()=>{
   assert.match(loader,/BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4/);
   assert.match(loader,/Routine Groups appears once at the top as a/);
   assert.match(loader,/collapsible, group-first card/);
+  assert.match(loader,/fitness-routine-plan-collapse-v1\.js\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1/);
   assert.match(entryCss,/fitness-routine-groups-collapsible-v1\.css\?v=BASELINE_FITNESS_ROUTINE_GROUPS_COLLAPSIBLE_20260818_1/);
+  assert.match(entryCss,/fitness-routine-plan-collapse-v1\.css\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1/);
 });
