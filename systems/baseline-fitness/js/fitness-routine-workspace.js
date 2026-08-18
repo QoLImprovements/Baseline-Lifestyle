@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v44.
+/* Baseline Fitness — canonical My Routine dependency loader v45.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -8,15 +8,15 @@
    plan deletion continuity -> plan selection continuity -> live policy ->
    Public View Only -> shared v12.
 
-   Routine Plan is ONE page. Routine Groups is one static manager at the top,
-   followed by Calisthenics, Cardio, Other Fitness Activity and Sports as
+   Routine Plan is ONE page. Routine Groups is one compact static manager at the
+   top, followed by Calisthenics, Cardio, Other Fitness Activity and Sports as
    collapsible cards. Legacy /plan/<category> URLs remain readable only to open
    the appropriate card, then canonicalise to /plan.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V44__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V44__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V45__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V45__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -143,7 +143,7 @@
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260810_2',marker:'data-fitness-routine-summary-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260809_1',marker:'data-fitness-routine-log-v1' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_1',marker:'data-fitness-routine-groups-v2' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_2',marker:'data-fitness-routine-groups-v2' },
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
     { src:'/systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js?v=BASELINE_FITNESS_PLAN_DELETE_CONTINUITY_20260818_2',marker:'data-fitness-plan-delete-continuity-v1' },
     { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260818_2',marker:'data-fitness-plan-selection-continuity-v1' },
