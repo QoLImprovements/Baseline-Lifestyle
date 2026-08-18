@@ -10,29 +10,42 @@
 #my-plan .fitness-log-date{min-width:190px}
 
 /* ROUTINE PLAN — ONE PAGE, ONE COMPACT STATIC GROUP MANAGER, FOUR COLLAPSIBLE CARDS.
-   Routine Groups sits once at the top and keeps the earlier compact presentation.
-   Do not turn it into four category management panels and do not make it collapsible. */
+   Routine Groups sits once at the top and uses a group-first editor:
+   select a Routine Group, then add that group's Routine Activities through
+   repeatable dropdown rows. Do not restore the old page-long assignment table. */
 #my-plan [data-fitness-routine-panel="plan"]>.fitness-routine-plan-tabs{display:none!important}
 #my-plan [data-fitness-routine-panel="plan"]>.bl-v4-group-card-global{
   display:grid!important;
-  gap:12px!important;
+  gap:14px!important;
   width:100%!important;
   min-width:0!important;
   margin:0 0 16px!important;
-  padding:14px 16px!important;
+  padding:16px!important;
   border:1px solid var(--bl-routine-border,var(--border,currentColor))!important;
   border-radius:16px!important;
   background:var(--bl-routine-surface,var(--filter-bg,var(--card-bg,transparent)))!important;
   color:var(--bl-routine-text,var(--ink,currentColor))!important;
   box-sizing:border-box!important;
 }
-#my-plan .bl-v4-group-card-global>div:first-child h3{margin:0!important;font-size:22px!important;line-height:1.25!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-card-head{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-card-head h3{margin:0!important;font-size:22px!important;line-height:1.25!important}
 #my-plan .bl-v4-group-card-global .bl-v4-group-create{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;gap:10px!important;align-items:end!important}
-#my-plan .bl-v4-group-card-global .bl-v4-group-list{display:grid!important;gap:8px!important}
-#my-plan .bl-v4-group-card-global .bl-v4-group-row{display:grid!important;grid-template-columns:auto minmax(0,1fr) auto!important;gap:10px!important;align-items:center!important;padding:8px 0!important}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-block{display:grid!important;gap:8px!important;padding-top:10px!important;border-top:1px solid var(--bl-routine-border,var(--border,currentColor))!important}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-block>h4{margin:0!important;font-size:18px!important}
-#my-plan .bl-v4-group-card-global .bl-v4-assignment-list{display:grid!important;gap:8px!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-editor{display:grid!important;gap:14px!important;padding-top:14px!important;border-top:1px solid var(--bl-routine-border,var(--border,currentColor))!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-select-row{display:grid!important;grid-template-columns:minmax(0,1fr) 48px!important;gap:10px!important;align-items:end!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-select-field{min-width:0!important;margin:0!important}
+#my-plan .bl-v4-group-card-global .bl-v4-group-select-field>span,
+#my-plan .bl-v4-group-card-global .bl-v4-activities-label{display:block!important;margin:0 0 6px!important;font-size:18px!important;font-weight:850!important;color:var(--bl-routine-text,var(--ink,currentColor))!important}
+#my-plan .bl-v4-group-card-global [data-v4-group-select],
+#my-plan .bl-v4-group-card-global [data-v4-group-activity]{width:100%!important;min-width:0!important;min-height:52px!important;font-size:18px!important;box-sizing:border-box!important}
+#my-plan .bl-v4-group-card-global .bl-v4-selected-group-remove,
+#my-plan .bl-v4-group-card-global .bl-v4-activity-remove{display:grid!important;place-items:center!important;width:48px!important;min-width:48px!important;height:52px!important;min-height:52px!important;margin:0!important;padding:0!important;border-radius:14px!important;font-size:22px!important;line-height:1!important}
+#my-plan .bl-v4-group-card-global .bl-v4-selected-group-remove[hidden]{display:none!important}
+#my-plan .bl-v4-group-card-global .bl-v4-activity-editor{display:grid!important;gap:10px!important;min-width:0!important}
+#my-plan .bl-v4-group-card-global .bl-v4-activity-editor[hidden]{display:none!important}
+#my-plan .bl-v4-group-card-global .bl-v4-activity-list{display:grid!important;gap:9px!important;min-width:0!important}
+#my-plan .bl-v4-group-card-global .bl-v4-activity-row{display:grid!important;grid-template-columns:minmax(0,1fr) 48px!important;gap:10px!important;align-items:center!important;min-width:0!important}
+#my-plan .bl-v4-group-card-global .bl-v4-add-activity{justify-self:start!important;margin-top:2px!important}
+
 #my-plan .fitness-routine-plan-panels{
   display:grid!important;
   grid-template-columns:1fr!important;
@@ -224,7 +237,11 @@
 }
 
 @media(max-width:820px){
-  #my-plan .bl-v4-group-card-global .bl-v4-group-create{grid-template-columns:1fr!important}
+  #my-plan .bl-v4-group-card-global .bl-v4-group-create,
+  #my-plan .bl-v4-group-card-global .bl-v4-group-select-row,
+  #my-plan .bl-v4-group-card-global .bl-v4-activity-row{grid-template-columns:1fr!important}
+  #my-plan .bl-v4-group-card-global .bl-v4-selected-group-remove,
+  #my-plan .bl-v4-group-card-global .bl-v4-activity-remove{justify-self:start!important;width:48px!important}
   #my-plan .fitness-activity-add{grid-template-columns:1fr}
   #my-plan .fitness-calendar-controls{
     grid-template-columns:1fr!important;
