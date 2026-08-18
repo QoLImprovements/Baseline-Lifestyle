@@ -1,4 +1,4 @@
-/* Baseline Fitness — single owner for Fitness Routine group editing v4.
+/* Baseline Fitness — single owner for Fitness Routine group editing v5.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -9,17 +9,27 @@
    ROUTINE PLAN GROUPS CONTRACT
    ----------------------------
    Routine Groups appears ONCE, statically, above the four collapsible Routine
-   Plan category cards. Preserve the original compact manager presentation:
-   one heading, one create row, the saved group list and one flat assignment
-   list. Do not expand it into four category management panels and do not wrap
-   it in <details>.
+   Plan category cards. The editor is group-first rather than a long assignment
+   table:
+     1. create a group when needed;
+     2. select one existing Routine Group from a dropdown;
+     3. manage that group's Routine Activities with activity dropdown rows;
+     4. "Add Another Activity" adds another activity dropdown, matching the
+        Plan Generator's add-another interaction language.
+
+   Every saved Calisthenics plan / Cardio / Other Fitness Activity / Sport is a
+   Routine Activity option. One activity can belong to only one Routine Group;
+   selecting an activity already assigned elsewhere moves it to the selected
+   group. Do not restore the old page-long Routine Steps -> group assignment
+   table and do not split the manager into category-specific panels.
 
    The workspace host exists before this ordered dependency loads, so one bounded
    Log observer is sufficient. Do not add boot polling or runtime <style> blocks.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V4__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V5__) return;
+  global.__BASELINE_FITNESS_ROUTINE_GROUPS_V5__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V4__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V3__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__ = true;
@@ -35,6 +45,7 @@
   let frame = 0;
   let logObserver = null;
   let arrangingLog = false;
+  let selectedGroupId = '';
 
   function owner() {
     try {
@@ -43,10 +54,12 @@
     } catch (_error) {}
     return 'guest';
   }
+
   function readSettings() {
     try { return UI.readSettings?.(owner()) || {}; }
     catch (_error) { return {}; }
   }
+
   function groupData() {
     const value = readSettings();
     const seen = new Set();
@@ -60,9 +73,11 @@
     });
     return { groups,assignments };
   }
+
   function save(data) {
     UI.writeSettings?.({ fitnessRoutineGroups:data.groups,fitnessRoutineAssignments:data.assignments },owner());
   }
+
   function entityList() {
     let planItems = [];
     let activities = [];
@@ -82,11 +97,68 @@
     } catch (_error) {}
     return planItems.concat(activities);
   }
+
   function uniqueId() {
     return global.crypto?.randomUUID ? `fitness-group-${global.crypto.randomUUID()}` : `fitness-group-${Date.now()}-${Math.random().toString(36).slice(2,8)}`;
   }
-  function groupOptions(selected,data) {
-    return `<option value="">No routine group</option>${data.groups.map((group,index) => `<option value="${esc(group.id)}"${group.id === selected ? ' selected' : ''}>${index+1}. ${esc(group.title)}</option>`).join('')}`;
+
+  function resolveSelectedGroup(data) {
+    if (selectedGroupId && data.groups.some((group) => group.id === selectedGroupId)) return selectedGroupId;
+    selectedGroupId = data.groups[0]?.id || '';
+    return selectedGroupId;
+  }
+
+  function groupSelectOptions(data,selected) {
+    if (!data.groups.length) return '<option value="">No Routine Groups created</option>';
+    return `<option value="">Select a Routine Group</option>${data.groups.map((group,index) => `<option value="${esc(group.id)}"${group.id === selected ? ' selected' : ''}>${index+1}. ${esc(group.title)}</option>`).join('')}`;
+  }
+
+  function activitySelectOptions(data,entities,groupId,currentKey='') {
+    const assignedHere = new Set(Object.entries(data.assignments).filter(([,assignedGroup]) => assignedGroup === groupId).map(([key]) => key));
+    return `<option value="">Select Routine Activity</option>${entities.map((entity) => {
+      const duplicate = assignedHere.has(entity.key) && entity.key !== currentKey;
+      return `<option value="${esc(entity.key)}"${entity.key === currentKey ? ' selected' : ''}${duplicate ? ' disabled' : ''}>${esc(entity.label)}</option>`;
+    }).join('')}`;
+  }
+
+  function activityRowHtml(data,entities,groupId,currentKey='') {
+    const label = entities.find((entity) => entity.key === currentKey)?.label || 'Routine Activity';
+    return `<div class="bl-v4-activity-row" data-v4-activity-slot data-v4-slot-key="${esc(currentKey)}">
+      <select data-v4-group-activity aria-label="${currentKey ? `Routine Activity: ${esc(label)}` : 'Select Routine Activity'}">${activitySelectOptions(data,entities,groupId,currentKey)}</select>
+      <button type="button" class="tiny-btn bl-v4-activity-remove" data-v4-remove-activity aria-label="Remove ${esc(label)} from this Routine Group">×</button>
+    </div>`;
+  }
+
+  function renderActivityEditor(card,data,entities,groupId) {
+    const editor = $('[data-v4-activity-editor]',card);
+    const list = $('[data-v4-activity-list]',card);
+    if (!editor || !list) return;
+    editor.hidden = !groupId;
+    if (!groupId) {
+      list.replaceChildren();
+      return;
+    }
+    if (list.contains(document.activeElement)) return;
+    const assigned = entities.filter((entity) => data.assignments[entity.key] === groupId);
+    list.innerHTML = assigned.length
+      ? assigned.map((entity) => activityRowHtml(data,entities,groupId,entity.key)).join('')
+      : activityRowHtml(data,entities,groupId,'');
+  }
+
+  function appendActivitySlot() {
+    const card = $('[data-v4-group-card="global"]');
+    const groupSelect = $('[data-v4-group-select]',card);
+    const list = $('[data-v4-activity-list]',card);
+    const groupId = String(groupSelect?.value || selectedGroupId || '');
+    if (!card || !list || !groupId) return;
+    const data = groupData();
+    const entities = entityList();
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = activityRowHtml(data,entities,groupId,'');
+    const row = wrapper.firstElementChild;
+    if (!row) return;
+    list.appendChild(row);
+    row.querySelector('select')?.focus();
   }
 
   function ensureGroupManager() {
@@ -103,15 +175,21 @@
       card = document.createElement('section');
       card.className = 'bl-v4-group-card bl-v4-group-card-global bl-v4-group-card-compact';
       card.dataset.v4GroupCard = 'global';
-      card.innerHTML = `<div><h3>Routine Groups</h3></div>
+      card.innerHTML = `<div class="bl-v4-group-card-head"><h3>Routine Groups</h3></div>
         <div class="bl-v4-group-create">
           <label class="field-stack"><span>Group name</span><input type="text" maxlength="80" data-v4-group-name="global" placeholder="Name a routine group…"></label>
           <button type="button" class="action secondary" data-v4-create-group="global">Create Group</button>
         </div>
-        <div class="bl-v4-group-list" data-v4-group-list="global"></div>
-        <div class="bl-v4-assignment-block">
-          <h4>Routine Steps</h4>
-          <div class="bl-v4-assignment-list" data-v4-assignment-list="global"></div>
+        <div class="bl-v4-group-editor">
+          <div class="bl-v4-group-select-row">
+            <label class="field-stack bl-v4-group-select-field"><span>Routine Group</span><select data-v4-group-select></select></label>
+            <button type="button" class="tiny-btn bl-v4-selected-group-remove" data-v4-remove-selected-group aria-label="Remove selected Routine Group">×</button>
+          </div>
+          <div class="bl-v4-activity-editor" data-v4-activity-editor hidden>
+            <span class="bl-v4-activities-label">Routine Activities</span>
+            <div class="bl-v4-activity-list" data-v4-activity-list></div>
+            <button type="button" class="action secondary bl-v4-add-activity" data-v4-add-activity>Add Another Activity</button>
+          </div>
         </div>`;
       planPanel.insertBefore(card,planCards);
     } else if (card.nextElementSibling !== planCards) {
@@ -120,18 +198,14 @@
 
     const data = groupData();
     const entities = entityList();
-    const list = $('[data-v4-group-list="global"]',card);
-    const groupsHtml = data.groups.length
-      ? data.groups.map((group,index) => `<div class="bl-v4-group-row"><span class="bl-v4-number">${index+1}</span><strong>${esc(group.title)}</strong><button type="button" class="tiny-btn bl-v4-group-remove" data-v4-remove-group="${esc(group.id)}" aria-label="Remove ${esc(group.title)}">×</button></div>`).join('')
-      : '<p class="note">No routine groups created yet.</p>';
-    if (list && list.innerHTML !== groupsHtml) list.innerHTML = groupsHtml;
-
-    const assignments = $('[data-v4-assignment-list="global"]',card);
-    const assignmentHtml = entities.length
-      ? entities.map((entity) => `<label class="bl-v4-assignment-row"><strong>${esc(entity.label)}</strong><select data-v4-entity-group="${esc(entity.key)}">${groupOptions(data.assignments[entity.key] || '',data)}</select></label>`).join('')
-      : '<p class="note">No Routine Steps are currently saved.</p>';
-    if (assignments && assignments.innerHTML !== assignmentHtml && !assignments.contains(document.activeElement)) assignments.innerHTML = assignmentHtml;
-
+    const groupId = resolveSelectedGroup(data);
+    const groupSelect = $('[data-v4-group-select]',card);
+    const groupOptions = groupSelectOptions(data,groupId);
+    if (groupSelect && !groupSelect.matches(':focus') && groupSelect.innerHTML !== groupOptions) groupSelect.innerHTML = groupOptions;
+    if (groupSelect && groupSelect.value !== groupId && !groupSelect.matches(':focus')) groupSelect.value = groupId;
+    const removeGroupButton = $('[data-v4-remove-selected-group]',card);
+    if (removeGroupButton) removeGroupButton.hidden = !groupId;
+    renderActivityEditor(card,data,entities,groupId);
     decoratePlanItemNumbers(data,entities);
   }
 
@@ -157,7 +231,7 @@
         head.prepend(number);
       }
       number.textContent = String(value);
-      number.setAttribute('aria-label',`${value}. ${entities.find((entity) => entity.key === key)?.label || 'Routine Step'}`);
+      number.setAttribute('aria-label',`${value}. ${entities.find((entity) => entity.key === key)?.label || 'Routine Activity'}`);
     });
   }
 
@@ -167,6 +241,7 @@
     const activityId = node.getAttribute?.('data-log-activity') || node.querySelector?.('[data-fitness-log-complete]')?.dataset.fitnessLogComplete || '';
     return activityId ? `activity:${String(activityId)}` : '';
   }
+
   function logCards(target) {
     const cards = [];
     $$('.fitness-calisthenics-log-card,.fitness-routine-log-item',target).forEach((node) => {
@@ -176,10 +251,12 @@
     });
     return cards;
   }
+
   function logAlreadyArranged(target) {
     const direct = Array.from(target?.children || []);
     return direct.length > 0 && direct.every((child) => child.matches?.('.bl-fitness-log-group,.bl-fitness-log-individual'));
   }
+
   function arrangeRoutineLog() {
     const target = $('#fitnessRoutineLogItems');
     if (!target || arrangingLog || logAlreadyArranged(target)) return;
@@ -253,24 +330,63 @@
     if (!title) { input?.focus();return; }
     const data = groupData();
     if (data.groups.some((group) => group.title.localeCompare(title,'en-GB',{ sensitivity:'base' }) === 0)) { input?.focus();return; }
-    data.groups.push({ id:uniqueId(),title });
+    const id = uniqueId();
+    data.groups.push({ id,title });
+    selectedGroupId = id;
     save(data);
     if (input) input.value='';
     invalidateRoutineLogLayout();
+    schedule();
   }
+
   function removeGroup(id) {
     const data = groupData();
+    const removedIndex = data.groups.findIndex((group) => group.id === id);
     data.groups = data.groups.filter((group) => group.id !== id);
     Object.keys(data.assignments).forEach((key) => { if (data.assignments[key] === id) delete data.assignments[key]; });
+    if (selectedGroupId === id) selectedGroupId = data.groups[Math.max(0,Math.min(removedIndex,data.groups.length-1))]?.id || '';
     save(data);
     invalidateRoutineLogLayout();
+    schedule();
   }
-  function assign(key,groupId) {
+
+  function changeActivitySlot(select) {
+    const card = select.closest('[data-v4-group-card="global"]');
+    const row = select.closest('[data-v4-activity-slot]');
+    const groupId = String($('[data-v4-group-select]',card)?.value || selectedGroupId || '');
+    if (!row || !groupId) return;
+    const oldKey = String(row.dataset.v4SlotKey || '');
+    const newKey = String(select.value || '');
     const data = groupData();
-    if (groupId && data.groups.some((group) => group.id === groupId)) data.assignments[key]=groupId;
-    else delete data.assignments[key];
+    if (newKey && data.assignments[newKey] === groupId && newKey !== oldKey) {
+      select.value = oldKey;
+      return;
+    }
+    if (oldKey && oldKey !== newKey && data.assignments[oldKey] === groupId) delete data.assignments[oldKey];
+    if (newKey) data.assignments[newKey] = groupId;
+    row.dataset.v4SlotKey = newKey;
     save(data);
     invalidateRoutineLogLayout();
+    schedule();
+  }
+
+  function removeActivitySlot(button) {
+    const row = button.closest('[data-v4-activity-slot]');
+    const card = button.closest('[data-v4-group-card="global"]');
+    const list = $('[data-v4-activity-list]',card);
+    const groupId = String($('[data-v4-group-select]',card)?.value || selectedGroupId || '');
+    const key = String(row?.dataset.v4SlotKey || '');
+    if (!row || !list) return;
+    if (!key) {
+      row.remove();
+      if (!list.children.length) appendActivitySlot();
+      return;
+    }
+    const data = groupData();
+    if (groupId && data.assignments[key] === groupId) delete data.assignments[key];
+    save(data);
+    invalidateRoutineLogLayout();
+    schedule();
   }
 
   function schedule() {
@@ -281,6 +397,7 @@
       arrangeRoutineLog();
     });
   }
+
   function watchLog() {
     const target = $('#fitnessRoutineLogItems');
     if (!target || logObserver || typeof MutationObserver === 'undefined') return;
@@ -289,21 +406,43 @@
     });
     logObserver.observe(target,{ childList:true,subtree:false });
   }
+
   function bind() {
     document.addEventListener('click',(event) => {
       const create = event.target?.closest?.('[data-v4-create-group]');
       if (create) { event.preventDefault();createGroup();return; }
-      const remove = event.target?.closest?.('[data-v4-remove-group]');
-      if (remove) { event.preventDefault();removeGroup(String(remove.dataset.v4RemoveGroup || '')); }
+      const removeSelected = event.target?.closest?.('[data-v4-remove-selected-group]');
+      if (removeSelected) {
+        event.preventDefault();
+        const id = String($('[data-v4-group-select]',removeSelected.closest('[data-v4-group-card="global"]'))?.value || selectedGroupId || '');
+        if (id) removeGroup(id);
+        return;
+      }
+      const addActivity = event.target?.closest?.('[data-v4-add-activity]');
+      if (addActivity) { event.preventDefault();appendActivitySlot();return; }
+      const removeActivity = event.target?.closest?.('[data-v4-remove-activity]');
+      if (removeActivity) { event.preventDefault();removeActivitySlot(removeActivity); }
     });
+
     document.addEventListener('keydown',(event) => {
       const input = event.target?.closest?.('[data-v4-group-name="global"]');
       if (input && event.key === 'Enter') { event.preventDefault();createGroup(); }
     });
+
     document.addEventListener('change',(event) => {
-      const select = event.target?.closest?.('[data-v4-entity-group]');
-      if (select) assign(String(select.dataset.v4EntityGroup || ''),String(select.value || ''));
+      const groupSelect = event.target?.closest?.('[data-v4-group-select]');
+      if (groupSelect) {
+        selectedGroupId = String(groupSelect.value || '');
+        const card = groupSelect.closest('[data-v4-group-card="global"]');
+        renderActivityEditor(card,groupData(),entityList(),selectedGroupId);
+        const removeButton = $('[data-v4-remove-selected-group]',card);
+        if (removeButton) removeButton.hidden = !selectedGroupId;
+        return;
+      }
+      const activitySelect = event.target?.closest?.('[data-v4-group-activity]');
+      if (activitySelect) changeActivitySlot(activitySelect);
     });
+
     document.addEventListener('baseline:fitness-plans-updated',schedule);
     document.addEventListener('baseline:routine-settings-changed',schedule);
     document.addEventListener('baseline:fitness-routine-updated',schedule);
