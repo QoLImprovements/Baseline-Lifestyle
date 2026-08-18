@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const css=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const selection=read('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js');
@@ -20,12 +21,13 @@ test('Routine Plan is one page with four collapsible category cards and no neste
   assert.doesNotMatch(structure,/button\.dataset\.fitnessPlanView/);
 });
 
-test('all four Routine Plan category panels stay mounted; details owns collapse state',()=>{
+test('all four category panels stay mounted while disclosure interaction remains native',()=>{
   assert.match(structure,/child\.hidden=false/);
   assert.match(structure,/child\.classList\.add\('active'\)/);
   assert.doesNotMatch(structure,/child\.hidden=activePlanView!==view/);
-  assert.match(structure,/if \(card\) card\.open=true/);
   assert.match(structure,/\.fitness-routine-plan-card>summary/);
+  assert.match(collapse,/card\.open=false/);
+  assert.match(collapse,/current visit remains a normal native/);
 });
 
 test('the canonical Fitness Routine Plan route has no category suffix',()=>{
