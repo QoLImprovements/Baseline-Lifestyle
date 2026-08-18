@@ -48,20 +48,34 @@ test('activity catalogue and base activity data owner remain intact',() => {
   assert.match(workspace,/updateLog\(complete\.dataset\.fitnessLogComplete/);
 });
 
-test('non-Calisthenics activity completion remains reversible by checkbox',() => {
+test('non-Calisthenics activity completion remains reversible and Remove Entry clears recorded log values',() => {
   assert.match(workspace,/entry\.completed = Boolean\(value\)/);
   assert.match(workspace,/renderLog\(\);\s*renderCalendar\(\)/);
   assert.match(shared,/preserveFitnessCompleted/);
+  assert.match(routineLog,/function meaningfulActivityEntry\(/);
+  assert.match(routineLog,/data-fitness-activity-log-remove-request/);
+  assert.match(routineLog,/data-fitness-activity-log-remove-confirm/);
+  assert.match(routineLog,/function clearActivityLogEntry\(/);
+  assert.match(routineLog,/field\.dispatchEvent\(new Event\('input'/);
+  assert.match(routineLog,/checkbox\.dispatchEvent\(new Event\('change'/);
 });
 
-test('completed Calisthenics entries use explicit Remove Entry confirmation in the Fitness Log owner',() => {
+test('completed Calisthenics entries use explicit working Remove Entry confirmation in the Fitness Log owner',() => {
   assert.match(routineLog,/Remove Entry/);
   assert.match(routineLog,/data-fitness-log-remove-confirm/);
   assert.match(routineLog,/action:'set_status',status:'planned'/);
+  assert.match(routineLog,/await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\)/);
   assert.doesNotMatch(shared,/data-fitness-log-remove-confirm/);
   assert.match(updateSession,/\$action === 'set_status'/);
   assert.match(updateSession,/in_array\(\$status, \['planned','rescheduled','done'\]/);
   assert.match(updateSession,/completed_at=NULL/);
+});
+
+test('Fitness activity picker does not expose the brighter border as an isolated white rule',() => {
+  assert.match(routineLog,/fitness-activity-combobox>input/);
+  assert.match(routineLog,/border-color:var\(--border\)!important/);
+  assert.match(routineLog,/fitness-activity-add::before/);
+  assert.match(routineLog,/content:none!important/);
 });
 
 test('Fitness Summary uses one shell/filter and one comprehensive content owner',() => {
