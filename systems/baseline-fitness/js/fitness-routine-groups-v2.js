@@ -1,4 +1,4 @@
-/* Baseline Fitness — single owner for Fitness Routine group editing v3.
+/* Baseline Fitness — single owner for Fitness Routine group editing v4.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -8,17 +8,19 @@
 
    ROUTINE PLAN GROUPS CONTRACT
    ----------------------------
-   Routine Groups is ONE static manager at the top of Routine Plan. It sits above
-   the four collapsible category cards (Calisthenics, Cardio, Other Fitness
-   Activity and Sports). Never duplicate a Routine Groups editor inside those
-   category cards, and never wrap the Routine Groups manager in <details>.
+   Routine Groups appears ONCE, statically, above the four collapsible Routine
+   Plan category cards. Preserve the original compact manager presentation:
+   one heading, one create row, the saved group list and one flat assignment
+   list. Do not expand it into four category management panels and do not wrap
+   it in <details>.
 
    The workspace host exists before this ordered dependency loads, so one bounded
    Log observer is sufficient. Do not add boot polling or runtime <style> blocks.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V3__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_GROUPS_V4__) return;
+  global.__BASELINE_FITNESS_ROUTINE_GROUPS_V4__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V3__ = true;
   global.__BASELINE_FITNESS_ROUTINE_GROUPS_V2__ = true;
 
@@ -92,8 +94,6 @@
     const planCards = $('.fitness-routine-plan-panels',planPanel);
     if (!planPanel || !planCards) return;
 
-    /* Remove legacy duplicated managers that older builds placed inside every
-       category card. There must be exactly one Routine Groups editor. */
     let card = planPanel.querySelector(':scope>.bl-v4-group-card[data-v4-group-card="global"]');
     $$('.bl-v4-group-card',planPanel).forEach((node) => {
       if (node !== card) node.remove();
@@ -101,19 +101,17 @@
 
     if (!card) {
       card = document.createElement('section');
-      card.className = 'bl-v4-group-card bl-v4-group-card-global';
+      card.className = 'bl-v4-group-card bl-v4-group-card-global bl-v4-group-card-compact';
       card.dataset.v4GroupCard = 'global';
-      card.innerHTML = `<div class="bl-v4-group-card-head"><h3>Routine Groups</h3></div>
+      card.innerHTML = `<div><h3>Routine Groups</h3></div>
         <div class="bl-v4-group-create">
           <label class="field-stack"><span>Group name</span><input type="text" maxlength="80" data-v4-group-name="global" placeholder="Name a routine group…"></label>
           <button type="button" class="action secondary" data-v4-create-group="global">Create Group</button>
         </div>
         <div class="bl-v4-group-list" data-v4-group-list="global"></div>
-        <div class="bl-v4-assignment-sections" data-v4-assignment-sections>
-          <section class="bl-v4-assignment-section" data-v4-assignment-section="calisthenics"><h4>Calisthenics plans</h4><div class="bl-v4-assignment-list" data-v4-assignment-list="calisthenics"></div></section>
-          <section class="bl-v4-assignment-section" data-v4-assignment-section="cardio"><h4>Cardio activities</h4><div class="bl-v4-assignment-list" data-v4-assignment-list="cardio"></div></section>
-          <section class="bl-v4-assignment-section" data-v4-assignment-section="other"><h4>Other Fitness Activity</h4><div class="bl-v4-assignment-list" data-v4-assignment-list="other"></div></section>
-          <section class="bl-v4-assignment-section" data-v4-assignment-section="sports"><h4>Sports activities</h4><div class="bl-v4-assignment-list" data-v4-assignment-list="sports"></div></section>
+        <div class="bl-v4-assignment-block">
+          <h4>Routine Steps</h4>
+          <div class="bl-v4-assignment-list" data-v4-assignment-list="global"></div>
         </div>`;
       planPanel.insertBefore(card,planCards);
     } else if (card.nextElementSibling !== planCards) {
@@ -122,27 +120,17 @@
 
     const data = groupData();
     const entities = entityList();
-    const emptyLabels = {
-      calisthenics:'calisthenics plans',
-      cardio:'cardio activities',
-      other:'other fitness activities',
-      sports:'sports activities'
-    };
-
     const list = $('[data-v4-group-list="global"]',card);
     const groupsHtml = data.groups.length
       ? data.groups.map((group,index) => `<div class="bl-v4-group-row"><span class="bl-v4-number">${index+1}</span><strong>${esc(group.title)}</strong><button type="button" class="tiny-btn bl-v4-group-remove" data-v4-remove-group="${esc(group.id)}" aria-label="Remove ${esc(group.title)}">×</button></div>`).join('')
       : '<p class="note">No routine groups created yet.</p>';
     if (list && list.innerHTML !== groupsHtml) list.innerHTML = groupsHtml;
 
-    ['calisthenics','cardio','other','sports'].forEach((section) => {
-      const assignments = $(`[data-v4-assignment-list="${section}"]`,card);
-      const members = entities.filter((entity) => entity.section === section);
-      const assignmentHtml = members.length
-        ? members.map((entity) => `<label class="bl-v4-assignment-row"><strong>${esc(entity.label)}</strong><select data-v4-entity-group="${esc(entity.key)}">${groupOptions(data.assignments[entity.key] || '',data)}</select></label>`).join('')
-        : `<p class="note">No ${esc(emptyLabels[section])} are currently saved.</p>`;
-      if (assignments && assignments.innerHTML !== assignmentHtml && !assignments.contains(document.activeElement)) assignments.innerHTML = assignmentHtml;
-    });
+    const assignments = $('[data-v4-assignment-list="global"]',card);
+    const assignmentHtml = entities.length
+      ? entities.map((entity) => `<label class="bl-v4-assignment-row"><strong>${esc(entity.label)}</strong><select data-v4-entity-group="${esc(entity.key)}">${groupOptions(data.assignments[entity.key] || '',data)}</select></label>`).join('')
+      : '<p class="note">No Routine Steps are currently saved.</p>';
+    if (assignments && assignments.innerHTML !== assignmentHtml && !assignments.contains(document.activeElement)) assignments.innerHTML = assignmentHtml;
 
     decoratePlanItemNumbers(data,entities);
   }
