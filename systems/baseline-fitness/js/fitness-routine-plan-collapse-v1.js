@@ -1,4 +1,4 @@
-/* Baseline Fitness — Routine Plan disclosure-state authority v2.
+/* Baseline Fitness — Routine Plan disclosure-state authority v3.
 
    ROUTINE PLAN COLLAPSE CONTRACT
    ------------------------------
@@ -16,12 +16,14 @@
 
    Opening/closing a card during the current visit remains a normal native
    <details> interaction. This authority only resets disclosure state at a real
-   Routine Plan entry boundary, page lifecycle restoration, or when a new card is
-   inserted by a renderer. It does not alter Routine data, groups or plan choice.
+   Routine Plan entry boundary, page lifecycle/history restoration, or when a
+   new card is inserted by a renderer. It does not alter Routine data, groups or
+   plan choice.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V2__) return;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V3__) return;
+  global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V3__=true;
   global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V2__=true;
   global.__BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_V1__=true;
 
@@ -88,6 +90,13 @@
       const next=String(event.detail?.view || currentView());
       if (next==='plan' && lastView!=='plan') collapseCards(true);
       lastView=next;
+    });
+
+    /* Structure's popstate listener may restore its remembered category first.
+       This listener is registered later, so it normalises the final state back
+       to all-collapsed after that restoration completes. */
+    global.addEventListener('popstate',() => {
+      if (routeIsPlan()) collapseCards(true);
     });
 
     global.addEventListener('pageshow',() => {
