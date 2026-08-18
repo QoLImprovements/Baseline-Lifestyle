@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v51.
+/* Baseline Fitness — canonical My Routine dependency loader v52.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -6,13 +6,20 @@
    catalogue/family filter -> shared Routine system -> base workspace ->
    structure/router -> Summary owner -> Log owner -> groups -> disclosure-state
    authority -> generator -> plan deletion continuity -> plan selection
-   continuity -> live policy -> Public View Only -> shared v12.
+   continuity -> live policy -> Public View Only -> Public Summary canonical
+   mirror -> shared v12.
 
    Routine Plan is ONE page. Routine Groups appears once at the top as a
    collapsible, group-first card: select a Routine Group, then manage that
    group's Routine Activities through repeatable dropdowns and Add Another
    Activity. Calisthenics, Cardio, Other Fitness Activity and Sports follow as
    collapsible cards.
+
+   PUBLIC SUMMARY MIRROR CONTRACT
+   ------------------------------
+   Public Routines -> User's Routine Summary must use the canonical owner
+   Fitness Routine Summary renderer for comprehensive cards. Do not restore the
+   condensed Public-only summary implementation.
 
    DISCLOSURE RESET CONTRACT
    -------------------------
@@ -25,8 +32,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V51__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V51__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V52__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V52__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -160,6 +167,7 @@
     { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260818_3',marker:'data-fitness-plan-selection-continuity-v1' },
     { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260809_5',marker:'data-fitness-live-policy-v3' },
     { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260818_1',marker:'data-baseline-public-routine-viewonly-v4' },
+    { src:'/systems/baseline-fitness/js/fitness-public-routine-summary-mirror-v1.js?v=BASELINE_FITNESS_PUBLIC_SUMMARY_MIRROR_20260818_1',marker:'data-fitness-public-summary-mirror-v1' },
     { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260810_2',marker:'data-baseline-routine-coherence-v12' }
   ])
     .then(selectRoutinePage)
