@@ -4,9 +4,10 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const guard=read('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js');
+const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
-test('Calisthenics plan selection cannot leave the single Routine Plan page',()=>{
+test('Calisthenics plan selection cannot leave the single Routine Plan page or force a card open',()=>{
   assert.doesNotThrow(()=>new Function(guard));
   assert.match(guard,/selection change INSIDE the/);
   assert.match(guard,/single My Routine > Routine Plan page/);
@@ -15,16 +16,19 @@ test('Calisthenics plan selection cannot leave the single Routine Plan page',()=
   assert.match(guard,/sessionStorage\?\.setItem\(VIEW_KEY,'plan'\)/);
   assert.match(guard,/sessionStorage\?\.setItem\(PLAN_VIEW_KEY,'calisthenics'\)/);
   assert.match(guard,/activateTopView\?\.\('plan',false\)/);
-  assert.match(guard,/activatePlanView\?\.\('calisthenics',false\)/);
+  assert.match(guard,/BASELINE_fitnessRoutinePlanCollapse\?\.collapseAll\?\.\(\)/);
+  assert.doesNotMatch(guard,/activatePlanView\?\.\('calisthenics',false\)/);
   assert.match(guard,/global\.addEventListener\('change'/);
   assert.match(guard,/event\.stopImmediatePropagation\(\)/);
   assert.match(guard,/#calisthenicsPlanSelect/);
   assert.doesNotMatch(guard,/\/my-routine\/log|activateTopView\?\.\('log'/);
+  assert.match(collapse,/ALL FIVE MUST BEGIN COLLAPSED/);
 });
 
-test('Fitness loader installs selection continuity after deletion continuity',()=>{
+test('Fitness loader installs disclosure reset before selection continuity',()=>{
+  const disclosure=loader.indexOf('fitness-routine-plan-collapse-v1.js');
   const deletion=loader.indexOf('fitness-plan-delete-continuity-v1.js');
   const selection=loader.indexOf('fitness-plan-selection-continuity-v1.js');
   const policy=loader.indexOf('fitness-live-policy-v1.js');
-  assert.ok(deletion>=0 && selection>deletion && policy>selection);
+  assert.ok(disclosure>=0 && deletion>disclosure && selection>deletion && policy>selection);
 });
