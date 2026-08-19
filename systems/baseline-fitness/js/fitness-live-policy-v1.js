@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical live scheduling and progression policy v3.
+/* Baseline Fitness — canonical live scheduling and progression policy v4.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -14,8 +14,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_LIVE_POLICY_V3__) return;
-  global.__BASELINE_FITNESS_LIVE_POLICY_V3__ = true;
+  if (!global.document || global.__BASELINE_FITNESS_LIVE_POLICY_V4__) return;
+  global.__BASELINE_FITNESS_LIVE_POLICY_V4__ = true;
 
   const document = global.document;
   if ((document.documentElement.dataset.app || document.body?.dataset.app) !== 'fitness') return;
@@ -23,6 +23,7 @@
   const RANGE_ID='frequencyRangeMax';
   const EARLY_PREFIX='__bl_fitness_start_early_v3__::';
   const FAILURE_PREFIX='__bl_fitness_exercise_failed_sessions_v3__::';
+  const OUTCOME_PREFIX='__bl_fitness_exercise_outcomes_v4__::';
   const STEP_PREFIX='__bl_fitness_workout_progress_v2__';
   const $=(selector,root=document) => root?.querySelector?.(selector) || null;
   const $$=(selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
@@ -117,6 +118,7 @@
   }
 
   function failureKey() { return `${FAILURE_PREFIX}${owner()}`; }
+  function outcomeKey() { return `${OUTCOME_PREFIX}${owner()}`; }
   function readFailures() {
     try { const value=JSON.parse(global.localStorage?.getItem(failureKey()) || '[]');return Array.isArray(value)?value:[]; }
     catch (_error) { return []; }
@@ -125,16 +127,37 @@
     try { global.localStorage?.setItem(failureKey(),JSON.stringify((Array.isArray(value)?value:[]).slice(-500))); }
     catch (_error) {}
   }
+  function readOutcomes() {
+    try { const value=JSON.parse(global.localStorage?.getItem(outcomeKey()) || '[]');return Array.isArray(value)?value:[]; }
+    catch (_error) { return []; }
+  }
+  function writeOutcomes(value) {
+    try { global.localStorage?.setItem(outcomeKey(),JSON.stringify((Array.isArray(value)?value:[]).slice(-1000))); }
+    catch (_error) {}
+  }
   function sessionStillDone(record) {
     const plan=plans().find((candidate) => Number(candidate.planId)===Number(record.planId));
     const session=(plan?.sessions || []).find((candidate) => Number(candidate.sessionIndex ?? candidate.session_index)===Number(record.sessionIndex));
     return String(session?.status || '')==='done';
   }
-  function failedCompletedSessions(exercise) {
-    const key=canonicalExercise(exercise).toLocaleLowerCase('en-GB');
-    return readFailures().filter((record) => record.exercise===key && sessionStillDone(record)).length;
+  function completedExerciseSessions(exercise) {
+    return plansContaining(exercise).flatMap((plan) => (Array.isArray(plan?.sessions)?plan.sessions:[])
+      .filter((session) => String(session?.status || '')==='done')
+      .map((session) => ({ planId:Number(plan.planId),sessionIndex:Number(session.sessionIndex ?? session.session_index) })));
   }
-  function progressLevel(exercise) { return Math.max(0,completedSharedSessions(exercise)-failedCompletedSessions(exercise)); }
+  function sameOutcome(record,session,exerciseKey) {
+    return Number(record?.planId)===session.planId && Number(record?.sessionIndex)===session.sessionIndex && record?.exercise===exerciseKey;
+  }
+  function progressLevel(exercise) {
+    const exerciseKey=canonicalExercise(exercise).toLocaleLowerCase('en-GB');
+    const outcomes=readOutcomes();const legacyFailures=readFailures();
+    return completedExerciseSessions(exercise).reduce((total,session) => {
+      const outcome=outcomes.find((record) => sameOutcome(record,session,exerciseKey));
+      if (outcome) return total+(outcome.success===true?1:0);
+      const failed=legacyFailures.some((record) => sameOutcome(record,session,exerciseKey));
+      return total+(failed?0:1);
+    },0);
+  }
   function holdTarget(baseline,progressionSession) {
     let seconds=Math.max(1,Math.round(Number(baseline) || 1));for (let session=2;session<=Math.max(1,Number(progressionSession)||1);session+=1) seconds+=seconds>=90?2:3;return seconds;
   }
@@ -162,10 +185,14 @@
     return Array.from(groups.entries()).map(([exercise,indexes]) => ({ exercise,success:indexes.every((index) => String(results[index]?.status || '')==='success') }));
   }
   function storeSessionOutcomes(context) {
-    if (!context?.planId || !context?.sessionIndex) return;const records=readFailures();const sessionKey=`${Number(context.planId)}:${Number(context.sessionIndex)}`;const outcomes=sessionExerciseOutcomes(context);const exerciseKeys=new Set(outcomes.map((entry) => entry.exercise.toLocaleLowerCase('en-GB')));
-    const next=records.filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
-    outcomes.forEach((entry) => { if (!entry.success) next.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),failed:true,at:new Date().toISOString() }); });
-    writeFailures(next);
+    if (!context?.planId || !context?.sessionIndex) return;
+    const sessionKey=`${Number(context.planId)}:${Number(context.sessionIndex)}`;const outcomes=sessionExerciseOutcomes(context);const exerciseKeys=new Set(outcomes.map((entry) => entry.exercise.toLocaleLowerCase('en-GB')));const at=new Date().toISOString();
+    const nextOutcomes=readOutcomes().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
+    outcomes.forEach((entry) => nextOutcomes.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),success:entry.success,at }));
+    writeOutcomes(nextOutcomes);
+    const nextFailures=readFailures().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
+    outcomes.forEach((entry) => { if (!entry.success) nextFailures.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),failed:true,at }); });
+    writeFailures(nextFailures);
   }
 
   function permissionKey(context) { return `${EARLY_PREFIX}${Number(context?.planId||0)}::${Number(context?.sessionIndex||0)}`; }
@@ -201,18 +228,20 @@
       const original=progression;global.BASELINE_FITNESS_EXERCISE_PROGRESSION=Object.freeze(Object.assign({},original,{ __baselineFitnessLivePolicyV3:true,adjustContext(source) { const adjusted=typeof original.adjustContext==='function'?original.adjustContext(source):source;return applyPolicy(adjusted); } }));
     }
     const workout=global.BASELINE_fitnessWorkout;
-    if (workout && !workout.__baselineFitnessLivePolicyV3) {
+    if (workout && !workout.__baselineFitnessLivePolicyV4) {
       const original=workout;global.BASELINE_fitnessWorkout=Object.freeze(Object.assign({},original,{
-        __baselineFitnessLivePolicyV3:true,
+        __baselineFitnessLivePolicyV4:true,
         getCurrentContext:() => applyPolicy(original.getCurrentContext?.()),
         startSession:() => applyPolicy(original.startSession?.()),
         succeedCurrentStep:(mode='manual') => applyPolicy(original.succeedCurrentStep?.(mode)),
         failCurrentStep:(achieved,mode='manual') => applyPolicy(original.failCurrentStep?.(achieved,mode)),
         recordTimedCurrentStep:(achieved,mode='manual') => directTimedRecord(achieved,mode),
         finishSession:async() => {
-          const before=applyPolicy(original.getCurrentContext?.());const after=await original.finishSession?.();const advanced=Boolean(before?.allComplete && (after?.planComplete || Number(after?.sessionIndex || 0)!==Number(before?.sessionIndex || 0)));
-          if (advanced) { storeSessionOutcomes(before);await global.BASELINE_fitnessPlans?.refresh?.(); }
-          return applyPolicy(after);
+          const before=applyPolicy(original.getCurrentContext?.());
+          if (before?.allComplete) storeSessionOutcomes(before);
+          const after=await original.finishSession?.();const advanced=Boolean(before?.allComplete && (after?.planComplete || Number(after?.sessionIndex || 0)!==Number(before?.sessionIndex || 0)));
+          if (advanced) await global.BASELINE_fitnessPlans?.refresh?.();
+          return applyPolicy(original.getCurrentContext?.() || after);
         },
         resetSession:() => applyPolicy(original.resetSession?.()),
         onChange(listener) { return original.onChange?.((context) => { try { listener(applyPolicy(context)); }catch (_error) {} }); }
@@ -271,7 +300,9 @@
   }
 
   function boot() {
-    ensureEarlyPrompt();ensureRangeControl();installRuntimeWrapper();bindEvents();patchUi();global.BASELINE_FITNESS_LIVE_POLICY=Object.freeze({ augmentPlanJson,applyPolicy,progressLevel });document.documentElement.setAttribute('data-baseline-fitness-live-policy','v3');
+    ensureEarlyPrompt();ensureRangeControl();installRuntimeWrapper();bindEvents();patchUi();global.BASELINE_FITNESS_LIVE_POLICY=Object.freeze({ augmentPlanJson,applyPolicy,progressLevel });document.documentElement.setAttribute('data-baseline-fitness-live-policy','v4');
   }
+  if (typeof module!=='undefined' && module.exports) module.exports={ canonicalExercise,progressLevel,sessionExerciseOutcomes,storeSessionOutcomes };
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
 })(typeof window!=='undefined'?window:globalThis);
+
