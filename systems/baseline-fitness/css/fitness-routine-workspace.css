@@ -26,7 +26,7 @@
 @import url('/systems/baseline-fitness/css/fitness-routine-plan-collapse-v1.css?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1');
 @import url('/systems/baseline-fitness/css/fitness-routine-sitewide-v3.css?v=BASELINE_FITNESS_SITEWIDE_ROUTINE_20260816_1');
 @import url('/systems/baseline-fitness/css/fitness-routine-summary-v2.css?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260809_2');
-@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260809_10');
+@import url('/sitewide/css/baseline-routine-coherence-v12.css?v=BASELINE_ROUTINE_COHERENCE_20260821_1');
 
 html[data-initial-fitness-tab="my-plan"] #system{display:none!important}
 html[data-initial-fitness-tab="my-plan"] #my-plan{display:block!important}

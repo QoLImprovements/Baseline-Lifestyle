@@ -21,6 +21,7 @@
   const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
   const VIEW_KEY = '__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
+  const REVEAL_KEY = '__bl_fitness_reveal_plan_card_once_v1__';
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
   let owner = 'guest';
@@ -305,8 +306,16 @@
     const url=new URL('/baseline-fitness/my-routine',global.location.origin);url.searchParams.set('new-plan',String(Date.now()));global.location.assign(url.toString());
   }
   function openPlan(planId) {
-    const id=Math.max(0,Number(planId)||0);if (!id) return;setCreatingPlan(false);setSelectedPlanId(id);clearPlanCaches();try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics'); }catch (_error) {}
-    const url=new URL(global.location.href);url.pathname='/baseline-fitness/my-routine';url.searchParams.set('routine-view','plan');url.searchParams.set('routine-plan','calisthenics');url.searchParams.delete('new-plan');global.location.assign(url.toString());
+    const id=Math.max(0,Number(planId)||0);if (!id) return;
+    if (typeof global.BASELINE_fitnessPlanSelectionContinuity?.openSelectedPlan==='function') {
+      global.BASELINE_fitnessPlanSelectionContinuity.openSelectedPlan(id);
+      return;
+    }
+    setCreatingPlan(false);setSelectedPlanId(id);clearPlanCaches();
+    try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');global.sessionStorage?.setItem(REVEAL_KEY,'calisthenics'); }catch (_error) {}
+    document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');document.documentElement.setAttribute('data-initial-routine-view','plan');document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
+    try { global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false); }catch (_error) {}
+    const url=new URL('/baseline-fitness/my-routine/plan',global.location.origin);global.location.assign(url.toString());
   }
 
   function completedDate(session) {

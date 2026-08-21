@@ -72,5 +72,5 @@ test('Fitness loader installs disclosure reset before selection continuity',()=>
   assert.ok(disclosure>=0 && deletion>disclosure && selection>deletion && policy>selection);
   assert.match(loader,/ROUTINE_PLAN_COLLAPSE_20260821_1/);
   assert.match(loader,/PLAN_SELECTION_CONTINUITY_20260821_1/);
-  assert.match(page,/ROUTINE_WORKSPACE_20260821_1/);
+  assert.match(page,/ROUTINE_WORKSPACE_20260821_2/);
 });

@@ -456,43 +456,57 @@
     });
     return markers;
   }
+  function fitnessActivityCaption(item,entry) {
+    const definition=global.BASELINE_FITNESS_ACTIVITY_CATALOGUE?.ACTIVITY_BY_ID?.get?.(String(item?.activityId || '')) || null;
+    const values=entry?.metrics && typeof entry.metrics==='object'?entry.metrics:{};
+    const details=(definition?.metrics || []).map((metric) => {
+      const value=values[metric.key];
+      if (value===undefined || value===null || value==='') return '';
+      if (metric.key==='durationMinutes') return global.BASELINE_fitnessRoutineCodes?.compactDuration?.(value) || `${value} minutes`;
+      return `${metric.label}: ${value}${metric.unit?` ${metric.unit}`:''}`;
+    }).filter(Boolean);
+    return `${String(item?.name || 'Fitness activity')}${details.length?` - ${details.join(' · ')}`:''}`;
+  }
+  function fitnessPlanCaption(plan,sessions) {
+    const planName=String(plan?.planJson?.name || plan?.name || 'Calisthenics');
+    const items=Array.isArray(plan?.planJson?.items)?plan.planJson.items:[];
+    const workForSession=global.BASELINE_FITNESS_DEBUG?.workForSession;
+    const sections=(Array.isArray(sessions)?sessions:[]).map((session) => {
+      const index=Math.max(1,Number(session?.session_index || session?.sessionIndex) || 1);
+      let work=[];
+      try { work=typeof workForSession==='function'?workForSession(items,index):[]; }
+      catch (_error) { work=[]; }
+      const steps=work.map((entry) => entry.unit==='seconds'
+        ? `${entry.item?.name || 'Timed hold'} - ${entry.hold}s`
+        : `${entry.item?.name || 'Exercise'} - ${(entry.values || []).join('/')}`);
+      return [`${planName} · Session ${index}`].concat(steps).join('\n');
+    });
+    return sections.length?sections.join('\n'):planName;
+  }
   function fitnessMarkers(date) {
     const state=fitnessState();
     const plans=fitnessPlans();
     const grouping=fitnessGroups();
-    const complete=[];
-    const seen=new Set();
-    const markers=[];
+    const codes=global.BASELINE_fitnessRoutineCodes;
+    const entities=codes?.buildEntities?.(plans,state.activities || []) || [];
+    const completedKeys=[];
+    const captions={};
     Object.entries(state.logs?.[date] || {}).forEach(([id,entry]) => {
       if (!entry?.completed) return;
       const item=(state.activities || []).find((candidate) => String(candidate.id)===String(id));
-      if (item) complete.push({ key:`activity:${item.id}`,label:item.name || 'Fitness activity' });
+      if (!item) return;
+      const key=`activity:${item.id}`;
+      completedKeys.push(key);
+      captions[key]=fitnessActivityCaption(item,entry);
     });
     plans.forEach((plan) => {
-      if ((plan.sessions || []).some((session) => String(session.status || '')==='done' && completionDate(session)===date)) {
-        complete.push({ key:`plan:${Number(plan.planId)}`,label:String(plan.planJson?.name || plan.name || 'Calisthenics') });
-      }
+      const sessions=(plan.sessions || []).filter((session) => String(session.status || '')==='done' && completionDate(session)===date);
+      if (!sessions.length) return;
+      const key=`plan:${Number(plan.planId)}`;
+      completedKeys.push(key);
+      captions[key]=fitnessPlanCaption(plan,sessions);
     });
-    const all=plans.map((plan) => ({ key:`plan:${Number(plan.planId)}`,label:String(plan.planJson?.name || plan.name || 'Calisthenics') }))
-      .concat((state.activities || []).map((item) => ({ key:`activity:${item.id}`,label:item.name || 'Fitness activity' })));
-    const individual=all.filter((entity) => !grouping.assignments[entity.key]);
-    complete.forEach((entity) => {
-      const groupId=String(grouping.assignments[entity.key] || '');
-      if (groupId) {
-        const target=`group:${groupId}`;
-        if (seen.has(target)) return;
-        seen.add(target);
-        const index=grouping.groups.findIndex((group) => String(group.id)===groupId);
-        if (index>=0) markers.push({ number:index+1,label:grouping.groups[index].title,target });
-        return;
-      }
-      const target=`entity:${entity.key}`;
-      if (seen.has(target)) return;
-      seen.add(target);
-      const index=individual.findIndex((candidate) => candidate.key===entity.key);
-      markers.push({ number:grouping.groups.length+Math.max(0,index)+1,label:entity.label,target });
-    });
-    return markers;
+    return codes?.completionMarkers?.({ entities,completedKeys,captions,groups:grouping.groups,assignments:grouping.assignments }) || [];
   }
 
   function removeLegacyCalendarPayload(day) {
@@ -515,10 +529,10 @@
         wrap.className='bl-routine-calendar-markers';
         day.appendChild(wrap);
       }
-      const signature=markers.map((marker) => `${marker.number}:${marker.label}:${marker.target}`).join('|');
+      const signature=markers.map((marker) => `${marker.code || marker.number}:${marker.caption || marker.label}:${marker.target}`).join('|');
       if (wrap.dataset.signature===signature) return;
       wrap.dataset.signature=signature;
-      wrap.innerHTML=markers.map((marker) => `<span role="button" tabindex="0" class="bl-routine-calendar-marker" data-routine-summary-target="${esc(marker.target)}" data-caption="${esc(marker.label)}" title="${esc(marker.label)}" aria-label="Open Routine Summary: ${esc(marker.label)}">${marker.number}</span>`).join('');
+      wrap.innerHTML=markers.map((marker) => `<span role="button" tabindex="0" class="bl-routine-calendar-marker" data-routine-summary-target="${esc(marker.target)}" data-caption="${esc(marker.caption || marker.label)}" aria-label="Open Routine Summary: ${esc(marker.label)}">${esc(marker.code || marker.number)}</span>`).join('');
     });
   }
 

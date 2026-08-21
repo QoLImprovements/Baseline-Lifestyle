@@ -171,8 +171,11 @@ test('Fitness Summary has only one content/filter owner',()=>{
   assert.doesNotMatch(coherence,/function applyFitnessSummary\s*\(/);
 });
 
-test('calendar markers are number-only with hover captions and Summary navigation',()=>{
-  assert.match(coherence,/data-caption=\"\$\{esc\(marker\.label\)\}\"/);
+test('calendar markers use routine codes with detailed hover captions and Summary navigation',()=>{
+  assert.match(coherence,/marker\.code \|\| marker\.number/);
+  assert.match(coherence,/data-caption=\"\$\{esc\(marker\.caption \|\| marker\.label\)\}\"/);
+  assert.match(coherence,/fitnessPlanCaption/);
+  assert.match(coherence,/fitnessActivityCaption/);
   assert.match(coherence,/data-routine-summary-target/);
   assert.match(coherence,/openSummary/);
   assert.match(coherenceCss,/content:attr\(data-caption\)/);

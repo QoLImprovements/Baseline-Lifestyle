@@ -13,6 +13,7 @@
   const BODY_KEY = '__bl_fitness_body_profile_v1__';
   const PAGE_SIZE = 12;
   const REQUEST_TIMEOUT_MS = 12000;
+  const PROGRESSION_MODES = Object.freeze({ LINEAR: 'linear-fixed', STRAIGHT: 'straight-sets', TIMED: 'timed-hold' });
 
   const CATALOGUE = global.BASELINE_FITNESS_EXERCISE_CATALOGUE ||
     (typeof module !== 'undefined' && module.exports ? require('./fitness-exercise-catalogue.js') : null);
@@ -25,7 +26,7 @@
   const STORE = global.BASELINE_store && typeof global.BASELINE_store.read === 'function' ? global.BASELINE_store : null;
 
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, setValues, progressionIncrements, progressedSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
+    module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   }
   if (typeof document === 'undefined') return;
   if (global.__BASELINE_FITNESS_APP__) return;
@@ -134,14 +135,22 @@
     const rawType = String(source.progressionType || '');
     const type = rawType === LEGACY_TIMED_TYPE ? TYPES.TIMED : Object.values(TYPES).includes(rawType) ? rawType : definition.progressionType;
     const item = { exercise: definition.name, baseline: Math.round(clamp(source.baseline || definition.base, 1, 9999)), progressionType: type };
+    const rawMode = String(source.progressionMode || '');
+    const savedMode = rawMode === 'linear-percent' ? PROGRESSION_MODES.LINEAR : rawMode;
+    if (definition.unit === 'seconds') item.progressionMode = PROGRESSION_MODES.TIMED;
+    else if ([PROGRESSION_MODES.LINEAR, PROGRESSION_MODES.STRAIGHT].includes(savedMode)) item.progressionMode = savedMode;
     if (definition.unit === 'reps') {
       item.sets = setCount(source.sets || 3);
       const defaultPerSet = type === TYPES.LEG ? 3 : 1;
-      const defaultTotal = defaultPerSet * (definition.laterality === 'per-side' ? 2 : 1);
       const rawIncrease = Number(source.repIncrease);
-      let totalIncrease = Number.isFinite(rawIncrease) && rawIncrease >= 0 ? Math.round(rawIncrease) : defaultTotal;
-      if (definition.laterality === 'per-side' && totalIncrease % 2 !== 0) totalIncrease += 1;
-      item.repIncrease = Math.round(clamp(totalIncrease, 0, 1000));
+      if (item.progressionMode) {
+        item.repIncrease = Math.round(clamp(Number.isFinite(rawIncrease) && rawIncrease >= 0 ? rawIncrease : defaultPerSet, 0, 1000));
+      } else {
+        const defaultTotal = defaultPerSet * (definition.laterality === 'per-side' ? 2 : 1);
+        let totalIncrease = Number.isFinite(rawIncrease) && rawIncrease >= 0 ? Math.round(rawIncrease) : defaultTotal;
+        if (definition.laterality === 'per-side' && totalIncrease % 2 !== 0) totalIncrease += 1;
+        item.repIncrease = Math.round(clamp(totalIncrease, 0, 1000));
+      }
     }
     return item;
   }
@@ -180,6 +189,25 @@
     const increments = progressionIncrements(type, count);
     return setValues(baseline, count).map((value, index) => value + ((session - 1) * increments[index]));
   }
+  function planSetValues(itemValue, definitionValue, sessionIndex) {
+    const item = itemValue && typeof itemValue === 'object' ? itemValue : {};
+    const definition = definitionValue && typeof definitionValue === 'object' ? definitionValue : exerciseDefinition(item.exercise);
+    const mode = String(item.progressionMode || '');
+    if (![PROGRESSION_MODES.LINEAR, PROGRESSION_MODES.STRAIGHT].includes(mode)) {
+      return progressedSetValues(item.baseline, item.sets, sessionIndex, item.progressionType);
+    }
+    const sets = setCount(item.sets || 3);
+    const session = Math.max(1, Math.round(Number(sessionIndex) || 1));
+    const fallbackIncrease = String(definition.progressionType || '') === String(TYPES.LEG) ? 3 : 1;
+    const rawIncrease = Number(item.repIncrease);
+    const increase = Number.isFinite(rawIncrease) && rawIncrease >= 0 ? Math.round(rawIncrease) : fallbackIncrease;
+    const finalSet = Math.max(1, Math.round((Number(item.baseline) || 1) * 0.80));
+    const offsets = { 1:[0], 2:[-1,0], 3:[-1,-2,0], 4:[-2,-3,-1,0], 5:[-3,-4,-2,-1,0] }[sets];
+    const initial = mode === PROGRESSION_MODES.STRAIGHT
+      ? Array(sets).fill(finalSet)
+      : offsets.map((offset) => Math.max(1, finalSet + (offset * increase)));
+    return initial.map((value) => value + ((session - 1) * increase));
+  }
   function holdIncrement(seconds) {
     return Math.max(1, Math.round(Number(seconds) || 1)) >= 90 ? 2 : 3;
   }
@@ -194,7 +222,7 @@
       const definition = exerciseDefinition(item.exercise);
       return definition.unit === 'seconds'
         ? { item: definition, unit: 'seconds', hold: holdValue(item.baseline, sessionIndex), progressionType: TYPES.TIMED }
-        : { item: definition, unit: 'reps', sets: item.sets, values: progressedSetValues(item.baseline, item.sets, sessionIndex, item.progressionType), progressionType: item.progressionType };
+        : { item: definition, unit: 'reps', sets: item.sets, values: planSetValues(item, definition, sessionIndex), progressionType: item.progressionType };
     });
   }
   function executionSteps(work) {
@@ -994,7 +1022,7 @@
     resetSession: resetCurrentWorkout,
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
-  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, setValues, progressionIncrements, progressedSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
+  global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
   if (typeof module !== 'undefined' && module.exports) module.exports = global.BASELINE_FITNESS_DEBUG;
   if (typeof document === 'undefined' || typeof global.addEventListener !== 'function') return;
 
