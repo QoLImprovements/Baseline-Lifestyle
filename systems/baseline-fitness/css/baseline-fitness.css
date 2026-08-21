@@ -864,3 +864,26 @@ body.voice-workout-active{overflow:hidden}
   .voice-workout-actions .compact-action{flex:1 1 180px;justify-content:center}
 }
 body.voice-workout-active .bl-scroll{overflow:hidden!important}
+
+/* Completion-date controls share one input-height row beneath their label. */
+.session-completion-date-editor{
+  align-items:flex-end;
+}
+.session-completion-date-editor > .compact-action,
+.session-completion-date-editor > .note,
+.session-completion-date-editor > .status{
+  min-height:48px;
+}
+.session-completion-date-editor > .note,
+.session-completion-date-editor > .status{
+  display:flex;
+  align-items:center;
+  margin:0;
+}
+@media (max-width:700px){
+  .session-completion-date-editor > .note,
+  .session-completion-date-editor > .status{
+    flex-basis:100%;
+    min-height:0;
+  }
+}
