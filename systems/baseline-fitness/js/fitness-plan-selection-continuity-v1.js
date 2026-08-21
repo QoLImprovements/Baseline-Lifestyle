@@ -8,13 +8,14 @@
 
    Routine Plan categories are collapsible cards, not nested pages. Selecting a
    Calisthenics plan reloads the canonical /plan page while preserving the plan
-   selection. The disclosure state is deliberately NOT preserved: the shared
-   Routine Plan collapse authority requires Routine Groups and all four category
-   cards to begin collapsed after every page load/refresh.
+   selection. The selected Calisthenics card is revealed again after that
+   selection-triggered reload so the newly selected plan is immediately visible.
+   This is a one-load hand-off, not general disclosure-state persistence.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V3__) return;
+  if (!global.document || global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V4__) return;
+  global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V4__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V3__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V2__=true;
   global.__BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_V1__=true;
@@ -25,6 +26,7 @@
   const PLAN_CACHE_PREFIX='__bl_fitness_plan_cache_v1__::';
   const VIEW_KEY='__bl_fitness_routine_view_v2__';
   const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
+  const REVEAL_KEY='__bl_fitness_reveal_plan_card_once_v1__';
   const CLEAN_ROUTE='/baseline-fitness/my-routine/plan';
 
   function normaliseOwner(value) {
@@ -59,6 +61,7 @@
       global.localStorage?.removeItem(`${CREATE_PREFIX}${owner}`);
       global.sessionStorage?.setItem(VIEW_KEY,'plan');
       global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');
+      global.sessionStorage?.setItem(REVEAL_KEY,'calisthenics');
     } catch (_error) {}
     clearPlanCaches();
     document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
@@ -67,16 +70,15 @@
     return true;
   }
 
-  function keepPlanVisible() {
+  function keepPlanPageActive() {
     try {
       global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false);
-      global.BASELINE_fitnessRoutinePlanCollapse?.collapseAll?.();
     } catch (_error) {}
   }
 
   function openSelectedPlan(planId) {
     if (!persistSelection(planId)) return;
-    keepPlanVisible();
+    keepPlanPageActive();
     const url=new URL(CLEAN_ROUTE,global.location.origin);
     global.location.assign(url.toString());
   }
