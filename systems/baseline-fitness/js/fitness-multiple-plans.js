@@ -292,7 +292,8 @@
     if (generatedActions && generatedActions!==existingActions) { existingActions?.remove();head.appendChild(generatedActions); }
     let summary=shell.querySelector(':scope>.calisthenics-saved-plan-summary');if (!summary) { summary=document.createElement('div');summary.className='calisthenics-saved-plan-summary session-plan-meta';head.insertAdjacentElement('afterend',summary); }
     const total=Number(plan.progress?.total || plan.planJson?.sessions || (plan.sessions || []).length || 0);const done=Number(plan.progress?.done || (plan.sessions || []).filter((session) => session.status==='done').length || 0);
-    summary.innerHTML=`<span class="badge">Start: ${prettyDate(plan.planJson?.startDate || plan.planJson?.start_date)}</span><span class="badge">Frequency: ${frequencyText(plan)}</span><span class="badge">Sessions: ${total}</span><span class="badge">Progress: ${done}/${total}</span>`;
+    const startBadge=plan.planJson?.scheduleMode==='specific-days'?`<span class="badge">Schedule begins: ${prettyDate(plan.planJson?.startDate || plan.planJson?.start_date)}</span>`:'';
+    summary.innerHTML=`${startBadge}<span class="badge">Frequency: ${frequencyText(plan)}</span><span class="badge">Sessions: ${total}</span><span class="badge">Progress: ${done}/${total}</span>`;
     Array.from(shell.children).find((node) => node.tagName==='H2' && node!==title)?.remove();Array.from(shell.children).find((node) => node.matches?.('p.note'))?.remove();generated?.remove();decorateExerciseNames(shell);
   }
 
@@ -319,15 +320,31 @@
   }
 
   function completedDate(session) {
-    const raw=Number(session?.completed_at);if (!raw) return '';const date=new Date(raw*1000);const pad=(number) => String(number).padStart(2,'0');return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`;
+    const raw=session?.completed_at ?? session?.completedAt ?? '';if (!raw) return '';
+    if (typeof raw==='number' || /^\d+$/.test(String(raw))) { const number=Number(raw),date=new Date(number>9999999999?number:number*1000);return Number.isNaN(date.getTime())?'':date.toLocaleDateString('sv-SE'); }
+    const text=String(raw);if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0,10);const parsed=new Date(text);return Number.isNaN(parsed.getTime())?'':parsed.toLocaleDateString('sv-SE');
   }
   function todayIso() { return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toISOString().slice(0,10); }
+  function localDate(value) { const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ''));return match?new Date(Number(match[1]),Number(match[2])-1,Number(match[3])):new Date(); }
+  function weekBounds(value) { const date=localDate(value),startIndex=global.BASELINE_RoutineSystem?.startDayIndex?.() ?? 1,offset=((date.getDay()-startIndex)+7)%7,start=new Date(date);start.setDate(start.getDate()-offset);const end=new Date(start);end.setDate(end.getDate()+6);const iso=(item)=>item.toLocaleDateString('sv-SE');return { start:iso(start),end:iso(end) }; }
+  function weeklyGoal(plan,date,index=0) {
+    const value=plan?.planJson || {},minimum=Math.max(1,Math.min(7,Number(value.frequencyMin || String(value.frequency || '1x').replace(/\D/g,'')) || 1));
+    const rawMaximum=Math.max(0,Math.min(7,Number(value.frequencyRangeMax || 0))),maximum=rawMaximum>=minimum?rawMaximum:minimum,bounds=weekBounds(date);
+    const count=(Array.isArray(plan?.sessions)?plan.sessions:[]).filter((session)=>String(session?.status || '')==='done' && completedDate(session)>=bounds.start && completedDate(session)<=bounds.end).length;
+    return { planId:Number(plan?.planId),planName:planName(plan,index),minimum,maximum,count,goalMet:count>=minimum,extra:Math.max(0,count-minimum),remaining:Math.max(0,minimum-count),available:count<maximum };
+  }
+  function weeklyGoalDetail(goal) {
+    if (!goal.goalMet) return `Weekly goal: ${goal.count}/${goal.minimum} · ${goal.remaining} remaining`;
+    if (goal.count>=goal.maximum) return `Weekly goal met · ${goal.extra} extra · range complete (${goal.count}/${goal.maximum})`;
+    return `Weekly goal met · ${goal.extra} extra · up to ${goal.maximum-goal.count} more this week`;
+  }
+  function getWeeklyGoalsForDate(date) { const target=String(date || todayIso());return plans.map((plan,index)=>weeklyGoal(plan,target,index)); }
   function getPlansForDate(date) {
     const target=String(date || todayIso());if (target>todayIso()) return [];const output=[];
     plans.forEach((plan,index) => {
-      const sessions=Array.isArray(plan.sessions)?plan.sessions:[];
-      sessions.filter((session) => session.status==='done' && completedDate(session)===target).forEach((session) => { output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(session.session_index),detail:'Completed on this date',status:'done' }); });
-      if (target===todayIso()) { const next=sessions.find((session) => session.status!=='done');if (next && String(next.scheduled_date || '')<=target) output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(next.session_index),detail:String(next.scheduled_date || '')<target?'Overdue and available today':'Due today',status:'due' }); }
+      const sessions=Array.isArray(plan.sessions)?plan.sessions:[],goal=weeklyGoal(plan,target,index);
+      sessions.filter((session) => session.status==='done' && completedDate(session)===target).forEach((session) => { output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(session.session_index),detail:`Completed on this date · ${weeklyGoalDetail(goal)}`,status:'done',weeklyGoal:goal }); });
+      if (target===todayIso()) { const next=sessions.find((session) => session.status!=='done'),flexible=plan.planJson?.scheduleMode!=='specific-days';if (next && (flexible?goal.available:String(next.scheduled_date || '')<=target)) output.push({ planId:Number(plan.planId),planName:planName(plan,index),sessionIndex:Number(next.session_index),detail:flexible?weeklyGoalDetail(goal):(String(next.scheduled_date || '')<target?'Overdue and available today':'Due today'),status:'due',weeklyGoal:goal }); }
     });
     return output;
   }
@@ -350,6 +367,6 @@
   }
   function boot() { patchInterface();bind();attachAuth(); }
 
-  global.BASELINE_fitnessPlans=Object.freeze({ refresh:refreshPlans,getPlans,getSelectedPlanId:selectedPlanId,getPlansForDate,openPlan,createPlan });
+  global.BASELINE_fitnessPlans=Object.freeze({ refresh:refreshPlans,getPlans,getSelectedPlanId:selectedPlanId,getPlansForDate,getWeeklyGoalsForDate,openPlan,createPlan });
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
 })(typeof window!=='undefined'?window:globalThis);

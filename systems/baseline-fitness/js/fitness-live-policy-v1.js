@@ -262,7 +262,7 @@
     document.documentElement.setAttribute('data-flex-weekly-count',weekly?'true':'false');
   }
   function patchFrequencyPresentation() {
-    const plan=planJson();const weekly=flexibleWeekly(plan || { scheduleMode:$('#scheduleMode')?.value || 'weekly-count' });document.documentElement.setAttribute('data-flex-weekly-count',weekly?'true':'false');document.documentElement.setAttribute('data-flex-weekly-count-preview',$('#scheduleMode')?.value==='specific-days'?'false':'true');const rangeField=$('#'+RANGE_ID)?.closest('.fitness-frequency-grid');if (rangeField) rangeField.hidden=$('#scheduleMode')?.value==='specific-days';const label=frequencyLabel(plan);$$('#myPlanOut .badge,#planOut .badge').forEach((badge) => { if (/^Frequency:/i.test(String(badge.textContent || '').trim())) badge.textContent=`Frequency: ${label}`; });patchWorkoutAccess();
+    const plan=planJson();const weekly=flexibleWeekly(plan || { scheduleMode:$('#scheduleMode')?.value || 'weekly-count' });document.documentElement.setAttribute('data-flex-weekly-count',weekly?'true':'false');document.documentElement.setAttribute('data-flex-weekly-count-preview',$('#scheduleMode')?.value==='specific-days'?'false':'true');const rangeField=$('#'+RANGE_ID)?.closest('.fitness-frequency-grid');if (rangeField) rangeField.hidden=$('#scheduleMode')?.value==='specific-days';const startField=$('#startDate')?.closest('.field-stack');if (startField) startField.hidden=weekly;const label=frequencyLabel(plan);$$('#myPlanOut .badge,#planOut .badge').forEach((badge) => { if (/^Frequency:/i.test(String(badge.textContent || '').trim())) badge.textContent=`Frequency: ${label}`; });patchWorkoutAccess();
   }
   function patchUi() { ensureRangeControl();patchFrequencyPresentation(); }
 

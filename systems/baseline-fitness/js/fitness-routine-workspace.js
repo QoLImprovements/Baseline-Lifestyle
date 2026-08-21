@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v55.
+/* Baseline Fitness — canonical My Routine dependency loader v56.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -41,8 +41,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V55__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V55__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V56__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V56__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -165,9 +165,9 @@
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260810_1',marker:'data-fitness-routine-workspace-v2' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_ROUTINE_SUMMARY_20260810_2',marker:'data-fitness-routine-summary-v3' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-fitness-routine-summary-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260819_3',marker:'data-fitness-routine-log-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-codes-v1.js?v=BASELINE_FITNESS_ROUTINE_CODES_20260821_1',marker:'data-fitness-routine-codes-v1' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4',marker:'data-fitness-routine-groups-v2' },
@@ -175,8 +175,8 @@
     { src:'/systems/baseline-fitness/js/fitness-generator-progression-v1.js?v=BASELINE_FITNESS_GENERATOR_PROGRESSION_20260809_6',marker:'data-fitness-generator-progression-v5' },
     { src:'/systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js?v=BASELINE_FITNESS_PLAN_DELETE_CONTINUITY_20260818_2',marker:'data-fitness-plan-delete-continuity-v1' },
     { src:'/systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js?v=BASELINE_FITNESS_PLAN_SELECTION_CONTINUITY_20260821_1',marker:'data-fitness-plan-selection-continuity-v1' },
-    { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_LIVE_POLICY_20260809_5',marker:'data-fitness-live-policy-v3' },
-    { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260818_1',marker:'data-baseline-public-routine-viewonly-v4' },
+    { src:'/systems/baseline-fitness/js/fitness-live-policy-v1.js?v=BASELINE_FITNESS_COMPLETION_DATES_20260821_1',marker:'data-fitness-live-policy-v3' },
+    { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-baseline-public-routine-viewonly-v4' },
     { src:'/systems/baseline-fitness/js/fitness-public-routine-summary-mirror-v1.js?v=BASELINE_FITNESS_PUBLIC_SUMMARY_MIRROR_20260818_1',marker:'data-fitness-public-summary-mirror-v1' },
     { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260821_1',marker:'data-baseline-routine-coherence-v12' }
   ])

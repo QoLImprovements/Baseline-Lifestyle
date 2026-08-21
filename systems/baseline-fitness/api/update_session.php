@@ -9,6 +9,18 @@ $sessionIndex = (int)($d['sessionIndex'] ?? ($d['session_index'] ?? 0));
 $action = strtolower(trim((string)($d['action'] ?? 'toggle_done')));
 $days = max(1, min(14, (int)($d['days'] ?? 1)));
 if($sessionIndex <= 0) bl_json(['ok'=>false,'error'=>'bad_session_index'], 400);
+$completionDate = trim((string)($d['completionDate'] ?? ($d['completion_date'] ?? '')));
+$completionIso = null;
+$completionTimestamp = null;
+if($completionDate !== ''){
+  $parsedCompletion = DateTimeImmutable::createFromFormat('!Y-m-d', $completionDate, new DateTimeZone('UTC'));
+  if(!$parsedCompletion || $parsedCompletion->format('Y-m-d') !== $completionDate || $completionDate > gmdate('Y-m-d')){
+    bl_json(['ok'=>false,'error'=>'bad_completion_date'], 400);
+  }
+  $parsedCompletion = $parsedCompletion->setTime(12, 0, 0);
+  $completionIso = $parsedCompletion->format('c');
+  $completionTimestamp = $parsedCompletion->getTimestamp();
+}
 
 try{
   $mode = bl_resource_authority();
@@ -35,7 +47,7 @@ try{
     if($action === 'toggle_done'){
       $isDone = (string)($target['status'] ?? '') === 'done';
       $target['status'] = $isDone ? 'planned' : 'done';
-      $target['completedAt'] = $isDone ? null : $now;
+      $target['completedAt'] = $isDone ? null : ($completionIso ?? $now);
       $target['updatedAt'] = $now;
       $sessions[$targetIndex] = $target;
     }elseif($action === 'reschedule'){
@@ -52,7 +64,13 @@ try{
       $status = strtolower(trim((string)($d['status'] ?? 'planned')));
       if(!in_array($status, ['planned','rescheduled','done'], true)) $status = 'planned';
       $target['status'] = $status;
-      $target['completedAt'] = $status === 'done' ? $now : null;
+      $target['completedAt'] = $status === 'done' ? ($completionIso ?? $now) : null;
+      $target['updatedAt'] = $now;
+      $sessions[$targetIndex] = $target;
+    }elseif($action === 'set_completion_date'){
+      if((string)($target['status'] ?? '') !== 'done') bl_json(['ok'=>false,'error'=>'completion_requires_done'], 409);
+      if($completionIso === null) bl_json(['ok'=>false,'error'=>'bad_completion_date'], 400);
+      $target['completedAt'] = $completionIso;
       $target['updatedAt'] = $now;
       $sessions[$targetIndex] = $target;
     }else{
@@ -94,7 +112,7 @@ try{
     if($isDone){
       $db->prepare('UPDATE plan_sessions SET status="planned", completed_at=NULL, updated_at=:t WHERE id=:id')->execute([':t'=>$now, ':id'=>(int)$srow['id']]);
     }else{
-      $db->prepare('UPDATE plan_sessions SET status="done", completed_at=:c, updated_at=:t WHERE id=:id')->execute([':c'=>$now, ':t'=>$now, ':id'=>(int)$srow['id']]);
+      $db->prepare('UPDATE plan_sessions SET status="done", completed_at=:c, updated_at=:t WHERE id=:id')->execute([':c'=>$completionTimestamp ?? $now, ':t'=>$now, ':id'=>(int)$srow['id']]);
     }
   }elseif($action === 'reschedule'){
     if(((string)($srow['status'] ?? '')) !== 'done'){
@@ -106,7 +124,12 @@ try{
     $status = strtolower(trim((string)($d['status'] ?? 'planned')));
     if(!in_array($status, ['planned','rescheduled','done'], true)) $status = 'planned';
     $db->prepare('UPDATE plan_sessions SET status=:s, completed_at=:c, updated_at=:t WHERE id=:id')
-      ->execute([':s'=>$status,':c'=>$status === 'done' ? $now : null,':t'=>$now,':id'=>(int)$srow['id']]);
+      ->execute([':s'=>$status,':c'=>$status === 'done' ? ($completionTimestamp ?? $now) : null,':t'=>$now,':id'=>(int)$srow['id']]);
+  }elseif($action === 'set_completion_date'){
+    if(((string)($srow['status'] ?? '')) !== 'done') bl_json(['ok'=>false,'error'=>'completion_requires_done'], 409);
+    if($completionTimestamp === null) bl_json(['ok'=>false,'error'=>'bad_completion_date'], 400);
+    $db->prepare('UPDATE plan_sessions SET completed_at=:c, updated_at=:t WHERE id=:id')
+      ->execute([':c'=>$completionTimestamp,':t'=>$now,':id'=>(int)$srow['id']]);
   }else{
     bl_json(['ok'=>false,'error'=>'bad_action'], 400);
   }

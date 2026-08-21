@@ -117,10 +117,15 @@
     const source = value && typeof value === 'object' ? value : {};
     const mode = FREQUENCIES.some((entry) => entry.value === source.mode) ? source.mode : 'weekly';
     const days = Array.isArray(source.days) ? DAYS.filter((day) => source.days.includes(day)) : [];
+    const timesPerWeekMin = Math.max(1, Math.min(14, Math.round(Number(source.timesPerWeekMin ?? source.timesPerWeek) || 1)));
+    const requestedMaximum = Math.max(1, Math.min(14, Math.round(Number(source.timesPerWeekMax ?? source.timesPerWeek) || timesPerWeekMin)));
+    const timesPerWeekMax = Math.max(timesPerWeekMin, requestedMaximum);
     return {
       mode,
       days,
-      timesPerWeek:Math.max(1, Math.min(14, Math.round(Number(source.timesPerWeek) || 1))),
+      timesPerWeek:timesPerWeekMin,
+      timesPerWeekMin,
+      timesPerWeekMax,
       timesPerMonth:Math.max(1, Math.min(31, Math.round(Number(source.timesPerMonth) || 1)))
     };
   }
@@ -207,7 +212,9 @@
     const frequency = normaliseFrequency(value);
     if (frequency.mode === 'daily') return 'Every day';
     if (frequency.mode === 'days') return frequency.days.length ? frequency.days.join(', ') : 'Specific days not selected';
-    if (frequency.mode === 'weekly') return `${frequency.timesPerWeek}× each week`;
+    if (frequency.mode === 'weekly') return frequency.timesPerWeekMax > frequency.timesPerWeekMin
+      ? `${frequency.timesPerWeekMin}–${frequency.timesPerWeekMax}× each week`
+      : `${frequency.timesPerWeekMin}× each week`;
     if (frequency.mode === 'monthly') return `${frequency.timesPerMonth}× each month`;
     return 'As needed';
   }
@@ -221,6 +228,21 @@
     return Object.entries(state.logs).reduce((count, [entryDate, entries]) => (
       entryDate >= bounds.start && entryDate <= bounds.end && entries[itemId]?.completed ? count + 1 : count
     ), 0);
+  }
+
+  function weeklyGoalStatus(item, date) {
+    const frequency = normaliseFrequency(item?.frequency);
+    const count = completedCountForWeek(item.id, date);
+    const minimum = frequency.timesPerWeekMin;
+    const maximum = frequency.timesPerWeekMax;
+    const goalMet = count >= minimum;
+    const extra = Math.max(0, count - minimum);
+    const remaining = Math.max(0, minimum - count);
+    let detail = '';
+    if (!goalMet) detail = `Weekly goal: ${count}/${minimum} · ${remaining} remaining`;
+    else if (count >= maximum) detail = `Weekly goal met · ${extra} extra · range complete (${count}/${maximum})`;
+    else detail = `Weekly goal met · ${extra} extra · up to ${maximum - count} more this week`;
+    return { count, minimum, maximum, goalMet, extra, remaining, due:count < maximum, detail };
   }
 
   function monthBounds(value) {
@@ -244,8 +266,7 @@
       return { due, detail:due ? 'Scheduled today' : 'Not scheduled today' };
     }
     if (item.frequency.mode === 'weekly') {
-      const remaining = Math.max(0, item.frequency.timesPerWeek - completedCountForWeek(item.id, date));
-      return { due:remaining > 0, detail:remaining > 0 ? `${remaining} remaining this week` : 'Weekly target complete' };
+      return weeklyGoalStatus(item, date);
     }
     if (item.frequency.mode === 'monthly') {
       const remaining = Math.max(0, item.frequency.timesPerMonth - completedCountForMonth(item.id, date));
@@ -504,7 +525,7 @@
       name:definition.name,
       section,
       timeOfDay:'anytime',
-      frequency:{ mode:'weekly', timesPerWeek:1, days:[] },
+      frequency:{ mode:'weekly', timesPerWeek:1, timesPerWeekMin:1, timesPerWeekMax:1, days:[] },
       targetMetrics:{},
       notes:''
     }, state.activities.length));
@@ -549,7 +570,7 @@
 
   function weeklyControl(item) {
     if (item.frequency.mode !== 'weekly') return '';
-    return `<label class="field-stack"><span>Times each week</span><input type="number" min="1" max="14" value="${item.frequency.timesPerWeek}" data-activity-id="${escapeHtml(item.id)}" data-activity-field="timesPerWeek"></label>`;
+    return `<label class="field-stack"><span>Minimum times each week</span><input type="number" min="1" max="14" value="${item.frequency.timesPerWeekMin}" data-activity-id="${escapeHtml(item.id)}" data-activity-field="timesPerWeekMin"></label><label class="field-stack"><span>Maximum times each week</span><input type="number" min="${item.frequency.timesPerWeekMin}" max="14" value="${item.frequency.timesPerWeekMax}" data-activity-id="${escapeHtml(item.id)}" data-activity-field="timesPerWeekMax"></label>`;
   }
 
   function monthlyControl(item) {
@@ -608,8 +629,12 @@
     }
     const context = currentCalisthenicsContext();
     if (!context?.available || context.planComplete) return '';
-    const title = context.sessionIndex ? `Session ${context.sessionIndex}` : 'Current workout';
-    const progress = `${Number(context.completedSteps || 0)}/${Number(context.totalSteps || 0)} steps completed`;
+    const goal = global.BASELINE_fitnessPlans?.getWeeklyGoalsForDate?.(state.selectedDate)?.find((entry) => Number(entry.planId) === Number(context.planId));
+    const selectedPlan = global.BASELINE_fitnessPlans?.getPlans?.().find((plan) => Number(plan.planId) === Number(context.planId));
+    const title = String(selectedPlan?.planJson?.name || (context.sessionIndex ? `Session ${context.sessionIndex}` : 'Current workout'));
+    const workoutProgress = `${Number(context.completedSteps || 0)}/${Number(context.totalSteps || 0)} steps completed`;
+    const goalProgress = goal ? (goal.goalMet ? `Weekly goal met · ${goal.extra} extra` : `Weekly goal: ${goal.count}/${goal.minimum} · ${goal.remaining} remaining`) : '';
+    const progress = [context.sessionIndex ? `Session ${context.sessionIndex}` : '',workoutProgress,goalProgress].filter(Boolean).join(' · ');
     return `<section class="fitness-routine-log-group"><h3>Calisthenics</h3><article class="session-card fitness-calisthenics-log-card">
       <div><strong class="session-title">${escapeHtml(title)}</strong><small>${escapeHtml(progress)}</small></div>
       <button type="button" class="tiny-btn" data-open-fitness-view="calisthenics">View workout</button>
@@ -645,10 +670,16 @@
     const progress = $('#fitnessRoutineLogProgress');
     if (!target) return;
 
-    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due);
     const entries = ensureLogDate(state.selectedDate);
-    const completed = dueItems.filter((item) => entries[item.id]?.completed).length;
-    if (progress) progress.textContent = `${completed}/${dueItems.length} planned non-calisthenics activities completed`;
+    const dueItems = state.activities.filter((item) => dueStatus(item, state.selectedDate).due || entries[item.id]?.completed);
+    const weeklyActivityGoals = state.activities.filter((item) => item.frequency.mode === 'weekly').map((item) => weeklyGoalStatus(item, state.selectedDate));
+    const weeklyPlanGoals = global.BASELINE_fitnessPlans?.getWeeklyGoalsForDate?.(state.selectedDate) || [];
+    const weeklyGoals = weeklyActivityGoals.concat(weeklyPlanGoals);
+    const goalsMet = weeklyGoals.filter((goal) => goal.goalMet).length;
+    const extras = weeklyGoals.reduce((total, goal) => total + Math.max(0, Number(goal.extra) || 0), 0);
+    if (progress) progress.textContent = weeklyGoals.length
+      ? `Weekly goals met: ${goalsMet}/${weeklyGoals.length} routine activities · ${extras} extra completion${extras === 1 ? '' : 's'}`
+      : 'No weekly activity goals are configured.';
 
     const sections = [
       ['cardio','Cardio'],
@@ -746,7 +777,12 @@
     if (field === 'notes') item.notes = cleanText(control.value, 1200);
     if (field === 'timeOfDay') item.timeOfDay = TIMES.some((entry) => entry.value === control.value) ? control.value : 'anytime';
     if (field === 'frequencyMode') item.frequency.mode = FREQUENCIES.some((entry) => entry.value === control.value) ? control.value : 'weekly';
-    if (field === 'timesPerWeek') item.frequency.timesPerWeek = Math.max(1, Math.min(14, Math.round(Number(control.value) || 1)));
+    if (field === 'timesPerWeekMin') {
+      item.frequency.timesPerWeekMin = Math.max(1, Math.min(14, Math.round(Number(control.value) || 1)));
+      item.frequency.timesPerWeek = item.frequency.timesPerWeekMin;
+      item.frequency.timesPerWeekMax = Math.max(item.frequency.timesPerWeekMin, Number(item.frequency.timesPerWeekMax) || item.frequency.timesPerWeekMin);
+    }
+    if (field === 'timesPerWeekMax') item.frequency.timesPerWeekMax = Math.max(item.frequency.timesPerWeekMin, Math.min(14, Math.round(Number(control.value) || item.frequency.timesPerWeekMin)));
     if (field === 'timesPerMonth') item.frequency.timesPerMonth = Math.max(1, Math.min(31, Math.round(Number(control.value) || 1)));
     scheduleSave();
   }
@@ -929,7 +965,7 @@
         return;
       }
       const field = event.target.closest('[data-activity-field]');
-      if (field && ['name','notes','timesPerWeek','timesPerMonth'].includes(field.dataset.activityField)) {
+      if (field && ['name','notes','timesPerWeekMin','timesPerWeekMax','timesPerMonth'].includes(field.dataset.activityField)) {
         updateActivityField(field);
         return;
       }
@@ -951,7 +987,7 @@
       const field = event.target.closest('[data-activity-field]');
       if (field) {
         updateActivityField(field);
-        if (['frequencyMode','timeOfDay'].includes(field.dataset.activityField)) {
+        if (['frequencyMode','timeOfDay','timesPerWeekMin','timesPerWeekMax'].includes(field.dataset.activityField)) {
           const item = itemById(field.dataset.activityId);
           if (item) renderActivityList(item.section);
           renderLog();
