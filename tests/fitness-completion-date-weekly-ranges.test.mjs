@@ -53,8 +53,8 @@ test('completion-date changes feed the existing daily Group marker compositor',(
 });
 
 test('updated browser cache contracts and JavaScript parse cleanly',()=>{
-  assert.match(page,/baseline-fitness-app\.js\?v=BASELINE_FITNESS_COMPLETION_DATES_20260821_1/);
-  assert.match(page,/fitness-routine-workspace-v2\.js\?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1/);
+  assert.match(page,/baseline-fitness-app\.js\?v=BASELINE_FITNESS_COUNTDOWN_LABELS_20260822_1/);
+  assert.match(page,/fitness-routine-workspace-v2\.js\?v=BASELINE_FITNESS_COMPACT_LOG_20260822_1/);
   for (const path of [
     'systems/baseline-fitness/js/baseline-fitness-app.js',
     'systems/baseline-fitness/js/fitness-multiple-plans.js',

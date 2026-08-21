@@ -642,17 +642,17 @@
   }
 
   function renderLogItem(item) {
-    const due = dueStatus(item, state.selectedDate);
     const entry = ensureLogDate(state.selectedDate)[item.id] || { completed:false, note:'', metrics:{}, completedAt:'' };
     const targetSummary = (definitionFor(item).metrics || [])
       .map((metric) => item.targetMetrics?.[metric.key] !== undefined && item.targetMetrics?.[metric.key] !== ''
-        ? `${metric.label}: ${item.targetMetrics[metric.key]}${metric.unit ? ` ${metric.unit}` : ''}`
+        ? `${item.targetMetrics[metric.key]}${metric.unit ? ` ${metric.unit === 'minutes' ? 'min' : metric.unit}` : ''}`
         : '')
       .filter(Boolean)
       .join(' · ');
+    const metaSummary = [item.timeOfDay && item.timeOfDay !== 'anytime' ? timeLabel(item.timeOfDay) : '', targetSummary].filter(Boolean).join(' · ');
     return `<article class="session-card fitness-routine-log-item${entry.completed ? ' complete' : ''}">
       <div class="fitness-log-item-head">
-        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(timeLabel(item.timeOfDay))} · ${escapeHtml(due.detail)}${targetSummary ? ` · ${escapeHtml(targetSummary)}` : ''}</small></span></label>
+        <label class="fitness-log-completion"><input type="checkbox" data-fitness-log-complete="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}"${entry.completed ? ' checked' : ''}><span><strong>${escapeHtml(item.name)}</strong>${metaSummary ? `<small>${escapeHtml(metaSummary)}</small>` : ''}</span></label>
       </div>
       ${metricFields(item, 'log', entry)}
       <label class="field-stack fitness-log-note"><span>Optional note</span><textarea rows="2" maxlength="800" data-fitness-log-note="${escapeHtml(item.id)}" data-fitness-log-date="${escapeHtml(state.selectedDate)}" placeholder="How it felt, conditions, result or anything worth remembering">${escapeHtml(entry.note || '')}</textarea></label>

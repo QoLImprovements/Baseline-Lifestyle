@@ -163,8 +163,8 @@
   }
   function relabelStep(step,target) {
     const copy=Object.assign({},step,{ target });const label=String(copy.label || '');
-    if (copy.isTimed || copy.unit==='seconds') { if (/guide\s+\d+\s+seconds/i.test(label)) copy.label=label.replace(/guide\s+\d+\s+seconds/i,`guide ${target} seconds`);return copy; }
-    const perSide=copy.laterality==='per-side';if (/\(\d+(?:\s+per side)?\)/.test(label)) copy.label=label.replace(/\(\d+(?:\s+per side)?\)/,`(${target}${perSide?' per side':''})`);else copy.label=`${copy.name || copy.exercise} - (${target}${perSide?' per side':''})`;return copy;
+    if (copy.isTimed || copy.unit==='seconds') { copy.label=`${copy.name || copy.exercise} - ${target} seconds`;return copy; }
+    if (/\(\d+(?:\s+per side)?\)/.test(label)) copy.label=label.replace(/\(\d+(?:\s+per side)?\)/,`(${target})`);else copy.label=`${copy.name || copy.exercise} - (${target})`;return copy;
   }
   function applySharedProgression(context) {
     if (!context || !Array.isArray(context.steps) || !context.steps.length) return context;
@@ -305,4 +305,3 @@
   if (typeof module!=='undefined' && module.exports) module.exports={ canonicalExercise,progressLevel,sessionExerciseOutcomes,storeSessionOutcomes };
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
 })(typeof window!=='undefined'?window:globalThis);
-

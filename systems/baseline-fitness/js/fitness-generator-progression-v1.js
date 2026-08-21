@@ -152,8 +152,8 @@
 
   function detailText(row,definition,mode) {
     const baseline=Math.max(1,Math.round(Number(row.querySelector('.ex-baseline')?.value) || definition?.base || 1));const sets=setCount(row.querySelector('.ex-sets')?.value || 3);
-    if (mode===MODES.TIMED) return { start:`${baseline} sec guide`,progression:baseline>=90?'Next guide +2 sec':'Next guide +3 sec',rule:'Record technical burnout' };
-    const increase=repIncreaseForRow(row,definition);const targets=progressedTargets({ baseline,sets,repIncrease:increase,progressionMode:mode },definition,1);const suffix=definition?.laterality==='per-side'?' per side':'';
+    if (mode===MODES.TIMED) return { start:`${baseline} sec target`,progression:baseline>=90?'Next target +2 sec':'Next target +3 sec',rule:'Complete the countdown' };
+    const increase=repIncreaseForRow(row,definition);const targets=progressedTargets({ baseline,sets,repIncrease:increase,progressionMode:mode },definition,1);const suffix='';
     return { start:`${targets.join(' / ')}${suffix}`,progression:`+${increase} to every set after success`,rule:mode===MODES.LINEAR?'Final starting set = 80% of Max Baseline':'Equal working sets start at 80% of Max Baseline' };
   }
   function muscleFocus(definition) {

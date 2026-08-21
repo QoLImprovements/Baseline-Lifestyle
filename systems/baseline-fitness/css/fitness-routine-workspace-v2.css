@@ -179,7 +179,22 @@
 #my-plan .fitness-log-note>span{font-size:18px;color:var(--muted);font-weight:760}
 
 /* Routine Log activity details are collapsed by default. */
-#my-plan .fitness-log-item-head>.bl-routine-entry-actions{margin-left:auto}
+#my-plan .fitness-log-item-head{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) max-content!important;
+  align-items:center!important;
+  gap:16px!important;
+  min-width:0!important;
+}
+#my-plan .fitness-log-item-head>.fitness-log-completion{min-width:0!important}
+#my-plan .fitness-log-item-head>.fitness-log-completion>span{display:grid!important;gap:5px!important;min-width:0!important}
+#my-plan .fitness-log-item-head>.bl-routine-entry-actions{
+  justify-self:end!important;
+  flex-wrap:nowrap!important;
+  margin-left:0!important;
+  white-space:nowrap!important;
+}
+#my-plan .fitness-log-item-head>.bl-routine-entry-actions>button{flex:0 0 auto!important}
 #my-plan .fitness-log-details-toggle{flex:0 0 auto}
 #my-plan .fitness-log-details-panel{
   display:grid;
@@ -258,4 +273,6 @@
   #my-plan .fitness-routine-plan-card>summary::after{right:20px!important}
   #my-plan .fitness-routine-plan-card-body{padding:12px!important}
   #my-plan .fitness-routine-subtab{padding:9px 12px}
+  #my-plan .fitness-log-item-head{grid-template-columns:1fr!important;align-items:start!important}
+  #my-plan .fitness-log-item-head>.bl-routine-entry-actions{justify-self:start!important}
 }
