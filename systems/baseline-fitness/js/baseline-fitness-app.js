@@ -599,8 +599,8 @@
     const plan = current.planJson;
     if (!target || !plan) return;
     target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span><span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
-    $('#editOptionsBtn')?.addEventListener('click', () => { generatorMode = 'edit'; hydrateGenerator(plan); syncPlanShells(); });
-    $('#deletePlanBtn')?.addEventListener('click', openDeletePlanModal);
+    $('#editOptionsBtn', target)?.addEventListener('click', () => { generatorMode = 'edit'; hydrateGenerator(plan); syncPlanShells(); });
+    $('#deletePlanBtn', target)?.addEventListener('click', openDeletePlanModal);
   }
   function syncPlanShells() {
     const hasPlan = Boolean(current.planJson);
