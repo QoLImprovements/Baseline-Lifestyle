@@ -95,7 +95,11 @@
     const value=frequency && typeof frequency==='object'?frequency:{};
     if (value.mode==='daily') return 'Every day';
     if (value.mode==='days') return Array.isArray(value.days)&&value.days.length?value.days.join(', '):'Specific days';
-    if (value.mode==='weekly') return `${Math.max(1,Number(value.timesPerWeek || 1))}× each week`;
+    if (value.mode==='weekly') {
+      const minimum=Math.max(1,Math.min(14,Number(value.timesPerWeekMin ?? value.timesPerWeek) || 1));
+      const maximum=Math.max(minimum,Math.min(14,Number(value.timesPerWeekMax ?? value.timesPerWeek) || minimum));
+      return maximum>minimum?`${minimum}–${maximum}× each week`:`${minimum}× each week`;
+    }
     if (value.mode==='monthly') return `${Math.max(1,Number(value.timesPerMonth || 1))}× each month`;
     return 'As needed';
   }

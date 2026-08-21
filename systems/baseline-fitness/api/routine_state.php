@@ -24,10 +24,14 @@ function bl_fitness_routine_frequency($value): array {
     $day = bl_fitness_routine_text($day, 12);
     if(in_array($day, $allowedDays, true) && !in_array($day, $days, true)) $days[] = $day;
   }
+  $timesPerWeekMin = max(1, min(14, (int)($source['timesPerWeekMin'] ?? ($source['timesPerWeek'] ?? 1))));
+  $timesPerWeekMax = max($timesPerWeekMin, min(14, (int)($source['timesPerWeekMax'] ?? ($source['timesPerWeek'] ?? $timesPerWeekMin))));
   return [
     'mode'=>$mode,
     'days'=>$days,
-    'timesPerWeek'=>max(1, min(14, (int)($source['timesPerWeek'] ?? 1))),
+    'timesPerWeek'=>$timesPerWeekMin,
+    'timesPerWeekMin'=>$timesPerWeekMin,
+    'timesPerWeekMax'=>$timesPerWeekMax,
     'timesPerMonth'=>max(1, min(31, (int)($source['timesPerMonth'] ?? 1))),
   ];
 }

@@ -100,8 +100,9 @@
   function frequencyText(value) {
     const frequency=value && typeof value === 'object' ? value : {};
     if (frequency.mode==='daily') return 'Every day';if (frequency.mode==='days') return (frequency.days || []).join(', ') || 'Specific days';
-    if (frequency.mode==='weekly') return `${Math.max(1,Number(frequency.timesPerWeek || 1))}× each week`;if (frequency.mode==='monthly') return `${Math.max(1,Number(frequency.timesPerMonth || 1))}× each month`;return 'As needed';
+    if (frequency.mode==='weekly') { const min=Math.max(1,Math.min(14,Number(frequency.timesPerWeekMin ?? frequency.timesPerWeek) || 1)),max=Math.max(min,Math.min(14,Number(frequency.timesPerWeekMax ?? frequency.timesPerWeek) || min));return max>min?`${min}–${max}× each week`:`${min}× each week`; }if (frequency.mode==='monthly') return `${Math.max(1,Number(frequency.timesPerMonth || 1))}× each month`;return 'As needed';
   }
+  function weeklyMaximum(frequency) { const value=frequency && typeof frequency==='object'?frequency:{};const min=Math.max(1,Math.min(14,Number(value.timesPerWeekMin ?? value.timesPerWeek) || 1));return Math.max(min,Math.min(14,Number(value.timesPerWeekMax ?? value.timesPerWeek) || min)); }
   function planFrequency(plan) {
     const value=plan?.planJson || {};if (value.scheduleMode==='specific-days') return (value.days || []).filter(Boolean).join(', ') || 'Specific weekdays';
     const min=Math.max(1,Math.min(7,Number(value.frequencyMin || String(value.frequency || '1x').replace(/\D/g,'')) || 1));const max=Math.max(0,Math.min(7,Number(value.frequencyRangeMax || 0)));
@@ -133,18 +134,18 @@
   function completedThisWeek(id,date) { const dates=new Set(weekDates(date).map(isoDate));return Object.entries(routine?.logs || {}).reduce((count,[logDate,entries]) => count+(dates.has(logDate) && entries?.[id]?.completed ? 1:0),0); }
   function itemDue(item,date,group) {
     if (routine?.logs?.[date]?.[item.id]?.completed) return true;const frequency=effectiveSkin(item,group).frequency || {};
-    if (frequency.mode==='daily') return true;if (frequency.mode==='days') return (frequency.days || []).includes(dayName(date));if (frequency.mode==='weekly') return completedThisWeek(item.id,date)<Math.max(1,Number(frequency.timesPerWeek || 1));return true;
+    if (frequency.mode==='daily') return true;if (frequency.mode==='days') return (frequency.days || []).includes(dayName(date));if (frequency.mode==='weekly') return completedThisWeek(item.id,date)<weeklyMaximum(frequency);return true;
   }
   function activityDue(activity,date) {
     if (routine?.logs?.[date]?.[activity.id]?.completed) return true;const frequency=activity.frequency || {};
-    if (frequency.mode==='daily') return true;if (frequency.mode==='days') return (frequency.days || []).includes(dayName(date));if (frequency.mode==='weekly') return completedThisWeek(activity.id,date)<Math.max(1,Number(frequency.timesPerWeek || 1));return true;
+    if (frequency.mode==='daily') return true;if (frequency.mode==='days') return (frequency.days || []).includes(dayName(date));if (frequency.mode==='weekly') return completedThisWeek(activity.id,date)<weeklyMaximum(frequency);return true;
   }
   function planState(plan,date) {
     const sessions=Array.isArray(plan?.sessions)?plan.sessions:[];const complete=sessions.find((session) => String(session.status || '')==='done' && completionDate(session)===date);if (complete) return { due:true,complete:true,label:`Session ${sessionIndex(complete)}` };
     const scheduled=sessions.find((session) => scheduledDate(session)===date && String(session.status || '')!=='done');if (scheduled) return { due:true,complete:false,label:`Session ${sessionIndex(scheduled)}` };
     const planJson=plan?.planJson || {};if (planJson.scheduleMode==='specific-days' || isFuture(date)) return { due:false,complete:false,label:'' };
-    const week=new Set(weekDates(date).map(isoDate));const done=sessions.filter((session) => String(session.status || '')==='done' && week.has(completionDate(session))).length;const minimum=Math.max(1,Math.min(7,Number(planJson.frequencyMin || String(planJson.frequency || '1x').replace(/\D/g,'')) || 1));
-    return { due:done<minimum,complete:false,label:'Session' };
+    const week=new Set(weekDates(date).map(isoDate));const done=sessions.filter((session) => String(session.status || '')==='done' && week.has(completionDate(session))).length;const minimum=Math.max(1,Math.min(7,Number(planJson.frequencyMin || String(planJson.frequency || '1x').replace(/\D/g,'')) || 1)),maximum=Math.max(minimum,Math.min(7,Number(planJson.frequencyRangeMax || minimum)));
+    return { due:done<maximum,complete:false,label:done>=minimum?`Weekly goal met · ${Math.max(0,done-minimum)} extra`:`Weekly goal ${done}/${minimum}` };
   }
 
   function markers(date) {

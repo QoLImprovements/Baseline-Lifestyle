@@ -74,6 +74,19 @@
     const date = parseDate(value);
     return date ? date.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' }) : String(value || '');
   }
+  function completionDateValue(row) {
+    const raw = row?.completed_at ?? row?.completedAt ?? '';
+    if (!raw) return '';
+    if (typeof raw === 'number' || /^\d+$/.test(String(raw))) {
+      const number = Number(raw);
+      const date = new Date(number > 9999999999 ? number : number * 1000);
+      return Number.isNaN(date.getTime()) ? '' : isoDate(date);
+    }
+    const text = String(raw);
+    if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+    const parsed = new Date(text);
+    return Number.isNaN(parsed.getTime()) ? '' : isoDate(parsed);
+  }
 
   function storageKey(prefix, suffix) { return `${prefix}::${String(suffix || '').trim().toLowerCase()}`; }
   function userPlanKey() { return storageKey(PLAN_KEY, auth.name); }
@@ -555,13 +568,52 @@
   }
   function sessionCard(row, plan, suffix = '') {
     const index = Number(row.session_index);
-    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(niceDate(row.scheduled_date))}</div></div><span class="badge">${row.status === 'done' ? 'Done' : 'Planned'}</span></div><div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
+    const completed = row.status === 'done';
+    const completionDate = completionDateValue(row) || row.scheduled_date || today();
+    const dateDisplay = completed ? `Completed: ${niceDate(completionDate)}` : `Workout date: ${niceDate(row.scheduled_date)}`;
+    const dateEditor = suffix === 'Completed'
+      ? `<div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Completion date</span><input type="date" max="${today()}" value="${escapeHtml(completionDate)}" data-session-completion-date="${index}"></label><button type="button" class="compact-action compact-action--primary" data-save-session-completion-date="${index}">Save date</button><span class="status" data-session-completion-date-status="${index}"></span></div>`
+      : '';
+    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(dateDisplay)}</div></div><span class="badge">${completed ? 'Done' : 'Planned'}</span></div>${dateEditor}<div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
+  }
+  async function saveSessionCompletionDate(button, target) {
+    const sessionIndex = Number(button.dataset.saveSessionCompletionDate || 0);
+    const field = $(`[data-session-completion-date="${sessionIndex}"]`, target);
+    const status = $(`[data-session-completion-date-status="${sessionIndex}"]`, target);
+    const completionDate = String(field?.value || '');
+    if (!sessionIndex || !/^\d{4}-\d{2}-\d{2}$/.test(completionDate) || completionDate > today()) {
+      if (status) status.textContent = 'Choose today or an earlier date.';
+      field?.focus();
+      return;
+    }
+    button.disabled = true;
+    if (status) status.textContent = 'Saving…';
+    const result = FILE_PROTOCOL
+      ? { ok:true }
+      : await apiJson(`${API}/update_session.php`, { method:'POST', body:{ planId:current.planId, sessionIndex, action:'set_completion_date', completionDate } });
+    if (!result.ok) {
+      button.disabled = false;
+      if (status) status.textContent = 'Could not update the completion date.';
+      return;
+    }
+    if (FILE_PROTOCOL) {
+      const row = current.sessions.find((item) => Number(item.session_index) === sessionIndex);
+      if (row) row.completed_at = `${completionDate}T12:00:00Z`;
+    } else {
+      current.sessions = Array.isArray(result.sessions) ? result.sessions : current.sessions;
+      current.progress = result.progress || calculateProgress(current.sessions, current.planJson);
+    }
+    await global.BASELINE_fitnessPlans?.refresh?.();
+    renderSavedPlanHeader();
+    renderPlanSubtab('completed');
+    notifyWorkout();
   }
   function paginatedCards(target, rows, plan, type) {
     if (!target) return;
     const limit = renderLimits[type] || PAGE_SIZE;
     const visible = rows.slice(0, limit);
     target.innerHTML = visible.length ? visible.map((row) => sessionCard(row, plan, type === 'completed' ? 'Completed' : 'Future')).join('') : `<div class="${type}-empty">No ${type === 'completed' ? 'completed' : 'future'} workouts ${type === 'completed' ? 'yet' : 'remain in this plan'}.</div>`;
+    $$('[data-save-session-completion-date]', target).forEach((button) => button.addEventListener('click', () => saveSessionCompletionDate(button, target)));
     if (rows.length > visible.length) {
       const more = document.createElement('button');
       more.type = 'button';
@@ -598,7 +650,8 @@
     const target = $('#myPlanOut');
     const plan = current.planJson;
     if (!target || !plan) return;
-    target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span><span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
+    const scheduleBadge = plan.scheduleMode === 'specific-days' ? `<span class="badge">Schedule begins: ${escapeHtml(niceDate(plan.startDate))}</span>` : '';
+    target.innerHTML = `<div class="card"><div class="my-plan-saved-head"><div><h2 style="margin:0 0 12px">Saved plan</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span><span class="badge">Progress: ${current.progress?.done || 0}/${current.progress?.total || plan.sessions}</span></div></div><div class="saved-plan-actions"><button class="compact-action compact-action--ghost" type="button" id="editOptionsBtn">Edit Plan</button><button class="compact-action compact-action--danger" type="button" id="deletePlanBtn">Delete Plan</button></div></div></div>`;
     $('#editOptionsBtn', target)?.addEventListener('click', () => { generatorMode = 'edit'; hydrateGenerator(plan); syncPlanShells(); });
     $('#deletePlanBtn', target)?.addEventListener('click', openDeletePlanModal);
   }
@@ -619,7 +672,8 @@
     const rows = sessionRows(plan);
     const draw = () => {
       const visible = rows.slice(0, renderLimits.preview);
-      target.innerHTML = `<div class="card"><h2>Your plan preview</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span></div></div>${visible.map((row) => sessionCard(row, plan)).join('')}`;
+      const scheduleBadge = plan.scheduleMode === 'specific-days' ? `<span class="badge">Schedule begins: ${escapeHtml(niceDate(plan.startDate))}</span>` : '';
+      target.innerHTML = `<div class="card"><h2>Your plan preview</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Frequency: ${escapeHtml(plan.frequency)} Weekly</span><span class="badge">Sessions: ${plan.sessions}</span></div></div>${visible.map((row) => sessionCard(row, plan)).join('')}`;
       if (rows.length > visible.length) {
         const more = document.createElement('button'); more.type = 'button'; more.className = 'action secondary'; more.textContent = `Show ${Math.min(PAGE_SIZE, rows.length - visible.length)} more sessions`;
         more.addEventListener('click', () => { renderLimits.preview += PAGE_SIZE; draw(); });
@@ -629,7 +683,7 @@
     draw();
   }
 
-  function defaultStepState() { return { completedSteps: 0, started: false, results: {}, pendingFailureStep: null }; }
+  function defaultStepState() { return { completedSteps: 0, started: false, results: {}, pendingFailureStep: null, completionDate: '' }; }
   function readStepState(sessionIndex) {
     const source = readStorage(stepStorageKey(current.planId, sessionIndex), defaultStepState()) || defaultStepState();
     return Object.assign(defaultStepState(), source, { results: source.results && typeof source.results === 'object' ? source.results : {} });
@@ -712,11 +766,17 @@
   async function finishCurrentWorkout() {
     const context = workoutContext();
     if (!context.canStart || !context.allComplete || !context.sessionIndex) return context;
+    const state = readStepState(context.sessionIndex);
+    const completionDate = /^\d{4}-\d{2}-\d{2}$/.test(String(state.completionDate || '')) && state.completionDate <= today() ? state.completionDate : today();
     const result = FILE_PROTOCOL
       ? { ok: true }
-      : await apiJson(`${API}/update_session.php`, { method: 'POST', body: { planId: current.planId, sessionIndex: context.sessionIndex, action: 'toggle_done' } });
+      : await apiJson(`${API}/update_session.php`, { method: 'POST', body: { planId: current.planId, sessionIndex: context.sessionIndex, action: 'toggle_done', completionDate } });
+    if (!result.ok) {
+      if ($('#myPlanStatus')) $('#myPlanStatus').textContent = 'Could not finish the workout. Your recorded steps and completion date have been kept.';
+      return context;
+    }
     if (FILE_PROTOCOL) {
-      const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex); if (row) row.status = 'done';
+      const row = current.sessions.find((item) => Number(item.session_index) === context.sessionIndex); if (row) { row.status = 'done'; row.completed_at = `${completionDate}T12:00:00Z`; }
       current.progress = calculateProgress(current.sessions, current.planJson);
     } else if (result.ok) {
       current.sessions = Array.isArray(result.sessions) ? result.sessions : current.sessions;
@@ -784,7 +844,15 @@
       return `<div class="current-step ${index < context.completedSteps ? 'done' : active ? 'active' : ''}"><div class="current-step-head"><div><b class="current-step-label">${escapeHtml(step.label)}</b></div><div class="step-actions">${resultText}${timedActions}</div></div>${entry}</div>`;
     }).join('');
 
-    out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px"><span class="badge">${escapeHtml(niceDate(row.scheduled_date))}</span><span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
+    const scheduleBadge = current.planJson.scheduleMode === 'specific-days' ? `<span class="badge">Workout date: ${escapeHtml(niceDate(row.scheduled_date))}</span>` : '';
+    const completionDate = /^\d{4}-\d{2}-\d{2}$/.test(String(state.completionDate || '')) ? state.completionDate : today();
+    out.innerHTML = `<div class="card session-card"><div class="section-head-actions"><div><h3 style="margin:0">Session ${context.sessionIndex} - Current</h3><div class="session-plan-meta" style="margin-top:12px">${scheduleBadge}<span class="badge">${context.completedSteps}/${context.totalSteps} steps done</span></div></div><div class="workout-start-actions"><button class="action secondary voice-workout-start" type="button" id="startVoiceWorkoutBtn" ${context.access.can ? '' : 'disabled'}>Start (Voice Activated)</button><button class="action" type="button" id="startWorkoutBtn" ${context.access.can ? '' : 'disabled'}>${state.started ? 'Continue Workout' : 'Start Workout'}</button></div></div><div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Workout completion date</span><input id="currentWorkoutCompletionDate" type="date" max="${today()}" value="${escapeHtml(completionDate)}"></label><span class="note">This date is used when you finish the workout and in Routine Log.</span></div><div class="session-step-list">${stepsHtml}</div><div class="actions-inline" style="margin-top:14px"><button class="compact-action compact-action--primary" id="finishWorkout" ${context.access.can && context.allComplete ? '' : 'disabled'}>Finish workout</button><button class="compact-action compact-action--ghost" id="resetWorkout" ${context.access.can ? '' : 'disabled'}>Reset workout steps</button></div></div>`;
+    $('#currentWorkoutCompletionDate', out)?.addEventListener('change', (event) => {
+      const next = readStepState(context.sessionIndex);
+      next.completionDate = String(event.currentTarget.value || '') <= today() ? String(event.currentTarget.value || '') : today();
+      event.currentTarget.value = next.completionDate || today();
+      writeStepState(context.sessionIndex, next);
+    });
     $('#startWorkoutBtn', out)?.addEventListener('click', startCurrentWorkout);
     $$('.step-success', out).forEach((button) => button.addEventListener('click', () => { const step = context.steps[Number(button.dataset.step)]; recordStep('success', step.target); }));
     $$('.step-fail-toggle', out).forEach((button) => button.addEventListener('click', () => { const next = readStepState(context.sessionIndex); next.started = true; next.pendingFailureStep = Number(button.dataset.step); writeStepState(context.sessionIndex, next); renderCurrentWorkout(); }));
@@ -918,7 +986,8 @@
     const plan = normalisePlan(response?.planJson);
     if (!response.ok || !plan) { target.textContent = 'No saved plan for this profile yet.'; return; }
     const rows = Array.isArray(response.sessions) ? response.sessions.slice(0, PAGE_SIZE) : sessionRows(plan).slice(0, PAGE_SIZE);
-    target.innerHTML = `<div class="card"><h2>${escapeHtml(name)}’s plan</h2><div class="session-plan-meta"><span class="badge">Start: ${escapeHtml(niceDate(plan.startDate))}</span><span class="badge">Sessions: ${plan.sessions}</span></div></div>${rows.map((row) => sessionCard(row, plan)).join('')}${plan.sessions > rows.length ? `<p class="note">Showing the first ${rows.length} sessions.</p>` : ''}`;
+    const scheduleBadge = plan.scheduleMode === 'specific-days' ? `<span class="badge">Schedule begins: ${escapeHtml(niceDate(plan.startDate))}</span>` : '';
+    target.innerHTML = `<div class="card"><h2>${escapeHtml(name)}’s plan</h2><div class="session-plan-meta">${scheduleBadge}<span class="badge">Sessions: ${plan.sessions}</span></div></div>${rows.map((row) => sessionCard(row, plan)).join('')}${plan.sessions > rows.length ? `<p class="note">Showing the first ${rows.length} sessions.</p>` : ''}`;
   }
   function renderAchievements() {
     const summary = $('#achSummary'); const grid = $('#achGrid'); if (!summary || !grid) return;
