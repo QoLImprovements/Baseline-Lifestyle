@@ -36,7 +36,7 @@ test('Voice settings stay fully on-screen above the workout without changing the
 
   assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
   assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
-  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_BURNOUT_HOLDS_20260804_1/);
+  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_COUNTDOWN_20260822_1/);
 
   const interfaceIndex = html.indexOf('baseline-fitness-voice-interface.css');
   const fixesIndex = html.indexOf('baseline-ui-fixes.css');
@@ -48,7 +48,7 @@ test('Fitness voice assets use fresh cache keys', () => {
   const protectedAccess = read('sitewide/js/baseline-protected-access.js');
   assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
   assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
-  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_BURNOUT_HOLDS_20260804_1/);
+  assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_COUNTDOWN_20260822_1/);
   assert.match(protectedAccess, /BASELINE_PROTECTED_ACCESS_20260803_2/);
 });
 

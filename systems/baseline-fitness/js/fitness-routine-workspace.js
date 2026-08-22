@@ -168,7 +168,7 @@
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_COMPACT_LOG_20260822_1',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-fitness-routine-summary-v3' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_STABLE_LOG_ACTIONS_20260822_1',marker:'data-fitness-routine-log-v3' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=BASELINE_FITNESS_ROUTINE_LOG_20260819_3',marker:'data-fitness-routine-log-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-codes-v1.js?v=BASELINE_FITNESS_ROUTINE_CODES_20260821_1',marker:'data-fitness-routine-codes-v1' },
     { src:'/systems/baseline-fitness/js/fitness-routine-groups-v2.js?v=BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4',marker:'data-fitness-routine-groups-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260821_1',marker:'data-fitness-routine-plan-collapse-v1' },
