@@ -148,8 +148,8 @@
   margin:18px 0;
 }
 #my-plan .fitness-activity-combobox{display:grid;grid-template-columns:minmax(0,1fr) 50px}
-#my-plan .fitness-activity-combobox>input{border-radius:14px 0 0 14px;min-width:0;border-right:0}
-#my-plan .fitness-activity-combobox>[data-activity-toggle]{width:50px;min-width:50px;border-radius:0 14px 14px 0;border-left:0}
+html[data-app="fitness"] body[data-app="fitness"] #my-plan .fitness-activity-combobox>input{border-radius:14px 0 0 14px;min-width:0;border-top:0!important;border-right:0}
+html[data-app="fitness"] body[data-app="fitness"] #my-plan .fitness-activity-combobox>[data-activity-toggle]{width:50px;min-width:50px;border-radius:0 14px 14px 0;border-top:0!important;border-left:0}
 #my-plan .fitness-activity-menu{
   top:calc(100% + 7px);
   left:0;
