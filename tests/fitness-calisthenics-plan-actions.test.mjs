@@ -23,7 +23,7 @@ test('saved Calisthenics plan binds Edit Plan and Delete Plan to the newly rende
 });
 
 test('Routine Plan serves the corrected action binding without a stale browser cache',()=>{
-  assert.match(page,/baseline-fitness-app\.js\?v=BASELINE_FITNESS_COMPLETION_DATES_20260821_1/);
+  assert.match(page,/baseline-fitness-app\.js\?v=BASELINE_FITNESS_COUNTDOWN_LABELS_20260822_1/);
 });
 
 test('Delete Plan retains confirmation before deleting the selected plan',()=>{

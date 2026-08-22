@@ -81,7 +81,8 @@ test('separate left and right holds remain separate workout steps and are displa
   assert.equal(steps[0].name, 'Elbow Side Plank Left');
   assert.equal(steps[1].name, 'Elbow Side Plank Right');
   assert.notEqual(steps[0].exerciseKey, steps[1].exerciseKey);
-  assert.match(steps[0].label, /Hold to technical burnout/);
+  assert.match(steps[0].label, /30 seconds/);
+  assert.doesNotMatch(steps[0].label, /technical burnout/i);
   assert.match(generatorSource, /definition\?\.unit==='seconds' && definition\?\.laterality==='separate-left-right'/);
   assert.match(generatorSource, /`\$\{name\} \(L\/R\)`/);
 });

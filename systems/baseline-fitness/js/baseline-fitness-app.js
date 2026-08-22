@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_EXERCISE_CATALOGUE_20260804_1';
+  const BUILD = 'BASELINE_FITNESS_COUNTDOWN_LABELS_20260822_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
@@ -247,12 +247,11 @@
     for (let round = 0; round < rounds; round += 1) {
       reps.forEach((entry) => {
         if (entry.values[round] == null) return;
-        const perSide = entry.item.laterality === 'per-side';
         steps.push({
           name: entry.item.name,
           exercise: entry.item.name,
           exerciseKey: entry.item.name,
-          label: `${entry.item.name} - (${entry.values[round]}${perSide ? ' per side' : ''})`,
+          label: `${entry.item.name} - (${entry.values[round]})`,
           target: entry.values[round],
           unit: 'reps',
           isTimed: false,
@@ -278,14 +277,14 @@
           steps.push(Object.assign({}, base, {
             name: `${entry.item.name} ${side}`,
             exerciseKey: `${entry.item.name}::${side.toLowerCase()}`,
-            label: `${entry.item.name} - ${side} • Hold to technical burnout (guide ${entry.hold} seconds)`
+            label: `${entry.item.name} - ${side} - ${entry.hold} seconds`
           }));
         });
       } else {
         steps.push(Object.assign({}, base, {
           name: entry.item.name,
           exerciseKey: entry.item.name,
-          label: `${entry.item.name} • Hold to technical burnout (guide ${entry.hold} seconds)`
+          label: `${entry.item.name} - ${entry.hold} seconds`
         }));
       }
     });
@@ -398,7 +397,7 @@
     }).join('');
   }
   function progressionDescription(definition) {
-    if (definition.progressionType === TYPES.TIMED) return 'Hold to technical burnout; next guide is achieved time +3 seconds, changing to +2 seconds from 90 seconds.';
+    if (definition.progressionType === TYPES.TIMED) return 'Hold for the set target; the next target increases by 3 seconds, changing to 2 seconds from 90 seconds.';
     if (definition.progressionType === TYPES.LEG) return '+3 repetitions to every set after success.';
     return '+1 repetition to every set after success.';
   }
@@ -561,8 +560,8 @@
   function planExerciseRows(plan, sessionIndex) {
     return workForSession(plan.items, sessionIndex).map((entry) => {
       const detail = entry.unit === 'seconds'
-        ? `Hold to technical burnout • guide <b>${entry.hold}</b> seconds${entry.item.laterality === 'separate-left-right' ? ' for each side.' : '.'}`
-        : `Sets (${entry.sets}): ${entry.values.map((value) => `<b>${value}</b>`).join(' / ')} reps${entry.item.laterality === 'per-side' ? ' per side.' : '.'}`;
+        ? `Hold for <b>${entry.hold}</b> seconds${entry.item.laterality === 'separate-left-right' ? ' on each side.' : '.'}`
+        : `Sets (${entry.sets}): ${entry.values.map((value) => `<b>${value}</b>`).join(' / ')} reps.`;
       return `<div class="session-subcard plan-exercise-row"><b>${escapeHtml(entry.item.name)}</b><div>${detail}</div></div>`;
     }).join('');
   }
@@ -794,18 +793,26 @@
     closeTimerModal();
     modal.hidden = false;
     let prep = Math.round(clamp(current.planJson?.timerStartDelay || 5, 1, 10));
-    let elapsed = 0;
+    let remaining = Math.max(1, Math.round(Number(step.target) || 1));
     let phase = 'prep';
+    let completed = false;
     const tick = () => {
       if (phase === 'prep') {
         message.textContent = `Get into position. Hold begins in ${prep} second${prep === 1 ? '' : 's'}.`;
         digits.textContent = formatTimer(prep);
-        if (prep <= 0) { phase = 'work'; digits.textContent = formatTimer(0); }
-        else prep -= 1;
+        if (prep <= 1) phase = 'work';
+        prep -= 1;
       } else {
-        message.textContent = `${step.name} • hold to technical burnout. Guide: ${step.target} seconds.`;
-        digits.textContent = formatTimer(elapsed);
-        elapsed += 1;
+        message.textContent = `${step.name} • ${step.target}-second hold.`;
+        digits.textContent = formatTimer(remaining);
+        if (remaining <= 0 && !completed) {
+          completed = true;
+          if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+          message.textContent = 'Target complete. This hold has been recorded.';
+          recordStep('success', step.target);
+          return;
+        }
+        remaining -= 1;
       }
     };
     tick();
@@ -836,10 +843,10 @@
           : `<div class="step-status ${result.status === 'success' ? 'success' : 'failed'}">${result.status === 'success' ? '✓ Succeeded' : '✕ Failed'} · Achieved ${escapeHtml(result.achieved)}</div>`
         : '';
       const timedActions = step.isTimed
-        ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Count-Up</button><button class="compact-action compact-action--success step-hold-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Record Hold</button>`
+        ? `<button class="compact-action compact-action--ghost step-timer" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Start Countdown</button><button class="compact-action compact-action--success step-hold-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>Record Hold</button>`
         : `<button class="compact-action compact-action--success step-icon-btn step-success" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✓</button><button class="compact-action compact-action--danger step-icon-btn step-fail-toggle" type="button" data-step="${index}" ${canAct ? '' : 'disabled'}>✕</button>`;
       const entry = failOpen
-        ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">${step.isTimed ? 'Enter exact burnout time (seconds)' : `Enter achieved ${escapeHtml(step.unit)}`}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action ${step.isTimed ? 'compact-action--success step-hold-save' : 'compact-action--danger step-fail-save'}" type="button" data-step="${index}">Save</button></div>`
+        ? `<div class="failure-entry"><label for="failedAmount${index}" class="note">${step.isTimed ? 'Enter completed hold time (seconds)' : `Enter achieved ${escapeHtml(step.unit)}`}</label><input id="failedAmount${index}" class="failed-amount" type="number" min="0" inputmode="numeric"><button class="compact-action ${step.isTimed ? 'compact-action--success step-hold-save' : 'compact-action--danger step-fail-save'}" type="button" data-step="${index}">Save</button></div>`
         : '';
       return `<div class="current-step ${index < context.completedSteps ? 'done' : active ? 'active' : ''}"><div class="current-step-head"><div><b class="current-step-label">${escapeHtml(step.label)}</b></div><div class="step-actions">${resultText}${timedActions}</div></div>${entry}</div>`;
     }).join('');

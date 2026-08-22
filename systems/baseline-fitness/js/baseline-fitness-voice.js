@@ -1,6 +1,6 @@
 !(function (t) {
   "use strict";
-  const e = "BASELINE_FITNESS_VOICE_BURNOUT_HOLDS_20260804_1",
+  const e = "BASELINE_FITNESS_VOICE_COUNTDOWN_20260822_1",
     i = `__${e}__`;
   if (t[i]) return;
   t[i] = !0;
@@ -615,11 +615,23 @@
   function y(t) {
     const e = o("#voiceWorkoutTimerWrap");
     (e && (e.hidden = !1),
-      v("#voiceWorkoutTimerLabel", "Hold time"),
+      v("#voiceWorkoutTimerLabel", "Time remaining"),
       v(
         "#voiceWorkoutTimer",
         `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`,
       ));
+  }
+  async function completeTimedHold(achieved, resultLabel = "Recorded") {
+    k();
+    b(resultLabel);
+    p()?.recordTimedCurrentStep?.(Math.max(1, achieved), "voice");
+    const context = m();
+    if ((E(context), context?.allComplete || !context?.step)) {
+      a.state = n.FINISHED;
+      await M("Workout steps complete. Use Finish Workout to complete this session.");
+      return;
+    }
+    await L();
   }
   function E(t = m()) {
     if (!t) return;
@@ -691,17 +703,8 @@
               try {
                 const i = u(e);
                 if (!i) return;
-                if (a.state === n.TIMING && /\b(stop|done|finished|burnout)\b/.test(i))
-                  return void (await (async function () {
-                    const achieved = Math.max(1, a.elapsed || 1);
-                    k();
-                    b("Recorded");
-                    p()?.recordTimedCurrentStep?.(achieved, "voice");
-                    const e = m();
-                    if ((E(e), e?.allComplete || !e?.step))
-                      return ((a.state = n.FINISHED), void (await M("Workout steps complete. Use Finish Workout to complete this session.")));
-                    await L();
-                  })());
+                if (a.state === n.TIMING && /\b(stop|done|finished)\b/.test(i))
+                  return void (await completeTimedHold(a.elapsed || 1));
                 if (/\b(stop|end|cancel)\s+(voice\s+)?workout\b/.test(i))
                   return void C(!1);
                 if (/\brepeat\b/.test(i))
@@ -720,11 +723,14 @@
                           k(),
                           (a.state = n.TIMING),
                           (a.elapsed = 0),
-                          y(a.elapsed),
-                          await M(`Hold to technical burnout. The guide is ${e.step.target} seconds. Say Stop when your form reaches burnout.`),
-                          void (a.timer = t.setInterval(() => {
+                          (a.remaining = Math.max(1, Math.round(Number(e.step.target) || 1))),
+                          y(a.remaining),
+                          await M(`Hold for ${a.remaining} seconds. The timer will count down and record the hold when it reaches zero.`),
+                          void (a.timer = t.setInterval(async () => {
                             a.elapsed += 1;
-                            y(a.elapsed);
+                            a.remaining = Math.max(0, a.remaining - 1);
+                            y(a.remaining);
+                            if (a.remaining === 0) await completeTimedHold(e.step.target, "Complete");
                           }, 1e3))
                         );
                       ((a.state = n.RESULT),
@@ -843,7 +849,7 @@
           "All workout steps are complete. Use Finish Workout to complete this session.",
         ))
       );
-    ((a.state = n.BEGIN), await M(t.step?.isTimed ? "When ready, say Begin. Hold to technical burnout, then say Stop." : "When Ready, Say “Begin”."));
+    ((a.state = n.BEGIN), await M(t.step?.isTimed ? `When ready, say Begin. The ${t.step.target}-second timer will count down automatically.` : "When Ready, Say “Begin”."));
   }
   async function I() {
     if (a.active) return;
