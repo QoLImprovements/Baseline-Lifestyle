@@ -79,5 +79,5 @@ test('the routine code owner loads before groups and the calendar compositor',as
   const calendarIndex=loader.indexOf('baseline-routine-coherence-v12.js');
   assert.ok(codesIndex>=0 && groupsIndex>codesIndex && calendarIndex>groupsIndex);
   assert.match(page,/fitness-routine-codes-v1\.js\?v=BASELINE_FITNESS_ROUTINE_CODES_20260821_1/);
-  assert.match(page,/fitness-routine-workspace\.css\?v=BASELINE_FITNESS_COMPACT_LOG_20260822_1/);
+  assert.match(page,/fitness-routine-workspace\.css\?v=BASELINE_FITNESS_PICKER_LINE_REMOVAL_20260822_1/);
 });
