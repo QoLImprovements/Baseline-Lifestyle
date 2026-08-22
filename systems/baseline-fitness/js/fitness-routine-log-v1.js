@@ -71,11 +71,11 @@
     style.id='fitnessRoutineLogV3Polish';
     style.textContent=`
       html[data-app="fitness"] #my-plan .fitness-activity-combobox>input{
-        border-color:var(--border)!important;border-top:0!important;border-right:0!important;
+        border-color:var(--border)!important;border-right:0!important;
       }
       html[data-app="fitness"] #my-plan .fitness-activity-combobox>input:not(:focus){box-shadow:none!important}
       html[data-app="fitness"] #my-plan .fitness-activity-combobox>[data-activity-toggle]{
-        border:1px solid var(--border)!important;border-top:0!important;border-left:0!important;
+        border:1px solid var(--border)!important;border-left:0!important;
       }
       html[data-app="fitness"] #my-plan .fitness-activity-add::before,
       html[data-app="fitness"] #my-plan .fitness-activity-add::after,
