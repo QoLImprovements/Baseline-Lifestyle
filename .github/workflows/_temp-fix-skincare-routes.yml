@@ -1,0 +1,41 @@
+name: Temporary fix Skincare clean routes
+
+on:
+  push:
+    branches:
+      - fix/skincare-testing-embedded-20260823
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'fix/skincare-testing-embedded-20260823' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: fix/skincare-testing-embedded-20260823
+          fetch-depth: 0
+
+      - name: Apply clean-route correction
+        run: python tools/fix-skincare-clean-routes.py
+
+      - name: Restore temporary files before commit
+        run: |
+          git checkout -- .github/workflows/_temp-fix-skincare-routes.yml
+          git checkout -- tools/fix-skincare-clean-routes.py
+
+      - name: Commit route correction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitewide/js/baseline-shared.js
+          git add sitewide/js/baseline-tabs.js
+          git commit -m "Keep Natural Skincare navigation on public clean routes"
+          git push origin HEAD:fix/skincare-testing-embedded-20260823
