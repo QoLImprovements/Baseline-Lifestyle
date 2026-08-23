@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260824_3";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260824_4";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -6746,6 +6746,9 @@ function setupRecipeFavourites(){
       contentUiStarted = true;
       initContentUi();
     };
+    try{
+      window.BASELINE_ensureContentUi = ensureContentUi;
+    }catch(_e){}
 
     const bindLazyContentUi = ()=>{
       const shouldStartForTarget = (target)=>{
@@ -6782,9 +6785,6 @@ function setupRecipeFavourites(){
             }
           }catch(_e){}
         }, { capture:true });
-      }catch(_e){}
-      try{
-        window.BASELINE_ensureContentUi = ensureContentUi;
       }catch(_e){}
     };
 
