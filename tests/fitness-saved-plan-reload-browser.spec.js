@@ -174,7 +174,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   const createButton = page.locator('#createCalisthenicsPlan');
   await expect(createButton).toBeVisible();
   await createButton.click();
-  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/plan\/calisthenics$/);
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/plan$/);
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   const createMarker = await page.evaluate(() => {
     for (let index=0; index<localStorage.length; index+=1) {
