@@ -39,15 +39,20 @@ jobs:
       - name: Apply embedded recipe patch
         run: python tools/apply-skincare-testing-recipes.py
 
-      - name: Remove temporary patch machinery
+      - name: Restore workflow and temporary files before commit
         run: |
-          git rm -f tools/apply-skincare-testing-recipes.py
-          git rm -f .github/workflows/_temp-apply-skincare-testing.yml
+          git checkout -- .github/workflows/website-checks.yml
+          git checkout -- .github/workflows/_temp-apply-skincare-testing.yml
+          git checkout -- tools/apply-skincare-testing-recipes.py
 
-      - name: Commit patched site
+      - name: Commit patched site and regression files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add systems/baseline-natural-skincare/baseline-natural-skincare.html
+          git add tests/skincare-testing-recipes.test.mjs
+          git add tests/skincare-testing-recipes-browser.spec.js
+          git add tests/support/production-static-server.cjs
+          git add package.json
           git commit -m "Embed Testing recipes in canonical Skincare recipe system"
           git push origin HEAD:fix/skincare-testing-embedded-20260823
