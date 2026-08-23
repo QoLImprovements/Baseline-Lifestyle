@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-shot branch patch: expose the same content UI helper on eager and lazy routes.
 path = Path('sitewide/js/baseline-shared.js')
 text = path.read_text(encoding='utf-8')
 text = text.replace('const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260824_3";', 'const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260824_4";', 1)
