@@ -35,6 +35,17 @@ test('Testing is a real recipe subcategory rather than a sortable list label', (
   assert.match(shared, /a\.dataset\.recipeId = item\.id/);
 });
 
+test('Recipes and My Routine remain separate section siblings', () => {
+  const recipesStart = html.indexOf('<section class="section" id="recipes">');
+  const ingredientsStart = html.indexOf('<section class="section" id="ingredients">');
+  const supportStart = html.indexOf('<section class="section" id="support">');
+  const routineStart = html.indexOf('<section class="section" id="routine">');
+  assert.ok(recipesStart >= 0 && ingredientsStart > recipesStart, 'Recipes must end before Ingredient Library');
+  assert.ok(supportStart > ingredientsStart, 'Skin Support must follow Ingredient Library');
+  assert.ok(routineStart > supportStart, 'My Routine must remain outside Recipes and Skin Support');
+  assert.match(html.slice(recipesStart, ingredientsStart), /<\/section>\s*<!-- INGREDIENT LIBRARY -->$/s);
+});
+
 test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
   for (const [id, slug] of recipes) {
     const opening = recipeOpening(id, slug);
