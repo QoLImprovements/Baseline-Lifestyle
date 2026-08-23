@@ -23,6 +23,19 @@ jobs:
           ref: fix/skincare-testing-embedded-20260823
           fetch-depth: 0
 
+      - name: Tighten one-shot recipe-card validation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('tools/apply-skincare-testing-recipes.py')
+          text = p.read_text(encoding='utf-8')
+          old = '''for token in ('id="r8"', 'id="r9"', 'id="r10"', 'data-recipe-slug="testing-shaving-gel"', 'data-recipe-slug="testing-natural-tooth-brightening-powder"', 'data-recipe-slug="testing-microcurrent-conductive-gel"'):\n    if html.count(token) != 1:\n        raise SystemExit(f'embedded recipe validation failed for {token}: {html.count(token)} occurrences')'''
+          new = '''for token in (\n    '<div class="recipe card recipe-page" data-recipe-slug="testing-shaving-gel" id="r8">',\n    '<div class="recipe card recipe-page" data-recipe-slug="testing-natural-tooth-brightening-powder" id="r9">',\n    '<div class="recipe card recipe-page" data-recipe-slug="testing-microcurrent-conductive-gel" id="r10">',\n):\n    if html.count(token) != 1:\n        raise SystemExit(f'embedded recipe validation failed for {token}: {html.count(token)} occurrences')'''
+          if old not in text:
+              raise SystemExit('one-shot validation block not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+
       - name: Apply embedded recipe patch
         run: python tools/apply-skincare-testing-recipes.py
 
