@@ -9,26 +9,29 @@ const recipes = [
   ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel Recipe – 40 g']
 ];
 
+function recipeOpening(id, slug) {
+  return `<div class="recipe card recipe-page" data-recipe-slug="${slug}" id="${id}">`;
+}
+
 test('Skincare Testing recipes are embedded in the canonical recipe document', () => {
   for (const [id, slug, title] of recipes) {
-    assert.match(html, new RegExp(`<div class="recipe card recipe-page" data-recipe-slug="${slug}" id="${id}">`));
+    assert.ok(html.includes(recipeOpening(id, slug)), `missing embedded recipe card ${id}`);
     assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"`));
-    assert.match(html, new RegExp(`<h3>${title.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}</h3>`));
+    assert.ok(html.includes(`<h3>${title}</h3>`), `missing recipe title ${title}`);
   }
   assert.doesNotMatch(html, /\/systems\/baseline-natural-skincare\/recipes\/testing-[^"']+\.html/);
   assert.doesNotMatch(html, /#tab=recipes\/testing-/);
 });
 
 test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
-  for (let index = 0; index < recipes.length; index += 1) {
-    const [id] = recipes[index];
-    const start = html.indexOf(`id="${id}"`);
-    assert.notEqual(start, -1);
-    const nextId = recipes[index + 1]?.[0];
-    const end = nextId ? html.indexOf(`id="${nextId}"`, start) : html.indexOf('</div>\n</div>\n</div>\n</div>\n</div>\n</div>\n</section>\n<!-- INGREDIENT LIBRARY -->', start);
-    const block = html.slice(start, end === -1 ? undefined : end);
+  for (const [id, slug] of recipes) {
+    const opening = recipeOpening(id, slug);
+    const start = html.indexOf(opening);
+    assert.notEqual(start, -1, `missing opening card for ${id}`);
+    const nextRecipe = html.indexOf('<div class="recipe card recipe-page"', start + opening.length);
+    const block = html.slice(start, nextRecipe === -1 ? undefined : nextRecipe);
     for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
-      assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`));
+      assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `${id} missing ${heading}`);
     }
     assert.match(block, /class="recipe-actions"/);
     assert.match(block, /class="print-btn"/);
