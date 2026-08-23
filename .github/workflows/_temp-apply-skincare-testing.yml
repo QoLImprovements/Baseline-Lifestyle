@@ -4,13 +4,17 @@ on:
   push:
     branches:
       - fix/skincare-testing-embedded-20260823
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
+    if: github.head_ref == 'fix/skincare-testing-embedded-20260823' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     steps:
       - name: Check out branch
