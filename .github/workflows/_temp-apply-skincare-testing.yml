@@ -1,0 +1,36 @@
+name: Temporary apply Skincare Testing recipes
+
+on:
+  push:
+    branches:
+      - fix/skincare-testing-embedded-20260823
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: fix/skincare-testing-embedded-20260823
+          fetch-depth: 0
+
+      - name: Apply embedded recipe patch
+        run: python tools/apply-skincare-testing-recipes.py
+
+      - name: Remove temporary patch machinery
+        run: |
+          git rm tools/apply-skincare-testing-recipes.py
+          git rm .github/workflows/_temp-apply-skincare-testing.yml
+
+      - name: Commit patched site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Embed Testing recipes in canonical Skincare recipe system"
+          git push origin HEAD:fix/skincare-testing-embedded-20260823
