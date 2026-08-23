@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-shot branch patch: clean recipe overview routes must boot before interaction.
 path = Path('sitewide/js/baseline-shared.js')
 text = path.read_text(encoding='utf-8')
 old_build = 'const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260804_2";'
