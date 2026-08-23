@@ -57,6 +57,31 @@ test('POST requests retain the established JSON request body', async () => {
   assert.equal(calls[0][1].body, '{"identifier":"person","password":"secret"}');
 });
 
+test('resource revisions are shared across independently loaded feature clients', () => {
+  const { api } = loadClient();
+  assert.equal(api.revisions.expected('fitness'), 0);
+  assert.equal(api.revisions.remember('fitness', { revision:4 }), 4);
+  assert.equal(api.revisions.expected('fitness'), 4);
+  assert.deepEqual(plain(api.revisions.withExpected('fitness', { planId:9 })), {
+    planId:9,
+    expectedRevision:4,
+  });
+  assert.deepEqual(plain(api.revisions.withExpected('fitness', { planId:9,expectedRevision:2 })), {
+    planId:9,
+    expectedRevision:2,
+  });
+});
+
+test('per-game bootstrap revisions retain independent conflict boundaries', () => {
+  const { api } = loadClient();
+  api.revisions.rememberMap('games', { pairs:3,trackcoin:8,invalid:-1 });
+  assert.equal(api.revisions.expected('games:pairs'), 3);
+  assert.equal(api.revisions.expected('games:trackcoin'), 8);
+  assert.equal(api.revisions.expected('games:invalid'), 0);
+  api.revisions.clear('games:pairs');
+  assert.equal(api.revisions.expected('games:pairs'), 0);
+});
+
 test('HTML API failures remain identifiable without exposing an unbounded response', async () => {
   const html = '<!doctype html><body>' + 'failure '.repeat(100) + '</body>';
   const { api, warnings } = loadClient({ fetchImpl:async ()=>({

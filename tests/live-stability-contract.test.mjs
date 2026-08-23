@@ -21,6 +21,17 @@ test('live stability runtime covers the reported refresh and persistence faults'
   assert.doesNotMatch(loader, /installRoutineInterfaceRepairs/);
 });
 
+test('Badminton has one revision-aware writer and never retries stale shared state',()=>{
+  const core=read('sitewide/js/baseline-live-stability-core-v3.js');
+  const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
+  assert.match(badminton,/__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__/);
+  assert.match(badminton,/expectedRevision:Number\.isInteger\(serverRevision\)/);
+  assert.match(badminton,/data\.error==='revision_conflict'/);
+  assert.match(badminton,/serverSaveConflict=true/);
+  assert.match(badminton,/CONFLICT_BACKUP_KEY/);
+  assert.doesNotMatch(core,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
+});
+
 test('shared and protected runtimes load stability without reordering first-paint CSS', () => {
   const shared = read('sitewide/js/baseline-shared.js');
   const protectedAccess = read('sitewide/js/baseline-protected-access.js');

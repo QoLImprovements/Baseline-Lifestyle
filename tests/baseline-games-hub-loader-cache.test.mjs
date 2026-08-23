@@ -23,7 +23,7 @@ test('module entry loads non-blocking storage messaging before optional loaders'
   const storageIndex=bootstrap.indexOf('games-server-storage-ui.js');
   const optionalIndex=bootstrap.indexOf('baseline-games-hub-v14.js');
   assert.ok(storageIndex>=0&&optionalIndex>storageIndex);
-  assert.match(storageUi,/GAMES_SERVER_STORAGE_UI_20260710_3/);
+  assert.match(storageUi,/GAMES_SERVER_STORAGE_UI_20260823_1/);
   assert.match(storageUi,/Temporary play is active/);
   assert.match(storageUi,/does not overwrite account data/);
   assert.doesNotMatch(storageUi,/blockLockedGameHotkeys|BROWSE_HOTKEYS|stopImmediatePropagation/);
@@ -42,7 +42,7 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
 });
 
 test('storage authority owns persistence only and never game controls',()=>{
-  assert.match(guard,/GAMES_HUB_STORAGE_20260801_1/);
+  assert.match(guard,/GAMES_HUB_STORAGE_20260823_1/);
   assert.match(guard,/canBrowse:\(\)=>true/);
   assert.match(guard,/canPlay:\(\)=>true/);
   assert.match(guard,/canSave:\(\)=>state\.canSave/);

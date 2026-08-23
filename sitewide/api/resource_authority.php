@@ -92,6 +92,12 @@ function bl_resource_revision_from_input(array $input): ?int {
   return $revision;
 }
 
+function bl_resource_required_revision_from_input(array $input): int {
+  $revision = bl_resource_revision_from_input($input);
+  if($revision === null) bl_json(['ok'=>false,'error'=>'expected_revision_required'], 428);
+  return $revision;
+}
+
 function bl_resource_conflict_response(BaselineSavedDataConflictException $error): void {
   bl_json(['ok'=>false,'error'=>'revision_conflict'], 409);
 }

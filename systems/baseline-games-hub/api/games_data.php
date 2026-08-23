@@ -199,7 +199,7 @@ try{
       $app = bl_game_data_app((string)($payload['app'] ?? ''));
       if($app === 'hubsettings') bl_json(['ok'=>false,'error'=>'non_persistent_app'], 400);
       $profile = bl_game_data_profile($payload['profile'] ?? null);
-      $expected = bl_resource_revision_from_input($payload);
+      $expected = bl_resource_required_revision_from_input($payload);
       $written = bl_game_file_write($uid, $app, $profile, false, $expected);
       bl_json(['ok'=>true,'app'=>$app,'profile'=>$profile,'updated_at'=>bl_resource_timestamp((string)$written['updatedAt']),'revision'=>$written['revision']]);
     }

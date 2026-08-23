@@ -141,8 +141,8 @@ try{
 
   $input = bl_input_json();
   $action = strtolower(trim((string)($input['action'] ?? 'import_local')));
-  $expected = bl_resource_revision_from_input($input);
-  if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+  $expected = bl_resource_required_revision_from_input($input);
+  if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
 
   if(in_array($action, ['save_profile','import_local'], true) && array_key_exists('profile', $input)){
     $profile = bl_fitness_profile_validate($input['profile']);

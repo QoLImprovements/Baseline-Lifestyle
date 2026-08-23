@@ -5328,3 +5328,14 @@ body[data-app="games"] [role="tooltip"] *{color:inherit!important;-webkit-text-f
   #ninjaPanel .realm-location-button--exploration{right:4%!important;bottom:16%!important;}
   #ninjaPanel .realm-drawer{top:10px!important;left:10px!important;right:10px!important;bottom:10px!important;width:auto!important;z-index:40!important;}
 }
+/* Explicit, per-game browser-progress import. Guest progress is never copied silently. */
+.games-browser-import{
+  display:grid;
+  gap:10px;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid var(--border);
+}
+.games-browser-import>p{margin:0}
+.games-browser-import-actions{display:flex;flex-wrap:wrap;gap:8px}
+.games-browser-import-actions .action{min-height:42px}

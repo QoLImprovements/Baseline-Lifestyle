@@ -99,8 +99,8 @@ try{
     if($mode === 'saved-data'){
       $path = bl_saved_user_resource_path($uid, 'voice');
       $resource = bl_resource_file_read($path, []);
-      $expected = bl_resource_revision_from_input($input);
-      if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+      $expected = bl_resource_required_revision_from_input($input);
+      if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
       $written = bl_resource_file_replace($path, $normalised, $resource['revision']);
       bl_json([
         'ok'=>true,

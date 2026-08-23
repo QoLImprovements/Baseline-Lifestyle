@@ -14,6 +14,8 @@ try{
 
   if($mode === 'saved-data'){
     $resource = bl_fitness_resource_read($uid);
+    $expected = bl_resource_required_revision_from_input($input);
+    if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
     $planIndex = bl_fitness_find_plan_index($resource['data'],$planId);
     if($planIndex === null) bl_json(['ok'=>false,'error'=>'not_found'],404);
     $record = $resource['data']['plans'][$planIndex] ?? [];

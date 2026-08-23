@@ -24,6 +24,10 @@
   const API='/systems/baseline-fitness/api/delete_plan.php';
   let deleting=false;
 
+  function revisionedBody(body) {
+    return global.BASELINE_api?.revisions?.withExpected?.('fitness',body) || Object.assign({ expectedRevision:0 },body);
+  }
+
   const byId=(plans,id) => (plans || []).find((plan) => Number(plan?.planId)===Number(id)) || null;
   const planId=(plan) => Math.max(0,Number(plan?.planId) || 0);
 
@@ -80,11 +84,16 @@
         method:'POST',
         credentials:'same-origin',
         headers:{ Accept:'application/json','Content-Type':'application/json' },
-        body:JSON.stringify({ planId:deletedId })
+        body:JSON.stringify(revisionedBody({ planId:deletedId }))
       });
       let data={};
       try { data=await response.json(); } catch (_error) {}
+      if (response.status===409 && data?.error==='revision_conflict') {
+        await controller.refresh?.();
+        throw new Error('revision_conflict');
+      }
       if (!response.ok || data?.ok===false) throw new Error(String(data?.error || `http_${response.status}`));
+      global.BASELINE_api?.revisions?.remember?.('fitness',data);
 
       const after=typeof controller.refresh==='function' ? await controller.refresh() : [];
       const survivors=Array.isArray(after) ? after.filter((plan) => planId(plan)!==deletedId) : [];
@@ -107,7 +116,9 @@
 
       global.location.assign('/baseline-fitness/my-routine/plan');
     } catch (error) {
-      setStatus('Could not delete the plan.');
+      setStatus(error?.message==='revision_conflict'
+        ? 'This plan changed elsewhere. The latest plans were reloaded; please delete again.'
+        : 'Could not delete the plan.');
       try { console.error('Calisthenics plan deletion failed.',error); } catch (_error) {}
       button.disabled=false;
     } finally {

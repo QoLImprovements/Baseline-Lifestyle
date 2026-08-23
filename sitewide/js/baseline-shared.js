@@ -4832,6 +4832,9 @@ function buildControls(recipeEl){
   const API_BASE = sitewideApi.base;
   const IS_FILE_PROTOCOL = !!sitewideApi.isFile;
   const apiJson = sitewideApi.json;
+  const resourceRevisions = sitewideApi.revisions;
+  const rememberResourceRevision = (resource,data)=>resourceRevisions?.remember?.(resource,data);
+  const revisionedResourceBody = (resource,body)=>resourceRevisions?.withExpected?.(resource,body) || Object.assign({ expectedRevision:0 },body);
 
   function ensureDefaultHomebarScaffold(){
     if(q('.bl-top-header')) return null;
@@ -4952,11 +4955,11 @@ function buildControls(recipeEl){
   function setupSitewideVoiceAssets(){
     if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
     const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
-    let jsUrl = '/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_RESPONSIVE_20260720_1';
+    let jsUrl = '/sitewide/js/baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1';
     let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1';
     try{
       if(sharedScript && sharedScript.src){
-        jsUrl = new URL('baseline-voice.js?v=BASELINE_VOICE_RESPONSIVE_20260720_1', sharedScript.src).href;
+        jsUrl = new URL('baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1', sharedScript.src).href;
         cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1', sharedScript.src).href;
       }
     }catch(_e){}
@@ -5912,6 +5915,7 @@ function setupAuthFlyout(){
         return Array.isArray(ids) ? ids.map(String) : [];
       }
       const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
+      if(r?.data?.ok) rememberResourceRevision('favourites',r.data);
       const ids = (r && r.data && r.data.ok && Array.isArray(r.data.ids)) ? r.data.ids : [];
       return ids.map(String);
     }
@@ -6333,6 +6337,7 @@ function setupBinauralFlyout(){
       list = lsRead(key, []);
     }else{
       const r = await apiJson(API_BASE + '/binaural.php');
+      if(r?.data?.ok) rememberResourceRevision('binaural',r.data);
       list = (r && r.data && r.data.ok && Array.isArray(r.data.presets)) ? r.data.presets : [];
     }
 
@@ -6387,7 +6392,13 @@ function setupBinauralFlyout(){
             setStatus('Deleted: ' + p.name);
             return;
           }
-          await apiJson(API_BASE + '/binaural.php', { method:'POST', body:{ action:'delete', name: p.name } });
+          const deleted = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',{ action:'delete', name:p.name }) });
+          if(deleted?.data?.ok) rememberResourceRevision('binaural',deleted.data);
+          if(deleted?.status===409 && deleted?.data?.error==='revision_conflict'){
+            await loadUserPresets();
+            setStatus('Presets changed elsewhere. The latest account presets were reloaded; please delete again.');
+            return;
+          }
           await loadUserPresets();
           setStatus('Deleted: ' + p.name);
         });
@@ -6421,10 +6432,14 @@ function setupBinauralFlyout(){
         return;
       }
 
-      const r = await apiJson(API_BASE + '/binaural.php', { method:'POST', body: payload });
+      const r = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',payload) });
       if(r && r.data && r.data.ok){
+        rememberResourceRevision('binaural',r.data);
         await loadUserPresets();
         setStatus('Saved: ' + nm);
+      }else if(r?.status===409 && r?.data?.error==='revision_conflict'){
+        await loadUserPresets();
+        setStatus('Presets changed elsewhere. The latest account presets were reloaded; please save again.');
       }else{
         setStatus('Could not save preset.');
       }
@@ -6555,6 +6570,7 @@ function setupRecipeFavourites(){
         return;
       }
       const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
+      if(r?.data?.ok) rememberResourceRevision('favourites',r.data);
       const ids = (r && r.data && r.data.ok && Array.isArray(r.data.ids)) ? r.data.ids : [];
       favSet = new Set(ids.map(String));
       updateButtons();
@@ -6565,12 +6581,15 @@ function setupRecipeFavourites(){
         try{ if(typeof window.BASELINE_openAuth === 'function') window.BASELINE_openAuth(); }catch(_e){}
         return;
       }
-      const r = await apiJson(API_BASE + '/favourites.php', { method:'POST', body:{ app: appKey, recipeId } });
+      const r = await apiJson(API_BASE + '/favourites.php', { method:'POST', body:revisionedResourceBody('favourites',{ app:appKey,recipeId }) });
       if(r && r.data && r.data.ok){
+        rememberResourceRevision('favourites',r.data);
         if(r.data.favourited) favSet.add(String(recipeId));
         else favSet.delete(String(recipeId));
         updateButtons();
         try{ document.dispatchEvent(new CustomEvent('baseline:favs-changed')); }catch(_e){}
+      }else if(r?.status===409 && r?.data?.error==='revision_conflict'){
+        await refreshFavs();
       }
     }
     // Cache recipe titles locally for the Account favourites dropdowns.
@@ -6883,7 +6902,7 @@ function setupRecipeFavourites(){
 /* BASELINE-LIVE-STABILITY-LOADER-20260803 */
 (function(){
   'use strict';
-  const build = 'BASELINE_LIVE_STABILITY_20260803_1';
+  const build = 'SAVED_DATA_REVISION_CLIENT_20260823_1';
   if(!document.querySelector('link[data-baseline-live-stability-style]')){
     const link = document.createElement('link');
     link.rel = 'stylesheet';

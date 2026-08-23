@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_PROTECTED_ACCESS_20260803_2';
+  const BUILD = 'SAVED_DATA_REVISION_CLIENT_20260823_1';
   if(window.__BASELINE_PROTECTED_ACCESS__) return;
   window.__BASELINE_PROTECTED_ACCESS__ = BUILD;
 

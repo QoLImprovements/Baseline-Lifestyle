@@ -46,6 +46,19 @@
       "cutoverRule": "The protected shared Badminton resource is authoritative after cutover. Clear or refresh the local cache only after a verified server load and enforce established Badminton administration permissions."
     },
     {
+      "id": "badminton-shared-conflict-backup",
+      "inventoryPatterns": [
+        "__baseline_badminton_session_v4_conflict_backup__"
+      ],
+      "knownKeys": [
+        "__baseline_badminton_session_v4_conflict_backup__"
+      ],
+      "classification": "shared-state-conflict-recovery-copy",
+      "decision": "preserve-local-until-reviewed",
+      "target": "Shared/Badminton/badminton.json",
+      "cutoverRule": "Created only when the browser and protected shared resource conflict. Never auto-import or auto-delete it; an administrator must compare it with the authoritative revision before resolving the backup."
+    },
+    {
       "id": "diet-log-local-content",
       "inventoryPatterns": [
         "__baseline_food_diet_log_v1__"

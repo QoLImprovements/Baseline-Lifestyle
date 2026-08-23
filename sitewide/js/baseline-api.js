@@ -3,6 +3,46 @@
 
   const isFile = !!(scope.location && scope.location.protocol === 'file:');
   const base = isFile ? './api' : '/api';
+  const resourceRevisions = new Map();
+
+  function revisionNumber(value){
+    const revision = Number(value);
+    return Number.isInteger(revision) && revision >= 0 ? revision : null;
+  }
+
+  function rememberRevision(resource, payload){
+    const key = String(resource || '').trim();
+    if(!key || !payload || typeof payload !== 'object') return null;
+    const revision = revisionNumber(payload.revision);
+    if(revision !== null) resourceRevisions.set(key, revision);
+    return resourceRevisions.has(key) ? resourceRevisions.get(key) : null;
+  }
+
+  function rememberRevisionMap(prefix, revisions){
+    const root = String(prefix || '').trim();
+    if(!root || !revisions || typeof revisions !== 'object') return;
+    Object.entries(revisions).forEach(([name, value])=>{
+      rememberRevision(`${root}:${String(name || '').trim()}`, { revision:value });
+    });
+  }
+
+  function expectedRevision(resource){
+    const key = String(resource || '').trim();
+    return key && resourceRevisions.has(key) ? resourceRevisions.get(key) : 0;
+  }
+
+  function withExpectedRevision(resource, body){
+    const payload = body && typeof body === 'object' && !Array.isArray(body) ? Object.assign({}, body) : {};
+    if(!Object.prototype.hasOwnProperty.call(payload, 'expectedRevision')){
+      payload.expectedRevision = expectedRevision(resource);
+    }
+    return payload;
+  }
+
+  function clearRevision(resource){
+    const key = String(resource || '').trim();
+    if(key) resourceRevisions.delete(key);
+  }
 
   async function json(url, opts={}){
     if(isFile){
@@ -56,12 +96,21 @@
     return { ok:!!(response && response.ok && data && data.ok), status, data };
   }
 
+  const revisions = Object.freeze({
+    remember:rememberRevision,
+    rememberMap:rememberRevisionMap,
+    expected:expectedRevision,
+    withExpected:withExpectedRevision,
+    clear:clearRevision,
+  });
+
   scope.BASELINE_api = {
     base,
     isFile,
     json,
     get:(path)=>json(path, { method:'GET' }),
     post:(path, body)=>json(path, { method:'POST', body }),
+    revisions,
   };
 
   function removeObsoleteUpdateFooter(){

@@ -131,3 +131,4 @@ Exact commands and rollback handling are documented in `SAVED_DATA_RUNTIME_CUTOV
 - Do not use usernames or email addresses as physical folder identities.
 - Do not place migration evidence, locks or temporary files inside Saved Data.
 - Do not describe production cutover as complete until Hostinger deployment, backup/restore evidence and live smoke tests have passed.
+> Historical checkpoint (2026-08-02). For the current runtime and Hostinger status, see `CURRENT_ARCHITECTURE_AND_HOSTINGER_STATUS_20260823.md`.

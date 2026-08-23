@@ -78,8 +78,8 @@ try{
     if($mode === 'saved-data'){
       $path = bl_saved_user_resource_path($uid, 'favourites');
       $resource = bl_resource_file_read($path, ['items'=>[]]);
-      $expected = bl_resource_revision_from_input($d);
-      if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+      $expected = bl_resource_required_revision_from_input($d);
+      if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
       $items = is_array($resource['data']['items'] ?? null) ? $resource['data']['items'] : [];
       $found = false;
       $next = [];

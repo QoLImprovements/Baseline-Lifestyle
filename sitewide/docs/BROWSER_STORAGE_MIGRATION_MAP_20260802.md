@@ -66,6 +66,8 @@ Shared/Badminton/badminton.json
 
 Import is allowed only through the protected administrator path after comparison with current server state. A browser cache cannot replace a newer shared revision.
 
+If a stale writer is detected, the browser preserves its local snapshot under `__baseline_badminton_session_v4_conflict_backup__`. This is a recovery copy only: it must be compared by an administrator and is never auto-imported or automatically deleted.
+
 ## Deliberately not migrated
 
 Device/session UI preferences, recipe-title indexes, outer-embed snapshots and generic storage-wrapper expressions are not persistent account data. Browser account/password previews and local preview sessions are explicitly excluded from production authentication.

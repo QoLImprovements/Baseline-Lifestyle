@@ -1,10 +1,10 @@
 (function(global){
   'use strict';
 
-  const BUILD='GAMES_HUB_STORAGE_20260801_1';
+  const BUILD='GAMES_HUB_STORAGE_20260823_1';
   const DATA_API='/systems/baseline-games-hub/api/games_data.php';
   const CORE_APPS=['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
-  const ALL_APPS=[...CORE_APPS,'dartsfocused','meridiangrove','hubsettings'];
+  const ALL_APPS=[...CORE_APPS,'dartsfocused','meridiangrove'];
   const KEYS=Object.freeze({
     guestProfiles:'__bl_games_guest_profiles_v1__',
     trackCoin:'__bl_trackcoin_v1__',
@@ -16,17 +16,19 @@
     realmBackup:'__bl_baseline_realm_v3_backup__',
     realmJournal:'__bl_baseline_realm_v3_journal__'
   });
-  const MANAGED_KEYS=new Set(Object.values(KEYS));
+  const MANAGED_KEYS=new Set([
+    KEYS.guestProfiles,KEYS.trackCoin,KEYS.darts,KEYS.meridian,
+    KEYS.realmV2,KEYS.realmV3,KEYS.realmBackup,KEYS.realmJournal
+  ]);
   const DIRECT_APP=Object.freeze({
     [KEYS.trackCoin]:'trackcoin',
-    [KEYS.autoNext]:'hubsettings',
     [KEYS.darts]:'dartsfocused',
     [KEYS.meridian]:'meridiangrove'
   });
   const memory=new Map();
   const pending=Object.create(null);
   const timers=Object.create(null);
-  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{}};
+  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{},legacyProfiles:{}};
   const local=(()=>{try{return global.localStorage;}catch(_error){return null;}})();
   const storageProto=global.Storage&&global.Storage.prototype;
   const nativeGet=storageProto&&storageProto.getItem;
@@ -40,7 +42,7 @@
   function nativeRead(key){try{return local&&nativeGet?nativeGet.call(local,key):null;}catch(_error){return null;}}
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
   function emitStorageState(){
-    try{document.dispatchEvent(new CustomEvent('baseline:game-storage',{detail:{status:state.status,authenticated:state.authenticated,canPlay:true,canSave:state.canSave,error:state.lastError}}));}catch(_error){}
+    try{document.dispatchEvent(new CustomEvent('baseline:game-storage',{detail:{status:state.status,authenticated:state.authenticated,canPlay:true,canSave:state.canSave,error:state.lastError,importCandidates:importCandidates()}}));}catch(_error){}
   }
   function setState(status,error,authenticated,canSave){
     state.status=status;
@@ -79,7 +81,6 @@
     if(!profiles.ninja){const realm=legacyNinjaFromRealm(nativeRead(KEYS.realmV3))||legacyNinjaFromRealm(nativeRead(KEYS.realmV2));if(realm)profiles.ninja=realm;}
     const darts=parse(nativeRead(KEYS.darts));if(darts&&typeof darts==='object')profiles.dartsfocused=darts;
     const meridian=parse(nativeRead(KEYS.meridian));if(meridian&&typeof meridian==='object')profiles.meridiangrove=meridian;
-    const settings=parse(nativeRead(KEYS.autoNext));if(settings&&typeof settings==='object')profiles.hubsettings=settings;
     return profiles;
   }
   function prepareMemory(profiles){
@@ -90,10 +91,32 @@
     if(profiles.trackcoin)memory.set(KEYS.trackCoin,serialise(profiles.trackcoin));
     if(profiles.dartsfocused)memory.set(KEYS.darts,serialise(profiles.dartsfocused));
     if(profiles.meridiangrove)memory.set(KEYS.meridian,serialise(profiles.meridiangrove));
-    if(profiles.hubsettings)memory.set(KEYS.autoNext,serialise(profiles.hubsettings));
+  }
+  function revisionFor(app){const value=Number(state.revisions[app]);return Number.isInteger(value)&&value>=0?value:0;}
+  function rememberRevisions(revisions){
+    if(!revisions||typeof revisions!=='object')return;
+    Object.entries(revisions).forEach(([app,value])=>{const revision=Number(value);if(ALL_APPS.includes(app)&&Number.isInteger(revision)&&revision>=0)state.revisions[app]=revision;});
+  }
+  function importCandidates(){
+    if(!state.authenticated)return[];
+    return ALL_APPS.filter(app=>state.legacyProfiles[app]&&typeof state.legacyProfiles[app]==='object'&&!own(state.profiles,app));
+  }
+  function clearImportedLocalProfile(app){
+    const aggregate=parse(nativeRead(KEYS.guestProfiles));
+    if(aggregate&&typeof aggregate==='object'&&own(aggregate,app)){
+      delete aggregate[app];
+      try{
+        if(Object.keys(aggregate).length)nativeSet.call(local,KEYS.guestProfiles,serialise(aggregate));
+        else nativeDelete(KEYS.guestProfiles);
+      }catch(_error){}
+    }
+    if(app==='trackcoin')nativeDelete(KEYS.trackCoin);
+    if(app==='dartsfocused')nativeDelete(KEYS.darts);
+    if(app==='meridiangrove')nativeDelete(KEYS.meridian);
   }
   function bootstrap(){
     const legacy=collectLegacyProfiles();
+    state.legacyProfiles=copy(legacy);
     prepareMemory(legacy);
     const result=syncRequest('GET',DATA_API+'?bootstrap=1');
     if(!result.ok){
@@ -101,29 +124,25 @@
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
       return;
     }
-    let profiles=copy(result.data.profiles),missing={};
-    ALL_APPS.forEach(app=>{if(!own(profiles,app)&&legacy[app]&&typeof legacy[app]==='object')missing[app]=legacy[app];});
-    if(Object.keys(missing).length){
-      const migration=syncRequest('POST',DATA_API,{action:'migrate_missing',profiles:missing});
-      if(!migration.ok){
-        profiles=Object.assign({},missing,profiles);
-        state.profiles=profiles;
-        prepareMemory(profiles);
-        setState('migration-failed',migration.error,true,false);
-        return;
-      }
-      profiles=copy(migration.data.profiles);
-    }
+    const profiles=copy(result.data.profiles);
+    state.revisions={};
+    rememberRevisions(result.data.revisions);
     state.profiles=profiles;
     prepareMemory(profiles);
-    MANAGED_KEYS.forEach(nativeDelete);
     setState('ready','',true,true);
   }
   function postProfile(app,profile,keepalive){
     if(!state.canSave||!ALL_APPS.includes(app)||!profile||typeof profile!=='object')return Promise.resolve(false);
-    return fetch(DATA_API,{method:'POST',credentials:'same-origin',keepalive:!!keepalive,headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({action:'save',app,profile})})
+    return fetch(DATA_API,{method:'POST',credentials:'same-origin',keepalive:!!keepalive,headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({action:'save',app,profile,expectedRevision:revisionFor(app)})})
       .then(response=>response.json().catch(()=>({})).then(data=>{
+        if(response.status===409&&data.error==='revision_conflict'){
+          state.lastError='revision_conflict';state.status='conflict';state.canSave=false;
+          document.documentElement.setAttribute('data-games-server-save-error','revision_conflict');
+          emitStorageState();
+          return false;
+        }
         if(!response.ok||!data.ok)throw new Error(data.error||'save_failed');
+        const revision=Number(data.revision);if(Number.isInteger(revision)&&revision>=0)state.revisions[app]=revision;
         state.lastError='';state.profiles[app]=data.profile||profile;
         document.documentElement.removeAttribute('data-games-server-save-error');
         emitStorageState();
@@ -138,8 +157,23 @@
         return false;
       });
   }
+  function importGuestProfile(app){
+    if(!state.authenticated||!ALL_APPS.includes(app)||!importCandidates().includes(app))return false;
+    const migration=syncRequest('POST',DATA_API,{action:'migrate_missing',profiles:{[app]:state.legacyProfiles[app]}});
+    if(!migration.ok){state.lastError=migration.error||'migration_failed';emitStorageState();return false;}
+    state.profiles=copy(migration.data.profiles);
+    rememberRevisions(migration.data.revisions);
+    prepareMemory(state.profiles);
+    clearImportedLocalProfile(app);
+    delete state.legacyProfiles[app];
+    emitStorageState();
+    return true;
+  }
   function queueProfile(app,profile){
     if(!state.canSave||!ALL_APPS.includes(app)||!profile||typeof profile!=='object')return;
+    // Startup defaults must not create an account save before the user decides
+    // what to do with an existing browser profile for this game.
+    if(importCandidates().includes(app))return;
     pending[app]=profile;
     global.clearTimeout(timers[app]);
     timers[app]=global.setTimeout(()=>{
@@ -193,6 +227,8 @@
     isReady:()=>state.ready,
     getStatus:()=>state.status,
     getLastError:()=>state.lastError,
+    getImportCandidates:()=>importCandidates().slice(),
+    importGuestProfile,
     flush:flushPending
   });
 })(window);

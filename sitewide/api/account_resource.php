@@ -62,3 +62,67 @@ function bl_account_resource_sync_by_id(PDO $db, int $uid): void {
   $user = $stmt->fetch();
   if(is_array($user)) bl_account_resource_sync($user);
 }
+
+function bl_account_index_projection(): array {
+  $usersRoot = bl_saved_join(bl_saved_root(), 'Users');
+  $byName = [];
+  $byEmail = [];
+  $issues = [];
+  $accounts = 0;
+  if(!is_dir($usersRoot)) return ['index'=>['byName'=>[],'byEmail'=>[]],'issues'=>[],'accounts'=>0];
+  foreach(scandir($usersRoot) ?: [] as $folder){
+    if(preg_match('/^[0-9]{6}$/', (string)$folder) !== 1) continue;
+    $directory = bl_saved_join($usersRoot, (string)$folder);
+    if(is_link($directory) || !is_dir($directory)){
+      $issues[] = ['code'=>'unsafe_user_directory','folder'=>(string)$folder];
+      continue;
+    }
+    $resource = bl_resource_file_read(bl_saved_join($directory, 'account.json'), []);
+    if((int)($resource['revision'] ?? 0) <= 0) continue;
+    $account = is_array($resource['data'] ?? null) ? $resource['data'] : [];
+    if(sprintf('%06d', (int)($account['userId'] ?? 0)) !== (string)$folder){
+      $issues[] = ['code'=>'account_user_id_mismatch','folder'=>(string)$folder];
+      continue;
+    }
+    $accounts++;
+    foreach(['name','email'] as $field){
+      $key = strtolower(trim((string)($account[$field] ?? '')));
+      if($key === '') continue;
+      $target = $field === 'name' ? $byName : $byEmail;
+      if(isset($target[$key]) && $target[$key] !== $folder){
+        $issues[] = ['code'=>'duplicate_' . $field,'folder'=>(string)$folder];
+        continue;
+      }
+      if($field === 'name') $byName[$key] = (string)$folder;
+      else $byEmail[$key] = (string)$folder;
+    }
+  }
+  ksort($byName);
+  ksort($byEmail);
+  return ['index'=>['byName'=>$byName,'byEmail'=>$byEmail],'issues'=>$issues,'accounts'=>$accounts];
+}
+
+function bl_account_index_verify(): array {
+  $projection = bl_account_index_projection();
+  $resource = bl_resource_file_read(bl_saved_account_index_path(), ['byName'=>[],'byEmail'=>[]]);
+  $current = [
+    'byName'=>is_array($resource['data']['byName'] ?? null) ? $resource['data']['byName'] : [],
+    'byEmail'=>is_array($resource['data']['byEmail'] ?? null) ? $resource['data']['byEmail'] : [],
+  ];
+  ksort($current['byName']);
+  ksort($current['byEmail']);
+  return [
+    'ok'=>$projection['issues'] === [] && $current === $projection['index'],
+    'matches'=>$current === $projection['index'],
+    'accounts'=>$projection['accounts'],
+    'issues'=>$projection['issues'],
+    'expected'=>$projection['index'],
+    'revision'=>(int)($resource['revision'] ?? 0),
+  ];
+}
+
+function bl_account_index_rebuild(int $expectedRevision): array {
+  $verification = bl_account_index_verify();
+  if($verification['issues'] !== []) throw new RuntimeException('account_index_projection_invalid');
+  return bl_resource_file_replace(bl_saved_account_index_path(), $verification['expected'], $expectedRevision);
+}
