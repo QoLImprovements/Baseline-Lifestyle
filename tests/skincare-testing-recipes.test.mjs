@@ -12,17 +12,27 @@ const recipes = [
 ];
 
 function recipeOpening(id, slug) {
-  return `<div class="recipe card recipe-page" data-recipe-slug="${slug}" id="${id}">`;
+  return `<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="${slug}" id="${id}">`;
 }
 
 test('Skincare Testing recipes are embedded in the canonical recipe document', () => {
   for (const [id, slug, title] of recipes) {
-    assert.ok(html.includes(recipeOpening(id, slug)), `missing embedded recipe card ${id}`);
+    assert.ok(html.includes(recipeOpening(id, slug)), `missing embedded Testing recipe card ${id}`);
     assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"`));
     assert.ok(html.includes(`<h3>${title}</h3>`), `missing recipe title ${title}`);
   }
   assert.doesNotMatch(html, /\/systems\/baseline-natural-skincare\/recipes\/testing-[^"']+\.html/);
   assert.doesNotMatch(html, /#tab=recipes\/testing-/);
+});
+
+test('Testing is a real recipe subcategory rather than a sortable list label', () => {
+  for (const [id, slug] of recipes) {
+    assert.ok(html.includes(recipeOpening(id, slug)), `${id} must declare data-category="Testing"`);
+  }
+  assert.match(shared, /const hasCategories = sortedCards\.some/);
+  assert.match(shared, /const cat = \(card\.dataset\.category \|\| 'Recipes'\)/);
+  assert.match(shared, /if\(cat !== 'Recipes'\)/);
+  assert.match(shared, /a\.dataset\.recipeId = item\.id/);
 });
 
 test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
@@ -47,4 +57,10 @@ test('Natural Skincare navigation keeps public clean URLs instead of implementat
   assert.match(tabs, /"baseline-natural-skincare\.html": \{ base:"\/baseline-natural-skincare", tabs:/);
   assert.doesNotMatch(shared, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html#tab=/);
   assert.doesNotMatch(tabs, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html.*hashTabs:true/);
+});
+
+test('leaving Skincare My Routine clears bootstrap-only routine visibility flags', () => {
+  assert.match(shared, /dataset\.app === 'skin' && id !== 'routine'/);
+  assert.match(shared, /removeAttribute\('data-initial-skincare-tab'\)/);
+  assert.match(shared, /removeAttribute\('data-initial-routine-view'\)/);
 });
