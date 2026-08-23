@@ -241,7 +241,7 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Builds progressive bodyweight strength and muscular endurance');
   await page.locator('#fitnessPublicRoutineResult [data-public-view="plan"]').click();
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Core Calisthenics');
-  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Baseline 90 seconds');
+  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('1. Elbow Plank');
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('1/3 sessions completed');
 
   await page.locator('[data-fitness-routine-view="log"]').click();
