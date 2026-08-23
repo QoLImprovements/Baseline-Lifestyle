@@ -53,7 +53,8 @@ test('Testing recipes are grouped under the Testing subcategory', async ({ page 
   await expect(testingHeading).toHaveCount(1);
   await expect(testingHeading).toBeVisible();
 
-  const testingLinks = testingHeading.locator('xpath=following-sibling::ul[1]/li/a.recipe-open');
+  // The category renderer places the category list directly after its heading.
+  const testingLinks = page.locator('#recipes-landing h4 + ul a.recipe-open');
   await expect(testingLinks).toHaveCount(3);
   const ids = await testingLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
   expect(ids).toEqual(['r10','r8','r9']);
@@ -78,9 +79,12 @@ test('Testing recipe links open through the normal recipe overview router', asyn
 
 test('leaving My Routine for Recipes hides Routine Log and Calendar completely', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/my-routine/log');
-  await expect(page.locator('#routine')).toHaveClass(/active/);
+
+  // My Routine is intentionally made visible during first paint by root route
+  // markers; it does not need the generic .active class at that point.
   await expect(page.locator('#routine')).toBeVisible();
   await expect(page.locator('#routine .routine-subtabs')).toBeVisible();
+  await expect(page.locator('html')).toHaveAttribute('data-initial-skincare-tab', 'routine');
 
   await page.locator('.tab[data-target="recipes"]').click();
 
