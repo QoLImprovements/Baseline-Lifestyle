@@ -82,7 +82,7 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   await page.addInitScript(() => {
     localStorage.setItem('__bl_skincare_routine_v1__::guest', JSON.stringify({
       visibility:'private',
-      items:[{
+      routine:[{
         id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
         frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
       },{
@@ -186,11 +186,13 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await expect(yogaDetails).toBeHidden();
 
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  const planTabs = page.locator('.fitness-routine-plan-tabs [data-fitness-plan-view]');
-  await expect(planTabs).toHaveCount(4);
-  expect(await planTabs.allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activity','Sports']);
+  const planCards = page.locator('details[data-fitness-plan-card]');
+  await expect(planCards).toHaveCount(4);
+  expect(await planCards.locator(':scope > summary > span').allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activity','Sports']);
 
-  await page.locator('[data-fitness-plan-view="other"]').click();
+  const otherCard=page.locator('details[data-fitness-plan-card="other"]');
+  await otherCard.locator(':scope > summary').click();
+  await expect(otherCard).toHaveAttribute('open','');
   const groupCard = page.locator('[data-fitness-routine-panel="other"] .bl-v4-group-card');
   await expect(groupCard).toBeVisible();
   await groupCard.locator('[data-v4-group-name="other"]').fill('Recovery and Mobility');

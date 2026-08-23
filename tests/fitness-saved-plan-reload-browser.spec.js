@@ -19,7 +19,7 @@ async function diagnosticState(page, phase) {
     const saved = document.querySelector('#myPlanSavedWrap');
     const generator = document.querySelector('#myPlanGeneratorWrap');
     const activeSubview = document.querySelector('.fitness-routine-subtabs [data-fitness-routine-view][aria-selected="true"]');
-    const activePlanSubview = document.querySelector('[data-fitness-plan-view][aria-selected="true"]');
+    const activePlanSubview = document.querySelector('details[data-fitness-plan-card][open]');
     const styles = (element) => {
       if (!element) return null;
       const style = getComputedStyle(element);
@@ -36,7 +36,7 @@ async function diagnosticState(page, phase) {
       calisthenics:Boolean(calisthenics), calisthenicsState:styles(calisthenics),
       saved:Boolean(saved), savedState:styles(saved), generator:Boolean(generator), generatorState:styles(generator),
       activeSubview:activeSubview?.dataset.fitnessRoutineView || '',
-      activePlanSubview:activePlanSubview?.dataset.fitnessPlanView || '',
+      activePlanSubview:activePlanSubview?.dataset.fitnessPlanCard || '',
       flags:{
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
         structure:Boolean(window.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V6__),
@@ -60,6 +60,16 @@ async function chooseExercise(page, name) {
   await expect(option).toBeVisible();
   await option.click();
   await expect(input).toHaveValue(name);
+}
+
+async function openFitnessPlanCard(page, view) {
+  const card=page.locator(`details[data-fitness-plan-card="${view}"]`);
+  await expect(card).toBeVisible();
+  if (!(await card.evaluate((element) => element.open))) {
+    await card.locator(':scope > summary').click();
+  }
+  await expect(card).toHaveAttribute('open','');
+  return card;
 }
 
 test('Fitness saves, summarises, reloads and creates another plan without unstable text', async ({ page }) => {
@@ -98,7 +108,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
   await page.locator('.tab[data-target="my-plan"]').click();
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
+  await openFitnessPlanCard(page,'calisthenics');
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
 
   await chooseExercise(page, 'Knee Push-Ups');
@@ -118,13 +128,14 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   expect(after.sessionView).toBe('plan');
   expect(after.planView).toBe('calisthenics');
   expect(after.activeSubview).toBe('plan');
-  expect(after.activePlanSubview).toBe('calisthenics');
+  expect(after.activePlanSubview).toBe('');
   expect(after.flags.workspace).toBe(true);
   expect(after.flags.structure).toBe(true);
   expect(after.flags.coherence).toBe(true);
   expect(after.flags.policy).toBe(true);
   expect(pageErrors).toEqual([]);
   expect(failedRequests).toEqual([]);
+  await openFitnessPlanCard(page,'calisthenics');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 
@@ -159,7 +170,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   expect(stability.widthSpread).toBeLessThanOrEqual(1);
 
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
+  await openFitnessPlanCard(page,'calisthenics');
   const createButton = page.locator('#createCalisthenicsPlan');
   await expect(createButton).toBeVisible();
   await createButton.click();
@@ -215,7 +226,7 @@ test('weekly-count workout is immediately startable and has no unlock date', asy
   await installSavedPlanRoutes(page,planJson,sessions);
   await page.goto('/baseline-fitness/my-routine',{ waitUntil:'domcontentloaded' });
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
+  await openFitnessPlanCard(page,'calisthenics');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   const start = page.locator('#startWorkoutBtn');
   await expect(start).toBeEnabled();
@@ -246,7 +257,7 @@ test('specific-weekday future workout offers Start Early Yes or No', async ({ pa
   await installSavedPlanRoutes(page,planJson,sessions);
   await page.goto('/baseline-fitness/my-routine',{ waitUntil:'domcontentloaded' });
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  await page.locator('[data-fitness-plan-view="calisthenics"]').click();
+  await openFitnessPlanCard(page,'calisthenics');
   const start = page.locator('#startWorkoutBtn');
   await expect(start).toBeEnabled();
   await start.click();
