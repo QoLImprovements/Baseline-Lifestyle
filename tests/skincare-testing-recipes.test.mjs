@@ -43,7 +43,9 @@ test('Recipes and My Routine remain separate section siblings', () => {
   assert.ok(recipesStart >= 0 && ingredientsStart > recipesStart, 'Recipes must end before Ingredient Library');
   assert.ok(supportStart > ingredientsStart, 'Skin Support must follow Ingredient Library');
   assert.ok(routineStart > supportStart, 'My Routine must remain outside Recipes and Skin Support');
-  assert.match(html.slice(recipesStart, ingredientsStart).trimEnd(), /<\/section>$/s);
+  const recipesBlock = html.slice(recipesStart, ingredientsStart);
+  assert.equal((recipesBlock.match(/<section\b/g) || []).length, 1, 'Recipes must contain one section opening');
+  assert.equal((recipesBlock.match(/<\/section>/g) || []).length, 1, 'Recipes must contain one matching section close');
 });
 
 test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
