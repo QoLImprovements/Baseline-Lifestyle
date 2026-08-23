@@ -248,5 +248,5 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await page.reload({ waitUntil:'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
   await page.locator('[data-calendar-view="week"]').click();
-  await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.bl-routine-week-list .bl-routine-day-row');
+  await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.week-view > .fitness-calendar-day');
 });
