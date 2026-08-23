@@ -289,6 +289,16 @@
     }
     if(!exists) return;
 
+    // Skincare's first-paint route markers only bootstrap My Routine. Once a
+    // different top-level tab is selected, remove them so CSS cannot keep
+    // #routine visible alongside the newly selected section.
+    try{
+      if(document.body && document.body.dataset && document.body.dataset.app === "skin" && id !== "routine"){
+        document.documentElement.removeAttribute("data-initial-skincare-tab");
+        document.documentElement.removeAttribute("data-initial-routine-view");
+      }
+    }catch(_e){}
+
     for(var t=0;t<tabs.length;t++){
       var tid = getTabId(tabs[t]);
       var sel = (tid === id);
