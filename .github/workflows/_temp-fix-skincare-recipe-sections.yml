@@ -1,0 +1,29 @@
+name: Temporary fix Skincare recipe sections
+
+on:
+  push:
+    branches:
+      - fix/skincare-recipes-routine-leak-20260824
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/skincare-recipes-routine-leak-20260824
+          fetch-depth: 0
+      - name: Apply isolated Skincare repair
+        run: python tools/_temp_fix_skincare_recipe_sections.py
+      - name: Commit runtime repair only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitewide/js/baseline-shared.js systems/baseline-natural-skincare/baseline-natural-skincare.html
+          git diff --cached --quiet && exit 0
+          git commit -m "Keep Skincare Recipes isolated and group Testing recipes"
+          git push origin HEAD:fix/skincare-recipes-routine-leak-20260824
