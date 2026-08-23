@@ -290,7 +290,7 @@
   const BASELINE_CLEAN_PAGE_ROUTES = Object.freeze({
     'baseline-food-approach.html': { base:'/baseline-food-approach', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', 'diet-log':'diet-log' } },
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
-    'baseline-natural-skincare.html': { base:'/systems/baseline-natural-skincare/baseline-natural-skincare.html', hashTabs:true, defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
+    'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
     'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'workout-routine', library:'exercise-library', achievements:'achievements', 'my-plan':'my-plan','my-routine':'my-plan' } }
   });
@@ -298,7 +298,7 @@
     'index.html':'/home/1', 'home.html':'/home/1', 'home':'/home/1',
     'baseline-food-approach.html':'/baseline-food-approach/system',
     'baseline-massage.html':'/baseline-massage/system',
-    'baseline-natural-skincare.html':'/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=system',
+    'baseline-natural-skincare.html':'/baseline-natural-skincare/system',
     'baseline-badminton-session.html':'/baseline-badminton-session/system',
     'baseline-fitness.html':'/baseline-fitness/system',
     'baseline-games-hub.html':'/baseline-games-hub/games-hub'
@@ -361,7 +361,7 @@
     if(skincareRoute){
       const tabBySlug = { system:'system', recipes:'recipes', 'ingredient-library':'ingredients', 'skin-support-system':'support', 'my-routine':'routine' };
       const tabId = tabBySlug[String(skincareRoute[1] || '').toLowerCase()] || 'system';
-      return '/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=' + encodeURIComponent(tabId);
+      return '/baseline-natural-skincare/' + String(skincareRoute[1] || 'system').toLowerCase();
     }
     const stripped = href.split('#')[0].split('?')[0].replace(/^\/+/, '');
     const targetFile = (stripped.split('/').pop() || '').toLowerCase();
