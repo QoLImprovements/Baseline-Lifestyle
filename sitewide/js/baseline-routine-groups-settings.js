@@ -395,8 +395,12 @@
     const button = $(`[data-bl-save-fitness-plan-settings="${planId}"]`);
     if (button) { button.disabled = true; button.textContent = 'Saving…'; }
     try {
-      const response = await fetch('/systems/baseline-fitness/api/plan_update.php', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json', Accept:'application/json' }, body:JSON.stringify({ planId:Number(planId), planJson:json, planText:`${group.label} updated`, reschedule:true }) });
+      const body=global.BASELINE_api?.revisions?.withExpected?.('fitness',{ planId:Number(planId),planJson:json,planText:`${group.label} updated`,reschedule:true }) || { planId:Number(planId),planJson:json,planText:`${group.label} updated`,reschedule:true,expectedRevision:0 };
+      const response = await fetch('/systems/baseline-fitness/api/plan_update.php', { method:'POST', credentials:'same-origin', headers:{ 'Content-Type':'application/json', Accept:'application/json' }, body:JSON.stringify(body) });
+      const result=await response.clone().json().catch(()=>null);
+      if(response.status===409&&result?.error==='revision_conflict')throw new Error('revision_conflict');
       if (!response.ok) throw new Error('save_failed');
+      global.BASELINE_api?.revisions?.remember?.('fitness',result);
       await global.BASELINE_fitnessPlans?.refresh?.();
       if (button) button.textContent = 'Saved';
     } catch (_error) {

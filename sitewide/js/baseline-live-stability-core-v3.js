@@ -161,7 +161,7 @@
   }
 
   function installBadmintonSavedDataReconciliation(){
-    if(!document.body || document.body.dataset.app !== 'badminton' || !window.fetch) return;
+    if(!document.body || document.body.dataset.app !== 'badminton' || !window.fetch || window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__) return;
     let lastObserved = 0;
     let inFlight = false;
     let revision = null;
@@ -194,6 +194,7 @@
     }
 
     async function reconcile(force){
+      if(window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__) return;
       if(inFlight) return;
       const local = localState();
       if(!local) return;
@@ -219,11 +220,8 @@
         if(Number.isInteger(revision) && revision >= 0) payload.expectedRevision = revision;
         let saved = await request('POST', payload);
         if(saved && saved.error === 'revision_conflict'){
-          const latest = await request('GET');
-          if(latest && latest.ok && Number.isInteger(Number(latest.revision))){
-            revision = Number(latest.revision);
-            saved = await request('POST', { state:local, expectedRevision:revision });
-          }
+          announceFailure('revision conflict; shared state changed elsewhere and was not overwritten');
+          return;
         }
         if(!saved || !saved.ok){
           announceFailure(saved && (saved.error || saved.__status));

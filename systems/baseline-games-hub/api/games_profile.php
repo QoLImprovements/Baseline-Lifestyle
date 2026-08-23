@@ -74,7 +74,7 @@ try{
     if(!is_array($payload)) $payload = bl_input_json();
     $profile = bl_normalise_game_profile($app, is_array($payload['profile'] ?? null) ? $payload['profile'] : []);
     if($mode === 'saved-data'){
-      $expected = bl_resource_revision_from_input($payload);
+      $expected = bl_resource_required_revision_from_input($payload);
       $written = bl_legacy_game_file_write($uid, $app, $profile, $expected);
       bl_json(['ok'=>true,'app'=>$app,'profile'=>$profile,'revision'=>$written['revision']]);
     }

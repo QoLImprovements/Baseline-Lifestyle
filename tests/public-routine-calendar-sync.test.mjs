@@ -12,7 +12,7 @@ const html=read('systems/baseline-fitness/baseline-fitness.html');
 test('Public calendar marker has exactly one shared caption source',()=>{
   assert.match(publicViewer,/data-caption=\"\$\{esc\(marker\.label\)\}\"/);
   assert.doesNotMatch(publicViewer,/data-public-summary-target=\"\$\{esc\(marker\.target\)\}\" title=/);
-  assert.match(publicViewer,/never add a native title tooltip as a second competing caption/);
+  assert.match(publicViewer,/never add a native title\s+tooltip as a second competing caption/);
 });
 
 test('Public Fitness Calendar reuses owner Routine Log calendar control classes',()=>{
@@ -57,5 +57,5 @@ test('Public Fitness saved-data plans preserve every completed session date for 
 test('Fitness entry points cache-bust the synchronized Public Routine viewer',()=>{
   assert.match(loader,/baseline-public-routine-viewonly-v4\.js\?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1/);
   assert.match(html,/baseline-public-routine-viewonly-v4\.js\?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1/);
-  assert.match(html,/fitness-routine-workspace\.js\?v=BASELINE_FITNESS_ROUTINE_WORKSPACE_20260822_1/);
+  assert.match(html,/fitness-routine-workspace\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
 });

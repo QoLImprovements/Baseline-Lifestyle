@@ -144,7 +144,7 @@ test('security and performance repairs stay in place', () => {
 
   const fitnessHtml = fs.readFileSync(path.join(root, 'systems/baseline-fitness/baseline-fitness.html'), 'utf8');
   assert.ok(fitnessHtml.includes('/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1'));
-  assert.ok(fitnessHtml.includes('/sitewide/js/baseline-voice.js?v=BASELINE_VOICE_FITNESS_SETTINGS_20260803_1'));
+  assert.ok(fitnessHtml.includes('/sitewide/js/baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1'));
   assert.equal(fitnessHtml.includes('/systems/baseline-fitness/css/baseline-voice.css'), false);
   assert.equal(fitnessHtml.includes('/systems/baseline-fitness/js/baseline-voice.js'), false);
   assert.equal(fs.existsSync(path.join(root, 'systems/baseline-fitness/css/baseline-voice.css')), false);

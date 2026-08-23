@@ -15,5 +15,5 @@ test('Fitness activity sections remove only the row decoration and preserve legi
   assert.doesNotMatch(workspaceCss,/\.fitness-activity-combobox[^}]*border-top:0/);
   assert.match(workspaceCss,/#my-plan \.fitness-activity-add\{[^}]*border-top:0!important;[^}]*box-shadow:none!important;[^}]*background-image:none!important/);
   assert.match(workspaceCss,/\.fitness-activity-add::before,[\s\S]*\.fitness-activity-add::after,[\s\S]*\.fitness-activity-combobox::before,[\s\S]*\.fitness-activity-combobox::after\{[^}]*content:none!important;[^}]*display:none!important/);
-  assert.match(page,/fitness-routine-workspace\.css\?v=BASELINE_FITNESS_ACTIVITY_ROW_LINE_REMOVAL_20260822_1/);
+  assert.match(page,/fitness-routine-workspace\.css\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
 });

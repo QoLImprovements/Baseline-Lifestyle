@@ -144,3 +144,4 @@ When the release is complete, add:
 - backup/restore drill result;
 - rollback baseline;
 - end of branch-retention window.
+> Historical checkpoint (2026-08-02). For the current runtime and Hostinger status, see `CURRENT_ARCHITECTURE_AND_HOSTINGER_STATUS_20260823.md`.

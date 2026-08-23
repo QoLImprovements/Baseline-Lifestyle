@@ -534,7 +534,7 @@ try{
   }
 
   if($mode === 'saved-data'){
-    $expected = bl_resource_revision_from_input($input);
+    $expected = bl_resource_required_revision_from_input($input);
     $written = bl_badminton_file_write($state, $expected);
     $updatedAt = bl_resource_timestamp((string)$written['updatedAt']);
     $revision = (int)$written['revision'];

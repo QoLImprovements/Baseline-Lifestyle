@@ -431,11 +431,11 @@ if($accessUntil <= time()){
     </main>
   </div>
 
-  <script defer src="/sitewide/js/baseline-protected-access.js?v=BASELINE_CHARITY_HEADER_20260803_3"></script>
-  <script defer src="/sitewide/js/baseline-api.js?v=SITEWIDE_API_BOUNDARY_20260802_1"></script>
+  <script defer src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
+  <script defer src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
   <script defer src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script>
   <script defer src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script>
-  <script defer src="/sitewide/js/baseline-shared.js?v=BASELINE_CHARITY_HEADER_20260803_3"></script>
+  <script defer src="/sitewide/js/baseline-shared.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
 </body>

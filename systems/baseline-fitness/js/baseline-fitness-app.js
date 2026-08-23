@@ -116,6 +116,11 @@
 
   async function apiJson(path, options = {}) {
     if (FILE_PROTOCOL) return { ok: false, error: 'server_required' };
+    const revisions=global.BASELINE_api?.revisions;
+    const method=String(options.method || 'GET').toUpperCase();
+    const requestBody=options.body && method!=='GET'
+      ? (revisions?.withExpected?.('fitness',options.body) || Object.assign({ expectedRevision:0 },options.body))
+      : options.body;
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timer = controller ? setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS) : null;
     try {
@@ -123,15 +128,16 @@
       const url = new URL(path, baseUrl);
       if (options.params) Object.entries(options.params).forEach(([name, value]) => url.searchParams.set(name, String(value)));
       const response = await fetch(url, {
-        method: options.method || 'GET',
+        method,
         credentials: 'same-origin',
-        headers: Object.assign({ Accept: 'application/json' }, options.body ? { 'Content-Type': 'application/json' } : {}),
-        body: options.body ? JSON.stringify(options.body) : undefined,
+        headers: Object.assign({ Accept: 'application/json' }, requestBody ? { 'Content-Type': 'application/json' } : {}),
+        body: requestBody ? JSON.stringify(requestBody) : undefined,
         signal: controller ? controller.signal : undefined
       });
       const text = await response.text();
       let data = null;
       try { data = text ? JSON.parse(text) : null; } catch (_error) { data = null; }
+      if(data && typeof data==='object') revisions?.remember?.('fitness',data);
       return data && typeof data === 'object' ? data : { ok: false, error: response.ok ? 'invalid_json' : `http_${response.status}` };
     } catch (error) {
       return { ok: false, error: error && error.name === 'AbortError' ? 'timeout' : 'network_error' };

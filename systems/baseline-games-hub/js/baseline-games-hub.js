@@ -1,4 +1,4 @@
-import './games-server-storage-ui.js';
+import './games-server-storage-ui.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1';
 import './baseline-games-hub-v14.js';
 
 // Independently preloaded by baseline-games-hub.html so a failure in either

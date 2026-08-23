@@ -11,6 +11,7 @@ const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
 const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
 const storageUi=read('systems/baseline-games-hub/js/games-server-storage-ui.js');
 const loader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
+const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 const html=read('systems/baseline-games-hub/baseline-games-hub.html');
 
 function runGuard({status=401,payload={ok:false,error:'signed_out'},initial={}}={}){
@@ -86,6 +87,36 @@ test('authenticated storage enables saving without becoming the owner of game co
   assert.equal(listeners.document.click,undefined);
   assert.equal(listeners.document.submit,undefined);
   assert.equal(listeners.document.keydown,undefined);
+});
+
+test('device-only auto-next settings remain in native local storage',()=>{
+  const key='__bl_games_auto_next_v1__';
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}}});
+  context.localStorage.setItem(key,JSON.stringify({pairs:true}));
+  assert.equal(localStorage.values.get(key),JSON.stringify({pairs:true}));
+  assert.doesNotMatch(guard,/\[KEYS\.autoNext\]:'hubsettings'/);
+});
+
+test('browser game progress requires an explicit per-game import decision',()=>{
+  const key='__bl_games_guest_profiles_v1__';
+  const original=JSON.stringify({pairs:{level:4}});
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}},initial:{[key]:original}});
+  assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['pairs']);
+  assert.equal(localStorage.values.get(key),original);
+  assert.match(guard,/importGuestProfile/);
+  assert.match(storageUi,/Nothing is imported automatically/);
+  assert.match(storageUi,/Import \$\{importLabels\[app\]\|\|app\}/);
+  assert.match(guard,/if\(importCandidates\(\)\.includes\(app\)\)return/);
+  assert.match(storageUi,/window\.location\.reload\(\)/);
+});
+
+test('account game writes carry per-file revisions and stop on conflicts',()=>{
+  assert.match(guard,/expectedRevision:revisionFor\(app\)/);
+  assert.match(guard,/response\.status===409&&data\.error==='revision_conflict'/);
+  assert.match(guard,/state\.status='conflict';state\.canSave=false/);
+  assert.match(core,/serverStorageAuthority\(\)/);
+  assert.match(core,/if\(serverStorageAuthority\(\)\) return/);
+  assert.doesNotMatch(core,/serverStorageAuthority[\s\S]{0,180}isReady\(\)/);
 });
 
 test('storage presentation is non-blocking and the guard has no fallback runtime',()=>{

@@ -16,6 +16,7 @@ const policy=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-liv
 const shared=fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js',import.meta.url),'utf8');
 const sharedCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css',import.meta.url),'utf8');
 const fitnessCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css',import.meta.url),'utf8');
+const workspaceCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace-v2.css',import.meta.url),'utf8');
 const publicViewer=fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js',import.meta.url),'utf8');
 const updateSession=fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php',import.meta.url),'utf8');
 
@@ -83,15 +84,16 @@ test('Remove Entry buttons are preserved across patches instead of being destroy
 
 test('canonical loader force-loads Routine Log v3 even when the legacy direct marker exists',() => {
   assert.match(loader,/ROUTINE LOG COMPATIBILITY CONTRACT/);
-  assert.match(loader,/BASELINE_FITNESS_ROUTINE_LOG_20260819_3/);
+  assert.match(loader,/SAVED_DATA_REVISION_CLIENT_20260823_1/);
   assert.match(loader,/marker:'data-fitness-routine-log-v3'/);
 });
 
 test('Fitness activity picker does not expose the brighter border as an isolated white rule',() => {
-  assert.match(routineLog,/fitness-activity-combobox>input/);
-  assert.match(routineLog,/border-color:var\(--border\)!important/);
-  assert.match(routineLog,/fitness-activity-add::before/);
-  assert.match(routineLog,/content:none!important/);
+  assert.match(workspaceCss,/fitness-activity-combobox>input/);
+  assert.match(workspaceCss,/border-color:var\(--border\)!important/);
+  assert.match(workspaceCss,/fitness-activity-add::before/);
+  assert.match(workspaceCss,/content:none!important/);
+  assert.doesNotMatch(routineLog,/createElement\(['"]style['"]\)/);
 });
 
 test('Fitness Summary uses one shell/filter and one comprehensive content owner',() => {

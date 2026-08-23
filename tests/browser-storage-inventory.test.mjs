@@ -90,9 +90,9 @@ test("migration rules are explicit and preserve unresolved user content", () => 
 test("shared Badminton browser state uses the agreed nested resource path", () => {
   const rules = mapping.rules || [];
   const sharedRules = rules.filter((rule) =>
-    ["badminton-shared-v3-legacy", "badminton-shared-v4-cache"].includes(rule.id),
+    ["badminton-shared-v3-legacy", "badminton-shared-v4-cache", "badminton-shared-conflict-backup"].includes(rule.id),
   );
-  assert.equal(sharedRules.length, 2);
+  assert.equal(sharedRules.length, 3);
   for (const rule of sharedRules) {
     assert.equal(rule.target, "Shared/Badminton/badminton.json");
   }

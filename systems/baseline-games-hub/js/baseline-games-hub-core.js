@@ -1079,6 +1079,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }catch(_e){}
     return { authed:false, name:'', email:'' };
   }
+  function serverStorageAuthority(){
+    const authority=window.BaselineGameStorage;
+    return authority&&typeof authority.canPlay==='function'?authority:null;
+  }
   async function apiJson(url, options){
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeoutId = controller ? window.setTimeout(function(){ try{ controller.abort(); }catch(_e){} }, 2600) : 0;
@@ -1365,8 +1369,14 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
       return;
     }
+    if(serverStorageAuthority()){
+      profiles[app]=normaliseProfile(app,guestFallback);
+      guestProfiles[app]=JSON.parse(JSON.stringify(profiles[app]));
+      return;
+    }
     try{
       const data = await apiJson(API_PATH + '?app=' + encodeURIComponent(app));
+      window.BASELINE_api?.revisions?.remember?.(`games:${app}`,data);
       profiles[app] = normaliseProfile(app, data.profile || {});
       guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
       writeGuestProfile(app, profiles[app]);
@@ -1407,13 +1417,16 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(app === 'trackcoin') writeTrackCoinStorage(profile);
     guestProfiles[app] = JSON.parse(JSON.stringify(profile));
     writeGuestProfile(app, profile);
+    if(serverStorageAuthority()) return;
     if(!authState.authed || location.protocol === 'file:'){
       return;
     }
     window.clearTimeout(saveTimers[app]);
     saveTimers[app] = window.setTimeout(async function(){
       try{
-        const data = await apiJson(API_PATH, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ app, profile }) });
+        const payload=window.BASELINE_api?.revisions?.withExpected?.(`games:${app}`,{ app,profile }) || { app,profile,expectedRevision:0 };
+        const data = await apiJson(API_PATH, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) });
+        window.BASELINE_api?.revisions?.remember?.(`games:${app}`,data);
         if(data && data.profile){
           guestProfiles[app] = JSON.parse(JSON.stringify(data.profile));
           writeGuestProfile(app, data.profile);

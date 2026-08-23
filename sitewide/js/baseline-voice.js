@@ -167,6 +167,11 @@
   let statusNode=null;
   let accountName='';
   let serverLoadToken=0;
+  const VOICE_RESOURCE='voice';
+
+  function revisionClient(){ return global.BASELINE_api?.revisions || null; }
+  function rememberRevision(data){ revisionClient()?.remember?.(VOICE_RESOURCE,data); }
+  function revisionedBody(body){ return revisionClient()?.withExpected?.(VOICE_RESOURCE,body) || Object.assign({ expectedRevision:0 },body); }
 
   function readLocalSettings(){
     try{
@@ -199,10 +204,16 @@
           method:'POST',
           credentials:'same-origin',
           headers:{'Content-Type':'application/json','Accept':'application/json'},
-          body:JSON.stringify({settings})
+          body:JSON.stringify(revisionedBody({settings}))
         });
         const data=await response.json().catch(()=>null);
+        if(response.status===409&&data?.error==='revision_conflict'){
+          await loadServerSettings(accountName);
+          setStatus('Voice settings changed elsewhere. The latest account settings were reloaded; please make your change again.','warning');
+          return getSettings();
+        }
         if(!response.ok||!data?.ok) throw new Error('save_failed');
+        rememberRevision(data);
         setStatus('Voice settings saved to your account.','success');
       }catch(_error){
         setStatus('Saved on this device. Account synchronisation was unavailable.','warning');
@@ -219,6 +230,7 @@
       const response=await fetch(API_ENDPOINT,{credentials:'same-origin',headers:{'Accept':'application/json'}});
       const data=await response.json().catch(()=>null);
       if(token!==serverLoadToken) return getSettings();
+      if(response.ok&&data?.ok) rememberRevision(data);
       if(response.ok&&data?.ok&&data.settings){
         settings=normaliseSettings(data.settings);
         writeLocalSettings(settings);

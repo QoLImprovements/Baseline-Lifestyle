@@ -102,3 +102,4 @@ The assertions were updated to test current deliberate behavior. A saved-data co
 | 10. Hostinger feasibility | Official capability review completed; real-plan benchmark pending |
 | 11. Comparative testing | Test matrix prepared; audio/model benchmark pending |
 | 12. Controlled integration | Not started; correctly gated on Stages 10–11 |
+> Historical checkpoint (2026-08-02). For the current runtime and Hostinger status, see `CURRENT_ARCHITECTURE_AND_HOSTINGER_STATUS_20260823.md`.

@@ -80,8 +80,8 @@ try{
     if($mode === 'saved-data'){
       $path = bl_saved_user_resource_path($uid, 'binaural');
       $resource = bl_resource_file_read($path, ['presets'=>[]]);
-      $expected = bl_resource_revision_from_input($d);
-      if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+      $expected = bl_resource_required_revision_from_input($d);
+      if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
       $presets = is_array($resource['data']['presets'] ?? null) ? $resource['data']['presets'] : [];
       $existing = null;
       $next = [];

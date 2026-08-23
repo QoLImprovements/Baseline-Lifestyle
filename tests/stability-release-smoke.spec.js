@@ -190,9 +190,10 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   const routinePlanTab = page.locator('[data-fitness-routine-view="plan"]');
   await expect(routinePlanTab).toBeVisible();
   await routinePlanTab.click();
-  const calisthenicsTab = page.locator('[data-fitness-plan-view="calisthenics"]');
-  await expect(calisthenicsTab).toBeVisible();
-  await calisthenicsTab.click();
+  const calisthenicsCard = page.locator('details[data-fitness-plan-card="calisthenics"]');
+  await expect(calisthenicsCard).toBeVisible();
+  await calisthenicsCard.locator(':scope > summary').click();
+  await expect(calisthenicsCard).toHaveAttribute('open','');
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   await page.locator('.ex-row').first().locator('.ex-baseline').fill('12');
   await page.locator('#sessions').fill('2');
@@ -205,7 +206,8 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('[data-fitness-plan-view="calisthenics"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('details[data-fitness-plan-card="calisthenics"]')).toBeVisible();
+  await page.locator('details[data-fitness-plan-card="calisthenics"] > summary').click();
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
   await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
 });

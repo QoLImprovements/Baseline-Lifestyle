@@ -6,6 +6,7 @@
   // 20260609 rebuild: one dominant hardship path controls save, instruction, and SVG before ratings can change.
 
   const STORAGE_KEY = '__baseline_badminton_session_v4__';
+  const CONFLICT_BACKUP_KEY = '__baseline_badminton_session_v4_conflict_backup__';
   const APP_VERSION = '4.2';
   const START_RATING = 25;
   const MAX_RATING = 50;
@@ -18,6 +19,7 @@
   const LOGIN_OPTIONS_URL = '/systems/baseline-badminton-session/api/badminton_logins.php';
   const SITE_MODERATOR_CANONICAL_LOGIN = 'Peter Bates-Wilkinson';
   const SITE_MODERATOR_ALIASES = ['bateswilkinson@gmail.com','peterbw','peter bates-wilkinson','peter bates wilkinson','peter bates-wilkinson'];
+  window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__ = true;
   const DOUBLES_ZONES = ['C1','L1','L2','C2','S1','M1','M2','S2','FS1','F1','FS2'];
   const SINGLES_ZONES = ['L1','L2','M1','M2','S1','S2','F1'];
   const PRESET_ZONE_MAP = {
@@ -146,6 +148,8 @@
   let serverLoadAbortController = null;
   let pageIsLeaving = false;
   let lastServerAuth = null;
+  let serverRevision = 0;
+  let serverSaveConflict = false;
   let suppressServerHydrationUntil = 0;
 
   function protectLocalCurrentState(ms){
@@ -239,8 +243,21 @@
     }
   }
 
+  function preserveConflictingLocalState(candidate){
+    try{ localStorage.setItem(CONFLICT_BACKUP_KEY,JSON.stringify(candidate)); }catch(_error){}
+  }
+
+  function announceServerSaveConflict(message){
+    const alert=document.querySelector('[data-plan-alert],#planAlert,.plan-alert');
+    if(alert) alert.textContent=message || 'Badminton changed elsewhere. Nothing was overwritten; reload before making further changes.';
+  }
+
+  function serverPayload(candidate){
+    return { state:candidate,expectedRevision:Number.isInteger(serverRevision)&&serverRevision>=0?serverRevision:0 };
+  }
+
   function queueServerSave(){
-    if(pageIsLeaving || !API_STATE_URL || !window.fetch) return;
+    if(pageIsLeaving || serverSaveConflict || !API_STATE_URL || !window.fetch) return;
     if(serverSaveTimer) window.clearTimeout(serverSaveTimer);
     serverSaveTimer = window.setTimeout(function(){
       serverSaveTimer = null;
@@ -253,7 +270,7 @@
         method:'POST',
         credentials:'same-origin',
         headers:{ 'Content-Type':'application/json' },
-        body:JSON.stringify({ state:state })
+        body:JSON.stringify(serverPayload(state))
       };
       if(serverSaveAbortController) requestOptions.signal = serverSaveAbortController.signal;
       fetch(API_STATE_URL, requestOptions).then(function(response){
@@ -263,7 +280,15 @@
         });
       }).then(function(data){
         updateServerAuth(data && data.auth);
+        if(data && data.error==='revision_conflict'){
+          serverSaveConflict=true;
+          preserveConflictingLocalState(state);
+          announceServerSaveConflict();
+          return;
+        }
         if(data && data.ok){
+          const revision=Number(data.revision);
+          if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
           // The local page is the source of truth immediately after a POST.
           // Do not hydrate from the echoed server payload here: doing so can
           // rebuild the whole current-games grid after one court saves, which
@@ -372,10 +397,20 @@
         if(pageIsLeaving || serverHydrationSuppressed()) return;
         if(pageIsLeaving || !data || !data.ok) return;
         updateServerAuth(data.auth);
+        const revision=Number(data.revision);
+        if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
+        serverSaveConflict=false;
         const serverState = data.state && typeof data.state === 'object' ? data.state : null;
         const serverHasContent = stateHasSessionContent(serverState);
         const localHasContent = stateHasSessionContent(localSnapshot);
-        if(localHasContent && localStateIsNewerThanServer(localSnapshot, serverState)){
+        if(serverRevision>0&&serverState){
+          if(localHasContent&&localStateIsNewerThanServer(localSnapshot,serverState)){
+            preserveConflictingLocalState(localSnapshot);
+            announceServerSaveConflict('A newer browser copy was preserved separately. The shared server version was loaded and was not overwritten.');
+          }
+          state=hydrateLoadedState(serverState);
+          persistSessionLocalOnly();
+        }else if(localHasContent && localStateIsNewerThanServer(localSnapshot, serverState)){
           state = localSnapshot;
           migrateKnownModeratorPlayer();
           ensureRatingStores();

@@ -70,6 +70,12 @@ try{
   $index = bl_resource_file_read(bl_saved_account_index_path(), []);
   bl_resource_test_assert(($index['data']['byName']['peter'] ?? '') === '000007', 'name index failed');
   bl_resource_test_assert(($index['data']['byEmail']['peter@example.test'] ?? '') === '000007', 'email index failed');
+  $brokenIndex = bl_resource_file_replace(bl_saved_account_index_path(), ['byName'=>[],'byEmail'=>[]], (int)$index['revision']);
+  $verification = bl_account_index_verify();
+  bl_resource_test_assert(empty($verification['matches']), 'account index drift was not detected');
+  bl_account_index_rebuild((int)$brokenIndex['revision']);
+  $verification = bl_account_index_verify();
+  bl_resource_test_assert(!empty($verification['ok']), 'account index repair failed');
 
   $fitness = bl_fitness_resource_default();
   $fitness['plans'][] = [

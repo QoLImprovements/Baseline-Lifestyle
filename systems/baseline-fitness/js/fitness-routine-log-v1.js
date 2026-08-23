@@ -63,37 +63,7 @@
   function selectedDate(){ return String($('#fitnessRoutineLogDate',root())?.value||todayIso()); }
   function detailsKey(id){ return `${selectedDate()}::${String(id||'')}`; }
   function safeId(value){ return String(value||'').replace(/[^a-zA-Z0-9_-]/g,'-'); }
-
-  function installPolish(){
-    if (document.getElementById('fitnessRoutineLogV3Polish')) return;
-    document.getElementById('fitnessRoutineLogV2Polish')?.remove();
-    const style=document.createElement('style');
-    style.id='fitnessRoutineLogV3Polish';
-    style.textContent=`
-      html[data-app="fitness"] #my-plan .fitness-activity-combobox>input{
-        border-color:var(--border)!important;border-right:0!important;
-      }
-      html[data-app="fitness"] #my-plan .fitness-activity-combobox>input:not(:focus){box-shadow:none!important}
-      html[data-app="fitness"] #my-plan .fitness-activity-combobox>[data-activity-toggle]{
-        border:1px solid var(--border)!important;border-left:0!important;
-      }
-      html[data-app="fitness"] #my-plan .fitness-activity-add::before,
-      html[data-app="fitness"] #my-plan .fitness-activity-add::after,
-      html[data-app="fitness"] #my-plan .fitness-activity-combobox::before,
-      html[data-app="fitness"] #my-plan .fitness-activity-combobox::after{content:none!important;display:none!important}
-      html[data-app="fitness"] #fitnessRoutineLogItems .bl-routine-entry-actions,
-      html[data-app="fitness"] #fitnessRoutineLogItems .bl-routine-entry-actions button{
-        position:relative!important;z-index:30!important;pointer-events:auto!important;touch-action:manipulation;
-      }
-      html[data-app="fitness"] #fitnessRoutineLogItems :is(.fitness-calisthenics-log-card,.fitness-routine-log-item)::before,
-      html[data-app="fitness"] #fitnessRoutineLogItems :is(.fitness-calisthenics-log-card,.fitness-routine-log-item)::after{
-        pointer-events:none!important;
-      }
-      #fitnessLogRemoveEntryModal .fitness-log-remove-modal-status{min-height:22px;margin-top:10px;color:var(--muted)}
-      #fitnessLogRemoveEntryModal .fitness-log-remove-modal-status[data-kind="error"]{color:var(--ink)}
-    `;
-    document.head.appendChild(style);
-  }
+  function revisionedBody(body){ return global.BASELINE_api?.revisions?.withExpected?.('fitness',body) || Object.assign({ expectedRevision:0 },body); }
 
   function schedule(){ if (!frame) frame=global.requestAnimationFrame(patch); }
   function routineSnapshot(){
@@ -119,7 +89,7 @@
       <p class="note">The routine activity or plan itself will remain in Routine Plan.</p>
       <div class="actions-inline" style="margin-top:14px">
         <button type="button" class="compact-action compact-action--ghost" data-fitness-log-modal-cancel>Cancel</button>
-        <button type="button" class="compact-action compact-action--danger" data-fitness-log-modal-confirm>Remove Entry</button>
+        <button type="button" class="compact-action compact-action--danger" data-fitness-log-modal-confirm data-fitness-log-remove-confirm>Remove Entry</button>
       </div>
       <div class="fitness-log-remove-modal-status" data-fitness-log-modal-status role="status"></div>
     </div>`;
@@ -274,16 +244,23 @@
     try {
       const response=await global.fetch(SESSION_API,{
         method:'POST',credentials:'same-origin',headers:{ 'Content-Type':'application/json',Accept:'application/json' },
-        body:JSON.stringify({ planId,sessionIndex,action:'set_status',status:'planned' })
+        body:JSON.stringify(revisionedBody({ planId,sessionIndex,action:'set_status',status:'planned' }))
       });
       const result=await response.json().catch(()=>null);
+      if (response.status===409&&result?.error==='revision_conflict') {
+        await global.BASELINE_fitnessPlans?.refresh?.();
+        throw new Error('revision_conflict');
+      }
       if (!response.ok||!result?.ok) throw new Error(result?.error||`http_${response.status}`);
+      global.BASELINE_api?.revisions?.remember?.('fitness',result);
       await global.BASELINE_fitnessPlans?.refresh?.();
       global.BASELINE_fitnessRoutine?.render?.();
       try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-updated',{ detail:{ planId,sessionIndex,completed:false,source:'fitness-routine-log-remove-v3' } })); } catch (_error) {}
       closeRemoveDialog();schedule();return true;
-    } catch (_error) {
-      setRemoveDialogBusy(false,'Could not remove entry. Try again.',true);return false;
+    } catch (error) {
+      setRemoveDialogBusy(false,error?.message==='revision_conflict'
+        ? 'This workout changed elsewhere. The latest plan was reloaded; please remove again.'
+        : 'Could not remove entry. Try again.',true);return false;
     } finally { removeBusy.delete(identity); }
   }
 
@@ -395,7 +372,7 @@
 
   function boot(){
     const host=root();if (!host) return;
-    installPolish();bind(host);
+    bind(host);
     if (typeof MutationObserver!=='undefined') {
       observer=new MutationObserver((mutations)=>{ if (!patching&&mutations.some(relevantMutation)) schedule(); });
       observer.observe(host,{ childList:true,subtree:true });

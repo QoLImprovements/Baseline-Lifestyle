@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const mirror=read('systems/baseline-fitness/js/fitness-public-routine-summary-mirror-v1.js');
+const owner=read('systems/baseline-fitness/js/fitness-routine-summary-v2.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 
 test('Public Fitness Routine Summary uses the canonical owner Summary renderer as its card factory',()=>{
@@ -14,10 +15,13 @@ test('Public Fitness Routine Summary uses the canonical owner Summary renderer a
 });
 
 test('Public Fitness Routine Summary preserves the comprehensive owner card hierarchy',()=>{
+  assert.match(mirror,/const clone=card\.cloneNode\(true\)/);
   for (const token of [
     'fitness-plan-summary-card',
     'bl-fitness-summary-exercise-details',
-    'bl-routine-summary-grid',
+    'bl-routine-summary-grid'
+  ]) assert.ok(owner.includes(token),`missing canonical owner token ${token}`);
+  for (const token of [
     'bl-routine-summary-list',
     'fitness-summary-group-head',
     'Calisthenic Plans',

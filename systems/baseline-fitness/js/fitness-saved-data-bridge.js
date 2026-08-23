@@ -50,6 +50,14 @@
     return null;
   }
   function writeLocal(key,value) { nativeSet.call(global.localStorage,key,JSON.stringify(value)); }
+  function revisionClient() { return global.BASELINE_api?.revisions || null; }
+  function rememberRevision(data) {
+    const remembered=revisionClient()?.remember?.('fitness',data);
+    if (Number.isInteger(Number(remembered))) revision=Number(remembered);
+  }
+  function revisionedBody(body) {
+    return revisionClient()?.withExpected?.('fitness',body) || Object.assign({},body,{ expectedRevision:revision });
+  }
 
   async function request(options={}) {
     const response=await fetch(API,{ method:options.method || 'GET',credentials:'same-origin',headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),body:options.body?JSON.stringify(options.body):undefined });
@@ -60,6 +68,7 @@
   function applyServer(data) {
     if (!data?.ok) return;
     revision=Number(data.revision) || 0;
+    rememberRevision(data);
     serverActive=data.activeWorkout && typeof data.activeWorkout==='object'?data.activeWorkout:null;
     if (data.profile && typeof data.profile==='object') writeLocal(bodyKey(),data.profile);
     if (serverActive?.state) writeLocal(stepKey(serverActive),serverActive.state);
@@ -72,9 +81,13 @@
   async function post(body,retry=true) {
     if (!enabled || syncing) return null;syncing=true;
     try {
-      const data=await request({ method:'POST',body:Object.assign({},body,{ expectedRevision:revision }) });
+      let data=await request({ method:'POST',body:revisionedBody(body) });
       if (data?.ok) { applyServer(data);return data; }
-      if (retry && data?.error==='revision_conflict') { await reload();return post(body,false); }
+      if (retry && data?.error==='revision_conflict') {
+        await reload();
+        data=await request({ method:'POST',body:revisionedBody(body) });
+        if (data?.ok) { applyServer(data);return data; }
+      }
       if (data?.error==='profile_conflict' && data.serverProfile) writeLocal(bodyKey(),data.serverProfile);
       if (data?.error==='active_workout_conflict' && data.serverActiveWorkout?.state) writeLocal(stepKey(data.serverActiveWorkout),data.serverActiveWorkout.state);
       return data;

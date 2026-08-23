@@ -13,8 +13,8 @@ try{
   $mode = bl_resource_authority();
   if($mode === 'saved-data'){
     $resource = bl_fitness_resource_read($uid);
-    $expected = bl_resource_revision_from_input($d);
-    if($expected !== null && $expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+    $expected = bl_resource_required_revision_from_input($d);
+    if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
     $planId = bl_fitness_next_plan_id($resource['data']);
     $resource['data']['plans'][] = [
       'sourcePlanId'=>$planId,

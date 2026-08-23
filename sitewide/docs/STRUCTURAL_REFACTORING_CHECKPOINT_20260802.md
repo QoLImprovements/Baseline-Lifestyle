@@ -139,3 +139,4 @@ The eleventh change extracts account state, provider discovery, login, registrat
 - Introduce Vite only after a measured benefit is demonstrated.
 - Preserve existing routes, wording, manual controls and visual design.
 - Do not test against live production Saved Data.
+> Historical checkpoint (2026-08-02). For the current runtime and Hostinger status, see `CURRENT_ARCHITECTURE_AND_HOSTINGER_STATUS_20260823.md`.

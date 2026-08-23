@@ -49,7 +49,7 @@ test('Fitness voice assets use fresh cache keys', () => {
   assert.match(html, /baseline-fitness-voice-interface\.css\?v=BASELINE_FITNESS_VOICE_OVERLAY_20260803_2/);
   assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
   assert.match(html, /baseline-fitness-voice\.js\?v=BASELINE_FITNESS_VOICE_COUNTDOWN_20260822_1/);
-  assert.match(protectedAccess, /BASELINE_PROTECTED_ACCESS_20260803_2/);
+  assert.match(protectedAccess, /SAVED_DATA_REVISION_CLIENT_20260823_1/);
 });
 
 test('Voice settings use concise fitness copy, aligned controls and Save and Close behaviour', () => {
@@ -71,5 +71,5 @@ test('Voice settings use concise fitness copy, aligned controls and Save and Clo
   assert.match(fixesCss, /#bl-voice-close\.bl-voice-close-icon/);
   assert.match(fixesCss, /grid-template-columns:repeat\(3,max-content\)!important/);
   assert.match(html, /baseline-ui-fixes\.css\?v=BASELINE_UI_FIXES_20260803_3/);
-  assert.match(html, /baseline-voice\.js\?v=BASELINE_VOICE_FITNESS_SETTINGS_20260803_1/);
+  assert.match(html, /baseline-voice\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
 });

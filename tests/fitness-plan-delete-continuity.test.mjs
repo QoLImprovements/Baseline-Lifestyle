@@ -22,7 +22,9 @@ test('deleting one plan selects another saved plan instead of entering Plan Gene
 
 test('Plan Generator is only the fallback when no saved plans survive deletion', () => {
   assert.ok(continuity.includes("if (typeof controller.createPlan==='function')"));
-  assert.ok(continuity.includes('only when there are genuinely no saved plans'));
+  const survivorBranch=continuity.indexOf('if (survivors.length)');
+  const generatorFallback=continuity.indexOf("if (typeof controller.createPlan==='function')");
+  assert.ok(survivorBranch>=0 && generatorFallback>survivorBranch);
 });
 
 test('legacy single-plan delete handler is intercepted before it can reset the generator', () => {

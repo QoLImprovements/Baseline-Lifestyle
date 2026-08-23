@@ -82,7 +82,7 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   await page.addInitScript(() => {
     localStorage.setItem('__bl_skincare_routine_v1__::guest', JSON.stringify({
       visibility:'private',
-      items:[{
+      routine:[{
         id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
         frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
       },{
@@ -122,9 +122,11 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   const firstPlanGroup = page.locator('.routine-plan-group[data-plan-group="browser-group"]');
   await expect(firstPlanGroup).toBeVisible();
   await expect(firstPlanGroup.locator('.routine-item .bl-v4-number:visible')).toHaveCount(0);
-  const editStep = page.locator('[data-skincare-step-toggle="browser-facial-steam"]');
-  await editStep.click();
-  const timeSelect = page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]');
+  const groupSettings = firstPlanGroup.locator('[data-plan-group-settings="browser-group"]');
+  await groupSettings.click();
+  await expect(groupSettings).toHaveAttribute('aria-expanded','true');
+  const timeSelect = firstPlanGroup.locator('[data-group-field="timeOfDay"][data-group-id="browser-group"]');
+  await expect(timeSelect).toBeVisible();
   await timeSelect.selectOption('evening');
   await expect(timeSelect).toHaveValue('evening');
 
@@ -186,21 +188,27 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await expect(yogaDetails).toBeHidden();
 
   await page.locator('[data-fitness-routine-view="plan"]').click();
-  const planTabs = page.locator('.fitness-routine-plan-tabs [data-fitness-plan-view]');
-  await expect(planTabs).toHaveCount(4);
-  expect(await planTabs.allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activity','Sports']);
+  const planCards = page.locator('details[data-fitness-plan-card]');
+  await expect(planCards).toHaveCount(4);
+  expect(await planCards.locator(':scope > summary > span').allTextContents()).toEqual(['Calisthenics','Cardio','Other Fitness Activity','Sports']);
 
-  await page.locator('[data-fitness-plan-view="other"]').click();
-  const groupCard = page.locator('[data-fitness-routine-panel="other"] .bl-v4-group-card');
+  const otherCard=page.locator('details[data-fitness-plan-card="other"]');
+  await otherCard.locator(':scope > summary').click();
+  await expect(otherCard).toHaveAttribute('open','');
+  const groupCard = page.locator('details[data-v4-group-card="global"]');
   await expect(groupCard).toBeVisible();
-  await groupCard.locator('[data-v4-group-name="other"]').fill('Recovery and Mobility');
-  await groupCard.locator('[data-v4-create-group="other"]').click();
-  await expect(groupCard.locator('.bl-v4-group-row')).toContainText('Recovery and Mobility');
+  if (!(await groupCard.evaluate((element) => element.open))) {
+    await groupCard.locator(':scope > summary').click();
+  }
+  await expect(groupCard).toHaveAttribute('open','');
+  await groupCard.locator('[data-v4-group-name="global"]').fill('Recovery and Mobility');
+  await groupCard.locator('[data-v4-create-group="global"]').click();
+  await expect(groupCard.locator('[data-v4-group-select]')).toContainText('1. Recovery and Mobility');
 
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
   await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveText('2');
-  await groupCard.locator('[data-v4-entity-group="activity:browser-hatha-yoga"]').selectOption({ label:'1. Recovery and Mobility' });
+  await groupCard.locator('[data-v4-group-activity]').first().selectOption('activity:browser-hatha-yoga');
   await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveCount(0);
 
   await page.locator('[data-fitness-routine-view="log"]').click();
@@ -230,15 +238,15 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   await page.locator('#fitnessPublicRoutineResult [data-public-view="summary"]').click();
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Benefits and practical role');
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Mobility and controlled breathing');
-  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Progressive bodyweight training using the saved exercise plan.');
+  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Builds progressive bodyweight strength and muscular endurance');
   await page.locator('#fitnessPublicRoutineResult [data-public-view="plan"]').click();
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Core Calisthenics');
-  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('Baseline 90 seconds');
+  await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('1. Elbow Plank');
   await expect(page.locator('#fitnessPublicRoutineResult')).toContainText('1/3 sessions completed');
 
   await page.locator('[data-fitness-routine-view="log"]').click();
   await page.reload({ waitUntil:'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
   await page.locator('[data-calendar-view="week"]').click();
-  await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.bl-routine-week-list .bl-routine-day-row');
+  await expectFullWidthWeekRows(page, '#fitnessCalendarGrid.week-view > .fitness-calendar-day');
 });
