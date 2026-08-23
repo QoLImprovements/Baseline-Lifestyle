@@ -41,8 +41,8 @@ jobs:
 
       - name: Remove temporary patch machinery
         run: |
-          git rm tools/apply-skincare-testing-recipes.py
-          git rm .github/workflows/_temp-apply-skincare-testing.yml
+          git rm -f tools/apply-skincare-testing-recipes.py
+          git rm -f .github/workflows/_temp-apply-skincare-testing.yml
 
       - name: Commit patched site
         run: |
