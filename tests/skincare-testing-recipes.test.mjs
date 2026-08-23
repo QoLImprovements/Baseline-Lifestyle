@@ -72,8 +72,11 @@ test('Natural Skincare navigation keeps public clean URLs instead of implementat
   assert.doesNotMatch(tabs, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html.*hashTabs:true/);
 });
 
-test('leaving Skincare My Routine clears bootstrap-only routine visibility flags', () => {
+test('leaving Skincare My Routine clears bootstrap-only routine visibility flags in both tab authorities', () => {
   assert.match(shared, /dataset\.app === 'skin' && id !== 'routine'/);
   assert.match(shared, /removeAttribute\('data-initial-skincare-tab'\)/);
   assert.match(shared, /removeAttribute\('data-initial-routine-view'\)/);
+  assert.match(tabs, /dataset\.app === "skin" && id !== "routine"/);
+  assert.match(tabs, /removeAttribute\("data-initial-skincare-tab"\)/);
+  assert.match(tabs, /removeAttribute\("data-initial-routine-view"\)/);
 });
