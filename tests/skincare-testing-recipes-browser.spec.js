@@ -80,11 +80,9 @@ test('Testing recipe links open through the normal recipe overview router', asyn
 test('leaving My Routine for Recipes hides Routine Log and Calendar completely', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/my-routine/log');
 
-  // My Routine is intentionally made visible during first paint by root route
-  // markers; it does not need the generic .active class at that point.
   await expect(page.locator('#routine')).toBeVisible();
   await expect(page.locator('#routine .routine-subtabs')).toBeVisible();
-  await expect(page.locator('html')).toHaveAttribute('data-initial-skincare-tab', 'routine');
+  await expect(page.locator('.tab[data-target="routine"]')).toHaveAttribute('aria-selected', 'true');
 
   await page.locator('.tab[data-target="recipes"]').click();
 
