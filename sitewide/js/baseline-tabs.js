@@ -382,9 +382,9 @@
   }
 
   var TESTING_RECIPES=[
-    { title:"Shaving Gel Recipe", href:"/baseline-natural-skincare/recipes/testing-shaving-gel", description:"slippery-elm, glycerin and jojoba shaving gel." },
-    { title:"Natural Tooth-Brightening Powder Recipe", href:"/baseline-natural-skincare/recipes/testing-natural-tooth-brightening-powder", description:"kaolin, sage and peppermint surface-stain powder." },
-    { title:"Microcurrent Conductive Gel Recipe – 40 g", href:"/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel", description:"water, glycerin, Dead Sea salt and guar conductive gel." }
+    { title:"Shaving Gel Recipe", href:"/systems/baseline-natural-skincare/recipes/testing-shaving-gel.html", description:"slippery-elm, glycerin and jojoba shaving gel." },
+    { title:"Natural Tooth-Brightening Powder Recipe", href:"/systems/baseline-natural-skincare/recipes/testing-natural-tooth-brightening-powder.html", description:"kaolin, sage and peppermint surface-stain powder." },
+    { title:"Microcurrent Conductive Gel Recipe – 40 g", href:"/systems/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel.html", description:"water, glycerin, Dead Sea salt and guar conductive gel." }
   ];
 
   function makeList(withDescriptions){
