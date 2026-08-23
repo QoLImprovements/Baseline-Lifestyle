@@ -122,9 +122,11 @@ test('Skincare uses stable saved groups, one control set and the shared public v
   const firstPlanGroup = page.locator('.routine-plan-group[data-plan-group="browser-group"]');
   await expect(firstPlanGroup).toBeVisible();
   await expect(firstPlanGroup.locator('.routine-item .bl-v4-number:visible')).toHaveCount(0);
-  const editStep = page.locator('[data-skincare-step-toggle="browser-facial-steam"]');
-  await editStep.click();
-  const timeSelect = page.locator('[data-routine-item="browser-facial-steam"] [data-field="timeOfDay"]');
+  const groupSettings = firstPlanGroup.locator('[data-plan-group-settings="browser-group"]');
+  await groupSettings.click();
+  await expect(groupSettings).toHaveAttribute('aria-expanded','true');
+  const timeSelect = firstPlanGroup.locator('[data-group-field="timeOfDay"][data-group-id="browser-group"]');
+  await expect(timeSelect).toBeVisible();
   await timeSelect.selectOption('evening');
   await expect(timeSelect).toHaveValue('evening');
 
@@ -193,16 +195,20 @@ test('Fitness uses one four-view structure, grouping, compact Log and faithful p
   const otherCard=page.locator('details[data-fitness-plan-card="other"]');
   await otherCard.locator(':scope > summary').click();
   await expect(otherCard).toHaveAttribute('open','');
-  const groupCard = page.locator('[data-fitness-routine-panel="other"] .bl-v4-group-card');
+  const groupCard = page.locator('details[data-v4-group-card="global"]');
   await expect(groupCard).toBeVisible();
-  await groupCard.locator('[data-v4-group-name="other"]').fill('Recovery and Mobility');
-  await groupCard.locator('[data-v4-create-group="other"]').click();
-  await expect(groupCard.locator('.bl-v4-group-row')).toContainText('Recovery and Mobility');
+  if (!(await groupCard.evaluate((element) => element.open))) {
+    await groupCard.locator(':scope > summary').click();
+  }
+  await expect(groupCard).toHaveAttribute('open','');
+  await groupCard.locator('[data-v4-group-name="global"]').fill('Recovery and Mobility');
+  await groupCard.locator('[data-v4-create-group="global"]').click();
+  await expect(groupCard.locator('[data-v4-group-select]')).toContainText('1. Recovery and Mobility');
 
   const activityCard = page.locator('[data-activity-card="browser-hatha-yoga"]');
   await expect(activityCard).toBeVisible();
   await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveText('2');
-  await groupCard.locator('[data-v4-entity-group="activity:browser-hatha-yoga"]').selectOption({ label:'1. Recovery and Mobility' });
+  await groupCard.locator('[data-v4-group-activity]').first().selectOption('activity:browser-hatha-yoga');
   await expect(activityCard.locator('.bl-v4-number[data-v4-individual-number]:visible')).toHaveCount(0);
 
   await page.locator('[data-fitness-routine-view="log"]').click();

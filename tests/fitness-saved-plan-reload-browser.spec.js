@@ -41,7 +41,7 @@ async function diagnosticState(page, phase) {
         workspace:Boolean(window.__BASELINE_FITNESS_ROUTINE_WORKSPACE_V2__),
         structure:Boolean(window.__BASELINE_FITNESS_ROUTINE_STRUCTURE_V6__),
         coherence:Boolean(window.__BASELINE_ROUTINE_COHERENCE_V12__),
-        policy:Boolean(window.__BASELINE_FITNESS_LIVE_POLICY_V3__),
+        policy:Boolean(window.__BASELINE_FITNESS_LIVE_POLICY_V4__),
         app:Boolean(window.BASELINE_FITNESS_DEBUG),
         routineApi:Boolean(window.BASELINE_fitnessRoutine)
       }
