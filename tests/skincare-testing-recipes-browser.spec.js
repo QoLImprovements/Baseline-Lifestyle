@@ -1,9 +1,9 @@
 const { test, expect } = require('@playwright/test');
 
 const recipes = [
-  { id:'r8', slug:'testing-shaving-gel', title:'Shaving Gel Recipe' },
-  { id:'r9', slug:'testing-natural-tooth-brightening-powder', title:'Natural Tooth-Brightening Powder Recipe' },
-  { id:'r10', slug:'testing-microcurrent-conductive-gel', title:'Microcurrent Conductive Gel Recipe – 40 g' }
+  { id:'r8', slug:'testing-shaving-gel', title:'Shaving Gel' },
+  { id:'r9', slug:'testing-natural-tooth-brightening-powder', title:'Natural Tooth-Brightening Powder' },
+  { id:'r10', slug:'testing-microcurrent-conductive-gel', title:'Microcurrent Conductive Gel' }
 ];
 
 async function expectCanonicalRecipeView(page, recipe) {
