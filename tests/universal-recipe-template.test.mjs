@@ -14,6 +14,11 @@ test('shared recipe engine exposes the universal four-view template', () => {
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
+test('Details remains a deliberately empty placeholder in every recipe view', () => {
+  assert.match(shared, /group !== 'details' && \(next === 'show-all' \|\| group === next\)/);
+  assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
+});
+
 test('Adjustments owns scaling utilities while recipe-defining choices remain standard-view controls', () => {
   assert.match(shared, /recipe-adjustments-toggle/);
   assert.match(shared, /adjustmentsBtn\.textContent = 'Adjustments'/);
@@ -22,6 +27,12 @@ test('Adjustments owns scaling utilities while recipe-defining choices remain st
   assert.match(shared, /editBody\.appendChild\(controls\)/);
   assert.match(shared, /qsa\('\.glide-controller', recipeEl\).*recipeViewGroup = 'standard'/s);
   assert.doesNotMatch(shared, /textContent = 'Edit Options'/);
+});
+
+test('Adjustments has no coloured button surface', () => {
+  assert.match(css, /recipe-meta-row > \.recipe-adjustments-toggle[\s\S]*background:transparent !important;/);
+  assert.match(css, /recipe-meta-row > \.recipe-adjustments-toggle[\s\S]*background-color:transparent !important;/);
+  assert.match(css, /recipe-meta-row > \.recipe-adjustments-toggle[\s\S]*background-image:none !important;/);
 });
 
 test('universal recipe styling inherits system variables instead of imposing Food or Skincare colours', () => {
