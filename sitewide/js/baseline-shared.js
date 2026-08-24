@@ -4479,6 +4479,11 @@ function buildControls(recipeEl){
           opt.textContent = btn.textContent.trim();
           variantSelect.appendChild(opt);
         });
+        const activeVariant = q('.variant-tab[aria-selected="true"]', variantSwitcher);
+        if(activeVariant){
+          const initialVariant = activeVariant.getAttribute('data-variant') || activeVariant.textContent.trim();
+          if(initialVariant) variantSelect.value = initialVariant;
+        }
         field.appendChild(variantSelect);
         strip.appendChild(field);
 
@@ -6942,7 +6947,8 @@ function setupRecipeFavourites(){
     const cleanContentRoute = cleanRouteStateFromPath();
     const needsImmediateContentUi = /^(#recipe=|#r\d+$|#tab=recipes|#tab=ingredients|#ingredients$|#recipes$|#support$|#support=|#support-|#ing-)/i.test(contentViewHash)
       || !!recipePathStateFromLocation()
-      || !!(cleanContentRoute && cleanContentRoute.kind === 'tab' && ['recipes','ingredients','support'].includes(cleanContentRoute.tabId));
+      || !!(cleanContentRoute && cleanContentRoute.kind === 'tab' && ['recipes','ingredients','support'].includes(cleanContentRoute.tabId))
+      || !!q('.recipe.card.recipe-page');
 
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
