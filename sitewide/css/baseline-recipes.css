@@ -3900,3 +3900,259 @@ html body[data-app][data-app] .recipe-page .scale-tools > .scale-apply{
     justify-self:stretch!important;
   }
 }
+
+
+/* BASELINE-UNIVERSAL-RECIPE-TEMPLATE-20260824
+   One recipe information architecture across Food + Natural Skincare.
+   Geometry/behaviour are shared; every surface inherits the active system theme. */
+body[data-app] .recipe-universal-template .recipe-view-hidden{
+  display:none !important;
+}
+
+body[data-app] .recipe-universal-template > .recipe-title-row > h1,
+body[data-app] .recipe-universal-template > .recipe-title-row > h2,
+body[data-app] .recipe-universal-template > .recipe-title-row > h3{
+  cursor:default !important;
+}
+
+body[data-app] .recipe-universal-template .recipe-meta-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:12px !important;
+  flex-wrap:wrap !important;
+  width:100% !important;
+  margin:6px 0 12px !important;
+  font-size:16px !important;
+  line-height:1.35 !important;
+  color:var(--muted, var(--ink)) !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-summary{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:0 !important;
+  min-width:0 !important;
+  flex:1 1 auto !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-item{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  white-space:normal !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-item + .recipe-meta-item::before{
+  content:'•' !important;
+  display:inline-block !important;
+  margin:0 .55em !important;
+  color:currentColor !important;
+  opacity:.68 !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-key{
+  font-weight:780 !important;
+  color:var(--ink) !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-status .recipe-meta-value{
+  font-weight:800 !important;
+  color:var(--accent-2, var(--ink)) !important;
+}
+
+/* Adjustments is intentionally text-scale, not a large control pill. */
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  gap:.35em !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:auto !important;
+  margin:0 0 0 auto !important;
+  padding:0 !important;
+  border:0 !important;
+  border-radius:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  color:var(--accent-2, var(--ink)) !important;
+  -webkit-text-fill-color:currentColor !important;
+  font:inherit !important;
+  font-size:1em !important;
+  font-weight:800 !important;
+  line-height:inherit !important;
+  box-shadow:none !important;
+  text-decoration:underline !important;
+  text-decoration-thickness:1px !important;
+  text-underline-offset:3px !important;
+  cursor:pointer !important;
+}
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle::after{
+  content:'▾' !important;
+  display:inline-block !important;
+  text-decoration:none !important;
+  transition:transform .16s ease !important;
+}
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle[aria-expanded="true"]::after{
+  transform:rotate(180deg) !important;
+}
+
+body[data-app] .recipe-universal-template .recipe-adjustments-panel[hidden]{
+  display:none !important;
+}
+body[data-app] .recipe-universal-template.recipe-adjustments-open .recipe-adjustments-panel{
+  display:block !important;
+  width:100% !important;
+  margin:0 0 14px !important;
+  padding:12px 0 4px !important;
+  border-top:1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 72%, transparent) !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-adjustments-panel > .recipe-controls{
+  display:grid !important;
+}
+
+/* Subtabs use the active system palette rather than defining Food/Skincare colours here. */
+body[data-app] .recipe-universal-template .recipe-subtabs{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+  width:100% !important;
+  margin:8px 0 16px !important;
+  padding:0 0 10px !important;
+  border-bottom:1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 78%, transparent) !important;
+}
+html body[data-app] .recipe-universal-template .recipe-subtab{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  min-height:36px !important;
+  margin:0 !important;
+  padding:7px 12px !important;
+  border-radius:999px !important;
+  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  background:var(--showall-bg, var(--accent-soft, rgba(255,255,255,.18))) !important;
+  color:var(--accent-2, var(--ink)) !important;
+  -webkit-text-fill-color:currentColor !important;
+  font:inherit !important;
+  font-size:15px !important;
+  font-weight:780 !important;
+  line-height:1.1 !important;
+  box-shadow:none !important;
+  cursor:pointer !important;
+}
+html body[data-app] .recipe-universal-template .recipe-subtab[aria-selected="true"]{
+  background:var(--accent-soft, var(--showall-bg)) !important;
+  border-color:var(--accent, var(--showall-border, var(--border))) !important;
+  color:var(--ink) !important;
+  font-weight:900 !important;
+  box-shadow:0 8px 18px -16px rgba(35,23,19,.42) !important;
+}
+
+/* Variant + recipe-defining choices live in Standard View. */
+body[data-app] .recipe-universal-template .recipe-option-strip{
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  flex-wrap:wrap !important;
+  margin:0 0 14px !important;
+}
+body[data-app] .recipe-universal-template .recipe-option-strip:empty{
+  display:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-formula-controls{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:wrap !important;
+  gap:10px 14px !important;
+}
+body[data-app] .recipe-universal-template .recipe-formula-controls .recipe-control-row{
+  display:flex !important;
+  align-items:center !important;
+  gap:8px !important;
+  width:auto !important;
+  margin:0 !important;
+}
+body[data-app] .recipe-universal-template .recipe-formula-controls .recipe-control-row > .label{
+  margin:0 !important;
+  white-space:nowrap !important;
+}
+body[data-app] .recipe-universal-template .recipe-formula-controls .bl-select,
+body[data-app] .recipe-universal-template .recipe-formula-controls select,
+body[data-app] .recipe-universal-template .recipe-formula-controls .oat-toggle{
+  width:auto !important;
+  max-width:100% !important;
+}
+
+/* The native variant buttons remain the event authority, but the compact selector is the visible UI. */
+body[data-app] .recipe-universal-template .recipe-native-variant-switcher,
+body[data-app] .recipe-universal-template .variant-heading{
+  display:none !important;
+}
+
+/* Recipe-specific sliders are never hidden by the Adjustments utility panel. */
+html body[data-app] .recipe-universal-template .glide-controller,
+html body[data-app] #recipes .recipe-universal-template:not(.recipe-options-open) .glide-controller{
+  display:grid !important;
+}
+body[data-app] .recipe-universal-template[data-recipe-view="details"] .glide-controller,
+body[data-app] .recipe-universal-template[data-recipe-view="guidance"] .glide-controller{
+  display:none !important;
+}
+
+/* Remove ad-hoc emphasis from recipe prose. Bold is reserved for semantic labels. */
+body[data-app] .recipe-universal-template [data-recipe-view-group] strong{
+  font-weight:inherit !important;
+}
+body[data-app] .recipe-universal-template .recipe-subgroup-label,
+body[data-app] .recipe-universal-template .recipe-method-action,
+body[data-app] .recipe-universal-template .recipe-detail-label,
+body[data-app] .recipe-universal-template .recipe-guidance-label{
+  font-weight:850 !important;
+}
+
+/* Standalone Food Phase-4B pages use the same card template; remove the development-only duplicate title/note. */
+body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-note,
+body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-top > h1{
+  display:none !important;
+}
+
+@media (max-width:720px){
+  body[data-app] .recipe-universal-template .recipe-meta-row{
+    align-items:flex-start !important;
+  }
+  html body[data-app] .recipe-universal-template .recipe-adjustments-toggle{
+    margin-left:0 !important;
+  }
+  body[data-app] .recipe-universal-template .recipe-subtabs{
+    display:grid !important;
+    grid-template-columns:repeat(2, minmax(0, 1fr)) !important;
+  }
+  html body[data-app] .recipe-universal-template .recipe-subtab{
+    width:100% !important;
+  }
+  body[data-app] .recipe-universal-template .recipe-formula-controls,
+  body[data-app] .recipe-universal-template .recipe-formula-controls .recipe-control-row{
+    width:100% !important;
+    align-items:stretch !important;
+  }
+  body[data-app] .recipe-universal-template .recipe-formula-controls .recipe-control-row{
+    flex-direction:column !important;
+  }
+}
+
+@media print{
+  body[data-app] .recipe-universal-template .recipe-subtabs,
+  body[data-app] .recipe-universal-template .recipe-adjustments-toggle,
+  body[data-app] .recipe-universal-template .recipe-adjustments-panel,
+  body[data-app] .recipe-universal-template .recipe-option-strip,
+  body[data-app] .recipe-universal-template .glide-controller{
+    display:none !important;
+  }
+  body[data-app] .recipe-universal-template [data-recipe-view-group]{
+    display:block !important;
+  }
+}

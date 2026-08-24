@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_RECIPE_SECTION_SAFE_20260824_5";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_UNIVERSAL_RECIPE_TEMPLATE_20260824_1";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -2356,15 +2356,20 @@ function parseViewStateHash(hash){
     opts = opts || {};
     const onlyId = opts.onlyId || null;
 
+    const recipeScope = q('#recipes');
+    const recipeSelectorBase = recipeScope
+      ? '#recipes .recipe.card.recipe-page'
+      : '.recipe.card.recipe-page';
+
     let recipes = [];
     if(onlyId){
       try{
-        recipes = qsa('#recipes .recipe.card.recipe-page[id="' + CSS.escape(String(onlyId)) + '"]');
+        recipes = qsa(recipeSelectorBase + '[id="' + CSS.escape(String(onlyId)) + '"]');
       }catch(_e){
-        recipes = qsa('#recipes .recipe.card.recipe-page[id]');
+        recipes = qsa(recipeSelectorBase + '[id]');
       }
     }else{
-      recipes = qsa('#recipes .recipe.card.recipe-page[id]');
+      recipes = qsa(recipeSelectorBase + '[id]');
     }
     if(!recipes.length) return;
 
@@ -3575,7 +3580,7 @@ function parseViewStateHash(hash){
 function buildControls(recipeEl){
       if(q('.recipe-controls', recipeEl)) return;
 
-      const h3 = q('h3', recipeEl);
+      const h3 = q('h3,h2,h1', recipeEl);
       if(!h3) return;
 
       let titleRow = (h3.parentElement && h3.parentElement.classList && h3.parentElement.classList.contains('recipe-title-row'))
@@ -4443,11 +4448,11 @@ function buildControls(recipeEl){
       if(!recipeEl || (recipeEl.dataset && recipeEl.dataset.compactOptionsReady === '1')) return;
       const controls = q('.recipe-controls', recipeEl);
       const printSummary = q('.print-summary', recipeEl);
-      const titleRow = q('.recipe-title-row', recipeEl) || q('h3,h2', recipeEl);
+      const titleRow = q('.recipe-title-row', recipeEl) || q('h3,h2,h1', recipeEl);
       if(!titleRow || !controls || !printSummary) return;
 
       const strip = document.createElement('div');
-      strip.className = 'recipe-option-strip print-hide';
+      strip.className = 'recipe-option-strip recipe-standard-controls print-hide';
       ['pointerdown','mousedown','touchstart','click'].forEach(function(evtName){
         strip.addEventListener(evtName, function(e){ e.stopPropagation(); });
       });
@@ -4493,40 +4498,46 @@ function buildControls(recipeEl){
         });
       }
 
-      const editBtn = document.createElement('button');
-      editBtn.type = 'button';
-      editBtn.className = 'recipe-options-toggle';
-      editBtn.setAttribute('aria-expanded', 'false');
-      editBtn.textContent = 'Edit Options';
-      strip.appendChild(editBtn);
+      // Recipe-defining choices remain in the default recipe view. They are not
+      // utility adjustments: changing oat type or thickness can materially change
+      // the recipe the user is making.
+      const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
+      if(formulaRows.length){
+        const formulaControls = document.createElement('div');
+        formulaControls.className = 'recipe-formula-controls';
+        formulaRows.forEach(row=> formulaControls.appendChild(row));
+        strip.appendChild(formulaControls);
+      }
 
-      let topResetBtn = null;
-      try{
-        topResetBtn = q('button.reset', controls);
-        if(topResetBtn){
-          topResetBtn.classList.add('recipe-top-reset');
-          strip.appendChild(topResetBtn);
-        }
-      }catch(_e){}
+      const adjustmentsBtn = document.createElement('button');
+      adjustmentsBtn.type = 'button';
+      adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
+      adjustmentsBtn.setAttribute('aria-expanded', 'false');
+      adjustmentsBtn.textContent = 'Adjustments';
 
       const editBody = document.createElement('div');
-      editBody.className = 'recipe-edit-options print-hide';
+      editBody.className = 'recipe-edit-options recipe-adjustments-panel print-hide';
       editBody.hidden = true;
-      try{ recipeEl.classList.remove('recipe-options-open'); }catch(_e){}
+      try{
+        recipeEl.classList.remove('recipe-options-open');
+        recipeEl.classList.remove('recipe-adjustments-open');
+      }catch(_e){}
 
       titleRow.insertAdjacentElement('afterend', printSummary);
       printSummary.insertAdjacentElement('afterend', strip);
       strip.insertAdjacentElement('afterend', editBody);
       controls.classList.add('recipe-edit-controls');
       editBody.appendChild(controls);
-      if(variantSwitcher) editBody.appendChild(variantSwitcher);
 
-      editBtn.addEventListener('click', ()=>{
-        const open = !recipeEl.classList.contains('recipe-options-open');
+      adjustmentsBtn.addEventListener('click', ()=>{
+        const open = !recipeEl.classList.contains('recipe-adjustments-open');
+        recipeEl.classList.toggle('recipe-adjustments-open', open);
+        // Retain the legacy class only as a compatibility hook for the existing
+        // control CSS. Recipe-specific controls are independently forced visible
+        // by the universal template contract.
         recipeEl.classList.toggle('recipe-options-open', open);
         editBody.hidden = !open;
-        editBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-        editBtn.textContent = open ? 'Hide Options' : 'Edit Options';
+        adjustmentsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
 
       qsa('.variant-tab', recipeEl).forEach(btn=>{
@@ -4546,11 +4557,218 @@ function buildControls(recipeEl){
         slider.addEventListener('change', ()=>{ if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary(); });
       });
 
-      // Keep the compact top variant selector native: this avoids the enhanced-select/native-select
-      // double-render that produced the visible ghost text on the recipe option strip.
-      // Measurement and scale dropdowns remain enhanced below.
-      // if(variantSelect) enhanceSelect(variantSelect);
+      try{ recipeEl.__baselineAdjustmentsButton = adjustmentsBtn; }catch(_e){}
       if(recipeEl.dataset) recipeEl.dataset.compactOptionsReady = '1';
+    }
+
+    function setupRecipeUniversalTemplate(recipeEl){
+      if(!recipeEl || (recipeEl.dataset && recipeEl.dataset.universalTemplateReady === '1')) return;
+      const titleRow = q('.recipe-title-row', recipeEl) || q('h3,h2,h1', recipeEl);
+      const strip = q('.recipe-option-strip', recipeEl);
+      const editBody = q('.recipe-edit-options', recipeEl);
+      if(!titleRow || !strip || !editBody) return;
+
+      recipeEl.classList.add('recipe-universal-template');
+
+      const metaRow = document.createElement('div');
+      metaRow.className = 'recipe-meta-row';
+      const metaSummary = document.createElement('div');
+      metaSummary.className = 'recipe-meta-summary';
+      metaRow.appendChild(metaSummary);
+
+      function normaliseMetaValue(value){
+        return String(value || '').replace(/\s+/g, ' ').replace(/^[\s:–—-]+|[\s.;]+$/g, '').trim();
+      }
+      function addMeta(label, value, className){
+        value = normaliseMetaValue(value);
+        if(!value) return;
+        const item = document.createElement('span');
+        item.className = 'recipe-meta-item' + (className ? (' ' + className) : '');
+        const key = document.createElement('span');
+        key.className = 'recipe-meta-key';
+        key.textContent = label + ':';
+        const val = document.createElement('span');
+        val.className = 'recipe-meta-value';
+        val.textContent = value;
+        item.append(key, document.createTextNode(' '), val);
+        metaSummary.appendChild(item);
+      }
+      function firstMatch(re, text){
+        const match = String(text || '').match(re);
+        return match && match[1] ? normaliseMetaValue(match[1]) : '';
+      }
+
+      const recipeText = String(recipeEl.textContent || '').replace(/\s+/g, ' ');
+      let yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
+      if(!yieldValue){
+        yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
+      }
+      if(!yieldValue){
+        yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
+          .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
+      }
+      const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
+      const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
+      const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
+
+      addMeta('Yield', yieldValue);
+      addMeta('Equipment', equipmentValue);
+      addMeta('Allergens', allergensValue);
+      addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
+
+      const adjustmentsBtn = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
+      if(adjustmentsBtn) metaRow.appendChild(adjustmentsBtn);
+
+      const tabs = document.createElement('div');
+      tabs.className = 'recipe-subtabs print-hide';
+      tabs.setAttribute('role', 'tablist');
+      tabs.setAttribute('aria-label', 'Recipe views');
+      const tabDefs = [
+        ['standard', 'Standard View'],
+        ['details', 'Details'],
+        ['guidance', 'Guidance'],
+        ['show-all', 'Show All']
+      ];
+      tabDefs.forEach(([id, label])=>{
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'recipe-subtab';
+        button.dataset.recipeSubtab = id;
+        button.setAttribute('role', 'tab');
+        button.setAttribute('aria-selected', id === 'standard' ? 'true' : 'false');
+        button.textContent = label;
+        tabs.appendChild(button);
+      });
+
+      // Canonical order: title -> metadata/Adjustments -> adjustments panel ->
+      // subtabs -> the selected view content. There is intentionally no visible
+      // "Standard View" heading inside the content.
+      titleRow.insertAdjacentElement('afterend', metaRow);
+      metaRow.insertAdjacentElement('afterend', editBody);
+      editBody.insertAdjacentElement('afterend', tabs);
+      tabs.insertAdjacentElement('afterend', strip);
+
+      function headingGroup(text){
+        const t = String(text || '').replace(/\(\s*view\s*\)/ig, '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if(!t) return '';
+        if(/(?:^|\s)ingredients? roles?\b|^meta\b|^formula\b|technical|breakdown/.test(t)) return 'details';
+        if(/^ingredients?\b/.test(t) || /^method\b/.test(t)) return 'standard';
+        if(/storage|\buse\b|serving|body\s*&\s*sensory|comedogenic|safety|preservation|^notes?\b/.test(t)) return 'guidance';
+        return '';
+      }
+
+      function markContainer(container){
+        if(!container) return;
+        const children = Array.from(container.children || []);
+        let current = '';
+        let seenRecognisedHeading = false;
+        children.forEach((child, index)=>{
+          if(child === metaRow || child === editBody || child === tabs || child === strip || child.classList.contains('recipe-actions') || child.classList.contains('recipe-title-row') || child.classList.contains('print-summary')){
+            return;
+          }
+          if(child.classList.contains('variant-panel')){
+            markContainer(child);
+            return;
+          }
+          if(/^H[1-4]$/i.test(child.tagName || '')){
+            const group = headingGroup(child.textContent || '');
+            if(group){
+              current = group;
+              seenRecognisedHeading = true;
+              child.dataset.recipeViewGroup = group;
+            }else if(container.classList && container.classList.contains('variant-panel') && !seenRecognisedHeading){
+              // Variant name heading belongs with the make-the-recipe view.
+              current = 'standard';
+              child.dataset.recipeViewGroup = 'standard';
+            }else{
+              current = '';
+            }
+            return;
+          }
+          if(current){
+            child.dataset.recipeViewGroup = current;
+          }else if(container.classList && container.classList.contains('variant-panel') && !seenRecognisedHeading){
+            child.dataset.recipeViewGroup = 'standard';
+          }
+        });
+      }
+
+      markContainer(recipeEl);
+      qsa('.variant-panel', recipeEl).forEach(markContainer);
+
+      // Recipe-specific controls are part of Standard View, never hidden behind
+      // the Adjustments utility panel.
+      strip.dataset.recipeViewGroup = 'standard';
+      qsa('.glide-controller', recipeEl).forEach(el=>{ el.dataset.recipeViewGroup = 'standard'; });
+
+      // Existing status/meta prose is deeper information once the compact metadata
+      // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
+      // from cluttering Standard View.
+      qsa(':scope > p.note', recipeEl).forEach(note=>{
+        const text = String(note.textContent || '');
+        if(/formulation currently being tested/i.test(text) || /\b(?:Yield|Equipment|Allergens?)\s*:/i.test(text) || /Barrier-first.*Vegan/i.test(text)){
+          note.dataset.recipeViewGroup = 'details';
+        }
+      });
+      qsa('p', recipeEl).forEach(p=>{
+        if(/^\s*Total\s*[–—:-]/i.test(String(p.textContent || ''))){
+          p.dataset.recipeViewGroup = 'details';
+        }
+      });
+
+      // The ingredient-library link is supporting information, not part of the
+      // minimal make-the-recipe view. Keep it available in Details and Show All.
+      qsa('.recipe-info-view-link, .info-link', recipeEl).forEach(link=>{
+        link.dataset.recipeViewGroup = 'details';
+      });
+
+      function normalizeEmphasis(){
+        qsa('ol > li > strong:first-child', recipeEl).forEach(strong=>{
+          const value = String(strong.textContent || '').trim();
+          if(!value) return;
+          if(/^[0-9¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/.test(value)) return;
+          strong.classList.add('recipe-method-action');
+          const next = strong.nextSibling;
+          if(next && next.nodeType === Node.TEXT_NODE && /^\s*:/.test(next.nodeValue || '') && !/:$/.test(value)){
+            strong.textContent = value + ':';
+            next.nodeValue = String(next.nodeValue || '').replace(/^\s*:\s*/, ' ');
+          }
+        });
+        qsa('.ing-subhead > strong', recipeEl).forEach(strong=> strong.classList.add('recipe-subgroup-label'));
+        qsa('[data-recipe-view-group="details"] li > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-detail-label'));
+        qsa('[data-recipe-view-group="guidance"] li > strong:first-child, [data-recipe-view-group="guidance"] p > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-guidance-label'));
+      }
+      normalizeEmphasis();
+
+      function setView(view){
+        const next = ['standard','details','guidance','show-all'].includes(view) ? view : 'standard';
+        recipeEl.dataset.recipeView = next;
+        qsa('.recipe-subtab', tabs).forEach(button=>{
+          button.setAttribute('aria-selected', button.dataset.recipeSubtab === next ? 'true' : 'false');
+        });
+        qsa('[data-recipe-view-group]', recipeEl).forEach(el=>{
+          const group = el.dataset.recipeViewGroup || '';
+          const visible = next === 'show-all' || group === next;
+          el.classList.toggle('recipe-view-hidden', !visible);
+        });
+        // Utility adjustments remain independent of the selected information tab.
+        editBody.classList.remove('recipe-view-hidden');
+        metaRow.classList.remove('recipe-view-hidden');
+        tabs.classList.remove('recipe-view-hidden');
+      }
+
+      qsa('.recipe-subtab', tabs).forEach(button=>{
+        button.addEventListener('click', event=>{
+          event.preventDefault();
+          event.stopPropagation();
+          setView(button.dataset.recipeSubtab || 'standard');
+        });
+      });
+
+      // Default every newly opened recipe to Standard View.
+      setView('standard');
+      try{ recipeEl.__baselineSetRecipeView = setView; }catch(_e){}
+      if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
 
     recipes.forEach(recipeEl=>{
@@ -4559,6 +4777,7 @@ function buildControls(recipeEl){
       ensureLiteralRecipeStructure(recipeEl);
       buildControls(recipeEl);
       setupRecipeCompactOptions(recipeEl);
+      setupRecipeUniversalTemplate(recipeEl);
 
       // Ensure method "Amounts:" pills exist immediately on first render.
       // (Previously they only appeared after the first Apply/Reset.)
