@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "SITEWIDE_UNIVERSAL_RECIPE_TEMPLATE_20260824_1";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_UNIVERSAL_RECIPE_TEMPLATE_20260824_3";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -4597,6 +4597,7 @@ function buildControls(recipeEl){
         val.textContent = value;
         item.append(key, document.createTextNode(' '), val);
         metaSummary.appendChild(item);
+        return val;
       }
       function firstMatch(re, text){
         const match = String(text || '').match(re);
@@ -4612,17 +4613,30 @@ function buildControls(recipeEl){
         yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
           .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
       }
+      if(!yieldValue){
+        const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
+        if(serves) yieldValue = serves;
+      }
+      if(!yieldValue) yieldValue = '1 recipe batch';
       const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
       const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
       const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
 
-      addMeta('Yield', yieldValue);
+      const yieldMetaValue = addMeta('Yield', yieldValue);
+      const batchMetaValue = addMeta('Batch', '1×');
       addMeta('Equipment', equipmentValue);
       addMeta('Allergens', allergensValue);
       addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
+      if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
+      if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
 
       const adjustmentsBtn = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
-      if(adjustmentsBtn) metaRow.appendChild(adjustmentsBtn);
+      const adjustmentsRow = document.createElement('div');
+      adjustmentsRow.className = 'recipe-adjustments-row print-hide';
+      if(adjustmentsBtn) adjustmentsRow.appendChild(adjustmentsBtn);
+
+      const legacyPrintSummary = q('.print-summary', recipeEl);
+      if(legacyPrintSummary) legacyPrintSummary.classList.add('recipe-legacy-print-summary');
 
       const tabs = document.createElement('div');
       tabs.className = 'recipe-subtabs print-hide';
@@ -4645,13 +4659,37 @@ function buildControls(recipeEl){
         tabs.appendChild(button);
       });
 
-      // Canonical order: title -> metadata/Adjustments -> adjustments panel ->
+      // Canonical order: title -> information line -> Adjustments -> adjustments panel ->
       // subtabs -> the selected view content. There is intentionally no visible
       // "Standard View" heading inside the content.
       titleRow.insertAdjacentElement('afterend', metaRow);
-      metaRow.insertAdjacentElement('afterend', editBody);
+      metaRow.insertAdjacentElement('afterend', adjustmentsRow);
+      adjustmentsRow.insertAdjacentElement('afterend', editBody);
       editBody.insertAdjacentElement('afterend', tabs);
       tabs.insertAdjacentElement('afterend', strip);
+
+      const batchInput = q('input.multiplier-input', recipeEl);
+      const baseYieldMatch = String(yieldValue || '').match(/^([0-9]+(?:\.[0-9]+)?)\s*(g|kg|ml|l)\b/i);
+      function tidyNumber(value){
+        const rounded = Math.round(Number(value) * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : String(rounded);
+      }
+      function syncUniversalRecipeMeta(){
+        let batch = batchInput ? parseFloat(batchInput.value || '1') : 1;
+        if(!Number.isFinite(batch) || batch <= 0) batch = 1;
+        if(batchMetaValue) batchMetaValue.textContent = tidyNumber(batch) + '×';
+        if(yieldMetaValue && baseYieldMatch){
+          yieldMetaValue.textContent = tidyNumber(parseFloat(baseYieldMatch[1]) * batch) + ' ' + baseYieldMatch[2];
+        }else if(yieldMetaValue && /^1 recipe batch$/i.test(String(yieldValue || ''))){
+          yieldMetaValue.textContent = tidyNumber(batch) + ' recipe ' + (batch === 1 ? 'batch' : 'batches');
+        }
+      }
+      if(batchInput){
+        batchInput.addEventListener('input', syncUniversalRecipeMeta);
+        batchInput.addEventListener('change', syncUniversalRecipeMeta);
+      }
+      syncUniversalRecipeMeta();
+      try{ recipeEl.__baselineSyncUniversalRecipeMeta = syncUniversalRecipeMeta; }catch(_e){}
 
       function headingGroup(text){
         const t = String(text || '').replace(/\(\s*view\s*\)/ig, '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -4704,7 +4742,19 @@ function buildControls(recipeEl){
       // Recipe-specific controls are part of Standard View, never hidden behind
       // the Adjustments utility panel.
       strip.dataset.recipeViewGroup = 'standard';
-      qsa('.glide-controller', recipeEl).forEach(el=>{ el.dataset.recipeViewGroup = 'standard'; });
+      qsa('.glide-controller', recipeEl).forEach(controller=>{
+        controller.dataset.recipeViewGroup = 'standard';
+        const previous = controller.previousElementSibling;
+        if(previous && previous.matches && previous.matches('p')){
+          previous.classList.add('recipe-slider-intro-legacy');
+        }
+        if(!q(':scope > .recipe-slider-instruction', controller)){
+          const instruction = document.createElement('p');
+          instruction.className = 'recipe-slider-instruction';
+          instruction.textContent = 'Adjust slider to preference.';
+          controller.insertBefore(instruction, controller.firstChild);
+        }
+      });
 
       // Existing status/meta prose is deeper information once the compact metadata
       // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
@@ -4753,12 +4803,13 @@ function buildControls(recipeEl){
         });
         qsa('[data-recipe-view-group]', recipeEl).forEach(el=>{
           const group = el.dataset.recipeViewGroup || '';
-          const visible = next === 'show-all' || group === next;
+          const visible = group !== 'details' && (next === 'show-all' || group === next);
           el.classList.toggle('recipe-view-hidden', !visible);
         });
         // Utility adjustments remain independent of the selected information tab.
         editBody.classList.remove('recipe-view-hidden');
         metaRow.classList.remove('recipe-view-hidden');
+        adjustmentsRow.classList.remove('recipe-view-hidden');
         tabs.classList.remove('recipe-view-hidden');
       }
 

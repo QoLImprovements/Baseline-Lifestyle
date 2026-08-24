@@ -4156,3 +4156,110 @@ body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-top > h1{
     display:block !important;
   }
 }
+
+
+/* BASELINE-RECIPE-DETAILS-PLACEHOLDER-20260824
+   Details stays available as a future-editing subtab, but intentionally renders no
+   recipe content. Adjustments is a text action, not a coloured button surface. */
+body[data-app] .recipe-universal-template [data-recipe-view-group="details"]{
+  display:none !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle,
+html body[data-app] .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+
+
+/* BASELINE-UNIVERSAL-RECIPE-SPACING-20260824
+   One geometry rhythm for all recipes. Colours remain owned by the active system. */
+body[data-app] .recipe-universal-template > .recipe-title-row{
+  margin:8px 0 10px !important;
+  padding:8px 0 6px !important;
+}
+body[data-app] .recipe-universal-template .recipe-meta-row{
+  margin:0 0 4px !important;
+  padding:0 !important;
+  gap:8px 12px !important;
+}
+body[data-app] .recipe-universal-template .recipe-adjustments-row{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  width:100% !important;
+  margin:0 0 12px !important;
+  padding:0 !important;
+  background:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-adjustments-row > .recipe-adjustments-toggle,
+html body[data-app] .recipe-universal-template .recipe-adjustments-row > .recipe-adjustments-toggle{
+  margin:0 !important;
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-adjustments-panel{
+  margin:0 0 12px !important;
+}
+body[data-app] .recipe-universal-template .recipe-subtabs{
+  margin:0 0 16px !important;
+}
+body[data-app] .recipe-universal-template .recipe-option-strip{
+  margin:0 0 18px !important;
+}
+body[data-app] .recipe-universal-template > h4[data-recipe-view-group],
+body[data-app] .recipe-universal-template .variant-panel > h4[data-recipe-view-group]{
+  margin:18px 0 8px !important;
+}
+body[data-app] .recipe-universal-template > ul[data-recipe-view-group],
+body[data-app] .recipe-universal-template > ol[data-recipe-view-group],
+body[data-app] .recipe-universal-template .variant-panel > ul[data-recipe-view-group],
+body[data-app] .recipe-universal-template .variant-panel > ol[data-recipe-view-group]{
+  margin-top:0 !important;
+  margin-bottom:18px !important;
+}
+body[data-app] .recipe-universal-template .recipe-legacy-print-summary{
+  display:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-slider-intro-legacy{
+  display:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-slider-instruction{
+  margin:0 0 9px !important;
+  padding:0 !important;
+  font-size:inherit !important;
+  line-height:1.4 !important;
+  color:var(--muted, var(--ink)) !important;
+}
+body[data-app] .recipe-universal-template .glide-controller{
+  margin-top:0 !important;
+  margin-bottom:18px !important;
+}
+@media (max-width:720px){
+  body[data-app] .recipe-universal-template .recipe-adjustments-row{
+    justify-content:flex-start !important;
+  }
+}
+
+
+/* BASELINE-UNIVERSAL-RECIPE-VISIBILITY-AUTHORITY-20260824
+   Final shared visibility authority. Older recipe-specific display rules must not
+   resurrect content deliberately removed by the universal template. */
+html body[data-app] #recipes .recipe-page.recipe-universal-template [data-recipe-view-group="details"],
+html body[data-app] .recipe-page.recipe-universal-template [data-recipe-view-group="details"]{
+  display:none !important;
+}
+html body[data-app] #recipes .recipe-page.recipe-universal-template .recipe-legacy-print-summary,
+html body[data-app] .recipe-page.recipe-universal-template .recipe-legacy-print-summary{
+  display:none !important;
+}
+html body[data-app] #recipes .recipe-page.recipe-universal-template p.recipe-slider-intro-legacy,
+html body[data-app] .recipe-page.recipe-universal-template p.recipe-slider-intro-legacy{
+  display:none !important;
+}
