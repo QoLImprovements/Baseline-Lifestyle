@@ -78,8 +78,12 @@ test('Testing recipe links open through the normal recipe overview router', asyn
 });
 
 test('leaving My Routine for Recipes hides Routine Log and Calendar completely', async ({ page }) => {
-  await page.goto('/baseline-natural-skincare/my-routine/log');
+  // Reproduce the reported UI flow directly: enter My Routine through the
+  // normal top-level tab, then leave it for Recipes on the same page.
+  await page.goto('/baseline-natural-skincare/system');
+  await page.locator('.tab[data-target="routine"]').click();
 
+  await expect(page.locator('#routine')).toHaveClass(/active/);
   await expect(page.locator('#routine')).toBeVisible();
   await expect(page.locator('#routine .routine-subtabs')).toBeVisible();
   await expect(page.locator('.tab[data-target="routine"]')).toHaveAttribute('aria-selected', 'true');
