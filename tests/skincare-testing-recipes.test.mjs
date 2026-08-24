@@ -6,9 +6,9 @@ const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const recipes = [
-  ['r8', 'testing-shaving-gel', 'Shaving Gel Recipe'],
-  ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder Recipe'],
-  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel Recipe – 40 g']
+  ['r8', 'testing-shaving-gel', 'Shaving Gel'],
+  ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder'],
+  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel']
 ];
 
 function recipeOpening(id, slug) {
