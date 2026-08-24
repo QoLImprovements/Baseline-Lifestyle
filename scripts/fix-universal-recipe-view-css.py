@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-shot branch repair; removed before merge.
 path = Path('sitewide/css/baseline-recipes.css')
 css = path.read_text(encoding='utf-8')
 old = '''html body[data-app] .recipe-universal-template .glide-controller,
