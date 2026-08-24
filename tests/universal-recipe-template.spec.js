@@ -18,6 +18,12 @@ async function expectAdjustmentsContract(card) {
   await expect(adjustments).toBeVisible();
   await expect(adjustments).toHaveText('Adjustments');
   await expect(adjustments).toHaveAttribute('aria-expanded', 'false');
+  const adjustmentSurface = await adjustments.evaluate(el => ({
+    backgroundColor: getComputedStyle(el).backgroundColor,
+    backgroundImage: getComputedStyle(el).backgroundImage,
+  }));
+  expect(adjustmentSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(adjustmentSurface.backgroundImage).toBe('none');
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 
   await adjustments.click();
@@ -46,10 +52,11 @@ test('Skincare universal recipe keeps variants and formula sliders in Standard V
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
 
-  // Details hides the make-the-recipe sections, Guidance shows use/storage, Show All restores everything.
+  // Details is intentionally empty; Guidance shows use/storage; Show All restores Standard + Guidance only.
   await card.locator('[data-recipe-subtab="details"]').click();
   await expect(card.locator('h4').filter({ hasText: /^Ingredients$/ }).first()).toBeHidden();
   await expect(card.locator('.glide-controller').first()).toBeHidden();
+  await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
 
   await card.locator('[data-recipe-subtab="guidance"]').click();
   await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
@@ -58,6 +65,7 @@ test('Skincare universal recipe keeps variants and formula sliders in Standard V
   await card.locator('[data-recipe-subtab="show-all"]').click();
   await expect(card.getByRole('heading', { name: /^Method$/i }).first()).toBeVisible();
   await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
+  await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
 });
 
 test('Food oat type is a Standard View recipe choice, not an Adjustment', async ({ page }) => {
@@ -87,6 +95,23 @@ test('Food thickness is a Standard View recipe choice while scaling remains unde
   await card.locator('.recipe-adjustments-toggle').click();
   await expect(card.locator('.recipe-adjustments-panel')).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel .scale-toggle')).toBeVisible();
+});
+
+test('Details subtab is intentionally empty in both recipe systems', async ({ page }) => {
+  const recipes = [
+    ['/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel', '#r10'],
+    ['/baseline-food-approach/recipes/tomato-and-red-pepper-sauce', '#r10'],
+  ];
+
+  for (const [url, selector] of recipes) {
+    await page.goto(url);
+    const card = page.locator(selector);
+    await expect(card).toBeVisible();
+    await card.locator('[data-recipe-subtab="details"]').click();
+    await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
+    await card.locator('[data-recipe-subtab="show-all"]').click();
+    await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
+  }
 });
 
 test('system-specific recipe themes remain owned by the active system', async ({ page }) => {
