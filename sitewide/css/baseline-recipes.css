@@ -4094,12 +4094,12 @@ body[data-app] .recipe-universal-template .variant-heading{
 }
 
 /* Recipe-specific sliders are never hidden by the Adjustments utility panel. */
-html body[data-app] .recipe-universal-template .glide-controller,
-html body[data-app] #recipes .recipe-universal-template:not(.recipe-options-open) .glide-controller{
+html body[data-app] .recipe-universal-template .glide-controller:not(.recipe-view-hidden),
+html body[data-app] #recipes .recipe-universal-template:not(.recipe-options-open) .glide-controller:not(.recipe-view-hidden){
   display:grid !important;
 }
-body[data-app] .recipe-universal-template[data-recipe-view="details"] .glide-controller,
-body[data-app] .recipe-universal-template[data-recipe-view="guidance"] .glide-controller{
+html body[data-app] .recipe-universal-template .glide-controller.recipe-view-hidden,
+html body[data-app] #recipes .recipe-universal-template .glide-controller.recipe-view-hidden{
   display:none !important;
 }
 
