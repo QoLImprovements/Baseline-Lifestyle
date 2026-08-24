@@ -1,0 +1,33 @@
+name: Patch skincare Testing titles
+
+on:
+  push:
+    branches:
+      - fix/skincare-testing-recipe-titles-20260824
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: fix/skincare-testing-recipe-titles-20260824
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+      - name: Normalise Testing recipe titles
+        run: python scripts/patch-skincare-testing-recipe-titles.py
+      - name: Commit title corrections
+        run: |
+          git config user.name "QoLImprovements"
+          git config user.email "contact@baselinelifestyle.org"
+          git add systems/baseline-natural-skincare/baseline-natural-skincare.html tests/skincare-testing-recipes-browser.spec.js tests/skincare-testing-recipes.test.mjs
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "Match Testing recipe titles to Skincare convention"
+          git push origin HEAD:fix/skincare-testing-recipe-titles-20260824
