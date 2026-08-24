@@ -1,5 +1,6 @@
 from pathlib import Path
 
+# One-shot branch finalizer. Removed before merge.
 path = Path('sitewide/js/baseline-shared.js')
 s = path.read_text(encoding='utf-8')
 
