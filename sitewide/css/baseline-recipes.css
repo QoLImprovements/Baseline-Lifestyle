@@ -4156,3 +4156,18 @@ body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-top > h1{
     display:block !important;
   }
 }
+
+
+/* BASELINE-RECIPE-DETAILS-PLACEHOLDER-20260824
+   Details stays available as a future-editing subtab, but intentionally renders no
+   recipe content. Adjustments is a text action, not a coloured button surface. */
+body[data-app] .recipe-universal-template [data-recipe-view-group="details"]{
+  display:none !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle,
+html body[data-app] .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+}

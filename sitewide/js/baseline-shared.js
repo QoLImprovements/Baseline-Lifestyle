@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "SITEWIDE_UNIVERSAL_RECIPE_TEMPLATE_20260824_1";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_UNIVERSAL_RECIPE_TEMPLATE_20260824_2";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -4753,7 +4753,7 @@ function buildControls(recipeEl){
         });
         qsa('[data-recipe-view-group]', recipeEl).forEach(el=>{
           const group = el.dataset.recipeViewGroup || '';
-          const visible = next === 'show-all' || group === next;
+          const visible = group !== 'details' && (next === 'show-all' || group === next);
           el.classList.toggle('recipe-view-hidden', !visible);
         });
         // Utility adjustments remain independent of the selected information tab.
