@@ -25,7 +25,7 @@ async function expectAdjustmentsContract(card) {
   await expect(card.locator('.recipe-adjustments-panel')).toBeVisible();
   await expect(card.locator('.recipe-control-row--batch')).toBeVisible();
   await expect(card.locator('.recipe-control-row--measurement')).toBeVisible();
-  await expect(card.locator('.recipe-control-row--scale')).toBeVisible();
+  await expect(card.locator('.recipe-adjustments-panel .scale-toggle')).toBeVisible();
 
   await adjustments.click();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
@@ -39,7 +39,9 @@ test('Skincare universal recipe keeps variants and formula sliders in Standard V
   await expectUniversalTabs(card);
 
   // Variant selection and recipe-defining controls remain visible without opening Adjustments.
-  await expect(card.locator('.recipe-variant-field')).toBeVisible();
+  const variant = card.locator('.recipe-variant-field select');
+  await expect(variant).toBeVisible();
+  await expect(variant).not.toHaveValue('');
   await expect(card.locator('.glide-controller').first()).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
@@ -78,12 +80,13 @@ test('Food thickness is a Standard View recipe choice while scaling remains unde
   const card = page.locator('#r5');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
-  await expect(card.locator('.recipe-formula-controls .thickness-select')).toBeVisible();
+  await expect(card.locator('.recipe-formula-controls .recipe-control-row--thickness')).toBeVisible();
+  await expect(card.locator('.recipe-formula-controls .bl-select.thickness-select')).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 
   await card.locator('.recipe-adjustments-toggle').click();
   await expect(card.locator('.recipe-adjustments-panel')).toBeVisible();
-  await expect(card.locator('.scale-toggle')).toBeVisible();
+  await expect(card.locator('.recipe-adjustments-panel .scale-toggle')).toBeVisible();
 });
 
 test('system-specific recipe themes remain owned by the active system', async ({ page }) => {
@@ -91,15 +94,19 @@ test('system-specific recipe themes remain owned by the active system', async ({
   const skinCard = page.locator('#r10');
   await expect(skinCard).toBeVisible();
   const skinApp = await page.locator('body').getAttribute('data-app');
-  const skinBg = await skinCard.evaluate(el => getComputedStyle(el).backgroundImage);
+  const skinAccent = await page.locator('body').evaluate(el => getComputedStyle(el).getPropertyValue('--accent').trim());
+  const skinSurface = await skinCard.evaluate(el => getComputedStyle(el).backgroundColor);
   expect(skinApp).toBe('skin');
+  expect(skinAccent).not.toBe('');
 
   await page.goto('/baseline-food-approach/recipes/tomato-and-red-pepper-sauce');
   const foodCard = page.locator('#r10');
   await expect(foodCard).toBeVisible();
   const foodApp = await page.locator('body').getAttribute('data-app');
-  const foodBg = await foodCard.evaluate(el => getComputedStyle(el).backgroundImage);
+  const foodAccent = await page.locator('body').evaluate(el => getComputedStyle(el).getPropertyValue('--accent').trim());
+  const foodSurface = await foodCard.evaluate(el => getComputedStyle(el).backgroundColor);
   expect(foodApp).toBe('food');
+  expect(foodAccent).not.toBe('');
 
-  expect(skinBg).not.toBe(foodBg);
+  expect(`${skinAccent}|${skinSurface}`).not.toBe(`${foodAccent}|${foodSurface}`);
 });
