@@ -8,7 +8,7 @@
 
 (function(){
   "use strict";
-  const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_REFRESH_SAFE_20260824_4";
+  const BASELINE_SHARED_BUILD = "SITEWIDE_SKINCARE_RECIPE_SECTION_SAFE_20260824_5";
   try{ document.documentElement.setAttribute("data-baseline-shared-js", BASELINE_SHARED_BUILD); }catch(_e){}
   try{
     if(window.__BASELINE_SHARED__){ return; }
@@ -1585,6 +1585,15 @@ function parseViewStateHash(hash){
       if(!id || !sectionsById.has(id)) return;
       clearPendingNavScroll();
 
+      // Skincare's first-paint routine markers are bootstrap-only. Once the
+      // user leaves My Routine they must not keep forcing #routine visible.
+      try{
+        if(document.body && document.body.dataset && document.body.dataset.app === 'skin' && id !== 'routine'){
+          document.documentElement.removeAttribute('data-initial-skincare-tab');
+          document.documentElement.removeAttribute('data-initial-routine-view');
+        }
+      }catch(_e){}
+
       tabs.forEach(t=>{
         const selected = tabId(t) === id;
         t.classList.toggle('active', selected);
@@ -1943,9 +1952,13 @@ function parseViewStateHash(hash){
         }
 
         cats.forEach(cat => {
-          const h4 = document.createElement('h4');
-          h4.textContent = cat;
-          sideNav.appendChild(h4);
+          // The default recipe collection already has the primary Recipes
+          // heading. Only named sub-categories need another heading.
+          if(cat !== 'Recipes'){
+            const h4 = document.createElement('h4');
+            h4.textContent = cat;
+            sideNav.appendChild(h4);
+          }
 
           const ul = document.createElement('ul');
           (byCategory.get(cat) || []).forEach(item => {
@@ -1954,6 +1967,7 @@ function parseViewStateHash(hash){
             try{ a.href = recipeUrlForId(item.id); }catch(_e){ a.href = `#${item.id}`; }
             a.textContent = item.title;
             a.className = 'recipe-open';
+            a.dataset.recipeId = item.id;
             li.appendChild(a);
             ul.appendChild(li);
           });
@@ -1973,9 +1987,11 @@ function parseViewStateHash(hash){
         }
 
         cats.forEach(cat => {
-          const h4 = document.createElement('h4');
-          h4.textContent = cat;
-          landingCard.appendChild(h4);
+          if(cat !== 'Recipes'){
+            const h4 = document.createElement('h4');
+            h4.textContent = cat;
+            landingCard.appendChild(h4);
+          }
 
           const ul = document.createElement('ul');
           (byCategory.get(cat) || []).forEach(item => {
@@ -1984,6 +2000,7 @@ function parseViewStateHash(hash){
             try{ a.href = recipeUrlForId(item.id); }catch(_e){ a.href = `#${item.id}`; }
             a.textContent = item.title;
             a.className = 'recipe-open';
+            a.dataset.recipeId = item.id;
             li.appendChild(a);
             ul.appendChild(li);
           });

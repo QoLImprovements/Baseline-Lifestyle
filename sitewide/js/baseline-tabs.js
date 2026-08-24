@@ -175,6 +175,16 @@
 (function(){
   "use strict";
 
+  function repairSkincareRoutineRoute(){
+    try{
+      var path = String(window.location.pathname || "").toLowerCase().replace(/\/+$/, "");
+      if(!/\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)) return;
+      if(typeof window.BASELINE_selectTab === "function"){
+        window.BASELINE_selectTab("routine", { silentHistory:true });
+      }
+    }catch(_e){}
+  }
+
   function shouldDisable(){
     try{ return !!window.__BASELINE_SHARED__; }catch(_e){ return false; }
   }
@@ -289,6 +299,16 @@
     }
     if(!exists) return;
 
+    // Skincare's first-paint route markers only bootstrap My Routine. Once a
+    // different top-level tab is selected, remove them so CSS cannot keep
+    // #routine visible alongside the newly selected section.
+    try{
+      if(document.body && document.body.dataset && document.body.dataset.app === "skin" && id !== "routine"){
+        document.documentElement.removeAttribute("data-initial-skincare-tab");
+        document.documentElement.removeAttribute("data-initial-routine-view");
+      }
+    }catch(_e){}
+
     for(var t=0;t<tabs.length;t++){
       var tid = getTabId(tabs[t]);
       var sel = (tid === id);
@@ -319,9 +339,14 @@
   }
 
   function init(){
+    // The shared router historically treated /my-routine/<view> as the System
+    // tab. Repair that nested clean route before this fail-safe decides whether
+    // it is needed, so the canonical My Routine page remains visible.
+    repairSkincareRoutineRoute();
     if(shouldDisable()) return;
 
     expose();
+    repairSkincareRoutineRoute();
 
     try{
       var tabs = qsa(".tab[data-target], .tab[data-tab]");
