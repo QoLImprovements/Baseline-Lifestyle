@@ -482,3 +482,76 @@
     skin: SKIN
   };
 })();
+
+/* Baseline Natural Skincare — Testing recipe bootstrap.
+   This executes synchronously before baseline-shared discovers and templates recipe cards. */
+(function(){
+  "use strict";
+  if(!document.body || document.body.dataset.app !== "skin") return;
+  if(document.getElementById("r11")) return;
+  var recipes = document.querySelector("#recipes .recipes");
+  if(!recipes) return;
+
+  recipes.insertAdjacentHTML("beforeend", `
+<!-- Testing Recipe 11 -->
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11">
+<div class="recipe-actions">
+<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
+<button class="print-btn" onclick="printCard('r11')" type="button">Print This Recipe</button>
+</div>
+<h3>Soap-Free Powdered Hair Wash</h3>
+<p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
+<p class="note">Equipment: airtight storage container and small mixing bowl. Allergens: oats.</p>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
+<h4>Ingredients</h4>
+<ul>
+<li class="ing-subhead"><strong>Dry powder blend — 100 g</strong></li>
+<li data-method-step="1" data-tip="Supports the scalp barrier and provides a soft, gentle washing base.">75 g <strong>Colloidal Oatmeal</strong></li>
+<li data-method-step="1" data-tip="Provides mucilage and slip; helps reduce friction and tangling.">15 g <strong>Marshmallow Root Powder</strong></li>
+<li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp.">5 g <strong>Chicory-Root Inulin</strong></li>
+<li data-method-step="1" data-tip="Helps disperse added and natural oils into the rinse water without soap or conventional detergent surfactants.">5 g <strong>Sunflower Lecithin Powder</strong></li>
+<li class="ing-subhead"><strong>For one wash</strong></li>
+<li data-method-step="2" data-tip="The prepared dry base used for a single wash.">10 g <strong>Powder Blend</strong></li>
+<li data-method-step="3" data-tip="Hydrates the powder blend into a smooth, loose cream for immediate use.">20–30 g <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-water" href="#ing-water">Warm Water</a></li>
+<li data-method-step="4" data-tip="Adds lightweight lubrication, softness and a small protective lipid phase.">0.5–1 g <strong>Jojoba/Argan Oil Blend</strong></li>
+<li class="ing-subhead"><strong>Jojoba/Argan oil blend</strong></li>
+<li data-tip="Lightweight lubrication and a protective lipid layer.">80% <strong>Jojoba Oil</strong></li>
+<li data-tip="Emollience, softness and additional conditioning.">20% <strong>Argan Oil</strong></li>
+</ul>
+<p><strong>Total – 100 g</strong></p>
+<h4>Ingredient Roles</h4>
+<ul>
+<li><strong>Colloidal Oatmeal</strong> – supports the scalp barrier, soothes the skin and provides a soft, gentle washing base.</li>
+<li><strong>Marshmallow Root Powder</strong> – provides mucilage, slip, conditioning and helps reduce friction and tangling.</li>
+<li><strong>Chicory-Root Inulin</strong> – provides lightweight conditioning and moisture-binding benefits for the hair and scalp.</li>
+<li><strong>Sunflower Lecithin Powder</strong> – helps disperse the added oils and natural scalp oils into the rinse water without relying on soap or aggressive surfactants.</li>
+<li><strong>Jojoba Oil</strong> – provides lightweight lubrication and a protective lipid layer.</li>
+<li><strong>Argan Oil</strong> – provides emollience, softness and additional conditioning.</li>
+</ul>
+<h4>Method</h4>
+<ol>
+<li><strong>Blend</strong>: Mix the dry powder ingredients thoroughly and store completely dry in an airtight container.</li>
+<li><strong>Measure</strong>: For each wash, place 10 g of the powder blend into a small bowl or container.</li>
+<li><strong>Hydrate</strong>: Add 20–30 g of warm water and mix until a smooth, loose cream forms.</li>
+<li><strong>Add oil blend</strong>: Add 0.5–1 g of the 80% jojoba / 20% argan oil blend.</li>
+<li><strong>Mix</strong>: Mix thoroughly.</li>
+<li><strong>Apply</strong>: Apply to wet scalp and hair.</li>
+<li><strong>Massage</strong>: Massage gently through the scalp and hair.</li>
+<li><strong>Rinse</strong>: Rinse thoroughly with water.</li>
+</ol>
+<h4>Storage &amp; Use</h4>
+<ul>
+<li>Keep the dry powder blend completely dry in an airtight container.</li>
+<li>Make only enough wet mixture for one use. Once water has been added, use immediately and discard any remainder.</li>
+</ul>
+<h4>Comedogenic Considerations</h4>
+<ul>
+<li>This is a rinse-off formula with only a small added oil phase. Individual scalp and hairline responses to jojoba and argan can vary.</li>
+</ul>
+<h4>Notes</h4>
+<ul>
+<li><strong>Formula exclusions:</strong> soap free • sulfate free • soapnut free • shikakai free • saponin free • no conventional detergent surfactants.</li>
+<li>This recipe is currently grouped under <strong>Testing</strong>.</li>
+</ul>
+</div>`);
+})();
