@@ -8,7 +8,8 @@ const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const recipes = [
   ['r8', 'testing-shaving-gel', 'Shaving Gel'],
   ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder'],
-  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel']
+  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel'],
+  ['r11', 'testing-soap-free-powdered-hair-wash', 'Soap-Free Powdered Hair Wash']
 ];
 
 function recipeOpening(id, slug) {
