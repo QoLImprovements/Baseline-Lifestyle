@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_COMPLETED_BADGE_20260828_1';
+  const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
@@ -787,8 +787,14 @@
       current.sessions = Array.isArray(result.sessions) ? result.sessions : current.sessions;
       current.progress = result.progress || calculateProgress(current.sessions, current.planJson);
     }
+    const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };
     removeStorage(stepStorageKey(current.planId, context.sessionIndex));
-    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();
+    cachePlan(current);
+    await global.BASELINE_fitnessPlans?.refresh?.();
+    global.BASELINE_fitnessRoutine?.render?.();
+    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements();
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-completed', { detail:Object.assign({ source:'finish-current-workout' }, completedSession) })); } catch (_error) {}
+    notifyWorkout();
     return workoutContext();
   }
   function formatTimer(seconds) { const total = Math.max(0, Math.round(Number(seconds) || 0)); return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`; }
