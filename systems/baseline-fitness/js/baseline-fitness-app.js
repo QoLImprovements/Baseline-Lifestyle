@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_COUNTDOWN_LABELS_20260822_1';
+  const BUILD = 'BASELINE_FITNESS_COMPLETED_BADGE_20260828_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
@@ -579,7 +579,7 @@
     const dateEditor = suffix === 'Completed'
       ? `<div class="actions-inline session-completion-date-editor"><label class="field-stack"><span>Completion date</span><input type="date" max="${today()}" value="${escapeHtml(completionDate)}" data-session-completion-date="${index}"></label><button type="button" class="compact-action compact-action--primary" data-save-session-completion-date="${index}">Save date</button><span class="status" data-session-completion-date-status="${index}"></span></div>`
       : '';
-    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(dateDisplay)}</div></div><span class="badge">${completed ? 'Done' : 'Planned'}</span></div>${dateEditor}<div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
+    return `<div class="card session-card"><div class="top" style="display:flex;justify-content:space-between;gap:12px"><div><div class="title">Session ${index}${suffix ? ` - ${escapeHtml(suffix)}` : ''}</div><div class="muted">${escapeHtml(dateDisplay)}</div></div>${completed ? '' : '<span class="badge">Planned</span>'}</div>${dateEditor}<div class="divider"></div>${planExerciseRows(plan, index)}</div>`;
   }
   async function saveSessionCompletionDate(button, target) {
     const sessionIndex = Number(button.dataset.saveSessionCompletionDate || 0);
