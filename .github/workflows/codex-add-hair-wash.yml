@@ -29,7 +29,7 @@ jobs:
           browser_test_path = Path('tests/skincare-testing-recipes-browser.spec.js')
 
           html = html_path.read_text(encoding='utf-8')
-          assert 'id="r11"' not in html, 'r11 already exists'
+          assert ' id="r11">' not in html, 'r11 already exists'
 
           side_anchor = '<li><a class="recipe-open" data-recipe-id="r10" href="/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel">Microcurrent Conductive Gel</a></li>'
           side_add = side_anchor + '\n<li><a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a></li>'
@@ -117,7 +117,7 @@ jobs:
           html = html.replace(recipe_end_marker, recipe + recipe_end_marker, 1)
 
           assert html.count('data-recipe-id="r11"') == 2
-          assert html.count('id="r11"') == 1
+          assert html.count(' id="r11">') == 1
           assert 'data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11"' in html
           html_path.write_text(html, encoding='utf-8')
 
