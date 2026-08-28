@@ -1,0 +1,72 @@
+name: One-shot fix Routine Log session attribution
+
+on:
+  push:
+    paths:
+      - '.github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply completion attribution fix
+        shell: bash
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          app_path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
+          html_path = Path('systems/baseline-fitness/baseline-fitness.html')
+          workflow_path = Path('.github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml')
+
+          app = app_path.read_text(encoding='utf-8')
+          old = """    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();
+    return workoutContext();
+"""
+          new = """    const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };
+    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    cachePlan(current);
+    await global.BASELINE_fitnessPlans?.refresh?.();
+    global.BASELINE_fitnessRoutine?.render?.();
+    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements();
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-completed', { detail:Object.assign({ source:'finish-current-workout' }, completedSession) })); } catch (_error) {}
+    notifyWorkout();
+    return workoutContext();
+"""
+          if old not in app:
+              raise SystemExit('Expected finishCurrentWorkout completion tail was not found; refusing unsafe patch.')
+          app = app.replace(old, new, 1)
+          app = re.sub(
+              r"const BUILD = '[^']+';",
+              "const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';",
+              app,
+              count=1,
+          )
+          app_path.write_text(app, encoding='utf-8')
+
+          html = html_path.read_text(encoding='utf-8')
+          html, count = re.subn(
+              r'baseline-fitness-app\.js\?v=[A-Za-z0-9_\-]+',
+              'baseline-fitness-app.js?v=BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1',
+              html,
+              count=1,
+          )
+          if count != 1:
+              raise SystemExit('Could not update baseline-fitness-app.js cache key in baseline-fitness.html.')
+          html_path.write_text(html, encoding='utf-8')
+
+          workflow_path.unlink()
+          PY
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Fix Routine Log completed session attribution"
+          git push
