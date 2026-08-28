@@ -195,6 +195,12 @@
       notes: "Blend; 1 tsp ≈ 1 g (approx.)."
     }),
 
+    "ing-dead-sea-salt": withDerived({
+    label: "Dead Sea salt",
+    g_per_tsp: 6.0,
+    notes: "Practical fine-crystal estimate; crystal size and packing can change spoon weight, so gram measurements remain preferred for precise cosmetic batches."
+  }),
+
     "ing-sea-salt": withDerived({
       label: "Sea salt / salt",
       g_per_tsp: 6.0,
@@ -366,7 +372,12 @@
     }),
 
     /* Carrier oils */
-    "ing-olive": withDerived({
+    "ing-safflower": withDerived({
+    label: "Safflower oil",
+    g_per_ml: 0.92,
+    notes: "Carrier-oil conversion; practical density varies slightly by cultivar, processing and temperature."
+  }),
+  "ing-olive": withDerived({
       label: "Olive oil",
       g_per_ml: 0.91
     }),
@@ -428,8 +439,9 @@
       g_per_ml: 1.0
     }),
     "ing-cucumber": withDerived({
-      label: "Cucumber juice",
-      g_per_ml: 1.0
+      label: "Cucumber seed oil",
+      g_per_ml: 0.922,
+      notes: "Cucumis sativus seed oil. Practical density uses the midpoint of a 0.915–0.930 relative-density specification at 25°C; 240 ml is approximately 221.3 g."
     }),
 
     /* Powders / thickeners */
