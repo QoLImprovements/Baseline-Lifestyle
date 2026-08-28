@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';
+  const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_2';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
