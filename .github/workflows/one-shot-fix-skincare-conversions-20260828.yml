@@ -27,11 +27,7 @@ jobs:
           profiles_path = Path('sitewide/js/baseline-ingredient-profiles.js')
           profiles = profiles_path.read_text(encoding='utf-8')
 
-          old = '''    "ing-cucumber": withDerived({
-                label: "Cucumber juice",
-                g_per_ml: 1.0
-              }),'''
-          # Tolerate normal indentation in the source.
+          # Cucumber Seed Oil was incorrectly sharing a water-like cucumber profile.
           pattern = re.compile(r'\s*"ing-cucumber":\s*withDerived\(\{\s*label:\s*"Cucumber juice",\s*g_per_ml:\s*1\.0\s*\}\),')
           replacement = '''
               "ing-cucumber": withDerived({
@@ -42,6 +38,34 @@ jobs:
           profiles, count = pattern.subn(replacement, profiles, count=1)
           if count != 1:
               raise SystemExit(f'Expected exactly one incorrect ing-cucumber profile, found {count}')
+
+          # The complete recipe audit also found these two recipe ingredients had no profile at all.
+          carrier_marker = '''    /* Carrier oils */
+              "ing-olive": withDerived({'''
+          if carrier_marker not in profiles:
+              carrier_marker = '''    /* Carrier oils */
+            "ing-olive": withDerived({'''
+          if carrier_marker not in profiles:
+              raise SystemExit('Could not locate carrier-oil insertion point')
+          carrier_insert = carrier_marker.replace('"ing-olive": withDerived({', '''"ing-safflower": withDerived({
+              label: "Safflower oil",
+              g_per_ml: 0.92,
+              notes: "Carrier-oil conversion; practical density varies slightly by cultivar, processing and temperature."
+            }),
+            "ing-olive": withDerived({''')
+          profiles = profiles.replace(carrier_marker, carrier_insert, 1)
+
+          salt_marker = '''    "ing-sea-salt": withDerived({'''
+          if salt_marker not in profiles:
+              raise SystemExit('Could not locate sea-salt insertion point')
+          dead_sea = '''    "ing-dead-sea-salt": withDerived({
+              label: "Dead Sea salt",
+              g_per_tsp: 6.0,
+              notes: "Practical fine-crystal estimate; crystal size and packing can change spoon weight, so gram measurements remain preferred for precise cosmetic batches."
+            }),
+
+          '''
+          profiles = profiles.replace(salt_marker, dead_sea + salt_marker, 1)
           profiles_path.write_text(profiles, encoding='utf-8')
 
           html_path = Path('systems/baseline-natural-skincare/baseline-natural-skincare.html')
@@ -119,6 +143,11 @@ jobs:
             assert.match(block,/g_per_ml:\s*0\.922\b/);
             assert.doesNotMatch(block,/g_per_ml:\s*1(?:\.0)?\b/);
             assert.match(main,/Cucumber Seed Oil/);
+          });
+
+          test('previously missing safflower and Dead Sea salt conversions stay covered',()=>{
+            assert.match(blocks.get('ing-safflower')||'',/g_per_ml:\s*0\.92\b/);
+            assert.match(blocks.get('ing-dead-sea-salt')||'',/g_per_tsp:\s*6\.0\b/);
           });
 
           test('ingredient profile fix is cache-busted on skincare',()=>{
