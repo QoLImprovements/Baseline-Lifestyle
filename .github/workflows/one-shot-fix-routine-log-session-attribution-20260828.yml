@@ -26,20 +26,22 @@ jobs:
           path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
           text = path.read_text(encoding='utf-8')
 
-          old = """    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
-    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();
-    return workoutContext();
-"""
-          new = """    const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };
-    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
-    cachePlan(current);
-    await global.BASELINE_fitnessPlans?.refresh?.();
-    global.BASELINE_fitnessRoutine?.render?.();
-    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements();
-    try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-completed', { detail:Object.assign({ source:'finish-current-workout' }, completedSession) })); } catch (_error) {}
-    notifyWorkout();
-    return workoutContext();
-"""
+          old = (
+              "    removeStorage(stepStorageKey(current.planId, context.sessionIndex));\n"
+              "    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();\n"
+              "    return workoutContext();\n"
+          )
+          new = (
+              "    const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };\n"
+              "    removeStorage(stepStorageKey(current.planId, context.sessionIndex));\n"
+              "    cachePlan(current);\n"
+              "    await global.BASELINE_fitnessPlans?.refresh?.();\n"
+              "    global.BASELINE_fitnessRoutine?.render?.();\n"
+              "    renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements();\n"
+              "    try { document.dispatchEvent(new CustomEvent('baseline:fitness-workout-completed', { detail:Object.assign({ source:'finish-current-workout' }, completedSession) })); } catch (_error) {}\n"
+              "    notifyWorkout();\n"
+              "    return workoutContext();\n"
+          )
 
           count = text.count(old)
           if count != 1:
