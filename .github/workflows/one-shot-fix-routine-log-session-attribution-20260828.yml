@@ -1,28 +1,31 @@
-name: One-shot fix Routine Log session attribution
+name: One-shot fix Routine Log completed session
 
 on:
-  push: {}
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml'
 
 permissions:
   contents: write
 
 jobs:
-  fix:
+  patch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply fix
+        with:
+          fetch-depth: 0
+
+      - name: Fix completed session attribution
         shell: bash
         run: |
-          python3 <<'PY'
+          python - <<'PY'
           from pathlib import Path
-          import re
 
-          app_path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
-          html_path = Path('systems/baseline-fitness/baseline-fitness.html')
-          workflow_path = Path('.github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml')
+          path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
+          text = path.read_text(encoding='utf-8')
 
-          app = app_path.read_text(encoding='utf-8')
           old = """    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
     renderSavedPlanHeader(); renderPlanSubtab('current'); renderAchievements(); notifyWorkout();
     return workoutContext();
@@ -37,22 +40,39 @@ jobs:
     notifyWorkout();
     return workoutContext();
 """
-          if old not in app:
-              raise SystemExit('Expected finishCurrentWorkout completion tail not found')
-          app = app.replace(old, new, 1)
-          app = re.sub(r"const BUILD = '[^']+';", "const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';", app, count=1)
-          app_path.write_text(app, encoding='utf-8')
 
-          html = html_path.read_text(encoding='utf-8')
-          html, count = re.subn(r'baseline-fitness-app\.js\?v=[A-Za-z0-9_\-]+', 'baseline-fitness-app.js?v=BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1', html, count=1)
+          count = text.count(old)
           if count != 1:
-              raise SystemExit('Could not update Fitness app cache key')
-          html_path.write_text(html, encoding='utf-8')
+              raise SystemExit(f'Expected exactly one finishCurrentWorkout completion tail, found {count}')
 
-          workflow_path.unlink()
+          text = text.replace(old, new, 1)
+          text = text.replace(
+              "const BUILD = 'BASELINE_FITNESS_COMPLETED_BADGE_20260828_1';",
+              "const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';",
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
           PY
+
+      - name: Verify completed session remains authoritative
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('systems/baseline-fitness/js/baseline-fitness-app.js').read_text(encoding='utf-8')
+          assert "const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };" in text
+          assert "await global.BASELINE_fitnessPlans?.refresh?.();" in text
+          assert "global.BASELINE_fitnessRoutine?.render?.();" in text
+          assert "baseline:fitness-workout-completed" in text
+          PY
+
+      - name: Commit patch and remove one-shot workflow
+        shell: bash
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git rm .github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml
+          git add systems/baseline-fitness/js/baseline-fitness-app.js
+          git diff --cached --check
           git commit -m "Fix Routine Log completed session attribution"
-          git push
+          git push origin HEAD:main
