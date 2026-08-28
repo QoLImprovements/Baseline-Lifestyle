@@ -3,7 +3,8 @@ const { test, expect } = require('@playwright/test');
 const recipes = [
   { id:'r8', slug:'testing-shaving-gel', title:'Shaving Gel' },
   { id:'r9', slug:'testing-natural-tooth-brightening-powder', title:'Natural Tooth-Brightening Powder' },
-  { id:'r10', slug:'testing-microcurrent-conductive-gel', title:'Microcurrent Conductive Gel' }
+  { id:'r10', slug:'testing-microcurrent-conductive-gel', title:'Microcurrent Conductive Gel' },
+  { id:'r11', slug:'testing-soap-free-powdered-hair-wash', title:'Soap-Free Powdered Hair Wash' }
 ];
 
 async function expectCanonicalRecipeView(page, recipe) {
@@ -55,9 +56,9 @@ test('Testing recipes are grouped under the Testing subcategory', async ({ page 
 
   // The category renderer places the category list directly after its heading.
   const testingLinks = page.locator('#recipes-landing h4 + ul a.recipe-open');
-  await expect(testingLinks).toHaveCount(3);
+  await expect(testingLinks).toHaveCount(4);
   const ids = await testingLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
-  expect(ids).toEqual(['r10','r8','r9']);
+  expect(ids).toEqual(['r10','r11','r8','r9']);
 });
 
 test('Testing recipe links open through the normal recipe overview router', async ({ page }) => {
