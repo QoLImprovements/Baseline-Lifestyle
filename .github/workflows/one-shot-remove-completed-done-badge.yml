@@ -1,0 +1,64 @@
+name: One-shot remove completed Done badge
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/one-shot-remove-completed-done-badge.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Remove redundant Done badge
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('systems/baseline-fitness/js/baseline-fitness-app.js')
+          text = path.read_text(encoding='utf-8')
+
+          old = '<span class="badge">${completed ? \'Done\' : \'Planned\'}</span>'
+          new = '${completed ? \'\' : \'<span class="badge">Planned</span>\'}'
+
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'Expected exactly one completed/planned badge renderer, found {count}')
+
+          text = text.replace(old, new, 1)
+          text = text.replace(
+              "const BUILD = 'BASELINE_FITNESS_COUNTDOWN_LABELS_20260822_1';",
+              "const BUILD = 'BASELINE_FITNESS_COMPLETED_BADGE_20260828_1';",
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify completed cards no longer render Done badge
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('systems/baseline-fitness/js/baseline-fitness-app.js').read_text(encoding='utf-8')
+          assert "completed ? 'Done' : 'Planned'" not in text
+          assert "${completed ? '' : '<span class=\"badge\">Planned</span>'}" in text
+          PY
+
+      - name: Commit patch and remove one-shot workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/one-shot-remove-completed-done-badge.yml
+          git add systems/baseline-fitness/js/baseline-fitness-app.js
+          git diff --cached --check
+          git commit -m "Remove redundant Done badge from completed workouts"
+          git push origin HEAD:main
