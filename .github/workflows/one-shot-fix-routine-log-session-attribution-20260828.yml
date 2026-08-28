@@ -1,20 +1,17 @@
 name: One-shot fix Routine Log session attribution
 
 on:
-  push:
-    paths:
-      - '.github/workflows/one-shot-fix-routine-log-session-attribution-20260828.yml'
+  push: {}
 
 permissions:
   contents: write
 
 jobs:
   fix:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Apply completion attribution fix
+      - name: Apply fix
         shell: bash
         run: |
           python3 <<'PY'
@@ -41,30 +38,19 @@ jobs:
     return workoutContext();
 """
           if old not in app:
-              raise SystemExit('Expected finishCurrentWorkout completion tail was not found; refusing unsafe patch.')
+              raise SystemExit('Expected finishCurrentWorkout completion tail not found')
           app = app.replace(old, new, 1)
-          app = re.sub(
-              r"const BUILD = '[^']+';",
-              "const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';",
-              app,
-              count=1,
-          )
+          app = re.sub(r"const BUILD = '[^']+';", "const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1';", app, count=1)
           app_path.write_text(app, encoding='utf-8')
 
           html = html_path.read_text(encoding='utf-8')
-          html, count = re.subn(
-              r'baseline-fitness-app\.js\?v=[A-Za-z0-9_\-]+',
-              'baseline-fitness-app.js?v=BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1',
-              html,
-              count=1,
-          )
+          html, count = re.subn(r'baseline-fitness-app\.js\?v=[A-Za-z0-9_\-]+', 'baseline-fitness-app.js?v=BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_1', html, count=1)
           if count != 1:
-              raise SystemExit('Could not update baseline-fitness-app.js cache key in baseline-fitness.html.')
+              raise SystemExit('Could not update Fitness app cache key')
           html_path.write_text(html, encoding='utf-8')
 
           workflow_path.unlink()
           PY
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
