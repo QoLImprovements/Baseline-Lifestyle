@@ -5,29 +5,37 @@ import fs from 'node:fs';
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
+const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const recipes = [
-  ['r8', 'testing-shaving-gel', 'Shaving Gel'],
-  ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder'],
-  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel']
+  ['r8', 'testing-shaving-gel', 'Shaving Gel', html],
+  ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder', html],
+  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel', html],
+  ['r11', 'testing-soap-free-powdered-hair-wash', 'Soap-Free Powdered Hair Wash', profiles]
 ];
 
 function recipeOpening(id, slug) {
   return `<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="${slug}" id="${id}">`;
 }
 
-test('Skincare Testing recipes are embedded in the canonical recipe document', () => {
-  for (const [id, slug, title] of recipes) {
-    assert.ok(html.includes(recipeOpening(id, slug)), `missing embedded Testing recipe card ${id}`);
-    assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"`));
-    assert.ok(html.includes(`<h3>${title}</h3>`), `missing recipe title ${title}`);
+test('Skincare Testing recipes are available to the canonical recipe document before shared recipe discovery', () => {
+  for (const [id, slug, title, source] of recipes) {
+    assert.ok(source.includes(recipeOpening(id, slug)), `missing Testing recipe card ${id}`);
+    assert.ok(source.includes(`<h3>${title}</h3>`), `missing recipe title ${title}`);
+    if (source === html) {
+      assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"`));
+    }
   }
+
+  const profilesScript = html.indexOf('/sitewide/js/baseline-ingredient-profiles.js');
+  const sharedScript = html.indexOf('/sitewide/js/baseline-shared.js');
+  assert.ok(profilesScript >= 0 && sharedScript > profilesScript, 'Testing bootstrap must execute before shared recipe discovery');
   assert.doesNotMatch(html, /\/systems\/baseline-natural-skincare\/recipes\/testing-[^"']+\.html/);
   assert.doesNotMatch(html, /#tab=recipes\/testing-/);
 });
 
 test('Testing is a real recipe subcategory rather than a sortable list label', () => {
-  for (const [id, slug] of recipes) {
-    assert.ok(html.includes(recipeOpening(id, slug)), `${id} must declare data-category="Testing"`);
+  for (const [id, slug, _title, source] of recipes) {
+    assert.ok(source.includes(recipeOpening(id, slug)), `${id} must declare data-category="Testing"`);
   }
   assert.match(shared, /const hasCategories = sortedCards\.some/);
   assert.match(shared, /const cat = \(card\.dataset\.category \|\| 'Recipes'\)/);
@@ -49,18 +57,32 @@ test('Recipes and My Routine remain separate section siblings', () => {
 });
 
 test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
-  for (const [id, slug] of recipes) {
+  for (const [id, slug, _title, source] of recipes) {
     const opening = recipeOpening(id, slug);
-    const start = html.indexOf(opening);
+    const start = source.indexOf(opening);
     assert.notEqual(start, -1, `missing opening card for ${id}`);
-    const nextRecipe = html.indexOf('<div class="recipe card recipe-page"', start + opening.length);
-    const block = html.slice(start, nextRecipe === -1 ? undefined : nextRecipe);
+    const nextRecipe = source.indexOf('<div class="recipe card recipe-page"', start + opening.length);
+    const block = source.slice(start, nextRecipe === -1 ? undefined : nextRecipe);
     for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
       assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `${id} missing ${heading}`);
     }
     assert.match(block, /class="recipe-actions"/);
     assert.match(block, /class="print-btn"/);
   }
+});
+
+test('Soap-Free Powdered Hair Wash preserves the testing formulation and immediate-use handling', () => {
+  assert.match(profiles, /75 g <strong>Colloidal Oatmeal<\/strong>/);
+  assert.match(profiles, /15 g <strong>Marshmallow Root Powder<\/strong>/);
+  assert.match(profiles, /5 g <strong>Chicory-Root Inulin<\/strong>/);
+  assert.match(profiles, /5 g <strong>Sunflower Lecithin Powder<\/strong>/);
+  assert.match(profiles, /10 g <strong>Powder Blend<\/strong>/);
+  assert.match(profiles, /20–30 g .*Warm Water/);
+  assert.match(profiles, /0\.5–1 g <strong>Jojoba\/Argan Oil Blend<\/strong>/);
+  assert.match(profiles, /80% <strong>Jojoba Oil<\/strong>/);
+  assert.match(profiles, /20% <strong>Argan Oil<\/strong>/);
+  assert.match(profiles, /Once water has been added, use immediately and discard any remainder\./);
+  assert.match(profiles, /soap free • sulfate free • soapnut free • shikakai free • saponin free • no conventional detergent surfactants/);
 });
 
 test('Natural Skincare navigation keeps public clean URLs instead of implementation-file hashes', () => {
