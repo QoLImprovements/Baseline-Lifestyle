@@ -1,6 +1,6 @@
 /* Baseline Natural Skincare — isolated recipe UX bootstrap 2026-09-06.
    This loader is intentionally separate from the My Routine bootstrap and does
-   not start recipe-only modules until the canonical My Routine stack is ready. */
+   not start recipe-only modules until the parser-loaded My Routine stack is ready. */
 (function(global){
   'use strict';
   if(!global.document || global.__BASELINE_SKINCARE_RECIPE_BOOTSTRAP_20260906__) return;
@@ -16,8 +16,6 @@
     '/systems/baseline-natural-skincare/js/skincare-recipe-finalise-20260906.js?v=RECIPE_FINALISE_20260906_4'
   ];
   var index=0;
-  var routineReadyChecks=0;
-  var MAX_ROUTINE_READY_CHECKS=80;
 
   function next(){
     if(index>=modules.length) return;
@@ -37,20 +35,14 @@
     (document.head||document.documentElement).appendChild(script);
   }
 
-  function startWhenRoutineReady(){
-    if(global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ && global.BASELINE_RoutineSystem){
-      next();
-      return;
-    }
-    routineReadyChecks+=1;
-    if(routineReadyChecks<MAX_ROUTINE_READY_CHECKS){
-      global.setTimeout(startWhenRoutineReady,25);
-    }
+  function startAfterRoutine(){
+    if(!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) return;
+    next();
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startWhenRoutineReady,{once:true});
+    document.addEventListener('DOMContentLoaded',startAfterRoutine,{once:true});
   }else{
-    startWhenRoutineReady();
+    startAfterRoutine();
   }
 })(typeof window!=='undefined'?window:globalThis);
