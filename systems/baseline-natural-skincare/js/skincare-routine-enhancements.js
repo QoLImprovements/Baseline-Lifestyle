@@ -271,3 +271,18 @@
   else start();
   global.addEventListener('pagehide',()=>recipeObserver?.disconnect(),{ once:true });
 })(typeof window!=='undefined'?window:globalThis);
+
+/* Recipe UX boot is deliberately isolated from the My Routine bootstrap above.
+   It only loads on the Skincare document and never changes routine subtab state. */
+(function (global) {
+  'use strict';
+  const document=global.document;
+  if (!document || document.documentElement.getAttribute('data-app')!=='skin') return;
+  if (global.__BASELINE_SKINCARE_RECIPE_BOOTSTRAP_LOADER_20260906__) return;
+  global.__BASELINE_SKINCARE_RECIPE_BOOTSTRAP_LOADER_20260906__=true;
+  const script=document.createElement('script');
+  script.src='/systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js?v=RECIPE_BOOTSTRAP_20260906_2';
+  script.async=false;
+  script.setAttribute('data-skincare-recipe-bootstrap-20260906','true');
+  document.head.appendChild(script);
+})(typeof window!=='undefined'?window:globalThis);
