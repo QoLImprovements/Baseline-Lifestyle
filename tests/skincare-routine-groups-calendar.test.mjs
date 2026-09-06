@@ -30,8 +30,8 @@ test('Skincare identifies the exact My Routine panel before body paint',() => {
 test('Skincare has one controlled group/calendar renderer and recipe UX cannot race it',() => {
   assert.match(loader,/canonical My Routine bootstrap v35/);
   assert.match(loader,/skincare-routine-sitewide-v5\.js/);
-  assert.doesNotMatch(loader,/skincare-recipe-bootstrap-20260906|skincare-recipe-navigation-20260906/);
-  assert.doesNotMatch(loader,/skincare-routine-sitewide-v4\.js|skincare-routine-group-ui|state-bridge/);
+  assert.match(loader,/skincare-recipe-bootstrap-20260906\.js/);
+  assert.doesNotMatch(loader,/skincare-recipe-navigation-20260906|skincare-recipe-ux-20260906|skincare-routine-sitewide-v4\.js|skincare-routine-group-ui|state-bridge/);
   assert.match(sitewide,/UI\.observe\(root,patch\)/);
   assert.doesNotMatch(sitewide,/skincare-recipe-|sitewide-v5-core|new MutationObserver|setInterval|Loading My Routine/);
 
