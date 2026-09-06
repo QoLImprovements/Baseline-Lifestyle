@@ -20,6 +20,9 @@
   ];
 
   var index = 0;
+  var routineReadyChecks = 0;
+  var MAX_ROUTINE_READY_CHECKS = 80;
+
   function next() {
     if (index >= scripts.length) return;
     var script = document.createElement('script');
@@ -29,12 +32,16 @@
     script.onerror = next;
     (document.head || document.documentElement).appendChild(script);
   }
+
   function start() {
-    if (!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) {
-      global.setTimeout(start, 0);
+    if (global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ && global.BASELINE_RoutineSystem) {
+      next();
       return;
     }
-    next();
+    routineReadyChecks += 1;
+    if (routineReadyChecks < MAX_ROUTINE_READY_CHECKS) {
+      global.setTimeout(start, 25);
+    }
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
