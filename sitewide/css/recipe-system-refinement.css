@@ -1,0 +1,153 @@
+/* Baseline Lifestyle — Recipe System Refinement */
+
+/* Variant choice is a compact segmented selector rather than a dropdown. */
+#recipes .recipe-variant-field--segmented{
+  display:flex;
+  flex:1 1 100%;
+  min-width:0;
+}
+
+#recipes .recipe-variant-select-source{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  margin:-1px !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  clip:rect(0 0 0 0) !important;
+  clip-path:inset(50%) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+  pointer-events:none !important;
+}
+
+#recipes .recipe-variant-segments{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+  width:max-content;
+  max-width:100%;
+  padding:4px;
+  border:1px solid var(--border);
+  border-radius:16px;
+  background:transparent;
+}
+
+#recipes .recipe-variant-segment{
+  appearance:none;
+  border:1px solid transparent;
+  border-radius:12px;
+  background:transparent;
+  color:var(--ink);
+  padding:8px 12px;
+  min-height:38px;
+  font:inherit;
+  font-weight:760;
+  line-height:1.15;
+  cursor:pointer;
+}
+
+#recipes .recipe-variant-segment:hover{
+  border-color:var(--border);
+  background:var(--filter-bg);
+}
+
+#recipes .recipe-variant-segment[aria-pressed="true"]{
+  border-color:var(--showall-border);
+  background:var(--showall-bg);
+  color:var(--accent-2);
+  box-shadow:0 8px 18px -16px rgba(0,0,0,.5);
+}
+
+#recipes .recipe-variant-segment:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 4px var(--ring);
+}
+
+/* Details is now a real view. The base layer remains conservative; this
+   refinement makes the grouped technical content visible in Details and Show All. */
+#recipes .recipe-page[data-recipe-view="details"] [data-recipe-view-group="details"],
+#recipes .recipe-page[data-recipe-view="show-all"] [data-recipe-view-group="details"]{
+  display:revert !important;
+}
+
+/* Keep slider value, range and explanation visually connected. */
+#recipes .recipe-universal-template .glide-controller{
+  gap:10px !important;
+  align-items:start;
+  margin-top:10px;
+  margin-bottom:12px;
+}
+
+#recipes .recipe-universal-template .glide-control-main{
+  display:grid;
+  gap:5px;
+  min-width:0;
+}
+
+#recipes .recipe-universal-template .glide-slider-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin:0;
+}
+
+#recipes .recipe-universal-template .glide-label{
+  min-width:0;
+  font-weight:800;
+}
+
+#recipes .recipe-universal-template .glide-readout{
+  margin:0;
+  text-align:right;
+  font-weight:800;
+  line-height:1.25;
+}
+
+#recipes .recipe-universal-template .glide-slider-wrap{
+  margin:0;
+  padding:0;
+}
+
+#recipes .recipe-universal-template .glide-scale{
+  margin-top:1px;
+  gap:12px;
+}
+
+#recipes .recipe-universal-template .glide-control-explainer{
+  margin:0 !important;
+  padding:8px 0 0 !important;
+  border-top:1px solid var(--border);
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+#recipes .recipe-universal-template .glide-explain-title{
+  margin:0 0 2px 0;
+}
+
+#recipes .recipe-universal-template .glide-explain{
+  margin:0 0 4px 0;
+}
+
+#recipes .recipe-universal-template .glide-breakdown{
+  margin-top:4px;
+}
+
+@media (max-width:640px){
+  #recipes .recipe-variant-segments{
+    width:100%;
+  }
+  #recipes .recipe-variant-segment{
+    flex:1 1 120px;
+  }
+  #recipes .recipe-universal-template .glide-slider-head{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:3px;
+  }
+  #recipes .recipe-universal-template .glide-readout{
+    text-align:left;
+  }
+}
