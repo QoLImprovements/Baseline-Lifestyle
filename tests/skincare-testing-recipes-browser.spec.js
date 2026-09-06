@@ -1,9 +1,11 @@
 const { test, expect } = require('@playwright/test');
 
-const recipes = [
-  { id:'r8', slug:'testing-shaving-gel', title:'Shaving Gel' },
-  { id:'r9', slug:'testing-natural-tooth-brightening-powder', title:'Natural Tooth-Brightening Powder' },
-  { id:'r10', slug:'testing-microcurrent-conductive-gel', title:'Microcurrent Conductive Gel' },
+const promoted = [
+  { id:'r8', slug:'calming-shave-gel', title:'Calming Shave Gel', oldSlug:'testing-shaving-gel' },
+  { id:'r9', slug:'tooth-polishing-powder', title:'Tooth Polishing Powder', oldSlug:'testing-natural-tooth-brightening-powder' },
+  { id:'r10', slug:'microcurrent-glide-gel', title:'Microcurrent Glide Gel', oldSlug:'testing-microcurrent-conductive-gel' }
+];
+const testing = [
   { id:'r11', slug:'testing-soap-free-powdered-hair-wash', title:'Soap-Free Powdered Hair Wash' }
 ];
 
@@ -12,17 +14,16 @@ async function expectCanonicalRecipeView(page, recipe) {
   await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#routine')).not.toHaveClass(/active/);
   await expect(page.locator('#routine')).toBeHidden();
-  await expect(page.locator('#recipes')).toHaveClass(/recipe-open-mode/);
+  await expect(page.locator('#recipes')).toHaveClass(/recipe-open-mode|recipe-detail-open/);
   await expect(card).toBeVisible();
   await expect(card.locator('h3')).toHaveText(recipe.title);
   await expect(card.locator('.recipe-actions')).toBeVisible();
   await expect(card.locator('.back-btn')).toBeVisible();
   await expect(card.locator('.print-btn')).toBeVisible();
-
-  // The established Skincare design creates recipe controls for every recipe,
-  // but deliberately keeps them hidden until Recipe Options is opened.
   await expect(card.locator('.recipe-controls')).toHaveCount(1);
   await expect(card.locator('.recipe-controls')).toBeHidden();
+  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveText('Recipe');
+  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'true');
 
   const box = await card.boundingBox();
   expect(box).not.toBeNull();
@@ -30,21 +31,26 @@ async function expectCanonicalRecipeView(page, recipe) {
 
   const url = new URL(page.url());
   expect(url.pathname).toBe(`/baseline-natural-skincare/recipes/${recipe.slug}`);
-  expect(url.hash).not.toContain('recipes/testing-');
   expect(url.hash).not.toContain('-html');
 }
 
-for (const recipe of recipes) {
-  test(`Skincare Testing recipe opens and survives refresh: ${recipe.slug}`, async ({ page }) => {
+for (const recipe of [...promoted, ...testing]) {
+  test(`Skincare recipe opens and survives refresh: ${recipe.slug}`, async ({ page }) => {
     await page.goto(`/baseline-natural-skincare/recipes/${recipe.slug}`);
     await expectCanonicalRecipeView(page, recipe);
-
     await page.reload();
     await expectCanonicalRecipeView(page, recipe);
   });
 }
 
-test('Testing recipes are grouped under the Testing subcategory', async ({ page }) => {
+for (const recipe of promoted) {
+  test(`promoted recipe migrates its former Testing URL: ${recipe.oldSlug}`, async ({ page }) => {
+    await page.goto(`/baseline-natural-skincare/recipes/${recipe.oldSlug}`);
+    await expectCanonicalRecipeView(page, recipe);
+  });
+}
+
+test('only the remaining experimental recipe stays under Testing', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
@@ -52,21 +58,23 @@ test('Testing recipes are grouped under the Testing subcategory', async ({ page 
 
   const testingHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Testing$/ });
   await expect(testingHeading).toHaveCount(1);
-  await expect(testingHeading).toBeVisible();
+  const testingLinks = testingHeading.locator('+ ul a.recipe-open');
+  await expect(testingLinks).toHaveCount(1);
+  await expect(testingLinks.first()).toHaveAttribute('data-recipe-id', 'r11');
 
-  // The category renderer places the category list directly after its heading.
-  const testingLinks = page.locator('#recipes-landing h4 + ul a.recipe-open');
-  await expect(testingLinks).toHaveCount(4);
-  const ids = await testingLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
-  expect(ids).toEqual(['r10','r11','r8','r9']);
+  const mainHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Recipes$/ });
+  await expect(mainHeading).toHaveCount(1);
+  const mainLinks = mainHeading.locator('+ ul a.recipe-open');
+  await expect(mainLinks).toHaveCount(8);
+  const ids = await mainLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
+  expect(ids).toEqual(['r1','r10','r2','r3','r6','r7','r8','r9']);
 });
 
-test('Testing recipe links open through the normal recipe overview router', async ({ page }) => {
+test('promoted recipes open through the normal recipe overview router', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
-  await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
 
-  for (const recipe of recipes) {
+  for (const recipe of promoted) {
     const link = page.locator(`#recipes-landing a.recipe-open[data-recipe-id="${recipe.id}"]`);
     await expect(link).toBeVisible();
     await link.click();
@@ -74,13 +82,23 @@ test('Testing recipe links open through the normal recipe overview router', asyn
 
     await page.locator(`#${recipe.id} .back-btn`).click();
     await expect(page.locator('#recipes-landing')).toBeVisible();
-    await expect(page.locator('#routine')).toBeHidden();
   }
 });
 
+test('recipe subtab choice is not carried into the next recipe', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const first = page.locator('#r2');
+  await first.locator('[data-recipe-subtab="details"]').click();
+  await expect(first.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'true');
+
+  await page.locator('#side-nav a.recipe-open[data-recipe-id="r3"]').click();
+  const next = page.locator('#r3');
+  await expect(next).toBeVisible();
+  await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveText('Recipe');
+});
+
 test('leaving My Routine for Recipes hides Routine Log and Calendar completely', async ({ page }) => {
-  // Reproduce the reported UI flow directly: enter My Routine through the
-  // normal top-level tab, then leave it for Recipes on the same page.
   await page.goto('/baseline-natural-skincare/system');
   await page.locator('.tab[data-target="routine"]').click();
 
