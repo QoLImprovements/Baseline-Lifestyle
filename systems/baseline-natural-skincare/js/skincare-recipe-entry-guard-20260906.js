@@ -13,7 +13,10 @@
     recipe.querySelectorAll(':scope > .recipe-subtabs .recipe-subtab').forEach(button=>{
       const selected=button.dataset.recipeSubtab===next;
       button.setAttribute('aria-selected',selected?'true':'false');
-      if(button.dataset.recipeSubtab==='standard') button.textContent='Recipes';
+      if(button.dataset.recipeSubtab==='standard'){
+        button.textContent='Recipe';
+        button.setAttribute('aria-label','Recipe');
+      }
     });
     recipe.querySelectorAll('[data-recipe-view-group]').forEach(el=>{
       const group=String(el.dataset.recipeViewGroup || '');
@@ -37,8 +40,10 @@
   function resetCurrent(){ const recipe=currentOpenRecipe(); if(recipe) reset(recipe); }
 
   function initialise(){
-    document.querySelectorAll('#recipes .recipe-page').forEach(recipe=>applyView(recipe,recipe.dataset.recipeView || 'standard'));
-    global.setTimeout(resetCurrent,0);
+    /* Recipe subtabs are deliberately ephemeral. Never restore a previous
+       Details/Guidance/Show All selection when a recipe is entered again. */
+    document.querySelectorAll('#recipes .recipe-page').forEach(recipe=>reset(recipe));
+    resetCurrent();
   }
 
   document.addEventListener('click',event=>{
@@ -52,6 +57,4 @@
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initialise,{once:true});
   else initialise();
-  global.setTimeout(initialise,180);
-  global.setTimeout(initialise,700);
 })(typeof window!=='undefined'?window:globalThis);
