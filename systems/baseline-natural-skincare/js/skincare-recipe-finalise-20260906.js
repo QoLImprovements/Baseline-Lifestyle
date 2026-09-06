@@ -47,8 +47,8 @@
   }
   function setTabs(){
     document.querySelectorAll('#recipes .recipe-subtab[data-recipe-subtab="standard"]').forEach(function(button){
-      button.textContent='Recipes';
-      button.setAttribute('aria-label','Recipes');
+      button.textContent='Recipe';
+      button.setAttribute('aria-label','Recipe');
     });
   }
   function setSliderCopy(){
