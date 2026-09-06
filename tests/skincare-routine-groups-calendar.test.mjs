@@ -37,8 +37,9 @@ test('Skincare has one controlled group/calendar renderer and recipe UX cannot r
 
   assert.match(recipeBootstrap,/__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
   assert.match(recipeBootstrap,/global\.BASELINE_RoutineSystem/);
-  assert.match(recipeBootstrap,/startWhenRoutineReady/);
-  assert.doesNotMatch(recipeBootstrap,/routine-subtab|data-routine-view|data-routine-panel|skincare-routine-sitewide-v5\.js/);
+  assert.match(recipeBootstrap,/startAfterRoutine/);
+  assert.match(recipeBootstrap,/DOMContentLoaded/);
+  assert.doesNotMatch(recipeBootstrap,/setInterval|setTimeout|routine-subtab|data-routine-view|data-routine-panel|skincare-routine-sitewide-v5\.js/);
 });
 
 test('My Routine subtabs retain their own canonical labels',() => {
