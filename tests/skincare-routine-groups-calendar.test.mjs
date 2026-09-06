@@ -6,6 +6,7 @@ import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const html=readFileSync(resolve(root,'systems/baseline-natural-skincare/baseline-natural-skincare.html'),'utf8');
 const loader=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'),'utf8');
+const recipeBootstrap=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js'),'utf8');
 const routine=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine.js'),'utf8');
 const sitewide=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js'),'utf8');
 const coherence=readFileSync(resolve(root,'sitewide/js/baseline-routine-coherence-v12.js'),'utf8');
@@ -26,11 +27,24 @@ test('Skincare identifies the exact My Routine panel before body paint',() => {
   assert.ok(routine.indexOf('loadLocalState();')<routine.indexOf('await loadRemoteState()'));
 });
 
-test('Skincare has one controlled group/calendar renderer',() => {
+test('Skincare has one controlled group/calendar renderer and recipe UX cannot race it',() => {
+  assert.match(loader,/canonical My Routine bootstrap v35/);
   assert.match(loader,/skincare-routine-sitewide-v5\.js/);
+  assert.doesNotMatch(loader,/skincare-recipe-bootstrap-20260906|skincare-recipe-navigation-20260906/);
   assert.doesNotMatch(loader,/skincare-routine-sitewide-v4\.js|skincare-routine-group-ui|state-bridge/);
   assert.match(sitewide,/UI\.observe\(root,patch\)/);
-  assert.doesNotMatch(sitewide,/new MutationObserver|setInterval|Loading My Routine/);
+  assert.doesNotMatch(sitewide,/skincare-recipe-|sitewide-v5-core|new MutationObserver|setInterval|Loading My Routine/);
+
+  assert.match(recipeBootstrap,/__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
+  assert.match(recipeBootstrap,/global\.BASELINE_RoutineSystem/);
+  assert.match(recipeBootstrap,/startWhenRoutineReady/);
+  assert.doesNotMatch(recipeBootstrap,/routine-subtab|data-routine-view|data-routine-panel|skincare-routine-sitewide-v5\.js/);
+});
+
+test('My Routine subtabs retain their own canonical labels',() => {
+  for (const [view,label] of [['log','Routine Log'],['summary','Routine Summary'],['plan','Routine Plan'],['public','Public Routines']]) {
+    assert.match(html,new RegExp(`data-routine-view="${view}"[^>]*>${label}<\\/button>`));
+  }
 });
 
 test('Routine Summary remains the comprehensive shared template with session-side filtering',() => {
