@@ -1,10 +1,11 @@
 const { test, expect } = require('@playwright/test');
 
-async function expectUniversalTabs(card) {
+async function expectUniversalTabs(card, standardLabel = 'Standard View') {
   const tabs = card.locator('.recipe-subtabs');
   await expect(tabs).toBeVisible();
   await expect(tabs.locator('.recipe-subtab')).toHaveCount(4);
   await expect(tabs.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(tabs.locator('[data-recipe-subtab="standard"]')).toHaveText(standardLabel);
   await expect(tabs.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'false');
   await expect(tabs.locator('[data-recipe-subtab="guidance"]')).toHaveAttribute('aria-selected', 'false');
   await expect(tabs.locator('[data-recipe-subtab="show-all"]')).toHaveAttribute('aria-selected', 'false');
@@ -51,25 +52,34 @@ async function expectAdjustmentsContract(card) {
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 }
 
-test('Skincare universal recipe keeps variants and formula sliders in Standard View', async ({ page }) => {
+test('Skincare recipe uses segmented variants and compact explanatory sliders in Recipe view', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend');
   const card = page.locator('#r6');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
-  await expectUniversalTabs(card);
+  await expectUniversalTabs(card, 'Recipe');
 
-  const variant = card.locator('.recipe-variant-field select');
-  await expect(variant).toBeVisible();
-  await expect(variant).not.toHaveValue('');
+  const variants = card.locator('.variant-switcher .variant-tab');
+  await expect(variants).toHaveCount(2);
+  await expect(variants.filter({ hasText:/^Olive Blend$/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(card.locator('.recipe-variant-field')).toHaveCount(0);
   await expect(card.locator('.glide-controller').first()).toBeVisible();
-  await expect(card.locator('.recipe-slider-instruction').first()).toHaveText('Adjust slider to preference.');
+  await expect(card.locator('.recipe-slider-instruction').first()).toBeHidden();
+  await expect(card.locator('.glide-variable-help').first()).toBeVisible();
+  await expect(card.locator('.glide-value-bubble').first()).toBeVisible();
+  await expect(card.locator('.slider-save-btn').filter({ hasText:'Save as my setting' }).first()).toBeVisible();
+  await expect(card.locator('.slider-default-btn').filter({ hasText:'Reset to recipe default' }).first()).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
 
   await card.locator('[data-recipe-subtab="details"]').click();
   await expect(card.locator('h4').filter({ hasText: /^Ingredients$/ }).first()).toBeHidden();
   await expect(card.locator('.glide-controller').first()).toBeHidden();
-  await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
+  await expect(card.locator('.recipe-details-intro')).toBeVisible();
+  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Purpose$/ })).toBeVisible();
+  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Design Rationale$/ })).toBeVisible();
+  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Variables & Fixed Elements$/ })).toBeVisible();
+  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Boundaries$/ })).toBeVisible();
 
   await card.locator('[data-recipe-subtab="guidance"]').click();
   await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
@@ -78,14 +88,15 @@ test('Skincare universal recipe keeps variants and formula sliders in Standard V
   await card.locator('[data-recipe-subtab="show-all"]').click();
   await expect(card.getByRole('heading', { name: /^Method$/i }).first()).toBeVisible();
   await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
-  await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
+  await expect(card.locator('.recipe-details-intro')).toBeVisible();
 });
 
-test('Protective balm removes the old slider prose and uses the shared slider instruction', async ({ page }) => {
+test('Protective balm removes generic slider prose and explains each variable beside the control', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const card = page.locator('#r3');
   await expect(card).toBeVisible();
-  await expect(card.locator('.recipe-slider-instruction').first()).toHaveText('Adjust slider to preference.');
+  await expect(card.locator('.recipe-slider-instruction').first()).toBeHidden();
+  await expect(card.locator('.glide-variable-help')).toHaveCount(2);
   await expect(card.getByText(/One batch; the sliders change the overall feel/i)).toBeHidden();
 });
 
@@ -94,7 +105,7 @@ test('Food oat type is a Standard View recipe choice, not an Adjustment', async 
   const card = page.locator('#r4');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
-  await expectUniversalTabs(card);
+  await expectUniversalTabs(card, 'Standard View');
   await expect(card.locator('.recipe-formula-controls .oat-toggle')).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
@@ -150,25 +161,25 @@ test('numeric Yield updates when Batch is changed', async ({ page }) => {
   await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('200 g');
 });
 
-test('Details subtab is intentionally empty in both recipe systems', async ({ page }) => {
-  const recipes = [
-    ['/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel', '#r10'],
-    ['/baseline-food-approach/recipes/tomato-and-red-pepper-sauce', '#r10'],
-  ];
+test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel');
+  const skin = page.locator('#r10');
+  await expect(skin).toBeVisible();
+  await skin.locator('[data-recipe-subtab="details"]').click();
+  await expect(skin.locator('.recipe-details-intro')).toBeVisible();
+  await expect(skin.locator('.recipe-detail-block')).toHaveCount(6);
+  await skin.locator('[data-recipe-subtab="show-all"]').click();
+  await expect(skin.locator('.recipe-details-intro')).toBeVisible();
 
-  for (const [url, selector] of recipes) {
-    await page.goto(url);
-    const card = page.locator(selector);
-    await expect(card).toBeVisible();
-    await card.locator('[data-recipe-subtab="details"]').click();
-    await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
-    await card.locator('[data-recipe-subtab="show-all"]').click();
-    await expect(card.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
-  }
+  await page.goto('/baseline-food-approach/recipes/tomato-and-red-pepper-sauce');
+  const food = page.locator('#r10');
+  await expect(food).toBeVisible();
+  await food.locator('[data-recipe-subtab="details"]').click();
+  await expect(food.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
 });
 
 test('system-specific recipe themes remain owned by the active system', async ({ page }) => {
-  await page.goto('/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel');
+  await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel');
   const skinCard = page.locator('#r10');
   await expect(skinCard).toBeVisible();
   const skinApp = await page.locator('body').getAttribute('data-app');
