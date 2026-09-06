@@ -25,7 +25,7 @@
       const style=document.createElement('style');style.id='baseline-skincare-slider-cleanup-style';
       style.textContent=`
         #recipes .recipe-slider-instruction{display:none!important}
-        #recipes .glide-controller{grid-template-columns:minmax(0,1.35fr) minmax(280px,.95fr)!important}
+        #recipes .glide-controller{grid-template-columns:minmax(280px,380px) minmax(0,1fr)!important}
         #recipes .glide-label,
         #recipes .glide-readout,
         #recipes .glide-value-bubble,
