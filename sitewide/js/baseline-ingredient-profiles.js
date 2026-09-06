@@ -196,10 +196,10 @@
     }),
 
     "ing-dead-sea-salt": withDerived({
-    label: "Dead Sea salt",
-    g_per_tsp: 6.0,
-    notes: "Practical fine-crystal estimate; crystal size and packing can change spoon weight, so gram measurements remain preferred for precise cosmetic batches."
-  }),
+      label: "Dead Sea salt",
+      g_per_tsp: 6.0,
+      notes: "Practical fine-crystal estimate; crystal size and packing can change spoon weight, so gram measurements remain preferred for precise cosmetic batches."
+    }),
 
     "ing-sea-salt": withDerived({
       label: "Sea salt / salt",
@@ -373,11 +373,11 @@
 
     /* Carrier oils */
     "ing-safflower": withDerived({
-    label: "Safflower oil",
-    g_per_ml: 0.92,
-    notes: "Carrier-oil conversion; practical density varies slightly by cultivar, processing and temperature."
-  }),
-  "ing-olive": withDerived({
+      label: "Safflower oil",
+      g_per_ml: 0.92,
+      notes: "Carrier-oil conversion; practical density varies slightly by cultivar, processing and temperature."
+    }),
+    "ing-olive": withDerived({
       label: "Olive oil",
       g_per_ml: 0.91
     }),
@@ -453,10 +453,15 @@
     "ing-guar-gum": withDerived({
       label: "Guar gum powder",
       g_per_tsp: 3.0,
-      notes: "Extremely variable; small doses are hard to weigh precisely."
+      notes: "Practical level-spoon anchor: 1 tsp ≈ 3.0 g. Weigh grams for the most repeatable gel texture."
     }),
 
     /* Salts / household */
+    "ing-dead-sea-salt": withDerived({
+      label: "Dead Sea salt",
+      g_per_tsp: 6.0,
+      notes: "Practical fine-crystal estimate; crystal size and packing can change spoon weight, so gram measurements remain preferred for precise cosmetic batches."
+    }),
     "ing-epsom": withDerived({
       label: "Epsom salt",
       g_per_tbsp: 15,
@@ -481,4 +486,108 @@
     food: FOOD,
     skin: SKIN
   };
+
+  /* Testing Shaving Gel (r8): promote guar from an open-ended instruction to a
+     real formula value while retaining a user-adjustable gel-thickness range.
+     This script is loaded after the recipe markup and before baseline-shared.js,
+     so the shared batch/conversion engine sees the generated amount element. */
+  function enhanceTestingShaveGel(){
+    const recipe = document.getElementById("r8");
+    if(!recipe || recipe.dataset.guargelReady === "1") return;
+
+    const guarLink = recipe.querySelector('a.ing-link[data-ingredient="ing-guar-gum"]');
+    if(!guarLink) return;
+    const guarLi = guarLink.closest("li");
+    if(!guarLi) return;
+
+    recipe.dataset.guargelReady = "1";
+    guarLink.textContent = "Guar Gum";
+
+    const guarAmt = document.createElement("span");
+    guarAmt.className = "amt r8-thickness-guar-amt";
+    guarAmt.dataset.baseDisplay = "3.0 g";
+    guarAmt.dataset.baseMin = "3";
+    guarAmt.dataset.baseMax = "3";
+    guarAmt.dataset.baseUnit = "g";
+    guarAmt.textContent = "3.0 g";
+    guarLi.replaceChildren(guarAmt, document.createTextNode(" "), guarLink);
+    guarLi.dataset.tip = "Creates a true gel structure. The slider stays within a gel-oriented range rather than dropping to a merely thickened liquid.";
+
+    const controller = document.createElement("div");
+    controller.className = "glide-controller";
+    controller.setAttribute("aria-label", "Shaving gel thickness control");
+    controller.innerHTML = [
+      '<div class="glide-control-main">',
+      '<div class="glide-slider-head">',
+      '<div class="glide-label">Thickness</div>',
+      '<div class="glide-readout"><span class="r8-thickness-grams">3.0</span> g guar • <span class="r8-thickness-percent">1.25</span>%</div>',
+      '</div>',
+      '<div class="glide-slider-wrap"><input aria-describedby="r8ThicknessExplain r8ThicknessBreakdown" aria-label="Shaving gel guar gum thickness" class="glide-slider" id="r8Thickness" max="1.6" min="0.8" step="0.05" type="range" value="1.25"/></div>',
+      '<div class="glide-scale"><span>Lesser thickness — soft gel</span><span>Greater thickness — firm gel</span></div>',
+      '</div>',
+      '<div class="glide-control-explainer">',
+      '<div class="glide-explain-title">Gel Texture</div>',
+      '<p class="glide-explain" id="r8ThicknessExplain">Full gel consistency: structured and cushioning without making the default excessively firm.</p>',
+      '<div class="glide-breakdown" id="r8ThicknessBreakdown"><strong>Current batch:</strong> 240 ml water • 2 tbsp slippery elm • 5 ml glycerin • 3.0 g guar (about 1 level tsp) • 1.25 ml jojoba.</div>',
+      '</div>'
+    ].join("");
+
+    const infoLink = recipe.querySelector(".info-link");
+    const ingredientsHeading = Array.from(recipe.querySelectorAll("h4")).find(function(el){
+      return String(el.textContent || "").trim().toLowerCase() === "ingredients";
+    });
+    if(infoLink) infoLink.insertAdjacentElement("afterend", controller);
+    else if(ingredientsHeading) ingredientsHeading.insertAdjacentElement("beforebegin", controller);
+    else recipe.insertBefore(controller, recipe.firstChild);
+
+    const slider = controller.querySelector("#r8Thickness");
+    const gramsEls = controller.querySelectorAll(".r8-thickness-grams");
+    const percentEls = controller.querySelectorAll(".r8-thickness-percent");
+    const explainEl = controller.querySelector("#r8ThicknessExplain");
+    const breakdownEl = controller.querySelector("#r8ThicknessBreakdown");
+
+    function fmt(value, digits){
+      const n = Number(value);
+      if(!Number.isFinite(n)) return "0";
+      const places = typeof digits === "number" ? digits : 2;
+      return n.toFixed(places).replace(/\.0+$|(?<=\.[0-9]*?)0+$/g, "").replace(/\.$/, "");
+    }
+
+    function textureText(percent){
+      if(percent <= 0.95) return "Soft gel: still a proper gel, but easier-spreading and less firm.";
+      if(percent < 1.4) return "Full gel consistency: structured and cushioning without making the default excessively firm.";
+      return "Firm gel: denser, more structured and more resistant to running during shaving.";
+    }
+
+    function syncThickness(){
+      const percent = Number(slider.value || 1.25);
+      const grams = 240 * (percent / 100);
+      const tsp = grams / 3.0;
+      const gramsText = fmt(grams, 2);
+      const percentText = fmt(percent, 2);
+      const tspText = fmt(tsp, 2);
+
+      guarAmt.dataset.baseDisplay = gramsText + " g";
+      guarAmt.dataset.baseMin = String(grams);
+      guarAmt.dataset.baseMax = String(grams);
+      guarAmt.dataset.baseUnit = "g";
+      guarAmt.textContent = gramsText + " g";
+
+      gramsEls.forEach(function(el){ el.textContent = gramsText; });
+      percentEls.forEach(function(el){ el.textContent = percentText; });
+      if(explainEl) explainEl.textContent = textureText(percent);
+      if(breakdownEl){
+        breakdownEl.innerHTML = '<strong>Current batch:</strong> 240 ml water • 2 tbsp slippery elm • 5 ml glycerin • ' + gramsText + ' g guar (about ' + tspText + ' tsp) • 1.25 ml jojoba.';
+      }
+
+      if(typeof recipe.__baselineApplyScaling === "function") recipe.__baselineApplyScaling();
+    }
+
+    slider.addEventListener("input", syncThickness);
+    slider.addEventListener("change", syncThickness);
+    syncThickness();
+  }
+
+  if(document.body) enhanceTestingShaveGel();
+  else document.addEventListener("DOMContentLoaded", enhanceTestingShaveGel, { once:true });
 })();
