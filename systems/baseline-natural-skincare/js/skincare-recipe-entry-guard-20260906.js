@@ -13,7 +13,7 @@
     recipe.querySelectorAll(':scope > .recipe-subtabs .recipe-subtab').forEach(button=>{
       const selected=button.dataset.recipeSubtab===next;
       button.setAttribute('aria-selected',selected?'true':'false');
-      if(button.dataset.recipeSubtab==='standard') button.textContent='Recipe';
+      if(button.dataset.recipeSubtab==='standard') button.textContent='Recipes';
     });
     recipe.querySelectorAll('[data-recipe-view-group]').forEach(el=>{
       const group=String(el.dataset.recipeViewGroup || '');
