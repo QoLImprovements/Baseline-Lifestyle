@@ -44,3 +44,17 @@
     keys,
   };
 })(window);
+
+/* Skincare-only recipe UX module. Kept out of the shared bundle and loaded only on the skincare app. */
+(function(scope){
+  'use strict';
+  try{
+    if(!scope.document || scope.document.documentElement.getAttribute('data-app') !== 'skin') return;
+    if(scope.document.querySelector('script[data-skincare-recipe-ux-20260906]')) return;
+    const script=scope.document.createElement('script');
+    script.src='/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=SKINCARE_RECIPE_UX_20260906_1';
+    script.async=false;
+    script.setAttribute('data-skincare-recipe-ux-20260906','true');
+    scope.document.head.appendChild(script);
+  }catch(_e){}
+})(window);
