@@ -23,7 +23,22 @@
     });
     if(!document.getElementById('baseline-skincare-slider-cleanup-style')){
       const style=document.createElement('style');style.id='baseline-skincare-slider-cleanup-style';
-      style.textContent='#recipes .glide-controller{grid-template-columns:minmax(0,1fr)!important}#recipes .recipe-slider-instruction{display:none!important}';
+      style.textContent=`
+        #recipes .recipe-slider-instruction{display:none!important}
+        #recipes .glide-controller{grid-template-columns:minmax(0,1.35fr) minmax(280px,.95fr)!important}
+        #recipes .glide-label,
+        #recipes .glide-readout,
+        #recipes .glide-value-bubble,
+        #recipes .glide-scale,
+        #recipes .glide-scale small,
+        #recipes .glide-variable-help,
+        #recipes .glide-explain-title,
+        #recipes .glide-explain,
+        #recipes .glide-breakdown{font-size:1em!important}
+        @media (max-width:900px){
+          #recipes .glide-controller{grid-template-columns:1fr!important}
+        }
+      `;
       document.head.appendChild(style);
     }
   }
