@@ -21,6 +21,7 @@
       const slider=document.getElementById(id);const heading=slider?.closest('.glide-control-main')?.querySelector('.glide-label');
       if(heading) heading.textContent=label;
     });
+    document.querySelectorAll('#r6 .variant-panel > h4 + ul > .ing-subhead').forEach(el=>el.remove());
     if(!document.getElementById('baseline-skincare-slider-cleanup-style')){
       const style=document.createElement('style');style.id='baseline-skincare-slider-cleanup-style';
       style.textContent=`
@@ -35,6 +36,16 @@
         #recipes .glide-explain-title,
         #recipes .glide-explain,
         #recipes .glide-breakdown{font-size:1em!important}
+        #recipes .card .card{
+          border:2px solid var(--border-2,var(--border))!important;
+          box-shadow:var(--shadow)!important;
+        }
+        #recipes .glide-explain,
+        #recipes .glide-breakdown{
+          min-height:3.2em!important;
+          line-height:1.58!important;
+          font-variant-numeric:tabular-nums;
+        }
         @media (max-width:900px){
           #recipes .glide-controller{grid-template-columns:1fr!important}
         }
