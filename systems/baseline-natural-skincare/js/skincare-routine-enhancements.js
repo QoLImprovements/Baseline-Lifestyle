@@ -1,11 +1,42 @@
-/* Baseline Natural Skincare — retained no-op compatibility module.
+/* Baseline Natural Skincare — recipe UX bootstrap compatibility boundary.
 
-   My Routine is owned by skincare-routine.js, skincare-routine-sitewide-v5.js,
-   and the existing shared routine infrastructure. Recipe code is deliberately
-   not loaded or owned from this routine-named file.
+   This file does not own or patch My Routine. The parser-loaded routine stack
+   is allowed to initialise completely before any recipe-only enhancement code
+   is requested. This prevents recipe bootstrapping from racing the canonical
+   My Routine subtab/group/calendar owners.
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_SKINCARE_ROUTINE_ENHANCEMENTS_COMPAT__) return;
-  global.__BASELINE_SKINCARE_ROUTINE_ENHANCEMENTS_COMPAT__ = true;
+  if (!global.document || global.__BASELINE_SKINCARE_RECIPE_UX_BOOTSTRAP_20260906__) return;
+  global.__BASELINE_SKINCARE_RECIPE_UX_BOOTSTRAP_20260906__ = true;
+
+  var document = global.document;
+  var scripts = [
+    '/systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js?v=RECIPE_NAV_20260906_3',
+    '/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=RECIPE_UX_20260906_3',
+    '/systems/baseline-natural-skincare/js/skincare-slider-cleanup-20260906.js?v=SLIDER_CLEANUP_20260906_3',
+    '/systems/baseline-natural-skincare/js/skincare-recipe-entry-guard-20260906.js?v=RECIPE_ENTRY_20260906_3',
+    '/systems/baseline-natural-skincare/js/skincare-recipe-finalise-20260906.js?v=RECIPE_FINALISE_20260906_2'
+  ];
+
+  var index = 0;
+  function next() {
+    if (index >= scripts.length) return;
+    var script = document.createElement('script');
+    script.src = scripts[index++];
+    script.async = false;
+    script.onload = next;
+    script.onerror = next;
+    (document.head || document.documentElement).appendChild(script);
+  }
+  function start() {
+    if (!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) {
+      global.setTimeout(start, 0);
+      return;
+    }
+    next();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once:true });
+  else start();
 })(typeof window !== 'undefined' ? window : globalThis);
