@@ -5,35 +5,78 @@ import fs from 'node:fs';
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
-const recipes = [
-  ['r8', 'testing-shaving-gel', 'Shaving Gel'],
-  ['r9', 'testing-natural-tooth-brightening-powder', 'Natural Tooth-Brightening Powder'],
-  ['r10', 'testing-microcurrent-conductive-gel', 'Microcurrent Conductive Gel'],
-  ['r11', 'testing-soap-free-powdered-hair-wash', 'Soap-Free Powdered Hair Wash']
+const navigation = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js', 'utf8');
+const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
+
+const promoted = [
+  ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
+  ['r9', 'tooth-polishing-powder', 'Tooth Polishing Powder'],
+  ['r10', 'microcurrent-glide-gel', 'Microcurrent Glide Gel']
 ];
 
-function recipeOpening(id, slug) {
-  return `<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="${slug}" id="${id}">`;
-}
+const redirectCases = [
+  ['testing-shaving-gel.html', '/baseline-natural-skincare/recipes/calming-shave-gel'],
+  ['testing-natural-tooth-brightening-powder.html', '/baseline-natural-skincare/recipes/tooth-polishing-powder'],
+  ['testing-microcurrent-conductive-gel.html', '/baseline-natural-skincare/recipes/microcurrent-glide-gel'],
+  ['hydrating-conductive-mist.html', '/baseline-natural-skincare/recipes/microcurrent-glide-gel']
+];
 
-test('Skincare Testing recipes are embedded in the canonical recipe document', () => {
-  for (const [id, slug, title] of recipes) {
-    assert.ok(html.includes(recipeOpening(id, slug)), `missing embedded Testing recipe card ${id}`);
-    assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"`));
-    assert.ok(html.includes(`<h3>${title}</h3>`), `missing recipe title ${title}`);
+test('promoted skincare recipes are in the main catalogue under permanent names', () => {
+  for (const [id, slug, title] of promoted) {
+    assert.match(navigation, new RegExp(`\\['${id}','${slug}','${title}'`));
   }
-  assert.doesNotMatch(html, /\/systems\/baseline-natural-skincare\/recipes\/testing-[^"']+\.html/);
-  assert.doesNotMatch(html, /#tab=recipes\/testing-/);
+  assert.match(navigation, /Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment\.'/);
+  assert.match(navigation, /Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
+  assert.match(navigation, /const TESTING=\[\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
 });
 
-test('Testing is a real recipe subcategory rather than a sortable list label', () => {
-  for (const [id, slug] of recipes) {
-    assert.ok(html.includes(recipeOpening(id, slug)), `${id} must declare data-category="Testing"`);
+test('promotion logic removes retired competing cards and Testing status', () => {
+  assert.match(recipeUx, /r8:\s*\{\s*slug:'calming-shave-gel',\s*title:'Calming Shave Gel'/);
+  assert.match(recipeUx, /r9:\s*\{\s*slug:'tooth-polishing-powder',\s*title:'Tooth Polishing Powder'/);
+  assert.match(recipeUx, /r10:\s*\{\s*slug:'microcurrent-glide-gel',\s*title:'Microcurrent Glide Gel'/);
+  assert.match(recipeUx, /const REPLACED_IDS = Object\.freeze\(\{ r4:'r10', r5:'r8' \}\)/);
+  assert.match(recipeUx, /recipe\.removeAttribute\('data-category'\)/);
+  assert.match(recipeUx, /\['r4','r5'\]\.forEach/);
+  assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
+  assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
+  assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
+  assert.match(recipeUx, /'testing-natural-tooth-brightening-powder':'r9'/);
+});
+
+test('permanent promoted recipe documents use final titles and formulations', () => {
+  const shave = fs.readFileSync('systems/baseline-natural-skincare/recipes/calming-shave-gel.html', 'utf8');
+  const tooth = fs.readFileSync('systems/baseline-natural-skincare/recipes/tooth-polishing-powder.html', 'utf8');
+  const microcurrent = fs.readFileSync('systems/baseline-natural-skincare/recipes/microcurrent-glide-gel.html', 'utf8');
+
+  assert.match(shave, /<h1>Calming Shave Gel<\/h1>/);
+  assert.match(shave, /Slippery Elm Powder/);
+  assert.match(shave, /Guar Gum/);
+
+  assert.match(tooth, /<h1>Tooth Polishing Powder<\/h1>/);
+  assert.match(tooth, /Kaolin, sage and peppermint powder for occasional surface-stain removal\./);
+  assert.match(tooth, /not a bleaching or peroxide whitening treatment/i);
+
+  assert.match(microcurrent, /<h1>Microcurrent Glide Gel<\/h1>/);
+  assert.match(microcurrent, /Water-based conductive gel with sustained glide for microcurrent treatment\./);
+  assert.match(microcurrent, /Dead Sea Salt/);
+});
+
+test('retired and Testing URLs redirect to permanent promoted URLs', () => {
+  for (const [file, target] of redirectCases) {
+    const redirect = fs.readFileSync(`systems/baseline-natural-skincare/recipes/${file}`, 'utf8');
+    assert.ok(redirect.includes(`window.location.replace('${target}')`), `${file} must redirect to ${target}`);
+    assert.ok(redirect.includes(`href="${target}"`), `${file} must expose the permanent fallback link`);
   }
-  assert.match(shared, /const hasCategories = sortedCards\.some/);
-  assert.match(shared, /const cat = \(card\.dataset\.category \|\| 'Recipes'\)/);
-  assert.match(shared, /if\(cat !== 'Recipes'\)/);
-  assert.match(shared, /a\.dataset\.recipeId = item\.id/);
+});
+
+test('Soap-Free Powdered Hair Wash remains the active Testing recipe', () => {
+  const opening = '<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11">';
+  const start = html.indexOf(opening);
+  assert.notEqual(start, -1, 'missing embedded Testing recipe r11');
+  const block = html.slice(start);
+  for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
+    assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
+  }
 });
 
 test('Recipes and My Routine remain separate section siblings', () => {
@@ -47,21 +90,6 @@ test('Recipes and My Routine remain separate section siblings', () => {
   const recipesBlock = html.slice(recipesStart, ingredientsStart);
   assert.equal((recipesBlock.match(/<section\b/g) || []).length, 1, 'Recipes must contain one section opening');
   assert.equal((recipesBlock.match(/<\/section>/g) || []).length, 1, 'Recipes must contain one matching section close');
-});
-
-test('Every Skincare Testing recipe keeps the standard recipe sections', () => {
-  for (const [id, slug] of recipes) {
-    const opening = recipeOpening(id, slug);
-    const start = html.indexOf(opening);
-    assert.notEqual(start, -1, `missing opening card for ${id}`);
-    const nextRecipe = html.indexOf('<div class="recipe card recipe-page"', start + opening.length);
-    const block = html.slice(start, nextRecipe === -1 ? undefined : nextRecipe);
-    for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
-      assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `${id} missing ${heading}`);
-    }
-    assert.match(block, /class="recipe-actions"/);
-    assert.match(block, /class="print-btn"/);
-  }
 });
 
 test('Natural Skincare navigation keeps public clean URLs instead of implementation-file hashes', () => {
