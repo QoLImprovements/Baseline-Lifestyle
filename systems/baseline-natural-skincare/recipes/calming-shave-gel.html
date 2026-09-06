@@ -7,66 +7,44 @@
 <link href="/sitewide/css/baseline-themes.css" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-sitewide.css" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-recipes.css" rel="stylesheet"/>
-<style>body{margin:0;min-height:100vh;background:linear-gradient(90deg,#b8644d,#e8c1b2 48%,#e8c1b2 52%,#b8644d);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#2b1812}.wrap{max-width:980px;margin:0 auto;padding:28px 18px}.card{background:rgba(247,233,220,.94);border:1px solid rgba(122,74,58,.18);border-radius:22px;padding:24px;box-shadow:0 22px 60px -42px rgba(35,23,19,.55)}a{color:#783a2d;font-weight:750}.note{color:#5f463e}.recipe-actions,.recipe-nav{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.glide-controller{background:rgba(255,255,255,.34);border-radius:16px;padding:14px;margin:10px 0 16px}.glide-slider{width:100%}.glide-scale{display:flex;justify-content:space-between;font-size:.9rem}.ing-subhead{list-style:none;margin-top:12px}</style>
+<style>body{margin:0;min-height:100vh;background:linear-gradient(90deg,#b8644d,#e8c1b2 48%,#e8c1b2 52%,#b8644d);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#2b1812}.wrap{max-width:980px;margin:0 auto;padding:28px 18px}.card{background:rgba(247,233,220,.94);border:1px solid rgba(122,74,58,.18);border-radius:22px;padding:24px;box-shadow:0 22px 60px -42px rgba(35,23,19,.55)}a{color:#783a2d;font-weight:750}.note{color:#5f463e}.recipe-actions,.recipe-nav{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.ing-subhead{list-style:none;margin-top:12px}.details{display:grid;gap:10px;margin:18px 0}.detail{padding:12px 14px;border:1px solid rgba(122,74,58,.16);border-radius:14px;background:rgba(255,255,255,.24)}.detail h2{margin:.1rem 0 .35rem;font-size:1.05rem}.detail p{margin:0}</style>
 <script>function printCard(){window.print();}function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skincare/recipes';}</script>
 </head>
 <body data-app="skin"><main class="wrap">
 <nav class="card recipe-nav"><a href="/baseline-natural-skincare/recipes">Back to Skincare Recipes</a><a href="/baseline-natural-skincare/system">Baseline Natural Skincare</a></nav>
-<!-- Recipe 5 -->
-<div class="recipe card recipe-page is-open" data-recipe-slug="calming-shave-gel" id="r5">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r5')" type="button">Print This Recipe</button>
-</div>
+<div class="recipe card recipe-page is-open" data-recipe-slug="calming-shave-gel" id="r8">
+<div class="recipe-actions"><button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button><button class="print-btn" onclick="printCard()" type="button">Print This Recipe</button></div>
 <h1>Calming Shave Gel</h1>
 <a class="info-link" href="/baseline-natural-skincare/ingredient-library">Recipe Ingredient Information</a>
-<p class="note">240 ml master batch. Use the cushion slider to set guar gum as a percentage of the batch without changing the base water, slippery elm, glycerin, or jojoba.</p>
-<div class="glide-controller" aria-label="Shave gel cushion control">
-<div class="glide-control-main">
-<div class="glide-slider-head">
-<div class="glide-label">Cushion Level</div>
-<div class="glide-readout"><span class="r5-guar-percent">1.0</span>% guar gum</div>
-</div>
-<div class="glide-slider-wrap"><input aria-describedby="r5CushionExplain r5CushionBreakdown" aria-label="Calming shave gel guar gum percentage" class="glide-slider" id="r5Guar" max="1.2" min="0.4" step="0.1" type="range" value="1.0"/></div>
-<div class="glide-scale"><span>Looser slip</span><span>Thicker cushion</span></div>
-</div>
-<div class="glide-control-explainer"><div class="glide-explain-title">Overall Feel</div><p class="glide-explain" id="r5CushionExplain">A looser gel rinses faster and feels lighter. A higher guar percentage gives more cushion and blade protection, but can feel more draggy if pushed too high.</p><div class="glide-breakdown" id="r5CushionBreakdown"><strong>Current batch:</strong> 240 ml water phase • 2 tbsp slippery elm • 5 ml glycerin • <span class="r5-guar-grams">2.4</span> g guar • 1.25 ml jojoba.</div></div>
-</div>
 <h2>Ingredients</h2>
 <ul>
-<li class="ing-subhead"><strong>Gel base</strong></li>
-<li data-method-step="1" data-tip="Warm solvent phase; helps hydrate slippery elm and activate the gel texture.">240 ml <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Filtered or distilled water</a> (warmed to 45–50 °C)</li>
-<li data-method-step="2" data-tip="Mucilage-rich botanical powder; creates soothing slip and blade cushion.">2 tbsp (level) <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-slipperyelm" href="/baseline-natural-skincare/ingredient-library/slipperyelm">Slippery elm powder</a></li>
-<li class="ing-subhead"><strong>Thickener dispersion</strong></li>
-<li data-method-step="4" data-tip="Humectant that helps pre-disperse the gum and improves glide/hydration feel.">5 ml <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-glycerin" href="/baseline-natural-skincare/ingredient-library/glycerin">Vegetable glycerin</a></li>
-<li data-method-step="4" data-tip="Natural gum thickener; raises cushion and reduces runniness."><span class="amt r5-guar-amt" data-base-display="2.4 g" data-base-unit="g">2.4 g</span> <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-guar-gum" href="/baseline-natural-skincare/ingredient-library/guar-gum">Guar Gum Powder</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="6" data-tip="Liquid wax ester; adds a tiny amount of glide and post-rinse softness without making the gel oily.">1.25 ml <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba">Jojoba oil</a></li>
+<li data-method-step="1">240 ml <strong>Water</strong></li>
+<li data-method-step="1">2 tablespoons <strong>Slippery Elm Powder</strong></li>
+<li data-method-step="3">5 ml <strong>Vegetable Glycerin</strong></li>
+<li data-method-step="4"><strong>Guar Gum</strong> – enough to thicken to the preferred gel consistency</li>
+<li data-method-step="5">1.25 ml <strong>Jojoba Oil</strong></li>
 </ul>
 <h2>Method</h2>
 <ol>
-<li>Warm the water to <strong>45–50 °C</strong> (warm, not hot).</li>
-<li>Whisk in the slippery elm powder until smooth.</li>
-<li>Rest for <strong>10 minutes</strong> to fully hydrate the mucilage.</li>
-<li>In a small cup, pre-disperse the guar gum into the vegetable glycerin (mix until smooth, no dry pockets).</li>
-<li>Whisk the glycerin/guar mix into the gel until evenly thickened.</li>
-<li>Stir in the jojoba oil and whisk again until the texture is fully even.</li>
+<li><strong>Combine</strong>: Add the slippery elm powder to the water and mix thoroughly.</li>
+<li><strong>Hydrate</strong>: Allow it to hydrate and develop its natural mucilage.</li>
+<li><strong>Add glycerin</strong>: Mix in the vegetable glycerin.</li>
+<li><strong>Thicken</strong>: Gradually add guar gum until the desired shaving-gel thickness is reached.</li>
+<li><strong>Add jojoba</strong>: Mix in the jojoba oil thoroughly.</li>
 </ol>
 <h2>Storage &amp; Use</h2>
-<ul>
-<li>Refrigerate; use within <strong>3–5 days</strong> (no preservative). Make small fresh batches.</li>
-<li>Apply to warm, wet skin. Shave with gentle passes. Rinse with warm water and follow with your oil cleanse / butter as needed.</li>
-</ul>
+<ul><li>Store appropriately and use a suitable preservative if keeping the water-based gel for more than immediate use.</li></ul>
 <h2>Comedogenic Considerations</h2>
-<ul>
-<li>Mostly water-based with tiny lipids (jojoba 0–2). Low clogging tendency; patch test if very congestion-prone.</li>
-</ul>
+<ul><li>Mostly water-based with a small jojoba phase. Keep use rinse-off and monitor individual skin response if congestion-prone.</li></ul>
 <h2>Notes</h2>
-<ul>
-<li>If it feels too thick or slightly draggy, dilute in the palm with a few drops of warm water before applying.</li>
-<li>If it dries mid-pass, increase glycerin by <strong>¼ tsp</strong> (small steps only).</li>
-<li>Your common <strong>⅓ batch</strong> lands around <strong>0.8 g guar</strong> at the current default, which sits in the <strong>¼ tsp or slightly more</strong> zone.</li>
-<li>No separate glide slider is used here: cushion is the useful variable, while glide stays anchored by slippery elm, glycerin, and jojoba.</li>
-</ul>
+<ul><li>Guar gum is the texture adjustment: add it gradually rather than treating thickness as a fixed target.</li></ul>
+<div class="details" aria-label="Recipe details">
+<div class="detail"><h2>Purpose</h2><p>A shaving gel designed to provide wet glide, mucilage cushion and a small emollient phase so the blade moves with less drag.</p></div>
+<div class="detail"><h2>Formula Profile</h2><p>Water-based • rinse-off • slippery-elm/guar gel • small jojoba phase • unpreserved unless a preservation system is added.</p></div>
+<div class="detail"><h2>How the Formulation Works</h2><p>Slippery elm supplies mucilage and cushioning; glycerin adds glide and water retention; guar builds gel structure; jojoba adds light lubrication; water hydrates the gums.</p></div>
+<div class="detail"><h2>Design Rationale</h2><p>Slippery elm provides the main shave slip, with guar added only until the preferred structure is reached.</p></div>
+<div class="detail"><h2>Variables &amp; Fixed Elements</h2><p>Guar gum is added gradually to the preferred consistency. Water, slippery elm, glycerin and jojoba form the fixed base.</p></div>
+<div class="detail"><h2>Boundaries</h2><p>A water-based gel needs suitable preservation if stored rather than made for immediate use. It is intended as a rinse-off shaving medium.</p></div>
+</div>
 </div>
 </main></body></html>
