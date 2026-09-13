@@ -13,6 +13,8 @@ const storageUi=read('systems/baseline-games-hub/js/games-server-storage-ui.js')
 const loader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
 const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 const html=read('systems/baseline-games-hub/baseline-games-hub.html');
+const gamesApi=read('systems/baseline-games-hub/api/games_data.php');
+const savedData=read('sitewide/api/saved_data.php');
 
 function runGuard({status=401,payload={ok:false,error:'signed_out'},initial={}}={}){
   class FakeStorage{
@@ -108,6 +110,18 @@ test('browser game progress requires an explicit per-game import decision',()=>{
   assert.match(storageUi,/Import \$\{importLabels\[app\]\|\|app\}/);
   assert.match(guard,/if\(importCandidates\(\)\.includes\(app\)\)return/);
   assert.match(storageUi,/window\.location\.reload\(\)/);
+});
+
+test('Badminton Focused is a separate explicit per-game save',()=>{
+  const key='__bl_badminton_focused_v1__';
+  const profile=JSON.stringify({version:1,xp:120,level:3});
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}},initial:{[key]:profile}});
+  assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['badmintonfocused']);
+  assert.equal(localStorage.values.get(key),profile,'local save must remain until explicit adoption');
+  assert.match(storageUi,/badmintonfocused:'Badminton Focused'/);
+  assert.match(gamesApi,/badmintonfocused/);
+  assert.match(savedData,/'badmintonfocused' => 'badminton-focused\.json'/);
+  assert.doesNotMatch(savedData,/Shared[\s\S]{0,120}badminton-focused\.json/);
 });
 
 test('account game writes carry per-file revisions and stop on conflicts',()=>{
