@@ -1,38 +1,18 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/schema.php';
 require_once __DIR__ . '/fitness_resource.php';
 
 /*
- * PUBLIC ROUTINE DATA AUTHORITY INVARIANT
- * ---------------------------------------
- * Public Routines must show the same Calisthenics plans/session completions as
- * the owner's Routine Log. When BASELINE_RESOURCE_AUTHORITY=saved-data, SQLite
- * is not the live plan authority, so this endpoint must read plans/sessions from
- * the Fitness saved-data resource. Otherwise Public Calendar markers can lag
- * behind the owner calendar (for example an individual Calisthenics plan marker
- * disappearing publicly while it remains visible in Routine Log).
- *
- * Routine activities/logs/visibility/groups continue to use their canonical
- * routine-state/group stores. Only Calisthenics plan/session authority switches
- * with the sitewide Fitness resource authority.
+ * Public Routine is a read-only projection of Saved Data. Authentication SQLite
+ * is not a routine-data fallback and is not consulted for activities, logs,
+ * groups or Calisthenics plan/session state.
  */
-
 function bl_public_fitness_v2_text($value, int $maximum): string {
   $text = trim((string)$value);
   if(bl_str_len($text) > $maximum){
     $text = function_exists('mb_substr') ? (string)mb_substr($text, 0, $maximum) : substr($text, 0, $maximum);
   }
   return $text;
-}
-
-function bl_public_fitness_v2_decode(string $json, array $fallback): array {
-  try{
-    $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
-    return is_array($decoded) ? $decoded : $fallback;
-  }catch(Throwable $error){
-    return $fallback;
-  }
 }
 
 function bl_public_fitness_v2_frequency($value): array {
@@ -157,7 +137,6 @@ function bl_public_fitness_v2_resource_plans(array $resourceData): array {
   usort($records, static function(array $left,array $right): int {
     return [bl_fitness_plan_created_timestamp($left), bl_fitness_plan_id($left)] <=> [bl_fitness_plan_created_timestamp($right), bl_fitness_plan_id($right)];
   });
-
   $plans = [];
   foreach(array_slice($records, 0, 50) as $record){
     $planId = bl_fitness_plan_id($record);
@@ -196,34 +175,8 @@ function bl_public_fitness_v2_resource_plans(array $resourceData): array {
   return $plans;
 }
 
-function bl_public_fitness_v2_sqlite_plans(PDO $db, int $userId): array {
-  $planStatement = $db->prepare('SELECT id, plan_json, created_at FROM plans WHERE user_id=:user_id ORDER BY created_at ASC, id ASC LIMIT 50');
-  $planStatement->execute([':user_id'=>$userId]);
-  $sessionStatement = $db->prepare('SELECT session_index, scheduled_date, status, completed_at FROM plan_sessions WHERE plan_id=:plan_id AND user_id=:user_id ORDER BY session_index ASC');
-  $plans = [];
-  foreach(($planStatement->fetchAll() ?: []) as $planRow){
-    $planId = (int)($planRow['id'] ?? 0);
-    $planJson = bl_public_fitness_v2_plan_json(bl_public_fitness_v2_decode((string)($planRow['plan_json'] ?? '{}'), []));
-    $sessionStatement->execute([':plan_id'=>$planId, ':user_id'=>$userId]);
-    $sessions = [];
-    foreach(($sessionStatement->fetchAll() ?: []) as $session){
-      $status = (string)($session['status'] ?? 'planned');
-      if(!in_array($status, ['planned','rescheduled','done'], true)) $status = 'planned';
-      $sessions[] = [
-        'sessionIndex'=>(int)($session['session_index'] ?? 0),
-        'scheduledDate'=>$planJson['scheduleMode'] === 'specific-days' ? (string)($session['scheduled_date'] ?? '') : '',
-        'status'=>$status,
-        'completedAt'=>$status === 'done' && is_numeric($session['completed_at'] ?? null) ? gmdate('c', (int)$session['completed_at']) : null,
-      ];
-    }
-    $plans[] = [
-      'planId'=>$planId,
-      'planJson'=>$planJson,
-      'sessions'=>$sessions,
-      'createdAt'=>gmdate('c', (int)($planRow['created_at'] ?? time())),
-    ];
-  }
-  return $plans;
+function bl_public_fitness_v2_routine_path(int $userId): string {
+  return bl_saved_join(bl_saved_root(), 'Users', bl_saved_user_folder($userId), 'fitness-routine.json');
 }
 
 try{
@@ -231,41 +184,29 @@ try{
   $name = bl_public_fitness_v2_text($_GET['name'] ?? '', BL_MAX_NAME_LEN);
   if($name === '') bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
 
-  $db = bl_fitness_db();
-  $statement = $db->prepare('SELECT u.id, u.name, r.visibility, r.routine_json, r.logs_json, r.updated_at
-    FROM users u
-    LEFT JOIN fitness_routine_state r ON r.user_id=u.id
-    WHERE lower(u.name)=lower(:name)
-    LIMIT 1');
-  $statement->execute([':name'=>$name]);
-  $row = $statement->fetch();
-  if(!$row || $row['routine_json'] === null) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
-  if(strtolower((string)($row['visibility'] ?? 'private')) !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
-  $userId = (int)($row['id'] ?? 0);
+  $account = bl_fitness_account_by_name($name);
+  if(!$account) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
+  $userId = (int)$account['id'];
+  $routine = bl_resource_file_read(bl_public_fitness_v2_routine_path($userId), [
+    'visibility'=>'private','activities'=>[],'logs'=>[],'groups'=>[],'assignments'=>[]
+  ]);
+  $routineData = is_array($routine['data'] ?? null) ? $routine['data'] : [];
+  if(strtolower((string)($routineData['visibility'] ?? 'private')) !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
 
-  $activities = bl_public_fitness_v2_activities(bl_public_fitness_v2_decode((string)($row['routine_json'] ?? '[]'), []));
-  $logs = bl_public_fitness_v2_logs(bl_public_fitness_v2_decode((string)($row['logs_json'] ?? '{}'), []));
+  $activities = bl_public_fitness_v2_activities($routineData['activities'] ?? []);
+  $logs = bl_public_fitness_v2_logs($routineData['logs'] ?? []);
+  $fitness = bl_fitness_resource_read($userId);
+  $plans = bl_public_fitness_v2_resource_plans($fitness['data']);
+  if($activities === [] && $plans === []) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
 
-  $mode = bl_resource_authority();
-  if($mode === 'saved-data'){
-    $resource = bl_fitness_resource_read($userId);
-    $plans = bl_public_fitness_v2_resource_plans($resource['data']);
-  }else{
-    $plans = bl_public_fitness_v2_sqlite_plans($db, $userId);
-    if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $userId);
-  }
-
-  $groupStatement = $db->prepare('SELECT groups_json, assignments_json FROM fitness_routine_groups WHERE user_id=:user_id LIMIT 1');
-  $groupStatement->execute([':user_id'=>$userId]);
-  $groupRow = $groupStatement->fetch() ?: [];
-  $groups = bl_public_fitness_v2_groups(bl_public_fitness_v2_decode((string)($groupRow['groups_json'] ?? '[]'), []));
+  $groups = bl_public_fitness_v2_groups($routineData['groups'] ?? []);
   $validGroups = [];
   foreach($groups as $group) $validGroups[(string)$group['id']] = true;
   $validEntities = [];
   foreach($plans as $plan) $validEntities['plan:' . (int)$plan['planId']] = true;
   foreach($activities as $activity) $validEntities['activity:' . (string)$activity['id']] = true;
   $assignments = [];
-  foreach(bl_public_fitness_v2_decode((string)($groupRow['assignments_json'] ?? '{}'), []) as $key=>$groupId){
+  foreach((is_array($routineData['assignments'] ?? null) ? $routineData['assignments'] : []) as $key=>$groupId){
     $entity = bl_public_fitness_v2_text($key, 180);
     $group = bl_public_fitness_v2_text($groupId, 100);
     if(isset($validEntities[$entity]) && isset($validGroups[$group])) $assignments[$entity] = $group;
@@ -274,13 +215,13 @@ try{
   bl_json([
     'ok'=>true,
     'publicRoutine'=>[
-      'owner'=>(string)($row['name'] ?? $name),
+      'owner'=>(string)$account['name'],
       'activities'=>$activities,
       'logs'=>$logs,
       'plans'=>$plans,
       'groups'=>$groups,
       'assignments'=>$assignments,
-      'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
+      'updatedAt'=>$routine['updatedAt'] ?? $fitness['updatedAt'] ?? null,
     ],
   ]);
 }catch(Throwable $error){

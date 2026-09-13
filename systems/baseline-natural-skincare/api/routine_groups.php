@@ -1,129 +1,46 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/schema.php';
+require_once __DIR__ . '/skincare_resource.php';
 
-function bl_skincare_group_text($value, int $maximum): string {
-  $text = trim((string)$value);
-  if(bl_str_len($text) > $maximum){
-    $text = function_exists('mb_substr') ? (string)mb_substr($text, 0, $maximum) : substr($text, 0, $maximum);
-  }
-  return $text;
-}
-
-function bl_skincare_group_decode(string $json, array $fallback): array {
-  try{
-    $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
-    return is_array($decoded) ? $decoded : $fallback;
-  }catch(Throwable $error){
-    return $fallback;
-  }
-}
-
-function bl_skincare_group_frequency($value): array {
-  $source = is_array($value) ? $value : [];
-  $mode = strtolower(bl_skincare_group_text($source['mode'] ?? 'daily', 24));
-  if(!in_array($mode, ['daily','days','weekly','as-needed'], true)) $mode = 'daily';
-  $allowedDays = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
-  $days = [];
-  foreach((is_array($source['days'] ?? null) ? $source['days'] : []) as $day){
-    $day = bl_skincare_group_text($day, 12);
-    if(in_array($day, $allowedDays, true) && !in_array($day, $days, true)) $days[] = $day;
-  }
-  return ['mode'=>$mode,'days'=>$days,'timesPerWeek'=>max(1,min(14,(int)($source['timesPerWeek'] ?? 3)))];
-}
-
-function bl_skincare_groups_normalise($value): array {
-  if(!is_array($value)) return [];
-  $groups = [];
-  $seenIds = [];
-  $seenTitles = [];
-  foreach(array_slice($value, 0, 30) as $index=>$raw){
-    if(!is_array($raw)) continue;
-    $id = bl_skincare_group_text($raw['id'] ?? ('routine-group-' . ($index + 1)), 80);
-    $id = preg_replace('/[^a-zA-Z0-9_-]/', '-', $id) ?: '';
-    $title = bl_skincare_group_text($raw['title'] ?? '', 80);
-    if($id === '' || $title === '') continue;
-    if(isset($seenIds[$id])) $id .= '-' . ($index + 1);
-    $titleKey = function_exists('mb_strtolower') ? mb_strtolower($title) : strtolower($title);
-    if(isset($seenTitles[$titleKey])) continue;
-    $seenIds[$id] = true;
-    $seenTitles[$titleKey] = true;
-    $time = strtolower(bl_skincare_group_text($raw['timeOfDay'] ?? 'anytime', 20));
-    if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
-    $groups[] = [
-      'id'=>$id,
-      'title'=>$title,
-      'collapsed'=>!empty($raw['collapsed']),
-      'frequency'=>bl_skincare_group_frequency($raw['frequency'] ?? []),
-      'timeOfDay'=>$time,
-    ];
-  }
-  return $groups;
-}
-
-function bl_skincare_group_assignments($value, array $groups): array {
-  if(!is_array($value)) return [];
-  $valid = [];
-  foreach($groups as $group) $valid[(string)$group['id']] = true;
-  $assignments = [];
-  foreach(array_slice($value, 0, 120, true) as $itemId=>$groupId){
-    $item = bl_skincare_group_text($itemId, 80);
-    $group = bl_skincare_group_text($groupId, 80);
-    if($item !== '' && isset($valid[$group])) $assignments[$item] = $group;
-  }
-  return $assignments;
-}
-
-function bl_skincare_group_row(PDO $db, int $userId): ?array {
-  $statement = $db->prepare('SELECT groups_json, assignments_json, updated_at FROM skincare_routine_groups WHERE user_id=:user_id LIMIT 1');
-  $statement->execute([':user_id'=>$userId]);
-  $row = $statement->fetch();
-  return $row ?: null;
-}
-
-function bl_skincare_group_payload(?array $row): array {
-  if(!$row) return ['ok'=>true,'hasGroups'=>false,'groups'=>[],'assignments'=>[],'updatedAt'=>null];
-  $groups = bl_skincare_groups_normalise(bl_skincare_group_decode((string)($row['groups_json'] ?? '[]'), []));
+function bl_skincare_group_payload(array $resource): array {
+  $data = $resource['data'] ?? [];
+  $groups = bl_skincare_groups($data['groups'] ?? []);
   return [
     'ok'=>true,
-    'hasGroups'=>count($groups) > 0,
+    'hasGroups'=>true,
     'groups'=>$groups,
-    'assignments'=>bl_skincare_group_assignments(
-      bl_skincare_group_decode((string)($row['assignments_json'] ?? '{}'), []),
-      $groups
-    ),
-    'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
+    'assignments'=>bl_skincare_assignments($data['assignments'] ?? [], $groups),
+    'revision'=>(int)($resource['revision'] ?? 0),
+    'updatedAt'=>$resource['updatedAt'] ?? null,
   ];
 }
 
 try{
-  $db = bl_skincare_db();
   $user = bl_require_user();
   $userId = (int)$user['id'];
   $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
-  if($method === 'GET') bl_json(bl_skincare_group_payload(bl_skincare_group_row($db, $userId)));
+  if($method === 'GET') bl_json(bl_skincare_group_payload(bl_skincare_resource($userId)));
   if($method !== 'POST') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
 
   $input = bl_input_json();
-  $groups = bl_skincare_groups_normalise($input['groups'] ?? []);
-  $assignments = bl_skincare_group_assignments($input['assignments'] ?? [], $groups);
-  $updated = bl_now();
-
-  $statement = $db->prepare('INSERT INTO skincare_routine_groups(user_id, groups_json, assignments_json, updated_at)
-    VALUES(:user_id,:groups_json,:assignments_json,:updated_at)
-    ON CONFLICT(user_id) DO UPDATE SET
-      groups_json=excluded.groups_json,
-      assignments_json=excluded.assignments_json,
-      updated_at=excluded.updated_at');
-  $statement->execute([
-    ':user_id'=>$userId,
-    ':groups_json'=>json_encode($groups, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-    ':assignments_json'=>json_encode($assignments, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-    ':updated_at'=>$updated,
-  ]);
-
-  bl_json(bl_skincare_group_payload(bl_skincare_group_row($db, $userId)));
+  $expected = bl_resource_required_revision_from_input($input);
+  $groups = bl_skincare_groups($input['groups'] ?? []);
+  $assignments = bl_skincare_assignments($input['assignments'] ?? [], $groups);
+  $written = bl_resource_file_mutate(
+    bl_skincare_path($userId),
+    bl_skincare_default(),
+    static function(array $current) use ($groups,$assignments): array {
+      $current = array_merge(bl_skincare_default(), $current);
+      $current['groups'] = $groups;
+      $current['assignments'] = $assignments;
+      return $current;
+    },
+    $expected
+  );
+  bl_json(bl_skincare_group_payload($written ?? bl_skincare_resource($userId)));
+}catch(BaselineSavedDataConflictException $error){
+  bl_resource_conflict_response($error);
 }catch(InvalidArgumentException $error){
   bl_json(['ok'=>false,'error'=>$error->getMessage()], 400);
 }catch(Throwable $error){

@@ -113,6 +113,13 @@
     revisions,
   };
 
+  // Parser-time dependency: this keeps the API client transport-only while the
+  // separate guard is installed before feature scripts can touch legacy Saved Data.
+  if(scope.document && scope.document.readyState === 'loading' && !scope.__BASELINE_SAVED_DATA_GUARD_LOADER__){
+    scope.__BASELINE_SAVED_DATA_GUARD_LOADER__=true;
+    scope.document.write('<script src="/sitewide/js/baseline-saved-data-guard.js?v=SAVED_DATA_SERVER_ONLY_20260823_1"><' + '/script>');
+  }
+
   function removeObsoleteUpdateFooter(){
     const document = scope.document;
     if(!document) return;

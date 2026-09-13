@@ -1,6 +1,6 @@
 {
   "formatVersion": 1,
-  "authority": "SQLite is the current migration source; protected Saved Data resource files are the target production authority",
+  "authority": "Protected Saved Data resource files are the sole live authority for authenticated application data; SQLite is retained only for authentication/identity and explicit migration or rollback tooling",
   "canonicalGameFiles": {
     "ninja": "baseline-realm.json",
     "baseline-realm": "baseline-realm.json",
@@ -15,18 +15,16 @@
     "rule-shift": "rule-shift.json",
     "dartsfocused": "darts-focused.json",
     "darts-focused": "darts-focused.json",
+    "badmintonfocused": "badminton-focused.json",
+    "badminton-focused": "badminton-focused.json",
     "meridiangrove": "meridian-grove.json",
     "meridian-grove": "meridian-grove.json"
   },
   "rules": [
     {
       "id": "badminton-shared-v3-legacy",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v3__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v3__"
-      ],
+      "inventoryPatterns": ["__baseline_badminton_session_v3__"],
+      "knownKeys": ["__baseline_badminton_session_v3__"],
       "classification": "legacy-shared-state",
       "decision": "normalise-and-compare",
       "target": "Shared/Badminton/badminton.json",
@@ -34,25 +32,17 @@
     },
     {
       "id": "badminton-shared-v4-cache",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v4__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v4__"
-      ],
+      "inventoryPatterns": ["__baseline_badminton_session_v4__"],
+      "knownKeys": ["__baseline_badminton_session_v4__"],
       "classification": "shared-state-browser-cache",
       "decision": "retain-as-non-authoritative-cache-until-cutover",
       "target": "Shared/Badminton/badminton.json",
-      "cutoverRule": "The protected shared Badminton resource is authoritative after cutover. Clear or refresh the local cache only after a verified server load and enforce established Badminton administration permissions."
+      "cutoverRule": "The protected shared Badminton resource is authoritative. A browser copy is only a cache/recovery copy and cannot become a successful fallback save."
     },
     {
       "id": "badminton-shared-conflict-backup",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v4_conflict_backup__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v4_conflict_backup__"
-      ],
+      "inventoryPatterns": ["__baseline_badminton_session_v4_conflict_backup__"],
+      "knownKeys": ["__baseline_badminton_session_v4_conflict_backup__"],
       "classification": "shared-state-conflict-recovery-copy",
       "decision": "preserve-local-until-reviewed",
       "target": "Shared/Badminton/badminton.json",
@@ -60,25 +50,17 @@
     },
     {
       "id": "diet-log-local-content",
-      "inventoryPatterns": [
-        "__baseline_food_diet_log_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_food_diet_log_v1__"
-      ],
-      "classification": "user-content-without-approved-resource",
-      "decision": "preserve-local-and-block-retirement",
-      "target": null,
-      "cutoverRule": "Contains dated food logs, notes, recipes and health-profile fields. Do not delete or force it into fitness.json. A dedicated schema and explicit approval are required first."
+      "inventoryPatterns": ["__baseline_food_diet_log_v1__"],
+      "knownKeys": ["__baseline_food_diet_log_v1__"],
+      "classification": "legacy-food-user-content",
+      "decision": "offer-explicit-one-time-import",
+      "target": "Users/{paddedUserId}/food.json#dietLog",
+      "cutoverRule": "Authenticated Diet Log writes go only to revisioned food.json. Guest edits live only in the current page session. A pre-cutover browser copy is hidden from normal runtime reads and may be copied only through the explicit import control when the server resource is empty."
     },
     {
       "id": "outer-embed-snapshot",
-      "inventoryPatterns": [
-        "__baseline_outer_embed_snapshot_v2__"
-      ],
-      "knownKeys": [
-        "__baseline_outer_embed_snapshot_v2__"
-      ],
+      "inventoryPatterns": ["__baseline_outer_embed_snapshot_v2__"],
+      "knownKeys": ["__baseline_outer_embed_snapshot_v2__"],
       "classification": "ephemeral-navigation-snapshot",
       "decision": "retire-without-migration",
       "target": null,
@@ -86,40 +68,26 @@
     },
     {
       "id": "voice-settings",
-      "inventoryPatterns": [
-        "__baseline_voice_settings_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_voice_settings_v1__"
-      ],
-      "classification": "user-settings",
-      "decision": "migrate-authenticated-value",
+      "inventoryPatterns": ["__baseline_voice_settings_v1__"],
+      "knownKeys": ["__baseline_voice_settings_v1__"],
+      "classification": "legacy-user-settings",
+      "decision": "offer-explicit-one-time-import",
       "target": "Users/{paddedUserId}/voice.json",
-      "cutoverRule": "Use the authenticated server voice_settings record when present. Keep guest settings local and never let guest data overwrite an authenticated resource."
+      "cutoverRule": "Authenticated Voice settings are server-only and revisioned. Guest changes are page-session only. A pre-cutover browser value is never used as an authenticated fallback and can be imported only explicitly when no server Voice resource exists."
     },
     {
       "id": "badminton-focused-game",
-      "inventoryPatterns": [
-        "__bl_badminton_focused_v1__"
-      ],
-      "knownKeys": [
-        "__bl_badminton_focused_v1__"
-      ],
-      "classification": "unapproved-individual-game-save",
-      "decision": "preserve-local-and-block-retirement",
-      "target": null,
-      "cutoverRule": "This browser save is not recognised by the current protected Games API or canonical game-file map. Preserve it unchanged until a dedicated game schema and physical filename are explicitly approved; never discard or merge it into shared Badminton state."
+      "inventoryPatterns": ["__bl_badminton_focused_v1__"],
+      "knownKeys": ["__bl_badminton_focused_v1__"],
+      "classification": "legacy-individual-game-save",
+      "decision": "offer-explicit-one-time-import",
+      "target": "Users/{paddedUserId}/Games/badminton-focused.json",
+      "cutoverRule": "Badminton Focused is now a recognised per-game Saved Data resource. Authenticated progress saves only to badminton-focused.json; guest progress is page-session only and a pre-cutover browser save requires explicit import into an empty server resource."
     },
     {
       "id": "darts-focused-game",
-      "inventoryPatterns": [
-        "__bl_darts_focused_v1__",
-        "__bl_darts_focused_v2__"
-      ],
-      "knownKeys": [
-        "__bl_darts_focused_v1__",
-        "__bl_darts_focused_v2__"
-      ],
+      "inventoryPatterns": ["__bl_darts_focused_v1__","__bl_darts_focused_v2__"],
+      "knownKeys": ["__bl_darts_focused_v1__","__bl_darts_focused_v2__"],
       "classification": "individual-game-save-with-duplicate-legacy-key",
       "decision": "normalise-and-migrate-explicitly",
       "target": "Users/{paddedUserId}/Games/darts-focused.json",
@@ -127,12 +95,8 @@
     },
     {
       "id": "games-auto-next-preference",
-      "inventoryPatterns": [
-        "__bl_games_auto_next_v1__"
-      ],
-      "knownKeys": [
-        "__bl_games_auto_next_v1__"
-      ],
+      "inventoryPatterns": ["__bl_games_auto_next_v1__"],
+      "knownKeys": ["__bl_games_auto_next_v1__"],
       "classification": "device-ui-preference",
       "decision": "keep-local",
       "target": null,
@@ -140,12 +104,8 @@
     },
     {
       "id": "games-guest-profiles",
-      "inventoryPatterns": [
-        "__bl_games_guest_profiles_v1__"
-      ],
-      "knownKeys": [
-        "__bl_games_guest_profiles_v1__"
-      ],
+      "inventoryPatterns": ["__bl_games_guest_profiles_v1__"],
+      "knownKeys": ["__bl_games_guest_profiles_v1__"],
       "classification": "guest-game-profiles",
       "decision": "offer-explicit-per-game-import",
       "target": "Users/{paddedUserId}/Games/{canonicalGameFile}",
@@ -153,12 +113,8 @@
     },
     {
       "id": "trackcoin-game",
-      "inventoryPatterns": [
-        "__bl_trackcoin_v1__"
-      ],
-      "knownKeys": [
-        "__bl_trackcoin_v1__"
-      ],
+      "inventoryPatterns": ["__bl_trackcoin_v1__"],
+      "knownKeys": ["__bl_trackcoin_v1__"],
       "classification": "individual-game-save",
       "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/Games/track-coin.json",
@@ -166,12 +122,8 @@
     },
     {
       "id": "recipe-title-index",
-      "inventoryPatterns": [
-        "[expression] 'bl_recipe_index_' + appKey"
-      ],
-      "knownKeys": [
-        "bl_recipe_index_{app}"
-      ],
+      "inventoryPatterns": ["[expression] 'bl_recipe_index_' + appKey"],
+      "knownKeys": ["bl_recipe_index_{app}"],
       "classification": "rebuildable-display-cache",
       "decision": "rebuild-without-migration",
       "target": null,
@@ -179,13 +131,8 @@
     },
     {
       "id": "fitness-body-profile",
-      "inventoryPatterns": [
-        "[expression] bodyProfileKey(",
-        "[expression] bodyKey("
-      ],
-      "knownKeys": [
-        "__bl_fitness_body_profile_v1__::{normalised-user}"
-      ],
+      "inventoryPatterns": ["[expression] bodyProfileKey(","[expression] bodyKey("],
+      "knownKeys": ["__bl_fitness_body_profile_v1__::{normalised-user}"],
       "classification": "fitness-user-data",
       "decision": "migrate-after-schema-validation",
       "target": "Users/{paddedUserId}/fitness.json#profile",
@@ -193,9 +140,7 @@
     },
     {
       "id": "storage-wrapper-implementation",
-      "inventoryPatterns": [
-        "[expression] key"
-      ],
+      "inventoryPatterns": ["[expression] key"],
       "knownKeys": [],
       "classification": "implementation-only",
       "decision": "no-independent-migration",
@@ -204,12 +149,8 @@
     },
     {
       "id": "realm-exploration-game",
-      "inventoryPatterns": [
-        "[expression] SAVE_KEY"
-      ],
-      "knownKeys": [
-        "baseline.realm.exploration.jrpg.v1"
-      ],
+      "inventoryPatterns": ["[expression] SAVE_KEY"],
+      "knownKeys": ["baseline.realm.exploration.jrpg.v1"],
       "classification": "baseline-realm-mode-save",
       "decision": "normalise-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#exploration",
@@ -217,26 +158,17 @@
     },
     {
       "id": "skincare-slider-settings",
-      "inventoryPatterns": [
-        "[expression] sliderSaveStorageKey(saveId",
-        "[expression] sliderSaveStorageKey(saveKey"
-      ],
-      "knownKeys": [
-        "__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"
-      ],
-      "classification": "user-settings-without-approved-resource",
-      "decision": "preserve-local-and-block-retirement",
-      "target": null,
-      "cutoverRule": "These are authenticated recipe-controller preferences, but the approved Saved Data tree has no skincare resource. Keep them local until a protected schema is separately approved."
+      "inventoryPatterns": ["[expression] sliderSaveStorageKey(saveId","[expression] sliderSaveStorageKey(saveKey"],
+      "knownKeys": ["__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"],
+      "classification": "legacy-skincare-recipe-settings",
+      "decision": "offer-explicit-one-time-import",
+      "target": "Users/{paddedUserId}/skincare.json#recipeSettings",
+      "cutoverRule": "Authenticated recipe-controller settings are revisioned in skincare.json. Guest changes are page-session only. Pre-cutover browser values are hidden from normal runtime reads and imported only by explicit choice when they do not overlap server settings."
     },
     {
       "id": "fitness-active-workout",
-      "inventoryPatterns": [
-        "[expression] stepStorageKey(current.planId"
-      ],
-      "knownKeys": [
-        "__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"
-      ],
+      "inventoryPatterns": ["[expression] stepStorageKey(current.planId"],
+      "knownKeys": ["__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"],
       "classification": "fitness-active-session-state",
       "decision": "migrate-only-valid-current-session",
       "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
@@ -245,10 +177,7 @@
     {
       "id": "fitness-bridge-plan-lookups",
       "inventoryPatterns": [],
-      "knownKeys": [
-        "__bl_fitness_plan_cache_v1__::{normalised-user}",
-        "__bl_fitness_plan_v1__::{normalised-user}"
-      ],
+      "knownKeys": ["__bl_fitness_plan_cache_v1__::{normalised-user}","__bl_fitness_plan_v1__::{normalised-user}"],
       "classification": "fitness-bridge-lookup-expressions",
       "decision": "no-independent-migration",
       "target": null,
@@ -256,38 +185,26 @@
     },
     {
       "id": "fitness-plan-cache",
-      "inventoryPatterns": [
-        "[expression] userCacheKey("
-      ],
-      "knownKeys": [
-        "__bl_fitness_plan_cache_v1__::{normalised-user}"
-      ],
+      "inventoryPatterns": ["[expression] userCacheKey("],
+      "knownKeys": ["__bl_fitness_plan_cache_v1__::{normalised-user}"],
       "classification": "rebuildable-server-cache",
       "decision": "rebuild-without-migration",
       "target": null,
-      "cutoverRule": "The server plan is authoritative during migration; this cache may only accelerate display and must be replaced after a verified authoritative read."
+      "cutoverRule": "The server plan is authoritative; this cache may only accelerate display and must be replaced after a verified authoritative read."
     },
     {
       "id": "fitness-file-protocol-plan",
-      "inventoryPatterns": [
-        "[expression] userPlanKey("
-      ],
-      "knownKeys": [
-        "__bl_fitness_plan_v1__::{normalised-user}"
-      ],
+      "inventoryPatterns": ["[expression] userPlanKey("],
+      "knownKeys": ["__bl_fitness_plan_v1__::{normalised-user}"],
       "classification": "file-protocol-development-fallback",
       "decision": "exclude-from-production-migration",
       "target": null,
-      "cutoverRule": "Production uses the protected Fitness API. This fallback must not compete with SQLite during migration or the Saved Data resource after cutover."
+      "cutoverRule": "Production uses the protected Fitness API. This development fallback must never become a production save authority."
     },
     {
       "id": "realm-tactical-v1-legacy",
-      "inventoryPatterns": [
-        "baseline-realm:tactical-operations:v1"
-      ],
-      "knownKeys": [
-        "baseline-realm:tactical-operations:v1"
-      ],
+      "inventoryPatterns": ["baseline-realm:tactical-operations:v1"],
+      "knownKeys": ["baseline-realm:tactical-operations:v1"],
       "classification": "legacy-baseline-realm-mode-save",
       "decision": "normalise-then-retire",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
@@ -295,12 +212,8 @@
     },
     {
       "id": "realm-tactical-v2",
-      "inventoryPatterns": [
-        "baseline-realm:tactical-operations:v2"
-      ],
-      "knownKeys": [
-        "baseline-realm:tactical-operations:v2"
-      ],
+      "inventoryPatterns": ["baseline-realm:tactical-operations:v2"],
+      "knownKeys": ["baseline-realm:tactical-operations:v2"],
       "classification": "baseline-realm-mode-save-and-local-fallback",
       "decision": "normalise-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
@@ -308,12 +221,8 @@
     },
     {
       "id": "games-hub-view",
-      "inventoryPatterns": [
-        "baselineGamesHubView"
-      ],
-      "knownKeys": [
-        "baselineGamesHubView"
-      ],
+      "inventoryPatterns": ["baselineGamesHubView"],
+      "knownKeys": ["baselineGamesHubView"],
       "classification": "device-ui-state",
       "decision": "keep-local-or-session-only",
       "target": null,
@@ -321,12 +230,8 @@
     },
     {
       "id": "site-index-view",
-      "inventoryPatterns": [
-        "baselineIndexActiveView"
-      ],
-      "knownKeys": [
-        "baselineIndexActiveView"
-      ],
+      "inventoryPatterns": ["baselineIndexActiveView"],
+      "knownKeys": ["baselineIndexActiveView"],
       "classification": "session-ui-state",
       "decision": "expire-with-session",
       "target": null,
@@ -335,9 +240,7 @@
     {
       "id": "local-account-preview-users",
       "inventoryPatterns": [],
-      "knownKeys": [
-        "__bl_local_users_v1__"
-      ],
+      "knownKeys": ["__bl_local_users_v1__"],
       "classification": "file-preview-auth-fallback",
       "decision": "exclude-and-retire-in-production",
       "target": null,
@@ -346,9 +249,7 @@
     {
       "id": "local-account-preview-session",
       "inventoryPatterns": [],
-      "knownKeys": [
-        "__bl_local_session_v1__"
-      ],
+      "knownKeys": ["__bl_local_session_v1__"],
       "classification": "file-preview-session-fallback",
       "decision": "exclude-and-retire-in-production",
       "target": null,
@@ -356,12 +257,8 @@
     },
     {
       "id": "pending-recipe-route",
-      "inventoryPatterns": [
-        "__baseline_pending_recipe_route_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_pending_recipe_route_v1__"
-      ],
+      "inventoryPatterns": ["__baseline_pending_recipe_route_v1__"],
+      "knownKeys": ["__baseline_pending_recipe_route_v1__"],
       "classification": "session-navigation-state",
       "decision": "expire-with-session",
       "target": null,
@@ -369,12 +266,8 @@
     },
     {
       "id": "fitness-body-view",
-      "inventoryPatterns": [
-        "__baseline_fitness_body_view_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_fitness_body_view_v1__"
-      ],
+      "inventoryPatterns": ["__baseline_fitness_body_view_v1__"],
+      "knownKeys": ["__baseline_fitness_body_view_v1__"],
       "classification": "session-ui-state",
       "decision": "expire-with-session",
       "target": null,
@@ -382,16 +275,8 @@
     },
     {
       "id": "my-routine-navigation-state",
-      "inventoryPatterns": [
-        "__bl_fitness_plan_view_v4__",
-        "__bl_fitness_routine_view_v2__",
-        "__bl_skincare_routine_view__"
-      ],
-      "knownKeys": [
-        "__bl_fitness_plan_view_v4__",
-        "__bl_fitness_routine_view_v2__",
-        "__bl_skincare_routine_view__"
-      ],
+      "inventoryPatterns": ["__bl_fitness_plan_view_v4__","__bl_fitness_routine_view_v2__","__bl_skincare_routine_view__"],
+      "knownKeys": ["__bl_fitness_plan_view_v4__","__bl_fitness_routine_view_v2__","__bl_skincare_routine_view__"],
       "classification": "session-navigation-state",
       "decision": "expire-with-session",
       "target": null,

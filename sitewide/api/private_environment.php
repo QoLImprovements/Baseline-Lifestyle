@@ -42,7 +42,6 @@ function bl_private_environment(): array {
     'BASELINE_DB_PATH',
     'BASELINE_SAVED_DATA_PATH',
     'BASELINE_RUNTIME_PATH',
-    'BASELINE_RESOURCE_AUTHORITY',
     'BL_SITE_URL',
     'BL_MAIL_FROM_EMAIL',
     'BL_MAIL_FROM_NAME',

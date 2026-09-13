@@ -3,26 +3,27 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/saved_data.php';
 
-const BL_RESOURCE_AUTHORITY_ENV_KEY = 'BASELINE_RESOURCE_AUTHORITY';
-
+/**
+ * Saved Data is the sole live application-data authority.
+ *
+ * SQLite remains available to authentication and explicit migration/rollback
+ * tooling, but live resource endpoints must never switch to SQLite or mirror
+ * writes as a fallback when Saved Data is unavailable.
+ */
 function bl_resource_authority(): string {
-  $mode = strtolower(trim(bl_env(BL_RESOURCE_AUTHORITY_ENV_KEY, 'sqlite')));
-  if(!in_array($mode, ['sqlite','mirror','saved-data'], true)){
-    throw new BaselineSavedDataConfigurationException('invalid_resource_authority');
-  }
-  if($mode !== 'sqlite'){
-    bl_saved_root();
-    bl_runtime_root();
-  }
-  return $mode;
+  bl_saved_root();
+  bl_runtime_root();
+  return 'saved-data';
 }
 
 function bl_resource_uses_files(): bool {
-  return bl_resource_authority() === 'saved-data';
+  bl_resource_authority();
+  return true;
 }
 
 function bl_resource_mirrors_files(): bool {
-  return bl_resource_authority() === 'mirror';
+  bl_resource_authority();
+  return false;
 }
 
 function bl_resource_file_read(string $path, array $default=[]): array {

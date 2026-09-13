@@ -8,20 +8,21 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
 const exists = relative => fs.existsSync(path.join(root, relative));
 
-test('resource authority is host-controlled and defaults safely to SQLite', () => {
+test('Saved Data is the sole live application-data authority', () => {
   const authority = read('sitewide/api/resource_authority.php');
   const privateEnv = read('sitewide/api/private_environment.php');
   const example = read('.env.example');
-  assert.match(authority, /bl_env\(BL_RESOURCE_AUTHORITY_ENV_KEY, 'sqlite'\)/);
-  assert.match(authority, /\['sqlite','mirror','saved-data'\]/);
+  assert.match(authority, /return 'saved-data'/);
+  assert.match(authority, /Saved Data is the sole live application-data authority/);
+  assert.doesNotMatch(authority, /BL_RESOURCE_AUTHORITY_ENV_KEY/);
+  assert.doesNotMatch(authority, /\['sqlite','mirror','saved-data'\]/);
   assert.match(authority, /bl_resource_file_mutate/);
   assert.match(authority, /revision_conflict/);
-  assert.match(privateEnv, /BASELINE_RESOURCE_AUTHORITY/);
-  assert.match(example, /^BASELINE_RESOURCE_AUTHORITY=$/m);
-  assert.doesNotMatch(example, /BASELINE_RESOURCE_AUTHORITY=(?:mirror|saved-data)/);
+  assert.doesNotMatch(privateEnv, /BASELINE_RESOURCE_AUTHORITY/);
+  assert.doesNotMatch(example, /BASELINE_RESOURCE_AUTHORITY/);
 });
 
-test('every approved persistence surface has a file-backed path', () => {
+test('every approved persistence surface has a Saved Data path or resource helper', () => {
   const files = [
     'sitewide/api/favourites.php',
     'sitewide/api/binaural.php',
@@ -35,23 +36,52 @@ test('every approved persistence surface has a file-backed path', () => {
     'systems/baseline-fitness/api/update_session.php',
     'systems/baseline-fitness/api/achievements.php',
     'systems/baseline-fitness/api/list_profiles.php',
+    'systems/baseline-fitness/api/routine_state.php',
+    'systems/baseline-fitness/api/routine_groups.php',
+    'systems/baseline-natural-skincare/api/routine_state.php',
+    'systems/baseline-natural-skincare/api/routine_groups.php',
+    'systems/baseline-natural-skincare/api/recipe_settings.php',
+    'systems/baseline-food-approach/api/diet_log.php',
     'systems/baseline-badminton-session/api/badminton_session.php',
   ];
   for(const file of files){
     const source = read(file);
-    assert.match(source, /resource_authority|fitness_resource|badminton_storage/, `${file} is SQLite-only`);
+    assert.match(
+      source,
+      /resource_authority|resource_file|fitness_resource|skincare_resource|badminton_storage|bl_saved_/,
+      `${file} does not expose a Saved Data-backed path`,
+    );
   }
 });
 
-test('games remain physically isolated and hub settings never become a save file', () => {
+test('games are physically isolated, including Badminton Focused', () => {
   const games = read('systems/baseline-games-hub/api/games_data.php');
   const paths = read('sitewide/api/saved_data.php');
-  for(const file of ['baseline-realm.json','pairs.json','detect-word.json','make-24.json','track-coin.json','rule-shift.json','darts-focused.json','meridian-grove.json']){
+  for(const file of ['baseline-realm.json','pairs.json','detect-word.json','make-24.json','track-coin.json','rule-shift.json','darts-focused.json','badminton-focused.json','meridian-grove.json']){
     assert.ok(paths.includes(`'${file}'`), `${file} missing`);
   }
-  assert.match(games, /function bl_game_data_file_apps/);
-  assert.doesNotMatch(games.match(/function bl_game_data_file_apps[\s\S]*?\}/)?.[0] || '', /hubsettings/);
-  assert.match(games, /non_persistent_app/);
+  assert.match(games, /badmintonfocused/);
+  assert.doesNotMatch(games, /bl_games_db\s*\(/);
+  assert.doesNotMatch(games, /hubsettings/);
+  assert.doesNotMatch(games, /migrate_missing/);
+  assert.match(games, /bl_resource_required_revision_from_input/);
+});
+
+test('dedicated browser persistence guard makes meaningful legacy data session-only and failure-stopping', () => {
+  const api = read('sitewide/js/baseline-api.js');
+  const guard = read('sitewide/js/baseline-saved-data-guard.js');
+  assert.match(api, /baseline-saved-data-guard\.js/);
+  assert.doesNotMatch(api, /localStorage|createElement/);
+  assert.match(guard, /__baseline_food_diet_log_v1__/);
+  assert.match(guard, /__baseline_slider_state__::/);
+  assert.match(guard, /__bl_badminton_focused_v1__/);
+  assert.match(guard, /showFailure/);
+  assert.match(guard, /save_blocked/);
+  assert.match(guard, /Saving has stopped/);
+  assert.match(guard, /Old browser saves available/);
+  assert.match(guard, /Nothing is imported automatically/);
+  assert.match(guard, /server_has_data/);
+  assert.match(guard, /Account save failed\. This change was not saved to your account\./);
 });
 
 test('Fitness browser-owned values are validated and bridged before the application', () => {
@@ -69,6 +99,16 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
+});
+
+test('empty server Routine Groups remain authoritative instead of auto-uploading browser groups', () => {
+  const fitnessGroups = read('systems/baseline-fitness/api/routine_groups.php');
+  const skincareGroups = read('systems/baseline-natural-skincare/api/routine_groups.php');
+  const publicViewer = read('sitewide/js/baseline-public-routine-viewonly-v4.js');
+  assert.match(fitnessGroups, /'hasState'=>true/);
+  assert.match(skincareGroups, /'hasGroups'=>true/);
+  assert.match(publicViewer, /else if \(local\.groups\.length \|\| Object\.keys\(local\.assignments\)\.length\) await pushGroups\(local\)/);
+  assert.match(fitnessGroups, /Legacy browser groups must never be auto-uploaded/);
 });
 
 test('account projections and index synchronization exclude authentication secrets', () => {

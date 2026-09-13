@@ -6,7 +6,8 @@ $saved = $base . '/private/Saved Data';
 $runtime = $base . '/private/Runtime';
 putenv('BASELINE_SAVED_DATA_PATH=' . $saved);
 putenv('BASELINE_RUNTIME_PATH=' . $runtime);
-putenv('BASELINE_RESOURCE_AUTHORITY=saved-data');
+// An obsolete authority environment value must not re-enable SQLite fallback.
+putenv('BASELINE_RESOURCE_AUTHORITY=sqlite');
 $_SERVER['DOCUMENT_ROOT'] = $base . '/public_html';
 
 require_once dirname(__DIR__) . '/sitewide/api/account_resource.php';
@@ -28,7 +29,11 @@ function bl_resource_test_remove(string $directory): void {
 }
 
 try{
-  bl_resource_test_assert(bl_resource_authority() === 'saved-data', 'authority mode failed');
+  bl_resource_test_assert(bl_resource_authority() === 'saved-data', 'obsolete authority environment changed live mode');
+  bl_resource_test_assert(str_ends_with(bl_saved_user_resource_path(7, 'fitness-routine'), '/Users/000007/fitness-routine.json'), 'fitness routine path failed');
+  bl_resource_test_assert(str_ends_with(bl_saved_user_resource_path(7, 'food'), '/Users/000007/food.json'), 'food path failed');
+  bl_resource_test_assert(str_ends_with(bl_saved_user_resource_path(7, 'skincare'), '/Users/000007/skincare.json'), 'skincare path failed');
+  bl_resource_test_assert(str_ends_with(bl_saved_game_path(7, 'badmintonfocused'), '/Games/badminton-focused.json'), 'Badminton Focused path failed');
 
   $path = bl_saved_user_resource_path(7, 'favourites');
   $first = bl_resource_file_mutate($path, ['items'=>[]], static function(array $data): array {
@@ -104,5 +109,6 @@ try{
   bl_resource_test_assert($temps === [], 'temporary files remain');
   echo "resource authority runtime contract passed\n";
 }finally{
+  putenv('BASELINE_RESOURCE_AUTHORITY');
   bl_resource_test_remove($base);
 }

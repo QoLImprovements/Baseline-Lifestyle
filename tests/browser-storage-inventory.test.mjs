@@ -64,9 +64,9 @@ test("every discovered storage group has one reviewed migration decision", () =>
   assert.deepEqual(stale, [], `stale inventory patterns: ${stale.join(", ")}`);
 });
 
-test("migration rules are explicit and preserve unresolved user content", () => {
+test("migration rules explicitly route formerly browser-owned content into Saved Data", () => {
   assert.equal(mapping.formatVersion, 1);
-  assert.match(mapping.authority, /Saved Data resource files are the target production authority/i);
+  assert.match(mapping.authority, /sole live authority/i);
   const rules = mapping.rules || [];
   assert.ok(rules.length > 10);
   const ids = rules.map((rule) => rule.id);
@@ -80,10 +80,16 @@ test("migration rules are explicit and preserve unresolved user content", () => 
     assert.ok(rule.cutoverRule, `${rule.id}: cutover rule required`);
   }
 
-  for(const id of ["diet-log-local-content", "skincare-slider-settings", "badminton-focused-game"]){
+  const expected = new Map([
+    ["diet-log-local-content", "Users/{paddedUserId}/food.json#dietLog"],
+    ["skincare-slider-settings", "Users/{paddedUserId}/skincare.json#recipeSettings"],
+    ["badminton-focused-game", "Users/{paddedUserId}/Games/badminton-focused.json"],
+  ]);
+  for(const [id,target] of expected){
     const rule = rules.find((candidate) => candidate.id === id);
-    assert.equal(rule?.decision, "preserve-local-and-block-retirement");
-    assert.equal(rule?.target, null);
+    assert.equal(rule?.decision, "offer-explicit-one-time-import");
+    assert.equal(rule?.target, target);
+    assert.match(rule?.cutoverRule || "", /explicit|choice/i);
   }
 });
 
@@ -109,12 +115,17 @@ test("game browser data maps to canonical physical save files", () => {
   assert.equal(mapping.canonicalGameFiles?.trackcoin, "track-coin.json");
   assert.equal(mapping.canonicalGameFiles?.ruleshift, "rule-shift.json");
   assert.equal(mapping.canonicalGameFiles?.dartsfocused, "darts-focused.json");
+  assert.equal(mapping.canonicalGameFiles?.badmintonfocused, "badminton-focused.json");
   assert.equal(mapping.canonicalGameFiles?.meridiangrove, "meridian-grove.json");
 
   const rules = mapping.rules || [];
   assert.equal(
     rules.find((rule) => rule.id === "trackcoin-game")?.target,
     "Users/{paddedUserId}/Games/track-coin.json",
+  );
+  assert.equal(
+    rules.find((rule) => rule.id === "badminton-focused-game")?.target,
+    "Users/{paddedUserId}/Games/badminton-focused.json",
   );
   for(const id of ["realm-exploration-game", "realm-tactical-v1-legacy", "realm-tactical-v2"]){
     assert.match(
@@ -123,7 +134,7 @@ test("game browser data maps to canonical physical save files", () => {
     );
   }
   assert.equal(
-    rules.some((rule) => /Games\/(?:detectword|make24|trackcoin|ruleshift|dartsfocused|ninja)\.json/.test(String(rule.target || ""))),
+    rules.some((rule) => /Games\/(?:detectword|make24|trackcoin|ruleshift|dartsfocused|badmintonfocused|ninja)\.json/.test(String(rule.target || ""))),
     false,
   );
 });
