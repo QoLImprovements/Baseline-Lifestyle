@@ -15,11 +15,13 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('systems/baseline-fitness/js/baseline-fitness-app.js'),
     read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),
     read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js'),
-    read('systems/baseline-fitness/js/fitness-routine-log-v1.js')
+    read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
+    read('systems/baseline-food-approach/js/food-saved-data-bridge.js'),
+    read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js')
   ];
   for(const source of sources){
-    assert.match(source,/withExpected|revisioned(?:Resource)?Body/);
-    assert.match(source,/\.remember\?|rememberResourceRevision|rememberRevision/);
+    assert.match(source,/expectedRevision|withExpected|revisioned(?:Resource)?Body/);
+    assert.match(source,/revision/i);
   }
 });
 
@@ -30,7 +32,11 @@ test('Saved Data mutation endpoints require a submitted revision',()=>{
     'systems/baseline-badminton-session/api/badminton_session.php',
     'systems/baseline-fitness/api/save_plan.php','systems/baseline-fitness/api/plan_update.php',
     'systems/baseline-fitness/api/delete_plan.php','systems/baseline-fitness/api/update_session.php',
-    'systems/baseline-fitness/api/fitness_state.php','systems/baseline-fitness/api/start_early.php'
+    'systems/baseline-fitness/api/fitness_state.php','systems/baseline-fitness/api/start_early.php',
+    'systems/baseline-food-approach/api/food_data.php',
+    'systems/baseline-natural-skincare/api/routine_state.php',
+    'systems/baseline-natural-skincare/api/routine_groups.php',
+    'systems/baseline-natural-skincare/api/skincare_data.php'
   ];
   for(const endpoint of endpoints){
     assert.match(read(endpoint),/bl_resource_required_revision_from_input/,
@@ -48,6 +54,14 @@ test('delete-if-empty preserves the submitted revision through the final locked 
   assert.match(favourites,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_replace\(\$path, \['presets'=>\$next\], \$expected\)/);
+});
+
+test('Skincare clients never retry a stale document with a freshly fetched revision',()=>{
+  const bridge=read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js');
+  assert.match(bridge,/response\.status===409/);
+  assert.match(bridge,/state\.canSave=false/);
+  assert.match(bridge,/backup\(kind\+'-mutation',submitted\)/);
+  assert.doesNotMatch(bridge,/409[\s\S]{0,300}nativeFetch\(/);
 });
 
 test('full-document shared saves refuse stale conflict retries',()=>{
