@@ -67,6 +67,9 @@ try{
   }
 
   if($method !== 'POST') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
+  if(bl_resource_authority() === 'sqlite'){
+    bl_json(['ok'=>false,'error'=>'saved_data_cutover_required'], 409);
+  }
   $input = bl_input_json();
   $expectedRevision = bl_resource_required_revision_from_input($input);
   $action = strtolower(bl_skincare_slider_text($input['action'] ?? 'replace_sliders', 40));
