@@ -36,14 +36,18 @@ test('owner and Public Fitness calendars share the same two-row geometry with on
   assert.match(fitnessCss,/\.fitness-calendar-grid\.week-view/);
 });
 
-test('Public Fitness calendar reads Calisthenics plans from the same authority as the owner',()=>{
+test('Public Fitness calendar reads routine and Calisthenics data directly from Saved Data',()=>{
   assert.match(publicApi,/require_once __DIR__ \. '\/fitness_resource\.php'/);
-  assert.match(publicApi,/\$mode = bl_resource_authority\(\)/);
-  assert.match(publicApi,/if\(\$mode === 'saved-data'\)/);
+  assert.match(publicApi,/read-only projection of Saved Data/);
+  assert.match(publicApi,/bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
+  assert.match(publicApi,/bl_resource_file_read\(bl_public_fitness_v2_routine_path\(\$userId\)/);
+  assert.match(publicApi,/bl_fitness_account_by_name\(\$name\)/);
   assert.match(publicApi,/bl_fitness_resource_read\(\$userId\)/);
-  assert.match(publicApi,/bl_public_fitness_v2_resource_plans\(\$resource\['data'\]\)/);
+  assert.match(publicApi,/bl_public_fitness_v2_resource_plans\(\$fitness\['data'\]\)/);
   assert.match(publicApi,/\$rawCompleted = \$session\['completedAt'\] \?\? \$session\['completed_at'\]/);
-  assert.match(publicApi,/Public Calendar markers can lag/);
+  assert.doesNotMatch(publicApi,/\$mode = bl_resource_authority\(\)/);
+  assert.doesNotMatch(publicApi,/bl_public_fitness_v2_sqlite_plans/);
+  assert.doesNotMatch(publicApi,/fitness_routine_state|fitness_routine_groups|SELECT .* FROM plans/s);
 });
 
 test('Public Fitness saved-data plans preserve every completed session date for marker generation',()=>{
