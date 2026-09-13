@@ -69,8 +69,24 @@ function bl_resource_file_delete(string $path, ?int $expectedRevision=null): voi
   bl_resource_file_mutate($path, [], static fn(): ?array => null, $expectedRevision);
 }
 
-function bl_resource_file_delete_if_empty(string $path, array $data, callable $isEmpty): ?array {
-  if(!$isEmpty($data)) return bl_resource_file_replace($path, $data);
+/**
+ * Replace a resource with $data, or remove an empty migration/mirror snapshot.
+ *
+ * Browser-originated mutations must pass $expectedRevision. In that case an
+ * empty document is written as a revisioned envelope instead of being deleted;
+ * otherwise deleting the file would reset the apparent revision to zero and a
+ * stale browser could later recreate it without seeing the intervening write.
+ * Internal mirror/export callers may omit the revision so genuinely optional
+ * empty resources are not created unnecessarily.
+ */
+function bl_resource_file_delete_if_empty(
+  string $path,
+  array $data,
+  callable $isEmpty,
+  ?int $expectedRevision=null
+): ?array {
+  if(!$isEmpty($data)) return bl_resource_file_replace($path, $data, $expectedRevision);
+  if($expectedRevision !== null) return bl_resource_file_replace($path, $data, $expectedRevision);
   bl_resource_file_delete($path);
   return null;
 }
