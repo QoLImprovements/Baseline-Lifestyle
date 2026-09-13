@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/schema.php';
+require_once __DIR__ . '/fitness_resource.php';
 
 function bl_fitness_group_text($value, int $maximum): string {
   $text = trim((string)$value);
@@ -8,15 +8,6 @@ function bl_fitness_group_text($value, int $maximum): string {
     $text = function_exists('mb_substr') ? (string)mb_substr($text, 0, $maximum) : substr($text, 0, $maximum);
   }
   return $text;
-}
-
-function bl_fitness_group_decode(string $json, array $fallback): array {
-  try{
-    $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
-    return is_array($decoded) ? $decoded : $fallback;
-  }catch(Throwable $error){
-    return $fallback;
-  }
 }
 
 function bl_fitness_groups_normalise($value): array {
@@ -54,52 +45,69 @@ function bl_fitness_group_assignments($value, array $groups): array {
   return $assignments;
 }
 
-function bl_fitness_group_row(PDO $db, int $userId): ?array {
-  $statement = $db->prepare('SELECT groups_json, assignments_json, updated_at FROM fitness_routine_groups WHERE user_id=:user_id LIMIT 1');
-  $statement->execute([':user_id'=>$userId]);
-  $row = $statement->fetch();
-  return $row ?: null;
+function bl_fitness_group_resource_path(int $userId): string {
+  return bl_saved_user_resource_path($userId, 'fitness-routine');
 }
 
-function bl_fitness_group_payload(?array $row): array {
-  if(!$row) return ['ok'=>true,'hasState'=>false,'groups'=>[],'assignments'=>[],'updatedAt'=>null];
-  $groups = bl_fitness_groups_normalise(bl_fitness_group_decode((string)($row['groups_json'] ?? '[]'), []));
+function bl_fitness_group_default(): array {
+  return [
+    'visibility'=>'private',
+    'activities'=>[],
+    'logs'=>[],
+    'groups'=>[],
+    'assignments'=>[],
+  ];
+}
+
+function bl_fitness_group_resource(int $userId): array {
+  $resource = bl_resource_file_read(bl_fitness_group_resource_path($userId), bl_fitness_group_default());
+  $data = is_array($resource['data'] ?? null) ? $resource['data'] : [];
+  $resource['data'] = array_merge(bl_fitness_group_default(), $data);
+  return $resource;
+}
+
+function bl_fitness_group_payload(array $resource): array {
+  $data = $resource['data'] ?? [];
+  $groups = bl_fitness_groups_normalise($data['groups'] ?? []);
   return [
     'ok'=>true,
+    // A successful server read is authoritative even when groups are empty.
+    // Legacy browser groups must never auto-upload into an empty resource.
     'hasState'=>true,
     'groups'=>$groups,
-    'assignments'=>bl_fitness_group_assignments(bl_fitness_group_decode((string)($row['assignments_json'] ?? '{}'), []), $groups),
-    'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
+    'assignments'=>bl_fitness_group_assignments($data['assignments'] ?? [], $groups),
+    'revision'=>(int)($resource['revision'] ?? 0),
+    'updatedAt'=>$resource['updatedAt'] ?? null,
   ];
 }
 
 try{
-  $db = bl_fitness_db();
   $user = bl_require_user();
   $userId = (int)$user['id'];
   $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
-  if($method === 'GET') bl_json(bl_fitness_group_payload(bl_fitness_group_row($db, $userId)));
+  if($method === 'GET') bl_json(bl_fitness_group_payload(bl_fitness_group_resource($userId)));
   if($method !== 'POST') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
 
   $input = bl_input_json();
+  $expectedRevision = bl_resource_required_revision_from_input($input);
   $groups = bl_fitness_groups_normalise($input['groups'] ?? []);
   $assignments = bl_fitness_group_assignments($input['assignments'] ?? [], $groups);
-  $updated = bl_now();
-  $statement = $db->prepare('INSERT INTO fitness_routine_groups(user_id, groups_json, assignments_json, updated_at)
-    VALUES(:user_id,:groups_json,:assignments_json,:updated_at)
-    ON CONFLICT(user_id) DO UPDATE SET
-      groups_json=excluded.groups_json,
-      assignments_json=excluded.assignments_json,
-      updated_at=excluded.updated_at');
-  $statement->execute([
-    ':user_id'=>$userId,
-    ':groups_json'=>json_encode($groups, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-    ':assignments_json'=>json_encode($assignments, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),
-    ':updated_at'=>$updated,
-  ]);
+  $written = bl_resource_file_mutate(
+    bl_fitness_group_resource_path($userId),
+    bl_fitness_group_default(),
+    static function(array $current) use ($groups, $assignments): array {
+      $current = array_merge(bl_fitness_group_default(), $current);
+      $current['groups'] = $groups;
+      $current['assignments'] = $assignments;
+      return $current;
+    },
+    $expectedRevision
+  );
 
-  bl_json(bl_fitness_group_payload(bl_fitness_group_row($db, $userId)));
+  bl_json(bl_fitness_group_payload($written ?? bl_fitness_group_resource($userId)));
+}catch(BaselineSavedDataConflictException $error){
+  bl_resource_conflict_response($error);
 }catch(InvalidArgumentException $error){
   bl_json(['ok'=>false,'error'=>$error->getMessage()], 400);
 }catch(Throwable $error){
