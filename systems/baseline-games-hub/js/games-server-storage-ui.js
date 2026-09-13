@@ -1,4 +1,4 @@
-const BUILD='GAMES_SERVER_STORAGE_UI_20260823_1';
+const BUILD='GAMES_SERVER_STORAGE_UI_20260913_1';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
@@ -39,7 +39,7 @@ function enforceAccountCopy(){
   const description=accountCard()?.querySelector('.header-row .note');
   if(description&&description.textContent!==expected.description)description.textContent=expected.description;
 }
-const importLabels=Object.freeze({pairs:'Pairs',detectword:'Detect The Word',make24:'Make The Number',trackcoin:'Track The Coin',ruleshift:'Rule Shift',ninja:'Baseline Realm',dartsfocused:'Darts Focused',meridiangrove:'Meridian Grove'});
+const importLabels=Object.freeze({pairs:'Pairs',detectword:'Detect The Word',make24:'Make The Number',trackcoin:'Track The Coin',ruleshift:'Rule Shift',ninja:'Baseline Realm',dartsfocused:'Darts Focused',meridiangrove:'Meridian Grove',badmintonfocused:'Badminton Focused'});
 function ensureImportControls(state){
   const card=accountCard();
   let panel=document.getElementById('gamesBrowserProgressImport');
