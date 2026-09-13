@@ -35,6 +35,7 @@ test('every approved persistence surface has a file-backed path', () => {
     'systems/baseline-fitness/api/update_session.php',
     'systems/baseline-fitness/api/achievements.php',
     'systems/baseline-fitness/api/list_profiles.php',
+    'systems/baseline-fitness/api/routine_state.php',
     'systems/baseline-fitness/api/routine_groups.php',
     'systems/baseline-badminton-session/api/badminton_session.php',
   ];
@@ -72,16 +73,24 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
 });
 
-test('Fitness Routine Groups use the shared revisioned Saved Data resource', () => {
+test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
   const paths = read('sitewide/api/saved_data.php');
+  const state = read('systems/baseline-fitness/api/routine_state.php');
   const groups = read('systems/baseline-fitness/api/routine_groups.php');
   const bridge = read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
   const api = read('sitewide/js/baseline-api.js');
   assert.match(paths, /'fitness-routine'\s*=>\s*'fitness-routine\.json'/);
+  assert.match(state, /bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
   assert.match(groups, /bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
+  assert.match(state, /bl_resource_required_revision_from_input/);
   assert.match(groups, /bl_resource_required_revision_from_input/);
   assert.match(groups, /'hasState'=>true/);
+  assert.doesNotMatch(state, /fitness_routine_state\s+WHERE|INSERT INTO fitness_routine_state/);
   assert.doesNotMatch(groups, /fitness_routine_groups\s+WHERE|INSERT INTO fitness_routine_groups/);
+  assert.match(state, /bl_fitness_profile_names_from_files/);
+  assert.match(state, /bl_fitness_account_by_name/);
+  assert.match(state, /array_merge\(bl_fitness_routine_default\(\), \$current\)/);
+  assert.match(groups, /array_merge\(bl_fitness_group_default\(\), \$current\)/);
   assert.match(bridge, /fitness-routine/);
   assert.match(bridge, /withExpected/);
   assert.match(bridge, /save_blocked/);
