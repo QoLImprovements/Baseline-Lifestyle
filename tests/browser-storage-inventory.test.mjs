@@ -30,7 +30,7 @@ test("browser-storage inventory scans production sources deterministically", () 
   const second = collectBrowserStorageInventory(root);
   console.log(`BASELINE_BROWSER_STORAGE_INVENTORY=${JSON.stringify(first)}`);
   assert.deepEqual(second, first);
-  assert.deepEqual(first.productionPaths, ["index.html", "sitewide", "systems"]);
+  assert.deepEqual(first.productionPaths, ["index.html", "index", "sitewide", "systems"]);
   assert.ok(first.scannedFiles > 10, "expected production source files");
   assert.ok(first.occurrenceCount > 0, "expected browser-storage accesses");
   assert.ok(first.groups.some((group) => group.pattern.includes("voice_settings")));
