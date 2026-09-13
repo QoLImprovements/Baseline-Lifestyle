@@ -104,6 +104,7 @@ function bl_saved_user_resource_path(int $userId, string $resource): string {
     'favourites' => 'favourites.json',
     'binaural' => 'binaural.json',
     'fitness' => 'fitness.json',
+    'fitness-routine' => 'fitness-routine.json',
     'voice' => 'voice.json',
     'food' => 'food.json',
     'skincare' => 'skincare.json',
