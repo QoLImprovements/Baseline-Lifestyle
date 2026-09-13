@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT = path.resolve(HERE, "..");
-const PRODUCTION_PATHS = Object.freeze(["index.html", "sitewide", "systems"]);
+const PRODUCTION_PATHS = Object.freeze(["index.html", "index", "sitewide", "systems"]);
 const INCLUDED_EXTENSIONS = new Set([".js", ".mjs", ".html", ".php"]);
 const EXCLUDED_DIRECTORIES = new Set([
   ".git",
