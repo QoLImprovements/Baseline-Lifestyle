@@ -93,7 +93,12 @@ try{
         $next[] = $preset;
       }
       if($action === 'delete'){
-        $written = bl_resource_file_delete_if_empty($path, ['presets'=>$next], static fn(array $data): bool => ($data['presets'] ?? []) === []);
+        $written = bl_resource_file_delete_if_empty(
+          $path,
+          ['presets'=>$next],
+          static fn(array $data): bool => ($data['presets'] ?? []) === [],
+          $expected
+        );
         bl_json(['ok'=>true,'revision'=>(int)($written['revision'] ?? 0)]);
       }
       if($action !== 'save') bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
@@ -113,7 +118,7 @@ try{
         'createdAt'=>is_array($existing) && is_string($existing['createdAt'] ?? null) ? $existing['createdAt'] : $now,
         'updatedAt'=>$now,
       ]);
-      $written = bl_resource_file_replace($path, ['presets'=>$next], $resource['revision']);
+      $written = bl_resource_file_replace($path, ['presets'=>$next], $expected);
       $response = ['ok'=>true,'revision'=>$written['revision']];
       $response[is_array($existing) ? 'updated' : 'created'] = true;
       bl_json($response);
