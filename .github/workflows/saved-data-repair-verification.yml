@@ -1,0 +1,66 @@
+name: Saved Data repair verification
+on:
+  push:
+    branches: [test/saved-data-repair-20260913]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: 8255d0d95974050233d8fa4482de6c469977307a
+          persist-credentials: false
+      - run: git archive --format=tar.gz --output=baseline-source.tar.gz HEAD
+      - uses: actions/upload-artifact@v7
+        with:
+          name: baseline-source
+          path: baseline-source.tar.gz
+          retention-days: 1
+  contracts:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [php, games, unit]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: PHP syntax and contracts
+        if: matrix.suite == 'php'
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do php -l "$file" >/dev/null; done < <(find sitewide systems tests -name '*.php' -print0)
+          npm run test:saved-data-php
+      - if: matrix.suite == 'games'
+        run: npm run test:realm-stage2
+      - if: matrix.suite == 'unit'
+        run: npm test && npm run test:fitness && npm run test:voice
+  baseline-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: 8255d0d95974050233d8fa4482de6c469977307a
+          persist-credentials: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/skincare-testing-recipes-browser.spec.js tests/universal-recipe-template.spec.js --retries=0 --reporter=line
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: baseline-browser-failures
+          path: test-results
+          retention-days: 1
