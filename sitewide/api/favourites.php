@@ -92,7 +92,12 @@ try{
       }
       if(!$found) $next[] = ['app'=>$app,'recipeId'=>$rid,'createdAt'=>gmdate('c')];
       usort($next, static fn(array $a, array $b): int => strcmp((string)($a['app'] ?? '') . ':' . (string)($a['recipeId'] ?? ''), (string)($b['app'] ?? '') . ':' . (string)($b['recipeId'] ?? '')));
-      $written = bl_resource_file_delete_if_empty($path, ['items'=>$next], static fn(array $data): bool => ($data['items'] ?? []) === []);
+      $written = bl_resource_file_delete_if_empty(
+        $path,
+        ['items'=>$next],
+        static fn(array $data): bool => ($data['items'] ?? []) === [],
+        $expected
+      );
       bl_json([
         'ok'=>true,
         'favourited'=>!$found,
