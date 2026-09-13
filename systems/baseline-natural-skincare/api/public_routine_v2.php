@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/schema.php';
+require_once __DIR__ . '/skincare_saved_data.php';
 
 function bl_public_skin_text($value, int $maximum): string {
   $text = trim((string)$value);
@@ -8,15 +8,6 @@ function bl_public_skin_text($value, int $maximum): string {
     $text = function_exists('mb_substr') ? (string)mb_substr($text, 0, $maximum) : substr($text, 0, $maximum);
   }
   return $text;
-}
-
-function bl_public_skin_decode(string $json, array $fallback): array {
-  try{
-    $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
-    return is_array($decoded) ? $decoded : $fallback;
-  }catch(Throwable $error){
-    return $fallback;
-  }
 }
 
 function bl_public_skin_frequency($value): array {
@@ -29,11 +20,7 @@ function bl_public_skin_frequency($value): array {
     $day = bl_public_skin_text($day, 12);
     if(in_array($day, $allowedDays, true) && !in_array($day, $days, true)) $days[] = $day;
   }
-  return [
-    'mode'=>$mode,
-    'days'=>$days,
-    'timesPerWeek'=>max(1, min(14, (int)($source['timesPerWeek'] ?? 3))),
-  ];
+  return ['mode'=>$mode,'days'=>$days,'timesPerWeek'=>max(1,min(14,(int)($source['timesPerWeek'] ?? 3)))];
 }
 
 function bl_public_skin_routine($value): array {
@@ -65,31 +52,6 @@ function bl_public_skin_routine($value): array {
   return $output;
 }
 
-function bl_public_skin_logs($value): array {
-  if(!is_array($value)) return [];
-  $dates = array_keys($value);
-  sort($dates, SORT_STRING);
-  $dates = array_slice($dates, -366);
-  $logs = [];
-  foreach($dates as $date){
-    if(preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$date) !== 1) continue;
-    $entries = [];
-    foreach((is_array($value[$date] ?? null) ? $value[$date] : []) as $itemId=>$raw){
-      if(!is_array($raw)) continue;
-      $id = bl_public_skin_text($itemId, 80);
-      if($id === '') continue;
-      $completedAt = bl_public_skin_text($raw['completedAt'] ?? '', 40);
-      if($completedAt !== '' && strtotime($completedAt) === false) $completedAt = '';
-      $entries[$id] = [
-        'completed'=>!empty($raw['completed']),
-        'completedAt'=>$completedAt,
-      ];
-    }
-    if($entries !== []) $logs[(string)$date] = $entries;
-  }
-  return $logs;
-}
-
 function bl_public_skin_groups($value): array {
   $output = [];
   $ids = [];
@@ -99,11 +61,13 @@ function bl_public_skin_groups($value): array {
     $title = bl_public_skin_text($raw['title'] ?? '', 80);
     if($id === '' || $title === '' || isset($ids[$id])) continue;
     $ids[$id] = true;
+    $time = strtolower(bl_public_skin_text($raw['timeOfDay'] ?? 'anytime', 20));
+    if(!in_array($time, ['morning','evening','anytime'], true)) $time = 'anytime';
     $output[] = [
       'id'=>$id,
       'title'=>$title,
       'applyTime'=>!empty($raw['applyTime']),
-      'timeOfDay'=>bl_public_skin_text($raw['timeOfDay'] ?? 'anytime', 20),
+      'timeOfDay'=>$time,
       'applyFrequency'=>!empty($raw['applyFrequency']),
       'frequency'=>bl_public_skin_frequency($raw['frequency'] ?? []),
     ];
@@ -112,31 +76,25 @@ function bl_public_skin_groups($value): array {
 }
 
 try{
-  if(strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
+  if(strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'GET') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
   $name = bl_public_skin_text($_GET['name'] ?? '', BL_MAX_NAME_LEN);
   if($name === '') bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
 
   $db = bl_skincare_db();
-  $statement = $db->prepare('SELECT u.id, u.name, r.visibility, r.routine_json, r.logs_json, r.updated_at
-    FROM users u
-    LEFT JOIN skincare_routines r ON r.user_id=u.id
-    WHERE lower(u.name)=lower(:name)
-    LIMIT 1');
-  $statement->execute([':name'=>$name]);
-  $row = $statement->fetch();
-  if(!$row || $row['routine_json'] === null) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
-  if(strtolower((string)($row['visibility'] ?? 'private')) !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
+  $identity = bl_skincare_saved_identity_by_name($db, $name);
+  if(!$identity) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
 
-  $userId = (int)($row['id'] ?? 0);
-  $logs = bl_public_skin_logs(bl_public_skin_decode((string)($row['logs_json'] ?? '{}'), []));
-  $groupStatement = $db->prepare('SELECT groups_json, assignments_json FROM skincare_routine_groups WHERE user_id=:user_id LIMIT 1');
-  $groupStatement->execute([':user_id'=>$userId]);
-  $groupRow = $groupStatement->fetch() ?: [];
-  $groups = bl_public_skin_groups(bl_public_skin_decode((string)($groupRow['groups_json'] ?? '[]'), []));
+  $resource = bl_skincare_saved_read($db, (int)$identity['id']);
+  $data = is_array($resource['data'] ?? null) ? $resource['data'] : [];
+  $routine = bl_public_skin_routine($data['routine'] ?? []);
+  if(!$resource['found'] || $routine === []) bl_json(['ok'=>false,'error'=>'routine_not_found'], 404);
+  if(($data['visibility'] ?? '') !== 'public') bl_json(['ok'=>false,'error'=>'routine_private'], 403);
+
+  $groups = bl_public_skin_groups($data['groups'] ?? []);
   $validGroups = [];
   foreach($groups as $group) $validGroups[(string)$group['id']] = true;
   $assignments = [];
-  foreach(bl_public_skin_decode((string)($groupRow['assignments_json'] ?? '{}'), []) as $itemId=>$groupId){
+  foreach((is_array($data['assignments'] ?? null) ? $data['assignments'] : []) as $itemId=>$groupId){
     $item = bl_public_skin_text($itemId, 80);
     $group = bl_public_skin_text($groupId, 80);
     if($item !== '' && isset($validGroups[$group])) $assignments[$item] = $group;
@@ -145,12 +103,11 @@ try{
   bl_json([
     'ok'=>true,
     'publicRoutine'=>[
-      'owner'=>(string)($row['name'] ?? $name),
-      'routine'=>bl_public_skin_routine(bl_public_skin_decode((string)($row['routine_json'] ?? '[]'), [])),
-      'logs'=>$logs,
+      'owner'=>$identity['name'],
+      'routine'=>$routine,
       'groups'=>$groups,
       'assignments'=>$assignments,
-      'updatedAt'=>gmdate('c', (int)($row['updated_at'] ?? time())),
+      'updatedAt'=>$resource['updatedAt'],
     ],
   ]);
 }catch(Throwable $error){
