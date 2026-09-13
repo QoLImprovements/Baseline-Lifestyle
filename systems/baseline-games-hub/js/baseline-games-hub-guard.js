@@ -1,29 +1,31 @@
 (function(global){
   'use strict';
 
-  const BUILD='GAMES_HUB_STORAGE_20260823_1';
+  const BUILD='GAMES_HUB_STORAGE_20260913_1';
   const DATA_API='/systems/baseline-games-hub/api/games_data.php';
   const CORE_APPS=['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
-  const ALL_APPS=[...CORE_APPS,'dartsfocused','meridiangrove'];
+  const ALL_APPS=[...CORE_APPS,'dartsfocused','meridiangrove','badmintonfocused'];
   const KEYS=Object.freeze({
     guestProfiles:'__bl_games_guest_profiles_v1__',
     trackCoin:'__bl_trackcoin_v1__',
     autoNext:'__bl_games_auto_next_v1__',
     darts:'__bl_darts_focused_v1__',
     meridian:'baseline.realm.exploration.jrpg.v1',
+    badminton:'__bl_badminton_focused_v1__',
     realmV2:'__bl_baseline_realm_v2__',
     realmV3:'__bl_baseline_realm_v3__',
     realmBackup:'__bl_baseline_realm_v3_backup__',
     realmJournal:'__bl_baseline_realm_v3_journal__'
   });
   const MANAGED_KEYS=new Set([
-    KEYS.guestProfiles,KEYS.trackCoin,KEYS.darts,KEYS.meridian,
+    KEYS.guestProfiles,KEYS.trackCoin,KEYS.darts,KEYS.meridian,KEYS.badminton,
     KEYS.realmV2,KEYS.realmV3,KEYS.realmBackup,KEYS.realmJournal
   ]);
   const DIRECT_APP=Object.freeze({
     [KEYS.trackCoin]:'trackcoin',
     [KEYS.darts]:'dartsfocused',
-    [KEYS.meridian]:'meridiangrove'
+    [KEYS.meridian]:'meridiangrove',
+    [KEYS.badminton]:'badmintonfocused'
   });
   const memory=new Map();
   const pending=Object.create(null);
@@ -81,6 +83,7 @@
     if(!profiles.ninja){const realm=legacyNinjaFromRealm(nativeRead(KEYS.realmV3))||legacyNinjaFromRealm(nativeRead(KEYS.realmV2));if(realm)profiles.ninja=realm;}
     const darts=parse(nativeRead(KEYS.darts));if(darts&&typeof darts==='object')profiles.dartsfocused=darts;
     const meridian=parse(nativeRead(KEYS.meridian));if(meridian&&typeof meridian==='object')profiles.meridiangrove=meridian;
+    const badminton=parse(nativeRead(KEYS.badminton));if(badminton&&typeof badminton==='object')profiles.badmintonfocused=badminton;
     return profiles;
   }
   function prepareMemory(profiles){
@@ -91,6 +94,7 @@
     if(profiles.trackcoin)memory.set(KEYS.trackCoin,serialise(profiles.trackcoin));
     if(profiles.dartsfocused)memory.set(KEYS.darts,serialise(profiles.dartsfocused));
     if(profiles.meridiangrove)memory.set(KEYS.meridian,serialise(profiles.meridiangrove));
+    if(profiles.badmintonfocused)memory.set(KEYS.badminton,serialise(profiles.badmintonfocused));
   }
   function revisionFor(app){const value=Number(state.revisions[app]);return Number.isInteger(value)&&value>=0?value:0;}
   function rememberRevisions(revisions){
@@ -113,6 +117,7 @@
     if(app==='trackcoin')nativeDelete(KEYS.trackCoin);
     if(app==='dartsfocused')nativeDelete(KEYS.darts);
     if(app==='meridiangrove')nativeDelete(KEYS.meridian);
+    if(app==='badmintonfocused')nativeDelete(KEYS.badminton);
   }
   function bootstrap(){
     const legacy=collectLegacyProfiles();
