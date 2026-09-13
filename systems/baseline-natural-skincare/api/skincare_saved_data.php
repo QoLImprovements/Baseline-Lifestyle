@@ -110,15 +110,21 @@ function bl_skincare_saved_read(PDO $db, int $userId): array {
 
   $sqlite = bl_skincare_saved_sqlite_snapshot($db, $userId);
   $revision = 0;
+  $data = $sqlite['data'];
   if($mode === 'mirror'){
     $mirror = bl_resource_file_read($path, bl_skincare_saved_default());
     $revision = (int)$mirror['revision'];
+    $mirrorData = is_array($mirror['data'] ?? null) ? $mirror['data'] : [];
+    /* Sliders have no legacy SQLite representation. During mirror mode they
+       live only in the protected Saved Data copy while routine/groups remain
+       SQLite-primary until the final authority switch. */
+    if(is_array($mirrorData['sliders'] ?? null)) $data['sliders'] = $mirrorData['sliders'];
   }
   return [
     'revision'=>$revision,
     'updatedAt'=>$sqlite['updatedAt'],
-    'data'=>$sqlite['data'],
-    'found'=>(bool)$sqlite['hasData'],
+    'data'=>$data,
+    'found'=>(bool)$sqlite['hasData'] || $revision > 0,
     'source'=>$mode,
   ];
 }
