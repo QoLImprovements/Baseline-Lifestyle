@@ -69,9 +69,14 @@ function bl_resource_file_delete(string $path, ?int $expectedRevision=null): voi
   bl_resource_file_mutate($path, [], static fn(): ?array => null, $expectedRevision);
 }
 
-function bl_resource_file_delete_if_empty(string $path, array $data, callable $isEmpty): ?array {
-  if(!$isEmpty($data)) return bl_resource_file_replace($path, $data);
-  bl_resource_file_delete($path);
+function bl_resource_file_delete_if_empty(
+  string $path,
+  array $data,
+  callable $isEmpty,
+  ?int $expectedRevision=null
+): ?array {
+  if(!$isEmpty($data)) return bl_resource_file_replace($path, $data, $expectedRevision);
+  bl_resource_file_delete($path, $expectedRevision);
   return null;
 }
 
