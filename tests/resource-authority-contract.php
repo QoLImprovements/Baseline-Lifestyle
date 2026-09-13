@@ -29,6 +29,7 @@ function bl_resource_test_remove(string $directory): void {
 
 try{
   bl_resource_test_assert(bl_resource_authority() === 'saved-data', 'authority mode failed');
+  bl_resource_test_assert(str_ends_with(bl_saved_user_resource_path(7, 'fitness-routine'), '/Users/000007/fitness-routine.json'), 'fitness routine path failed');
 
   $path = bl_saved_user_resource_path(7, 'favourites');
   $first = bl_resource_file_mutate($path, ['items'=>[]], static function(array $data): array {
