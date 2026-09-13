@@ -39,6 +39,17 @@ test('Saved Data mutation endpoints require a submitted revision',()=>{
   assert.match(read('sitewide/api/resource_authority.php'),/expected_revision_required/);
 });
 
+test('delete-if-empty preserves the submitted revision through the final locked mutation',()=>{
+  const authority=read('sitewide/api/resource_authority.php');
+  assert.match(authority,/function bl_resource_file_delete_if_empty\([\s\S]*?\?int \$expectedRevision=null[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)[\s\S]*?bl_resource_file_delete\(\$path, \$expectedRevision\)/);
+
+  const favourites=read('sitewide/api/favourites.php');
+  const binaural=read('sitewide/api/binaural.php');
+  assert.match(favourites,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
+  assert.match(binaural,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
+  assert.match(binaural,/bl_resource_file_replace\(\$path, \['presets'=>\$next\], \$expected\)/);
+});
+
 test('full-document shared saves refuse stale conflict retries',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const stability=read('sitewide/js/baseline-live-stability-core-v3.js');
