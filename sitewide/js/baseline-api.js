@@ -113,8 +113,18 @@
     revisions,
   };
 
+  /* Natural Skincare still has legacy clients that call fetch/localStorage
+     directly. Load the compatibility bridge while the parser is here so it is
+     installed before those clients register their DOM-ready migrations. */
+  const document = scope.document;
+  if(document && !isFile && document.documentElement?.dataset?.app === 'skin' && document.readyState === 'loading'){
+    if(!scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__){
+      scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__ = true;
+      document.write('<script src="/systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js?v=SKINCARE_SAVED_DATA_BRIDGE_20260913_1"><\/script>');
+    }
+  }
+
   function removeObsoleteUpdateFooter(){
-    const document = scope.document;
     if(!document) return;
     const app = document.documentElement?.dataset?.app || document.body?.dataset?.app || '';
     if(app !== 'skin' && app !== 'food') return;
@@ -123,7 +133,6 @@
     });
   }
 
-  const document = scope.document;
   if(document){
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', removeObsoleteUpdateFooter, { once:true });
     else removeObsoleteUpdateFooter();
