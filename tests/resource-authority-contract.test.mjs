@@ -35,11 +35,12 @@ test('every approved persistence surface has a file-backed path', () => {
     'systems/baseline-fitness/api/update_session.php',
     'systems/baseline-fitness/api/achievements.php',
     'systems/baseline-fitness/api/list_profiles.php',
+    'systems/baseline-fitness/api/routine_groups.php',
     'systems/baseline-badminton-session/api/badminton_session.php',
   ];
   for(const file of files){
     const source = read(file);
-    assert.match(source, /resource_authority|fitness_resource|badminton_storage/, `${file} is SQLite-only`);
+    assert.match(source, /resource_authority|resource_file|fitness_resource|badminton_storage|bl_saved_/, `${file} is SQLite-only`);
   }
 });
 
@@ -69,6 +70,23 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
+});
+
+test('Fitness Routine Groups use the shared revisioned Saved Data resource', () => {
+  const paths = read('sitewide/api/saved_data.php');
+  const groups = read('systems/baseline-fitness/api/routine_groups.php');
+  const bridge = read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
+  const api = read('sitewide/js/baseline-api.js');
+  assert.match(paths, /'fitness-routine'\s*=>\s*'fitness-routine\.json'/);
+  assert.match(groups, /bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
+  assert.match(groups, /bl_resource_required_revision_from_input/);
+  assert.match(groups, /'hasState'=>true/);
+  assert.doesNotMatch(groups, /fitness_routine_groups\s+WHERE|INSERT INTO fitness_routine_groups/);
+  assert.match(bridge, /fitness-routine/);
+  assert.match(bridge, /withExpected/);
+  assert.match(bridge, /save_blocked/);
+  assert.match(bridge, /Saving has stopped/);
+  assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
 test('account projections and index synchronization exclude authentication secrets', () => {
