@@ -122,15 +122,15 @@ function scanFile(root, relativePath) {
   const patterns = [
     {
       owner: "localStorage",
-      regex: /\b(?:global\.)?localStorage\s*\.\s*(getItem|setItem|removeItem)\s*\(\s*([^,\n\)]+)/g,
+      regex: /\b(?:global\.)?localStorage\s*\??\.\s*(getItem|setItem|removeItem)\s*\(\s*([^,\n\)]+)/g,
     },
     {
       owner: "sessionStorage",
-      regex: /\b(?:global\.)?sessionStorage\s*\.\s*(getItem|setItem|removeItem)\s*\(\s*([^,\n\)]+)/g,
+      regex: /\b(?:global\.)?sessionStorage\s*\??\.\s*(getItem|setItem|removeItem)\s*\(\s*([^,\n\)]+)/g,
     },
     {
       owner: "BASELINE_store",
-      regex: /\b(?:global\.)?(?:BASELINE_store|STORE)\s*\.\s*(read|write|del)\s*\(\s*([^,\n\)]+)/g,
+      regex: /\b(?:global\.)?(?:BASELINE_store|STORE)\s*\??\.\s*(read|write|del)\s*\(\s*([^,\n\)]+)/g,
     },
     {
       owner: "storage-wrapper",
