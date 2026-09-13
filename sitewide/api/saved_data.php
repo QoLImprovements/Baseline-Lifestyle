@@ -105,6 +105,8 @@ function bl_saved_user_resource_path(int $userId, string $resource): string {
     'binaural' => 'binaural.json',
     'fitness' => 'fitness.json',
     'voice' => 'voice.json',
+    'food' => 'food.json',
+    'skincare' => 'skincare.json',
   ];
   if(!isset($files[$resource])) throw new InvalidArgumentException('invalid_user_resource');
   return bl_saved_join(bl_saved_root(), 'Users', bl_saved_user_folder($userId), $files[$resource]);
@@ -127,6 +129,8 @@ function bl_saved_game_files(): array {
     'darts-focused' => 'darts-focused.json',
     'meridiangrove' => 'meridian-grove.json',
     'meridian-grove' => 'meridian-grove.json',
+    'badmintonfocused' => 'badminton-focused.json',
+    'badminton-focused' => 'badminton-focused.json',
   ];
 }
 
