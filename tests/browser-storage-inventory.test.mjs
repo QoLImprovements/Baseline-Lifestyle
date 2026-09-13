@@ -64,7 +64,7 @@ test("every discovered storage group has one reviewed migration decision", () =>
   assert.deepEqual(stale, [], `stale inventory patterns: ${stale.join(", ")}`);
 });
 
-test("migration rules are explicit and preserve unresolved user content", () => {
+test("migration rules are explicit and known blockers now have approved resources", () => {
   assert.equal(mapping.formatVersion, 1);
   assert.match(mapping.authority, /Saved Data resource files are the target production authority/i);
   const rules = mapping.rules || [];
@@ -80,11 +80,19 @@ test("migration rules are explicit and preserve unresolved user content", () => 
     assert.ok(rule.cutoverRule, `${rule.id}: cutover rule required`);
   }
 
-  for(const id of ["diet-log-local-content", "skincare-slider-settings", "badminton-focused-game"]){
-    const rule = rules.find((candidate) => candidate.id === id);
-    assert.equal(rule?.decision, "preserve-local-and-block-retirement");
-    assert.equal(rule?.target, null);
-  }
+  const food=rules.find((rule)=>rule.id==="diet-log-local-content");
+  assert.equal(food?.target,"Users/{paddedUserId}/food.json");
+  assert.equal(food?.decision,"migrate-authenticated-value");
+
+  const skincare=rules.find((rule)=>rule.id==="skincare-slider-settings");
+  assert.equal(skincare?.target,"Users/{paddedUserId}/skincare.json#sliders");
+  assert.equal(skincare?.decision,"migrate-authenticated-value");
+
+  const badmintonFocused=rules.find((rule)=>rule.id==="badminton-focused-game");
+  assert.equal(badmintonFocused?.target,"Users/{paddedUserId}/Games/badminton-focused.json");
+  assert.equal(badmintonFocused?.decision,"migrate-explicitly");
+
+  assert.equal(rules.some((rule)=>rule.decision==="preserve-local-and-block-retirement"),false);
 });
 
 test("shared Badminton browser state uses the agreed nested resource path", () => {
@@ -110,11 +118,16 @@ test("game browser data maps to canonical physical save files", () => {
   assert.equal(mapping.canonicalGameFiles?.ruleshift, "rule-shift.json");
   assert.equal(mapping.canonicalGameFiles?.dartsfocused, "darts-focused.json");
   assert.equal(mapping.canonicalGameFiles?.meridiangrove, "meridian-grove.json");
+  assert.equal(mapping.canonicalGameFiles?.badmintonfocused, "badminton-focused.json");
 
   const rules = mapping.rules || [];
   assert.equal(
     rules.find((rule) => rule.id === "trackcoin-game")?.target,
     "Users/{paddedUserId}/Games/track-coin.json",
+  );
+  assert.equal(
+    rules.find((rule) => rule.id === "badminton-focused-game")?.target,
+    "Users/{paddedUserId}/Games/badminton-focused.json",
   );
   for(const id of ["realm-exploration-game", "realm-tactical-v1-legacy", "realm-tactical-v2"]){
     assert.match(
