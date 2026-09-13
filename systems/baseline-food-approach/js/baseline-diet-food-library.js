@@ -5,6 +5,7 @@
   var here=document.currentScript&&document.currentScript.src?document.currentScript.src:"";
   var base=here?here.replace(/[^/]*$/,""):"";
   var files=[
+  "food-saved-data-bridge.js",
   "../Diet Log/food-library/runtime/cofid-current/cofid-current--beverages--20260617.js",
   "../Diet Log/food-library/runtime/cofid-current/cofid-current--condiments-and-sauces--20260617.js",
   "../Diet Log/food-library/runtime/cofid-current/cofid-current--fish-and-seafood--20260617.js",
