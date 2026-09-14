@@ -95,6 +95,11 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(bridge, /withExpected/);
   assert.match(bridge, /save_blocked/);
   assert.match(bridge, /Saving has stopped/);
+  assert.match(bridge, /ACTIVE_LOCAL_PREFIXES/);
+  assert.match(bridge, /quarantineAuthenticatedLocal/);
+  assert.match(bridge, /authoritativeRoutineResponse/);
+  assert.match(bridge, /hasRoutine:true/);
+  assert.match(bridge, /Import legacy routine/);
   assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
