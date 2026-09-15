@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const BUILD='FOOD_SAVED_DATA_BRIDGE_20260913_1';
+  const BUILD='FOOD_SAVED_DATA_BRIDGE_20260915_1';
   const STORAGE_KEY='__baseline_food_diet_log_v1__';
   const CONFLICT_BACKUP_KEY='__baseline_food_diet_log_v1_conflict_backup__';
   const API='/systems/baseline-food-approach/api/food_data.php';
@@ -28,10 +28,16 @@
   function nativeRead(key){try{return local&&nativeGet?nativeGet.call(local,key):null;}catch(_error){return null;}}
   function nativeWrite(key,value){try{if(local&&nativeSet)nativeSet.call(local,key,String(value));}catch(_error){}}
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
+  function sessionAuthenticated(){try{return Boolean(global.BASELINE_auth?.get?.()?.authed);}catch(_error){return false;}}
   function emit(){
     try{document.dispatchEvent(new CustomEvent('baseline:food-saved-data',{detail:{status:state.status,authenticated:state.authenticated,canSave:state.canSave,revision:state.revision,hasImportCandidate:Boolean(state.importCandidate),error:state.lastError}}));}catch(_error){}
   }
-  function setState(status,error,authenticated,canSave){state.status=status;state.lastError=error||'';state.authenticated=Boolean(authenticated);state.canSave=Boolean(canSave);state.ready=true;emit();}
+  function renderBridgeUi(){renderMigrationChoice();renderAuthorityStatus();}
+  function requestRender(){
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderBridgeUi,{once:true});
+    else renderBridgeUi();
+  }
+  function setState(status,error,authenticated,canSave){state.status=status;state.lastError=error||'';state.authenticated=Boolean(authenticated);state.canSave=Boolean(canSave);state.ready=true;emit();requestRender();}
   function syncRequest(method,payload){
     let status=0;
     try{
@@ -53,6 +59,11 @@
   function backupConflict(documentValue){
     nativeWrite(CONFLICT_BACKUP_KEY,JSON.stringify({savedAt:new Date().toISOString(),revision:state.revision,document:normaliseDocument(documentValue)}));
   }
+  function blockWrite(){
+    document.documentElement.setAttribute('data-food-server-save-error',state.lastError||'save_blocked');
+    emit();
+    requestRender();
+  }
   function installAuthority(){
     if(state.installed||!storageProto||!nativeGet||!nativeSet||!nativeRemove)return;
     state.installed=true;
@@ -64,6 +75,7 @@
     storageProto.setItem=function(key,value){
       const name=String(key);
       if(this!==local||name!==STORAGE_KEY||!state.authenticated)return nativeSet.call(this,key,value);
+      if(!state.canSave){blockWrite();return;}
       const documentValue=parse(String(value));
       if(!documentValue)return;
       state.memory=serialise(documentValue);
@@ -72,6 +84,7 @@
     storageProto.removeItem=function(key){
       const name=String(key);
       if(this!==local||name!==STORAGE_KEY||!state.authenticated)return nativeRemove.call(this,key);
+      if(!state.canSave){blockWrite();return;}
       const empty=defaultDocument();
       state.memory=serialise(empty);
       queueSave(empty);
@@ -98,6 +111,7 @@
         state.lastError='revision_conflict';
         document.documentElement.setAttribute('data-food-server-save-error','revision_conflict');
         emit();
+        requestRender();
         return;
       }
       if(!response.ok||!data.ok)throw new Error(data.error||'save_failed');
@@ -106,6 +120,7 @@
       state.lastError='';
       document.documentElement.removeAttribute('data-food-server-save-error');
       emit();
+      requestRender();
     }catch(error){
       backupConflict(documentValue);
       state.canSave=false;
@@ -113,6 +128,7 @@
       state.lastError=String(error&&error.message||error||'save_failed');
       document.documentElement.setAttribute('data-food-server-save-error',state.lastError);
       emit();
+      requestRender();
     }finally{
       state.inFlight=false;
       if(state.pending&&state.canSave)drain();
@@ -127,7 +143,7 @@
     const panel=document.createElement('div');
     panel.id='foodSavedDataMigrationReview';
     panel.setAttribute('data-food-migration-review','true');
-    panel.innerHTML='<strong>Browser Diet Log data is available.</strong><p class="note">Your account already has Diet Log data, so the browser copy was not imported automatically. Choose which copy to keep.</p><div class="actions"><button type="button" data-food-import-browser>Import browser Diet Log</button><button type="button" data-food-keep-account>Keep account Diet Log</button></div>';
+    panel.innerHTML='<strong>Browser Diet Log data is available.</strong><p class="note">Saved Data is authoritative for this signed-in account. The browser copy was preserved and was not imported automatically. Choose which copy to keep.</p><div class="actions"><button type="button" data-food-import-browser>Import browser Diet Log</button><button type="button" data-food-keep-account>Keep account Diet Log</button></div>';
     panel.querySelector('[data-food-import-browser]')?.addEventListener('click',()=>{
       if(!global.confirm||global.confirm('Replace the current account Diet Log with the preserved browser copy?'))importBrowserData();
     });
@@ -141,6 +157,24 @@
     });
     host.before(panel);
   }
+  function renderAuthorityStatus(){
+    const existing=document.getElementById('foodSavedDataAuthorityStatus');
+    const blocked=state.authenticated&&!state.canSave&&state.status!=='loading';
+    if(!blocked){existing?.remove();return;}
+    const host=document.getElementById('dietLogApp');
+    if(!host||existing)return;
+    const panel=document.createElement('div');
+    panel.id='foodSavedDataAuthorityStatus';
+    panel.setAttribute('data-food-save-blocked','true');
+    const reason=state.status==='conflict'?'The account Diet Log changed elsewhere.':'The authoritative account Diet Log could not be saved or loaded.';
+    panel.innerHTML='<strong>Diet Log saving has stopped.</strong><p class="note">'+reason+' Reload the account copy before making more changes.</p><div class="actions"><button type="button" data-food-reload-account>Reload account Diet Log</button></div>';
+    panel.querySelector('[data-food-reload-account]')?.addEventListener('click',()=>{
+      state.pending=null;
+      global.clearTimeout(state.timer);
+      bootstrap();
+    });
+    host.before(panel);
+  }
   function importBrowserData(){
     if(!state.importCandidate||!state.canSave)return false;
     const result=syncRequest('POST',serverPayload(state.importCandidate,state.revision,'save'));
@@ -148,14 +182,15 @@
       state.lastError=result.error||'migration_failed';
       if(result.status===409){state.status='conflict';state.canSave=false;backupConflict(state.importCandidate);}
       emit();
+      requestRender();
       return false;
     }
     state.revision=Number(result.data.revision)||state.revision;
     state.memory=serialise(result.data.document||state.importCandidate);
     state.importCandidate=null;
     nativeDelete(STORAGE_KEY);
-    renderMigrationChoice();
-    emit();
+    document.documentElement.removeAttribute('data-food-server-save-error');
+    setState('ready','',true,true);
     global.location?.reload?.();
     return true;
   }
@@ -165,38 +200,29 @@
     const result=syncRequest('GET');
     if(!result.ok){
       if(result.status===401){setState('signed-out','',false,false);return;}
-      setState('unavailable',result.error,false,false);return;
+      if(sessionAuthenticated()){
+        installAuthority();
+        setState('unavailable',result.error,true,false);
+        return;
+      }
+      setState('unavailable',result.error,false,false);
+      return;
     }
     state.authenticated=true;
     state.revision=Number(result.data.revision)||0;
     const serverDocument=normaliseDocument(result.data.document||defaultDocument());
-    if(!result.data.found&&browserDocument){
-      const migrated=syncRequest('POST',serverPayload(browserDocument,0,'import_missing'));
-      if(migrated.ok){
-        state.revision=Number(migrated.data.revision)||1;
-        state.memory=serialise(migrated.data.document||browserDocument);
+    state.memory=serialise(serverDocument);
+    if(browserDocument){
+      if(equivalent(browserDocument,serverDocument)){
         nativeDelete(STORAGE_KEY);
         state.importCandidate=null;
-        installAuthority();
-        setState('ready','',true,true);
-        return;
+      }else{
+        state.importCandidate=normaliseDocument(browserDocument);
       }
-      if(migrated.status!==409){setState('migration-failed',migrated.error,true,false);return;}
-      const refreshed=syncRequest('GET');
-      if(!refreshed.ok){setState('migration-failed',refreshed.error,true,false);return;}
-      state.revision=Number(refreshed.data.revision)||0;
-      state.memory=serialise(refreshed.data.document||defaultDocument());
-      state.importCandidate=normaliseDocument(browserDocument);
-    }else{
-      state.memory=serialise(serverDocument);
-      if(browserDocument){
-        if(equivalent(browserDocument,serverDocument))nativeDelete(STORAGE_KEY);
-        else state.importCandidate=normaliseDocument(browserDocument);
-      }else state.importCandidate=null;
-    }
+    }else state.importCandidate=null;
     installAuthority();
+    document.documentElement.removeAttribute('data-food-server-save-error');
     setState('ready','',true,true);
-    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderMigrationChoice,{once:true});else renderMigrationChoice();
   }
   function flushPending(){
     if(!state.pending||!state.canSave)return;
@@ -208,7 +234,7 @@
   bootstrap();
   global.addEventListener('pagehide',flushPending);
   document.addEventListener('baseline:auth',()=>global.setTimeout(bootstrap,0));
-  document.addEventListener('baseline:food-saved-data',renderMigrationChoice);
+  document.addEventListener('baseline:food-saved-data',renderBridgeUi);
   document.documentElement.setAttribute('data-food-saved-data-bridge',BUILD);
   global.BaselineFoodSavedData=Object.freeze({
     build:BUILD,
@@ -218,6 +244,7 @@
     getRevision:()=>state.revision,
     hasImportCandidate:()=>Boolean(state.importCandidate),
     importBrowserData,
+    reloadAccountData:bootstrap,
     flush:flushPending
   });
 })(window);
