@@ -103,6 +103,31 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
+test('Voice Saved Data stays authoritative for authenticated settings', () => {
+  const endpoint = read('sitewide/api/voice_settings.php');
+  const voice = read('sitewide/js/baseline-voice.js');
+  const saveStart = voice.indexOf('async function saveSettings');
+  const loadStart = voice.indexOf('async function loadServerSettings');
+  const supportStart = voice.indexOf('function support');
+  assert.ok(saveStart > -1 && loadStart > saveStart && supportStart > loadStart);
+  const save = voice.slice(saveStart, loadStart);
+  const load = voice.slice(loadStart, supportStart);
+
+  assert.match(endpoint, /bl_resource_required_revision_from_input/);
+  assert.match(save, /revisionedBody\(\{settings:candidate\}\)/);
+  assert.match(save, /accountSaveBlocked/);
+  assert.match(save, /Saving has stopped/);
+  assert.match(save, /Voice settings were not saved/);
+  assert.doesNotMatch(save, /Saved on this device\. Account synchronisation was unavailable/);
+  assert.doesNotMatch(load, /writeLocalSettings/);
+  assert.match(load, /data\.settings\?normaliseSettings\(data\.settings\):normaliseSettings\(DEFAULTS\)/);
+  assert.doesNotMatch(load, /method:\s*['"]POST['"]/);
+  assert.match(voice, /id=\"bl-voice-reload\"/);
+  assert.match(voice, /if\(lastSaveSucceeded\) closeSettings\(\)/);
+  assert.match(voice, /settings=normaliseSettings\(DEFAULTS\)/);
+  assert.match(voice, /settings=readLocalSettings\(\)/);
+});
+
 test('account projections and index synchronization exclude authentication secrets', () => {
   const account = read('sitewide/api/account_resource.php');
   assert.match(account, /Account Index|bl_saved_account_index_path/);
