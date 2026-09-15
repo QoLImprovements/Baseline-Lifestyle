@@ -121,7 +121,7 @@
   if(document && !isFile && app === 'skin' && document.readyState === 'loading'){
     if(!scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__){
       scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__ = true;
-      document.write('<script src="/systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js?v=SKINCARE_SAVED_DATA_BRIDGE_20260913_1"><\/script>');
+      document.write('<script src="/systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js?v=SKINCARE_SAVED_DATA_BRIDGE_20260915_1"><\/script>');
     }
   }
 
