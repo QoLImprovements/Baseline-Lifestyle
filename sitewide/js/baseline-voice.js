@@ -167,6 +167,8 @@
   let statusNode=null;
   let accountName='';
   let serverLoadToken=0;
+  let accountSaveBlocked=false;
+  let lastSaveSucceeded=true;
   const VOICE_RESOURCE='voice';
 
   function revisionClient(){ return global.BASELINE_api?.revisions || null; }
@@ -194,30 +196,57 @@
   function getSettings(){ return Object.assign({},settings); }
 
   async function saveSettings(next,options={}){
-    settings=normaliseSettings(Object.assign({},settings,next||{}));
-    writeLocalSettings(settings);
-    syncSettingsUi();
-    emitSettings();
-    if(options.server!==false && accountName && location.protocol!=='file:'){
-      try{
-        const response=await fetch(API_ENDPOINT,{
-          method:'POST',
-          credentials:'same-origin',
-          headers:{'Content-Type':'application/json','Accept':'application/json'},
-          body:JSON.stringify(revisionedBody({settings}))
-        });
-        const data=await response.json().catch(()=>null);
-        if(response.status===409&&data?.error==='revision_conflict'){
-          await loadServerSettings(accountName);
-          setStatus('Voice settings changed elsewhere. The latest account settings were reloaded; please make your change again.','warning');
-          return getSettings();
-        }
-        if(!response.ok||!data?.ok) throw new Error('save_failed');
-        rememberRevision(data);
-        setStatus('Voice settings saved to your account.','success');
-      }catch(_error){
-        setStatus('Saved on this device. Account synchronisation was unavailable.','warning');
+    const candidate=normaliseSettings(Object.assign({},settings,next||{}));
+    const authenticated=Boolean(accountName&&location.protocol!=='file:');
+    if(!authenticated){
+      settings=candidate;
+      writeLocalSettings(settings);
+      syncSettingsUi();
+      emitSettings();
+      lastSaveSucceeded=true;
+      return getSettings();
+    }
+    if(options.server===false){
+      settings=candidate;
+      syncSettingsUi();
+      emitSettings();
+      lastSaveSucceeded=true;
+      return getSettings();
+    }
+    if(accountSaveBlocked){
+      lastSaveSucceeded=false;
+      syncSettingsUi();
+      setStatus('Saving has stopped. Reload the authoritative account settings before making another change.','error');
+      return getSettings();
+    }
+    try{
+      const response=await fetch(API_ENDPOINT,{
+        method:'POST',
+        credentials:'same-origin',
+        headers:{'Content-Type':'application/json','Accept':'application/json'},
+        body:JSON.stringify(revisionedBody({settings:candidate}))
+      });
+      const data=await response.json().catch(()=>null);
+      if(response.status===409&&data?.error==='revision_conflict'){
+        accountSaveBlocked=true;
+        await loadServerSettings(accountName);
+        lastSaveSucceeded=false;
+        setStatus('Voice settings changed elsewhere. The latest account settings were reloaded; review them before saving again.','warning');
+        return getSettings();
       }
+      if(!response.ok||!data?.ok) throw new Error('save_failed');
+      rememberRevision(data);
+      settings=candidate;
+      accountSaveBlocked=false;
+      lastSaveSucceeded=true;
+      syncSettingsUi();
+      emitSettings();
+      setStatus('Voice settings saved to your account.','success');
+    }catch(_error){
+      accountSaveBlocked=true;
+      lastSaveSucceeded=false;
+      syncSettingsUi();
+      setStatus('Voice settings were not saved. Saving has stopped until you reload the authoritative account settings.','error');
     }
     return getSettings();
   }
@@ -230,14 +259,21 @@
       const response=await fetch(API_ENDPOINT,{credentials:'same-origin',headers:{'Accept':'application/json'}});
       const data=await response.json().catch(()=>null);
       if(token!==serverLoadToken) return getSettings();
-      if(response.ok&&data?.ok) rememberRevision(data);
-      if(response.ok&&data?.ok&&data.settings){
-        settings=normaliseSettings(data.settings);
-        writeLocalSettings(settings);
+      if(!response.ok||!data?.ok) throw new Error('load_failed');
+      rememberRevision(data);
+      settings=data.settings?normaliseSettings(data.settings):normaliseSettings(DEFAULTS);
+      accountSaveBlocked=false;
+      lastSaveSucceeded=true;
+      syncSettingsUi();
+      emitSettings();
+    }catch(_error){
+      if(token===serverLoadToken){
+        accountSaveBlocked=true;
+        lastSaveSucceeded=false;
         syncSettingsUi();
-        emitSettings();
+        setStatus('Account voice settings could not be loaded. Saving has stopped until you reload them.','error');
       }
-    }catch(_error){}
+    }
     return getSettings();
   }
 
@@ -599,6 +635,8 @@
       supportNode.innerHTML=`<strong>Browser status:</strong> Speech recognition ${info.recognition?'available':'unavailable'}; spoken responses ${info.synthesis?'available':'unavailable'}; secure microphone context ${info.secureContext?'available':'required'}.`;
       supportNode.dataset.supported=String(info.recognition&&info.synthesis&&info.secureContext);
     }
+    const reload=$('#bl-voice-reload',flyout);
+    if(reload) reload.hidden=!(accountName&&accountSaveBlocked);
     syncToggleState();
   }
 
@@ -671,6 +709,7 @@
         </div>
         <div class="bl-voice-actions">
           <button type="button" class="bl-mini-btn bl-voice-save-close" id="bl-voice-save">Save &amp; Close</button>
+          <button type="button" class="bl-mini-btn" id="bl-voice-reload" hidden>Reload account settings</button>
           <button type="button" class="bl-mini-btn" id="bl-voice-test-output">Test voice</button>
           <button type="button" class="bl-mini-btn" id="bl-voice-test-mic">Test microphone</button>
         </div>
@@ -684,7 +723,16 @@
       flyout.hidden?openSettings():closeSettings();
     });
     $('#bl-voice-close',flyout)?.addEventListener('click',closeSettings);
-    $('#bl-voice-save',flyout)?.addEventListener('click',async()=>{ await saveSettings(settingsFromUi()); closeSettings(); });
+    $('#bl-voice-save',flyout)?.addEventListener('click',async()=>{
+      await saveSettings(settingsFromUi());
+      if(lastSaveSucceeded) closeSettings();
+    });
+    $('#bl-voice-reload',flyout)?.addEventListener('click',async()=>{
+      if(!accountName) return;
+      setStatus('Reloading authoritative account voice settings...','');
+      await loadServerSettings(accountName);
+      if(!accountSaveBlocked) setStatus('Latest account voice settings reloaded. Review them before saving.','success');
+    });
     $('#bl-voice-test-output',flyout)?.addEventListener('click',async()=>{
       settings=normaliseSettings(Object.assign({},settings,settingsFromUi(),{spokenResponses:true}));
       setStatus('Playing the selected voice.','');
@@ -729,8 +777,24 @@
     const apply=snapshot=>{
       const authed=Boolean(snapshot?.authed);
       const name=authed?String(snapshot?.name||snapshot?.user?.name||'').trim():'';
-      if(!authed){ accountName=''; ++serverLoadToken; return; }
-      if(name&&name!==accountName) loadServerSettings(name);
+      if(!authed){
+        accountName='';
+        ++serverLoadToken;
+        accountSaveBlocked=false;
+        lastSaveSucceeded=true;
+        settings=readLocalSettings();
+        syncSettingsUi();
+        emitSettings();
+        return;
+      }
+      if(name&&name!==accountName){
+        accountSaveBlocked=true;
+        lastSaveSucceeded=false;
+        settings=normaliseSettings(DEFAULTS);
+        syncSettingsUi();
+        emitSettings();
+        loadServerSettings(name);
+      }
     };
     try{ apply(global.BASELINE_auth?.get?.()); }catch(_error){}
     try{ global.BASELINE_auth?.onChange?.(apply); }catch(_error){}
