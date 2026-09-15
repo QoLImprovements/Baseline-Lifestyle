@@ -152,6 +152,7 @@ test('Food Saved Data remains authoritative and legacy browser data requires exp
 test('account projections and index synchronization exclude authentication secrets', () => {
   const account = read('sitewide/api/account_resource.php');
   assert.match(account, /Account Index|bl_saved_account_index_path/);
+  assert.match(account, /account\.json|bl_saved_user_resource_path/);
   assert.doesNotMatch(account, /pass_hash|google_sub|passwordHash|providerSubject/);
   for(const endpoint of ['sitewide/api/login.php','sitewide/api/register.php','sitewide/api/google_callback.php']){
     assert.match(read(endpoint), /bl_account_resource_sync/);
@@ -164,6 +165,7 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(cutover, /readyForSavedDataMode/);
   assert.match(cutover, /evidence_inside_saved_data/);
   assert.match(cutover, /productionAuthorityChanged.*false/s);
+  assert.match(rollback, /output_must_differ_from_source/);
   assert.match(rollback, /pass_hash|authentication_database/);
   assert.match(rollback, /optionalFitnessSectionsNotRepresentedInSQLite/);
   assert.match(rollback, /realpath\(\(string\)\(\$_SERVER\['SCRIPT_FILENAME'\]/);
