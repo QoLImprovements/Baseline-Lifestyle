@@ -70,9 +70,10 @@ test('shared Badminton treats successful empty Saved Data as authoritative',()=>
   assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
   assert.match(hydrate,/if\(hasAuthoritativeRevision&&serverState\)/);
   assert.match(hydrate,/serverRevision===0[\s\S]{0,500}empty shared server state is authoritative/);
-  const authorityBranch=hydrate.indexOf('if(hasAuthoritativeRevision&&serverState)');
-  const localPromotion=hydrate.indexOf('else if(localHasContent && localStateIsNewerThanServer');
-  assert.ok(authorityBranch>-1&&localPromotion>authorityBranch,'authoritative revision handling must precede any local promotion path');
+  assert.match(hydrate,/successful shared server response is authoritative/);
+  assert.doesNotMatch(hydrate,/else if\(localHasContent && localStateIsNewerThanServer/);
+  assert.doesNotMatch(hydrate,/if\(currentUserIsManager\(\)\) queueServerSave\(\)/);
+  assert.doesNotMatch(hydrate,/else if\(localHasContent && currentUserIsManager\(\)\)/);
 });
 
 test('shared Badminton exposes load/save failures and blocks unsafe follow-up writes',()=>{

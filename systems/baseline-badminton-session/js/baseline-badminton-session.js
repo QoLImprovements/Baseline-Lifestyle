@@ -411,34 +411,17 @@
         const hasAuthoritativeRevision=Object.prototype.hasOwnProperty.call(data,'revision')&&Number.isInteger(revision)&&revision>=0;
         if(hasAuthoritativeRevision) serverRevision=revision;
         serverSaveConflict=false;
-        const serverState = data.state && typeof data.state === 'object' ? data.state : null;
+        const serverState = data.state && typeof data.state === 'object' ? data.state : createInitialState();
         const serverHasContent = stateHasSessionContent(serverState);
         const localHasContent = stateHasSessionContent(localSnapshot);
-        if(hasAuthoritativeRevision&&serverState){
-          if(localHasContent&&(serverRevision===0||localStateIsNewerThanServer(localSnapshot,serverState))){
-            preserveConflictingLocalState(localSnapshot);
-            announceServerSaveConflict(serverRevision===0
-              ? 'A browser Badminton copy was preserved separately. The empty shared server state is authoritative and was not replaced automatically.'
-              : 'A newer browser copy was preserved separately. The shared server version was loaded and was not overwritten.');
-          }
-          state=hydrateLoadedState(serverState);
-          persistSessionLocalOnly();
-        }else if(localHasContent && localStateIsNewerThanServer(localSnapshot, serverState)){
-          state = localSnapshot;
-          migrateKnownModeratorPlayer();
-          ensureRatingStores();
-          persistSessionLocalOnly();
-          if(currentUserIsManager()) queueServerSave();
-        }else if(serverState && (serverHasContent || !localHasContent || !currentUserIsManager())){
-          state = hydrateLoadedState(serverState);
-          persistSessionLocalOnly();
-        }else if(localHasContent && currentUserIsManager()){
-          state = localSnapshot;
-          migrateKnownModeratorPlayer();
-          ensureRatingStores();
-          persistSessionLocalOnly();
-          queueServerSave();
+        if(localHasContent&&(!serverHasContent||localStateIsNewerThanServer(localSnapshot,serverState))){
+          preserveConflictingLocalState(localSnapshot);
+          announceServerSaveConflict(hasAuthoritativeRevision&&serverRevision===0
+            ? 'A browser Badminton copy was preserved separately. The empty shared server state is authoritative and was not replaced automatically.'
+            : 'A browser Badminton copy was preserved separately. The successful shared server response is authoritative and was not overwritten.');
         }
+        state=hydrateLoadedState(serverState);
+        persistSessionLocalOnly();
         renderAll(false);
       })
       .catch(function(_error){
