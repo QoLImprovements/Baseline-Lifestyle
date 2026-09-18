@@ -73,24 +73,60 @@
     if (data.profile && typeof data.profile==='object') writeLocal(bodyKey(),data.profile);
     if (serverActive?.state) writeLocal(stepKey(serverActive),serverActive.state);
   }
-  async function reload() {
-    const data=await request();
-    if (data.disabled) { enabled=false;return data; }
-    enabled=Boolean(data.ok);if (enabled) applyServer(data);return data;
+  function renderAuthorityStatus() {
+    const existing=document.getElementById('fitnessSavedDataAuthorityStatus');
+    if (!saveBlocked) { existing?.remove();return; }
+    const host=document.querySelector('main')||document.body;
+    if (!host) return;
+    const panel=existing||document.createElement('div');
+    panel.id='fitnessSavedDataAuthorityStatus';
+    panel.className='card';
+    panel.setAttribute('data-fitness-save-blocked','true');
+    panel.innerHTML='<strong>Fitness saving has stopped.</strong><p class="note">The authoritative account Fitness data could not be safely saved. Reload the account copy before making more persistent changes.</p>';
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent='Reload account Fitness data';
+    button.addEventListener('click',()=>reload());
+    panel.appendChild(button);
+    if (!existing) host.prepend(panel);
   }
-  async function post(body,retry=true) {
-    if (!enabled || syncing) return null;syncing=true;
+  function blockSaving(error) {
+    saveBlocked=true;
+    lastError=String(error||'save_failed');
+    document.documentElement.setAttribute('data-fitness-server-save-error',lastError);
+    renderAuthorityStatus();
+  }
+  async function reload() {
     try {
-      let data=await request({ method:'POST',body:revisionedBody(body) });
-      if (data?.ok) { applyServer(data);return data; }
-      if (retry && data?.error==='revision_conflict') {
-        await reload();
-        data=await request({ method:'POST',body:revisionedBody(body) });
-        if (data?.ok) { applyServer(data);return data; }
+      const data=await request();
+      if (data.disabled) { enabled=false;return data; }
+      enabled=Boolean(data.ok);
+      if (enabled) {
+        applyServer(data);
+        saveBlocked=false;
+        lastError='';
+        document.documentElement.removeAttribute('data-fitness-server-save-error');
+        renderAuthorityStatus();
       }
+      return data;
+    } catch (error) {
+      enabled=false;
+      blockSaving(error&&error.message||'fitness_load_failed');
+      return {ok:false,error:lastError};
+    }
+  }
+  async function post(body) {
+    if (!enabled || syncing || saveBlocked) return null;syncing=true;
+    try {
+      const data=await request({ method:'POST',body:revisionedBody(body) });
+      if (data?.ok) { applyServer(data);return data; }
       if (data?.error==='profile_conflict' && data.serverProfile) writeLocal(bodyKey(),data.serverProfile);
       if (data?.error==='active_workout_conflict' && data.serverActiveWorkout?.state) writeLocal(stepKey(data.serverActiveWorkout),data.serverActiveWorkout.state);
+      blockSaving(data?.error||'save_failed');
       return data;
+    } catch (error) {
+      blockSaving(error&&error.message||'save_failed');
+      return {ok:false,error:lastError};
     } finally { syncing=false; }
   }
   async function importExisting(server) {
@@ -110,6 +146,10 @@
   }
 
   Storage.prototype.setItem=function(key,rawValue) {
+    if (this===global.localStorage && typeof key==='string' && saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
+      renderAuthorityStatus();
+      return;
+    }
     const result=nativeSet.apply(this,arguments);
     if (this===global.localStorage && typeof key==='string') {
       const value=parseJson(rawValue);

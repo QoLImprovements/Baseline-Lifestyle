@@ -73,6 +73,16 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
 });
 
+test('Fitness browser Saved Data conflicts stop stale retries and block unsafe writes', () => {
+  const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.doesNotMatch(bridge, /retry && data\?\.error==='revision_conflict'/);
+  assert.doesNotMatch(bridge, /await reload\(\)[\s\S]{0,180}revisionedBody\(body\)/);
+  assert.match(bridge, /saveBlocked=true/);
+  assert.match(bridge, /Fitness saving has stopped/);
+  assert.match(bridge, /Reload account Fitness data/);
+  assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
+});
+
 test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
   const paths = read('sitewide/api/saved_data.php');
   const state = read('systems/baseline-fitness/api/routine_state.php');
