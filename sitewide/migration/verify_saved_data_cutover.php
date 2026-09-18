@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/sqlite_secure_exporter.php';
+require_once __DIR__ . '/skincare_saved_data_migration.php';
 
 final class BaselineSavedDataCutoverVerificationException extends RuntimeException {}
 
@@ -50,6 +51,16 @@ function bl_cutover_comparable_data(string $relative, array $resource): array {
     return [
       'plans'=>is_array($data['plans'] ?? null) ? $data['plans'] : [],
       'achievements'=>is_array($data['achievements'] ?? null) ? $data['achievements'] : [],
+    ];
+  }
+  if(preg_match('#^Users/[0-9]{6}/skincare\\.json$#', $relative) === 1){
+    return [
+      'schemaVersion'=>(int)($data['schemaVersion'] ?? 1),
+      'visibility'=>(string)($data['visibility'] ?? 'private'),
+      'routine'=>is_array($data['routine'] ?? null) ? $data['routine'] : [],
+      'logs'=>is_array($data['logs'] ?? null) ? $data['logs'] : [],
+      'groups'=>is_array($data['groups'] ?? null) ? $data['groups'] : [],
+      'assignments'=>is_array($data['assignments'] ?? null) ? $data['assignments'] : [],
     ];
   }
   if(preg_match('#^Users/[0-9]{6}/Games/[A-Za-z0-9-]+\\.json$#', $relative) === 1){
@@ -108,6 +119,8 @@ function bl_verify_saved_data_cutover(string $database, string $savedData): arra
   $errors = [];
   try{
     $report = bl_secure_export_sqlite_copy($database, $temporary);
+    $skincareReport = bl_migration_export_skincare_from_copy($database, $temporary);
+    $report['counts'] = array_merge($report['counts'] ?? [], $skincareReport);
     if(($report['missingTables'] ?? []) !== []) $errors[] = ['check'=>'missing_tables','tables'=>$report['missingTables']];
     if(($report['invalid'] ?? []) !== []) $errors[] = ['check'=>'invalid_source','count'=>count($report['invalid'])];
     if(($report['unmappedFields'] ?? []) !== []) $errors[] = ['check'=>'unmapped_source_fields','fields'=>array_keys($report['unmappedFields'])];
