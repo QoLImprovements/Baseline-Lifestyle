@@ -83,7 +83,7 @@ test('signed-out storage keeps games playable and temporary progress isolated in
 });
 
 test('authenticated storage enables saving without becoming the owner of game controls',()=>{
-  const {context,listeners}=runGuard({status:200,payload:{ok:true,profiles:{}}});
+  const {context,listeners}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{}}});
   assert.equal(context.BaselineGameStorage.canPlay(),true);
   assert.equal(context.BaselineGameStorage.canSave(),true);
   assert.equal(context.BaselineGameStorage.getStatus(),'ready');
@@ -94,7 +94,7 @@ test('authenticated storage enables saving without becoming the owner of game co
 
 test('device-only auto-next settings remain in native local storage',()=>{
   const key='__bl_games_auto_next_v1__';
-  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}}});
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}}});
   context.localStorage.setItem(key,JSON.stringify({pairs:true}));
   assert.equal(localStorage.values.get(key),JSON.stringify({pairs:true}));
   assert.doesNotMatch(guard,/\[KEYS\.autoNext\]:'hubsettings'/);
@@ -103,7 +103,7 @@ test('device-only auto-next settings remain in native local storage',()=>{
 test('browser game progress requires an explicit per-game import decision',()=>{
   const key='__bl_games_guest_profiles_v1__';
   const original=JSON.stringify({pairs:{level:4}});
-  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}},initial:{[key]:original}});
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:original}});
   assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['pairs']);
   assert.equal(localStorage.values.get(key),original);
   assert.match(guard,/importGuestProfile/);
@@ -116,13 +116,32 @@ test('browser game progress requires an explicit per-game import decision',()=>{
 test('Badminton Focused is a separate explicit per-game save',()=>{
   const key='__bl_badminton_focused_v1__';
   const profile=JSON.stringify({version:1,xp:120,level:3});
-  const {context,localStorage}=runGuard({status:200,payload:{ok:true,profiles:{},revisions:{}},initial:{[key]:profile}});
+  const {context,localStorage}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:profile}});
   assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['badmintonfocused']);
   assert.equal(localStorage.values.get(key),profile,'local save must remain until explicit adoption');
   assert.match(storageUi,/badmintonfocused:'Badminton Focused'/);
   assert.match(gamesApi,/badmintonfocused/);
   assert.match(savedData,/'badmintonfocused' => 'badminton-focused\.json'/);
   assert.doesNotMatch(savedData,/Shared[\s\S]{0,120}badminton-focused\.json/);
+});
+
+test('legacy game import candidates stay bound to the first authenticated account',()=>{
+  const key='__bl_badminton_focused_v1__';
+  const ownerKey='__bl_games_legacy_profiles_owner_v1__';
+  const profile=JSON.stringify({version:1,xp:120,level:3});
+  const first=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:profile}});
+  assert.deepEqual(Array.from(first.context.BaselineGameStorage.getImportCandidates()),['badmintonfocused']);
+  assert.equal(first.localStorage.values.get(ownerKey),'uid:7');
+
+  const second=runGuard({
+    status:200,
+    payload:{ok:true,accountId:8,profiles:{},revisions:{}},
+    initial:{[key]:profile,[ownerKey]:'uid:7'}
+  });
+  assert.deepEqual(Array.from(second.context.BaselineGameStorage.getImportCandidates()),[]);
+  assert.equal(second.localStorage.values.get(key),profile);
+  assert.equal(second.localStorage.values.get(ownerKey),'uid:7');
+  assert.match(gamesApi,/'accountId'=>\$uid/);
 });
 
 test('explicit game imports carry observed revisions and keep browser data until server acceptance',()=>{
