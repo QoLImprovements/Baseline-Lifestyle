@@ -16,6 +16,7 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),
     read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
+    read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js'),
     read('systems/baseline-food-approach/js/food-saved-data-bridge.js'),
     read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js')
   ];
@@ -68,7 +69,8 @@ test('shared Badminton treats successful empty Saved Data as authoritative',()=>
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
   assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
-  assert.match(hydrate,/if\(hasAuthoritativeRevision&&serverState\)/);
+  assert.match(hydrate,/const serverState = data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\);/);
+  assert.match(hydrate,/state=hydrateLoadedState\(serverState\);/);
   assert.match(hydrate,/serverRevision===0[\s\S]{0,500}empty shared server state is authoritative/);
   assert.match(hydrate,/successful shared server response is authoritative/);
   assert.doesNotMatch(hydrate,/else if\(localHasContent && localStateIsNewerThanServer/);
@@ -82,7 +84,10 @@ test('shared Badminton exposes load/save failures and blocks unsafe follow-up wr
   assert.match(badminton,/serverSaveConflict \|\| serverSaveBlocked/);
   assert.match(badminton,/Badminton was not saved to the shared server\. Saving has stopped/);
   assert.match(badminton,/authoritative shared Badminton state could not be loaded/);
-  assert.doesNotMatch(badminton,/\.catch\(function\(_error\)\{\}\)/);
+  const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
+  const save=badminton.match(/function queueServerSave\(\)[\s\S]*?\n  \}/)?.[0]||'';
+  assert.doesNotMatch(hydrate,/\.catch\(function\(_error\)\{\}\)/);
+  assert.doesNotMatch(save,/\.catch\(function\(_error\)\{\}\)/);
 });
 
 test('full-document shared saves refuse stale conflict retries',()=>{
@@ -93,4 +98,30 @@ test('full-document shared saves refuse stale conflict retries',()=>{
   assert.match(badminton,/CONFLICT_BACKUP_KEY/);
   assert.doesNotMatch(stability,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
   assert.match(games,/state\.status='conflict';state\.canSave=false/);
+});
+
+
+test('Fitness Routine Saved Data bridge loads before browser-owned workspace writers',()=>{
+  const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  const bridgeIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
+  const workspaceIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.ok(bridgeIndex>=0 && workspaceIndex>bridgeIndex,'Fitness Routine Saved Data bridge must load before the workspace');
+});
+
+
+test('Fitness exercise progression history uses revisioned Saved Data authority',()=>{
+  const resource=read('systems/baseline-fitness/api/fitness_resource.php');
+  const endpoint=read('systems/baseline-fitness/api/fitness_state.php');
+  const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  const policy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
+  const rollback=read('sitewide/migration/build_sqlite_rollback_copy.php');
+  assert.match(resource,/progressionHistory/);
+  assert.match(resource,/\['profile','activeWorkout','progressionHistory'\]/);
+  assert.match(endpoint,/save_progression_history/);
+  assert.match(endpoint,/progression_history_conflict/);
+  assert.match(bridge,/saveProgressionHistory/);
+  assert.match(bridge,/progressionHistory:'Exercise progression history'/);
+  assert.match(policy,/await storeSessionOutcomes\(before\)/);
+  assert.match(policy,/savedData\?\.savedDataDisabled/);
+  assert.match(rollback,/fitness\.json#progressionHistory/);
 });

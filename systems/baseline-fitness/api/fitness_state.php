@@ -122,11 +122,51 @@ function bl_fitness_active_workout_validate($value, array $data): array {
   ];
 }
 
+function bl_fitness_progression_records_validate($value, bool $failures=false): array {
+  if($value === null) return [];
+  if(!is_array($value)) throw new InvalidArgumentException('invalid_progression_history');
+  $limit = $failures ? 500 : 1000;
+  $records = [];
+  foreach(array_slice(array_values($value), -$limit) as $raw){
+    if(!is_array($raw)) continue;
+    $planId = max(0, (int)($raw['planId'] ?? 0));
+    $sessionIndex = max(0, (int)($raw['sessionIndex'] ?? 0));
+    $exercise = mb_substr(trim((string)($raw['exercise'] ?? '')), 0, 120);
+    if($planId <= 0 || $sessionIndex <= 0 || $exercise === '') continue;
+    $sessionKey = $planId . ':' . $sessionIndex;
+    $record = [
+      'sessionKey'=>$sessionKey,
+      'planId'=>$planId,
+      'sessionIndex'=>$sessionIndex,
+      'exercise'=>mb_strtolower($exercise, 'UTF-8'),
+      'at'=>mb_substr(trim((string)($raw['at'] ?? '')), 0, 64),
+    ];
+    if($failures) $record['failed'] = true;
+    else $record['success'] = !empty($raw['success']);
+    $records[] = $record;
+  }
+  return $records;
+}
+
+function bl_fitness_progression_history_validate($value): array {
+  if($value === null || $value === []) return ['outcomes'=>[], 'failures'=>[]];
+  if(!is_array($value)) throw new InvalidArgumentException('invalid_progression_history');
+  return [
+    'outcomes'=>bl_fitness_progression_records_validate($value['outcomes'] ?? [], false),
+    'failures'=>bl_fitness_progression_records_validate($value['failures'] ?? [], true),
+  ];
+}
+
+function bl_fitness_progression_history_has_values(array $history): bool {
+  return ($history['outcomes'] ?? []) !== [] || ($history['failures'] ?? []) !== [];
+}
+
 function bl_fitness_state_response(array $resource): array {
   return [
     'ok'=>true,
     'profile'=>is_array($resource['data']['profile'] ?? null) ? $resource['data']['profile'] : null,
     'activeWorkout'=>is_array($resource['data']['activeWorkout'] ?? null) ? $resource['data']['activeWorkout'] : null,
+    'progressionHistory'=>bl_fitness_progression_history_validate($resource['data']['progressionHistory'] ?? []),
     'revision'=>$resource['revision'],
   ];
 }
@@ -163,8 +203,18 @@ try{
     $resource['data']['activeWorkout'] = $active;
   }
 
+  if(in_array($action, ['save_progression_history','import_local'], true) && array_key_exists('progressionHistory', $input)){
+    $history = bl_fitness_progression_history_validate($input['progressionHistory']);
+    $existing = bl_fitness_progression_history_validate($resource['data']['progressionHistory'] ?? []);
+    if($action === 'import_local' && bl_fitness_progression_history_has_values($existing) && $existing !== $history && empty($input['overwrite'])){
+      bl_json(['ok'=>false,'error'=>'progression_history_conflict','serverProgressionHistory'=>$existing,'revision'=>$resource['revision']], 409);
+    }
+    if(bl_fitness_progression_history_has_values($history)) $resource['data']['progressionHistory'] = $history;
+    else unset($resource['data']['progressionHistory']);
+  }
+
   if($action === 'clear_active_workout') unset($resource['data']['activeWorkout']);
-  if(!in_array($action, ['save_profile','save_active_workout','clear_active_workout','import_local'], true)){
+  if(!in_array($action, ['save_profile','save_active_workout','save_progression_history','clear_active_workout','import_local'], true)){
     bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
   }
 

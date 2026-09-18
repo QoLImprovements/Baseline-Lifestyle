@@ -23,6 +23,7 @@ function loadPolicy(plans) {
     setItem(key,value){ values.set(key,String(value)); }
   };
   globalThis.BASELINE_auth={ get(){ return { authed:true,name:'Peter' }; } };
+  globalThis.BASELINE_FITNESS_SAVED_DATA={ enabled:false,savedDataDisabled:true };
   globalThis.BASELINE_fitnessPlans={ getPlans(){ return plans; },getSelectedPlanId(){ return 1; } };
   delete globalThis.__BASELINE_FITNESS_LIVE_POLICY_V4__;
   delete require.cache[require.resolve(policyFilename)];
@@ -72,8 +73,9 @@ test('each exercise advances after success and only the failed exercise repeats'
   assert.equal(ledger.find((entry) => entry.sessionIndex===2 && entry.exercise==='squats')?.success,false);
 });
 
-test('outcomes are saved before the completed workout state is cleared',() => {
+test('outcomes are saved only after the completed workout is accepted',() => {
   const source=fs.readFileSync(policyPath,'utf8');
-  assert.match(source,/if \(before\?\.allComplete\) storeSessionOutcomes\(before\);\s*const after=await original\.finishSession/);
+  assert.match(source,/const after=await original\.finishSession\?\.\(\);const advanced=/);
+  assert.match(source,/if \(advanced\) \{\s*await storeSessionOutcomes\(before\);\s*await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\);\s*\}/);
   assert.match(source,/return applyPolicy\(original\.getCurrentContext\?\.\(\) \|\| after\)/);
 });

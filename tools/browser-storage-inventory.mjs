@@ -78,11 +78,17 @@ function decodeLiteral(expression) {
 }
 
 function collectConstants(source) {
-  const constants = new Map();
+  const candidates = new Map();
   const expression = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*((?:'[^'\n]*')|(?:"[^"\n]*")|(?:`[^`\n]*`))/g;
   for (const match of source.matchAll(expression)) {
     const decoded = decodeLiteral(match[2]);
-    if (decoded !== null) constants.set(match[1], decoded);
+    if (decoded === null) continue;
+    if (!candidates.has(match[1])) candidates.set(match[1], new Set());
+    candidates.get(match[1]).add(decoded);
+  }
+  const constants = new Map();
+  for (const [name, values] of candidates) {
+    if (values.size === 1) constants.set(name, values.values().next().value);
   }
   return constants;
 }

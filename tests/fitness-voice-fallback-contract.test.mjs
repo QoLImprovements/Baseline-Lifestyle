@@ -64,7 +64,7 @@ test('Voice settings use concise fitness copy, aligned controls and Save and Clo
   assert.match(sharedVoice, /Plays spoken workout guidance and feedback\./);
   assert.match(sharedVoice, /Save &amp; Close/);
   assert.match(sharedVoice, /aria-label="Close voice settings"/);
-  assert.match(sharedVoice, /await saveSettings\(settingsFromUi\(\)\); closeSettings\(\);/);
+  assert.match(sharedVoice, /await saveSettings\(settingsFromUi\(\)\);\s*if\(lastSaveSucceeded\) closeSettings\(\);/);
 
   assert.match(fixesCss, /FITNESS-VOICE-SETTINGS-REFINEMENT-20260803/);
   assert.match(fixesCss, /\.bl-voice-primary-grid\{/);

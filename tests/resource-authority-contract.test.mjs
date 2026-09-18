@@ -66,7 +66,7 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.match(endpoint, /profile_conflict/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
   assert.match(bridge, /action\s*:\s*['"]import_local['"]/);
-  assert.match(bridge, /revision_conflict/);
+  assert.match(bridge, /body:revisionedBody\(body\)/);
   assert.match(bridge, /serverProfile/);
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
@@ -200,7 +200,7 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(cutover, /Games\/baseline-realm/);
   assert.match(cutover, /'profile'=>is_array\(\$data\['profile'\]/);
   assert.match(cutover, /nativeResourceCount/);
-  assert.match(cutover, /skincare_saved_data_migration\\.php/);
+  assert.match(cutover, /skincare_saved_data_migration\.php/);
   assert.match(cutover, /bl_migration_export_skincare_from_copy/);
   const skincareMigration = read('sitewide/migration/skincare_saved_data_migration.php');
   assert.match(skincareMigration, /invalid_skincare_json/);
@@ -211,13 +211,13 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(rollback, /pass_hash|authentication_database/);
   assert.match(rollback, /optionalFitnessSectionsNotRepresentedInSQLite/);
   assert.match(rollback, /savedDataResourcesPreservedOutsideSQLite/);
-  assert.match(rollback, /fitness-routine\\.json/);
-  assert.match(rollback, /food\\.json/);
-  assert.match(rollback, /skincare\\.json/);
-  assert.match(rollback, /Account Index\\/accounts\\.json/);
-  assert.match(rollback, /Games\\/baseline-realm\\.json#/);
-  assert.match(rollback, /'badminton-focused\\.json'=>'badmintonfocused'/);
-  assert.match(read('sitewide/migration/sqlite_secure_exporter.php'), /'badmintonfocused'=>'badminton-focused\\.json'/);
+  assert.match(rollback, /fitness-routine\.json/);
+  assert.match(rollback, /food\.json/);
+  assert.match(rollback, /skincare\.json/);
+  assert.match(rollback, /Account Index\/accounts\.json/);
+  assert.match(rollback, /Games\/baseline-realm\.json#/);
+  assert.match(rollback, /'badminton-focused\.json'=>'badmintonfocused'/);
+  assert.match(read('sitewide/migration/sqlite_secure_exporter.php'), /'badmintonfocused'=>'badminton-focused\.json'/);
   assert.match(rollback, /realpath\(\(string\)\(\$_SERVER\['SCRIPT_FILENAME'\]/);
 });
 

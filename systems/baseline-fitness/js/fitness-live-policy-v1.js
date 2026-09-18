@@ -135,6 +135,28 @@
     try { global.localStorage?.setItem(outcomeKey(),JSON.stringify((Array.isArray(value)?value:[]).slice(-1000))); }
     catch (_error) {}
   }
+  function authenticated() {
+    try { return Boolean(global.BASELINE_auth?.get?.()?.authed); }
+    catch (_error) { return false; }
+  }
+  async function persistProgressionHistory(outcomes,failures) {
+    const nextOutcomes=(Array.isArray(outcomes)?outcomes:[]).slice(-1000);
+    const nextFailures=(Array.isArray(failures)?failures:[]).slice(-500);
+    const savedData=global.BASELINE_FITNESS_SAVED_DATA;
+    if (authenticated()) {
+      if (savedData?.savedDataDisabled) {
+        writeOutcomes(nextOutcomes);
+        writeFailures(nextFailures);
+        return true;
+      }
+      if (!savedData?.enabled || typeof savedData.saveProgressionHistory!=='function') return false;
+      const result=await savedData.saveProgressionHistory({ outcomes:nextOutcomes,failures:nextFailures });
+      return Boolean(result?.ok);
+    }
+    writeOutcomes(nextOutcomes);
+    writeFailures(nextFailures);
+    return true;
+  }
   function sessionStillDone(record) {
     const plan=plans().find((candidate) => Number(candidate.planId)===Number(record.planId));
     const session=(plan?.sessions || []).find((candidate) => Number(candidate.sessionIndex ?? candidate.session_index)===Number(record.sessionIndex));
@@ -184,15 +206,14 @@
     (context?.steps || []).forEach((step,index) => { const exercise=canonicalExercise(step?.exercise || step?.name);if (!exercise) return;if (!groups.has(exercise)) groups.set(exercise,[]);groups.get(exercise).push(index); });
     return Array.from(groups.entries()).map(([exercise,indexes]) => ({ exercise,success:indexes.every((index) => String(results[index]?.status || '')==='success') }));
   }
-  function storeSessionOutcomes(context) {
-    if (!context?.planId || !context?.sessionIndex) return;
+  async function storeSessionOutcomes(context) {
+    if (!context?.planId || !context?.sessionIndex) return false;
     const sessionKey=`${Number(context.planId)}:${Number(context.sessionIndex)}`;const outcomes=sessionExerciseOutcomes(context);const exerciseKeys=new Set(outcomes.map((entry) => entry.exercise.toLocaleLowerCase('en-GB')));const at=new Date().toISOString();
     const nextOutcomes=readOutcomes().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
     outcomes.forEach((entry) => nextOutcomes.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),success:entry.success,at }));
-    writeOutcomes(nextOutcomes);
     const nextFailures=readFailures().filter((record) => !(record.sessionKey===sessionKey && exerciseKeys.has(record.exercise)));
     outcomes.forEach((entry) => { if (!entry.success) nextFailures.push({ sessionKey,planId:Number(context.planId),sessionIndex:Number(context.sessionIndex),exercise:entry.exercise.toLocaleLowerCase('en-GB'),failed:true,at }); });
-    writeFailures(nextFailures);
+    return persistProgressionHistory(nextOutcomes,nextFailures);
   }
 
   function permissionKey(context) { return `${EARLY_PREFIX}${Number(context?.planId||0)}::${Number(context?.sessionIndex||0)}`; }
@@ -238,9 +259,11 @@
         recordTimedCurrentStep:(achieved,mode='manual') => directTimedRecord(achieved,mode),
         finishSession:async() => {
           const before=applyPolicy(original.getCurrentContext?.());
-          if (before?.allComplete) storeSessionOutcomes(before);
           const after=await original.finishSession?.();const advanced=Boolean(before?.allComplete && (after?.planComplete || Number(after?.sessionIndex || 0)!==Number(before?.sessionIndex || 0)));
-          if (advanced) await global.BASELINE_fitnessPlans?.refresh?.();
+          if (advanced) {
+            await storeSessionOutcomes(before);
+            await global.BASELINE_fitnessPlans?.refresh?.();
+          }
           return applyPolicy(original.getCurrentContext?.() || after);
         },
         resetSession:() => applyPolicy(original.resetSession?.()),
@@ -296,6 +319,7 @@
     },true);
     document.addEventListener('baseline:fitness-plans-updated',() => { rangeDirty=false;installRuntimeWrapper();patchUi(); });
     document.addEventListener('baseline:fitness-workout-updated',patchWorkoutAccess);
+    document.addEventListener('baseline:fitness-progression-history-updated',() => { Promise.resolve(global.BASELINE_fitnessPlans?.refresh?.()).finally(patchUi); });
     global.addEventListener('pageshow',() => { installRuntimeWrapper();patchUi(); });
   }
 

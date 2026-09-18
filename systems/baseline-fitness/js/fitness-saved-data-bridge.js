@@ -2,8 +2,8 @@
 
    OWNERSHIP CONTRACT
    ------------------
-   This module synchronises the browser-owned body profile and active-workout
-   state with the protected Saved Data API. It does not calculate exercise
+   This module synchronises the browser-owned body profile, active-workout and
+   progression-history state with the protected Saved Data API. It does not calculate exercise
    progression, alter workout targets, render the page, poll for authorities or
    observe the document. Calisthenics progression belongs to the active
    generator/live-policy chain.
@@ -16,22 +16,27 @@
   const API='/systems/baseline-fitness/api/fitness_state.php';
   const BODY_PREFIX='__bl_fitness_body_profile_v1__::';
   const STEP_PREFIX='__bl_fitness_workout_progress_v2__::';
+  const OUTCOME_PREFIX='__bl_fitness_exercise_outcomes_v4__::';
+  const FAILURE_PREFIX='__bl_fitness_exercise_failed_sessions_v3__::';
   const IMPORT_BACKUP_PREFIX='__bl_fitness_saved_data_import_backup_v1__::';
   const nativeGet=Storage.prototype.getItem;
   const nativeSet=Storage.prototype.setItem;
   const nativeRemove=Storage.prototype.removeItem;
   const timers=new Map();
   let enabled=false;
+  let savedDataDisabled=false;
   let revision=0;
   let authName='';
   let syncing=false;
   let serverActive=null;
   let saveBlocked=false;
   let lastError='';
-  let imports={profile:null,activeWorkout:null};
+  let imports={profile:null,activeWorkout:null,progressionHistory:null};
 
   function normalise(value) { return String(value || '').trim().toLocaleLowerCase('en-GB'); }
   function bodyKey() { return BODY_PREFIX+normalise(authName); }
+  function outcomeKey() { return OUTCOME_PREFIX+normalise(authName); }
+  function failureKey() { return FAILURE_PREFIX+normalise(authName); }
   function parseJson(raw) {
     try { const value=JSON.parse(String(raw));return value && typeof value==='object'?value:null; }
     catch (_error) { return null; }
@@ -53,6 +58,17 @@
       if (active) return active;
     }
     return null;
+  }
+  function localProgressionHistory() {
+    const outcomes=parseJson(nativeGet.call(global.localStorage,outcomeKey()));
+    const failures=parseJson(nativeGet.call(global.localStorage,failureKey()));
+    return {
+      outcomes:Array.isArray(outcomes)?outcomes:[],
+      failures:Array.isArray(failures)?failures:[],
+    };
+  }
+  function progressionHistoryHasValues(value) {
+    return Boolean((value?.outcomes || []).length || (value?.failures || []).length);
   }
   function importBackupKey(kind) { return IMPORT_BACKUP_PREFIX+normalise(authName)+'::'+kind; }
   function readImportBackup(kind) { return parseJson(nativeGet.call(global.localStorage,importBackupKey(kind))); }
@@ -76,11 +92,18 @@
       if (!readImportBackup('activeWorkout')) writeImportBackup('activeWorkout',activeWorkout);
       nativeRemove.call(global.localStorage,stepKey(activeWorkout));
     }
+    const progressionHistory=localProgressionHistory();
+    if (progressionHistoryHasValues(progressionHistory) && !readImportBackup('progressionHistory')) {
+      writeImportBackup('progressionHistory',progressionHistory);
+    }
+    nativeRemove.call(global.localStorage,outcomeKey());
+    nativeRemove.call(global.localStorage,failureKey());
   }
   function prepareImportCandidates(server) {
     const profile=readImportBackup('profile');
     const activeWorkout=readImportBackup('activeWorkout');
-    imports={profile:null,activeWorkout:null};
+    const progressionHistory=readImportBackup('progressionHistory');
+    imports={profile:null,activeWorkout:null,progressionHistory:null};
     if (profile) {
       if (server?.profile && equivalent(profile,server.profile)) clearImportBackup('profile');
       else imports.profile=profile;
@@ -89,12 +112,20 @@
       if (server?.activeWorkout && equivalentActive(activeWorkout,server.activeWorkout)) clearImportBackup('activeWorkout');
       else imports.activeWorkout=activeWorkout;
     }
+    if (progressionHistory) {
+      const authoritative=server?.progressionHistory && typeof server.progressionHistory==='object'
+        ? server.progressionHistory
+        : { outcomes:[],failures:[] };
+      if (equivalent(progressionHistory,authoritative)) clearImportBackup('progressionHistory');
+      else imports.progressionHistory=progressionHistory;
+    }
     renderMigrationReview();
   }
-  function hasImportCandidate() { return Boolean(imports.profile||imports.activeWorkout); }
+  function hasImportCandidate() { return Boolean(imports.profile||imports.activeWorkout||imports.progressionHistory); }
   function importKindForKey(key) {
     if (key===bodyKey()) return 'profile';
     if (String(key).startsWith(STEP_PREFIX)) return 'activeWorkout';
+    if (key===outcomeKey() || key===failureKey()) return 'progressionHistory';
     return '';
   }
   function writeLocal(key,value) { nativeSet.call(global.localStorage,key,JSON.stringify(value)); }
@@ -120,6 +151,10 @@
     serverActive=data.activeWorkout && typeof data.activeWorkout==='object'?data.activeWorkout:null;
     if (data.profile && typeof data.profile==='object') writeLocal(bodyKey(),data.profile);
     if (serverActive?.state) writeLocal(stepKey(serverActive),serverActive.state);
+    const progression=data.progressionHistory && typeof data.progressionHistory==='object'?data.progressionHistory:{ outcomes:[],failures:[] };
+    writeLocal(outcomeKey(),Array.isArray(progression.outcomes)?progression.outcomes:[]);
+    writeLocal(failureKey(),Array.isArray(progression.failures)?progression.failures:[]);
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-progression-history-updated')); } catch (_error) {}
   }
   function renderAuthorityStatus() {
     const existing=document.getElementById('fitnessSavedDataAuthorityStatus');
@@ -147,7 +182,8 @@
   async function reload() {
     try {
       const data=await request();
-      if (data.disabled) { enabled=false;return data; }
+      if (data.disabled) { enabled=false;savedDataDisabled=true;return data; }
+      savedDataDisabled=false;
       enabled=Boolean(data.ok);
       if (enabled) {
         applyServer(data);
@@ -159,6 +195,7 @@
       return data;
     } catch (error) {
       enabled=false;
+      savedDataDisabled=false;
       blockSaving(error&&error.message||'fitness_load_failed');
       return {ok:false,error:lastError};
     }
@@ -170,6 +207,10 @@
       if (data?.ok) { applyServer(data);return data; }
       if (data?.error==='profile_conflict' && data.serverProfile) writeLocal(bodyKey(),data.serverProfile);
       if (data?.error==='active_workout_conflict' && data.serverActiveWorkout?.state) writeLocal(stepKey(data.serverActiveWorkout),data.serverActiveWorkout.state);
+      if (data?.error==='progression_history_conflict' && data.serverProgressionHistory) {
+        writeLocal(outcomeKey(),Array.isArray(data.serverProgressionHistory.outcomes)?data.serverProgressionHistory.outcomes:[]);
+        writeLocal(failureKey(),Array.isArray(data.serverProgressionHistory.failures)?data.serverProgressionHistory.failures:[]);
+      }
       blockSaving(data?.error||'save_failed');
       return data;
     } catch (error) {
@@ -189,6 +230,7 @@
     const payload={action:'import_local'};
     if (kind==='profile') payload.profile=imports.profile;
     else if (kind==='activeWorkout') payload.activeWorkout=imports.activeWorkout;
+    else if (kind==='progressionHistory') payload.progressionHistory=imports.progressionHistory;
     else return false;
     const result=await post(payload);
     if (!result?.ok) return false;
@@ -207,7 +249,7 @@
     panel.className='card';
     panel.setAttribute('data-fitness-migration-review','true');
     panel.innerHTML='<strong>Browser Fitness data is available.</strong><p class="note">Account data is authoritative, including an empty account state. The browser copy was preserved and was not imported automatically.</p>';
-    const labels={profile:'Body profile',activeWorkout:'Active workout'};
+    const labels={profile:'Body profile',activeWorkout:'Active workout',progressionHistory:'Exercise progression history'};
     Object.keys(labels).forEach(kind=>{
       if (!imports[kind]) return;
       const row=document.createElement('div');
@@ -227,6 +269,17 @@
     });
     if (!existing) host.prepend(panel);
   }
+  async function saveProgressionHistory(value) {
+    const history=value && typeof value==='object'?value:{};
+    return post({
+      action:'save_progression_history',
+      progressionHistory:{
+        outcomes:Array.isArray(history.outcomes)?history.outcomes:[],
+        failures:Array.isArray(history.failures)?history.failures:[],
+      },
+    });
+  }
+
   function schedule(key,value) {
     clearTimeout(timers.get(key));
     timers.set(key,global.setTimeout(() => {
@@ -278,12 +331,12 @@
   async function syncForAuth(snapshot) {
     const nextName=snapshot?.authed?String(snapshot.name || snapshot.user?.name || '').trim():'';
     if (!nextName) {
-      enabled=false;authName='';revision=0;serverActive=null;imports={profile:null,activeWorkout:null};
+      enabled=false;savedDataDisabled=false;authName='';revision=0;serverActive=null;imports={profile:null,activeWorkout:null,progressionHistory:null};
       renderMigrationReview();
       return;
     }
     if (normalise(nextName)!==normalise(authName)) {
-      revision=0;serverActive=null;saveBlocked=false;lastError='';imports={profile:null,activeWorkout:null};
+      revision=0;serverActive=null;saveBlocked=false;lastError='';imports={profile:null,activeWorkout:null,progressionHistory:null};
     }
     authName=nextName;
     quarantineLegacyLocal();
@@ -299,8 +352,10 @@
   global.BASELINE_FITNESS_SAVED_DATA=Object.freeze({
     reload,
     get enabled(){ return enabled; },
+    get savedDataDisabled(){ return savedDataDisabled; },
     get revision(){ return revision; },
     hasImportCandidate,
+    saveProgressionHistory,
     importLegacy,
     keepAccount
   });
