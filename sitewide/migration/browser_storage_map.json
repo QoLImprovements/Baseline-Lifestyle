@@ -161,9 +161,9 @@
       "inventoryPatterns": ["[expression] SAVE_KEY"],
       "knownKeys": ["baseline.realm.exploration.jrpg.v1"],
       "classification": "server-saved-data-migration-source",
-      "decision": "normalise-into-baseline-realm-resource",
-      "target": "Users/{paddedUserId}/Games/baseline-realm.json#exploration",
-      "cutoverRule": "Validate the JRPG save version and shared-inventory interactions, then merge it into the single Baseline Realm resource without overwriting newer Realm sections."
+      "decision": "migrate-explicitly-to-canonical-game-file",
+      "target": "Users/{paddedUserId}/Games/meridian-grove.json",
+      "cutoverRule": "This is the Meridian Grove Exploration game save. The Games Hub guard maps the key to the isolated meridiangrove game profile, whose canonical physical file is meridian-grove.json. Keep it separate from the Baseline Realm ninja envelope and require the standard explicit per-game browser import with expectedRevision protection."
     },
     {
       "id": "skincare-routine-local-cache",

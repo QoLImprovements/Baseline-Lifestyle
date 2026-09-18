@@ -165,7 +165,19 @@ test("game browser data maps to canonical physical save files", () => {
     rules.find((rule) => rule.id === "badminton-focused-game")?.target,
     "Users/{paddedUserId}/Games/badminton-focused.json",
   );
-  for(const id of ["realm-exploration-game", "realm-tactical-v1-legacy", "realm-tactical-v2"]){
+  assert.equal(
+    rules.find((rule) => rule.id === "realm-exploration-game")?.target,
+    "Users/{paddedUserId}/Games/meridian-grove.json",
+  );
+  assert.equal(
+    rules.find((rule) => rule.id === "realm-exploration-game")?.decision,
+    "migrate-explicitly-to-canonical-game-file",
+  );
+  assert.match(
+    rules.find((rule) => rule.id === "realm-exploration-game")?.cutoverRule || "",
+    /separate from the Baseline Realm ninja envelope/i,
+  );
+  for(const id of ["realm-tactical-v1-legacy", "realm-tactical-v2"]){
     assert.match(
       rules.find((rule) => rule.id === id)?.target || "",
       /^Users\/\{paddedUserId\}\/Games\/baseline-realm\.json#/,
