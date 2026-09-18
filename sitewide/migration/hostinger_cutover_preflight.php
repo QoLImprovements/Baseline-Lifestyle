@@ -145,8 +145,12 @@ function bl_hostinger_preflight_same_filesystem(string $left, string $right): ?b
 
 function bl_hostinger_preflight_runtime_report(): array {
   $extensions = [];
-  foreach(['pdo_sqlite','json','mbstring','openssl'] as $extension){
+  foreach(['pdo_sqlite','json'] as $extension){
     $extensions[$extension] = extension_loaded($extension);
+  }
+  $optionalExtensions = [];
+  foreach(['mbstring','openssl'] as $extension){
+    $optionalExtensions[$extension] = extension_loaded($extension);
   }
   $functions = [];
   foreach(['random_bytes','flock','rename','chmod','mkdir','json_encode','json_decode'] as $function){
@@ -156,6 +160,7 @@ function bl_hostinger_preflight_runtime_report(): array {
     'phpVersion'=>PHP_VERSION,
     'php8OrNewer'=>version_compare(PHP_VERSION, '8.0.0', '>='),
     'extensions'=>$extensions,
+    'optionalExtensions'=>$optionalExtensions,
     'functions'=>$functions,
     'fsyncAvailable'=>function_exists('fsync'),
   ];
