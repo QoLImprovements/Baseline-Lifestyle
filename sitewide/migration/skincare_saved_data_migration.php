@@ -9,14 +9,15 @@ function bl_migration_table_exists(PDO $db, string $table): bool {
   return (bool)$statement->fetchColumn();
 }
 
-function bl_migration_decode_json($value, array $fallback): array {
+function bl_migration_decode_json($value, array $fallback, string $label): array {
   if(!is_string($value) || trim($value) === '') return $fallback;
   try{
     $decoded = json_decode($value, true, 48, JSON_THROW_ON_ERROR);
-    return is_array($decoded) ? $decoded : $fallback;
   }catch(Throwable $error){
-    return $fallback;
+    throw new BaselineSqliteExportException('invalid_skincare_json:' . $label, 0, $error);
   }
+  if(!is_array($decoded)) throw new BaselineSqliteExportException('invalid_skincare_json:' . $label);
+  return $decoded;
 }
 
 function bl_migration_export_skincare_from_copy(string $databasePath, string $root): array {
@@ -56,17 +57,17 @@ function bl_migration_export_skincare_from_copy(string $databasePath, string $ro
 
   $written = 0;
   foreach(array_keys($userIds) as $userId){
-    if(!isset($knownUsers[$userId])) continue;
+    if(!isset($knownUsers[$userId])) throw new BaselineSqliteExportException('skincare_user_missing');
     $routine = $routineByUser[$userId] ?? [];
     $groups = $groupsByUser[$userId] ?? [];
     $updated = max((int)($routine['updated_at'] ?? 0), (int)($groups['updated_at'] ?? 0), 1);
     $data = [
       'schemaVersion'=>1,
       'visibility'=>(($routine['visibility'] ?? '') === 'public') ? 'public' : 'private',
-      'routine'=>bl_migration_decode_json($routine['routine_json'] ?? null, []),
-      'logs'=>bl_migration_decode_json($routine['logs_json'] ?? null, []),
-      'groups'=>bl_migration_decode_json($groups['groups_json'] ?? null, []),
-      'assignments'=>bl_migration_decode_json($groups['assignments_json'] ?? null, []),
+      'routine'=>bl_migration_decode_json($routine['routine_json'] ?? null, [], 'routine:' . $userId),
+      'logs'=>bl_migration_decode_json($routine['logs_json'] ?? null, [], 'logs:' . $userId),
+      'groups'=>bl_migration_decode_json($groups['groups_json'] ?? null, [], 'groups:' . $userId),
+      'assignments'=>bl_migration_decode_json($groups['assignments_json'] ?? null, [], 'assignments:' . $userId),
       'sliders'=>[],
     ];
     bl_export_write_json(
