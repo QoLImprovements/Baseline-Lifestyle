@@ -190,12 +190,42 @@ function bl_rollback_apply_badminton(PDO $db, string $savedData, array &$counts)
   $counts['badmintonStates']++;
 }
 
+function bl_rollback_preserved_saved_data_resources(string $savedData): array {
+  $preserved = [];
+  if(is_file($savedData . '/Account Index/accounts.json')) $preserved[] = 'Account Index/accounts.json';
+
+  foreach(bl_rollback_user_directories($savedData) as $uid=>$directory){
+    $folder = sprintf('%06d', $uid);
+    foreach(['fitness-routine.json','food.json','skincare.json'] as $filename){
+      if(is_file($directory . '/' . $filename)) $preserved[] = 'Users/' . $folder . '/' . $filename;
+    }
+
+    $fitness = bl_rollback_resource($directory . '/fitness.json');
+    if(is_array($fitness)){
+      if(!empty($fitness['profile'])) $preserved[] = 'Users/' . $folder . '/fitness.json#profile';
+      if(!empty($fitness['activeWorkout'])) $preserved[] = 'Users/' . $folder . '/fitness.json#activeWorkout';
+    }
+
+    $realm = bl_rollback_resource($directory . '/Games/baseline-realm.json');
+    if(is_array($realm)){
+      foreach(array_keys($realm) as $section){
+        if(in_array($section, ['game','profile','createdAt','updatedAt'], true)) continue;
+        if(!empty($realm[$section])) $preserved[] = 'Users/' . $folder . '/Games/baseline-realm.json#' . $section;
+      }
+    }
+  }
+
+  sort($preserved);
+  return array_values(array_unique($preserved));
+}
+
 function bl_build_sqlite_rollback_copy(string $source, string $savedData, string $output): array {
   if(!extension_loaded('pdo_sqlite')) throw new BaselineRollbackCopyException('pdo_sqlite_required');
   if(!is_file($source) || !is_readable($source) || is_link($source)) throw new BaselineRollbackCopyException('source_not_readable');
   if(!is_dir($savedData) || is_link($savedData)) throw new BaselineRollbackCopyException('saved_data_not_readable');
   if($source === $output) throw new BaselineRollbackCopyException('output_must_differ_from_source');
   $sourceHash = hash_file('sha256', $source);
+  $preservedSavedData = bl_rollback_preserved_saved_data_resources($savedData);
   $staging = $output . '.staging-' . bin2hex(random_bytes(8));
   bl_export_ensure_directory(dirname($output));
   if(!copy($source, $staging)) throw new BaselineRollbackCopyException('source_copy_failed');
@@ -231,6 +261,7 @@ function bl_build_sqlite_rollback_copy(string $source, string $savedData, string
       'outputSizeBytes'=>filesize($output),
       'counts'=>$counts,
       'optionalFitnessSectionsNotRepresentedInSQLite'=>array_values(array_unique($optionalUsers)),
+      'savedDataResourcesPreservedOutsideSQLite'=>$preservedSavedData,
       'sourceChanged'=>false,
     ];
   }catch(Throwable $error){
