@@ -56,7 +56,7 @@ function mountTacticalOperations({root,onExit,inventoryService,eventBus}){
 
   function persist(){
     if(migrationPending)return{ok:false,pendingMigration:true};
-    return persist();
+    return writeSave(state,inventoryService);
   }
   function migrationReview(){
     if(!migrationPending)return'';
