@@ -63,6 +63,23 @@ jobs:
             tests/baseline-api-client.test.mjs
           php tests/resource-authority-contract.php
 
+      - name: Run Phase 3 second-half regression verification
+        run: |
+          node --test \
+            tests/public-routine-calendar-sync.test.mjs \
+            tests/public-routine-summary-mirror.test.mjs \
+            tests/site-structure-integrity.test.mjs \
+            tests/live-stability-contract.test.mjs
+          npx playwright test \
+            tests/baseline-fitness-voice.spec.js \
+            tests/fitness-saved-plan-reload-browser.spec.js \
+            tests/routine-system-browser.spec.js \
+            tests/stability-release-smoke.spec.js \
+            --reporter=line
+
+      - name: Run Phase 3 migration and cutover PHP verification
+        run: npm run test:migration-exporter
+
       - name: Run finite stability, release and routine interaction smoke tests
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-results.json
