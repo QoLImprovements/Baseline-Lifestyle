@@ -158,6 +158,7 @@ function bl_rollback_game_files(): array {
   return [
     'baseline-realm.json'=>'ninja','pairs.json'=>'pairs','detect-word.json'=>'detectword','make-24.json'=>'make24',
     'track-coin.json'=>'trackcoin','rule-shift.json'=>'ruleshift','darts-focused.json'=>'dartsfocused','meridian-grove.json'=>'meridiangrove',
+    'badminton-focused.json'=>'badmintonfocused',
   ];
 }
 
