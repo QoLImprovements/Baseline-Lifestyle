@@ -313,17 +313,35 @@ function bl_hostinger_cutover_preflight(string $documentRoot, ?array $settings=n
   ];
 }
 
-function bl_hostinger_preflight_write_evidence(string $path, array $evidence): void {
+function bl_hostinger_preflight_write_evidence(string $path, array $evidence, string $documentRoot=''): void {
   $path = bl_hostinger_preflight_normalize($path, 'evidence_path');
   $parent = dirname($path);
+  if($documentRoot !== ''){
+    $documentRoot = bl_hostinger_preflight_normalize($documentRoot, 'document_root');
+    $resolvedRoot = realpath($documentRoot) ?: $documentRoot;
+    $resolvedParent = realpath($parent) ?: $parent;
+    if(bl_hostinger_preflight_within($resolvedParent, $resolvedRoot)){
+      throw new BaselineHostingerPreflightException('evidence_inside_document_root');
+    }
+  }
   if(!is_dir($parent) || !is_writable($parent)) throw new BaselineHostingerPreflightException('evidence_parent_not_writable');
+  if(bl_hostinger_preflight_symlink_ancestor($parent)) throw new BaselineHostingerPreflightException('evidence_parent_symlinked');
+  if(DIRECTORY_SEPARATOR === '/' && bl_hostinger_preflight_private_permissions($parent) !== true){
+    throw new BaselineHostingerPreflightException('evidence_parent_not_private');
+  }
   if(is_link($path)) throw new BaselineHostingerPreflightException('evidence_is_symlink');
   $json = json_encode($evidence, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR) . "\n";
   $temporary = $parent . '/.hostinger-preflight-' . bin2hex(random_bytes(10)) . '.tmp';
   $handle = @fopen($temporary, 'xb');
   if($handle === false) throw new BaselineHostingerPreflightException('evidence_create_failed');
   try{
-    if(fwrite($handle, $json) !== strlen($json)) throw new BaselineHostingerPreflightException('evidence_write_failed');
+    $offset = 0;
+    $length = strlen($json);
+    while($offset < $length){
+      $written = fwrite($handle, substr($json, $offset));
+      if($written === false || $written === 0) throw new BaselineHostingerPreflightException('evidence_write_failed');
+      $offset += $written;
+    }
     if(!fflush($handle)) throw new BaselineHostingerPreflightException('evidence_flush_failed');
     if(function_exists('fsync') && !fsync($handle)) throw new BaselineHostingerPreflightException('evidence_sync_failed');
   }finally{
@@ -355,7 +373,7 @@ if(PHP_SAPI === 'cli' && realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) =
   }
   try{
     $result = bl_hostinger_cutover_preflight($documentRoot);
-    if($evidence !== '') bl_hostinger_preflight_write_evidence($evidence, $result);
+    if($evidence !== '') bl_hostinger_preflight_write_evidence($evidence, $result, $documentRoot);
     fwrite(STDOUT, json_encode([
       'ok'=>$result['ok'],
       'readyForMirrorPreparation'=>$result['readyForMirrorPreparation'],
