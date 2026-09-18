@@ -142,6 +142,8 @@ test('legacy game import candidates stay bound to the first authenticated accoun
   assert.equal(second.localStorage.values.get(key),profile);
   assert.equal(second.localStorage.values.get(ownerKey),'uid:7');
   assert.match(gamesApi,/'accountId'=>\$uid/);
+  assert.match(guard,/addEventListener\('baseline:auth'[\s\S]{0,180}bootstrap\(\)/);
+  assert.doesNotMatch(guard,/authenticated!==state\.authenticated/);
 });
 
 test('explicit game imports carry observed revisions and keep browser data until server acceptance',()=>{
