@@ -4,6 +4,8 @@ Status date: 2026-09-18
 
 This document is the current repository authority. Earlier dated audit, checkpoint and cutover documents are retained as historical evidence and must not be read as descriptions of the current runtime.
 
+Phase 4 production readiness and the exact remaining Hostinger/deployment gates are tracked in `PHASE_4_PRODUCTION_CUTOVER_READINESS_20260918.md`. That checklist does not authorize or perform the Phase 5 authority switch.
+
 ## Production boundaries
 
 | Hostinger location | Responsibility |
