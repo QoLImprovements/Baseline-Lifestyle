@@ -1,5 +1,7 @@
 # Hostinger Business deployment and rollback runbook
 
+> Historical/general deployment reference. For the current Phase 5 Saved Data deployment sequence, use `PHASE_5_HOSTINGER_DEPLOYMENT_FIRST_HALF_20260918.md` first. The Phase 5 first half keeps `BASELINE_RESOURCE_AUTHORITY=sqlite` and stops before mirror mode.
+
 The finite post-deployment release gate, safe private-path restore drill, stable-tag rule and forward-only Git rollback procedure are recorded in [`STABILITY_AND_RELEASE_CHECKPOINT_20260802.md`](./STABILITY_AND_RELEASE_CHECKPOINT_20260802.md).
 
 ## Deployment boundary
