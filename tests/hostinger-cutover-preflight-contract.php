@@ -13,6 +13,8 @@ $privateRoot = $base . '/private';
 $database = $privateRoot . '/baseline.sqlite';
 $savedData = $privateRoot . '/Saved Data';
 $runtime = $privateRoot . '/Runtime';
+$privateEnvPath = $base . '/missing-private.env';
+putenv('BASELINE_PRIVATE_ENV_PATH=' . $privateEnvPath);
 
 @mkdir($documentRoot, 0700, true);
 @mkdir($savedData, 0700, true);
@@ -85,6 +87,7 @@ try{
 
   echo "Hostinger cutover preflight contract passed\n";
 }finally{
+  putenv('BASELINE_PRIVATE_ENV_PATH');
   if(is_dir($base)){
     $iterator = new RecursiveIteratorIterator(
       new RecursiveDirectoryIterator($base, FilesystemIterator::SKIP_DOTS),
