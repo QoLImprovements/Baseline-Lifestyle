@@ -58,6 +58,27 @@ try{
   bl_hostinger_preflight_assert(scandir($savedData) === $beforeSaved, 'preflight wrote to Saved Data');
   bl_hostinger_preflight_assert(scandir($runtime) === $beforeRuntime, 'preflight wrote to Runtime');
 
+  $evidenceDir = $privateRoot . '/Migration Evidence';
+  @mkdir($evidenceDir, 0700, true);
+  @chmod($evidenceDir, 0700);
+  $evidencePath = $evidenceDir . '/preflight.json';
+  bl_hostinger_preflight_write_evidence($evidencePath, $result, $documentRoot);
+  bl_hostinger_preflight_assert(is_file($evidencePath), 'private preflight evidence was not written');
+  if(DIRECTORY_SEPARATOR === '/'){
+    $mode = fileperms($evidencePath);
+    bl_hostinger_preflight_assert($mode !== false && (($mode & 0077) === 0), 'preflight evidence permissions are not private');
+  }
+
+  $publicEvidence = $documentRoot . '/preflight.json';
+  $publicEvidenceBlocked = false;
+  try{
+    bl_hostinger_preflight_write_evidence($publicEvidence, $result, $documentRoot);
+  }catch(BaselineHostingerPreflightException $error){
+    $publicEvidenceBlocked = $error->getMessage() === 'evidence_inside_document_root';
+  }
+  bl_hostinger_preflight_assert($publicEvidenceBlocked, 'public document-root evidence path was not blocked');
+  bl_hostinger_preflight_assert(!is_file($publicEvidence), 'public evidence file was created');
+
   $advanced = $settings;
   $advanced['authority']['value'] = 'saved-data';
   $advancedResult = bl_hostinger_cutover_preflight($documentRoot, $advanced);
