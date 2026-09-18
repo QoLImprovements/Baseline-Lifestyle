@@ -112,8 +112,28 @@ try{
   $badminton['data']['matches'][] = ['id'=>'m-1'];
   bl_roundtrip_write($badmintonPath, $badminton);
 
+  foreach(['fitness-routine.json','food.json','skincare.json'] as $nativeFilename){
+    bl_roundtrip_write($saved . '/Users/000007/' . $nativeFilename, [
+      'schemaVersion'=>1,
+      'revision'=>1,
+      'updatedAt'=>'2026-08-02T18:03:00Z',
+      'data'=>['nativeOnly'=>true],
+    ]);
+  }
+
   $rollbackResult = bl_build_sqlite_rollback_copy($source, $saved, $rollback);
   bl_roundtrip_assert($rollbackResult['ok'] === true, 'rollback copy failed');
+  $preserved = $rollbackResult['savedDataResourcesPreservedOutsideSQLite'] ?? [];
+  foreach([
+    'Account Index/accounts.json',
+    'Users/000007/fitness-routine.json',
+    'Users/000007/food.json',
+    'Users/000007/skincare.json',
+    'Users/000007/fitness.json#profile',
+    'Users/000007/fitness.json#activeWorkout',
+  ] as $expectedPreserved){
+    bl_roundtrip_assert(in_array($expectedPreserved, $preserved, true), 'Saved-Data-only rollback preservation missing: ' . $expectedPreserved);
+  }
   bl_roundtrip_assert(hash_file('sha256', $source) === $sourceHash, 'source database changed');
   bl_roundtrip_assert(in_array('000007', $rollbackResult['optionalFitnessSectionsNotRepresentedInSQLite'], true), 'optional Fitness warning missing');
 
