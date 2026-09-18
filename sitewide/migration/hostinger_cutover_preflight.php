@@ -67,6 +67,9 @@ function bl_hostinger_preflight_path_report(string $path, string $documentRoot, 
   $resolvedDocumentRoot = realpath($documentRoot) ?: $documentRoot;
   $outside = !bl_hostinger_preflight_within($resolved, $resolvedDocumentRoot);
   $privatePermissions = $exists ? bl_hostinger_preflight_private_permissions($normalized) : false;
+  $parentPrivatePermissions = !$directory && is_dir(dirname($normalized))
+    ? bl_hostinger_preflight_private_permissions(dirname($normalized))
+    : null;
 
   return [
     'configured'=>true,
@@ -77,6 +80,7 @@ function bl_hostinger_preflight_path_report(string $path, string $documentRoot, 
     'readable'=>$exists && is_readable($normalized),
     'writable'=>$exists && is_writable($normalized),
     'privatePermissions'=>$privatePermissions,
+    'parentPrivatePermissions'=>$parentPrivatePermissions,
     'pathSha256'=>hash('sha256', $normalized),
     'baseName'=>basename($normalized),
   ];
@@ -226,6 +230,7 @@ function bl_hostinger_cutover_preflight(string $documentRoot, ?array $settings=n
     $databaseReport['readable'] ?? false,
     $databaseReport['writable'] ?? false,
     $databaseReport['privatePermissions'] ?? false,
+    $databaseReport['parentPrivatePermissions'] ?? false,
   ]);
   $savedDataPathOk = bl_hostinger_preflight_all_true([
     $savedDataReport['configured'] ?? false,
