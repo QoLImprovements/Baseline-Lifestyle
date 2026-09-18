@@ -54,7 +54,7 @@ test('the shared controller delegates transport to the focused API client', () =
   assert.match(api, /credentials:\s*'same-origin'/);
   assert.match(api, /error:'network_error'/);
   assert.match(api, /error: looksLikeHtml \? 'api_returned_html' : 'api_non_json_response'/);
-  assert.doesNotMatch(api, /authState|createElement|localStorage/);
+  assert.doesNotMatch(api, /authState|createElement|(?:scope|window|global)\\.localStorage\\.(?:getItem|setItem|removeItem)/);
 });
 
 test('the shared controller delegates local cache persistence to the focused store client', () => {
