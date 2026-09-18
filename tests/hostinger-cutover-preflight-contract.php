@@ -36,10 +36,10 @@ try{
   @chmod($database, 0600);
 
   $settings = [
-    'database'=>['value'=>$database,'source'=>'private-env'],
-    'savedData'=>['value'=>$savedData,'source'=>'private-env'],
-    'runtime'=>['value'=>$runtime,'source'=>'private-env'],
-    'authority'=>['value'=>'sqlite','source'=>'private-env'],
+    'database'=>['value'=>$database,'source'=>'process'],
+    'savedData'=>['value'=>$savedData,'source'=>'process'],
+    'runtime'=>['value'=>$runtime,'source'=>'process'],
+    'authority'=>['value'=>'sqlite','source'=>'process'],
   ];
 
   $beforeSaved = scandir($savedData);
@@ -61,6 +61,12 @@ try{
   $advancedResult = bl_hostinger_cutover_preflight($documentRoot, $advanced);
   bl_hostinger_preflight_assert(($advancedResult['ok'] ?? true) === false, 'saved-data authority incorrectly passed pre-mirror preflight');
   bl_hostinger_preflight_assert(($advancedResult['gates']['authorityIsSqlite'] ?? true) === false, 'saved-data authority gate not blocked');
+
+  $privateEnvRequired = $settings;
+  $privateEnvRequired['authority']['source'] = 'private-env';
+  $privateEnvResult = bl_hostinger_cutover_preflight($documentRoot, $privateEnvRequired);
+  bl_hostinger_preflight_assert(($privateEnvResult['ok'] ?? true) === false, 'missing private environment policy proof incorrectly passed');
+  bl_hostinger_preflight_assert(($privateEnvResult['gates']['privateEnvironmentPolicyOk'] ?? true) === false, 'private environment policy gate not blocked');
 
   $defaulted = $settings;
   $defaulted['authority']['source'] = 'default';
