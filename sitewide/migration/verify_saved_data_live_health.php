@@ -6,6 +6,17 @@ require_once dirname(__DIR__) . '/api/saved_data.php';
 
 final class BaselineSavedDataLiveHealthException extends RuntimeException {}
 
+function bl_saved_data_live_explicit_settings(array $settings): array {
+  $explicit = [];
+  foreach(['database','savedData','runtime','authority'] as $key){
+    $setting = $settings[$key] ?? null;
+    $explicit[$key] = is_array($setting)
+      && trim((string)($setting['value'] ?? '')) !== ''
+      && trim((string)($setting['source'] ?? 'default')) !== 'default';
+  }
+  return $explicit;
+}
+
 function bl_saved_data_live_allowed_directory(string $relative): bool {
   if(in_array($relative, ['Account Index','Users','Shared','Shared/Badminton'], true)) return true;
   if(preg_match('#^Users/[0-9]{6}$#', $relative) === 1) return true;
@@ -139,7 +150,7 @@ function bl_verify_saved_data_live_health(string $documentRoot, ?array $settings
   if(!is_dir($documentRoot)) throw new BaselineSavedDataLiveHealthException('document_root_not_directory');
 
   $settings = $settings ?? bl_hostinger_preflight_collect_settings();
-  $explicit = bl_cutover_package_explicit_settings($settings);
+  $explicit = bl_saved_data_live_explicit_settings($settings);
   $authority = strtolower(trim((string)($settings['authority']['value'] ?? '')));
   $database = trim((string)($settings['database']['value'] ?? ''));
   $savedData = trim((string)($settings['savedData']['value'] ?? ''));
