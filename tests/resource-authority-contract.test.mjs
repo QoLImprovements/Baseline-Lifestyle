@@ -48,7 +48,7 @@ test('every approved persistence surface has a file-backed path', () => {
 test('games remain physically isolated and hub settings never become a save file', () => {
   const games = read('systems/baseline-games-hub/api/games_data.php');
   const paths = read('sitewide/api/saved_data.php');
-  for(const file of ['baseline-realm.json','pairs.json','detect-word.json','make-24.json','track-coin.json','rule-shift.json','darts-focused.json','meridian-grove.json']){
+  for(const file of ['baseline-realm.json','pairs.json','detect-word.json','make-24.json','track-coin.json','rule-shift.json','darts-focused.json','meridian-grove.json','badminton-focused.json']){
     assert.ok(paths.includes(`'${file}'`), `${file} missing`);
   }
   assert.match(games, /function bl_game_data_file_apps/);
@@ -199,6 +199,8 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(rollback, /output_must_differ_from_source/);
   assert.match(rollback, /pass_hash|authentication_database/);
   assert.match(rollback, /optionalFitnessSectionsNotRepresentedInSQLite/);
+  assert.match(rollback, /'badminton-focused\\.json'=>'badmintonfocused'/);
+  assert.match(read('sitewide/migration/sqlite_secure_exporter.php'), /'badmintonfocused'=>'badminton-focused\\.json'/);
   assert.match(rollback, /realpath\(\(string\)\(\$_SERVER\['SCRIPT_FILENAME'\]/);
 });
 
