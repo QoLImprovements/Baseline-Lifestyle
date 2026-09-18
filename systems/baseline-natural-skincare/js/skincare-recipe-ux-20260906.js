@@ -406,8 +406,9 @@
   function startRecipeUx(){
     canonicaliseOldRecipePath();
     applyAll();
+    document.getElementById('recipes')?.classList.remove('recipe-focus');
     wrapRecipeOpen();
-    global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
+    global.requestAnimationFrame(()=>{ applyAll(); document.getElementById('recipes')?.classList.remove('recipe-focus'); openPromotedRecipeForPath(); });
     global.setTimeout(applyAll,120);
     global.setTimeout(applyAll,600);
     global.addEventListener('load',applyAll,{once:true});
