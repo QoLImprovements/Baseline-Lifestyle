@@ -179,6 +179,8 @@ function bl_secure_game_files(): array {
     'darts-focused'=>'darts-focused.json',
     'meridiangrove'=>'meridian-grove.json',
     'meridian-grove'=>'meridian-grove.json',
+    'badmintonfocused'=>'badminton-focused.json',
+    'badminton-focused'=>'badminton-focused.json',
   ];
 }
 
