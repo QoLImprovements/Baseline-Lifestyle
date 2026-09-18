@@ -124,6 +124,16 @@ test('Badminton Focused is a separate explicit per-game save',()=>{
   assert.doesNotMatch(savedData,/Shared[\s\S]{0,120}badminton-focused\.json/);
 });
 
+test('explicit game imports carry observed revisions and keep browser data until server acceptance',()=>{
+  assert.match(guard,/action:'migrate_missing'[\s\S]{0,180}expectedRevisions:\{\[app\]:revisionFor\(app\)\}/);
+  assert.match(guard,/if\(!own\(profiles,app\)\)[\s\S]{0,180}migration_not_verified/);
+  assert.match(guard,/migration\.status===409[\s\S]{0,120}state\.status='conflict';state\.canSave=false/);
+  assert.match(gamesApi,/\$expectedRevisions = is_array\(\$payload\['expectedRevisions'\]/);
+  assert.match(gamesApi,/bl_resource_required_revision_from_input\(\[[\s\S]{0,120}'expectedRevision'=>\$expectedRevisions\[\$app\] \?\? null/);
+  const write=gamesApi.match(/function bl_game_file_write[\s\S]*?\n\}/)?.[0]||'';
+  assert.ok(write.indexOf('expectedRevision')<write.indexOf('onlyIfMissing && $resource'), 'revision check must happen before missing-only early return');
+});
+
 test('account game writes carry per-file revisions and stop on conflicts',()=>{
   assert.match(guard,/expectedRevision:revisionFor\(app\)/);
   assert.match(guard,/response\.status===409&&data\.error==='revision_conflict'/);

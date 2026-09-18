@@ -108,8 +108,8 @@ function bl_game_file_write(int $uid, string $app, array $profile, bool $onlyIfM
   if(!in_array($app, bl_game_data_file_apps(), true)) throw new RuntimeException('non_persistent_app');
   $path = bl_saved_game_path($uid, $app);
   $resource = bl_resource_file_read($path, []);
-  if($onlyIfMissing && $resource['revision'] > 0) return $resource;
   if($expectedRevision !== null && $expectedRevision !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
+  if($onlyIfMissing && $resource['revision'] > 0) return $resource;
   $now = gmdate('c');
   $createdAt = is_string($resource['data']['createdAt'] ?? null) ? $resource['data']['createdAt'] : $now;
   return bl_resource_file_replace($path, [
@@ -187,10 +187,14 @@ try{
     if($mode === 'saved-data'){
       if($action === 'migrate_missing'){
         $incoming = is_array($payload['profiles'] ?? null) ? $payload['profiles'] : [];
+        $expectedRevisions = is_array($payload['expectedRevisions'] ?? null) ? $payload['expectedRevisions'] : [];
         foreach($incoming as $appRaw=>$profileRaw){
           $app = bl_game_data_app((string)$appRaw);
           if($app === 'hubsettings') continue;
-          bl_game_file_write($uid, $app, bl_game_data_profile($profileRaw), true);
+          $expected = bl_resource_required_revision_from_input([
+            'expectedRevision'=>$expectedRevisions[$app] ?? null,
+          ]);
+          bl_game_file_write($uid, $app, bl_game_data_profile($profileRaw), true, $expected);
         }
         $rows = bl_game_file_all($uid);
         bl_json(['ok'=>true,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at'],'revisions'=>$rows['revisions']]);

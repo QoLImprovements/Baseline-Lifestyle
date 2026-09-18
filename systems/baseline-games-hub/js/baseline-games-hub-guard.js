@@ -164,9 +164,20 @@
   }
   function importGuestProfile(app){
     if(!state.authenticated||!ALL_APPS.includes(app)||!importCandidates().includes(app))return false;
-    const migration=syncRequest('POST',DATA_API,{action:'migrate_missing',profiles:{[app]:state.legacyProfiles[app]}});
-    if(!migration.ok){state.lastError=migration.error||'migration_failed';emitStorageState();return false;}
-    state.profiles=copy(migration.data.profiles);
+    const migration=syncRequest('POST',DATA_API,{action:'migrate_missing',profiles:{[app]:state.legacyProfiles[app]},expectedRevisions:{[app]:revisionFor(app)}});
+    if(!migration.ok){
+      state.lastError=migration.error||'migration_failed';
+      if(migration.status===409){state.status='conflict';state.canSave=false;}
+      emitStorageState();
+      return false;
+    }
+    const profiles=copy(migration.data.profiles);
+    if(!own(profiles,app)){
+      state.lastError='migration_not_verified';
+      emitStorageState();
+      return false;
+    }
+    state.profiles=profiles;
     rememberRevisions(migration.data.revisions);
     prepareMemory(state.profiles);
     clearImportedLocalProfile(app);
