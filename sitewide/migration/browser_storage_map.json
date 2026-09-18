@@ -53,9 +53,9 @@
       "inventoryPatterns": ["__baseline_food_diet_log_v1__"],
       "knownKeys": ["__baseline_food_diet_log_v1__"],
       "classification": "server-saved-data-migration-source",
-      "decision": "migrate-authenticated-value",
+      "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/food.json",
-      "cutoverRule": "The complete Diet Log document (logs, notes, saved recipes and health/profile fields) is imported only after an authenticated server read. Revision 0 may adopt a missing resource; an existing divergent server resource requires an explicit import/keep decision. Delete the legacy key only after verified server acceptance."
+      "cutoverRule": "The complete Diet Log document (logs, notes, saved recipes and health/profile fields) is preserved as a browser import candidate after an authenticated server read. It may become account data only after the signed-in user explicitly chooses Import browser Diet Log, including when the authoritative server resource is empty at revision 0. Delete the legacy key only after verified server acceptance or an explicit keep-account decision."
     },
     {
       "id": "diet-log-conflict-backup",

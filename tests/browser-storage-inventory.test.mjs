@@ -82,7 +82,8 @@ test("migration rules are explicit and known blockers now have approved resource
 
   const food=rules.find((rule)=>rule.id==="diet-log-local-content");
   assert.equal(food?.target,"Users/{paddedUserId}/food.json");
-  assert.equal(food?.decision,"migrate-authenticated-value");
+  assert.equal(food?.decision,"migrate-explicitly");
+  assert.match(food?.cutoverRule || "", /explicitly chooses Import browser Diet Log/i);
 
   const skincare=rules.find((rule)=>rule.id==="skincare-slider-settings");
   assert.equal(skincare?.target,"Users/{paddedUserId}/skincare.json#sliders");
