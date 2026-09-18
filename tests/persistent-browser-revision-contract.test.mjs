@@ -68,7 +68,8 @@ test('shared Badminton treats successful empty Saved Data as authoritative',()=>
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
   assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
-  assert.match(hydrate,/const serverState = data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\);/);\n  assert.match(hydrate,/state=hydrateLoadedState\(serverState\);/);
+  assert.match(hydrate,/const serverState = data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\);/);
+  assert.match(hydrate,/state=hydrateLoadedState\(serverState\);/);
   assert.match(hydrate,/serverRevision===0[\s\S]{0,500}empty shared server state is authoritative/);
   assert.match(hydrate,/successful shared server response is authoritative/);
   assert.doesNotMatch(hydrate,/else if\(localHasContent && localStateIsNewerThanServer/);
@@ -82,7 +83,10 @@ test('shared Badminton exposes load/save failures and blocks unsafe follow-up wr
   assert.match(badminton,/serverSaveConflict \|\| serverSaveBlocked/);
   assert.match(badminton,/Badminton was not saved to the shared server\. Saving has stopped/);
   assert.match(badminton,/authoritative shared Badminton state could not be loaded/);
-  const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';\n  const save=badminton.match(/function queueServerSave\(\)[\s\S]*?\n  \}/)?.[0]||'';\n  assert.doesNotMatch(hydrate,/\.catch\(function\(_error\)\{\}\)/);\n  assert.doesNotMatch(save,/\.catch\(function\(_error\)\{\}\)/);
+  const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
+  const save=badminton.match(/function queueServerSave\(\)[\s\S]*?\n  \}/)?.[0]||'';
+  assert.doesNotMatch(hydrate,/\.catch\(function\(_error\)\{\}\)/);
+  assert.doesNotMatch(save,/\.catch\(function\(_error\)\{\}\)/);
 });
 
 test('full-document shared saves refuse stale conflict retries',()=>{
