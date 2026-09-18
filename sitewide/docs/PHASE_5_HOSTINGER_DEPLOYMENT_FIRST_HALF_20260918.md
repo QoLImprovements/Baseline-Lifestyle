@@ -250,6 +250,6 @@ At that point:
 - Saved Data and Runtime are ready for controlled use;
 - **SQLite is still authoritative**.
 
-The second half may then create/validate the fresh migration snapshot and deliberately enter `mirror` mode.
+The second half may then create/validate the fresh migration snapshot and deliberately enter `mirror` mode. Follow `PHASE_5_SAVED_DATA_CUTOVER_SECOND_HALF_20260918.md` for that sequence.
 
 No `saved-data` authority switch is authorized by this document.
