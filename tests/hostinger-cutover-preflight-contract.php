@@ -76,6 +76,12 @@ try{
   bl_hostinger_preflight_assert(($defaultedResult['ok'] ?? true) === false, 'default authority source incorrectly passed');
   bl_hostinger_preflight_assert(($defaultedResult['gates']['authorityExplicit'] ?? true) === false, 'default authority source gate not blocked');
 
+  @chmod($privateRoot, 0755);
+  $publicParentResult = bl_hostinger_cutover_preflight($documentRoot, $settings);
+  bl_hostinger_preflight_assert(($publicParentResult['ok'] ?? true) === false, 'non-private database parent directory incorrectly passed');
+  bl_hostinger_preflight_assert(($publicParentResult['gates']['databasePathSafe'] ?? true) === false, 'database parent permission gate not blocked');
+  @chmod($privateRoot, 0700);
+
   $unsafeSaved = $documentRoot . '/Saved Data';
   @mkdir($unsafeSaved, 0700, true);
   @chmod($unsafeSaved, 0700);
