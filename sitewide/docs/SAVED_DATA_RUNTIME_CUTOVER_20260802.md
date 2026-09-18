@@ -1,5 +1,7 @@
 # Saved Data runtime cutover — 2 August 2026
 
+> Historical reference. For the current production sequence use `PHASE_5_SAVED_DATA_CUTOVER_SECOND_HALF_20260918.md`. In particular, do **not** use the original pre-mirror SQLite copy as the final verification or rollback source after mirror observation; take a fresh consistent final snapshot after mirror activity and verify/package against that current snapshot.
+
 ## Authority modes
 
 `BASELINE_RESOURCE_AUTHORITY` controls only user/shared resource storage. Authentication credentials remain in protected SQLite.
