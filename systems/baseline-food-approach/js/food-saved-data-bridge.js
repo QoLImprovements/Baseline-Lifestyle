@@ -41,7 +41,7 @@
     nativeWrite(LEGACY_OWNER_KEY,current);
     return current;
   }
-  function clearLegacySource(){clearLegacySource();nativeDelete(LEGACY_OWNER_KEY);}
+  function clearLegacySource(){nativeDelete(STORAGE_KEY);nativeDelete(LEGACY_OWNER_KEY);}
   function emit(){
     try{document.dispatchEvent(new CustomEvent('baseline:food-saved-data',{detail:{status:state.status,authenticated:state.authenticated,canSave:state.canSave,revision:state.revision,hasImportCandidate:Boolean(state.importCandidate),error:state.lastError}}));}catch(_error){}
   }
