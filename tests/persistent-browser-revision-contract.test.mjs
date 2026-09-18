@@ -16,6 +16,7 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),
     read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
+    read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js'),
     read('systems/baseline-food-approach/js/food-saved-data-bridge.js'),
     read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js')
   ];
@@ -97,4 +98,12 @@ test('full-document shared saves refuse stale conflict retries',()=>{
   assert.match(badminton,/CONFLICT_BACKUP_KEY/);
   assert.doesNotMatch(stability,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
   assert.match(games,/state\.status='conflict';state\.canSave=false/);
+});
+
+
+test('Fitness Routine Saved Data bridge loads before browser-owned workspace writers',()=>{
+  const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  const bridgeIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
+  const workspaceIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.ok(bridgeIndex>=0 && workspaceIndex>bridgeIndex,'Fitness Routine Saved Data bridge must load before the workspace');
 });
