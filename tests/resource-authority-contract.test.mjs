@@ -211,13 +211,13 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(rollback, /pass_hash|authentication_database/);
   assert.match(rollback, /optionalFitnessSectionsNotRepresentedInSQLite/);
   assert.match(rollback, /savedDataResourcesPreservedOutsideSQLite/);
-  assert.match(rollback, /fitness-routine\\.json/);
-  assert.match(rollback, /food\\.json/);
-  assert.match(rollback, /skincare\\.json/);
-  assert.match(rollback, /Account Index\\/accounts\\.json/);
-  assert.match(rollback, /Games\\/baseline-realm\\.json#/);
-  assert.match(rollback, /'badminton-focused\\.json'=>'badmintonfocused'/);
-  assert.match(read('sitewide/migration/sqlite_secure_exporter.php'), /'badmintonfocused'=>'badminton-focused\\.json'/);
+  assert.match(rollback, /fitness-routine\.json/);
+  assert.match(rollback, /food\.json/);
+  assert.match(rollback, /skincare\.json/);
+  assert.match(rollback, /Account Index\/accounts\.json/);
+  assert.match(rollback, /Games\/baseline-realm\.json#/);
+  assert.match(rollback, /'badminton-focused\.json'=>'badmintonfocused'/);
+  assert.match(read('sitewide/migration/sqlite_secure_exporter.php'), /'badmintonfocused'=>'badminton-focused\.json'/);
   assert.match(rollback, /realpath\(\(string\)\(\$_SERVER\['SCRIPT_FILENAME'\]/);
 });
 
