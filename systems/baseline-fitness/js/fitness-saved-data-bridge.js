@@ -24,6 +24,8 @@
   let authName='';
   let syncing=false;
   let serverActive=null;
+  let saveBlocked=false;
+  let lastError='';
 
   function normalise(value) { return String(value || '').trim().toLocaleLowerCase('en-GB'); }
   function bodyKey() { return BODY_PREFIX+normalise(authName); }
