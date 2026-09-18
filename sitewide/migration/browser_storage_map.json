@@ -170,27 +170,27 @@
       "inventoryPatterns": ["[expression] storageKey(", "[expression] routineStorageKey("],
       "knownKeys": ["__bl_skincare_routine_v1__::{normalised-user}"],
       "classification": "migration-only-legacy-state",
-      "decision": "migrate-then-virtualise",
+      "decision": "migrate-explicitly-then-virtualise",
       "target": "Users/{paddedUserId}/skincare.json#routine",
-      "cutoverRule": "For a signed-in user, import local routine/log content only when the server routine is missing and with the current expectedRevision. A divergent browser copy becomes a conflict backup. After verification, the legacy key is virtualised as compatibility state rather than physical account persistence."
+      "cutoverRule": "For a signed-in user, the authoritative account routine is loaded first, including an empty routine. A different meaningful browser routine/log copy is preserved as an import candidate and may become account data only after the user explicitly chooses Import browser copy with the current expectedRevision. Keeping the account copy removes the old physical browser source; authenticated compatibility reads are virtualised from account state."
     },
     {
       "id": "skincare-routine-groups-local-cache",
       "inventoryPatterns": ["[expression] groupStorageKey("],
       "knownKeys": ["__bl_skincare_routine_groups_v2__::{normalised-user}", "__bl_skincare_routine_groups_v1__::{normalised-user}"],
       "classification": "migration-only-legacy-state",
-      "decision": "migrate-then-virtualise",
+      "decision": "migrate-explicitly-then-virtualise",
       "target": "Users/{paddedUserId}/skincare.json#groups",
-      "cutoverRule": "Import groups/assignments only if the server section is missing. Mutate the shared skincare resource with expectedRevision; divergent browser copies are preserved for review and must never overwrite newer routine data."
+      "cutoverRule": "For a signed-in user, the authoritative account groups/assignments are loaded first, including an empty section. A different meaningful browser copy is preserved as an import candidate and may become account data only after the user explicitly chooses Import browser copy with the shared skincare expectedRevision. Keeping the account copy removes the old physical browser source; unrelated skincare sections must remain preserved."
     },
     {
       "id": "skincare-slider-settings",
       "inventoryPatterns": ["[expression] sliderSaveStorageKey(saveId", "[expression] sliderSaveStorageKey(saveKey"],
       "knownKeys": ["__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"],
       "classification": "server-saved-data-migration-source",
-      "decision": "migrate-authenticated-value",
+      "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/skincare.json#sliders",
-      "cutoverRule": "Slider controllers are merged into the protected skincare resource only in mirror or saved-data mode and only with expectedRevision. Existing divergent server slider values return conflict; local values remain preserved for review."
+      "cutoverRule": "For a signed-in user, authoritative account slider state is loaded first, including an empty slider set. A different browser slider copy is preserved as an import candidate and may be merged only after the user explicitly chooses Import browser copy, only in mirror or saved-data mode, and only with expectedRevision. Keeping the account copy removes the old browser source."
     },
     {
       "id": "skincare-conflict-backups",

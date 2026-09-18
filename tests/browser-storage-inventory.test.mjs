@@ -85,9 +85,23 @@ test("migration rules are explicit and known blockers now have approved resource
   assert.equal(food?.decision,"migrate-explicitly");
   assert.match(food?.cutoverRule || "", /explicitly chooses Import browser Diet Log/i);
 
+  const skincareRoutine=rules.find((rule)=>rule.id==="skincare-routine-local-cache");
+  assert.equal(skincareRoutine?.target,"Users/{paddedUserId}/skincare.json#routine");
+  assert.equal(skincareRoutine?.decision,"migrate-explicitly-then-virtualise");
+  assert.match(skincareRoutine?.cutoverRule || "", /authoritative account routine is loaded first, including an empty routine/i);
+  assert.match(skincareRoutine?.cutoverRule || "", /explicitly chooses Import browser copy/i);
+
+  const skincareGroups=rules.find((rule)=>rule.id==="skincare-routine-groups-local-cache");
+  assert.equal(skincareGroups?.target,"Users/{paddedUserId}/skincare.json#groups");
+  assert.equal(skincareGroups?.decision,"migrate-explicitly-then-virtualise");
+  assert.match(skincareGroups?.cutoverRule || "", /authoritative account groups\/assignments are loaded first, including an empty section/i);
+  assert.match(skincareGroups?.cutoverRule || "", /explicitly chooses Import browser copy/i);
+
   const skincare=rules.find((rule)=>rule.id==="skincare-slider-settings");
   assert.equal(skincare?.target,"Users/{paddedUserId}/skincare.json#sliders");
-  assert.equal(skincare?.decision,"migrate-authenticated-value");
+  assert.equal(skincare?.decision,"migrate-explicitly");
+  assert.match(skincare?.cutoverRule || "", /authoritative account slider state is loaded first, including an empty slider set/i);
+  assert.match(skincare?.cutoverRule || "", /explicitly chooses Import browser copy/i);
 
   const badmintonFocused=rules.find((rule)=>rule.id==="badminton-focused-game");
   assert.equal(badmintonFocused?.target,"Users/{paddedUserId}/Games/badminton-focused.json");
