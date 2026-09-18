@@ -54,6 +54,7 @@ try{
   $db->exec("INSERT INTO plan_sessions(plan_id,user_id,session_index,scheduled_date,status,completed_at,updated_at) VALUES(3,7,2,'2026-08-07','planned',NULL,1700000801)");
   $db->exec("INSERT INTO achievements(user_id,code,unlocked_at) VALUES(7,'first_session',1700000900)");
   $db->exec("INSERT INTO games_profiles(user_id,app,profile_json,created_at,updated_at) VALUES(7,'pairs','{\"app\":\"pairs\",\"level\":2}',1700001000,1700001100)");
+  $db->exec("INSERT INTO games_profiles(user_id,app,profile_json,created_at,updated_at) VALUES(7,'badmintonfocused','{\"app\":\"badmintonfocused\",\"score\":4}',1700001001,1700001101)");
   $db->exec("INSERT INTO badminton_state_store VALUES('global','{\"version\":4,\"players\":[],\"matches\":[]}',1700001200)");
   $db = null;
 
@@ -98,6 +99,13 @@ try{
   $game['data']['updatedAt'] = '2026-08-02T18:02:00Z';
   bl_roundtrip_write($gamePath, $game);
 
+  $badmintonFocusedPath = $saved . '/Users/000007/Games/badminton-focused.json';
+  bl_roundtrip_assert(is_file($badmintonFocusedPath), 'Badminton Focused did not export to its canonical filename');
+  $badmintonFocused = bl_roundtrip_read($badmintonFocusedPath);
+  $badmintonFocused['data']['profile']['score'] = 12;
+  $badmintonFocused['data']['updatedAt'] = '2026-08-02T18:02:30Z';
+  bl_roundtrip_write($badmintonFocusedPath, $badmintonFocused);
+
   $badmintonPath = $saved . '/Shared/Badminton/badminton.json';
   $badminton = bl_roundtrip_read($badmintonPath);
   $badminton['data']['version'] = 5;
@@ -116,6 +124,8 @@ try{
   bl_roundtrip_assert((int)$restored->query('SELECT COUNT(*) FROM favourites WHERE user_id=7')->fetchColumn() === 2, 'favourites rollback failed');
   $restoredGame = json_decode((string)$restored->query("SELECT profile_json FROM games_profiles WHERE user_id=7 AND app='pairs'")->fetchColumn(), true);
   bl_roundtrip_assert(($restoredGame['level'] ?? 0) === 9, 'game rollback failed');
+  $restoredBadmintonFocused = json_decode((string)$restored->query("SELECT profile_json FROM games_profiles WHERE user_id=7 AND app='badmintonfocused'")->fetchColumn(), true);
+  bl_roundtrip_assert(($restoredBadmintonFocused['score'] ?? 0) === 12, 'Badminton Focused rollback mapping failed');
   $session = $restored->query('SELECT status FROM plan_sessions WHERE user_id=7 AND session_index=1')->fetchColumn();
   bl_roundtrip_assert($session === 'done', 'Fitness session rollback failed');
   $restoredBadminton = json_decode((string)$restored->query("SELECT state_json FROM badminton_state_store WHERE state_key='global'")->fetchColumn(), true);
