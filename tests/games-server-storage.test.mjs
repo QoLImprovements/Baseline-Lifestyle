@@ -142,6 +142,8 @@ test('Baseline Realm Tactical Operations keeps browser saves explicit for authen
   assert.match(tactical,/data-action="keep-account-copy"/);
   assert.match(tactical,/if\(migrationPending\)return\{ok:false,pendingMigration:true\}/);
   assert.match(tactical,/if\(!signedIn\)[\s\S]{0,160}localStorage\.setItem\(LOCAL_SAVE_KEY/);
+  assert.match(tactical,/LOCAL_OWNER_KEY='baseline-realm:tactical-operations:owner'/);
+  assert.match(tactical,/owner&&owner===accountOwner\(\)/);
   assert.match(tactical,/browser recovery copy is retained until a later account load verifies the same state/i);
 });
 

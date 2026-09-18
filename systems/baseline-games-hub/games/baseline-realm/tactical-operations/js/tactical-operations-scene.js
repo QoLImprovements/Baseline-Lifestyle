@@ -8,11 +8,23 @@ const STYLE_ID='baseline-realm-tactical-operations-style';
 const STYLE_URL='/systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css?v=TACTICAL_OPERATIONS_INTERACTION_REPAIR_20260707_2';
 const LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v2';
 const LEGACY_LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v1';
+const LOCAL_OWNER_KEY='baseline-realm:tactical-operations:owner';
 
 function ensureStylesheet(){let link=document.getElementById(STYLE_ID);if(!link){link=document.createElement('link');link.id=STYLE_ID;link.rel='stylesheet';document.head.append(link);}if(link.getAttribute('href')!==STYLE_URL)link.href=STYLE_URL;}
-function accountAuthenticated(){try{return Boolean(globalThis.BASELINE_auth?.get?.()?.authed);}catch{return false;}}
+function authSnapshot(){try{return globalThis.BASELINE_auth?.get?.()||null;}catch{return null;}}
+function accountAuthenticated(){return Boolean(authSnapshot()?.authed);}
+function accountOwner(){const snapshot=authSnapshot();return String(snapshot?.name||snapshot?.user?.name||'').trim().toLocaleLowerCase('en-GB');}
 function readLocalSave(){for(const key of[LOCAL_SAVE_KEY,LEGACY_LOCAL_SAVE_KEY]){try{const value=JSON.parse(localStorage.getItem(key)||'null');if(value&&typeof value==='object')return value;}catch{}}return null;}
-function clearLocalSave(){try{localStorage.removeItem(LOCAL_SAVE_KEY);localStorage.removeItem(LEGACY_LOCAL_SAVE_KEY);}catch{}}
+function localOwner(){try{return String(localStorage.getItem(LOCAL_OWNER_KEY)||'').trim().toLocaleLowerCase('en-GB');}catch{return'';}}
+function claimLocalOwner(){
+  const current=accountOwner();
+  if(!current)return'';
+  const existing=localOwner();
+  if(existing)return existing;
+  try{localStorage.setItem(LOCAL_OWNER_KEY,current);}catch{}
+  return current;
+}
+function clearLocalSave(){try{localStorage.removeItem(LOCAL_SAVE_KEY);localStorage.removeItem(LEGACY_LOCAL_SAVE_KEY);localStorage.removeItem(LOCAL_OWNER_KEY);}catch{}}
 function equivalent(left,right){try{return JSON.stringify(left)===JSON.stringify(right);}catch{return false;}}
 function readSave(inventoryService){
   const local=readLocalSave();
@@ -20,8 +32,10 @@ function readSave(inventoryService){
   if(signedIn&&typeof inventoryService?.read==='function'){
     let tactical=null;
     try{const value=inventoryService.read()?.realm?.tacticalOperations;tactical=value&&typeof value==='object'?value:null;}catch{}
-    if(local&&tactical&&equivalent(local,tactical)){clearLocalSave();return{saved:tactical,importCandidate:null,signedIn:true};}
-    return{saved:tactical,importCandidate:local,signedIn:true};
+    const owner=local?claimLocalOwner():'';
+    const candidate=local&&owner&&owner===accountOwner()?local:null;
+    if(candidate&&tactical&&equivalent(candidate,tactical))return{saved:tactical,importCandidate:null,signedIn:true};
+    return{saved:tactical,importCandidate:candidate,signedIn:true};
   }
   return{saved:local,importCandidate:null,signedIn:false};
 }

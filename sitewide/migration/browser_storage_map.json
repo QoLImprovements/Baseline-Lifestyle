@@ -271,7 +271,7 @@
       "classification": "migration-only-legacy-state",
       "decision": "preserve-as-explicit-import-candidate",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "For a signed-in user, the Baseline Realm tacticalOperations section is authoritative even when absent/empty. Preserve this v1 browser copy only as an explicit import candidate when no equivalent account state exists. Never promote it automatically; remove it only after the user chooses Keep account copy or a later authoritative account load verifies an imported equivalent state."
+      "cutoverRule": "For a signed-in user, the Baseline Realm tacticalOperations section is authoritative even when absent/empty. Preserve this v1 browser copy only as an explicit import candidate when no equivalent account state exists. Bind the preserved copy to the first authenticated account that reviews it so it cannot be offered after an account switch. Never promote it automatically; remove it only after the user explicitly chooses Keep account copy."
     },
     {
       "id": "realm-tactical-v2",
@@ -280,7 +280,16 @@
       "classification": "migration-only-legacy-state",
       "decision": "migrate-explicitly-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "For a signed-in user, the Baseline Realm inventory-service tacticalOperations section is authoritative even when absent/empty. A divergent v2 browser copy must be presented for Import browser copy or Keep account copy and must never be loaded as account state automatically. Keep the browser recovery copy until a later authoritative account load verifies the imported equivalent."
+      "cutoverRule": "For a signed-in user, the Baseline Realm inventory-service tacticalOperations section is authoritative even when absent/empty. A divergent v2 browser copy must be presented for Import browser copy or Keep account copy and must never be loaded as account state automatically. Bind the preserved copy to the first authenticated account that reviews it; a successful import may leave it as non-authoritative recovery evidence, and it is removed only by an explicit Keep account copy decision."
+    },
+    {
+      "id": "realm-tactical-legacy-owner",
+      "inventoryPatterns": [],
+      "knownKeys": ["baseline-realm:tactical-operations:owner"],
+      "classification": "migration-only-legacy-metadata",
+      "decision": "bind-candidate-to-reviewing-account",
+      "target": null,
+      "cutoverRule": "This metadata binds the unresolved physical Tactical Operations browser save to the first authenticated account that reviews it. It prevents the same recovery copy from becoming an import candidate after an account switch and is deleted only with the associated browser save after Keep account copy."
     },
     {
       "id": "games-hub-view",

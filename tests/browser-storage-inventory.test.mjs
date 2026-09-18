@@ -197,6 +197,9 @@ test("game browser data maps to canonical physical save files", () => {
   assert.equal(tacticalV2?.decision,"migrate-explicitly-into-baseline-realm-resource");
   assert.match(tacticalV1?.cutoverRule || "", /authoritative even when absent\/empty/i);
   assert.match(tacticalV2?.cutoverRule || "", /must never be loaded as account state automatically/i);
+  assert.match(tacticalV2?.cutoverRule || "", /Bind the preserved copy to the first authenticated account/i);
+  const tacticalOwner=rules.find((rule)=>rule.id==="realm-tactical-legacy-owner");
+  assert.equal(tacticalOwner?.decision,"bind-candidate-to-reviewing-account");
 });
 
 test("browser authentication preview keys are explicitly excluded", () => {
