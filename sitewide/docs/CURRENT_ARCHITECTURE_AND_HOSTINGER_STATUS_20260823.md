@@ -1,6 +1,6 @@
 # Baseline Lifestyle — Current Architecture and Hostinger Status
 
-Status date: 2026-08-23
+Status date: 2026-09-18
 
 This document is the current repository authority. Earlier dated audit, checkpoint and cutover documents are retained as historical evidence and must not be read as descriptions of the current runtime.
 
@@ -16,18 +16,34 @@ This document is the current repository authority. Earlier dated audit, checkpoi
 | `Migration Evidence/` | Migration validation, rollback material and redacted operational evidence |
 | `.baseline-private.env` | Private paths, resource-authority mode and secrets |
 
-The active authentication database is `/home/u470362356/domains/baselinelifestyle.org/private-auth/baseline.sqlite`. It must not be deleted or moved into Saved Data. Password hashes, external identity subjects, session material and credentials must never be written to JSON.
+The documented production authentication database is `/home/u470362356/domains/baselinelifestyle.org/private-auth/baseline.sqlite`. It must not be deleted or moved into Saved Data. Password hashes, external identity subjects, session material and credentials must never be written to JSON.
+
+The repository still contains a local-development SQLite fallback at `sitewide/api/baseline.sqlite`. Production must set `BASELINE_DB_PATH` to the private authentication database. The root Apache policy denies direct requests for `.sqlite`, `.db`, `.env`, `.ini`, `.log`, `.bak`, `.old` and `.zip` files, but this is defence in depth rather than a substitute for keeping production persistence outside `public_html`.
 
 ## Saved Data authority
 
-The intended production setting is `BASELINE_RESOURCE_AUTHORITY=saved-data`.
+The intended final production setting is `BASELINE_RESOURCE_AUTHORITY=saved-data`.
 
-Canonical resources are:
+Supported authority modes are deliberately limited to:
+
+- `sqlite`;
+- `mirror`;
+- `saved-data`.
+
+The source default is `sqlite` when no authority value is configured. That default is not evidence of the real Hostinger production setting. The deployed `.baseline-private.env` or process environment must be inspected before any production cutover.
+
+The intended production transition is:
+
+`sqlite → mirror → verify → saved-data`
+
+Do not skip mirror verification and do not switch production authority as part of readiness verification.
+
+Canonical Saved Data resources are:
 
 - `Account Index/accounts.json`;
 - `Users/{six-digit-id}/account.json`;
-- per-user `favourites.json`, `binaural.json`, `fitness.json` and `voice.json`;
-- one canonical file per played game under `Users/{six-digit-id}/Games/`;
+- per-user `favourites.json`, `binaural.json`, `voice.json`, `fitness.json`, `fitness-routine.json`, `food.json` and `skincare.json`;
+- one canonical file per played game under `Users/{six-digit-id}/Games/`, including `badminton-focused.json`;
 - `Shared/Badminton/badminton.json`.
 
 Resource writes validate private absolute roots, reject symlink ancestors, use restrictive permissions, lock briefly, write and validate a same-filesystem temporary file, and atomically rename it over the previous revision.
@@ -36,26 +52,57 @@ Every browser-originated Saved Data mutation must submit `expectedRevision`. A c
 
 ## Browser migration decisions
 
-- Games auto-next is a device-only preference and remains in local storage.
-- Guest Games profiles require an explicit per-game signed-in import decision.
-- Food diet logs, Skincare slider settings and Badminton Focused progress remain preserved in browser storage until dedicated schemas are approved. Their keys block browser-storage retirement.
+The executable migration contract is `sitewide/migration/browser_storage_map.json`. Its current rules include:
+
+- Games auto-next remains a device-only preference.
+- Guest Games profiles and physical legacy game saves require explicit per-game signed-in import decisions.
+- Badminton Focused is an individual game resource at `Games/badminton-focused.json`; its legacy browser save is an explicit, account-bound import candidate and is never Shared Badminton state.
+- Food Diet Log browser content is an explicit, account-bound import candidate for `food.json`. A successful authoritative empty resource remains empty unless the user deliberately imports the browser copy.
+- Skincare routine, groups/assignments and slider state are explicit import candidates for sections of `skincare.json`; unrelated sections must survive partial writes.
+- Fitness body profile, active workout and progression history are explicit import candidates for `fitness.json`. Fitness Routine has its own authoritative `fitness-routine.json` resource and explicit legacy import candidate.
+- The Voice browser key remains guest/device preference state. For an authenticated account, `voice.json` is authoritative, including the empty/default state.
+- Shared Badminton browser state is a non-authoritative cache after a verified server load. Conflict backups are review-only recovery copies and are never auto-imported.
 - Browser authentication preview/password keys are never migration sources.
-- Shared Badminton browser state is a non-authoritative cache after a verified server load.
+- UI/session/navigation preferences remain browser/session state where the migration map classifies them as non-account data.
+
+Legacy physical browser storage is removed only after the relevant explicit import succeeds or the user explicitly chooses to keep the account copy, according to the resource-specific migration rule.
+
+## Repository-verifiable Hostinger requirements
+
+The current Saved Data implementation requires a PHP 8 runtime because it uses PHP 8 language/runtime functions such as `str_starts_with`. The historical Hostinger checkpoint recorded PHP 8.3 as active on 2026-08-02; the current deployed PHP version still requires manual reconfirmation before cutover.
+
+The deployment must provide:
+
+- PDO with SQLite support for the authentication database and any intentionally remaining SQLite persistence;
+- JSON support;
+- `random_bytes`;
+- filesystem functions used by the Saved Data writer, including directory creation, file reads/writes, `flock`, `rename` and permission changes;
+- private absolute Saved Data and Runtime paths outside `DOCUMENT_ROOT`;
+- Saved Data and Runtime temporary files on the same filesystem so atomic replacement can be enforced.
+
+`fsync` is used when available and is not a hard requirement.
+
+The repository enforces that configured Saved Data and Runtime roots are absolute and outside the document root, rejects symlinked directory ancestors, creates private directories with mode `700`, and writes resource files with mode `600`. The private environment loader refuses a symlinked private env file, files larger than 16 KiB, or files granting group/other access.
+
+Repository code cannot prove that Hostinger actually exposes the required extensions, preserves Unix permissions, places the configured paths outside `public_html`, keeps Saved Data across deployment/restart, or blocks direct web access to the sibling private paths. Those remain manual deployment checks.
 
 ## Operational sign-off still required
 
-Repository tests cannot prove the private Hostinger paths or backup system. Before declaring the cutover complete, record redacted evidence for:
+Repository tests cannot prove the private Hostinger paths, deployed environment values or backup system. Before declaring the cutover complete, record redacted evidence for:
 
-1. the exact deployed `main` commit and PHP version;
-2. private directory ownership and restrictive permissions;
-3. public inaccessibility of `.baseline-private.env`, Saved Data, Runtime, Migration Evidence and the auth database;
-4. write, refresh and sign-out/sign-in tests for Account, Favourites, Binaural, Voice, Fitness, every played game and Shared Badminton;
-5. revision increments and confirmation that only the intended resource file changed;
-6. no abandoned Runtime temporary files or locks;
-7. backup inclusion and a real restore drill;
-8. a current rollback SQLite copy built from Saved Data before any authority reversal.
+1. the exact deployed `main` commit and current PHP version/modules;
+2. the actual deployed `BASELINE_RESOURCE_AUTHORITY` value;
+3. the deployed `BASELINE_DB_PATH`, `BASELINE_SAVED_DATA_PATH` and `BASELINE_RUNTIME_PATH` locations, confirming private absolute roots outside `public_html`;
+4. private directory ownership and restrictive permissions;
+5. public inaccessibility of `.baseline-private.env`, Saved Data, Runtime, Migration Evidence and the auth database;
+6. write, refresh and sign-out/sign-in tests for Account, Favourites, Binaural, Voice, Fitness, Fitness Routine, Food, Skincare, every played game and Shared Badminton;
+7. revision increments and confirmation that only the intended resource file or section changed;
+8. no abandoned Runtime temporary files or locks;
+9. persistence of Saved Data through the relevant Hostinger deployment/restart lifecycle;
+10. backup inclusion and a real restore drill;
+11. a current rollback SQLite copy built from Saved Data before any authority reversal, while separately preserving Saved-Data-only resources that SQLite cannot represent.
 
-Only the obsolete migration-source SQLite copy under Saved Data may be archived after the checks above. The active `private-auth/baseline.sqlite` remains required.
+Only obsolete migration-source SQLite copies may be archived after the required checks. The active `private-auth/baseline.sqlite` remains required.
 
 ## Account-index consistency
 
