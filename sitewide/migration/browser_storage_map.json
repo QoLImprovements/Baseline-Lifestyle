@@ -177,9 +177,7 @@
     },
     {
       "id": "games-legacy-import-owner",
-      "inventoryPatterns": [
-        "__bl_games_legacy_profiles_owner_v1__"
-      ],
+      "inventoryPatterns": [],
       "knownKeys": [
         "__bl_games_legacy_profiles_owner_v1__"
       ],
