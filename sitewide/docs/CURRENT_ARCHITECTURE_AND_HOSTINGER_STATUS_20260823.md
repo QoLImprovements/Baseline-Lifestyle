@@ -8,6 +8,8 @@ Phase 4 production readiness and the exact remaining Hostinger/deployment gates 
 
 Phase 5 first-half Hostinger deployment preparation is tracked in `PHASE_5_HOSTINGER_DEPLOYMENT_FIRST_HALF_20260918.md`. That runbook keeps resource authority explicitly on `sqlite` and stops before mirror mode.
 
+Phase 5 second-half production transition is tracked in `PHASE_5_SAVED_DATA_CUTOVER_SECOND_HALF_20260918.md`. It requires `sqlite → mirror → fresh final SQLite snapshot → stable cutover package → saved-data`, and the final snapshot must be taken after mirror observation rather than reusing the older pre-mirror copy.
+
 ## Production boundaries
 
 | Hostinger location | Responsibility |
