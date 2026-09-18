@@ -398,15 +398,18 @@
         if(pageIsLeaving || !data || !data.ok) return;
         updateServerAuth(data.auth);
         const revision=Number(data.revision);
-        if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
+        const hasAuthoritativeRevision=Object.prototype.hasOwnProperty.call(data,'revision')&&Number.isInteger(revision)&&revision>=0;
+        if(hasAuthoritativeRevision) serverRevision=revision;
         serverSaveConflict=false;
         const serverState = data.state && typeof data.state === 'object' ? data.state : null;
         const serverHasContent = stateHasSessionContent(serverState);
         const localHasContent = stateHasSessionContent(localSnapshot);
-        if(serverRevision>0&&serverState){
-          if(localHasContent&&localStateIsNewerThanServer(localSnapshot,serverState)){
+        if(hasAuthoritativeRevision&&serverState){
+          if(localHasContent&&(serverRevision===0||localStateIsNewerThanServer(localSnapshot,serverState))){
             preserveConflictingLocalState(localSnapshot);
-            announceServerSaveConflict('A newer browser copy was preserved separately. The shared server version was loaded and was not overwritten.');
+            announceServerSaveConflict(serverRevision===0
+              ? 'A browser Badminton copy was preserved separately. The empty shared server state is authoritative and was not replaced automatically.'
+              : 'A newer browser copy was preserved separately. The shared server version was loaded and was not overwritten.');
           }
           state=hydrateLoadedState(serverState);
           persistSessionLocalOnly();

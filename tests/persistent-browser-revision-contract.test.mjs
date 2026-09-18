@@ -64,6 +64,17 @@ test('Skincare clients never retry a stale document with a freshly fetched revis
   assert.doesNotMatch(bridge,/409[\s\S]{0,300}nativeFetch\(/);
 });
 
+test('shared Badminton treats successful empty Saved Data as authoritative',()=>{
+  const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
+  const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
+  assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
+  assert.match(hydrate,/if\(hasAuthoritativeRevision&&serverState\)/);
+  assert.match(hydrate,/serverRevision===0[\s\S]{0,500}empty shared server state is authoritative/);
+  const authorityBranch=hydrate.indexOf('if(hasAuthoritativeRevision&&serverState)');
+  const localPromotion=hydrate.indexOf('else if(localHasContent && localStateIsNewerThanServer');
+  assert.ok(authorityBranch>-1&&localPromotion>authorityBranch,'authoritative revision handling must precede any local promotion path');
+});
+
 test('full-document shared saves refuse stale conflict retries',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const stability=read('sitewide/js/baseline-live-stability-core-v3.js');
