@@ -161,7 +161,7 @@ try{
     if($mode === 'saved-data'){
       if(isset($_GET['bootstrap'])){
         $rows = bl_game_file_all($uid);
-        bl_json(['ok'=>true,'authed'=>true,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at'],'revisions'=>$rows['revisions']]);
+        bl_json(['ok'=>true,'authed'=>true,'accountId'=>$uid,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at'],'revisions'=>$rows['revisions']]);
       }
       $app = bl_game_data_app((string)($_GET['app'] ?? ''));
       $row = bl_game_file_read($uid, $app);
@@ -172,7 +172,7 @@ try{
     if(isset($_GET['bootstrap'])){
       $rows = bl_game_data_rows($db, $uid);
       if($mode === 'mirror') bl_game_mirror_rows($uid, $rows);
-      bl_json(['ok'=>true,'authed'=>true,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at']]);
+      bl_json(['ok'=>true,'authed'=>true,'accountId'=>$uid,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at']]);
     }
     $app = bl_game_data_app((string)($_GET['app'] ?? ''));
     $rows = bl_game_data_rows($db, $uid, [$app]);
