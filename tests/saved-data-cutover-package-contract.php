@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/sitewide/migration/prepare_saved_data_cutover.php';
+require_once dirname(__DIR__) . '/sitewide/migration/verify_saved_data_live_health.php';
 
 function bl_cutover_package_assert(bool $condition, string $message): void {
   if(!$condition) throw new RuntimeException($message);
@@ -89,6 +90,23 @@ try{
   bl_cutover_package_assert(($result['gates']['liveDatabaseStableDuringPreparation'] ?? false) === true, 'live database stability gate failed');
   bl_cutover_package_assert(($result['gates']['savedDataStableDuringPreparation'] ?? false) === true, 'Saved Data stability gate failed');
   bl_cutover_package_assert(is_file($rollback), 'rollback copy was not created');
+
+  $liveSettings = $settings;
+  $liveSettings['authority']['value'] = 'saved-data';
+  $liveHealth = bl_verify_saved_data_live_health($documentRoot, $liveSettings);
+  bl_cutover_package_assert(($liveHealth['ok'] ?? false) === true, 'valid Saved Data live health did not pass: ' . json_encode($liveHealth));
+  bl_cutover_package_assert(($liveHealth['healthySavedDataMode'] ?? false) === true, 'live health not marked healthy');
+  bl_cutover_package_assert(($liveHealth['productionAuthorityChanged'] ?? true) === false, 'live health claimed authority change');
+  bl_cutover_package_assert(($liveHealth['gates']['authorityIsSavedData'] ?? false) === true, 'saved-data authority gate failed');
+  bl_cutover_package_assert(($liveHealth['gates']['savedDataTreeHealthy'] ?? false) === true, 'healthy Saved Data tree failed scan');
+
+  $unexpectedPath = $saved . '/unexpected.txt';
+  file_put_contents($unexpectedPath, 'unexpected');
+  @chmod($unexpectedPath, 0600);
+  $unexpectedHealth = bl_verify_saved_data_live_health($documentRoot, $liveSettings);
+  bl_cutover_package_assert(($unexpectedHealth['ok'] ?? true) === false, 'unexpected Saved Data file incorrectly passed live health');
+  bl_cutover_package_assert(($unexpectedHealth['gates']['savedDataTreeHealthy'] ?? true) === false, 'unexpected file did not fail tree health');
+  @unlink($unexpectedPath);
 
   $savedDataAuthority = $settings;
   $savedDataAuthority['authority']['value'] = 'saved-data';
