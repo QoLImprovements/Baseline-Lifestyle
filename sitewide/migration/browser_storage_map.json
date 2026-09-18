@@ -284,7 +284,7 @@
     },
     {
       "id": "realm-tactical-legacy-owner",
-      "inventoryPatterns": [],
+      "inventoryPatterns": ["baseline-realm:tactical-operations:owner"],
       "knownKeys": ["baseline-realm:tactical-operations:owner"],
       "classification": "migration-only-legacy-metadata",
       "decision": "bind-candidate-to-reviewing-account",
