@@ -187,6 +187,12 @@ test("game browser data maps to canonical physical save files", () => {
     rules.some((rule) => /Games\/(?:detectword|make24|trackcoin|ruleshift|dartsfocused|ninja)\.json/.test(String(rule.target || ""))),
     false,
   );
+  const tacticalV1=rules.find((rule)=>rule.id==="realm-tactical-v1-legacy");
+  const tacticalV2=rules.find((rule)=>rule.id==="realm-tactical-v2");
+  assert.equal(tacticalV1?.decision,"preserve-as-explicit-import-candidate");
+  assert.equal(tacticalV2?.decision,"migrate-explicitly-into-baseline-realm-resource");
+  assert.match(tacticalV1?.cutoverRule || "", /authoritative even when absent\/empty/i);
+  assert.match(tacticalV2?.cutoverRule || "", /must never be loaded as account state automatically/i);
 });
 
 test("browser authentication preview keys are explicitly excluded", () => {

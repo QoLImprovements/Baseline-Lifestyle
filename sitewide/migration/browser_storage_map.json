@@ -260,18 +260,18 @@
       "inventoryPatterns": ["baseline-realm:tactical-operations:v1"],
       "knownKeys": ["baseline-realm:tactical-operations:v1"],
       "classification": "migration-only-legacy-state",
-      "decision": "normalise-then-retire",
+      "decision": "preserve-as-explicit-import-candidate",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "Use only when no valid newer v2 or inventory-service state exists. Merge into the single Baseline Realm resource and remove the legacy key only after verified import."
+      "cutoverRule": "For a signed-in user, the Baseline Realm tacticalOperations section is authoritative even when absent/empty. Preserve this v1 browser copy only as an explicit import candidate when no equivalent account state exists. Never promote it automatically; remove it only after the user chooses Keep account copy or a later authoritative account load verifies an imported equivalent state."
     },
     {
       "id": "realm-tactical-v2",
       "inventoryPatterns": ["baseline-realm:tactical-operations:v2"],
       "knownKeys": ["baseline-realm:tactical-operations:v2"],
-      "classification": "server-saved-data-migration-source",
-      "decision": "normalise-into-baseline-realm-resource",
+      "classification": "migration-only-legacy-state",
+      "decision": "migrate-explicitly-into-baseline-realm-resource",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "Compare with the Baseline Realm inventory-service copy and report divergence before merging the selected state into the single Baseline Realm resource."
+      "cutoverRule": "For a signed-in user, the Baseline Realm inventory-service tacticalOperations section is authoritative even when absent/empty. A divergent v2 browser copy must be presented for Import browser copy or Keep account copy and must never be loaded as account state automatically. Keep the browser recovery copy until a later authoritative account load verifies the imported equivalent."
     },
     {
       "id": "games-hub-view",

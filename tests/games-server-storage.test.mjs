@@ -15,6 +15,7 @@ const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 const html=read('systems/baseline-games-hub/baseline-games-hub.html');
 const gamesApi=read('systems/baseline-games-hub/api/games_data.php');
 const savedData=read('sitewide/api/saved_data.php');
+const tactical=read('systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js');
 
 function runGuard({status=401,payload={ok:false,error:'signed_out'},initial={}}={}){
   class FakeStorage{
@@ -132,6 +133,16 @@ test('explicit game imports carry observed revisions and keep browser data until
   assert.match(gamesApi,/bl_resource_required_revision_from_input\(\[[\s\S]{0,120}'expectedRevision'=>\$expectedRevisions\[\$app\] \?\? null/);
   const write=gamesApi.match(/function bl_game_file_write[\s\S]*?\n\}/)?.[0]||'';
   assert.ok(write.indexOf('expectedRevision')<write.indexOf('onlyIfMissing && $resource'), 'revision check must happen before missing-only early return');
+});
+
+test('Baseline Realm Tactical Operations keeps browser saves explicit for authenticated accounts',()=>{
+  assert.match(tactical,/accountAuthenticated\(\)/);
+  assert.match(tactical,/Account Baseline Realm data is authoritative, including an empty Tactical Operations section/);
+  assert.match(tactical,/data-action="import-browser-copy"/);
+  assert.match(tactical,/data-action="keep-account-copy"/);
+  assert.match(tactical,/if\(migrationPending\)return\{ok:false,pendingMigration:true\}/);
+  assert.match(tactical,/if\(!signedIn\)[\s\S]{0,160}localStorage\.setItem\(LOCAL_SAVE_KEY/);
+  assert.match(tactical,/browser recovery copy is retained until a later account load verifies the same state/i);
 });
 
 test('account game writes carry per-file revisions and stop on conflicts',()=>{
