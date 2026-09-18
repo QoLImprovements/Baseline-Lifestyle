@@ -3,6 +3,7 @@
 
   const BUILD='FOOD_SAVED_DATA_BRIDGE_20260915_1';
   const STORAGE_KEY='__baseline_food_diet_log_v1__';
+  const LEGACY_OWNER_KEY='__baseline_food_diet_log_v1_owner__';
   const CONFLICT_BACKUP_KEY='__baseline_food_diet_log_v1_conflict_backup__';
   const API='/systems/baseline-food-approach/api/food_data.php';
   const local=(()=>{try{return global.localStorage;}catch(_error){return null;}})();
@@ -28,7 +29,19 @@
   function nativeRead(key){try{return local&&nativeGet?nativeGet.call(local,key):null;}catch(_error){return null;}}
   function nativeWrite(key,value){try{if(local&&nativeSet)nativeSet.call(local,key,String(value));}catch(_error){}}
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
-  function sessionAuthenticated(){try{return Boolean(global.BASELINE_auth?.get?.()?.authed);}catch(_error){return false;}}
+  function authSnapshot(){try{return global.BASELINE_auth?.get?.()||null;}catch(_error){return null;}}
+  function sessionAuthenticated(){return Boolean(authSnapshot()?.authed);}
+  function accountOwner(){const snapshot=authSnapshot();return String(snapshot?.name||snapshot?.user?.name||'').trim().toLocaleLowerCase('en-GB');}
+  function legacyOwner(){return String(nativeRead(LEGACY_OWNER_KEY)||'').trim().toLocaleLowerCase('en-GB');}
+  function claimLegacyOwner(){
+    const current=accountOwner();
+    if(!current)return'';
+    const existing=legacyOwner();
+    if(existing)return existing;
+    nativeWrite(LEGACY_OWNER_KEY,current);
+    return current;
+  }
+  function clearLegacySource(){clearLegacySource();nativeDelete(LEGACY_OWNER_KEY);}
   function emit(){
     try{document.dispatchEvent(new CustomEvent('baseline:food-saved-data',{detail:{status:state.status,authenticated:state.authenticated,canSave:state.canSave,revision:state.revision,hasImportCandidate:Boolean(state.importCandidate),error:state.lastError}}));}catch(_error){}
   }
@@ -149,7 +162,7 @@
     });
     panel.querySelector('[data-food-keep-account]')?.addEventListener('click',()=>{
       if(!global.confirm||global.confirm('Keep the account Diet Log and remove the old browser copy from this device?')){
-        nativeDelete(STORAGE_KEY);
+        clearLegacySource();
         state.importCandidate=null;
         renderMigrationChoice();
         emit();
@@ -188,7 +201,7 @@
     state.revision=Number(result.data.revision)||state.revision;
     state.memory=serialise(result.data.document||state.importCandidate);
     state.importCandidate=null;
-    nativeDelete(STORAGE_KEY);
+    clearLegacySource();
     document.documentElement.removeAttribute('data-food-server-save-error');
     setState('ready','',true,true);
     global.location?.reload?.();
@@ -197,6 +210,7 @@
   function bootstrap(){
     const browserRaw=nativeRead(STORAGE_KEY);
     const browserDocument=parse(browserRaw);
+    const candidateOwner=browserDocument?claimLegacyOwner():'';
     const result=syncRequest('GET');
     if(!result.ok){
       if(result.status===401){setState('signed-out','',false,false);return;}
@@ -212,9 +226,9 @@
     state.revision=Number(result.data.revision)||0;
     const serverDocument=normaliseDocument(result.data.document||defaultDocument());
     state.memory=serialise(serverDocument);
-    if(browserDocument){
+    if(browserDocument&&candidateOwner&&candidateOwner===accountOwner()){
       if(equivalent(browserDocument,serverDocument)){
-        nativeDelete(STORAGE_KEY);
+        clearLegacySource();
         state.importCandidate=null;
       }else{
         state.importCandidate=normaliseDocument(browserDocument);

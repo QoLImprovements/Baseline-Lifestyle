@@ -172,6 +172,14 @@ test('Food Saved Data remains authoritative and legacy browser data requires exp
   assert.match(bridge, /sessionAuthenticated\(\)/);
 });
 
+test('Food legacy import candidates stay isolated across account switches', () => {
+  const bridge = read('systems/baseline-food-approach/js/food-saved-data-bridge.js');
+  assert.match(bridge, /LEGACY_OWNER_KEY='__baseline_food_diet_log_v1_owner__'/);
+  assert.match(bridge, /function claimLegacyOwner\(\)/);
+  assert.match(bridge, /candidateOwner&&candidateOwner===accountOwner\(\)/);
+  assert.match(bridge, /function clearLegacySource\(\)\{nativeDelete\(STORAGE_KEY\);nativeDelete\(LEGACY_OWNER_KEY\);\}/);
+});
+
 test('account projections and index synchronization exclude authentication secrets', () => {
   const account = read('sitewide/api/account_resource.php');
   assert.match(account, /Account Index|bl_saved_account_index_path/);

@@ -106,6 +106,10 @@ test("migration rules are explicit and known blockers now have approved resource
   assert.equal(fitnessBackup?.decision,"preserve-until-explicit-decision");
   assert.match(fitnessBackup?.cutoverRule || "", /Never auto-import/i);
 
+  const foodOwner=rules.find((rule)=>rule.id==="diet-log-legacy-owner");
+  assert.equal(foodOwner?.decision,"bind-candidate-to-reviewing-account");
+  assert.match(foodOwner?.cutoverRule || "", /preventing the same candidate from being offered after an account switch/i);
+
   const skincareRoutine=rules.find((rule)=>rule.id==="skincare-routine-local-cache");
   assert.equal(skincareRoutine?.target,"Users/{paddedUserId}/skincare.json#routine");
   assert.equal(skincareRoutine?.decision,"migrate-explicitly-then-virtualise");

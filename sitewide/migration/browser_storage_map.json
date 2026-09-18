@@ -55,7 +55,16 @@
       "classification": "server-saved-data-migration-source",
       "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/food.json",
-      "cutoverRule": "The complete Diet Log document (logs, notes, saved recipes and health/profile fields) is preserved as a browser import candidate after an authenticated server read. It may become account data only after the signed-in user explicitly chooses Import browser Diet Log, including when the authoritative server resource is empty at revision 0. Delete the legacy key only after verified server acceptance or an explicit keep-account decision."
+      "cutoverRule": "The complete Diet Log document (logs, notes, saved recipes and health/profile fields) is preserved as a browser import candidate after an authenticated server read. It may become account data only after the signed-in user explicitly chooses Import browser Diet Log, including when the authoritative server resource is empty at revision 0. Bind an unresolved legacy candidate to the first authenticated account that reviews it so account switching cannot offer the same candidate to another account. Delete the legacy key only after verified server acceptance or an explicit keep-account decision."
+    },
+    {
+      "id": "diet-log-legacy-owner",
+      "inventoryPatterns": [],
+      "knownKeys": ["__baseline_food_diet_log_v1_owner__"],
+      "classification": "migration-only-legacy-metadata",
+      "decision": "bind-candidate-to-reviewing-account",
+      "target": null,
+      "cutoverRule": "This metadata does not contain Diet Log content. It binds the unresolved global legacy Diet Log candidate to the first authenticated account that reviews it, preventing the same candidate from being offered after an account switch. Remove it only with the associated legacy source after verified import or Keep account."
     },
     {
       "id": "diet-log-conflict-backup",
