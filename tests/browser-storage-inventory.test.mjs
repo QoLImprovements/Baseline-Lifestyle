@@ -131,6 +131,12 @@ test("migration rules are explicit and known blockers now have approved resource
   const badmintonFocused=rules.find((rule)=>rule.id==="badminton-focused-game");
   assert.equal(badmintonFocused?.target,"Users/{paddedUserId}/Games/badminton-focused.json");
   assert.equal(badmintonFocused?.decision,"migrate-explicitly");
+  assert.match(badmintonFocused?.cutoverRule || "", /account switch cannot offer the same save/i);
+
+  const gamesOwner=rules.find((rule)=>rule.id==="games-legacy-import-owner");
+  assert.equal(gamesOwner?.decision,"bind-candidates-to-reviewing-account");
+  assert.equal(gamesOwner?.target,null);
+  assert.match(gamesOwner?.cutoverRule || "", /different account must not see those saves as import candidates/i);
 
   assert.equal(rules.some((rule)=>rule.decision==="preserve-local-and-block-retirement"),false);
 });
