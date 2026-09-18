@@ -46,13 +46,50 @@ function bl_cutover_expected_files(string $root): array {
 
 function bl_cutover_comparable_data(string $relative, array $resource): array {
   $data = $resource['data'];
-  if(preg_match('#^Users/[0-9]{6}/fitness\.json$#', $relative) === 1){
+  if(preg_match('#^Users/[0-9]{6}/fitness\\.json$#', $relative) === 1){
     return [
       'plans'=>is_array($data['plans'] ?? null) ? $data['plans'] : [],
       'achievements'=>is_array($data['achievements'] ?? null) ? $data['achievements'] : [],
     ];
   }
+  if(preg_match('#^Users/[0-9]{6}/Games/[A-Za-z0-9-]+\\.json$#', $relative) === 1){
+    return [
+      'game'=>(string)($data['game'] ?? ''),
+      'profile'=>is_array($data['profile'] ?? null) ? $data['profile'] : [],
+    ];
+  }
   return $data;
+}
+
+function bl_cutover_expected_users(array $expectedFiles): array {
+  $users = [];
+  foreach($expectedFiles as $relative){
+    if(preg_match('#^Users/([0-9]{6})/account\\.json$#', $relative, $match) === 1) $users[$match[1]] = true;
+  }
+  return $users;
+}
+
+function bl_cutover_saved_data_native_resource(string $relative, array $resource, array $expectedUsers): bool {
+  if($relative === 'Account Index/accounts.json'){
+    $data = $resource['data'];
+    return ($data['byName'] ?? []) === [] && ($data['byEmail'] ?? []) === [];
+  }
+
+  if(preg_match('#^Users/([0-9]{6})/(fitness-routine|food|skincare)\\.json$#', $relative, $match) === 1){
+    return isset($expectedUsers[$match[1]]);
+  }
+
+  if(preg_match('#^Users/([0-9]{6})/fitness\\.json$#', $relative, $match) === 1 && isset($expectedUsers[$match[1]])){
+    $base = bl_cutover_comparable_data($relative, $resource);
+    return ($base['plans'] ?? []) === [] && ($base['achievements'] ?? []) === [];
+  }
+
+  if(preg_match('#^Users/([0-9]{6})/Games/baseline-realm\\.json$#', $relative, $match) === 1 && isset($expectedUsers[$match[1]])){
+    $base = bl_cutover_comparable_data($relative, $resource);
+    return ($base['profile'] ?? []) === [];
+  }
+
+  return false;
 }
 
 function bl_cutover_tree_hash(string $root): string {
@@ -76,6 +113,8 @@ function bl_verify_saved_data_cutover(string $database, string $savedData): arra
     if(($report['unmappedFields'] ?? []) !== []) $errors[] = ['check'=>'unmapped_source_fields','fields'=>array_keys($report['unmappedFields'])];
     $expectedFiles = bl_cutover_expected_files($temporary);
     $actualFiles = bl_cutover_expected_files($savedData);
+    $expectedUsers = bl_cutover_expected_users($expectedFiles);
+    $nativeFiles = [];
 
     foreach($expectedFiles as $relative){
       $actualPath = $savedData . '/' . $relative;
@@ -97,18 +136,19 @@ function bl_verify_saved_data_cutover(string $database, string $savedData): arra
     }
 
     foreach(array_diff($actualFiles, $expectedFiles) as $relative){
-      if(preg_match('#^Users/[0-9]{6}/fitness\.json$#', $relative) === 1){
-        try{
-          $resource = bl_cutover_json($savedData . '/' . $relative);
-          $base = bl_cutover_comparable_data($relative, $resource);
-          if(($base['plans'] ?? []) === [] && ($base['achievements'] ?? []) === []) continue;
-        }catch(Throwable $error){
-          $errors[] = ['check'=>'resource_validation','path'=>$relative,'error'=>$error->getMessage()];
+      try{
+        $resource = bl_cutover_json($savedData . '/' . $relative);
+        if(bl_cutover_saved_data_native_resource($relative, $resource, $expectedUsers)){
+          $nativeFiles[] = $relative;
           continue;
         }
+      }catch(Throwable $error){
+        $errors[] = ['check'=>'resource_validation','path'=>$relative,'error'=>$error->getMessage()];
+        continue;
       }
       $errors[] = ['check'=>'unexpected_resource','path'=>$relative];
     }
+    sort($nativeFiles);
 
     return [
       'ok'=>$errors === [],
@@ -121,6 +161,8 @@ function bl_verify_saved_data_cutover(string $database, string $savedData): arra
       'savedData'=>[
         'resourceCount'=>count($actualFiles),
         'treeSha256'=>bl_cutover_tree_hash($savedData),
+        'nativeResourceCount'=>count($nativeFiles),
+        'nativeResources'=>$nativeFiles,
       ],
       'counts'=>$report['counts'] ?? [],
       'errors'=>$errors,
