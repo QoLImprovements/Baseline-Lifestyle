@@ -6,6 +6,8 @@ This document is the current repository authority. Earlier dated audit, checkpoi
 
 Phase 4 production readiness and the exact remaining Hostinger/deployment gates are tracked in `PHASE_4_PRODUCTION_CUTOVER_READINESS_20260918.md`. That checklist does not authorize or perform the Phase 5 authority switch.
 
+Phase 5 first-half Hostinger deployment preparation is tracked in `PHASE_5_HOSTINGER_DEPLOYMENT_FIRST_HALF_20260918.md`. That runbook keeps resource authority explicitly on `sqlite` and stops before mirror mode.
+
 ## Production boundaries
 
 | Hostinger location | Responsibility |
