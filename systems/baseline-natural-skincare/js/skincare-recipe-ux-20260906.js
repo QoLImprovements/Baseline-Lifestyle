@@ -134,7 +134,7 @@
       const recipe=recipeById(id); if(!recipe) return;
       recipe.removeAttribute('data-category');
       recipe.dataset.recipeSlug=meta.slug;
-      const title=recipe.querySelector(':scope > h3'); if(title) title.textContent=meta.title;
+      const title=recipe.querySelector(':scope > .recipe-title-row > h3') || recipe.querySelector(':scope > h3'); if(title) title.textContent=meta.title;
       recipe.querySelectorAll(':scope > p.note').forEach(note=>{
         if(/formulation currently being tested/i.test(note.textContent || '')) note.remove();
       });
@@ -334,6 +334,7 @@
       #recipes .glide-variable-help{margin:.65rem 0 0;font-size:.88rem;line-height:1.4;opacity:.86}
       #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
       #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
+      html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden){display:grid!important}
       #recipes .recipe-detail-block{padding:.8rem .9rem;border:1px solid rgba(73,48,40,.15);border-radius:.7rem;background:rgba(255,255,255,.12)}
       #recipes .recipe-detail-block h4{margin:0 0 .28rem}
       #recipes .recipe-detail-block p{margin:0;line-height:1.5}
@@ -363,6 +364,7 @@
     const id=hit?hit[0]:oldId;
     if(!id) return;
     try{ global.BASELINE_openRecipe?.(id,{ silentHistory:true }); }catch(_error){}
+    document.getElementById('recipes')?.classList.remove('recipe-focus');
     global.requestAnimationFrame(()=>resetRecipeView(recipeById(id)));
   }
 
@@ -374,6 +376,7 @@
       global.BASELINE_openRecipe=function(id,opts){
         let next=String(id || ''); if(REPLACED_IDS[next]) next=REPLACED_IDS[next];
         const result=original.call(this,next,opts || {});
+        document.getElementById('recipes')?.classList.remove('recipe-focus');
         global.requestAnimationFrame(()=>resetRecipeView(recipeById(next)));
         return result;
       };
@@ -403,8 +406,9 @@
   function startRecipeUx(){
     canonicaliseOldRecipePath();
     applyAll();
+    document.getElementById('recipes')?.classList.remove('recipe-focus');
     wrapRecipeOpen();
-    global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
+    global.requestAnimationFrame(()=>{ applyAll(); document.getElementById('recipes')?.classList.remove('recipe-focus'); openPromotedRecipeForPath(); });
     global.setTimeout(applyAll,120);
     global.setTimeout(applyAll,600);
     global.addEventListener('load',applyAll,{once:true});

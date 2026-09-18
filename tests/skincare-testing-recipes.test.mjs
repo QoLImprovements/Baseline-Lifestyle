@@ -30,6 +30,10 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   assert.match(navigation, /const TESTING=\[\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
 });
 
+test('main Skincare document loads the recipe UX runtime', () => {
+  assert.match(html, /\/systems\/baseline-natural-skincare\/js\/skincare-recipe-ux-20260906\.js/);
+});
+
 test('promotion logic removes retired competing cards and Testing status', () => {
   assert.match(recipeUx, /r8:\s*\{\s*slug:'calming-shave-gel',\s*title:'Calming Shave Gel'/);
   assert.match(recipeUx, /r9:\s*\{\s*slug:'tooth-polishing-powder',\s*title:'Tooth Polishing Powder'/);
