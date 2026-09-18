@@ -28,3 +28,11 @@ test('Skincare recipe UX runtime executes and integrates with the universal reci
   await expect(card.locator('.recipe-details-intro')).toBeVisible();
   await expect(page.locator('#side-nav')).toBeVisible();
 });
+
+
+test('ordinary recipe routes keep the Skincare side navigation available', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  await expect(page.locator('#r2')).toBeVisible();
+  await expect(page.locator('#side-nav')).toBeVisible();
+  await expect(page.locator('#recipes')).not.toHaveClass(/recipe-focus/);
+});
