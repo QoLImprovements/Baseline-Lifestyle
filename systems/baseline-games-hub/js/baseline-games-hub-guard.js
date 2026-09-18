@@ -245,12 +245,8 @@
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')flushPending();});
   document.addEventListener('baseline:auth',()=>{
     global.setTimeout(()=>{
-      let authenticated=false;
-      try{authenticated=!!(global.BASELINE_auth&&global.BASELINE_auth.get&&global.BASELINE_auth.get().authed);}catch(_error){}
-      if(authenticated!==state.authenticated){
-        bootstrap();
-        emitStorageState();
-      }
+      bootstrap();
+      emitStorageState();
     },0);
   });
   document.documentElement.setAttribute('data-baseline-games-hub-storage',BUILD);
