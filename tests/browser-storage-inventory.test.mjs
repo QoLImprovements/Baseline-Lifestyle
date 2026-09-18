@@ -106,6 +106,16 @@ test("migration rules are explicit and known blockers now have approved resource
   assert.equal(fitnessBackup?.decision,"preserve-until-explicit-decision");
   assert.match(fitnessBackup?.cutoverRule || "", /Never auto-import/i);
 
+  const fitnessRoutine=rules.find((rule)=>rule.id==="fitness-routine-local-cache");
+  assert.equal(fitnessRoutine?.target,"Users/{paddedUserId}/fitness-routine.json");
+  assert.match(fitnessRoutine?.cutoverRule || "", /bridge loads before the workspace/i);
+  assert.match(fitnessRoutine?.cutoverRule || "", /must never become authenticated fallback authority/i);
+
+  const fitnessProgression=rules.find((rule)=>rule.id==="fitness-progression-history");
+  assert.equal(fitnessProgression?.target,"Users/{paddedUserId}/fitness.json#progressionHistory");
+  assert.match(fitnessProgression?.cutoverRule || "", /changes future progression/i);
+  assert.match(fitnessProgression?.cutoverRule || "", /explicit import with expectedRevision/i);
+
   const foodOwner=rules.find((rule)=>rule.id==="diet-log-legacy-owner");
   assert.equal(foodOwner?.decision,"bind-candidate-to-reviewing-account");
   assert.match(foodOwner?.cutoverRule || "", /preventing the same candidate from being offered after an account switch/i);
