@@ -66,7 +66,7 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.match(endpoint, /profile_conflict/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
   assert.match(bridge, /action\s*:\s*['"]import_local['"]/);
-  assert.match(bridge, /revision_conflict/);
+  assert.match(bridge, /body:revisionedBody\(body\)/);
   assert.match(bridge, /serverProfile/);
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
