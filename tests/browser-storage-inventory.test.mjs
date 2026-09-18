@@ -80,6 +80,13 @@ test("migration rules are explicit and known blockers now have approved resource
     assert.ok(rule.cutoverRule, `${rule.id}: cutover rule required`);
   }
 
+  const voice=rules.find((rule)=>rule.id==="voice-settings");
+  assert.equal(voice?.classification,"device-only-guest-preference");
+  assert.equal(voice?.decision,"keep-local-for-guests-never-promote");
+  assert.equal(voice?.target,null);
+  assert.match(voice?.cutoverRule || "", /voice\.json is authoritative, including an empty resource/i);
+  assert.match(voice?.cutoverRule || "", /must never be automatically promoted/i);
+
   const food=rules.find((rule)=>rule.id==="diet-log-local-content");
   assert.equal(food?.target,"Users/{paddedUserId}/food.json");
   assert.equal(food?.decision,"migrate-explicitly");

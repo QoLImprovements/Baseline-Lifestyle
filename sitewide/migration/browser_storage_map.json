@@ -79,10 +79,10 @@
       "id": "voice-settings",
       "inventoryPatterns": ["__baseline_voice_settings_v1__"],
       "knownKeys": ["__baseline_voice_settings_v1__"],
-      "classification": "server-saved-data",
-      "decision": "migrate-authenticated-value",
-      "target": "Users/{paddedUserId}/voice.json",
-      "cutoverRule": "Use the authenticated server voice resource when present. Keep guest settings local and never let guest data overwrite an authenticated resource."
+      "classification": "device-only-guest-preference",
+      "decision": "keep-local-for-guests-never-promote",
+      "target": null,
+      "cutoverRule": "For a signed-in user, Users/{paddedUserId}/voice.json is authoritative, including an empty resource which resolves to account defaults. The browser key remains only guest/file-mode preference state and must never be automatically promoted into an authenticated account or used as authenticated save fallback."
     },
     {
       "id": "badminton-focused-game",
