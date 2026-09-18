@@ -207,6 +207,13 @@ function bl_hostinger_cutover_preflight(string $documentRoot, ?array $settings=n
 
   $explicitSettings = [];
   foreach($settings as $key=>$setting) $explicitSettings[$key] = ($setting['source'] ?? 'default') !== 'default';
+  $privateEnvironment = bl_hostinger_preflight_private_env_report();
+  $usesPrivateEnvironment = false;
+  foreach($settings as $setting){
+    if(($setting['source'] ?? '') === 'private-env') $usesPrivateEnvironment = true;
+  }
+  $privateEnvironmentPolicyOk = !$usesPrivateEnvironment
+    || (($privateEnvironment['present'] ?? false) === true && ($privateEnvironment['policyOk'] ?? false) === true);
 
   $runtimeExtensionsOk = bl_hostinger_preflight_all_true($runtimeReport['extensions']);
   $runtimeFunctionsOk = bl_hostinger_preflight_all_true($runtimeReport['functions']);
@@ -249,6 +256,7 @@ function bl_hostinger_cutover_preflight(string $documentRoot, ?array $settings=n
     'savedDataPathExplicit'=>$explicitSettings['savedData'] ?? false,
     'runtimePathExplicit'=>$explicitSettings['runtime'] ?? false,
     'authorityExplicit'=>$explicitSettings['authority'] ?? false,
+    'privateEnvironmentPolicyOk'=>$privateEnvironmentPolicyOk,
     'authorityIsSqlite'=>$authority === 'sqlite',
     'databasePathSafe'=>$databasePathOk,
     'savedDataPathSafe'=>$savedDataPathOk,
@@ -275,7 +283,7 @@ function bl_hostinger_cutover_preflight(string $documentRoot, ?array $settings=n
       'runtime'=>$settings['runtime']['source'],
     ],
     'runtime'=>$runtimeReport,
-    'privateEnvironment'=>bl_hostinger_preflight_private_env_report(),
+    'privateEnvironment'=>$privateEnvironment,
     'paths'=>[
       'documentRoot'=>[
         'pathSha256'=>hash('sha256', $documentRoot),
