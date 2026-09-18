@@ -85,6 +85,20 @@ test("migration rules are explicit and known blockers now have approved resource
   assert.equal(food?.decision,"migrate-explicitly");
   assert.match(food?.cutoverRule || "", /explicitly chooses Import browser Diet Log/i);
 
+  const fitnessProfile=rules.find((rule)=>rule.id==="fitness-body-profile");
+  assert.equal(fitnessProfile?.target,"Users/{paddedUserId}/fitness.json#profile");
+  assert.equal(fitnessProfile?.decision,"migrate-explicitly-after-schema-validation");
+  assert.match(fitnessProfile?.cutoverRule || "", /account profile state is authoritative, including an empty profile/i);
+
+  const fitnessWorkout=rules.find((rule)=>rule.id==="fitness-active-workout");
+  assert.equal(fitnessWorkout?.target,"Users/{paddedUserId}/fitness.json#activeWorkout");
+  assert.equal(fitnessWorkout?.decision,"migrate-explicitly-only-valid-current-session");
+  assert.match(fitnessWorkout?.cutoverRule || "", /account active-workout state is authoritative, including no active workout/i);
+
+  const fitnessBackup=rules.find((rule)=>rule.id==="fitness-import-recovery-backup");
+  assert.equal(fitnessBackup?.decision,"preserve-until-explicit-decision");
+  assert.match(fitnessBackup?.cutoverRule || "", /Never auto-import/i);
+
   const skincareRoutine=rules.find((rule)=>rule.id==="skincare-routine-local-cache");
   assert.equal(skincareRoutine?.target,"Users/{paddedUserId}/skincare.json#routine");
   assert.equal(skincareRoutine?.decision,"migrate-explicitly-then-virtualise");

@@ -16,6 +16,8 @@
   const API='/systems/baseline-fitness/api/fitness_state.php';
   const BODY_PREFIX='__bl_fitness_body_profile_v1__::';
   const STEP_PREFIX='__bl_fitness_workout_progress_v2__::';
+  const IMPORT_BACKUP_PREFIX='__bl_fitness_saved_data_import_backup_v1__::';
+  const nativeGet=Storage.prototype.getItem;
   const nativeSet=Storage.prototype.setItem;
   const nativeRemove=Storage.prototype.removeItem;
   const timers=new Map();
@@ -26,6 +28,7 @@
   let serverActive=null;
   let saveBlocked=false;
   let lastError='';
+  let imports={profile:null,activeWorkout:null};
 
   function normalise(value) { return String(value || '').trim().toLocaleLowerCase('en-GB'); }
   function bodyKey() { return BODY_PREFIX+normalise(authName); }
@@ -50,6 +53,49 @@
       if (active) return active;
     }
     return null;
+  }
+  function importBackupKey(kind) { return IMPORT_BACKUP_PREFIX+normalise(authName)+'::'+kind; }
+  function readImportBackup(kind) { return parseJson(nativeGet.call(global.localStorage,importBackupKey(kind))); }
+  function writeImportBackup(kind,value) { if (value) nativeSet.call(global.localStorage,importBackupKey(kind),JSON.stringify(value)); }
+  function clearImportBackup(kind) { nativeRemove.call(global.localStorage,importBackupKey(kind)); }
+  function equivalent(left,right) { try { return JSON.stringify(left)===JSON.stringify(right); } catch (_error) { return false; } }
+  function equivalentActive(left,right) {
+    if (!left || !right) return false;
+    return Number(left.planId)===Number(right.planId)
+      && Number(left.sessionIndex)===Number(right.sessionIndex)
+      && equivalent(left.state,right.state);
+  }
+  function quarantineLegacyLocal() {
+    const profile=localBody();
+    if (profile) {
+      if (!readImportBackup('profile')) writeImportBackup('profile',profile);
+      nativeRemove.call(global.localStorage,bodyKey());
+    }
+    const activeWorkout=localActive();
+    if (activeWorkout) {
+      if (!readImportBackup('activeWorkout')) writeImportBackup('activeWorkout',activeWorkout);
+      nativeRemove.call(global.localStorage,stepKey(activeWorkout));
+    }
+  }
+  function prepareImportCandidates(server) {
+    const profile=readImportBackup('profile');
+    const activeWorkout=readImportBackup('activeWorkout');
+    imports={profile:null,activeWorkout:null};
+    if (profile) {
+      if (server?.profile && equivalent(profile,server.profile)) clearImportBackup('profile');
+      else imports.profile=profile;
+    }
+    if (activeWorkout) {
+      if (server?.activeWorkout && equivalentActive(activeWorkout,server.activeWorkout)) clearImportBackup('activeWorkout');
+      else imports.activeWorkout=activeWorkout;
+    }
+    renderMigrationReview();
+  }
+  function hasImportCandidate() { return Boolean(imports.profile||imports.activeWorkout); }
+  function importKindForKey(key) {
+    if (key===bodyKey()) return 'profile';
+    if (String(key).startsWith(STEP_PREFIX)) return 'activeWorkout';
+    return '';
   }
   function writeLocal(key,value) { nativeSet.call(global.localStorage,key,JSON.stringify(value)); }
   function revisionClient() { return global.BASELINE_api?.revisions || null; }
@@ -131,12 +177,55 @@
       return {ok:false,error:lastError};
     } finally { syncing=false; }
   }
-  async function importExisting(server) {
-    if (!enabled) return;const profile=localBody();const activeWorkout=localActive();const payload={ action:'import_local' };
-    if (!server?.profile && profile) payload.profile=profile;
-    if (!server?.activeWorkout && activeWorkout) payload.activeWorkout=activeWorkout;
-    if (!Object.hasOwn(payload,'profile') && !Object.hasOwn(payload,'activeWorkout')) return;
-    await post(payload);
+  function keepAccount(kind) {
+    if (!Object.hasOwn(imports,kind) || !imports[kind]) return false;
+    clearImportBackup(kind);
+    imports[kind]=null;
+    renderMigrationReview();
+    return true;
+  }
+  async function importLegacy(kind) {
+    if (!enabled || saveBlocked || !Object.hasOwn(imports,kind) || !imports[kind]) return false;
+    const payload={action:'import_local'};
+    if (kind==='profile') payload.profile=imports.profile;
+    else if (kind==='activeWorkout') payload.activeWorkout=imports.activeWorkout;
+    else return false;
+    const result=await post(payload);
+    if (!result?.ok) return false;
+    clearImportBackup(kind);
+    imports[kind]=null;
+    renderMigrationReview();
+    return true;
+  }
+  function renderMigrationReview() {
+    const existing=document.getElementById('fitnessSavedDataMigrationReview');
+    if (!hasImportCandidate()) { existing?.remove();return; }
+    const host=document.querySelector('main')||document.body;
+    if (!host) return;
+    const panel=existing||document.createElement('div');
+    panel.id='fitnessSavedDataMigrationReview';
+    panel.className='card';
+    panel.setAttribute('data-fitness-migration-review','true');
+    panel.innerHTML='<strong>Browser Fitness data is available.</strong><p class="note">Account data is authoritative, including an empty account state. The browser copy was preserved and was not imported automatically.</p>';
+    const labels={profile:'Body profile',activeWorkout:'Active workout'};
+    Object.keys(labels).forEach(kind=>{
+      if (!imports[kind]) return;
+      const row=document.createElement('div');
+      row.className='actions';
+      const label=document.createElement('span');
+      label.textContent=labels[kind];
+      const importButton=document.createElement('button');
+      importButton.type='button';
+      importButton.textContent='Import browser copy';
+      importButton.addEventListener('click',()=>importLegacy(kind));
+      const keepButton=document.createElement('button');
+      keepButton.type='button';
+      keepButton.textContent='Keep account copy';
+      keepButton.addEventListener('click',()=>keepAccount(kind));
+      row.append(label,importButton,keepButton);
+      panel.appendChild(row);
+    });
+    if (!existing) host.prepend(panel);
   }
   function schedule(key,value) {
     clearTimeout(timers.get(key));
@@ -148,9 +237,16 @@
   }
 
   Storage.prototype.setItem=function(key,rawValue) {
-    if (this===global.localStorage && typeof key==='string' && saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
-      renderAuthorityStatus();
-      return;
+    if (this===global.localStorage && typeof key==='string') {
+      const importKind=importKindForKey(key);
+      if (imports[importKind]) {
+        renderMigrationReview();
+        return;
+      }
+      if (saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
+        renderAuthorityStatus();
+        return;
+      }
     }
     const result=nativeSet.apply(this,arguments);
     if (this===global.localStorage && typeof key==='string') {
@@ -160,6 +256,17 @@
     return result;
   };
   Storage.prototype.removeItem=function(key) {
+    if (this===global.localStorage && typeof key==='string') {
+      const importKind=importKindForKey(key);
+      if (imports[importKind]) {
+        renderMigrationReview();
+        return;
+      }
+      if (saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
+        renderAuthorityStatus();
+        return;
+      }
+    }
     const result=nativeRemove.apply(this,arguments);
     if (this===global.localStorage && enabled && typeof key==='string' && key.startsWith(STEP_PREFIX)) {
       const removed=activeFromKey(key,serverActive?.state || {});
@@ -170,9 +277,18 @@
 
   async function syncForAuth(snapshot) {
     const nextName=snapshot?.authed?String(snapshot.name || snapshot.user?.name || '').trim():'';
-    if (!nextName) { enabled=false;authName='';revision=0;serverActive=null;return; }
-    if (normalise(nextName)!==normalise(authName)) { revision=0;serverActive=null; }
-    authName=nextName;const server=await reload();if (enabled) await importExisting(server);
+    if (!nextName) {
+      enabled=false;authName='';revision=0;serverActive=null;imports={profile:null,activeWorkout:null};
+      renderMigrationReview();
+      return;
+    }
+    if (normalise(nextName)!==normalise(authName)) {
+      revision=0;serverActive=null;saveBlocked=false;lastError='';imports={profile:null,activeWorkout:null};
+    }
+    authName=nextName;
+    quarantineLegacyLocal();
+    const server=await reload();
+    if (enabled) prepareImportCandidates(server);
   }
   function attachAuth() {
     const auth=global.BASELINE_auth;
@@ -180,7 +296,14 @@
     syncForAuth(auth.get());if (typeof auth.onChange==='function') auth.onChange(syncForAuth);
   }
 
-  global.BASELINE_FITNESS_SAVED_DATA=Object.freeze({ reload,get enabled(){ return enabled; },get revision(){ return revision; } });
+  global.BASELINE_FITNESS_SAVED_DATA=Object.freeze({
+    reload,
+    get enabled(){ return enabled; },
+    get revision(){ return revision; },
+    hasImportCandidate,
+    importLegacy,
+    keepAccount
+  });
   attachAuth();
   global.addEventListener?.('pagehide',() => timers.forEach((timer) => clearTimeout(timer)),{ once:true });
 })(typeof window!=='undefined'?window:globalThis);

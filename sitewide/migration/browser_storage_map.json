@@ -143,9 +143,9 @@
       "inventoryPatterns": ["[expression] bodyProfileKey(", "[expression] bodyKey("],
       "knownKeys": ["__bl_fitness_body_profile_v1__::{normalised-user}"],
       "classification": "server-saved-data-migration-source",
-      "decision": "migrate-after-schema-validation",
+      "decision": "migrate-explicitly-after-schema-validation",
       "target": "Users/{paddedUserId}/fitness.json#profile",
-      "cutoverRule": "Validate field allowlists and units. Do not create paths from the username embedded in the legacy key. The bridge expression and the Fitness application expression refer to the same physical browser key."
+      "cutoverRule": "For a signed-in user, account profile state is authoritative, including an empty profile. Quarantine any pre-existing browser profile under an account-scoped recovery key before the application reads it. After server load, expose a deliberate Import browser copy or Keep account copy decision; imports use the current fitness expectedRevision and server schema validation. Never derive Saved Data paths from the username embedded in a browser key."
     },
     {
       "id": "storage-wrapper-implementation",
@@ -215,9 +215,9 @@
       "inventoryPatterns": ["[expression] stepStorageKey(current.planId"],
       "knownKeys": ["__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"],
       "classification": "server-saved-data-migration-source",
-      "decision": "migrate-only-valid-current-session",
+      "decision": "migrate-explicitly-only-valid-current-session",
       "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
-      "cutoverRule": "Import only when plan ID, next session and step count match authoritative Fitness data. Invalid or stale entries must be reported, not silently applied."
+      "cutoverRule": "For a signed-in user, account active-workout state is authoritative, including no active workout. Quarantine a pre-existing browser workout before application startup and expose it only as an explicit import candidate. Import only after the user chooses Import browser copy and only when plan ID, current session and step validation succeed with the current fitness expectedRevision; invalid, stale or conflicting entries must remain preserved and must not be silently applied."
     },
     {
       "id": "fitness-bridge-plan-lookups",
@@ -227,6 +227,15 @@
       "decision": "no-independent-migration",
       "target": null,
       "cutoverRule": "These known bridge lookup keys are already covered by the separate Fitness cache and file-protocol fallback decisions. They create no additional browser resource."
+    },
+    {
+      "id": "fitness-import-recovery-backup",
+      "inventoryPatterns": [],
+      "knownKeys": ["__bl_fitness_saved_data_import_backup_v1__::{normalised-user}::{profile|activeWorkout}"],
+      "classification": "migration-only-legacy-state",
+      "decision": "preserve-until-explicit-decision",
+      "target": "Users/{paddedUserId}/fitness.json",
+      "cutoverRule": "This recovery copy is created before an authenticated legacy Fitness browser key is removed from its active application location. Keep it until an explicit import succeeds or the user chooses Keep account copy. Never auto-import it and never expose it across account names."
     },
     {
       "id": "fitness-plan-cache",

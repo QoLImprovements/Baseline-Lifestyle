@@ -83,6 +83,19 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
 });
 
+test('Fitness legacy browser profile and workout require explicit import', () => {
+  const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.doesNotMatch(bridge, /await importExisting\(server\)/);
+  assert.doesNotMatch(bridge, /async function importExisting/);
+  assert.match(bridge, /quarantineLegacyLocal\(\);[\s\S]{0,120}const server=await reload\(\)/);
+  assert.match(bridge, /Account data is authoritative, including an empty account state/);
+  assert.match(bridge, /Import browser copy/);
+  assert.match(bridge, /Keep account copy/);
+  assert.match(bridge, /payload=\{action:'import_local'\}/);
+  assert.match(bridge, /IMPORT_BACKUP_PREFIX/);
+  assert.match(bridge, /if \(imports\[importKind\]\)[\s\S]{0,100}renderMigrationReview\(\)/);
+});
+
 test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
   const paths = read('sitewide/api/saved_data.php');
   const state = read('systems/baseline-fitness/api/routine_state.php');
