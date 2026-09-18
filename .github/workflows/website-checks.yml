@@ -74,6 +74,7 @@ jobs:
             tests/baseline-fitness-voice.spec.js \
             tests/fitness-saved-plan-reload-browser.spec.js \
             tests/routine-system-browser.spec.js \
+            tests/skincare-recipe-runtime.spec.js \
             tests/stability-release-smoke.spec.js \
             --reporter=line
 
