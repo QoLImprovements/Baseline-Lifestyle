@@ -100,7 +100,7 @@
       "classification": "server-saved-data-migration-source",
       "decision": "migrate-explicitly",
       "target": "Users/{paddedUserId}/Games/badminton-focused.json",
-      "cutoverRule": "Treat this as an individual game save, never Shared Badminton. A signed-in user must explicitly adopt/import the local profile for this game; an existing server save is never replaced automatically and all server mutations use expectedRevision."
+      "cutoverRule": "Treat this as an individual game save, never Shared Badminton. A signed-in user must explicitly adopt/import the local profile for this game; an existing server save is never replaced automatically and all server mutations use expectedRevision. The unresolved browser candidate is bound by the Games Hub legacy-owner metadata to the first authenticated account that reviews it, so an account switch cannot offer the same save to another account."
     },
     {
       "id": "darts-focused-game",
@@ -128,6 +128,15 @@
       "decision": "offer-explicit-per-game-import",
       "target": "Users/{paddedUserId}/Games/{canonicalGameFile}",
       "cutoverRule": "Split by recognised game ID using canonicalGameFiles. Require a signed-in user decision and stale-write comparison; guest data must never automatically replace authenticated progress."
+    },
+    {
+      "id": "games-legacy-import-owner",
+      "inventoryPatterns": ["__bl_games_legacy_profiles_owner_v1__"],
+      "knownKeys": ["__bl_games_legacy_profiles_owner_v1__"],
+      "classification": "migration-only-legacy-metadata",
+      "decision": "bind-candidates-to-reviewing-account",
+      "target": null,
+      "cutoverRule": "This metadata contains no game progress. It binds unresolved physical Games Hub browser saves to the first authenticated account that reviews them. A different account must not see those saves as import candidates. Remove the marker only after no physical legacy game profiles remain."
     },
     {
       "id": "trackcoin-game",
