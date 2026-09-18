@@ -11,7 +11,7 @@ function bl_hostinger_preflight_is_absolute(string $path): bool {
 }
 
 function bl_hostinger_preflight_normalize(string $path, string $label): string {
-  $path = rtrim(trim(str_replace('\\\\', '/', $path)), '/');
+  $path = rtrim(trim(str_replace('\\', '/', $path)), '/');
   if($path === '' || !bl_hostinger_preflight_is_absolute($path)){
     throw new BaselineHostingerPreflightException($label . '_must_be_absolute');
   }
@@ -22,8 +22,8 @@ function bl_hostinger_preflight_normalize(string $path, string $label): string {
 }
 
 function bl_hostinger_preflight_within(string $path, string $root): bool {
-  $path = rtrim(str_replace('\\\\', '/', $path), '/') . '/';
-  $root = rtrim(str_replace('\\\\', '/', $root), '/') . '/';
+  $path = rtrim(str_replace('\\', '/', $path), '/') . '/';
+  $root = rtrim(str_replace('\\', '/', $root), '/') . '/';
   return str_starts_with($path, $root);
 }
 
@@ -35,7 +35,7 @@ function bl_hostinger_preflight_private_permissions(string $path): ?bool {
 }
 
 function bl_hostinger_preflight_symlink_ancestor(string $path): bool {
-  $path = rtrim(str_replace('\\\\', '/', $path), '/');
+  $path = rtrim(str_replace('\\', '/', $path), '/') . '/';
   while($path !== '' && dirname($path) !== $path){
     if(is_link($path)) return true;
     $path = dirname($path);
