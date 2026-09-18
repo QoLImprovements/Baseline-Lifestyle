@@ -75,6 +75,15 @@ test('shared Badminton treats successful empty Saved Data as authoritative',()=>
   assert.ok(authorityBranch>-1&&localPromotion>authorityBranch,'authoritative revision handling must precede any local promotion path');
 });
 
+test('shared Badminton exposes load/save failures and blocks unsafe follow-up writes',()=>{
+  const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
+  assert.match(badminton,/serverSaveBlocked = false/);
+  assert.match(badminton,/serverSaveConflict \|\| serverSaveBlocked/);
+  assert.match(badminton,/Badminton was not saved to the shared server\. Saving has stopped/);
+  assert.match(badminton,/authoritative shared Badminton state could not be loaded/);
+  assert.doesNotMatch(badminton,/\.catch\(function\(_error\)\{\}\)/);
+});
+
 test('full-document shared saves refuse stale conflict retries',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const stability=read('sitewide/js/baseline-live-stability-core-v3.js');

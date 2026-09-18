@@ -150,6 +150,7 @@
   let lastServerAuth = null;
   let serverRevision = 0;
   let serverSaveConflict = false;
+  let serverSaveBlocked = false;
   let suppressServerHydrationUntil = 0;
 
   function protectLocalCurrentState(ms){
@@ -257,7 +258,7 @@
   }
 
   function queueServerSave(){
-    if(pageIsLeaving || serverSaveConflict || !API_STATE_URL || !window.fetch) return;
+    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch) return;
     if(serverSaveTimer) window.clearTimeout(serverSaveTimer);
     serverSaveTimer = window.setTimeout(function(){
       serverSaveTimer = null;
@@ -289,6 +290,7 @@
         if(data && data.ok){
           const revision=Number(data.revision);
           if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
+          serverSaveBlocked=false;
           // The local page is the source of truth immediately after a POST.
           // Do not hydrate from the echoed server payload here: doing so can
           // rebuild the whole current-games grid after one court saves, which
@@ -298,7 +300,9 @@
           persistSessionLocalOnly();
         }
       }).catch(function(_error){
-        // Local development can run without PHP; keep the local state usable.
+        serverSaveBlocked=true;
+        preserveConflictingLocalState(state);
+        announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the page to load the authoritative shared state before making more persistent changes.');
       }).finally(function(){
         serverSaveInFlight = false;
         serverSaveAbortController = null;
@@ -395,8 +399,14 @@
       .then(function(response){ return response.json().catch(function(){ return null; }); })
       .then(function(data){
         if(pageIsLeaving || serverHydrationSuppressed()) return;
-        if(pageIsLeaving || !data || !data.ok) return;
+        if(pageIsLeaving) return;
+        if(!data || !data.ok){
+          serverSaveBlocked=true;
+          announceServerSaveConflict('The authoritative shared Badminton state could not be loaded. Browser data was not promoted; reload the page before making persistent changes.');
+          return;
+        }
         updateServerAuth(data.auth);
+        serverSaveBlocked=false;
         const revision=Number(data.revision);
         const hasAuthoritativeRevision=Object.prototype.hasOwnProperty.call(data,'revision')&&Number.isInteger(revision)&&revision>=0;
         if(hasAuthoritativeRevision) serverRevision=revision;
@@ -431,7 +441,11 @@
         }
         renderAll(false);
       })
-      .catch(function(_error){})
+      .catch(function(_error){
+        serverSaveBlocked=true;
+        if(stateHasSessionContent(localSnapshot)) preserveConflictingLocalState(localSnapshot);
+        announceServerSaveConflict('The authoritative shared Badminton state could not be loaded. Browser data was preserved separately; reload the page before making persistent changes.');
+      })
       .finally(function(){
         serverLoadAbortController = null;
       });
