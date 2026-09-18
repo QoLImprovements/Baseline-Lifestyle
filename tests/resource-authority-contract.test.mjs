@@ -200,6 +200,9 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(cutover, /Games\/baseline-realm/);
   assert.match(cutover, /'profile'=>is_array\(\$data\['profile'\]/);
   assert.match(cutover, /nativeResourceCount/);
+  assert.match(cutover, /skincare_saved_data_migration\\.php/);
+  assert.match(cutover, /bl_migration_export_skincare_from_copy/);
+  assert.match(cutover, /'assignments'=>is_array/);
   assert.match(cutover, /unexpected_resource/);
   assert.match(rollback, /output_must_differ_from_source/);
   assert.match(rollback, /pass_hash|authentication_database/);
