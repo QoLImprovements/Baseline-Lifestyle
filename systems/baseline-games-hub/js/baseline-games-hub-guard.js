@@ -12,6 +12,7 @@
     darts:'__bl_darts_focused_v1__',
     meridian:'baseline.realm.exploration.jrpg.v1',
     badminton:'__bl_badminton_focused_v1__',
+    legacyOwner:'__bl_games_legacy_profiles_owner_v1__',
     realmV2:'__bl_baseline_realm_v2__',
     realmV3:'__bl_baseline_realm_v3__',
     realmBackup:'__bl_baseline_realm_v3_backup__',
@@ -30,7 +31,7 @@
   const memory=new Map();
   const pending=Object.create(null);
   const timers=Object.create(null);
-  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{},legacyProfiles:{}};
+  const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{},legacyProfiles:{},accountOwner:''};
   const local=(()=>{try{return global.localStorage;}catch(_error){return null;}})();
   const storageProto=global.Storage&&global.Storage.prototype;
   const nativeGet=storageProto&&storageProto.getItem;
@@ -42,7 +43,22 @@
   function own(object,key){return Object.prototype.hasOwnProperty.call(object,key);}
   function serialise(value){try{return JSON.stringify(value);}catch(_error){return '{}';}}
   function nativeRead(key){try{return local&&nativeGet?nativeGet.call(local,key):null;}catch(_error){return null;}}
+  function nativeWrite(key,value){try{if(local&&nativeSet)nativeSet.call(local,key,String(value));}catch(_error){}}
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
+  function bootstrapAccountOwner(data){
+    const id=Number(data&&data.accountId);
+    return Number.isInteger(id)&&id>0?'uid:'+id:'';
+  }
+  function legacyOwner(){return String(nativeRead(KEYS.legacyOwner)||'').trim().toLowerCase();}
+  function hasLegacyProfiles(profiles){return Boolean(profiles&&Object.keys(profiles).some(app=>profiles[app]&&typeof profiles[app]==='object'));}
+  function bindLegacyProfilesToAccount(profiles){
+    if(!hasLegacyProfiles(profiles)){nativeDelete(KEYS.legacyOwner);return{};}
+    if(!state.accountOwner)return{};
+    const existing=legacyOwner();
+    if(existing&&existing!==state.accountOwner)return{};
+    if(!existing)nativeWrite(KEYS.legacyOwner,state.accountOwner);
+    return profiles;
+  }
   function emitStorageState(){
     try{document.dispatchEvent(new CustomEvent('baseline:game-storage',{detail:{status:state.status,authenticated:state.authenticated,canPlay:true,canSave:state.canSave,error:state.lastError,importCandidates:importCandidates()}}));}catch(_error){}
   }
@@ -102,7 +118,7 @@
     Object.entries(revisions).forEach(([app,value])=>{const revision=Number(value);if(ALL_APPS.includes(app)&&Number.isInteger(revision)&&revision>=0)state.revisions[app]=revision;});
   }
   function importCandidates(){
-    if(!state.authenticated)return[];
+    if(!state.authenticated||!state.accountOwner||legacyOwner()!==state.accountOwner)return[];
     return ALL_APPS.filter(app=>state.legacyProfiles[app]&&typeof state.legacyProfiles[app]==='object'&&!own(state.profiles,app));
   }
   function clearImportedLocalProfile(app){
@@ -122,6 +138,7 @@
   function bootstrap(){
     const legacy=collectLegacyProfiles();
     state.legacyProfiles=copy(legacy);
+    state.accountOwner='';
     prepareMemory(legacy);
     const result=syncRequest('GET',DATA_API+'?bootstrap=1');
     if(!result.ok){
@@ -129,6 +146,8 @@
       setState(result.status===401?'signed-out':'unavailable',result.error,false,false);
       return;
     }
+    state.accountOwner=bootstrapAccountOwner(result.data);
+    state.legacyProfiles=copy(bindLegacyProfilesToAccount(legacy));
     const profiles=copy(result.data.profiles);
     state.revisions={};
     rememberRevisions(result.data.revisions);
@@ -182,6 +201,7 @@
     prepareMemory(state.profiles);
     clearImportedLocalProfile(app);
     delete state.legacyProfiles[app];
+    if(!hasLegacyProfiles(collectLegacyProfiles()))nativeDelete(KEYS.legacyOwner);
     emitStorageState();
     return true;
   }
