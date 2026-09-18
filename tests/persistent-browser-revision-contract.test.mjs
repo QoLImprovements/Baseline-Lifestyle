@@ -107,3 +107,21 @@ test('Fitness Routine Saved Data bridge loads before browser-owned workspace wri
   const workspaceIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
   assert.ok(bridgeIndex>=0 && workspaceIndex>bridgeIndex,'Fitness Routine Saved Data bridge must load before the workspace');
 });
+
+
+test('Fitness exercise progression history uses revisioned Saved Data authority',()=>{
+  const resource=read('systems/baseline-fitness/api/fitness_resource.php');
+  const endpoint=read('systems/baseline-fitness/api/fitness_state.php');
+  const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  const policy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
+  const rollback=read('sitewide/migration/build_sqlite_rollback_copy.php');
+  assert.match(resource,/progressionHistory/);
+  assert.match(resource,/\['profile','activeWorkout','progressionHistory'\]/);
+  assert.match(endpoint,/save_progression_history/);
+  assert.match(endpoint,/progression_history_conflict/);
+  assert.match(bridge,/saveProgressionHistory/);
+  assert.match(bridge,/progressionHistory:'Exercise progression history'/);
+  assert.match(policy,/await storeSessionOutcomes\(before\)/);
+  assert.match(policy,/savedData\?\.savedDataDisabled/);
+  assert.match(rollback,/fitness\.json#progressionHistory/);
+});

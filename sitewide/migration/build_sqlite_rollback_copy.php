@@ -116,7 +116,7 @@ function bl_rollback_apply_fitness(PDO $db, int $uid, string $directory, array &
   $db->prepare('DELETE FROM achievements WHERE user_id=:u')->execute([':u'=>$uid]);
   $resource = bl_rollback_resource($directory . '/fitness.json');
   if($resource === null) return;
-  if(!empty($resource['profile']) || !empty($resource['activeWorkout'])) $optionalUsers[] = sprintf('%06d', $uid);
+  if(!empty($resource['profile']) || !empty($resource['activeWorkout']) || !empty($resource['progressionHistory'])) $optionalUsers[] = sprintf('%06d', $uid);
   $planStmt = $db->prepare('INSERT INTO plans(user_id,created_at,plan_text,plan_json) VALUES(:u,:t,:text,:json)');
   $sessionStmt = $db->prepare('INSERT INTO plan_sessions(plan_id,user_id,session_index,scheduled_date,status,completed_at,updated_at) VALUES(:p,:u,:i,:d,:s,:c,:t)');
   foreach((is_array($resource['plans'] ?? null) ? $resource['plans'] : []) as $plan){
@@ -204,6 +204,7 @@ function bl_rollback_preserved_saved_data_resources(string $savedData): array {
     if(is_array($fitness)){
       if(!empty($fitness['profile'])) $preserved[] = 'Users/' . $folder . '/fitness.json#profile';
       if(!empty($fitness['activeWorkout'])) $preserved[] = 'Users/' . $folder . '/fitness.json#activeWorkout';
+      if(!empty($fitness['progressionHistory'])) $preserved[] = 'Users/' . $folder . '/fitness.json#progressionHistory';
     }
 
     $realm = bl_rollback_resource($directory . '/Games/baseline-realm.json');
