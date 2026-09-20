@@ -292,6 +292,9 @@ Options -Indexes
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system|my-routine)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
+  # Recover malformed top-level Fitness URLs produced by the former nested route builder.
+  RewriteRule ^baseline-fitness/my-routine(?:/(?:log|summary|public|plan(?:/(?:calisthenics|cardio|other|sports))?))?/(system|my-plan|my-body|library|exercise-library|achievements)/?$ /baseline-fitness/$1 [R=302,L]
+
   RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
   # Baseline Games Hub hierarchy.
