@@ -18,7 +18,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b8644d"/>
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
-<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p))d.setAttribute('data-initial-recipe-route','1')}}catch(_e){}}()</script>
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');var m=p.match(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/([a-z0-9-]+)$/i);if(m){var slug=String(m[1]||'').toLowerCase();d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',slug);var s=document.createElement('style');s.id='baseline-exact-recipe-first-paint';s.textContent='html[data-initial-recipe-route="1"] body[data-app] #recipes #recipes-landing{display:none!important}html[data-initial-recipe-route="1"] body[data-app] #recipes .recipe-page{display:none!important}html[data-initial-recipe-route="1"][data-initial-recipe-slug="'+slug+'"] body[data-app] #recipes .recipe-page[data-recipe-slug="'+slug+'"]{display:block!important}';document.head.appendChild(s)}}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -41,7 +41,6 @@ These Markdown rules are a human reference point, not live runtime config.
 <style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-recipe-route="1"] body[data-app] #recipes .recipe-layout{visibility:hidden!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
 </style>
@@ -810,9 +809,9 @@ Method steps MUST follow this format:
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
-<li data-method-step="2" data-tip="Provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.">24 g <strong>Superfine Food/Pharmaceutical-Grade White Kaolin Clay</strong></li>
-<li data-method-step="2" data-tip="Traditional oral-care herb that complements the cleansing powder.">4.5 g <strong>Very Finely Powdered Sage Leaf</strong></li>
-<li data-method-step="2" data-tip="Provides natural freshness and a mild peppermint flavour.">1.5 g <strong>Very Finely Powdered Peppermint Leaf</strong></li>
+<li data-method-step="2" data-tip="Provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.">24 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-white-kaolin" href="/baseline-natural-skincare/ingredient-library/white-kaolin?filter=r9">Superfine Food/Pharmaceutical-Grade White Kaolin Clay</a></li>
+<li data-method-step="2" data-tip="Traditional oral-care herb that complements the cleansing powder.">4.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-sage-leaf-powder" href="/baseline-natural-skincare/ingredient-library/sage-leaf-powder?filter=r9">Very Finely Powdered Sage Leaf</a></li>
+<li data-method-step="2" data-tip="Provides natural freshness and a mild peppermint flavour.">1.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-peppermint-leaf-powder" href="/baseline-natural-skincare/ingredient-library/peppermint-leaf-powder?filter=r9">Very Finely Powdered Peppermint Leaf</a></li>
 </ul>
 <h4>Ingredient Roles</h4>
 <ul>
@@ -911,10 +910,10 @@ Method steps MUST follow this format:
 <h4>Ingredients</h4>
 <ul>
 <li class="ing-subhead"><strong>Dry Powder Blend — 100 g</strong></li>
-<li data-method-step="1" data-tip="Supports scalp comfort and provides the soft, gentle powder base."><span class="amt" data-base-display="75 g" data-base-max="75" data-base-min="75" data-base-unit="g">75 g</span> <strong>Colloidal Oatmeal</strong></li>
-<li data-method-step="1" data-tip="Provides mucilage, slip and conditioning to reduce friction and tangling."><span class="amt" data-base-display="15 g" data-base-max="15" data-base-min="15" data-base-unit="g">15 g</span> <strong>Marshmallow Root Powder</strong></li>
-<li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <strong>Chicory-Root Inulin</strong></li>
-<li data-method-step="1" data-tip="Helps disperse added oils and natural scalp oils into the rinse water without conventional detergent surfactants."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <strong>Sunflower Lecithin Powder</strong></li>
+<li data-method-step="1" data-tip="Supports scalp comfort and provides the soft, gentle powder base."><span class="amt" data-base-display="75 g" data-base-max="75" data-base-min="75" data-base-unit="g">75 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-colloidal-oatmeal" href="/baseline-natural-skincare/ingredient-library/colloidal-oatmeal?filter=r11">Colloidal Oatmeal</a></li>
+<li data-method-step="1" data-tip="Provides mucilage, slip and conditioning to reduce friction and tangling."><span class="amt" data-base-display="15 g" data-base-max="15" data-base-min="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-marshmallow-root-powder" href="/baseline-natural-skincare/ingredient-library/marshmallow-root-powder?filter=r11">Marshmallow Root Powder</a></li>
+<li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-inulin-powder" href="/baseline-natural-skincare/ingredient-library/inulin-powder?filter=r11">Chicory-Root Inulin</a></li>
+<li data-method-step="1" data-tip="Helps disperse added oils and natural scalp oils into the rinse water without conventional detergent surfactants."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-sunflower-lecithin-powder" href="/baseline-natural-skincare/ingredient-library/sunflower-lecithin-powder?filter=r11">Sunflower Lecithin Powder</a></li>
 </ul>
 <p><strong>Total – 100 g dry powder blend</strong></p>
 <h4>For One Wash</h4>
@@ -966,6 +965,93 @@ Method steps MUST follow this format:
 <li>Each 10 g powder dose contains approximately 0.5 g sunflower lecithin. At the 5% starting oil level, the added oil is approximately 1.6–2.1 g per wash depending on the water used, giving a lecithin-to-added-oil ratio of roughly 1:3.2 to 1:4.2 before accounting for natural scalp oil.</li>
 <li>The 5% oil level is deliberate: this wash is intended to add a meaningful jojoba/argan conditioning oil phase while the lecithin helps disperse the oils and rinse away excess without conventional detergent surfactants.</li>
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
+</ul>
+</div>
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12">
+<div class="recipe-actions">
+<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
+<button class="print-btn" onclick="printCard('r12')" type="button">Print This Recipe</button>
+</div>
+
+<h3>Lip/ balm</h3>
+<p class="note">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
+
+<div class="glide-controller glide-controller--paired" aria-label="Lip balm formulation controls">
+<div class="glide-control-main">
+<div class="glide-slider-head">
+<div class="glide-label">Butter character</div>
+<div class="glide-readout" id="r12ButterReadout">15% mango • 10% kokum</div>
+</div>
+<div class="glide-slider-wrap">
+<input aria-label="Butter character between creamier mango and firmer kokum" class="glide-slider" data-default-value="10" id="r12ButterCharacter" min="5" max="15" step="0.5" type="range" value="10"/>
+</div>
+<div class="glide-scale"><span>Creamier</span><span>Firmer</span></div>
+</div>
+
+<div class="glide-control-main">
+<div class="glide-slider-head">
+<div class="glide-label">Structure</div>
+<div class="glide-readout" id="r12StructureReadout">3% candelilla • 25.5% apricot kernel oil</div>
+</div>
+<div class="glide-slider-wrap">
+<input aria-label="Structure between softer melt and more durable balm" class="glide-slider" data-default-value="3" id="r12Structure" min="2" max="4" step="0.25" type="range" value="3"/>
+</div>
+<div class="glide-scale"><span>Softer melt</span><span>More durable set</span></div>
+</div>
+
+<div class="glide-control-explainer">
+<div class="glide-explain-title">Overall Feel</div>
+<p class="glide-explain" id="r12OverallExplain">Balanced rich balm with a smooth set, controlled glide and durable protective finish.</p>
+</div>
+</div>
+
+<h4>Ingredients</h4>
+<ul>
+<li class="ing-subhead"><strong>Butters</strong></li>
+<li data-method-step="3" data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter">Cocoa Butter</a></li>
+<li data-method-step="3" data-tip="Softer butter that improves creaminess and spreadability."><span class="amt" data-formula-key="mango" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-mango-butter" href="/baseline-natural-skincare/ingredient-library/mango-butter">Mango Butter</a></li>
+<li data-method-step="3" data-tip="Harder butter that increases structure and gives a relatively dry, smooth finish."><span class="amt" data-formula-key="kokum" data-base-display="10 g" data-base-min="10" data-base-max="10" data-base-unit="g">10 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-kokum-butter" href="/baseline-natural-skincare/ingredient-library/kokum-butter">Kokum Butter</a></li>
+
+<li class="ing-subhead"><strong>Oils</strong></li>
+<li data-method-step="4" data-tip="Primary liquid oil; improves slip and keeps the high-butter formula spreadable."><span class="amt" data-formula-key="apricot" data-base-display="25.5 g" data-base-min="25.5" data-base-max="25.5" data-base-unit="g">25.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-apricot-kernel-oil" href="/baseline-natural-skincare/ingredient-library/apricot-kernel-oil">Apricot Kernel Oil</a></li>
+<li data-method-step="4" data-tip="Rich emollient oil that adds body and a more substantial conditioning feel."><span class="amt" data-formula-key="avocado" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado">Avocado Oil</a></li>
+<li data-method-step="4" data-tip="Seed oil that contributes fatty-acid diversity and antioxidant-containing unsaponifiables."><span class="amt" data-formula-key="raspberry" data-base-display="11 g" data-base-min="11" data-base-max="11" data-base-unit="g">11 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-red-raspberry-seed-oil" href="/baseline-natural-skincare/ingredient-library/red-raspberry-seed-oil">Red Raspberry Seed Oil</a></li>
+
+<li class="ing-subhead"><strong>Structure &amp; antioxidant</strong></li>
+<li data-method-step="3" data-tip="Vegan wax that improves structure, film persistence and resistance to softening."><span class="amt" data-formula-key="candelilla" data-base-display="3 g" data-base-min="3" data-base-max="3" data-base-unit="g">3 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-candelilla-wax" href="/baseline-natural-skincare/ingredient-library/candelilla-wax">Candelilla Wax</a></li>
+<li data-method-step="5" data-tip="Antioxidant that helps slow oxidation of the oil phase. It is not a preservative."><span class="amt" data-formula-key="vitamin-e" data-base-display="0.5 g" data-base-min="0.5" data-base-max="0.5" data-base-unit="g">0.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a></li>
+</ul>
+
+<h4>Method</h4>
+<ol>
+<li><strong>Prepare</strong>: Clean and completely dry the working area, utensils, heat-safe container and final balm containers.</li>
+<li><strong>Weigh</strong>: Weigh the cocoa butter, mango butter, kokum butter, candelilla wax and liquid oils in the amounts shown.</li>
+<li><strong>Melt</strong>: Gently heat the cocoa butter, mango butter, kokum butter and candelilla wax using a water bath or double boiler until just fully melted.</li>
+<li><strong>Combine</strong>: Remove from direct heat, add the apricot kernel, avocado and red raspberry seed oils, and stir until completely uniform.</li>
+<li><strong>Add vitamin E</strong>: Allow the mixture to cool slightly while remaining fully liquid, then stir in the vitamin E thoroughly.</li>
+<li><strong>Pour</strong>: Pour into clean, dry containers and leave undisturbed until completely set and cool.</li>
+<li><strong>Cap</strong>: Fit the lids once the balm is fully cool and label the batch.</li>
+</ol>
+
+<h4>Storage &amp; Use</h4>
+<ul>
+<li>Apply a thin layer to lips or dry areas as needed.</li>
+<li>Store cool, dry and away from direct sunlight or sustained heat.</li>
+<li>Because the formula is anhydrous, keep water out of the container during use.</li>
+</ul>
+
+<h4>Comedogenic Considerations</h4>
+<ul>
+<li>This is a rich, persistent balm designed primarily for lips and targeted dry areas rather than as a lightweight full-face moisturiser. Individual skin response varies.</li>
+</ul>
+
+<h4>Notes</h4>
+<ul>
+<li><strong>Default formula:</strong> 20% cocoa butter • 15% mango butter • 10% kokum butter • 25.5% apricot kernel oil • 15% avocado oil • 11% red raspberry seed oil • 3% candelilla wax • 0.5% vitamin E.</li>
+<li><strong>Butter character slider:</strong> changes mango against kokum while keeping their combined share fixed at 25%.</li>
+<li><strong>Structure slider:</strong> changes candelilla against apricot kernel oil while keeping their combined share fixed at 28.5%.</li>
+<li>Vitamin E is an antioxidant for the oil phase, not a broad-spectrum preservative.</li>
+<li>Use cosmetic-grade raw materials suitable for lip-care applications when the product is intended for lips.</li>
 </ul>
 </div>
 </div>
@@ -1457,6 +1543,70 @@ Method steps MUST follow this format:
 <p><strong>Relevant recipes:</strong> <a href="/baseline-natural-skincare/recipes/testing-lip-balm">Lip/ balm</a>.</p>
 </div>
 
+<div class="card" id="ing-white-kaolin">
+<h3>Superfine White Kaolin Clay</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Kaolin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Mineral clay</p>
+<p>💚 <strong>Benefits:</strong> Fine absorbent powder; provides gentle surface polishing in the testing tooth powder.</p>
+<p>🔧 <strong>Usage:</strong> Dry and rinse-off powders • 🧊 <strong>Storage:</strong> Keep completely dry and sealed.</p>
+<ul class="notes-list"><li>Use only a superfine cosmetic/food/pharmaceutical grade appropriate to the intended use.</li><li>Avoid creating or inhaling airborne fine powder.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
+</div>
+<div class="card" id="ing-sage-leaf-powder">
+<h3>Sage Leaf Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Salvia Officinalis Leaf Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Sage leaf</p>
+<p>💚 <strong>Benefits:</strong> Finely powdered botanical used for flavour and the herb component of the testing tooth powder.</p>
+<p>🔧 <strong>Usage:</strong> Dry rinse-off powders • 🧊 <strong>Storage:</strong> Airtight, cool and dry.</p>
+<ul class="notes-list"><li>Use very finely milled material so the finished powder does not feel coarse.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
+</div>
+<div class="card" id="ing-peppermint-leaf-powder">
+<h3>Peppermint Leaf Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Mentha Piperita Leaf Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Peppermint leaf</p>
+<p>💚 <strong>Benefits:</strong> Botanical flavour and fresh sensory character in the testing tooth powder.</p>
+<p>🔧 <strong>Usage:</strong> Dry rinse-off powders • 🧊 <strong>Storage:</strong> Airtight, cool and dry.</p>
+<ul class="notes-list"><li>Use very finely powdered leaf material and keep the blend dry.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
+</div>
+<div class="card" id="ing-colloidal-oatmeal">
+<h3>Colloidal Oatmeal</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Avena Sativa Kernel Flour</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Oat kernel</p>
+<p>💚 <strong>Benefits:</strong> Soft powder base with soothing, barrier-supportive skin feel and gentle cleansing assistance.</p>
+<p>🔧 <strong>Usage:</strong> Dry or freshly hydrated rinse-off formulas • 🧊 <strong>Storage:</strong> Keep dry and airtight.</p>
+<ul class="notes-list"><li>Forms the majority of the Soap-Free Powdered Hair Wash dry blend.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-marshmallow-root-powder">
+<h3>Marshmallow Root Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Althaea Officinalis Root Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Marshmallow root</p>
+<p>💚 <strong>Benefits:</strong> Mucilage-rich powder that adds slip and reduces friction in freshly hydrated rinse-off formulas.</p>
+<p>🔧 <strong>Usage:</strong> Dry blends and freshly hydrated rinse-off formulas • 🧊 <strong>Storage:</strong> Keep dry and airtight.</p>
+<ul class="notes-list"><li>Hydrate only the amount needed for immediate use unless an appropriate preservation system is used.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-inulin-powder">
+<h3>Chicory-Root Inulin</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Inulin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Chicory root</p>
+<p>💚 <strong>Benefits:</strong> Water-binding conditioning ingredient used to support a softer hair and scalp feel.</p>
+<p>🔧 <strong>Usage:</strong> Dry blends and water-based formulas • 🧊 <strong>Storage:</strong> Keep powder dry and sealed.</p>
+<ul class="notes-list"><li>Dissolves when the hair-wash portion is hydrated for use.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-sunflower-lecithin-powder">
+<h3>Sunflower Lecithin Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Lecithin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Sunflower seed phospholipids</p>
+<p>💚 <strong>Benefits:</strong> Dispersing and conditioning aid that helps the small oil phase mix through the freshly hydrated hair wash.</p>
+<p>🔧 <strong>Usage:</strong> Dry blends and freshly hydrated rinse-off formulas • 🧊 <strong>Storage:</strong> Cool, dry and airtight.</p>
+<ul class="notes-list"><li>Used as a dispersing aid rather than as a conventional detergent surfactant.</li></ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+
 </div>
 </div></div>
 </section>
@@ -1719,7 +1869,7 @@ Method steps MUST follow this format:
 </script>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=SKINCARE_INGREDIENT_CONVERSIONS_20260920_2"></script>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
-<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1"></script>
+<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=SKINCARE_INGREDIENT_ORIGIN_FILTER_20260920_1"></script>
 <script src="/sitewide/js/baseline-tabs.js?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1"></script>
 <script>
 (function(){
