@@ -1997,7 +1997,13 @@ function parseViewStateHash(hash){
     const sortedCards = recipeCards.slice().sort((a,b) => getTitle(a).localeCompare(getTitle(b)));
     sortedCards.forEach(card => recipesContainer.appendChild(card));
 
-    // 2) Update overview + nav lists
+    // 2) Update overview + nav lists.
+    // Natural Skincare has promoted and folder-backed recipes with authored
+    // descriptors. Its canonical recipe-navigation module owns that landing
+    // content; the generic category rebuilder must never strip those labels.
+    const isSkincareRecipeCollection = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    if(isSkincareRecipeCollection) return;
+
     const hasCategories = sortedCards.some(c => c.dataset && typeof c.dataset.category === 'string' && c.dataset.category.trim() !== '');
 
     if(hasCategories){
