@@ -60,7 +60,11 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
 
   assert.match(fitness, /const ROUTE_BASE = '\/baseline-fitness'/);
   assert.match(fitness, /const ROUTINE_ROUTE_RE = /);
-  assert.match(fitness, /return `\$\{ROUTE_BASE\}\/\$\{canonical\}`/);
+  assert.match(fitness, /const BODY_ROUTE_RE = /);
+  assert.match(fitness, /function bodyRoutePath\(view\)/);
+  assert.match(fitness, /canonical === 'my-body' \? bodyRoutePath\('overall'\)/);
+  assert.match(fitness, /setBodySubtab\(button\.dataset\.bodyView, 'push'\)/);
+  assert.doesNotMatch(fitness, /fillBodyProfile\(\); setBodySubtab\('overall'\)/);
   assert.doesNotMatch(fitness, /const base = location\.pathname\.replace\(ROUTE_RE/);
 
   assert.match(shared, /'my-body':'my-body'/);
@@ -77,13 +81,19 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
   assert.match(routineStructure, /if \(!ownsNestedRoutinePath\(url\.pathname\).*allowEnter/s);
   assert.match(routineStructure, /const route=routeFromPath\(\);\s*if \(!route\) return;/);
 
+  const routineLoader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  assert.match(routineLoader, /return String\(global\.location\?\.pathname \|\| ''\)/);
+  assert.doesNotMatch(routineLoader, /getEntriesByType\?\.\('navigation'\)/);
+
   assert.match(fallbackTabs, /"my-body":"my-body"/);
   assert.match(fallbackTabs, /library:"library"/);
 
   assert.match(htaccess, /Recover malformed top-level Fitness URLs produced by the former nested route builder/);
   assert.match(htaccess, /baseline-fitness\/my-routine.*\(system\|my-plan\|my-body\|library\|exercise-library\|achievements\).*\/baseline-fitness\/\$1/s);
+  assert.match(htaccess, /baseline-fitness\/my-body\/\(overall\|profile\|services\)/);
   assert.match(testServer, /malformedFitness/);
   assert.match(testServer, /system\|workout-routine\|library\|exercise-library\|achievements\|my-routine\|my-plan\|my-body/);
+  assert.match(testServer, /baseline-fitness\\\/my-body\\\/\(\?:overall\|profile\|services\)/);
 });
 
 test('protected key and Charity banner controls have stable first-paint geometry', () => {
