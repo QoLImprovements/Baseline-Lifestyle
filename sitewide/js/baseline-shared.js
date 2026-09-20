@@ -1838,6 +1838,10 @@ function parseViewStateHash(hash){
       // Ensure buttons + scaling tools are present in focused view (sitewide).
       setupRecipeActionBars();
       setupRecipeTools({ onlyId: id });
+      try{
+        document.documentElement.removeAttribute('data-initial-section');
+        document.documentElement.removeAttribute('data-initial-recipe-route');
+      }catch(_e){}
       // Keep existing back links/buttons available; no extra banner is injected.
 
       if(!opts.silentHistory){
@@ -1870,6 +1874,10 @@ function parseViewStateHash(hash){
       setRecipeVisibility(null);
 
       activateRecipesTabSilently();
+      try{
+        document.documentElement.removeAttribute('data-initial-section');
+        document.documentElement.removeAttribute('data-initial-recipe-route');
+      }catch(_e){}
 
       if(!opts.silentHistory){
         const recipesState = { kind: 'tab', tabId: 'recipes' };
@@ -3489,201 +3497,291 @@ function parseViewStateHash(hash){
 
     function injectMethodAmounts(recipeEl){
       try{ qsa('.method-amt-inject', recipeEl).forEach(el=>el.remove()); }catch(_e){}
+      if(!recipeEl) return;
 
-      let ingUl = null;
-      try{
-        const h4s = qsa('h4', recipeEl);
-        const ingH = h4s.find(h => (h.textContent||'').trim().toLowerCase() === 'ingredients');
-        if(ingH){
-          let el = ingH.nextElementSibling;
-          while(el && el.tagName !== 'UL') el = el.nextElementSibling;
-          if(el && el.tagName === 'UL') ingUl = el;
-        }
-      }catch(_e){}
-      if(!ingUl) return;
-
-      let methodOl = null;
-      try{
-        const h4s = qsa('h4', recipeEl);
-        const mH = h4s.find(h => (h.textContent||'').trim().toLowerCase() === 'method');
-        if(mH){
-          let el = mH.nextElementSibling;
-          while(el && el.tagName !== 'OL') el = el.nextElementSibling;
-          if(el && el.tagName === 'OL') methodOl = el;
-        }
-      }catch(_e){}
-      if(!methodOl) return;
-
-      function normSpaces(s){
-        return String(s||'').replace(/\s+/g, ' ').replace(/\s*([–-])\s*/g, ' $1 ').trim();
+      function normSpaces(value){
+        return String(value || '')
+          .replace(/\s+/g, ' ')
+          .replace(/\s*([–—-])\s*/g, ' $1 ')
+          .trim();
       }
-      function sanitizeForMethodPill(s){
-        let out = String(s||'');
-        out = out.replace(/\s*\((?:\s*or[^)]*|[^)]*of\s+your\s+choosing[^)]*)\)\s*/gi, ' ');
-        out = out.replace(/\s+or\s+nut\s+butter\s+of\s+your\s+choosing/gi, '');
-        return normSpaces(out);
-      }
-      function amountFromLi(li){
-        const amt = q('.amt', li);
-        const aTxt = amt ? normSpaces(amt.textContent||'') : '';
-        if(aTxt) return aTxt;
-        const ts = q('.thickness-swap', li);
-        if(ts){
-          const v = normSpaces(ts.textContent||'');
-          const u = normSpaces((q('.thickness-unit', li)||{}).textContent||'');
-          const out = (v && u) ? (v + ' ' + u) : (v || u);
-          if(out) return out;
-        }
-        const raw = normSpaces(li.textContent||'');
-        const m = raw.match(/^([\d¼½¾⅓⅔⅛⅜⅝⅞./\s-]+)\s*([a-zA-Z]+|ml|g|kg|l|tbsp|tsp|cup|cups)?/i);
-        if(m){
-          const qv = normSpaces(m[1]||'');
-          const qu = normSpaces(m[2]||'');
-          return normSpaces((qv && qu) ? (qv + ' ' + qu) : qv);
-        }
-        return '';
-      }
-      function normalizeStage(s){
-        return normSpaces(String(s||'').toLowerCase()).replace(/stage/g, ' ').replace(/\s+/g, ' ').trim();
-      }
-      function getLeadToken(s){
-        const m = normalizeStage(s).match(/[a-z]+/);
-        return m ? m[0] : '';
-      }
-      function getStepInfo(step, idx){
-        const strong = q('strong', step);
-        let title = '';
-        if(strong) title = normSpaces((strong.textContent||'').replace(/:$/, ''));
-        if(!title){
-          const raw = normSpaces(step.textContent||'');
-          const m = raw.match(/^([^:]{1,120}):/);
-          if(m) title = normSpaces(m[1]||'');
-        }
-        if(!title) title = `step ${idx+1}`;
-        return {
-          index: idx + 1,
-          key: normalizeStage(title),
-          lead: getLeadToken(title),
-          text: normalizeStage(step.textContent||'')
-        };
-      }
-      function normalizeIngredientTerm(s){
-        return normalizeStage(s)
-          .replace(/gluten\s*-?\s*free/g, ' ')
-          .replace(/uncooked/g, ' ')
-          .replace(/softened/g, ' ')
-          .replace(/finely\s+chopped/g, ' ')
-          .replace(/chopped/g, ' ')
-          .replace(/sliced/g, ' ')
-          .replace(/juiced/g, ' ')
-          .replace(/raw/g, ' ')
-          .replace(/roasted/g, ' ')
-          .replace(/unhulled/g, ' ')
-          .replace(/whole/g, ' ')
-          .replace(/dried/g, ' ')
-          .replace(/ground/g, ' ')
-          .replace(/plain/g, ' ')
+      function normalizeStage(value){
+        return normSpaces(value)
+          .toLowerCase()
+          .replace(/\bstage\b/g, ' ')
+          .replace(/[^a-z0-9%]+/g, ' ')
           .replace(/\s+/g, ' ')
           .trim();
       }
-      const GENERIC_TERMS = new Set(['water','sea salt','salt']);
-      function buildTerms(li){
-        const terms = [];
-        qsa('a.ing-link', li).forEach(a=>{
-          const t = normalizeIngredientTerm(a.textContent||'');
-          if(t) terms.push(t);
-        });
-        const raw = normalizeIngredientTerm(li.textContent||'');
-        const amt = normalizeIngredientTerm(amountFromLi(li));
-        let remainder = raw;
-        if(amt && remainder.indexOf(amt) === 0) remainder = remainder.slice(amt.length).trim();
-        remainder = remainder.replace(/^of\s+/, '').trim();
-        if(remainder) terms.push(remainder);
-        return Array.from(new Set(terms.filter(Boolean)));
+      function getLeadToken(value){
+        const match=normalizeStage(value).match(/[a-z]+/);
+        return match ? match[0] : '';
       }
-      function termInStep(term, stepText){
+      function sanitizeForMethodPill(value){
+        let out=String(value || '');
+        out=out.replace(/\s*\((?:\s*or\b[^)]*|[^)]*of\s+your\s+choosing[^)]*)\)\s*/gi, ' ');
+        out=out.replace(/\s+or\s+nut\s+butter\s+of\s+your\s+choosing\b/gi, '');
+        return normSpaces(out);
+      }
+      function amountFromLi(li){
+        const amt=q('.amt',li);
+        const amtText=amt ? normSpaces(amt.textContent || '') : '';
+        if(amtText) return amtText;
+
+        const swap=q('.thickness-swap',li);
+        if(swap){
+          const value=normSpaces(swap.textContent || '');
+          const unit=normSpaces((q('.thickness-unit',li) || {}).textContent || '');
+          const combined=normSpaces(value && unit ? value+' '+unit : value || unit);
+          if(combined) return combined;
+        }
+
+        const raw=normSpaces(li.textContent || '');
+        let match=raw.match(/^([\d¼½¾⅓⅔⅛⅜⅝⅞./\s-]+)\s*(g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|%|grams?|millilit(?:er|re)s?)\b/i);
+        if(match) return normSpaces(match[1]+' '+match[2]);
+
+        match=raw.match(/[–—-]\s*([\d¼½¾⅓⅔⅛⅜⅝⅞./\s-]+)\s*(g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|%|grams?|millilit(?:er|re)s?)\b/i);
+        if(match) return normSpaces(match[1]+' '+match[2]);
+
+        return '';
+      }
+      function getStepInfo(step,index){
+        const strong=q('strong',step);
+        let title='';
+        if(strong) title=normSpaces((strong.textContent || '').replace(/:$/,''));
+        if(!title){
+          const raw=normSpaces(step.textContent || '');
+          const match=raw.match(/^([^:]{1,120}):/);
+          if(match) title=normSpaces(match[1] || '');
+        }
+        if(!title) title='step '+(index+1);
+        return {
+          index:index+1,
+          element:step,
+          key:normalizeStage(title),
+          lead:getLeadToken(title),
+          text:normalizeStage(step.textContent || '')
+        };
+      }
+      function actionScore(info){
+        const key=String(info && info.key || '');
+        if(/\b(add|combine|mix|blend|stir|whisk|fold|melt|dissolve|disperse|hydrate|whip|beat|knead|cook|simmer|boil|bake|roast|toast|heat|pour|season|top|coat|soak|marinate|press|process)\b/.test(key)) return 4;
+        if(/\b(place|transfer|spread|apply|form|shape|rest|chill|cool)\b/.test(key)) return 3;
+        if(/\b(weigh|measure|set\s+(?:the\s+)?sliders?|note|preheat|gather|equipment|clean\s+and\s+dry)\b/.test(key)) return 0;
+        return 2;
+      }
+      function normalizeIngredientTerm(value){
+        let out=String(value || '')
+          .replace(/\([^)]*\)/g,' ')
+          .replace(/[–—]/g,'-')
+          .toLowerCase();
+        out=out
+          .replace(/\b(?:gluten\s*-?\s*free|unrefined|refined|uncooked|softened|finely|very|superfine|powdered|chopped|sliced|juiced|raw|roasted|unhulled|whole|dried|ground|plain|fresh|frozen|food|pharmaceutical|grade|white|organic)\b/g,' ')
+          .replace(/[^a-z0-9%]+/g,' ')
+          .replace(/\s+/g,' ')
+          .trim();
+        return out;
+      }
+      function addTerm(set,value){
+        const term=normalizeIngredientTerm(value);
+        if(!term || term.length<2) return;
+        set.add(term);
+
+        const core=term
+          .replace(/\b(?:oil|butter|wax|powder|flour|seed|leaf|clay|blend|mixture)\b/g,' ')
+          .replace(/\s+/g,' ')
+          .trim();
+        if(core.length>=3) set.add(core);
+
+        const words=core.split(/\s+/).filter(word=>word.length>=4 && !['kernel','water'].includes(word));
+        if(words.length===1) set.add(words[0]);
+        else if(words.length>1){
+          set.add(words.slice(-2).join(' '));
+          const last=words[words.length-1];
+          if(last.length>=5) set.add(last);
+        }
+      }
+      function buildTerms(li){
+        const terms=new Set();
+
+        qsa('a.ing-link',li).forEach(anchor=>addTerm(terms,anchor.textContent || ''));
+
+        qsa('strong',li).forEach(strong=>{
+          if(strong.closest('li.ing-subhead')) return;
+          addTerm(terms,strong.textContent || '');
+        });
+
+        let raw=normSpaces(li.textContent || '');
+        const amount=amountFromLi(li);
+        if(amount && raw.toLowerCase().startsWith(amount.toLowerCase())){
+          raw=raw.slice(amount.length).trim();
+        }
+        raw=raw.replace(/^[–—-]\s*/,'');
+        if(/[–—-]/.test(raw)){
+          const parts=raw.split(/\s+[–—-]\s+/);
+          if(parts[0] && parts[0].length<100) addTerm(terms,parts[0]);
+        }else{
+          addTerm(terms,raw);
+        }
+
+        return Array.from(terms).filter(Boolean);
+      }
+      function termInStep(term,stepText){
         if(!term || !stepText) return false;
         if(stepText.includes(term)) return true;
-        if(term.endsWith('s') && stepText.includes(term.slice(0, -1))) return true;
-        if(stepText.includes(term + 's')) return true;
+        if(term.endsWith('s') && stepText.includes(term.slice(0,-1))) return true;
+        if(stepText.includes(term+'s')) return true;
         return false;
       }
-
-      const entries = [];
-      let currentStage = '';
-      qsa('li', ingUl).forEach(li=>{
-        if(li.classList && li.classList.contains('ing-subhead')){
-          currentStage = normSpaces(li.textContent||'');
-          return;
-        }
-        const display = sanitizeForMethodPill(normSpaces(li.textContent||''));
-        if(!display) return;
-        const explicit = String((li.dataset && li.dataset.methodStep) || '').split(',').map(s=>parseInt(s.trim(),10)).filter(n=>Number.isFinite(n) && n > 0);
-        const terms = buildTerms(li);
-        const isGeneric = terms.some(t => GENERIC_TERMS.has(t));
-        entries.push({
-          display,
-          stageKey: normalizeStage(currentStage),
-          stageLead: getLeadToken(currentStage),
-          explicit,
-          terms,
-          isGeneric,
-          amountText: normalizeStage(amountFromLi(li))
+      function isAfter(a,b){
+        return !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      }
+      function nearestSectionTitle(li,ingredientHeading,methodHeading,headings){
+        let title='Ingredients';
+        headings.forEach(heading=>{
+          if(heading===ingredientHeading || heading===methodHeading) return;
+          if(isAfter(ingredientHeading,heading) && isAfter(heading,li)) title=normSpaces(heading.textContent || title);
         });
+        return title;
+      }
+      function isIngredientCandidate(li,sectionTitle){
+        if(!li || li.classList.contains('ing-subhead')) return false;
+        if(/^(ingredient roles?|roles?|nutrition|serving ideas?|body\s*&?\s*sensory notes?|storage|notes?|comedogenic considerations?)\b/i.test(sectionTitle)) return false;
+        if(li.dataset && li.dataset.methodStep) return true;
+        if(q('.amt,.thickness-swap,a.ing-link',li)) return true;
+        const raw=normSpaces(li.textContent || '');
+        return /\d/.test(raw) && /(?:\b(?:g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|grams?|millilit(?:er|re)s?)\b|%)/i.test(raw);
+      }
+
+      const headings=qsa('h2,h3,h4',recipeEl);
+      const ingredientHeading=headings.find(h=>/^ingredients\b/i.test(normSpaces(h.textContent || '')));
+      const methodHeading=headings.find(h=>/^method\b/i.test(normSpaces(h.textContent || '')));
+      if(!ingredientHeading || !methodHeading) return;
+
+      let methodOl=null;
+      let cursor=methodHeading.nextElementSibling;
+      while(cursor){
+        if(cursor.tagName==='OL'){ methodOl=cursor; break; }
+        if(/^H[234]$/i.test(cursor.tagName || '')) break;
+        cursor=cursor.nextElementSibling;
+      }
+      if(!methodOl) return;
+
+      const steps=Array.from(methodOl.children || [])
+        .filter(el=>el && el.tagName==='LI')
+        .map((step,index)=>getStepInfo(step,index));
+      if(!steps.length) return;
+
+      const ingredientLis=qsa('li',recipeEl).filter(li=>{
+        if(!isAfter(ingredientHeading,li) || !isAfter(li,methodHeading)) return false;
+        if(li.closest('ol')) return false;
+        const sectionTitle=nearestSectionTitle(li,ingredientHeading,methodHeading,headings);
+        return isIngredientCandidate(li,sectionTitle);
       });
+      if(!ingredientLis.length) return;
+
+      const entries=ingredientLis.map((li,index)=>{
+        const explicit=String((li.dataset && li.dataset.methodStep) || '')
+          .split(',')
+          .map(value=>parseInt(value.trim(),10))
+          .filter(value=>Number.isFinite(value) && value>0 && value<=steps.length);
+        const sectionTitle=nearestSectionTitle(li,ingredientHeading,methodHeading,headings);
+        const key=(recipeEl.id || 'recipe')+'-method-ing-'+(index+1);
+        li.dataset.methodTagKey=key;
+        return {
+          key,
+          li,
+          display:sanitizeForMethodPill(normSpaces(li.textContent || '')),
+          explicit,
+          sectionKey:normalizeStage(sectionTitle),
+          sectionLead:getLeadToken(sectionTitle),
+          terms:buildTerms(li),
+          raw:normalizeStage(li.textContent || '')
+        };
+      }).filter(entry=>entry.display);
       if(!entries.length) return;
 
-      const emittedMethodAmounts = new Set();
-
-      qsa('li', methodOl).forEach((step, idx)=>{
-        const info = getStepInfo(step, idx);
-        const selected = [];
-        const specificMatches = [];
-
-        entries.forEach(entry=>{
-          if(entry.explicit.length){
-            if(entry.explicit.includes(info.index)) selected.push(entry.display);
-            return;
-          }
-          if(entry.isGeneric) return;
-          let matched = false;
-          if(entry.stageKey && info.key && entry.stageKey === info.key) matched = true;
-          else if(entry.stageLead && info.lead && entry.stageLead === info.lead) matched = true;
-          else if(entry.terms.some(term => termInStep(term, info.text))) matched = true;
-          if(matched){
-            selected.push(entry.display);
-            specificMatches.push(entry);
-          }
+      function bestNaturalMatch(entry){
+        const matches=steps.filter(info=>entry.terms.some(term=>termInStep(term,info.text)));
+        const substantive=matches.filter(info=>actionScore(info)>=2);
+        const pool=substantive.length ? substantive : matches;
+        if(!pool.length) return null;
+        return pool.slice().sort((a,b)=>{
+          const scoreDiff=actionScore(b)-actionScore(a);
+          return scoreDiff || a.index-b.index;
+        })[0];
+      }
+      function bestExplicitMatch(entry){
+        if(!entry.explicit.length) return null;
+        const candidates=entry.explicit.map(index=>steps[index-1]).filter(Boolean);
+        return candidates.slice().sort((a,b)=>{
+          const scoreDiff=actionScore(b)-actionScore(a);
+          return scoreDiff || a.index-b.index;
+        })[0] || null;
+      }
+      function bestSectionMatch(entry){
+        const matches=steps.filter(info=>{
+          if(entry.sectionKey && info.key && entry.sectionKey===info.key) return true;
+          if(entry.sectionLead && info.lead && entry.sectionLead===info.lead) return true;
+          return false;
         });
+        if(!matches.length) return null;
+        return matches.slice().sort((a,b)=>{
+          const scoreDiff=actionScore(b)-actionScore(a);
+          return scoreDiff || a.index-b.index;
+        })[0];
+      }
+      function bestCategoryMatch(entry){
+        const categoryWords=['oil','oils','butter','butters','wax','waxes','powder','powders','water','salt','spice','spices','herb','herbs','oats','nuts','seeds','flour','milk'];
+        const categories=categoryWords.filter(word=>entry.raw.includes(word));
+        if(!categories.length) return null;
+        const matches=steps.filter(info=>categories.some(word=>info.text.includes(word)));
+        if(!matches.length) return null;
+        return matches.slice().sort((a,b)=>{
+          const scoreDiff=actionScore(b)-actionScore(a);
+          return scoreDiff || a.index-b.index;
+        })[0];
+      }
 
-        const hasSpecificMatch = specificMatches.length > 0;
-        entries.forEach(entry=>{
-          if(entry.explicit.length || !entry.isGeneric) return;
-          let matched = false;
-          if(entry.stageKey && info.key && entry.stageKey === info.key) matched = true;
-          else if(entry.stageLead && info.lead && entry.stageLead === info.lead) matched = true;
-          else if(entry.amountText && info.text.includes(entry.amountText)) matched = true;
-          else if(entry.terms.some(term => termInStep(term, info.text)) && hasSpecificMatch) matched = true;
-          if(matched) selected.push(entry.display);
-        });
+      const placements=new Map();
+      entries.forEach(entry=>{
+        const natural=bestNaturalMatch(entry);
+        let target=natural && actionScore(natural)>=2 ? natural : null;
+        if(!target) target=bestExplicitMatch(entry);
+        if(!target) target=natural;
+        if(!target) target=bestSectionMatch(entry);
+        if(!target) target=bestCategoryMatch(entry);
+        if(!target){
+          target=steps.find(info=>actionScore(info)>=3) || steps[0];
+        }
+        if(!target) return;
+        const list=placements.get(target.index) || [];
+        list.push(entry);
+        placements.set(target.index,list);
+      });
 
-        const deduped = Array.from(new Set(selected.filter(Boolean)))
-          .filter(txt => !emittedMethodAmounts.has(txt));
-        if(!deduped.length) return;
-        deduped.forEach(txt => emittedMethodAmounts.add(txt));
-        const wrap = document.createElement('div');
-        wrap.className = 'method-amt-inject';
-        const label = document.createElement('span');
-        label.className = 'method-amt-label';
-        label.textContent = 'Amounts:';
+      steps.forEach(info=>{
+        const list=placements.get(info.index) || [];
+        if(!list.length) return;
+
+        const wrap=document.createElement('div');
+        wrap.className='method-amt-inject';
+        wrap.dataset.methodAmounts='first-use';
+
+        const label=document.createElement('span');
+        label.className='method-amt-label';
+        label.textContent='Amounts:';
         wrap.appendChild(label);
-        deduped.forEach(txt=>{
-          const pill = document.createElement('span');
-          pill.className = 'method-amt';
-          pill.textContent = txt;
+
+        list.forEach(entry=>{
+          const pill=document.createElement('span');
+          pill.className='method-amt';
+          pill.dataset.methodIngredientKey=entry.key;
+          pill.textContent=entry.display;
           wrap.appendChild(pill);
         });
-        step.appendChild(wrap);
+
+        info.element.appendChild(wrap);
       });
     }
 
