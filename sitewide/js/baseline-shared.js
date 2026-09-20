@@ -3497,6 +3497,7 @@ function parseViewStateHash(hash){
 
     function injectMethodAmounts(recipeEl){
       try{ qsa('.method-amt-inject', recipeEl).forEach(el=>el.remove()); }catch(_e){}
+      try{ qsa('[data-method-tag-key]', recipeEl).forEach(el=>{ delete el.dataset.methodTagKey; }); }catch(_e){}
       if(!recipeEl) return;
 
       function normSpaces(value){
@@ -3653,7 +3654,18 @@ function parseViewStateHash(hash){
         return /\d/.test(raw) && /(?:\b(?:g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|grams?|millilit(?:er|re)s?)\b|%)/i.test(raw);
       }
 
-      const headings=qsa('h2,h3,h4',recipeEl);
+      // Variant recipes can contain several complete Ingredients + Method
+      // blocks. Method tags must describe the ingredient list the viewer can
+      // currently see, never a hidden/default variant.
+      const variantPanels=qsa('.variant-panel',recipeEl);
+      const activeVariantPanels=variantPanels.filter(panel=>{
+        if(panel.hidden) return false;
+        if(String(panel.getAttribute('aria-hidden') || '').toLowerCase()==='true') return false;
+        return true;
+      });
+      const methodScope=activeVariantPanels[0] || recipeEl;
+
+      const headings=qsa('h2,h3,h4',methodScope);
       const ingredientHeading=headings.find(h=>/^ingredients\b/i.test(normSpaces(h.textContent || '')));
       const methodHeading=headings.find(h=>/^method\b/i.test(normSpaces(h.textContent || '')));
       if(!ingredientHeading || !methodHeading) return;
@@ -3672,9 +3684,16 @@ function parseViewStateHash(hash){
         .map((step,index)=>getStepInfo(step,index));
       if(!steps.length) return;
 
-      const ingredientLis=qsa('li',recipeEl).filter(li=>{
+      const ingredientLis=qsa('li',methodScope).filter(li=>{
         if(!isAfter(ingredientHeading,li) || !isAfter(li,methodHeading)) return false;
         if(li.closest('ol')) return false;
+        if(li.hidden || String(li.getAttribute('aria-hidden') || '').toLowerCase()==='true') return false;
+        const hiddenAncestor=li.closest('[hidden], [aria-hidden="true"]');
+        if(hiddenAncestor && methodScope.contains(hiddenAncestor)) return false;
+        try{
+          const style=window.getComputedStyle(li);
+          if(style && (style.display==='none' || style.visibility==='hidden')) return false;
+        }catch(_e){}
         const sectionTitle=nearestSectionTitle(li,ingredientHeading,methodHeading,headings);
         return isIngredientCandidate(li,sectionTitle);
       });
@@ -3686,7 +3705,8 @@ function parseViewStateHash(hash){
           .map(value=>parseInt(value.trim(),10))
           .filter(value=>Number.isFinite(value) && value>0 && value<=steps.length);
         const sectionTitle=nearestSectionTitle(li,ingredientHeading,methodHeading,headings);
-        const key=(recipeEl.id || 'recipe')+'-method-ing-'+(index+1);
+        const scopeKey=(methodScope.id || (methodScope.dataset && methodScope.dataset.variantPanel) || 'main');
+        const key=(recipeEl.id || 'recipe')+'-'+scopeKey+'-method-ing-'+(index+1);
         const ingredientIds=qsa('a.ing-link[data-ingredient]',li)
           .map(anchor=>String(anchor.dataset.ingredient || '').trim())
           .filter(Boolean)
@@ -4768,6 +4788,23 @@ function buildControls(recipeEl){
         adjustmentsBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
 
+      let methodRefreshFrame=0;
+      function refreshMethodAmountsFromVisibleIngredients(){
+        const run=()=>{
+          methodRefreshFrame=0;
+          try{ injectMethodAmounts(recipeEl); }catch(_e){}
+        };
+        if(typeof window.requestAnimationFrame === 'function'){
+          if(methodRefreshFrame) window.cancelAnimationFrame(methodRefreshFrame);
+          methodRefreshFrame=window.requestAnimationFrame(()=>{
+            methodRefreshFrame=window.requestAnimationFrame(run);
+          });
+        }else{
+          window.setTimeout(run, 0);
+        }
+      }
+      try{ recipeEl.__baselineRefreshMethodAmounts = refreshMethodAmountsFromVisibleIngredients; }catch(_e){}
+
       qsa('.variant-tab', recipeEl).forEach(btn=>{
         btn.addEventListener('click', ()=>{
           window.setTimeout(()=>{
@@ -4776,13 +4813,24 @@ function buildControls(recipeEl){
               if(v) variantSelect.value = v;
             }
             if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
+            refreshMethodAmountsFromVisibleIngredients();
           }, 0);
         });
       });
 
       qsa('input[type="range"]', recipeEl).forEach(slider=>{
-        slider.addEventListener('input', ()=>{ if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary(); });
-        slider.addEventListener('change', ()=>{ if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary(); });
+        slider.addEventListener('input', ()=>{
+          if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
+          refreshMethodAmountsFromVisibleIngredients();
+        });
+        slider.addEventListener('change', ()=>{
+          if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
+          refreshMethodAmountsFromVisibleIngredients();
+        });
+      });
+
+      qsa('.slider-default-btn, .slider-reset-btn', recipeEl).forEach(button=>{
+        button.addEventListener('click', refreshMethodAmountsFromVisibleIngredients);
       });
 
       try{ recipeEl.__baselineAdjustmentsButton = adjustmentsBtn; }catch(_e){}
