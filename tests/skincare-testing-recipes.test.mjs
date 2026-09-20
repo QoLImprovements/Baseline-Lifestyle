@@ -14,6 +14,7 @@ const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
 const lipBalm = fs.readFileSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html', 'utf8');
+const recipeBootstrap = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js', 'utf8');
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
@@ -36,6 +37,16 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   assert.match(navigation, /Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
   assert.match(navigation, /\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
+});
+
+test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
+  assert.match(html, /skincare-recipe-bootstrap-20260906\.js\?v=RECIPE_REFRESH_STABILITY_20260920_1/);
+  assert.match(recipeBootstrap, /skincare-recipe-navigation-20260906\.js/);
+  assert.match(recipeBootstrap, /skincare-recipe-finalise-20260906\.js/);
+  assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
+  assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
 test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
