@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import vm from 'node:vm';
 
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
@@ -98,6 +99,18 @@ test('Skincare recipe ingredient links no longer author the obsolete hash naviga
   const recipesBlock = html.slice(recipesStart, ingredientsStart);
   assert.doesNotMatch(recipesBlock, /class="ing-link"[^>]*href="#ing-/);
   assert.match(shared, /if\(!isSkincare\) qsa\('#recipes a\.ing-link\[data-from-recipe\]\[data-ingredient\]'\)/);
+});
+
+test('changed Skincare runtime scripts remain valid JavaScript', () => {
+  const files = [
+    'sitewide/js/baseline-ingredient-profiles.js',
+    'sitewide/js/baseline-shared.js',
+    'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js'
+  ];
+  for (const file of files) {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.doesNotThrow(() => new vm.Script(source, { filename:file }), file + ' must parse');
+  }
 });
 
 test('main Skincare document loads the recipe UX runtime', () => {
