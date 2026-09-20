@@ -137,6 +137,56 @@ test('promoted recipes open through the normal recipe overview router', async ({
   }
 });
 
+test('Lip Balm direct route renders from the application document without a delayed recipe fetch', async ({ page }) => {
+  let standaloneFetches = 0;
+  await page.route('**/systems/baseline-natural-skincare/recipes/testing-lip-balm.html', async (route) => {
+    standaloneFetches += 1;
+    await route.abort();
+  });
+
+  await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'domcontentloaded' });
+  const card = page.locator('#r12');
+  await expect(card).toBeVisible();
+  await expect(card.locator('h3')).toHaveText('Lip/ balm');
+  await expect(card.locator('#r12ButterCharacter')).toBeVisible();
+  expect(standaloneFetches).toBe(0);
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(card).toBeVisible();
+  expect(standaloneFetches).toBe(0);
+});
+
+test('Skincare ingredient links keep the originating recipe selected and filtered across refresh', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'domcontentloaded' });
+  const link = page.locator('#r12 a.ing-link[data-ingredient="ing-kokum-butter"]');
+  await expect(link).toHaveAttribute('href', /\/baseline-natural-skincare\/ingredient-library\/kokum-butter\?filter=r12$/);
+  await link.click();
+
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter\?filter=r12$/);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r12');
+  await expect(page.locator('#ing-kokum-butter')).toBeVisible();
+  await expect(page.locator('#ing-white-kaolin')).toBeHidden();
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter\?filter=r12$/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r12');
+  await expect(page.locator('#ing-kokum-butter')).toBeVisible();
+  await expect(page.locator('#ing-white-kaolin')).toBeHidden();
+});
+
+test('new powder ingredients are linked and filter to their source recipe', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/tooth-polishing-powder', { waitUntil:'domcontentloaded' });
+  const kaolin = page.locator('#r9 a.ing-link[data-ingredient="ing-white-kaolin"]');
+  await expect(kaolin).toBeVisible();
+  await kaolin.click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/white-kaolin\?filter=r9$/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r9');
+  await expect(page.locator('#ing-white-kaolin')).toBeVisible();
+  await expect(page.locator('#ing-sage-leaf-powder')).toBeVisible();
+  await expect(page.locator('#ing-peppermint-leaf-powder')).toBeVisible();
+});
+
 test('recipe subtab choice is not carried into the next recipe', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
   const first = page.locator('#r2');
