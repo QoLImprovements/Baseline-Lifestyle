@@ -419,36 +419,16 @@
     });
   }
 
-  function fmtSliderValue(value){
-    const n=Number(value); if(!Number.isFinite(n)) return String(value || '');
-    return Math.abs(n-Math.round(n))<0.001?String(Math.round(n)):n.toFixed(1);
-  }
-  function updateBubble(slider){
-    const meta=SLIDER_META[slider.id]; if(!meta) return;
-    const wrap=slider.closest('.glide-slider-wrap'); if(!wrap) return;
-    let bubble=wrap.querySelector('.glide-value-bubble');
-    if(!bubble){ bubble=document.createElement('output');bubble.className='glide-value-bubble';wrap.appendChild(bubble); }
-    const min=Number(slider.min || 0),max=Number(slider.max || 100),val=Number(slider.value || 0);
-    const pct=max>min?((val-min)/(max-min))*100:50;
-    bubble.style.left=`${Math.max(0,Math.min(100,pct))}%`;
-    bubble.textContent=`${fmtSliderValue(val)}% ${meta.bubble}`;
-  }
   function enhanceSliders(){
     Object.entries(SLIDER_META).forEach(([id,meta])=>{
       const slider=document.getElementById(id); if(!slider) return;
       const main=slider.closest('.glide-control-main'); if(!main) return;
       const scale=main.querySelector('.glide-scale');
       if(scale && scale.dataset.recipeUx202609!=='1'){
-        scale.innerHTML=`<span><strong>${escapeHtml(meta.left[0])}</strong><small>${escapeHtml(meta.left[1])}</small></span><span><strong>${escapeHtml(meta.right[0])}</strong><small>${escapeHtml(meta.right[1])}</small></span>`;
+        scale.innerHTML=`<span>${escapeHtml(meta.left.join(' — '))}</span><span>${escapeHtml(meta.right.join(' — '))}</span>`;
         scale.dataset.recipeUx202609='1';
       }
-      main.querySelectorAll('.glide-variable-help,.recipe-slider-instruction').forEach(el=>el.remove());
-      if(slider.dataset.recipeUxBound!=='1'){
-        slider.dataset.recipeUxBound='1';
-        slider.addEventListener('input',()=>global.requestAnimationFrame(()=>updateBubble(slider)));
-        slider.addEventListener('change',()=>updateBubble(slider));
-      }
-      updateBubble(slider);
+      main.querySelectorAll('.glide-variable-help,.recipe-slider-instruction,.glide-value-bubble').forEach(el=>el.remove());
     });
     document.querySelectorAll('.slider-save-btn:not(.slider-default-btn)').forEach(button=>button.textContent='Save as my setting');
     document.querySelectorAll('.slider-default-btn').forEach(button=>button.textContent='Reset to recipe default');
@@ -465,12 +445,12 @@
       #recipes .glide-controller{gap:.8rem!important;padding:.85rem!important;align-items:start!important}
       #recipes .glide-control-main{min-height:0!important;padding:.75rem!important}
       #recipes .glide-control-explainer{min-height:0!important;padding:.75rem!important}
-      #recipes .glide-slider-wrap{position:relative;padding-top:2.15rem!important}
-      #recipes .glide-value-bubble{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;padding:.18rem .45rem;border-radius:.45rem;background:rgba(255,255,255,.82);border:1px solid rgba(73,48,40,.18);font-size:.82rem;font-weight:700;line-height:1.25;pointer-events:none}
-      #recipes .glide-scale{display:flex!important;justify-content:space-between!important;gap:1rem!important;margin-top:.45rem!important}
-      #recipes .glide-scale>span{display:flex;flex-direction:column;gap:.08rem;max-width:46%;line-height:1.2}
-      #recipes .glide-scale>span:last-child{text-align:right;align-items:flex-end}
-      #recipes .glide-scale small{font-size:.78rem;opacity:.76}
+      #recipes .glide-slider-wrap{position:relative;padding-top:.35rem!important}
+      #recipes .glide-value-bubble{display:none!important}
+      #recipes .glide-scale{display:grid!important;grid-template-columns:max-content max-content!important;justify-content:space-between!important;gap:1rem!important;margin-top:.45rem!important}
+      #recipes .glide-scale>span{display:block!important;max-width:none!important;white-space:nowrap!important;line-height:1.2}
+      #recipes .glide-scale>span:last-child{text-align:right}
+      #recipes .glide-scale small{font-size:inherit;opacity:1}
       #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
       #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
       html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden){display:grid!important}
@@ -478,7 +458,7 @@
       #recipes .recipe-detail-block h4{margin:0 0 .28rem}
       #recipes .recipe-detail-block p{margin:0;line-height:1.5}
       #recipes .recipe-view-hidden{display:none!important}
-      @media (max-width:720px){#recipes .variant-switcher{width:100%;border-radius:.8rem}#recipes .variant-switcher .variant-tab{flex:1 1 auto}#recipes .glide-scale>span{max-width:48%}}
+      @media (max-width:720px){#recipes .variant-switcher{width:100%;border-radius:.8rem}#recipes .variant-switcher .variant-tab{flex:1 1 auto}#recipes .glide-scale{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}#recipes .glide-scale>span{white-space:normal!important}#recipes .glide-scale>span:last-child{text-align:right}}
     `;
     document.head.appendChild(style);
   }
