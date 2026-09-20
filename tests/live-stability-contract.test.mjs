@@ -69,6 +69,9 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
   assert.match(shared, /baseline-natural-skincare\\\/my-routine/);
   assert.match(shared, /preserveNestedRoutinePath/);
   assert.match(shared, /const nextUrl = preserveNestedRoutinePath/);
+  assert.match(shared, /const initialHashView = initialHash \? parseViewStateHash\(initialHash\) : null/);
+  assert.match(shared, /const initialCleanRouteView = cleanRouteStateFromPath\(\)/);
+  assert.match(shared, /initialHashView \|\| initialCleanRouteView/);
 
   assert.match(routineStructure, /function ownsNestedRoutinePath/);
   assert.match(routineStructure, /if \(!ownsNestedRoutinePath\(url\.pathname\).*allowEnter/s);
