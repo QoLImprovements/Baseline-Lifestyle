@@ -228,7 +228,7 @@ test('Food recipes keep repeated water quantities at their authored first-use st
   const waterPills = (await page.locator('#r4 .method-amt').allTextContents()).filter(text => /water/i.test(text));
   expect(waterPills.some(text => /2 tbsp water/i.test(text))).toBe(true);
   expect(waterPills.some(text => /600 ml water/i.test(text))).toBe(true);
-  expect(waterPills.some(text => /1.?2 tbsp hot water/i.test(text))).toBe(true);
+  expect(waterPills.some(text => /1\s*[–—-]\s*2 tbsp hot water/i.test(text))).toBe(true);
 });
 
 test('Skincare recipe uses segmented variants and compact explanatory sliders in Recipe view', async ({ page }) => {
