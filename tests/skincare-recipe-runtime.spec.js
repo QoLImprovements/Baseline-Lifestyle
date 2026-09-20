@@ -111,7 +111,7 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
 test('universal slider template keeps Restorative Hydration Layer text separated and Overall Feel below the slider', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/restorative-hydration-layer');
   const adjustments = page.locator('#r7 .recipe-adjustments-toggle');
-  await adjustments.click();
+  await expect(adjustments).toHaveAttribute('aria-expanded', 'false');
 
   const controller = page.locator('#r7 .glide-controller');
   await expect(controller).toBeVisible();
