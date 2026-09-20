@@ -263,7 +263,9 @@ Options -Indexes
   RewriteRule ^baseline-natural-skincare/ingredient-library/olive-oil/?$ /baseline-natural-skincare/ingredient-library/olive [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/rose-water/?$ /baseline-natural-skincare/ingredient-library/rosewater [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/safflower-oil/?$ /baseline-natural-skincare/ingredient-library/safflower [R=302,L]
-  RewriteRule ^baseline-natural-skincare/ingredient-library/([^/]+)/?$ systems/baseline-natural-skincare/ingredients/$1.html [L,QSA]
+  # Canonical Skincare ingredient detail URLs keep the full application shell.
+  # The client router selects and scrolls to the matching ingredient card.
+  RewriteRule ^baseline-natural-skincare/ingredient-library/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-food-approach/diet-log/([^/]+)/?$ "systems/baseline-food-approach/Diet Log/$1.html" [L,QSA]
 
   # BASELINE-CLEAN-RECIPE-DETAIL-ROUTES-20260607
