@@ -64,8 +64,10 @@ test('Skincare recipe uses segmented variants and compact explanatory sliders in
   await expect(variants.filter({ hasText:/^Olive Blend$/ })).toHaveAttribute('aria-selected', 'true');
   await expect(card.locator('.recipe-variant-field')).toHaveCount(0);
   await expect(card.locator('.glide-controller').first()).toBeVisible();
-  await expect(card.locator('.recipe-slider-instruction').first()).toBeHidden();
-  await expect(card.locator('.glide-variable-help').first()).toBeVisible();
+  await expect(card.locator('.recipe-slider-instruction')).toHaveCount(0);
+  await expect(card.locator('.glide-variable-help')).toHaveCount(0);
+  await expect(card.locator('.glide-explain-title').first()).toHaveText('Overall Feel');
+  await expect(card.locator('.glide-breakdown:visible')).toHaveCount(0);
   await expect(card.locator('.glide-value-bubble').first()).toBeVisible();
   await expect(card.locator('.slider-save-btn').filter({ hasText:'Save as my setting' }).first()).toBeVisible();
   await expect(card.locator('.slider-default-btn').filter({ hasText:'Reset to recipe default' }).first()).toBeVisible();
@@ -91,12 +93,15 @@ test('Skincare recipe uses segmented variants and compact explanatory sliders in
   await expect(card.locator('.recipe-details-intro')).toBeVisible();
 });
 
-test('Protective balm removes generic slider prose and explains each variable beside the control', async ({ page }) => {
+test('Protective balm uses two equal slider columns with one Overall Feel descriptor', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const card = page.locator('#r3');
   await expect(card).toBeVisible();
-  await expect(card.locator('.recipe-slider-instruction').first()).toBeHidden();
-  await expect(card.locator('.glide-variable-help')).toHaveCount(2);
+  await expect(card.locator('.recipe-slider-instruction')).toHaveCount(0);
+  await expect(card.locator('.glide-variable-help')).toHaveCount(0);
+  await expect(card.locator('.glide-explain-title')).toHaveText('Overall Feel');
+  await expect(card.locator('.glide-explain-title')).toHaveCount(1);
+  await expect(card.locator('.glide-breakdown:visible')).toHaveCount(0);
   await expect(card.getByText(/One batch; the sliders change the overall feel/i)).toBeHidden();
 });
 
