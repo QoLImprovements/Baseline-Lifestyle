@@ -297,11 +297,13 @@ test('leaving Skincare My Routine clears bootstrap-only routine visibility flags
   assert.match(tabs, /removeAttribute\("data-initial-routine-view"\)/);
 });
 
-test('nested Skincare My Routine clean routes are repaired before the fallback exits', () => {
-  assert.match(tabs, /function repairSkincareRoutineRoute\(\)/);
+test('nested Skincare and Fitness My Routine clean routes are repaired before the fallback exits', () => {
+  assert.match(tabs, /function repairNestedRoutineRoute\(\)/);
   assert.match(tabs, /baseline-natural-skincare\\\/my-routine\(\?:\\\/\(\?:log\|summary\|plan\|public\)\)\?/);
   assert.match(tabs, /window\.BASELINE_selectTab\("routine", \{ silentHistory:true \}\)/);
-  const repairCall = tabs.indexOf('repairSkincareRoutineRoute();');
+  assert.match(tabs, /baseline-fitness\\\/my-routine/);
+  assert.match(tabs, /window\.BASELINE_selectTab\("my-plan", \{ silentHistory:true \}\)/);
+  const repairCall = tabs.indexOf('repairNestedRoutineRoute();');
   const disableExit = tabs.indexOf('if(shouldDisable()) return;', repairCall);
   assert.ok(repairCall >= 0 && disableExit > repairCall, 'nested route repair must run before the shared-owner early exit');
 });
