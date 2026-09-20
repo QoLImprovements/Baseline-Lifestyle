@@ -79,10 +79,13 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
 });
 
-test('method ingredient amount tags are emitted only once per recipe pass', () => {
-  assert.match(shared, /const emittedMethodAmounts = new Set\(\)/);
-  assert.match(shared, /filter\(txt => !emittedMethodAmounts\.has\(txt\)\)/);
-  assert.match(shared, /deduped\.forEach\(txt => emittedMethodAmounts\.add\(txt\)\)/);
+test('method ingredient amount tags use one source key and one first-use pill per ingredient source', () => {
+  assert.match(shared, /li\.dataset\.methodTagKey=key/);
+  assert.match(shared, /pill\.dataset\.methodIngredientKey=entry\.key/);
+  assert.match(shared, /wrap\.dataset\.methodAmounts='first-use'/);
+  assert.match(shared, /function bestNaturalMatch\(entry\)/);
+  assert.match(shared, /function bestExplicitMatch\(entry\)/);
+  assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
 
 test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
