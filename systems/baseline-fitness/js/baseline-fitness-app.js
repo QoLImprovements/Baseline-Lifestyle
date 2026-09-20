@@ -2,13 +2,14 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_CANONICAL_REFRESH_ROUTES_20260920_1';
+  const BUILD = 'BASELINE_FITNESS_EXACT_REFRESH_ROUTES_20260920_2';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
   const ROUTE_BASE = '/baseline-fitness';
   const ROUTE_RE = /^\/baseline-fitness\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/i;
   const ROUTINE_ROUTE_RE = /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/?$/i;
+  const BODY_ROUTE_RE = /^\/baseline-fitness\/my-body\/(overall|profile|services)\/?$/i;
   const PLAN_KEY = '__bl_fitness_plan_v1__';
   const PLAN_CACHE_KEY = '__bl_fitness_plan_cache_v1__';
   const STEP_KEY = '__bl_fitness_workout_progress_v2__';
@@ -351,16 +352,24 @@
   function routeState() {
     const path = String(location.pathname || '').replace(/\/+$/, '');
     if (ROUTINE_ROUTE_RE.test(path)) {
-      return { raw:'my-routine', target:'my-plan', alias:false, routine:true };
+      return { raw:'my-routine', target:'my-plan', alias:false, routine:true, bodyView:null };
+    }
+    const bodyMatch = path.match(BODY_ROUTE_RE);
+    if (bodyMatch) {
+      return { raw:'my-body', target:'my-body', alias:false, routine:false, bodyView:String(bodyMatch[1] || 'overall').toLowerCase() };
     }
     const match = path.match(ROUTE_RE);
     const raw = match ? String(match[1] || '').toLowerCase() : 'system';
     const target = ALIASES[raw] || raw;
-    return { raw, target: TABS.includes(target) ? target : 'system', alias: Boolean(ALIASES[raw]), routine:false };
+    return { raw, target: TABS.includes(target) ? target : 'system', alias: Boolean(ALIASES[raw]), routine:false, bodyView:target === 'my-body' ? 'overall' : null };
+  }
+  function bodyRoutePath(view) {
+    const selected = ['overall', 'profile', 'services'].includes(view) ? view : 'overall';
+    return `${ROUTE_BASE}/my-body/${selected}`;
   }
   function routePath(target) {
     const canonical = TABS.includes(target) ? target : 'system';
-    return `${ROUTE_BASE}/${canonical}`;
+    return canonical === 'my-body' ? bodyRoutePath('overall') : `${ROUTE_BASE}/${canonical}`;
   }
   function replaceTabButtons() {
     $$('.tab[data-target]').forEach((oldButton) => {
@@ -1060,15 +1069,24 @@
     if (form) Array.from(form.elements).forEach((field) => { if (field.name && Object.prototype.hasOwnProperty.call(profile, field.name)) field.value = profile[field.name]; });
     renderBodyCalculations(profile); renderBodySummary();
   }
-  function setBodySubtab(view) {
+  function setBodySubtab(view, historyMode = 'none') {
     if (!['overall', 'profile', 'services'].includes(view)) view = 'overall';
-    $$('.my-body-subtab').forEach((button) => { const active = button.dataset.bodyView === view; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
-    $$('.my-body-panel').forEach((panel) => { panel.hidden = panel.dataset.bodyPanel !== view; });
+    document.documentElement.setAttribute('data-initial-body-view', view);
+    $('.my-body-subtab').forEach((button) => { const active = button.dataset.bodyView === view; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
+    $('.my-body-panel').forEach((panel) => { panel.hidden = panel.dataset.bodyPanel !== view; });
+    try {
+      const route = routeState();
+      if (route.target === 'my-body') {
+        const desired = bodyRoutePath(view);
+        if (historyMode === 'push' && String(location.pathname || '').replace(/\/+$/, '') !== desired) history.pushState({ fitnessTab:'my-body', bodyView:view }, '', desired);
+        if (historyMode === 'replace' && String(location.pathname || '').replace(/\/+$/, '') !== desired) history.replaceState({ fitnessTab:'my-body', bodyView:view }, '', desired);
+      }
+    } catch (_error) {}
   }
 
   function bindUi() {
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
-    $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView)));
+    $('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
     $('#bodyProfileForm')?.addEventListener('submit', (event) => { event.preventDefault(); const profile = profileFromForm(); writeStorage(bodyProfileKey(), profile); renderBodyCalculations(profile); renderBodySummary(); if ($('#bodyProfileStatus')) $('#bodyProfileStatus').textContent = 'Body profile saved.'; });
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
@@ -1095,14 +1113,24 @@
     document.documentElement.setAttribute('data-baseline-fitness-runtime', BUILD);
     document.documentElement.setAttribute('data-baseline-fitness-tab-owner', BUILD);
     replaceTabButtons();
-    global.BASELINE_selectTab = (target, options = {}) => activateTopTab(ALIASES[target] || target, options.silentHistory ? 'none' : 'push');
-    global.addEventListener('popstate', () => activateTopTab(routeState().target, 'none'));
-    $$('select').forEach(normaliseNativeSelect);
+    global.BASELINE_selectTab = (target, options = {}) => {
+      const selected = ALIASES[target] || target;
+      activateTopTab(selected, options.silentHistory ? 'none' : 'push');
+      if (selected === 'my-body') setBodySubtab('overall', 'replace');
+    };
+    global.addEventListener('popstate', () => {
+      const route = routeState();
+      activateTopTab(route.target, 'none');
+      if (route.target === 'my-body') setBodySubtab(route.bodyView || 'overall', 'none');
+    });
+    $('select').forEach(normaliseNativeSelect);
     resetGenerator();
     bindUi();
     bindAuthOnce();
-    renderLibrary(); renderAchievements(); fillBodyProfile(); setBodySubtab('overall'); renderPlanSubtab('current');
-    const route = routeState(); activateTopTab(route.target, route.alias ? 'replace' : 'none');
+    renderLibrary(); renderAchievements(); fillBodyProfile(); renderPlanSubtab('current');
+    const route = routeState();
+    if (route.target === 'my-body') setBodySubtab(route.bodyView || 'overall', route.bodyView ? 'none' : 'replace');
+    activateTopTab(route.target, route.alias ? 'replace' : 'none');
   }
 
   global.BASELINE_fitnessWorkout = Object.freeze({
