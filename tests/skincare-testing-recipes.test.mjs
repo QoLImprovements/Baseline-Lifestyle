@@ -7,6 +7,11 @@ const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const navigation = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
+const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
+const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
+const htaccess = fs.readFileSync('.htaccess', 'utf8');
+const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
+const lipBalm = fs.readFileSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html', 'utf8');
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
@@ -27,7 +32,72 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   }
   assert.match(navigation, /Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment\.'/);
   assert.match(navigation, /Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
-  assert.match(navigation, /const TESTING=\[\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
+  assert.match(navigation, /\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
+});
+
+test('Lip/ balm remains a recipe-folder Testing source instead of being duplicated in the Skincare shell', () => {
+  assert.match(lipBalm, /data-category="Testing"/);
+  assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
+  assert.match(lipBalm, /id="r12"/);
+  assert.match(lipBalm, /<h1>Lip\/ balm<\/h1>/);
+  assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
+  assert.match(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
+  assert.match(testServer, /match\[1\] === 'testing-lip-balm'.*testing-lip-balm\.html/);
+});
+
+test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
+  const expected = [
+    ['cocoa', '20'],
+    ['mango', '15'],
+    ['kokum', '10'],
+    ['apricot', '25.5'],
+    ['avocado', '15'],
+    ['raspberry', '11'],
+    ['candelilla', '3'],
+    ['vitamin-e', '0.5']
+  ];
+  for (const [key, amount] of expected) {
+    assert.match(lipBalm, new RegExp(`data-formula-key="${key}"[^>]*data-base-display="${amount} g"`));
+  }
+  assert.match(lipBalm, /id="r12ButterCharacter" min="5" max="15" step="0\.5"[^>]*value="10"/);
+  assert.match(lipBalm, /const mango=25-kokum/);
+  assert.match(lipBalm, /id="r12Structure" min="2" max="4" step="0\.25"[^>]*value="3"/);
+  assert.match(lipBalm, /const apricot=28\.5-candelilla/);
+});
+
+test('Lip/ balm ingredients use canonical clean ingredient URLs with registered records and conversions', () => {
+  const ingredients = [
+    ['ing-cocoa-butter', 'cocoa-butter'],
+    ['ing-mango-butter', 'mango-butter'],
+    ['ing-kokum-butter', 'kokum-butter'],
+    ['ing-apricot-kernel-oil', 'apricot-kernel-oil'],
+    ['ing-red-raspberry-seed-oil', 'red-raspberry-seed-oil'],
+    ['ing-candelilla-wax', 'candelilla-wax']
+  ];
+  for (const [id, slug] of ingredients) {
+    assert.match(lipBalm, new RegExp(`data-ingredient="${id}" href="/baseline-natural-skincare/ingredient-library/${slug}"`));
+    assert.ok(html.includes(`id="${id}"`), `missing integrated ingredient card ${id}`);
+    assert.match(shared, new RegExp(`'${id}':'${slug}'`));
+    assert.match(profiles, new RegExp(`"${id}"\\s*:\\s*withDerived`));
+  }
+  assert.doesNotMatch(lipBalm, /class="ing-link"[^>]*href="#ing-/);
+});
+
+test('Skincare recipe sidebar is absent by structure, styling and navigation ownership', () => {
+  assert.doesNotMatch(html, /id="side-nav"|class="[^"]*side-recipe-nav/);
+  assert.doesNotMatch(navigation, /side-nav|side-recipe-nav/);
+  assert.doesNotMatch(skincareCss, /side-recipe-nav/);
+  assert.match(shared, /const allowSideNav = routePageFileFromPath\(location\.pathname \|\| ''\) !== 'baseline-natural-skincare\.html'/);
+});
+
+test('Skincare recipe ingredient links no longer author the obsolete hash navigation method', () => {
+  const recipesStart = html.indexOf('<section class="section" id="recipes">');
+  const ingredientsStart = html.indexOf('<section class="section" id="ingredients">');
+  const recipesBlock = html.slice(recipesStart, ingredientsStart);
+  assert.doesNotMatch(recipesBlock, /class="ing-link"[^>]*href="#ing-/);
+  assert.match(shared, /if\(!isSkincare\) qsa\('#recipes a\.ing-link\[data-from-recipe\]\[data-ingredient\]'\)/);
 });
 
 test('main Skincare document loads the recipe UX runtime', () => {
