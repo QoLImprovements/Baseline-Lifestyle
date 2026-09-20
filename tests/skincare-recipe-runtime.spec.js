@@ -63,7 +63,103 @@ test('recipe ingredient links use canonical records and browser Back and Forward
   await expect(page.locator('#side-nav')).toHaveCount(0);
 
   await page.goForward();
-  await expect(page).toHaveURL(new RegExp(ingredientUrl.replace(/\//g, '\\/') + '$'));
+  await expect(page).toHaveURL(new RegExp(ingredientUrl.replace(/\//g, '\\/') + '
+
+test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+
+test('recipe overview Back and Forward follow the actual recipe sequence', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes');
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+
+  await page.locator('#recipes-landing a[data-recipe-id="r6"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/anhydrous-massage-oil-blend$/);
+  await expect(page.locator('#r6')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+
+  await page.locator('#recipes-landing a[data-recipe-id="r2"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/);
+  await expect(page.locator('#r2')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await page.goForward();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/);
+  await expect(page.locator('#r2')).toBeVisible();
+  await expect(page.locator('#side-nav')).toHaveCount(0);
+});
+
+test('legacy ingredient aliases redirect to their canonical records', async ({ page }) => {
+  const cases = [
+    ['castor', 'castor-oil', 'Castor Oil'],
+    ['cucumber', 'cucumber-seed-oil', 'Cucumber Seed Oil'],
+    ['jojoba', 'jojoba-oil', 'Jojoba Oil'],
+    ['shea', 'shea-butter', 'Shea Butter']
+  ];
+
+  for (const [alias, canonical, title] of cases) {
+    await page.goto('/baseline-natural-skincare/ingredient-library/' + alias);
+    await expect(page).toHaveURL(new RegExp('/baseline-natural-skincare/ingredient-library/' + canonical + '
+));
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+
+  await page.reload();
+  await expect(page).toHaveURL(new RegExp(ingredientUrl.replace(/\//g, '\\/') + '
+
+test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+
+test('legacy ingredient aliases redirect to their canonical records', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/ingredient-library/jojoba');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+));
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+
+test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+
+test('legacy ingredient aliases redirect to their canonical records', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/ingredient-library/jojoba');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+));
+    await expect(page.locator('h1')).toContainText(title);
+  }
+});
+));
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+
+  await page.reload();
+  await expect(page).toHaveURL(new RegExp(ingredientUrl.replace(/\//g, '\\/') + '
+
+test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+
+test('legacy ingredient aliases redirect to their canonical records', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/ingredient-library/jojoba');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+});
+));
   await expect(page.locator('h1')).toContainText('Jojoba Oil');
 });
 
