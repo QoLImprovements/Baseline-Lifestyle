@@ -69,7 +69,16 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-fitness/my-routine/plan/cardio',
     '/baseline-fitness/my-routine/plan/other',
     '/baseline-fitness/my-routine/plan/sports',
-    '/baseline-games-hub/games-hub'
+    '/baseline-games-hub/games-hub',
+    '/baseline-games-hub/games-hub/games-list',
+    '/baseline-games-hub/games-hub/pairs',
+    '/baseline-games-hub/games-hub/detect-the-word',
+    '/baseline-games-hub/games-hub/make-the-number',
+    '/baseline-games-hub/games-hub/track-the-coin',
+    '/baseline-games-hub/games-hub/rule-shift',
+    '/baseline-games-hub/games-hub/darts-focused',
+    '/baseline-games-hub/games-hub/badminton-focused',
+    '/baseline-games-hub/games-hub/baseline-realm'
   ];
 
   for (const pathname of routes) {
