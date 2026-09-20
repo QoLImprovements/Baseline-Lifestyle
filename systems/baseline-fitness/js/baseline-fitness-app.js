@@ -398,7 +398,10 @@
     } catch (_error) {}
     if (target === 'my-plan' || target === 'achievements') ensurePlanLoaded();
     if (target === 'library') renderLibrary();
-    if (target === 'my-body') fillBodyProfile();
+    if (target === 'my-body') {
+      fillBodyProfile();
+      if (historyMode === 'push') setBodySubtab('overall', 'none');
+    }
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-tab-changed', { detail: { target } })); } catch (_error) {}
   }
 
