@@ -113,6 +113,17 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
   }
 });
 
+test('Skincare inline script blocks remain valid JavaScript', () => {
+  const blocks = [...html.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  assert.ok(blocks.length > 0, 'expected inline Skincare scripts');
+  blocks.forEach((match, index) => {
+    assert.doesNotThrow(
+      () => new vm.Script(match[1], { filename:`baseline-natural-skincare.inline-${index + 1}.js` }),
+      `inline Skincare script ${index + 1} must parse`
+    );
+  });
+});
+
 test('main Skincare document loads the recipe UX runtime', () => {
   assert.match(html, /\/systems\/baseline-natural-skincare\/js\/skincare-recipe-ux-20260906\.js/);
 });
