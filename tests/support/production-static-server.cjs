@@ -185,6 +185,13 @@ const server = http.createServer((req, res) => {
   let pathname = safePathname(requestUrl.pathname);
   if (pathname.length > 1) pathname = pathname.replace(/\/+$/, '');
 
+  const malformedFitness = pathname.match(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/(system|my-plan|my-body|library|exercise-library|achievements)$/i);
+  if (malformedFitness) {
+    res.writeHead(302, { Location: `/baseline-fitness/${malformedFitness[1].toLowerCase()}`, 'Cache-Control':'no-store' });
+    res.end();
+    return;
+  }
+
   const redirect = DEFAULT_REDIRECTS.get(pathname);
   if (redirect) {
     res.writeHead(302, { Location: redirect, 'Cache-Control':'no-store' });
