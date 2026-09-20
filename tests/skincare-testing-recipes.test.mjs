@@ -105,7 +105,8 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
   const files = [
     'sitewide/js/baseline-ingredient-profiles.js',
     'sitewide/js/baseline-shared.js',
-    'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js'
+    'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js',
+    'systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js'
   ];
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
