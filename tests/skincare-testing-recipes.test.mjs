@@ -33,17 +33,19 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   for (const [id, slug, title] of promoted) {
     assert.match(navigation, new RegExp(`\\['${id}','${slug}','${title}'`));
   }
-  assert.match(navigation, /Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment\.'/);
-  assert.match(navigation, /Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
+  assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
+  assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
   assert.match(navigation, /\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
 });
 
 test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
+  assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
+  assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
-  assert.match(html, /skincare-recipe-bootstrap-20260906\.js\?v=RECIPE_REFRESH_STABILITY_20260920_1/);
-  assert.match(recipeBootstrap, /skincare-recipe-navigation-20260906\.js/);
+  assert.match(html, /skincare-recipe-bootstrap-20260906\.js\?v=RECIPE_REFRESH_STABILITY_20260920_2/);
+  assert.match(recipeBootstrap, /skincare-recipe-navigation-20260906\.js\?v=RECIPE_NAV_20260920_5/);
   assert.match(recipeBootstrap, /skincare-recipe-finalise-20260906\.js/);
   assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
