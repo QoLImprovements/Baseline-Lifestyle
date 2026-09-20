@@ -65,7 +65,9 @@ test('Fitness browser-owned values are validated and bridged before the applicat
   assert.match(endpoint, /active_workout_step_mismatch/);
   assert.match(endpoint, /profile_conflict/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
-  assert.match(bridge, /action\s*:\s*['"]import_local['"]/);
+  assert.doesNotMatch(endpoint, /import_local/);
+  assert.doesNotMatch(bridge, /import_local|Import browser copy|Keep account copy/);
+  assert.match(bridge, /purgeObsoleteBrowserState\(\)/);
   assert.match(bridge, /body:revisionedBody\(body\)/);
   assert.match(bridge, /serverProfile/);
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
@@ -83,17 +85,11 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
 });
 
-test('Fitness legacy browser profile and workout require explicit import', () => {
+test('Fitness retired browser saves are discarded instead of offered for import', () => {
   const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.doesNotMatch(bridge, /await importExisting\(server\)/);
-  assert.doesNotMatch(bridge, /async function importExisting/);
-  assert.match(bridge, /quarantineLegacyLocal\(\);[\s\S]{0,120}const server=await reload\(\)/);
-  assert.match(bridge, /Account data is authoritative, including an empty account state/);
-  assert.match(bridge, /Import browser copy/);
-  assert.match(bridge, /Keep account copy/);
-  assert.match(bridge, /payload=\{action:'import_local'\}/);
-  assert.match(bridge, /IMPORT_BACKUP_PREFIX/);
-  assert.match(bridge, /if \(imports\[importKind\]\)[\s\S]{0,100}renderMigrationReview\(\)/);
+  assert.match(bridge, /purgeObsoleteBrowserState\(\)/);
+  assert.match(bridge, /OBSOLETE_IMPORT_PREFIX/);
+  assert.doesNotMatch(bridge, /Import browser copy|Keep account copy|renderMigrationReview|importLegacy|action:'import_local'/);
 });
 
 test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
@@ -118,11 +114,11 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(bridge, /withExpected/);
   assert.match(bridge, /save_blocked/);
   assert.match(bridge, /Saving has stopped/);
-  assert.match(bridge, /ACTIVE_LOCAL_PREFIXES/);
-  assert.match(bridge, /quarantineAuthenticatedLocal/);
+  assert.match(bridge, /OBSOLETE_LOCAL_PREFIXES/);
+  assert.match(bridge, /purgeObsoleteLocal/);
   assert.match(bridge, /authoritativeRoutineResponse/);
   assert.match(bridge, /hasRoutine:true/);
-  assert.match(bridge, /Import legacy routine/);
+  assert.doesNotMatch(bridge, /Import legacy routine|Legacy Fitness Routine data was found|legacyImportAvailable|importLegacy/);
   assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
