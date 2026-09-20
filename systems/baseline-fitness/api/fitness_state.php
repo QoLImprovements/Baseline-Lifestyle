@@ -180,41 +180,28 @@ try{
   if($method !== 'POST') bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
 
   $input = bl_input_json();
-  $action = strtolower(trim((string)($input['action'] ?? 'import_local')));
+  $action = strtolower(trim((string)($input['action'] ?? '')));
   $expected = bl_resource_required_revision_from_input($input);
   if($expected !== $resource['revision']) throw new BaselineSavedDataConflictException('revision_conflict');
 
-  if(in_array($action, ['save_profile','import_local'], true) && array_key_exists('profile', $input)){
+  if($action === 'save_profile' && array_key_exists('profile', $input)){
     $profile = bl_fitness_profile_validate($input['profile']);
-    $existing = is_array($resource['data']['profile'] ?? null) ? $resource['data']['profile'] : [];
-    if($action === 'import_local' && bl_fitness_profile_has_values($existing) && $existing !== $profile && empty($input['overwrite'])){
-      bl_json(['ok'=>false,'error'=>'profile_conflict','serverProfile'=>$existing,'revision'=>$resource['revision']], 409);
-    }
     if(bl_fitness_profile_has_values($profile)) $resource['data']['profile'] = $profile;
     else unset($resource['data']['profile']);
   }
 
-  if(in_array($action, ['save_active_workout','import_local'], true) && array_key_exists('activeWorkout', $input) && $input['activeWorkout'] !== null){
-    $active = bl_fitness_active_workout_validate($input['activeWorkout'], $resource['data']);
-    $existing = is_array($resource['data']['activeWorkout'] ?? null) ? $resource['data']['activeWorkout'] : null;
-    if($action === 'import_local' && $existing !== null && $existing !== $active && empty($input['overwrite'])){
-      bl_json(['ok'=>false,'error'=>'active_workout_conflict','serverActiveWorkout'=>$existing,'revision'=>$resource['revision']], 409);
-    }
-    $resource['data']['activeWorkout'] = $active;
+  if($action === 'save_active_workout' && array_key_exists('activeWorkout', $input) && $input['activeWorkout'] !== null){
+    $resource['data']['activeWorkout'] = bl_fitness_active_workout_validate($input['activeWorkout'], $resource['data']);
   }
 
-  if(in_array($action, ['save_progression_history','import_local'], true) && array_key_exists('progressionHistory', $input)){
+  if($action === 'save_progression_history' && array_key_exists('progressionHistory', $input)){
     $history = bl_fitness_progression_history_validate($input['progressionHistory']);
-    $existing = bl_fitness_progression_history_validate($resource['data']['progressionHistory'] ?? []);
-    if($action === 'import_local' && bl_fitness_progression_history_has_values($existing) && $existing !== $history && empty($input['overwrite'])){
-      bl_json(['ok'=>false,'error'=>'progression_history_conflict','serverProgressionHistory'=>$existing,'revision'=>$resource['revision']], 409);
-    }
     if(bl_fitness_progression_history_has_values($history)) $resource['data']['progressionHistory'] = $history;
     else unset($resource['data']['progressionHistory']);
   }
 
   if($action === 'clear_active_workout') unset($resource['data']['activeWorkout']);
-  if(!in_array($action, ['save_profile','save_active_workout','save_progression_history','clear_active_workout','import_local'], true)){
+  if(!in_array($action, ['save_profile','save_active_workout','save_progression_history','clear_active_workout'], true)){
     bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
   }
 
