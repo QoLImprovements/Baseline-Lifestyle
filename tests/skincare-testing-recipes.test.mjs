@@ -84,7 +84,7 @@ test('Lip/ balm uses the shared slider/explainer structure and explicit first-us
   assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Primary liquid oil/);
   assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Rich emollient oil/);
   assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Seed oil/);
-  assert.match(lipBalm, /data-method-step="5"[^>]*Vitamin E/);
+  assert.match(lipBalm, /<li data-method-step="5"[^>]*>[\s\S]*?Vitamin E \(Tocopherol\)<\/a><\/li>/);
 });
 
 test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
