@@ -50,6 +50,42 @@ test('clean recipe detail routes serve the complete parent applications', () => 
   assert.doesNotMatch(htaccess, /baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/recipes\/\$1\.html/);
 });
 
+test('Fitness route generation is canonical and legacy malformed nested URLs recover', () => {
+  const fitness = read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const routineStructure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+  const shared = read('sitewide/js/baseline-shared.js');
+  const fallbackTabs = read('sitewide/js/baseline-tabs.js');
+  const htaccess = read('.htaccess');
+  const testServer = read('tests/support/production-static-server.cjs');
+
+  assert.match(fitness, /const ROUTE_BASE = '\/baseline-fitness'/);
+  assert.match(fitness, /const ROUTINE_ROUTE_RE = /);
+  assert.match(fitness, /return `\$\{ROUTE_BASE\}\/\$\{canonical\}`/);
+  assert.doesNotMatch(fitness, /const base = location\.pathname\.replace\(ROUTE_RE/);
+
+  assert.match(shared, /'my-body':'my-body'/);
+  assert.match(shared, /library:'library'/);
+  assert.match(shared, /baseline-fitness\\\/my-routine/);
+  assert.match(shared, /baseline-natural-skincare\\\/my-routine/);
+  assert.match(shared, /preserveNestedRoutinePath/);
+  assert.match(shared, /const nextUrl = preserveNestedRoutinePath/);
+  assert.match(shared, /const initialHashView = initialHash \? parseViewStateHash\(initialHash\) : null/);
+  assert.match(shared, /const initialCleanRouteView = cleanRouteStateFromPath\(\)/);
+  assert.match(shared, /initialHashView \|\| initialCleanRouteView/);
+
+  assert.match(routineStructure, /function ownsNestedRoutinePath/);
+  assert.match(routineStructure, /if \(!ownsNestedRoutinePath\(url\.pathname\).*allowEnter/s);
+  assert.match(routineStructure, /const route=routeFromPath\(\);\s*if \(!route\) return;/);
+
+  assert.match(fallbackTabs, /"my-body":"my-body"/);
+  assert.match(fallbackTabs, /library:"library"/);
+
+  assert.match(htaccess, /Recover malformed top-level Fitness URLs produced by the former nested route builder/);
+  assert.match(htaccess, /baseline-fitness\/my-routine.*\(system\|my-plan\|my-body\|library\|exercise-library\|achievements\).*\/baseline-fitness\/\$1/s);
+  assert.match(testServer, /malformedFitness/);
+  assert.match(testServer, /system\|workout-routine\|library\|exercise-library\|achievements\|my-routine\|my-plan\|my-body/);
+});
+
 test('protected key and Charity banner controls have stable first-paint geometry', () => {
   const css = read('sitewide/css/baseline-protected-key-placement.css');
   assert.match(css, /BASELINE-LIVE-KEY-FIRST-PAINT-20260803/);

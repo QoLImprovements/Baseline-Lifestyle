@@ -14,6 +14,7 @@ const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
 const lipBalm = fs.readFileSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html', 'utf8');
+const recipeBootstrap = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js', 'utf8');
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
@@ -32,10 +33,22 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   for (const [id, slug, title] of promoted) {
     assert.match(navigation, new RegExp(`\\['${id}','${slug}','${title}'`));
   }
-  assert.match(navigation, /Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment\.'/);
-  assert.match(navigation, /Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
+  assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
+  assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
   assert.match(navigation, /\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
+});
+
+test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
+  assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
+  assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
+  assert.match(html, /skincare-recipe-bootstrap-20260906\.js\?v=RECIPE_REFRESH_STABILITY_20260920_2/);
+  assert.match(recipeBootstrap, /skincare-recipe-navigation-20260906\.js\?v=RECIPE_NAV_20260920_5/);
+  assert.match(recipeBootstrap, /skincare-recipe-finalise-20260906\.js/);
+  assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
+  assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
 test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
@@ -286,11 +299,13 @@ test('leaving Skincare My Routine clears bootstrap-only routine visibility flags
   assert.match(tabs, /removeAttribute\("data-initial-routine-view"\)/);
 });
 
-test('nested Skincare My Routine clean routes are repaired before the fallback exits', () => {
-  assert.match(tabs, /function repairSkincareRoutineRoute\(\)/);
+test('nested Skincare and Fitness My Routine clean routes are repaired before the fallback exits', () => {
+  assert.match(tabs, /function repairNestedRoutineRoute\(\)/);
   assert.match(tabs, /baseline-natural-skincare\\\/my-routine\(\?:\\\/\(\?:log\|summary\|plan\|public\)\)\?/);
   assert.match(tabs, /window\.BASELINE_selectTab\("routine", \{ silentHistory:true \}\)/);
-  const repairCall = tabs.indexOf('repairSkincareRoutineRoute();');
+  assert.match(tabs, /baseline-fitness\\\/my-routine/);
+  assert.match(tabs, /window\.BASELINE_selectTab\("my-plan", \{ silentHistory:true \}\)/);
+  const repairCall = tabs.indexOf('repairNestedRoutineRoute();');
   const disableExit = tabs.indexOf('if(shouldDisable()) return;', repairCall);
   assert.ok(repairCall >= 0 && disableExit > repairCall, 'nested route repair must run before the shared-owner early exit');
 });

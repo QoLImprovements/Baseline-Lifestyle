@@ -32,6 +32,139 @@ test('primary production routes load without runtime errors', async ({ page }) =
   expect(pageErrors).toEqual([]);
 });
 
+test('canonical clean route families can be requested directly for browser refresh', async ({ request }) => {
+  const routes = [
+    '/baseline-food-approach/system',
+    '/baseline-food-approach/recipes',
+    '/baseline-food-approach/ingredient-library',
+    '/baseline-food-approach/diet-log',
+    '/baseline-massage/system',
+    '/baseline-massage/library',
+    '/baseline-massage/planner',
+    '/baseline-natural-skincare/system',
+    '/baseline-natural-skincare/recipes',
+    '/baseline-natural-skincare/ingredient-library',
+    '/baseline-natural-skincare/skin-support-system',
+    '/baseline-natural-skincare/my-routine',
+    '/baseline-natural-skincare/my-routine/log',
+    '/baseline-natural-skincare/my-routine/summary',
+    '/baseline-natural-skincare/my-routine/plan',
+    '/baseline-natural-skincare/my-routine/public',
+    '/baseline-badminton-session/system',
+    '/baseline-badminton-session/game-plan',
+    '/baseline-badminton-session/ratings-standings',
+    '/baseline-badminton-session/players-pairs',
+    '/baseline-badminton-session/session-history',
+    '/baseline-fitness/system',
+    '/baseline-fitness/my-plan',
+    '/baseline-fitness/my-body',
+    '/baseline-fitness/library',
+    '/baseline-fitness/achievements',
+    '/baseline-fitness/my-routine',
+    '/baseline-fitness/my-routine/log',
+    '/baseline-fitness/my-routine/summary',
+    '/baseline-fitness/my-routine/public',
+    '/baseline-fitness/my-routine/plan',
+    '/baseline-fitness/my-routine/plan/calisthenics',
+    '/baseline-fitness/my-routine/plan/cardio',
+    '/baseline-fitness/my-routine/plan/other',
+    '/baseline-fitness/my-routine/plan/sports',
+    '/baseline-games-hub/games-hub',
+    '/baseline-games-hub/games-hub/games-list',
+    '/baseline-games-hub/games-hub/pairs',
+    '/baseline-games-hub/games-hub/detect-the-word',
+    '/baseline-games-hub/games-hub/make-the-number',
+    '/baseline-games-hub/games-hub/track-the-coin',
+    '/baseline-games-hub/games-hub/rule-shift',
+    '/baseline-games-hub/games-hub/darts-focused',
+    '/baseline-games-hub/games-hub/badminton-focused',
+    '/baseline-games-hub/games-hub/baseline-realm'
+  ];
+
+  for (const pathname of routes) {
+    const response = await request.get(pathname);
+    expect(response.status(), pathname + ' must be directly refreshable').toBeLessThan(400);
+  }
+});
+
+test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {
+  await page.goto('/baseline-food-approach/system', { waitUntil:'domcontentloaded' });
+  const recipes = page.locator('.tab[data-target="recipes"], .tab[data-tab="recipes"]').first();
+  const ingredients = page.locator('.tab[data-target="ingredients"], .tab[data-tab="ingredients"]').first();
+
+  await recipes.click();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
+  await expect(page.locator('#recipes')).toHaveClass(/active/);
+
+  await ingredients.click();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library$/);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
+  await expect(page.locator('#recipes')).toHaveClass(/active/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/system$/);
+  await expect(page.locator('#system')).toHaveClass(/active/);
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/recipes$/);
+  await expect(page.locator('#recipes')).toHaveClass(/active/);
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/baseline-food-approach\/ingredient-library$/);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+});
+
+test('Fitness top-level tabs remain canonical from nested My Routine and survive refresh Back and Forward', async ({ page }) => {
+  await page.route('**/systems/baseline-fitness/api/**', (route) => fulfillJson(route, { ok:true, hasRoutine:false, profiles:[], achievements:[] }));
+  await page.route('**/sitewide/api/**', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok:true, authed:false });
+    if (pathname.endsWith('/auth_providers.php')) return fulfillJson(route, { ok:true, providers:{ password:true, google:false } });
+    return fulfillJson(route, { ok:true });
+  });
+
+  await page.goto('/baseline-fitness/my-routine/log', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
+  await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
+
+  await page.locator('.tab[data-target="my-body"]').click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body$/);
+  await expect(page.locator('#my-body')).toHaveClass(/active/);
+  expect(new URL(page.url()).pathname).toBe('/baseline-fitness/my-body');
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_FITNESS_DEBUG));
+  expect(new URL(page.url()).pathname).toBe('/baseline-fitness/my-body');
+  await expect(page.locator('#my-body')).toHaveClass(/active/);
+
+  await page.goBack({ waitUntil:'domcontentloaded' });
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/log$/);
+  await expect(page.locator('.tab[data-target="my-plan"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
+
+  await page.goForward({ waitUntil:'domcontentloaded' });
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body$/);
+  await expect(page.locator('#my-body')).toHaveClass(/active/);
+
+  await page.goBack({ waitUntil:'domcontentloaded' });
+  await page.locator('.tab[data-target="library"]').click();
+  expect(new URL(page.url()).pathname).toBe('/baseline-fitness/library');
+  await page.reload({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe('/baseline-fitness/library');
+  await expect(page.locator('#library')).toHaveClass(/active/);
+});
+
+test('legacy malformed nested Fitness history URLs recover to the canonical top-level page', async ({ page }) => {
+  const response = await page.goto('/baseline-fitness/my-routine/log/my-body', { waitUntil:'domcontentloaded' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+  expect(new URL(page.url()).pathname).toBe('/baseline-fitness/my-body');
+  await expect(page.locator('#my-body')).toHaveClass(/active/);
+});
+
 test('shared login, favourites, Binaural presets and logout complete one account round trip', async ({ page }) => {
   const state = {
     authed: false,

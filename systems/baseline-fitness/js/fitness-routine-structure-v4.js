@@ -5,7 +5,8 @@
    The base Fitness workspace owns activity/log data. fitness-multiple-plans.js
    owns saved Calisthenics plans. This adapter owns only the four-view My Routine
    shell, the single-page Routine Plan category cards, Public visibility/profile
-   controls and canonical clean path routing.
+   controls and nested My Routine clean paths. The top-level Fitness router owns
+   /system, /my-plan, /my-body, /library and /achievements history entries.
 
    ROUTINE PLAN CONTRACT — DO NOT REINTRODUCE SUBTABS
    --------------------------------------------------
@@ -72,7 +73,16 @@
     if (match) return { view:String(match[1]).toLowerCase(),plan:rememberedPlanView(),clean:true };
     match=path.match(/^\/baseline-fitness\/my-routine\/plan(?:\/(calisthenics|cardio|other|sports))?$/i);
     if (match) return { view:'plan',plan:PLAN_VIEWS.includes(String(match[1] || '').toLowerCase())?String(match[1]).toLowerCase():rememberedPlanView(),clean:!match[1] };
-    if (/^\/baseline-fitness\/my-routine$/i.test(path)) return { view:'log',plan:rememberedPlanView(),clean:false };
+    if (/^\/baseline-fitness\/my-routine$/i.test(path)) {
+      let view='';
+      try {
+        const url=new URL(global.location.href);
+        if (url.searchParams.has('new-plan')) view='plan';
+        else view=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
+      } catch (_error) {}
+      if (!TOP_VIEWS.includes(view)) view='log';
+      return { view,plan:rememberedPlanView(),clean:false };
+    }
     if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:rememberedPlanView(),clean:false };
     return null;
   }
@@ -96,9 +106,17 @@
     if (view==='plan') return `${ROUTE_BASE}/plan`;
     return `${ROUTE_BASE}/${TOP_VIEWS.includes(view)?view:'log'}`;
   }
-  function writeRoute() {
+  function ownsNestedRoutinePath(pathname=global.location?.pathname || '') {
+    const path=String(pathname || '').replace(/\/+$/,'');
+    return /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/i.test(path);
+  }
+  function isTopLevelPlanEntry(pathname=global.location?.pathname || '') {
+    return /^\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/i.test(String(pathname || ''));
+  }
+  function writeRoute({ allowEnter=false }={}) {
     try {
       const url=new URL(global.location.href);
+      if (!ownsNestedRoutinePath(url.pathname) && !(allowEnter && isTopLevelPlanEntry(url.pathname))) return;
       url.pathname=cleanPath();
       ['routine-view','routine-plan','routine-filter','routine-date','new-plan'].forEach((key)=>url.searchParams.delete(key));
       url.hash='';
@@ -259,13 +277,11 @@
     activePlanView=next;
     const planPanel=$('[data-fitness-routine-panel="plan"]');
     if (!planPanel) return;
-    const card=planPanel.querySelector(`details[data-fitness-plan-card="${next}"]`);
-    if (card) card.open=true;
     const child=planPanel.querySelector(`[data-fitness-routine-panel="${next}"]`);
     if (child) { child.hidden=false;child.classList.add('active'); }
     if (remember) {
       try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,next); } catch (_error) {}
-      writeRoute();
+      writeRoute({ allowEnter:true });
     }
   }
   function activateTopView(view,remember=true) {
@@ -285,7 +301,7 @@
     if (next==='log') global.BASELINE_fitnessRoutine?.render?.();
     if (remember) {
       try { global.sessionStorage?.setItem(VIEW_KEY,next); } catch (_error) {}
-      writeRoute();
+      writeRoute({ allowEnter:true });
     }
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-view-changed',{ detail:{ view:next,planView:activePlanView } })); } catch (_error) {}
   }
@@ -388,7 +404,9 @@
       }
     });
     global.addEventListener('popstate',()=>{
-      const route=currentRoute();activeView=route.view;activePlanView=route.plan;
+      const route=routeFromPath();
+      if (!route) return;
+      activeView=route.view;activePlanView=route.plan;
       activateTopView(activeView,false);if (activeView==='plan') activatePlanView(activePlanView,false);
     });
   }

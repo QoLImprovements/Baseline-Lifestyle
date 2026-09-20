@@ -2,11 +2,13 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_ROUTINE_LOG_SESSION_ATTRIBUTION_20260828_2';
+  const BUILD = 'BASELINE_FITNESS_CANONICAL_REFRESH_ROUTES_20260920_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
-  const ROUTE_RE = /\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/;
+  const ROUTE_BASE = '/baseline-fitness';
+  const ROUTE_RE = /^\/baseline-fitness\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/i;
+  const ROUTINE_ROUTE_RE = /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/?$/i;
   const PLAN_KEY = '__bl_fitness_plan_v1__';
   const PLAN_CACHE_KEY = '__bl_fitness_plan_cache_v1__';
   const STEP_KEY = '__bl_fitness_workout_progress_v2__';
@@ -347,14 +349,18 @@
   }
 
   function routeState() {
-    const match = location.pathname.match(ROUTE_RE);
-    const raw = match ? match[1] : 'system';
+    const path = String(location.pathname || '').replace(/\/+$/, '');
+    if (ROUTINE_ROUTE_RE.test(path)) {
+      return { raw:'my-routine', target:'my-plan', alias:false, routine:true };
+    }
+    const match = path.match(ROUTE_RE);
+    const raw = match ? String(match[1] || '').toLowerCase() : 'system';
     const target = ALIASES[raw] || raw;
-    return { raw, target: TABS.includes(target) ? target : 'system', alias: Boolean(ALIASES[raw]) };
+    return { raw, target: TABS.includes(target) ? target : 'system', alias: Boolean(ALIASES[raw]), routine:false };
   }
   function routePath(target) {
-    const base = location.pathname.replace(ROUTE_RE, '').replace(/\/$/, '');
-    return `${base}/${target}`.replace(/\/{2,}/g, '/');
+    const canonical = TABS.includes(target) ? target : 'system';
+    return `${ROUTE_BASE}/${canonical}`;
   }
   function replaceTabButtons() {
     $$('.tab[data-target]').forEach((oldButton) => {

@@ -292,7 +292,7 @@
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
-    'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'workout-routine', library:'exercise-library', achievements:'achievements', 'my-plan':'my-plan','my-routine':'my-plan' } }
+    'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
   const BASELINE_CLEAN_PAGE_LINKS = Object.freeze({
     'index.html':'/home/1', 'home.html':'/home/1', 'home':'/home/1',
@@ -328,6 +328,12 @@
         }
       }
       const path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
+      if(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(path)){
+        return { kind:'tab', tabId:'my-plan', raw:path };
+      }
+      if(/^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)){
+        return { kind:'tab', tabId:'routine', raw:path };
+      }
       const recipeDetail = path.match(/\/recipes\/([^\/?#]+)$/i);
       if(recipeDetail && recipeDetail[1]){
         return { kind:'tab', tabId:'recipes', raw:path };
@@ -1991,7 +1997,13 @@ function parseViewStateHash(hash){
     const sortedCards = recipeCards.slice().sort((a,b) => getTitle(a).localeCompare(getTitle(b)));
     sortedCards.forEach(card => recipesContainer.appendChild(card));
 
-    // 2) Update overview + nav lists
+    // 2) Update overview + nav lists.
+    // Natural Skincare has promoted and folder-backed recipes with authored
+    // descriptors. Its canonical recipe-navigation module owns that landing
+    // content; the generic category rebuilder must never strip those labels.
+    const isSkincareRecipeCollection = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    if(isSkincareRecipeCollection) return;
+
     const hasCategories = sortedCards.some(c => c.dataset && typeof c.dataset.category === 'string' && c.dataset.category.trim() !== '');
 
     if(hasCategories){
@@ -7402,9 +7414,10 @@ function setupRecipeFavourites(){
     // Seed the first history entry so the browser Back button returns to the prior in-page view (not the index).
 
     const initialHash = location.hash || '';
-    const initialHashView = parseViewStateHash(initialHash);
+    const initialHashView = initialHash ? parseViewStateHash(initialHash) : null;
     const initialRecipeView = recipePathStateFromLocation();
     const initialIngredientView = skincareIngredientPathStateFromLocation();
+    const initialCleanRouteView = cleanRouteStateFromPath();
 
     // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
     // A clean ingredient record gets its own page URL; one address must not
@@ -7418,7 +7431,7 @@ function setupRecipeFavourites(){
       }
     }
 
-    const initialView = initialRecipeView || initialIngredientView || initialHashView;
+    const initialView = initialRecipeView || initialIngredientView || initialHashView || initialCleanRouteView;
     const snapshot = (!initialHash) ? readNavSnapshot() : null;
     const snapshotState = (snapshot && snapshot.state && typeof snapshot.state === 'object') ? snapshot.state : null;
 
@@ -7445,7 +7458,14 @@ function setupRecipeFavourites(){
           setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
         }else{
           const nextState = { kind: 'tab', tabId: tabId };
-          setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
+          const rawCleanRoute = String(initialView.raw || '').toLowerCase().replace(/\/+$/,'');
+          const preserveNestedRoutinePath =
+            /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(rawCleanRoute) ||
+            /^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(rawCleanRoute);
+          const nextUrl = preserveNestedRoutinePath
+            ? String(location.pathname || '') + String(location.search || '') + String(location.hash || '')
+            : urlForNavState(nextState);
+          setNavState(nextState, { replace:true, url: nextUrl });
         }
       }catch(_e){}
     }else if(initialView && initialView.kind === 'ingredient'){

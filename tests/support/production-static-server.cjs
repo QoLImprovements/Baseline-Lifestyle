@@ -29,7 +29,7 @@ const CONTENT_TYPES = Object.freeze({
   '.php': 'text/plain; charset=utf-8'
 });
 
-const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm))?\/?$/;
+const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm))?\/?$/;
 
 /* Keep this route table aligned with the public Apache clean-route contract.
    Playwright must be able to refresh a virtual route directly; otherwise a
@@ -41,7 +41,7 @@ const STATIC_ROUTE_RULES = [
   [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system|my-routine)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-natural-skincare\/my-routine\/(?:log|summary|plan|public)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-badminton-session\/(?:system|game-plan|ratings-standings|players-pairs|session-history)\/?$/, '/systems/baseline-badminton-session/baseline-badminton-session.html'],
-  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
+  [/^\/baseline-fitness\/(?:system|workout-routine|library|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
   [/^\/baseline-fitness\/my-routine\/(?:log|summary|public)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
   [/^\/baseline-fitness\/my-routine\/plan(?:\/(?:calisthenics|cardio|other|sports))?\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
 ];
@@ -184,6 +184,13 @@ const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url || '/', `http://${req.headers.host || `${HOST}:${PORT}`}`);
   let pathname = safePathname(requestUrl.pathname);
   if (pathname.length > 1) pathname = pathname.replace(/\/+$/, '');
+
+  const malformedFitness = pathname.match(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/(system|my-plan|my-body|library|exercise-library|achievements)$/i);
+  if (malformedFitness) {
+    res.writeHead(302, { Location: `/baseline-fitness/${malformedFitness[1].toLowerCase()}`, 'Cache-Control':'no-store' });
+    res.end();
+    return;
+  }
 
   const redirect = DEFAULT_REDIRECTS.get(pathname);
   if (redirect) {

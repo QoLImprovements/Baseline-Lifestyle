@@ -70,6 +70,58 @@ test('only the remaining experimental recipe stays under Testing', async ({ page
   expect(ids).toEqual(['r1','r10','r2','r3','r6','r7','r8','r9']);
 });
 
+test('Skincare recipe catalogue keeps its Recipes heading and descriptors across reload Back and Forward', async ({ page }) => {
+  const expectCatalogue = async () => {
+    await expect(page.locator('#recipes')).toHaveClass(/active/);
+    await expect(page.locator('#recipes-landing')).toBeVisible();
+    await page.waitForFunction(() => globalThis.__BASELINE_SKINCARE_RECIPE_NAV_20260906__ === true);
+
+    const recipesHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Recipes$/ });
+    const testingHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Testing$/ });
+    await expect(recipesHeading).toHaveCount(1);
+    await expect(testingHeading).toHaveCount(1);
+
+    const mainLinks = recipesHeading.locator('+ ul a');
+    const testingLinks = testingHeading.locator('+ ul a');
+    await expect(mainLinks).toHaveCount(8);
+    await expect(testingLinks).toHaveCount(2);
+
+    const mainText = await mainLinks.allTextContents();
+    const testingText = await testingLinks.allTextContents();
+    for (const text of [...mainText, ...testingText]) {
+      expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
+    }
+    expect(mainText.some(text => text.startsWith('Calming Shave Gel — '))).toBe(true);
+    expect(mainText.some(text => text.startsWith('Microcurrent Glide Gel — '))).toBe(true);
+    expect(mainText.some(text => text.startsWith('Tooth Polishing Powder — '))).toBe(true);
+    expect(testingText.some(text => text.startsWith('Lip/ balm — '))).toBe(true);
+
+    return { mainText, testingText };
+  };
+
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+  const initial = await expectCatalogue();
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  const refreshed = await expectCatalogue();
+  expect(refreshed).toEqual(initial);
+
+  await page.locator('#recipes-landing a.recipe-open[data-recipe-id="r3"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/protective-touch-balm$/);
+  await expect(page.locator('#r3')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  expect(await expectCatalogue()).toEqual(initial);
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/protective-touch-balm$/);
+  await expect(page.locator('#r3')).toBeVisible();
+
+  await page.goBack();
+  expect(await expectCatalogue()).toEqual(initial);
+});
+
 test('promoted recipes open through the normal recipe overview router', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes-landing')).toBeVisible();
