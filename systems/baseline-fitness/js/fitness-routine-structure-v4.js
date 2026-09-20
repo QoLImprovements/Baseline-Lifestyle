@@ -5,7 +5,8 @@
    The base Fitness workspace owns activity/log data. fitness-multiple-plans.js
    owns saved Calisthenics plans. This adapter owns only the four-view My Routine
    shell, the single-page Routine Plan category cards, Public visibility/profile
-   controls and canonical clean path routing.
+   controls and nested My Routine clean paths. The top-level Fitness router owns
+   /system, /my-plan, /my-body, /library and /achievements history entries.
 
    ROUTINE PLAN CONTRACT — DO NOT REINTRODUCE SUBTABS
    --------------------------------------------------
@@ -96,9 +97,17 @@
     if (view==='plan') return `${ROUTE_BASE}/plan`;
     return `${ROUTE_BASE}/${TOP_VIEWS.includes(view)?view:'log'}`;
   }
-  function writeRoute() {
+  function ownsNestedRoutinePath(pathname=global.location?.pathname || '') {
+    const path=String(pathname || '').replace(/\/+$/,'');
+    return /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/i.test(path);
+  }
+  function isTopLevelPlanEntry(pathname=global.location?.pathname || '') {
+    return /^\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/i.test(String(pathname || ''));
+  }
+  function writeRoute({ allowEnter=false }={}) {
     try {
       const url=new URL(global.location.href);
+      if (!ownsNestedRoutinePath(url.pathname) && !(allowEnter && isTopLevelPlanEntry(url.pathname))) return;
       url.pathname=cleanPath();
       ['routine-view','routine-plan','routine-filter','routine-date','new-plan'].forEach((key)=>url.searchParams.delete(key));
       url.hash='';
@@ -265,7 +274,7 @@
     if (child) { child.hidden=false;child.classList.add('active'); }
     if (remember) {
       try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,next); } catch (_error) {}
-      writeRoute();
+      writeRoute({ allowEnter:true });
     }
   }
   function activateTopView(view,remember=true) {
@@ -285,7 +294,7 @@
     if (next==='log') global.BASELINE_fitnessRoutine?.render?.();
     if (remember) {
       try { global.sessionStorage?.setItem(VIEW_KEY,next); } catch (_error) {}
-      writeRoute();
+      writeRoute({ allowEnter:true });
     }
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-view-changed',{ detail:{ view:next,planView:activePlanView } })); } catch (_error) {}
   }
@@ -388,7 +397,9 @@
       }
     });
     global.addEventListener('popstate',()=>{
-      const route=currentRoute();activeView=route.view;activePlanView=route.plan;
+      const route=routeFromPath();
+      if (!route) return;
+      activeView=route.view;activePlanView=route.plan;
       activateTopView(activeView,false);if (activeView==='plan') activatePlanView(activePlanView,false);
     });
   }
