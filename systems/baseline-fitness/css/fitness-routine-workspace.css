@@ -36,4 +36,16 @@ html[data-initial-fitness-tab="library"] #system{display:none!important}
 html[data-initial-fitness-tab="library"] #library{display:block!important}
 html[data-initial-fitness-tab="achievements"] #system{display:none!important}
 html[data-initial-fitness-tab="achievements"] #achievements{display:block!important}
+
+/* Exact My Body first paint: the URL-owned subview is visible before deferred JS,
+   so refresh never flashes Overall Summary while restoring another body page. */
+html[data-initial-fitness-tab="my-body"][data-initial-body-view] #my-body .my-body-panel{display:none!important}
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="overall"] #my-body .my-body-panel[data-body-panel="overall"],
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="profile"] #my-body .my-body-panel[data-body-panel="profile"],
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="services"] #my-body .my-body-panel[data-body-panel="services"]{display:block!important}
+html[data-initial-fitness-tab="my-body"][data-initial-body-view] #my-body .my-body-subtab{opacity:.72}
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="overall"] #my-body .my-body-subtab[data-body-view="overall"],
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="profile"] #my-body .my-body-subtab[data-body-view="profile"],
+html[data-initial-fitness-tab="my-body"][data-initial-body-view="services"] #my-body .my-body-subtab[data-body-view="services"]{opacity:1}
+
 html[data-initial-fitness-tab="my-plan"][data-initial-routine-view] #my-plan:not([data-routine-workspace-v2="true"])>.grid{display:none!important}
