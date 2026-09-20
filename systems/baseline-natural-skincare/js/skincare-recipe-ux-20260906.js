@@ -31,6 +31,11 @@
   const TESTING_RECIPES = Object.freeze([
     ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.']
   ]);
+  // Folder-backed recipes are linked into the catalogue but are never copied
+  // into the large Skincare application document.
+  const EXTERNAL_RECIPES = Object.freeze([
+    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm', description:'adjustable butter character and structure with a balanced 100 g default formula.', category:'Testing' }
+  ]);
 
   const DETAIL_DATA = Object.freeze({
     r1:{
@@ -117,6 +122,33 @@
     r6AvocadoCastor:{bubble:'castor',left:['2% castor','Quicker slip'],right:['10% castor','Longer glide'],help:'Adjust castor to change lasting glide. Watermelon seed oil automatically compensates.'},
     r7Hydration:{bubble:'water',left:['70% water','Higher glycerin'],right:['90% water','Lighter hydration layer'],help:'Adjust the water phase. Glycerin automatically compensates so the formula remains at 100%.'}
   });
+
+  function installExternalRecipeLinks(){
+    const landing=document.getElementById('recipes-landing');
+    if(!landing) return;
+    EXTERNAL_RECIPES.forEach(recipe=>{
+      const href=recipeHref(recipe.slug);
+      if(landing.querySelector('a[href="'+href+'"]')) return;
+      let heading=Array.from(landing.querySelectorAll(':scope > h4')).find(el=>String(el.textContent||'').trim()===recipe.category);
+      if(!heading){
+        heading=document.createElement('h4');
+        heading.textContent=recipe.category;
+        landing.appendChild(heading);
+      }
+      let list=heading.nextElementSibling;
+      if(!list || list.tagName!=='UL'){
+        list=document.createElement('ul');
+        heading.insertAdjacentElement('afterend',list);
+      }
+      const li=document.createElement('li');
+      const a=document.createElement('a');
+      a.href=href;
+      a.dataset.externalRecipeId=recipe.id;
+      a.textContent=recipe.title+' — '+recipe.description;
+      li.appendChild(a);
+      list.appendChild(li);
+    });
+  }
 
   function escapeHtml(value){
     return String(value == null ? '' : value).replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
@@ -362,6 +394,7 @@
 
   function applyAll(){
     installStyles();
+    installExternalRecipeLinks();
     promoteCards();
     rewriteRecipeAnchors();
     restoreSegmentedVariants();
