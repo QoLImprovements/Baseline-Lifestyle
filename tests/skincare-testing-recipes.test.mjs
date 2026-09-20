@@ -37,15 +37,20 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
 });
 
-test('Lip/ balm remains a recipe-folder Testing source instead of being duplicated in the Skincare shell', () => {
+test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
   assert.match(lipBalm, /data-category="Testing"/);
   assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
   assert.match(lipBalm, /id="r12"/);
-  assert.match(lipBalm, /<h1>Lip\/ balm<\/h1>/);
+  assert.match(lipBalm, /<h3>Lip\/ balm<\/h3>/);
   assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
-  assert.match(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
-  assert.match(testServer, /match\[1\] === 'testing-lip-balm'.*testing-lip-balm\.html/);
+  assert.match(recipeUx, /source:'\/systems\/baseline-natural-skincare\/recipes\/testing-lip-balm\.html'/);
+  assert.match(recipeUx, /loadExternalRecipeForCurrentPath/);
+  assert.match(recipeUx, /document\.importNode\(sourceCard,true\)/);
+  assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
+  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
+  assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
+  assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
 
 test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
