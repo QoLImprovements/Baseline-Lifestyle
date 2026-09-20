@@ -1,4 +1,4 @@
-/* Baseline Fitness — canonical My Routine dependency loader v56.
+/* Baseline Fitness — canonical My Routine dependency loader v57.
 
    OWNERSHIP / BOOT ORDER
    ----------------------
@@ -41,8 +41,8 @@
 */
 (function (global) {
   'use strict';
-  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V56__) return;
-  global.__BASELINE_FITNESS_ROUTINE_LOADER_V56__=true;
+  if (!global.document || global.__BASELINE_FITNESS_ROUTINE_LOADER_V57__) return;
+  global.__BASELINE_FITNESS_ROUTINE_LOADER_V57__=true;
 
   const document=global.document;
   const ROUTINE_VIEW_KEY='__bl_fitness_routine_view_v2__';
@@ -52,10 +52,10 @@
   const PLAN_VIEWS=['calisthenics','cardio','other','sports'];
 
   function routePath() {
-    try {
-      const entry=global.performance?.getEntriesByType?.('navigation')?.[0];
-      return entry?.name?new URL(entry.name,global.location.href).pathname:String(global.location?.pathname || '');
-    } catch (_error) { return String(global.location?.pathname || ''); }
+    /* The address bar is the sole route authority. A PerformanceNavigationTiming
+       entry describes how the document was originally reached and can be stale
+       after pushState/replaceState, pageshow or browser history restoration. */
+    return String(global.location?.pathname || '');
   }
   function rememberedPlan() {
     try {
@@ -167,7 +167,7 @@
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
     { src:'/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js?v=SAVED_DATA_REVISION_CLIENT_20260918_1',marker:'data-fitness-routine-saved-data-bridge' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_COMPACT_LOG_20260822_1',marker:'data-fitness-routine-workspace-v2' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_STRUCTURE_20260818_2',marker:'data-fitness-routine-structure-v6' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_EXACT_REFRESH_20260920_1',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-fitness-routine-summary-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-log-v1.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1',marker:'data-fitness-routine-log-v3' },
     { src:'/systems/baseline-fitness/js/fitness-routine-codes-v1.js?v=BASELINE_FITNESS_ROUTINE_CODES_20260821_1',marker:'data-fitness-routine-codes-v1' },
