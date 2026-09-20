@@ -4933,7 +4933,19 @@ function buildControls(recipeEl){
 
     function normalizeRecipeSliderTemplate(recipeEl){
       qsa('.glide-controller', recipeEl).forEach(controller=>{
-        const controls = qsa('.glide-control-main', controller);
+        // Paired sliders used to be wrapped in .glide-control-stack. Physically
+        // flatten that wrapper so the universal grid owns both slider columns
+        // directly; this prevents page-local stack rules from creating unequal widths.
+        qsa(':scope > .glide-control-stack', controller).forEach(stack=>{
+          Array.from(stack.children || []).forEach(child=>{
+            if(child.classList && child.classList.contains('glide-control-main')){
+              controller.insertBefore(child, stack);
+            }
+          });
+          try{ stack.remove(); }catch(_e){}
+        });
+
+        const controls = qsa(':scope > .glide-control-main', controller);
         if(!controls.length) return;
 
         controller.classList.add('recipe-slider-template');

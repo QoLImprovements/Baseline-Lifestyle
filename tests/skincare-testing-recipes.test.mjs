@@ -54,15 +54,21 @@ test('Lip/ balm stays sourced from the recipe folder but is rendered through the
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
 
-test('sitewide recipe slider template owns layout, Overall Feel and helper-prose suppression', () => {
+test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
+  assert.match(shared, /qsa\(':scope > \.glide-control-stack', controller\)/);
+  assert.match(shared, /controller\.insertBefore\(child, stack\)/);
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);
   assert.match(shared, /glide-breakdown.*aria-hidden/s);
   assert.doesNotMatch(shared, /instruction\.textContent = 'Adjust slider to preference\.'/);
-  assert.match(recipeCss, /BASELINE-UNIVERSAL-RECIPE-SLIDER-CONTRACT-20260920/);
-  assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(recipeCss, /BASELINE-UNIVERSAL-RECIPE-SLIDER-WIDTH-CAPTION-20260920/);
+  assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(recipeCss, /glide-value-bubble[\s\S]*display:none !important/);
+  assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap !important/);
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
-  assert.match(recipeCss, /glide-variable-help[\s\S]*recipe-slider-instruction[\s\S]*display:none/);
+  assert.doesNotMatch(recipeUx, /function updateBubble\(/);
+  assert.doesNotMatch(recipeUx, /createElement\('output'\)/);
+  assert.match(recipeUx, /meta\.left\.join\(' — '\)/);
   assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
 });
 

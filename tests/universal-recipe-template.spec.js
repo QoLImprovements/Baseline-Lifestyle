@@ -68,7 +68,7 @@ test('Skincare recipe uses segmented variants and compact explanatory sliders in
   await expect(card.locator('.glide-variable-help')).toHaveCount(0);
   await expect(card.locator('.glide-explain-title').first()).toHaveText('Overall Feel');
   await expect(card.locator('.glide-breakdown:visible')).toHaveCount(0);
-  await expect(card.locator('.glide-value-bubble').first()).toBeVisible();
+  await expect(card.locator('.glide-value-bubble')).toHaveCount(0);
   await expect(card.locator('.slider-save-btn').filter({ hasText:'Save as my setting' }).first()).toBeVisible();
   await expect(card.locator('.slider-default-btn').filter({ hasText:'Reset to recipe default' }).first()).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
@@ -93,16 +93,37 @@ test('Skincare recipe uses segmented variants and compact explanatory sliders in
   await expect(card.locator('.recipe-details-intro')).toBeVisible();
 });
 
-test('Protective balm uses two equal slider columns with one Overall Feel descriptor', async ({ page }) => {
+test('Protective balm uses two true equal-width slider columns with one Overall Feel descriptor', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const card = page.locator('#r3');
   await expect(card).toBeVisible();
   await expect(card.locator('.recipe-slider-instruction')).toHaveCount(0);
   await expect(card.locator('.glide-variable-help')).toHaveCount(0);
+  await expect(card.locator('.glide-value-bubble')).toHaveCount(0);
   await expect(card.locator('.glide-explain-title')).toHaveText('Overall Feel');
   await expect(card.locator('.glide-explain-title')).toHaveCount(1);
   await expect(card.locator('.glide-breakdown:visible')).toHaveCount(0);
   await expect(card.getByText(/One batch; the sliders change the overall feel/i)).toBeHidden();
+
+  const geometry = await card.locator('.glide-controller').evaluate((controller) => {
+    const mains = Array.from(controller.querySelectorAll(':scope > .glide-control-main')).map((el) => {
+      const r = el.getBoundingClientRect();
+      return { x:r.x, width:r.width, right:r.right };
+    });
+    const scales = Array.from(controller.querySelectorAll('.glide-scale span')).map((el) => {
+      const cs = getComputedStyle(el);
+      return { whiteSpace:cs.whiteSpace, height:el.getBoundingClientRect().height, lineHeight:parseFloat(cs.lineHeight) || 0 };
+    });
+    return { mains, stackCount:controller.querySelectorAll(':scope > .glide-control-stack').length, scales };
+  });
+  expect(geometry.stackCount).toBe(0);
+  expect(geometry.mains).toHaveLength(2);
+  expect(Math.abs(geometry.mains[0].width - geometry.mains[1].width)).toBeLessThan(3);
+  expect(geometry.mains[1].x).toBeGreaterThanOrEqual(geometry.mains[0].right - 1);
+  for (const scale of geometry.scales) {
+    expect(scale.whiteSpace).toBe('nowrap');
+    if (scale.lineHeight > 0) expect(scale.height).toBeLessThan(scale.lineHeight * 1.6);
+  }
 });
 
 test('Food oat type is a Standard View recipe choice, not an Adjustment', async ({ page }) => {
