@@ -12,6 +12,33 @@ async function expectUniversalTabs(card, standardLabel = 'Standard View') {
   await expect(card.locator('h1,h2,h3,h4').filter({ hasText: /^Standard View$/ })).toHaveCount(0);
 }
 
+async function expectDirectRecipeFirstPaint(page, url, targetSelector) {
+  let releaseShared;
+  let sharedRequestedResolve;
+  const releaseGate = new Promise(resolve => { releaseShared = resolve; });
+  const sharedRequested = new Promise(resolve => { sharedRequestedResolve = resolve; });
+
+  await page.route('**/sitewide/js/baseline-shared.js*', async route => {
+    sharedRequestedResolve();
+    await releaseGate;
+    await route.continue();
+  }, { times: 1 });
+
+  const navigation = page.goto(url, { waitUntil: 'domcontentloaded' });
+  await sharedRequested;
+
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#recipes .recipe-layout')).toHaveCSS('visibility', 'hidden');
+
+  releaseShared();
+  await navigation;
+
+  await expect(page.locator(targetSelector)).toBeVisible();
+  await expect(page.locator('html')).not.toHaveAttribute('data-initial-section', 'recipes');
+  await expect(page.locator('html')).not.toHaveAttribute('data-initial-recipe-route', '1');
+}
+
 async function expectAdjustmentsContract(card) {
   const meta = card.locator('.recipe-meta-row');
   await expect(meta).toBeVisible();
@@ -51,6 +78,126 @@ async function expectAdjustmentsContract(card) {
   await adjustments.click();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 }
+
+test('direct Food and Skincare recipe routes never paint the System section first', async ({ page }) => {
+  await expectDirectRecipeFirstPaint(
+    page,
+    '/baseline-natural-skincare/recipes/protective-touch-balm',
+    '#r3'
+  );
+  await expectDirectRecipeFirstPaint(
+    page,
+    '/baseline-food-approach/recipes/hearty-oat-porridge-with-apple-pear-and-vanilla',
+    '#r4'
+  );
+});
+
+test('every authored Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
+  for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {
+    await page.goto(url);
+    const cards = page.locator('.recipe-page.recipe-universal-template');
+    await expect.poll(async () => cards.count()).toBeGreaterThan(0);
+
+    const audit = await cards.evaluateAll(items => items.map(card => {
+      const headings = Array.from(card.querySelectorAll('h2,h3,h4'));
+      const ingredients = headings.find(h => /^ingredients\b/i.test((h.textContent || '').trim()));
+      const method = headings.find(h => /^method\b/i.test((h.textContent || '').trim()));
+      if (!ingredients || !method) {
+        return { id:card.id, title:card.querySelector('h3')?.textContent?.trim() || '', error:'missing Ingredients/Method heading' };
+      }
+
+      const follows = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
+      const sectionFor = (li) => {
+        let title = 'Ingredients';
+        for (const heading of headings) {
+          if (heading === ingredients || heading === method) continue;
+          if (follows(ingredients, heading) && follows(heading, li)) title = (heading.textContent || '').trim();
+        }
+        return title;
+      };
+      const candidate = (li) => {
+        if (li.classList.contains('ing-subhead')) return false;
+        const section = sectionFor(li);
+        if (/^(ingredient roles?|roles?|nutrition|serving ideas?|body\s*&?\s*sensory notes?|storage|notes?|comedogenic considerations?)\b/i.test(section)) return false;
+        if (li.dataset.methodStep) return true;
+        if (li.querySelector('.amt,.thickness-swap,a.ing-link')) return true;
+        const raw = (li.textContent || '').replace(/\s+/g,' ').trim();
+        return /\d/.test(raw) && /(?:\b(?:g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|grams?|millilit(?:er|re)s?)\b|%)/i.test(raw);
+      };
+
+      const sources = Array.from(card.querySelectorAll('li')).filter(li =>
+        follows(ingredients, li) &&
+        follows(li, method) &&
+        !li.closest('ol') &&
+        candidate(li)
+      );
+      const pills = Array.from(card.querySelectorAll('.method-amt[data-method-ingredient-key]'));
+      const pillCounts = new Map();
+      pills.forEach(pill => {
+        const key = pill.dataset.methodIngredientKey || '';
+        pillCounts.set(key, (pillCounts.get(key) || 0) + 1);
+      });
+
+      return {
+        id:card.id,
+        title:card.querySelector('h3')?.textContent?.trim() || '',
+        sourceCount:sources.length,
+        pillCount:pills.length,
+        missingSourceKeys:sources.filter(li => !li.dataset.methodTagKey).map(li => (li.textContent || '').trim()),
+        wrongPillCounts:sources
+          .filter(li => li.dataset.methodTagKey && pillCounts.get(li.dataset.methodTagKey) !== 1)
+          .map(li => ({ text:(li.textContent || '').trim(), count:pillCounts.get(li.dataset.methodTagKey) || 0 })),
+        pillsOutsideMethod:pills
+          .filter(pill => !pill.closest('ol'))
+          .map(pill => (pill.textContent || '').trim())
+      };
+    }));
+
+    for (const result of audit) {
+      expect(result.error, `${url} ${result.id} ${result.title}`).toBeUndefined();
+      expect(result.sourceCount, `${url} ${result.id} should expose ingredient sources`).toBeGreaterThan(0);
+      expect(result.missingSourceKeys, `${url} ${result.id} missing source tag keys`).toEqual([]);
+      expect(result.wrongPillCounts, `${url} ${result.id} missing/duplicate method tags`).toEqual([]);
+      expect(result.pillsOutsideMethod, `${url} ${result.id} method pills outside method list`).toEqual([]);
+      expect(result.pillCount, `${url} ${result.id} pill/source parity`).toBe(result.sourceCount);
+    }
+  }
+});
+
+test('Protective Touch Balm places ingredients at actual use rather than stale slider-step metadata', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
+  const steps = page.locator('#r3 ol').first().locator(':scope > li');
+
+  await expect(steps.nth(1).locator('.method-amt')).toHaveCount(0);
+
+  await expect(steps.nth(2)).toContainText('Jojoba Oil');
+  await expect(steps.nth(2)).toContainText('Castor Oil');
+  await expect(steps.nth(2)).toContainText('Carnauba Wax');
+  await expect(steps.nth(2)).not.toContainText('Shea Butter');
+
+  await expect(steps.nth(3)).toContainText('Shea Butter');
+  await expect(steps.nth(4)).toContainText('Calendula Oil');
+  await expect(steps.nth(5)).toContainText('Vitamin E');
+
+  const pills = await page.locator('#r3 .method-amt').allTextContents();
+  for (const name of ['Jojoba Oil','Castor Oil','Carnauba Wax','Shea Butter','Calendula Oil','Vitamin E']) {
+    expect(pills.filter(text => text.includes(name)), name).toHaveLength(1);
+  }
+});
+
+test('Food recipes keep repeated water quantities at their authored first-use stages', async ({ page }) => {
+  await page.goto('/baseline-food-approach/recipes/hearty-oat-porridge-with-apple-pear-and-vanilla');
+  const steps = page.locator('#r4 ol').first().locator(':scope > li');
+
+  await expect(steps.nth(1)).toContainText('2 tbsp water');
+  await expect(steps.nth(3)).toContainText('600 ml water');
+  await expect(steps.nth(4)).toContainText('1–2 tbsp hot water');
+
+  const waterPills = (await page.locator('#r4 .method-amt').allTextContents()).filter(text => /water/i.test(text));
+  expect(waterPills.some(text => /2 tbsp water/i.test(text))).toBe(true);
+  expect(waterPills.some(text => /600 ml water/i.test(text))).toBe(true);
+  expect(waterPills.some(text => /1.?2 tbsp hot water/i.test(text))).toBe(true);
+});
 
 test('Skincare recipe uses segmented variants and compact explanatory sliders in Recipe view', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend');
