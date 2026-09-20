@@ -154,6 +154,63 @@ function bl_rollback_apply_fitness(PDO $db, int $uid, string $directory, array &
   }
 }
 
+function bl_rollback_apply_skincare(PDO $db, int $uid, string $directory, array &$counts): void {
+  $resource = bl_rollback_resource($directory . '/skincare.json');
+  $hasRoutines = bl_export_table_exists($db, 'skincare_routines');
+  $hasGroups = bl_export_table_exists($db, 'skincare_routine_groups');
+
+  if($resource !== null && (!$hasRoutines || !$hasGroups)){
+    throw new BaselineRollbackCopyException('skincare_tables_missing');
+  }
+
+  if($hasRoutines){
+    $db->prepare('DELETE FROM skincare_routines WHERE user_id=:u')->execute([':u'=>$uid]);
+  }
+  if($hasGroups){
+    $db->prepare('DELETE FROM skincare_routine_groups WHERE user_id=:u')->execute([':u'=>$uid]);
+  }
+  if($resource === null) return;
+
+  if((int)($resource['schemaVersion'] ?? 1) !== 1){
+    throw new BaselineRollbackCopyException('unsupported_skincare_schema_version');
+  }
+  foreach(['routine','logs','groups','assignments'] as $section){
+    if(array_key_exists($section, $resource) && !is_array($resource[$section])){
+      throw new BaselineRollbackCopyException('invalid_skincare_section:' . $section);
+    }
+  }
+
+  $visibility = (($resource['visibility'] ?? '') === 'public') ? 'public' : 'private';
+  $routine = is_array($resource['routine'] ?? null) ? $resource['routine'] : [];
+  $logs = is_array($resource['logs'] ?? null) ? $resource['logs'] : [];
+  $groups = is_array($resource['groups'] ?? null) ? $resource['groups'] : [];
+  $assignments = is_array($resource['assignments'] ?? null) ? $resource['assignments'] : [];
+  $updated = time();
+
+  $db->prepare(
+    'INSERT INTO skincare_routines(user_id,visibility,routine_json,logs_json,updated_at)
+     VALUES(:u,:v,:r,:l,:t)'
+  )->execute([
+    ':u'=>$uid,
+    ':v'=>$visibility,
+    ':r'=>json_encode($routine, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+    ':l'=>json_encode($logs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+    ':t'=>$updated,
+  ]);
+  $counts['skincareRoutines']++;
+
+  $db->prepare(
+    'INSERT INTO skincare_routine_groups(user_id,groups_json,assignments_json,updated_at)
+     VALUES(:u,:g,:a,:t)'
+  )->execute([
+    ':u'=>$uid,
+    ':g'=>json_encode($groups, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+    ':a'=>json_encode($assignments, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+    ':t'=>$updated,
+  ]);
+  $counts['skincareGroups']++;
+}
+
 function bl_rollback_game_files(): array {
   return [
     'baseline-realm.json'=>'ninja','pairs.json'=>'pairs','detect-word.json'=>'detectword','make-24.json'=>'make24',
@@ -231,7 +288,7 @@ function bl_build_sqlite_rollback_copy(string $source, string $savedData, string
   bl_export_ensure_directory(dirname($output));
   if(!copy($source, $staging)) throw new BaselineRollbackCopyException('source_copy_failed');
   @chmod($staging, 0600);
-  $counts = ['accounts'=>0,'favourites'=>0,'binauralPresets'=>0,'voiceSettings'=>0,'fitnessPlans'=>0,'fitnessSessions'=>0,'fitnessAchievements'=>0,'gameProfiles'=>0,'badmintonStates'=>0];
+  $counts = ['accounts'=>0,'favourites'=>0,'binauralPresets'=>0,'voiceSettings'=>0,'fitnessPlans'=>0,'fitnessSessions'=>0,'fitnessAchievements'=>0,'skincareRoutines'=>0,'skincareGroups'=>0,'gameProfiles'=>0,'badmintonStates'=>0];
   $optionalUsers = [];
   try{
     $db = new PDO('sqlite:' . $staging, null, null, [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
@@ -243,6 +300,7 @@ function bl_build_sqlite_rollback_copy(string $source, string $savedData, string
       bl_rollback_apply_binaural($db, $uid, $directory, $counts);
       bl_rollback_apply_voice($db, $uid, $directory, $counts);
       bl_rollback_apply_fitness($db, $uid, $directory, $counts, $optionalUsers);
+      bl_rollback_apply_skincare($db, $uid, $directory, $counts);
       bl_rollback_apply_games($db, $uid, $directory, $counts);
     }
     bl_rollback_apply_badminton($db, $savedData, $counts);
