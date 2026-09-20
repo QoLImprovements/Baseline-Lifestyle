@@ -9,6 +9,7 @@ const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const navigation = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
+const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
@@ -51,6 +52,39 @@ test('Lip/ balm stays sourced from the recipe folder but is rendered through the
   assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
   assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
+});
+
+test('sitewide recipe slider template owns layout, Overall Feel and helper-prose suppression', () => {
+  assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
+  assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);
+  assert.match(shared, /glide-breakdown.*aria-hidden/s);
+  assert.doesNotMatch(shared, /instruction\.textContent = 'Adjust slider to preference\.'/);
+  assert.match(recipeCss, /BASELINE-UNIVERSAL-RECIPE-SLIDER-CONTRACT-20260920/);
+  assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
+  assert.match(recipeCss, /glide-variable-help[\s\S]*recipe-slider-instruction[\s\S]*display:none/);
+  assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
+});
+
+test('method ingredient amount tags are emitted only once per recipe pass', () => {
+  assert.match(shared, /const emittedMethodAmounts = new Set\(\)/);
+  assert.match(shared, /filter\(txt => !emittedMethodAmounts\.has\(txt\)\)/);
+  assert.match(shared, /deduped\.forEach\(txt => emittedMethodAmounts\.add\(txt\)\)/);
+});
+
+test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
+  assert.match(lipBalm, /class="glide-controller glide-controller--paired"/);
+  assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);
+  assert.match(lipBalm, /class="glide-control-explainer"/);
+  assert.match(lipBalm, /class="glide-explain-title">Overall Feel<\/div>/);
+  assert.doesNotMatch(lipBalm, /id="r12Reset"/);
+  assert.doesNotMatch(lipBalm, /Adjust kokum to change|automatically compensates so mango \+ kokum/);
+  assert.match(lipBalm, /data-method-step="3"[^>]*data-tip="Rich, firm butter/);
+  assert.match(lipBalm, /data-method-step="3"[^>]*data-tip="Vegan wax/);
+  assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Primary liquid oil/);
+  assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Rich emollient oil/);
+  assert.match(lipBalm, /data-method-step="4"[^>]*data-tip="Seed oil/);
+  assert.match(lipBalm, /data-method-step="5"[^>]*Vitamin E/);
 });
 
 test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
