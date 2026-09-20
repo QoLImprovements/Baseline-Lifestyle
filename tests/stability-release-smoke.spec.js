@@ -10,7 +10,7 @@ function fulfillJson(route, payload, status = 200) {
 
 test('primary production routes load without runtime errors', async ({ page }) => {
   const pageErrors = [];
-  page.on('pageerror', (error) => pageErrors.push(`${new URL(page.url()).pathname}: ${error.message}`));
+  page.on('pageerror', (error) => pageErrors.push(`${new URL(page.url()).pathname}: ${error.stack || error.message}`));
 
   const routes = [
     ['/home/1', 'home'],
