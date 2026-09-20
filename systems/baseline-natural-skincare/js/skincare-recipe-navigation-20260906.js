@@ -14,7 +14,10 @@
     ['r10','microcurrent-glide-gel','Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment.'],
     ['r9','tooth-polishing-powder','Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal.']
   ];
-  const TESTING=[\n    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],\n    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',true]\n  ];
+  const TESTING=[
+    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],
+    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',true]
+  ];
   function list(items,descriptions){
     const ul=document.createElement('ul');
     items.forEach(([id,slug,title,description,nativeNavigation])=>{
