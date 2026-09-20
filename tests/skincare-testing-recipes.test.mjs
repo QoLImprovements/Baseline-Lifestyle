@@ -54,6 +54,13 @@ test('Lip/ balm stays sourced from the recipe folder but is rendered through the
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
 
+test('Skincare Details is hidden at creation time to prevent hard-refresh first-paint flashes', () => {
+  assert.match(recipeUx, /recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/);
+  assert.match(recipeUx, /details\.hidden=!showDetails/);
+  assert.match(recipeUx, /recipe-details-intro\[hidden\]\{display:none!important\}/);
+  assert.match(recipeUx, /:not\(\.recipe-view-hidden\):not\(\[hidden\]\)/);
+});
+
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
   assert.match(shared, /qsa\(':scope > \.glide-control-stack', controller\)/);

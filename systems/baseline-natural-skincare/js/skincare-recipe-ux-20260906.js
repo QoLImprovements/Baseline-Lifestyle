@@ -351,7 +351,10 @@
   }
 
   function detailsMarkup(data){
-    return `<div class="recipe-details-intro" data-recipe-view-group="details">
+    // Details must be hidden at creation time. On a hard refresh this block is
+    // inserted before the deferred recipe-view reset runs; making hidden the
+    // native initial state prevents an incorrect Details frame from painting.
+    return `<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
       <div class="recipe-detail-block"><h4>Purpose</h4><p>${escapeHtml(data.purpose)}</p></div>
       <div class="recipe-detail-block"><h4>Formula Profile</h4><p>${escapeHtml(data.profile)}</p></div>
       <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>${escapeHtml(data.works)}</p></div>
@@ -387,7 +390,11 @@
       el.classList.toggle('recipe-view-hidden',!show);
     });
     const details=recipe.querySelector(':scope > .recipe-details-intro');
-    if(details) details.classList.toggle('recipe-view-hidden',!(next==='details' || next==='show-all'));
+    if(details){
+      const showDetails=next==='details' || next==='show-all';
+      details.classList.toggle('recipe-view-hidden',!showDetails);
+      details.hidden=!showDetails;
+    }
   }
   function resetRecipeView(recipe){
     if(!recipe) return;
@@ -453,7 +460,8 @@
       #recipes .glide-scale small{font-size:inherit;opacity:1}
       #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
       #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
-      html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden){display:grid!important}
+      #recipes .recipe-details-intro[hidden]{display:none!important}
+      html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden):not([hidden]){display:grid!important}
       #recipes .recipe-detail-block{padding:.8rem .9rem;border:1px solid rgba(73,48,40,.15);border-radius:.7rem;background:rgba(255,255,255,.12)}
       #recipes .recipe-detail-block h4{margin:0 0 .28rem}
       #recipes .recipe-detail-block p{margin:0;line-height:1.5}

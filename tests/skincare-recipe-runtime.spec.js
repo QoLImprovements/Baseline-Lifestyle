@@ -178,9 +178,15 @@ test('Skincare recipe UX keeps direct recipe routes focused without a side navig
     slug: 'calming-shave-gel'
   });
 
-  await expect(card.locator('.recipe-details-intro')).toBeHidden();
+  const details = card.locator('.recipe-details-intro');
+  await expect(details).toBeHidden();
+  await expect(details).toHaveAttribute('hidden', '');
   await card.locator('[data-recipe-subtab="details"]').click();
-  await expect(card.locator('.recipe-details-intro')).toBeVisible();
+  await expect(details).toBeVisible();
+  await expect(details).not.toHaveAttribute('hidden', '');
+  await card.locator('[data-recipe-subtab="standard"]').click();
+  await expect(details).toBeHidden();
+  await expect(details).toHaveAttribute('hidden', '');
   await expect(page.locator('#side-nav')).toHaveCount(0);
 });
 
