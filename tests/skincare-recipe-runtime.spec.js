@@ -120,25 +120,38 @@ test('universal slider template keeps Restorative Hydration Layer text separated
   await expect(controller.locator('.glide-explain-title')).toHaveCount(1);
   await expect(controller.locator('.glide-breakdown:visible')).toHaveCount(0);
   await expect(controller.locator('.glide-variable-help, .recipe-slider-instruction')).toHaveCount(0);
+  await expect(controller.locator('.glide-value-bubble')).toHaveCount(0);
 
   const layout = await controller.evaluate((el) => {
-    const main = el.querySelector('.glide-control-main')?.getBoundingClientRect();
-    const feel = el.querySelector('.glide-control-explainer')?.getBoundingClientRect();
+    const controllerRect = el.getBoundingClientRect();
+    const main = el.querySelector(':scope > .glide-control-main')?.getBoundingClientRect();
+    const feel = el.querySelector(':scope > .glide-control-explainer')?.getBoundingClientRect();
     const label = el.querySelector('.glide-label')?.getBoundingClientRect();
     const readout = el.querySelector('.glide-readout')?.getBoundingClientRect();
+    const scaleSpans = Array.from(el.querySelectorAll('.glide-scale span')).map((span) => {
+      const cs = getComputedStyle(span);
+      return { whiteSpace:cs.whiteSpace, height:span.getBoundingClientRect().height, lineHeight:parseFloat(cs.lineHeight) || 0 };
+    });
     return {
+      controller: { width:controllerRect.width },
       main: main ? { x:main.x, y:main.y, width:main.width, bottom:main.bottom } : null,
       feel: feel ? { x:feel.x, y:feel.y, width:feel.width } : null,
       label: label ? { top:label.top, bottom:label.bottom } : null,
-      readout: readout ? { top:readout.top, bottom:readout.bottom } : null
+      readout: readout ? { top:readout.top, bottom:readout.bottom } : null,
+      scaleSpans
     };
   });
 
   expect(layout.main).not.toBeNull();
   expect(layout.feel).not.toBeNull();
+  expect(layout.main.width).toBeGreaterThan(layout.controller.width * 0.9);
   expect(Math.abs(layout.main.width - layout.feel.width)).toBeLessThan(3);
   expect(layout.feel.y).toBeGreaterThanOrEqual(layout.main.bottom - 1);
   expect(layout.readout.top).toBeGreaterThanOrEqual(layout.label.bottom - 1);
+  for (const scale of layout.scaleSpans) {
+    expect(scale.whiteSpace).toBe('nowrap');
+    if (scale.lineHeight > 0) expect(scale.height).toBeLessThan(scale.lineHeight * 1.6);
+  }
 });
 
 test('Skincare recipe UX keeps direct recipe routes focused without a side navigation', async ({ page }) => {
