@@ -343,6 +343,26 @@
       g_per_ml: 0.97,
       notes: "Typically measured by weight (g). Density is provided so Volume mode can still render consistently."
     }),
+    "ing-cocoa-butter": withDerived({
+      label: "Cocoa butter",
+      g_per_ml: 0.91,
+      notes: "Solid butter; practical conversion is approximate and assumes melted/level volume. Weigh grams for repeatable balm formulation."
+    }),
+    "ing-mango-butter": withDerived({
+      label: "Mango butter",
+      g_per_ml: 0.915,
+      notes: "Solid butter; practical conversion uses an approximate midpoint density. Weigh grams for repeatable balm formulation."
+    }),
+    "ing-kokum-butter": withDerived({
+      label: "Kokum butter",
+      g_per_ml: 0.91,
+      notes: "Hard solid butter; volume conversion is approximate. Weigh grams for repeatable balm formulation."
+    }),
+    "ing-candelilla-wax": withDerived({
+      label: "Candelilla wax",
+      g_per_ml: 0.98,
+      notes: "Hard plant wax; density/packing varies by flake or pellet form. Weigh grams for repeatable balm structure."
+    }),
     "ing-calendula": withDerived({
       label: "Calendula infused oil",
       g_per_ml: 0.92,
@@ -362,6 +382,16 @@
     }),
     "ing-olive": withDerived({ label: "Olive oil", g_per_ml: 0.91 }),
     "ing-avocado": withDerived({ label: "Avocado oil", g_per_ml: 0.91 }),
+    "ing-apricot-kernel-oil": withDerived({
+      label: "Apricot kernel oil",
+      g_per_ml: 0.91,
+      notes: "Carrier-oil conversion; practical density varies slightly with supplier and temperature."
+    }),
+    "ing-red-raspberry-seed-oil": withDerived({
+      label: "Red raspberry seed oil",
+      g_per_ml: 0.92,
+      notes: "Seed-oil conversion; practical density varies slightly with supplier and temperature."
+    }),
     "ing-argan": withDerived({ label: "Argan oil", g_per_ml: 0.91 }),
     "ing-jojoba": withDerived({ label: "Jojoba oil", g_per_ml: 0.87 }),
     "ing-jojoba-oil": withDerived({ label: "Jojoba oil", g_per_ml: 0.87, notes: "Alias profile for the Jojoba Oil ingredient route." }),

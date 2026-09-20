@@ -1250,6 +1250,12 @@
     'ing-slipperyelm':'slipperyelm',
     'ing-guar-gum':'guar-gum',
     'ing-avocado':'avocado',
+    'ing-cocoa-butter':'cocoa-butter',
+    'ing-mango-butter':'mango-butter',
+    'ing-kokum-butter':'kokum-butter',
+    'ing-apricot-kernel-oil':'apricot-kernel-oil',
+    'ing-red-raspberry-seed-oil':'red-raspberry-seed-oil',
+    'ing-candelilla-wax':'candelilla-wax',
     'ing-fractionated-coconut':'fractionated-coconut',
     'ing-watermelon':'watermelon',
     'ing-dead-sea-salt':'dead-sea-salt',
@@ -1962,6 +1968,9 @@ function parseViewStateHash(hash){
   function setupRecipeOverviewAndOrdering(){
     const recipesSection = document.getElementById('recipes');
     if(!recipesSection) return;
+    // Natural Skincare has no recipe side navigation. Keep any legacy/shared
+    // side-nav support available only to systems that still intentionally own it.
+    const allowSideNav = routePageFileFromPath(location.pathname || '') !== 'baseline-natural-skincare.html';
 
     const recipesContainer = recipesSection.querySelector('.recipes');
     const recipeCards = Array.from(recipesSection.querySelectorAll('.recipe-page[id]'));
@@ -2007,7 +2016,7 @@ function parseViewStateHash(hash){
       });
 
       // Side nav rebuild (preserve back link and the primary "Recipes" heading)
-      const sideNav = recipesSection.querySelector('#side-nav');
+      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
       if(sideNav){
         const children = Array.from(sideNav.children);
         const firstHeadingIndex = children.findIndex(el => el.tagName === 'H4');
@@ -2085,7 +2094,7 @@ function parseViewStateHash(hash){
         items.forEach(li => ul.appendChild(li));
       };
 
-      const sideNav = recipesSection.querySelector('#side-nav');
+      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
       if(sideNav){
         sideNav.querySelectorAll('ul').forEach(sortList);
       }
@@ -2118,20 +2127,36 @@ function parseViewStateHash(hash){
       if(el) el.scrollIntoView({behavior:'auto', block:'start'});
     };
 
-    // Build recipe list from recipe cards
+    // Build recipe list from embedded recipe cards. Natural Skincare can also
+    // register folder-backed recipes without duplicating their recipe body here.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
+    const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
     const recipes = recipeCards.map(card => {
       const h = q('h3', card);
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
-      return { id: card.id, name };
+      return { id: card.id, name, external:false, href:'' };
     });
+    if(isSkincare){
+      recipes.push({
+        id:'r12',
+        name:'Lip/ balm',
+        external:true,
+        href:'/baseline-natural-skincare/recipes/testing-lip-balm'
+      });
+    }
 
     // Build map: recipeId -> Set(ingredientIds).
     // Skincare recipe ingredient links are real record URLs, not recipe-path
     // hashes. This keeps one public URL responsible for one visible record and
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
-    const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    if(isSkincare){
+      recipeToIngredients.set('r12', new Set([
+        'ing-cocoa-butter','ing-mango-butter','ing-kokum-butter',
+        'ing-apricot-kernel-oil','ing-avocado','ing-red-raspberry-seed-oil',
+        'ing-candelilla-wax','ing-vitamin-e'
+      ]));
+    }
     qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       const rid = a.getAttribute('data-from-recipe');
       const iid = a.getAttribute('data-ingredient');
@@ -2185,22 +2210,28 @@ function parseViewStateHash(hash){
         if(!showAll){
           const recipe = recipes.find(r=>r.id===recipeId);
           const a = document.createElement('a');
-          a.href = `#${recipeId}`;
           a.className = 'action';
           a.textContent = recipe ? `View recipe: ${recipe.name}` : 'View recipe';
-          a.addEventListener('click', (e)=>{
-            e.preventDefault();
-            if(typeof window.BASELINE_openRecipe === 'function'){
-              window.BASELINE_openRecipe(recipeId);
-            }else{
-              if(typeof window.BASELINE_selectTab === 'function'){
-                window.BASELINE_selectTab('recipes', { silentHistory:true });
+          if(recipe && recipe.external && recipe.href){
+            // Folder-backed recipes use native navigation. Do not feed them into
+            // BASELINE_openRecipe because there is intentionally no embedded card.
+            a.href = recipe.href;
+          }else{
+            a.href = `#${recipeId}`;
+            a.addEventListener('click', (e)=>{
+              e.preventDefault();
+              if(typeof window.BASELINE_openRecipe === 'function'){
+                window.BASELINE_openRecipe(recipeId);
               }else{
-                const recipesTab = q('.tab[data-tab="recipes"], .tab[data-target="recipes"]');
-                if(recipesTab) recipesTab.click();
+                if(typeof window.BASELINE_selectTab === 'function'){
+                  window.BASELINE_selectTab('recipes', { silentHistory:true });
+                }else{
+                  const recipesTab = q('.tab[data-tab="recipes"], .tab[data-target="recipes"]');
+                  if(recipesTab) recipesTab.click();
+                }
               }
-            }
-          });
+            });
+          }
           linkWrap.appendChild(a);
         }
       }
@@ -2262,8 +2293,10 @@ function parseViewStateHash(hash){
       applyFilter('all');
     }
 
-    // Ingredient links inside recipes: jump to ingredient library + filter
-    qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
+    // Legacy hash-based ingredient clicks remain only for non-Skincare systems.
+    // Skincare authors canonical /ingredient-library/<slug> URLs and never creates
+    // a recipe#ing-* navigation state.
+    if(!isSkincare) qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       a.addEventListener('click', (e)=>{
         const href = a.getAttribute('href') || '';
         if(!href.startsWith('#')) return;

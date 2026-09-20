@@ -91,7 +91,10 @@ test('recipe subtab choice is not carried into the next recipe', async ({ page }
   await first.locator('[data-recipe-subtab="details"]').click();
   await expect(first.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'true');
 
-  await page.locator('#side-nav a.recipe-open[data-recipe-id="r3"]').click();
+  await first.locator('.back-btn').click();
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+  await expect(page.locator('#side-nav')).toHaveCount(0);
+  await page.locator('#recipes-landing a.recipe-open[data-recipe-id="r3"]').click();
   const next = page.locator('#r3');
   await expect(next).toBeVisible();
   await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'true');

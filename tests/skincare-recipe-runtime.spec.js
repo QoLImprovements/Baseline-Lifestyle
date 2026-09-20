@@ -1,5 +1,56 @@
 const { test, expect } = require('@playwright/test');
 
+test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes');
+
+  const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/testing-lip-balm"]');
+  await expect(link).toContainText('Lip/ balm');
+  await expect(link).not.toHaveAttribute('data-recipe-id', /.+/);
+
+  await link.click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h1')).toHaveText('Lip/ balm');
+  await expect(page.locator('#side-nav')).toHaveCount(0);
+  await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
+
+  await page.locator('#r12ButterCharacter').evaluate((el) => {
+    el.value = '15';
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+  });
+  await page.locator('#r12Structure').evaluate((el) => {
+    el.value = '4';
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+  });
+
+  await expect(page.locator('[data-formula-key="mango"]')).toHaveText('10 g');
+  await expect(page.locator('[data-formula-key="kokum"]')).toHaveText('15 g');
+  await expect(page.locator('[data-formula-key="candelilla"]')).toHaveText('4 g');
+  await expect(page.locator('[data-formula-key="apricot"]')).toHaveText('24.5 g');
+
+  const total = await page.locator('[data-formula-key]').evaluateAll((els) =>
+    els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+  );
+  expect(total).toBeCloseTo(100, 6);
+
+  await page.locator('#r12Reset').click();
+  await expect(page.locator('[data-formula-key="mango"]')).toHaveText('15 g');
+  await expect(page.locator('[data-formula-key="kokum"]')).toHaveText('10 g');
+  await expect(page.locator('[data-formula-key="candelilla"]')).toHaveText('3 g');
+  await expect(page.locator('[data-formula-key="apricot"]')).toHaveText('25.5 g');
+
+  await page.locator('a[data-ingredient="ing-kokum-butter"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter$/);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ing-kokum-butter')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page.locator('#r12 h1')).toHaveText('Lip/ balm');
+  await expect(page.locator('#side-nav')).toHaveCount(0);
+  await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
+});
+
 test('Skincare recipe UX keeps direct recipe routes focused without a side navigation', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/calming-shave-gel');
 
