@@ -40,6 +40,8 @@ try{
   $db->exec('CREATE TABLE achievements(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,code TEXT NOT NULL,unlocked_at INTEGER NOT NULL,UNIQUE(user_id,code),FOREIGN KEY(user_id) REFERENCES users(id))');
   $db->exec('CREATE TABLE games_profiles(id INTEGER PRIMARY KEY AUTOINCREMENT,user_id INTEGER NOT NULL,app TEXT NOT NULL,profile_json TEXT NOT NULL,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL,UNIQUE(user_id,app),FOREIGN KEY(user_id) REFERENCES users(id))');
   $db->exec('CREATE TABLE badminton_state_store(state_key TEXT PRIMARY KEY,state_json TEXT NOT NULL,updated_at INTEGER NOT NULL)');
+  $db->exec('CREATE TABLE skincare_routines(user_id INTEGER PRIMARY KEY,visibility TEXT NOT NULL,routine_json TEXT NOT NULL,logs_json TEXT NOT NULL,updated_at INTEGER NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id))');
+  $db->exec('CREATE TABLE skincare_routine_groups(user_id INTEGER PRIMARY KEY,groups_json TEXT NOT NULL,assignments_json TEXT NOT NULL,updated_at INTEGER NOT NULL,FOREIGN KEY(user_id) REFERENCES users(id))');
   $db->exec('CREATE TABLE password_reset_tokens(id INTEGER PRIMARY KEY,user_id INTEGER,selector TEXT,verifier_hash TEXT,expires_at INTEGER,created_at INTEGER,used_at INTEGER)');
   $db->exec('CREATE TABLE rate_limit_events(id INTEGER PRIMARY KEY,bucket TEXT,subject_hash TEXT,created_at INTEGER)');
   $db->exec('CREATE TABLE schema_migrations(component TEXT,version INTEGER,applied_at INTEGER,PRIMARY KEY(component,version))');
@@ -56,10 +58,13 @@ try{
   $db->exec("INSERT INTO games_profiles(user_id,app,profile_json,created_at,updated_at) VALUES(7,'pairs','{\"app\":\"pairs\",\"level\":2}',1700001000,1700001100)");
   $db->exec("INSERT INTO games_profiles(user_id,app,profile_json,created_at,updated_at) VALUES(7,'badmintonfocused','{\"app\":\"badmintonfocused\",\"score\":4}',1700001001,1700001101)");
   $db->exec("INSERT INTO badminton_state_store VALUES('global','{\"version\":4,\"players\":[],\"matches\":[]}',1700001200)");
+  $db->exec("INSERT INTO skincare_routines VALUES(7,'private','[{\"id\":\"old-routine\"}]','[{\"id\":\"old-log\"}]',1700001201)");
+  $db->exec("INSERT INTO skincare_routine_groups VALUES(7,'[{\"id\":\"old-group\"}]','{\"monday\":\"old-group\"}',1700001202)");
   $db = null;
 
   $sourceHash = hash_file('sha256', $source);
   $report = bl_secure_export_sqlite_copy($source, $saved);
+  bl_migration_export_skincare_from_copy($source, $saved);
   bl_roundtrip_assert(($report['invalid'] ?? []) === [], 'fixture export invalid');
   $verified = bl_verify_saved_data_cutover($source, $saved);
   bl_roundtrip_assert($verified['ok'] === true, 'clean Saved Data did not verify: ' . json_encode($verified['errors']));
@@ -82,6 +87,7 @@ try{
   bl_roundtrip_assert(in_array('resource_mismatch', array_column($tampered['errors'], 'check'), true), 'tampered game mismatch not reported');
 
   bl_secure_export_sqlite_copy($source, $saved);
+  bl_migration_export_skincare_from_copy($source, $saved);
   $fitness = bl_roundtrip_read($fitnessPath);
   $fitness['data']['profile'] = ['age'=>'40','sex'=>'male','activity'=>'moderate','height'=>'180','weight'=>'80'];
   $fitness['data']['activeWorkout'] = ['planId'=>3,'sessionIndex'=>1,'stepCount'=>3,'state'=>['completedSteps'=>1,'started'=>true,'results'=>[],'pendingFailureStep'=>null]];
@@ -112,7 +118,7 @@ try{
   $badminton['data']['matches'][] = ['id'=>'m-1'];
   bl_roundtrip_write($badmintonPath, $badminton);
 
-  foreach(['fitness-routine.json','food.json','skincare.json'] as $nativeFilename){
+  foreach(['fitness-routine.json','food.json'] as $nativeFilename){
     bl_roundtrip_write($saved . '/Users/000007/' . $nativeFilename, [
       'schemaVersion'=>1,
       'revision'=>1,
@@ -120,6 +126,21 @@ try{
       'data'=>['nativeOnly'=>true],
     ]);
   }
+
+  bl_roundtrip_write($saved . '/Users/000007/skincare.json', [
+    'schemaVersion'=>1,
+    'revision'=>2,
+    'updatedAt'=>'2026-08-02T18:03:30Z',
+    'data'=>[
+      'schemaVersion'=>1,
+      'visibility'=>'public',
+      'routine'=>[['id'=>'current-routine','steps'=>['cleanse','moisturise']]],
+      'logs'=>[['id'=>'current-log','date'=>'2026-08-02']],
+      'groups'=>[['id'=>'current-group','name'=>'Evening']],
+      'assignments'=>['monday'=>'current-group'],
+      'sliders'=>['hydration'=>75],
+    ],
+  ]);
 
   $rollbackResult = bl_build_sqlite_rollback_copy($source, $saved, $rollback);
   bl_roundtrip_assert($rollbackResult['ok'] === true, 'rollback copy failed');
@@ -134,6 +155,8 @@ try{
   ] as $expectedPreserved){
     bl_roundtrip_assert(in_array($expectedPreserved, $preserved, true), 'Saved-Data-only rollback preservation missing: ' . $expectedPreserved);
   }
+  bl_roundtrip_assert(($rollbackResult['counts']['skincareRoutines'] ?? 0) === 1, 'Skincare routine rollback count missing');
+  bl_roundtrip_assert(($rollbackResult['counts']['skincareGroups'] ?? 0) === 1, 'Skincare group rollback count missing');
   bl_roundtrip_assert(hash_file('sha256', $source) === $sourceHash, 'source database changed');
   bl_roundtrip_assert(in_array('000007', $rollbackResult['optionalFitnessSectionsNotRepresentedInSQLite'], true), 'optional Fitness warning missing');
 
@@ -150,6 +173,20 @@ try{
   bl_roundtrip_assert($session === 'done', 'Fitness session rollback failed');
   $restoredBadminton = json_decode((string)$restored->query("SELECT state_json FROM badminton_state_store WHERE state_key='global'")->fetchColumn(), true);
   bl_roundtrip_assert(($restoredBadminton['version'] ?? 0) === 5, 'Badminton rollback failed');
+
+  $restoredSkincare = $restored->query('SELECT visibility,routine_json,logs_json FROM skincare_routines WHERE user_id=7')->fetch();
+  bl_roundtrip_assert(($restoredSkincare['visibility'] ?? '') === 'public', 'Skincare visibility rollback failed');
+  $restoredRoutine = json_decode((string)($restoredSkincare['routine_json'] ?? '[]'), true, 48, JSON_THROW_ON_ERROR);
+  $restoredLogs = json_decode((string)($restoredSkincare['logs_json'] ?? '[]'), true, 48, JSON_THROW_ON_ERROR);
+  bl_roundtrip_assert(($restoredRoutine[0]['id'] ?? '') === 'current-routine', 'Skincare routine rollback failed');
+  bl_roundtrip_assert(($restoredLogs[0]['id'] ?? '') === 'current-log', 'Skincare logs rollback failed');
+
+  $restoredSkincareGroups = $restored->query('SELECT groups_json,assignments_json FROM skincare_routine_groups WHERE user_id=7')->fetch();
+  $restoredGroups = json_decode((string)($restoredSkincareGroups['groups_json'] ?? '[]'), true, 48, JSON_THROW_ON_ERROR);
+  $restoredAssignments = json_decode((string)($restoredSkincareGroups['assignments_json'] ?? '[]'), true, 48, JSON_THROW_ON_ERROR);
+  bl_roundtrip_assert(($restoredGroups[0]['id'] ?? '') === 'current-group', 'Skincare groups rollback failed');
+  bl_roundtrip_assert(($restoredAssignments['monday'] ?? '') === 'current-group', 'Skincare assignments rollback failed');
+
   bl_roundtrip_assert($restored->query('PRAGMA integrity_check')->fetchColumn() === 'ok', 'rollback integrity failed');
   bl_roundtrip_assert($restored->query('PRAGMA foreign_key_check')->fetchAll() === [], 'rollback foreign keys failed');
   $restored = null;
