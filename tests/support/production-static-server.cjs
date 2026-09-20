@@ -29,7 +29,7 @@ const CONTENT_TYPES = Object.freeze({
   '.php': 'text/plain; charset=utf-8'
 });
 
-const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|baseline-realm))?\/?$/;
+const HUB_ROUTE = /^\/baseline-games-hub\/games-hub(?:\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm))?\/?$/;
 
 /* Keep this route table aligned with the public Apache clean-route contract.
    Playwright must be able to refresh a virtual route directly; otherwise a
