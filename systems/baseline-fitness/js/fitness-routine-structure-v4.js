@@ -73,7 +73,16 @@
     if (match) return { view:String(match[1]).toLowerCase(),plan:rememberedPlanView(),clean:true };
     match=path.match(/^\/baseline-fitness\/my-routine\/plan(?:\/(calisthenics|cardio|other|sports))?$/i);
     if (match) return { view:'plan',plan:PLAN_VIEWS.includes(String(match[1] || '').toLowerCase())?String(match[1]).toLowerCase():rememberedPlanView(),clean:!match[1] };
-    if (/^\/baseline-fitness\/my-routine$/i.test(path)) return { view:'log',plan:rememberedPlanView(),clean:false };
+    if (/^\/baseline-fitness\/my-routine$/i.test(path)) {
+      let view='';
+      try {
+        const url=new URL(global.location.href);
+        if (url.searchParams.has('new-plan')) view='plan';
+        else view=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
+      } catch (_error) {}
+      if (!TOP_VIEWS.includes(view)) view='log';
+      return { view,plan:rememberedPlanView(),clean:false };
+    }
     if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:rememberedPlanView(),clean:false };
     return null;
   }
