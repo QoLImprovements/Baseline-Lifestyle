@@ -1968,6 +1968,9 @@ function parseViewStateHash(hash){
   function setupRecipeOverviewAndOrdering(){
     const recipesSection = document.getElementById('recipes');
     if(!recipesSection) return;
+    // Natural Skincare has no recipe side navigation. Keep any legacy/shared
+    // side-nav support available only to systems that still intentionally own it.
+    const allowSideNav = routePageFileFromPath(location.pathname || '') !== 'baseline-natural-skincare.html';
 
     const recipesContainer = recipesSection.querySelector('.recipes');
     const recipeCards = Array.from(recipesSection.querySelectorAll('.recipe-page[id]'));
@@ -2013,7 +2016,7 @@ function parseViewStateHash(hash){
       });
 
       // Side nav rebuild (preserve back link and the primary "Recipes" heading)
-      const sideNav = recipesSection.querySelector('#side-nav');
+      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
       if(sideNav){
         const children = Array.from(sideNav.children);
         const firstHeadingIndex = children.findIndex(el => el.tagName === 'H4');
@@ -2091,7 +2094,7 @@ function parseViewStateHash(hash){
         items.forEach(li => ul.appendChild(li));
       };
 
-      const sideNav = recipesSection.querySelector('#side-nav');
+      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
       if(sideNav){
         sideNav.querySelectorAll('ul').forEach(sortList);
       }
@@ -2268,8 +2271,10 @@ function parseViewStateHash(hash){
       applyFilter('all');
     }
 
-    // Ingredient links inside recipes: jump to ingredient library + filter
-    qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
+    // Legacy hash-based ingredient clicks remain only for non-Skincare systems.
+    // Skincare authors canonical /ingredient-library/<slug> URLs and never creates
+    // a recipe#ing-* navigation state.
+    if(!isSkincare) qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       a.addEventListener('click', (e)=>{
         const href = a.getAttribute('href') || '';
         if(!href.startsWith('#')) return;
