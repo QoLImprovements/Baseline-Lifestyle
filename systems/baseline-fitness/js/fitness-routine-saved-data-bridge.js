@@ -1,4 +1,4 @@
-/* Baseline Lifestyle — Fitness Routine Saved Data revision + legacy-import bridge. */
+/* Baseline Lifestyle — Fitness Routine Saved Data revision bridge. Server data is authoritative; obsolete browser saves are discarded. */
 (function(scope){
   'use strict';
   if(!scope.document || scope.__BASELINE_FITNESS_ROUTINE_SAVED_DATA_BRIDGE__) return;
@@ -14,14 +14,12 @@
     routineStatePath,
     '/systems/baseline-fitness/api/routine_groups.php',
   ]);
-  const ACTIVE_LOCAL_PREFIXES = Object.freeze([
+  const OBSOLETE_LOCAL_PREFIXES = Object.freeze([
     '__bl_fitness_routine_v2__::',
     '__bl_fitness_routine_v1__::',
+    '__bl_fitness_routine_legacy_import__::',
   ]);
-  const LEGACY_IMPORT_PREFIX = '__bl_fitness_routine_legacy_import__::';
   let blocked = false;
-  let currentOwner = '';
-  let legacyImport = null;
 
   function endpointPath(url){
     try{
@@ -53,71 +51,23 @@
     return normaliseOwner(snapshot.name || snapshot.user?.name || '');
   }
 
-  function importStorageKey(owner){
-    return `${LEGACY_IMPORT_PREFIX}${normaliseOwner(owner)}`;
-  }
-
-  function parseLegacyRecord(raw, owner, sourceKey){
-    try{
-      const parsed = JSON.parse(String(raw || ''));
-      if(!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
-      return {
-        schemaVersion:1,
-        owner:normaliseOwner(owner),
-        sourceKey:String(sourceKey || ''),
-        capturedAt:new Date().toISOString(),
-        data:{
-          activities:Array.isArray(parsed.activities) ? parsed.activities : [],
-          logs:parsed.logs && typeof parsed.logs === 'object' && !Array.isArray(parsed.logs) ? parsed.logs : {},
-        },
-      };
-    }catch(_error){
-      return null;
-    }
-  }
-
-  function readQuarantined(owner){
-    try{
-      const raw = scope.localStorage?.getItem(importStorageKey(owner));
-      const parsed = raw ? JSON.parse(raw) : null;
-      return parsed && parsed.data && typeof parsed.data === 'object' ? parsed : null;
-    }catch(_error){
-      return null;
-    }
-  }
-
-  function quarantineAuthenticatedLocal(snapshot = authSnapshot()){
+  function purgeObsoleteLocal(snapshot = authSnapshot()){
     const owner = authenticatedOwner(snapshot);
-    if(!owner) return null;
-    currentOwner = owner;
     const storage = scope.localStorage;
-    if(!storage) return null;
-
-    let quarantined = readQuarantined(owner);
+    if(!storage) return;
     try{
-      if(!quarantined){
-        for(const prefix of ACTIVE_LOCAL_PREFIXES){
-          const sourceKey = `${prefix}${owner}`;
-          const raw = storage.getItem(sourceKey);
-          if(!raw) continue;
-          const candidate = parseLegacyRecord(raw, owner, sourceKey);
-          if(candidate){
-            storage.setItem(importStorageKey(owner), JSON.stringify(candidate));
-            quarantined = candidate;
-            break;
-          }
-        }
+      /* Local routine saves are retired. Remove both the former active cache and
+         any old quarantined import copy; never surface either as a data source. */
+      const keys=[];
+      for(let index=0; index<storage.length; index+=1){
+        const key=String(storage.key(index) || '');
+        if(OBSOLETE_LOCAL_PREFIXES.some((prefix)=>key.startsWith(prefix))) keys.push(key);
       }
-      // Authenticated routine data is server-owned. Active local copies are
-      // never a normal-runtime authority; keep only the separate import copy.
-      for(const prefix of ACTIVE_LOCAL_PREFIXES) storage.removeItem(`${prefix}${owner}`);
+      keys.forEach((key)=>storage.removeItem(key));
+      if(owner){
+        OBSOLETE_LOCAL_PREFIXES.forEach((prefix)=>storage.removeItem(`${prefix}${owner}`));
+      }
     }catch(_error){}
-    legacyImport = quarantined;
-    return quarantined;
-  }
-
-  function hideLegacyImport(){
-    scope.document.getElementById('baselineFitnessRoutineLegacyImport')?.remove();
   }
 
   function failureMessage(code){
@@ -176,56 +126,18 @@
     });
   }
 
-  async function importLegacyRoutine(){
-    const record = legacyImport || readQuarantined(currentOwner);
-    if(!record?.data || blocked) return;
-    const result = await scope.fetch(routineStatePath, {
-      method:'POST',
-      credentials:'same-origin',
-      headers:{ Accept:'application/json', 'Content-Type':'application/json' },
-      body:JSON.stringify({
-        activities:Array.isArray(record.data.activities) ? record.data.activities : [],
-        logs:record.data.logs && typeof record.data.logs === 'object' ? record.data.logs : {},
-      }),
-    });
-    let payload = null;
-    try{ payload = await result.clone().json(); }catch(_error){}
-    if(!result.ok || !payload?.ok) return;
-    try{ scope.localStorage?.removeItem(importStorageKey(currentOwner)); }catch(_error){}
-    legacyImport = null;
-    hideLegacyImport();
-    scope.location?.reload?.();
-  }
-
-  function showLegacyImport(){
-    if(!legacyImport || scope.document.getElementById('baselineFitnessRoutineLegacyImport')) return;
-    const banner = scope.document.createElement('div');
-    banner.id = 'baselineFitnessRoutineLegacyImport';
-    banner.setAttribute('role', 'status');
-    banner.style.cssText = 'position:fixed;left:16px;right:16px;bottom:16px;z-index:2147483646;padding:14px 16px;border:2px solid currentColor;border-radius:10px;background:Canvas;color:CanvasText;box-shadow:0 8px 30px rgba(0,0,0,.3);font:600 14px/1.4 system-ui,sans-serif;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap';
-    const message = scope.document.createElement('span');
-    message.textContent = 'Legacy Fitness Routine data was found on this device. The server version remains authoritative unless you explicitly import the legacy copy.';
-    const button = scope.document.createElement('button');
-    button.type = 'button';
-    button.textContent = 'Import legacy routine';
-    button.style.cssText = 'font:inherit;padding:8px 12px;cursor:pointer';
-    button.addEventListener('click', importLegacyRoutine);
-    banner.append(message, button);
-    (scope.document.body || scope.document.documentElement).appendChild(banner);
-  }
-
-  function attachAuthQuarantine(){
+  function attachAuthPurge(){
     const auth = scope.BASELINE_auth;
     if(!auth || typeof auth.get !== 'function') return;
-    quarantineAuthenticatedLocal(auth.get());
-    if(typeof auth.onChange === 'function') auth.onChange((snapshot)=>quarantineAuthenticatedLocal(snapshot));
+    purgeObsoleteLocal(auth.get());
+    if(typeof auth.onChange === 'function') auth.onChange((snapshot)=>purgeObsoleteLocal(snapshot));
   }
 
-  // Register this before the Fitness workspace DOM-ready listener. If auth is
-  // already available, quarantine immediately as well.
-  attachAuthQuarantine();
+  // Register before the workspace so retired browser state cannot become a
+  // fallback authority during startup.
+  attachAuthPurge();
   if(scope.document.readyState === 'loading'){
-    scope.document.addEventListener('DOMContentLoaded', attachAuthQuarantine, { once:true });
+    scope.document.addEventListener('DOMContentLoaded', attachAuthPurge, { once:true });
   }
 
   scope.fetch = async function(input, init){
@@ -239,9 +151,8 @@
     const method = String(options.method || input?.method || 'GET').toUpperCase();
     const mutating = method !== 'GET' && method !== 'HEAD';
 
-    // The old workspace reads local data immediately before its GET. Capture
-    // and remove that copy here as a final guard before the GET can resolve.
-    if(method === 'GET') quarantineAuthenticatedLocal();
+    // Final guard: retired browser routine state is removed before every read.
+    if(method === 'GET') purgeObsoleteLocal();
 
     if(mutating){
       if(blocked) return blockedResponse();
@@ -269,9 +180,8 @@
     if(mutating && (!response.ok || !payload?.ok)) showFailure(payload?.error || `http_${response.status}`);
 
     if(method === 'GET' && path === routineStatePath && payload?.ok){
-      // Successful empty server state is still authoritative. The legacy
-      // workspace's `hasRoutine` gate must never auto-upload a local copy.
-      if(!payload.hasRoutine && legacyImport) showLegacyImport();
+      // Successful empty server state is authoritative. The legacy workspace's
+      // `hasRoutine` gate must never manufacture browser-owned authority.
       return authoritativeRoutineResponse(response, payload);
     }
     return response;
@@ -280,7 +190,5 @@
   scope.BASELINE_FitnessRoutineSavedDataBridge = Object.freeze({
     resource,
     isBlocked:() => blocked,
-    legacyImportAvailable:() => Boolean(legacyImport || readQuarantined(currentOwner)),
-    importLegacy:importLegacyRoutine,
   });
 })(window);
