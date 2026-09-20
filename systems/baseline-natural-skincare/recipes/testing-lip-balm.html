@@ -20,7 +20,6 @@ a{color:#783a2d;font-weight:750}
 .glide-scale{display:flex;justify-content:space-between;gap:16px;font-size:.9rem}
 .glide-readout{font-weight:700;margin:.35rem 0}
 .ing-subhead{list-style:none;margin-top:12px}
-.testing-label{display:inline-block;margin:0 0 12px;padding:5px 10px;border:1px solid currentColor;border-radius:999px;font-size:.82rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 </style>
 <script>
 function printCard(){window.print();}
@@ -115,12 +114,11 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 <div class="recipe card recipe-page is-open" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard()" type="button">Print This Recipe</button>
+<button class="print-btn" onclick="printCard('r12')" type="button">Print This Recipe</button>
 </div>
 
-<div class="testing-label">Testing</div>
-<h1>Lip/ balm</h1>
-<p class="note"><strong>Testing</strong> — 100 g anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
+<h3>Lip/ balm</h3>
+<p class="note">100 g anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
 
 <div class="glide-controller" aria-label="Lip balm formulation controls">
 <div class="glide-control">
@@ -146,7 +144,7 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 <button class="slider-default-btn" id="r12Reset" type="button">Reset to recipe default</button>
 </div>
 
-<h2>Ingredients</h2>
+<h4>Ingredients</h4>
 <ul>
 <li class="ing-subhead"><strong>Butters</strong></li>
 <li data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter">Cocoa Butter</a></li>
@@ -163,7 +161,7 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 <li data-method-step="5" data-tip="Antioxidant that helps slow oxidation of the oil phase. It is not a preservative."><span class="amt" data-formula-key="vitamin-e" data-base-display="0.5 g" data-base-min="0.5" data-base-max="0.5" data-base-unit="g">0.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a></li>
 </ul>
 
-<h2>Method</h2>
+<h4>Method</h4>
 <ol>
 <li><strong>Prepare</strong>: Clean and completely dry the working area, utensils, heat-safe container and final balm containers.</li>
 <li><strong>Weigh</strong>: Set the sliders to the desired positions, then weigh the cocoa butter, mango butter, kokum butter, candelilla wax and liquid oils in the amounts shown.</li>
@@ -174,19 +172,19 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 <li><strong>Cap</strong>: Fit the lids once the balm is fully cool and label the batch.</li>
 </ol>
 
-<h2>Storage &amp; Use</h2>
+<h4>Storage &amp; Use</h4>
 <ul>
 <li>Apply a thin layer to lips or dry areas as needed.</li>
 <li>Store cool, dry and away from direct sunlight or sustained heat.</li>
 <li>Because the formula is anhydrous, keep water out of the container during use.</li>
 </ul>
 
-<h2>Comedogenic Considerations</h2>
+<h4>Comedogenic Considerations</h4>
 <ul>
 <li>This is a rich, persistent balm designed primarily for lips and targeted dry areas rather than as a lightweight full-face moisturiser. Individual skin response varies.</li>
 </ul>
 
-<h2>Notes</h2>
+<h4>Notes</h4>
 <ul>
 <li><strong>Default formula:</strong> 20% cocoa butter • 15% mango butter • 10% kokum butter • 25.5% apricot kernel oil • 15% avocado oil • 11% red raspberry seed oil • 3% candelilla wax • 0.5% vitamin E.</li>
 <li><strong>Butter character slider:</strong> changes mango against kokum while keeping their combined share fixed at 25%.</li>
