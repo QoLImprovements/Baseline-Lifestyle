@@ -276,8 +276,6 @@ Options -Indexes
   # The parent router opens the matching data-recipe-slug and preserves the banner,
   # tabs, favourites, batch controls and account/binaural controls on refresh.
   RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
-  # Testing Lip/ Balm is sourced from its recipe-folder document, not duplicated in the Skincare shell.
-  RewriteRule ^baseline-natural-skincare/recipes/testing-lip-balm/?$ systems/baseline-natural-skincare/recipes/testing-lip-balm.html [L,QSA]
   RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 
   # Baseline Charity Shop uses the same virtual clean-route structure as every other system.
