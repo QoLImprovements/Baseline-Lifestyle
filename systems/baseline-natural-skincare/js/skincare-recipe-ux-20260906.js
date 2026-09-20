@@ -34,7 +34,7 @@
   // Folder-backed recipes are linked into the catalogue but are never copied
   // into the large Skincare application document.
   const EXTERNAL_RECIPES = Object.freeze([
-    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm', description:'adjustable butter character and structure with a balanced 100 g default formula.', category:'Testing' }
+    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm', description:'adjustable butter character and structure with a balanced 100 g default formula.', category:'Testing', source:'/systems/baseline-natural-skincare/recipes/testing-lip-balm.html' }
   ]);
 
   const DETAIL_DATA = Object.freeze({
@@ -109,6 +109,14 @@
       rationale:'The dry blend is stored without water and only hydrated for one wash, reducing the preservation burden while keeping the experimental cleansing system modular.',
       variables:'Water is adjusted per wash to reach a usable cream. The jojoba/argan blend is added as a small conditioning phase.',
       boundaries:'Rinsing and cleansing performance still need testing, especially with heavier oil or product buildup. Once hydrated, use immediately and discard any remainder.'
+    },
+    r12:{
+      purpose:'A rich anhydrous balm designed for lips and targeted dry areas, with a protective winter-friendly finish and adjustable physical character.',
+      profile:'100 g reference batch • anhydrous • vegan • Testing • 45% butters at the default • adjustable butter character and structure.',
+      works:'Cocoa butter provides the main rich body; mango softens the butter phase; kokum raises firmness with a relatively dry finish; apricot kernel oil supplies spread; avocado adds richness; red raspberry seed oil diversifies the liquid-oil phase; candelilla reinforces structure; vitamin E supports oxidation resistance.',
+      rationale:'The default keeps the total butter phase at 45% while using kokum to reduce dependence on wax. The paired controls change one physical quality at a time while compensating with another ingredient so the formula stays at 100%.',
+      variables:'Mango and kokum trade against each other while totaling 25%. Candelilla and apricot kernel oil trade against each other while totaling 28.5%. Cocoa, avocado, red raspberry seed oil and vitamin E stay fixed.',
+      boundaries:'This is an anhydrous conditioning and protective balm, not a water-based hydration layer. For lip use, use cosmetic-grade raw materials that are suitable for lip-care applications.'
     }
   });
 
@@ -120,8 +128,128 @@
     r6Glide:{bubble:'castor',left:['0% castor','Freer slip'],right:['15% castor','Richer drag'],help:'Adjust castor to change traction. Olive automatically compensates while jojoba remains fixed at 15%.'},
     r6AvocadoRichness:{bubble:'avocado',left:['50% avocado','Lighter body'],right:['70% avocado','Richer body'],help:'Adjust avocado to change richness. Fractionated coconut automatically compensates.'},
     r6AvocadoCastor:{bubble:'castor',left:['2% castor','Quicker slip'],right:['10% castor','Longer glide'],help:'Adjust castor to change lasting glide. Watermelon seed oil automatically compensates.'},
-    r7Hydration:{bubble:'water',left:['70% water','Higher glycerin'],right:['90% water','Lighter hydration layer'],help:'Adjust the water phase. Glycerin automatically compensates so the formula remains at 100%.'}
+    r7Hydration:{bubble:'water',left:['70% water','Higher glycerin'],right:['90% water','Lighter hydration layer'],help:'Adjust the water phase. Glycerin automatically compensates so the formula remains at 100%.'},
+    r12ButterCharacter:{bubble:'kokum',left:['5% kokum','Creamier mango balance'],right:['15% kokum','Firmer butter balance'],help:'Adjust kokum to change the butter character. Mango automatically compensates so mango + kokum remain at 25%.'},
+    r12Structure:{bubble:'candelilla',left:['2% candelilla','Softer melt'],right:['4% candelilla','More durable set'],help:'Adjust candelilla to change structure. Apricot kernel oil automatically compensates so this pair remains at 28.5%.'}
   });
+
+  function externalRecipeForCurrentPath(){
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
+    if(!match) return null;
+    const slug=String(match[1] || '').toLowerCase();
+    return EXTERNAL_RECIPES.find(recipe=>recipe.slug===slug) || null;
+  }
+
+  function bindLipBalmFormula(recipe){
+    if(!recipe || recipe.id!=='r12' || recipe.dataset.lipBalmFormulaBound==='1') return;
+    recipe.dataset.lipBalmFormulaBound='1';
+
+    const defaults=Object.freeze({
+      cocoa:20,
+      mango:15,
+      kokum:10,
+      apricot:25.5,
+      avocado:15,
+      raspberry:11,
+      candelilla:3,
+      vitaminE:0.5
+    });
+
+    function fmt(value){
+      const n=Number(value);
+      if(!Number.isFinite(n)) return '0';
+      return Math.abs(n-Math.round(n))<0.001 ? String(Math.round(n)) : n.toFixed(1);
+    }
+
+    function setAmount(key,value){
+      const el=recipe.querySelector('[data-formula-key="'+key+'"]');
+      if(!el) return;
+      const text=fmt(value)+' g';
+      el.textContent=text;
+      el.dataset.baseDisplay=text;
+      el.dataset.baseMin=String(value);
+      el.dataset.baseMax=String(value);
+      el.dataset.baseUnit='g';
+    }
+
+    function refreshScaledDisplay(){
+      try{ recipe.__baselineApplyScaling?.(); }catch(_error){}
+      try{ recipe.__baselineUpdatePrintSummary?.(); }catch(_error){}
+    }
+
+    function update(){
+      const butter=recipe.querySelector('#r12ButterCharacter');
+      const structure=recipe.querySelector('#r12Structure');
+      if(!butter || !structure) return;
+
+      const kokum=Number(butter.value);
+      const mango=25-kokum;
+      const candelilla=Number(structure.value);
+      const apricot=28.5-candelilla;
+
+      setAmount('cocoa',defaults.cocoa);
+      setAmount('mango',mango);
+      setAmount('kokum',kokum);
+      setAmount('apricot',apricot);
+      setAmount('avocado',defaults.avocado);
+      setAmount('raspberry',defaults.raspberry);
+      setAmount('candelilla',candelilla);
+      setAmount('vitamin-e',defaults.vitaminE);
+
+      const butterReadout=recipe.querySelector('#r12ButterReadout');
+      if(butterReadout) butterReadout.textContent=fmt(mango)+'% mango • '+fmt(kokum)+'% kokum';
+      const structureReadout=recipe.querySelector('#r12StructureReadout');
+      if(structureReadout) structureReadout.textContent=fmt(candelilla)+'% candelilla • '+fmt(apricot)+'% apricot kernel oil';
+
+      global.requestAnimationFrame(refreshScaledDisplay);
+    }
+
+    function reset(){
+      const butter=recipe.querySelector('#r12ButterCharacter');
+      const structure=recipe.querySelector('#r12Structure');
+      if(butter) butter.value=String(defaults.kokum);
+      if(structure) structure.value=String(defaults.candelilla);
+      update();
+    }
+
+    const butter=recipe.querySelector('#r12ButterCharacter');
+    const structure=recipe.querySelector('#r12Structure');
+    const resetButton=recipe.querySelector('#r12Reset');
+    if(butter){ butter.addEventListener('input',update); butter.addEventListener('change',update); }
+    if(structure){ structure.addEventListener('input',update); structure.addEventListener('change',update); }
+    if(resetButton) resetButton.addEventListener('click',reset);
+    update();
+  }
+
+  async function loadExternalRecipeForCurrentPath(){
+    const meta=externalRecipeForCurrentPath();
+    if(!meta) return null;
+
+    const existing=recipeById(meta.id);
+    if(existing){
+      bindLipBalmFormula(existing);
+      return { meta, recipe:existing };
+    }
+
+    const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
+    if(!container) throw new Error('Skincare recipe container is unavailable.');
+
+    const response=await global.fetch(meta.source,{ credentials:'same-origin', cache:'no-store' });
+    if(!response.ok) throw new Error('Unable to load '+meta.title+' recipe source ('+response.status+').');
+
+    const sourceHtml=await response.text();
+    const parsed=new DOMParser().parseFromString(sourceHtml,'text/html');
+    const sourceCard=parsed.getElementById(meta.id);
+    if(!sourceCard) throw new Error(meta.title+' recipe source does not contain #'+meta.id+'.');
+
+    const recipe=document.importNode(sourceCard,true);
+    recipe.classList.remove('is-open','active');
+    recipe.style.display='none';
+    container.appendChild(recipe);
+    bindLipBalmFormula(recipe);
+    return { meta, recipe };
+  }
 
   function installExternalRecipeLinks(){
     const landing=document.getElementById('recipes-landing');
@@ -395,6 +523,7 @@
   function applyAll(){
     installStyles();
     installExternalRecipeLinks();
+    bindLipBalmFormula(recipeById('r12'));
     promoteCards();
     rewriteRecipeAnchors();
     restoreSegmentedVariants();
@@ -407,16 +536,35 @@
     });
   }
 
-  function startRecipeUx(){
+  async function startRecipeUx(){
     canonicaliseOldRecipePath();
+
+    let external=null;
+    try{
+      external=await loadExternalRecipeForCurrentPath();
+    }catch(error){
+      console.error('[Baseline Skincare] Failed to load folder-backed recipe:',error);
+    }
+
     applyAll();
     wrapRecipeOpen();
-    global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
+
+    if(external && external.recipe){
+      try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
+      global.requestAnimationFrame(()=>{
+        applyAll();
+        try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
+        resetRecipeView(external.recipe);
+      });
+    }else{
+      global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
+    }
+
     global.setTimeout(applyAll,120);
     global.setTimeout(applyAll,600);
     global.addEventListener('load',applyAll,{once:true});
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',startRecipeUx,{once:true});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{ startRecipeUx(); },{once:true});
   else startRecipeUx();
 })(typeof window!=='undefined'?window:globalThis);
