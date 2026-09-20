@@ -14,13 +14,17 @@
     ['r10','microcurrent-glide-gel','Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment.'],
     ['r9','tooth-polishing-powder','Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal.']
   ];
-  const TESTING=[['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.']];
+  const TESTING=[\n    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],\n    ['r12','testing-lip-balm','Lip/ Balm','adjustable butter character and structure with a balanced 100 g default formula.',true]\n  ];
   function list(items,descriptions){
     const ul=document.createElement('ul');
-    items.forEach(([id,slug,title,description])=>{
+    items.forEach(([id,slug,title,description,nativeNavigation])=>{
       const li=document.createElement('li');
       const a=document.createElement('a');
-      a.className='recipe-open';a.dataset.recipeId=id;a.href='/baseline-natural-skincare/recipes/'+slug;
+      a.href='/baseline-natural-skincare/recipes/'+slug;
+      if(!nativeNavigation){
+        a.className='recipe-open';
+        a.dataset.recipeId=id;
+      }
       a.textContent=descriptions?title+' — '+description:title;
       li.appendChild(a);ul.appendChild(li);
     });
@@ -28,11 +32,6 @@
   }
   function h4(text){ const el=document.createElement('h4');el.textContent=text;return el; }
   function rebuild(){
-    // Skincare recipe detail pages are intentionally single-column. Remove the
-    // legacy side navigation instead of rebuilding or merely hiding it.
-    const side=document.getElementById('side-nav');
-    if(side) side.remove();
-
     const landing=document.getElementById('recipes-landing');
     if(landing){
       let title=landing.querySelector(':scope > h2');
