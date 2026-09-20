@@ -54,7 +54,10 @@ test('recipe ingredient links use canonical records and Back and Forward restore
 
   await jojoba.click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
-  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ing-jojoba')).toBeVisible();
+  await expect(page.locator('#ing-jojoba h3')).toContainText('Jojoba Oil');
+  await expect(page.locator('.bl-homebar')).toBeVisible();
 
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/anhydrous-massage-oil-blend$/);
@@ -64,17 +67,21 @@ test('recipe ingredient links use canonical records and Back and Forward restore
 
   await page.goForward();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
-  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ing-jojoba')).toBeVisible();
 
   await page.reload();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
-  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ing-jojoba')).toBeVisible();
+  await expect(page.locator('#ing-jojoba h3')).toContainText('Jojoba Oil');
 });
 
 test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
-  await expect(page.locator('h1')).toContainText('Jojoba Oil');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ing-jojoba')).toBeVisible();
 });
 
 test('recipe overview Back and Forward follow the actual recipe sequence', async ({ page }) => {
@@ -104,15 +111,18 @@ test('recipe overview Back and Forward follow the actual recipe sequence', async
 
 test('legacy ingredient aliases redirect to their canonical records', async ({ page }) => {
   const cases = [
-    ['castor', 'castor-oil', 'Castor Oil'],
-    ['cucumber', 'cucumber-seed-oil', 'Cucumber Seed Oil'],
-    ['jojoba', 'jojoba-oil', 'Jojoba Oil'],
-    ['shea', 'shea-butter', 'Shea Butter']
+    ['castor', 'castor-oil', 'ing-castor', 'Castor Oil'],
+    ['cucumber', 'cucumber-seed-oil', 'ing-cucumber', 'Cucumber Seed Oil'],
+    ['jojoba', 'jojoba-oil', 'ing-jojoba', 'Jojoba Oil'],
+    ['shea', 'shea-butter', 'ing-shea', 'Shea Butter']
   ];
 
-  for (const [alias, canonical, title] of cases) {
+  for (const [alias, canonical, ingredientId, title] of cases) {
     await page.goto('/baseline-natural-skincare/ingredient-library/' + alias);
-    await expect(page).toHaveURL(new RegExp('/baseline-natural-skincare/ingredient-library/' + canonical + '$'));
-    await expect(page.locator('h1')).toContainText(title);
+    expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/ingredient-library/' + canonical);
+    await expect(page.locator('#ingredients')).toHaveClass(/active/);
+    await expect(page.locator('#' + ingredientId)).toBeVisible();
+    await expect(page.locator('#' + ingredientId + ' h3')).toContainText(title);
+    await expect(page.locator('.bl-homebar')).toBeVisible();
   }
 });
