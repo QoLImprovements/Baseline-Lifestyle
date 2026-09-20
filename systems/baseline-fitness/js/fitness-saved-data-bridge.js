@@ -1,4 +1,4 @@
-/* Baseline Fitness — protected browser-owned Saved Data bridge v2.
+/* Baseline Fitness — protected Saved Data server-authority bridge v3.
 
    OWNERSHIP CONTRACT
    ------------------
@@ -18,7 +18,7 @@
   const STEP_PREFIX='__bl_fitness_workout_progress_v2__::';
   const OUTCOME_PREFIX='__bl_fitness_exercise_outcomes_v4__::';
   const FAILURE_PREFIX='__bl_fitness_exercise_failed_sessions_v3__::';
-  const IMPORT_BACKUP_PREFIX='__bl_fitness_saved_data_import_backup_v1__::';
+  const OBSOLETE_IMPORT_PREFIX='__bl_fitness_saved_data_import_backup_v1__::';
   const nativeGet=Storage.prototype.getItem;
   const nativeSet=Storage.prototype.setItem;
   const nativeRemove=Storage.prototype.removeItem;
@@ -31,7 +31,6 @@
   let serverActive=null;
   let saveBlocked=false;
   let lastError='';
-  let imports={profile:null,activeWorkout:null,progressionHistory:null};
 
   function normalise(value) { return String(value || '').trim().toLocaleLowerCase('en-GB'); }
   function bodyKey() { return BODY_PREFIX+normalise(authName); }
@@ -67,66 +66,23 @@
       failures:Array.isArray(failures)?failures:[],
     };
   }
-  function progressionHistoryHasValues(value) {
-    return Boolean((value?.outcomes || []).length || (value?.failures || []).length);
-  }
-  function importBackupKey(kind) { return IMPORT_BACKUP_PREFIX+normalise(authName)+'::'+kind; }
-  function readImportBackup(kind) { return parseJson(nativeGet.call(global.localStorage,importBackupKey(kind))); }
-  function writeImportBackup(kind,value) { if (value) nativeSet.call(global.localStorage,importBackupKey(kind),JSON.stringify(value)); }
-  function clearImportBackup(kind) { nativeRemove.call(global.localStorage,importBackupKey(kind)); }
-  function equivalent(left,right) { try { return JSON.stringify(left)===JSON.stringify(right); } catch (_error) { return false; } }
-  function equivalentActive(left,right) {
-    if (!left || !right) return false;
-    return Number(left.planId)===Number(right.planId)
-      && Number(left.sessionIndex)===Number(right.sessionIndex)
-      && equivalent(left.state,right.state);
-  }
-  function quarantineLegacyLocal() {
-    const profile=localBody();
-    if (profile) {
-      if (!readImportBackup('profile')) writeImportBackup('profile',profile);
+  function purgeObsoleteBrowserState() {
+    try {
+      const obsoleteKeys=[];
+      for (let index=0;index<global.localStorage.length;index+=1) {
+        const key=String(global.localStorage.key(index) || '');
+        if (key.startsWith(OBSOLETE_IMPORT_PREFIX)) obsoleteKeys.push(key);
+      }
+      obsoleteKeys.forEach((key)=>nativeRemove.call(global.localStorage,key));
       nativeRemove.call(global.localStorage,bodyKey());
-    }
-    const activeWorkout=localActive();
-    if (activeWorkout) {
-      if (!readImportBackup('activeWorkout')) writeImportBackup('activeWorkout',activeWorkout);
-      nativeRemove.call(global.localStorage,stepKey(activeWorkout));
-    }
-    const progressionHistory=localProgressionHistory();
-    if (progressionHistoryHasValues(progressionHistory) && !readImportBackup('progressionHistory')) {
-      writeImportBackup('progressionHistory',progressionHistory);
-    }
-    nativeRemove.call(global.localStorage,outcomeKey());
-    nativeRemove.call(global.localStorage,failureKey());
-  }
-  function prepareImportCandidates(server) {
-    const profile=readImportBackup('profile');
-    const activeWorkout=readImportBackup('activeWorkout');
-    const progressionHistory=readImportBackup('progressionHistory');
-    imports={profile:null,activeWorkout:null,progressionHistory:null};
-    if (profile) {
-      if (server?.profile && equivalent(profile,server.profile)) clearImportBackup('profile');
-      else imports.profile=profile;
-    }
-    if (activeWorkout) {
-      if (server?.activeWorkout && equivalentActive(activeWorkout,server.activeWorkout)) clearImportBackup('activeWorkout');
-      else imports.activeWorkout=activeWorkout;
-    }
-    if (progressionHistory) {
-      const authoritative=server?.progressionHistory && typeof server.progressionHistory==='object'
-        ? server.progressionHistory
-        : { outcomes:[],failures:[] };
-      if (equivalent(progressionHistory,authoritative)) clearImportBackup('progressionHistory');
-      else imports.progressionHistory=progressionHistory;
-    }
-    renderMigrationReview();
-  }
-  function hasImportCandidate() { return Boolean(imports.profile||imports.activeWorkout||imports.progressionHistory); }
-  function importKindForKey(key) {
-    if (key===bodyKey()) return 'profile';
-    if (String(key).startsWith(STEP_PREFIX)) return 'activeWorkout';
-    if (key===outcomeKey() || key===failureKey()) return 'progressionHistory';
-    return '';
+      const suffix=`::${normalise(authName)}`;
+      for (let index=global.localStorage.length-1;index>=0;index-=1) {
+        const key=String(global.localStorage.key(index) || '');
+        if (key.startsWith(STEP_PREFIX) && (!suffix || key.endsWith(suffix))) nativeRemove.call(global.localStorage,key);
+      }
+      nativeRemove.call(global.localStorage,outcomeKey());
+      nativeRemove.call(global.localStorage,failureKey());
+    } catch (_error) {}
   }
   function writeLocal(key,value) { nativeSet.call(global.localStorage,key,JSON.stringify(value)); }
   function revisionClient() { return global.BASELINE_api?.revisions || null; }
@@ -218,57 +174,6 @@
       return {ok:false,error:lastError};
     } finally { syncing=false; }
   }
-  function keepAccount(kind) {
-    if (!Object.hasOwn(imports,kind) || !imports[kind]) return false;
-    clearImportBackup(kind);
-    imports[kind]=null;
-    renderMigrationReview();
-    return true;
-  }
-  async function importLegacy(kind) {
-    if (!enabled || saveBlocked || !Object.hasOwn(imports,kind) || !imports[kind]) return false;
-    const payload={action:'import_local'};
-    if (kind==='profile') payload.profile=imports.profile;
-    else if (kind==='activeWorkout') payload.activeWorkout=imports.activeWorkout;
-    else if (kind==='progressionHistory') payload.progressionHistory=imports.progressionHistory;
-    else return false;
-    const result=await post(payload);
-    if (!result?.ok) return false;
-    clearImportBackup(kind);
-    imports[kind]=null;
-    renderMigrationReview();
-    return true;
-  }
-  function renderMigrationReview() {
-    const existing=document.getElementById('fitnessSavedDataMigrationReview');
-    if (!hasImportCandidate()) { existing?.remove();return; }
-    const host=document.querySelector('main')||document.body;
-    if (!host) return;
-    const panel=existing||document.createElement('div');
-    panel.id='fitnessSavedDataMigrationReview';
-    panel.className='card';
-    panel.setAttribute('data-fitness-migration-review','true');
-    panel.innerHTML='<strong>Browser Fitness data is available.</strong><p class="note">Account data is authoritative, including an empty account state. The browser copy was preserved and was not imported automatically.</p>';
-    const labels={profile:'Body profile',activeWorkout:'Active workout',progressionHistory:'Exercise progression history'};
-    Object.keys(labels).forEach(kind=>{
-      if (!imports[kind]) return;
-      const row=document.createElement('div');
-      row.className='actions';
-      const label=document.createElement('span');
-      label.textContent=labels[kind];
-      const importButton=document.createElement('button');
-      importButton.type='button';
-      importButton.textContent='Import browser copy';
-      importButton.addEventListener('click',()=>importLegacy(kind));
-      const keepButton=document.createElement('button');
-      keepButton.type='button';
-      keepButton.textContent='Keep account copy';
-      keepButton.addEventListener('click',()=>keepAccount(kind));
-      row.append(label,importButton,keepButton);
-      panel.appendChild(row);
-    });
-    if (!existing) host.prepend(panel);
-  }
   async function saveProgressionHistory(value) {
     const history=value && typeof value==='object'?value:{};
     return post({
@@ -291,11 +196,6 @@
 
   Storage.prototype.setItem=function(key,rawValue) {
     if (this===global.localStorage && typeof key==='string') {
-      const importKind=importKindForKey(key);
-      if (imports[importKind]) {
-        renderMigrationReview();
-        return;
-      }
       if (saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
         renderAuthorityStatus();
         return;
@@ -310,11 +210,6 @@
   };
   Storage.prototype.removeItem=function(key) {
     if (this===global.localStorage && typeof key==='string') {
-      const importKind=importKindForKey(key);
-      if (imports[importKind]) {
-        renderMigrationReview();
-        return;
-      }
       if (saveBlocked && (key===bodyKey() || key.startsWith(STEP_PREFIX))) {
         renderAuthorityStatus();
         return;
@@ -331,17 +226,18 @@
   async function syncForAuth(snapshot) {
     const nextName=snapshot?.authed?String(snapshot.name || snapshot.user?.name || '').trim():'';
     if (!nextName) {
-      enabled=false;savedDataDisabled=false;authName='';revision=0;serverActive=null;imports={profile:null,activeWorkout:null,progressionHistory:null};
-      renderMigrationReview();
+      enabled=false;savedDataDisabled=false;authName='';revision=0;serverActive=null;
       return;
     }
     if (normalise(nextName)!==normalise(authName)) {
-      revision=0;serverActive=null;saveBlocked=false;lastError='';imports={profile:null,activeWorkout:null,progressionHistory:null};
+      revision=0;serverActive=null;saveBlocked=false;lastError='';
     }
     authName=nextName;
-    quarantineLegacyLocal();
-    const server=await reload();
-    if (enabled) prepareImportCandidates(server);
+    /* Retired browser saves/import backups are never candidates. Clear them
+       before loading the authoritative account state, then repopulate only the
+       runtime cache from the server response. */
+    purgeObsoleteBrowserState();
+    await reload();
   }
   function attachAuth() {
     const auth=global.BASELINE_auth;
@@ -354,10 +250,7 @@
     get enabled(){ return enabled; },
     get savedDataDisabled(){ return savedDataDisabled; },
     get revision(){ return revision; },
-    hasImportCandidate,
-    saveProgressionHistory,
-    importLegacy,
-    keepAccount
+    saveProgressionHistory
   });
   attachAuth();
   global.addEventListener?.('pagehide',() => timers.forEach((timer) => clearTimeout(timer)),{ once:true });
