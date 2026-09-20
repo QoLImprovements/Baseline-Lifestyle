@@ -184,8 +184,20 @@ function bl_saved_decode_file(string $path): ?array {
   }catch(Throwable $error){
     throw new BaselineSavedDataCorruptException('resource_invalid_json', 0, $error);
   }
-  if(!is_array($decoded) || !isset($decoded['revision']) || !array_key_exists('data', $decoded)){
+  if(!is_array($decoded) || !array_key_exists('data', $decoded)){
     throw new BaselineSavedDataCorruptException('resource_invalid_envelope');
+  }
+  if(($decoded['schemaVersion'] ?? null) !== BL_SAVED_SCHEMA_VERSION){
+    throw new BaselineSavedDataCorruptException('resource_schema_version_invalid');
+  }
+  if(!isset($decoded['revision']) || !is_int($decoded['revision']) || $decoded['revision'] < 0){
+    throw new BaselineSavedDataCorruptException('resource_revision_invalid');
+  }
+  if(array_key_exists('updatedAt', $decoded) && $decoded['updatedAt'] !== null && !is_string($decoded['updatedAt'])){
+    throw new BaselineSavedDataCorruptException('resource_updated_at_invalid');
+  }
+  if(!is_array($decoded['data'])){
+    throw new BaselineSavedDataCorruptException('resource_data_invalid');
   }
   return $decoded;
 }
