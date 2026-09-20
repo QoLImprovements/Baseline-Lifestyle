@@ -255,6 +255,10 @@ Options -Indexes
   RewriteRule ^baseline-food-approach/ingredients/([^/]+)/?$ /baseline-food-approach/ingredient-library/$1 [R=302,L]
   RewriteRule ^baseline-food-approach/ingredient-library/([^/]+)/?$ systems/baseline-food-approach/ingredients/$1.html [L,QSA]
   # Legacy skincare ingredient aliases now resolve to one canonical record each.
+  RewriteRule ^baseline-natural-skincare/ingredient-library/castor/?$ /baseline-natural-skincare/ingredient-library/castor-oil [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/cucumber/?$ /baseline-natural-skincare/ingredient-library/cucumber-seed-oil [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/jojoba/?$ /baseline-natural-skincare/ingredient-library/jojoba-oil [R=302,L]
+  RewriteRule ^baseline-natural-skincare/ingredient-library/shea/?$ /baseline-natural-skincare/ingredient-library/shea-butter [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/lavender-essential-oil/?$ /baseline-natural-skincare/ingredient-library/lavender [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/olive-oil/?$ /baseline-natural-skincare/ingredient-library/olive [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/rose-water/?$ /baseline-natural-skincare/ingredient-library/rosewater [R=302,L]
