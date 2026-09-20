@@ -332,6 +332,13 @@
       if(recipeDetail && recipeDetail[1]){
         return { kind:'tab', tabId:'recipes', raw:path };
       }
+      const skincareIngredientDetail = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)$/i);
+      if(skincareIngredientDetail && skincareIngredientDetail[1]){
+        const ingredientId = skincareIngredientIdForSlug(skincareIngredientDetail[1]);
+        return ingredientId
+          ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:null, raw:path }
+          : { kind:'tab', tabId:'ingredients', raw:path };
+      }
       const slug = (path.split('/').filter(Boolean).pop() || '');
       const bySlug = {};
       Object.keys(cfg.tabs || {}).forEach(function(tabId){ bySlug[cfg.tabs[tabId]] = tabId; });
@@ -1245,8 +1252,31 @@
     'ing-avocado':'avocado',
     'ing-fractionated-coconut':'fractionated-coconut',
     'ing-watermelon':'watermelon',
-    'ing-dead-sea-salt':'dead-sea-salt'
+    'ing-dead-sea-salt':'dead-sea-salt',
+    'ing-epsom':'epsom',
+    'ing-vinegar':'vinegar'
   });
+
+  function skincareIngredientIdForSlug(slug){
+    let token = String(slug || '').trim().toLowerCase();
+    try{ token = decodeURIComponent(token); }catch(_e){}
+    const ids = Object.keys(SKINCARE_INGREDIENT_SLUG_BY_ID);
+    for(const ingredientId of ids){
+      if(SKINCARE_INGREDIENT_SLUG_BY_ID[ingredientId] === token) return ingredientId;
+    }
+    return '';
+  }
+
+  function skincareIngredientPathStateFromLocation(){
+    try{
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-natural-skincare.html') return null;
+      const path = decodeURIComponent(String(location.pathname || ''));
+      const match = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)\/?$/i);
+      if(!match || !match[1]) return null;
+      const ingredientId = skincareIngredientIdForSlug(match[1]);
+      return ingredientId ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:null, raw:path } : null;
+    }catch(_e){ return null; }
+  }
 
   function skincareIngredientUrlForId(ingredientId){
     const slug = SKINCARE_INGREDIENT_SLUG_BY_ID[String(ingredientId || '').trim()];
@@ -1327,6 +1357,11 @@
 
   function urlForNavState(state){
     if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
+    if(state && state.kind === 'ingredient' && state.ingredientId
+      && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
+      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId);
+      if(cleanIngredientUrl) return cleanIngredientUrl;
+    }
     if(state && state.kind === 'tab' && state.tabId){
       const cleanUrl = cleanUrlWithOptionalFilter(state.tabId, state.recipeFilter || '');
       if(cleanUrl) return cleanUrl;
@@ -1680,6 +1715,7 @@ function parseViewStateHash(hash){
     try{
       const rv = cleanRouteStateFromPath();
       if(rv && rv.kind === 'tab' && rv.tabId) initial = rv.tabId;
+      else if(rv && rv.kind === 'ingredient') initial = 'ingredients';
     }catch(_e){}
 
     try{
@@ -7037,6 +7073,7 @@ function setupRecipeFavourites(){
     const cleanContentRoute = cleanRouteStateFromPath();
     const needsImmediateContentUi = /^(#recipe=|#r\d+$|#tab=recipes|#tab=ingredients|#ingredients$|#recipes$|#support$|#support=|#support-|#ing-)/i.test(contentViewHash)
       || !!recipePathStateFromLocation()
+      || !!(cleanContentRoute && cleanContentRoute.kind === 'ingredient')
       || !!(cleanContentRoute && cleanContentRoute.kind === 'tab' && ['recipes','ingredients','support'].includes(cleanContentRoute.tabId))
       || !!q('.recipe.card.recipe-page');
 
@@ -7139,6 +7176,7 @@ function setupRecipeFavourites(){
     const initialHash = location.hash || '';
     const initialHashView = parseViewStateHash(initialHash);
     const initialRecipeView = recipePathStateFromLocation();
+    const initialIngredientView = skincareIngredientPathStateFromLocation();
 
     // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
     // A clean ingredient record gets its own page URL; one address must not
@@ -7152,7 +7190,7 @@ function setupRecipeFavourites(){
       }
     }
 
-    const initialView = initialRecipeView || initialHashView;
+    const initialView = initialRecipeView || initialIngredientView || initialHashView;
     const snapshot = (!initialHash) ? readNavSnapshot() : null;
     const snapshotState = (snapshot && snapshot.state && typeof snapshot.state === 'object') ? snapshot.state : null;
 
