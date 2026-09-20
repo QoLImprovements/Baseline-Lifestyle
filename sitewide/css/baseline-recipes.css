@@ -4354,3 +4354,56 @@ html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-templa
 html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .slider-save-row{
   margin-top:12px !important;
 }
+
+
+/* BASELINE-UNIVERSAL-RECIPE-SLIDER-WIDTH-CAPTION-20260920 */
+/* Final slider geometry contract: direct slider children own equal columns. */
+html body[data-app] #recipes .recipe-page .glide-value-bubble{
+  display:none !important;
+}
+html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template{
+  grid-auto-flow:row !important;
+  grid-auto-columns:auto !important;
+}
+html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template[data-slider-count="1"]{
+  grid-template-columns:minmax(0,1fr) !important;
+}
+html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template[data-slider-count="2"]{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+}
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template > .glide-control-main{
+  grid-column:auto !important;
+  min-width:0 !important;
+  width:100% !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template > .glide-control-explainer{
+  grid-column:1 / -1 !important;
+}
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .glide-scale{
+  display:grid !important;
+  grid-template-columns:max-content max-content !important;
+  justify-content:space-between !important;
+  align-items:start !important;
+  width:100% !important;
+}
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .glide-scale > span{
+  display:block !important;
+  width:auto !important;
+  max-width:none !important;
+  white-space:nowrap !important;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+}
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .glide-scale > span:last-child{
+  text-align:right !important;
+}
+@media (max-width:720px){
+  html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .glide-scale{
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  }
+  html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template .glide-scale > span{
+    white-space:normal !important;
+  }
+}
