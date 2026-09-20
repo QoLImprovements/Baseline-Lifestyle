@@ -114,7 +114,7 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
 });
 
 test('Skincare inline script blocks remain valid JavaScript', () => {
-  const blocks = [...html.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\\/script>/gi)];
+  const blocks = [...html.matchAll(/<script(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)<\/script>/gi)];
   assert.ok(blocks.length > 0, 'expected inline Skincare scripts');
   blocks.forEach((match, index) => {
     assert.doesNotThrow(
