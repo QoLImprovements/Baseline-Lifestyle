@@ -496,35 +496,8 @@
   window.BASELINE_MEASURE_CONSTANTS = MEASURES;
   window.BASELINE_INGREDIENT_PROFILES = { food: FOOD, skin: SKIN };
 
-  /* Wire testing-only powder ingredients into the shared conversion engine.
-     These recipes deliberately use simple <strong> labels rather than ingredient-library links. */
-  function wireTestingPowderIngredients(){
-    const mappings = {
-      r9: {
-        "superfine food/pharmaceutical-grade white kaolin clay": "ing-white-kaolin",
-        "very finely powdered sage leaf": "ing-sage-leaf-powder",
-        "very finely powdered peppermint leaf": "ing-peppermint-leaf-powder"
-      },
-      r11: {
-        "colloidal oatmeal": "ing-colloidal-oatmeal",
-        "marshmallow root powder": "ing-marshmallow-root-powder",
-        "chicory-root inulin": "ing-inulin-powder",
-        "sunflower lecithin powder": "ing-sunflower-lecithin-powder"
-      }
-    };
-
-    Object.keys(mappings).forEach(function(recipeId){
-      const recipe = document.getElementById(recipeId);
-      if(!recipe) return;
-      recipe.querySelectorAll("li").forEach(function(li){
-        const strong = li.querySelector("strong");
-        if(!strong) return;
-        const key = String(strong.textContent || "").trim().toLowerCase();
-        const ingredientId = mappings[recipeId][key];
-        if(ingredientId) li.dataset.ingredient = ingredientId;
-      });
-    });
-  }
+  /* Testing powder recipes now use the same canonical ingredient-library links
+     and data-ingredient IDs as every other recipe. */
 
   /* Testing Shaving Gel (r8): promote guar from an open-ended instruction to a
      real formula value while retaining a user-adjustable gel-thickness range.
@@ -838,8 +811,6 @@
       if(recipe && (event.target.matches(".batch-input") || event.target.matches(".glide-slider"))) schedule(recipe, 150);
     });
   }
-
-  wireTestingPowderIngredients();
   enhanceTestingShaveGel();
 
   // baseline-shared.js is loaded immediately after this file. A zero-delay task
