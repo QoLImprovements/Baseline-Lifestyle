@@ -28,14 +28,18 @@
   }
   function h4(text){ const el=document.createElement('h4');el.textContent=text;return el; }
   function rebuild(){
+    // Skincare recipe detail pages are intentionally single-column. Remove the
+    // legacy side navigation instead of rebuilding or merely hiding it.
     const side=document.getElementById('side-nav');
-    if(side) side.replaceChildren(h4('Recipes'),list(MAIN,false),h4('Testing'),list(TESTING,false));
+    if(side) side.remove();
+
     const landing=document.getElementById('recipes-landing');
     if(landing){
       let title=landing.querySelector(':scope > h2');
       if(!title){ title=document.createElement('h2');title.textContent='Recipes'; }
       let intro=landing.querySelector(':scope > p');
-      if(!intro){ intro=document.createElement('p');intro.textContent='Select a recipe to view it. Each recipe opens alone with a side navigation.'; }
+      if(!intro){ intro=document.createElement('p'); }
+      intro.textContent='Select a recipe to view it.';
       landing.replaceChildren(title,intro,h4('Recipes'),list(MAIN,true),h4('Testing'),list(TESTING,true));
     }
   }
