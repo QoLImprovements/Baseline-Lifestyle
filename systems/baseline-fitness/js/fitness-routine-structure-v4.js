@@ -268,8 +268,6 @@
     activePlanView=next;
     const planPanel=$('[data-fitness-routine-panel="plan"]');
     if (!planPanel) return;
-    const card=planPanel.querySelector(`details[data-fitness-plan-card="${next}"]`);
-    if (card) card.open=true;
     const child=planPanel.querySelector(`[data-fitness-routine-panel="${next}"]`);
     if (child) { child.hidden=false;child.classList.add('active'); }
     if (remember) {
