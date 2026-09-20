@@ -52,6 +52,7 @@ test('clean recipe detail routes serve the complete parent applications', () => 
 
 test('Fitness route generation is canonical and legacy malformed nested URLs recover', () => {
   const fitness = read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const routineStructure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
   const shared = read('sitewide/js/baseline-shared.js');
   const fallbackTabs = read('sitewide/js/baseline-tabs.js');
   const htaccess = read('.htaccess');
@@ -66,6 +67,12 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
   assert.match(shared, /library:'library'/);
   assert.match(shared, /baseline-fitness\\\/my-routine/);
   assert.match(shared, /baseline-natural-skincare\\\/my-routine/);
+  assert.match(shared, /preserveNestedRoutinePath/);
+  assert.match(shared, /const nextUrl = preserveNestedRoutinePath/);
+
+  assert.match(routineStructure, /function ownsNestedRoutinePath/);
+  assert.match(routineStructure, /if \(!ownsNestedRoutinePath\(url\.pathname\).*allowEnter/s);
+  assert.match(routineStructure, /const route=routeFromPath\(\);\s*if \(!route\) return;/);
 
   assert.match(fallbackTabs, /"my-body":"my-body"/);
   assert.match(fallbackTabs, /library:"library"/);
