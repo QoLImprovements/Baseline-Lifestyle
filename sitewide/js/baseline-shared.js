@@ -7457,7 +7457,14 @@ function setupRecipeFavourites(){
           setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
         }else{
           const nextState = { kind: 'tab', tabId: tabId };
-          setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
+          const rawCleanRoute = String(initialView.raw || '').toLowerCase().replace(/\/+$/,'');
+          const preserveNestedRoutinePath =
+            /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(rawCleanRoute) ||
+            /^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(rawCleanRoute);
+          const nextUrl = preserveNestedRoutinePath
+            ? String(location.pathname || '') + String(location.search || '') + String(location.hash || '')
+            : urlForNavState(nextState);
+          setNavState(nextState, { replace:true, url: nextUrl });
         }
       }catch(_e){}
     }else if(initialView && initialView.kind === 'ingredient'){
