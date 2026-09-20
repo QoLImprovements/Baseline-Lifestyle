@@ -165,7 +165,7 @@
     { src:'/systems/baseline-fitness/js/fitness-activity-catalogue-v2.js?v=BASELINE_FITNESS_ACTIVITY_CATALOGUE_20260805_3',marker:'data-fitness-activity-catalogue-v2' },
     { src:'/systems/baseline-fitness/js/fitness-exercise-family-filter.js?v=BASELINE_FITNESS_EXERCISE_FAMILY_FILTER_20260808_2',marker:'data-fitness-exercise-family-filter' },
     { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-    { src:'/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js?v=SAVED_DATA_REVISION_CLIENT_20260918_1',marker:'data-fitness-routine-saved-data-bridge' },
+    { src:'/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js?v=FITNESS_ROUTINE_SERVER_ONLY_20260920_1',marker:'data-fitness-routine-saved-data-bridge' },
     { src:'/systems/baseline-fitness/js/fitness-routine-workspace-v2.js?v=BASELINE_FITNESS_COMPACT_LOG_20260822_1',marker:'data-fitness-routine-workspace-v2' },
     { src:'/systems/baseline-fitness/js/fitness-routine-structure-v4.js?v=BASELINE_FITNESS_ROUTINE_EXACT_REFRESH_20260920_1',marker:'data-fitness-routine-structure-v6' },
     { src:'/systems/baseline-fitness/js/fitness-routine-summary-v2.js?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1',marker:'data-fitness-routine-summary-v3' },
