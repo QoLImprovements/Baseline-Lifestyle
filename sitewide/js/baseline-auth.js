@@ -9,13 +9,12 @@
   const state = { authed:false, name:'', email:'', providers:{ password:true, google:false } };
   const listeners = new Set();
 
+  /* Server session state is the only authentication authority. Retire the old
+     browser preview/session keys instead of using them to pre-authenticate UI
+     or migration code before /me.php has confirmed the current account. */
   try{
-    const cachedSession = store.read(sessionKey, null);
-    if(cachedSession && cachedSession.name){
-      state.authed = true;
-      state.name = String(cachedSession.name || '').trim();
-      state.email = String(cachedSession.email || '').trim();
-    }
+    store.del(sessionKey);
+    if(store.keys.users) store.del(store.keys.users);
   }catch(_e){}
 
   function snapshot(){
@@ -36,16 +35,13 @@
   });
   Object.freeze(stateView);
 
-  function syncLocalSession(user){
-    const current = user || {};
-    if(current.authed && current.name){
-      store.write(sessionKey, {
-        name:String(current.name || ''),
-        email:String(current.email || ''),
-      });
-    }else{
+  function syncLocalSession(_user){
+    /* Compatibility cleanup only. Never cache authenticated identity in
+       browser storage: the server session remains authoritative. */
+    try{
       store.del(sessionKey);
-    }
+      if(store.keys.users) store.del(store.keys.users);
+    }catch(_e){}
   }
 
   function emit(){

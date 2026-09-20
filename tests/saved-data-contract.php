@@ -40,6 +40,25 @@ try{
     'runtime temporary directory failed'
   );
 
+  $corruptPath = bl_saved_user_resource_path(7, 'favourites');
+  bl_saved_ensure_directory(dirname($corruptPath));
+  foreach([
+    ['schemaVersion'=>2,'revision'=>1,'updatedAt'=>gmdate('c'),'data'=>[],'error'=>'resource_schema_version_invalid'],
+    ['schemaVersion'=>1,'revision'=>'1','updatedAt'=>gmdate('c'),'data'=>[],'error'=>'resource_revision_invalid'],
+    ['schemaVersion'=>1,'revision'=>1,'updatedAt'=>gmdate('c'),'data'=>'not-an-object','error'=>'resource_data_invalid'],
+  ] as $fixture){
+    $error = $fixture['error'];
+    unset($fixture['error']);
+    file_put_contents($corruptPath, json_encode($fixture, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR));
+    try{
+      bl_saved_read($corruptPath);
+      throw new RuntimeException('malformed Saved Data envelope was accepted');
+    }catch(BaselineSavedDataCorruptException $expected){
+      bl_contract_assert($expected->getMessage() === $error, 'wrong malformed-envelope error');
+    }
+  }
+  @unlink($corruptPath);
+
   $gameExpectations = [
     'ninja'=>'baseline-realm.json',
     'baseline-realm'=>'baseline-realm.json',

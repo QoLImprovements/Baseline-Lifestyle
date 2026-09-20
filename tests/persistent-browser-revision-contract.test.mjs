@@ -46,15 +46,17 @@ test('Saved Data mutation endpoints require a submitted revision',()=>{
   assert.match(read('sitewide/api/resource_authority.php'),/expected_revision_required/);
 });
 
-test('delete-if-empty preserves the submitted revision through the final locked mutation',()=>{
+test('delete-if-empty preserves monotonic Saved Data revisions',()=>{
   const authority=read('sitewide/api/resource_authority.php');
-  assert.match(authority,/function bl_resource_file_delete_if_empty\([\s\S]*?\?int \$expectedRevision=null[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)[\s\S]*?bl_resource_file_delete\(\$path, \$expectedRevision\)/);
+  assert.match(authority,/function bl_resource_file_delete_if_empty\([\s\S]*?\?int \$expectedRevision=null[\s\S]*?bl_resource_authority\(\) === 'saved-data'[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)[\s\S]*?bl_resource_file_delete\(\$path, \$expectedRevision\)/);
 
   const favourites=read('sitewide/api/favourites.php');
   const binaural=read('sitewide/api/binaural.php');
+  const fitness=read('systems/baseline-fitness/api/fitness_resource.php');
   assert.match(favourites,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_replace\(\$path, \['presets'=>\$next\], \$expected\)/);
+  assert.match(fitness,/bl_fitness_resource_is_empty\(\$data\)[\s\S]*?bl_resource_authority\(\) === 'saved-data'[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)/);
 });
 
 test('Skincare clients never retry a stale document with a freshly fetched revision',()=>{

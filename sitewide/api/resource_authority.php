@@ -76,6 +76,9 @@ function bl_resource_file_delete_if_empty(
   ?int $expectedRevision=null
 ): ?array {
   if(!$isEmpty($data)) return bl_resource_file_replace($path, $data, $expectedRevision);
+  if(bl_resource_authority() === 'saved-data'){
+    return bl_resource_file_replace($path, $data, $expectedRevision);
+  }
   bl_resource_file_delete($path, $expectedRevision);
   return null;
 }

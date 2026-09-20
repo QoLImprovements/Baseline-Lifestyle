@@ -43,20 +43,21 @@ function loadAuth({ isFile=false, cachedSession=null, responses=[] }={}){
   return { auth:window.BASELINE_auth, calls, events, values };
 }
 
-test('cached account state is exposed through immutable live snapshots', () => {
-  const { auth } = loadAuth({ cachedSession:{ name:'Cached Person', email:'cached@example.test' } });
+test('obsolete cached account state is ignored until the server confirms authentication', () => {
+  const { auth, values } = loadAuth({ cachedSession:{ name:'Cached Person', email:'cached@example.test' } });
   assert.deepEqual(plain(auth.get()), {
-    authed:true,
-    name:'Cached Person',
-    email:'cached@example.test',
+    authed:false,
+    name:'',
+    email:'',
     providers:{ password:true, google:false },
   });
+  assert.equal(values.has('__bl_local_session_v1__'), false);
   assert.equal(Object.isFrozen(auth.state), true);
-  assert.equal(auth.state.authed, true);
-  assert.throws(()=>{ auth.state.authed = false; }, TypeError);
+  assert.equal(auth.state.authed, false);
+  assert.throws(()=>{ auth.state.authed = true; }, TypeError);
 });
 
-test('login validates input then updates state, cache and subscribers', async () => {
+test('login validates input then updates server-derived state without creating a browser auth cache', async () => {
   const response = { ok:true, status:200, data:{
     ok:true,
     user:{ name:'Signed In', email:'signed@example.test' },
@@ -75,7 +76,7 @@ test('login validates input then updates state, cache and subscribers', async ()
   });
   assert.equal(auth.state.authed, true);
   assert.equal(auth.state.name, 'Signed In');
-  assert.equal(values.get('__bl_local_session_v1__'), '{"name":"Signed In","email":"signed@example.test"}');
+  assert.equal(values.has('__bl_local_session_v1__'), false);
   assert.equal(updates.length, 1);
   assert.equal(events[0].type, 'baseline:auth');
 });

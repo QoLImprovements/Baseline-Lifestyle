@@ -51,6 +51,26 @@ try{
   bl_resource_file_delete($path, 2);
   bl_resource_test_assert(!is_file($path), 'resource deletion failed');
 
+  $tombstoneStart = bl_resource_file_replace($path, [
+    'items'=>[['app'=>'food','recipeId'=>'three','createdAt'=>'2026-08-02T12:02:00Z']],
+  ], 0);
+  bl_resource_test_assert(($tombstoneStart['revision'] ?? 0) === 1, 'tombstone setup failed');
+  $tombstone = bl_resource_file_delete_if_empty(
+    $path,
+    ['items'=>[]],
+    static fn(array $data): bool => ($data['items'] ?? []) === [],
+    1
+  );
+  bl_resource_test_assert(is_file($path), 'saved-data empty state lost its revision tombstone');
+  bl_resource_test_assert(($tombstone['revision'] ?? 0) === 2, 'empty-state revision did not advance');
+  bl_resource_test_assert((bl_resource_file_read($path, ['items'=>[]])['data']['items'] ?? null) === [], 'empty-state tombstone is not authoritative');
+  try{
+    bl_resource_file_replace($path, ['items'=>[['app'=>'food','recipeId'=>'stale']]], 0);
+    throw new RuntimeException('revision-zero ABA write was accepted after delete');
+  }catch(BaselineSavedDataConflictException $expected){
+    bl_resource_test_assert($expected->getMessage() === 'revision_conflict', 'wrong tombstone conflict');
+  }
+
   $user = [
     'id'=>7,
     'name'=>'Peter',

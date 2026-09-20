@@ -44,6 +44,9 @@ function bl_fitness_resource_write(int $uid, array $data, ?int $expectedRevision
   $data = bl_fitness_resource_normalise($data);
   $path = bl_fitness_resource_path($uid);
   if(bl_fitness_resource_is_empty($data)){
+    if(bl_resource_authority() === 'saved-data'){
+      return bl_resource_file_replace($path, $data, $expectedRevision);
+    }
     bl_resource_file_delete($path, $expectedRevision);
     return null;
   }

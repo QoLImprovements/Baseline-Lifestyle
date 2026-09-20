@@ -1,6 +1,6 @@
 # Baseline Lifestyle — Current Architecture and Hostinger Status
 
-Status date: 2026-09-18
+Status date: 2026-09-20
 
 This document is the current repository authority. Earlier dated audit, checkpoint and cutover documents are retained as historical evidence and must not be read as descriptions of the current runtime.
 
@@ -9,6 +9,10 @@ Phase 4 production readiness and the exact remaining Hostinger/deployment gates 
 Phase 5 first-half Hostinger deployment preparation is tracked in `PHASE_5_HOSTINGER_DEPLOYMENT_FIRST_HALF_20260918.md`. That runbook keeps resource authority explicitly on `sqlite` and stops before mirror mode.
 
 Phase 5 second-half production transition is tracked in `PHASE_5_SAVED_DATA_CUTOVER_SECOND_HALF_20260918.md`. It requires `sqlite → mirror → fresh final SQLite snapshot → stable cutover package → saved-data`, and the final snapshot must be taken after mirror observation rather than reusing the older pre-mirror copy.
+
+Current September production completion evidence is recorded in `PHASE_5_COMPLETION_EVIDENCE_20260920.md`. Production was already in `saved-data` mode when the September verification work began, so the earlier historical transition was not recreated. Backup restore capability, current-state rollback readiness, private-path isolation and the deployed `main` commit were verified against the observed production state.
+
+The post-cutover architecture review is recorded in `PHASE_6_ARCHITECTURE_REVIEW_20260920.md`. It is the current source for reviewed empty-state semantics, monotonic revisions, browser migration/authentication authority, game isolation, failure behavior and accepted final-architecture limitations.
 
 ## Production boundaries
 
@@ -28,7 +32,7 @@ The repository still contains a local-development SQLite fallback at `sitewide/a
 
 ## Saved Data authority
 
-The intended final production setting is `BASELINE_RESOURCE_AUTHORITY=saved-data`.
+The verified current production setting is `BASELINE_RESOURCE_AUTHORITY=saved-data`.
 
 Supported authority modes are deliberately limited to:
 
@@ -36,13 +40,13 @@ Supported authority modes are deliberately limited to:
 - `mirror`;
 - `saved-data`.
 
-The source default is `sqlite` when no authority value is configured. That default is not evidence of the real Hostinger production setting. The deployed `.baseline-private.env` or process environment must be inspected before any production cutover.
+The source default is `sqlite` when no authority value is configured. Production verification on 2026-09-20 confirmed the deployed authority is explicitly `saved-data`; the source default must still never be used as a substitute for deployment evidence.
 
 The intended production transition is:
 
 `sqlite → mirror → verify → saved-data`
 
-Do not skip mirror verification and do not switch production authority as part of readiness verification.
+The intended transition remains the procedure for any future fresh cutover. The September verification did not retroactively recreate it because production was already `saved-data` authoritative and contained legitimate newer writes.
 
 Canonical Saved Data resources are:
 
@@ -92,23 +96,26 @@ The repository enforces that configured Saved Data and Runtime roots are absolut
 
 Repository code cannot prove that Hostinger actually exposes the required extensions, preserves Unix permissions, places the configured paths outside `public_html`, keeps Saved Data across deployment/restart, or blocks direct web access to the sibling private paths. Those remain manual deployment checks.
 
-## Operational sign-off still required
+## Operational production evidence
 
-Repository tests cannot prove the private Hostinger paths, deployed environment values or backup system. Before declaring the cutover complete, record redacted evidence for:
+September 2026 operational verification established:
 
-1. the exact deployed `main` commit and current PHP version/modules;
-2. the actual deployed `BASELINE_RESOURCE_AUTHORITY` value;
-3. the deployed `BASELINE_DB_PATH`, `BASELINE_SAVED_DATA_PATH` and `BASELINE_RUNTIME_PATH` locations, confirming private absolute roots outside `public_html`;
-4. private directory ownership and restrictive permissions;
-5. public inaccessibility of `.baseline-private.env`, Saved Data, Runtime, Migration Evidence and the auth database;
-6. write, refresh and sign-out/sign-in tests for Account, Favourites, Binaural, Voice, Fitness, Fitness Routine, Food, Skincare, every played game and Shared Badminton;
-7. revision increments and confirmation that only the intended resource file or section changed;
-8. no abandoned Runtime temporary files or locks;
-9. persistence of Saved Data through the relevant Hostinger deployment/restart lifecycle;
-10. backup inclusion and a real restore drill;
-11. a current rollback SQLite copy built from Saved Data before any authority reversal, while separately preserving Saved-Data-only resources that SQLite cannot represent.
+- reviewed `main` and deployed production matched commit `324b3bbb4e75872bac5883f865e504fb5536439f`;
+- production authority is explicitly `saved-data`;
+- authentication SQLite is healthy and remains private;
+- the canonical Saved Data tree is healthy;
+- Account Index verification passes without repair;
+- direct HTTP requests to tested private paths fail closed with 404;
+- the Hostinger file backup includes authentication SQLite, Saved Data and private configuration;
+- an isolated backup restore drill passed integrity, foreign-key, schema and Saved Data structural checks;
+- a fresh current-state rollback SQLite copy can be built from current authentication SQLite plus current Saved Data;
+- complete Saved-Data-only material is preserved outside rollback SQLite;
+- the rollback Skincare mapping now reconstructs current visibility, routine, logs, groups and assignments rather than leaving stale legacy SQLite content;
+- final rollback verification passed semantic coverage and left live application data, configuration and authority unchanged.
 
-Only obsolete migration-source SQLite copies may be archived after the required checks. The active `private-auth/baseline.sqlite` remains required.
+The hosting environment did not expose a readable application/server error log during final verification. Comprehensive server-log inspection therefore remains an explicit operational limitation rather than an inferred pass.
+
+See `PHASE_5_COMPLETION_EVIDENCE_20260920.md` for the evidence summary and the historical-transition discrepancy.
 
 ## Account-index consistency
 
