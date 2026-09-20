@@ -113,13 +113,19 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
   }
 });
 
-test('Skincare inline script blocks remain valid JavaScript', () => {
-  const blocks = [...html.matchAll(/<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi)];
-  assert.ok(blocks.length > 0, 'expected inline Skincare scripts');
+test('Skincare executable inline script blocks remain valid JavaScript', () => {
+  const blocks = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/gi)]
+    .filter((match) => {
+      const attrs = match[1] || '';
+      if (/\bsrc\s*=/.test(attrs)) return false;
+      const type = (/\btype\s*=\s*["']([^"']+)["']/i.exec(attrs) || [])[1] || '';
+      return !type || /^(?:text|application)\/javascript$/i.test(type) || /^module$/i.test(type);
+    });
+  assert.ok(blocks.length > 0, 'expected executable inline Skincare scripts');
   blocks.forEach((match, index) => {
     assert.doesNotThrow(
-      () => new vm.Script(match[1], { filename:`baseline-natural-skincare.inline-${index + 1}.js` }),
-      `inline Skincare script ${index + 1} must parse`
+      () => new vm.Script(match[2], { filename:`baseline-natural-skincare.inline-${index + 1}.js` }),
+      `executable inline Skincare script ${index + 1} must parse`
     );
   });
 });
