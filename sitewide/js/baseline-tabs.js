@@ -176,12 +176,15 @@
 (function(){
   "use strict";
 
-  function repairSkincareRoutineRoute(){
+  function repairNestedRoutineRoute(){
     try{
       var path = String(window.location.pathname || "").toLowerCase().replace(/\/+$/, "");
-      if(!/\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)) return;
-      if(typeof window.BASELINE_selectTab === "function"){
-        window.BASELINE_selectTab("routine", { silentHistory:true });
+      if(/\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)){
+        if(typeof window.BASELINE_selectTab === "function") window.BASELINE_selectTab("routine", { silentHistory:true });
+        return;
+      }
+      if(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(path)){
+        if(typeof window.BASELINE_selectTab === "function") window.BASELINE_selectTab("my-plan", { silentHistory:true });
       }
     }catch(_e){}
   }
@@ -236,7 +239,7 @@
     "baseline-massage.html": { base:"/baseline-massage", tabs:{ system:"system", library:"library", planner:"planner" } },
     "baseline-natural-skincare.html": { base:"/baseline-natural-skincare", tabs:{ system:"system", recipes:"recipes", ingredients:"ingredient-library", support:"skin-support-system", routine:"my-routine" } },
     "baseline-badminton-session.html": { base:"/baseline-badminton-session", tabs:{ system:"system", gameplan:"game-plan", standings:"ratings-standings", roster:"players-pairs", history:"session-history" } },
-    "baseline-fitness.html": { base:"/baseline-fitness", tabs:{ system:"system", routine:"workout-routine", library:"exercise-library", achievements:"achievements", "my-plan":"my-plan","my-routine":"my-plan" } }
+    "baseline-fitness.html": { base:"/baseline-fitness", tabs:{ system:"system", routine:"my-plan", library:"library", achievements:"achievements", "my-plan":"my-plan", "my-routine":"my-plan", "my-body":"my-body" } }
   };
 
   function urlForTab(id){
@@ -343,11 +346,11 @@
     // The shared router historically treated /my-routine/<view> as the System
     // tab. Repair that nested clean route before this fail-safe decides whether
     // it is needed, so the canonical My Routine page remains visible.
-    repairSkincareRoutineRoute();
+    repairNestedRoutineRoute();
     if(shouldDisable()) return;
 
     expose();
-    repairSkincareRoutineRoute();
+    repairNestedRoutineRoute();
 
     try{
       var tabs = qsa(".tab[data-target], .tab[data-tab]");
