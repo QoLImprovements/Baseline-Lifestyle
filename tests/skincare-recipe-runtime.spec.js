@@ -9,8 +9,13 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
 
   await link.click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page.locator('.bl-homebar')).toBeVisible();
+  await expect(page.locator('#recipes')).toHaveClass(/recipe-focus/);
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h1')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
+  await expect(page.locator('#r12 .recipe-subtabs')).toBeVisible();
+  await expect(page.locator('#r12 .recipe-adjustments-toggle')).toBeVisible();
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
 
@@ -46,7 +51,9 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
 
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
-  await expect(page.locator('#r12 h1')).toHaveText('Lip/ balm');
+  await expect(page.locator('.bl-homebar')).toBeVisible();
+  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
 });
