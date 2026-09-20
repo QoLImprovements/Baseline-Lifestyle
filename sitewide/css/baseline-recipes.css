@@ -4274,7 +4274,6 @@ html body[data-app] .recipe-page.recipe-universal-template p.recipe-slider-intro
   - no per-slider helper prose or duplicate selected-variant block
 */
 html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template{
-  display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
   gap:16px !important;
   align-items:start !important;
