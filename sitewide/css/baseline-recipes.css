@@ -4273,7 +4273,7 @@ html body[data-app] .recipe-page.recipe-universal-template p.recipe-slider-intro
   - one Overall Feel panel always sits below the slider row
   - no per-slider helper prose or duplicate selected-variant block
 */
-html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template{
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template{
   display:grid !important;
   grid-template-columns:minmax(0,1fr) !important;
   gap:16px !important;
@@ -4282,7 +4282,7 @@ html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.
   max-width:100% !important;
   box-sizing:border-box !important;
 }
-html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template[data-slider-count="2"]{
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template[data-slider-count="2"]{
   grid-template-columns:repeat(2,minmax(0,1fr)) !important;
 }
 html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template > .glide-control-stack{
@@ -4361,14 +4361,14 @@ html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-templa
 html body[data-app] #recipes .recipe-page .glide-value-bubble{
   display:none !important;
 }
-html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template{
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template{
   grid-auto-flow:row !important;
   grid-auto-columns:auto !important;
 }
-html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template[data-slider-count="1"]{
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template[data-slider-count="1"]{
   grid-template-columns:minmax(0,1fr) !important;
 }
-html body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller.recipe-slider-template[data-slider-count="2"]{
+html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template[data-slider-count="2"]{
   grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
 }
 html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-template > .glide-control-main{
