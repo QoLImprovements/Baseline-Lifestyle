@@ -122,6 +122,7 @@
   }
 
   function rewriteIngredientHrefs(){
+    if(!onFoodPage()) return;
     var links = document.querySelectorAll('a.ing-link[data-ingredient]');
     for(var i=0;i<links.length;i++){
       var a = links[i];
