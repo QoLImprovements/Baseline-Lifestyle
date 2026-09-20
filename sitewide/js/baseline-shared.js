@@ -292,7 +292,7 @@
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
-    'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'workout-routine', library:'exercise-library', achievements:'achievements', 'my-plan':'my-plan','my-routine':'my-plan' } }
+    'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
   const BASELINE_CLEAN_PAGE_LINKS = Object.freeze({
     'index.html':'/home/1', 'home.html':'/home/1', 'home':'/home/1',
@@ -328,6 +328,12 @@
         }
       }
       const path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
+      if(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(path)){
+        return { kind:'tab', tabId:'my-plan', raw:path };
+      }
+      if(/^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)){
+        return { kind:'tab', tabId:'routine', raw:path };
+      }
       const recipeDetail = path.match(/\/recipes\/([^\/?#]+)$/i);
       if(recipeDetail && recipeDetail[1]){
         return { kind:'tab', tabId:'recipes', raw:path };
