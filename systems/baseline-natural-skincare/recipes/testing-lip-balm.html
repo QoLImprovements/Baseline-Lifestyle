@@ -79,23 +79,22 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 
     const structureReadout=document.getElementById('r12StructureReadout');
     if(structureReadout) structureReadout.textContent=fmt(candelilla)+'% candelilla • '+fmt(apricot)+'% apricot kernel oil';
-  }
 
-  function resetDefaults(){
-    const butter=document.getElementById('r12ButterCharacter');
-    const structure=document.getElementById('r12Structure');
-    if(butter) butter.value=String(DEFAULTS.kokum);
-    if(structure) structure.value=String(DEFAULTS.candelilla);
-    update();
+    const overallFeel=document.getElementById('r12OverallExplain');
+    if(overallFeel){
+      if(kokum <= 7.5 && candelilla <= 2.5) overallFeel.textContent='Creamier, softer-melting balm with a richer glide and lighter structural hold.';
+      else if(kokum >= 12.5 && candelilla >= 3.5) overallFeel.textContent='Firmest, most durable setting with a drier pickup and the strongest structural hold.';
+      else if(kokum >= 12.5) overallFeel.textContent='Firmer butter-led feel with a drier pickup while keeping the wax level moderate.';
+      else if(candelilla >= 3.5) overallFeel.textContent='More durable, wax-supported set while keeping the butter balance relatively creamy.';
+      else overallFeel.textContent='Balanced rich balm with a smooth set, controlled glide and durable protective finish.';
+    }
   }
 
   function boot(){
     const butter=document.getElementById('r12ButterCharacter');
     const structure=document.getElementById('r12Structure');
-    const reset=document.getElementById('r12Reset');
     if(butter){butter.addEventListener('input',update);butter.addEventListener('change',update);}
     if(structure){structure.addEventListener('input',update);structure.addEventListener('change',update);}
-    if(reset) reset.addEventListener('click',resetDefaults);
     update();
   }
 
@@ -120,44 +119,49 @@ function BASELINE_showAllRecipes(){window.location.href='/baseline-natural-skinc
 <h3>Lip/ balm</h3>
 <p class="note">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
 
-<div class="glide-controller" aria-label="Lip balm formulation controls">
+<div class="glide-controller glide-controller--paired" aria-label="Lip balm formulation controls">
 <div class="glide-control-main">
-<div class="glide-label"><strong>Butter character</strong></div>
+<div class="glide-slider-head">
+<div class="glide-label">Butter character</div>
 <div class="glide-readout" id="r12ButterReadout">15% mango • 10% kokum</div>
+</div>
 <div class="glide-slider-wrap">
 <input aria-label="Butter character between creamier mango and firmer kokum" class="glide-slider" data-default-value="10" id="r12ButterCharacter" min="5" max="15" step="0.5" type="range" value="10"/>
 </div>
-<div class="glide-scale"><span>Creamier: more mango</span><span>Firmer: more kokum</span></div>
-<p class="note">Mango and kokum always total 25% of the batch. Cocoa butter remains fixed at 20%.</p>
+<div class="glide-scale"><span>Creamier</span><span>Firmer</span></div>
 </div>
 
 <div class="glide-control-main">
-<div class="glide-label"><strong>Structure</strong></div>
+<div class="glide-slider-head">
+<div class="glide-label">Structure</div>
 <div class="glide-readout" id="r12StructureReadout">3% candelilla • 25.5% apricot kernel oil</div>
+</div>
 <div class="glide-slider-wrap">
 <input aria-label="Structure between softer melt and more durable balm" class="glide-slider" data-default-value="3" id="r12Structure" min="2" max="4" step="0.25" type="range" value="3"/>
 </div>
-<div class="glide-scale"><span>Softer melt</span><span>More durable balm</span></div>
-<p class="note">Candelilla and apricot kernel oil compensate against each other so the complete formula always remains 100 g.</p>
+<div class="glide-scale"><span>Softer melt</span><span>More durable set</span></div>
 </div>
 
-<button class="slider-default-btn" id="r12Reset" type="button">Reset to recipe default</button>
+<div class="glide-control-explainer">
+<div class="glide-explain-title">Overall Feel</div>
+<p class="glide-explain" id="r12OverallExplain">Balanced rich balm with a smooth set, controlled glide and durable protective finish.</p>
+</div>
 </div>
 
 <h4>Ingredients</h4>
 <ul>
 <li class="ing-subhead"><strong>Butters</strong></li>
-<li data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter">Cocoa Butter</a></li>
-<li data-tip="Softer butter that improves creaminess and spreadability."><span class="amt" data-formula-key="mango" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-mango-butter" href="/baseline-natural-skincare/ingredient-library/mango-butter">Mango Butter</a></li>
-<li data-tip="Harder butter that increases structure and gives a relatively dry, smooth finish."><span class="amt" data-formula-key="kokum" data-base-display="10 g" data-base-min="10" data-base-max="10" data-base-unit="g">10 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-kokum-butter" href="/baseline-natural-skincare/ingredient-library/kokum-butter">Kokum Butter</a></li>
+<li data-method-step="3" data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter">Cocoa Butter</a></li>
+<li data-method-step="3" data-tip="Softer butter that improves creaminess and spreadability."><span class="amt" data-formula-key="mango" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-mango-butter" href="/baseline-natural-skincare/ingredient-library/mango-butter">Mango Butter</a></li>
+<li data-method-step="3" data-tip="Harder butter that increases structure and gives a relatively dry, smooth finish."><span class="amt" data-formula-key="kokum" data-base-display="10 g" data-base-min="10" data-base-max="10" data-base-unit="g">10 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-kokum-butter" href="/baseline-natural-skincare/ingredient-library/kokum-butter">Kokum Butter</a></li>
 
 <li class="ing-subhead"><strong>Oils</strong></li>
-<li data-tip="Primary liquid oil; improves slip and keeps the high-butter formula spreadable."><span class="amt" data-formula-key="apricot" data-base-display="25.5 g" data-base-min="25.5" data-base-max="25.5" data-base-unit="g">25.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-apricot-kernel-oil" href="/baseline-natural-skincare/ingredient-library/apricot-kernel-oil">Apricot Kernel Oil</a></li>
-<li data-tip="Rich emollient oil that adds body and a more substantial conditioning feel."><span class="amt" data-formula-key="avocado" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado">Avocado Oil</a></li>
-<li data-tip="Seed oil that contributes fatty-acid diversity and antioxidant-containing unsaponifiables."><span class="amt" data-formula-key="raspberry" data-base-display="11 g" data-base-min="11" data-base-max="11" data-base-unit="g">11 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-red-raspberry-seed-oil" href="/baseline-natural-skincare/ingredient-library/red-raspberry-seed-oil">Red Raspberry Seed Oil</a></li>
+<li data-method-step="4" data-tip="Primary liquid oil; improves slip and keeps the high-butter formula spreadable."><span class="amt" data-formula-key="apricot" data-base-display="25.5 g" data-base-min="25.5" data-base-max="25.5" data-base-unit="g">25.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-apricot-kernel-oil" href="/baseline-natural-skincare/ingredient-library/apricot-kernel-oil">Apricot Kernel Oil</a></li>
+<li data-method-step="4" data-tip="Rich emollient oil that adds body and a more substantial conditioning feel."><span class="amt" data-formula-key="avocado" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado">Avocado Oil</a></li>
+<li data-method-step="4" data-tip="Seed oil that contributes fatty-acid diversity and antioxidant-containing unsaponifiables."><span class="amt" data-formula-key="raspberry" data-base-display="11 g" data-base-min="11" data-base-max="11" data-base-unit="g">11 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-red-raspberry-seed-oil" href="/baseline-natural-skincare/ingredient-library/red-raspberry-seed-oil">Red Raspberry Seed Oil</a></li>
 
 <li class="ing-subhead"><strong>Structure &amp; antioxidant</strong></li>
-<li data-tip="Vegan wax that improves structure, film persistence and resistance to softening."><span class="amt" data-formula-key="candelilla" data-base-display="3 g" data-base-min="3" data-base-max="3" data-base-unit="g">3 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-candelilla-wax" href="/baseline-natural-skincare/ingredient-library/candelilla-wax">Candelilla Wax</a></li>
+<li data-method-step="3" data-tip="Vegan wax that improves structure, film persistence and resistance to softening."><span class="amt" data-formula-key="candelilla" data-base-display="3 g" data-base-min="3" data-base-max="3" data-base-unit="g">3 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-candelilla-wax" href="/baseline-natural-skincare/ingredient-library/candelilla-wax">Candelilla Wax</a></li>
 <li data-method-step="5" data-tip="Antioxidant that helps slow oxidation of the oil phase. It is not a preservative."><span class="amt" data-formula-key="vitamin-e" data-base-display="0.5 g" data-base-min="0.5" data-base-max="0.5" data-base-unit="g">0.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a></li>
 </ul>
 

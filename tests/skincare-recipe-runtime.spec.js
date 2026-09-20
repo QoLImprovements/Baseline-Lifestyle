@@ -15,7 +15,35 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
   await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
   await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
   await expect(page.locator('#r12 .recipe-subtabs')).toBeVisible();
-  await expect(page.locator('#r12 .recipe-adjustments-toggle')).toBeVisible();
+  const adjustments = page.locator('#r12 .recipe-adjustments-toggle');
+  await expect(adjustments).toBeVisible();
+  await adjustments.click();
+  await expect(page.locator('#r12 .glide-controller')).toBeVisible();
+  await expect(page.locator('#r12 .glide-explain-title')).toHaveText('Overall Feel');
+  await expect(page.locator('#r12 .glide-explain-title')).toHaveCount(1);
+  await expect(page.locator('#r12 .glide-variable-help, #r12 .recipe-slider-instruction')).toHaveCount(0);
+  await expect(page.locator('#r12 .glide-breakdown:visible')).toHaveCount(0);
+  await expect(page.locator('#r12Reset')).toHaveCount(0);
+
+  const lipSliderLayout = await page.locator('#r12 .glide-controller').evaluate((controller) => {
+    const mains = Array.from(controller.querySelectorAll('.glide-control-main')).map((el) => {
+      const r = el.getBoundingClientRect();
+      return { x:r.x, y:r.y, width:r.width, height:r.height, right:r.right, bottom:r.bottom };
+    });
+    const feel = controller.querySelector('.glide-control-explainer')?.getBoundingClientRect();
+    return {
+      sliderCount: controller.getAttribute('data-slider-count'),
+      mains,
+      feel: feel ? { x:feel.x, y:feel.y, width:feel.width, height:feel.height } : null
+    };
+  });
+  expect(lipSliderLayout.sliderCount).toBe('2');
+  expect(lipSliderLayout.mains).toHaveLength(2);
+  expect(Math.abs(lipSliderLayout.mains[0].width - lipSliderLayout.mains[1].width)).toBeLessThan(3);
+  expect(lipSliderLayout.mains[1].x).toBeGreaterThanOrEqual(lipSliderLayout.mains[0].right - 1);
+  expect(lipSliderLayout.feel).not.toBeNull();
+  expect(lipSliderLayout.feel.y).toBeGreaterThanOrEqual(Math.max(...lipSliderLayout.mains.map((r) => r.bottom)) - 1);
+
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
 
@@ -38,11 +66,33 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
   );
   expect(total).toBeCloseTo(100, 6);
 
-  await page.locator('#r12Reset').click();
+  const defaultButton = page.locator('#r12 .slider-default-btn');
+  await expect(defaultButton).toHaveText('Reset to recipe default');
+  const defaultRadius = await defaultButton.evaluate((el) => parseFloat(getComputedStyle(el).borderRadius));
+  expect(defaultRadius).toBeGreaterThan(10);
+  await defaultButton.click();
   await expect(page.locator('[data-formula-key="mango"]')).toHaveText('15 g');
   await expect(page.locator('[data-formula-key="kokum"]')).toHaveText('10 g');
   await expect(page.locator('[data-formula-key="candelilla"]')).toHaveText('3 g');
   await expect(page.locator('[data-formula-key="apricot"]')).toHaveText('25.5 g');
+
+  const methodSteps = page.locator('#r12 h4 + ol > li');
+  await expect(methodSteps.nth(1).locator('.method-amt')).toHaveCount(0);
+  await expect(methodSteps.nth(2).locator('.method-amt')).toHaveCount(4);
+  await expect(methodSteps.nth(2)).toContainText('Cocoa Butter');
+  await expect(methodSteps.nth(2)).toContainText('Mango Butter');
+  await expect(methodSteps.nth(2)).toContainText('Kokum Butter');
+  await expect(methodSteps.nth(2)).toContainText('Candelilla Wax');
+  await expect(methodSteps.nth(3).locator('.method-amt')).toHaveCount(3);
+  await expect(methodSteps.nth(3)).toContainText('Apricot Kernel Oil');
+  await expect(methodSteps.nth(3)).toContainText('Avocado Oil');
+  await expect(methodSteps.nth(3)).toContainText('Red Raspberry Seed Oil');
+  await expect(methodSteps.nth(4).locator('.method-amt')).toHaveCount(1);
+  await expect(methodSteps.nth(4)).toContainText('Vitamin E');
+  const allMethodPills = await page.locator('#r12 .method-amt').allTextContents();
+  for (const name of ['Cocoa Butter','Mango Butter','Kokum Butter','Candelilla Wax','Apricot Kernel Oil','Avocado Oil','Red Raspberry Seed Oil','Vitamin E']) {
+    expect(allMethodPills.filter((text) => text.includes(name))).toHaveLength(1);
+  }
 
   await page.locator('a[data-ingredient="ing-kokum-butter"]').click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter$/);
@@ -56,6 +106,39 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
   await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
+});
+
+test('universal slider template keeps Restorative Hydration Layer text separated and Overall Feel below the slider', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/restorative-hydration-layer');
+  const adjustments = page.locator('#r7 .recipe-adjustments-toggle');
+  await adjustments.click();
+
+  const controller = page.locator('#r7 .glide-controller');
+  await expect(controller).toBeVisible();
+  await expect(controller).toHaveAttribute('data-slider-count', '1');
+  await expect(controller.locator('.glide-explain-title')).toHaveText('Overall Feel');
+  await expect(controller.locator('.glide-explain-title')).toHaveCount(1);
+  await expect(controller.locator('.glide-breakdown:visible')).toHaveCount(0);
+  await expect(controller.locator('.glide-variable-help, .recipe-slider-instruction')).toHaveCount(0);
+
+  const layout = await controller.evaluate((el) => {
+    const main = el.querySelector('.glide-control-main')?.getBoundingClientRect();
+    const feel = el.querySelector('.glide-control-explainer')?.getBoundingClientRect();
+    const label = el.querySelector('.glide-label')?.getBoundingClientRect();
+    const readout = el.querySelector('.glide-readout')?.getBoundingClientRect();
+    return {
+      main: main ? { x:main.x, y:main.y, width:main.width, bottom:main.bottom } : null,
+      feel: feel ? { x:feel.x, y:feel.y, width:feel.width } : null,
+      label: label ? { top:label.top, bottom:label.bottom } : null,
+      readout: readout ? { top:readout.top, bottom:readout.bottom } : null
+    };
+  });
+
+  expect(layout.main).not.toBeNull();
+  expect(layout.feel).not.toBeNull();
+  expect(Math.abs(layout.main.width - layout.feel.width)).toBeLessThan(3);
+  expect(layout.feel.y).toBeGreaterThanOrEqual(layout.main.bottom - 1);
+  expect(layout.readout.top).toBeGreaterThanOrEqual(layout.label.bottom - 1);
 });
 
 test('Skincare recipe UX keeps direct recipe routes focused without a side navigation', async ({ page }) => {

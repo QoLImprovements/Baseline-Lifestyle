@@ -3633,6 +3633,8 @@ function parseViewStateHash(hash){
       });
       if(!entries.length) return;
 
+      const emittedMethodAmounts = new Set();
+
       qsa('li', methodOl).forEach((step, idx)=>{
         const info = getStepInfo(step, idx);
         const selected = [];
@@ -3665,8 +3667,10 @@ function parseViewStateHash(hash){
           if(matched) selected.push(entry.display);
         });
 
-        const deduped = Array.from(new Set(selected.filter(Boolean)));
+        const deduped = Array.from(new Set(selected.filter(Boolean)))
+          .filter(txt => !emittedMethodAmounts.has(txt));
         if(!deduped.length) return;
+        deduped.forEach(txt => emittedMethodAmounts.add(txt));
         const wrap = document.createElement('div');
         wrap.className = 'method-amt-inject';
         const label = document.createElement('span');
@@ -4854,12 +4858,6 @@ function buildControls(recipeEl){
         if(previous && previous.matches && previous.matches('p')){
           previous.classList.add('recipe-slider-intro-legacy');
         }
-        if(!q(':scope > .recipe-slider-instruction', controller)){
-          const instruction = document.createElement('p');
-          instruction.className = 'recipe-slider-instruction';
-          instruction.textContent = 'Adjust slider to preference.';
-          controller.insertBefore(instruction, controller.firstChild);
-        }
       });
 
       // Existing status/meta prose is deeper information once the compact metadata
@@ -4933,6 +4931,31 @@ function buildControls(recipeEl){
       if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
 
+    function normalizeRecipeSliderTemplate(recipeEl){
+      qsa('.glide-controller', recipeEl).forEach(controller=>{
+        const controls = qsa('.glide-control-main', controller);
+        if(!controls.length) return;
+
+        controller.classList.add('recipe-slider-template');
+        controller.dataset.sliderCount = String(controls.length > 1 ? 2 : 1);
+
+        qsa('.recipe-slider-instruction, .glide-variable-help', controller).forEach(el=>{
+          try{ el.remove(); }catch(_e){}
+        });
+
+        const explainers = qsa('.glide-control-explainer', controller);
+        if(explainers.length){
+          const explainer = explainers[0];
+          const title = q('.glide-explain-title', explainer);
+          if(title) title.textContent = 'Overall Feel';
+          qsa('.glide-breakdown', explainer).forEach(el=>{
+            el.hidden = true;
+            el.setAttribute('aria-hidden', 'true');
+          });
+        }
+      });
+    }
+
     recipes.forEach(recipeEl=>{
       // Prepare
       wrapAmounts(recipeEl);
@@ -4940,9 +4963,10 @@ function buildControls(recipeEl){
       buildControls(recipeEl);
       setupRecipeCompactOptions(recipeEl);
       setupRecipeUniversalTemplate(recipeEl);
+      normalizeRecipeSliderTemplate(recipeEl);
 
       // Ensure method "Amounts:" pills exist immediately on first render.
-      // (Previously they only appeared after the first Apply/Reset.)
+      // Each ingredient is emitted only at its first assigned/actual-use step.
       try{ injectMethodAmounts(recipeEl); }catch(_e){}
     });
 

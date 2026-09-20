@@ -44,10 +44,13 @@ test('Adjustments has no coloured button surface', () => {
   assert.match(css, /recipe-adjustments-toggle[\s\S]*background-image:none !important;/);
 });
 
-test('slider recipes use one concise preference instruction and suppress old slider prose', () => {
-  assert.match(shared, /recipe-slider-instruction/);
-  assert.match(shared, /Adjust slider to preference\./);
+test('slider recipes use the universal slider row plus one Overall Feel descriptor', () => {
+  assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
+  assert.match(shared, /title\.textContent = 'Overall Feel'/);
+  assert.match(shared, /\.glide-variable-help/);
+  assert.doesNotMatch(shared, /instruction\.textContent = 'Adjust slider to preference\.'/);
   assert.match(shared, /recipe-slider-intro-legacy/);
+  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-SLIDER-CONTRACT-20260920/);
   assert.match(css, /\.recipe-slider-intro-legacy\{\s*display:none !important;/s);
 });
 
