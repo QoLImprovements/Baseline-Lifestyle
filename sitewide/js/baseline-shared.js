@@ -341,9 +341,10 @@
       const skincareIngredientDetail = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)$/i);
       if(skincareIngredientDetail && skincareIngredientDetail[1]){
         const ingredientId = skincareIngredientIdForSlug(skincareIngredientDetail[1]);
+        const recipeFilter = new URLSearchParams(location.search || '').get('filter') || null;
         return ingredientId
-          ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:null, raw:path }
-          : { kind:'tab', tabId:'ingredients', raw:path };
+          ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:recipeFilter, raw:path }
+          : { kind:'tab', tabId:'ingredients', recipeFilter:recipeFilter, raw:path };
       }
       const slug = (path.split('/').filter(Boolean).pop() || '');
       const bySlug = {};
@@ -1265,6 +1266,13 @@
     'ing-fractionated-coconut':'fractionated-coconut',
     'ing-watermelon':'watermelon',
     'ing-dead-sea-salt':'dead-sea-salt',
+    'ing-white-kaolin':'white-kaolin',
+    'ing-sage-leaf-powder':'sage-leaf-powder',
+    'ing-peppermint-leaf-powder':'peppermint-leaf-powder',
+    'ing-colloidal-oatmeal':'colloidal-oatmeal',
+    'ing-marshmallow-root-powder':'marshmallow-root-powder',
+    'ing-inulin-powder':'inulin-powder',
+    'ing-sunflower-lecithin-powder':'sunflower-lecithin-powder',
     'ing-epsom':'epsom',
     'ing-vinegar':'vinegar'
   });
@@ -1286,13 +1294,17 @@
       const match = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)\/?$/i);
       if(!match || !match[1]) return null;
       const ingredientId = skincareIngredientIdForSlug(match[1]);
-      return ingredientId ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:null, raw:path } : null;
+      const recipeFilter = new URLSearchParams(location.search || '').get('filter') || null;
+      return ingredientId ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:recipeFilter, raw:path } : null;
     }catch(_e){ return null; }
   }
 
-  function skincareIngredientUrlForId(ingredientId){
+  function skincareIngredientUrlForId(ingredientId, recipeFilter){
     const slug = SKINCARE_INGREDIENT_SLUG_BY_ID[String(ingredientId || '').trim()];
-    return slug ? '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug) : '';
+    if(!slug) return '';
+    const base = '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug);
+    const filter = String(recipeFilter || '').trim();
+    return filter ? (base + '?filter=' + encodeURIComponent(filter)) : base;
   }
 
   function recipeTokenFromHref(href){
@@ -1371,7 +1383,7 @@
     if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
     if(state && state.kind === 'ingredient' && state.ingredientId
       && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId);
+      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId, state.recipeFilter || '');
       if(cleanIngredientUrl) return cleanIngredientUrl;
     }
     if(state && state.kind === 'tab' && state.tabId){
@@ -2154,7 +2166,7 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
-    if(isSkincare){
+    if(isSkincare && !recipeCards.some(card => card.id === 'r12')){
       recipes.push({
         id:'r12',
         name:'Lip/ balm',
@@ -2168,7 +2180,7 @@ function parseViewStateHash(hash){
     // hashes. This keeps one public URL responsible for one visible record and
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
-    if(isSkincare){
+    if(isSkincare && !recipeCards.some(card => card.id === 'r12')){
       recipeToIngredients.set('r12', new Set([
         'ing-cocoa-butter','ing-mango-butter','ing-kokum-butter',
         'ing-apricot-kernel-oil','ing-avocado','ing-red-raspberry-seed-oil',
@@ -2183,7 +2195,7 @@ function parseViewStateHash(hash){
       recipeToIngredients.get(rid).add(iid);
 
       if(isSkincare){
-        const cleanIngredientUrl = skincareIngredientUrlForId(iid);
+        const cleanIngredientUrl = skincareIngredientUrlForId(iid, rid);
         if(cleanIngredientUrl) a.setAttribute('href', cleanIngredientUrl);
       }
     });
