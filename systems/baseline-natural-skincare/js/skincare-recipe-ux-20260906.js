@@ -202,24 +202,32 @@
       const structureReadout=recipe.querySelector('#r12StructureReadout');
       if(structureReadout) structureReadout.textContent=fmt(candelilla)+'% candelilla • '+fmt(apricot)+'% apricot kernel oil';
 
-      global.requestAnimationFrame(refreshScaledDisplay);
-    }
+      const overallFeel=recipe.querySelector('#r12OverallExplain');
+      if(overallFeel){
+        if(kokum <= 7.5 && candelilla <= 2.5){
+          overallFeel.textContent='Creamier, softer-melting balm with a richer glide and lighter structural hold.';
+        }else if(kokum >= 12.5 && candelilla >= 3.5){
+          overallFeel.textContent='Firmest, most durable setting with a drier pickup and the strongest structural hold.';
+        }else if(kokum >= 12.5){
+          overallFeel.textContent='Firmer butter-led feel with a drier pickup while keeping the wax level moderate.';
+        }else if(candelilla >= 3.5){
+          overallFeel.textContent='More durable, wax-supported set while keeping the butter balance relatively creamy.';
+        }else{
+          overallFeel.textContent='Balanced rich balm with a smooth set, controlled glide and durable protective finish.';
+        }
+      }
 
-    function reset(){
-      const butter=recipe.querySelector('#r12ButterCharacter');
-      const structure=recipe.querySelector('#r12Structure');
-      if(butter) butter.value=String(defaults.kokum);
-      if(structure) structure.value=String(defaults.candelilla);
-      update();
+      global.requestAnimationFrame(refreshScaledDisplay);
     }
 
     const butter=recipe.querySelector('#r12ButterCharacter');
     const structure=recipe.querySelector('#r12Structure');
-    const resetButton=recipe.querySelector('#r12Reset');
+    const controller=recipe.querySelector('.glide-controller');
+    if(controller) controller.__baselineSliderSync=update;
     if(butter){ butter.addEventListener('input',update); butter.addEventListener('change',update); }
     if(structure){ structure.addEventListener('input',update); structure.addEventListener('change',update); }
-    if(resetButton) resetButton.addEventListener('click',reset);
     update();
+    try{ global.BASELINE_decorateRecipeSliderSaves?.(); }catch(_error){};
   }
 
   async function loadExternalRecipeForCurrentPath(){
@@ -434,9 +442,7 @@
         scale.innerHTML=`<span><strong>${escapeHtml(meta.left[0])}</strong><small>${escapeHtml(meta.left[1])}</small></span><span><strong>${escapeHtml(meta.right[0])}</strong><small>${escapeHtml(meta.right[1])}</small></span>`;
         scale.dataset.recipeUx202609='1';
       }
-      let help=main.querySelector('.glide-variable-help');
-      if(!help){ help=document.createElement('p');help.className='glide-variable-help';main.appendChild(help); }
-      help.textContent=meta.help;
+      main.querySelectorAll('.glide-variable-help,.recipe-slider-instruction').forEach(el=>el.remove());
       if(slider.dataset.recipeUxBound!=='1'){
         slider.dataset.recipeUxBound='1';
         slider.addEventListener('input',()=>global.requestAnimationFrame(()=>updateBubble(slider)));
@@ -465,7 +471,6 @@
       #recipes .glide-scale>span{display:flex;flex-direction:column;gap:.08rem;max-width:46%;line-height:1.2}
       #recipes .glide-scale>span:last-child{text-align:right;align-items:flex-end}
       #recipes .glide-scale small{font-size:.78rem;opacity:.76}
-      #recipes .glide-variable-help{margin:.65rem 0 0;font-size:.88rem;line-height:1.4;opacity:.86}
       #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
       #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
       html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden){display:grid!important}
