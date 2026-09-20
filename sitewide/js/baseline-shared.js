@@ -1223,6 +1223,36 @@
     return recipeBaseUrlForCurrentPage() + '/' + encodeURIComponent(slug);
   }
 
+  const SKINCARE_INGREDIENT_SLUG_BY_ID = Object.freeze({
+    'ing-shea':'shea-butter',
+    'ing-cucumber':'cucumber-seed-oil',
+    'ing-argan':'argan',
+    'ing-jojoba':'jojoba-oil',
+    'ing-lavender':'lavender',
+    'ing-safflower':'safflower',
+    'ing-vitamin-e':'vitamin-e',
+    'ing-castor':'castor-oil',
+    'ing-olive':'olive',
+    'ing-carnauba':'carnauba',
+    'ing-calendula':'calendula',
+    'ing-water':'water',
+    'ing-witchhazel':'witchhazel',
+    'ing-rosewater':'rosewater',
+    'ing-cucumber-hydrosol':'cucumber-hydrosol',
+    'ing-glycerin':'glycerin',
+    'ing-slipperyelm':'slipperyelm',
+    'ing-guar-gum':'guar-gum',
+    'ing-avocado':'avocado',
+    'ing-fractionated-coconut':'fractionated-coconut',
+    'ing-watermelon':'watermelon',
+    'ing-dead-sea-salt':'dead-sea-salt'
+  });
+
+  function skincareIngredientUrlForId(ingredientId){
+    const slug = SKINCARE_INGREDIENT_SLUG_BY_ID[String(ingredientId || '').trim()];
+    return slug ? '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug) : '';
+  }
+
   function recipeTokenFromHref(href){
     const raw = String(href || '').trim();
     if(!raw) return '';
@@ -2066,30 +2096,6 @@ function parseViewStateHash(hash){
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
     const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
-    const skincareIngredientSlugById = Object.freeze({
-      'ing-shea':'shea-butter',
-      'ing-cucumber':'cucumber-seed-oil',
-      'ing-argan':'argan',
-      'ing-jojoba':'jojoba-oil',
-      'ing-lavender':'lavender',
-      'ing-safflower':'safflower',
-      'ing-vitamin-e':'vitamin-e',
-      'ing-castor':'castor-oil',
-      'ing-olive':'olive',
-      'ing-carnauba':'carnauba',
-      'ing-calendula':'calendula',
-      'ing-water':'water',
-      'ing-witchhazel':'witchhazel',
-      'ing-rosewater':'rosewater',
-      'ing-cucumber-hydrosol':'cucumber-hydrosol',
-      'ing-glycerin':'glycerin',
-      'ing-slipperyelm':'slipperyelm',
-      'ing-guar-gum':'guar-gum',
-      'ing-avocado':'avocado',
-      'ing-fractionated-coconut':'fractionated-coconut',
-      'ing-watermelon':'watermelon',
-      'ing-dead-sea-salt':'dead-sea-salt'
-    });
     qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       const rid = a.getAttribute('data-from-recipe');
       const iid = a.getAttribute('data-ingredient');
@@ -2098,8 +2104,8 @@ function parseViewStateHash(hash){
       recipeToIngredients.get(rid).add(iid);
 
       if(isSkincare){
-        const slug = skincareIngredientSlugById[iid];
-        if(slug) a.setAttribute('href', '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug));
+        const cleanIngredientUrl = skincareIngredientUrlForId(iid);
+        if(cleanIngredientUrl) a.setAttribute('href', cleanIngredientUrl);
       }
     });
 
@@ -7131,7 +7137,22 @@ function setupRecipeFavourites(){
     // Seed the first history entry so the browser Back button returns to the prior in-page view (not the index).
 
     const initialHash = location.hash || '';
-    const initialView = recipePathStateFromLocation() || parseViewStateHash(initialHash);
+    const initialHashView = parseViewStateHash(initialHash);
+    const initialRecipeView = recipePathStateFromLocation();
+
+    // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
+    // A clean ingredient record gets its own page URL; one address must not
+    // describe both a recipe and an ingredient at the same time.
+    if(initialRecipeView && initialHashView && initialHashView.kind === 'ingredient'
+      && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
+      const cleanIngredientUrl = skincareIngredientUrlForId(initialHashView.ingredientId);
+      if(cleanIngredientUrl){
+        window.location.replace(cleanIngredientUrl);
+        return;
+      }
+    }
+
+    const initialView = initialRecipeView || initialHashView;
     const snapshot = (!initialHash) ? readNavSnapshot() : null;
     const snapshotState = (snapshot && snapshot.state && typeof snapshot.state === 'object') ? snapshot.state : null;
 
