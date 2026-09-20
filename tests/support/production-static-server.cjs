@@ -91,7 +91,6 @@ function mapPath(pathname) {
   match = pathname.match(/^\/baseline-food-approach\/recipes\/([^/]+)\/?$/);
   if (match) return `/systems/baseline-food-approach/recipes/${match[1]}.html`;
   match = pathname.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)\/?$/);
-  if (match && match[1] === 'testing-lip-balm') return '/systems/baseline-natural-skincare/recipes/testing-lip-balm.html';
   if (match) return '/systems/baseline-natural-skincare/baseline-natural-skincare.html';
   match = pathname.match(/^\/baseline-food-approach\/diet-log\/([^/]+)\/?$/);
   if (match) return `/systems/baseline-food-approach/Diet Log/${match[1]}.html`;

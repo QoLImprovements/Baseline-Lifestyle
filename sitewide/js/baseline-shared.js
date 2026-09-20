@@ -1805,9 +1805,6 @@ function parseViewStateHash(hash){
     const recipesSection = q('#recipes');
     if(!recipesSection) return;
 
-    const recipeEls = qsa('.recipe-page[id]', recipesSection);
-    const recipeIds = recipeEls.map(el => el.id);
-
     const recipeMain = q('.recipe-main', recipesSection) || recipesSection;
     function activateRecipesTabSilently(){
       if(typeof window.BASELINE_selectTab === 'function'){
@@ -1832,7 +1829,8 @@ function parseViewStateHash(hash){
 
     function openRecipe(id, opts={}){
       id = recipeIdForToken(id);
-      if(!recipeIds.includes(id)) return;
+      const liveCard = id ? document.getElementById(id) : null;
+      if(!liveCard || !recipesSection.contains(liveCard) || !liveCard.classList.contains('recipe-page')) return;
 
       recipesSection.classList.add('recipe-open-mode', 'recipe-focus', 'recipe-detail-open');
       activateRecipesTabSilently();
