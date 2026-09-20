@@ -1,3 +1,4 @@
+const { test, expect } = require('@playwright/test');
 
 test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
@@ -49,8 +50,6 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
 });
-
-const { test, expect } = require('@playwright/test');
 
 test('Skincare recipe UX keeps direct recipe routes focused without a side navigation', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/calming-shave-gel');
