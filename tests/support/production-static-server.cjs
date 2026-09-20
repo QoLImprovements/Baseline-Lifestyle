@@ -41,7 +41,7 @@ const STATIC_ROUTE_RULES = [
   [/^\/baseline-natural-skincare\/(?:system|recipes|ingredient-library|skin-support-system|my-routine)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-natural-skincare\/my-routine\/(?:log|summary|plan|public)\/?$/, '/systems/baseline-natural-skincare/baseline-natural-skincare.html'],
   [/^\/baseline-badminton-session\/(?:system|game-plan|ratings-standings|players-pairs|session-history)\/?$/, '/systems/baseline-badminton-session/baseline-badminton-session.html'],
-  [/^\/baseline-fitness\/(?:system|workout-routine|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
+  [/^\/baseline-fitness\/(?:system|workout-routine|library|exercise-library|achievements|my-routine|my-plan|my-body)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
   [/^\/baseline-fitness\/my-routine\/(?:log|summary|public)\/?$/, '/systems/baseline-fitness/baseline-fitness.html'],
   [/^\/baseline-fitness\/my-routine\/plan(?:\/(?:calisthenics|cardio|other|sports))?\/?$/, '/systems/baseline-fitness/baseline-fitness.html']
 ];
