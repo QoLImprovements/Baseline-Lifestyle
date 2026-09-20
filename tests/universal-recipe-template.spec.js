@@ -124,18 +124,19 @@ test('direct Food and Skincare recipe routes never paint the System section firs
   );
 });
 
-test('every authored Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
+test('every visible Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
   for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {
     await page.goto(url);
     const cards = page.locator('.recipe-page.recipe-universal-template');
     await expect.poll(async () => cards.count()).toBeGreaterThan(0);
 
     const audit = await cards.evaluateAll(items => items.map(card => {
-      const headings = Array.from(card.querySelectorAll('h2,h3,h4'));
+      const scope = card.querySelector('.variant-panel:not([hidden])') || card;
+      const headings = Array.from(scope.querySelectorAll('h2,h3,h4'));
       const ingredients = headings.find(h => /^ingredients\b/i.test((h.textContent || '').trim()));
       const method = headings.find(h => /^method\b/i.test((h.textContent || '').trim()));
       if (!ingredients || !method) {
-        return { id:card.id, title:card.querySelector('h3')?.textContent?.trim() || '', error:'missing Ingredients/Method heading' };
+        return { id:card.id, title:card.querySelector('h3')?.textContent?.trim() || '', error:'missing visible Ingredients/Method heading' };
       }
 
       const follows = (a, b) => !!(a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING);
@@ -149,6 +150,7 @@ test('every authored Food and Skincare ingredient source receives exactly one fi
       };
       const candidate = (li) => {
         if (li.classList.contains('ing-subhead')) return false;
+        if (li.hidden || String(li.getAttribute('aria-hidden') || '').toLowerCase() === 'true') return false;
         const section = sectionFor(li);
         if (/^(ingredient roles?|roles?|nutrition|serving ideas?|body\s*&?\s*sensory notes?|storage|notes?|comedogenic considerations?)\b/i.test(section)) return false;
         if (li.dataset.methodStep) return true;
@@ -157,18 +159,21 @@ test('every authored Food and Skincare ingredient source receives exactly one fi
         return /\d/.test(raw) && /(?:\b(?:g|kg|ml|l|tbsp|tsp|cups?|drops?|pinch(?:es)?|cloves?|grams?|millilit(?:er|re)s?)\b|%)/i.test(raw);
       };
 
-      const sources = Array.from(card.querySelectorAll('li')).filter(li =>
+      const sources = Array.from(scope.querySelectorAll('li')).filter(li =>
         follows(ingredients, li) &&
         follows(li, method) &&
         !li.closest('ol') &&
         candidate(li)
       );
-      const pills = Array.from(card.querySelectorAll('.method-amt[data-method-ingredient-key]'));
+      const pills = Array.from(scope.querySelectorAll('.method-amt[data-method-ingredient-key]'));
       const pillCounts = new Map();
       pills.forEach(pill => {
         const key = pill.dataset.methodIngredientKey || '';
         pillCounts.set(key, (pillCounts.get(key) || 0) + 1);
       });
+
+      const inactiveTaggedSources = Array.from(card.querySelectorAll('.variant-panel[hidden] [data-method-tag-key]'))
+        .map(li => (li.textContent || '').trim());
 
       return {
         id:card.id,
@@ -181,40 +186,117 @@ test('every authored Food and Skincare ingredient source receives exactly one fi
           .map(li => ({ text:(li.textContent || '').trim(), count:pillCounts.get(li.dataset.methodTagKey) || 0 })),
         pillsOutsideMethod:pills
           .filter(pill => !pill.closest('ol'))
-          .map(pill => (pill.textContent || '').trim())
+          .map(pill => (pill.textContent || '').trim()),
+        inactiveTaggedSources
       };
     }));
 
     for (const result of audit) {
       expect(result.error, `${url} ${result.id} ${result.title}`).toBeUndefined();
-      expect(result.sourceCount, `${url} ${result.id} should expose ingredient sources`).toBeGreaterThan(0);
+      expect(result.sourceCount, `${url} ${result.id} should expose visible ingredient sources`).toBeGreaterThan(0);
       expect(result.missingSourceKeys, `${url} ${result.id} missing source tag keys`).toEqual([]);
       expect(result.wrongPillCounts, `${url} ${result.id} missing/duplicate method tags`).toEqual([]);
       expect(result.pillsOutsideMethod, `${url} ${result.id} method pills outside method list`).toEqual([]);
-      expect(result.pillCount, `${url} ${result.id} pill/source parity`).toBe(result.sourceCount);
+      expect(result.inactiveTaggedSources, `${url} ${result.id} hidden variants must not own active method tags`).toEqual([]);
+      expect(result.pillCount, `${url} ${result.id} visible pill/source parity`).toBe(result.sourceCount);
     }
   }
 });
 
-test('Protective Touch Balm places ingredients at actual use rather than stale slider-step metadata', async ({ page }) => {
+test('Protective Touch Balm method ignores optional sliders and mirrors current visible ingredient amounts', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
-  const steps = page.locator('#r3 ol').first().locator(':scope > li');
+  const card = page.locator('#r3');
+  const steps = card.locator('h4').filter({ hasText:/^Method$/ }).locator('xpath=following-sibling::ol[1]').locator(':scope > li');
 
-  await expect(steps.nth(1).locator('.method-amt')).toHaveCount(0);
+  await expect(steps).toHaveCount(7);
+  await expect(steps.nth(0).locator('.method-amt')).toHaveCount(0);
+  await expect(steps.nth(0)).not.toContainText(/slider/i);
 
-  await expect(steps.nth(2)).toContainText('Jojoba Oil');
-  await expect(steps.nth(2)).toContainText('Castor Oil');
-  await expect(steps.nth(2)).toContainText('Carnauba Wax');
-  await expect(steps.nth(2)).not.toContainText('Shea Butter');
+  await expect(steps.nth(1)).toContainText('Jojoba Oil');
+  await expect(steps.nth(1)).toContainText('Castor Oil');
+  await expect(steps.nth(1)).toContainText('Carnauba Wax');
+  await expect(steps.nth(1)).not.toContainText('Shea Butter');
 
-  await expect(steps.nth(3)).toContainText('Shea Butter');
-  await expect(steps.nth(4)).toContainText('Calendula Oil');
-  await expect(steps.nth(5)).toContainText('Vitamin E');
+  await expect(steps.nth(2)).toContainText('Shea Butter');
+  await expect(steps.nth(3)).toContainText('Calendula Oil');
+  await expect(steps.nth(4)).toContainText('Vitamin E');
+  await expect(card.getByRole('heading', { name:/^Method$/ }).locator('xpath=following-sibling::ol[1]')).not.toContainText(/slider/i);
 
-  const pills = await page.locator('#r3 .method-amt').allTextContents();
+  const initialPills = await card.locator('.method-amt').allTextContents();
   for (const name of ['Jojoba Oil','Castor Oil','Carnauba Wax','Shea Butter','Calendula Oil','Vitamin E']) {
-    expect(pills.filter(text => text.includes(name)), name).toHaveLength(1);
+    expect(initialPills.filter(text => text.includes(name)), name).toHaveLength(1);
   }
+
+  await card.locator('#r3BalanceCastor').evaluate((el) => {
+    el.value = '12';
+    el.dispatchEvent(new Event('input', { bubbles:true }));
+  });
+  await expect(card.locator('.r3-balance-castor-amt')).toContainText('12');
+
+  await expect.poll(async () => {
+    return card.evaluate(el => {
+      const source = el.querySelector('a[data-ingredient="ing-castor"]')?.closest('li');
+      const key = source?.dataset.methodTagKey || '';
+      const pill = key ? el.querySelector('.method-amt[data-method-ingredient-key="' + CSS.escape(key) + '"]') : null;
+      const norm = value => String(value || '').replace(/\s+/g,' ').replace(/\s*([–—-])\s*/g,' $1 ').trim();
+      return { source:norm(source?.textContent), pill:norm(pill?.textContent) };
+    });
+  }).toEqual(expect.objectContaining({
+    source: expect.stringContaining('12'),
+    pill: expect.stringContaining('12')
+  }));
+
+  const liveMatch = await card.evaluate(el => {
+    const rows = Array.from(el.querySelectorAll('[data-method-tag-key]'));
+    const norm = value => String(value || '').replace(/\s+/g,' ').replace(/\s*([–—-])\s*/g,' $1 ').trim();
+    return rows.every(row => {
+      const key = row.dataset.methodTagKey || '';
+      const pill = el.querySelector('.method-amt[data-method-ingredient-key="' + CSS.escape(key) + '"]');
+      return pill && norm(pill.textContent) === norm(row.textContent);
+    });
+  });
+  expect(liveMatch).toBe(true);
+});
+
+test('Oil Cleanser method tags switch with the visible variant and never instruct slider changes', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const card = page.locator('#r2');
+
+  const visibleState = async () => card.evaluate(el => {
+    const active = el.querySelector('.variant-panel:not([hidden])');
+    const hidden = Array.from(el.querySelectorAll('.variant-panel[hidden]'));
+    const norm = value => String(value || '').replace(/\s+/g,' ').replace(/\s*([–—-])\s*/g,' $1 ').trim();
+    const sources = active ? Array.from(active.querySelectorAll('[data-method-tag-key]')) : [];
+    const matches = sources.every(row => {
+      const key = row.dataset.methodTagKey || '';
+      const pill = active.querySelector('.method-amt[data-method-ingredient-key="' + CSS.escape(key) + '"]');
+      return pill && norm(pill.textContent) === norm(row.textContent);
+    });
+    return {
+      active:active?.getAttribute('data-variant-panel') || active?.id || '',
+      matches,
+      activePills:active ? active.querySelectorAll('.method-amt').length : 0,
+      hiddenPills:hidden.reduce((sum,panel)=>sum+panel.querySelectorAll('.method-amt').length,0),
+      methodText:active ? Array.from(active.querySelectorAll('h4')).find(h=>/^method$/i.test((h.textContent||'').trim()))?.nextElementSibling?.textContent || '' : ''
+    };
+  });
+
+  let state = await visibleState();
+  expect(state.activePills).toBeGreaterThan(0);
+  expect(state.hiddenPills).toBe(0);
+  expect(state.matches).toBe(true);
+  expect(state.methodText).not.toMatch(/slider/i);
+
+  const enhanced = card.locator('.variant-tab[data-variant="enhanced"]');
+  await enhanced.click();
+  await expect(enhanced).toHaveAttribute('aria-selected','true');
+
+  await expect.poll(async () => (await visibleState()).active).toMatch(/Enhanced|enhanced/i);
+  state = await visibleState();
+  expect(state.activePills).toBeGreaterThan(0);
+  expect(state.hiddenPills).toBe(0);
+  expect(state.matches).toBe(true);
+  expect(state.methodText).not.toMatch(/slider/i);
 });
 
 test('Food recipes keep repeated water quantities at their authored first-use stages', async ({ page }) => {
