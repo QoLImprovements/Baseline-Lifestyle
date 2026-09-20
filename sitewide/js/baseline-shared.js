@@ -2060,14 +2060,47 @@ function parseViewStateHash(hash){
       return { id: card.id, name };
     });
 
-    // Build map: recipeId -> Set(ingredientIds)
+    // Build map: recipeId -> Set(ingredientIds).
+    // Skincare recipe ingredient links are real record URLs, not recipe-path
+    // hashes. This keeps one public URL responsible for one visible record and
+    // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
+    const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    const skincareIngredientSlugById = Object.freeze({
+      'ing-shea':'shea-butter',
+      'ing-cucumber':'cucumber-seed-oil',
+      'ing-argan':'argan',
+      'ing-jojoba':'jojoba-oil',
+      'ing-lavender':'lavender',
+      'ing-safflower':'safflower',
+      'ing-vitamin-e':'vitamin-e',
+      'ing-castor':'castor-oil',
+      'ing-olive':'olive',
+      'ing-carnauba':'carnauba',
+      'ing-calendula':'calendula',
+      'ing-water':'water',
+      'ing-witchhazel':'witchhazel',
+      'ing-rosewater':'rosewater',
+      'ing-cucumber-hydrosol':'cucumber-hydrosol',
+      'ing-glycerin':'glycerin',
+      'ing-slipperyelm':'slipperyelm',
+      'ing-guar-gum':'guar-gum',
+      'ing-avocado':'avocado',
+      'ing-fractionated-coconut':'fractionated-coconut',
+      'ing-watermelon':'watermelon',
+      'ing-dead-sea-salt':'dead-sea-salt'
+    });
     qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       const rid = a.getAttribute('data-from-recipe');
       const iid = a.getAttribute('data-ingredient');
       if(!rid || !iid) return;
       if(!recipeToIngredients.has(rid)) recipeToIngredients.set(rid, new Set());
       recipeToIngredients.get(rid).add(iid);
+
+      if(isSkincare){
+        const slug = skincareIngredientSlugById[iid];
+        if(slug) a.setAttribute('href', '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug));
+      }
     });
 
     // Populate dropdown (replace existing options except “all”)
