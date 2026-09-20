@@ -296,6 +296,7 @@ Options -Indexes
   RewriteRule ^baseline-fitness/my-routine(?:/(?:log|summary|public|plan(?:/(?:calisthenics|cardio|other|sports))?))?/(system|my-plan|my-body|library|exercise-library|achievements)/?$ /baseline-fitness/$1 [R=302,L]
 
   RewriteRule ^baseline-fitness/(system|workout-routine|library|exercise-library|achievements|my-plan|my-body)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
+  RewriteRule ^baseline-fitness/my-body/(overall|profile|services)/?$ systems/baseline-fitness/baseline-fitness.html [L,QSA]
 
   # Baseline Games Hub hierarchy.
   RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
