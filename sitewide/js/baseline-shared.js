@@ -7414,9 +7414,10 @@ function setupRecipeFavourites(){
     // Seed the first history entry so the browser Back button returns to the prior in-page view (not the index).
 
     const initialHash = location.hash || '';
-    const initialHashView = parseViewStateHash(initialHash);
+    const initialHashView = initialHash ? parseViewStateHash(initialHash) : null;
     const initialRecipeView = recipePathStateFromLocation();
     const initialIngredientView = skincareIngredientPathStateFromLocation();
+    const initialCleanRouteView = cleanRouteStateFromPath();
 
     // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
     // A clean ingredient record gets its own page URL; one address must not
@@ -7430,7 +7431,7 @@ function setupRecipeFavourites(){
       }
     }
 
-    const initialView = initialRecipeView || initialIngredientView || initialHashView;
+    const initialView = initialRecipeView || initialIngredientView || initialHashView || initialCleanRouteView;
     const snapshot = (!initialHash) ? readNavSnapshot() : null;
     const snapshotState = (snapshot && snapshot.state && typeof snapshot.state === 'object') ? snapshot.state : null;
 
