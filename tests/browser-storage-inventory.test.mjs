@@ -94,27 +94,29 @@ test("migration rules are explicit and known blockers now have approved resource
 
   const fitnessProfile=rules.find((rule)=>rule.id==="fitness-body-profile");
   assert.equal(fitnessProfile?.target,"Users/{paddedUserId}/fitness.json#profile");
-  assert.equal(fitnessProfile?.decision,"migrate-explicitly-after-schema-validation");
-  assert.match(fitnessProfile?.cutoverRule || "", /account profile state is authoritative, including an empty profile/i);
+  assert.equal(fitnessProfile?.decision,"discard-retired-browser-source-use-server-authoritative-cache");
+  assert.match(fitnessProfile?.cutoverRule || "", /never offer or import/i);
 
   const fitnessWorkout=rules.find((rule)=>rule.id==="fitness-active-workout");
   assert.equal(fitnessWorkout?.target,"Users/{paddedUserId}/fitness.json#activeWorkout");
-  assert.equal(fitnessWorkout?.decision,"migrate-explicitly-only-valid-current-session");
-  assert.match(fitnessWorkout?.cutoverRule || "", /account active-workout state is authoritative, including no active workout/i);
+  assert.equal(fitnessWorkout?.decision,"discard-retired-browser-source-use-server-authoritative-cache");
+  assert.match(fitnessWorkout?.cutoverRule || "", /never offer or import/i);
 
   const fitnessBackup=rules.find((rule)=>rule.id==="fitness-import-recovery-backup");
-  assert.equal(fitnessBackup?.decision,"preserve-until-explicit-decision");
-  assert.match(fitnessBackup?.cutoverRule || "", /Never auto-import/i);
+  assert.equal(fitnessBackup?.decision,"discard-on-startup");
+  assert.equal(fitnessBackup?.target,null);
+  assert.match(fitnessBackup?.cutoverRule || "", /never be rendered as an import choice/i);
 
   const fitnessRoutine=rules.find((rule)=>rule.id==="fitness-routine-local-cache");
   assert.equal(fitnessRoutine?.target,"Users/{paddedUserId}/fitness-routine.json");
-  assert.match(fitnessRoutine?.cutoverRule || "", /bridge loads before the workspace/i);
-  assert.match(fitnessRoutine?.cutoverRule || "", /must never become authenticated fallback authority/i);
+  assert.equal(fitnessRoutine?.decision,"discard-retired-browser-source-then-server-authoritative-cache");
+  assert.match(fitnessRoutine?.cutoverRule || "", /No legacy import path remains/i);
+  assert.match(fitnessRoutine?.cutoverRule || "", /never becomes authenticated authority/i);
 
   const fitnessProgression=rules.find((rule)=>rule.id==="fitness-progression-history");
   assert.equal(fitnessProgression?.target,"Users/{paddedUserId}/fitness.json#progressionHistory");
-  assert.match(fitnessProgression?.cutoverRule || "", /changes future progression/i);
-  assert.match(fitnessProgression?.cutoverRule || "", /explicit import with expectedRevision/i);
+  assert.equal(fitnessProgression?.decision,"discard-retired-browser-source-use-server-authoritative-cache");
+  assert.match(fitnessProgression?.cutoverRule || "", /never offer or import/i);
 
   const foodOwner=rules.find((rule)=>rule.id==="diet-log-legacy-owner");
   assert.equal(foodOwner?.decision,"bind-candidate-to-reviewing-account");
