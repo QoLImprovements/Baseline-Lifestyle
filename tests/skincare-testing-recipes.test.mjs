@@ -79,12 +79,31 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
 });
 
-test('method ingredient amount tags are emitted only once per recipe pass', () => {
-  assert.match(shared, /const emittedMethodAmounts = new Set\(\)/);
-  assert.match(shared, /filter\(txt => !emittedMethodAmounts\.has\(txt\)\)/);
-  assert.match(shared, /deduped\.forEach\(txt => emittedMethodAmounts\.add\(txt\)\)/);
+test('Skincare recipe methods never instruct the viewer to operate optional sliders', () => {
+  const methodBlocks = Array.from(html.matchAll(/<h4>Method<\/h4>\s*<ol>([\s\S]*?)<\/ol>/gi))
+    .map(match => match[1]);
+  assert.ok(methodBlocks.length > 0);
+  for (const method of methodBlocks) {
+    assert.doesNotMatch(method, /slider/i);
+  }
 });
 
+test('method ingredient amount tags use the visible ingredient state as their source of truth', () => {
+  assert.match(shared, /const activeVariantPanels=variantPanels\.filter/);
+  assert.match(shared, /const methodScope=activeVariantPanels\[0\] \|\| recipeEl/);
+  assert.match(shared, /qsa\('li',methodScope\)/);
+  assert.match(shared, /delete el\.dataset\.methodTagKey/);
+  assert.match(shared, /refreshMethodAmountsFromVisibleIngredients/);
+  assert.match(shared, /slider\.addEventListener\('input'/);
+  assert.match(shared, /slider\.addEventListener\('change'/);
+  assert.match(shared, /\.slider-default-btn, \.slider-reset-btn/);
+  assert.match(shared, /li\.dataset\.methodTagKey=key/);
+  assert.match(shared, /pill\.dataset\.methodIngredientKey=entry\.key/);
+  assert.match(shared, /wrap\.dataset\.methodAmounts='first-use'/);
+  assert.match(shared, /function bestNaturalMatch\(entry\)/);
+  assert.match(shared, /function bestExplicitMatch\(entry\)/);
+  assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
+});
 test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
   assert.match(lipBalm, /class="glide-controller glide-controller--paired"/);
   assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);

@@ -4,6 +4,33 @@ import fs from 'node:fs';
 
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const css = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
+const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
+const foodHtml = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
+
+test('Food and Skincare declare recipe routes before first paint', () => {
+  for (const html of [skincareHtml, foodHtml]) {
+    assert.match(html, /id="baseline-recipe-route-first-paint"/);
+    assert.match(html, /data-initial-section','recipes'/);
+    assert.match(html, /data-initial-recipe-route','1'/);
+    assert.match(html, /data-initial-section="recipes"[^}]*#system\.section\{display:none!important\}/s);
+    assert.match(html, /data-initial-section="recipes"[^}]*#recipes\.section\{display:block!important\}/s);
+    assert.match(html, /data-initial-recipe-route="1"[^}]*\.recipe-layout\{visibility:hidden!important\}/s);
+    assert.match(html, /baseline-shared\.js\?v=SITEWIDE_RECIPE_FIRST_PAINT_METHOD_TAGS_20260920_2/);
+  }
+  assert.match(shared, /removeAttribute\('data-initial-section'\)/);
+  assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
+});
+
+test('shared method-tag engine maps every ingredient source to one first-use method step', () => {
+  assert.match(shared, /function injectMethodAmounts\(recipeEl\)/);
+  assert.match(shared, /dataset\.methodTagKey=key/);
+  assert.match(shared, /dataset\.methodIngredientKey=entry\.key/);
+  assert.match(shared, /function bestNaturalMatch\(entry\)/);
+  assert.match(shared, /function bestExplicitMatch\(entry\)/);
+  assert.match(shared, /const preferExplicit=!!explicit && \(entry\.genericTerm \|\| \(identityCounts\.get\(entry\.identity\) \|\| 0\)>1\)/);
+  assert.match(shared, /data-method-amounts='first-use'|dataset\.methodAmounts='first-use'/);
+  assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
+});
 
 test('shared recipe engine exposes the universal four-view template', () => {
   assert.match(shared, /\['standard', 'Standard View'\]/);
