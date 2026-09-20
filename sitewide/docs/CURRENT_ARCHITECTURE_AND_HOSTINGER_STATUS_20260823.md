@@ -12,6 +12,8 @@ Phase 5 second-half production transition is tracked in `PHASE_5_SAVED_DATA_CUTO
 
 Current September production completion evidence is recorded in `PHASE_5_COMPLETION_EVIDENCE_20260920.md`. Production was already in `saved-data` mode when the September verification work began, so the earlier historical transition was not recreated. Backup restore capability, current-state rollback readiness, private-path isolation and the deployed `main` commit were verified against the observed production state.
 
+The post-cutover architecture review is recorded in `PHASE_6_ARCHITECTURE_REVIEW_20260920.md`. It is the current source for reviewed empty-state semantics, monotonic revisions, browser migration/authentication authority, game isolation, failure behavior and accepted final-architecture limitations.
+
 ## Production boundaries
 
 | Hostinger location | Responsibility |
