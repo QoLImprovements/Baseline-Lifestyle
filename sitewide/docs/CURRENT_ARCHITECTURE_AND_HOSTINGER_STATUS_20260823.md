@@ -14,6 +14,8 @@ Current September production completion evidence is recorded in `PHASE_5_COMPLET
 
 The post-cutover architecture review is recorded in `PHASE_6_ARCHITECTURE_REVIEW_20260920.md`. It is the current source for reviewed empty-state semantics, monotonic revisions, browser migration/authentication authority, game isolation, failure behavior and accepted final-architecture limitations.
 
+Final Phase 6 production completion evidence is recorded in `PHASE_6_PRODUCTION_COMPLETION_20260920.md`. Production is verified on reviewed release `627a66925d57f9056a6a13bf81bfb47b872fc1ba`, with `saved-data` authority, 16 healthy Saved Data resources, healthy authentication SQLite, a matching Account Index, private-path isolation and non-destructive public smoke checks all passing.
+
 ## Production boundaries
 
 | Hostinger location | Responsibility |
@@ -100,7 +102,8 @@ Repository code cannot prove that Hostinger actually exposes the required extens
 
 September 2026 operational verification established:
 
-- reviewed `main` and deployed production matched commit `324b3bbb4e75872bac5883f865e504fb5536439f`;
+- Stage 5 verification matched reviewed `main` and deployed production at commit `324b3bbb4e75872bac5883f865e504fb5536439f`;
+- final Phase 6 production verification matched reviewed `main` and deployed production at commit `627a66925d57f9056a6a13bf81bfb47b872fc1ba`;
 - production authority is explicitly `saved-data`;
 - authentication SQLite is healthy and remains private;
 - the canonical Saved Data tree is healthy;
@@ -113,9 +116,9 @@ September 2026 operational verification established:
 - the rollback Skincare mapping now reconstructs current visibility, routine, logs, groups and assignments rather than leaving stale legacy SQLite content;
 - final rollback verification passed semantic coverage and left live application data, configuration and authority unchanged.
 
-The hosting environment did not expose a readable application/server error log during final verification. Comprehensive server-log inspection therefore remains an explicit operational limitation rather than an inferred pass.
+The hosting environment did not expose a readable application/server error log during Stage 5 or final Phase 6 verification. Comprehensive server-log inspection therefore remains an explicit operational limitation rather than an inferred pass.
 
-See `PHASE_5_COMPLETION_EVIDENCE_20260920.md` for the evidence summary and the historical-transition discrepancy.
+See `PHASE_5_COMPLETION_EVIDENCE_20260920.md` for the Stage 5 evidence summary and historical-transition discrepancy, and `PHASE_6_PRODUCTION_COMPLETION_20260920.md` for the final reviewed-release production verification.
 
 ## Account-index consistency
 

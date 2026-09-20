@@ -243,7 +243,8 @@ Current operational authority is:
 
 1. `CURRENT_ARCHITECTURE_AND_HOSTINGER_STATUS_20260823.md` — current architecture, updated 2026-09-20;
 2. `PHASE_5_COMPLETION_EVIDENCE_20260920.md` — actual production backup/restore/rollback evidence;
-3. this Phase 6 review — final architecture review and accepted limitations.
+3. this Phase 6 review — final architecture review and accepted limitations;
+4. `PHASE_6_PRODUCTION_COMPLETION_20260920.md` — final deployed-release verification and production completion evidence.
 
 The September Phase 5 first/second-half documents remain the intended procedure for a controlled fresh cutover. They are not proof that their historical transition sequence was observed on this production instance.
 
@@ -271,21 +272,28 @@ Phase 6 made the following corrective changes:
 5. regression coverage for each of those behaviors;
 6. current Stage 5 production evidence and architecture documentation.
 
-These changes require the normal reviewed CI/merge/deploy process before production can be described as running the Phase 6 release.
+These changes passed the repository CI workflow, were merged to `main`, and were verified in production on 2026-09-20. Production completion evidence is recorded in `PHASE_6_PRODUCTION_COMPLETION_20260920.md`.
 
-## 15. Completion condition
+## 15. Completion status
 
-Repository-side Phase 6 review is complete when:
+Phase 6 is complete.
 
-- the Phase 6 change set passes the repository CI workflow;
-- the branch is merged to `main`.
+Repository-side completion:
 
-Production Phase 6 completion additionally requires:
+- the Phase 6 change set passed the repository CI workflow;
+- the reviewed change set was merged to `main`.
 
-- the resulting `main` commit to be deployed;
-- production authority to remain `saved-data`;
-- the deployed commit to be confirmed;
-- read-only live Saved Data health and Account Index verification to pass;
-- private-path isolation to remain intact;
-- no deployment-induced persistence/configuration change to be observed.
+Production completion:
+
+- reviewed release `627a66925d57f9056a6a13bf81bfb47b872fc1ba` was deployed;
+- production authority remained `saved-data`;
+- the deployed commit was confirmed;
+- live Saved Data health passed with 16 resources;
+- authentication SQLite health passed;
+- Account Index verification passed without repair;
+- private-path isolation remained intact;
+- public non-destructive smoke checks passed;
+- authentication SQLite, Saved Data and private configuration remained intact.
+
+The hosting environment still does not expose a readable application/server error log. See `PHASE_6_PRODUCTION_COMPLETION_20260920.md` for the final production evidence and remaining limitations.
 
