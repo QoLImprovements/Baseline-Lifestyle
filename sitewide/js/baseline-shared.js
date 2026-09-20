@@ -3687,19 +3687,30 @@ function parseViewStateHash(hash){
           .filter(value=>Number.isFinite(value) && value>0 && value<=steps.length);
         const sectionTitle=nearestSectionTitle(li,ingredientHeading,methodHeading,headings);
         const key=(recipeEl.id || 'recipe')+'-method-ing-'+(index+1);
+        const ingredientIds=qsa('a.ing-link[data-ingredient]',li)
+          .map(anchor=>String(anchor.dataset.ingredient || '').trim())
+          .filter(Boolean)
+          .sort();
+        const terms=buildTerms(li);
+        const identity=ingredientIds.length ? ingredientIds.join('|') : (terms[0] || key);
         li.dataset.methodTagKey=key;
         return {
           key,
           li,
+          identity,
           display:sanitizeForMethodPill(normSpaces(li.textContent || '')),
           explicit,
           sectionKey:normalizeStage(sectionTitle),
           sectionLead:getLeadToken(sectionTitle),
-          terms:buildTerms(li),
+          terms,
+          genericTerm:terms.some(term=>['water','salt','sea salt'].includes(term)),
           raw:normalizeStage(li.textContent || '')
         };
       }).filter(entry=>entry.display);
       if(!entries.length) return;
+
+      const identityCounts=new Map();
+      entries.forEach(entry=>identityCounts.set(entry.identity,(identityCounts.get(entry.identity) || 0)+1));
 
       function bestNaturalMatch(entry){
         const matches=steps.filter(info=>entry.terms.some(term=>termInStep(term,info.text)));
@@ -3746,8 +3757,12 @@ function parseViewStateHash(hash){
       const placements=new Map();
       entries.forEach(entry=>{
         const natural=bestNaturalMatch(entry);
-        let target=natural && actionScore(natural)>=2 ? natural : null;
-        if(!target) target=bestExplicitMatch(entry);
+        const explicit=bestExplicitMatch(entry);
+        const preferExplicit=!!explicit && (entry.genericTerm || (identityCounts.get(entry.identity) || 0)>1);
+
+        let target=preferExplicit ? explicit : null;
+        if(!target) target=natural && actionScore(natural)>=2 ? natural : null;
+        if(!target) target=explicit;
         if(!target) target=natural;
         if(!target) target=bestSectionMatch(entry);
         if(!target) target=bestCategoryMatch(entry);
