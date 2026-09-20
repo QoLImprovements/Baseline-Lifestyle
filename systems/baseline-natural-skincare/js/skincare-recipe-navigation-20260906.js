@@ -11,8 +11,8 @@
     ['r2','anhydrous-oil-cleanser','Anhydrous Oil Cleanser','three-variant safflower-led oil cleanser.'],
     ['r1','nurturing-glow-butter','Nurturing Glow Butter','rich barrier-supporting butter.'],
     ['r3','protective-touch-balm','Protective Touch Balm','protective balm for dry skin.'],
-    ['r10','microcurrent-glide-gel','Microcurrent Glide Gel','Water-based conductive gel with sustained glide for microcurrent treatment.'],
-    ['r9','tooth-polishing-powder','Tooth Polishing Powder','Kaolin, sage and peppermint powder for occasional surface-stain removal.']
+    ['r10','microcurrent-glide-gel','Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment.'],
+    ['r9','tooth-polishing-powder','Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal.']
   ];
   const TESTING=[
     ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],
