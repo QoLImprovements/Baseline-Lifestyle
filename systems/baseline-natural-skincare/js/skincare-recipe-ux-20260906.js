@@ -182,32 +182,6 @@
     });
   }
 
-  function makeNavItem(item,landing){
-    const [id,slug,title,description]=item;
-    const li=document.createElement('li');
-    const a=document.createElement('a');
-    a.className='recipe-open';a.dataset.recipeId=id;a.href=recipeHref(slug);
-    a.textContent=landing?`${title} — ${description}`:title;
-    li.appendChild(a);return li;
-  }
-  function rebuildLists(){
-    const navList=document.querySelector('#side-nav > ul');
-    if(navList && navList.dataset.recipeCollection202609!=='1'){
-      navList.replaceChildren(...MAIN_RECIPES.map(item=>makeNavItem(item,false)));
-      const head=document.createElement('li');head.className='ing-subhead';head.innerHTML='<strong>Testing</strong>';navList.appendChild(head);
-      TESTING_RECIPES.forEach(item=>navList.appendChild(makeNavItem(item,false)));
-      navList.dataset.recipeCollection202609='1';
-    }
-    const landing=document.getElementById('recipes-landing');
-    const list=landing?.querySelector('ul');
-    if(list && list.dataset.recipeCollection202609!=='1'){
-      list.replaceChildren(...MAIN_RECIPES.map(item=>makeNavItem(item,true)));
-      const head=document.createElement('li');head.className='ing-subhead';head.innerHTML='<strong>Testing</strong>';list.appendChild(head);
-      TESTING_RECIPES.forEach(item=>list.appendChild(makeNavItem(item,true)));
-      list.dataset.recipeCollection202609='1';
-    }
-  }
-
   function detailsMarkup(data){
     return `<div class="recipe-details-intro" data-recipe-view-group="details">
       <div class="recipe-detail-block"><h4>Purpose</h4><p>${escapeHtml(data.purpose)}</p></div>
@@ -364,7 +338,6 @@
     const id=hit?hit[0]:oldId;
     if(!id) return;
     try{ global.BASELINE_openRecipe?.(id,{ silentHistory:true }); }catch(_error){}
-    document.getElementById('recipes')?.classList.remove('recipe-focus');
     global.requestAnimationFrame(()=>resetRecipeView(recipeById(id)));
   }
 
@@ -376,7 +349,6 @@
       global.BASELINE_openRecipe=function(id,opts){
         let next=String(id || ''); if(REPLACED_IDS[next]) next=REPLACED_IDS[next];
         const result=original.call(this,next,opts || {});
-        document.getElementById('recipes')?.classList.remove('recipe-focus');
         global.requestAnimationFrame(()=>resetRecipeView(recipeById(next)));
         return result;
       };
@@ -391,7 +363,6 @@
   function applyAll(){
     installStyles();
     promoteCards();
-    rebuildLists();
     rewriteRecipeAnchors();
     restoreSegmentedVariants();
     installDetails();
@@ -406,9 +377,8 @@
   function startRecipeUx(){
     canonicaliseOldRecipePath();
     applyAll();
-    document.getElementById('recipes')?.classList.remove('recipe-focus');
     wrapRecipeOpen();
-    global.requestAnimationFrame(()=>{ applyAll(); document.getElementById('recipes')?.classList.remove('recipe-focus'); openPromotedRecipeForPath(); });
+    global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
     global.setTimeout(applyAll,120);
     global.setTimeout(applyAll,600);
     global.addEventListener('load',applyAll,{once:true});
