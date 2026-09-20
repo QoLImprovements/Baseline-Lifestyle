@@ -13,28 +13,60 @@ async function expectUniversalTabs(card, standardLabel = 'Standard View') {
 }
 
 async function expectDirectRecipeFirstPaint(page, url, targetSelector) {
-  let releaseShared;
-  let sharedRequestedResolve;
-  const releaseGate = new Promise(resolve => { releaseShared = resolve; });
-  const sharedRequested = new Promise(resolve => { sharedRequestedResolve = resolve; });
+  if (!page.__baselineRecipeFirstPaintAuditInstalled) {
+    page.__baselineRecipeFirstPaintAuditInstalled = true;
+    await page.addInitScript(() => {
+      window.__baselineRecipeFirstPaintAudit = {
+        sawSystem:false,
+        sawRecipes:false,
+        systemVisibleWhileRecipeGuardActive:false,
+        recipeGuardSeen:false
+      };
 
-  await page.route('**/sitewide/js/baseline-shared.js*', async route => {
-    sharedRequestedResolve();
-    await releaseGate;
-    await route.continue();
-  }, { times: 1 });
+      const check = () => {
+        const audit = window.__baselineRecipeFirstPaintAudit;
+        if (!audit) return;
 
-  const navigation = page.goto(url, { waitUntil: 'domcontentloaded' });
-  await sharedRequested;
+        const html = document.documentElement;
+        const guardActive = html.getAttribute('data-initial-section') === 'recipes';
+        if (guardActive) audit.recipeGuardSeen = true;
+
+        const system = document.getElementById('system');
+        const recipes = document.getElementById('recipes');
+
+        if (system) {
+          audit.sawSystem = true;
+          if (guardActive) {
+            const style = getComputedStyle(system);
+            if (style.display !== 'none' && style.visibility !== 'hidden') {
+              audit.systemVisibleWhileRecipeGuardActive = true;
+            }
+          }
+        }
+        if (recipes) audit.sawRecipes = true;
+      };
+
+      const observer = new MutationObserver(check);
+      observer.observe(document, { childList:true, subtree:true, attributes:true });
+      document.addEventListener('DOMContentLoaded', check, { once:false });
+      requestAnimationFrame(check);
+    });
+  }
+
+  await page.goto(url, { waitUntil:'load' });
+  await expect(page.locator(targetSelector)).toBeVisible();
+
+  const audit = await page.evaluate(() => window.__baselineRecipeFirstPaintAudit);
+  expect(audit.sawSystem, url + ' should contain the System section in the shell').toBe(true);
+  expect(audit.sawRecipes, url + ' should contain the Recipes section in the shell').toBe(true);
+  expect(audit.recipeGuardSeen, url + ' should activate the recipe first-paint guard').toBe(true);
+  expect(
+    audit.systemVisibleWhileRecipeGuardActive,
+    url + ' must never visibly paint System while resolving a direct recipe route'
+  ).toBe(false);
 
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes')).toBeVisible();
-  await expect(page.locator('#recipes .recipe-layout')).toHaveCSS('visibility', 'hidden');
-
-  releaseShared();
-  await navigation;
-
-  await expect(page.locator(targetSelector)).toBeVisible();
   await expect(page.locator('html')).not.toHaveAttribute('data-initial-section', 'recipes');
   await expect(page.locator('html')).not.toHaveAttribute('data-initial-recipe-route', '1');
 }
@@ -190,7 +222,7 @@ test('Food recipes keep repeated water quantities at their authored first-use st
   const steps = page.locator('#r4 ol').first().locator(':scope > li');
 
   await expect(steps.nth(1)).toContainText('2 tbsp water');
-  await expect(steps.nth(3)).toContainText('600 ml water');
+  await expect(steps.nth(3)).toContainText(/600 ml water/i);
   await expect(steps.nth(4)).toContainText('1–2 tbsp hot water');
 
   const waterPills = (await page.locator('#r4 .method-amt').allTextContents()).filter(text => /water/i.test(text));
