@@ -144,8 +144,7 @@
 .print-btn,
 .multiplier button,
 .back-fab,
-.top-fab,
-.side-recipe-nav a{
+.top-fab{
   border-radius:999px;
   border:1px solid rgba(188,95,70,0.22);
   background:linear-gradient(180deg, rgba(247,233,220,0.88), rgba(255,231,214,0.82));
@@ -158,8 +157,7 @@
 .print-btn:hover,
 .multiplier button:hover,
 .back-fab:hover,
-.top-fab:hover,
-.side-recipe-nav a:hover{
+.top-fab:hover{
   transform:translateY(-1px);
   box-shadow:0 18px 36px -30px rgba(188,95,70,0.38);
   filter:saturate(1.02);
@@ -169,8 +167,7 @@
 .print-btn:active,
 .multiplier button:active,
 .back-fab:active,
-.top-fab:active,
-.side-recipe-nav a:active{
+.top-fab:active{
   transform:translateY(0px);
 }
 .btnlike:focus-visible,
@@ -178,8 +175,7 @@
 .print-btn:focus-visible,
 .multiplier button:focus-visible,
 .back-fab:focus-visible,
-.top-fab:focus-visible,
-.side-recipe-nav a:focus-visible{
+.top-fab:focus-visible{
   outline:none;
   box-shadow:0 0 0 4px var(--ring), 0 18px 36px -30px rgba(188,95,70,0.38);
 }
