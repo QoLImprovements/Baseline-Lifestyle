@@ -221,10 +221,10 @@
       "knownKeys": [
         "__bl_fitness_body_profile_v1__::{normalised-user}"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-after-schema-validation",
+      "classification": "server-backed-runtime-compatibility-mirror",
+      "decision": "server-authoritative-no-import",
       "target": "Users/{paddedUserId}/fitness.json#profile",
-      "cutoverRule": "For a signed-in user, account profile state is authoritative, including an empty profile. Quarantine any pre-existing browser profile under an account-scoped recovery key before the application reads it. After server load, expose a deliberate Import browser copy or Keep account copy decision; imports use the current fitness expectedRevision and server schema validation. Never derive Saved Data paths from the username embedded in a browser key."
+      "cutoverRule": "For a signed-in user, account profile Saved Data is the sole persistent authority, including an empty profile. Retired browser profile/import copies are discarded before account hydration and are never offered for import. The legacy browser key may only mirror accepted account state while older UI code still reads it; it must never become fallback authority."
     },
     {
       "id": "storage-wrapper-implementation",
@@ -329,10 +329,10 @@
       "knownKeys": [
         "__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-only-valid-current-session",
+      "classification": "server-backed-runtime-compatibility-mirror",
+      "decision": "server-authoritative-no-import",
       "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
-      "cutoverRule": "For a signed-in user, account active-workout state is authoritative, including no active workout. Quarantine a pre-existing browser workout before application startup and expose it only as an explicit import candidate. Import only after the user chooses Import browser copy and only when plan ID, current session and step validation succeed with the current fitness expectedRevision; invalid, stale or conflicting entries must remain preserved and must not be silently applied."
+      "cutoverRule": "For a signed-in user, account active-workout Saved Data is the sole persistent authority, including no active workout. Retired browser workout/import copies are discarded before account hydration and are never offered for import. Any browser key used by older UI code is only a mirror of accepted account state."
     },
     {
       "id": "fitness-bridge-plan-lookups",
@@ -352,10 +352,10 @@
       "knownKeys": [
         "__bl_fitness_saved_data_import_backup_v1__::{normalised-user}::{profile|activeWorkout|progressionHistory}"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-until-explicit-decision",
-      "target": "Users/{paddedUserId}/fitness.json",
-      "cutoverRule": "This recovery copy is created before an authenticated legacy Fitness browser key is removed from its active application location. Keep it until an explicit import succeeds or the user chooses Keep account copy. Never auto-import it and never expose it across account names; this includes profile, active workout and progression history candidates."
+      "classification": "obsolete-remove",
+      "decision": "delete-retired-import-candidate",
+      "target": null,
+      "cutoverRule": "The Fitness browser-import feature is retired. Delete any old account-scoped profile, active-workout or progression-history import backup during authenticated startup. Never display, import or preserve it as a data source."
     },
     {
       "id": "fitness-plan-cache",
@@ -484,19 +484,6 @@
       "cutoverRule": "This temporary route handoff exists only while replacing a standalone recipe shell with the complete parent application. Never migrate it to Saved Data."
     },
     {
-      "id": "fitness-body-view",
-      "inventoryPatterns": [
-        "__baseline_fitness_body_view_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_fitness_body_view_v1__"
-      ],
-      "classification": "temporary-session-state",
-      "decision": "expire-with-session",
-      "target": null,
-      "cutoverRule": "This remembers only the selected My Body subtab for the current browser session and is not Fitness account data."
-    },
-    {
       "id": "my-routine-navigation-state",
       "inventoryPatterns": [
         "__bl_fitness_plan_view_v4__",
@@ -566,38 +553,9 @@
       "cutoverRule": "These keys choose which already-server-owned Fitness plan is shown or carry the one-device create-plan handoff. They contain no plan body and must never be treated as plan persistence or uploaded as account data."
     },
     {
-      "id": "fitness-routine-local-cache",
-      "classification": "server-backed-compatibility-cache",
-      "decision": "migrate-explicitly-then-keep-non-authoritative-cache",
-      "target": "Users/{paddedUserId}/fitness-routine.json",
-      "inventoryPatterns": [
-        "[expression] `__bl_fitness_routine_v2__::${owner(",
-        "[expression] storageKey(owner"
-      ],
-      "knownKeys": [
-        "__bl_fitness_routine_v2__::{normalised-user}",
-        "__bl_fitness_routine_v1__::{normalised-user}"
-      ],
-      "cutoverRule": "The Fitness Routine Saved Data bridge loads before the workspace. It quarantines any pre-existing account-named browser routine before the authoritative server GET, including when the server is empty, and exposes legacy data only for explicit import. Runtime local copies are compatibility caches only; a failed or conflicted server save blocks further persistent writes and the cache must never become authenticated fallback authority."
-    },
-    {
-      "id": "fitness-routine-import-candidate",
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-until-explicit-import-or-account-choice",
-      "target": "Users/{paddedUserId}/fitness-routine.json",
-      "inventoryPatterns": [
-        "[expression] importStorageKey(currentOwner",
-        "[expression] importStorageKey(owner"
-      ],
-      "knownKeys": [
-        "__bl_fitness_routine_legacy_import__::{normalised-user}"
-      ],
-      "cutoverRule": "This is the quarantined, account-bound legacy Fitness Routine candidate. Never auto-import it, never expose it across account names, and remove it only after verified server acceptance of an explicit import or an explicit decision to keep the account copy."
-    },
-    {
       "id": "fitness-progression-history",
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-then-use-server-authoritative-cache",
+      "classification": "server-backed-runtime-compatibility-mirror",
+      "decision": "server-authoritative-no-import",
       "target": "Users/{paddedUserId}/fitness.json#progressionHistory",
       "inventoryPatterns": [
         "[expression] failureKey(",
@@ -607,7 +565,7 @@
         "__bl_fitness_exercise_failed_sessions_v3__::{normalised-user}",
         "__bl_fitness_exercise_outcomes_v4__::{normalised-user}"
       ],
-      "cutoverRule": "Per-exercise success/failure history changes future progression and is therefore account data. The Fitness Saved Data bridge quarantines legacy browser history, loads the authoritative progressionHistory section first including an empty section, permits only explicit import with expectedRevision, and uses browser copies only as a cache of accepted server state. A failed or conflicted Saved Data write must not fall back to local authority."
+      "cutoverRule": "Exercise progression history is account Saved Data. Retired browser history/import copies are discarded before account hydration and are never offered for import. Compatibility keys may mirror accepted account state for older runtime readers, but a failed or conflicted server write must never fall back to browser authority."
     }
   ]
 }
