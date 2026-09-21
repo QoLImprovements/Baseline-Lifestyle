@@ -25,6 +25,8 @@ test('Fitness resolves the exact My Routine route before first paint without art
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/my-routine\\\/plan/);
   assert.match(loader,/function requestedRoute\(\)/);
+  assert.match(loader,/return String\(global\.location\?\.pathname \|\| ''\)/);
+  assert.doesNotMatch(loader,/getEntriesByType/);
   assert.match(loader,/function seedBaseWorkspaceView\(\)/);
   assert.match(loader,/function loadOrdered\(entries\)/);
   assert.doesNotMatch(loader,/restoreRequestedView|loadOrderedParallel|Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
@@ -34,8 +36,9 @@ test('Fitness creates the final structure in the same boot task and does not pol
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
   assert.match(workspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(workspace,/function renderStableState\(\)/);
-  assert.match(workspace,/const before = JSON\.stringify|const before=JSON\.stringify/);
-  assert.match(workspace,/if \(after !== before\) renderStableState\(\)|if \(after!==before\) renderStableState\(\)/);
+  assert.match(workspace,/Routine content is server-only/);
+  assert.match(workspace,/if \(!authed\) return;/);
+  assert.doesNotMatch(workspace,/readLocal\(|writeLocal\(|localStorage/);
   assert.doesNotMatch(workspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
   const boot=workspace.match(/function boot\(\) \{[\s\S]*?\n  \}/)?.[0] || '';
   assert.ok(boot,'Fitness boot function should exist');
