@@ -8,8 +8,6 @@
   global.__BASELINE_FITNESS_ROUTINE_WORKSPACE__ = true;
 
   const API = '/systems/baseline-fitness/api/routine_state.php';
-  const STORAGE_PREFIX = '__bl_fitness_routine_v2__::';
-  const LEGACY_STORAGE_PREFIX = '__bl_fitness_routine_v1__::';
   const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const SAVE_DELAY = 500;
   const DAYS = Object.freeze(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
@@ -275,34 +273,6 @@
     return { due:true, detail:'Optional / as needed' };
   }
 
-  function storageKey(owner = state.owner, legacy = false) {
-    return `${legacy ? LEGACY_STORAGE_PREFIX : STORAGE_PREFIX}${normaliseOwner(owner)}`;
-  }
-
-  function readLocal(owner = state.owner) {
-    if (state.authed) return null;
-    try {
-      const raw = global.localStorage?.getItem(storageKey(owner)) || global.localStorage?.getItem(storageKey(owner, true));
-      const value = raw ? JSON.parse(raw) : null;
-      return value && typeof value === 'object'
-        ? { activities:normaliseActivities(value.activities), logs:normaliseLogs(value.logs) }
-        : null;
-    } catch (_error) {
-      return null;
-    }
-  }
-
-  function writeLocal() {
-    if (state.authed) return;
-    try {
-      global.localStorage?.setItem(storageKey(), JSON.stringify({
-        activities:state.activities,
-        logs:state.logs,
-        updatedAt:new Date().toISOString()
-      }));
-    } catch (_error) {}
-  }
-
   async function request(options = {}) {
     try {
       const response = await fetch(API, {
@@ -322,15 +292,11 @@
   async function saveNow() {
     clearTimeout(state.saveTimer);
     state.saveTimer = 0;
-    if (!state.authed) {
-      writeLocal();
-      return;
-    }
+    if (!state.authed) return;
     await request({ method:'POST', body:{ activities:state.activities, logs:state.logs } });
   }
 
   function scheduleSave() {
-    if (!state.authed) writeLocal();
     clearTimeout(state.saveTimer);
     state.saveTimer = global.setTimeout(saveNow, SAVE_DELAY);
   }
@@ -1099,21 +1065,13 @@
     state.owner = nextOwner;
     if (!changed && state.loaded) return;
 
-    if (!authed) {
-      const local = readLocal(state.owner);
-      state.activities = local?.activities || [];
-      state.logs = normaliseLogs(local?.logs || {});
-      state.loaded = true;
-      renderStableState();
-      return;
-    }
-
-    // Signed-in routine content is server-only. Never paint or promote a
-    // browser copy while the authoritative account resource is loading.
+    // Routine content is server-only. Signed-out views start empty and do not
+    // create browser saves; signed-in views hydrate only from account data.
     state.activities = [];
     state.logs = {};
     state.loaded = true;
     renderStableState();
+    if (!authed) return;
 
     const response = await request();
     if (response.ok) {
