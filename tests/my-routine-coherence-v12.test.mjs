@@ -126,8 +126,9 @@ test('Fitness builds its final structure synchronously before routine data paint
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
   assert.match(fitnessWorkspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(fitnessWorkspace,/function renderStableState\(\)/);
-  assert.match(fitnessWorkspace,/const before\s*=\s*JSON\.stringify/);
-  assert.match(fitnessWorkspace,/if \(after\s*!==\s*before\) renderStableState\(\)/);
+  assert.match(fitnessWorkspace,/Routine content is server-only/);
+  assert.match(fitnessWorkspace,/state\.activities = \[\];[\s\S]{0,120}state\.logs = \{\};/);
+  assert.doesNotMatch(fitnessWorkspace,/readLocal\(|writeLocal\(|localStorage/);
   assert.doesNotMatch(fitnessWorkspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
   assert.match(structure,/ROUTE_BASE='\/baseline-fitness\/my-routine'/);
   assert.match(structure,/url\.pathname=cleanPath\(\)/);
