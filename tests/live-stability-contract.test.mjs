@@ -9,7 +9,7 @@ test('live stability runtime covers the reported refresh and persistence faults'
   const core = read('sitewide/js/baseline-live-stability-core-v3.js');
   const js = `${loader}\n${core}`;
   assert.match(js, /__baseline_pending_recipe_route_v1__/);
-  assert.match(js, /__baseline_fitness_body_view_v1__/);
+  assert.doesNotMatch(js, /__baseline_fitness_body_view_v1__/);
   assert.match(js, /data-baseline-games-stable/);
   assert.match(js, /Voice recognition unavailable\./);
   assert.match(js, /prompt\.textContent = 'Voice recognition unavailable\.';/);
@@ -59,12 +59,17 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
   const testServer = read('tests/support/production-static-server.cjs');
 
   assert.match(fitness, /const ROUTE_BASE = '\/baseline-fitness'/);
+  assert.match(fitness, /const BODY_ROUTE_RE = /);
+  assert.match(fitness, /function bodyViewFromPath/);
+  assert.match(fitness, /function bodyRoutePath/);
+  assert.match(fitness, /setBodySubtab\(button\.dataset\.bodyView, 'push'\)/);
   assert.match(fitness, /const ROUTINE_ROUTE_RE = /);
   assert.match(fitness, /return `\$\{ROUTE_BASE\}\/\$\{canonical\}`/);
   assert.doesNotMatch(fitness, /const base = location\.pathname\.replace\(ROUTE_RE/);
 
   assert.match(shared, /'my-body':'my-body'/);
   assert.match(shared, /library:'library'/);
+  assert.match(shared, /baseline-fitness\\\/my-body/);
   assert.match(shared, /baseline-fitness\\\/my-routine/);
   assert.match(shared, /baseline-natural-skincare\\\/my-routine/);
   assert.match(shared, /preserveNestedRoutinePath/);
@@ -80,6 +85,7 @@ test('Fitness route generation is canonical and legacy malformed nested URLs rec
   assert.match(fallbackTabs, /"my-body":"my-body"/);
   assert.match(fallbackTabs, /library:"library"/);
 
+  assert.match(htaccess, /baseline-fitness\/my-body\/\(profile\|services\)/);
   assert.match(htaccess, /Recover malformed top-level Fitness URLs produced by the former nested route builder/);
   assert.match(htaccess, /baseline-fitness\/my-routine.*\(system\|my-plan\|my-body\|library\|exercise-library\|achievements\).*\/baseline-fitness\/\$1/s);
   assert.match(testServer, /malformedFitness/);
@@ -95,12 +101,17 @@ test('protected key and Charity banner controls have stable first-paint geometry
   assert.match(css, /#bl-auth-toggle/);
 });
 
-test('new session-only navigation keys have explicit non-resource decisions', () => {
+test('temporary recipe handoff remains session-only while Fitness body view is URL-owned', () => {
   const mapping = JSON.parse(read('sitewide/migration/browser_storage_map.json'));
   const rules = mapping.rules || [];
-  for (const id of ['pending-recipe-route', 'fitness-body-view']) {
-    const rule = rules.find(candidate => candidate.id === id);
-    assert.equal(rule?.decision, 'expire-with-session');
-    assert.equal(rule?.target, null);
-  }
+  const recipeRoute = rules.find(candidate => candidate.id === 'pending-recipe-route');
+  assert.equal(recipeRoute?.decision, 'expire-with-session');
+  assert.equal(recipeRoute?.target, null);
+  assert.equal(rules.some(candidate => candidate.id === 'fitness-body-view'), false);
+
+  const core = read('sitewide/js/baseline-live-stability-core-v3.js');
+  const workspace = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  assert.doesNotMatch(core, /FITNESS_BODY_VIEW_KEY|installFitnessBodyViewMemory/);
+  assert.doesNotMatch(workspace, /getEntriesByType\?\.\('navigation'\)|getEntriesByType\('navigation'\)/);
+  assert.match(workspace, /return String\(global\.location\?\.pathname \|\| ''\)/);
 });
