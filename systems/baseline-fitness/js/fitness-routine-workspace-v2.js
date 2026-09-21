@@ -280,6 +280,7 @@
   }
 
   function readLocal(owner = state.owner) {
+    if (state.authed) return null;
     try {
       const raw = global.localStorage?.getItem(storageKey(owner)) || global.localStorage?.getItem(storageKey(owner, true));
       const value = raw ? JSON.parse(raw) : null;
@@ -292,6 +293,7 @@
   }
 
   function writeLocal() {
+    if (state.authed) return;
     try {
       global.localStorage?.setItem(storageKey(), JSON.stringify({
         activities:state.activities,
@@ -320,13 +322,15 @@
   async function saveNow() {
     clearTimeout(state.saveTimer);
     state.saveTimer = 0;
-    writeLocal();
-    if (!state.authed) return;
+    if (!state.authed) {
+      writeLocal();
+      return;
+    }
     await request({ method:'POST', body:{ activities:state.activities, logs:state.logs } });
   }
 
   function scheduleSave() {
-    writeLocal();
+    if (!state.authed) writeLocal();
     clearTimeout(state.saveTimer);
     state.saveTimer = global.setTimeout(saveNow, SAVE_DELAY);
   }
@@ -1095,24 +1099,28 @@
     state.owner = nextOwner;
     if (!changed && state.loaded) return;
 
-    const local = readLocal(state.owner);
-    state.activities = local?.activities || [];
-    state.logs = normaliseLogs(local?.logs || {});
+    if (!authed) {
+      const local = readLocal(state.owner);
+      state.activities = local?.activities || [];
+      state.logs = normaliseLogs(local?.logs || {});
+      state.loaded = true;
+      renderStableState();
+      return;
+    }
+
+    // Signed-in routine content is server-only. Never paint or promote a
+    // browser copy while the authoritative account resource is loading.
+    state.activities = [];
+    state.logs = {};
     state.loaded = true;
     renderStableState();
-    if (!authed) return;
 
-    const before = JSON.stringify({ activities:state.activities,logs:state.logs });
     const response = await request();
-    if (response.ok && response.hasRoutine) {
+    if (response.ok) {
       state.activities = normaliseActivities(response.activities);
       state.logs = normaliseLogs(response.logs);
-      writeLocal();
-    } else if (state.activities.length || Object.keys(state.logs).length) {
-      saveNow();
+      renderStableState();
     }
-    const after = JSON.stringify({ activities:state.activities,logs:state.logs });
-    if (after !== before) renderStableState();
   }
 
   function attachAuth() {
