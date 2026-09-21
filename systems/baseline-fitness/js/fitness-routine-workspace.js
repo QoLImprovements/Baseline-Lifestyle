@@ -52,10 +52,11 @@
   const PLAN_VIEWS=['calisthenics','cardio','other','sports'];
 
   function routePath() {
-    try {
-      const entry=global.performance?.getEntriesByType?.('navigation')?.[0];
-      return entry?.name?new URL(entry.name,global.location.href).pathname:String(global.location?.pathname || '');
-    } catch (_error) { return String(global.location?.pathname || ''); }
+    // Current location is the only route authority. A Navigation Timing entry
+    // describes how this document was originally loaded and can be stale after
+    // pushState/replaceState, which made refresh/history restore the wrong
+    // Routine subview.
+    return String(global.location?.pathname || '');
   }
   function rememberedPlan() {
     try {
