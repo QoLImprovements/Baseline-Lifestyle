@@ -56,18 +56,18 @@ test('games remain physically isolated and hub settings never become a save file
   assert.match(games, /non_persistent_app/);
 });
 
-test('Fitness browser-owned values are validated and bridged before the application', () => {
+test('Fitness Saved Data is validated and bridged before the application', () => {
   const endpoint = read('systems/baseline-fitness/api/fitness_state.php');
   const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const html = read('systems/baseline-fitness/baseline-fitness.html');
   assert.match(endpoint, /active_workout_plan_not_found/);
   assert.match(endpoint, /active_workout_not_current_session/);
   assert.match(endpoint, /active_workout_step_mismatch/);
-  assert.match(endpoint, /profile_conflict/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
-  assert.match(bridge, /action\s*:\s*['"]import_local['"]/);
+  assert.doesNotMatch(endpoint, /import_local/);
   assert.match(bridge, /body:revisionedBody\(body\)/);
-  assert.match(bridge, /serverProfile/);
+  assert.match(bridge, /purgeRetiredBrowserState\(\);[\s\S]{0,100}await reload\(\)/);
+  assert.doesNotMatch(bridge, /Import browser copy|Keep account copy|importLegacy/);
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
@@ -83,17 +83,13 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
 });
 
-test('Fitness legacy browser profile and workout require explicit import', () => {
+test('Fitness retired browser saves are discarded and cannot be imported', () => {
   const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.doesNotMatch(bridge, /await importExisting\(server\)/);
-  assert.doesNotMatch(bridge, /async function importExisting/);
-  assert.match(bridge, /quarantineLegacyLocal\(\);[\s\S]{0,120}const server=await reload\(\)/);
-  assert.match(bridge, /Account data is authoritative, including an empty account state/);
-  assert.match(bridge, /Import browser copy/);
-  assert.match(bridge, /Keep account copy/);
-  assert.match(bridge, /payload=\{action:'import_local'\}/);
-  assert.match(bridge, /IMPORT_BACKUP_PREFIX/);
-  assert.match(bridge, /if \(imports\[importKind\]\)[\s\S]{0,100}renderMigrationReview\(\)/);
+  assert.match(bridge, /Account Saved Data is the only persistent authority/);
+  assert.match(bridge, /RETIRED_IMPORT_BACKUP_PREFIX/);
+  assert.match(bridge, /function purgeRetiredBrowserState\(\)/);
+  assert.doesNotMatch(bridge, /Import browser copy|Keep account copy|renderMigrationReview/);
+  assert.doesNotMatch(bridge, /action:'import_local'|hasImportCandidate|importLegacy|keepAccount/);
 });
 
 test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
@@ -119,10 +115,10 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(bridge, /save_blocked/);
   assert.match(bridge, /Saving has stopped/);
   assert.match(bridge, /ACTIVE_LOCAL_PREFIXES/);
-  assert.match(bridge, /quarantineAuthenticatedLocal/);
+  assert.match(bridge, /purgeRetiredAuthenticatedLocal/);
   assert.match(bridge, /authoritativeRoutineResponse/);
   assert.match(bridge, /hasRoutine:true/);
-  assert.match(bridge, /Import legacy routine/);
+  assert.doesNotMatch(bridge, /Import legacy routine|legacyImportAvailable|importLegacy/);
   assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
