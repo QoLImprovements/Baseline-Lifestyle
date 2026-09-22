@@ -1089,7 +1089,7 @@
 
   function bindUi() {
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
-    $('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
+    $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
     $('#bodyProfileForm')?.addEventListener('submit', (event) => { event.preventDefault(); const profile = profileFromForm(); writeStorage(bodyProfileKey(), profile); renderBodyCalculations(profile); renderBodySummary(); if ($('#bodyProfileStatus')) $('#bodyProfileStatus').textContent = 'Body profile saved.'; });
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
