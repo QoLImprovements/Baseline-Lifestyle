@@ -328,6 +328,9 @@
         }
       }
       const path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
+      if(/^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(path)){
+        return { kind:'tab', tabId:'my-body', raw:path };
+      }
       if(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(path)){
         return { kind:'tab', tabId:'my-plan', raw:path };
       }
