@@ -484,19 +484,6 @@
       "cutoverRule": "This temporary route handoff exists only while replacing a standalone recipe shell with the complete parent application. Never migrate it to Saved Data."
     },
     {
-      "id": "fitness-body-view",
-      "inventoryPatterns": [
-        "__baseline_fitness_body_view_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_fitness_body_view_v1__"
-      ],
-      "classification": "temporary-session-state",
-      "decision": "expire-with-session",
-      "target": null,
-      "cutoverRule": "This remembers only the selected My Body subtab for the current browser session and is not Fitness account data."
-    },
-    {
       "id": "my-routine-navigation-state",
       "inventoryPatterns": [
         "__bl_fitness_plan_view_v4__",
