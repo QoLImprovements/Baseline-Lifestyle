@@ -48,7 +48,6 @@
   let planLoadPromise = null;
   let planLoadSerial = 0;
   let authUnsubscribe = null;
-  let authEventHandler = null;
   let timerInterval = null;
   let renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE };
   const workoutListeners = new Set();
@@ -924,8 +923,6 @@
       if (api && typeof api.get === 'function') {
         applyAuth(api.get());
         if (typeof api.onChange === 'function') authUnsubscribe = api.onChange((snapshot) => applyAuth(snapshot));
-        authEventHandler = (event) => applyAuth(event?.detail || api.get());
-        document.addEventListener('baseline:auth', authEventHandler);
         return;
       }
       attempts += 1;
@@ -1150,6 +1147,6 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = global.BASELINE_FITNESS_DEBUG;
   if (typeof document === 'undefined' || typeof global.addEventListener !== 'function') return;
 
-  global.addEventListener('pagehide', () => { closeTimerModal(); if (typeof authUnsubscribe === 'function') authUnsubscribe(); if (authEventHandler) document.removeEventListener('baseline:auth', authEventHandler); });
+  global.addEventListener('pagehide', () => { closeTimerModal(); if (typeof authUnsubscribe === 'function') authUnsubscribe(); });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true }); else init();
 })(typeof window !== 'undefined' ? window : globalThis);
