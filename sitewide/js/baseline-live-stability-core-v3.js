@@ -2,13 +2,12 @@
 (function(){
   'use strict';
 
-  const BUILD = 'BASELINE_LIVE_STABILITY_20260803_2';
+  const BUILD = 'BASELINE_LIVE_STABILITY_20260922_1';
   if(window.__BASELINE_LIVE_STABILITY__) return;
   window.__BASELINE_LIVE_STABILITY__ = BUILD;
   try{ document.documentElement.setAttribute('data-baseline-live-stability', BUILD); }catch(_error){}
 
   const RECIPE_PENDING_KEY = '__baseline_pending_recipe_route_v1__';
-  const FITNESS_BODY_VIEW_KEY = '__baseline_fitness_body_view_v1__';
   const BADMINTON_STORAGE_KEY = '__baseline_badminton_session_v4__';
   const BADMINTON_API = '/systems/baseline-badminton-session/api/badminton_session.php';
 
@@ -85,36 +84,6 @@
       event.stopImmediatePropagation();
       location.assign('/home/1');
     }, true);
-  }
-
-  function installFitnessBodyViewMemory(){
-    if(!document.body || document.body.dataset.app !== 'fitness') return;
-
-    document.addEventListener('click', function(event){
-      const button = event.target && event.target.closest ? event.target.closest('[data-body-view]') : null;
-      if(!button) return;
-      const view = String(button.getAttribute('data-body-view') || '').trim();
-      if(!view) return;
-      try{ sessionStorage.setItem(FITNESS_BODY_VIEW_KEY, view); }catch(_error){}
-    }, true);
-
-    if(!/\/baseline-fitness\/my-body\/?$/i.test(String(location.pathname || ''))) return;
-    let saved = '';
-    try{ saved = String(sessionStorage.getItem(FITNESS_BODY_VIEW_KEY) || ''); }catch(_error){}
-    if(!saved || saved === 'overall') return;
-
-    let attempts = 0;
-    const restore = function(){
-      attempts += 1;
-      const button = document.querySelector('[data-body-view="' + cssEscape(saved) + '"]');
-      if(button){
-        const selected = button.getAttribute('aria-selected') === 'true';
-        if(!selected) button.click();
-        return;
-      }
-      if(attempts < 50) window.setTimeout(restore, 60);
-    };
-    window.setTimeout(restore, 0);
   }
 
   function markGamesStable(){
@@ -251,7 +220,6 @@
     if(redirectStandaloneRecipeShell()) return;
     installFastHomeNavigation();
     restorePendingRecipe();
-    installFitnessBodyViewMemory();
     markGamesStable();
     correctVoiceConfigurationMessage();
     installBadmintonSavedDataReconciliation();
