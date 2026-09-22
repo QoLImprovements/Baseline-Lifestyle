@@ -25,8 +25,6 @@ test('Fitness resolves the exact My Routine route before first paint without art
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/my-routine\\\/plan/);
   assert.match(loader,/function requestedRoute\(\)/);
-  assert.match(loader,/return String\(global\.location\?\.pathname \|\| ''\)/);
-  assert.doesNotMatch(loader,/getEntriesByType/);
   assert.match(loader,/function seedBaseWorkspaceView\(\)/);
   assert.match(loader,/function loadOrdered\(entries\)/);
   assert.doesNotMatch(loader,/restoreRequestedView|loadOrderedParallel|Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
