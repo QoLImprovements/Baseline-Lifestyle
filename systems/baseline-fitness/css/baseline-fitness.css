@@ -887,3 +887,22 @@ body.voice-workout-active .bl-scroll{overflow:hidden!important}
     min-height:0;
   }
 }
+
+
+/* BASELINE-FITNESS-EXACT-VIEW-FIRST-PAINT-20260922 */
+html[data-initial-fitness-tab="system"] main.wrap>.section:not(#system),
+html[data-initial-fitness-tab="my-plan"] main.wrap>.section:not(#my-plan),
+html[data-initial-fitness-tab="my-body"] main.wrap>.section:not(#my-body),
+html[data-initial-fitness-tab="library"] main.wrap>.section:not(#library),
+html[data-initial-fitness-tab="achievements"] main.wrap>.section:not(#achievements){display:none!important}
+html[data-initial-fitness-tab="system"] #system,
+html[data-initial-fitness-tab="my-plan"] #my-plan,
+html[data-initial-fitness-tab="my-body"] #my-body,
+html[data-initial-fitness-tab="library"] #library,
+html[data-initial-fitness-tab="achievements"] #achievements{display:block!important}
+html[data-initial-fitness-body-view="profile"] #my-body [data-body-panel]:not([data-body-panel="profile"]),
+html[data-initial-fitness-body-view="services"] #my-body [data-body-panel]:not([data-body-panel="services"]),
+html[data-initial-fitness-body-view="overall"] #my-body [data-body-panel]:not([data-body-panel="overall"]){display:none!important}
+html[data-initial-fitness-body-view="profile"] #my-body [data-body-panel="profile"],
+html[data-initial-fitness-body-view="services"] #my-body [data-body-panel="services"],
+html[data-initial-fitness-body-view="overall"] #my-body [data-body-panel="overall"]{display:block!important}
