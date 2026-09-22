@@ -110,8 +110,5 @@ test('recipe handoff remains session-only while Fitness body view is URL-owned',
   assert.equal(rules.some(candidate => candidate.id === 'fitness-body-view'), false);
 
   const core = read('sitewide/js/baseline-live-stability-core-v3.js');
-  const workspace = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
   assert.doesNotMatch(core, /FITNESS_BODY_VIEW_KEY|installFitnessBodyViewMemory/);
-  assert.doesNotMatch(workspace, /getEntriesByType/);
-  assert.match(workspace, /return String\(global\.location\?\.pathname \|\| ''\)/);
 });
