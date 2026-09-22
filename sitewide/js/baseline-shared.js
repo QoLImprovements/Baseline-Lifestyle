@@ -7541,7 +7541,7 @@ function setupRecipeFavourites(){
 /* BASELINE-LIVE-STABILITY-LOADER-20260803 */
 (function(){
   'use strict';
-  const build = 'SAVED_DATA_REVISION_CLIENT_20260823_1';
+  const build = 'FITNESS_EXACT_VIEW_REFRESH_20260922_1';
   if(!document.querySelector('link[data-baseline-live-stability-style]')){
     const link = document.createElement('link');
     link.rel = 'stylesheet';
