@@ -24,7 +24,7 @@
     });
   }
 
-  load('/sitewide/js/baseline-live-stability-core-v3.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1', 'data-baseline-live-stability-core')
+  load('/sitewide/js/baseline-live-stability-core-v3.js?v=FITNESS_EXACT_VIEW_REFRESH_20260922_1', 'data-baseline-live-stability-core')
     .then(() => load('/sitewide/js/baseline-unified-favorites-v1.js?v=BASELINE_UNIFIED_FAVORITES_20260806_1', 'data-baseline-unified-favorites'))
     .then(() => load('/sitewide/js/baseline-detect-word-feedback-v1.js?v=BASELINE_DETECT_WORD_FEEDBACK_20260806_1', 'data-baseline-detect-word-feedback'))
     .catch((error) => { try { console.error('Baseline stability module failed to load.', error); } catch (_error) {} });
