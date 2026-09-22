@@ -52,10 +52,9 @@
   const PLAN_VIEWS=['calisthenics','cardio','other','sports'];
 
   function routePath() {
-    try {
-      const entry=global.performance?.getEntriesByType?.('navigation')?.[0];
-      return entry?.name?new URL(entry.name,global.location.href).pathname:String(global.location?.pathname || '');
-    } catch (_error) { return String(global.location?.pathname || ''); }
+    // Current location is the route authority. Navigation Timing describes the
+    // document's original load and can be stale after pushState/replaceState.
+    return String(global.location?.pathname || '');
   }
   function rememberedPlan() {
     try {
