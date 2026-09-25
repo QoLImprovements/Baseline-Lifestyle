@@ -58,6 +58,8 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-fitness/system',
     '/baseline-fitness/my-plan',
     '/baseline-fitness/my-body',
+    '/baseline-fitness/my-body/profile',
+    '/baseline-fitness/my-body/services',
     '/baseline-fitness/library',
     '/baseline-fitness/achievements',
     '/baseline-fitness/my-routine',
@@ -155,6 +157,68 @@ test('Fitness top-level tabs remain canonical from nested My Routine and survive
   await page.reload({ waitUntil:'domcontentloaded' });
   expect(new URL(page.url()).pathname).toBe('/baseline-fitness/library');
   await expect(page.locator('#library')).toHaveClass(/active/);
+});
+
+test('Fitness My Body exact subview survives refresh Back and Forward', async ({ page }) => {
+  await page.route('**/systems/baseline-fitness/api/**', (route) => fulfillJson(route, { ok:true, hasRoutine:false, profiles:[], achievements:[] }));
+  await page.route('**/sitewide/api/**', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok:true, authed:false });
+    if (pathname.endsWith('/auth_providers.php')) return fulfillJson(route, { ok:true, providers:{ password:true, google:false } });
+    return fulfillJson(route, { ok:true });
+  });
+
+  await page.goto('/baseline-fitness/my-body', { waitUntil:'domcontentloaded' });
+  await page.locator('[data-body-view="profile"]').click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body\/profile$/);
+  await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-view="overall"]')).toHaveAttribute('aria-selected','false');
+  await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
+  await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body\/profile$/);
+  await expect(page.locator('html')).toHaveAttribute('data-initial-fitness-body-view','profile');
+  await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
+
+  await page.locator('[data-body-view="services"]').click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body\/services$/);
+  await expect(page.locator('[data-body-view="services"]')).toHaveAttribute('aria-selected','true');
+
+  await page.goBack();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body\/profile$/);
+  await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-body\/services$/);
+  await expect(page.locator('[data-body-view="services"]')).toHaveAttribute('aria-selected','true');
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(page.locator('[data-body-view="services"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-panel="services"]')).toBeVisible();
+});
+
+test('Fitness Routine Log refresh stays on Routine Log after navigating from Plan', async ({ page }) => {
+  await page.route('**/systems/baseline-fitness/api/**', (route) => fulfillJson(route, { ok:true, hasRoutine:false, profiles:[], achievements:[] }));
+  await page.route('**/sitewide/api/**', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok:true, authed:false });
+    if (pathname.endsWith('/auth_providers.php')) return fulfillJson(route, { ok:true, providers:{ password:true, google:false } });
+    return fulfillJson(route, { ok:true });
+  });
+
+  await page.goto('/baseline-fitness/my-routine/plan', { waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessRoutineStructure));
+  await page.locator('[data-fitness-routine-view="log"]').click();
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/log$/);
+  await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/log$/);
+  await expect(page.locator('[data-fitness-routine-view="log"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected','false');
 });
 
 test('legacy malformed nested Fitness history URLs recover to the canonical top-level page', async ({ page }) => {

@@ -331,6 +331,9 @@
       if(/^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(path)){
         return { kind:'tab', tabId:'my-plan', raw:path };
       }
+      if(/^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(path)){
+        return { kind:'tab', tabId:'my-body', raw:path };
+      }
       if(/^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)){
         return { kind:'tab', tabId:'routine', raw:path };
       }
@@ -7461,6 +7464,7 @@ function setupRecipeFavourites(){
           const rawCleanRoute = String(initialView.raw || '').toLowerCase().replace(/\/+$/,'');
           const preserveNestedRoutinePath =
             /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(rawCleanRoute) ||
+            /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(rawCleanRoute) ||
             /^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(rawCleanRoute);
           const nextUrl = preserveNestedRoutinePath
             ? String(location.pathname || '') + String(location.search || '') + String(location.hash || '')
