@@ -16,8 +16,8 @@ test('Food and Skincare declare recipe routes before first paint', () => {
     assert.match(html, /data-initial-section="recipes"[^}]*#recipes\.section\{display:block!important\}/s);
     assert.match(html, /data-initial-recipe-route="1"[^}]*\.recipe-layout\{visibility:hidden!important\}/s);
   }
-  assert.match(skincareHtml, /baseline-shared\.js\?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1/);
-  assert.match(foodHtml, /baseline-shared\.js\?v=SITEWIDE_RECIPE_FIRST_PAINT_METHOD_TAGS_20260920_2/);
+  assert.match(skincareHtml, /baseline-shared\\.js\\?v=SITEWIDE_INGREDIENT_ROUTE_CONTEXT_20260925_1/);
+  assert.match(foodHtml, /baseline-shared\\.js\\?v=SITEWIDE_INGREDIENT_ROUTE_CONTEXT_20260925_1/);
   assert.match(shared, /removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
 });
