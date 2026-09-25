@@ -909,7 +909,10 @@
     const unchanged = next.authed === auth.authed && next.name === auth.name;
     auth = next;
     const button = $('#fitnessAccountBtn'); if (button) button.textContent = auth.authed ? 'Account' : 'Log in / Sign up';
-    if (unchanged) return;
+    if (unchanged) {
+      if (auth.authed && (activeTopTab === 'my-plan' || activeTopTab === 'achievements') && !current.planJson) ensurePlanLoaded();
+      return;
+    }
     fillBodyProfile();
     current = { planId: 0, planJson: null, sessions: [], progress: null };
     hydratedPlanId = null; generatorMode = 'create'; planLoadPromise = null; planLoadSerial += 1;
