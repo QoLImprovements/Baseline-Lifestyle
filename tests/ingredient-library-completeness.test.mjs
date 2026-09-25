@@ -126,7 +126,8 @@ test('every authored Food and Skincare recipe ingredient resolves to a canonical
       library: skinLibrary,
       slugMap: skinSlugMap,
       base: '/baseline-natural-skincare/ingredient-library',
-      sourceName: 'Skincare owned recipe ' + file
+      sourceName: 'Skincare owned recipe ' + file,
+      requireFilter: true
     });
   }
 
