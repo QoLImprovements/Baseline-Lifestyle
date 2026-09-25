@@ -4449,3 +4449,5 @@ html[data-initial-recipe-slug="hydrating-conductive-mist"] #recipes .recipe-page
 html[data-initial-recipe-slug="testing-shaving-gel"] #recipes .recipe-page[data-recipe-slug="testing-shaving-gel"]{display:block!important;visibility:visible!important;max-width:none!important}
 
 html[data-initial-recipe-slug="testing-natural-tooth-brightening-powder"] #recipes .recipe-page[data-recipe-slug="testing-natural-tooth-brightening-powder"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug$="-glide-gel"] #recipes #r10{display:block!important;visibility:visible!important;max-width:none!important}
