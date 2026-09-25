@@ -207,6 +207,48 @@ test('folder-backed Skincare Lip Balm keeps the exact route across direct load r
   await expect(page.locator('#recipes-landing')).toBeHidden();
 });
 
+test('Food recipe ingredient routes keep the exact ingredient and originating recipe context', async ({ page }) => {
+  const recipePath = '/baseline-food-approach/recipes/raw-40-c-almond-flax-pizza-base';
+  const ingredientPath = '/baseline-food-approach/ingredient-library/almonds';
+
+  await page.goto(recipePath, { waitUntil:'domcontentloaded' });
+  await expect(page.locator('#r1')).toBeVisible();
+
+  const almonds = page.locator('#r1 a.ing-link[data-ingredient="ing-almonds"]').first();
+  await expect(almonds).toHaveAttribute('href', ingredientPath + '?filter=r1');
+  await almonds.click();
+
+  expect(new URL(page.url()).pathname).toBe(ingredientPath);
+  expect(new URL(page.url()).searchParams.get('filter')).toBe('r1');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r1');
+  await expect(page.locator('#ing-almonds')).toBeVisible();
+
+  await page.goBack();
+  expect(new URL(page.url()).pathname).toBe(recipePath);
+  await expect(page.locator('#r1')).toBeVisible();
+  await expect(page.locator('#recipes')).toHaveClass(/recipe-focus/);
+
+  await page.goForward();
+  expect(new URL(page.url()).pathname).toBe(ingredientPath);
+  expect(new URL(page.url()).searchParams.get('filter')).toBe('r1');
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r1');
+  await expect(page.locator('#ing-almonds')).toBeVisible();
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(ingredientPath);
+  expect(new URL(page.url()).searchParams.get('filter')).toBe('r1');
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r1');
+  await expect(page.locator('#ing-almonds')).toBeVisible();
+
+  await page.goto('/baseline-food-approach/ingredient-library/white-mushroom?filter=r5', { waitUntil:'domcontentloaded' });
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r5');
+  await expect(page.locator('#ing-mushrooms')).toBeVisible();
+  await expect(page.locator('#ing-mushrooms h3')).toContainText('White Mushrooms');
+});
+
 test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {
   await page.goto('/baseline-food-approach/system', { waitUntil:'domcontentloaded' });
   const recipes = page.locator('.tab[data-target="recipes"], .tab[data-tab="recipes"]').first();
