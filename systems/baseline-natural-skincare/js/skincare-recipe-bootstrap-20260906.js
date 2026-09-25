@@ -35,14 +35,13 @@
     (document.head||document.documentElement).appendChild(script);
   }
 
-  function startAfterRoutine(){
-    if(!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) return;
+  function startRecipeModules(){
     next();
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startAfterRoutine,{once:true});
+    document.addEventListener('DOMContentLoaded',startRecipeModules,{once:true});
   }else{
-    startAfterRoutine();
+    startRecipeModules();
   }
 })(typeof window!=='undefined'?window:globalThis);
