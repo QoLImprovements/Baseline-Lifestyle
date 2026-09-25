@@ -67,6 +67,13 @@ test('Lip/ balm stays sourced from the recipe folder but is rendered through the
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
 
+test('recipe bootstrap starts independently of My Routine readiness', () => {
+  assert.match(recipeBootstrap, /function startRecipeModules\(\)/);
+  assert.doesNotMatch(recipeBootstrap, /__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
+  assert.doesNotMatch(recipeBootstrap, /BASELINE_RoutineSystem/);
+  assert.doesNotMatch(recipeBootstrap, /startAfterRoutine/);
+});
+
 test('Skincare Details is hidden at creation time to prevent hard-refresh first-paint flashes', () => {
   assert.match(recipeUx, /recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
