@@ -57,7 +57,7 @@ These Markdown rules are a human reference point, not live runtime config.
     <button class="tab" aria-selected="true" data-target="system" type="button">System</button>
     <button class="tab" aria-selected="false" data-target="library" type="button">Massage Library</button>
     <button class="tab" aria-selected="false" data-target="planner" type="button">Plan My Massage</button>
-  </nav>
+  </nav><script id="baseline-massage-route-first-paint">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-massage\/library\/?$/i.test(p)?"library":/^\/baseline-massage\/planner\/?$/i.test(p)?"planner":"system");if(!t)return;var n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){var a=b.getAttribute("data-target")===t;b.classList.toggle("active",a);b.setAttribute("aria-selected",a?"true":"false")});var st=document.createElement("style");st.id="baseline-massage-route-first-paint-style";st.textContent="main.wrap>.section{display:none!important}main.wrap>#"+t+".section{display:block!important}";document.head.appendChild(st);window.addEventListener("load",function(){document.querySelectorAll("main.wrap>.section").forEach(function(x){x.classList.toggle("active",x.id===t)});st.remove()},{once:true})}catch(_e){}}()</script>
 </header>
 
 <main class="wrap">
