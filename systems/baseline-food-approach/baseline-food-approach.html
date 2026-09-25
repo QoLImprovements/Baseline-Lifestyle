@@ -81,7 +81,7 @@ html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="reci
 <button aria-selected="false" class="tab" data-target="recipes">Recipes</button>
 <button aria-selected="false" class="tab" data-target="ingredients">Ingredient Library</button>
 <button aria-selected="false" class="tab" data-target="diet-log">Diet Log</button>
-</nav>
+</nav><script id="baseline-food-route-first-paint">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)?"recipes":/^\/baseline-food-approach\/ingredient-library(?:\/|$)/i.test(p)?"ingredients":/^\/baseline-food-approach\/diet-log(?:\/|$)/i.test(p)?"diet-log":"system");if(!t)return;var n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){var a=b.getAttribute("data-target")===t;b.classList.toggle("active",a);b.setAttribute("aria-selected",a?"true":"false")});var st=document.createElement("style");st.id="baseline-food-route-first-paint-style";st.textContent="main.wrap>.section{display:none!important}main.wrap>#"+t+".section{display:block!important}";document.head.appendChild(st);window.addEventListener("load",function(){document.querySelectorAll("main.wrap>.section").forEach(function(x){x.classList.toggle("active",x.id===t)});st.remove()},{once:true})}catch(_e){}}()</script>
 </header>
 <main class="wrap">
 <!-- SYSTEM -->
