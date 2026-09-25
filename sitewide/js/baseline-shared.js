@@ -1272,6 +1272,50 @@
     'ing-vinegar':'vinegar'
   });
 
+  const FOOD_INGREDIENT_SLUG_BY_ID = Object.freeze({
+    'ing-almond-butter':'almond-butter',
+    'ing-almonds':'almonds',
+    'ing-apple':'apple',
+    'ing-aubergine':'aubergine',
+    'ing-avocado':'avocado',
+    'ing-basil':'basil',
+    'ing-brazil-nut-butter':'brazil-nut-butter',
+    'ing-carrot':'carrot',
+    'ing-cashew-butter':'cashew-butter',
+    'ing-cashews':'cashews',
+    'ing-cassava-flour':'cassava-flour',
+    'ing-chickpeas':'chickpeas',
+    'ing-cornflour':'cornflour',
+    'ing-dried-herbs':'dried-herbs',
+    'ing-flaxseed':'flaxseed',
+    'ing-ground-cinnamon':'ground-cinnamon',
+    'ing-herbes-de-provence':'herbes-de-provence',
+    'ing-jumbo-oats':'jumbo-oats',
+    'ing-lemon':'lemon',
+    'ing-macadamia-butter':'macadamia-butter',
+    'ing-mushrooms':'white-mushroom',
+    'ing-nutritional-yeast':'nutritional-yeast',
+    'ing-oat-groats':'oat-groats',
+    'ing-parsley':'parsley',
+    'ing-peanut-butter':'peanut-butter',
+    'ing-pear':'pear',
+    'ing-polenta':'polenta',
+    'ing-porridge-oats':'porridge-oats',
+    'ing-potato':'potato',
+    'ing-red-pepper':'red-pepper',
+    'ing-rosemary':'rosemary',
+    'ing-sage':'sage',
+    'ing-sattu':'sattu',
+    'ing-sea-salt':'sea-salt',
+    'ing-sweet-potato':'sweet-potato',
+    'ing-tahini':'tahini',
+    'ing-tapioca-starch':'tapioca-starch',
+    'ing-tomatoes':'tomatoes',
+    'ing-turmeric':'turmeric',
+    'ing-vanilla-bean-powder':'vanilla-bean-powder',
+    'ing-water':'water'
+  });
+
   function skincareIngredientIdForSlug(slug){
     let token = String(slug || '').trim().toLowerCase();
     try{ token = decodeURIComponent(token); }catch(_e){}
@@ -1301,6 +1345,48 @@
     const base = '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug);
     const filter = String(recipeFilter || '').trim();
     return filter ? (base + '?filter=' + encodeURIComponent(filter)) : base;
+  }
+
+  function foodIngredientIdForSlug(slug){
+    let token = String(slug || '').trim().toLowerCase();
+    try{ token = decodeURIComponent(token); }catch(_e){}
+    const ids = Object.keys(FOOD_INGREDIENT_SLUG_BY_ID);
+    for(const ingredientId of ids){
+      if(FOOD_INGREDIENT_SLUG_BY_ID[ingredientId] === token) return ingredientId;
+    }
+    return '';
+  }
+
+  function foodIngredientPathStateFromLocation(){
+    try{
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-food-approach.html') return null;
+      const path = decodeURIComponent(String(location.pathname || ''));
+      const match = path.match(/\/baseline-food-approach\/ingredient-library\/([^\/?#]+)\/?$/i);
+      if(!match || !match[1]) return null;
+      const ingredientId = foodIngredientIdForSlug(match[1]);
+      if(!ingredientId) return null;
+      const filter = String(new URL(location.href).searchParams.get('filter') || '').trim();
+      return { kind:'ingredient', ingredientId:ingredientId, recipeFilter:filter || null, raw:path };
+    }catch(_e){ return null; }
+  }
+
+  function foodIngredientUrlForId(ingredientId, recipeFilter){
+    const slug = FOOD_INGREDIENT_SLUG_BY_ID[String(ingredientId || '').trim()];
+    if(!slug) return '';
+    const base = '/baseline-food-approach/ingredient-library/' + encodeURIComponent(slug);
+    const filter = String(recipeFilter || '').trim();
+    return filter ? (base + '?filter=' + encodeURIComponent(filter)) : base;
+  }
+
+  function ingredientPathStateFromLocation(){
+    return skincareIngredientPathStateFromLocation() || foodIngredientPathStateFromLocation();
+  }
+
+  function ingredientUrlForId(ingredientId, recipeFilter){
+    const pageFile = routePageFileFromPath(location.pathname || '');
+    if(pageFile === 'baseline-natural-skincare.html') return skincareIngredientUrlForId(ingredientId, recipeFilter);
+    if(pageFile === 'baseline-food-approach.html') return foodIngredientUrlForId(ingredientId, recipeFilter);
+    return '';
   }
 
   function recipeTokenFromHref(href){
@@ -1377,9 +1463,8 @@
 
   function urlForNavState(state){
     if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
-    if(state && state.kind === 'ingredient' && state.ingredientId
-      && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId, state.recipeFilter || '');
+    if(state && state.kind === 'ingredient' && state.ingredientId){
+      const cleanIngredientUrl = ingredientUrlForId(state.ingredientId, state.recipeFilter || '');
       if(cleanIngredientUrl) return cleanIngredientUrl;
     }
     if(state && state.kind === 'tab' && state.tabId){
@@ -7440,7 +7525,7 @@ function setupRecipeFavourites(){
     const initialHash = location.hash || '';
     const initialHashView = initialHash ? parseViewStateHash(initialHash) : null;
     const initialRecipeView = recipePathStateFromLocation();
-    const initialIngredientView = skincareIngredientPathStateFromLocation();
+    const initialIngredientView = ingredientPathStateFromLocation();
     const initialCleanRouteView = cleanRouteStateFromPath();
 
     // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
