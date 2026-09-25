@@ -238,16 +238,37 @@
     try{ global.BASELINE_decorateRecipeSliderSaves?.(); }catch(_error){};
   }
 
+  function installExternalRecipePlaceholder(meta){
+    if(!meta) return null;
+    const existing=recipeById(meta.id);
+    if(existing) return existing;
+
+    const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
+    if(!container) return null;
+
+    const recipe=document.createElement('div');
+    recipe.className='recipe card recipe-page';
+    recipe.id=meta.id;
+    recipe.dataset.category=meta.category || '';
+    recipe.dataset.recipeSlug=meta.slug;
+    recipe.dataset.externalRecipePlaceholder='1';
+    recipe.style.display='none';
+    recipe.innerHTML='<div class="recipe-actions"><button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button></div><h3>'+escapeHtml(meta.title)+'</h3><p class="note">'+escapeHtml(meta.description || '')+'</p>';
+    container.appendChild(recipe);
+    return recipe;
+  }
+
   async function loadExternalRecipeForCurrentPath(){
     const meta=externalRecipeForCurrentPath();
     if(!meta) return null;
 
     const existing=recipeById(meta.id);
-    if(existing){
+    if(existing && existing.dataset.externalRecipePlaceholder!=='1'){
       bindLipBalmFormula(existing);
       return { meta, recipe:existing };
     }
 
+    const placeholder=(existing && existing.dataset.externalRecipePlaceholder==='1') ? existing : null;
     const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
     if(!container) throw new Error('Skincare recipe container is unavailable.');
 
@@ -262,7 +283,8 @@
     const recipe=document.importNode(sourceCard,true);
     recipe.classList.remove('is-open','active');
     recipe.style.display='none';
-    container.appendChild(recipe);
+    if(placeholder && placeholder.parentNode) placeholder.replaceWith(recipe);
+    else container.appendChild(recipe);
     bindLipBalmFormula(recipe);
     return { meta, recipe };
   }
@@ -539,6 +561,14 @@
 
   async function startRecipeUx(){
     canonicaliseOldRecipePath();
+
+    const externalMeta=externalRecipeForCurrentPath();
+    if(externalMeta){
+      const placeholder=installExternalRecipePlaceholder(externalMeta);
+      if(placeholder){
+        try{ global.BASELINE_openRecipe?.(externalMeta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
+      }
+    }
 
     let external=null;
     try{
