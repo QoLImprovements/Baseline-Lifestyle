@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — isolated recipe UX bootstrap 2026-09-06.
+/* Baseline Natural Skincare — isolated recipe UX bootstrap 2026-09-06.\n   Section 2 refresh-stability work keeps direct recipe routes independent.
    This loader is intentionally separate from the My Routine bootstrap and does
    not start recipe-only modules until the parser-loaded My Routine stack is ready. */
 (function(global){
