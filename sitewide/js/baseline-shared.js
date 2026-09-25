@@ -2241,7 +2241,9 @@ function parseViewStateHash(hash){
     // Build recipe list from embedded recipe cards. Natural Skincare can also
     // register folder-backed recipes without duplicating their recipe body here.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
-    const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    const routePageFile = routePageFileFromPath(location.pathname || '');
+    const isSkincare = routePageFile === 'baseline-natural-skincare.html';
+    const isFood = routePageFile === 'baseline-food-approach.html';
     const recipes = recipeCards.map(card => {
       const h = q('h3', card);
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
@@ -2275,14 +2277,14 @@ function parseViewStateHash(hash){
       if(!recipeToIngredients.has(rid)) recipeToIngredients.set(rid, new Set());
       recipeToIngredients.get(rid).add(iid);
 
-      if(isSkincare){
-        const cleanIngredientUrl = skincareIngredientUrlForId(iid, rid);
+      if(isSkincare || isFood){
+        const cleanIngredientUrl = ingredientUrlForId(iid, rid);
         if(cleanIngredientUrl) a.setAttribute('href', cleanIngredientUrl);
       }
     });
 
-    if(isSkincare && !document.documentElement.dataset.skincareIngredientRecipeLinksBound){
-      document.documentElement.dataset.skincareIngredientRecipeLinksBound = '1';
+    if((isSkincare || isFood) && !document.documentElement.dataset.ingredientRecipeLinksBound){
+      document.documentElement.dataset.ingredientRecipeLinksBound = '1';
       document.addEventListener('click', (e)=>{
         const a = e.target && e.target.closest
           ? e.target.closest('#recipes a.ing-link[data-from-recipe][data-ingredient]')
@@ -2290,7 +2292,7 @@ function parseViewStateHash(hash){
         if(!a) return;
         const recipeId = String(a.getAttribute('data-from-recipe') || '').trim();
         const ingredientId = String(a.getAttribute('data-ingredient') || '').trim();
-        const cleanIngredientUrl = skincareIngredientUrlForId(ingredientId, recipeId);
+        const cleanIngredientUrl = ingredientUrlForId(ingredientId, recipeId);
         if(!cleanIngredientUrl) return;
         e.preventDefault();
         window.location.assign(cleanIngredientUrl);
@@ -2423,7 +2425,7 @@ function parseViewStateHash(hash){
     // Legacy hash-based ingredient clicks remain only for non-Skincare systems.
     // Skincare authors canonical /ingredient-library/<slug> URLs and never creates
     // a recipe#ing-* navigation state.
-    if(!isSkincare) qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
+    if(!isSkincare && !isFood) qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       a.addEventListener('click', (e)=>{
         const href = a.getAttribute('href') || '';
         if(!href.startsWith('#')) return;
@@ -7531,9 +7533,8 @@ function setupRecipeFavourites(){
     // Repair legacy hybrid URLs such as /recipes/a-recipe#ing-jojoba.
     // A clean ingredient record gets its own page URL; one address must not
     // describe both a recipe and an ingredient at the same time.
-    if(initialRecipeView && initialHashView && initialHashView.kind === 'ingredient'
-      && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(initialHashView.ingredientId, initialHashView.recipeFilter || '');
+    if(initialRecipeView && initialHashView && initialHashView.kind === 'ingredient'){
+      const cleanIngredientUrl = ingredientUrlForId(initialHashView.ingredientId, initialHashView.recipeFilter || '');
       if(cleanIngredientUrl){
         window.location.replace(cleanIngredientUrl);
         return;
