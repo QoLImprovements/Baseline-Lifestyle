@@ -86,7 +86,7 @@ function mapPath(pathname) {
   }
 
   let match = pathname.match(/^\/baseline-food-approach\/ingredient-library\/([^/]+)\/?$/);
-  if (match) return `/systems/baseline-food-approach/ingredients/${match[1]}.html`;
+  if (match) return '/systems/baseline-food-approach/baseline-food-approach.html';
   match = pathname.match(/^\/baseline-natural-skincare\/ingredient-library\/([^/]+)\/?$/);
   if (match) return '/systems/baseline-natural-skincare/baseline-natural-skincare.html';
   match = pathname.match(/^\/baseline-food-approach\/recipes\/([^/]+)\/?$/);
