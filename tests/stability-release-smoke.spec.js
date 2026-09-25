@@ -89,6 +89,40 @@ test('canonical clean route families can be requested directly for browser refre
   }
 });
 
+test('clean routes paint the exact tab before external application JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const routes = [
+    ['/baseline-food-approach/ingredient-library', 'ingredients'],
+    ['/baseline-food-approach/diet-log', 'diet-log'],
+    ['/baseline-natural-skincare/skin-support-system', 'support'],
+    ['/baseline-natural-skincare/my-routine/summary', 'routine'],
+    ['/baseline-massage/planner', 'planner'],
+    ['/baseline-badminton-session/session-history', 'history'],
+    ['/baseline-games-hub/games-hub/games-list', 'games']
+  ];
+
+  for (const [pathname, target] of routes) {
+    const response = await page.goto(pathname, { waitUntil:'load' });
+    expect(response, pathname + ' returned no response').not.toBeNull();
+    expect(response.status(), pathname + ' did not load').toBeLessThan(400);
+    await expect(page.locator('.tabs .tab[data-target="' + target + '"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('.tabs .tab[aria-selected="true"]')).toHaveCount(1);
+    await expect(page.locator('#' + target + '.section')).toBeVisible();
+  }
+
+  await page.goto('/baseline-fitness/my-body/profile', { waitUntil:'load' });
+  await expect(page.locator('.tabs .tab[data-target="my-body"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-view="overall"]')).toHaveAttribute('aria-selected','false');
+  await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
+  await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
+});
+
 test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {
   await page.goto('/baseline-food-approach/system', { waitUntil:'domcontentloaded' });
   const recipes = page.locator('.tab[data-target="recipes"], .tab[data-tab="recipes"]').first();
