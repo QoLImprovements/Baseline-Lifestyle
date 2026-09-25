@@ -243,7 +243,7 @@
     const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
     if(!container) throw new Error('Skincare recipe container is unavailable.');
 
-    const response=await global.fetch(meta.source,{ credentials:'same-origin', cache:'no-store' });
+    const response=await global.fetch(meta.source,{ credentials:'same-origin' });
     if(!response.ok) throw new Error('Unable to load '+meta.title+' recipe source ('+response.status+').');
 
     const sourceHtml=await response.text();
