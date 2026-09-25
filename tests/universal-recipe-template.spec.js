@@ -138,8 +138,8 @@ test('direct Food and Skincare recipe routes never paint the System section firs
   );
 });
 
-test('all Food recipe clean routes preserve exact selection through refresh Back and Forward', async ({ page }) => {
-  for (const recipe of foodRecipes) {
+for (const recipe of foodRecipes) {
+  test(`Food recipe preserves exact selection through refresh Back and Forward: ${recipe.slug}`, async ({ page }) => {
     const url = '/baseline-food-approach/recipes/' + recipe.slug;
     await page.goto(url, { waitUntil:'domcontentloaded' });
 
@@ -165,8 +165,8 @@ test('all Food recipe clean routes preserve exact selection through refresh Back
     await page.goForward();
     expect(new URL(page.url()).pathname).toBe('/baseline-food-approach/recipes');
     await expect(page.locator('#recipes-landing')).toBeVisible();
-  }
-});
+  });
+}
 
 test('every visible Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
   for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {
