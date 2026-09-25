@@ -1080,8 +1080,8 @@
   function setBodySubtab(view, historyMode = 'none') {
     if (!BODY_VIEWS.includes(view)) view = 'overall';
     document.documentElement.setAttribute('data-initial-fitness-body-view', view);
-    $('.my-body-subtab').forEach((button) => { const active = button.dataset.bodyView === view; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
-    $('.my-body-panel').forEach((panel) => { panel.hidden = panel.dataset.bodyPanel !== view; });
+    $$('.my-body-subtab').forEach((button) => { const active = button.dataset.bodyView === view; button.classList.toggle('active', active); button.setAttribute('aria-selected', String(active)); });
+    $$('.my-body-panel').forEach((panel) => { panel.hidden = panel.dataset.bodyPanel !== view; });
     if (historyMode === 'push') {
       try {
         const nextPath = bodyRoutePath(view);
@@ -1092,7 +1092,7 @@
 
   function bindUi() {
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
-    $('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
+    $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
     $('#bodyProfileForm')?.addEventListener('submit', (event) => { event.preventDefault(); const profile = profileFromForm(); writeStorage(bodyProfileKey(), profile); renderBodyCalculations(profile); renderBodySummary(); if ($('#bodyProfileStatus')) $('#bodyProfileStatus').textContent = 'Body profile saved.'; });
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
