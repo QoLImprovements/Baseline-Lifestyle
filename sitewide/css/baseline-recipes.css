@@ -4453,3 +4453,6 @@ html[data-initial-recipe-slug="testing-natural-tooth-brightening-powder"] #recip
 html[data-initial-recipe-slug$="-glide-gel"] #recipes #r10{display:block!important;visibility:visible!important;max-width:none!important}
 
 html[data-initial-recipe-slug="tooth-polishing-powder"] #recipes #r9{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug$="-shave-gel"] #recipes #r5{display:none!important;visibility:hidden!important}
+html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{display:block!important;visibility:visible!important;max-width:none!important}
