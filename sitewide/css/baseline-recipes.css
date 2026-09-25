@@ -4409,8 +4409,8 @@ html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-templa
 
 
 /* Section 2: exact clean recipe route first paint. */
-html[data-initial-recipe-route="1"] #recipes .recipe-main,
-html[data-initial-recipe-route="1"] #recipes .recipes{visibility:visible!important}
+html[data-initial-recipe-route="1"] #recipes .recipe-main{visibility:visible!important}
+html[data-initial-recipe-route="1"] #recipes .recipes{display:grid!important;visibility:visible!important}
 html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!important}
 html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
