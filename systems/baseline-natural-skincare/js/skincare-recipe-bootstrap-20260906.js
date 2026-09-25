@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — isolated recipe UX bootstrap 2026-09-06.\n   Section 2 refresh-stability work keeps direct recipe routes independent.
+/* Baseline Natural Skincare — isolated recipe UX bootstrap 2026-09-06.
    This loader is intentionally separate from the My Routine bootstrap and does
    not start recipe-only modules until the parser-loaded My Routine stack is ready. */
 (function(global){
@@ -35,23 +35,14 @@
     (document.head||document.documentElement).appendChild(script);
   }
 
-  function isDirectRecipeRoute(){
-    var path=String((global.location && global.location.pathname) || '');
-    return path.indexOf('/baseline-natural-skincare/recipes/')===0;
-  }
-
-  function startRecipeModules(){
-    if(isDirectRecipeRoute()){
-      next();
-      return;
-    }
+  function startAfterRoutine(){
     if(!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) return;
     next();
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startRecipeModules,{once:true});
+    document.addEventListener('DOMContentLoaded',startAfterRoutine,{once:true});
   }else{
-    startRecipeModules();
+    startAfterRoutine();
   }
 })(typeof window!=='undefined'?window:globalThis);
