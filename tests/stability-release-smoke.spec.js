@@ -38,6 +38,17 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-food-approach/recipes',
     '/baseline-food-approach/ingredient-library',
     '/baseline-food-approach/diet-log',
+    '/baseline-food-approach/recipes/raw-40-c-almond-flax-pizza-base',
+    '/baseline-food-approach/recipes/creamy-stovetop-polenta',
+    '/baseline-food-approach/recipes/pure-stovetop-chickpea-baked-beans',
+    '/baseline-food-approach/recipes/hearty-oat-porridge-with-apple-pear-and-vanilla',
+    '/baseline-food-approach/recipes/creamy-mushroom-sauce',
+    '/baseline-food-approach/recipes/mushroom-and-rosemary-oat-groats-risotto',
+    '/baseline-food-approach/recipes/sattu-balanced-nut-butter-spread-base',
+    '/baseline-food-approach/recipes/sweet-potato-and-bell-pepper-sauce',
+    '/baseline-food-approach/recipes/aubergine-and-carrot-sauce',
+    '/baseline-food-approach/recipes/tomato-and-red-pepper-sauce',
+    '/baseline-food-approach/recipes/potato-and-carrot-vegan-cheese',
     '/baseline-massage/system',
     '/baseline-massage/library',
     '/baseline-massage/planner',
@@ -50,6 +61,14 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-natural-skincare/my-routine/summary',
     '/baseline-natural-skincare/my-routine/plan',
     '/baseline-natural-skincare/my-routine/public',
+    '/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend',
+    '/baseline-natural-skincare/recipes/restorative-hydration-layer',
+    '/baseline-natural-skincare/recipes/calming-shave-gel',
+    '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser',
+    '/baseline-natural-skincare/recipes/nurturing-glow-butter',
+    '/baseline-natural-skincare/recipes/protective-touch-balm',
+    '/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash',
+    '/baseline-natural-skincare/recipes/testing-lip-balm',
     '/baseline-badminton-session/system',
     '/baseline-badminton-session/game-plan',
     '/baseline-badminton-session/ratings-standings',
@@ -121,6 +140,71 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-view="profile"]')).toHaveAttribute('aria-selected','true');
   await expect(page.locator('[data-body-panel="overall"]')).toBeHidden();
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
+});
+
+test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const routes = [
+    ['/baseline-natural-skincare/recipes/nurturing-glow-butter', 'r1', 'Nurturing Glow Butter'],
+    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel']
+  ];
+
+  for (const [pathname, recipeId, title] of routes) {
+    const response = await page.goto(pathname, { waitUntil:'load' });
+    expect(response, pathname + ' returned no response').not.toBeNull();
+    expect(response.status(), pathname + ' did not load').toBeLessThan(400);
+    await expect(page.locator('.tabs .tab[data-target="recipes"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#system')).toBeHidden();
+    await expect(page.locator('#recipes')).toBeVisible();
+    await expect(page.locator('#recipes-landing')).toBeHidden();
+    await expect(page.locator('#' + recipeId)).toBeVisible();
+    await expect(page.locator('#' + recipeId + ' h3').first()).toHaveText(title);
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+    await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
+  }
+});
+
+test('folder-backed Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+  const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
+
+  await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('html')).toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
+  await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
+
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+  const external = page.locator('#recipes-landing a[href="' + lipBalmPath + '"]').first();
+  await expect(external).toBeVisible();
+  await external.click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page.locator('#r12')).toBeVisible();
+
+  await page.goBack({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes');
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+
+  await page.goForward({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
 });
 
 test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {

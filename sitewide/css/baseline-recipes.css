@@ -4406,3 +4406,53 @@ html body[data-app] #recipes .recipe-page .glide-controller.recipe-slider-templa
     white-space:normal !important;
   }
 }
+
+
+/* Section 2: exact clean recipe route first paint. */
+html[data-initial-recipe-route="1"] #recipes .recipe-main{visibility:visible!important}
+html[data-initial-recipe-route="1"] #recipes .recipes{display:grid!important;visibility:visible!important}
+html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!important}
+html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
+html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
+html[data-initial-recipe-route="1"] #recipes .side-recipe-nav{display:none!important}
+
+/* Section 2: Food exact-route selectors, group 1. */
+html[data-initial-recipe-slug="raw-40-c-almond-flax-pizza-base"] #recipes .recipe-page[data-recipe-slug="raw-40-c-almond-flax-pizza-base"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="creamy-stovetop-polenta"] #recipes .recipe-page[data-recipe-slug="creamy-stovetop-polenta"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="pure-stovetop-chickpea-baked-beans"] #recipes .recipe-page[data-recipe-slug="pure-stovetop-chickpea-baked-beans"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"] #recipes .recipe-page[data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="creamy-mushroom-sauce"] #recipes .recipe-page[data-recipe-slug="creamy-mushroom-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="mushroom-and-rosemary-oat-groats-risotto"] #recipes .recipe-page[data-recipe-slug="mushroom-and-rosemary-oat-groats-risotto"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="sweet-potato-and-bell-pepper-sauce"] #recipes .recipe-page[data-recipe-slug="sweet-potato-and-bell-pepper-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="aubergine-and-carrot-sauce"] #recipes .recipe-page[data-recipe-slug="aubergine-and-carrot-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="tomato-and-red-pepper-sauce"] #recipes .recipe-page[data-recipe-slug="tomato-and-red-pepper-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="potato-and-carrot-vegan-cheese"] #recipes .recipe-page[data-recipe-slug="potato-and-carrot-vegan-cheese"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="sattu-balanced-nut-butter-spread-base"] #recipes .recipe-page[data-recipe-slug="sattu-balanced-nut-butter-spread-base"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="nurturing-glow-butter"] #recipes .recipe-page[data-recipe-slug="nurturing-glow-butter"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"] #recipes .recipe-page[data-recipe-slug="anhydrous-oil-cleanser"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="protective-touch-balm"] #recipes .recipe-page[data-recipe-slug="protective-touch-balm"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="anhydrous-massage-oil-blend"] #recipes .recipe-page[data-recipe-slug="anhydrous-massage-oil-blend"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="restorative-hydration-layer"] #recipes .recipe-page[data-recipe-slug="restorative-hydration-layer"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="calming-shave-gel"] #recipes .recipe-page[data-recipe-slug="calming-shave-gel"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="testing-soap-free-powdered-hair-wash"] #recipes .recipe-page[data-recipe-slug="testing-soap-free-powdered-hair-wash"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="hydrating-conductive-mist"] #recipes .recipe-page[data-recipe-slug="hydrating-conductive-mist"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="testing-shaving-gel"] #recipes .recipe-page[data-recipe-slug="testing-shaving-gel"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="testing-natural-tooth-brightening-powder"] #recipes .recipe-page[data-recipe-slug="testing-natural-tooth-brightening-powder"]{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug$="-glide-gel"] #recipes #r10{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug="tooth-polishing-powder"] #recipes #r9{display:block!important;visibility:visible!important;max-width:none!important}
+
+html[data-initial-recipe-slug$="-shave-gel"] #recipes #r5{display:none!important;visibility:hidden!important}
+html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{display:block!important;visibility:visible!important;max-width:none!important}

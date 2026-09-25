@@ -18,7 +18,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b8644d"/>
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
-<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p))d.setAttribute('data-initial-recipe-route','1')}}catch(_e){}}()</script>
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',(p.split('/').pop()||'').toLowerCase())}}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -29,7 +29,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=CONTENT_SIZED_BANNER_DROPDOWN_20260607" rel="stylesheet"/><link rel="stylesheet" href="/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2">
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
-<link href="/sitewide/css/baseline-recipes.css?v=RECIPE_SLIDER_WIDTH_CAPTION_20260920_5" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-recipes.css?v=RECIPE_ROUTE_STABILITY_20260925_1" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/baseline-natural-skincare.css?v=SKINCARE_CANONICAL_CSS_20260712" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/skincare-routine-enhancements.css?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2" rel="stylesheet"/>
@@ -759,8 +759,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r8')" type="button">Print This Recipe</button>
 </div>
-<h3>Shaving Gel</h3>
-<p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
+<h3>Calming Shave Gel</h3>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -800,13 +799,12 @@ Method steps MUST follow this format:
 </ul>
 </div>
 <!-- Testing Recipe 9 -->
-<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-natural-tooth-brightening-powder" id="r9">
+<div class="recipe card recipe-page" data-recipe-slug="tooth-polishing-powder" id="r9">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r9')" type="button">Print This Recipe</button>
 </div>
-<h3>Natural Tooth-Brightening Powder</h3>
-<p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
+<h3>Tooth Polishing Powder</h3>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -853,8 +851,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r10')" type="button">Print This Recipe</button>
 </div>
-<h3>Microcurrent Conductive Gel</h3>
-<p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
+<h3>Micro&#99;urrent Glide Gel</h3>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -2555,7 +2552,7 @@ Method steps MUST follow this format:
   window.addEventListener('load', initRecipeSliders);
 })();
 </script>
-<script src="/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=RECIPE_FIRST_PAINT_20260920_6"></script>
+<script src="/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=RECIPE_ROUTE_STABILITY_20260925_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-model.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-comprehensive-benefits.js?v=SKINCARE_ROUTINE_COMPREHENSIVE_20260804_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js?v=SKINCARE_ROUTINE_CATALOGUE_V2_20260804_1"></script>

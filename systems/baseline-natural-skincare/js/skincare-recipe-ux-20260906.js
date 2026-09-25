@@ -37,6 +37,14 @@
     { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm', description:'adjustable butter character and structure with a balanced 100 g default formula.', category:'Testing', source:'/systems/baseline-natural-skincare/recipes/testing-lip-balm.html' }
   ]);
 
+  const EXTERNAL_RECIPE_PREFETCH = (function(){
+    try{
+      const path=String((global.location && global.location.pathname) || '').replace(/\/+$/,'');
+      const meta=EXTERNAL_RECIPES.find(recipe=>path===ROUTE_BASE+recipe.slug);
+      return meta ? global.fetch(meta.source,{ credentials:'same-origin' }) : null;
+    }catch(_error){ return null; }
+  })();
+
   const DETAIL_DATA = Object.freeze({
     r1:{
       purpose:'A rich emollient and occlusive finishing layer used after water-based hydration to reduce evaporation and soften dry-feeling skin.',
@@ -243,7 +251,7 @@
     const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
     if(!container) throw new Error('Skincare recipe container is unavailable.');
 
-    const response=await global.fetch(meta.source,{ credentials:'same-origin', cache:'no-store' });
+    const response=await (EXTERNAL_RECIPE_PREFETCH || global.fetch(meta.source,{ credentials:'same-origin' }));
     if(!response.ok) throw new Error('Unable to load '+meta.title+' recipe source ('+response.status+').');
 
     const sourceHtml=await response.text();
