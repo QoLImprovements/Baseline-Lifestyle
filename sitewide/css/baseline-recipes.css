@@ -4415,3 +4415,10 @@ html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!impor
 html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
 html[data-initial-recipe-route="1"] #recipes .side-recipe-nav{display:none!important}
+
+/* Section 2: Food exact-route selectors, group 1. */
+html[data-initial-recipe-slug="raw-40-c-almond-flax-pizza-base"] #recipes .recipe-page[data-recipe-slug="raw-40-c-almond-flax-pizza-base"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="creamy-stovetop-polenta"] #recipes .recipe-page[data-recipe-slug="creamy-stovetop-polenta"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="pure-stovetop-chickpea-baked-beans"] #recipes .recipe-page[data-recipe-slug="pure-stovetop-chickpea-baked-beans"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"] #recipes .recipe-page[data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"]{display:block!important;visibility:visible!important;max-width:none!important}
+html[data-initial-recipe-slug="creamy-mushroom-sauce"] #recipes .recipe-page[data-recipe-slug="creamy-mushroom-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
