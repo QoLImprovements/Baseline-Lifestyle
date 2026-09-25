@@ -142,6 +142,34 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
 });
 
+test('recipe detail first paint is exact before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const routes = [
+    ['/baseline-food-approach/recipes/creamy-mushroom-sauce', 'r5', 'Creamy Mushroom Sauce'],
+    ['/baseline-natural-skincare/recipes/nurturing-glow-butter', 'r1', 'Nurturing Glow Butter'],
+    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel']
+  ];
+
+  for (const [pathname, recipeId, title] of routes) {
+    const response = await page.goto(pathname, { waitUntil:'load' });
+    expect(response, pathname + ' returned no response').not.toBeNull();
+    expect(response.status(), pathname + ' did not load').toBeLessThan(400);
+    await expect(page.locator('.tabs .tab[data-target="recipes"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#system')).toBeHidden();
+    await expect(page.locator('#recipes')).toBeVisible();
+    await expect(page.locator('#recipes-landing')).toBeHidden();
+    await expect(page.locator('#' + recipeId)).toBeVisible();
+    await expect(page.locator('#' + recipeId + ' h3').first()).toHaveText(title);
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+    await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
+  }
+});
+
 test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {
   await page.goto('/baseline-food-approach/system', { waitUntil:'domcontentloaded' });
   const recipes = page.locator('.tab[data-target="recipes"], .tab[data-tab="recipes"]').first();
