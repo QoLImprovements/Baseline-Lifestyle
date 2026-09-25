@@ -253,7 +253,9 @@ Options -Indexes
   # Fine-detail Food and Skincare records now have file ownership.
   RewriteRule ^baseline-food-approach/ingredients/mushrooms/?$ /baseline-food-approach/ingredient-library/white-mushroom [R=302,L]
   RewriteRule ^baseline-food-approach/ingredients/([^/]+)/?$ /baseline-food-approach/ingredient-library/$1 [R=302,L]
-  RewriteRule ^baseline-food-approach/ingredient-library/([^/]+)/?$ systems/baseline-food-approach/ingredients/$1.html [L,QSA]
+  # Canonical Food ingredient detail URLs keep the full application shell so
+  # ingredient focus and originating-recipe filter survive refresh/history.
+  RewriteRule ^baseline-food-approach/ingredient-library/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
   # Legacy skincare ingredient aliases now resolve to one canonical record each.
   RewriteRule ^baseline-natural-skincare/ingredient-library/castor/?$ /baseline-natural-skincare/ingredient-library/castor-oil [R=302,L]
   RewriteRule ^baseline-natural-skincare/ingredient-library/cucumber/?$ /baseline-natural-skincare/ingredient-library/cucumber-seed-oil [R=302,L]
