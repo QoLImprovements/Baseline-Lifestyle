@@ -170,6 +170,20 @@ test('recipe detail first paint is exact before external JavaScript runs', async
   }
 });
 
+test('folder-backed Skincare recipe survives refresh', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+  const external = page.locator('#recipes-landing [data-external-recipe-id="r12"]');
+  await expect(external).toBeVisible();
+  await external.click();
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
+});
+
 test('shared top-level history restores the same Food page with Back and Forward', async ({ page }) => {
   await page.goto('/baseline-food-approach/system', { waitUntil:'domcontentloaded' });
   const recipes = page.locator('.tab[data-target="recipes"], .tab[data-tab="recipes"]').first();
