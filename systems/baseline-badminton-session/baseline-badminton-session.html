@@ -63,7 +63,7 @@ html[data-app="badminton"],body[data-app="badminton"]{margin:0;min-height:100%;b
     <button class="tab" aria-selected="false" data-target="standings">Ratings / Standings</button>
     <button class="tab" aria-selected="false" data-target="roster">Players &amp; Pairs</button>
     <button class="tab" aria-selected="false" data-target="history">Session History</button>
-  </nav>
+  </nav><script id="baseline-badminton-route-first-paint">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-badminton-session\/game-plan\/?$/i.test(p)?"gameplan":/^\/baseline-badminton-session\/ratings-standings\/?$/i.test(p)?"standings":/^\/baseline-badminton-session\/players-pairs\/?$/i.test(p)?"roster":/^\/baseline-badminton-session\/session-history\/?$/i.test(p)?"history":"system");if(!t)return;var n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){var a=b.getAttribute("data-target")===t;b.classList.toggle("active",a);b.setAttribute("aria-selected",a?"true":"false")});var st=document.createElement("style");st.id="baseline-badminton-route-first-paint-style";st.textContent="main.wrap>.section{display:none!important}main.wrap>#"+t+".section{display:block!important}";document.head.appendChild(st);window.addEventListener("load",function(){document.querySelectorAll("main.wrap>.section").forEach(function(x){x.classList.toggle("active",x.id===t)});st.remove()},{once:true})}catch(_e){}}()</script>
 </header>
 
 <main class="wrap">
