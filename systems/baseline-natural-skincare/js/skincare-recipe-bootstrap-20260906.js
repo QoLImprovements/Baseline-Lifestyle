@@ -35,14 +35,23 @@
     (document.head||document.documentElement).appendChild(script);
   }
 
-  function startAfterRoutine(){
+  function isDirectRecipeRoute(){
+    var path=String((global.location && global.location.pathname) || '');
+    return path.indexOf('/baseline-natural-skincare/recipes/')===0;
+  }
+
+  function startRecipeModules(){
+    if(isDirectRecipeRoute()){
+      next();
+      return;
+    }
     if(!global.__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__ || !global.BASELINE_RoutineSystem) return;
     next();
   }
 
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startAfterRoutine,{once:true});
+    document.addEventListener('DOMContentLoaded',startRecipeModules,{once:true});
   }else{
-    startAfterRoutine();
+    startRecipeModules();
   }
 })(typeof window!=='undefined'?window:globalThis);
