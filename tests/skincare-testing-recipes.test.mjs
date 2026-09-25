@@ -162,7 +162,7 @@ test('Lip/ balm ingredients use canonical clean ingredient URLs with registered 
     ['ing-candelilla-wax', 'candelilla-wax']
   ];
   for (const [id, slug] of ingredients) {
-    assert.match(lipBalm, new RegExp(`data-ingredient="${id}" href="/baseline-natural-skincare/ingredient-library/${slug}"`));
+    assert.match(lipBalm, new RegExp(`data-ingredient="${id}" href="/baseline-natural-skincare/ingredient-library/${slug}\\?filter=r12"`));
     assert.ok(html.includes(`id="${id}"`), `missing integrated ingredient card ${id}`);
     assert.match(shared, new RegExp(`'${id}':'${slug}'`));
     assert.match(profiles, new RegExp(`"${id}"\\s*:\\s*withDerived`));
@@ -182,7 +182,10 @@ test('Skincare recipe ingredient links no longer author the obsolete hash naviga
   const ingredientsStart = html.indexOf('<section class="section" id="ingredients">');
   const recipesBlock = html.slice(recipesStart, ingredientsStart);
   assert.doesNotMatch(recipesBlock, /class="ing-link"[^>]*href="#ing-/);
-  assert.match(shared, /if\(!isSkincare\) qsa\('#recipes a\.ing-link\[data-from-recipe\]\[data-ingredient\]'\)/);
+  assert.match(shared, /Delegate from document so folder-backed recipes inserted after startup/);
+  assert.match(shared, /closest\('#recipes a\.ing-link\[data-from-recipe\]\[data-ingredient\]'\)/);
+  assert.match(shared, /ingredientUrlForId\(ingredientId, recipeId\)/);
+  assert.doesNotMatch(shared, /if\(!isSkincare\) qsa\('#recipes a\.ing-link/);
 });
 
 test('changed Skincare runtime scripts remain valid JavaScript', () => {
