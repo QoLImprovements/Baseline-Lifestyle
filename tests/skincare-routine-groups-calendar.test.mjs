@@ -35,9 +35,10 @@ test('Skincare has one controlled group/calendar renderer and recipe UX cannot r
   assert.match(sitewide,/UI\.observe\(root,patch\)/);
   assert.doesNotMatch(sitewide,/skincare-recipe-|sitewide-v5-core|new MutationObserver|setInterval|Loading My Routine/);
 
-  assert.match(recipeBootstrap,/__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
-  assert.match(recipeBootstrap,/global\.BASELINE_RoutineSystem/);
-  assert.match(recipeBootstrap,/startAfterRoutine/);
+  assert.doesNotMatch(recipeBootstrap,/__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
+  assert.doesNotMatch(recipeBootstrap,/global\.BASELINE_RoutineSystem/);
+  assert.doesNotMatch(recipeBootstrap,/startAfterRoutine/);
+  assert.match(recipeBootstrap,/function startRecipeModules\(\)/);
   assert.match(recipeBootstrap,/DOMContentLoaded/);
   assert.doesNotMatch(recipeBootstrap,/setInterval|setTimeout|routine-subtab|data-routine-view|data-routine-panel|skincare-routine-sitewide-v5\.js/);
 });

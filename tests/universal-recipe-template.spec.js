@@ -1,5 +1,19 @@
 const { test, expect } = require('@playwright/test');
 
+const foodRecipes = [
+  { id:'r1', slug:'raw-40-c-almond-flax-pizza-base', title:'Raw 40°C Almond–Flax Pizza Base' },
+  { id:'r6', slug:'mushroom-and-rosemary-oat-groats-risotto', title:'Mushroom and Rosemary Oat Groats Risotto' },
+  { id:'r5', slug:'creamy-mushroom-sauce', title:'Creamy Mushroom Sauce' },
+  { id:'r7', slug:'sattu-balanced-nut-butter-spread-base', title:'Sattu-Balanced Nut Butter Spread Base' },
+  { id:'r2', slug:'creamy-stovetop-polenta', title:'Creamy Stovetop Polenta' },
+  { id:'r4', slug:'hearty-oat-porridge-with-apple-pear-and-vanilla', title:'Hearty Oat Porridge with Apple, Pear & Vanilla' },
+  { id:'r3', slug:'pure-stovetop-chickpea-baked-beans', title:'Pure Stovetop Chickpea Baked Beans' },
+  { id:'r11', slug:'potato-and-carrot-vegan-cheese', title:'Potato & Carrot Vegan Cheese' },
+  { id:'r8', slug:'sweet-potato-and-bell-pepper-sauce', title:'Sweet Potato & Bell Pepper Sauce' },
+  { id:'r9', slug:'aubergine-and-carrot-sauce', title:'Aubergine & Carrot Sauce' },
+  { id:'r10', slug:'tomato-and-red-pepper-sauce', title:'Tomato & Red Pepper Sauce' }
+];
+
 async function expectUniversalTabs(card, standardLabel = 'Standard View') {
   const tabs = card.locator('.recipe-subtabs');
   await expect(tabs).toBeVisible();
@@ -123,6 +137,36 @@ test('direct Food and Skincare recipe routes never paint the System section firs
     '#r4'
   );
 });
+
+for (const recipe of foodRecipes) {
+  test(`Food recipe preserves exact selection through refresh Back and Forward: ${recipe.slug}`, async ({ page }) => {
+    const url = '/baseline-food-approach/recipes/' + recipe.slug;
+    await page.goto(url, { waitUntil:'domcontentloaded' });
+
+    expect(new URL(page.url()).pathname).toBe(url);
+    await expect(page.locator('#system')).toBeHidden();
+    await expect(page.locator('#recipes')).toBeVisible();
+    await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
+
+    await page.reload({ waitUntil:'domcontentloaded' });
+    expect(new URL(page.url()).pathname).toBe(url);
+    await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
+
+    await page.locator('#' + recipe.id + ' .back-btn').click();
+    expect(new URL(page.url()).pathname).toBe('/baseline-food-approach/recipes');
+    await expect(page.locator('#recipes-landing')).toBeVisible();
+
+    await page.goBack();
+    expect(new URL(page.url()).pathname).toBe(url);
+    await expect(page.locator('#' + recipe.id)).toBeVisible();
+
+    await page.goForward();
+    expect(new URL(page.url()).pathname).toBe('/baseline-food-approach/recipes');
+    await expect(page.locator('#recipes-landing')).toBeVisible();
+  });
+}
 
 test('every visible Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
   for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {

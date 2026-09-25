@@ -1,5 +1,12 @@
 const { test, expect } = require('@playwright/test');
 
+const ordinary = [
+  { id:'r6', slug:'anhydrous-massage-oil-blend', title:'Anhydrous Massage Oil Blend' },
+  { id:'r7', slug:'restorative-hydration-layer', title:'Restorative Hydration Layer' },
+  { id:'r2', slug:'anhydrous-oil-cleanser', title:'Anhydrous Oil Cleanser' },
+  { id:'r1', slug:'nurturing-glow-butter', title:'Nurturing Glow Butter' },
+  { id:'r3', slug:'protective-touch-balm', title:'Protective Touch Balm' }
+];
 const promoted = [
   { id:'r8', slug:'calming-shave-gel', title:'Calming Shave Gel', oldSlug:'testing-shaving-gel' },
   { id:'r9', slug:'tooth-polishing-powder', title:'Tooth Polishing Powder', oldSlug:'testing-natural-tooth-brightening-powder' },
@@ -34,7 +41,7 @@ async function expectCanonicalRecipeView(page, recipe) {
   expect(url.hash).not.toContain('-html');
 }
 
-for (const recipe of [...promoted, ...testing]) {
+for (const recipe of [...ordinary, ...promoted, ...testing]) {
   test(`Skincare recipe opens and survives refresh: ${recipe.slug}`, async ({ page }) => {
     await page.goto(`/baseline-natural-skincare/recipes/${recipe.slug}`);
     await expectCanonicalRecipeView(page, recipe);
@@ -42,6 +49,30 @@ for (const recipe of [...promoted, ...testing]) {
     await expectCanonicalRecipeView(page, recipe);
   });
 }
+
+test('all embedded Skincare recipe routes preserve exact selection through Back and Forward', async ({ page }) => {
+  const sequence = [...ordinary, ...promoted, ...testing];
+
+  await page.goto('/baseline-natural-skincare/recipes');
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+
+  for (const recipe of sequence) {
+    const link = page.locator(`#recipes-landing a.recipe-open[data-recipe-id="${recipe.id}"]`);
+    await expect(link).toBeVisible();
+    await link.click();
+    await expectCanonicalRecipeView(page, recipe);
+
+    await page.goBack();
+    expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes');
+    await expect(page.locator('#recipes-landing')).toBeVisible();
+
+    await page.goForward();
+    await expectCanonicalRecipeView(page, recipe);
+
+    await page.goBack();
+    await expect(page.locator('#recipes-landing')).toBeVisible();
+  }
+});
 
 for (const recipe of promoted) {
   test(`promoted recipe migrates its former Testing URL: ${recipe.oldSlug}`, async ({ page }) => {
