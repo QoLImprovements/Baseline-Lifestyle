@@ -2403,10 +2403,16 @@ function parseViewStateHash(hash){
     }
 
     // Recipe ingredient links use canonical record URLs in both Food and Skincare.
-    // Keep navigation in the application shell so the ingredient, originating
-    // recipe filter, and browser Back/Forward state move together.
-    qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
-      a.addEventListener('click', (e)=>{
+    // Delegate from document so folder-backed recipes inserted after startup
+    // (currently Lip/ balm) keep the same navigation contract.
+    if(!ingredientsSection.dataset.recipeIngredientNavBound){
+      ingredientsSection.dataset.recipeIngredientNavBound = '1';
+      document.addEventListener('click', (e)=>{
+        const a = e.target && e.target.closest
+          ? e.target.closest('#recipes a.ing-link[data-from-recipe][data-ingredient]')
+          : null;
+        if(!a) return;
+
         const ingredientId = String(a.getAttribute('data-ingredient') || '').trim();
         const recipeId = String(a.getAttribute('data-from-recipe') || '').trim();
         if(!ingredientId) return;
@@ -2441,7 +2447,7 @@ function parseViewStateHash(hash){
           setNavState(ingredientState, { url: nextUrl });
         }, 50);
       });
-    });
+    }
 
     // Deep link: if landing on #ing-..., ensure ingredients tab is active
     const hash = (location.hash || '');
