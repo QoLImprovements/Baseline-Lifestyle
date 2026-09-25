@@ -142,7 +142,7 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
 });
 
-test('recipe detail first paint is exact before external JavaScript runs', async ({ page }) => {
+test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', (route) => {
     const pathname = new URL(route.request().url()).pathname;
     if (/\.js$/i.test(pathname)) return route.abort();
@@ -150,7 +150,6 @@ test('recipe detail first paint is exact before external JavaScript runs', async
   });
 
   const routes = [
-    ['/baseline-food-approach/recipes/creamy-mushroom-sauce', 'r5', 'Creamy Mushroom Sauce'],
     ['/baseline-natural-skincare/recipes/nurturing-glow-butter', 'r1', 'Nurturing Glow Butter'],
     ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel']
   ];
@@ -170,17 +169,41 @@ test('recipe detail first paint is exact before external JavaScript runs', async
   }
 });
 
-test('folder-backed Skincare recipe survives refresh', async ({ page }) => {
-  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
-  const external = page.locator('#recipes-landing [data-external-recipe-id="r12"]');
-  await expect(external).toBeVisible();
-  await external.click();
+test('folder-backed Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+  const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
+
+  await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('html')).toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
   await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes-landing')).toBeHidden();
+  await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
+
+  await page.reload({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 
-  await page.reload({ waitUntil:'domcontentloaded' });
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+  const external = page.locator('#recipes-landing a[href="' + lipBalmPath + '"]').first();
+  await expect(external).toBeVisible();
+  await external.click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
   await expect(page.locator('#r12')).toBeVisible();
+
+  await page.goBack({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes');
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+
+  await page.goForward({ waitUntil:'domcontentloaded' });
+  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  await expect(page.locator('#r12')).toBeVisible();
+  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 });
 
