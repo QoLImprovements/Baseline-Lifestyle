@@ -215,8 +215,7 @@
     {
       "id": "fitness-body-profile",
       "inventoryPatterns": [
-        "[expression] bodyProfileKey(",
-        "[expression] bodyKey("
+        "[expression] bodyProfileKey("
       ],
       "knownKeys": [
         "__bl_fitness_body_profile_v1__::{normalised-user}"
