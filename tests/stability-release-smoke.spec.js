@@ -237,6 +237,62 @@ test('shared top-level history restores the same Food page with Back and Forward
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
 });
 
+const topLevelHistoryCases = [
+  {
+    name:'Skincare',
+    start:'/baseline-natural-skincare/system',
+    target:'/baseline-natural-skincare/skin-support-system',
+    tab:'support',
+    section:'support'
+  },
+  {
+    name:'Massage',
+    start:'/baseline-massage/system',
+    target:'/baseline-massage/planner',
+    tab:'planner',
+    section:'planner'
+  },
+  {
+    name:'Badminton Session',
+    start:'/baseline-badminton-session/system',
+    target:'/baseline-badminton-session/session-history',
+    tab:'history',
+    section:'history'
+  },
+  {
+    name:'Games Hub',
+    start:'/baseline-games-hub/games-hub',
+    target:'/baseline-games-hub/games-hub/games-list',
+    tab:'games',
+    section:'games'
+  }
+];
+
+for (const routeCase of topLevelHistoryCases) {
+  test(`${routeCase.name} top-level tab survives refresh Back and Forward`, async ({ page }) => {
+    await page.goto(routeCase.start, { waitUntil:'domcontentloaded' });
+    await expect(page.locator('.tabs .tab[data-target="' + routeCase.tab + '"]').first()).toBeVisible();
+
+    await page.locator('.tabs .tab[data-target="' + routeCase.tab + '"]').first().click();
+    expect(new URL(page.url()).pathname).toBe(routeCase.target);
+    await expect(page.locator('.tabs .tab[data-target="' + routeCase.tab + '"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#' + routeCase.section)).toBeVisible();
+
+    await page.reload({ waitUntil:'domcontentloaded' });
+    expect(new URL(page.url()).pathname).toBe(routeCase.target);
+    await expect(page.locator('.tabs .tab[data-target="' + routeCase.tab + '"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#' + routeCase.section)).toBeVisible();
+
+    await page.goBack({ waitUntil:'domcontentloaded' });
+    expect(new URL(page.url()).pathname).toBe(routeCase.start);
+
+    await page.goForward({ waitUntil:'domcontentloaded' });
+    expect(new URL(page.url()).pathname).toBe(routeCase.target);
+    await expect(page.locator('.tabs .tab[data-target="' + routeCase.tab + '"]').first()).toHaveAttribute('aria-selected','true');
+    await expect(page.locator('#' + routeCase.section)).toBeVisible();
+  });
+}
+
 test('Fitness top-level tabs remain canonical from nested My Routine and survive refresh Back and Forward', async ({ page }) => {
   await page.route('**/systems/baseline-fitness/api/**', (route) => fulfillJson(route, { ok:true, hasRoutine:false, profiles:[], achievements:[] }));
   await page.route('**/sitewide/api/**', async (route) => {
