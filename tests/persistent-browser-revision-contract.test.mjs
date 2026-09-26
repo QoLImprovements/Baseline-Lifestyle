@@ -120,9 +120,11 @@ test('Fitness exercise progression history uses revisioned Saved Data authority'
   assert.match(resource,/progressionHistory/);
   assert.match(resource,/\['profile','activeWorkout','progressionHistory'\]/);
   assert.match(endpoint,/save_progression_history/);
-  assert.match(endpoint,/progression_history_conflict/);
+  assert.doesNotMatch(endpoint,/progression_history_conflict|import_local/);
+  assert.match(endpoint,/bl_resource_required_revision_from_input/);
   assert.match(bridge,/saveProgressionHistory/);
-  assert.match(bridge,/progressionHistory:'Exercise progression history'/);
+  assert.match(bridge,/action:'save_progression_history'/);
+  assert.match(bridge,/body:revisionedBody\(body\)/);
   assert.match(policy,/await storeSessionOutcomes\(before\)/);
   assert.match(policy,/savedData\?\.savedDataDisabled/);
   assert.match(rollback,/fitness\.json#progressionHistory/);
