@@ -7314,11 +7314,13 @@ function setupRecipeFavourites(){
 
     const contentViewHash = String(location.hash || '');
     const cleanContentRoute = cleanRouteStateFromPath();
+    const routePageFile = routePageFileFromPath(location.pathname || '');
+    const isSkincarePage = routePageFile === 'baseline-natural-skincare.html';
     const needsImmediateContentUi = /^(#recipe=|#r\d+$|#tab=recipes|#tab=ingredients|#ingredients$|#recipes$|#support$|#support=|#support-|#ing-)/i.test(contentViewHash)
       || !!recipePathStateFromLocation()
       || !!(cleanContentRoute && cleanContentRoute.kind === 'ingredient')
       || !!(cleanContentRoute && cleanContentRoute.kind === 'tab' && ['recipes','ingredients','support'].includes(cleanContentRoute.tabId))
-      || !!q('.recipe.card.recipe-page');
+      || (!isSkincarePage && !!q('.recipe.card.recipe-page'));
 
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
@@ -7375,9 +7377,19 @@ function setupRecipeFavourites(){
         }catch(_e){ return false; }
       };
       try{
-        document.addEventListener('pointerdown', (e)=>{ if(shouldStartForTarget(e.target)) ensureContentUi(); }, { capture:true, passive:true });
+        document.addEventListener('pointerdown', (e)=>{
+          if(!shouldStartForTarget(e.target)) return;
+          const tab = e.target && e.target.closest ? e.target.closest('.tab[data-target], .tab[data-tab]') : null;
+          if(isSkincarePage && tab) return;
+          ensureContentUi();
+        }, { capture:true, passive:true });
         document.addEventListener('click', (e)=>{
           if(!shouldStartForTarget(e.target)) return;
+          const tab = e.target && e.target.closest ? e.target.closest('.tab[data-target], .tab[data-tab]') : null;
+          if(isSkincarePage && tab){
+            window.setTimeout(ensureContentUi, 0);
+            return;
+          }
           ensureContentUi();
           try{
             const a = e.target && e.target.closest ? e.target.closest('a[href*="#recipe="], a.recipe-open') : null;
