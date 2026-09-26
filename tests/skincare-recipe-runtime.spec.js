@@ -1,5 +1,42 @@
 const { test, expect } = require('@playwright/test');
 
+
+test('Skincare first-paint lock releases on tab interaction before full page load', async ({ page }) => {
+  let releaseLoad;
+  const loadGate = new Promise((resolve) => { releaseLoad = resolve; });
+
+  await page.route('**/__baseline-delay-load.png', async (route) => {
+    await loadGate;
+    await route.fulfill({ status:204, body:'' });
+  });
+
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const image = document.createElement('img');
+      image.src = '/__baseline-delay-load.png';
+      image.alt = '';
+      image.hidden = true;
+      document.body.appendChild(image);
+    }, { once:true });
+  });
+
+  await page.goto('/baseline-natural-skincare/system', { waitUntil:'domcontentloaded' });
+  await expect(page.locator('#baseline-skincare-route-first-paint-style')).toHaveCount(1);
+
+  await page.locator('.tab[data-target="recipes"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#baseline-skincare-route-first-paint-style')).toHaveCount(0);
+
+  releaseLoad();
+  await page.waitForLoadState('load');
+
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+});
+
 test('Lip Balm direct route is focused before the folder-backed source finishes loading', async ({ page }) => {
   let releaseSource;
   const sourceGate = new Promise((resolve) => { releaseSource = resolve; });
@@ -126,8 +163,9 @@ test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider bal
   }
 
   await page.locator('a[data-ingredient="ing-kokum-butter"]').click();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/kokum-butter\?filter=r12$/);
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r12');
   await expect(page.locator('#ing-kokum-butter')).toBeVisible();
 
   await page.goBack();
@@ -237,15 +275,16 @@ test('ordinary Skincare recipe routes remain single-recipe views after refresh',
 
 test('recipe ingredient links use canonical records and Back and Forward restore the correct views', async ({ page }) => {
   const recipeUrl = '/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend';
-  const ingredientUrl = '/baseline-natural-skincare/ingredient-library/jojoba-oil';
+  const ingredientUrl = '/baseline-natural-skincare/ingredient-library/jojoba-oil?filter=r6';
 
   await page.goto(recipeUrl);
   const jojoba = page.locator('#r6 a.ing-link[data-ingredient="ing-jojoba"]').first();
   await expect(jojoba).toHaveAttribute('href', ingredientUrl);
 
   await jojoba.click();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil\?filter=r6$/);
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r6');
   await expect(page.locator('#ing-jojoba')).toBeVisible();
   await expect(page.locator('#ing-jojoba h3')).toContainText('Jojoba Oil');
   await expect(page.locator('.bl-homebar')).toBeVisible();
@@ -257,21 +296,23 @@ test('recipe ingredient links use canonical records and Back and Forward restore
   await expect(page.locator('#side-nav')).toHaveCount(0);
 
   await page.goForward();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil\?filter=r6$/);
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
   await expect(page.locator('#ing-jojoba')).toBeVisible();
 
   await page.reload();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil\?filter=r6$/);
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r6');
   await expect(page.locator('#ing-jojoba')).toBeVisible();
   await expect(page.locator('#ing-jojoba h3')).toContainText('Jojoba Oil');
 });
 
 test('legacy recipe plus ingredient hash URLs are repaired to one canonical ingredient URL', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend#ing-jojoba&filter=r6');
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/jojoba-oil\?filter=r6$/);
   await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r6');
   await expect(page.locator('#ing-jojoba')).toBeVisible();
 });
 
