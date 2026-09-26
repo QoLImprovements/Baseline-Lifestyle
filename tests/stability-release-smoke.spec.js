@@ -540,11 +540,6 @@ test('Games Hub restores account progress and keeps a game playable', async ({ p
   await page.route('**/systems/baseline-games-hub/api/games_data.php**', async (route) => {
     if (route.request().method() === 'GET') return fulfillJson(route, { ok: true, authed: true, profiles });
     const payload = route.request().postDataJSON();
-    if (payload.action === 'migrate_missing') {
-      for (const [app, profile] of Object.entries(payload.profiles || {})) {
-        if (!profiles[app]) profiles[app] = profile;
-      }
-    }
     if (payload.action === 'save' && payload.app && payload.profile) profiles[payload.app] = payload.profile;
     return fulfillJson(route, { ok: true, authed: true, profiles });
   });
