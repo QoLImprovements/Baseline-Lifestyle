@@ -134,12 +134,6 @@
     try {
       const data=await request({ method:'POST',body:revisionedBody(body) });
       if (data?.ok) { applyServer(data);return data; }
-      if (data?.error==='profile_conflict' && data.serverProfile) writeLocal(bodyKey(),data.serverProfile);
-      if (data?.error==='active_workout_conflict' && data.serverActiveWorkout?.state) writeLocal(stepKey(data.serverActiveWorkout),data.serverActiveWorkout.state);
-      if (data?.error==='progression_history_conflict' && data.serverProgressionHistory) {
-        writeLocal(outcomeKey(),Array.isArray(data.serverProgressionHistory.outcomes)?data.serverProgressionHistory.outcomes:[]);
-        writeLocal(failureKey(),Array.isArray(data.serverProgressionHistory.failures)?data.serverProgressionHistory.failures:[]);
-      }
       blockSaving(data?.error||'save_failed');
       return data;
     } catch (error) {
