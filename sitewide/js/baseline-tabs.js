@@ -17,6 +17,8 @@
 (function(){
   "use strict";
 
+  try{ if(window.__BASELINE_SHARED__) return; }catch(_e){}
+
   var HISTORY_KEY = "__baseline_nav_v1__";
 
   function onFoodPage(){
