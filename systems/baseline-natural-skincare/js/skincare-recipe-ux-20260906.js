@@ -559,7 +559,19 @@
     });
   }
 
+  let recipeUxStarted=false;
+
+  function onRecipeRoute(){
+    try{
+      return /^\/baseline-natural-skincare\/recipes(?:\/|$)/i.test(String(global.location?.pathname || ''));
+    }catch(_error){
+      return false;
+    }
+  }
+
   async function startRecipeUx(){
+    if(recipeUxStarted) return;
+    recipeUxStarted=true;
     canonicaliseOldRecipePath();
 
     const externalMeta=externalRecipeForCurrentPath();
@@ -583,19 +595,28 @@
     if(external && external.recipe){
       try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
       global.requestAnimationFrame(()=>{
-        applyAll();
         try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
         resetRecipeView(external.recipe);
       });
     }else{
-      global.requestAnimationFrame(()=>{ applyAll(); openPromotedRecipeForPath(); });
+      global.requestAnimationFrame(openPromotedRecipeForPath);
     }
-
-    global.setTimeout(applyAll,120);
-    global.setTimeout(applyAll,600);
-    global.addEventListener('load',applyAll,{once:true});
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>{ startRecipeUx(); },{once:true});
-  else startRecipeUx();
+  function bindDeferredRecipeUx(){
+    if(onRecipeRoute()){
+      startRecipeUx();
+      return;
+    }
+    const handler=(event)=>{
+      const target=event.target?.closest?.('.tab[data-target="recipes"], .recipe-open, a[href*="/baseline-natural-skincare/recipes"]');
+      if(!target) return;
+      document.removeEventListener('click',handler,false);
+      global.setTimeout(()=>{ startRecipeUx(); },0);
+    };
+    document.addEventListener('click',handler,false);
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindDeferredRecipeUx,{once:true});
+  else bindDeferredRecipeUx();
 })(typeof window!=='undefined'?window:globalThis);
