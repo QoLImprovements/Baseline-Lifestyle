@@ -73,24 +73,13 @@ try{
   $input = bl_input_json();
   $expectedRevision = bl_resource_required_revision_from_input($input);
   $action = strtolower(bl_skincare_slider_text($input['action'] ?? 'replace_sliders', 40));
-  if(!in_array($action, ['replace_sliders','merge_sliders'], true)){
+  if($action !== 'replace_sliders'){
     bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
   }
   $submitted = bl_skincare_sliders($input['sliders'] ?? []);
 
-  $written = bl_skincare_saved_mutate($db, $userId, $expectedRevision, static function(array $data) use ($action, $submitted): array {
-    $current = bl_skincare_sliders(is_array($data['sliders'] ?? null) ? $data['sliders'] : []);
-    if($action === 'merge_sliders'){
-      foreach($submitted as $controller=>$values){
-        if(array_key_exists($controller, $current) && $current[$controller] !== $values){
-          throw new BaselineSavedDataConflictException('slider_migration_conflict');
-        }
-        $current[$controller] = $values;
-      }
-      $data['sliders'] = $current;
-    }else{
-      $data['sliders'] = $submitted;
-    }
+  $written = bl_skincare_saved_mutate($db, $userId, $expectedRevision, static function(array $data) use ($submitted): array {
+    $data['sliders'] = $submitted;
     return $data;
   });
 
@@ -102,8 +91,7 @@ try{
     'sliders'=>bl_skincare_sliders($written['data']['sliders'] ?? []),
   ]);
 }catch(BaselineSavedDataConflictException $error){
-  $code = $error->getMessage() === 'slider_migration_conflict' ? 'slider_migration_conflict' : 'revision_conflict';
-  bl_json(['ok'=>false,'error'=>$code], 409);
+  bl_json(['ok'=>false,'error'=>'revision_conflict'], 409);
 }catch(InvalidArgumentException $error){
   $code = $error->getMessage();
   if(in_array($code, [
