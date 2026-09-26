@@ -1,5 +1,42 @@
 const { test, expect } = require('@playwright/test');
 
+
+test('Skincare first-paint lock releases on tab interaction before full page load', async ({ page }) => {
+  let releaseLoad;
+  const loadGate = new Promise((resolve) => { releaseLoad = resolve; });
+
+  await page.route('**/__baseline-delay-load.png', async (route) => {
+    await loadGate;
+    await route.fulfill({ status:204, body:'' });
+  });
+
+  await page.addInitScript(() => {
+    document.addEventListener('DOMContentLoaded', () => {
+      const image = document.createElement('img');
+      image.src = '/__baseline-delay-load.png';
+      image.alt = '';
+      image.hidden = true;
+      document.body.appendChild(image);
+    }, { once:true });
+  });
+
+  await page.goto('/baseline-natural-skincare/system', { waitUntil:'domcontentloaded' });
+  await expect(page.locator('#baseline-skincare-route-first-paint-style')).toHaveCount(1);
+
+  await page.locator('.tab[data-target="recipes"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#baseline-skincare-route-first-paint-style')).toHaveCount(0);
+
+  releaseLoad();
+  await page.waitForLoadState('load');
+
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
+  await expect(page.locator('#recipes')).toBeVisible();
+  await expect(page.locator('#system')).toBeHidden();
+});
+
 test('Lip Balm direct route is focused before the folder-backed source finishes loading', async ({ page }) => {
   let releaseSource;
   const sourceGate = new Promise((resolve) => { releaseSource = resolve; });
