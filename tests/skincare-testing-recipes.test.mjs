@@ -159,7 +159,7 @@ test('Lip/ balm default formula and slider compensation remain exactly 100 g', (
   assert.match(lipBalm, /const apricot=28\.5-candelilla/);
 });
 
-test('Lip/ balm ingredients use canonical clean ingredient URLs with registered records and conversions', () => {
+test('Lip/ balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
   const ingredients = [
     ['ing-cocoa-butter', 'cocoa-butter'],
     ['ing-mango-butter', 'mango-butter'],
@@ -169,7 +169,7 @@ test('Lip/ balm ingredients use canonical clean ingredient URLs with registered 
     ['ing-candelilla-wax', 'candelilla-wax']
   ];
   for (const [id, slug] of ingredients) {
-    assert.match(lipBalm, new RegExp(`data-ingredient="${id}" href="/baseline-natural-skincare/ingredient-library/${slug}"`));
+    assert.match(lipBalm, new RegExp(`data-ingredient="${id}" href="/baseline-natural-skincare/ingredient-library/${slug}\\?filter=r12"`));
     assert.ok(html.includes(`id="${id}"`), `missing integrated ingredient card ${id}`);
     assert.match(shared, new RegExp(`'${id}':'${slug}'`));
     assert.match(profiles, new RegExp(`"${id}"\\s*:\\s*withDerived`));
