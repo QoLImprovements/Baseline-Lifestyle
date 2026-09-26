@@ -68,10 +68,10 @@
       "knownKeys": [
         "__baseline_food_diet_log_v1__"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly",
+      "classification": "guest-local-compatibility-state",
+      "decision": "keep-local-when-signed-out-never-promote",
       "target": "Users/{paddedUserId}/food.json",
-      "cutoverRule": "The complete Diet Log document (logs, notes, saved recipes and health/profile fields) is preserved as a browser import candidate after an authenticated server read. It may become account data only after the signed-in user explicitly chooses Import browser Diet Log, including when the authoritative server resource is empty at revision 0. Bind an unresolved legacy candidate to the first authenticated account that reviews it so account switching cannot offer the same candidate to another account. Delete the legacy key only after verified server acceptance or an explicit keep-account decision."
+      "cutoverRule": "The browser Diet Log key remains available only outside authenticated account authority. On a signed-in load the browser copy is retired and Users/{paddedUserId}/food.json is authoritative, including an empty document. Never offer, merge or promote the browser copy into an authenticated account."
     },
     {
       "id": "diet-log-legacy-owner",
@@ -79,10 +79,10 @@
       "knownKeys": [
         "__baseline_food_diet_log_v1_owner__"
       ],
-      "classification": "migration-only-legacy-metadata",
-      "decision": "bind-candidate-to-reviewing-account",
+      "classification": "retired-migration-metadata",
+      "decision": "delete-on-authenticated-load",
       "target": null,
-      "cutoverRule": "This metadata does not contain Diet Log content. It binds the unresolved global legacy Diet Log candidate to the first authenticated account that reviews it, preventing the same candidate from being offered after an account switch. Remove it only with the associated legacy source after verified import or Keep account."
+      "cutoverRule": "Retired metadata from the former Diet Log browser-import flow. It contains no Diet Log content and is deleted when authenticated account authority is established; it must never bind or enable an import candidate."
     },
     {
       "id": "diet-log-conflict-backup",
@@ -129,10 +129,10 @@
       "knownKeys": [
         "__bl_badminton_focused_v1__"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/badminton-focused.json",
-      "cutoverRule": "Treat this as an individual game save, never Shared Badminton. A signed-in user must explicitly adopt/import the local profile for this game; an existing server save is never replaced automatically and all server mutations use expectedRevision. The unresolved browser candidate is bound by the Games Hub legacy-owner metadata to the first authenticated account that reviews it, so an account switch cannot offer the same save to another account."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "darts-focused-game",
@@ -144,10 +144,10 @@
         "__bl_darts_focused_v1__",
         "__bl_darts_focused_v2__"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "normalise-and-migrate-explicitly",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/darts-focused.json",
-      "cutoverRule": "Treat v1 as the current primary and v2 as the compatibility copy. Report a conflict if their payloads differ; do not choose silently."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "games-auto-next-preference",
@@ -170,10 +170,10 @@
       "knownKeys": [
         "__bl_games_guest_profiles_v1__"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "offer-explicit-per-game-import",
-      "target": "Users/{paddedUserId}/Games/{canonicalGameFile}",
-      "cutoverRule": "Split by recognised game ID using canonicalGameFiles. Require a signed-in user decision and stale-write comparison; guest data must never automatically replace authenticated progress."
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
+      "target": null,
+      "cutoverRule": "The aggregate browser profiles remain guest/local progress only. Signed-in Games Hub sessions use account game resources and ignore this browser aggregate. Never split, offer or promote it into authenticated account progress."
     },
     {
       "id": "games-legacy-import-owner",
@@ -181,10 +181,10 @@
       "knownKeys": [
         "__bl_games_legacy_profiles_owner_v1__"
       ],
-      "classification": "migration-only-legacy-metadata",
-      "decision": "bind-candidates-to-reviewing-account",
+      "classification": "retired-migration-metadata",
+      "decision": "delete-on-authenticated-load",
       "target": null,
-      "cutoverRule": "This metadata contains no game progress. It binds unresolved physical Games Hub browser saves to the first authenticated account that reviews them. A different account must not see those saves as import candidates. Remove the marker only after no physical legacy game profiles remain."
+      "cutoverRule": "Retired metadata from the former Games Hub browser-import flow. It contains no game progress and is deleted when authenticated account authority is established; it must never bind or enable import candidates."
     },
     {
       "id": "trackcoin-game",
@@ -194,10 +194,10 @@
       "knownKeys": [
         "__bl_trackcoin_v1__"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/track-coin.json",
-      "cutoverRule": "Prefer an existing authenticated Games Hub profile. Import local data only after recognised-resource validation, revision comparison and conflict review."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "recipe-title-index",
@@ -221,10 +221,10 @@
       "knownKeys": [
         "__bl_fitness_body_profile_v1__::{normalised-user}"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-after-schema-validation",
+      "classification": "server-backed-compatibility-cache",
+      "decision": "rebuild-from-account-never-promote",
       "target": "Users/{paddedUserId}/fitness.json#profile",
-      "cutoverRule": "For a signed-in user, account profile state is authoritative, including an empty profile. Quarantine any pre-existing browser profile under an account-scoped recovery key before the application reads it. After server load, expose a deliberate Import browser copy or Keep account copy decision; imports use the current fitness expectedRevision and server schema validation. Never derive Saved Data paths from the username embedded in a browser key."
+      "cutoverRule": "For a signed-in user, account profile state is authoritative, including an empty profile. Any pre-existing browser profile is retired before account load; compatibility storage may then be rebuilt from accepted server state only. Never offer or promote the browser copy into the account."
     },
     {
       "id": "storage-wrapper-implementation",
@@ -245,10 +245,10 @@
       "knownKeys": [
         "baseline.realm.exploration.jrpg.v1"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-to-canonical-game-file",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/meridian-grove.json",
-      "cutoverRule": "This is the Meridian Grove Exploration game save. The Games Hub guard maps the key to the isolated meridiangrove game profile, whose canonical physical file is meridian-grove.json. Keep it separate from the Baseline Realm ninja envelope and require the standard explicit per-game browser import with expectedRevision protection."
+      "cutoverRule": "This browser save remains guest/local game progress only. Signed-in Games Hub sessions use the authoritative account game resource and ignore the browser copy. Never offer, merge or promote this browser save into an authenticated account."
     },
     {
       "id": "skincare-routine-local-cache",
@@ -260,10 +260,10 @@
       "knownKeys": [
         "__bl_skincare_routine_v1__::{normalised-user}"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "migrate-explicitly-then-virtualise",
+      "classification": "guest-or-virtual-compatibility-state",
+      "decision": "retire-authenticated-physical-copy-never-promote",
       "target": "Users/{paddedUserId}/skincare.json#routine",
-      "cutoverRule": "For a signed-in user, the authoritative account routine is loaded first, including an empty routine. A different meaningful browser routine/log copy is preserved as an import candidate and may become account data only after the user explicitly chooses Import browser copy with the current expectedRevision. Keeping the account copy removes the old physical browser source; authenticated compatibility reads are virtualised from account state."
+      "cutoverRule": "For a signed-in user, the account routine is authoritative, including an empty routine. Physical account-named browser copies are retired and compatibility reads are virtualised from server state. Signed-out local behaviour remains local. Never offer or promote a browser routine into the account."
     },
     {
       "id": "skincare-routine-groups-local-cache",
@@ -278,10 +278,10 @@
         "__bl_skincare_routine_groups_v2__::{normalised-user}",
         "__bl_skincare_routine_groups_v1__::{normalised-user}"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "migrate-explicitly-then-virtualise",
+      "classification": "guest-or-virtual-compatibility-state",
+      "decision": "retire-authenticated-physical-copy-never-promote",
       "target": "Users/{paddedUserId}/skincare.json#groups",
-      "cutoverRule": "For a signed-in user, the authoritative account groups/assignments are loaded first, including an empty section. A different meaningful browser copy is preserved as an import candidate and may become account data only after the user explicitly chooses Import browser copy with the shared skincare expectedRevision. Keeping the account copy removes the old physical browser source; unrelated skincare sections must remain preserved."
+      "cutoverRule": "For a signed-in user, account groups and assignments are authoritative, including an empty section. Physical account-named browser copies are retired and compatibility reads are virtualised from server state. Signed-out local behaviour remains local. Never offer or promote browser groups into the account."
     },
     {
       "id": "skincare-slider-settings",
@@ -292,10 +292,10 @@
       "knownKeys": [
         "__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly",
+      "classification": "guest-or-virtual-compatibility-state",
+      "decision": "retire-authenticated-physical-copy-never-promote",
       "target": "Users/{paddedUserId}/skincare.json#sliders",
-      "cutoverRule": "For a signed-in user, authoritative account slider state is loaded first, including an empty slider set. A different browser slider copy is preserved as an import candidate and may be merged only after the user explicitly chooses Import browser copy, only in mirror or saved-data mode, and only with expectedRevision. Keeping the account copy removes the old browser source."
+      "cutoverRule": "For a signed-in user, account slider state is authoritative, including an empty slider set. Physical account-named browser slider copies are retired and compatibility reads are virtualised from server state. Signed-out local behaviour remains local. Never merge or promote browser sliders into the account."
     },
     {
       "id": "skincare-conflict-backups",
@@ -329,10 +329,10 @@
       "knownKeys": [
         "__bl_fitness_workout_progress_v2__::{planId}::{sessionIndex}::{normalised-user}"
       ],
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-only-valid-current-session",
+      "classification": "server-backed-compatibility-cache",
+      "decision": "rebuild-from-account-never-promote",
       "target": "Users/{paddedUserId}/fitness.json#activeWorkout",
-      "cutoverRule": "For a signed-in user, account active-workout state is authoritative, including no active workout. Quarantine a pre-existing browser workout before application startup and expose it only as an explicit import candidate. Import only after the user chooses Import browser copy and only when plan ID, current session and step validation succeed with the current fitness expectedRevision; invalid, stale or conflicting entries must remain preserved and must not be silently applied."
+      "cutoverRule": "For a signed-in user, account active-workout state is authoritative, including no active workout. Any pre-existing browser workout is retired before account load; compatibility storage may then be rebuilt only from accepted server state. Never import or promote a browser workout."
     },
     {
       "id": "fitness-bridge-plan-lookups",
@@ -352,10 +352,10 @@
       "knownKeys": [
         "__bl_fitness_saved_data_import_backup_v1__::{normalised-user}::{profile|activeWorkout|progressionHistory}"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-until-explicit-decision",
+      "classification": "retired-migration-state",
+      "decision": "delete-on-authenticated-load",
       "target": "Users/{paddedUserId}/fitness.json",
-      "cutoverRule": "This recovery copy is created before an authenticated legacy Fitness browser key is removed from its active application location. Keep it until an explicit import succeeds or the user chooses Keep account copy. Never auto-import it and never expose it across account names; this includes profile, active workout and progression history candidates."
+      "cutoverRule": "Retired recovery keys from the former Fitness explicit-import flow. New runtime code does not create or import them; authenticated startup removes any remaining copies. Revision conflicts continue to block unsafe writes rather than restoring browser authority."
     },
     {
       "id": "fitness-plan-cache",
@@ -391,10 +391,10 @@
       "knownKeys": [
         "baseline-realm:tactical-operations:v1"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-as-explicit-import-candidate",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "For a signed-in user, the Baseline Realm tacticalOperations section is authoritative even when absent/empty. Preserve this v1 browser copy only as an explicit import candidate when no equivalent account state exists. Bind the preserved copy to the first authenticated account that reviews it so it cannot be offered after an account switch. Never promote it automatically; remove it only after the user explicitly chooses Keep account copy."
+      "cutoverRule": "This Tactical Operations browser save remains signed-out guest/local progress only. When signed in, the Baseline Realm tacticalOperations account section is authoritative even when absent or empty, and the browser save is ignored. Never offer, merge or promote it into authenticated account state."
     },
     {
       "id": "realm-tactical-v2",
@@ -404,10 +404,10 @@
       "knownKeys": [
         "baseline-realm:tactical-operations:v2"
       ],
-      "classification": "migration-only-legacy-state",
-      "decision": "migrate-explicitly-into-baseline-realm-resource",
+      "classification": "guest-local-game-save",
+      "decision": "keep-local-for-guests-never-promote",
       "target": "Users/{paddedUserId}/Games/baseline-realm.json#tacticalOperations",
-      "cutoverRule": "For a signed-in user, the Baseline Realm inventory-service tacticalOperations section is authoritative even when absent/empty. A divergent v2 browser copy must be presented for Import browser copy or Keep account copy and must never be loaded as account state automatically. Bind the preserved copy to the first authenticated account that reviews it; a successful import may leave it as non-authoritative recovery evidence, and it is removed only by an explicit Keep account copy decision."
+      "cutoverRule": "This Tactical Operations browser save remains signed-out guest/local progress only. When signed in, the Baseline Realm tacticalOperations account section is authoritative even when absent or empty, and the browser save is ignored. Never offer, merge or promote it into authenticated account state."
     },
     {
       "id": "realm-tactical-legacy-owner",
@@ -417,10 +417,10 @@
       "knownKeys": [
         "baseline-realm:tactical-operations:owner"
       ],
-      "classification": "migration-only-legacy-metadata",
-      "decision": "bind-candidate-to-reviewing-account",
+      "classification": "retired-migration-metadata",
+      "decision": "delete-on-authenticated-load",
       "target": null,
-      "cutoverRule": "This metadata binds the unresolved physical Tactical Operations browser save to the first authenticated account that reviews it. It prevents the same recovery copy from becoming an import candidate after an account switch and is deleted only with the associated browser save after Keep account copy."
+      "cutoverRule": "Retired metadata from the former Tactical Operations browser-import flow. It contains no Tactical Operations progress and is deleted on signed-in account load; it must never bind or enable an import candidate."
     },
     {
       "id": "games-hub-view",
@@ -568,7 +568,7 @@
     {
       "id": "fitness-routine-local-cache",
       "classification": "server-backed-compatibility-cache",
-      "decision": "migrate-explicitly-then-keep-non-authoritative-cache",
+      "decision": "retire-on-authenticated-load-never-promote",
       "target": "Users/{paddedUserId}/fitness-routine.json",
       "inventoryPatterns": [
         "[expression] `__bl_fitness_routine_v2__::${owner(",
@@ -578,26 +578,23 @@
         "__bl_fitness_routine_v2__::{normalised-user}",
         "__bl_fitness_routine_v1__::{normalised-user}"
       ],
-      "cutoverRule": "The Fitness Routine Saved Data bridge loads before the workspace. It quarantines any pre-existing account-named browser routine before the authoritative server GET, including when the server is empty, and exposes legacy data only for explicit import. Runtime local copies are compatibility caches only; a failed or conflicted server save blocks further persistent writes and the cache must never become authenticated fallback authority."
+      "cutoverRule": "The Fitness Routine server resource is authoritative, including an empty routine. Authenticated browser routine copies are retired before authoritative GET handling and may never be imported or promoted. Existing workspace compatibility must not become fallback persistence after a failed or conflicted server save."
     },
     {
       "id": "fitness-routine-import-candidate",
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-until-explicit-import-or-account-choice",
+      "classification": "retired-migration-state",
+      "decision": "delete-on-authenticated-load",
       "target": "Users/{paddedUserId}/fitness-routine.json",
-      "inventoryPatterns": [
-        "[expression] importStorageKey(currentOwner",
-        "[expression] importStorageKey(owner"
-      ],
+      "inventoryPatterns": [],
       "knownKeys": [
         "__bl_fitness_routine_legacy_import__::{normalised-user}"
       ],
-      "cutoverRule": "This is the quarantined, account-bound legacy Fitness Routine candidate. Never auto-import it, never expose it across account names, and remove it only after verified server acceptance of an explicit import or an explicit decision to keep the account copy."
+      "cutoverRule": "Retired quarantine key from the former Fitness Routine explicit-import flow. New runtime code neither creates nor imports it; authenticated startup removes any remaining copy."
     },
     {
       "id": "fitness-progression-history",
-      "classification": "server-saved-data-migration-source",
-      "decision": "migrate-explicitly-then-use-server-authoritative-cache",
+      "classification": "server-backed-compatibility-cache",
+      "decision": "rebuild-from-account-never-promote",
       "target": "Users/{paddedUserId}/fitness.json#progressionHistory",
       "inventoryPatterns": [
         "[expression] failureKey(",
@@ -607,7 +604,7 @@
         "__bl_fitness_exercise_failed_sessions_v3__::{normalised-user}",
         "__bl_fitness_exercise_outcomes_v4__::{normalised-user}"
       ],
-      "cutoverRule": "Per-exercise success/failure history changes future progression and is therefore account data. The Fitness Saved Data bridge quarantines legacy browser history, loads the authoritative progressionHistory section first including an empty section, permits only explicit import with expectedRevision, and uses browser copies only as a cache of accepted server state. A failed or conflicted Saved Data write must not fall back to local authority."
+      "cutoverRule": "For a signed-in user, account progressionHistory is authoritative, including an empty section. Pre-existing browser outcomes/failures are retired before account load and compatibility storage is rebuilt only from accepted server state. Never import or promote browser history."
     }
   ]
 }
