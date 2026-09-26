@@ -56,18 +56,21 @@ test('games remain physically isolated and hub settings never become a save file
   assert.match(games, /non_persistent_app/);
 });
 
-test('Fitness browser-owned values are validated and bridged before the application', () => {
+test('Fitness account state is revisioned and bridged before the application', () => {
   const endpoint = read('systems/baseline-fitness/api/fitness_state.php');
   const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const html = read('systems/baseline-fitness/baseline-fitness.html');
   assert.match(endpoint, /active_workout_plan_not_found/);
   assert.match(endpoint, /active_workout_not_current_session/);
   assert.match(endpoint, /active_workout_step_mismatch/);
-  assert.match(endpoint, /profile_conflict/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
-  assert.match(bridge, /action\s*:\s*['"]import_local['"]/);
+  assert.doesNotMatch(endpoint, /import_local|profile_conflict|active_workout_conflict|progression_history_conflict/);
+  assert.doesNotMatch(bridge, /import_local|Import browser copy|Keep account copy/);
+  assert.match(bridge, /function retireAuthenticatedLocal\(\)/);
   assert.match(bridge, /body:revisionedBody\(body\)/);
-  assert.match(bridge, /serverProfile/);
+  assert.match(bridge, /action:'save_profile'/);
+  assert.match(bridge, /action:'save_active_workout'/);
+  assert.match(bridge, /action:'save_progression_history'/);
   const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
   assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
@@ -83,17 +86,16 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
 });
 
-test('Fitness legacy browser profile and workout require explicit import', () => {
+test('Fitness authenticated browser copies are retired instead of imported', () => {
+  const endpoint = read('systems/baseline-fitness/api/fitness_state.php');
   const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.doesNotMatch(bridge, /await importExisting\(server\)/);
-  assert.doesNotMatch(bridge, /async function importExisting/);
-  assert.match(bridge, /quarantineLegacyLocal\(\);[\s\S]{0,120}const server=await reload\(\)/);
-  assert.match(bridge, /Account data is authoritative, including an empty account state/);
-  assert.match(bridge, /Import browser copy/);
-  assert.match(bridge, /Keep account copy/);
-  assert.match(bridge, /payload=\{action:'import_local'\}/);
-  assert.match(bridge, /IMPORT_BACKUP_PREFIX/);
-  assert.match(bridge, /if \(imports\[importKind\]\)[\s\S]{0,100}renderMigrationReview\(\)/);
+  assert.match(bridge, /function retireAuthenticatedLocal\(\)/);
+  assert.match(bridge, /removeKeys=\[bodyKey\(\),outcomeKey\(\),failureKey\(\)\]/);
+  assert.match(bridge, /__bl_fitness_saved_data_import_backup_v1__/);
+  assert.match(bridge, /retireAuthenticatedLocal\(\);[\s\S]{0,100}await reload\(\)/);
+  assert.doesNotMatch(bridge, /quarantineLegacyLocal|prepareImportCandidates|renderMigrationReview|importLegacy|keepAccount|hasImportCandidate/);
+  assert.doesNotMatch(bridge, /Import browser copy|Keep account copy/);
+  assert.doesNotMatch(endpoint, /import_local/);
 });
 
 test('Fitness Routine state and groups share one revisioned Saved Data resource', () => {
@@ -119,10 +121,10 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(bridge, /save_blocked/);
   assert.match(bridge, /Saving has stopped/);
   assert.match(bridge, /ACTIVE_LOCAL_PREFIXES/);
-  assert.match(bridge, /quarantineAuthenticatedLocal/);
+  assert.match(bridge, /retireAuthenticatedLocal/);
   assert.match(bridge, /authoritativeRoutineResponse/);
   assert.match(bridge, /hasRoutine:true/);
-  assert.match(bridge, /Import legacy routine/);
+  assert.doesNotMatch(bridge, /Import legacy routine|importLegacyRoutine|legacyImportAvailable|showLegacyImport/);
   assert.match(api, /fitness-routine-saved-data-bridge\.js/);
 });
 
@@ -151,33 +153,32 @@ test('Voice Saved Data stays authoritative for authenticated settings', () => {
   assert.match(voice, /settings=readLocalSettings\(\)/);
 });
 
-test('Food Saved Data remains authoritative and legacy browser data requires explicit import', () => {
+test('Food Saved Data remains authoritative and authenticated browser data is retired', () => {
   const endpoint = read('systems/baseline-food-approach/api/food_data.php');
   const bridge = read('systems/baseline-food-approach/js/food-saved-data-bridge.js');
   const bootstrapStart = bridge.indexOf('function bootstrap');
   const flushStart = bridge.indexOf('function flushPending');
-  const importStart = bridge.indexOf('function importBrowserData');
-  assert.ok(bootstrapStart > -1 && flushStart > bootstrapStart && importStart > -1);
+  assert.ok(bootstrapStart > -1 && flushStart > bootstrapStart);
   const bootstrap = bridge.slice(bootstrapStart, flushStart);
 
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
-  assert.doesNotMatch(bridge, /import_missing/);
+  assert.doesNotMatch(endpoint, /import_missing/);
+  assert.doesNotMatch(bridge, /Import browser Diet Log|importBrowserData|renderMigrationChoice|hasImportCandidate/);
   assert.doesNotMatch(bootstrap, /syncRequest\(['"]POST['"]/);
+  assert.match(bootstrap, /retireAuthenticatedLegacySource\(\)/);
   assert.match(bootstrap, /state\.memory=serialise\(serverDocument\)/);
-  assert.match(bootstrap, /state\.importCandidate=normaliseDocument\(browserDocument\)/);
-  assert.match(bridge, /was not imported automatically/);
-  assert.match(bridge, /serverPayload\(state\.importCandidate,state\.revision,['"]save['"]\)/);
   assert.match(bridge, /if\(!state\.canSave\)\{blockWrite\(\);return;\}/);
   assert.match(bridge, /data-food-reload-account/);
   assert.match(bridge, /sessionAuthenticated\(\)/);
 });
 
-test('Food legacy import candidates stay isolated across account switches', () => {
+test('Food signed-out local data is preserved while authenticated legacy data is retired', () => {
   const bridge = read('systems/baseline-food-approach/js/food-saved-data-bridge.js');
   assert.match(bridge, /LEGACY_OWNER_KEY='__baseline_food_diet_log_v1_owner__'/);
-  assert.match(bridge, /function claimLegacyOwner\(\)/);
-  assert.match(bridge, /candidateOwner&&candidateOwner===accountOwner\(\)/);
   assert.match(bridge, /function clearLegacySource\(\)\{nativeDelete\(STORAGE_KEY\);nativeDelete\(LEGACY_OWNER_KEY\);\}/);
+  assert.match(bridge, /function retireAuthenticatedLegacySource\(\)\{if\(sessionAuthenticated\(\)\)clearLegacySource\(\);\}/);
+  assert.match(bridge, /if\(result\.status===401\)\{setState\('signed-out','',false,false\);return;\}/);
+  assert.doesNotMatch(bridge, /claimLegacyOwner|candidateOwner|importCandidate/);
 });
 
 test('account projections and index synchronization exclude authentication secrets', () => {
