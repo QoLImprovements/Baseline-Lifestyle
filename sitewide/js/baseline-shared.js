@@ -2155,7 +2155,9 @@ function parseViewStateHash(hash){
     // Build recipe list from embedded recipe cards. Natural Skincare can also
     // register folder-backed recipes without duplicating their recipe body here.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
-    const isSkincare = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
+    const routePageFile = routePageFileFromPath(location.pathname || '');
+    const isSkincare = routePageFile === 'baseline-natural-skincare.html';
+    const isFood = routePageFile === 'baseline-food-approach.html';
     const recipes = recipeCards.map(card => {
       const h = q('h3', card);
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
@@ -2192,6 +2194,9 @@ function parseViewStateHash(hash){
       if(isSkincare){
         const cleanIngredientUrl = skincareIngredientUrlForId(iid, rid);
         if(cleanIngredientUrl) a.setAttribute('href', cleanIngredientUrl);
+      }else if(isFood){
+        const ingredientsBase = cleanUrlForTab('ingredients') || '/baseline-food-approach/ingredient-library';
+        a.setAttribute('href', ingredientsBase + '?filter=' + encodeURIComponent(rid) + '#' + encodeURIComponent(iid));
       }
     });
 
@@ -2324,9 +2329,9 @@ function parseViewStateHash(hash){
     if(!isSkincare) qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       a.addEventListener('click', (e)=>{
         const href = a.getAttribute('href') || '';
-        if(!href.startsWith('#')) return;
+        if(!isFood && !href.startsWith('#')) return;
 
-        const ingredientId = href.slice(1);
+        const ingredientId = a.getAttribute('data-ingredient') || (href.startsWith('#') ? href.slice(1).split('&')[0] : '');
         const recipeId = a.getAttribute('data-from-recipe');
 
         // Switch to ingredients tab
@@ -2349,10 +2354,12 @@ function parseViewStateHash(hash){
         queueNavScroll(()=>{
           const el = ingredientById.get(ingredientId) || q(`#${CSS.escape(ingredientId)}`);
           if(el) el.scrollIntoView({behavior:'auto', block:'start'});
-          setNavState(
-          { kind: 'ingredient', ingredientId: ingredientId, recipeFilter: recipeId || null },
-          { url: urlWithoutHash() + (`#${ingredientId}` + (recipeId ? ('&filter=' + encodeURIComponent(recipeId)) : '')) }
-        );
+          const ingredientState = { kind: 'ingredient', ingredientId: ingredientId, recipeFilter: recipeId || null };
+          const foodIngredientsBase = isFood ? (cleanUrlForTab('ingredients') || '/baseline-food-approach/ingredient-library') : '';
+          const nextUrl = isFood
+            ? (foodIngredientsBase + (recipeId ? ('?filter=' + encodeURIComponent(recipeId)) : '') + '#' + encodeURIComponent(ingredientId))
+            : (urlWithoutHash() + (`#${ingredientId}` + (recipeId ? ('&filter=' + encodeURIComponent(recipeId)) : '')));
+          setNavState(ingredientState, { url: nextUrl });
         }, 50);
       });
     });
