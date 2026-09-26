@@ -1415,10 +1415,12 @@ function parseViewStateHash(hash){
       const v = decodeURIComponent((kv[1] || '').trim());
       if(k) params[k] = v;
     });
+    let queryFilter = null;
+    try{ queryFilter = new URLSearchParams(location.search || '').get('filter') || null; }catch(_e){}
     return {
       kind: 'ingredient',
       ingredientId,
-      recipeFilter: (params.filter || params.recipe || null),
+      recipeFilter: (params.filter || params.recipe || queryFilter || null),
       raw: hash
     };
   }
