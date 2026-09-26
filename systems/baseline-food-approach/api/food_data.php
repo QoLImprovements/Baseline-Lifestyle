@@ -137,13 +137,10 @@ try{
   if($method === 'POST'){
     $payload = bl_food_payload();
     $action = strtolower(trim((string)($payload['action'] ?? 'save')));
-    if(!in_array($action, ['save','import_missing'], true)) bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
+    if($action !== 'save') bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
     $expected = bl_resource_required_revision_from_input($payload);
     $current = bl_resource_file_read($path, bl_food_default_document());
     if($current['revision'] !== $expected) throw new BaselineSavedDataConflictException('revision_conflict');
-    if($action === 'import_missing' && $current['revision'] !== 0){
-      throw new BaselineSavedDataConflictException('revision_conflict');
-    }
     $document = bl_food_document($payload['document'] ?? null);
     $written = bl_resource_file_replace($path, $document, $expected);
     bl_json([
