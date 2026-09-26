@@ -11,7 +11,7 @@
   const nativeGet=storageProto&&storageProto.getItem;
   const nativeSet=storageProto&&storageProto.setItem;
   const nativeRemove=storageProto&&storageProto.removeItem;
-  const state={authenticated:false,ready:false,canSave:false,status:'loading',revision:0,memory:null,importCandidate:null,lastError:'',installed:false,pending:null,timer:0,inFlight:false};
+  const state={authenticated:false,ready:false,canSave:false,status:'loading',revision:0,memory:null,lastError:'',installed:false,pending:null,timer:0,inFlight:false};
 
   function defaultDocument(){return{schemaVersion:1,logs:{},notes:{},recipes:[],health:{}};}
   function parse(raw){try{const value=raw?JSON.parse(raw):null;return value&&typeof value==='object'&&!Array.isArray(value)?value:null;}catch(_error){return null;}}
@@ -31,21 +31,12 @@
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
   function authSnapshot(){try{return global.BASELINE_auth?.get?.()||null;}catch(_error){return null;}}
   function sessionAuthenticated(){return Boolean(authSnapshot()?.authed);}
-  function accountOwner(){const snapshot=authSnapshot();return String(snapshot?.name||snapshot?.user?.name||'').trim().toLocaleLowerCase('en-GB');}
-  function legacyOwner(){return String(nativeRead(LEGACY_OWNER_KEY)||'').trim().toLocaleLowerCase('en-GB');}
-  function claimLegacyOwner(){
-    const current=accountOwner();
-    if(!current)return'';
-    const existing=legacyOwner();
-    if(existing)return existing;
-    nativeWrite(LEGACY_OWNER_KEY,current);
-    return current;
-  }
   function clearLegacySource(){nativeDelete(STORAGE_KEY);nativeDelete(LEGACY_OWNER_KEY);}
+  function retireAuthenticatedLegacySource(){if(sessionAuthenticated())clearLegacySource();}
   function emit(){
-    try{document.dispatchEvent(new CustomEvent('baseline:food-saved-data',{detail:{status:state.status,authenticated:state.authenticated,canSave:state.canSave,revision:state.revision,hasImportCandidate:Boolean(state.importCandidate),error:state.lastError}}));}catch(_error){}
+    try{document.dispatchEvent(new CustomEvent('baseline:food-saved-data',{detail:{status:state.status,authenticated:state.authenticated,canSave:state.canSave,revision:state.revision,error:state.lastError}}));}catch(_error){}
   }
-  function renderBridgeUi(){renderMigrationChoice();renderAuthorityStatus();}
+  function renderBridgeUi(){renderAuthorityStatus();}
   function requestRender(){
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderBridgeUi,{once:true});
     else renderBridgeUi();
@@ -147,29 +138,6 @@
       if(state.pending&&state.canSave)drain();
     }
   }
-  function equivalent(a,b){return serialise(a)===serialise(b);}
-  function renderMigrationChoice(){
-    const existing=document.getElementById('foodSavedDataMigrationReview');
-    if(!state.importCandidate){existing?.remove();return;}
-    const host=document.getElementById('dietLogApp');
-    if(!host||existing)return;
-    const panel=document.createElement('div');
-    panel.id='foodSavedDataMigrationReview';
-    panel.setAttribute('data-food-migration-review','true');
-    panel.innerHTML='<strong>Browser Diet Log data is available.</strong><p class="note">Saved Data is authoritative for this signed-in account. The browser copy was preserved and was not imported automatically. Choose which copy to keep.</p><div class="actions"><button type="button" data-food-import-browser>Import browser Diet Log</button><button type="button" data-food-keep-account>Keep account Diet Log</button></div>';
-    panel.querySelector('[data-food-import-browser]')?.addEventListener('click',()=>{
-      if(!global.confirm||global.confirm('Replace the current account Diet Log with the preserved browser copy?'))importBrowserData();
-    });
-    panel.querySelector('[data-food-keep-account]')?.addEventListener('click',()=>{
-      if(!global.confirm||global.confirm('Keep the account Diet Log and remove the old browser copy from this device?')){
-        clearLegacySource();
-        state.importCandidate=null;
-        renderMigrationChoice();
-        emit();
-      }
-    });
-    host.before(panel);
-  }
   function renderAuthorityStatus(){
     const existing=document.getElementById('foodSavedDataAuthorityStatus');
     const blocked=state.authenticated&&!state.canSave&&state.status!=='loading';
@@ -188,29 +156,8 @@
     });
     host.before(panel);
   }
-  function importBrowserData(){
-    if(!state.importCandidate||!state.canSave)return false;
-    const result=syncRequest('POST',serverPayload(state.importCandidate,state.revision,'save'));
-    if(!result.ok){
-      state.lastError=result.error||'migration_failed';
-      if(result.status===409){state.status='conflict';state.canSave=false;backupConflict(state.importCandidate);}
-      emit();
-      requestRender();
-      return false;
-    }
-    state.revision=Number(result.data.revision)||state.revision;
-    state.memory=serialise(result.data.document||state.importCandidate);
-    state.importCandidate=null;
-    clearLegacySource();
-    document.documentElement.removeAttribute('data-food-server-save-error');
-    setState('ready','',true,true);
-    global.location?.reload?.();
-    return true;
-  }
   function bootstrap(){
-    const browserRaw=nativeRead(STORAGE_KEY);
-    const browserDocument=parse(browserRaw);
-    const candidateOwner=browserDocument?claimLegacyOwner():'';
+    retireAuthenticatedLegacySource();
     const result=syncRequest('GET');
     if(!result.ok){
       if(result.status===401){setState('signed-out','',false,false);return;}
@@ -226,14 +173,7 @@
     state.revision=Number(result.data.revision)||0;
     const serverDocument=normaliseDocument(result.data.document||defaultDocument());
     state.memory=serialise(serverDocument);
-    if(browserDocument&&candidateOwner&&candidateOwner===accountOwner()){
-      if(equivalent(browserDocument,serverDocument)){
-        clearLegacySource();
-        state.importCandidate=null;
-      }else{
-        state.importCandidate=normaliseDocument(browserDocument);
-      }
-    }else state.importCandidate=null;
+    clearLegacySource();
     installAuthority();
     document.documentElement.removeAttribute('data-food-server-save-error');
     setState('ready','',true,true);
@@ -256,8 +196,6 @@
     canSave:()=>state.canSave,
     getStatus:()=>state.status,
     getRevision:()=>state.revision,
-    hasImportCandidate:()=>Boolean(state.importCandidate),
-    importBrowserData,
     reloadAccountData:bootstrap,
     flush:flushPending
   });
