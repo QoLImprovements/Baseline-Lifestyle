@@ -1289,13 +1289,17 @@
       const match = path.match(/\/baseline-natural-skincare\/ingredient-library\/([^\/?#]+)\/?$/i);
       if(!match || !match[1]) return null;
       const ingredientId = skincareIngredientIdForSlug(match[1]);
-      return ingredientId ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:null, raw:path } : null;
+      const recipeFilter = new URLSearchParams(location.search || '').get('filter') || null;
+      return ingredientId ? { kind:'ingredient', ingredientId:ingredientId, recipeFilter:recipeFilter, raw:path } : null;
     }catch(_e){ return null; }
   }
 
-  function skincareIngredientUrlForId(ingredientId){
+  function skincareIngredientUrlForId(ingredientId, recipeFilter){
     const slug = SKINCARE_INGREDIENT_SLUG_BY_ID[String(ingredientId || '').trim()];
-    return slug ? '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug) : '';
+    if(!slug) return '';
+    const base = '/baseline-natural-skincare/ingredient-library/' + encodeURIComponent(slug);
+    const filter = String(recipeFilter || '').trim();
+    return filter ? (base + '?filter=' + encodeURIComponent(filter)) : base;
   }
 
   function recipeTokenFromHref(href){
@@ -1374,7 +1378,7 @@
     if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
     if(state && state.kind === 'ingredient' && state.ingredientId
       && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId);
+      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId, state.recipeFilter || '');
       if(cleanIngredientUrl) return cleanIngredientUrl;
     }
     if(state && state.kind === 'tab' && state.tabId){
@@ -2186,7 +2190,7 @@ function parseViewStateHash(hash){
       recipeToIngredients.get(rid).add(iid);
 
       if(isSkincare){
-        const cleanIngredientUrl = skincareIngredientUrlForId(iid);
+        const cleanIngredientUrl = skincareIngredientUrlForId(iid, rid);
         if(cleanIngredientUrl) a.setAttribute('href', cleanIngredientUrl);
       }
     });
@@ -7439,7 +7443,7 @@ function setupRecipeFavourites(){
     // describe both a recipe and an ingredient at the same time.
     if(initialRecipeView && initialHashView && initialHashView.kind === 'ingredient'
       && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(initialHashView.ingredientId);
+      const cleanIngredientUrl = skincareIngredientUrlForId(initialHashView.ingredientId, initialHashView.recipeFilter || '');
       if(cleanIngredientUrl){
         window.location.replace(cleanIngredientUrl);
         return;
