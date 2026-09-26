@@ -168,6 +168,37 @@ for (const recipe of foodRecipes) {
   });
 }
 
+test('Food recipe ingredient links preserve recipe filter through refresh Back and Forward', async ({ page }) => {
+  const recipeUrl = '/baseline-food-approach/recipes/creamy-mushroom-sauce';
+  const ingredientUrl = '/baseline-food-approach/ingredient-library?filter=r5#ing-mushrooms';
+
+  await page.goto(recipeUrl);
+  const mushroom = page.locator('#r5 a.ing-link[data-ingredient="ing-mushrooms"]').first();
+  await expect(mushroom).toHaveAttribute('href', ingredientUrl);
+
+  await mushroom.click();
+  await expect(page).toHaveURL(ingredientUrl);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r5');
+  await expect(page.locator('#ing-mushrooms')).toBeVisible();
+
+  await page.goBack();
+  await expect(page).toHaveURL(recipeUrl);
+  await expect(page.locator('#r5')).toBeVisible();
+
+  await page.goForward();
+  await expect(page).toHaveURL(ingredientUrl);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r5');
+  await expect(page.locator('#ing-mushrooms')).toBeVisible();
+
+  await page.reload();
+  await expect(page).toHaveURL(ingredientUrl);
+  await expect(page.locator('#ingredients')).toHaveClass(/active/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r5');
+  await expect(page.locator('#ing-mushrooms')).toBeVisible();
+});
+
 test('every visible Food and Skincare ingredient source receives exactly one first-use method tag', async ({ page }) => {
   for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {
     await page.goto(url);
