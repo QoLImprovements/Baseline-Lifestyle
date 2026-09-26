@@ -100,72 +100,58 @@ test('device-only auto-next settings remain in native local storage',()=>{
   assert.doesNotMatch(guard,/\[KEYS\.autoNext\]:'hubsettings'/);
 });
 
-test('browser game progress requires an explicit per-game import decision',()=>{
+test('browser game progress remains guest-local and is never promoted into an authenticated account',()=>{
   const key='__bl_games_guest_profiles_v1__';
   const original=JSON.stringify({pairs:{level:4}});
   const {context,localStorage}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:original}});
-  assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['pairs']);
-  assert.equal(localStorage.values.get(key),original);
-  assert.match(guard,/importGuestProfile/);
-  assert.match(storageUi,/Nothing is imported automatically/);
-  assert.match(storageUi,/Import \$\{importLabels\[app\]\|\|app\}/);
-  assert.match(guard,/if\(importCandidates\(\)\.includes\(app\)\)return/);
-  assert.match(storageUi,/window\.location\.reload\(\)/);
+  assert.equal(localStorage.values.get(key),original,'physical guest save must remain local');
+  assert.equal(context.localStorage.getItem(key),JSON.stringify({}),'signed-in compatibility view must come from account profiles');
+  assert.equal(typeof context.BaselineGameStorage.getImportCandidates,'undefined');
+  assert.equal(typeof context.BaselineGameStorage.importGuestProfile,'undefined');
+  assert.doesNotMatch(guard,/importGuestProfile|migrate_missing|migration_not_verified/);
+  assert.doesNotMatch(storageUi,/Browser progress available|Nothing is imported automatically|Import \$\{/);
 });
 
-test('Badminton Focused is a separate explicit per-game save',()=>{
+test('Badminton Focused remains a separate guest-local save while signed-in account data stays separate',()=>{
   const key='__bl_badminton_focused_v1__';
   const profile=JSON.stringify({version:1,xp:120,level:3});
   const {context,localStorage}=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:profile}});
-  assert.deepEqual(Array.from(context.BaselineGameStorage.getImportCandidates()),['badmintonfocused']);
-  assert.equal(localStorage.values.get(key),profile,'local save must remain until explicit adoption');
-  assert.match(storageUi,/badmintonfocused:'Badminton Focused'/);
+  assert.equal(localStorage.values.get(key),profile,'guest Badminton Focused save must not be deleted');
+  assert.equal(context.localStorage.getItem(key),null,'signed-in view must not adopt guest Badminton Focused progress');
   assert.match(gamesApi,/badmintonfocused/);
   assert.match(savedData,/'badmintonfocused' => 'badminton-focused\.json'/);
   assert.doesNotMatch(savedData,/Shared[\s\S]{0,120}badminton-focused\.json/);
 });
 
-test('legacy game import candidates stay bound to the first authenticated account',()=>{
+test('retired Games Hub import-owner metadata is removed on authenticated load',()=>{
   const key='__bl_badminton_focused_v1__';
   const ownerKey='__bl_games_legacy_profiles_owner_v1__';
   const profile=JSON.stringify({version:1,xp:120,level:3});
-  const first=runGuard({status:200,payload:{ok:true,accountId:7,profiles:{},revisions:{}},initial:{[key]:profile}});
-  assert.deepEqual(Array.from(first.context.BaselineGameStorage.getImportCandidates()),['badmintonfocused']);
-  assert.equal(first.localStorage.values.get(ownerKey),'uid:7');
-
-  const second=runGuard({
+  const result=runGuard({
     status:200,
     payload:{ok:true,accountId:8,profiles:{},revisions:{}},
     initial:{[key]:profile,[ownerKey]:'uid:7'}
   });
-  assert.deepEqual(Array.from(second.context.BaselineGameStorage.getImportCandidates()),[]);
-  assert.equal(second.localStorage.values.get(key),profile);
-  assert.equal(second.localStorage.values.get(ownerKey),'uid:7');
-  assert.match(gamesApi,/'accountId'=>\$uid/);
-  assert.match(guard,/addEventListener\('baseline:auth'[\s\S]{0,180}bootstrap\(\)/);
-  assert.doesNotMatch(guard,/authenticated!==state\.authenticated/);
+  assert.equal(result.localStorage.values.get(key),profile);
+  assert.equal(result.localStorage.values.has(ownerKey),false);
+  assert.doesNotMatch(guard,/bindLegacyProfilesToAccount|legacyOwner\(\)|accountOwner/);
+  assert.match(guard,/nativeDelete\(KEYS\.legacyOwner\)/);
 });
 
-test('explicit game imports carry observed revisions and keep browser data until server acceptance',()=>{
-  assert.match(guard,/action:'migrate_missing'[\s\S]{0,180}expectedRevisions:\{\[app\]:revisionFor\(app\)\}/);
-  assert.match(guard,/if\(!own\(profiles,app\)\)[\s\S]{0,180}migration_not_verified/);
-  assert.match(guard,/migration\.status===409[\s\S]{0,120}state\.status='conflict';state\.canSave=false/);
-  assert.match(gamesApi,/\$expectedRevisions = is_array\(\$payload\['expectedRevisions'\]/);
-  assert.match(gamesApi,/bl_resource_required_revision_from_input\(\[[\s\S]{0,120}'expectedRevision'=>\$expectedRevisions\[\$app\] \?\? null/);
-  const write=gamesApi.match(/function bl_game_file_write[\s\S]*?\n\}/)?.[0]||'';
-  assert.ok(write.indexOf('expectedRevision')<write.indexOf('onlyIfMissing && $resource'), 'revision check must happen before missing-only early return');
+test('retired game migration API is absent while normal account writes remain revisioned',()=>{
+  assert.doesNotMatch(guard,/action:'migrate_missing'|importGuestProfile|getImportCandidates/);
+  assert.doesNotMatch(gamesApi,/migrate_missing|expectedRevisions/);
+  assert.match(guard,/action:'save',app,profile,expectedRevision:revisionFor\(app\)/);
+  assert.match(gamesApi,/bl_resource_required_revision_from_input\(\$payload\)/);
 });
 
-test('Baseline Realm Tactical Operations keeps browser saves explicit for authenticated accounts',()=>{
+test('Baseline Realm Tactical Operations keeps guest saves local and never promotes them when signed in',()=>{
   assert.match(tactical,/accountAuthenticated\(\)/);
-  assert.match(tactical,/Account Baseline Realm data is authoritative, including an empty Tactical Operations section/);
-  assert.match(tactical,/data-action="import-browser-copy"/);
-  assert.match(tactical,/data-action="keep-account-copy"/);
-  assert.match(tactical,/if\(migrationPending\)return\{ok:false,pendingMigration:true\}/);
-  assert.match(tactical,/if\(!signedIn\)[\s\S]{0,160}localStorage\.setItem\(LOCAL_SAVE_KEY/);
-  assert.match(tactical,/LOCAL_OWNER_KEY='baseline-realm:tactical-operations:owner'/);
-  assert.match(tactical,/owner&&owner===accountOwner\(\)/);
-  assert.match(tactical,/browser recovery copy is retained until a later account load verifies the same state/i);
+  assert.match(tactical,/if\(!signedIn\)[\s\S]{0,180}localStorage\.setItem\(LOCAL_SAVE_KEY/);
+  assert.match(tactical,/if\(signedIn\)\{[\s\S]{0,260}inventoryService\?\.read/);
+  assert.match(tactical,/localStorage\.removeItem\(RETIRED_OWNER_KEY\)/);
+  assert.doesNotMatch(tactical,/import-browser-copy|keep-account-copy|migrationPending|importCandidate|migrationReview/);
+  assert.doesNotMatch(tactical,/function clearLocalSave/);
 });
 
 test('account game writes carry per-file revisions and stop on conflicts',()=>{
