@@ -13,7 +13,7 @@ function ingredientLinks(html) {
   return Array.from(html.matchAll(/<a\b([^>]*\bclass=["'][^"']*\bing-link\b[^"']*["'][^>]*)>/gi), match => {
     const attrs = match[1];
     const get = (name) => {
-      const found = attrs.match(new RegExp(name + '=["\\']([^"\\']*)["\\']', 'i'));
+      const found = attrs.match(new RegExp(name + "=[\\\"']([^\\\"']*)[\\\"']", 'i'));
       return found ? found[1] : '';
     };
     return {
