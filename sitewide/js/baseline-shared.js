@@ -1376,10 +1376,19 @@
 
   function urlForNavState(state){
     if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
-    if(state && state.kind === 'ingredient' && state.ingredientId
-      && routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html'){
-      const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId, state.recipeFilter || '');
-      if(cleanIngredientUrl) return cleanIngredientUrl;
+    if(state && state.kind === 'ingredient' && state.ingredientId){
+      const routePageFile = routePageFileFromPath(location.pathname || '');
+      if(routePageFile === 'baseline-natural-skincare.html'){
+        const cleanIngredientUrl = skincareIngredientUrlForId(state.ingredientId, state.recipeFilter || '');
+        if(cleanIngredientUrl) return cleanIngredientUrl;
+      }
+      if(routePageFile === 'baseline-food-approach.html'){
+        const ingredientsBase = cleanUrlForTab('ingredients') || '/baseline-food-approach/ingredient-library';
+        const filter = String(state.recipeFilter || '').trim();
+        return ingredientsBase
+          + (filter ? ('?filter=' + encodeURIComponent(filter)) : '')
+          + '#' + encodeURIComponent(state.ingredientId);
+      }
     }
     if(state && state.kind === 'tab' && state.tabId){
       const cleanUrl = cleanUrlWithOptionalFilter(state.tabId, state.recipeFilter || '');
