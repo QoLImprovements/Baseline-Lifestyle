@@ -8,36 +8,23 @@ const STYLE_ID='baseline-realm-tactical-operations-style';
 const STYLE_URL='/systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css?v=TACTICAL_OPERATIONS_INTERACTION_REPAIR_20260707_2';
 const LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v2';
 const LEGACY_LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v1';
-const LOCAL_OWNER_KEY='baseline-realm:tactical-operations:owner';
+const RETIRED_OWNER_KEY='baseline-realm:tactical-operations:owner';
 
 function ensureStylesheet(){let link=document.getElementById(STYLE_ID);if(!link){link=document.createElement('link');link.id=STYLE_ID;link.rel='stylesheet';document.head.append(link);}if(link.getAttribute('href')!==STYLE_URL)link.href=STYLE_URL;}
 function authSnapshot(){try{return globalThis.BASELINE_auth?.get?.()||null;}catch{return null;}}
 function accountAuthenticated(){return Boolean(authSnapshot()?.authed);}
-function accountOwner(){const snapshot=authSnapshot();return String(snapshot?.name||snapshot?.user?.name||'').trim().toLocaleLowerCase('en-GB');}
 function readLocalSave(){for(const key of[LOCAL_SAVE_KEY,LEGACY_LOCAL_SAVE_KEY]){try{const value=JSON.parse(localStorage.getItem(key)||'null');if(value&&typeof value==='object')return value;}catch{}}return null;}
-function localOwner(){try{return String(localStorage.getItem(LOCAL_OWNER_KEY)||'').trim().toLocaleLowerCase('en-GB');}catch{return'';}}
-function claimLocalOwner(){
-  const current=accountOwner();
-  if(!current)return'';
-  const existing=localOwner();
-  if(existing)return existing;
-  try{localStorage.setItem(LOCAL_OWNER_KEY,current);}catch{}
-  return current;
-}
-function clearLocalSave(){try{localStorage.removeItem(LOCAL_SAVE_KEY);localStorage.removeItem(LEGACY_LOCAL_SAVE_KEY);localStorage.removeItem(LOCAL_OWNER_KEY);}catch{}}
-function equivalent(left,right){try{return JSON.stringify(left)===JSON.stringify(right);}catch{return false;}}
 function readSave(inventoryService){
-  const local=readLocalSave();
   const signedIn=accountAuthenticated();
-  if(signedIn&&typeof inventoryService?.read==='function'){
+  if(signedIn){
+    try{localStorage.removeItem(RETIRED_OWNER_KEY);}catch{}
     let tactical=null;
-    try{const value=inventoryService.read()?.realm?.tacticalOperations;tactical=value&&typeof value==='object'?value:null;}catch{}
-    const owner=local?claimLocalOwner():'';
-    const candidate=local&&owner&&owner===accountOwner()?local:null;
-    if(candidate&&tactical&&equivalent(candidate,tactical))return{saved:tactical,importCandidate:null,signedIn:true};
-    return{saved:tactical,importCandidate:candidate,signedIn:true};
+    if(typeof inventoryService?.read==='function'){
+      try{const value=inventoryService.read()?.realm?.tacticalOperations;tactical=value&&typeof value==='object'?value:null;}catch{}
+    }
+    return{saved:tactical,signedIn:true};
   }
-  return{saved:local,importCandidate:null,signedIn:false};
+  return{saved:readLocalSave(),signedIn:false};
 }
 function addCount(bucket,id,amount){if(!bucket||!id||!Number.isFinite(Number(amount)))return;bucket[id]=Math.max(0,Number(bucket[id]||0))+Number(amount);}
 function writeSave(state,inventoryService){
@@ -59,8 +46,6 @@ const esc=(value)=>String(value??'').replace(/[&<>"']/g,(ch)=>({'&':'&amp;','<':
 
 function mountTacticalOperations({root,onExit,inventoryService,eventBus}){
   const loaded=readSave(inventoryService);
-  let importCandidate=loaded.importCandidate;
-  let migrationPending=Boolean(importCandidate);
   let state=createInitialState({saved:loaded.saved}),selectedAction='move',disposed=false;
   const focusFor=(value)=>{const unit=value.units.find((entry)=>entry.id===value.selectedUnitId)||value.units.find((entry)=>entry.faction==='player');return{x:unit?.x||0,y:unit?.y||0};};
   let focus=focusFor(state);
@@ -68,15 +53,7 @@ function mountTacticalOperations({root,onExit,inventoryService,eventBus}){
   root.innerHTML='<section class="tactical-shell" aria-label="Baseline Realm Tactical Operations"></section>';
   const shell=root.querySelector('.tactical-shell');
 
-  function persist(){
-    if(migrationPending)return{ok:false,pendingMigration:true};
-    return writeSave(state,inventoryService);
-  }
-  function migrationReview(){
-    if(!migrationPending)return'';
-    return '<section class="tactical-card" data-tactical-migration-review><h4>Browser Tactical Operations data is available</h4><p>Account Baseline Realm data is authoritative, including an empty Tactical Operations section. The browser copy was preserved and was not imported automatically.</p><div class="tactical-header__actions"><button class="tactical-btn" data-action="import-browser-copy">Import browser copy</button><button class="tactical-btn" data-action="keep-account-copy">Keep account copy</button></div></section>';
-  }
-
+  function persist(){return writeSave(state,inventoryService);}
   function ranges(){const unit=activeUnit(state);return{move:new Set(movementRange(state).map((t)=>`${t.x},${t.y}`)),attack:new Set(attackRange(state).map((t)=>`${t.x},${t.y}`)),area:selectedAction==='ability'&&unit?new Set(areaTiles(focus,1).map((t)=>`${t.x},${t.y}`)):new Set()};}
   function statusCopy(){if(state.phase==='victory'){const next=nextMissionId(state);return next?`${state.mission.name} complete. ${MISSION_DEFINITIONS[next].name} is unlocked.`:'Campaign complete. Every Tactical Operations mission has been secured.';}if(state.phase==='defeat')return state.mission.defeat;const time=state.mission.roundLimit?` · Round limit ${state.mission.roundLimit}`:state.mission.targetRounds?` · Hold through round ${state.mission.targetRounds}`:'';return`${state.mission.type.toUpperCase()} · ${state.mission.objectiveLabel}${time}`;}
 
@@ -85,7 +62,6 @@ function mountTacticalOperations({root,onExit,inventoryService,eventBus}){
     const unit=activeUnit(state),selected=state.units.find((entry)=>entry.id===state.selectedUnitId)||unit,currentRanges=ranges(),timeline=state.timeline.map((id)=>state.units.find((entry)=>entry.id===id)).filter(Boolean),next=nextMissionId(state);
     shell.innerHTML=`
       <header class="tactical-header"><div><p class="tactical-kicker">Baseline Realm / Seven-mission tactics campaign</p><h3>Tactical Operations: ${esc(state.mission.name)}</h3><p>${esc(state.mission.objective)}</p></div><div class="tactical-header__actions"><button class="tactical-btn" data-action="save">Save</button><button class="tactical-btn" data-action="reset">Reset Mission</button><button class="tactical-btn tactical-btn--ghost" data-action="exit">Return to Basecamp</button></div></header>
-      ${migrationReview()}
       ${renderCampaign()}
       <div class="tactical-status tactical-status--${state.phase}"><strong>${state.phase==='playing'?`Round ${state.round}: ${esc(unit?.name||'No active unit')}`:state.phase.toUpperCase()}</strong><span>${esc(statusCopy())}</span>${state.phase==='victory'&&next?`<button class="tactical-btn" data-action="next-mission">Begin ${esc(MISSION_DEFINITIONS[next].name)}</button>`:''}</div>
       <div class="tactical-layout"><main class="tactical-board-wrap"><div class="tactical-grid" role="grid" aria-label="Isometric tactical grid for ${esc(state.mission.name)}">${renderTiles(currentRanges)}</div><div class="tactical-controls" aria-label="Action controls">${['move','attack','ability','wait'].map((action)=>`<button class="tactical-btn ${selectedAction===action?'is-active':''}" data-action-mode="${action}">${action}</button>`).join('')}<button class="tactical-btn" data-action="end-turn">End Turn</button></div></main><aside class="tactical-panel">${renderMissionBrief()}${renderTimeline(timeline)}${renderUnitCard(selected)}${renderWorkshop()}<div class="tactical-log">${state.log.slice(0,8).map((line)=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>
@@ -104,26 +80,9 @@ function mountTacticalOperations({root,onExit,inventoryService,eventBus}){
   function switchMission(missionId){if(!state.unlockedMissions.includes(missionId))return;persist();state=createInitialState({saved:serialiseState(state),missionId});selectedAction='move';focus=focusFor(state);persist();eventBus?.emit?.('realm:tactical:mission-changed',{missionId});render();}
   function handleTile(x,y){focus={x,y};const unit=activeUnit(state);if(!unit||unit.faction!=='player'||state.phase!=='playing'){const occupant=unitAt(state,x,y);if(occupant)state.selectedUnitId=occupant.id;render();return;}const occupant=unitAt(state,x,y);if(occupant)state.selectedUnitId=occupant.id;if(selectedAction==='move')moveUnit(state,unit.id,x,y);else if(selectedAction==='attack'&&occupant&&occupant.faction!==unit.faction)basicAttack(state,unit.id,occupant.id);else if(selectedAction==='ability')useAreaAbility(state,unit.id,x,y);else if(selectedAction==='wait')endTurn(state);if(state.phase!=='playing')persist();render();}
   async function handleCommand(action){
-    if(action==='import-browser-copy'){
-      if(!migrationPending||!importCandidate)return;
-      state=createInitialState({saved:importCandidate});
-      selectedAction='move';focus=focusFor(state);
-      const result=writeSave(state,inventoryService);
-      if(result.ok){
-        migrationPending=false;
-        state.log.unshift('Browser Tactical Operations import submitted. The browser recovery copy is retained until a later account load verifies the same state.');
-      }else state.log.unshift('Browser Tactical Operations was not imported. The browser recovery copy was preserved.');
-      render();return;
-    }
-    if(action==='keep-account-copy'){
-      clearLocalSave();importCandidate=null;migrationPending=false;
-      state.log.unshift('Account Tactical Operations copy kept; old browser copy removed.');
-      render();return;
-    }
-    if(migrationPending){render();return;}
     if(action==='save'){const result=persist();state.log.unshift(result.ok?(result.rewardGranted?'Mission reward and campaign save written.':'Tactical Operations save written.'):'Tactical Operations was not saved to the account.');}if(action==='reset'){state=createInitialState({saved:serialiseState(state),missionId:state.missionId});selectedAction='move';focus=focusFor(state);state.log.unshift('Mission reset without clearing campaign progress.');}if(action==='next-mission'){const next=nextMissionId(state);if(next)return switchMission(next);}if(action==='exit'){persist();try{await onExit?.();}catch(error){console.error('[Baseline Realm] Return to Basecamp failed.',error);eventBus?.emit?.('realm:tactical:return-failed',{error});}return;}if(action==='end-turn')endTurn(state);if(state.phase!=='playing')persist();render();}
   function onClick(event){const target=event.target instanceof Element?event.target:null;if(!target)return;const control=target.closest('[data-mission-id],[data-x][data-y],[data-action-mode],[data-action]');if(!control||!root.contains(control))return;event.preventDefault();event.stopPropagation();const mission=control.closest('[data-mission-id]');if(mission){switchMission(mission.dataset.missionId);return;}const tile=control.closest('[data-x][data-y]');if(tile){handleTile(Number(tile.dataset.x),Number(tile.dataset.y));return;}const mode=control.closest('[data-action-mode]');if(mode){selectedAction=mode.dataset.actionMode;render();return;}const action=control.closest('[data-action]');if(action)void handleCommand(action.dataset.action);}
-  function onKey(event){if(migrationPending)return;if(!root.contains(document.activeElement)&&document.activeElement!==document.body)return;const key=event.key.toLowerCase();if(key==='arrowleft')focus.x=Math.max(0,focus.x-1);else if(key==='arrowright')focus.x=Math.min(state.mission.width-1,focus.x+1);else if(key==='arrowup')focus.y=Math.max(0,focus.y-1);else if(key==='arrowdown')focus.y=Math.min(state.mission.height-1,focus.y+1);else if(key==='enter')handleTile(focus.x,focus.y);else if(key===' ')handleCommand('end-turn');else if(['1','2','3','4'].includes(key))selectedAction=['move','attack','ability','wait'][Number(key)-1];else return;event.preventDefault();render();}
+  function onKey(event){if(!root.contains(document.activeElement)&&document.activeElement!==document.body)return;const key=event.key.toLowerCase();if(key==='arrowleft')focus.x=Math.max(0,focus.x-1);else if(key==='arrowright')focus.x=Math.min(state.mission.width-1,focus.x+1);else if(key==='arrowup')focus.y=Math.max(0,focus.y-1);else if(key==='arrowdown')focus.y=Math.min(state.mission.height-1,focus.y+1);else if(key==='enter')handleTile(focus.x,focus.y);else if(key===' ')handleCommand('end-turn');else if(['1','2','3','4'].includes(key))selectedAction=['move','attack','ability','wait'][Number(key)-1];else return;event.preventDefault();render();}
 
   root.addEventListener('click',onClick,true);window.addEventListener('keydown',onKey);eventBus?.emit?.('realm:tactical:mission-changed',{missionId:state.missionId});render();
   return{save:()=>persist(),getState:()=>state,destroy(){if(disposed)return;disposed=true;persist();root.removeEventListener('click',onClick,true);window.removeEventListener('keydown',onKey);root.classList.remove('is-tactical-operations');eventBus?.emit?.('realm:tactical:closed',{missionId:state.missionId,phase:state.phase});}};
