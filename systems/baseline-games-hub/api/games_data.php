@@ -185,20 +185,6 @@ try{
     $action = strtolower(trim((string)($payload['action'] ?? 'save')));
 
     if($mode === 'saved-data'){
-      if($action === 'migrate_missing'){
-        $incoming = is_array($payload['profiles'] ?? null) ? $payload['profiles'] : [];
-        $expectedRevisions = is_array($payload['expectedRevisions'] ?? null) ? $payload['expectedRevisions'] : [];
-        foreach($incoming as $appRaw=>$profileRaw){
-          $app = bl_game_data_app((string)$appRaw);
-          if($app === 'hubsettings') continue;
-          $expected = bl_resource_required_revision_from_input([
-            'expectedRevision'=>$expectedRevisions[$app] ?? null,
-          ]);
-          bl_game_file_write($uid, $app, bl_game_data_profile($profileRaw), true, $expected);
-        }
-        $rows = bl_game_file_all($uid);
-        bl_json(['ok'=>true,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at'],'revisions'=>$rows['revisions']]);
-      }
       if($action !== 'save') bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
       $app = bl_game_data_app((string)($payload['app'] ?? ''));
       if($app === 'hubsettings') bl_json(['ok'=>false,'error'=>'non_persistent_app'], 400);
@@ -209,18 +195,6 @@ try{
     }
 
     $db = bl_games_db();
-    if($action === 'migrate_missing'){
-      $incoming = is_array($payload['profiles'] ?? null) ? $payload['profiles'] : [];
-      $db->beginTransaction();
-      foreach($incoming as $appRaw=>$profileRaw){
-        $app = bl_game_data_app((string)$appRaw);
-        bl_game_data_write($db, $uid, $app, bl_game_data_profile($profileRaw), true);
-      }
-      $db->commit();
-      $rows = bl_game_data_rows($db, $uid);
-      if($mode === 'mirror') bl_game_mirror_rows($uid, $rows);
-      bl_json(['ok'=>true,'profiles'=>$rows['profiles'],'updated_at'=>$rows['updated_at']]);
-    }
     if($action !== 'save') bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
     $app = bl_game_data_app((string)($payload['app'] ?? ''));
     $profile = bl_game_data_profile($payload['profile'] ?? null);
