@@ -9,8 +9,7 @@ function storageState(){
     canSave:Boolean(authority?.canSave?.()),
     ready:Boolean(authority?.isReady?.()),
     status:String(authority?.getStatus?.()||'loading'),
-    error:String(authority?.getLastError?.()||''),
-    importCandidates:Array.isArray(authority?.getImportCandidates?.())?authority.getImportCandidates():[]
+    error:String(authority?.getLastError?.()||'')
   };
 }
 function accountCard(){return document.getElementById('authStateNote')?.closest('.card')||null;}
@@ -38,34 +37,6 @@ function enforceAccountCopy(){
   if(note.innerHTML!==expected.html)note.innerHTML=expected.html;
   const description=accountCard()?.querySelector('.header-row .note');
   if(description&&description.textContent!==expected.description)description.textContent=expected.description;
-}
-const importLabels=Object.freeze({pairs:'Pairs',detectword:'Detect The Word',make24:'Make The Number',trackcoin:'Track The Coin',ruleshift:'Rule Shift',ninja:'Baseline Realm',dartsfocused:'Darts Focused',meridiangrove:'Meridian Grove',badmintonfocused:'Badminton Focused'});
-function ensureImportControls(state){
-  const card=accountCard();
-  let panel=document.getElementById('gamesBrowserProgressImport');
-  if(!card||!state.canSave||!state.importCandidates.length){panel?.remove();return;}
-  if(!panel){
-    panel=document.createElement('section');
-    panel.id='gamesBrowserProgressImport';
-    panel.className='games-browser-import';
-    panel.innerHTML='<strong>Browser progress available</strong><p class="inline-note">Choose each game you want to copy into your account. Nothing is imported automatically.</p><div class="games-browser-import-actions"></div>';
-    card.appendChild(panel);
-  }
-  const actions=panel.querySelector('.games-browser-import-actions');
-  const signature=state.importCandidates.join('|');
-  if(!actions||actions.dataset.signature===signature)return;
-  actions.dataset.signature=signature;
-  actions.replaceChildren(...state.importCandidates.map(app=>{
-    const button=document.createElement('button');
-    button.type='button';button.className='action ghost';button.textContent=`Import ${importLabels[app]||app}`;
-    button.addEventListener('click',()=>{
-      button.disabled=true;button.textContent='Importing…';
-      const imported=globalThis.BaselineGameStorage?.importGuestProfile?.(app)===true;
-      button.textContent=imported?'Imported':'Import failed';
-      if(imported)window.setTimeout(()=>window.location.reload(),0);else button.disabled=false;
-    });
-    return button;
-  }));
 }
 function saveStatusLabel(state){
   return state.canSave
@@ -164,7 +135,7 @@ function placeSaveIcons(){
   refreshActiveSaveTooltip();
 }
 function showSaveNotice(){document.getElementById('gamesServerLoginNotice')?.remove();placeSaveIcons();}
-function update(){const state=storageState();enforceAccountCopy();ensureImportControls(state);showSaveNotice();document.documentElement.toggleAttribute('data-games-save-unavailable',!state.canSave);}
+function update(){const state=storageState();enforceAccountCopy();showSaveNotice();document.documentElement.toggleAttribute('data-games-save-unavailable',!state.canSave);}
 function installSaveTooltipEvents(){
   document.addEventListener('mouseover',event=>{
     const button=event.target instanceof Element ? event.target.closest('[data-save-status-icon]') : null;

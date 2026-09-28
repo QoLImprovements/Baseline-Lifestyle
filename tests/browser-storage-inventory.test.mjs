@@ -64,7 +64,7 @@ test("every discovered storage group has one reviewed migration decision", () =>
   assert.deepEqual(stale, [], `stale inventory patterns: ${stale.join(", ")}`);
 });
 
-test("migration rules are explicit and known blockers now have approved resources", () => {
+test("post-cutover browser storage never promotes retired account copies", () => {
   assert.equal(mapping.formatVersion, 1);
   assert.match(mapping.authority, /Saved Data resource files are the target production authority/i);
   const rules = mapping.rules || [];
@@ -81,72 +81,49 @@ test("migration rules are explicit and known blockers now have approved resource
   }
 
   const voice=rules.find((rule)=>rule.id==="voice-settings");
-  assert.equal(voice?.classification,"device-only-guest-preference");
   assert.equal(voice?.decision,"keep-local-for-guests-never-promote");
   assert.equal(voice?.target,null);
-  assert.match(voice?.cutoverRule || "", /voice\.json is authoritative, including an empty resource/i);
   assert.match(voice?.cutoverRule || "", /must never be automatically promoted/i);
 
-  const food=rules.find((rule)=>rule.id==="diet-log-local-content");
-  assert.equal(food?.target,"Users/{paddedUserId}/food.json");
-  assert.equal(food?.decision,"migrate-explicitly");
-  assert.match(food?.cutoverRule || "", /explicitly chooses Import browser Diet Log/i);
+  const expectedDecisions = new Map([
+    ["diet-log-local-content","keep-local-when-signed-out-never-promote"],
+    ["diet-log-legacy-owner","delete-on-authenticated-load"],
+    ["fitness-body-profile","rebuild-from-account-never-promote"],
+    ["fitness-active-workout","rebuild-from-account-never-promote"],
+    ["fitness-progression-history","rebuild-from-account-never-promote"],
+    ["fitness-import-recovery-backup","delete-on-authenticated-load"],
+    ["fitness-routine-local-cache","retire-on-authenticated-load-never-promote"],
+    ["fitness-routine-import-candidate","delete-on-authenticated-load"],
+    ["skincare-routine-local-cache","retire-authenticated-physical-copy-never-promote"],
+    ["skincare-routine-groups-local-cache","retire-authenticated-physical-copy-never-promote"],
+    ["skincare-slider-settings","retire-authenticated-physical-copy-never-promote"],
+    ["games-guest-profiles","keep-local-for-guests-never-promote"],
+    ["games-legacy-import-owner","delete-on-authenticated-load"],
+    ["trackcoin-game","keep-local-for-guests-never-promote"],
+    ["darts-focused-game","keep-local-for-guests-never-promote"],
+    ["realm-exploration-game","keep-local-for-guests-never-promote"],
+    ["badminton-focused-game","keep-local-for-guests-never-promote"],
+    ["realm-tactical-v1-legacy","keep-local-for-guests-never-promote"],
+    ["realm-tactical-v2","keep-local-for-guests-never-promote"],
+    ["realm-tactical-legacy-owner","delete-on-authenticated-load"],
+  ]);
+  for (const [id,decision] of expectedDecisions) {
+    const rule=rules.find((entry)=>entry.id===id);
+    assert.ok(rule, `missing reviewed storage rule ${id}`);
+    assert.equal(rule.decision, decision, `${id} must match post-cutover retirement policy`);
+    assert.doesNotMatch(decision, /migrat|import|candidate|bind/i);
+  }
 
-  const fitnessProfile=rules.find((rule)=>rule.id==="fitness-body-profile");
-  assert.equal(fitnessProfile?.target,"Users/{paddedUserId}/fitness.json#profile");
-  assert.equal(fitnessProfile?.decision,"migrate-explicitly-after-schema-validation");
-  assert.match(fitnessProfile?.cutoverRule || "", /account profile state is authoritative, including an empty profile/i);
+  assert.match(rules.find((rule)=>rule.id==="diet-log-local-content")?.cutoverRule || "", /Never offer, merge or promote/i);
+  assert.match(rules.find((rule)=>rule.id==="fitness-body-profile")?.cutoverRule || "", /retired before account load/i);
+  assert.match(rules.find((rule)=>rule.id==="fitness-routine-local-cache")?.cutoverRule || "", /may never be imported or promoted/i);
+  assert.match(rules.find((rule)=>rule.id==="skincare-slider-settings")?.cutoverRule || "", /Never merge or promote/i);
+  assert.match(rules.find((rule)=>rule.id==="games-guest-profiles")?.cutoverRule || "", /guest\/local progress only/i);
+  assert.match(rules.find((rule)=>rule.id==="realm-tactical-v2")?.cutoverRule || "", /signed-out guest\/local progress only/i);
 
-  const fitnessWorkout=rules.find((rule)=>rule.id==="fitness-active-workout");
-  assert.equal(fitnessWorkout?.target,"Users/{paddedUserId}/fitness.json#activeWorkout");
-  assert.equal(fitnessWorkout?.decision,"migrate-explicitly-only-valid-current-session");
-  assert.match(fitnessWorkout?.cutoverRule || "", /account active-workout state is authoritative, including no active workout/i);
-
-  const fitnessBackup=rules.find((rule)=>rule.id==="fitness-import-recovery-backup");
-  assert.equal(fitnessBackup?.decision,"preserve-until-explicit-decision");
-  assert.match(fitnessBackup?.cutoverRule || "", /Never auto-import/i);
-
-  const fitnessRoutine=rules.find((rule)=>rule.id==="fitness-routine-local-cache");
-  assert.equal(fitnessRoutine?.target,"Users/{paddedUserId}/fitness-routine.json");
-  assert.match(fitnessRoutine?.cutoverRule || "", /bridge loads before the workspace/i);
-  assert.match(fitnessRoutine?.cutoverRule || "", /must never become authenticated fallback authority/i);
-
-  const fitnessProgression=rules.find((rule)=>rule.id==="fitness-progression-history");
-  assert.equal(fitnessProgression?.target,"Users/{paddedUserId}/fitness.json#progressionHistory");
-  assert.match(fitnessProgression?.cutoverRule || "", /changes future progression/i);
-  assert.match(fitnessProgression?.cutoverRule || "", /explicit import with expectedRevision/i);
-
-  const foodOwner=rules.find((rule)=>rule.id==="diet-log-legacy-owner");
-  assert.equal(foodOwner?.decision,"bind-candidate-to-reviewing-account");
-  assert.match(foodOwner?.cutoverRule || "", /preventing the same candidate from being offered after an account switch/i);
-
-  const skincareRoutine=rules.find((rule)=>rule.id==="skincare-routine-local-cache");
-  assert.equal(skincareRoutine?.target,"Users/{paddedUserId}/skincare.json#routine");
-  assert.equal(skincareRoutine?.decision,"migrate-explicitly-then-virtualise");
-  assert.match(skincareRoutine?.cutoverRule || "", /authoritative account routine is loaded first, including an empty routine/i);
-  assert.match(skincareRoutine?.cutoverRule || "", /explicitly chooses Import browser copy/i);
-
-  const skincareGroups=rules.find((rule)=>rule.id==="skincare-routine-groups-local-cache");
-  assert.equal(skincareGroups?.target,"Users/{paddedUserId}/skincare.json#groups");
-  assert.equal(skincareGroups?.decision,"migrate-explicitly-then-virtualise");
-  assert.match(skincareGroups?.cutoverRule || "", /authoritative account groups\/assignments are loaded first, including an empty section/i);
-  assert.match(skincareGroups?.cutoverRule || "", /explicitly chooses Import browser copy/i);
-
-  const skincare=rules.find((rule)=>rule.id==="skincare-slider-settings");
-  assert.equal(skincare?.target,"Users/{paddedUserId}/skincare.json#sliders");
-  assert.equal(skincare?.decision,"migrate-explicitly");
-  assert.match(skincare?.cutoverRule || "", /authoritative account slider state is loaded first, including an empty slider set/i);
-  assert.match(skincare?.cutoverRule || "", /explicitly chooses Import browser copy/i);
-
-  const badmintonFocused=rules.find((rule)=>rule.id==="badminton-focused-game");
-  assert.equal(badmintonFocused?.target,"Users/{paddedUserId}/Games/badminton-focused.json");
-  assert.equal(badmintonFocused?.decision,"migrate-explicitly");
-  assert.match(badmintonFocused?.cutoverRule || "", /account switch cannot offer the same save/i);
-
-  const gamesOwner=rules.find((rule)=>rule.id==="games-legacy-import-owner");
-  assert.equal(gamesOwner?.decision,"bind-candidates-to-reviewing-account");
-  assert.equal(gamesOwner?.target,null);
-  assert.match(gamesOwner?.cutoverRule || "", /different account must not see those saves as import candidates/i);
+  const skincareBackup=rules.find((rule)=>rule.id==="skincare-conflict-backups");
+  assert.equal(skincareBackup?.decision,"preserve-local-until-reviewed");
+  assert.match(skincareBackup?.cutoverRule || "", /Never auto-import, retry or delete/i);
 
   assert.equal(rules.some((rule)=>rule.decision==="preserve-local-and-block-retirement"),false);
 });
@@ -191,11 +168,11 @@ test("game browser data maps to canonical physical save files", () => {
   );
   assert.equal(
     rules.find((rule) => rule.id === "realm-exploration-game")?.decision,
-    "migrate-explicitly-to-canonical-game-file",
+    "keep-local-for-guests-never-promote",
   );
   assert.match(
     rules.find((rule) => rule.id === "realm-exploration-game")?.cutoverRule || "",
-    /separate from the Baseline Realm ninja envelope/i,
+    /guest\/local game progress only/i,
   );
   for(const id of ["realm-tactical-v1-legacy", "realm-tactical-v2"]){
     assert.match(
@@ -209,13 +186,12 @@ test("game browser data maps to canonical physical save files", () => {
   );
   const tacticalV1=rules.find((rule)=>rule.id==="realm-tactical-v1-legacy");
   const tacticalV2=rules.find((rule)=>rule.id==="realm-tactical-v2");
-  assert.equal(tacticalV1?.decision,"preserve-as-explicit-import-candidate");
-  assert.equal(tacticalV2?.decision,"migrate-explicitly-into-baseline-realm-resource");
-  assert.match(tacticalV1?.cutoverRule || "", /authoritative even when absent\/empty/i);
-  assert.match(tacticalV2?.cutoverRule || "", /must never be loaded as account state automatically/i);
-  assert.match(tacticalV2?.cutoverRule || "", /Bind the preserved copy to the first authenticated account/i);
+  assert.equal(tacticalV1?.decision,"keep-local-for-guests-never-promote");
+  assert.equal(tacticalV2?.decision,"keep-local-for-guests-never-promote");
+  assert.match(tacticalV1?.cutoverRule || "", /account section is authoritative/i);
+  assert.match(tacticalV2?.cutoverRule || "", /browser save is ignored/i);
   const tacticalOwner=rules.find((rule)=>rule.id==="realm-tactical-legacy-owner");
-  assert.equal(tacticalOwner?.decision,"bind-candidate-to-reviewing-account");
+  assert.equal(tacticalOwner?.decision,"delete-on-authenticated-load");
 });
 
 test("browser authentication preview keys are explicitly excluded", () => {

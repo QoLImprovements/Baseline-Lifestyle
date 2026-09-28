@@ -29,8 +29,7 @@
     status:'loading',
     error:'',
     installedStorage:false,
-    installedFetch:false,
-    imports:{routine:null,groups:null,sliders:null}
+    installedFetch:false
   };
 
   function parse(raw){try{const value=raw?JSON.parse(raw):null;return value&&typeof value==='object'&&!Array.isArray(value)?value:null;}catch(_error){return null;}}
@@ -48,13 +47,25 @@
   function nativeRead(key){try{return local&&nativeGet?nativeGet.call(local,key):null;}catch(_error){return null;}}
   function nativeWrite(key,value){try{if(local&&nativeSet)nativeSet.call(local,key,String(value));}catch(_error){}}
   function nativeDelete(key){try{if(local&&nativeRemove)nativeRemove.call(local,key);}catch(_error){}}
-  function equivalent(left,right){try{return JSON.stringify(left)===JSON.stringify(right);}catch(_error){return false;}}
-  function meaningfulRoutine(value){return Boolean(value&&(Array.isArray(value.routine||value.items)&&(value.routine||value.items).length||value.logs&&Object.keys(value.logs).length));}
-  function meaningfulGroups(value){return Boolean(value&&(Array.isArray(value.groups)&&value.groups.length||value.assignments&&Object.keys(value.assignments).length));}
-  function hasImports(){return Boolean(state.imports.routine||state.imports.groups||state.imports.sliders);}
+  function retireAuthenticatedPhysicalCopies(){
+    if(!sessionAuthenticated()||!local) return;
+    nativeDelete(routineKey());
+    nativeDelete(groupKey());
+    nativeDelete(legacyGroupKey());
+    const prefix=sliderPrefix();
+    const keys=[];
+    try{
+      for(let index=0;index<local.length;index+=1){
+        const key=local.key(index);
+        if(key&&key.startsWith(prefix)) keys.push(key);
+      }
+    }catch(_error){}
+    keys.forEach(nativeDelete);
+  }
+
   function bridgeHost(){return document.getElementById('routine')||document.getElementById('recipes')||document.querySelector('main');}
   function emit(){
-    try{document.dispatchEvent(new CustomEvent('baseline:skincare-saved-data',{detail:{status:state.status,revision:state.revision,source:state.source,canSave:state.canSave,error:state.error,hasImportCandidate:hasImports()}}));}catch(_error){}
+    try{document.dispatchEvent(new CustomEvent('baseline:skincare-saved-data',{detail:{status:state.status,revision:state.revision,source:state.source,canSave:state.canSave,error:state.error}}));}catch(_error){}
   }
   function backup(kind,value){
     if(!value) return;
@@ -102,19 +113,8 @@
     const result=initialResult||syncRequest('GET',ROUTINE_API);
     if(!result.ok) return result;
     remember(result);
-    const physical=parse(nativeRead(routineKey()));
     const server=serverRoutine(result.data);
-    state.imports.routine=null;
-    if(physical){
-      const localRoutine=serverRoutine(physical);
-      if(equivalent(localRoutine,server)){
-        nativeDelete(routineKey());
-      }else if(meaningfulRoutine(physical)){
-        state.imports.routine={routine:localRoutine.routine,logs:localRoutine.logs,visibility:localRoutine.visibility};
-      }else{
-        nativeDelete(routineKey());
-      }
-    }
+    nativeDelete(routineKey());
     virtual.set(routineKey(),JSON.stringify(server));
     return result;
   }
@@ -123,45 +123,14 @@
     const result=syncRequest('GET',GROUP_API);
     if(!result.ok) return result;
     remember(result);
-    const physical=parse(nativeRead(groupKey())||nativeRead(legacyGroupKey()));
     const server=serverGroups(result.data);
-    state.imports.groups=null;
-    if(physical){
-      const localGroups=serverGroups(physical);
-      if(equivalent(localGroups,server)){
-        nativeDelete(groupKey());
-        nativeDelete(legacyGroupKey());
-      }else if(meaningfulGroups(physical)){
-        state.imports.groups={groups:localGroups.groups,assignments:localGroups.assignments};
-      }else{
-        nativeDelete(groupKey());
-        nativeDelete(legacyGroupKey());
-      }
-    }
+    nativeDelete(groupKey());
+    nativeDelete(legacyGroupKey());
     virtual.set(groupKey(),JSON.stringify(server));
     virtual.set(legacyGroupKey(),JSON.stringify(server));
     return result;
   }
 
-  function localSliderEntries(){
-    const prefix=sliderPrefix();
-    const output={};
-    const keys=[];
-    try{
-      if(!local) return{output,keys};
-      for(let index=0;index<local.length;index+=1){
-        const key=local.key(index);
-        if(!key||!key.startsWith(prefix)) continue;
-        const parsed=parse(nativeRead(key));
-        if(!parsed) continue;
-        const id=key.slice(prefix.length);
-        if(!id) continue;
-        output[id]=parsed;
-        keys.push(key);
-      }
-    }catch(_error){}
-    return{output,keys};
-  }
   function clearVirtualSliders(){
     const prefix=sliderPrefix();
     Array.from(virtual.keys()).forEach(key=>{if(key.startsWith(prefix)) virtual.delete(key);});
@@ -185,16 +154,8 @@
     if(!result.ok) return result;
     remember(result);
     const server=result.data.sliders&&typeof result.data.sliders==='object'?result.data.sliders:{};
+    retireAuthenticatedPhysicalCopies();
     installServerSliders(server);
-    const localEntries=localSliderEntries();
-    state.imports.sliders=null;
-    if(Object.keys(localEntries.output).length){
-      if(equivalent(localEntries.output,server)){
-        localEntries.keys.forEach(nativeDelete);
-      }else{
-        state.imports.sliders={sliders:localEntries.output,keys:localEntries.keys.slice()};
-      }
-    }
     return result;
   }
 
@@ -328,88 +289,6 @@
     };
   }
 
-  function keepAccount(kind){
-    if(kind==='routine') nativeDelete(routineKey());
-    else if(kind==='groups'){
-      nativeDelete(groupKey());
-      nativeDelete(legacyGroupKey());
-    }else if(kind==='sliders'){
-      const candidate=state.imports.sliders;
-      (candidate?.keys||[]).forEach(nativeDelete);
-    }else return false;
-    state.imports[kind]=null;
-    emit();
-    requestRender();
-    return true;
-  }
-  function importCandidate(kind){
-    if(!state.canSave) return false;
-    const candidate=state.imports[kind];
-    if(!candidate) return false;
-    let result=null;
-    if(kind==='routine'){
-      result=syncRequest('POST',ROUTINE_API,{routine:candidate.routine,logs:candidate.logs,visibility:candidate.visibility,expectedRevision:state.revision});
-    }else if(kind==='groups'){
-      result=syncRequest('POST',GROUP_API,{groups:candidate.groups,assignments:candidate.assignments,expectedRevision:state.revision});
-    }else if(kind==='sliders'){
-      if(state.source==='sqlite'){
-        state.error='saved_data_cutover_required';
-        emit();
-        requestRender();
-        return false;
-      }
-      result=syncRequest('POST',DATA_API,{action:'merge_sliders',sliders:candidate.sliders,expectedRevision:state.revision});
-    }else return false;
-    if(!result.ok){
-      const error=result.data?.error||'legacy_import_failed';
-      blockSaving(result.status===409?'conflict':'unavailable',error,'legacy-'+kind,candidate);
-      return false;
-    }
-    remember(result);
-    keepAccount(kind);
-    bootstrap();
-    return true;
-  }
-
-  function renderMigrationReview(){
-    const existing=document.getElementById('skincareSavedDataMigrationReview');
-    if(!state.authenticated||!hasImports()){
-      existing?.remove();
-      return;
-    }
-    const host=bridgeHost();
-    if(!host) return;
-    const panel=existing||document.createElement('div');
-    panel.id='skincareSavedDataMigrationReview';
-    panel.className='card';
-    panel.setAttribute('data-skincare-migration-review','true');
-    panel.innerHTML='<strong>Browser Skincare data is available.</strong><p class="note">Account data is authoritative. Browser copies were preserved and were not imported automatically.</p>';
-    const labels={routine:'Routine and log',groups:'Routine groups',sliders:'Saved slider positions'};
-    Object.keys(labels).forEach(kind=>{
-      if(!state.imports[kind]) return;
-      const row=document.createElement('div');
-      row.className='actions';
-      const label=document.createElement('span');
-      label.textContent=labels[kind];
-      const importButton=document.createElement('button');
-      importButton.type='button';
-      importButton.textContent=kind==='sliders'&&state.source==='sqlite'?'Import available after Saved Data cutover':'Import browser copy';
-      if(kind==='sliders'&&state.source==='sqlite') importButton.disabled=true;
-      importButton.addEventListener('click',()=>{
-        if(!global.confirm||global.confirm('Import the preserved browser '+labels[kind].toLowerCase()+' into the account copy?')) importCandidate(kind);
-      });
-      const keepButton=document.createElement('button');
-      keepButton.type='button';
-      keepButton.textContent='Keep account copy';
-      keepButton.addEventListener('click',()=>{
-        if(!global.confirm||global.confirm('Keep the authoritative account copy and remove this old browser copy?')) keepAccount(kind);
-      });
-      row.append(label,importButton,keepButton);
-      panel.appendChild(row);
-    });
-    if(!existing) host.before(panel);
-  }
-
   function renderAuthorityStatus(){
     const existing=document.getElementById('skincareSavedDataAuthorityStatus');
     const blocked=state.authenticated&&!state.canSave&&state.status!=='loading';
@@ -432,7 +311,7 @@
     panel.appendChild(button);
     if(!existing) host.before(panel);
   }
-  function renderBridgeUi(){renderMigrationReview();renderAuthorityStatus();}
+  function renderBridgeUi(){renderAuthorityStatus();}
 
   function bootstrap(){
     state.owner=ownerFromAuth();
@@ -440,8 +319,8 @@
     state.ready=false;
     state.status='loading';
     state.error='';
-    state.imports={routine:null,groups:null,sliders:null};
     const authenticated=sessionAuthenticated();
+    if(authenticated) retireAuthenticatedPhysicalCopies();
     const routine=syncRequest('GET',ROUTINE_API);
     if(!routine.ok){
       if(routine.status===401&&!authenticated){
@@ -491,9 +370,6 @@
     getStatus:()=>state.status,
     canSave:()=>state.canSave,
     source:()=>state.source,
-    hasImportCandidate:()=>hasImports(),
-    importLegacy:importCandidate,
-    keepAccount,
     reloadAccountData:bootstrap
   });
 })(window);

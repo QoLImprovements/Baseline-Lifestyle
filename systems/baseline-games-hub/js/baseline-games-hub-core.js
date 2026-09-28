@@ -3435,11 +3435,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         const target = button.getAttribute('data-target');
         if(target === 'games'){
           selectedGame = '';
-          activateTab('games');
+          activateTab('games', { historyMode:'push' });
           selectGame('', { historyMode:'replace' });
           return;
         }
-        activateTab(target);
+        activateTab(target, { historyMode:'push' });
       }, true);
     });
   }
