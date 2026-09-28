@@ -273,6 +273,49 @@ test('ordinary Skincare recipe routes remain single-recipe views after refresh',
   await expect(page.locator('#side-nav')).toHaveCount(0);
 });
 
+
+test('powder recipes expose complete canonical ingredient-library records and filters', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash');
+
+  const hairWashLinks = [
+    ['ing-colloidal-oatmeal', 'colloidal-oatmeal'],
+    ['ing-marshmallow-root-powder', 'marshmallow-root-powder'],
+    ['ing-inulin-powder', 'inulin-powder'],
+    ['ing-sunflower-lecithin-powder', 'sunflower-lecithin-powder'],
+    ['ing-water', 'water'],
+    ['ing-jojoba', 'jojoba-oil'],
+    ['ing-argan', 'argan']
+  ];
+
+  for (const [ingredientId, slug] of hairWashLinks) {
+    const link = page.locator('#r11 a.ing-link[data-ingredient="' + ingredientId + '"]').first();
+    await expect(link).toHaveAttribute('href', '/baseline-natural-skincare/ingredient-library/' + slug + '?filter=r11');
+  }
+
+  await page.locator('#r11 a.ing-link[data-ingredient="ing-colloidal-oatmeal"]').first().click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/colloidal-oatmeal\?filter=r11$/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r11');
+  await expect(page.locator('#ing-colloidal-oatmeal')).toBeVisible();
+  await expect(page.locator('#ingredients .lib .card:visible')).toHaveCount(7);
+
+  await page.goto('/baseline-natural-skincare/recipes/tooth-polishing-powder');
+  const toothLinks = [
+    ['ing-white-kaolin', 'white-kaolin-clay'],
+    ['ing-sage-leaf-powder', 'sage-leaf-powder'],
+    ['ing-peppermint-leaf-powder', 'peppermint-leaf-powder']
+  ];
+  for (const [ingredientId, slug] of toothLinks) {
+    const link = page.locator('#r9 a.ing-link[data-ingredient="' + ingredientId + '"]').first();
+    await expect(link).toHaveAttribute('href', '/baseline-natural-skincare/ingredient-library/' + slug + '?filter=r9');
+  }
+
+  await page.locator('#r9 a.ing-link[data-ingredient="ing-white-kaolin"]').click();
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/ingredient-library\/white-kaolin-clay\?filter=r9$/);
+  await expect(page.locator('#ingredientFilter')).toHaveValue('r9');
+  await expect(page.locator('#ing-white-kaolin')).toBeVisible();
+  await expect(page.locator('#ingredients .lib .card:visible')).toHaveCount(3);
+});
+
 test('recipe ingredient links use canonical records and Back and Forward restore the correct views', async ({ page }) => {
   const recipeUrl = '/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend';
   const ingredientUrl = '/baseline-natural-skincare/ingredient-library/jojoba-oil?filter=r6';
