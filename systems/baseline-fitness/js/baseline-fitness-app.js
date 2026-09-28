@@ -1043,6 +1043,8 @@
     const target = $('#exerciseLibrary'); if (!target) return;
     const query = String($('#exSearch')?.value || '').toLowerCase();
     const group = $('#exGroup')?.value || 'all';
+    if (!query && group === 'all' && target.dataset.staticCatalogue === '1') return;
+    target.dataset.staticCatalogue = '0';
     target.innerHTML = EXERCISES
       .filter((item) => (group === 'all' || item.familyKey === group) && (!query || `${item.name} ${item.family} ${item.section} ${item.movementCategory} ${item.unit}`.toLowerCase().includes(query)))
       .map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.movementCategory)} • ${escapeHtml(item.variationLevel)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p><p class="note"><b>Progression:</b> ${escapeHtml(progressionDescription(item))}</p></div>`)
