@@ -51,16 +51,20 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
+test('Lip/ balm is present in the initial Skincare document and never waits on a secondary recipe fetch', () => {
   assert.match(lipBalm, /data-category="Testing"/);
   assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
   assert.match(lipBalm, /id="r12"/);
   assert.match(lipBalm, /<h3>Lip\/ balm<\/h3>/);
-  assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
-  assert.match(recipeUx, /source:'\/systems\/baseline-natural-skincare\/recipes\/testing-lip-balm\.html'/);
-  assert.match(recipeUx, /loadExternalRecipeForCurrentPath/);
-  assert.match(recipeUx, /document\.importNode\(sourceCard,true\)/);
+  assert.match(html, /data-recipe-slug="testing-lip-balm"/);
+  assert.match(html, /id="r12"/);
+  assert.match(html, /<h3>Lip\/ balm<\/h3>/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*false\]/);
+  assert.doesNotMatch(recipeUx, /EXTERNAL_RECIPES/);
+  assert.doesNotMatch(recipeUx, /loadExternalRecipeForCurrentPath/);
+  assert.doesNotMatch(recipeUx, /document\.importNode\(sourceCard,true\)/);
+  assert.doesNotMatch(recipeUx, /\bfetch\s*\(/);
+  assert.doesNotMatch(html, /__BASELINE_SKINCARE_LIP_BALM_PREFETCH__/);
   assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
   assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
   assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
