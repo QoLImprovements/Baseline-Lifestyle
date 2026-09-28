@@ -570,7 +570,7 @@
       }
     
       function buildAppMarkup(root){
-        root.innerHTML = `
+        if(!root.querySelector(':scope > .diet-log-app')) root.innerHTML = `
           <div class="diet-log-app">
             <div class="diet-log-panel diet-log-header-panel">
               <div class="diet-log-panel-header">
@@ -609,7 +609,7 @@
                         </div>
                         <div class="diet-field">
                           <label for="dietLogCategory">Category</label>
-                          <select id="dietLogCategory"></select>
+                          <select id="dietLogCategory"><option value="all">All categories</option></select>
                         </div>
                         <div class="diet-log-helper-row diet-log-helper-row--right">
                           <span id="dietLogResultCount" class="diet-inline-note"></span>
@@ -627,7 +627,7 @@
                         <p class="note">Choose meal, amount, and measure here.</p>
                       </div>
                     </div>
-                    <div id="dietLogSelected"></div>
+                    <div id="dietLogSelected"><p class="note" data-diet-log-first-paint-note>Search the food library to choose an item.</p></div>
                   </div>
                 </aside>
               </div>
