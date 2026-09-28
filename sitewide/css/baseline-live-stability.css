@@ -47,16 +47,8 @@ html body[data-app="charity-shop"] #bl-auth-toggle{
   pointer-events:auto!important;
 }
 
-/* Do not display provisional Games Hub copy while profiles are hydrating. */
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #authStateNote,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #bankSummary,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #gamesSummaryWrap,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #gamesList,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #ninjaRunStateValue,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #ninjaXpMeta,
-html[data-app="games"]:not([data-baseline-games-stable="true"]) body[data-app="games"] #ninjaOfflineMessage{
-  visibility:hidden!important;
-}
+/* Keep Games Hub content visible while saved/profile values hydrate.
+   Values may update in place, but the page never presents a blank hole. */
 
 @media(max-width:700px){
   html body[data-app] .bl-homebar-inner{gap:7px!important;}
