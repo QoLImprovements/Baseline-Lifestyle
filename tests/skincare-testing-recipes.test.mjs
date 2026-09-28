@@ -64,7 +64,7 @@ test('Lip/ balm is authored in the Skincare shell so direct routes never wait fo
   assert.match(recipeCss, /data-initial-recipe-slug="testing-lip-balm"/);
   assert.match(recipeUx, /if\(meta && document\.getElementById\(meta\.id\)\) return null/);
   assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
-  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
+  assert.ok(htaccess.includes('RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]'));
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
 test('recipe bootstrap starts independently of My Routine readiness', () => {
