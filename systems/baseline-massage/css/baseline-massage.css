@@ -102,9 +102,8 @@ body[data-app="massage"] .hero .subtitle{
   text-shadow:0 1px 1px rgba(30,14,6,.22)!important;
 }
 
-.section{display:none;animation:massageFade .22s ease}
+.section{display:none}
 .section.active{display:block}
-@keyframes massageFade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
 .tabs,
 .subtabs{
