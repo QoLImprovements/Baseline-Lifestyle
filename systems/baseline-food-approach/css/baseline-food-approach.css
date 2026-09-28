@@ -109,9 +109,8 @@
   [id]{ scroll-margin-top: 18px; }
 
   /* Layout width is owned by css/baseline-sitewide.css. */
-  .section{ display:none; animation:fade var(--dur-3) var(--ease-soft); }
+  .section{ display:none; }
   .section.active{ display:block; }
-  @keyframes fade{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
 
   /* Cards */
   .card{
