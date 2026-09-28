@@ -142,6 +142,56 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
 });
 
+test('deterministic page structure is present before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const systemRoutes = [
+    '/baseline-food-approach/system',
+    '/baseline-massage/system',
+    '/baseline-natural-skincare/system',
+    '/baseline-fitness/system',
+    '/baseline-badminton-session/system',
+    '/baseline-games-hub/games-hub'
+  ];
+
+  for (const pathname of systemRoutes) {
+    const response = await page.goto(pathname, { waitUntil:'load' });
+    expect(response.status(), pathname + ' did not load').toBeLessThan(400);
+    await expect(page.locator('#blProtectedKey')).toBeVisible();
+    await expect(page.locator('#blProtectedKey svg')).toHaveAttribute('stroke','currentColor');
+    await expect(page.locator('#bl-beats-toggle')).toBeVisible();
+    await expect(page.locator('#bl-voice-toggle')).toBeVisible();
+    await expect(page.locator('#bl-auth-toggle')).toBeVisible();
+    await expect(page.locator('.bl-homebar-spacer')).toHaveCount(1);
+  }
+
+  await page.goto('/home/1', { waitUntil:'load' });
+  await expect(page.locator('#blProtectedKey')).toBeVisible();
+  await expect(page.locator('#bl-voice-toggle')).toBeVisible();
+  await expect(page.locator('#bl-auth-toggle')).toBeVisible();
+
+  await page.goto('/baseline-food-approach/diet-log', { waitUntil:'load' });
+  await expect(page.locator('#dietLogApp > .diet-log-app')).toBeVisible();
+  await expect(page.locator('#dietLogFeatureNav')).toBeVisible();
+  await expect(page.locator('#dietLogSearch')).toBeVisible();
+
+  await page.goto('/baseline-games-hub/games-hub/games-list', { waitUntil:'load' });
+  await expect(page.locator('#gamesList [data-game-card]')).toHaveCount(8);
+  await expect(page.locator('#gamesList [data-game-card]').first()).toBeVisible();
+
+  await page.goto('/baseline-fitness/library', { waitUntil:'load' });
+  await expect(page.locator('#exerciseLibrary .exercise-card')).toHaveCount(75);
+  await expect(page.locator('#exerciseLibrary .exercise-card').first()).toBeVisible();
+
+  await page.goto('/baseline-massage/library', { waitUntil:'load' });
+  expect(await page.locator('#massageLibraryTabs .library-tab').count()).toBeGreaterThan(0);
+  expect(await page.locator('#massageLibraryGrid .library-card:visible').count()).toBeGreaterThan(0);
+});
+
 test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', (route) => {
     const pathname = new URL(route.request().url()).pathname;
@@ -151,7 +201,8 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
 
   const routes = [
     ['/baseline-natural-skincare/recipes/nurturing-glow-butter', 'r1', 'Nurturing Glow Butter'],
-    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel']
+    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel'],
+    ['/baseline-natural-skincare/recipes/testing-lip-balm', 'r12', 'Lip/ balm']
   ];
 
   for (const [pathname, recipeId, title] of routes) {
@@ -169,7 +220,7 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
   }
 });
 
-test('folder-backed Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+test('embedded Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
   const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
 
   await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
