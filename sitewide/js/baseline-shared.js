@@ -2181,19 +2181,13 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
-    if(isSkincare && !recipes.some(recipe=>recipe.id==='r12')){
+    if(isSkincare){
       recipes.push({
         id:'r12',
         name:'Lip/ balm',
         external:true,
         href:'/baseline-natural-skincare/recipes/testing-lip-balm'
       });
-    }else if(isSkincare){
-      const lipBalm=recipes.find(recipe=>recipe.id==='r12');
-      if(lipBalm){
-        lipBalm.external=true;
-        lipBalm.href='/baseline-natural-skincare/recipes/testing-lip-balm';
-      }
     }
 
     // Build map: recipeId -> Set(ingredientIds).
