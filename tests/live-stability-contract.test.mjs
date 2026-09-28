@@ -95,6 +95,36 @@ test('protected key and Charity banner controls have stable first-paint geometry
   assert.match(css, /#bl-auth-toggle/);
 });
 
+test('primary application shells load stability assets before visible UI settles', () => {
+  const shells = [
+    'index.html',
+    'systems/baseline-food-approach/baseline-food-approach.html',
+    'systems/baseline-natural-skincare/baseline-natural-skincare.html',
+    'systems/baseline-fitness/baseline-fitness.html',
+    'systems/baseline-massage/baseline-massage.html',
+    'systems/baseline-badminton-session/baseline-badminton-session.html',
+    'systems/baseline-games-hub/baseline-games-hub.html'
+  ];
+  for (const path of shells) {
+    const html = read(path);
+    assert.match(html, /id="blProtectedKey"/, path + ' must author the key in HTML');
+    assert.match(html, /data-baseline-live-stability-style="true"/, path + ' must load stability CSS in the head');
+    assert.match(html, /data-baseline-live-stability-script="true"/, path + ' must start stability JS without late injection');
+  }
+  const stabilityCss = read('sitewide/css/baseline-live-stability.css');
+  assert.doesNotMatch(stabilityCss, /data-baseline-games-stable="true"[\s\S]*visibility:hidden/);
+});
+
+test('visible recipe and library UI is not intentionally deferred until after first paint or interaction', () => {
+  const shared = read('sitewide/js/baseline-shared.js');
+  const skincare = read('systems/baseline-natural-skincare/baseline-natural-skincare.html');
+  const food = read('systems/baseline-food-approach/baseline-food-approach.html');
+  assert.match(shared, /ensureContentUi\(\);[\s\S]*runAfterFirstPaint\(initSecondaryUi\)/);
+  assert.doesNotMatch(shared, /bindLazyContentUi\(\);\s*runAfterFirstPaint\(initSecondaryUi\)/);
+  assert.doesNotMatch(skincare, /recipe-layout\{visibility:hidden!important\}/);
+  assert.doesNotMatch(food, /recipe-layout\{visibility:hidden!important\}/);
+});
+
 test('new session-only navigation keys have explicit non-resource decisions', () => {
   const mapping = JSON.parse(read('sitewide/migration/browser_storage_map.json'));
   const rules = mapping.rules || [];
