@@ -37,13 +37,11 @@ test('Skincare first-paint lock releases on tab interaction before full page loa
   await expect(page.locator('#system')).toBeHidden();
 });
 
-test('Lip Balm direct route is focused before the folder-backed source finishes loading', async ({ page }) => {
-  let releaseSource;
-  const sourceGate = new Promise((resolve) => { releaseSource = resolve; });
-
+test('Lip Balm direct route is fully visible without waiting for an external recipe file', async ({ page }) => {
+  let sourceRequested = false;
   await page.route('**/systems/baseline-natural-skincare/recipes/testing-lip-balm.html', async (route) => {
-    await sourceGate;
-    await route.continue();
+    sourceRequested = true;
+    await route.abort();
   });
 
   await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'domcontentloaded' });
@@ -54,26 +52,21 @@ test('Lip Balm direct route is focused before the folder-backed source finishes 
   await expect(page.locator('#recipes-landing')).toBeHidden();
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
-  await expect(page.locator('#r12')).toHaveAttribute('data-external-recipe-placeholder', '1');
-
-  releaseSource();
-
-  await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', '1');
   await expect(page.locator('#r12 #r12ButterCharacter')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', '1');
+  expect(sourceRequested).toBe(false);
 
-  await page.reload();
-  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes/testing-lip-balm');
+  await page.reload({ waitUntil:'domcontentloaded' });
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 #r12ButterCharacter')).toBeVisible();
+  expect(sourceRequested).toBe(false);
 });
-
-test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
+test('Testing Lip/ balm opens instantly from the embedded recipe, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
 
   const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/testing-lip-balm"]');
   await expect(link).toContainText('Lip/ balm');
-  await expect(link).not.toHaveAttribute('data-recipe-id', /.+/);
+  await expect(link).toHaveAttribute('data-recipe-id', 'r12');
 
   await link.click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
