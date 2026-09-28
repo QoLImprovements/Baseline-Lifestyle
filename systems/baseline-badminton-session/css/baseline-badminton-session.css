@@ -10,9 +10,8 @@ body{font-size:19px;line-height:1.55;background:var(--page-bg)}
 .bl-scroll{background:var(--page-bg);background-size:100% 100%;background-attachment:fixed}
 .title,.subtitle{color:var(--hero-ink)}
 .subtitle{max-width:none}
-.section{display:none;animation:fade var(--dur-3) var(--ease-soft)}
+.section{display:none}
 .section.active{display:block}
-@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:22px}
 .card h2,.card h3{margin:0 0 12px 0;color:var(--accent-2);font-family:var(--font-soft)}
 .card h2{font-size:31px;line-height:1.1}
