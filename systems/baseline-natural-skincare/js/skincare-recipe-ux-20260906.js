@@ -43,6 +43,7 @@
       if(primed) return primed;
       const path=String((global.location && global.location.pathname) || '').replace(/\/+$/,'');
       const meta=EXTERNAL_RECIPES.find(recipe=>path===ROUTE_BASE+recipe.slug);
+      if(meta && document.getElementById(meta.id)) return null;
       return meta ? global.fetch(meta.source,{ credentials:'same-origin' }) : null;
     }catch(_error){ return null; }
   })();
