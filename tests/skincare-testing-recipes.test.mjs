@@ -51,22 +51,22 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
+test('Lip/ balm is authored in the Skincare shell so direct routes never wait for a recipe fetch', () => {
   assert.match(lipBalm, /data-category="Testing"/);
   assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
   assert.match(lipBalm, /id="r12"/);
-  assert.match(lipBalm, /<h3>Lip\/ balm<\/h3>/);
-  assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
-  assert.match(recipeUx, /source:'\/systems\/baseline-natural-skincare\/recipes\/testing-lip-balm\.html'/);
-  assert.match(recipeUx, /loadExternalRecipeForCurrentPath/);
-  assert.match(recipeUx, /document\.importNode\(sourceCard,true\)/);
+  assert.match(html, /data-recipe-slug="testing-lip-balm"/);
+  assert.match(html, /id="r12"/);
+  assert.match(html, /<h3>Lip\/ balm<\/h3>/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*false\]/);
+  assert.doesNotMatch(html, /baseline-lip-balm-route-prefetch/);
+  assert.doesNotMatch(html, /recipe-layout\{visibility:hidden!important\}/);
+  assert.match(recipeCss, /data-initial-recipe-slug="testing-lip-balm"/);
+  assert.match(recipeUx, /if\(meta && document\.getElementById\(meta\.id\)\) return null/);
   assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
-  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
-  assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
+  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
-
 test('recipe bootstrap starts independently of My Routine readiness', () => {
   assert.match(recipeBootstrap, /function startRecipeModules\(\)/);
   assert.doesNotMatch(recipeBootstrap, /__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
