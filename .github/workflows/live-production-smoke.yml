@@ -34,7 +34,7 @@ jobs:
           check "/baseline-food-approach/recipes" "Baseline Food Approach"
           check "/baseline-food-approach/ingredient-library?filter=r5" "Ingredient Library"
           check "/baseline-fitness/my-routine/plan" "Baseline Fitness"
-          check "/baseline-fitness/my-body/body-profile" "Baseline Fitness"
+          check "/baseline-fitness/my-body/profile" "Baseline Fitness"
           check "/baseline-massage/system" "Baseline Massage"
           check "/baseline-badminton-session/system" "Baseline Badminton"
           check "/baseline-games-hub/games-hub" "Baseline Games Hub"
