@@ -112,6 +112,32 @@ test('generated development artifacts are excluded by repository rules', () => {
   }
 });
 
+
+test('core page controls are authored in first-paint markup instead of created later', () => {
+  const systems = [
+    'baseline-food-approach',
+    'baseline-massage',
+    'baseline-natural-skincare',
+    'baseline-fitness',
+    'baseline-badminton-session',
+    'baseline-games-hub'
+  ];
+  for (const system of systems) {
+    const html = fs.readFileSync(path.join(root, 'systems', system, `${system}.html`), 'utf8');
+    assert.match(html, /id="blProtectedKey"/, `${system} is missing the protected key from initial HTML`);
+    assert.match(html, /id="bl-beats-toggle"/, `${system} is missing Binaural from initial HTML`);
+    assert.match(html, /id="bl-voice-toggle"/, `${system} is missing Voice from initial HTML`);
+    assert.match(html, /id="bl-auth-toggle"/, `${system} is missing Account from initial HTML`);
+    assert.match(html, /class="bl-homebar-spacer"/, `${system} is missing the first-paint header spacer`);
+    assert.match(html, /id="blProtectedKey"[\s\S]{0,500}<svg[^>]+stroke="currentColor"/, `${system} key icon depends on late styling`);
+  }
+
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  assert.match(home, /id="blProtectedKey"/);
+  assert.match(home, /id="bl-voice-toggle"/);
+  assert.match(home, /id="bl-auth-toggle"/);
+});
+
 test('large page styling is owned by canonical system stylesheets', () => {
   const expectations = [
     ['baseline-fitness', '/systems/baseline-fitness/css/baseline-fitness.css'],
