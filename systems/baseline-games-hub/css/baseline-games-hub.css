@@ -8,7 +8,7 @@ html,body{margin:0;padding:0;min-height:100%;background:var(--page-bg);color:var
 body{background:var(--page-bg)}
 .bl-scroll{background:var(--page-bg);background-size:100% 100%;background-attachment:fixed}
 
-.section{display:none;animation:fade .28s ease}.section.active{display:block}@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.section{display:none}.section.active{display:block}
 .card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-soft);padding:24px}
 .card h2,.card h3{margin:0 0 12px 0;color:var(--accent-2);font-family:var(--font-soft)}
 
