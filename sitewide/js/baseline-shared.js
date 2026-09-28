@@ -1265,6 +1265,13 @@
     'ing-apricot-kernel-oil':'apricot-kernel-oil',
     'ing-red-raspberry-seed-oil':'red-raspberry-seed-oil',
     'ing-candelilla-wax':'candelilla-wax',
+    'ing-colloidal-oatmeal':'colloidal-oatmeal',
+    'ing-marshmallow-root-powder':'marshmallow-root-powder',
+    'ing-inulin-powder':'inulin-powder',
+    'ing-sunflower-lecithin-powder':'sunflower-lecithin-powder',
+    'ing-white-kaolin':'white-kaolin-clay',
+    'ing-sage-leaf-powder':'sage-leaf-powder',
+    'ing-peppermint-leaf-powder':'peppermint-leaf-powder',
     'ing-fractionated-coconut':'fractionated-coconut',
     'ing-watermelon':'watermelon',
     'ing-dead-sea-salt':'dead-sea-salt',
@@ -2174,13 +2181,19 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
-    if(isSkincare){
+    if(isSkincare && !recipes.some(recipe=>recipe.id==='r12')){
       recipes.push({
         id:'r12',
         name:'Lip/ balm',
         external:true,
         href:'/baseline-natural-skincare/recipes/testing-lip-balm'
       });
+    }else if(isSkincare){
+      const lipBalm=recipes.find(recipe=>recipe.id==='r12');
+      if(lipBalm){
+        lipBalm.external=true;
+        lipBalm.href='/baseline-natural-skincare/recipes/testing-lip-balm';
+      }
     }
 
     // Build map: recipeId -> Set(ingredientIds).
