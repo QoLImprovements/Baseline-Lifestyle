@@ -2170,8 +2170,7 @@ function parseViewStateHash(hash){
       if(el) el.scrollIntoView({behavior:'auto', block:'start'});
     };
 
-    // Build recipe list from embedded recipe cards. Natural Skincare can also
-    // register folder-backed recipes without duplicating their recipe body here.
+    // Build recipe list from recipe cards already present in the initial document.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
     const routePageFile = routePageFileFromPath(location.pathname || '');
     const isSkincare = routePageFile === 'baseline-natural-skincare.html';
@@ -2181,14 +2180,6 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
-    if(isSkincare){
-      recipes.push({
-        id:'r12',
-        name:'Lip/ balm',
-        external:true,
-        href:'/baseline-natural-skincare/recipes/testing-lip-balm'
-      });
-    }
 
     // Build map: recipeId -> Set(ingredientIds).
     // Skincare recipe ingredient links are real record URLs, not recipe-path
