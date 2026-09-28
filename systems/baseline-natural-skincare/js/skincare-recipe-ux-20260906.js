@@ -39,6 +39,8 @@
 
   const EXTERNAL_RECIPE_PREFETCH = (function(){
     try{
+      const primed=global.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__;
+      if(primed) return primed;
       const path=String((global.location && global.location.pathname) || '').replace(/\/+$/,'');
       const meta=EXTERNAL_RECIPES.find(recipe=>path===ROUTE_BASE+recipe.slug);
       return meta ? global.fetch(meta.source,{ credentials:'same-origin' }) : null;

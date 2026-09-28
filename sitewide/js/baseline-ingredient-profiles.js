@@ -496,8 +496,9 @@
   window.BASELINE_MEASURE_CONSTANTS = MEASURES;
   window.BASELINE_INGREDIENT_PROFILES = { food: FOOD, skin: SKIN };
 
-  /* Wire testing-only powder ingredients into the shared conversion engine.
-     These recipes deliberately use simple <strong> labels rather than ingredient-library links. */
+  /* Keep testing powder ingredients wired into the shared conversion engine.
+     These ingredients now use canonical ingredient-library links; the fallback
+     name map remains for older cached markup and legacy copies. */
   function wireTestingPowderIngredients(){
     const mappings = {
       r9: {
@@ -517,6 +518,11 @@
       const recipe = document.getElementById(recipeId);
       if(!recipe) return;
       recipe.querySelectorAll("li").forEach(function(li){
+        const link = li.querySelector('a.ing-link[data-ingredient]');
+        if(link){
+          li.dataset.ingredient = String(link.getAttribute('data-ingredient') || '').trim();
+          return;
+        }
         const strong = li.querySelector("strong");
         if(!strong) return;
         const key = String(strong.textContent || "").trim().toLowerCase();

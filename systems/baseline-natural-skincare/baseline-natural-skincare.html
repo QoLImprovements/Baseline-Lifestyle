@@ -19,6 +19,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
 <script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',(p.split('/').pop()||'').toLowerCase())}}}catch(_e){}}()</script>
+<script id="baseline-lip-balm-route-prefetch">!function(){try{var p=String(location.pathname||'').replace(/\/+$/,'');if(p==='/baseline-natural-skincare/recipes/testing-lip-balm'&&!window.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__){window.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__=fetch('/systems/baseline-natural-skincare/recipes/testing-lip-balm.html',{credentials:'same-origin'})}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -808,9 +809,9 @@ Method steps MUST follow this format:
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
-<li data-method-step="2" data-tip="Provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.">24 g <strong>Superfine Food/Pharmaceutical-Grade White Kaolin Clay</strong></li>
-<li data-method-step="2" data-tip="Traditional oral-care herb that complements the cleansing powder.">4.5 g <strong>Very Finely Powdered Sage Leaf</strong></li>
-<li data-method-step="2" data-tip="Provides natural freshness and a mild peppermint flavour.">1.5 g <strong>Very Finely Powdered Peppermint Leaf</strong></li>
+<li data-method-step="2" data-tip="Provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.">24 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-white-kaolin" href="/baseline-natural-skincare/ingredient-library/white-kaolin-clay?filter=r9">Superfine Food/Pharmaceutical-Grade White Kaolin Clay</a></li>
+<li data-method-step="2" data-tip="Traditional oral-care herb that complements the cleansing powder.">4.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-sage-leaf-powder" href="/baseline-natural-skincare/ingredient-library/sage-leaf-powder?filter=r9">Very Finely Powdered Sage Leaf</a></li>
+<li data-method-step="2" data-tip="Provides natural freshness and a mild peppermint flavour.">1.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-peppermint-leaf-powder" href="/baseline-natural-skincare/ingredient-library/peppermint-leaf-powder?filter=r9">Very Finely Powdered Peppermint Leaf</a></li>
 </ul>
 <h4>Ingredient Roles</h4>
 <ul>
@@ -908,22 +909,22 @@ Method steps MUST follow this format:
 <h4>Ingredients</h4>
 <ul>
 <li class="ing-subhead"><strong>Dry Powder Blend — 100 g</strong></li>
-<li data-method-step="1" data-tip="Supports scalp comfort and provides the soft, gentle powder base."><span class="amt" data-base-display="75 g" data-base-max="75" data-base-min="75" data-base-unit="g">75 g</span> <strong>Colloidal Oatmeal</strong></li>
-<li data-method-step="1" data-tip="Provides mucilage, slip and conditioning to reduce friction and tangling."><span class="amt" data-base-display="15 g" data-base-max="15" data-base-min="15" data-base-unit="g">15 g</span> <strong>Marshmallow Root Powder</strong></li>
-<li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <strong>Chicory-Root Inulin</strong></li>
-<li data-method-step="1" data-tip="Helps disperse added oils and natural scalp oils into the rinse water without conventional detergent surfactants."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <strong>Sunflower Lecithin Powder</strong></li>
+<li data-method-step="1" data-tip="Supports scalp comfort and provides the soft, gentle powder base."><span class="amt" data-base-display="75 g" data-base-max="75" data-base-min="75" data-base-unit="g">75 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-colloidal-oatmeal" href="/baseline-natural-skincare/ingredient-library/colloidal-oatmeal?filter=r11">Colloidal Oatmeal</a></li>
+<li data-method-step="1" data-tip="Provides mucilage, slip and conditioning to reduce friction and tangling."><span class="amt" data-base-display="15 g" data-base-max="15" data-base-min="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-marshmallow-root-powder" href="/baseline-natural-skincare/ingredient-library/marshmallow-root-powder?filter=r11">Marshmallow Root Powder</a></li>
+<li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-inulin-powder" href="/baseline-natural-skincare/ingredient-library/inulin-powder?filter=r11">Chicory-Root Inulin</a></li>
+<li data-method-step="1" data-tip="Helps disperse added oils and natural scalp oils into the rinse water without conventional detergent surfactants."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-sunflower-lecithin-powder" href="/baseline-natural-skincare/ingredient-library/sunflower-lecithin-powder?filter=r11">Sunflower Lecithin Powder</a></li>
 </ul>
 <p><strong>Total – 100 g dry powder blend</strong></p>
 <h4>For One Wash</h4>
 <ul>
 <li><strong>Powder Blend</strong> – 10 g</li>
-<li><strong>Warm Water</strong> – 20–30 g</li>
+<li><strong><a class="ing-link" data-from-recipe="r11" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water?filter=r11">Warm Water</a></strong> – 20–30 g</li>
 <li><strong>Jojoba/Argan Oil Blend</strong> – 5% of the final wet mixture (approximately 1.6–2.1 g with 20–30 g water)</li>
 </ul>
 <h4>Jojoba/Argan Oil Blend</h4>
 <ul>
-<li><strong>Jojoba Oil</strong> – 80%</li>
-<li><strong>Argan Oil</strong> – 20%</li>
+<li><strong><a class="ing-link" data-from-recipe="r11" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil?filter=r11">Jojoba Oil</a></strong> – 80%</li>
+<li><strong><a class="ing-link" data-from-recipe="r11" data-ingredient="ing-argan" href="/baseline-natural-skincare/ingredient-library/argan?filter=r11">Argan Oil</a></strong> – 20%</li>
 </ul>
 <h4>Ingredient Roles</h4>
 <ul>
@@ -1452,6 +1453,119 @@ Method steps MUST follow this format:
 <li>In Lip/ balm it compensates against apricot kernel oil to control structure.</li>
 </ul>
 <p><strong>Relevant recipes:</strong> <a href="/baseline-natural-skincare/recipes/testing-lip-balm">Lip/ balm</a>.</p>
+</div>
+
+<div class="card" id="ing-colloidal-oatmeal">
+<h3>Colloidal Oatmeal</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Avena Sativa (Oat) Kernel Flour</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Finely milled oat <em>kernel</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0–1 (informal guide)</p>
+<p>💚 <strong>Benefits:</strong> Soothing powder base; supports scalp and skin comfort; adds soft slip</p>
+<p>🔧 <strong>Usage:</strong> commonly 1–100% in dry/rinse-off blends • 🧊 <strong>Stability/Storage:</strong> keep completely dry and airtight</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Very finely milled oatmeal used for comfort-focused skin and scalp formulas.</li>
+<li>Disperses into water to form a soft suspension rather than behaving like a detergent.</li>
+<li>Use cosmetic-grade colloidal oatmeal where a consistently fine particle size is needed.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-marshmallow-root-powder">
+<h3>Marshmallow Root Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Althaea Officinalis Root Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Marshmallow <em>root</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0 (informal guide)</p>
+<p>💚 <strong>Benefits:</strong> Mucilage-rich slip; conditioning feel; helps reduce friction during washing</p>
+<p>🔧 <strong>Usage:</strong> commonly 1–30% in powder and rinse-off formulas • 🧊 <strong>Stability/Storage:</strong> keep dry and airtight</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Contains water-swellable mucilage that becomes slippery when hydrated.</li>
+<li>Useful where a powder wash needs glide without relying on conventional surfactants.</li>
+<li>Fine powder is preferable for easier mixing and rinsing.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-inulin-powder">
+<h3>Chicory-Root Inulin</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Inulin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Commonly extracted from chicory <em>root</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0</p>
+<p>💚 <strong>Benefits:</strong> Humectant and conditioning support; improves the soft feel of rinse-off blends</p>
+<p>🔧 <strong>Usage:</strong> commonly 0.5–10% • 🧊 <strong>Stability/Storage:</strong> keep dry and sealed</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Water-soluble fructan powder used as a mild conditioning and moisture-binding ingredient.</li>
+<li>Works well in simple powder systems because it dissolves during hydration.</li>
+<li>It is not a preservative and does not make a water-containing mixture shelf-stable.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-sunflower-lecithin-powder">
+<h3>Sunflower Lecithin Powder</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Lecithin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Sunflower <em>seed</em>-derived phospholipids</p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 1–2 (informal guide; formula dependent)</p>
+<p>💚 <strong>Benefits:</strong> Dispersing and emulsifying support; helps oil mix more evenly into a wet rinse-off formula</p>
+<p>🔧 <strong>Usage:</strong> commonly 0.5–10% • 🧊 <strong>Stability/Storage:</strong> keep cool, dry and tightly sealed</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Phospholipid-rich powder that helps bridge oil and water phases.</li>
+<li>In the hair wash it supports dispersion of the small jojoba/argan oil phase and natural scalp oils.</li>
+<li>It is not a conventional detergent surfactant and does not guarantee complete oil removal by itself.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash</a>.</p>
+</div>
+<div class="card" id="ing-white-kaolin">
+<h3>Superfine White Kaolin Clay</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Kaolin</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Naturally occurring <em>mineral clay</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Mined and processed in multiple regions worldwide</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0</p>
+<p>💚 <strong>Benefits:</strong> Fine mineral polishing and absorbency; dry powder structure</p>
+<p>🔧 <strong>Usage:</strong> formula dependent • 🧊 <strong>Stability/Storage:</strong> indefinite when clean and dry</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Fine kaolin is gentler-feeling than coarser abrasive powders when particle size is tightly controlled.</li>
+<li>For the tooth powder, use only a superfine grade specifically suitable for the intended oral/food-contact use.</li>
+<li>Keep the powder completely dry to prevent clumping and contamination.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
+</div>
+<div class="card" id="ing-sage-leaf-powder">
+<h3>Finely Powdered Sage Leaf</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Salvia Officinalis Leaf Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Sage <em>leaf</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0 (rinse-off powder use)</p>
+<p>💚 <strong>Benefits:</strong> Botanical powder used for flavour/aroma and traditional oral-care character</p>
+<p>🔧 <strong>Usage:</strong> low percentages in fine powder blends • 🧊 <strong>Stability/Storage:</strong> keep dry, dark and airtight</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Use a very fine powder so the blend remains smooth rather than gritty.</li>
+<li>Botanical powders vary in strength, colour and aroma between batches.</li>
+<li>For oral use, choose material supplied for that intended use.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
+</div>
+<div class="card" id="ing-peppermint-leaf-powder">
+<h3>Finely Powdered Peppermint Leaf</h3>
+<p class="meta-line">🧪 <strong>INCI:</strong> Mentha Piperita (Peppermint) Leaf Powder</p>
+<p class="meta-line">🌱 <strong>Source part:</strong> Peppermint <em>leaf</em></p>
+<p class="meta-line">🗺️ <strong>Geographic origin:</strong> Varies by supplier</p>
+<p class="meta-line">🧴 <strong>Comedogenic:</strong> 0 (rinse-off powder use)</p>
+<p>💚 <strong>Benefits:</strong> Fresh botanical flavour/aroma; complements dry oral-care powders</p>
+<p>🔧 <strong>Usage:</strong> low percentages in fine powder blends • 🧊 <strong>Stability/Storage:</strong> keep dry, dark and airtight</p>
+<p><strong>Notes:</strong></p>
+<ul class="notes-list">
+<li>Use very finely powdered leaf to minimise coarse particles.</li>
+<li>Leaf powder is milder and compositionally different from concentrated peppermint essential oil.</li>
+<li>For oral use, choose material supplied for that intended use.</li>
+</ul>
+<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r9" href="/baseline-natural-skincare/recipes/tooth-polishing-powder">Tooth Polishing Powder</a>.</p>
 </div>
 
 </div>
