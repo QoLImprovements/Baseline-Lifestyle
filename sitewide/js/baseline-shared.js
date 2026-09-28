@@ -7447,13 +7447,10 @@ function setupRecipeFavourites(){
       safeInit('auth refresh', ()=>{ try{ refreshAuth(); }catch(_e){} });
     };
 
-    if(needsImmediateContentUi){
-      ensureContentUi();
-      runAfterFirstPaint(initSecondaryUi);
-    }else{
-      bindLazyContentUi();
-      runAfterFirstPaint(initSecondaryUi);
-    }
+    // Visible recipe/library/select UI is completed synchronously so cards,
+    // captions, ingredient tags and enhanced controls do not pop in after paint.
+    ensureContentUi();
+    runAfterFirstPaint(initSecondaryUi);
 
     // Seed the first history entry so the browser Back button returns to the prior in-page view (not the index).
 
