@@ -244,7 +244,7 @@
       button.setAttribute('aria-expanded','false');
       button.setAttribute('aria-label','Open protected sections');
       button.title = 'Protected sections';
-      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
+      button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg>';
       if(pagesDropdown && pagesDropdown.parentNode === host) pagesDropdown.insertAdjacentElement('afterend',button);
       else{
         const rightControls = host.querySelector('.bl-homebar-right');
