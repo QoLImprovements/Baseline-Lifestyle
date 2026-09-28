@@ -5613,12 +5613,7 @@ function buildControls(recipeEl){
     }
 
     function currentAuthButtonLabel(){
-      try{
-        if(authState && authState.authed) return 'Account';
-        const cachedSession = lsRead(LOCAL_SESS_KEY, null);
-        if(cachedSession && (cachedSession.authed || cachedSession.name || cachedSession.email)) return 'Account';
-      }catch(_e){}
-      return 'Login';
+      return 'Account';
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
