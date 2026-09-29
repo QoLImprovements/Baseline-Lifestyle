@@ -92,7 +92,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <button type="button" class="library-tab" aria-selected="false" data-library-category="Body Areas" data-library-type="standard">Body Areas</button>
 <button type="button" class="library-tab" aria-selected="false" data-library-category="Massage Feelings / Themes" data-library-type="standard">Massage Feelings / Themes</button>
 </div>
-        <div class="library-technique-controls" id="libraryTechniqueControls" hidden>
+        <div class="library-technique-controls" id="libraryTechniqueControls">
           <label for="massageTechniqueFilter">Massage Techniques</label>
           <select id="massageTechniqueFilter" aria-label="Filter massage techniques">
 <option value="all">Show All</option>
@@ -755,100 +755,6 @@ These Markdown rules are a human reference point, not live runtime config.
   const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
 
-  const libraryData = [
-    {category:'Types Of Massage', items:[
-      {title:'Lomi Lomi Massage', desc:'A flowing Hawaiian massage tradition using broad, rhythmic contact to create continuity across the body rather than treating each area as an isolated task.', details:['Cultural context: Lomilomi is a Native Hawaiian healing practice with varied family, teacher, and lineage traditions. A general massage-library description cannot represent every traditional form.', 'What it feels like: long flowing strokes, broad contact, compression, rhythm, and smooth transitions that can make the massage feel spacious, warm, and connected.', 'How it is performed: trained practitioners may use the hands, forearms, arms, or elbows for gliding strokes, compression, and long continuous movement, with technique adapted to the receiver and the practitioner’s training.', 'Why someone might choose it: full-body flow, rhythmic movement, warmth, relaxation, and a session that feels integrated rather than divided into separate body parts.', 'Pressure choice: contact may range from light and soothing to firmer and more substantial, but it should remain clearly communicated, comfortable, and adjustable.', 'Session direction: the work may travel in long paths across larger areas, return in repeated waves, and use broad transitions so the body is not left feeling fragmented.', 'Related library section: see Lomi Lomi Techniques for general hands-on methods such as broad arm compression, forearm and hand gliding, long flowing strokes, and continuous full-body transitions.', 'Naming and training: where a provider is not traditionally trained in lomilomi, it is more accurate to describe the work as Lomi Lomi-inspired flowing massage rather than presenting it as the complete traditional Hawaiian healing practice.', 'Clear boundaries: pain, injury, unexplained swelling, numbness, fever, medical concerns, and any culturally or personally sensitive element require appropriate limits, consent, and referral where needed.']},
-      {title:'Sports Massage', desc:'Focused bodywork with clear pressure. Sports Massage is grounded, practical, and clearly communicated, supporting recovery, movement comfort, maintenance, and areas that feel overworked, tired, heavy, or restricted.', details:['Overall direction: pressure should stay useful, communicated, and adjustable rather than becoming forceful or something the receiver has to endure.', 'Scope: consultation, preparation, soft-tissue work, pressure awareness, stretching where appropriate, aftercare, and referral when something is outside massage. It does not diagnose or treat acute injury, unexplained symptoms, or pathology.', 'Focused pressure: firmer contact, compression, friction, soft tissue release, and stretching can be used, but the body should not be forced.', 'Useful for maintenance: training support, tired legs, shoulder load, recovery, movement comfort, and areas that repeatedly feel restricted.', 'Pressure can work in waves: broad pressure, focused contact, a lighter reset, then another round if wanted.', 'Clear boundaries: sharp pain, acute injury, unexplained swelling, numbness, fever, or medical concern needs appropriate clinical support.', 'Trigger point work: steady, specific pressure can be used carefully and briefly for local tightness or repeated holding patterns, followed by a broad reset rather than grinding pressure.', 'Soft tissue release: position, pressure, and gentle active or passive movement can be combined where an area responds better to movement than static pressure.', 'Cross-fibre friction: short focused friction can be used across the tissue direction with clear feedback, brief timing, and softer contact afterwards.', 'Assisted stretching: the provider can support the limb into a clear, tolerable stretch without forcing range, using static stretch, contract-relax, gentle range of movement, or shorter repeated stretches.', 'Gentle resisted engagement: a light contraction against support, followed by release, can help an area reset through active participation rather than force.', 'Compression for recovery: broad still or pulsed pressure through larger areas can support tired legs, shoulders, training load, and general recovery.']},
-      {title:'Swedish Massage', desc:'A warm, flowing, whole-body style built around glide, rhythm, broad contact, nurturing pressure, and smooth transitions so the body can feel warmer, quieter, easier, and more connected.', details:['What it feels like: long flowing strokes, warmth and glide, broad palm contact, soft transitions, and a pace that lets the body settle instead of bracing.', 'Why someone might choose it: comfort, relaxation, tiredness, body ease, stress, feeling held, and feeling reconnected with the body.', 'How the session may move: broad settling contact first, then a calm journey through areas such as the back, shoulders, legs, arms, hands, feet, neck, or head, finishing with lighter strokes.', 'Pressure choice: light, medium, firm, or changing pressure can all belong when the receiver names what works for them.', 'Long flowing strokes: broad palms, forearms, or soft knuckles move with oil or balm in long paths that connect one area to another, building warmth and helping the session feel continuous.', 'Settling holds: still contact over an agreed area can help the body arrive, calm the pace, close an area, or create a pause between different pressures.', 'Full-body rhythm: a repeated pace, pressure language, and transition style across different areas keeps the massage coherent rather than fragmented.', 'Warmth and glide: oil, balm, hand warmth, and smooth movement reduce drag, warm the tissue, and make touch easier to receive without becoming slippery or unfocused.', 'Finishing strokes: lighter, broader, or slower closing contact helps the receiver come back gradually and prevents the session from ending abruptly.']}
-    ]},
-    {category:'Body Areas', items:[
-      {title:'Head', desc:'Can be included for quiet, grounding, or a calmer finish.', details:['How it is approached: light contact, stillness, scalp work, or gentle pressure around the head where appropriate.', 'What it can support: settling, quietness, closing the session, and easing the transition out of massage.']},
-      {title:'Scalp', desc:'Can feel nurturing, settling, or deeply relaxing.', details:['How it is approached: fingertips, gentle circles, holds, or slow movement through the scalp.', 'What it can support: relaxation, feeling held, and a calmer finish.']},
-      {title:'Neck', desc:'Comfort-led work only; front and sides of neck need explicit agreement and care.', details:['How it is approached: gentle supported work, slow pressure changes, and careful positioning.', 'What it can support: shoulder load, posture comfort, and head/neck ease when clearly agreed.']},
-      {title:'Shoulders', desc:'A common focus area for load, stress, posture, and overuse.', details:['How it is approached: broad contact, kneading, compression, and careful focused work where useful.', 'What it can support: upper-body load, desk posture, training load, and general comfort.']},
-      {title:'Arms', desc:'Can be included for tiredness, training load, or simple full-body completion.', details:['How it is approached: long strokes, compression, petrissage, and hand-to-shoulder connection.', 'What it can support: full-body flow, hand/arm tiredness, racket sports, lifting, or repetitive use.']},
-      {title:'Hands', desc:'A small area that can feel personal, detailed, and comforting.', details:['How it is approached: palm pressure, finger traction, thumb work, and gentle joint movement.', 'What it can support: comfort, detail, and a nurturing finish.']},
-      {title:'Back', desc:'Upper, mid, and lower back can be treated as one connected area or divided for focus.', details:['How it is approached: long strokes, compression, kneading, friction, and focused waves of pressure.', 'What it can support: broad relaxation, shoulder load, breathing comfort, and lower-back ease.']},
-      {title:'Hips and legs', desc:'Hips, thighs, calves, ankles, and feet can be included for grounding, recovery, or full-body balance.', details:['How it is approached: broad pressure, compression, glide, assisted movement, and detailed work where wanted.', 'What it can support: training load, standing fatigue, grounding, and whole-body completion.']}
-    ]},
-    {category:'Massage Feelings / Themes', items:[
-      {title:'Comfort & Relaxation', desc:'Softening, warmth, rhythm, rest, and being looked after.', details:['How it is shaped: slower pace, broad contact, steady rhythm, and fewer abrupt transitions.', 'Useful when: the receiver wants to settle, rest, and feel looked after.']},
-      {title:'Lomi Lomi Flow', desc:'Broad, rhythmic, connected movement that helps the session feel continuous rather than divided into separate tasks.', details:['How it is shaped: long flowing strokes, hands, forearms or arms, broad compression, repeated rhythm, and smooth transitions, adapted to the provider’s training and the receiver’s comfort.', 'Useful when: the receiver wants warm full-body continuity, flowing rhythm, and fewer abrupt changes between areas.', 'Cultural note: this theme describes a Lomi Lomi-inspired session direction. Traditional lomilomi is a Native Hawaiian healing practice with varied family, teacher, and lineage traditions.']},
-      {title:'Therapeutic Comfort', desc:'Useful focused work without losing kindness or body ease.', details:['How it is shaped: focused areas are worked in waves, with lighter contact and resets between pressure.', 'Useful when: the receiver wants practical bodywork but still wants the session to feel warm and receivable.']},
-      {title:'Restorative / Healing-Aid', desc:'A gentle support feeling for tiredness, heaviness, and recovery.', details:['How it is shaped: steady pressure, warmth, slower transitions, and low sensory load.', 'Useful when: the body feels depleted, heavy, or in need of quieter support.']},
-      {title:'Sports Focus', desc:'Grounded work for overused, tired, restricted, or training-loaded areas.', details:['How it is shaped: clearer focus, more specific pressure, compression, stretching where useful, and direct feedback.', 'Useful when: recovery, maintenance, or movement comfort is the main aim.']},
-      {title:'Energising & Feel-good', desc:'A brighter finish, lighter rhythm, and a more awake body feeling.', details:['How it is shaped: lighter percussion where appropriate, quicker finishing rhythm, and more uplifting transitions.', 'Useful when: the receiver wants to leave refreshed rather than sleepy.']},
-      {title:'Deep Reset', desc:'Slower, fuller, more focused contact with time to settle after intensity.', details:['How it is shaped: deeper work is given time, varied carefully, and followed by calming contact.', 'Useful when: the receiver wants a more complete focused session without the body feeling rushed.']}
-    ]}
-  ];
-
-  const techniqueData = [
-    {category:'Compression', items:[
-      {title:'Static compression', desc:'Still pressure held through a broad or focused area.', details:['How it is performed: palms, thumbs, forearms, or soft fists hold steady pressure for a short period.', 'What it is used for: grounding, easing tight areas, and giving pressure without sliding.', 'Variations: palm compression, forearm compression, thumb compression, and broad supported holds.']},
-      {title:'Rhythmic compression', desc:'Repeated press-and-release contact.', details:['How it is performed: pressure is applied and released in a steady rhythm.', 'What it is used for: tired tissue, larger muscle groups, and a comfortable alternative to deep gliding.', 'Variations: palm pulsing, forearm pulsing, compression with rocking, and compression followed by glide.']},
-      {title:'Broad palm compression', desc:'A warm, non-pointed pressure using the whole palm.', details:['How it is performed: the palm settles into the tissue, then releases or moves gradually.', 'What it is used for: comfort, grounding, and pressure that feels supportive rather than sharp.', 'Variations: one-hand compression, two-hand compression, or palm compression with slow rocking.']}
-    ]},
-    {category:'Effleurage', items:[
-      {title:'Long gliding strokes', desc:'Continuous gliding contact that warms tissue, settles the nervous system, and connects one area of the massage to another.', details:['How it is performed: palms, fingers, or forearms glide with oil or balm in long, even paths, usually following the shape of the body rather than jumping between isolated points.', 'What it is used for: warming tissue, settling the receiver, connecting the session, checking how the body responds to pressure, and reducing abrupt transitions between areas.', 'Variations: broad palm glide, forearm glide, light finishing glide, slower grounding strokes, and connecting strokes between nearby areas.']},
-      {title:'Feathering', desc:'Very light finishing contact used to close or soften an area.', details:['How it is performed: fingertips or palms move lightly over the skin with minimal pressure.', 'What it is used for: calming the nervous system, finishing an area, or easing out of deeper pressure.', 'Variations: fingertip feathering, palm feathering, and slow closing strokes.']},
-      {title:'Forearm glide', desc:'A broader form of effleurage using the forearm for fuller contact.', details:['How it is performed: the forearm moves slowly through larger areas such as the back, thighs, or calves.', 'What it is used for: deeper warmth without poking pressure, larger-area flow, and broad grounding contact.', 'Variations: slow forearm glide, angled forearm glide, and forearm-to-palm transitions.']}
-    ]},
-    {category:'Friction', items:[
-      {title:'Circular friction', desc:'Small circular focused movement over a local area.', details:['How it is performed: fingers, thumbs, or knuckles make controlled circles without excessive force.', 'What it is used for: local warming, small areas of tightness, and more detailed attention.', 'Variations: thumb circles, fingertip circles, supported knuckle circles, and lighter circles over sensitive areas.']},
-      {title:'Cross-fibre friction', desc:'Short strokes across the line of the tissue.', details:['How it is performed: contact moves across the tissue direction for a brief, clearly communicated period.', 'What it is used for: focused texture work, tendon or muscle attachment work, and small stubborn areas.', 'Variations: thumb cross-fibre, finger cross-fibre, and short forearm-supported friction.']},
-      {title:'Linear friction', desc:'Short focused strokes along a small path.', details:['How it is performed: contact moves back and forth along a short line without grinding.', 'What it is used for: warming a small line of tissue and preparing for broader work afterwards.', 'Variations: thumb line work, knuckle line work, and gentle linear friction around joints.']}
-    ]},
-    {category:'Lomi Lomi Techniques', items:[
-      {title:'Broad arm compression', desc:'Broad pressure delivered through the forearm, arm, or carefully placed elbow contact rather than narrow, poking pressure.', details:['How it is performed: the provider settles broad contact into a suitable fleshy area, holds or pulses the pressure, and releases gradually while keeping the receiver informed.', 'What it is used for: warmth, grounding, larger-area pressure, and a fuller contact feeling without relying only on the hands.', 'Context: this is a general library description of a method used in some lomilomi training; exact practice varies by teacher, family, and lineage.']},
-      {title:'Continuous full-body transitions', desc:'Smooth movement connects one area to the next so the massage is experienced as one coherent flow rather than a set of disconnected tasks.', details:['How it is performed: broad gliding contact, returning strokes, and gradual changes of direction link nearby regions while draping, comfort, and boundaries remain clear.', 'What it is used for: continuity, whole-body connection, and reducing abrupt starts and stops between areas.', 'Context: the transition pattern should match the provider’s training and should not imitate culturally specific ritual or lineage practice that has not been learned.']},
-      {title:'Forearm gliding strokes', desc:'Long, broad gliding contact using the forearm to create warmth, rhythm, and continuous movement across larger areas.', details:['How it is performed: the soft forearm surface travels slowly with suitable oil or balm, using controlled body weight and avoiding sharp pressure from the elbow point.', 'What it is used for: broad warmth, flowing pressure, and connecting larger body regions without fragmented contact.', 'Variations: single-forearm glide, alternating forearm glide, and forearm-to-hand transitions, all adjusted to the receiver’s feedback.']},
-      {title:'Hand gliding strokes', desc:'Long, rhythmic strokes with the palms and hands that establish flow while keeping pressure responsive and clearly communicated.', details:['How it is performed: the hands glide in long paths, return smoothly, and maintain enough contact to avoid the massage feeling interrupted.', 'What it is used for: warming tissue, settling the pace, checking pressure, and linking detailed work back into a broader session rhythm.', 'Variations: broad palm glide, two-hand following strokes, lighter returning strokes, and slow finishing passes.']},
-      {title:'Long flowing strokes', desc:'Extended strokes travel across larger areas and repeat in waves, creating the recognisable sense of continuity associated with contemporary Lomi Lomi-style massage.', details:['How it is performed: hands, forearms, or arms move in long controlled paths with smooth changes of direction and no forced reach or unstable pressure.', 'What it is used for: full-body flow, rhythmic warmth, spaciousness, and helping separate areas feel part of one session.', 'Cultural and training note: traditional lomilomi is broader than a collection of strokes; this entry describes a general hands-on feature and is not a substitute for culturally grounded training.']}
-    ]},
-    {category:'Passive Movement / Gentle Mobilisation', items:[
-      {title:'Gentle range of movement', desc:'The provider moves an area while the receiver stays relaxed.', details:['How it is performed: joints are moved slowly through comfortable range only.', 'What it is used for: checking ease, reducing stiffness, and helping the body feel moved without effort.', 'Variations: shoulder range, hip range, ankle circles, wrist movement, and neck movement only with care.']},
-      {title:'Supported movement', desc:'Movement where the body is held and guided rather than pulled.', details:['How it is performed: the provider supports the limb or area fully while moving slowly.', 'What it is used for: comfort, trust, and gentle mobility work.', 'Variations: supported arm movement, supported leg movement, and supported head/neck movement where appropriate.']},
-      {title:'Light traction', desc:'Gentle lengthening pressure, never forceful pulling.', details:['How it is performed: a limb or area is supported and gently lengthened within comfort.', 'What it is used for: decompression feeling, lengthening, and a clearer finish after focused work.', 'Variations: ankle traction, wrist traction, gentle neck traction only if appropriate, and short release holds.']}
-    ]},
-    {category:'Petrissage', items:[
-      {title:'Kneading', desc:'Rhythmic lifting and pressing of soft tissue.', details:['How it is performed: tissue is gently gathered, lifted, compressed, and released in rhythm.', 'What it is used for: warming muscles, softening tight areas, and giving a nurturing pressure feeling.', 'Variations: thumb kneading, palm kneading, forearm-assisted kneading, and slower broad kneading.']},
-      {title:'Wringing', desc:'Two hands move tissue in opposing directions to create a rolling release.', details:['How it is performed: the hands move across the tissue in opposite directions, like gently wringing fabric.', 'What it is used for: larger muscle areas, warming, and freeing a broad section without drilling into one point.', 'Variations: back wringing, thigh wringing, calf wringing, and light rhythmic wringing.']},
-      {title:'Skin rolling', desc:'Gentle lifting and rolling of superficial tissue.', details:['How it is performed: a fold of tissue is lifted and rolled slowly, only where it feels comfortable.', 'What it is used for: surface tissue mobility and sensory awareness.', 'Variations: small local rolls, longer rolling paths, or very light assisted lifting.']}
-    ]},
-    {category:'Tapotement', items:[
-      {title:'Hacking', desc:'Light rhythmic chopping made with the outer / little-finger side of relaxed hands, not with a flat palm or hard edge.', details:['How it is performed: the relaxed outer edges of the hands alternate quickly over a larger muscle area, with loose wrists and soft, springy contact rather than hard chopping. The side of the hand is the defining feature of hacking.', 'What it is used for: brief energising, stimulating larger areas, changing the rhythm of the session, or adding a brighter finish when the receiver wants that feeling.', 'Variations: very light hacking, slower rhythmic hacking, short bursts only, or replacing it with softer tapping if the receiver finds side-hand percussion too sharp or startling.']},
-      {title:'Cupping', desc:'Rhythmic percussion using hollow, cupped hands so the contact feels springy rather than flat or slapping.', details:['How it is performed: the hands form a loose cup and alternate over larger fleshy areas, creating a soft hollow contact rather than a slap. The wrist stays relaxed and the pressure stays brief.', 'What it is used for: adding liveliness, stimulating larger areas, changing the pace after slower work, or giving an energising finish when that suits the receiver.', 'Variations: light cupping, alternating cupping, slower cupping, and short work over the back or thighs where appropriate.']},
-      {title:'Tapping', desc:'Light fingertip or hand tapping.', details:['How it is performed: fingers or relaxed hands tap rhythmically and lightly.', 'What it is used for: gentle stimulation, sensory variety, and a lighter energising finish.', 'Variations: fingertip tapping, soft hand tapping, and short rhythmic patterns.']},
-      {title:'Beating / loose-fist percussion', desc:'A stronger form of rhythmic percussion using loose fists or softened hand contact, only when clearly appropriate and wanted.', details:['How it is performed: loose fists or softened closed hands make brief, springy contact over larger muscle areas. It should never feel like striking, punishment, or force; the rhythm and looseness matter more than strength.', 'What it is used for: short energising work on large fleshy areas, usually as a brief change of rhythm rather than a main treatment style. It is not for bony, sensitive, painful, or anxious areas.', 'Variations: very light loose-fist percussion, alternating rhythm, short bursts only, or avoiding it entirely if it does not fit the receiver.']}
-    ]},
-    {category:'Vibration & Shaking', items:[
-      {title:'Fine vibration', desc:'Small rapid movement through the hands or fingers.', details:['How it is performed: a light vibration is transmitted through soft contact.', 'What it is used for: softening guarding, changing sensation, and easing an area after pressure.', 'Variations: fingertip vibration, palm vibration, and short local vibration.']},
-      {title:'Rocking', desc:'Gentle rhythmic movement through an area or the whole body.', details:['How it is performed: the provider applies a slow, contained rocking motion through the body or limb.', 'What it is used for: settling, reducing bracing, and helping the receiver feel safely moved.', 'Variations: shoulder rocking, hip rocking, limb rocking, and full-body settling rhythm.']},
-      {title:'Limb shaking', desc:'Gentle shaking through an arm or leg.', details:['How it is performed: the limb is supported and softly shaken without pulling or forcing.', 'What it is used for: releasing holding patterns and bringing ease back after focused work.', 'Variations: arm shaking, leg shaking, foot shaking, and very small supported movement.']}
-    ]}
-  ];
-
-  const areaGroups = [
-    {
-      title:'Upper Body',
-      help:'Tick the upper-body areas you want included.',
-      kind:'upper',
-      areas:['Head','Scalp','Neck','Shoulders','Arms','Hands','Upper back','Mid back','Lower back','Ribs / breathing area','Waist / obliques']
-    },
-    {
-      title:'Lower Body',
-      help:'Tick the lower-body areas you want included.',
-      kind:'lower',
-      areas:['Hips','Thighs','Knees','Calves','Shins','Ankles','Feet','Toes']
-    },
-    {
-      title:'Clear Agreement Areas',
-      help:'These can be included when the receiver clearly chooses them and the provider is comfortable working with them.',
-      kind:'sensitive',
-      areas:['Chest / pecs','Abdomen','Glutes','Inner thigh / adductors','Front or sides of neck','Face / jaw']
-    }
-  ];
-
   const thresholds = {
     small:25,
     limb:30,
@@ -872,7 +778,7 @@ These Markdown rules are a human reference point, not live runtime config.
     return qsa('[data-area-time]').find(el => el.getAttribute('data-area-time') === name) || null;
   }
 
-  function renderLibrary(){
+  function bindLibrary(){
     const tabs = qs('#massageLibraryTabs');
     const grid = qs('#massageLibraryGrid');
     const controls = qs('#libraryTechniqueControls');
@@ -880,175 +786,6 @@ These Markdown rules are a human reference point, not live runtime config.
     const typeControls = qs('#libraryTypeControls');
     const typeFilter = qs('#massageTypeFilter');
     if(!tabs || !grid) return;
-
-    tabs.innerHTML = '';
-    grid.innerHTML = '';
-    if(filter){
-      filter.innerHTML = '<option value="all">Show All</option>';
-      techniqueData.slice().sort((a, b) => a.category.localeCompare(b.category, undefined, {sensitivity:'base'})).forEach(group => {
-        const option = document.createElement('option');
-        option.value = 'category::' + group.category;
-        option.textContent = group.category;
-        filter.appendChild(option);
-      });
-    }
-    if(typeFilter){
-      typeFilter.innerHTML = '<option value="all">Show All</option>';
-      const massageTypes = libraryData.find(group => group.category === 'Types Of Massage');
-      if(massageTypes){
-        massageTypes.items.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, {sensitivity:'base'})).forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.title;
-          option.textContent = item.title;
-          typeFilter.appendChild(option);
-        });
-      }
-    }
-    if(filter){ sortSelectOptions(filter); filter.value = 'all'; }
-    if(typeFilter){ sortSelectOptions(typeFilter); typeFilter.value = 'all'; }
-
-    const tabGroups = [{category:'Massage Techniques', type:'techniques'}].concat(libraryData.map(group => Object.assign({type:'standard'}, group)));
-
-    if(controls) controls.hidden = false;
-    if(typeControls) typeControls.hidden = true;
-
-    tabGroups.forEach((group, index) => {
-      const tab = document.createElement('button');
-      tab.type = 'button';
-      tab.className = 'library-tab';
-      tab.textContent = group.category;
-      tab.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
-      tab.dataset.libraryCategory = group.category;
-      tab.dataset.libraryType = group.type;
-      tabs.appendChild(tab);
-    });
-
-    techniqueData.slice().sort((a, b) => a.category.localeCompare(b.category, undefined, {sensitivity:'base'})).forEach((group, groupIndex) => {
-      group.items.forEach((item, itemIndex) => {
-        grid.appendChild(buildLibraryCard({
-          tabCategory:'Massage Techniques',
-          category:group.category,
-          title:item.title,
-          desc:item.desc,
-          details:item.details,
-          index:'tech_' + groupIndex + '_' + itemIndex,
-          techniqueCategory:group.category,
-          techniqueTitle:item.title,
-          hidden:false
-        }));
-      });
-    });
-
-    libraryData.forEach((group, groupIndex) => {
-      const items = group.category === 'Types Of Massage'
-        ? group.items.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, {sensitivity:'base'}))
-        : group.items;
-      items.forEach((item, itemIndex) => {
-        grid.appendChild(buildLibraryCard({
-          tabCategory:group.category,
-          category:group.category,
-          title:item.title,
-          desc:item.desc,
-          details:item.details || [],
-          index:'std_' + groupIndex + '_' + itemIndex,
-          typeTitle:group.category === 'Types Of Massage' ? item.title : '',
-          hidden:true
-        }));
-      });
-    });
-
-    function labelFromDetail(raw){
-      const text = String(raw || '').trim();
-      const splitAt = text.indexOf(':');
-      if(splitAt > 0 && splitAt < 42){
-        return {label:text.slice(0, splitAt).trim(), body:text.slice(splitAt + 1).trim()};
-      }
-      return {label:'Detail', body:text};
-    }
-
-    function overviewExpansion(data){
-      const category = String(data.category || '');
-      const title = String(data.title || '');
-      if(category === 'Types Of Massage') return '';
-      if(category === 'Effleurage') return ' It usually belongs at the beginning and end of a massage, and it can also be used between deeper work so the receiver does not feel jumped from one area to another.';
-      if(category === 'Petrissage') return ' It gives the body a warmer, worked-through feeling without needing to become sharp or clinical, and it can be adjusted from gentle and nurturing to firmer and more focused.';
-      if(category === 'Friction') return ' It is more local than flowing massage, so it needs to be used with care, brief timing, and clear feedback rather than being repeated until the body braces.';
-      if(category === 'Tapotement') return ' It is usually brighter and more stimulating than slow massage, so it fits best when the receiver wants energy, circulation, or a short change in rhythm.';
-      if(category === 'Compression') return ' It can feel grounding because the pressure is clear and held rather than slippery, making it useful when the receiver wants contact that feels steady and contained.';
-      if(category === 'Vibration & Shaking') return ' It changes the sensory quality of the massage and can help the body release guarding when a static or deep approach would feel too direct.';
-      if(category === 'Passive Movement / Gentle Mobilisation') return ' It brings movement into the session without asking the receiver to perform, and it should always stay inside a comfortable, supported range.';
-      if(/Head|Scalp|Neck|Shoulders|Arms|Hands|Back|Hips and legs/.test(title)) return ' This helps the receiver decide whether the area belongs in the session, whether it needs time, and whether it needs gentler handling or clearer agreement.';
-      if(/Comfort|Therapeutic|Restorative|Sports|Energising|Deep Reset/.test(title)) return ' It gives the session an emotional and practical direction so the provider is not guessing the intended mood, pressure, or finish.';
-      return ' It helps turn a general massage preference into something the provider can actually shape with pressure, pace, timing, and clear feedback.';
-    }
-
-    function detailExpansion(label, body, data){
-      const category = String(data.category || '');
-      const title = String(data.title || '');
-      if(category === 'Types Of Massage') return String(body || '').replace(/\s+$/,'');
-      const l = String(label || '').toLowerCase();
-      let extra = '';
-      if(l.includes('how')){
-        if(category === 'Effleurage') extra = ' The contact should feel continuous and unbroken, with enough pressure to feel present but not so much that it becomes digging or dragging.';
-        else if(category === 'Petrissage') extra = ' The movement should feel like the tissue is being warmed and worked through, not pinched or grabbed, with rhythm doing as much of the work as force.';
-        else if(category === 'Friction') extra = ' Because the movement is small and specific, it should be brief, deliberate, and followed by softer contact so the area does not feel irritated.';
-        else if(category === 'Tapotement') extra = ' The rhythm matters more than force: it should feel controlled, light enough to receive, and easy to stop if it feels too stimulating.';
-        else if(category === 'Compression') extra = ' The pressure can be still, pulsed, or slowly released, and it should feel broad enough to support the area rather than poke into it.';
-        else if(category === 'Vibration & Shaking') extra = ' The provider supports the area so the receiver does not have to hold themselves in place, and the movement stays small enough to feel safe.';
-        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' The provider supports the limb or joint so the receiver can stay relaxed, with the movement stopping before strain, stretch-pain, or loss of trust.';
-        else extra = ' The approach should be clear enough for the receiver to understand what is happening, while still being adjusted through comfort and feedback.';
-      }else if(l.includes('used') || l.includes('support') || l.includes('useful')){
-        if(category === 'Effleurage') extra = ' It is also useful as a transition, because it lets the massage feel close and connected rather than broken into separate tasks.';
-        else if(category === 'Petrissage') extra = ' It can bring a satisfying worked-through feeling while still keeping warmth and care in the session.';
-        else if(category === 'Friction') extra = ' It is best used as a focused tool inside a wider massage, not as the whole feeling of the session.';
-        else if(category === 'Tapotement') extra = ' It can wake an area up, change the mood of the session, or give a more energising finish when that is wanted.';
-        else if(category === 'Compression') extra = ' It can be especially useful when the receiver wants pressure but does not want constant sliding, oiliness, or a restless pace.';
-        else if(category === 'Vibration & Shaking') extra = ' It can soften guarding, reset an area after pressure, or make the body feel less fixed and held.';
-        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' It can help the body feel included and moved without turning the massage into exercise or performance.';
-        else extra = ' This gives the provider a clearer reason for including it and helps the receiver decide whether it belongs in the session.';
-      }else if(l.includes('variation')){
-        if(category === 'Effleurage') extra = ' The variation should match the area size and the desired mood: broad and slow for settling, lighter for finishing, firmer only when clearly wanted.';
-        else if(category === 'Petrissage') extra = ' The same family can feel comforting, focused, or sports-led depending on depth, speed, and how much tissue is lifted or compressed.';
-        else if(category === 'Friction') extra = ' The smaller the contact, the more important it is to keep it short, specific, and balanced with broader contact around it.';
-        else if(category === 'Tapotement') extra = ' These variations should be offered as options, not imposed, because some receivers find them energising while others find them too sharp or startling.';
-        else if(category === 'Compression') extra = ' A broad variation usually feels more supportive; a narrow variation feels more specific and should be checked more carefully.';
-        else if(category === 'Vibration & Shaking') extra = ' Smaller variations are calmer, while larger rocking or shaking can feel more resetting and expressive when the receiver likes it.';
-        else if(category === 'Passive Movement / Gentle Mobilisation') extra = ' The variation should follow the receiver’s comfort, the area being moved, and whether the aim is relaxation, mobility, or a gentle reset.';
-        else extra = ' The exact version should be chosen from comfort, area size, pressure preference, and the overall rhythm of the massage.';
-      }else{
-        extra = ' This point should be read as practical guidance, not a fixed script; the receiver’s comfort and communication shape how it is used.';
-      }
-      return String(body || '').replace(/\s+$/,'') + extra;
-    }
-
-    function buildDetailHtml(data){
-      const details = data.details && data.details.length ? data.details : ['Use: This can be included, skipped, softened, or made more focused depending on what the receiver clearly chooses.'];
-      return details.map(detail => {
-        const parsed = labelFromDetail(detail);
-        const body = detailExpansion(parsed.label, parsed.body, data);
-        return '<p><strong>' + escapeHtml(parsed.label) + ':</strong> ' + escapeHtml(body) + '</p>';
-      }).join('');
-    }
-
-    function buildLibraryCard(data){
-      const card = document.createElement('article');
-      card.className = 'library-card library-entry';
-      card.dataset.libraryCategory = data.tabCategory;
-      if(data.techniqueCategory) card.dataset.techniqueCategory = data.techniqueCategory;
-      if(data.techniqueTitle) card.dataset.techniqueTitle = data.techniqueTitle;
-      if(data.typeTitle) card.dataset.typeTitle = data.typeTitle;
-      card.hidden = !!data.hidden;
-      const detailId = 'libraryDetail_' + data.index;
-      card.innerHTML = [
-        '<span class="library-tag">' + escapeHtml(data.category) + '</span>',
-        '<h3>' + escapeHtml(data.title) + '</h3>',
-        '<p class="library-summary"><strong>Overview:</strong> ' + escapeHtml(data.desc + overviewExpansion(data)) + '</p>',
-        '<div class="library-detail" id="' + detailId + '">',
-        buildDetailHtml(data),
-        '</div>'
-      ].join('');
-      return card;
-    }
 
     function activeTab(){
       return qs('[data-library-category][aria-selected="true"]', tabs);
@@ -1059,9 +796,7 @@ These Markdown rules are a human reference point, not live runtime config.
       const value = filter.value || 'all';
       qsa('.library-card[data-library-category="Massage Techniques"]', grid).forEach(card => {
         const category = card.dataset.techniqueCategory || '';
-        let show = true;
-        if(value.startsWith('category::')) show = category === value.split('::')[1];
-        card.hidden = !show;
+        card.hidden = value.startsWith('category::') && category !== value.split('::')[1];
       });
     }
 
@@ -1094,61 +829,12 @@ These Markdown rules are a human reference point, not live runtime config.
         if(tab && tab.dataset.libraryCategory === 'Massage Techniques') applyTechniqueFilter();
       });
     }
-
     if(typeFilter){
       typeFilter.addEventListener('change', () => {
         const tab = activeTab();
         if(tab && tab.dataset.libraryCategory === 'Types Of Massage') applyTypeFilter();
       });
     }
-
-      }
-
-  function renderAreas(){
-    const root = qs('#massageAreaLayout');
-    if(!root) return;
-    root.innerHTML = '';
-
-    const card = document.createElement('article');
-    card.className = 'area-card body-area-card';
-    card.innerHTML = [
-      '<strong>Body areas</strong>',
-      '<span>Tick the areas wanted and add time only where needed.</span>',
-      '<div class="area-groups"></div>'
-    ].join('');
-
-    const groupsRoot = qs('.area-groups', card);
-
-    areaGroups.forEach(group => {
-      const section = document.createElement('section');
-      section.className = 'area-section area-section-' + group.kind + (group.kind === 'sensitive' ? ' agreement-card' : '');
-      section.innerHTML = [
-        '<div class="area-section-head">',
-        '<strong>' + escapeHtml(group.title) + '</strong>',
-        '<span>' + escapeHtml(group.help) + '</span>',
-        '</div>',
-        '<div class="area-list"></div>'
-      ].join('');
-
-      const list = qs('.area-list', section);
-      group.areas.forEach(name => {
-        const id = 'area_' + slug(name);
-        const row = document.createElement('div');
-        row.className = 'area-item';
-        row.dataset.areaName = name;
-        row.dataset.areaGroup = group.kind;
-        row.innerHTML = [
-          '<input type="checkbox" id="' + id + '" data-area-check="' + escapeHtml(name) + '"/>',
-          '<label for="' + id + '">' + escapeHtml(name) + '</label>',
-          '<input class="area-time" data-area-time="' + escapeHtml(name) + '" type="number" min="0" step="5" value="0" aria-label="' + escapeHtml(name) + ' minutes" disabled/>'
-        ].join('');
-        list.appendChild(row);
-      });
-
-      groupsRoot.appendChild(section);
-    });
-
-    root.appendChild(card);
   }
 
   function selectedAreas(){
@@ -1554,14 +1240,10 @@ These Markdown rules are a human reference point, not live runtime config.
     const el = qs('#' + id);
     return el ? String(el.value || '').trim() : '';
   }
-  function slug(s){
-    return String(s || '').toLowerCase().replace(/&/g,' and ').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'area';
-  }
   function escapeHtml(str){
     return String(str || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
-  renderLibrary();
-  renderAreas();
+  bindLibrary();
   bindPlannerModes();
   bindPlanner();
   sortAllDropdowns();
