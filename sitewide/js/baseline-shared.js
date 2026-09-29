@@ -2005,147 +2005,9 @@ function parseViewStateHash(hash){
   function setupRecipeOverviewAndOrdering(){
     const recipesSection = document.getElementById('recipes');
     if(!recipesSection) return;
-    // Natural Skincare has no recipe side navigation. Keep any legacy/shared
-    // side-nav support available only to systems that still intentionally own it.
-    const allowSideNav = routePageFileFromPath(location.pathname || '') !== 'baseline-natural-skincare.html';
-
-    const recipesContainer = recipesSection.querySelector('.recipes');
-    const recipeCards = Array.from(recipesSection.querySelectorAll('.recipe-page[id]'));
-    if(!recipesContainer || !recipeCards.length) return;
-
-    const getTitle = (card) => {
-      const h = card.querySelector('h3');
-      return (h ? h.textContent : card.id || '').trim();
-    };
-
-    // 1) Order recipe cards alphabetically (landing card stays at the top)
-    const sortedCards = recipeCards.slice().sort((a,b) => getTitle(a).localeCompare(getTitle(b)));
-    sortedCards.forEach(card => recipesContainer.appendChild(card));
-
-    // 2) Update overview + nav lists.
-    // Natural Skincare has promoted and folder-backed recipes with authored
-    // descriptors. Its canonical recipe-navigation module owns that landing
-    // content; the generic category rebuilder must never strip those labels.
-    const isSkincareRecipeCollection = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
-    if(isSkincareRecipeCollection) return;
-
-    const hasCategories = sortedCards.some(c => c.dataset && typeof c.dataset.category === 'string' && c.dataset.category.trim() !== '');
-
-    if(hasCategories){
-      const categoryOrder = ['Dehydrator', 'Pressure Cooker', 'Stovetop'];
-      const byCategory = new Map();
-
-      sortedCards.forEach(card => {
-        const cat = (card.dataset.category || 'Recipes').trim() || 'Recipes';
-        const list = byCategory.get(cat) || [];
-        list.push({ id: card.id, title: getTitle(card) });
-        byCategory.set(cat, list);
-      });
-
-      // sort within each category
-      for(const [cat, items] of byCategory){
-        items.sort((a,b) => a.title.localeCompare(b.title));
-      }
-
-      const cats = Array.from(byCategory.keys()).sort((a,b) => {
-        const ai = categoryOrder.indexOf(a);
-        const bi = categoryOrder.indexOf(b);
-        if(ai !== -1 || bi !== -1){
-          if(ai === -1) return 1;
-          if(bi === -1) return -1;
-          return ai - bi;
-        }
-        return a.localeCompare(b);
-      });
-
-      // Side nav rebuild (preserve back link and the primary "Recipes" heading)
-      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
-      if(sideNav){
-        const children = Array.from(sideNav.children);
-        const firstHeadingIndex = children.findIndex(el => el.tagName === 'H4');
-        if(firstHeadingIndex !== -1){
-          for(let i = children.length - 1; i > firstHeadingIndex; i--){
-            sideNav.removeChild(children[i]);
-          }
-        }
-
-        cats.forEach(cat => {
-          // The default recipe collection already has the primary Recipes
-          // heading. Only named sub-categories need another heading.
-          if(cat !== 'Recipes'){
-            const h4 = document.createElement('h4');
-            h4.textContent = cat;
-            sideNav.appendChild(h4);
-          }
-
-          const ul = document.createElement('ul');
-          (byCategory.get(cat) || []).forEach(item => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            try{ a.href = recipeUrlForId(item.id); }catch(_e){ a.href = `#${item.id}`; }
-            a.textContent = item.title;
-            a.className = 'recipe-open';
-            a.dataset.recipeId = item.id;
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
-          sideNav.appendChild(ul);
-        });
-      }
-
-      // Landing overview rebuild (remove existing lists/headings, keep intro copy)
-      const landingCard = recipesSection.querySelector('#recipes-landing');
-      if(landingCard){
-        const kids = Array.from(landingCard.children);
-        const cut = kids.findIndex(el => el.tagName === 'H4' || el.tagName === 'UL');
-        if(cut !== -1){
-          for(let i = kids.length - 1; i >= cut; i--){
-            landingCard.removeChild(kids[i]);
-          }
-        }
-
-        cats.forEach(cat => {
-          if(cat !== 'Recipes'){
-            const h4 = document.createElement('h4');
-            h4.textContent = cat;
-            landingCard.appendChild(h4);
-          }
-
-          const ul = document.createElement('ul');
-          (byCategory.get(cat) || []).forEach(item => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            try{ a.href = recipeUrlForId(item.id); }catch(_e){ a.href = `#${item.id}`; }
-            a.textContent = item.title;
-            a.className = 'recipe-open';
-            a.dataset.recipeId = item.id;
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
-          landingCard.appendChild(ul);
-        });
-      }
-    }else{
-      // No categories: just sort any existing overview/nav lists alphabetically by their link text.
-      const sortList = (ul) => {
-        const items = Array.from(ul.querySelectorAll(':scope > li'));
-        items.sort((a,b) => {
-          const at = (a.querySelector('a') ? a.querySelector('a').textContent : a.textContent).trim();
-          const bt = (b.querySelector('a') ? b.querySelector('a').textContent : b.textContent).trim();
-          return at.localeCompare(bt);
-        });
-        items.forEach(li => ul.appendChild(li));
-      };
-
-      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
-      if(sideNav){
-        sideNav.querySelectorAll('ul').forEach(sortList);
-      }
-      const landingCard = recipesSection.querySelector('#recipes-landing');
-      if(landingCard){
-        landingCard.querySelectorAll('ul').forEach(sortList);
-      }
-    }
+    // Recipe catalogue/order is authored in HTML and is therefore already
+    // present at first paint. Runtime code must not reorder or rebuild visible
+    // recipe cards/navigation after the page has appeared.
   }
 
   // ---------------------------
@@ -2181,27 +2043,11 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
-    if(isSkincare){
-      recipes.push({
-        id:'r12',
-        name:'Lip/ balm',
-        external:true,
-        href:'/baseline-natural-skincare/recipes/testing-lip-balm'
-      });
-    }
-
     // Build map: recipeId -> Set(ingredientIds).
     // Skincare recipe ingredient links are real record URLs, not recipe-path
     // hashes. This keeps one public URL responsible for one visible record and
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
-    if(isSkincare){
-      recipeToIngredients.set('r12', new Set([
-        'ing-cocoa-butter','ing-mango-butter','ing-kokum-butter',
-        'ing-apricot-kernel-oil','ing-avocado','ing-red-raspberry-seed-oil',
-        'ing-candelilla-wax','ing-vitamin-e'
-      ]));
-    }
     qsa('#recipes a.ing-link[data-from-recipe][data-ingredient]').forEach(a=>{
       const rid = a.getAttribute('data-from-recipe');
       const iid = a.getAttribute('data-ingredient');
