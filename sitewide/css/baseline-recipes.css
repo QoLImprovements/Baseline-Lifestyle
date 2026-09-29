@@ -4467,3 +4467,9 @@ html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{display:block!importan
   gap:10px;
   flex-wrap:wrap;
 }
+
+/* First response matches the universal recipe Standard View before JS hydrates it. */
+html body[data-app] #recipes .recipe-page[data-recipe-view="standard"]:not(.recipe-universal-template) [data-recipe-view-group="details"],
+html body[data-app] #recipes .recipe-page[data-recipe-view="standard"]:not(.recipe-universal-template) [data-recipe-view-group="guidance"]{
+  display:none !important;
+}
