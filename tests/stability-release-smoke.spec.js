@@ -169,7 +169,7 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
   }
 });
 
-test('folder-backed Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+test('embedded Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
   const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
 
   await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
