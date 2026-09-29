@@ -224,13 +224,16 @@ test('main Skincare document loads the recipe UX runtime', () => {
   assert.match(html, /\/systems\/baseline-natural-skincare\/js\/skincare-recipe-ux-20260906\.js/);
 });
 
-test('promotion logic removes retired competing cards and Testing status', () => {
-  assert.match(recipeUx, /r8:\s*\{\s*slug:'calming-shave-gel',\s*title:'Calming Shave Gel'/);
-  assert.match(recipeUx, /r9:\s*\{\s*slug:'tooth-polishing-powder',\s*title:'Tooth Polishing Powder'/);
-  assert.match(recipeUx, /r10:\s*\{\s*slug:'microcurrent-glide-gel',\s*title:'Microcurrent Glide Gel'/);
+test('promoted Skincare recipes are canonical in initial HTML', () => {
+  assert.doesNotMatch(html, /\sid="r4"/);
+  assert.doesNotMatch(html, /\sid="r5"/);
+  assert.doesNotMatch(html, /data-recipe-id="r4"|data-recipe-id="r5"/);
+  assert.match(html, /data-recipe-slug="calming-shave-gel" id="r8"/);
+  assert.match(html, /data-recipe-slug="microcurrent-glide-gel" id="r10"/);
+  assert.doesNotMatch(html, /id="r8"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r8"/);
+  assert.doesNotMatch(html, /id="r10"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r10"/);
+  assert.doesNotMatch(recipeUx, /function promoteCards\(/);
   assert.match(recipeUx, /const REPLACED_IDS = Object\.freeze\(\{ r4:'r10', r5:'r8' \}\)/);
-  assert.match(recipeUx, /recipe\.removeAttribute\('data-category'\)/);
-  assert.match(recipeUx, /\['r4','r5'\]\.forEach/);
   assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
   assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
   assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
