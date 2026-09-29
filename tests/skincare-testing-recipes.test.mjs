@@ -13,7 +13,9 @@ const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
-const lipBalm = html;
+const lipBalmStart = html.indexOf('<!-- Testing Recipe 12 -->');
+const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
+const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
