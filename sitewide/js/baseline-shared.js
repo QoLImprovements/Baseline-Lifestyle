@@ -5136,13 +5136,16 @@ function buildControls(recipeEl){
         const build = 'BASELINE_GRADIENT_ALIGNMENT_20260801_1';
         const href = '/sitewide/css/baseline-gradient-alignment.css?v=' + build;
         let link = document.querySelector('link[data-baseline-gradient-alignment]');
+        if(link && link.getAttribute('href') === href) return;
         if(!link){
           link = document.createElement('link');
           link.rel = 'stylesheet';
           link.setAttribute('data-baseline-gradient-alignment','true');
+          link.setAttribute('href',href);
+          document.head.appendChild(link);
+          return;
         }
-        if(link.getAttribute('href') !== href) link.setAttribute('href',href);
-        document.head.appendChild(link);
+        link.setAttribute('href',href);
       }catch(_e){ /* the existing canonical header remains the safe fallback */ }
     })();
     // ------------------------------------------------------------
