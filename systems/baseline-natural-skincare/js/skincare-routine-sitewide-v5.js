@@ -134,15 +134,16 @@
     $$('.routine-card',root).forEach((card) => card.classList.add('bl-routine-card'));
   }
   function ensureCalendarCard() {
-    const panel=$('[data-routine-panel="log"]');const logCard=panel?.querySelector('.routine-card');if (!panel || !logCard) return;
-    let card=panel.querySelector('.routine-calendar-card');if (!card) { card=document.createElement('section');logCard.insertAdjacentElement('afterend',card); }
-    card.className='card routine-card routine-card-full routine-calendar-card bl-routine-card bl-routine-calendar';
-    UI.renderHtml(card,`<div class="routine-calendar-head bl-routine-calendar-head"><div><h2>Skincare Calendar</h2><p class="note">Select Week or Month. Each day opens directly in Routine Log.</p></div><div class="routine-calendar-controls bl-routine-calendar-controls"><div class="routine-calendar-view-tabs bl-routine-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="routine-mini routine-calendar-view" data-skincare-calendar-view="week" aria-selected="${state.calendarView==='week'?'true':'false'}">Week</button><button type="button" class="routine-mini routine-calendar-view" data-skincare-calendar-view="month" aria-selected="${state.calendarView==='month'?'true':'false'}">Month</button></div><div class="routine-calendar-nav bl-routine-calendar-nav"><button type="button" data-skincare-calendar-move="previous" aria-label="Previous period">←</button><strong id="routineCalendarLabel"></strong><button type="button" data-skincare-calendar-today>Today</button><button type="button" data-skincare-calendar-move="next" aria-label="Next period">→</button></div></div></div><div class="routine-calendar-weekdays" id="routineCalendarWeekdays" aria-hidden="true"></div><div class="routine-calendar-grid" id="routineCalendarGrid"></div>`,{ preserveFocus:false });
+    const card=$('[data-routine-panel="log"] .routine-calendar-card');
+    if (!card) return false;
+    card.classList.add('bl-routine-card','bl-routine-calendar');
+    return true;
   }
   function ensureGroupManager() {
-    const planCard=$('[data-routine-panel="plan"] .routine-card');const addRow=planCard?.querySelector('.routine-add-row');if (!planCard || !addRow) return;
-    let manager=planCard.querySelector('.routine-group-manager');if (!manager) { manager=document.createElement('section');manager.className='routine-group-manager bl-routine-group-manager';addRow.insertAdjacentElement('beforebegin',manager); }
-    UI.renderHtml(manager,'<div class="routine-group-manager-head"><div><h3>Create Routine Group</h3><p class="note">Create the group here. Configure its time and frequency from Settings on the group itself.</p></div></div><div class="routine-group-create"><input id="routineGroupName" type="text" maxlength="80" autocomplete="off" placeholder="Name a routine group…"><button id="createRoutineGroup" type="button">Create group</button></div>');
+    const manager=$('[data-routine-panel="plan"] .routine-group-manager');
+    if (!manager) return false;
+    manager.classList.add('bl-routine-group-manager');
+    return true;
   }
 
   function groupDayControls(group) {
