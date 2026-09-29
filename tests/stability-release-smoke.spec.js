@@ -142,6 +142,35 @@ test('clean routes paint the exact tab before external application JavaScript ru
   await expect(page.locator('[data-body-panel="profile"]')).toBeVisible();
 });
 
+test('permanent header controls are present before site JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  const routes = [
+    ['/home/1', false],
+    ['/baseline-food-approach/system', true],
+    ['/baseline-massage/system', true],
+    ['/baseline-natural-skincare/system', true],
+    ['/baseline-fitness/system', true],
+    ['/baseline-badminton-session/system', true],
+    ['/baseline-games-hub/games-hub', true]
+  ];
+
+  for (const [pathname, hasBeats] of routes) {
+    const response = await page.goto(pathname, { waitUntil:'load' });
+    expect(response, pathname + ' returned no response').not.toBeNull();
+    expect(response.status(), pathname + ' did not load').toBeLessThan(400);
+    await expect(page.locator('#blProtectedKey')).toBeVisible();
+    await expect(page.locator('#bl-voice-toggle')).toBeVisible();
+    await expect(page.locator('#bl-auth-toggle')).toBeVisible();
+    if (hasBeats) await expect(page.locator('#bl-beats-toggle')).toBeVisible();
+    else await expect(page.locator('#bl-beats-toggle')).toHaveCount(0);
+  }
+});
+
 test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', (route) => {
     const pathname = new URL(route.request().url()).pathname;
@@ -151,7 +180,8 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
 
   const routes = [
     ['/baseline-natural-skincare/recipes/nurturing-glow-butter', 'r1', 'Nurturing Glow Butter'],
-    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel']
+    ['/baseline-natural-skincare/recipes/calming-shave-gel', 'r8', 'Calming Shave Gel'],
+    ['/baseline-natural-skincare/recipes/testing-lip-balm', 'r12', 'Lip/ balm']
   ];
 
   for (const [pathname, recipeId, title] of routes) {
@@ -169,7 +199,7 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
   }
 });
 
-test('folder-backed Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+test('static Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
   const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
 
   await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
