@@ -85,7 +85,4 @@
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',apply,{once:true}); else apply();
-  global.setTimeout(apply,180);
-  global.setTimeout(apply,760);
-  global.setTimeout(apply,950);
 })(typeof window!=='undefined'?window:globalThis);
