@@ -29,23 +29,9 @@
     ['r9','tooth-polishing-powder','Tooth Polishing Powder','kaolin, sage and peppermint surface-stain polishing powder.']
   ]);
   const TESTING_RECIPES = Object.freeze([
-    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.']
+    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.'],
+    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.']
   ]);
-  // Folder-backed recipes are linked into the catalogue but are never copied
-  // into the large Skincare application document.
-  const EXTERNAL_RECIPES = Object.freeze([
-    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm', description:'adjustable butter character and structure with a balanced 100 g default formula.', category:'Testing', source:'/systems/baseline-natural-skincare/recipes/testing-lip-balm.html' }
-  ]);
-
-  const EXTERNAL_RECIPE_PREFETCH = (function(){
-    try{
-      const primed=global.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__;
-      if(primed) return primed;
-      const path=String((global.location && global.location.pathname) || '').replace(/\/+$/,'');
-      const meta=EXTERNAL_RECIPES.find(recipe=>path===ROUTE_BASE+recipe.slug);
-      return meta ? global.fetch(meta.source,{ credentials:'same-origin' }) : null;
-    }catch(_error){ return null; }
-  })();
 
   const DETAIL_DATA = Object.freeze({
     r1:{
@@ -143,14 +129,6 @@
     r12Structure:{bubble:'candelilla',left:['2% candelilla','Softer melt'],right:['4% candelilla','More durable set'],help:'Adjust candelilla to change structure. Apricot kernel oil automatically compensates so this pair remains at 28.5%.'}
   });
 
-  function externalRecipeForCurrentPath(){
-    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
-    const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
-    if(!match) return null;
-    const slug=String(match[1] || '').toLowerCase();
-    return EXTERNAL_RECIPES.find(recipe=>recipe.slug===slug) || null;
-  }
-
   function bindLipBalmFormula(recipe){
     if(!recipe || recipe.id!=='r12' || recipe.dataset.lipBalmFormulaBound==='1') return;
     recipe.dataset.lipBalmFormulaBound='1';
@@ -238,84 +216,6 @@
     if(structure){ structure.addEventListener('input',update); structure.addEventListener('change',update); }
     update();
     try{ global.BASELINE_decorateRecipeSliderSaves?.(); }catch(_error){};
-  }
-
-  function installExternalRecipePlaceholder(meta){
-    if(!meta) return null;
-    const existing=recipeById(meta.id);
-    if(existing) return existing;
-
-    const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
-    if(!container) return null;
-
-    const recipe=document.createElement('div');
-    recipe.className='recipe card recipe-page';
-    recipe.id=meta.id;
-    recipe.dataset.category=meta.category || '';
-    recipe.dataset.recipeSlug=meta.slug;
-    recipe.dataset.externalRecipePlaceholder='1';
-    recipe.style.display='none';
-    recipe.innerHTML='<div class="recipe-actions"><button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button></div><h3>'+escapeHtml(meta.title)+'</h3><p class="note">'+escapeHtml(meta.description || '')+'</p>';
-    container.appendChild(recipe);
-    return recipe;
-  }
-
-  async function loadExternalRecipeForCurrentPath(){
-    const meta=externalRecipeForCurrentPath();
-    if(!meta) return null;
-
-    const existing=recipeById(meta.id);
-    if(existing && existing.dataset.externalRecipePlaceholder!=='1'){
-      bindLipBalmFormula(existing);
-      return { meta, recipe:existing };
-    }
-
-    const placeholder=(existing && existing.dataset.externalRecipePlaceholder==='1') ? existing : null;
-    const container=document.querySelector('#recipes .recipe-main .recipes, #recipes .recipes');
-    if(!container) throw new Error('Skincare recipe container is unavailable.');
-
-    const response=await (EXTERNAL_RECIPE_PREFETCH || global.fetch(meta.source,{ credentials:'same-origin' }));
-    if(!response.ok) throw new Error('Unable to load '+meta.title+' recipe source ('+response.status+').');
-
-    const sourceHtml=await response.text();
-    const parsed=new DOMParser().parseFromString(sourceHtml,'text/html');
-    const sourceCard=parsed.getElementById(meta.id);
-    if(!sourceCard) throw new Error(meta.title+' recipe source does not contain #'+meta.id+'.');
-
-    const recipe=document.importNode(sourceCard,true);
-    recipe.classList.remove('is-open','active');
-    recipe.style.display='none';
-    if(placeholder && placeholder.parentNode) placeholder.replaceWith(recipe);
-    else container.appendChild(recipe);
-    bindLipBalmFormula(recipe);
-    return { meta, recipe };
-  }
-
-  function installExternalRecipeLinks(){
-    const landing=document.getElementById('recipes-landing');
-    if(!landing) return;
-    EXTERNAL_RECIPES.forEach(recipe=>{
-      const href=recipeHref(recipe.slug);
-      if(landing.querySelector('a[href="'+href+'"]')) return;
-      let heading=Array.from(landing.querySelectorAll(':scope > h4')).find(el=>String(el.textContent||'').trim()===recipe.category);
-      if(!heading){
-        heading=document.createElement('h4');
-        heading.textContent=recipe.category;
-        landing.appendChild(heading);
-      }
-      let list=heading.nextElementSibling;
-      if(!list || list.tagName!=='UL'){
-        list=document.createElement('ul');
-        heading.insertAdjacentElement('afterend',list);
-      }
-      const li=document.createElement('li');
-      const a=document.createElement('a');
-      a.href=href;
-      a.dataset.externalRecipeId=recipe.id;
-      a.textContent=recipe.title+' — '+recipe.description;
-      li.appendChild(a);
-      list.appendChild(li);
-    });
   }
 
   function escapeHtml(value){
@@ -547,7 +447,6 @@
 
   function applyAll(){
     installStyles();
-    installExternalRecipeLinks();
     bindLipBalmFormula(recipeById('r12'));
     promoteCards();
     rewriteRecipeAnchors();
@@ -571,38 +470,16 @@
     }
   }
 
-  async function startRecipeUx(){
+  function startRecipeUx(){
     if(recipeUxStarted) return;
     recipeUxStarted=true;
     canonicaliseOldRecipePath();
 
-    const externalMeta=externalRecipeForCurrentPath();
-    if(externalMeta){
-      const placeholder=installExternalRecipePlaceholder(externalMeta);
-      if(placeholder){
-        try{ global.BASELINE_openRecipe?.(externalMeta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
-      }
-    }
-
-    let external=null;
-    try{
-      external=await loadExternalRecipeForCurrentPath();
-    }catch(error){
-      console.error('[Baseline Skincare] Failed to load folder-backed recipe:',error);
-    }
-
+    // All recipe cards, including Lip Balm, are already in the first HTML
+    // response. JavaScript only enhances the already-visible recipe.
     applyAll();
     wrapRecipeOpen();
-
-    if(external && external.recipe){
-      try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
-      global.requestAnimationFrame(()=>{
-        try{ global.BASELINE_openRecipe?.(external.meta.id,{ silentHistory:true, noScroll:true }); }catch(_error){}
-        resetRecipeView(external.recipe);
-      });
-    }else{
-      global.requestAnimationFrame(openPromotedRecipeForPath);
-    }
+    global.requestAnimationFrame(openPromotedRecipeForPath);
   }
 
   function bindDeferredRecipeUx(){
