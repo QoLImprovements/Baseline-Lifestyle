@@ -6,7 +6,6 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const shared = readFileSync(resolve(root, 'sitewide/js/baseline-shared.js'), 'utf8');
 const skincare = readFileSync(resolve(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
-const lipBalm = readFileSync(resolve(root, 'systems/baseline-natural-skincare/recipes/testing-lip-balm.html'), 'utf8');
 const food = readFileSync(resolve(root, 'systems/baseline-food-approach/baseline-food-approach.html'), 'utf8');
 
 function ingredientLinks(html) {
@@ -42,7 +41,7 @@ function skincareSlugMap() {
 test('every Skincare recipe ingredient has a library card and canonical slug', () => {
   const cards = ingredientCardIds(skincare);
   const slugs = skincareSlugMap();
-  const links = [...ingredientLinks(skincare), ...ingredientLinks(lipBalm)];
+  const links = ingredientLinks(skincare);
 
   assert.ok(links.length > 0, 'Skincare recipes must expose ingredient links');
 
@@ -55,7 +54,9 @@ test('every Skincare recipe ingredient has a library card and canonical slug', (
 });
 
 test('Lip Balm ingredient links preserve r12 as their origin', () => {
-  const links = ingredientLinks(lipBalm);
+  const lipStart = skincare.indexOf('data-recipe-slug="testing-lip-balm"');
+  const lipEnd = skincare.indexOf('<section class="section" id="ingredients">', lipStart);
+  const links = ingredientLinks(skincare.slice(lipStart, lipEnd));
   assert.equal(links.length, 8, 'Lip Balm should expose eight ingredient links');
   for (const link of links) {
     assert.equal(link.recipeId, 'r12');
