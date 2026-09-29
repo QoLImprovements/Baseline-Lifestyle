@@ -1117,8 +1117,8 @@
     $('#cancelDeletePlanBtn')?.addEventListener('click', closeDeletePlanModal);
     $('#deletePlanConfirmInput')?.addEventListener('input', (event) => { if ($('#confirmDeletePlanBtn')) $('#confirmDeletePlanBtn').disabled = String(event.currentTarget.value || '').trim() !== 'DELETE'; });
     $('#confirmDeletePlanBtn')?.addEventListener('click', deletePlan);
-    const refresh = $('#profileRefresh'); const host = refresh?.parentElement;
-    if (host && !$('#fitnessAccountBtn')) { const button = document.createElement('button'); button.type = 'button'; button.id = 'fitnessAccountBtn'; button.className = 'action'; button.textContent = 'Log in / Sign up'; button.addEventListener('click', () => { try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); } }); host.append(button); }
+    const accountButton = $('#fitnessAccountBtn');
+    accountButton?.addEventListener('click', () => { try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); } });
   }
 
   function init() {
