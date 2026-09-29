@@ -4458,3 +4458,12 @@ html[data-initial-recipe-slug="tooth-polishing-powder"] #recipes #r9{display:blo
 
 html[data-initial-recipe-slug$="-shave-gel"] #recipes #r5{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{display:block!important;visibility:visible!important;max-width:none!important}
+
+
+/* Permanent recipe controls are present in HTML at first paint. */
+.recipe-favourites-row{
+  margin-top:10px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
