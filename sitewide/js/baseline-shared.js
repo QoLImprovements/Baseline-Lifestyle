@@ -7260,45 +7260,55 @@ function setupRecipeFavourites(){
         row.appendChild(h3);
       }
 
-      if(!q('.fav-btn', row)){
-        const btn = document.createElement('button');
+      let btn = q('.fav-btn', row);
+      if(!btn){
+        // Fallback only for legacy/non-canonical recipe markup. Canonical Food
+        // and Skincare pages author this button in HTML for first paint.
+        btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'fav-btn';
         btn.setAttribute('aria-pressed','false');
+        btn.setAttribute('aria-label','Save favorite');
         btn.textContent = '☆';
-        btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFav(id); });
         row.appendChild(btn);
+      }
+      if(btn.dataset.favBound !== '1'){
+        btn.dataset.favBound = '1';
+        btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFav(id); });
       }
 
       // Safety: remove any legacy fav buttons that were injected into action bars.
       qsa('.recipe-actions-right .fav-btn', card).forEach(x=>{ try{ x.remove(); }catch(_e){} });
     });
 
-    // Add a favourites toggle on the recipes landing card.
+    // Bind the statically authored favourites toggle. Keep a fallback for
+    // legacy/non-canonical markup, but do not make canonical first paint depend on JS.
     const landing = q('#recipes-landing');
-    if(landing && !q('#fav-only-toggle', landing)){
-      const wrap = document.createElement('div');
-      wrap.style.marginTop = '10px';
-      wrap.style.display = 'flex';
-      wrap.style.gap = '10px';
-      wrap.style.flexWrap = 'wrap';
-
-      const btn = document.createElement('button');
-      btn.id = 'fav-only-toggle';
-      btn.type = 'button';
-      btn.className = 'bl-mini-btn';
-      btn.textContent = '⭐ My favourites';
-      btn.addEventListener('click', ()=>{
-        if(!authState.authed){
-          try{ if(typeof window.BASELINE_openAuth === 'function') window.BASELINE_openAuth(); }catch(_e){}
-          return;
-        }
-        favOnly = !favOnly;
-        btn.textContent = favOnly ? '⭐ Showing favourites' : '⭐ My favourites';
-        updateButtons();
-      });
-      wrap.appendChild(btn);
-      landing.appendChild(wrap);
+    if(landing){
+      let btn = q('#fav-only-toggle', landing);
+      if(!btn){
+        const wrap = document.createElement('div');
+        wrap.className = 'recipe-favourites-row';
+        btn = document.createElement('button');
+        btn.id = 'fav-only-toggle';
+        btn.type = 'button';
+        btn.className = 'bl-mini-btn';
+        btn.textContent = '⭐ My favourites';
+        wrap.appendChild(btn);
+        landing.appendChild(wrap);
+      }
+      if(btn.dataset.favOnlyBound !== '1'){
+        btn.dataset.favOnlyBound = '1';
+        btn.addEventListener('click', ()=>{
+          if(!authState.authed){
+            try{ if(typeof window.BASELINE_openAuth === 'function') window.BASELINE_openAuth(); }catch(_e){}
+            return;
+          }
+          favOnly = !favOnly;
+          btn.textContent = favOnly ? '⭐ Showing favourites' : '⭐ My favourites';
+          updateButtons();
+        });
+      }
     }
 
     onAuthChange(refreshFavs);
