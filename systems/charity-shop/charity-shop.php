@@ -225,7 +225,184 @@ if($accessUntil <= time()){
             </article>
           </div>
         </div>
-        <div class="charity-subpanel charity-cashing-panel" id="operations-cashing" role="tabpanel" aria-labelledby="operationsCashingTab" tabindex="-1" hidden></div>
+        <div class="charity-subpanel charity-cashing-panel" id="operations-cashing" role="tabpanel" aria-labelledby="operationsCashingTab" tabindex="-1" hidden>
+  <div class="charity-cashup">
+    <header class="card charity-card charity-card--wide charity-cashup-heading">
+      <p class="charity-kicker">COUNT | MAKE FLOAT | CASH TO BANK</p>
+      <h2>Cashing Up</h2>
+      <p>Enter the number of each note and coin in the till. The page makes up the £100 float first, then calculates the remaining Cash To Bank.</p>
+    </header>
+    <section class="card charity-card charity-cash-table-card" aria-labelledby="charityCashCountTitle">
+      <h3 id="charityCashCountTitle">Cash In Till</h3>
+      <div class="charity-cash-table-wrap">
+        <table class="charity-cash-table">
+          <thead><tr><th scope="col">Note or coin</th><th scope="col">How many</th><th scope="col">Value</th></tr></thead>
+          <tbody>
+<tr data-cash-row="gbp50">
+  <th scope="row">£50</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp50">Number of £50 items</label>
+      <input id="cash-gbp50" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp50" data-pence="5000"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp50">£0.00</output></td>
+</tr>
+<tr data-cash-row="gbp20">
+  <th scope="row">£20</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp20">Number of £20 items</label>
+      <input id="cash-gbp20" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp20" data-pence="2000"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp20">£0.00</output></td>
+</tr>
+<tr data-cash-row="gbp10">
+  <th scope="row">£10</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp10">Number of £10 items</label>
+      <input id="cash-gbp10" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp10" data-pence="1000"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp10">£0.00</output></td>
+</tr>
+<tr data-cash-row="gbp5">
+  <th scope="row">£5</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp5">Number of £5 items</label>
+      <input id="cash-gbp5" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp5" data-pence="500"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp5">£0.00</output></td>
+</tr>
+<tr data-cash-row="gbp2">
+  <th scope="row">£2</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp2">Number of £2 items</label>
+      <input id="cash-gbp2" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp2" data-pence="200"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp2">£0.00</output></td>
+</tr>
+<tr data-cash-row="gbp1">
+  <th scope="row">£1</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-gbp1">Number of £1 items</label>
+      <input id="cash-gbp1" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="gbp1" data-pence="100"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="gbp1">£0.00</output></td>
+</tr>
+<tr data-cash-row="p50">
+  <th scope="row">50p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p50">Number of 50p items</label>
+      <input id="cash-p50" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p50" data-pence="50"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p50">£0.00</output></td>
+</tr>
+<tr data-cash-row="p20">
+  <th scope="row">20p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p20">Number of 20p items</label>
+      <input id="cash-p20" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p20" data-pence="20"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p20">£0.00</output></td>
+</tr>
+<tr data-cash-row="p10">
+  <th scope="row">10p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p10">Number of 10p items</label>
+      <input id="cash-p10" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p10" data-pence="10"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p10">£0.00</output></td>
+</tr>
+<tr data-cash-row="p5">
+  <th scope="row">5p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p5">Number of 5p items</label>
+      <input id="cash-p5" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p5" data-pence="5"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p5">£0.00</output></td>
+</tr>
+<tr data-cash-row="p2">
+  <th scope="row">2p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p2">Number of 2p items</label>
+      <input id="cash-p2" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p2" data-pence="2"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p2">£0.00</output></td>
+</tr>
+<tr data-cash-row="p1">
+  <th scope="row">1p</th>
+  <td><label class="charity-cash-visually-hidden" for="cash-p1">Number of 1p items</label>
+      <input id="cash-p1" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="p1" data-pence="1"></td>
+  <td><output class="charity-cash-subtotal" data-subtotal="p1">£0.00</output></td>
+</tr>
+          </tbody>
+        </table>
+      </div>
+      <section class="charity-cash-totals" aria-labelledby="charityCashTotalsTitle">
+        <h3 id="charityCashTotalsTitle">Till Totals</h3>
+        <div class="charity-total-line"><span>Total Count</span><output id="charityCashTotal" aria-live="polite">£0.00</output></div>
+        <div class="charity-float-line"><span>Float made</span><output id="charityFloatTotal" aria-live="polite">£0.00</output></div>
+        <div class="charity-total-line charity-total-line--final"><span>Cash To Bank</span><output id="charityCashToBank" aria-live="polite">£0.00</output></div>
+        <p class="charity-cash-result-label">The amount remaining after the float has been set aside</p>
+      </section>
+    </section>
+    <div class="charity-cash-lower-grid">
+      <section class="card charity-card charity-float-maker" aria-labelledby="charityFloatMakerTitle">
+        <h3 id="charityFloatMakerTitle">Float Summary</h3>
+        <p class="charity-float-copy">Use this selection of notes and change to make up the float.</p>
+        <div class="charity-float-table-wrap">
+          <table class="charity-float-table">
+            <thead><tr><th scope="col">Money</th><th scope="col">Aim</th><th scope="col">Keep</th><th scope="col">Value</th></tr></thead>
+            <tbody>
+<tr data-float-row="gbp5">
+  <th scope="row">£5</th>
+  <td>6 (Max)</td>
+  <td><output data-float-count="gbp5">0</output></td>
+  <td><output data-float-value="gbp5">£0.00</output></td>
+</tr>
+<tr data-float-row="gbp1">
+  <th scope="row">£1</th>
+  <td>55 (Max)</td>
+  <td><output data-float-count="gbp1">0</output></td>
+  <td><output data-float-value="gbp1">£0.00</output></td>
+</tr>
+<tr data-float-row="p50">
+  <th scope="row">50p</th>
+  <td>15></td>
+  <td><output data-float-count="p50">0</output></td>
+  <td><output data-float-value="p50">£0.00</output></td>
+</tr>
+<tr data-float-row="p20">
+  <th scope="row">20p</th>
+  <td>15></td>
+  <td><output data-float-count="p20">0</output></td>
+  <td><output data-float-value="p20">£0.00</output></td>
+</tr>
+<tr data-float-row="p10">
+  <th scope="row">10p</th>
+  <td>15></td>
+  <td><output data-float-count="p10">0</output></td>
+  <td><output data-float-value="p10">£0.00</output></td>
+</tr>
+<tr data-float-row="p5">
+  <th scope="row">5p</th>
+  <td>15></td>
+  <td><output data-float-count="p5">0</output></td>
+  <td><output data-float-value="p5">£0.00</output></td>
+</tr>
+<tr data-float-row="p2">
+  <th scope="row">2p</th>
+  <td>15></td>
+  <td><output data-float-count="p2">0</output></td>
+  <td><output data-float-value="p2">£0.00</output></td>
+</tr>
+<tr data-float-row="p1">
+  <th scope="row">1p</th>
+  <td>15></td>
+  <td><output data-float-count="p1">0</output></td>
+  <td><output data-float-value="p1">£0.00</output></td>
+</tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="charity-float-total-line"><span>Float total</span><output id="charityFloatMakerTotal">£0.00</output></div>
+        <p class="charity-float-status" id="charityFloatStatus" role="status" aria-live="polite"></p>
+        <p class="charity-float-fallback" id="charityFloatFallback" hidden></p>
+      </section>
+      <section class="card charity-card charity-cheque-summary" aria-labelledby="charityBankBookTitle">
+        <div class="charity-cheque-heading"><div><p class="charity-kicker">POUNDS - PENCE</p><h3 id="charityBankBookTitle">Cash To Bank Book</h3></div></div>
+        <p>Copy these grouped Cash To Bank amounts into the Cash To Bank Book.</p>
+        <div class="charity-cheque-rows">
+<div class="charity-cheque-row"><span>£50 notes</span><output data-bank-book-keys="gbp50">0 - 00</output></div>
+<div class="charity-cheque-row"><span>£20 notes</span><output data-bank-book-keys="gbp20">0 - 00</output></div>
+<div class="charity-cheque-row"><span>£10 notes</span><output data-bank-book-keys="gbp10">0 - 00</output></div>
+<div class="charity-cheque-row"><span>£5 notes</span><output data-bank-book-keys="gbp5">0 - 00</output></div>
+<div class="charity-cheque-row"><span>£2 coins</span><output data-bank-book-keys="gbp2">0 - 00</output></div>
+<div class="charity-cheque-row"><span>£1 coins</span><output data-bank-book-keys="gbp1">0 - 00</output></div>
+<div class="charity-cheque-row"><span>50p + 20p</span><output data-bank-book-keys="p50,p20">0 - 00</output></div>
+<div class="charity-cheque-row"><span>10p + 5p</span><output data-bank-book-keys="p10,p5">0 - 00</output></div>
+<div class="charity-cheque-row"><span>2p + 1p</span><output data-bank-book-keys="p2,p1">0 - 00</output></div>
+        </div>
+        <div class="charity-bank-total-line"><span>Total Cash To Bank</span><output id="charityBankBookTotal" aria-live="polite">£0.00</output></div>
+      </section>
+    </div>
+  </div>
+</div>
       </section>
 
       <section class="section charity-main-section" id="sizes" role="tabpanel" aria-labelledby="charityMainSizes" tabindex="0" hidden>
