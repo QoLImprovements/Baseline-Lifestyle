@@ -189,6 +189,7 @@ Method steps MUST follow this format:
 <div class="card recipe-landing" id="recipes-landing">
 <h2>Recipes</h2>
 <p>Select a recipe to view it.</p>
+<div class="recipe-favourites-row"><button id="fav-only-toggle" type="button" class="bl-mini-btn">⭐ My favourites</button></div>
 <h4>Recipes</h4>
 <ul>
 <li><a class="recipe-open" data-recipe-id="r6" href="/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend">Anhydrous Massage Oil Blend — three-oil massage blend with variable castor glide.</a></li>
@@ -213,7 +214,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r1')">Print This Recipe</button>
 </div>
-<h3>Nurturing Glow Butter</h3>
+<div class="recipe-title-row"><h3>Nurturing Glow Butter</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -252,7 +253,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r2')" type="button">Print This Recipe</button>
 </div>
-<h3>Anhydrous Oil Cleanser</h3>
+<div class="recipe-title-row"><h3>Anhydrous Oil Cleanser</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <p class="note">Choose the cleanser variant you want. The ingredient amounts below reflect the currently selected balance.</p>
 <div aria-label="Oil cleanser variants" class="variant-switcher" role="tablist">
@@ -412,7 +413,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r3')" type="button">Print This Recipe</button>
 </div>
-<h3>Protective Touch Balm</h3>
+<div class="recipe-title-row"><h3>Protective Touch Balm</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Meta</h4>
 <p>Barrier-first balm with a high-glide, protective finish. Vegan. No preservatives (anhydrous). Yield: 100 g. Includes vitamin E.</p>
@@ -486,7 +487,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r4')">Print This Recipe</button>
 </div>
-<h3>Hydrating Conductive Mist</h3>
+<div class="recipe-title-row"><h3>Hydrating Conductive Mist</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -523,7 +524,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r5')">Print This Recipe</button>
 </div>
-<h3>Calming Shave Gel</h3>
+<div class="recipe-title-row"><h3>Calming Shave Gel</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <p class="note">240 ml master batch. Use the cushion slider to set guar gum as a <strong>percentage of the batch</strong> without changing the base water, slippery elm, glycerin, or jojoba. This keeps the control aligned with batch multiplier and scale-by-ingredient.</p>
 <div aria-label="Shave gel cushion control" class="glide-controller">
@@ -585,7 +586,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r6')" type="button">Print This Recipe</button>
 </div>
-<h3>Anhydrous Massage Oil Blend</h3>
+<div class="recipe-title-row"><h3>Anhydrous Massage Oil Blend</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <div aria-label="Massage oil variants" class="variant-switcher" role="tablist">
 <button aria-controls="r6VariantOlive" aria-selected="true" class="variant-tab" data-variant="olive" role="tab" type="button">Olive Blend</button>
 <button aria-controls="r6VariantAvocado" aria-selected="false" class="variant-tab" data-variant="avocado" role="tab" type="button">Avocado Blend</button>
@@ -709,7 +710,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r7')" type="button">Print This Recipe</button>
 </div>
-<h3>Restorative Hydration Layer</h3>
+<div class="recipe-title-row"><h3>Restorative Hydration Layer</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <p class="note">Choose the water-to-glycerin ratio, then seal with an occlusive layer.</p>
 <div class="recipe-controls-anchor"></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
@@ -764,7 +765,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r8')" type="button">Print This Recipe</button>
 </div>
-<h3>Calming Shave Gel</h3>
+<div class="recipe-title-row"><h3>Calming Shave Gel</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -809,7 +810,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r9')" type="button">Print This Recipe</button>
 </div>
-<h3>Tooth Polishing Powder</h3>
+<div class="recipe-title-row"><h3>Tooth Polishing Powder</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -856,7 +857,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r10')" type="button">Print This Recipe</button>
 </div>
-<h3>Micro&#99;urrent Glide Gel</h3>
+<div class="recipe-title-row"><h3>Micro&#99;urrent Glide Gel</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
 <ul>
@@ -907,7 +908,7 @@ Method steps MUST follow this format:
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r11')" type="button">Print This Recipe</button>
 </div>
-<h3>Soap-Free Powdered Hair Wash</h3>
+<div class="recipe-title-row"><h3>Soap-Free Powdered Hair Wash</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
 <a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
 <h4>Ingredients</h4>
@@ -976,7 +977,7 @@ Method steps MUST follow this format:
 <button class="print-btn" onclick="printCard('r12')" type="button">Print This Recipe</button>
 </div>
 
-<h3>Lip/ balm</h3>
+<div class="recipe-title-row"><h3>Lip/ balm</h3><button type="button" class="fav-btn" aria-pressed="false" aria-label="Save favorite">☆</button></div>
 <p class="note">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
 
 <div class="glide-controller glide-controller--paired" aria-label="Lip balm formulation controls">
