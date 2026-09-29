@@ -1691,6 +1691,25 @@ Method steps MUST follow this format:
 <div class="routine-log-progress" id="routineLogProgress">0 actions due</div>
 <div class="routine-log-items" id="routineLogItems" aria-live="polite"></div>
 </div>
+<section class="card routine-card routine-card-full routine-calendar-card bl-routine-card bl-routine-calendar">
+<div class="routine-calendar-head bl-routine-calendar-head">
+<div><h2>Skincare Calendar</h2><p class="note">Select Week or Month. Each day opens directly in Routine Log.</p></div>
+<div class="routine-calendar-controls bl-routine-calendar-controls">
+<div class="routine-calendar-view-tabs bl-routine-calendar-view-tabs" role="tablist" aria-label="Calendar view">
+<button type="button" class="routine-mini routine-calendar-view" data-skincare-calendar-view="week" aria-selected="false">Week</button>
+<button type="button" class="routine-mini routine-calendar-view" data-skincare-calendar-view="month" aria-selected="true">Month</button>
+</div>
+<div class="routine-calendar-nav bl-routine-calendar-nav">
+<button type="button" data-skincare-calendar-move="previous" aria-label="Previous period">←</button>
+<strong id="routineCalendarLabel"></strong>
+<button type="button" data-skincare-calendar-today>Today</button>
+<button type="button" data-skincare-calendar-move="next" aria-label="Next period">→</button>
+</div>
+</div>
+</div>
+<div class="routine-calendar-weekdays" id="routineCalendarWeekdays" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+<div class="routine-calendar-grid" id="routineCalendarGrid"></div>
+</section>
 </div>
 <div class="routine-panel" data-routine-panel="summary" hidden>
 <div class="card routine-card routine-card-full">
@@ -1714,6 +1733,10 @@ Method steps MUST follow this format:
 <div class="routine-builder-head">
 <div><h2>Routine Plan</h2><p class="note">Type to find an action or open the grouped dropdown, then set its time, frequency, benefit summary and personal notes.</p></div>
 </div>
+<section class="routine-group-manager bl-routine-group-manager">
+<div class="routine-group-manager-head"><div><h3>Create Routine Group</h3><p class="note">Create the group here. Configure its time and frequency from Settings on the group itself.</p></div></div>
+<div class="routine-group-create"><input id="routineGroupName" type="text" maxlength="80" autocomplete="off" placeholder="Name a routine group…"><button id="createRoutineGroup" type="button">Create group</button></div>
+</section>
 <div class="routine-add-row">
 <div class="routine-action-combobox">
 <div class="routine-action-input-wrap">
@@ -1723,7 +1746,7 @@ Method steps MUST follow this format:
 <div id="routineActionMenu" class="routine-action-menu" role="listbox" hidden></div>
 <select id="routineActionSelect" class="routine-action-native" tabindex="-1" aria-hidden="true"><option value="">Choose a routine action…</option></select>
 </div>
-<button class="routine-add-button" id="addRoutineActionBtn" type="button">Add to routine</button>
+<button class="routine-add-button" id="addRoutineAction" type="button">Add to routine</button>
 </div>
 <div class="routine-items" id="routineItems" aria-live="polite"></div>
 </div>
