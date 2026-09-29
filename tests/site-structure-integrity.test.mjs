@@ -181,6 +181,27 @@ test('primary pages expose canonical discovery metadata and a level-one heading'
   }
 });
 
+test('static catalogue content is authored instead of injected after page load', () => {
+  const fitness = fs.readFileSync(path.join(root, 'systems/baseline-fitness/baseline-fitness.html'), 'utf8');
+  assert.equal((fitness.match(/class="card exercise-card"/g) || []).length, 75);
+  assert.match(fitness, /id="exerciseLibrary"[^>]*data-first-paint-static="1"/);
+
+  const massage = fs.readFileSync(path.join(root, 'systems/baseline-massage/baseline-massage.html'), 'utf8');
+  assert.equal((massage.match(/class="library-tab"/g) || []).length, 4);
+  assert.equal((massage.match(/class="library-card library-entry"/g) || []).length, 45);
+  assert.equal((massage.match(/data-area-check=/g) || []).length, 26);
+  assert.match(massage, /id="massageLibraryGrid"[^>]*data-first-paint-static="1"/);
+
+  const games = fs.readFileSync(path.join(root, 'systems/baseline-games-hub/baseline-games-hub.html'), 'utf8');
+  assert.equal((games.match(/data-game-card=/g) || []).length, 8);
+  assert.match(games, /id="gamesList"[^>]*data-first-paint-static="1"/);
+
+  const skincare = fs.readFileSync(path.join(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
+  const food = fs.readFileSync(path.join(root, 'systems/baseline-food-approach/baseline-food-approach.html'), 'utf8');
+  assert.equal((skincare.match(/data-first-paint-static="1"/g) || []).length >= 37, true);
+  assert.equal((food.match(/data-first-paint-static="1"/g) || []).length >= 36, true);
+});
+
 test('permanent header controls are authored in canonical page source', () => {
   const pages = [
     ['index.html', false],
