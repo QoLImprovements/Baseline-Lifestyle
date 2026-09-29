@@ -37,43 +37,36 @@ test('Skincare first-paint lock releases on tab interaction before full page loa
   await expect(page.locator('#system')).toBeHidden();
 });
 
-test('Lip Balm direct route is focused before the folder-backed source finishes loading', async ({ page }) => {
-  let releaseSource;
-  const sourceGate = new Promise((resolve) => { releaseSource = resolve; });
-
-  await page.route('**/systems/baseline-natural-skincare/recipes/testing-lip-balm.html', async (route) => {
-    await sourceGate;
-    await route.continue();
+test('Lip Balm direct route is complete in the first HTML response before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
   });
 
-  await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'domcontentloaded' });
-
+  const response = await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'load' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
   expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes/testing-lip-balm');
+
+  await expect(page.locator('.tabs .tab[data-target="recipes"]')).toHaveAttribute('aria-selected','true');
   await expect(page.locator('#recipes')).toBeVisible();
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
-  await expect(page.locator('#r12')).toHaveAttribute('data-external-recipe-placeholder', '1');
-
-  releaseSource();
-
-  await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', '1');
-  await expect(page.locator('#r12 #r12ButterCharacter')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
-
-  await page.reload();
-  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes/testing-lip-balm');
-  await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12ButterCharacter')).toBeVisible();
+  await expect(page.locator('#r12Structure')).toBeVisible();
+  await expect(page.locator('#r12 a[data-ingredient="ing-kokum-butter"]')).toBeVisible();
+  await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', /.+/);
 });
 
-test('Testing Lip/ balm opens from the recipe folder, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
+test('Testing Lip/ balm opens from the static Skincare shell, preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
 
   const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/testing-lip-balm"]');
   await expect(link).toContainText('Lip/ balm');
-  await expect(link).not.toHaveAttribute('data-recipe-id', /.+/);
+  await expect(link).toHaveAttribute('data-recipe-id', 'r12');
 
   await link.click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
