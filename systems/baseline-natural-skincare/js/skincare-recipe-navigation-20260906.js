@@ -16,7 +16,7 @@
   ];
   const TESTING=[
     ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],
-    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',true]
+    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',false]
   ];
   function list(items,descriptions){
     const ul=document.createElement('ul');
@@ -34,18 +34,18 @@
     return ul;
   }
   function h4(text){ const el=document.createElement('h4');el.textContent=text;return el; }
-  function rebuild(){
+  function reconcileStaticCatalogue(){
     const landing=document.getElementById('recipes-landing');
-    if(landing){
-      let title=landing.querySelector(':scope > h2');
-      if(!title){ title=document.createElement('h2');title.textContent='Recipes'; }
-      let intro=landing.querySelector(':scope > p');
-      if(!intro){ intro=document.createElement('p'); }
-      intro.textContent='Select a recipe to view it.';
-      landing.replaceChildren(title,intro,h4('Recipes'),list(MAIN,true),h4('Testing'),list(TESTING,true));
-    }
+    if(!landing) return;
+    [...MAIN,...TESTING].forEach(([id,slug,title,description])=>{
+      const href='/baseline-natural-skincare/recipes/'+slug;
+      const anchor=landing.querySelector('a[href="'+href+'"]');
+      if(!anchor) return;
+      anchor.classList.add('recipe-open');
+      anchor.dataset.recipeId=id;
+      anchor.removeAttribute('data-external-recipe-id');
+      anchor.textContent=title+' — '+description;
+    });
   }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',rebuild,{once:true}); else rebuild();
-  global.setTimeout(rebuild,220);
-  global.setTimeout(rebuild,760);
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',reconcileStaticCatalogue,{once:true}); else reconcileStaticCatalogue();
 })(typeof window!=='undefined'?window:globalThis);
