@@ -154,7 +154,7 @@
     const next=VIEWS.includes(view)?view:'log';state.activeView=next;
     $$('[data-routine-view]').forEach((button)=>{ const selected=button.dataset.routineView===next;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false'); });
     $$('[data-routine-panel]').forEach((panel)=>{ const selected=panel.dataset.routinePanel===next;panel.hidden=!selected;panel.classList.toggle('active',selected); });
-    if (next==='log') { renderLog();renderCalendar(); }
+    if (next==='log') renderLog();
     if (next==='summary') renderSummary();
     if (next==='plan') renderPlan();
     if (next==='public') renderPublicProfiles();
@@ -317,7 +317,7 @@
       if (event.target.matches('[data-field]')) { updateItemField(event.target);renderPlan(); }
       if (event.target.matches('[data-day]')) toggleDay(event.target);
       if (event.target.matches('[data-log-complete]')) { updateCompletionInPlace(event.target); }
-      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);state.calendarAnchor=MODEL.localDate(state.selectedDate);renderLog();renderCalendar(); }
+      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);state.calendarAnchor=MODEL.localDate(state.selectedDate);renderLog(); }
       if (event.target.id==='routineVisibility') { state.visibility=event.target.value==='public'?'public':'private';scheduleSave(); }
     });
     root.addEventListener('keydown',(event)=>{
@@ -331,7 +331,7 @@
     global.addEventListener('popstate',restoreRoute);
   }
 
-  function renderAll() { renderPlan();renderSummary();renderLog();renderCalendar();renderPublicProfiles(); }
+  function renderAll() { renderPlan();renderSummary();renderLog();renderPublicProfiles(); }
   async function init() {
     const routing=locationTargetsRoutine();
     state.activeView=routeViewFromLocation();
