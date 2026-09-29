@@ -210,7 +210,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipes">
 <!-- Recipe 1 -->
-<div class="recipe card recipe-page" data-recipe-slug="nurturing-glow-butter" id="r1">
+<div class="recipe card recipe-page" data-recipe-slug="nurturing-glow-butter" id="r1" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r1')">Print This Recipe</button>
@@ -220,9 +220,9 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Butter base</strong></li>
 <li data-method-step="1" data-tip="Unrefined butter rich in stearic &amp; oleic acids; occlusive, softens and supports barrier repair.">420 g <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-shea" href="/baseline-natural-skincare/ingredient-library/shea-butter">Shea Butter (Unrefined)</a> (softened)</li>
 <li class="ing-subhead"><strong>Oils</strong></li>
@@ -232,28 +232,28 @@ Method steps MUST follow this format:
 <li class="ing-subhead"><strong>Aromatic</strong></li>
 <li data-method-step="4" data-tip="Low-dose soothing aromatic; mild antimicrobial and calming aroma at ~0.5%.">60 drops <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-lavender" href="/baseline-natural-skincare/ingredient-library/lavender">Lavender Essential Oil</a> (≈0.5%)</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li>Whip the softened shea butter until light and fluffy.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">420 g Shea Butter (Unrefined) (softened)</span></div></li>
 <li>Drizzle in the cucumber seed oil, argan oil, and jojoba oil slowly while whipping until fully incorporated.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">60 ml Cucumber Seed Oil</span><span class="method-amt">60 ml Argan Oil</span><span class="method-amt">120 ml Jojoba Oil</span></div></li>
 <li>Chill for <strong>10 minutes</strong>, then whip again for a stable, airy texture.</li>
 <li>Add the lavender essential oil and whip briefly to distribute evenly.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">60 drops Lavender Essential Oil (≈0.5%)</span></div></li>
 <li>Jar immediately. Tap the jar gently to release trapped air pockets, then cap.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Store cool &amp; dry; avoid direct sunlight/heat. Shelf life: 12–24 months.</li>
 <li>Apply after shower/steam while skin is warm and slightly damp.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Overall low–moderate depending on skin . Patch test if congestion-prone.</li>
 </ul>
-<h4>Notes</h4>
-<ul><li>Soft-set at room temperature; richer and more cushiony than a firm balm, and it melts quickly on contact.</li></ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance"><li>Soft-set at room temperature; richer and more cushiony than a firm balm, and it melts quickly on contact.</li></ul>
 </div>
 <!-- Recipe 2 -->
-<div class="recipe card recipe-page" data-recipe-slug="anhydrous-oil-cleanser" id="r2">
+<div class="recipe card recipe-page" data-recipe-slug="anhydrous-oil-cleanser" id="r2" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r2')" type="button">Print This Recipe</button>
@@ -263,7 +263,7 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
 <p class="note">Choose the cleanser variant you want. The ingredient amounts below reflect the currently selected balance.</p>
 <div aria-label="Oil cleanser variants" class="variant-switcher" role="tablist">
 <button aria-controls="r2VariantReactive" aria-selected="false" class="variant-tab" data-variant="reactive" role="tab" type="button">Reactive</button>
@@ -289,31 +289,31 @@ Method steps MUST follow this format:
 <div class="glide-breakdown" id="r2ReactiveBreakdown"><strong>Selected variant:</strong> 100% safflower</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Reactive variant</strong></li>
 <li data-method-step="1" data-tip="High-linoleic oil with a light, calm skin feel; ideal when you want the cleanser to stay simple."><span class="amt r2-reactive-safflower-amt" data-base-display="100 ml" data-base-max="100" data-base-min="100" data-base-unit="ml">100 ml</span> <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-safflower" href="/baseline-natural-skincare/ingredient-library/safflower">Safflower Oil</a></li>
 <li class="ing-subhead"><strong>Optional antioxidant</strong></li>
 <li data-method-step="2" data-tip="Antioxidant (mixed tocopherols) to slow oxidation of unsaturated oils.">0.5–1 ml <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a> (optional)</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Add</strong>: measure the safflower oil into a completely dry bottle or beaker.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">100 ml Safflower Oil</span></div></li>
 <li><strong>Finish</strong>: add vitamin E if using, then swirl or roll until uniform.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">0.5–1 ml Vitamin E (Tocopherol) (optional)</span></div></li>
 <li><strong>Rest</strong>: cap, label, and let the blend settle for <strong>30 minutes</strong> before first use.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Massage onto dry or slightly damp skin, then wipe or rinse lightly.</li>
 <li>This is the lowest-input option and leaves the lightest finish of the three variants.</li>
 <li>Store cool and dark. Shelf life: ~9–12 months, depending on oil freshness.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Safflower is the lightest-feeling option here and is generally the easiest variant for lower-weight use.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>This variant stays fully anhydrous and preservative-free, so keep water out of the bottle.</li>
 <li>Reactive is the simplest build: one cleansing oil, optional antioxidant, no balance adjustment.</li>
 </ul>
@@ -332,36 +332,36 @@ Method steps MUST follow this format:
 </div>
 <div class="glide-control-explainer">
 <div class="glide-explain-title">Overall Feel</div>
-<p class="glide-explain" id="r2BalancedExplain">Middle-ground cleanse. Safflower stays dominant while castor adds more cling and sebum-lifting pull.</p>
+<p class="glide-explain" id="r2BalancedExplain" data-recipe-view-group="guidance">Middle-ground cleanse. Safflower stays dominant while castor adds more cling and sebum-lifting pull.</p>
 <div class="glide-breakdown" id="r2BalancedBreakdown"><strong>Selected variant:</strong> <span class="r2-balanced-safflower">90%</span> safflower • <span class="r2-balanced-castor-percent">10%</span> castor</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Balanced variant</strong></li>
 <li data-method-step="1" data-tip="High-linoleic base that keeps the blend light while filling the remainder after castor is set."><span class="amt r2-balanced-safflower-amt" data-base-display="90 ml" data-base-max="90" data-base-min="90" data-base-unit="ml">90 ml</span> <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-safflower" href="/baseline-natural-skincare/ingredient-library/safflower">Safflower Oil</a></li>
 <li data-method-step="1" data-tip="Viscous ricinoleic-rich oil; adds cling, cleansing pull, and a slower-moving finish as the slider rises."><span class="amt r2-balanced-castor-amt" data-base-display="10 ml" data-base-max="10" data-base-min="10" data-base-unit="ml">10 ml</span> <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
 <li class="ing-subhead"><strong>Optional antioxidant</strong></li>
 <li data-method-step="2" data-tip="Antioxidant (mixed tocopherols) to slow oxidation of unsaturated oils.">0.5–1 ml <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a> (optional)</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Add</strong>: measure the safflower oil and castor oil into a completely dry bottle or beaker.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">90 ml Safflower Oil</span><span class="method-amt">10 ml Castor Oil</span></div></li>
 <li><strong>Finish</strong>: add vitamin E if using, then swirl or roll until uniform.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">0.5–1 ml Vitamin E (Tocopherol) (optional)</span></div></li>
 <li><strong>Rest</strong>: cap, label, and let the blend settle for <strong>30 minutes</strong> before first use.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Massage onto dry or slightly damp skin, then wipe or rinse lightly.</li>
 <li>Balanced gives more cleansing pull than Reactive without moving into the heavier finish of Enhanced Barrier.</li>
 <li>Store cool and dark. Shelf life: ~9–12 months, depending on oil freshness.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>This version stays fairly low-weight overall, but becomes richer as castor rises.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>This variant stays anhydrous and preservative-free, so keep water out of the bottle.</li>
 <li>Balanced changes the cleansing pull through castor while safflower remains the main phase.</li>
 </ul>
@@ -380,12 +380,12 @@ Method steps MUST follow this format:
 </div>
 <div class="glide-control-explainer">
 <div class="glide-explain-title">Overall Feel</div>
-<p class="glide-explain" id="r2EnhancedExplain">Cushioned and slower-moving. Olive raises the occlusive after-feel while castor stays fixed for cleansing pull.</p>
+<p class="glide-explain" id="r2EnhancedExplain" data-recipe-view-group="guidance">Cushioned and slower-moving. Olive raises the occlusive after-feel while castor stays fixed for cleansing pull.</p>
 <div class="glide-breakdown" id="r2EnhancedBreakdown"><strong>Selected variant:</strong> <span class="r2-enhanced-safflower">72%</span> safflower • 10% castor • <span class="r2-enhanced-olive-percent">18%</span> olive</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Enhanced Barrier variant</strong></li>
 <li data-method-step="1" data-tip="Main safflower phase that keeps the richer version from becoming overly heavy."><span class="amt r2-enhanced-safflower-amt" data-base-display="72 ml" data-base-max="72" data-base-min="72" data-base-unit="ml">72 ml</span> <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-safflower" href="/baseline-natural-skincare/ingredient-library/safflower">Safflower Oil</a></li>
 <li data-method-step="1" data-tip="Fixed cleansing-support phase in the richer variant; keeps some pull while olive rises."><span class="amt r2-enhanced-castor-amt" data-base-display="10 ml" data-base-max="10" data-base-min="10" data-base-unit="ml">10 ml</span> <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
@@ -393,31 +393,31 @@ Method steps MUST follow this format:
 <li class="ing-subhead"><strong>Optional antioxidant</strong></li>
 <li data-method-step="2" data-tip="Antioxidant (mixed tocopherols) to slow oxidation of unsaturated oils.">0.5–1 ml <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a> (optional)</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Add</strong>: measure the safflower oil, castor oil, and olive oil into a completely dry bottle or beaker.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">72 ml Safflower Oil</span><span class="method-amt">10 ml Castor Oil</span><span class="method-amt">18 ml Olive Oil</span></div></li>
 <li><strong>Finish</strong>: add vitamin E if using, then swirl or roll until uniform.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">0.5–1 ml Vitamin E (Tocopherol) (optional)</span></div></li>
 <li><strong>Rest</strong>: cap, label, and let the blend settle for <strong>30 minutes</strong> before first use.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Massage onto dry or slightly damp skin, then wipe or rinse lightly.</li>
 <li>Enhanced Barrier leaves the richest protective finish of the three variants.</li>
 <li>Store cool and dark. Shelf life: ~9–12 months, depending on oil freshness.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>This is the richest version. The finish becomes more cushioned and occlusive as olive rises.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>This variant stays anhydrous and preservative-free, so keep water out of the bottle.</li>
 <li>Enhanced Barrier changes the post-rinse cushion through olive while castor stays fixed.</li>
 </ul>
 </div>
 </div>
 <!-- Recipe 3 -->
-<div class="recipe card recipe-page" data-recipe-slug="protective-touch-balm" id="r3">
+<div class="recipe card recipe-page" data-recipe-slug="protective-touch-balm" id="r3" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r3')" type="button">Print This Recipe</button>
@@ -427,10 +427,10 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p>Barrier-first balm with a high-glide, protective finish. Vegan. No preservatives (anhydrous). Yield: 100 g. Includes vitamin E.</p>
-<p class="note">100 g balm. One batch; the sliders change the overall feel and the internal percentage balance of that batch.</p>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Meta</h4>
+<p data-recipe-view-group="details">Barrier-first balm with a high-glide, protective finish. Vegan. No preservatives (anhydrous). Yield: 100 g. Includes vitamin E.</p>
+<p class="note" data-recipe-view-group="details">100 g balm. One batch; the sliders change the overall feel and the internal percentage balance of that batch.</p>
 <div aria-label="Protective Touch Balm feel controls" class="glide-controller glide-controller--paired">
 <div class="glide-control-stack">
 <div aria-label="Protective Touch Balm oil balance control" class="glide-control-main">
@@ -456,12 +456,12 @@ Method steps MUST follow this format:
 </div>
 <div class="glide-control-explainer">
 <div class="glide-explain-title">Overall Feel</div>
-<p class="glide-explain" id="r3OverallExplain">Balanced protective slip with a medium set. Enough cling for cushioning, while pickup and spread stay controlled.</p>
+<p class="glide-explain" id="r3OverallExplain" data-recipe-view-group="details">Balanced protective slip with a medium set. Enough cling for cushioning, while pickup and spread stay controlled.</p>
 <div class="glide-breakdown" id="r3OverallBreakdown"><strong>Selected variant:</strong> <span class="r3-balance-jojoba-readout">38.5</span>% jojoba • <span class="r3-balance-castor-readout">8.0</span>% castor • <span class="r3-firmness-shea-readout">40.0</span>% shea • <span class="r3-firmness-carnauba-readout">8.0</span>% carnauba • 5.0% calendula • 0.5% vitamin E</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Base</strong></li><li data-method-step="3" data-tip="Rich in stearic/oleic lipids; offsets wax so the balm keeps some softness as firmness rises or falls."><span class="amt r3-firmness-shea-amt" data-base-display="40.0 g" data-base-max="40" data-base-min="40" data-base-unit="g">40.0 g</span> <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-shea" href="/baseline-natural-skincare/ingredient-library/shea-butter">Shea Butter (Unrefined)</a></li>
 <li data-method-step="2" data-tip="Liquid wax ester similar to human sebum; increases slip and smoothness when the castor balance is kept lower."><span class="amt r3-balance-jojoba-amt" data-base-display="38.5 g" data-base-max="38.5" data-base-min="38.5" data-base-unit="g">38.5 g</span> <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil">Jojoba Oil</a></li>
 <li data-method-step="2" data-tip="Viscous ricinoleic-rich oil; adds cling and protective cushioning as you raise the slider."><span class="amt r3-balance-castor-amt" data-base-display="8.0 g" data-base-max="8" data-base-min="8" data-base-unit="g">8.0 g</span> <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
@@ -469,8 +469,8 @@ Method steps MUST follow this format:
 <li data-method-step="4" data-tip="Soothing botanical infusion (in sunflower oil); supports comfort and barrier feel.">5.0 g <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-calendula" href="/baseline-natural-skincare/ingredient-library/calendula">Calendula Oil (infused)</a> (in sunflower oil)</li>
 <li data-method-step="5" data-tip="Antioxidant (mixed tocopherols) to slow oxidation; also conditions skin.">0.5 g <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e">Vitamin E (Tocopherol)</a></li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Gentle simmer</strong>: in the bottom pan. Keep all tools/containers completely dry.</li>
 <li><strong>In the top pot add</strong>: carnauba wax + jojoba + castor. Heat and stir until wax is fully dissolved and the liquid is clear.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">38.5 g Jojoba Oil</span><span class="method-amt">8.0 g Castor Oil</span><span class="method-amt">8.0 g Carnauba Wax</span></div></li>
 <li><strong>Add shea butter</strong>: stir slowly until just melted and uniform.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">40.0 g Shea Butter (Unrefined)</span></div></li>
@@ -479,23 +479,23 @@ Method steps MUST follow this format:
 <li><strong>Rest 3–5 minutes</strong>: (no stirring) to let bubbles rise. Pour into jars.</li>
 <li><strong>Set and cure</strong>: leave jars open (or loosely covered) until fully set and cool, then cap. Let cure overnight.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Apply a thin layer to lips or dry areas. For daytime, start with a light coat and add only if needed.</li>
 <li>If your skin is congestion-prone, keep use targeted (lips, dry patches) rather than full-face.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Max-of-range scores: shea 2, jojoba 2, castor 1, calendula (sunflower) 2, carnauba 0, vitamin E 2. If congestion-prone, keep use targeted (lips/dry patches) rather than full-face.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>Because this is anhydrous, keep water out of the jar. Cap only once fully cooled.</li>
 <li>The oil-balance slider changes cling versus glide. The firmness slider changes pickup resistance and melt speed.</li>
 </ul>
 </div>
 <!-- Recipe 4 -->
-<div class="recipe card recipe-page" data-recipe-slug="hydrating-conductive-mist" id="r4">
+<div class="recipe card recipe-page" data-recipe-slug="hydrating-conductive-mist" id="r4" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r4')">Print This Recipe</button>
@@ -505,9 +505,9 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Base liquids</strong></li>
 <li data-method-step="1" data-tip="Primary solvent; supports hydration and electrical conductivity.">45 ml <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Distilled or filtered water</a></li>
 <li data-method-step="1" data-tip="Alcohol‑free distillate; lightly tones and supports calm contact.">20 ml <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-witchhazel" href="/baseline-natural-skincare/ingredient-library/witchhazel">Alcohol‑free witch hazel</a></li>
@@ -517,26 +517,26 @@ Method steps MUST follow this format:
 <li class="ing-subhead"><strong>Optional</strong></li>
 <li data-method-step="3" data-tip="Optional aromatic; omit entirely for dog use.">1 drop <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-lavender" href="/baseline-natural-skincare/ingredient-library/lavender">Lavender essential oil</a> (optional)</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li>In a clean bottle, combine the water, alcohol-free witch hazel, and rose water (or cucumber hydrosol).<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">45 ml Distilled or filtered water</span><span class="method-amt">20 ml Alcohol‑free witch hazel</span><span class="method-amt">30 ml Rose water or cucumber hydrosol</span></div></li>
 <li>Add the vegetable glycerin and swirl until fully mixed.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">5 ml Vegetable glycerin</span></div></li>
 <li>If using lavender essential oil, add it last. Cap and shake for <strong>15–20 seconds</strong> to disperse.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">1 drop Lavender essential oil (optional)</span></div></li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Store cool; use within 2–3 months (no preservative). For longer storage, refrigerate.</li>
 <li>Mist generously for microcurrent or lightly for daily hydration. For dogs, apply to hands or brush and work through coat.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Mostly water-based; very light lipids (MCT ~1, optional cucumber ~1). Low clogging tendency.</li>
 </ul>
-<h4>Notes</h4>
-<ul><li>Shake before use if you included essential oil.</li></ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance"><li>Shake before use if you included essential oil.</li></ul>
 </div>
 <!-- Recipe 5 -->
-<div class="recipe card recipe-page" data-recipe-slug="calming-shave-gel" id="r5">
+<div class="recipe card recipe-page" data-recipe-slug="calming-shave-gel" id="r5" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r5')">Print This Recipe</button>
@@ -546,7 +546,7 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
 <p class="note">240 ml master batch. Use the cushion slider to set guar gum as a <strong>percentage of the batch</strong> without changing the base water, slippery elm, glycerin, or jojoba. This keeps the control aligned with batch multiplier and scale-by-ingredient.</p>
 <div aria-label="Shave gel cushion control" class="glide-controller">
 <div class="glide-control-main">
@@ -565,8 +565,8 @@ Method steps MUST follow this format:
 <div class="glide-breakdown" id="r5CushionBreakdown"><strong>Selected variant:</strong> 240 ml water • 2 tbsp slippery elm • 5 ml glycerin • <span class="r5-cushion-percent">1.0%</span> guar • 1.25 ml jojoba</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Gel base</strong></li>
 <li data-method-step="1" data-tip="Hydrates mucilage; thickens gently at 45–50°C without cooking the gel.">240 ml <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Filtered or distilled water</a> (warmed to 45–50 °C)</li>
 <li data-method-step="2" data-tip="Inner-bark polysaccharides form a soothing mucilage film for cushion and calm glide.">2 tbsp (level) <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-slipperyelm" href="/baseline-natural-skincare/ingredient-library/slipperyelm">Slippery elm powder</a></li>
@@ -576,8 +576,8 @@ Method steps MUST follow this format:
 <li class="ing-subhead"><strong>Finish</strong></li>
 <li data-method-step="6" data-tip="Light post-shave comfort and a micro-lipid slip layer; biomimetic with human sebum.">1.25 ml <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil">Jojoba oil</a></li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li>Warm the water to <strong>45–50 °C</strong> (warm, not hot).<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">240 ml Filtered or distilled water (warmed to 45–50 °C)</span></div></li>
 <li>Whisk in the slippery elm powder until smooth.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">2 tbsp (level) Slippery elm powder</span></div></li>
 <li>Rest for <strong>10 minutes</strong> to fully hydrate the mucilage.</li>
@@ -585,24 +585,24 @@ Method steps MUST follow this format:
 <li>Whisk the glycerin/guar mix into the gel until evenly thickened.</li>
 <li>Stir in the jojoba oil and whisk again until the texture is fully even.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">1.25 ml Jojoba oil</span></div></li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Refrigerate; use within <strong>3–5 days</strong> (no preservative). Make small fresh batches.</li>
 <li>Apply to warm, wet skin. Shave with gentle passes. Rinse with warm water and follow with your oil cleanse / butter as needed.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Mostly water-based with tiny lipids (jojoba 0–2). Low clogging tendency; patch test if very congestion-prone.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>If it feels too thick or slightly draggy, dilute in the palm with a few drops of warm water before applying.</li>
 <li>If it dries mid-pass, increase glycerin by <strong>¼ tsp</strong> (small steps only).</li>
 <li>Your common <strong>⅓ batch</strong> lands around <strong>0.8 g guar</strong> at the current default, which sits in the <strong>¼ tsp or slightly more</strong> zone.</li>
 <li>No separate glide slider is used here: cushion is the useful variable, while glide stays anchored by slippery elm, glycerin, and jojoba.</li>
 </ul>
 </div>
-<div class="recipe card recipe-page" data-recipe-slug="anhydrous-massage-oil-blend" id="r6">
+<div class="recipe card recipe-page" data-recipe-slug="anhydrous-massage-oil-blend" id="r6" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r6')" type="button">Print This Recipe</button>
@@ -617,7 +617,7 @@ Method steps MUST follow this format:
 <button aria-controls="r6VariantAvocado" aria-selected="false" class="variant-tab" data-variant="avocado" role="tab" type="button">Avocado Blend</button>
 </div>
 <div class="recipe-controls-anchor"></div>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
 <div class="variant-panel" data-variant-panel="olive" id="r6VariantOlive" role="tabpanel">
 <p class="note">100 ml master blend. <strong>Jojoba stays fixed at 15%</strong>. Glide changes castor against olive.</p>
 <div aria-label="Olive massage blend glide control" class="glide-controller">
@@ -637,38 +637,38 @@ Method steps MUST follow this format:
 <div class="glide-breakdown" id="r6GlideBreakdown"><strong>Selected variant:</strong> 15% jojoba • <span class="glide-castor">7.5%</span> castor • <span class="glide-olive">77.5%</span> olive</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Olive Blend</strong></li>
 <li data-method-step="1" data-tip="Stable liquid wax ester; keeps the blend smooth and more balanced on skin.">15 ml <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil">Jojoba Oil</a></li>
 <li data-method-step="1" data-tip="Viscous ricinoleic-rich oil; increases traction and slows the glide as the percentage rises."><span class="amt glide-castor-amt" data-base-display="7.5 ml" data-base-max="7.5" data-base-min="7.5" data-base-unit="ml">7.5 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
 <li data-method-step="1" data-tip="Oleic-rich carrier; provides the main body of the blend and keeps the massage stroke long and cushioned."><span class="amt glide-olive-amt" data-base-display="77.5 ml" data-base-max="77.5" data-base-min="77.5" data-base-unit="ml">77.5 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-olive" href="/baseline-natural-skincare/ingredient-library/olive">Olive Oil</a></li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li>Make sure the bottle, cap, funnel, and all tools are completely dry.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">15 ml Jojoba Oil</span><span class="method-amt">7.5 ml Castor Oil</span><span class="method-amt">77.5 ml Olive Oil</span></div></li>
 <li>Add the jojoba oil, castor oil, and olive oil in the amounts shown for your chosen glide.</li>
 <li>Cap and roll or swirl until fully uniform.</li>
 <li>Let the blend settle for <strong>30 minutes</strong>, then label.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Massage onto dry skin. Reapply in small amounts rather than flooding the skin at the start.</li>
 <li>For a faster, freer slip stay lower on the slider; for more control and cling move higher.</li>
 <li>Store cool and dark. Shelf life: ~9–12 months, depending on the freshness of the oils used.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Best suited to the body. Olive keeps the blend cushioned but can feel too rich for congestion-prone facial skin.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li><strong>Glide scale:</strong> 0% castor / 85% olive at the lightest end. 15% castor / 70% olive at the richest end. Jojoba remains 15% throughout.</li>
 <li>This is the simpler blend: one fixed balancing oil, one variable traction oil, and one main body oil.</li>
 </ul>
 </div>
 <div class="variant-panel" data-variant-panel="avocado" hidden="" id="r6VariantAvocado" role="tabpanel">
-<p class="note">100 ml master blend. Richness changes <strong>avocado</strong> against <strong>fractionated coconut</strong>. Lasting glide changes <strong>castor</strong> against <strong>watermelon</strong>.</p>
+<p class="note" data-recipe-view-group="guidance">100 ml master blend. Richness changes <strong>avocado</strong> against <strong>fractionated coconut</strong>. Lasting glide changes <strong>castor</strong> against <strong>watermelon</strong>.</p>
 <div aria-label="Avocado massage blend controls" class="glide-controller glide-controller--paired">
 <div class="glide-control-stack">
 <div aria-label="Avocado massage blend richness control" class="glide-control-main">
@@ -694,43 +694,43 @@ Method steps MUST follow this format:
 </div>
 <div class="glide-control-explainer">
 <div class="glide-explain-title">Overall Feel</div>
-<p class="glide-explain" id="r6AvocadoOverallExplain">Balanced body with controlled lasting glide. Richer than Protective Touch Balm, but still smooth through the hand.</p>
+<p class="glide-explain" id="r6AvocadoOverallExplain" data-recipe-view-group="guidance">Balanced body with controlled lasting glide. Richer than Protective Touch Balm, but still smooth through the hand.</p>
 <div class="glide-breakdown" id="r6AvocadoBreakdown"><strong>Selected variant:</strong> <span class="r6-avocado-avocado-readout">60.0</span>% avocado • <span class="r6-avocado-fco-readout">20.0</span>% fractionated coconut • <span class="r6-avocado-watermelon-readout">15.0</span>% watermelon • <span class="r6-avocado-castor-readout">5.0</span>% castor</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Avocado Blend</strong></li>
 <li data-method-step="2" data-tip="Rich, cushioning carrier oil; increases body and richness as the richness slider rises."><span class="amt r6-avocado-avocado-amt" data-base-display="60 ml" data-base-max="60" data-base-min="60" data-base-unit="ml">60 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado">Avocado Oil</a></li>
 <li data-method-step="2" data-tip="Very light spreadability phase; becomes the balancing remainder as avocado rises or falls."><span class="amt r6-avocado-fco-amt" data-base-display="20 ml" data-base-max="20" data-base-min="20" data-base-unit="ml">20 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-fractionated-coconut" href="/baseline-natural-skincare/ingredient-library/fractionated-coconut">Fractionated Coconut Oil</a></li>
 <li data-method-step="2" data-tip="Silky, quicker-finishing seed oil; falls as lasting glide rises so the finish stays more anchored."><span class="amt r6-avocado-watermelon-amt" data-base-display="15 ml" data-base-max="15" data-base-min="15" data-base-unit="ml">15 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-watermelon" href="/baseline-natural-skincare/ingredient-library/watermelon">Watermelon Seed Oil</a></li>
 <li data-method-step="2" data-tip="Viscous ricinoleic-rich oil; raises drag and persistence as lasting glide increases."><span class="amt r6-avocado-castor-amt" data-base-display="5 ml" data-base-max="5" data-base-min="5" data-base-unit="ml">5 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li>Make sure the bottle, cap, funnel, and all tools are completely dry.</li>
 <li>Add the oils in the amounts shown for your selected richness and lasting glide.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">60 ml Avocado Oil</span><span class="method-amt">20 ml Fractionated Coconut Oil</span><span class="method-amt">15 ml Watermelon Seed Oil</span><span class="method-amt">5 ml Castor Oil</span></div></li>
 <li>Cap and roll or swirl until fully uniform.</li>
 <li>Let the blend settle for <strong>30 minutes</strong>, then label.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Massage onto dry skin. Reapply in small amounts rather than flooding the skin at the start.</li>
 <li>Lower lasting glide keeps the finish quicker; higher lasting glide keeps the stroke anchored for longer.</li>
 <li>Store cool and dark. Shelf life: ~9–12 months, depending on the freshness of the oils used.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>Best suited to the body. Avocado brings a richer skin feel than the olive variant, while watermelon keeps the finish smoother.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>Richness only changes avocado against fractionated coconut.</li>
 <li>Lasting glide only changes castor against watermelon.</li>
 </ul>
 </div>
 </div>
-<div class="recipe card recipe-page" data-recipe-slug="restorative-hydration-layer" id="r7">
+<div class="recipe card recipe-page" data-recipe-slug="restorative-hydration-layer" id="r7" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r7')" type="button">Print This Recipe</button>
@@ -742,7 +742,7 @@ Method steps MUST follow this format:
 
 <p class="note">Choose the water-to-glycerin ratio, then seal with an occlusive layer.</p>
 <div class="recipe-controls-anchor"></div>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
 <div aria-label="Restorative Hydration Layer ratio control" class="glide-controller">
 <div class="glide-control-main">
 <div class="glide-slider-head">
@@ -760,36 +760,36 @@ Method steps MUST follow this format:
 <div class="glide-breakdown" id="r7Breakdown"><strong>Selected variant:</strong> <span class="r7-water-readout">80.0</span>% rose water or water • <span class="r7-glycerin-readout">20.0</span>% vegetable glycerin</div>
 </div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Main</strong></li>
 <li data-method-step="1" data-tip="Water phase for surface hydration. Rose water can be used for a softer aromatic profile; plain water keeps the formula more neutral."><span class="amt r7-water-amt" data-base-display="80 ml" data-base-max="80" data-base-min="80" data-base-unit="ml">80 ml</span> <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-rosewater" href="/baseline-natural-skincare/ingredient-library/rosewater">Rose Water</a> or <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Water</a></li>
 <li data-method-step="2" data-tip="Humectant that binds water at the skin surface and increases post-wash hydration retention."><span class="amt r7-glycerin-amt" data-base-display="20 ml" data-base-max="20" data-base-min="20" data-base-unit="ml">20 ml</span> <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-glycerin" href="/baseline-natural-skincare/ingredient-library/glycerin">Vegetable Glycerin</a></li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Add</strong>: Add Rose Water or Water to a clean bottle.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">80 ml Rose Water or Water</span></div></li>
 <li><strong>Add</strong>: Add Vegetable Glycerin.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">20 ml Vegetable Glycerin</span></div></li>
 <li><strong>Combine</strong>: Cap and shake until fully combined.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Because this is water-based and unpreserved, make small batches and use promptly.</li>
 <li>Keep the bottle and tools clean to reduce contamination risk.</li>
 <li>Use after washing, before any butter, balm, or oil-sealing step.</li>
 </ul>
-<h4><a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
-<ul>
+<h4<a class="support-open" href="#support=support-comedogenic-rating">Comedogenic Considerations</a></h4>
+<ul data-recipe-view-group="guidance">
 <li>This is not an oil-led recipe. Comedogenic load is driven mainly by what you seal over it, not by the hydration layer itself.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li><strong>Formula range:</strong> 70–90% rose water or water • 10–30% vegetable glycerin.</li>
 <li><strong>Reference point:</strong> 100 ml batch = 80 ml rose water or water + 20 ml vegetable glycerin.</li>
 </ul>
 </div>
 <!-- Testing Recipe 8 -->
-<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-shaving-gel" id="r8">
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-shaving-gel" id="r8" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r8')" type="button">Print This Recipe</button>
@@ -799,46 +799,46 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li data-method-step="1" data-tip="Hydrates the slippery elm and guar gum.">240 ml <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Water</a></li>
 <li data-method-step="1" data-tip="Provides strong mucilage, razor slip and cushioning.">2 tablespoons <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-slipperyelm" href="/baseline-natural-skincare/ingredient-library/slipperyelm">Slippery Elm Powder</a></li>
 <li data-method-step="3" data-tip="Adds glide and helps retain moisture.">5 ml <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-glycerin" href="/baseline-natural-skincare/ingredient-library/glycerin">Vegetable Glycerin</a></li>
 <li data-method-step="4" data-tip="Creates the gel structure and controls thickness."><a class="ing-link" data-from-recipe="r8" data-ingredient="ing-guar-gum" href="/baseline-natural-skincare/ingredient-library/guar-gum">Guar Gum</a> – enough to thicken to preferred gel consistency</li>
 <li data-method-step="5" data-tip="Provides lubrication and leaves a light protective emollient layer on the skin.">1.25 ml <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil">Jojoba Oil</a></li>
 </ul>
-<h4>Ingredient Roles</h4>
-<ul>
+<h4Ingredient Roles</h4>
+<ul data-recipe-view-group="details">
 <li><strong>Slippery Elm Powder</strong> – provides strong mucilage, razor slip and cushioning.</li>
 <li><strong>Vegetable Glycerin</strong> – adds glide and helps retain moisture.</li>
 <li><strong>Guar Gum</strong> – creates the gel structure and controls thickness.</li>
 <li><strong>Jojoba Oil</strong> – provides lubrication and leaves a light protective emollient layer on the skin.</li>
 <li><strong>Water</strong> – hydrates the slippery elm and guar gum.</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Combine</strong>: Add the slippery elm powder to the water and mix thoroughly.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">240 ml Water</span><span class="method-amt">2 tablespoons Slippery Elm Powder</span></div></li>
 <li><strong>Hydrate</strong>: Allow it to hydrate and develop its natural mucilage.</li>
 <li><strong>Add glycerin</strong>: Mix in the vegetable glycerin.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">5 ml Vegetable Glycerin</span></div></li>
 <li><strong>Thicken</strong>: Gradually add guar gum until the desired shaving-gel thickness is reached.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">Guar Gum – enough to thicken to preferred gel consistency</span></div></li>
 <li><strong>Add jojoba</strong>: Mix in the jojoba oil thoroughly.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">1.25 ml Jojoba Oil</span></div></li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Store appropriately and use a suitable preservative if keeping the water-based gel for more than immediate use.</li>
 </ul>
-<h4>Comedogenic Considerations</h4>
-<ul>
+<h4Comedogenic Considerations</h4>
+<ul data-recipe-view-group="guidance">
 <li>Mostly water-based with a small jojoba phase. Keep use rinse-off and monitor individual skin response if congestion-prone.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
 </ul>
 </div>
 <!-- Testing Recipe 9 -->
-<div class="recipe card recipe-page" data-recipe-slug="tooth-polishing-powder" id="r9">
+<div class="recipe card recipe-page" data-recipe-slug="tooth-polishing-powder" id="r9" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r9')" type="button">Print This Recipe</button>
@@ -848,48 +848,48 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li data-method-step="2" data-tip="Provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.">24 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-white-kaolin" href="/baseline-natural-skincare/ingredient-library/white-kaolin-clay?filter=r9">Superfine Food/Pharmaceutical-Grade White Kaolin Clay</a></li>
 <li data-method-step="2" data-tip="Traditional oral-care herb that complements the cleansing powder.">4.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-sage-leaf-powder" href="/baseline-natural-skincare/ingredient-library/sage-leaf-powder?filter=r9">Very Finely Powdered Sage Leaf</a></li>
 <li data-method-step="2" data-tip="Provides natural freshness and a mild peppermint flavour.">1.5 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-peppermint-leaf-powder" href="/baseline-natural-skincare/ingredient-library/peppermint-leaf-powder?filter=r9">Very Finely Powdered Peppermint Leaf</a></li>
 </ul>
-<h4>Ingredient Roles</h4>
-<ul>
+<h4Ingredient Roles</h4>
+<ul data-recipe-view-group="details">
 <li><strong>White Kaolin Clay</strong> – provides gentle polishing to help remove surface staining and brighten the appearance of the teeth.</li>
 <li><strong>Sage Leaf Powder</strong> – traditional oral-care herb that complements the cleansing powder.</li>
 <li><strong>Peppermint Leaf Powder</strong> – provides natural freshness and a mild peppermint flavour.</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Weigh</strong>: Weigh all ingredients accurately.</li>
 <li><strong>Combine</strong>: Add the kaolin clay, sage powder and peppermint powder to a completely dry bowl.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">24 g Superfine Food/Pharmaceutical-Grade White Kaolin Clay</span><span class="method-amt">4.5 g Very Finely Powdered Sage Leaf</span><span class="method-amt">1.5 g Very Finely Powdered Peppermint Leaf</span></div></li>
 <li><strong>Mix</strong>: Mix very thoroughly until the herbs are evenly distributed throughout the kaolin.</li>
 <li><strong>Transfer</strong>: Transfer to a clean, completely dry airtight container.</li>
 <li><strong>Keep dry</strong>: Keep the powder dry during storage.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ol>
+<h4Storage &amp; Use</h4>
+<ol data-recipe-view-group="guidance">
 <li><strong>Wet</strong>: Wet a soft toothbrush.</li>
 <li><strong>Apply</strong>: Place a small amount of the powder onto the toothbrush.</li>
 <li><strong>Brush gently</strong>: Brush the teeth gently for approximately 30–60 seconds.</li>
 <li><strong>Rinse</strong>: Rinse the mouth thoroughly with water.</li>
 <li><strong>Frequency</strong>: Use approximately 1–2 times per week for surface-stain removal.</li>
 </ol>
-<h4>Comedogenic Considerations</h4>
-<ul>
+<h4Comedogenic Considerations</h4>
+<ul data-recipe-view-group="guidance">
 <li>Not applicable to the intended oral-care use. This is not a leave-on facial formula.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>Use only superfine kaolin suitable for oral/food use and very finely powdered herbs.</li>
 <li>Contains no baking soda, oil, charcoal, peroxide or acids.</li>
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
 </ul>
 </div>
 <!-- Testing Recipe 10 -->
-<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-microcurrent-conductive-gel" id="r10">
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-microcurrent-conductive-gel" id="r10" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r10')" type="button">Print This Recipe</button>
@@ -899,24 +899,24 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li data-method-step="2" data-tip="Provides the main water-based conductive medium.">35.36 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-water" href="/baseline-natural-skincare/ingredient-library/water">Distilled Water</a></li>
 <li data-method-step="1" data-tip="Helps retain moisture, improves glide and slows the gel from drying during microcurrent use.">4.00 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-glycerin" href="/baseline-natural-skincare/ingredient-library/glycerin">Vegetable Glycerin</a></li>
 <li data-method-step="2" data-tip="Provides dissolved minerals and electrolytes to support conductivity.">0.04 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-dead-sea-salt" href="/baseline-natural-skincare/ingredient-library/dead-sea-salt">Dead Sea Salt</a></li>
 <li data-method-step="1" data-tip="Creates a thick, scoopable gel consistency and helps the product remain in place on the skin.">0.60 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-guar-gum" href="/baseline-natural-skincare/ingredient-library/guar-gum">Guar Gum</a></li>
 </ul>
-<p><strong>Total – 40.00 g</strong></p>
-<h4>Ingredient Roles</h4>
-<ul>
+<p data-recipe-view-group="standard"><strong>Total – 40.00 g</strong></p>
+<h4Ingredient Roles</h4>
+<ul data-recipe-view-group="details">
 <li><strong>Distilled Water</strong> – provides the main water-based conductive medium.</li>
 <li><strong>Vegetable Glycerin</strong> – helps retain moisture, improves glide and slows the gel from drying during microcurrent use.</li>
 <li><strong>Dead Sea Salt</strong> – provides dissolved minerals and electrolytes to support conductivity.</li>
 <li><strong>Guar Gum</strong> – creates a thick, scoopable gel consistency and helps the product remain in place on the skin.</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Disperse</strong>: Add the guar gum to the vegetable glycerin and mix thoroughly until the guar is evenly dispersed.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">4.00 g Vegetable Glycerin</span><span class="method-amt">0.60 g Guar Gum</span></div></li>
 <li><strong>Dissolve</strong>: Dissolve the Dead Sea salt completely in the distilled water.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">35.36 g Distilled Water</span><span class="method-amt">0.04 g Dead Sea Salt</span></div></li>
 <li><strong>Combine</strong>: Slowly add the salt water to the glycerin and guar gum mixture while stirring continuously.</li>
@@ -925,26 +925,26 @@ Method steps MUST follow this format:
 <li><strong>Stir</strong>: Stir again once fully hydrated.</li>
 <li><strong>Portion</strong>: Transfer the amount needed for use into a clean, dry ramekin or other easily washable container.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ol>
+<h4Storage &amp; Use</h4>
+<ol data-recipe-view-group="guidance">
 <li><strong>Apply</strong>: Apply a generous layer of gel to the area being treated.</li>
 <li><strong>Treat</strong>: Use the microcurrent device over the gel while it remains wet and slippery.</li>
 <li><strong>Reapply</strong>: Add more gel if the device begins to drag or the gel starts drying.</li>
 <li><strong>Clean</strong>: Wash and fully dry the ramekin after use before using it for another batch.</li>
 </ol>
-<h4>Comedogenic Considerations</h4>
-<ul>
+<h4Comedogenic Considerations</h4>
+<ul data-recipe-view-group="guidance">
 <li>The formula contains no oils. Individual irritation or sensitivity can still occur.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li>The formula totals exactly <strong>40.00 g</strong>.</li>
 <li>This is a water-based testing formula. Use an appropriate preservation system if it is stored rather than prepared for immediate use.</li>
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
 </ul>
 </div>
 <!-- Testing Recipe 11 -->
-<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11">
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r11')" type="button">Print This Recipe</button>
@@ -954,17 +954,17 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<p class="note"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Ingredients</h4>
-<ul>
+<p class="note" data-recipe-view-group="details"><strong>Testing</strong> — formulation currently being tested before promotion into the main recipe collection.</p>
+<a class="info-link" data-scroll-to-ingredients="" href="#ingredients" data-recipe-view-group="details">Recipe Ingredient Information</a>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Dry Powder Blend — 100 g</strong></li>
 <li data-method-step="1" data-tip="Supports scalp comfort and provides the soft, gentle powder base."><span class="amt" data-base-display="75 g" data-base-max="75" data-base-min="75" data-base-unit="g">75 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-colloidal-oatmeal" href="/baseline-natural-skincare/ingredient-library/colloidal-oatmeal?filter=r11">Colloidal Oatmeal</a></li>
 <li data-method-step="1" data-tip="Provides mucilage, slip and conditioning to reduce friction and tangling."><span class="amt" data-base-display="15 g" data-base-max="15" data-base-min="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-marshmallow-root-powder" href="/baseline-natural-skincare/ingredient-library/marshmallow-root-powder?filter=r11">Marshmallow Root Powder</a></li>
 <li data-method-step="1" data-tip="Provides lightweight conditioning and moisture-binding support for hair and scalp."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-inulin-powder" href="/baseline-natural-skincare/ingredient-library/inulin-powder?filter=r11">Chicory-Root Inulin</a></li>
 <li data-method-step="1" data-tip="Helps disperse added oils and natural scalp oils into the rinse water without conventional detergent surfactants."><span class="amt" data-base-display="5 g" data-base-max="5" data-base-min="5" data-base-unit="g">5 g</span> <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-sunflower-lecithin-powder" href="/baseline-natural-skincare/ingredient-library/sunflower-lecithin-powder?filter=r11">Sunflower Lecithin Powder</a></li>
 </ul>
-<p><strong>Total – 100 g dry powder blend</strong></p>
+<p data-recipe-view-group="standard"><strong>Total – 100 g dry powder blend</strong></p>
 <h4>For One Wash</h4>
 <ul>
 <li><strong>Powder Blend</strong> – 10 g</li>
@@ -976,8 +976,8 @@ Method steps MUST follow this format:
 <li data-method-step="4"><strong><a class="ing-link" data-from-recipe="r11" data-ingredient="ing-jojoba" href="/baseline-natural-skincare/ingredient-library/jojoba-oil?filter=r11">Jojoba Oil</a></strong> – 80%</li>
 <li data-method-step="4"><strong><a class="ing-link" data-from-recipe="r11" data-ingredient="ing-argan" href="/baseline-natural-skincare/ingredient-library/argan?filter=r11">Argan Oil</a></strong> – 20%</li>
 </ul>
-<h4>Ingredient Roles</h4>
-<ul>
+<h4Ingredient Roles</h4>
+<ul data-recipe-view-group="details">
 <li><strong>Colloidal Oatmeal</strong> – supports the scalp barrier, soothes the skin and provides a soft, gentle washing base.</li>
 <li><strong>Marshmallow Root Powder</strong> – provides mucilage, slip, conditioning and helps reduce friction and tangling.</li>
 <li><strong>Chicory-Root Inulin</strong> – provides lightweight conditioning and moisture-binding benefits for the hair and scalp.</li>
@@ -985,8 +985,8 @@ Method steps MUST follow this format:
 <li><strong>Jojoba Oil</strong> – provides lightweight lubrication and a protective lipid layer.</li>
 <li><strong>Argan Oil</strong> – provides emollience, softness and additional conditioning.</li>
 </ul>
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Blend</strong>: Mix the dry powder ingredients thoroughly and store completely dry in an airtight container.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">75 g Colloidal Oatmeal</span><span class="method-amt">15 g Marshmallow Root Powder</span><span class="method-amt">5 g Chicory-Root Inulin</span><span class="method-amt">5 g Sunflower Lecithin Powder</span></div></li>
 <li><strong>Measure</strong>: For each wash, place 10 g of the powder blend into a small bowl or container.</li>
 <li><strong>Hydrate</strong>: Add 20–30 g of warm water and mix until a smooth, loose cream forms.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">Warm Water – 20–30 g</span></div></li>
@@ -996,19 +996,19 @@ Method steps MUST follow this format:
 <li><strong>Massage</strong>: Massage gently through the scalp and hair.</li>
 <li><strong>Rinse</strong>: Rinse thoroughly with water.</li>
 </ol>
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Keep the 100 g powder blend completely dry in an airtight container.</li>
 <li>Use 10 g powder blend with 20–30 g warm water and 0.5–1 g jojoba/argan oil blend per wash.</li>
 <li>Make only enough wet mixture for one use. Once water has been added, use immediately and discard any remainder.</li>
 <li>This is a very gentle, low-detergency wash. Rinsing performance should be assessed during testing, especially on oilier scalps or with heavier product buildup.</li>
 </ul>
-<h4>Comedogenic Considerations</h4>
-<ul>
+<h4Comedogenic Considerations</h4>
+<ul data-recipe-view-group="guidance">
 <li>This is a rinse-off scalp and hair formula with only a small added oil phase. Jojoba and argan are used for conditioning rather than as the primary washing phase; individual scalp response can still vary.</li>
 </ul>
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li><strong>Soap free • Sulfate free • Soapnut free • Shikakai free • Saponin free • No conventional detergent surfactants.</strong></li>
 <li>The 100 g dry blend provides approximately 10 washes when used at 10 g per wash.</li>
 <li>Each 10 g powder dose contains approximately 0.5 g sunflower lecithin. At the 5% starting oil level, the added oil is approximately 1.6–2.1 g per wash depending on the water used, giving a lecithin-to-added-oil ratio of roughly 1:3.2 to 1:4.2 before accounting for natural scalp oil.</li>
@@ -1016,7 +1016,7 @@ Method steps MUST follow this format:
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
 </ul>
 </div>
-<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12">
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12" data-recipe-view="standard">
 <div class="recipe-actions">
 <button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
 <button class="print-btn" onclick="printCard('r12')" type="button">Print This Recipe</button>
@@ -1027,7 +1027,7 @@ Method steps MUST follow this format:
 <div class="recipe-adjustments-row print-hide" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-adjustments-toggle print-hide" aria-expanded="false">Adjustments</button></div>
 <div class="recipe-subtabs print-hide" role="tablist" aria-label="Recipe views" data-recipe-first-paint-chrome="1"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true">Standard View</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 
-<p class="note">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
+<p class="note" data-recipe-view-group="details">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
 
 <div class="glide-controller glide-controller--paired" aria-label="Lip balm formulation controls">
 <div class="glide-control-main">
@@ -1058,8 +1058,8 @@ Method steps MUST follow this format:
 </div>
 </div>
 
-<h4>Ingredients</h4>
-<ul>
+<h4Ingredients</h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Butters</strong></li>
 <li data-method-step="3" data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter?filter=r12">Cocoa Butter</a></li>
 <li data-method-step="3" data-tip="Softer butter that improves creaminess and spreadability."><span class="amt" data-formula-key="mango" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-mango-butter" href="/baseline-natural-skincare/ingredient-library/mango-butter?filter=r12">Mango Butter</a></li>
@@ -1075,8 +1075,8 @@ Method steps MUST follow this format:
 <li data-method-step="5" data-tip="Antioxidant that helps slow oxidation of the oil phase. It is not a preservative."><span class="amt" data-formula-key="vitamin-e" data-base-display="0.5 g" data-base-min="0.5" data-base-max="0.5" data-base-unit="g">0.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e?filter=r12">Vitamin E (Tocopherol)</a></li>
 </ul>
 
-<h4>Method</h4>
-<ol>
+<h4Method</h4>
+<ol data-recipe-view-group="standard">
 <li><strong>Prepare</strong>: Clean and completely dry the working area, utensils, heat-safe container and final balm containers.</li>
 <li><strong>Weigh</strong>: Set the sliders to the desired positions, then weigh the cocoa butter, mango butter, kokum butter, candelilla wax and liquid oils in the amounts shown.</li>
 <li><strong>Melt</strong>: Gently heat the cocoa butter, mango butter, kokum butter and candelilla wax using a water bath or double boiler until just fully melted.<div class="method-amt-inject" data-method-amounts="first-use" data-first-paint-static="1"><span class="method-amt-label">Amounts:</span><span class="method-amt">20 g Cocoa Butter</span><span class="method-amt">15 g Mango Butter</span><span class="method-amt">10 g Kokum Butter</span><span class="method-amt">3 g Candelilla Wax</span></div></li>
@@ -1086,20 +1086,20 @@ Method steps MUST follow this format:
 <li><strong>Cap</strong>: Fit the lids once the balm is fully cool and label the batch.</li>
 </ol>
 
-<h4>Storage &amp; Use</h4>
-<ul>
+<h4Storage &amp; Use</h4>
+<ul data-recipe-view-group="guidance">
 <li>Apply a thin layer to lips or dry areas as needed.</li>
 <li>Store cool, dry and away from direct sunlight or sustained heat.</li>
 <li>Because the formula is anhydrous, keep water out of the container during use.</li>
 </ul>
 
-<h4>Comedogenic Considerations</h4>
-<ul>
+<h4Comedogenic Considerations</h4>
+<ul data-recipe-view-group="guidance">
 <li>This is a rich, persistent balm designed primarily for lips and targeted dry areas rather than as a lightweight full-face moisturiser. Individual skin response varies.</li>
 </ul>
 
-<h4>Notes</h4>
-<ul>
+<h4Notes</h4>
+<ul data-recipe-view-group="guidance">
 <li><strong>Default formula:</strong> 20% cocoa butter • 15% mango butter • 10% kokum butter • 25.5% apricot kernel oil • 15% avocado oil • 11% red raspberry seed oil • 3% candelilla wax • 0.5% vitamin E.</li>
 <li><strong>Butter character slider:</strong> changes mango against kokum while keeping their combined share fixed at 25%.</li>
 <li><strong>Structure slider:</strong> changes candelilla against apricot kernel oil while keeping their combined share fixed at 28.5%.</li>
