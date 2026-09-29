@@ -1043,9 +1043,15 @@
     const target = $('#exerciseLibrary'); if (!target) return;
     const query = String($('#exSearch')?.value || '').toLowerCase();
     const group = $('#exGroup')?.value || 'all';
+    if (!query && group === 'all' && target.dataset.firstPaintStatic === '1') {
+      // The complete default catalogue is already present in the HTML response.
+      // Keep it untouched on first boot so the library never paints empty first.
+      target.dataset.firstPaintStatic = '0';
+      return;
+    }
     target.innerHTML = EXERCISES
       .filter((item) => (group === 'all' || item.familyKey === group) && (!query || `${item.name} ${item.family} ${item.section} ${item.movementCategory} ${item.unit}`.toLowerCase().includes(query)))
-      .map((item) => `<div class="card exercise-card"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.movementCategory)} • ${escapeHtml(item.variationLevel)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p><p class="note"><b>Progression:</b> ${escapeHtml(progressionDescription(item))}</p></div>`)
+      .map((item) => `<div class="card exercise-card" data-exercise-family="${escapeHtml(item.familyKey)}" data-exercise-name="${escapeHtml(item.name)}"><div class="title">${escapeHtml(item.name)}</div><div class="muted">${escapeHtml(item.family)} • ${escapeHtml(item.movementCategory)} • ${escapeHtml(item.variationLevel)}</div><div class="divider"></div><p>${escapeHtml(item.how)}</p><p class="note"><b>Progression:</b> ${escapeHtml(progressionDescription(item))}</p></div>`)
       .join('');
   }
 
