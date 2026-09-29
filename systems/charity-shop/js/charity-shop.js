@@ -89,81 +89,8 @@
   }
 
   function installCashingUp(){
-    const operations = document.getElementById('operations');
-    if(!operations) return;
-
-    const tabs = operations.querySelector('.charity-subtabs');
-    if(tabs && !tabs.querySelector('[data-charity-subtarget="cashing"]')){
-      const source = tabs.querySelector('.charity-subtab:last-of-type');
-      const tab = source ? source.cloneNode(false) : document.createElement('button');
-      tab.type = 'button';
-      tab.className = 'charity-subtab subtab';
-      tab.dataset.charitySubtarget = 'cashing';
-      tab.setAttribute('role','tab');
-      tab.setAttribute('aria-selected','false');
-      tab.setAttribute('aria-controls','operations-cashing');
-      tab.tabIndex = -1;
-      tab.textContent = 'Cashing Up';
-      tabs.appendChild(tab);
-    }
-
-    let panel = document.getElementById('operations-cashing');
+    const panel = document.getElementById('operations-cashing');
     if(!panel || !panel.querySelector('.charity-cashup')) return;
-    if(!panel){
-      panel = document.createElement('div');
-      panel.id = 'operations-cashing';
-      panel.className = 'charity-subpanel charity-cashing-panel';
-      panel.hidden = true;
-      panel.tabIndex = -1;
-      panel.setAttribute('role','tabpanel');
-      operations.appendChild(panel);
-    }
-    if(!panel.querySelector('.charity-cashup')) panel.innerHTML = [
-      '<div class="charity-cashup">',
-      '  <header class="card charity-card charity-card--wide charity-cashup-heading">',
-      '    <p class="charity-kicker">COUNT | MAKE FLOAT | CASH TO BANK</p>',
-      '    <h2>Cashing Up</h2>',
-      '    <p>Enter the number of each note and coin in the till. The page makes up the £100 float first, then calculates the remaining Cash To Bank.</p>',
-      '  </header>',
-      '  <section class="card charity-card charity-cash-table-card" aria-labelledby="charityCashCountTitle">',
-      '    <h3 id="charityCashCountTitle">Cash In Till</h3>',
-      '    <div class="charity-cash-table-wrap">',
-      '      <table class="charity-cash-table">',
-      '        <thead><tr><th scope="col">Note or coin</th><th scope="col">How many</th><th scope="col">Value</th></tr></thead>',
-      '        <tbody>'+cashRows()+'</tbody>',
-      '      </table>',
-      '    </div>',
-      '    <section class="charity-cash-totals" aria-labelledby="charityCashTotalsTitle">',
-      '      <h3 id="charityCashTotalsTitle">Till Totals</h3>',
-      '      <div class="charity-total-line"><span>Total Count</span><output id="charityCashTotal" aria-live="polite">£0.00</output></div>',
-      '      <div class="charity-float-line"><span>Float made</span><output id="charityFloatTotal" aria-live="polite">£0.00</output></div>',
-      '      <div class="charity-total-line charity-total-line--final"><span>Cash To Bank</span><output id="charityCashToBank" aria-live="polite">£0.00</output></div>',
-      '      <p class="charity-cash-result-label">The amount remaining after the float has been set aside</p>',
-      '    </section>',
-      '  </section>',
-      '  <div class="charity-cash-lower-grid">',
-      '    <section class="card charity-card charity-float-maker" aria-labelledby="charityFloatMakerTitle">',
-      '      <h3 id="charityFloatMakerTitle">Float Summary</h3>',
-      '      <p class="charity-float-copy">Use this selection of notes and change to make up the float.</p>',
-      '      <div class="charity-float-table-wrap">',
-      '        <table class="charity-float-table">',
-      '          <thead><tr><th scope="col">Money</th><th scope="col">Aim</th><th scope="col">Keep</th><th scope="col">Value</th></tr></thead>',
-      '          <tbody>'+floatRows()+'</tbody>',
-      '        </table>',
-      '      </div>',
-      '      <div class="charity-float-total-line"><span>Float total</span><output id="charityFloatMakerTotal">£0.00</output></div>',
-      '      <p class="charity-float-status" id="charityFloatStatus" role="status" aria-live="polite"></p>',
-      '      <p class="charity-float-fallback" id="charityFloatFallback" hidden></p>',
-      '    </section>',
-      '    <section class="card charity-card charity-cheque-summary" aria-labelledby="charityBankBookTitle">',
-      '      <div class="charity-cheque-heading"><div><p class="charity-kicker">POUNDS - PENCE</p><h3 id="charityBankBookTitle">Cash To Bank Book</h3></div></div>',
-      '      <p>Copy these grouped Cash To Bank amounts into the Cash To Bank Book.</p>',
-      '      <div class="charity-cheque-rows">'+bankBookRows()+'</div>',
-      '      <div class="charity-bank-total-line"><span>Total Cash To Bank</span><output id="charityBankBookTotal" aria-live="polite">£0.00</output></div>',
-      '    </section>',
-      '  </div>',
-      '</div>'
-    ].join('');
     if(panel.dataset.cashingBound === 'true') return;
     panel.dataset.cashingBound = 'true';
 
