@@ -29,21 +29,20 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 
-<script>/* BASELINE-HOME-INDEX-CANONICAL-FALLBACK-20260607 */
+<script>/* BASELINE-HOME-INDEX-CANONICAL-FALLBACK-20260929 */
 (function(){
   try{
-    if(!/^https?:$/i.test(location.protocol)) return;
     var path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
     var hash = String(location.hash || '').toLowerCase();
+    var showBadminton = /\/home\/2$/.test(path) || hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1;
+    var target = showBadminton ? '/home/2' : '/home/1';
+    document.documentElement.setAttribute('data-initial-home-view', showBadminton ? 'badminton' : 'systems');
+
+    if(!/^https?:$/i.test(location.protocol)) return;
     var isLegacyHome = /\/index\.html$/.test(path) || path === '' || path === '/';
     if(!isLegacyHome) return;
-
-    var target = '/home/1';
-    if(hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1){
-      target = '/home/2';
-    }
     if(location.pathname !== target || location.hash){
-      history.replaceState({ baselineHomeView: target === '/home/2' ? 'badminton' : 'systems' }, '', target);
+      history.replaceState({ baselineHomeView: showBadminton ? 'badminton' : 'systems' }, '', target);
     }
   }catch(_e){}
 })();
