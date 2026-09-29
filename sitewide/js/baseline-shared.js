@@ -5020,6 +5020,12 @@ function buildControls(recipeEl){
     }
 
     recipes.forEach(recipeEl=>{
+      // First-paint chrome is authored in HTML so no visible controls arrive late.
+      // Replace it synchronously with the interactive runtime version before the
+      // browser can paint another frame.
+      qsa('[data-recipe-first-paint-chrome="1"]', recipeEl).forEach(el=>{
+        try{ el.remove(); }catch(_e){}
+      });
       // Prepare
       wrapAmounts(recipeEl);
       ensureLiteralRecipeStructure(recipeEl);
