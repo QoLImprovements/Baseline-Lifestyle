@@ -149,32 +149,6 @@
     return after!==before;
   }
 
-  function ensureShell() {
-    const root=$('#routine');
-    if (!root || $('.routine-shell',root)) return;
-    const shell=document.createElement('div');shell.className='routine-shell';
-    shell.innerHTML=`
-      <div class="routine-subtabs" role="tablist" aria-label="My Routine views">
-        <button type="button" class="routine-subtab active" data-routine-view="log" role="tab" aria-selected="true">Routine Log</button>
-        <button type="button" class="routine-subtab" data-routine-view="summary" role="tab" aria-selected="false">Routine Summary</button>
-        <button type="button" class="routine-subtab" data-routine-view="plan" role="tab" aria-selected="false">Routine Plan</button>
-        <button type="button" class="routine-subtab" data-routine-view="public" role="tab" aria-selected="false">Public Routines</button>
-      </div>
-      <div class="routine-panel active" data-routine-panel="log">
-        <section class="card routine-card routine-card-full">
-          <div class="routine-log-head"><div><h2>Routine Log</h2><p class="note">Record completed actions for the selected date. Weekly actions remain available until their weekly target is reached.</p></div><label class="routine-log-date"><span>Date</span><input type="date" id="routineLogDate"></label></div>
-          <div id="routineLogProgress" class="routine-log-progress"></div><div id="routineLogItems" class="routine-log-items"></div>
-        </section>
-        <section class="card routine-card routine-card-full routine-calendar-card">
-          <div class="routine-calendar-head"><div><h2>Skincare Calendar</h2><p class="note">Select Week or Month. Each day opens directly in Routine Log.</p></div><div class="routine-calendar-controls"><div class="routine-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="routine-mini routine-calendar-view" data-calendar-view="week" aria-selected="false">Week</button><button type="button" class="routine-mini routine-calendar-view active" data-calendar-view="month" aria-selected="true">Month</button></div><div class="routine-calendar-nav"><button type="button" class="routine-mini" data-calendar-move="previous" aria-label="Previous period">←</button><strong id="routineCalendarLabel"></strong><button type="button" class="routine-mini" data-calendar-today>Today</button><button type="button" class="routine-mini" data-calendar-move="next" aria-label="Next period">→</button></div></div></div>
-          <div class="routine-calendar-weekdays" aria-hidden="true"></div><div id="routineCalendarGrid" class="routine-calendar-grid month-view"></div>
-        </section>
-      </div>
-      <div class="routine-panel" data-routine-panel="summary" hidden><section class="card routine-card routine-card-full"><div class="routine-summary-head"><div><h2>Routine Summary</h2><p class="note">A complete view of every routine action, its schedule, benefits and personal notes. The plan may remain private or be shared publicly, while the completion log always stays private.</p></div></div><div id="routineSummary" class="routine-summary"></div></section></div>
-      <div class="routine-panel" data-routine-panel="plan" hidden><section class="card routine-card routine-card-full"><div class="routine-builder-head"><div><h2>Routine Plan</h2></div></div><div class="routine-add-row"><div class="routine-action-combobox"><div class="routine-action-input-wrap"><input id="routineActionSearch" type="search" autocomplete="off" placeholder="Type or choose a routine action…" role="combobox" aria-autocomplete="list" aria-controls="routineActionMenu" aria-expanded="false"><button type="button" class="routine-action-toggle" id="routineActionToggle" aria-label="Show routine actions" aria-expanded="false">⌄</button></div><select id="routineActionSelect" class="routine-action-native" aria-hidden="true" tabindex="-1"></select><div id="routineActionMenu" class="routine-action-menu" role="listbox" hidden></div></div><button id="addRoutineAction" type="button" class="routine-add-button">Add to routine</button></div><div id="routineItems" class="routine-items"></div><div id="routineSaveStatus" class="routine-save-status" aria-live="polite"></div></section></div>
-      <div class="routine-panel" data-routine-panel="public" hidden><section class="card routine-card routine-card-full"><div class="routine-public-head"><div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div><label><span>My Routine Visibility</span><select id="routineVisibility" class="routine-visibility-select"><option value="private">Private</option><option value="public">Public</option></select></label></div><div class="routine-public-select"><select id="publicRoutineName"><option value="">Choose a public profile…</option></select><button type="button" id="findPublicRoutineBtn" class="routine-add-button">View Routine</button></div><div id="publicRoutineResult" class="routine-public-result" aria-live="polite"></div></section></div>`;
-    root.appendChild(shell);
-  }
 
   function activateView(view,remember=true) {
     const next=VIEWS.includes(view)?view:'log';state.activeView=next;
@@ -363,7 +337,8 @@
     state.activeView=routeViewFromLocation();
     try { global.sessionStorage?.setItem(VIEW_KEY,state.activeView); } catch (_error) {}
 
-    ensureShell();
+    const root=$('#routine');
+    if(!root || !$('.routine-shell',root)) return;
     bindEvents();
     loadLocalState();
 
