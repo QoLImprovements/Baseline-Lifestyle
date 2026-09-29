@@ -19,7 +19,6 @@ These Markdown rules are a human reference point, not live runtime config.
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
 <script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',(p.split('/').pop()||'').toLowerCase())}}}catch(_e){}}()</script>
-<script id="baseline-lip-balm-route-prefetch">!function(){try{var p=String(location.pathname||'').replace(/\/+$/,'');if(p==='/baseline-natural-skincare/recipes/testing-lip-balm'&&!window.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__){window.__BASELINE_SKINCARE_LIP_BALM_PREFETCH__=fetch('/systems/baseline-natural-skincare/recipes/testing-lip-balm.html',{credentials:'same-origin'})}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -42,7 +41,6 @@ These Markdown rules are a human reference point, not live runtime config.
 <style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-recipe-route="1"] body[data-app] #recipes .recipe-layout{visibility:hidden!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
 </style>
@@ -70,6 +68,12 @@ html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="reci
 </div>
 </div>
 <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
+<div class="bl-homebar-spacer" aria-hidden="true"></div>
+<div class="bl-homebar-right" aria-label="Site controls">
+  <button id="bl-beats-toggle" class="bl-mini-btn" type="button" aria-label="Binaural" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"></path></svg></span><span class="bl-btn-label">Binaural</span></button>
+  <button id="bl-voice-toggle" class="bl-mini-btn" type="button" aria-label="Voice" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span><span class="bl-btn-label">Voice</span></button>
+  <button id="bl-auth-toggle" class="bl-mini-btn" type="button" aria-label="Login" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"></path><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"></path></svg></span><span class="bl-btn-label">Login</span></button>
+</div>
 </div>
 </div>
 <div class="bl-scroll">
@@ -199,7 +203,7 @@ Method steps MUST follow this format:
 <h4>Testing</h4>
 <ul>
 <li><a class="recipe-open" data-recipe-id="r11" href="/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash">Soap-Free Powdered Hair Wash — colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.</a></li>
-<li><a data-external-recipe-id="r12" href="/baseline-natural-skincare/recipes/testing-lip-balm">Lip/ balm — adjustable butter character and structure with a balanced 100 g default formula.</a></li>
+<li><a class="recipe-open" data-recipe-id="r12" href="/baseline-natural-skincare/recipes/testing-lip-balm">Lip/ balm — adjustable butter character and structure with a balanced 100 g default formula.</a></li>
 </ul>
 </div>
 <div class="recipes">
@@ -964,6 +968,93 @@ Method steps MUST follow this format:
 <li>Each 10 g powder dose contains approximately 0.5 g sunflower lecithin. At the 5% starting oil level, the added oil is approximately 1.6–2.1 g per wash depending on the water used, giving a lecithin-to-added-oil ratio of roughly 1:3.2 to 1:4.2 before accounting for natural scalp oil.</li>
 <li>The 5% oil level is deliberate: this wash is intended to add a meaningful jojoba/argan conditioning oil phase while the lecithin helps disperse the oils and rinse away excess without conventional detergent surfactants.</li>
 <li>This recipe is currently grouped under <strong>Testing</strong>.</li>
+</ul>
+</div>
+<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12">
+<div class="recipe-actions">
+<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
+<button class="print-btn" onclick="printCard('r12')" type="button">Print This Recipe</button>
+</div>
+
+<h3>Lip/ balm</h3>
+<p class="note">Yield: 100 g. Anhydrous vegan lip/body balm. The default formula is fixed at the balanced reference point; the sliders let the viewer change two physical qualities while preserving a 100 g batch.</p>
+
+<div class="glide-controller glide-controller--paired" aria-label="Lip balm formulation controls">
+<div class="glide-control-main">
+<div class="glide-slider-head">
+<div class="glide-label">Butter character</div>
+<div class="glide-readout" id="r12ButterReadout">15% mango • 10% kokum</div>
+</div>
+<div class="glide-slider-wrap">
+<input aria-label="Butter character between creamier mango and firmer kokum" class="glide-slider" data-default-value="10" id="r12ButterCharacter" min="5" max="15" step="0.5" type="range" value="10"/>
+</div>
+<div class="glide-scale"><span>Creamier</span><span>Firmer</span></div>
+</div>
+
+<div class="glide-control-main">
+<div class="glide-slider-head">
+<div class="glide-label">Structure</div>
+<div class="glide-readout" id="r12StructureReadout">3% candelilla • 25.5% apricot kernel oil</div>
+</div>
+<div class="glide-slider-wrap">
+<input aria-label="Structure between softer melt and more durable balm" class="glide-slider" data-default-value="3" id="r12Structure" min="2" max="4" step="0.25" type="range" value="3"/>
+</div>
+<div class="glide-scale"><span>Softer melt</span><span>More durable set</span></div>
+</div>
+
+<div class="glide-control-explainer">
+<div class="glide-explain-title">Overall Feel</div>
+<p class="glide-explain" id="r12OverallExplain">Balanced rich balm with a smooth set, controlled glide and durable protective finish.</p>
+</div>
+</div>
+
+<h4>Ingredients</h4>
+<ul>
+<li class="ing-subhead"><strong>Butters</strong></li>
+<li data-method-step="3" data-tip="Rich, firm butter that gives body, cushion and long-lasting emollience."><span class="amt" data-formula-key="cocoa" data-base-display="20 g" data-base-min="20" data-base-max="20" data-base-unit="g">20 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-cocoa-butter" href="/baseline-natural-skincare/ingredient-library/cocoa-butter?filter=r12">Cocoa Butter</a></li>
+<li data-method-step="3" data-tip="Softer butter that improves creaminess and spreadability."><span class="amt" data-formula-key="mango" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-mango-butter" href="/baseline-natural-skincare/ingredient-library/mango-butter?filter=r12">Mango Butter</a></li>
+<li data-method-step="3" data-tip="Harder butter that increases structure and gives a relatively dry, smooth finish."><span class="amt" data-formula-key="kokum" data-base-display="10 g" data-base-min="10" data-base-max="10" data-base-unit="g">10 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-kokum-butter" href="/baseline-natural-skincare/ingredient-library/kokum-butter?filter=r12">Kokum Butter</a></li>
+
+<li class="ing-subhead"><strong>Oils</strong></li>
+<li data-method-step="4" data-tip="Primary liquid oil; improves slip and keeps the high-butter formula spreadable."><span class="amt" data-formula-key="apricot" data-base-display="25.5 g" data-base-min="25.5" data-base-max="25.5" data-base-unit="g">25.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-apricot-kernel-oil" href="/baseline-natural-skincare/ingredient-library/apricot-kernel-oil?filter=r12">Apricot Kernel Oil</a></li>
+<li data-method-step="4" data-tip="Rich emollient oil that adds body and a more substantial conditioning feel."><span class="amt" data-formula-key="avocado" data-base-display="15 g" data-base-min="15" data-base-max="15" data-base-unit="g">15 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado?filter=r12">Avocado Oil</a></li>
+<li data-method-step="4" data-tip="Seed oil that contributes fatty-acid diversity and antioxidant-containing unsaponifiables."><span class="amt" data-formula-key="raspberry" data-base-display="11 g" data-base-min="11" data-base-max="11" data-base-unit="g">11 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-red-raspberry-seed-oil" href="/baseline-natural-skincare/ingredient-library/red-raspberry-seed-oil?filter=r12">Red Raspberry Seed Oil</a></li>
+
+<li class="ing-subhead"><strong>Structure &amp; antioxidant</strong></li>
+<li data-method-step="3" data-tip="Vegan wax that improves structure, film persistence and resistance to softening."><span class="amt" data-formula-key="candelilla" data-base-display="3 g" data-base-min="3" data-base-max="3" data-base-unit="g">3 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-candelilla-wax" href="/baseline-natural-skincare/ingredient-library/candelilla-wax?filter=r12">Candelilla Wax</a></li>
+<li data-method-step="5" data-tip="Antioxidant that helps slow oxidation of the oil phase. It is not a preservative."><span class="amt" data-formula-key="vitamin-e" data-base-display="0.5 g" data-base-min="0.5" data-base-max="0.5" data-base-unit="g">0.5 g</span> <a class="ing-link" data-from-recipe="r12" data-ingredient="ing-vitamin-e" href="/baseline-natural-skincare/ingredient-library/vitamin-e?filter=r12">Vitamin E (Tocopherol)</a></li>
+</ul>
+
+<h4>Method</h4>
+<ol>
+<li><strong>Prepare</strong>: Clean and completely dry the working area, utensils, heat-safe container and final balm containers.</li>
+<li><strong>Weigh</strong>: Set the sliders to the desired positions, then weigh the cocoa butter, mango butter, kokum butter, candelilla wax and liquid oils in the amounts shown.</li>
+<li><strong>Melt</strong>: Gently heat the cocoa butter, mango butter, kokum butter and candelilla wax using a water bath or double boiler until just fully melted.</li>
+<li><strong>Combine</strong>: Remove from direct heat, add the apricot kernel, avocado and red raspberry seed oils, and stir until completely uniform.</li>
+<li><strong>Add vitamin E</strong>: Allow the mixture to cool slightly while remaining fully liquid, then stir in the vitamin E thoroughly.</li>
+<li><strong>Pour</strong>: Pour into clean, dry containers and leave undisturbed until completely set and cool.</li>
+<li><strong>Cap</strong>: Fit the lids once the balm is fully cool and label the batch.</li>
+</ol>
+
+<h4>Storage &amp; Use</h4>
+<ul>
+<li>Apply a thin layer to lips or dry areas as needed.</li>
+<li>Store cool, dry and away from direct sunlight or sustained heat.</li>
+<li>Because the formula is anhydrous, keep water out of the container during use.</li>
+</ul>
+
+<h4>Comedogenic Considerations</h4>
+<ul>
+<li>This is a rich, persistent balm designed primarily for lips and targeted dry areas rather than as a lightweight full-face moisturiser. Individual skin response varies.</li>
+</ul>
+
+<h4>Notes</h4>
+<ul>
+<li><strong>Default formula:</strong> 20% cocoa butter • 15% mango butter • 10% kokum butter • 25.5% apricot kernel oil • 15% avocado oil • 11% red raspberry seed oil • 3% candelilla wax • 0.5% vitamin E.</li>
+<li><strong>Butter character slider:</strong> changes mango against kokum while keeping their combined share fixed at 25%.</li>
+<li><strong>Structure slider:</strong> changes candelilla against apricot kernel oil while keeping their combined share fixed at 28.5%.</li>
+<li>Vitamin E is an antioxidant for the oil phase, not a broad-spectrum preservative.</li>
+<li>Use cosmetic-grade raw materials suitable for lip-care applications when the product is intended for lips.</li>
 </ul>
 </div>
 </div>
