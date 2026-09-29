@@ -228,27 +228,6 @@
   }
   function recipeById(id){ return document.getElementById(resolveId(id) || ''); }
 
-  function promoteCards(){
-    Object.entries(PROMOTIONS).forEach(([id,meta])=>{
-      const recipe=recipeById(id); if(!recipe) return;
-      recipe.removeAttribute('data-category');
-      recipe.dataset.recipeSlug=meta.slug;
-      const title=recipe.querySelector(':scope > .recipe-title-row > h3') || recipe.querySelector(':scope > h3'); if(title) title.textContent=meta.title;
-      recipe.querySelectorAll(':scope > p.note').forEach(note=>{
-        if(/formulation currently being tested/i.test(note.textContent || '')) note.remove();
-      });
-      recipe.querySelectorAll(':scope h4 + ul li').forEach(()=>{});
-      recipe.querySelectorAll('li').forEach(li=>{
-        if(/currently grouped under\s+Testing/i.test(li.textContent || '')) li.remove();
-      });
-    });
-
-    ['r4','r5'].forEach(id=>{
-      const old=recipeById(id);
-      if(old) old.remove();
-    });
-  }
-
   function rewriteRecipeAnchors(){
     document.querySelectorAll('a.recipe-open,[data-recipe-id]').forEach(anchor=>{
       if(!(anchor instanceof Element)) return;
@@ -447,7 +426,6 @@
   function applyAll(){
     installStyles();
     bindLipBalmFormula(recipeById('r12'));
-    promoteCards();
     rewriteRecipeAnchors();
     restoreSegmentedVariants();
     installDetails();
