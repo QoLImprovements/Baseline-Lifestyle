@@ -108,6 +108,7 @@
     }
 
     let panel = document.getElementById('operations-cashing');
+    if(!panel || !panel.querySelector('.charity-cashup')) return;
     if(!panel){
       panel = document.createElement('div');
       panel.id = 'operations-cashing';
