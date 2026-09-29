@@ -13,7 +13,8 @@ const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
-const lipBalm = fs.readFileSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html', 'utf8');
+const lipBalmStart = html.indexOf('<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12">');
+const lipBalm = lipBalmStart >= 0 ? html.slice(lipBalmStart, html.indexOf('<section class="section" id="ingredients">', lipBalmStart)) : '';
 const recipeBootstrap = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js', 'utf8');
 
 const promoted = [
@@ -51,22 +52,22 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
+test('Lip/ balm is authored in the Skincare shell and has no second-document dependency', () => {
+  assert.notEqual(lipBalmStart, -1, 'Lip Balm must exist in the first Skincare HTML response');
   assert.match(lipBalm, /data-category="Testing"/);
   assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
   assert.match(lipBalm, /id="r12"/);
   assert.match(lipBalm, /<h3>Lip\/ balm<\/h3>/);
-  assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
-  assert.match(recipeUx, /source:'\/systems\/baseline-natural-skincare\/recipes\/testing-lip-balm\.html'/);
-  assert.match(recipeUx, /loadExternalRecipeForCurrentPath/);
-  assert.match(recipeUx, /document\.importNode\(sourceCard,true\)/);
+  assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*false\]/);
+  assert.doesNotMatch(recipeUx, /EXTERNAL_RECIPES|EXTERNAL_RECIPE_PREFETCH|loadExternalRecipeForCurrentPath|document\.importNode\(sourceCard,true\)|testing-lip-balm\.html/);
+  assert.doesNotMatch(html, /__BASELINE_SKINCARE_LIP_BALM_PREFETCH__/);
+  assert.equal(fs.existsSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html'), false);
   assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
   assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
   assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
-
 test('recipe bootstrap starts independently of My Routine readiness', () => {
   assert.match(recipeBootstrap, /function startRecipeModules\(\)/);
   assert.doesNotMatch(recipeBootstrap, /__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
@@ -154,9 +155,9 @@ test('Lip/ balm default formula and slider compensation remain exactly 100 g', (
     assert.match(lipBalm, new RegExp(`data-formula-key="${key}"[^>]*data-base-display="${amount} g"`));
   }
   assert.match(lipBalm, /id="r12ButterCharacter" min="5" max="15" step="0\.5"[^>]*value="10"/);
-  assert.match(lipBalm, /const mango=25-kokum/);
+  assert.match(recipeUx, /const mango=25-kokum/);
   assert.match(lipBalm, /id="r12Structure" min="2" max="4" step="0\.25"[^>]*value="3"/);
-  assert.match(lipBalm, /const apricot=28\.5-candelilla/);
+  assert.match(recipeUx, /const apricot=28\.5-candelilla/);
 });
 
 test('Lip/ balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
