@@ -30,4 +30,11 @@ test('primary header controls are visible before external JavaScript runs', asyn
   await expect(page.locator('#blProtectedKey')).toBeVisible();
   await expect(page.locator('#bl-voice-toggle')).toBeVisible();
   await expect(page.locator('#bl-auth-toggle')).toBeVisible();
+
+  const home2 = await page.goto('/home/2', { waitUntil:'load' });
+  expect(home2).not.toBeNull();
+  expect(home2.status()).toBeLessThan(400);
+  await expect(page.locator('html')).toHaveAttribute('data-initial-home-view','badminton');
+  await expect(page.locator('#badmintonView')).toBeVisible();
+  await expect(page.locator('#systemsView')).toBeHidden();
 });
