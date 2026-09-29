@@ -54,5 +54,4 @@
     }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',cleanup,{once:true}); else cleanup();
-  global.setTimeout(cleanup,260);global.setTimeout(cleanup,800);
 })(typeof window!=='undefined'?window:globalThis);
