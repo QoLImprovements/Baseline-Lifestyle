@@ -7,7 +7,6 @@
   if(!FLOAT_ENGINE){
     throw new Error('The charity float engine did not load.');
   }
-  const FLOAT_TARGET_PENCE = FLOAT_ENGINE.FLOAT_TARGET_PENCE;
   const DENOMINATIONS = FLOAT_ENGINE.DENOMINATIONS;
 
   const DENOMINATION_BY_KEY = Object.freeze(DENOMINATIONS.reduce(function(map,item){
@@ -16,21 +15,7 @@
   },Object.create(null)));
 
   const SMALL_COIN_KEYS = FLOAT_ENGINE.SMALL_COIN_KEYS;
-  const SMALL_COIN_KEY_SET = new Set(SMALL_COIN_KEYS);
 
-  const BANK_BOOK_GROUPS = Object.freeze([
-    {label:'£50 notes', keys:['gbp50']},
-    {label:'£20 notes', keys:['gbp20']},
-    {label:'£10 notes', keys:['gbp10']},
-    {label:'£5 notes', keys:['gbp5']},
-    {label:'£2 coins', keys:['gbp2']},
-    {label:'£1 coins', keys:['gbp1']},
-    {label:'50p + 20p', keys:['p50','p20']},
-    {label:'10p + 5p', keys:['p10','p5']},
-    {label:'2p + 1p', keys:['p2','p1']}
-  ]);
-
-  const FLOAT_DISPLAY_KEYS = FLOAT_ENGINE.FLOAT_DISPLAY_KEYS;
 
   function money(pence){
     return new Intl.NumberFormat('en-GB',{
@@ -52,40 +37,6 @@
 
   function makeFloatAllocation(available){
     return FLOAT_ENGINE.makeFloatAllocation(available);
-  }
-
-  function cashRows(){
-    return DENOMINATIONS.map(function(item){
-      return [
-        '<tr data-cash-row="'+item.key+'">',
-        '  <th scope="row">'+item.label+'</th>',
-        '  <td><label class="charity-cash-visually-hidden" for="cash-'+item.key+'">Number of '+item.label+' items</label>',
-        '      <input id="cash-'+item.key+'" class="charity-cash-count" type="number" inputmode="numeric" min="0" step="1" value="0" data-key="'+item.key+'" data-pence="'+item.pence+'"></td>',
-        '  <td><output class="charity-cash-subtotal" data-subtotal="'+item.key+'">£0.00</output></td>',
-        '</tr>'
-      ].join('');
-    }).join('');
-  }
-
-  function bankBookRows(){
-    return BANK_BOOK_GROUPS.map(function(group){
-      return '<div class="charity-cheque-row"><span>'+group.label+'</span><output data-bank-book-keys="'+group.keys.join(',')+'">0 - 00</output></div>';
-    }).join('');
-  }
-
-  function floatRows(){
-    return FLOAT_DISPLAY_KEYS.map(function(key){
-      const item = DENOMINATION_BY_KEY[key];
-      const aim = key === 'gbp5' ? '6 (Max)' : (key === 'gbp1' ? '55 (Max)' : '15>');
-      return [
-        '<tr data-float-row="'+key+'">',
-        '  <th scope="row">'+item.label+'</th>',
-        '  <td>'+aim+'</td>',
-        '  <td><output data-float-count="'+key+'">0</output></td>',
-        '  <td><output data-float-value="'+key+'">£0.00</output></td>',
-        '</tr>'
-      ].join('');
-    }).join('');
   }
 
   function installCashingUp(){
