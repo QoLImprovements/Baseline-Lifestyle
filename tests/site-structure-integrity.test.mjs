@@ -181,6 +181,23 @@ test('primary pages expose canonical discovery metadata and a level-one heading'
   }
 });
 
+test('permanent header controls are authored in canonical page source', () => {
+  const pages = [
+    ['index.html', false],
+    ...systemNames.map((system) => [path.join('systems', system, `${system}.html`), true]),
+    [path.join('systems','charity-shop','charity-shop.php'), true]
+  ];
+
+  for (const [relativePath, hasBeats] of pages) {
+    const source = fs.readFileSync(path.join(root, relativePath), 'utf8');
+    assert.match(source, /id=["']blProtectedKey["']/, relativePath + ' must author the protected key');
+    assert.match(source, /class=["'][^"']*bl-homebar-right/, relativePath + ' must author the right-control container');
+    assert.match(source, /id=["']bl-voice-toggle["']/, relativePath + ' must author Voice before JavaScript');
+    assert.match(source, /id=["']bl-auth-toggle["']/, relativePath + ' must author Login\/Account before JavaScript');
+    if (hasBeats) assert.match(source, /id=["']bl-beats-toggle["']/, relativePath + ' must author Binaural before JavaScript');
+  }
+});
+
 test('database schemas are versioned instead of rebuilt on every API request', () => {
   const config = fs.readFileSync(path.join(root, 'sitewide/api/config.php'), 'utf8');
   const database = fs.readFileSync(path.join(root, 'sitewide/api/database.php'), 'utf8');
