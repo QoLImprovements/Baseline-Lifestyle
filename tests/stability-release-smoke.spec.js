@@ -171,6 +171,36 @@ test('permanent header controls are present before site JavaScript runs', async 
   }
 });
 
+test('static catalogue routes are populated before external application JavaScript runs', async ({ page }) => {
+  await page.route('**/*', (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  let response = await page.goto('/baseline-fitness/exercise-library', { waitUntil:'load' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+  await expect(page.locator('#library.section')).toBeVisible();
+  await expect(page.locator('#exerciseLibrary .exercise-card')).toHaveCount(75);
+  await expect(page.locator('#exerciseLibrary .exercise-card').first()).toBeVisible();
+
+  response = await page.goto('/baseline-massage/library', { waitUntil:'load' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+  await expect(page.locator('#library.section')).toBeVisible();
+  await expect(page.locator('#massageLibraryTabs .library-tab')).toHaveCount(4);
+  await expect(page.locator('#massageLibraryGrid .library-card')).toHaveCount(45);
+  await expect(page.locator('#massageLibraryGrid .library-card:visible')).toHaveCount(27);
+
+  response = await page.goto('/baseline-games-hub/games-hub/games-list', { waitUntil:'load' });
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+  await expect(page.locator('#games.section')).toBeVisible();
+  await expect(page.locator('#gamesList [data-game-card]')).toHaveCount(8);
+  await expect(page.locator('#gamesList [data-game-card]').first()).toBeVisible();
+});
+
 test('embedded Skincare recipe first paint is exact before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', (route) => {
     const pathname = new URL(route.request().url()).pathname;
