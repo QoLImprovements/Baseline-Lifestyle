@@ -27,6 +27,8 @@ test('Home authors its visible controls before shared JavaScript runs', () => {
     assert.equal((html.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1);
   }
   assert.equal((html.match(/id="bl-beats-toggle"/g) || []).length, 0);
+  assert.match(html, /data-initial-home-view/);
   const css = readFileSync('sitewide/css/baseline-home.css', 'utf8');
   assert.match(css, /\.bl-top-header > \.bl-homebar-right\s*\{[^}]*position:absolute;[^}]*top:14px;[^}]*right:14px;/s);
+  assert.match(css, /html\[data-initial-home-view="badminton"\] #badmintonView\s*\{[^}]*opacity:1;[^}]*visibility:visible;/s);
 });
