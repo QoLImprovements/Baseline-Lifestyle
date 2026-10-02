@@ -4290,87 +4290,98 @@ function buildControls(recipeEl){
     }
 
     function buildScaleByIngredient(recipeEl, controlsEl, multInput, applyFn){
-      if(q('.scale-block', recipeEl)) return;
+      let block = q('.scale-block', recipeEl);
+      const preauthored = !!block;
+      let toggle = block ? q('.scale-toggle', block) : null;
+      let panel = block ? q('.scale-tools', block) : null;
+      let label = panel ? q('.label', panel) : null;
+      let ingSelect = panel ? q('.scale-ingredient-select', panel) : null;
+      let unitSelect = panel ? q('.scale-unit-select', panel) : null;
+      let amountInput = panel ? q('.scale-amount-input', panel) : null;
+      let btn = panel ? q('.scale-apply', panel) : null;
+      let msg = block ? q('.scale-msg', block) : null;
 
-      const block = document.createElement('div');
-      block.className = 'scale-block';
+      if(preauthored && block.dataset.scaleBound === '1') return;
 
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'scale-toggle';
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.textContent = 'Scale By Ingredient';
+      if(!preauthored){
+        block = document.createElement('div');
+        block.className = 'scale-block';
 
-      const panel = document.createElement('div');
-      panel.className = 'multiplier scale-tools';
-      panel.hidden = true;
+        toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'scale-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Scale By Ingredient';
 
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = 'Use:';
+        panel = document.createElement('div');
+        panel.className = 'multiplier scale-tools';
+        panel.hidden = true;
 
-      const ingSelect = document.createElement('select');
-      ingSelect.className = 'scale-ingredient-select';
-      ingSelect.setAttribute('aria-label', 'Ingredient');
-      ingSelect.innerHTML = '<option value="" selected disabled>Choose ingredient…</option>';
+        label = document.createElement('span');
+        label.className = 'label';
+        label.textContent = 'Use:';
 
-      const unitSelect = document.createElement('select');
-      unitSelect.className = 'scale-unit-select';
-      unitSelect.setAttribute('aria-label', 'Unit');
-      unitSelect.innerHTML = `
-        <option value="g">g</option>
-        <option value="kg">kg</option>
-        <option value="ml">ml</option>
-        <option value="l">l</option>
-        <option value="tsp">tsp</option>
-        <option value="tbsp">tbsp</option>
-        <option value="cup">cup</option>
-        <option value="count">count</option>
-        <option value="drop">drop</option>
-      `;
+        ingSelect = document.createElement('select');
+        ingSelect.className = 'scale-ingredient-select';
+        ingSelect.setAttribute('aria-label', 'Ingredient');
+        ingSelect.innerHTML = '<option value="" selected disabled>Choose ingredient…</option>';
 
-      const amountInput = document.createElement('input');
-      amountInput.type = 'number';
-      amountInput.min = '0';
-      amountInput.step = 'any';
-      amountInput.inputMode = 'decimal';
-      // Keep placeholder short so it fits comfortably on smaller viewports.
-      amountInput.placeholder = 'Enter Quantity';
-      amountInput.className = 'scale-amount-input';
-      // More explicit naming for accessibility.
-      amountInput.setAttribute('aria-label', 'Ingredient quantity');
-      amountInput.title = 'Ingredient quantity';
+        unitSelect = document.createElement('select');
+        unitSelect.className = 'scale-unit-select';
+        unitSelect.setAttribute('aria-label', 'Unit');
+        unitSelect.innerHTML = `
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">l</option>
+          <option value="tsp">tsp</option>
+          <option value="tbsp">tbsp</option>
+          <option value="cup">cup</option>
+          <option value="count">count</option>
+          <option value="drop">drop</option>
+        `;
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'scale-apply';
-      btn.textContent = 'Scale Recipe';
+        amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.min = '0';
+        amountInput.step = 'any';
+        amountInput.inputMode = 'decimal';
+        amountInput.placeholder = 'Enter Quantity';
+        amountInput.className = 'scale-amount-input';
+        amountInput.setAttribute('aria-label', 'Ingredient quantity');
+        amountInput.title = 'Ingredient quantity';
 
-      const msg = document.createElement('div');
-      msg.className = 'scale-msg note';
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'scale-apply';
+        btn.textContent = 'Scale Recipe';
 
-      panel.appendChild(label);
-      panel.appendChild(ingSelect);
-      panel.appendChild(unitSelect);
-      panel.appendChild(amountInput);
-      panel.appendChild(btn);
+        msg = document.createElement('div');
+        msg.className = 'scale-msg note';
 
-      // Themed dropdown UI (menu matches the site rather than the OS default list).
+        panel.appendChild(label);
+        panel.appendChild(ingSelect);
+        panel.appendChild(unitSelect);
+        panel.appendChild(amountInput);
+        panel.appendChild(btn);
+
+        block.appendChild(toggle);
+        block.appendChild(panel);
+        block.appendChild(msg);
+
+        if(controlsEl){
+          controlsEl.appendChild(block);
+        }else{
+          const controls = q('.recipe-controls', recipeEl);
+          if(controls) controls.appendChild(block);
+          else recipeEl.insertAdjacentElement('afterbegin', block);
+        }
+      }
+
+      if(!toggle || !panel || !ingSelect || !unitSelect || !amountInput || !btn || !msg) return;
       enhanceSelect(ingSelect);
       enhanceSelect(unitSelect);
-
-      block.appendChild(toggle);
-      block.appendChild(panel);
-      block.appendChild(msg);
-
-      // Keep Scale By Ingredient inside the main recipe controls card so it stays on its own line.
-      if(controlsEl){
-        controlsEl.appendChild(block);
-      }else{
-        const controls = q('.recipe-controls', recipeEl);
-        if(controls) controls.appendChild(block);
-        else recipeEl.insertAdjacentElement('afterbegin', block);
-      }
+      block.dataset.scaleBound = '1';
 
       let items = [];
 
