@@ -46,9 +46,9 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
-  assert.match(html, /skincare-slider-cleanup-20260906\.js/);
-  assert.match(html, /skincare-recipe-entry-guard-20260906\.js/);
-  assert.match(html, /skincare-recipe-finalise-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
   assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
@@ -65,18 +65,20 @@ test('Lip/ balm is embedded in the canonical Skincare shell', () => {
   assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
-test('recipe enhancement modules load directly without a deferred bootstrap chain', () => {
+test('recipe interaction module loads directly without post-load repair layers', () => {
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
   assert.match(html, /skincare-recipe-ux-20260906\.js/);
-  assert.match(html, /skincare-slider-cleanup-20260906\.js/);
-  assert.match(html, /skincare-recipe-entry-guard-20260906\.js/);
-  assert.match(html, /skincare-recipe-finalise-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
+  assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
-test('Skincare Details is hidden at creation time to prevent hard-refresh first-paint flashes', () => {
-  assert.match(recipeUx, /recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/);
+test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 10);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
-  assert.match(recipeUx, /recipe-details-intro\[hidden\]\{display:none!important\}/);
-  assert.match(recipeUx, /:not\(\.recipe-view-hidden\):not\(\[hidden\]\)/);
+  assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
+  assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
+  assert.match(skincareCss, /recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
 });
 
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
@@ -92,9 +94,12 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap !important/);
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
-  assert.doesNotMatch(recipeUx, /createElement\('output'\)/);
-  assert.match(recipeUx, /meta\.left\.join\(' — '\)/);
-  assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
+  assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);
+  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 8);
+  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 8);
+  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 8);
+  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 7);
+  assert.doesNotMatch(html, /class="glide-control-stack"/);
 });
 
 test('Skincare recipe methods never instruct the viewer to operate optional sliders', () => {
@@ -123,7 +128,7 @@ test('method ingredient amount tags use the visible ingredient state as their so
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
 test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
-  assert.match(lipBalm, /class="glide-controller glide-controller--paired"/);
+  assert.match(lipBalm, /class="[^"]*glide-controller[^"]*glide-controller--paired[^"]*recipe-slider-template[^"]*"/);
   assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);
   assert.match(lipBalm, /class="glide-control-explainer"/);
   assert.match(lipBalm, /class="glide-explain-title">Overall Feel<\/div>/);
@@ -267,12 +272,13 @@ test('retired and Testing URLs redirect to permanent promoted URLs', () => {
 });
 
 test('Soap-Free Powdered Hair Wash remains the active Testing recipe', () => {
-  const opening = '<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11">';
-  const start = html.indexOf(opening);
+  const opening = /<div class="recipe card recipe-page recipe-universal-template"[^>]*data-category="Testing"[^>]*data-recipe-slug="testing-soap-free-powdered-hair-wash"[^>]*id="r11"[^>]*>/;
+  const openingMatch = opening.exec(html);
+  const start = openingMatch ? openingMatch.index : -1;
   assert.notEqual(start, -1, 'missing embedded Testing recipe r11');
   const block = html.slice(start);
   for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
-    assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
+    assert.match(block, new RegExp(`<h4[^>]*>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
   }
 });
 
