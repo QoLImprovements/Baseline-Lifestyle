@@ -81,7 +81,7 @@ for (const recipe of promoted) {
   });
 }
 
-test('only the remaining experimental recipe stays under Testing', async ({ page }) => {
+test('Testing catalogue keeps Soap-Free Hair Wash and Lip/ balm', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
@@ -90,8 +90,9 @@ test('only the remaining experimental recipe stays under Testing', async ({ page
   const testingHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Testing$/ });
   await expect(testingHeading).toHaveCount(1);
   const testingLinks = testingHeading.locator('+ ul a.recipe-open');
-  await expect(testingLinks).toHaveCount(1);
-  await expect(testingLinks.first()).toHaveAttribute('data-recipe-id', 'r11');
+  await expect(testingLinks).toHaveCount(2);
+  const testingIds = await testingLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
+  expect(testingIds).toEqual(['r11','r12']);
 
   const mainHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Recipes$/ });
   await expect(mainHeading).toHaveCount(1);
@@ -105,7 +106,6 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
   const expectCatalogue = async () => {
     await expect(page.locator('#recipes')).toHaveClass(/active/);
     await expect(page.locator('#recipes-landing')).toBeVisible();
-    await page.waitForFunction(() => globalThis.__BASELINE_SKINCARE_RECIPE_NAV_20260906__ === true);
 
     const recipesHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Recipes$/ });
     const testingHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Testing$/ });
