@@ -4787,15 +4787,22 @@ function buildControls(recipeEl){
       const titleRow = q('.recipe-title-row', recipeEl) || q('h3,h2,h1', recipeEl);
       if(!titleRow || !controls || !printSummary) return;
 
-      const strip = document.createElement('div');
-      strip.className = 'recipe-option-strip recipe-standard-controls print-hide';
+      let strip = q('.recipe-option-strip[data-static-recipe-shell="1"]', recipeEl);
+      let editBody = q('.recipe-edit-options[data-static-recipe-shell="1"]', recipeEl);
+      let adjustmentsBtn = q('.recipe-adjustments-toggle[data-static-recipe-shell="1"]', recipeEl);
+      const preauthored = !!(strip && editBody && adjustmentsBtn);
+
+      if(!strip){
+        strip = document.createElement('div');
+        strip.className = 'recipe-option-strip recipe-standard-controls print-hide';
+      }
       ['pointerdown','mousedown','touchstart','click'].forEach(function(evtName){
         strip.addEventListener(evtName, function(e){ e.stopPropagation(); });
       });
 
       const variantSwitcher = q('.variant-switcher', recipeEl);
       let variantSelect = null;
-      if(variantSwitcher){
+      if(variantSwitcher && !preauthored){
         variantSwitcher.classList.add('recipe-native-variant-switcher', 'print-hide');
         const field = document.createElement('div');
         field.className = 'recipe-variant-field';
@@ -4839,36 +4846,40 @@ function buildControls(recipeEl){
         });
       }
 
-      // Recipe-defining choices remain in the default recipe view. They are not
-      // utility adjustments: changing oat type or thickness can materially change
-      // the recipe the user is making.
-      const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
-      if(formulaRows.length){
-        const formulaControls = document.createElement('div');
-        formulaControls.className = 'recipe-formula-controls';
-        formulaRows.forEach(row=> formulaControls.appendChild(row));
-        strip.appendChild(formulaControls);
+      if(!preauthored){
+        const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
+        if(formulaRows.length){
+          const formulaControls = document.createElement('div');
+          formulaControls.className = 'recipe-formula-controls';
+          formulaRows.forEach(row=> formulaControls.appendChild(row));
+          strip.appendChild(formulaControls);
+        }
+
+        adjustmentsBtn = document.createElement('button');
+        adjustmentsBtn.type = 'button';
+        adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
+        adjustmentsBtn.setAttribute('aria-expanded', 'false');
+        adjustmentsBtn.textContent = 'Adjustments';
+
+        editBody = document.createElement('div');
+        editBody.className = 'recipe-edit-options recipe-adjustments-panel print-hide';
+        editBody.hidden = true;
+
+        titleRow.insertAdjacentElement('afterend', printSummary);
+        printSummary.insertAdjacentElement('afterend', strip);
+        strip.insertAdjacentElement('afterend', editBody);
+        controls.classList.add('recipe-edit-controls');
+        editBody.appendChild(controls);
+      }else{
+        controls.classList.add('recipe-edit-controls');
       }
 
-      const adjustmentsBtn = document.createElement('button');
-      adjustmentsBtn.type = 'button';
-      adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
-      adjustmentsBtn.setAttribute('aria-expanded', 'false');
-      adjustmentsBtn.textContent = 'Adjustments';
-
-      const editBody = document.createElement('div');
-      editBody.className = 'recipe-edit-options recipe-adjustments-panel print-hide';
-      editBody.hidden = true;
       try{
         recipeEl.classList.remove('recipe-options-open');
         recipeEl.classList.remove('recipe-adjustments-open');
       }catch(_e){}
-
-      titleRow.insertAdjacentElement('afterend', printSummary);
-      printSummary.insertAdjacentElement('afterend', strip);
-      strip.insertAdjacentElement('afterend', editBody);
-      controls.classList.add('recipe-edit-controls');
-      editBody.appendChild(controls);
+      editBody.hidden = true;
+      adjustmentsBtn.setAttribute('aria-expanded', 'false');
 
       adjustmentsBtn.addEventListener('click', ()=>{
         const open = !recipeEl.classList.contains('recipe-adjustments-open');
