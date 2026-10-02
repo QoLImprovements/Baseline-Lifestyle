@@ -5192,10 +5192,20 @@ function buildControls(recipeEl){
           const visible = group !== 'details' && (next === 'show-all' || group === next);
           el.classList.toggle('recipe-view-hidden', !visible);
         });
-        // Utility adjustments remain independent of the selected information tab.
-        editBody.classList.remove('recipe-view-hidden');
+        // Adjustments only belong to the make-the-recipe surfaces.
+        // Leaving Recipe/Show All also closes the panel so no adjustment state
+        // remains open while Details or Guidance is being read.
+        const adjustmentsAvailable = next === 'standard' || next === 'show-all';
+        adjustmentsRow.classList.toggle('recipe-view-hidden', !adjustmentsAvailable);
+        if(!adjustmentsAvailable){
+          recipeEl.classList.remove('recipe-options-open');
+          recipeEl.classList.remove('recipe-adjustments-open');
+          editBody.hidden = true;
+          adjustmentsBtn.setAttribute('aria-expanded', 'false');
+        }else{
+          editBody.classList.remove('recipe-view-hidden');
+        }
         metaRow.classList.remove('recipe-view-hidden');
-        adjustmentsRow.classList.remove('recipe-view-hidden');
         tabs.classList.remove('recipe-view-hidden');
       }
 
