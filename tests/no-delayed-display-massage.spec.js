@@ -26,5 +26,6 @@ test('Massage library and planner shells exist before external JavaScript runs',
   await expect(page.locator('#providerMassageStyle')).toBeVisible();
   await expect(page.locator('#providerMassageTheme option')).toHaveCount(6);
   await expect(page.locator('#focusedMassageTheme option')).toHaveCount(6);
+  await expect(page.locator('#massageTheme option')).toHaveCount(6);
   await expect(page.locator('#massageAreaLayout [data-area-check]')).toHaveCount(25);
 });
