@@ -36,3 +36,17 @@ Last known change before this checkpoint file:
 ## Failure log
 
 - Checkpoint-write orchestration attempt: failed before repository mutation because the local tool script referenced an undeclared `path` variable. Classification: assistant/tool-call construction error; no code or GitHub state affected.
+
+
+## Checkpoint — resumed structural audit
+
+- Commit `5bc3b4d12e35878eb41606652b738c1468056446`: fixed the static recipe hydration selector so it binds `input.multiplier-input`, not the wrapper that shares the same class.
+- Commits `8ef41686ee52b24855f7c9a6527aaadcc951a8a8` and `521d3917b6f6461075c0888ba2e4fc7e16258f44`: removed a Standard-View/hidden-class contradiction, authored slider breakdown hidden state, and made semantic emphasis available before JavaScript.
+- Commit `0b372a94d4e28135f55165dafbd185f60356dc1d`: pre-authored recipe shells no longer run the shared post-load structural grouping/emphasis rewrite.
+- Structural audit: all 10 canonical Skincare recipe cards currently contain exactly one static control shell, one metadata row, one recipe tab set, one Details block, and one Adjustments row. No Standard View element is still authored with `recipe-view-hidden`.
+- Removed repair script references remain absent: finaliser, slider cleanup, entry guard and old recipe bootstrap.
+- Reduced `skincare-recipe-ux-20260906.js` contains no `setTimeout`, `requestAnimationFrame`, `createElement`, or `MutationObserver`.
+
+### Failure classification
+
+- Inline parser initially reported "Unexpected token :" for script block 5. Inspection showed block 5 is `type="application/json"` authoring data, not executable JavaScript. Classification: validation-script false positive, not a site syntax failure.
