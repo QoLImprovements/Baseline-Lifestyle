@@ -417,7 +417,9 @@ test('Skincare recipe uses segmented variants and compact explanatory sliders in
   await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Purpose$/ })).toBeVisible();
   await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Design Rationale$/ })).toBeVisible();
   await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Variables & Fixed Elements$/ })).toBeVisible();
-  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Boundaries$/ })).toBeVisible();
+  await expect(card.locator('.recipe-details-intro h4').filter({ hasText:/^Limitations & Trade-offs$/ })).toBeVisible();
+  await expect(card.locator('.recipe-comedogenic-rating')).toContainText(/^Comedogenic Rating — \d/);
+  await expect(card.getByRole('heading', { name:/Comedogenic Considerations/i })).toHaveCount(0);
 
   await card.locator('[data-recipe-subtab="guidance"]').click();
   await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
@@ -521,6 +523,29 @@ test('numeric Yield updates when Batch is changed', async ({ page }) => {
   await batchInput.dispatchEvent('input');
   await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Batch:/ })).toContainText('2×');
   await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('200 g');
+});
+
+test('Skincare Details uses a continuous two-column layout without card separation', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
+  const details = page.locator('#r3 .recipe-details-intro');
+  await page.locator('#r3 [data-recipe-subtab="details"]').click();
+  await expect(details).toBeVisible();
+
+  const layout = await details.evaluate(el => {
+    const style = getComputedStyle(el);
+    const first = el.querySelector('.recipe-detail-block');
+    const firstStyle = getComputedStyle(first);
+    return {
+      columns: style.gridTemplateColumns,
+      borderStyle: firstStyle.borderStyle,
+      backgroundImage: firstStyle.backgroundImage,
+      backgroundColor: firstStyle.backgroundColor
+    };
+  });
+  expect(layout.columns.split(' ').length).toBeGreaterThanOrEqual(2);
+  expect(layout.borderStyle).toBe('none');
+  expect(layout.backgroundImage).toBe('none');
+  expect(['rgba(0, 0, 0, 0)','transparent']).toContain(layout.backgroundColor);
 });
 
 test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {
