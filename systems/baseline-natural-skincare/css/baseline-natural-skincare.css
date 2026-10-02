@@ -954,3 +954,13 @@ html body[data-app="skin"] #recipes .glide-breakdown{
 @media (max-width:900px){
   html body[data-app="skin"] #recipes .glide-controller{grid-template-columns:1fr!important}
 }
+
+
+/* STATIC-FIRST-SKINCARE-RECIPE-SEMANTIC-EMPHASIS-20261002 */
+html body[data-app="skin"] #recipes .recipe-universal-template ol > li > strong:first-child,
+html body[data-app="skin"] #recipes .recipe-universal-template .ing-subhead > strong,
+html body[data-app="skin"] #recipes .recipe-universal-template [data-recipe-view-group="details"] li > strong:first-child,
+html body[data-app="skin"] #recipes .recipe-universal-template [data-recipe-view-group="guidance"] li > strong:first-child,
+html body[data-app="skin"] #recipes .recipe-universal-template [data-recipe-view-group="guidance"] p > strong:first-child{
+  font-weight:850 !important;
+}
