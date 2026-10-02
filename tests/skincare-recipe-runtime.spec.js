@@ -57,6 +57,30 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
   await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
   await expect(page.locator('#r12 #r12ButterCharacter')).toBeVisible();
   await expect(page.locator('#r12 #r12Structure')).toBeVisible();
+
+  // The final recipe chrome must already exist with external JS blocked.
+  await expect(page.locator('#r12 .recipe-meta-row')).toBeVisible();
+  await expect(page.locator('#r12 .recipe-meta-item').filter({ hasText:/^Yield:/ })).toContainText('100 g');
+  await expect(page.locator('#r12 .recipe-meta-item').filter({ hasText:/^Batch:/ })).toContainText('1×');
+  await expect(page.locator('#r12 .recipe-adjustments-toggle')).toBeVisible();
+  await expect(page.locator('#r12 .recipe-adjustments-toggle')).toHaveAttribute('aria-expanded','false');
+  await expect(page.locator('#r12 .recipe-adjustments-panel')).toBeHidden();
+  await expect(page.locator('#r12 .recipe-subtabs')).toBeVisible();
+  await expect(page.locator('#r12 .recipe-subtab')).toHaveCount(4);
+  await expect(page.locator('#r12 [data-recipe-subtab="standard"]')).toHaveText('Recipe');
+  await expect(page.locator('#r12 [data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#r12 .recipe-details-intro')).toBeHidden();
+  await expect(page.locator('#r12 [data-recipe-view-group="guidance"].recipe-view-hidden').first()).toBeHidden();
+
+  // Slider layout/save UI is authored, not installed after load.
+  await expect(page.locator('#r12 .glide-controller')).toHaveAttribute('data-slider-count','2');
+  await expect(page.locator('#r12 .glide-control-stack')).toHaveCount(0);
+  await expect(page.locator('#r12 .glide-explain-title')).toHaveText('Overall Feel');
+  await expect(page.locator('#r12 .slider-save-row')).toBeVisible();
+  await expect(page.locator('#r12 .slider-save-btn').filter({ hasText:'Save as my setting' })).toBeVisible();
+  await expect(page.locator('#r12 .slider-default-btn').filter({ hasText:'Reset to recipe default' })).toBeVisible();
+  await expect(page.locator('#r12 .glide-breakdown')).toBeHidden();
+
   await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', '1');
   expect(requested).not.toContain('/systems/baseline-natural-skincare/recipes/testing-lip-balm.html');
 });
