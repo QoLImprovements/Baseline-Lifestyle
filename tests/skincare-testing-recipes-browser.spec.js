@@ -12,9 +12,7 @@ const promoted = [
   { id:'r9', slug:'tooth-polishing-powder', title:'Tooth Polishing Powder', oldSlug:'testing-natural-tooth-brightening-powder' },
   { id:'r10', slug:'microcurrent-glide-gel', title:'Microcurrent Glide Gel', oldSlug:'testing-microcurrent-conductive-gel' }
 ];
-const testing = [
-  { id:'r11', slug:'testing-soap-free-powdered-hair-wash', title:'Soap-Free Powdered Hair Wash' }
-];
+const testing = [];
 
 async function expectCanonicalRecipeView(page, recipe) {
   const card = page.locator(`#${recipe.id}`);
@@ -81,7 +79,7 @@ for (const recipe of promoted) {
   });
 }
 
-test('Testing catalogue keeps Soap-Free Hair Wash and Lip/ balm', async ({ page }) => {
+test('Testing catalogue keeps only Lip/ balm', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
@@ -90,9 +88,8 @@ test('Testing catalogue keeps Soap-Free Hair Wash and Lip/ balm', async ({ page 
   const testingHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Testing$/ });
   await expect(testingHeading).toHaveCount(1);
   const testingLinks = testingHeading.locator('+ ul a.recipe-open');
-  await expect(testingLinks).toHaveCount(2);
-  const testingIds = await testingLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
-  expect(testingIds).toEqual(['r11','r12']);
+  await expect(testingLinks).toHaveCount(1);
+  await expect(testingLinks.first()).toHaveAttribute('data-recipe-id','r12');
 
   const mainHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Recipes$/ });
   await expect(mainHeading).toHaveCount(1);
