@@ -475,11 +475,9 @@ These Markdown rules are a human reference point, not live runtime config.
           <div class="planner-row">
             <label for="massageTheme">Massage theme</label>
             <select id="massageTheme" data-theme-select>
-              <option>Lomi Lomi Flow</option>
-              <option>Comfort &amp; Relaxation</option>
+              <option selected>Comfort &amp; Relaxation</option>
               <option>Therapeutic Comfort</option>
               <option>Restorative / Healing-Aid</option>
-              <option>Sports Focus</option>
               <option>Energising &amp; Feel-good</option>
               <option>Deep Reset</option>
               <option>Custom theme</option>
@@ -1110,7 +1108,7 @@ These Markdown rules are a human reference point, not live runtime config.
       qsa('[data-planner-mode]').forEach(other => other.setAttribute('aria-selected', other === btn ? 'true' : 'false'));
       qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === btn.dataset.plannerMode));
     }));
-    qsa('[data-style-select]').forEach(el => { el.addEventListener('change', () => { updateThemeForStyle(el); updatePlanner(); }); updateThemeForStyle(el); });
+    qsa('[data-style-select]').forEach(el => { el.addEventListener('change', () => { updateThemeForStyle(el); updatePlanner(); }); });
     qsa('[data-custom-select]').forEach(el => { el.addEventListener('change', () => updateCustomPreference(el)); updateCustomPreference(el); });
     qsa('[data-simple-build]').forEach(btn => btn.addEventListener('click', () => buildSimpleBrief(btn.dataset.simpleBuild)));
     qsa('[data-simple-clear]').forEach(btn => btn.addEventListener('click', () => clearSimplePlanner(btn.dataset.simpleClear)));
