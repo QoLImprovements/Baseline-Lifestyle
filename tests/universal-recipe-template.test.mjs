@@ -89,9 +89,14 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   for (const {id,html} of skincareRecipeBlocks()) {
     assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/,id+' Details starts hidden');
     assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,id+' Details blocks');
+    assert.match(html,/class="recipe-comedogenic-rating"[^>]*><strong>Comedogenic Rating —<\/strong> <span class="recipe-comedogenic-rating-value">[^<]+<\/span>/,id+' concise comedogenic rating');
+    assert.match(html,/<h4>Limitations &amp; Trade-offs<\/h4>/,id+' limitations heading');
+    assert.doesNotMatch(html,/Comedogenic Considerations/,id+' no comedogenic guidance subsection');
   }
   assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
   assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
+  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
