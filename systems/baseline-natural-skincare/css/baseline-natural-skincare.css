@@ -896,3 +896,34 @@ body[data-app] #recipes .recipe-edit-options .scale-block:not(.is-open) .scale-t
     background: rgba(0,0,0,.10);
     pointer-events: none;
 }
+
+
+/* STATIC-FIRST-SKINCARE-RECIPE-UX-20261002 */
+html body[data-app="skin"] #recipes .recipe-variant-field{display:none!important}
+html body[data-app="skin"] #recipes .variant-switcher{display:flex!important;flex-wrap:wrap;gap:.3rem;align-items:center;width:max-content;max-width:100%;padding:.28rem;border:1px solid rgba(73,48,40,.22);border-radius:999px;background:rgba(255,255,255,.16)}
+html body[data-app="skin"] #recipes .variant-switcher .variant-tab{appearance:none;border:0;border-radius:999px;padding:.55rem .9rem;background:transparent;color:inherit;font:inherit;font-weight:650;cursor:pointer}
+html body[data-app="skin"] #recipes .variant-switcher .variant-tab[aria-selected="true"]{background:rgba(255,255,255,.72);box-shadow:0 1px 4px rgba(60,35,28,.14)}
+html body[data-app="skin"] #recipes .glide-controller{gap:.8rem!important;padding:.85rem!important;align-items:start!important}
+html body[data-app="skin"] #recipes .glide-control-main{min-height:0!important;padding:.75rem!important}
+html body[data-app="skin"] #recipes .glide-control-explainer{min-height:0!important;padding:.75rem!important}
+html body[data-app="skin"] #recipes .glide-slider-wrap{position:relative;padding-top:.35rem!important}
+html body[data-app="skin"] #recipes .glide-value-bubble{display:none!important}
+html body[data-app="skin"] #recipes .glide-scale{display:grid!important;grid-template-columns:max-content max-content!important;justify-content:space-between!important;gap:1rem!important;margin-top:.45rem!important}
+html body[data-app="skin"] #recipes .glide-scale>span{display:block!important;max-width:none!important;white-space:nowrap!important;line-height:1.2}
+html body[data-app="skin"] #recipes .glide-scale>span:last-child{text-align:right}
+html body[data-app="skin"] #recipes .glide-scale small{font-size:inherit;opacity:1}
+html body[data-app="skin"] #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
+html body[data-app="skin"] #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
+html body[data-app="skin"] #recipes .recipe-details-intro[hidden]{display:none!important}
+html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden):not([hidden]){display:grid!important}
+html body[data-app="skin"] #recipes .recipe-detail-block{padding:.8rem .9rem;border:1px solid rgba(73,48,40,.15);border-radius:.7rem;background:rgba(255,255,255,.12)}
+html body[data-app="skin"] #recipes .recipe-detail-block h4{margin:0 0 .28rem}
+html body[data-app="skin"] #recipes .recipe-detail-block p{margin:0;line-height:1.5}
+html body[data-app="skin"] #recipes .recipe-view-hidden{display:none!important}
+@media (max-width:720px){
+  html body[data-app="skin"] #recipes .variant-switcher{width:100%;border-radius:.8rem}
+  html body[data-app="skin"] #recipes .variant-switcher .variant-tab{flex:1 1 auto}
+  html body[data-app="skin"] #recipes .glide-scale{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
+  html body[data-app="skin"] #recipes .glide-scale>span{white-space:normal!important}
+  html body[data-app="skin"] #recipes .glide-scale>span:last-child{text-align:right}
+}
