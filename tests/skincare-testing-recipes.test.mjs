@@ -103,7 +103,7 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
 });
 
 test('Skincare recipe methods never instruct the viewer to operate optional sliders', () => {
-  const methodBlocks = Array.from(html.matchAll(/<h4>Method<\/h4>\s*<ol>([\s\S]*?)<\/ol>/gi))
+  const methodBlocks = Array.from(html.matchAll(/<h4[^>]*>Method<\/h4>\s*<ol[^>]*>([\s\S]*?)<\/ol>/gi))
     .map(match => match[1]);
   assert.ok(methodBlocks.length > 0);
   for (const method of methodBlocks) {
