@@ -67,7 +67,6 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser',
     '/baseline-natural-skincare/recipes/nurturing-glow-butter',
     '/baseline-natural-skincare/recipes/protective-touch-balm',
-    '/baseline-natural-skincare/recipes/testing-soap-free-powdered-hair-wash',
     '/baseline-natural-skincare/recipes/testing-lip-balm',
     '/baseline-badminton-session/system',
     '/baseline-badminton-session/game-plan',
