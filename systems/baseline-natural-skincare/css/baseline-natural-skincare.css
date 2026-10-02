@@ -927,3 +927,30 @@ html body[data-app="skin"] #recipes .recipe-view-hidden{display:none!important}
   html body[data-app="skin"] #recipes .glide-scale>span{white-space:normal!important}
   html body[data-app="skin"] #recipes .glide-scale>span:last-child{text-align:right}
 }
+
+
+/* STATIC-FIRST-SKINCARE-SLIDER-CLEANUP-20261002 */
+html body[data-app="skin"] #recipes .recipe-slider-instruction{display:none!important}
+html body[data-app="skin"] #recipes .glide-controller{grid-template-columns:minmax(280px,380px) minmax(0,1fr)!important}
+html body[data-app="skin"] #recipes .glide-label,
+html body[data-app="skin"] #recipes .glide-readout,
+html body[data-app="skin"] #recipes .glide-value-bubble,
+html body[data-app="skin"] #recipes .glide-scale,
+html body[data-app="skin"] #recipes .glide-scale small,
+html body[data-app="skin"] #recipes .glide-variable-help,
+html body[data-app="skin"] #recipes .glide-explain-title,
+html body[data-app="skin"] #recipes .glide-explain,
+html body[data-app="skin"] #recipes .glide-breakdown{font-size:1em!important}
+html body[data-app="skin"] #recipes .card .card{
+  border:2px solid var(--border-2,var(--border))!important;
+  box-shadow:var(--shadow)!important;
+}
+html body[data-app="skin"] #recipes .glide-explain,
+html body[data-app="skin"] #recipes .glide-breakdown{
+  min-height:3.2em!important;
+  line-height:1.58!important;
+  font-variant-numeric:tabular-nums;
+}
+@media (max-width:900px){
+  html body[data-app="skin"] #recipes .glide-controller{grid-template-columns:1fr!important}
+}
