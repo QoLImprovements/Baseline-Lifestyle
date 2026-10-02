@@ -27,6 +27,16 @@
   }
   function recipeById(id){ return document.getElementById(resolveId(id) || ''); }
 
+  function collapseAdjustments(recipe){
+    if(!recipe) return;
+    recipe.classList.remove('recipe-options-open');
+    recipe.classList.remove('recipe-adjustments-open');
+    const panel=recipe.querySelector(':scope > .recipe-adjustments-panel');
+    const button=recipe.querySelector(':scope > .recipe-adjustments-row .recipe-adjustments-toggle');
+    if(panel) panel.hidden=true;
+    if(button) button.setAttribute('aria-expanded','false');
+  }
+
   function visibleGroups(recipe,view){
     if(!recipe) return;
     const next=['standard','details','guidance','show-all'].includes(view)?view:'standard';
@@ -46,10 +56,16 @@
       details.classList.toggle('recipe-view-hidden',!showDetails);
       details.hidden=!showDetails;
     }
+
+    const adjustmentsRow=recipe.querySelector(':scope > .recipe-adjustments-row');
+    const adjustmentsAvailable=next==='standard' || next==='show-all';
+    if(adjustmentsRow) adjustmentsRow.classList.toggle('recipe-view-hidden',!adjustmentsAvailable);
+    if(!adjustmentsAvailable) collapseAdjustments(recipe);
   }
 
   function resetRecipeView(recipe){
     if(!recipe) return;
+    collapseAdjustments(recipe);
     try{ recipe.__baselineSetRecipeView?.('standard'); }catch(_error){}
     visibleGroups(recipe,'standard');
   }
