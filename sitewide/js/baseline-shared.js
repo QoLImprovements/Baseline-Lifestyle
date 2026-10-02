@@ -4950,11 +4950,11 @@ function buildControls(recipeEl){
 
       recipeEl.classList.add('recipe-universal-template');
 
-      const metaRow = document.createElement('div');
-      metaRow.className = 'recipe-meta-row';
-      const metaSummary = document.createElement('div');
-      metaSummary.className = 'recipe-meta-summary';
-      metaRow.appendChild(metaSummary);
+      let metaRow = q('.recipe-meta-row[data-static-recipe-shell="1"]', recipeEl);
+      let metaSummary = metaRow ? q('.recipe-meta-summary', metaRow) : null;
+      let adjustmentsRow = q('.recipe-adjustments-row[data-static-recipe-shell="1"]', recipeEl);
+      let tabs = q('.recipe-subtabs[data-static-recipe-shell="1"]', recipeEl);
+      const preauthored = !!(metaRow && metaSummary && adjustmentsRow && tabs);
 
       function normaliseMetaValue(value){
         return String(value || '').replace(/\s+/g, ' ').replace(/^[\s:–—-]+|[\s.;]+$/g, '').trim();
@@ -4974,74 +4974,88 @@ function buildControls(recipeEl){
         metaSummary.appendChild(item);
         return val;
       }
-      function firstMatch(re, text){
-        const match = String(text || '').match(re);
+      function firstMatch(re, value){
+        const match = String(value || '').match(re);
         return match && match[1] ? normaliseMetaValue(match[1]) : '';
       }
 
       const recipeText = String(recipeEl.textContent || '').replace(/\s+/g, ' ');
-      let yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
-      if(!yieldValue){
-        yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
-      }
-      if(!yieldValue){
-        yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
-          .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
-      }
-      if(!yieldValue){
-        const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
-        if(serves) yieldValue = serves;
-      }
-      if(!yieldValue) yieldValue = '1 recipe batch';
-      const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
-      const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
-      const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
+      let yieldValue = '';
+      let yieldMetaValue = null;
+      let batchMetaValue = null;
 
-      const yieldMetaValue = addMeta('Yield', yieldValue);
-      const batchMetaValue = addMeta('Batch', '1×');
-      addMeta('Equipment', equipmentValue);
-      addMeta('Allergens', allergensValue);
-      addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
-      if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
-      if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
+      if(preauthored){
+        yieldMetaValue = q('.recipe-yield-meta-value', metaRow);
+        batchMetaValue = q('.recipe-batch-meta-value', metaRow);
+        yieldValue = normaliseMetaValue((yieldMetaValue && yieldMetaValue.dataset && yieldMetaValue.dataset.baseYield) || (yieldMetaValue && yieldMetaValue.textContent) || '1 recipe batch');
+      }else{
+        metaRow = document.createElement('div');
+        metaRow.className = 'recipe-meta-row';
+        metaSummary = document.createElement('div');
+        metaSummary.className = 'recipe-meta-summary';
+        metaRow.appendChild(metaSummary);
+
+        yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
+        if(!yieldValue){
+          yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
+        }
+        if(!yieldValue){
+          yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
+            .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
+        }
+        if(!yieldValue){
+          const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
+          if(serves) yieldValue = serves;
+        }
+        if(!yieldValue) yieldValue = '1 recipe batch';
+        const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
+        const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
+        const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
+
+        yieldMetaValue = addMeta('Yield', yieldValue);
+        batchMetaValue = addMeta('Batch', '1×');
+        addMeta('Equipment', equipmentValue);
+        addMeta('Allergens', allergensValue);
+        addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
+        if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
+        if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
+
+        const adjustmentsBtnForRow = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
+        adjustmentsRow = document.createElement('div');
+        adjustmentsRow.className = 'recipe-adjustments-row print-hide';
+        if(adjustmentsBtnForRow) adjustmentsRow.appendChild(adjustmentsBtnForRow);
+
+        tabs = document.createElement('div');
+        tabs.className = 'recipe-subtabs print-hide';
+        tabs.setAttribute('role', 'tablist');
+        tabs.setAttribute('aria-label', 'Recipe views');
+        const tabDefs = [
+          ['standard', 'Standard View'],
+          ['details', 'Details'],
+          ['guidance', 'Guidance'],
+          ['show-all', 'Show All']
+        ];
+        tabDefs.forEach(([id, label])=>{
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'recipe-subtab';
+          button.dataset.recipeSubtab = id;
+          button.setAttribute('role', 'tab');
+          button.setAttribute('aria-selected', id === 'standard' ? 'true' : 'false');
+          button.textContent = label;
+          tabs.appendChild(button);
+        });
+
+        titleRow.insertAdjacentElement('afterend', metaRow);
+        metaRow.insertAdjacentElement('afterend', adjustmentsRow);
+        adjustmentsRow.insertAdjacentElement('afterend', editBody);
+        editBody.insertAdjacentElement('afterend', tabs);
+        tabs.insertAdjacentElement('afterend', strip);
+      }
 
       const adjustmentsBtn = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
-      const adjustmentsRow = document.createElement('div');
-      adjustmentsRow.className = 'recipe-adjustments-row print-hide';
-      if(adjustmentsBtn) adjustmentsRow.appendChild(adjustmentsBtn);
-
       const legacyPrintSummary = q('.print-summary', recipeEl);
       if(legacyPrintSummary) legacyPrintSummary.classList.add('recipe-legacy-print-summary');
-
-      const tabs = document.createElement('div');
-      tabs.className = 'recipe-subtabs print-hide';
-      tabs.setAttribute('role', 'tablist');
-      tabs.setAttribute('aria-label', 'Recipe views');
-      const tabDefs = [
-        ['standard', 'Standard View'],
-        ['details', 'Details'],
-        ['guidance', 'Guidance'],
-        ['show-all', 'Show All']
-      ];
-      tabDefs.forEach(([id, label])=>{
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'recipe-subtab';
-        button.dataset.recipeSubtab = id;
-        button.setAttribute('role', 'tab');
-        button.setAttribute('aria-selected', id === 'standard' ? 'true' : 'false');
-        button.textContent = label;
-        tabs.appendChild(button);
-      });
-
-      // Canonical order: title -> information line -> Adjustments -> adjustments panel ->
-      // subtabs -> the selected view content. There is intentionally no visible
-      // "Standard View" heading inside the content.
-      titleRow.insertAdjacentElement('afterend', metaRow);
-      metaRow.insertAdjacentElement('afterend', adjustmentsRow);
-      adjustmentsRow.insertAdjacentElement('afterend', editBody);
-      editBody.insertAdjacentElement('afterend', tabs);
-      tabs.insertAdjacentElement('afterend', strip);
 
       const batchInput = q('input.multiplier-input', recipeEl);
       const baseYieldMatch = String(yieldValue || '').match(/^([0-9]+(?:\.[0-9]+)?)\s*(g|kg|ml|l)\b/i);
