@@ -964,3 +964,26 @@ html body[data-app="skin"] #recipes .recipe-universal-template [data-recipe-view
 html body[data-app="skin"] #recipes .recipe-universal-template [data-recipe-view-group="guidance"] p > strong:first-child{
   font-weight:850 !important;
 }
+
+
+/* SKINCARE-SHOW-ALL-TAB-ORDER-20261003 */
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"]{
+  display:flex !important;
+  flex-direction:column !important;
+}
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > [data-recipe-view-group="standard"],
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .variant-panel:not([hidden]) > [data-recipe-view-group="standard"]{
+  order:10 !important;
+}
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .recipe-details-intro,
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > [data-recipe-view-group="details"],
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .variant-panel:not([hidden]) > [data-recipe-view-group="details"]{
+  order:20 !important;
+}
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > [data-recipe-view-group="guidance"],
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .variant-panel:not([hidden]) > [data-recipe-view-group="guidance"]{
+  order:30 !important;
+}
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .variant-panel:not([hidden]){
+  display:contents !important;
+}
