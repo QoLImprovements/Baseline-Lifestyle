@@ -4744,6 +4744,7 @@ function buildControls(recipeEl){
     }
 
     function ensureLiteralRecipeStructure(recipeEl){
+      if(recipeEl && recipeEl.dataset && recipeEl.dataset.staticRecipeShell === '1') return;
       qsa('.variant-switcher', recipeEl).forEach(sw=>{
         const prev = sw.previousElementSibling;
         if(prev && prev.tagName === 'H4' && /^variants$/i.test((prev.textContent || '').trim())) return;
