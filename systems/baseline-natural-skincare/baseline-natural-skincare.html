@@ -2791,22 +2791,29 @@ Method steps MUST follow this format:
       var saveId = recipe.id + (panel && panel.getAttribute('data-variant-panel') ? (':' + panel.getAttribute('data-variant-panel')) : '');
       controller.setAttribute('data-slider-save-id', saveId);
 
-      var row = document.createElement('div');
-      row.className = 'slider-save-row';
-      var saveBtn = document.createElement('button');
-      saveBtn.type = 'button';
-      saveBtn.className = 'slider-save-btn';
-      saveBtn.textContent = 'Save Slider Position';
-      var defaultBtn = document.createElement('button');
-      defaultBtn.type = 'button';
-      defaultBtn.className = 'slider-save-btn slider-default-btn';
-      defaultBtn.textContent = 'Default';
-      var status = document.createElement('span');
-      status.className = 'slider-save-status';
-      row.appendChild(saveBtn);
-      row.appendChild(defaultBtn);
-      row.appendChild(status);
-      explainer.appendChild(row);
+      var row = explainer.querySelector(':scope > .slider-save-row');
+      var saveBtn = row && row.querySelector('.slider-save-btn:not(.slider-default-btn)');
+      var defaultBtn = row && row.querySelector('.slider-default-btn');
+      var status = row && row.querySelector('.slider-save-status');
+      if(!row){
+        row = document.createElement('div');
+        row.className = 'slider-save-row';
+        saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'slider-save-btn';
+        saveBtn.textContent = 'Save as my setting';
+        defaultBtn = document.createElement('button');
+        defaultBtn.type = 'button';
+        defaultBtn.className = 'slider-save-btn slider-default-btn';
+        defaultBtn.textContent = 'Reset to recipe default';
+        status = document.createElement('span');
+        status.className = 'slider-save-status';
+        row.appendChild(saveBtn);
+        row.appendChild(defaultBtn);
+        row.appendChild(status);
+        explainer.appendChild(row);
+      }
+      if(!saveBtn || !defaultBtn || !status) return;
 
       var syncFn = function(){
         if(typeof controller.__baselineSliderSync === 'function') controller.__baselineSliderSync();
