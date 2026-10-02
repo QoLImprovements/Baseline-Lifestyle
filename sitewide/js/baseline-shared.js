@@ -5126,58 +5126,60 @@ function buildControls(recipeEl){
         });
       }
 
-      markContainer(recipeEl);
-      qsa('.variant-panel', recipeEl).forEach(markContainer);
-
-      // Recipe-specific controls are part of Standard View, never hidden behind
-      // the Adjustments utility panel.
-      strip.dataset.recipeViewGroup = 'standard';
-      qsa('.glide-controller', recipeEl).forEach(controller=>{
-        controller.dataset.recipeViewGroup = 'standard';
-        const previous = controller.previousElementSibling;
-        if(previous && previous.matches && previous.matches('p')){
-          previous.classList.add('recipe-slider-intro-legacy');
-        }
-      });
-
-      // Existing status/meta prose is deeper information once the compact metadata
-      // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
-      // from cluttering Standard View.
-      qsa(':scope > p.note', recipeEl).forEach(note=>{
-        const text = String(note.textContent || '');
-        if(/formulation currently being tested/i.test(text) || /\b(?:Yield|Equipment|Allergens?)\s*:/i.test(text) || /Barrier-first.*Vegan/i.test(text)){
-          note.dataset.recipeViewGroup = 'details';
-        }
-      });
-      qsa('p', recipeEl).forEach(p=>{
-        if(/^\s*Total\s*[–—:-]/i.test(String(p.textContent || ''))){
-          p.dataset.recipeViewGroup = 'details';
-        }
-      });
-
-      // The ingredient-library link is supporting information, not part of the
-      // minimal make-the-recipe view. Keep it available in Details and Show All.
-      qsa('.recipe-info-view-link, .info-link', recipeEl).forEach(link=>{
-        link.dataset.recipeViewGroup = 'details';
-      });
-
-      function normalizeEmphasis(){
-        qsa('ol > li > strong:first-child', recipeEl).forEach(strong=>{
-          const value = String(strong.textContent || '').trim();
-          if(!value) return;
-          if(/^[0-9¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/.test(value)) return;
-          strong.classList.add('recipe-method-action');
-          const next = strong.nextSibling;
-          if(next && next.nodeType === Node.TEXT_NODE && /^\s*:/.test(next.nodeValue || '') && !/:$/.test(value)){
-            strong.textContent = value + ':';
-            next.nodeValue = String(next.nodeValue || '').replace(/^\s*:\s*/, ' ');
+      if(!preauthored){
+        markContainer(recipeEl);
+        qsa('.variant-panel', recipeEl).forEach(markContainer);
+  
+        // Recipe-specific controls are part of Standard View, never hidden behind
+        // the Adjustments utility panel.
+        strip.dataset.recipeViewGroup = 'standard';
+        qsa('.glide-controller', recipeEl).forEach(controller=>{
+          controller.dataset.recipeViewGroup = 'standard';
+          const previous = controller.previousElementSibling;
+          if(previous && previous.matches && previous.matches('p')){
+            previous.classList.add('recipe-slider-intro-legacy');
           }
         });
-        qsa('.ing-subhead > strong', recipeEl).forEach(strong=> strong.classList.add('recipe-subgroup-label'));
-        qsa('[data-recipe-view-group="details"] li > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-detail-label'));
-        qsa('[data-recipe-view-group="guidance"] li > strong:first-child, [data-recipe-view-group="guidance"] p > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-guidance-label'));
+  
+        // Existing status/meta prose is deeper information once the compact metadata
+        // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
+        // from cluttering Standard View.
+        qsa(':scope > p.note', recipeEl).forEach(note=>{
+          const text = String(note.textContent || '');
+          if(/formulation currently being tested/i.test(text) || /\b(?:Yield|Equipment|Allergens?)\s*:/i.test(text) || /Barrier-first.*Vegan/i.test(text)){
+            note.dataset.recipeViewGroup = 'details';
+          }
+        });
+        qsa('p', recipeEl).forEach(p=>{
+          if(/^\s*Total\s*[–—:-]/i.test(String(p.textContent || ''))){
+            p.dataset.recipeViewGroup = 'details';
+          }
+        });
+  
+        // The ingredient-library link is supporting information, not part of the
+        // minimal make-the-recipe view. Keep it available in Details and Show All.
+        qsa('.recipe-info-view-link, .info-link', recipeEl).forEach(link=>{
+          link.dataset.recipeViewGroup = 'details';
+        });
+  
+        function normalizeEmphasis(){
+          qsa('ol > li > strong:first-child', recipeEl).forEach(strong=>{
+            const value = String(strong.textContent || '').trim();
+            if(!value) return;
+            if(/^[0-9¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/.test(value)) return;
+            strong.classList.add('recipe-method-action');
+            const next = strong.nextSibling;
+            if(next && next.nodeType === Node.TEXT_NODE && /^\s*:/.test(next.nodeValue || '') && !/:$/.test(value)){
+              strong.textContent = value + ':';
+              next.nodeValue = String(next.nodeValue || '').replace(/^\s*:\s*/, ' ');
+            }
+          });
+          qsa('.ing-subhead > strong', recipeEl).forEach(strong=> strong.classList.add('recipe-subgroup-label'));
+          qsa('[data-recipe-view-group="details"] li > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-detail-label'));
+          qsa('[data-recipe-view-group="guidance"] li > strong:first-child, [data-recipe-view-group="guidance"] p > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-guidance-label'));
+        }
+        normalizeEmphasis();
       }
-      normalizeEmphasis();
 
       function setView(view){
         const next = ['standard','details','guidance','show-all'].includes(view) ? view : 'standard';
