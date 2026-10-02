@@ -50,3 +50,28 @@ Last known change before this checkpoint file:
 ### Failure classification
 
 - Inline parser initially reported "Unexpected token :" for script block 5. Inspection showed block 5 is `type="application/json"` authoring data, not executable JavaScript. Classification: validation-script false positive, not a site syntax failure.
+
+## Checkpoint — targeted static validation passed
+
+Latest static validation result: **21 / 21 checks passed**.
+
+Validated:
+- 10 canonical Skincare recipe cards.
+- 10 static controls, tab sets and Details blocks.
+- Standard / Details / Guidance initial visibility state.
+- No obsolete recipe repair/bootstrap runtime references.
+- No delayed DOM-construction primitives in the reduced Skincare recipe UX module.
+- Static multiplier input hydration selector.
+- Static slider layout, save controls and hidden breakdown state.
+- Static semantic-emphasis CSS.
+- External recipe runtime scripts parse.
+- Executable inline Skincare scripts parse.
+- Updated structural tests now assert the authored-shell architecture.
+
+Additional fix before this checkpoint:
+- Commit `e4d4ccd4adf7f5fed46f1901b0210f2c0a505f8c` authored `recipe-view-hidden` on the nine Details `(View)` links so DOM state is final as well as visual state.
+
+Failure-log addition:
+- Checkpoint-write orchestration retry failed before repository mutation because unescaped Markdown backticks terminated the local JavaScript template literal. Classification: assistant/tool-call construction error; no GitHub or code state affected.
+
+Next action: open a PR to trigger the repository's real GitHub Actions workflows. Any CI failure must be logged with workflow/job/step and classified before another fix.
