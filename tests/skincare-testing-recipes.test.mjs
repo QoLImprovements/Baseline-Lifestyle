@@ -13,8 +13,9 @@ const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
-const lipBalm = fs.readFileSync('systems/baseline-natural-skincare/recipes/testing-lip-balm.html', 'utf8');
-const recipeBootstrap = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js', 'utf8');
+const lipBalmStart = html.indexOf('<!-- Testing Recipe 12 -->');
+const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
+const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
@@ -44,41 +45,40 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
   assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
-  assert.match(html, /skincare-recipe-bootstrap-20260906\.js\?v=RECIPE_REFRESH_STABILITY_20260920_2/);
-  assert.match(recipeBootstrap, /skincare-recipe-navigation-20260906\.js\?v=RECIPE_NAV_20260920_5/);
-  assert.match(recipeBootstrap, /skincare-recipe-finalise-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
   assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm stays sourced from the recipe folder but is rendered through the Skincare shell', () => {
-  assert.match(lipBalm, /data-category="Testing"/);
-  assert.match(lipBalm, /data-recipe-slug="testing-lip-balm"/);
-  assert.match(lipBalm, /id="r12"/);
-  assert.match(lipBalm, /<h3>Lip\/ balm<\/h3>/);
-  assert.doesNotMatch(html, /data-recipe-slug="testing-lip-balm"/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'.*true\]/);
-  assert.match(recipeUx, /source:'\/systems\/baseline-natural-skincare\/recipes\/testing-lip-balm\.html'/);
-  assert.match(recipeUx, /loadExternalRecipeForCurrentPath/);
-  assert.match(recipeUx, /document\.importNode\(sourceCard,true\)/);
+test('Lip/ balm is embedded in the canonical Skincare shell', () => {
+  assert.match(html, /data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12"/);
+  assert.match(html, /<h3>Lip\/ balm<\/h3>/);
+  assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
+  assert.doesNotMatch(html, /baseline-lip-balm-route-prefetch/);
+  assert.doesNotMatch(recipeUx, /testing-lip-balm\.html/);
+  assert.doesNotMatch(recipeUx, /loadExternalRecipeForCurrentPath|installExternalRecipePlaceholder|document\.importNode\(sourceCard,true\)/);
   assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
   assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
   assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
   assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
 });
-
-test('recipe bootstrap starts independently of My Routine readiness', () => {
-  assert.match(recipeBootstrap, /function startRecipeModules\(\)/);
-  assert.doesNotMatch(recipeBootstrap, /__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
-  assert.doesNotMatch(recipeBootstrap, /BASELINE_RoutineSystem/);
-  assert.doesNotMatch(recipeBootstrap, /startAfterRoutine/);
+test('recipe interaction module loads directly without post-load repair layers', () => {
+  assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
+  assert.match(html, /skincare-recipe-ux-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
+  assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
-
-test('Skincare Details is hidden at creation time to prevent hard-refresh first-paint flashes', () => {
-  assert.match(recipeUx, /recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/);
+test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 10);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
-  assert.match(recipeUx, /recipe-details-intro\[hidden\]\{display:none!important\}/);
-  assert.match(recipeUx, /:not\(\.recipe-view-hidden\):not\(\[hidden\]\)/);
+  assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
+  assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
+  assert.match(skincareCss, /recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
 });
 
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
@@ -94,13 +94,16 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap !important/);
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
-  assert.doesNotMatch(recipeUx, /createElement\('output'\)/);
-  assert.match(recipeUx, /meta\.left\.join\(' — '\)/);
-  assert.doesNotMatch(recipeUx, /help\.textContent=meta\.help/);
+  assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);
+  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 8);
+  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 8);
+  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 8);
+  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 7);
+  assert.doesNotMatch(html, /class="glide-control-stack"/);
 });
 
 test('Skincare recipe methods never instruct the viewer to operate optional sliders', () => {
-  const methodBlocks = Array.from(html.matchAll(/<h4>Method<\/h4>\s*<ol>([\s\S]*?)<\/ol>/gi))
+  const methodBlocks = Array.from(html.matchAll(/<h4[^>]*>Method<\/h4>\s*<ol[^>]*>([\s\S]*?)<\/ol>/gi))
     .map(match => match[1]);
   assert.ok(methodBlocks.length > 0);
   for (const method of methodBlocks) {
@@ -125,7 +128,7 @@ test('method ingredient amount tags use the visible ingredient state as their so
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
 test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
-  assert.match(lipBalm, /class="glide-controller glide-controller--paired"/);
+  assert.match(lipBalm, /class="[^"]*glide-controller[^"]*glide-controller--paired[^"]*recipe-slider-template[^"]*"/);
   assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);
   assert.match(lipBalm, /class="glide-control-explainer"/);
   assert.match(lipBalm, /class="glide-explain-title">Overall Feel<\/div>/);
@@ -154,9 +157,9 @@ test('Lip/ balm default formula and slider compensation remain exactly 100 g', (
     assert.match(lipBalm, new RegExp(`data-formula-key="${key}"[^>]*data-base-display="${amount} g"`));
   }
   assert.match(lipBalm, /id="r12ButterCharacter" min="5" max="15" step="0\.5"[^>]*value="10"/);
-  assert.match(lipBalm, /const mango=25-kokum/);
+  assert.match(recipeUx, /const mango=25-kokum/);
   assert.match(lipBalm, /id="r12Structure" min="2" max="4" step="0\.25"[^>]*value="3"/);
-  assert.match(lipBalm, /const apricot=28\.5-candelilla/);
+  assert.match(recipeUx, /const apricot=28\.5-candelilla/);
 });
 
 test('Lip/ balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
@@ -226,13 +229,16 @@ test('main Skincare document loads the recipe UX runtime', () => {
   assert.match(html, /\/systems\/baseline-natural-skincare\/js\/skincare-recipe-ux-20260906\.js/);
 });
 
-test('promotion logic removes retired competing cards and Testing status', () => {
-  assert.match(recipeUx, /r8:\s*\{\s*slug:'calming-shave-gel',\s*title:'Calming Shave Gel'/);
-  assert.match(recipeUx, /r9:\s*\{\s*slug:'tooth-polishing-powder',\s*title:'Tooth Polishing Powder'/);
-  assert.match(recipeUx, /r10:\s*\{\s*slug:'microcurrent-glide-gel',\s*title:'Microcurrent Glide Gel'/);
+test('promoted Skincare recipes are canonical in initial HTML', () => {
+  assert.doesNotMatch(html, /\sid="r4"/);
+  assert.doesNotMatch(html, /\sid="r5"/);
+  assert.doesNotMatch(html, /data-recipe-id="r4"|data-recipe-id="r5"/);
+  assert.match(html, /data-recipe-slug="calming-shave-gel" id="r8"/);
+  assert.match(html, /data-recipe-slug="microcurrent-glide-gel" id="r10"/);
+  assert.doesNotMatch(html, /id="r8"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r8"/);
+  assert.doesNotMatch(html, /id="r10"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r10"/);
+  assert.doesNotMatch(recipeUx, /function promoteCards\(/);
   assert.match(recipeUx, /const REPLACED_IDS = Object\.freeze\(\{ r4:'r10', r5:'r8' \}\)/);
-  assert.match(recipeUx, /recipe\.removeAttribute\('data-category'\)/);
-  assert.match(recipeUx, /\['r4','r5'\]\.forEach/);
   assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
   assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
   assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
@@ -266,12 +272,13 @@ test('retired and Testing URLs redirect to permanent promoted URLs', () => {
 });
 
 test('Soap-Free Powdered Hair Wash remains the active Testing recipe', () => {
-  const opening = '<div class="recipe card recipe-page" data-category="Testing" data-recipe-slug="testing-soap-free-powdered-hair-wash" id="r11">';
-  const start = html.indexOf(opening);
+  const opening = /<div class="recipe card recipe-page recipe-universal-template"[^>]*data-category="Testing"[^>]*data-recipe-slug="testing-soap-free-powdered-hair-wash"[^>]*id="r11"[^>]*>/;
+  const openingMatch = opening.exec(html);
+  const start = openingMatch ? openingMatch.index : -1;
   assert.notEqual(start, -1, 'missing embedded Testing recipe r11');
   const block = html.slice(start);
   for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
-    assert.match(block, new RegExp(`<h4>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
+    assert.match(block, new RegExp(`<h4[^>]*>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
   }
 });
 

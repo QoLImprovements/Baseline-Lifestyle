@@ -31,13 +31,16 @@ const workspaceCss=read('systems/baseline-fitness/css/fitness-routine-workspace-
 const generatorCss=read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
 test('one active shared My Routine coherence layer remains',()=>{
-  for (const loader of [skinLoader,fitnessLoader]) {
-    assert.match(loader,/baseline-routine-coherence-v12\.js/);
-    assert.match(loader,/baseline-public-routine-viewonly-v4\.js/);
-    assert.doesNotMatch(loader,/baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
-  }
-  assert.match(skinLoader,/skincare-routine-sitewide-v5\.js/);
+  assert.match(skinHtml,/baseline-routine-coherence-v12\.js/);
+  assert.match(skinHtml,/baseline-public-routine-viewonly-v4\.js/);
+  assert.match(skinHtml,/skincare-routine-sitewide-v5\.js/);
+  assert.doesNotMatch(skinLoader,/loadOrdered\(|loadScript\(|createElement\(['"]script['"]\)/);
+  assert.doesNotMatch(skinLoader,/baseline-routine-coherence-v12\.js|baseline-public-routine-viewonly-v4\.js|baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
+
+  assert.match(fitnessLoader,/baseline-routine-coherence-v12\.js/);
+  assert.match(fitnessLoader,/baseline-public-routine-viewonly-v4\.js/);
   assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
+  assert.doesNotMatch(fitnessLoader,/baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
 });
 
 test('first-paint route identity is in the head while system CSS owns visibility',()=>{
@@ -183,7 +186,8 @@ test('calendar markers use routine codes with detailed hover captions and Summar
 });
 
 test('Skincare groups own time and frequency directly and start collapsed',()=>{
-  assert.match(skinGroups,/Create Routine Group/);
+  assert.match(skinHtml,/Create Routine Group/);
+  assert.match(skinHtml,/class="routine-group-manager bl-routine-group-manager"/);
   assert.match(skinGroups,/data-plan-group-settings/);
   assert.match(skinGroups,/Group time/);
   assert.match(skinGroups,/Group frequency/);

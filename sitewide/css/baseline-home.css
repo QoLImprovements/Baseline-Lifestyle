@@ -214,6 +214,13 @@ body[data-app="home"]{
   text-align:center;
 }
 
+/* NO-DELAYED-DISPLAY: keep visible Home controls in their final position before JavaScript binds them. */
+.bl-top-header > .bl-homebar-right{
+  position:absolute;
+  top:14px;
+  right:14px;
+}
+
 .bl-top-header-title{
   width:100%;
   display:flex;
@@ -272,6 +279,18 @@ body[data-app="home"] .wrap{
 }
 
 .home-panel.is-active{
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+}
+
+/* NO-DELAYED-DISPLAY: /home/2 must never paint the Home 1 panel first. */
+html[data-initial-home-view="badminton"] #systemsView{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+html[data-initial-home-view="badminton"] #badmintonView{
   opacity:1;
   visibility:visible;
   pointer-events:auto;

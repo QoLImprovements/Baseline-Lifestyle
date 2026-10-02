@@ -62,3 +62,17 @@ test('clean Massage routes agree across server, primary router, and fallback rou
   assert.doesNotMatch(html, /history\.(?:pushState|replaceState)/);
   assert.doesNotMatch(html, /^(?:<<<<<<<|=======|>>>>>>>)/m);
 });
+
+test('Massage static library and body-area controls exist before runtime binding', () => {
+  assert.equal(occurrences(html, /class="library-tab"/g), 4);
+  assert.equal(occurrences(html, /class="library-card library-entry"/g), 45);
+  assert.equal(occurrences(html, /<input type="checkbox" id="area_/g), 25);
+  assert.match(html, /id="providerMassageTheme"[\s\S]*?<option selected>Comfort &amp; Relaxation<\/option>/);
+  assert.match(html, /id="focusedMassageTheme"[\s\S]*?<option selected>Comfort &amp; Relaxation<\/option>/);
+  assert.equal(html.includes('function renderLibrary()'), false);
+  assert.equal(html.includes('function renderAreas()'), false);
+  assert.equal(html.includes('const libraryData = ['), false);
+  assert.equal(html.includes('const techniqueData = ['), false);
+  assert.equal(html.includes('const areaGroups = ['), false);
+  assert.equal(html.includes('function bindLibrary()'), true);
+});

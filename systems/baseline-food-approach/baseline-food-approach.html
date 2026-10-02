@@ -41,7 +41,6 @@ These Markdown rules are a human reference point, not live runtime config.
 <style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-recipe-route="1"] body[data-app] #recipes .recipe-layout{visibility:hidden!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
 </style>
@@ -65,7 +64,7 @@ html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="reci
 <a class="bl-pages-link" href="/baseline-games-hub/games-hub" role="menuitem">Baseline Games Hub</a>
 </div>
 </div>
-<button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>
+<button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button><div class="bl-homebar-right" aria-label="Site controls"><button id="bl-beats-toggle" class="bl-mini-btn" type="button" aria-label="Binaural" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"></path></svg></span><span class="bl-btn-label">Binaural</span></button><button id="bl-voice-toggle" class="bl-mini-btn" type="button" aria-label="Voice" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"></path><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path></svg></span><span class="bl-btn-label">Voice</span></button><button id="bl-auth-toggle" class="bl-mini-btn" type="button" aria-label="Login" aria-expanded="false"><span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"></path><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"></path></svg></span><span class="bl-btn-label">Login</span></button></div>
 </div>
 </div>
 <div class="bl-scroll">
@@ -1090,7 +1089,193 @@ Recommended structure:
 <div class="card">
 <h2>Diet Log</h2>
 <p class="note">Daily vegan food logging with stored gram/ml/cup/spoon/unit conversions and automatic nutrient totals.</p>
-<div id="dietLogApp"></div>
+<div id="dietLogApp">
+<div class="diet-log-app">
+            <div class="diet-log-panel diet-log-header-panel">
+              <div class="diet-log-panel-header">
+                <div>
+                  <h3>Daily Log</h3>
+                  <p class="note">Move through the log by feature. Only the current section is shown.</p>
+                </div>
+                <div class="diet-log-toolbar diet-log-toolbar--header">
+                  <div class="diet-field">
+                    <label for="dietLogDate">Day</label>
+                    <input id="dietLogDate" type="date" />
+                  </div>
+                  <div class="diet-log-view-nav" id="dietLogFeatureNav">
+                    <button id="dietViewBtnFood" type="button" class="action">Add food item</button>
+                    <button id="dietViewBtnRecipes" type="button" class="action secondary">Add recipe</button>
+                    <button id="dietViewBtnBreakdown" type="button" class="action secondary">Meal breakdown</button>
+                    <button id="dietViewBtnHealth" type="button" class="action secondary">View / edit health settings</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+    
+            <section id="dietViewFood" class="diet-view">
+              <div class="diet-log-shell diet-log-shell--food">
+                <div class="diet-log-main">
+                  <div class="diet-log-panel">
+                    <div class="diet-log-panel-header">
+                      <div>
+                        <h3>Food Library</h3>
+                        <p class="note">Search first. Items only appear when you search.</p>
+                      </div>
+                      <div class="diet-log-toolbar">
+                        <div class="diet-field diet-field--wide">
+                          <label for="dietLogSearch">Search food library</label>
+                          <input id="dietLogSearch" type="search" placeholder="Search foods, ingredients, or tags" autocomplete="off" />
+                        </div>
+                        <div class="diet-field">
+                          <label for="dietLogCategory">Category</label>
+                          <select id="dietLogCategory"></select>
+                        </div>
+                        <div class="diet-log-helper-row diet-log-helper-row--right">
+                          <span id="dietLogResultCount" class="diet-inline-note"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="dietLogFoodGrid" class="diet-food-list"></div>
+                  </div>
+                </div>
+                <aside class="diet-log-side">
+                  <div class="diet-log-panel" id="diet-log-selected-panel">
+                    <div class="diet-log-panel-header">
+                      <div>
+                        <h3>Selected Food</h3>
+                        <p class="note">Choose meal, amount, and measure here.</p>
+                      </div>
+                    </div>
+                    <div id="dietLogSelected"></div>
+                  </div>
+                </aside>
+              </div>
+            </section>
+    
+            <section id="dietViewRecipes" class="diet-view" hidden>
+              <div class="diet-log-panel">
+                <div class="diet-log-panel-header">
+                  <div>
+                    <h3>Add Recipe</h3>
+                    <p class="note">Save current logged entries as a reusable batch, then add fractions of that saved batch later.</p>
+                  </div>
+                </div>
+                <div class="diet-selected-card diet-recipe-builder-card">
+                  <div class="diet-field-grid diet-field-grid--recipe-builder">
+                    <div class="diet-field">
+                      <label for="dietRecipeName">Recipe name</label>
+                      <input id="dietRecipeName" type="text" placeholder="e.g. Lunch dhal batch" />
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietRecipeSourceMeal">Build from</label>
+                      <select id="dietRecipeSourceMeal"></select>
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietRecipeYield">Eating portions in full batch</label>
+                      <input id="dietRecipeYield" type="number" min="0.1" step="0.1" value="1" />
+                    </div>
+                  </div>
+                  <div class="diet-actions">
+                    <button id="dietRecipeSave" type="button" class="action">Save recipe</button>
+                  </div>
+                  <div id="dietRecipeStatus" class="diet-recipe-status" aria-live="polite"></div>
+                </div>
+                <div id="dietLogRecipes"></div>
+              </div>
+            </section>
+    
+            <section id="dietViewBreakdown" class="diet-view" hidden>
+              <div class="diet-log-stack">
+                <div class="diet-log-panel">
+                  <div class="diet-log-panel-header">
+                    <div>
+                      <h3>Entries</h3>
+                      <p class="note">Meal grouping and editing for the current day.</p>
+                    </div>
+                    <div class="diet-log-helper-row">
+                      <button id="dietLogClearDay" type="button" class="action secondary">Clear this day</button>
+                    </div>
+                  </div>
+                  <div id="dietLogEntries"></div>
+                </div>
+                <div class="diet-log-panel">
+                  <div class="diet-log-panel-header">
+                    <div>
+                      <h3>Daily Totals</h3>
+                      <p class="note">Totals, targets, and percentage of daily target met.</p>
+                    </div>
+                  </div>
+                  <div id="dietLogTotals"></div>
+                </div>
+                <div class="diet-log-panel">
+                  <div class="diet-log-panel-header">
+                    <div>
+                      <h3>Daily Notes</h3>
+                      <p class="note">Optional context kept with this date.</p>
+                    </div>
+                  </div>
+                  <div class="diet-field">
+                    <textarea id="dietLogNotes" rows="6" placeholder="Add daily notes here"></textarea>
+                  </div>
+                </div>
+              </div>
+            </section>
+    
+            <section id="dietViewHealth" class="diet-view" hidden>
+              <div class="diet-log-panel">
+                <div class="diet-log-panel-header">
+                  <div>
+                    <h3>Health Settings</h3>
+                    <p class="note">Stored here and used to estimate daily targets.</p>
+                  </div>
+                </div>
+                <div class="diet-selected-card diet-health-card">
+                  <div class="diet-field-grid diet-field-grid--health">
+                    <div class="diet-field">
+                      <label for="dietHealthWeight">Weight (kg)</label>
+                      <input id="dietHealthWeight" type="number" min="20" step="0.1" inputmode="decimal" />
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietHealthHeight">Height (cm)</label>
+                      <input id="dietHealthHeight" type="number" min="100" step="1" inputmode="numeric" />
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietHealthAge">Age</label>
+                      <input id="dietHealthAge" type="number" min="13" step="1" inputmode="numeric" />
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietHealthSex">Sex</label>
+                      <select id="dietHealthSex">
+                        <option value="unspecified">Unspecified</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                      </select>
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietHealthActivity">Activity</label>
+                      <select id="dietHealthActivity">
+                        <option value="sedentary">Sedentary</option>
+                        <option value="light">Lightly active</option>
+                        <option value="moderate">Moderately active</option>
+                        <option value="active">Active</option>
+                        <option value="very_active">Very active</option>
+                      </select>
+                    </div>
+                    <div class="diet-field">
+                      <label for="dietHealthGoal">Goal</label>
+                      <select id="dietHealthGoal">
+                        <option value="maintain">Maintain</option>
+                        <option value="fat_loss">Fat loss</option>
+                        <option value="gain">Gain</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div id="dietHealthSummary"></div>
+                </div>
+              </div>
+            </section>
+          </div>
+</div>
 </div>
 </div>
 </section>

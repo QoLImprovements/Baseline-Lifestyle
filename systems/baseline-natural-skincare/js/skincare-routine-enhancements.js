@@ -231,24 +231,6 @@
     }
   }
 
-  function loadScript({ src,marker }) {
-    const existing=document.querySelector(`script[${marker}]`);
-    if (existing) {
-      if (existing.dataset.loaded==='true' || existing.readyState==='complete') return Promise.resolve();
-      return new Promise((resolve,reject)=>{
-        existing.addEventListener('load',resolve,{ once:true });
-        existing.addEventListener('error',reject,{ once:true });
-      });
-    }
-    return new Promise((resolve,reject)=>{
-      const script=document.createElement('script');script.src=src;script.async=false;script.setAttribute(marker,'true');
-      script.addEventListener('load',()=>{ script.dataset.loaded='true';resolve(); },{ once:true });
-      script.addEventListener('error',reject,{ once:true });document.head.appendChild(script);
-    });
-  }
-  function loadOrdered(entries) {
-    return entries.reduce((chain,entry)=>chain.then(()=>loadScript(entry)),Promise.resolve());
-  }
   function start() {
     if (started) return;started=true;
     exposeAllBaselineRecipes();
@@ -257,32 +239,10 @@
       try { console.error('Skincare My Routine prerequisites were not available at DOM readiness.'); } catch (_error) {}
       return;
     }
-    loadOrdered([
-      { src:'/sitewide/js/baseline-routine-system.js?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260808_6',marker:'data-baseline-routine-system' },
-      { src:'/systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js?v=SKINCARE_SITEWIDE_ROUTINE_20260809_5',marker:'data-skincare-routine-sitewide-v5' },
-      { src:'/sitewide/js/baseline-public-routine-viewonly-v4.js?v=BASELINE_PUBLIC_ROUTINE_VIEWONLY_20260809_2',marker:'data-baseline-public-routine-viewonly-v4' },
-      { src:'/sitewide/js/baseline-routine-coherence-v12.js?v=BASELINE_ROUTINE_COHERENCE_20260810_2',marker:'data-baseline-routine-coherence-v12' }
-    ]).then(bindRecipeOptionNormaliser).catch((error)=>{
-      try { console.error('Skincare My Routine enhancement failed to load.',error); } catch (_error) {}
-    });
+    bindRecipeOptionNormaliser();
   }
 
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{ once:true });
   else start();
   global.addEventListener('pagehide',()=>recipeObserver?.disconnect(),{ once:true });
-})(typeof window!=='undefined'?window:globalThis);
-
-/* Recipe UX boot is deliberately isolated from the My Routine bootstrap above.
-   It only loads on the Skincare document and never changes routine subtab state. */
-(function (global) {
-  'use strict';
-  const document=global.document;
-  if (!document || document.documentElement.getAttribute('data-app')!=='skin') return;
-  if (global.__BASELINE_SKINCARE_RECIPE_BOOTSTRAP_LOADER_20260906__) return;
-  global.__BASELINE_SKINCARE_RECIPE_BOOTSTRAP_LOADER_20260906__=true;
-  const script=document.createElement('script');
-  script.src='/systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js?v=RECIPE_BOOTSTRAP_20260906_2';
-  script.async=false;
-  script.setAttribute('data-skincare-recipe-bootstrap-20260906','true');
-  document.head.appendChild(script);
 })(typeof window!=='undefined'?window:globalThis);

@@ -3,7 +3,7 @@
    OWNERSHIP CONTRACT
    ------------------
    This module owns the signed-in user's Skincare routine data, editable Plan,
-   completion Log, base calendar, visibility setting, public-profile list and
+   completion Log, visibility setting, public-profile list and
    canonical My Routine subview routing.
 
    Public My Routine URLs are clean page paths:
@@ -37,7 +37,7 @@
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
   const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
-  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),calendarView:'month',calendarAnchor:MODEL.localDate(MODEL.todayIso()),pendingRemoveId:'',saveTimer:0,profileLoading:false };
+  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false };
 
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
@@ -149,38 +149,12 @@
     return after!==before;
   }
 
-  function ensureShell() {
-    const root=$('#routine');
-    if (!root || $('.routine-shell',root)) return;
-    const shell=document.createElement('div');shell.className='routine-shell';
-    shell.innerHTML=`
-      <div class="routine-subtabs" role="tablist" aria-label="My Routine views">
-        <button type="button" class="routine-subtab active" data-routine-view="log" role="tab" aria-selected="true">Routine Log</button>
-        <button type="button" class="routine-subtab" data-routine-view="summary" role="tab" aria-selected="false">Routine Summary</button>
-        <button type="button" class="routine-subtab" data-routine-view="plan" role="tab" aria-selected="false">Routine Plan</button>
-        <button type="button" class="routine-subtab" data-routine-view="public" role="tab" aria-selected="false">Public Routines</button>
-      </div>
-      <div class="routine-panel active" data-routine-panel="log">
-        <section class="card routine-card routine-card-full">
-          <div class="routine-log-head"><div><h2>Routine Log</h2><p class="note">Record completed actions for the selected date. Weekly actions remain available until their weekly target is reached.</p></div><label class="routine-log-date"><span>Date</span><input type="date" id="routineLogDate"></label></div>
-          <div id="routineLogProgress" class="routine-log-progress"></div><div id="routineLogItems" class="routine-log-items"></div>
-        </section>
-        <section class="card routine-card routine-card-full routine-calendar-card">
-          <div class="routine-calendar-head"><div><h2>Skincare Calendar</h2><p class="note">Select Week or Month. Each day opens directly in Routine Log.</p></div><div class="routine-calendar-controls"><div class="routine-calendar-view-tabs" role="tablist" aria-label="Calendar view"><button type="button" class="routine-mini routine-calendar-view" data-calendar-view="week" aria-selected="false">Week</button><button type="button" class="routine-mini routine-calendar-view active" data-calendar-view="month" aria-selected="true">Month</button></div><div class="routine-calendar-nav"><button type="button" class="routine-mini" data-calendar-move="previous" aria-label="Previous period">←</button><strong id="routineCalendarLabel"></strong><button type="button" class="routine-mini" data-calendar-today>Today</button><button type="button" class="routine-mini" data-calendar-move="next" aria-label="Next period">→</button></div></div></div>
-          <div class="routine-calendar-weekdays" aria-hidden="true"></div><div id="routineCalendarGrid" class="routine-calendar-grid month-view"></div>
-        </section>
-      </div>
-      <div class="routine-panel" data-routine-panel="summary" hidden><section class="card routine-card routine-card-full"><div class="routine-summary-head"><div><h2>Routine Summary</h2><p class="note">A complete view of every routine action, its schedule, benefits and personal notes. The plan may remain private or be shared publicly, while the completion log always stays private.</p></div></div><div id="routineSummary" class="routine-summary"></div></section></div>
-      <div class="routine-panel" data-routine-panel="plan" hidden><section class="card routine-card routine-card-full"><div class="routine-builder-head"><div><h2>Routine Plan</h2></div></div><div class="routine-add-row"><div class="routine-action-combobox"><div class="routine-action-input-wrap"><input id="routineActionSearch" type="search" autocomplete="off" placeholder="Type or choose a routine action…" role="combobox" aria-autocomplete="list" aria-controls="routineActionMenu" aria-expanded="false"><button type="button" class="routine-action-toggle" id="routineActionToggle" aria-label="Show routine actions" aria-expanded="false">⌄</button></div><select id="routineActionSelect" class="routine-action-native" aria-hidden="true" tabindex="-1"></select><div id="routineActionMenu" class="routine-action-menu" role="listbox" hidden></div></div><button id="addRoutineAction" type="button" class="routine-add-button">Add to routine</button></div><div id="routineItems" class="routine-items"></div><div id="routineSaveStatus" class="routine-save-status" aria-live="polite"></div></section></div>
-      <div class="routine-panel" data-routine-panel="public" hidden><section class="card routine-card routine-card-full"><div class="routine-public-head"><div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div><label><span>My Routine Visibility</span><select id="routineVisibility" class="routine-visibility-select"><option value="private">Private</option><option value="public">Public</option></select></label></div><div class="routine-public-select"><select id="publicRoutineName"><option value="">Choose a public profile…</option></select><button type="button" id="findPublicRoutineBtn" class="routine-add-button">View Routine</button></div><div id="publicRoutineResult" class="routine-public-result" aria-live="polite"></div></section></div>`;
-    root.appendChild(shell);
-  }
 
   function activateView(view,remember=true) {
     const next=VIEWS.includes(view)?view:'log';state.activeView=next;
     $$('[data-routine-view]').forEach((button)=>{ const selected=button.dataset.routineView===next;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false'); });
     $$('[data-routine-panel]').forEach((panel)=>{ const selected=panel.dataset.routinePanel===next;panel.hidden=!selected;panel.classList.toggle('active',selected); });
-    if (next==='log') { renderLog();renderCalendar(); }
+    if (next==='log') renderLog();
     if (next==='summary') renderSummary();
     if (next==='plan') renderPlan();
     if (next==='public') renderPublicProfiles();
@@ -260,23 +234,6 @@
     refreshLogProgress();
     emit('log');
   }
-  function completedCount(date) { const entries=state.logs[date] || {};return Object.values(entries).filter((entry)=>entry?.completed).length; }
-  function calendarButton(date,inMonth=true) {
-    const iso=MODEL.isoDate(date);const count=completedCount(iso);const selected=iso===state.selectedDate;const today=iso===MODEL.todayIso();const future=MODEL.isFutureDate(iso);
-    return `<button type="button" class="routine-calendar-day${count?' has-routine':''}${selected?' selected':''}${today?' today':''}${future?' future-date':''}${inMonth?'':' outside-month'}" data-calendar-date="${iso}"${future?' disabled aria-disabled="true"':''} aria-label="${esc(date.toLocaleDateString('en-GB',{ weekday:'long',day:'numeric',month:'long',year:'numeric' }))}${count?`, ${count} completed action${count===1?'':'s'}`:''}"><span>${date.getDate()}</span>${count?`<span class="routine-calendar-count">${count}</span>`:''}</button>`;
-  }
-  function renderCalendar() {
-    const grid=$('#routineCalendarGrid');const label=$('#routineCalendarLabel');const weekdays=$('.routine-calendar-weekdays');if (!grid || !label || !weekdays) return;
-    $$('.routine-calendar-view').forEach((button)=>{ const selected=button.dataset.calendarView===state.calendarView;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false'); });
-    weekdays.innerHTML=(global.BASELINE_RoutineSystem?.orderedDays?.(MODEL.DAYS) || MODEL.DAYS).map((day)=>`<span>${esc(day.slice(0,3))}</span>`).join('');
-    if (state.calendarView==='week') {
-      const bounds=global.BASELINE_RoutineSystem?.weekBounds?.(state.calendarAnchor) || MODEL.weekBounds(state.calendarAnchor);label.textContent=`${bounds.start.toLocaleDateString('en-GB',{ day:'numeric',month:'short' })} – ${bounds.end.toLocaleDateString('en-GB',{ day:'numeric',month:'short',year:'numeric' })}`;grid.className='routine-calendar-grid week-view';grid.innerHTML=(global.BASELINE_RoutineSystem?.weekDates?.(state.calendarAnchor) || Array.from({ length:7 },(_,index)=>{ const date=new Date(bounds.start);date.setDate(date.getDate()+index);return date; })).map((date)=>global.BASELINE_RoutineSystem?.weekRow?global.BASELINE_RoutineSystem.weekRow(date,{ count:completedCount(MODEL.isoDate(date)),selectedDate:state.selectedDate,details:[] }):calendarButton(date)).join('');return;
-    }
-    const month=new Date(state.calendarAnchor.getFullYear(),state.calendarAnchor.getMonth(),1);label.textContent=month.toLocaleDateString('en-GB',{ month:'long',year:'numeric' });grid.className='routine-calendar-grid month-view';const dates=global.BASELINE_RoutineSystem?.monthDates?.(month) || [];
-    if (dates.length) { grid.innerHTML=dates.map((date)=>calendarButton(date,date.getMonth()===month.getMonth())).join('');return; }
-    const first=new Date(month);const startIndex=global.BASELINE_RoutineSystem?.startDayIndex?.() ?? 1;first.setDate(first.getDate()-(((month.getDay()-startIndex)+7)%7));grid.innerHTML=Array.from({ length:42 },(_,index)=>{ const date=new Date(first);date.setDate(date.getDate()+index);return calendarButton(date,date.getMonth()===month.getMonth()); }).join('');
-  }
-
   function ensureLogDate(date) { if (!state.logs[date]) state.logs[date]={};return state.logs[date]; }
   function updateLog(itemId,date,patch) {
     const entries=ensureLogDate(date);entries[itemId]=Object.assign({ completed:false,note:'',completedAt:'' },entries[itemId] || {},patch);if (entries[itemId].completed && !entries[itemId].completedAt) entries[itemId].completedAt=new Date().toISOString();if (!entries[itemId].completed) entries[itemId].completedAt='';scheduleSave();
@@ -291,7 +248,7 @@
   function addRoutineItem() {
     const select=$('#routineActionSelect');const actionId=select?.value || '';if (!actionId) { $('#routineActionSearch')?.focus();return; }const item=MODEL.createItem(actionId);state.routine.push(item);state.pendingRemoveId='';if (select) select.value='';const search=$('#routineActionSearch');if (search) search.value='';setActionPickerOpen(false);renderPlan();scheduleSave();
   }
-  function removeRoutineItem(id) { state.routine=state.routine.filter((item)=>item.id!==id);Object.values(state.logs).forEach((entries)=>{ if (entries && typeof entries==='object') delete entries[id]; });state.pendingRemoveId='';renderPlan();renderSummary();renderLog();renderCalendar();scheduleSave(); }
+  function removeRoutineItem(id) { state.routine=state.routine.filter((item)=>item.id!==id);Object.values(state.logs).forEach((entries)=>{ if (entries && typeof entries==='object') delete entries[id]; });state.pendingRemoveId='';renderPlan();renderSummary();renderLog();scheduleSave(); }
   function moveRoutineItem(id,direction) {
     const index=state.routine.findIndex((item)=>item.id===id);if (index<0) return;const target=direction==='up'?index-1:index+1;if (target<0 || target>=state.routine.length) return;const [item]=state.routine.splice(index,1);state.routine.splice(target,0,item);renderPlan();scheduleSave();
   }
@@ -310,8 +267,6 @@
   function toggleDay(control) {
     const item=itemById(control.dataset.id);if (!item) return;const day=control.dataset.day;const days=new Set(item.frequency.days);if (control.checked) days.add(day);else days.delete(day);item.frequency.days=MODEL.DAYS.filter((entry)=>days.has(entry));scheduleSave();
   }
-  function moveCalendar(direction) { const anchor=new Date(state.calendarAnchor);if (state.calendarView==='week') anchor.setDate(anchor.getDate()+(direction==='next'?7:-7));else anchor.setMonth(anchor.getMonth()+(direction==='next'?1:-1),1);state.calendarAnchor=anchor;renderCalendar(); }
-
   function enterRoutineFromOuterTab() {
     state.activeView=routeViewFromLocation();
     selectOuterRoutine();
@@ -329,10 +284,6 @@
       if (event.target.closest('[data-remove-cancel]')) { state.pendingRemoveId='';renderPlan();return; }
       const removeConfirm=event.target.closest('[data-remove-confirm]');if (removeConfirm) { removeRoutineItem(removeConfirm.dataset.removeConfirm);return; }
       if (event.target.closest('[data-open-routine-plan]')) { activateView('plan');return; }
-      const calendarView=event.target.closest('[data-calendar-view]');if (calendarView) { state.calendarView=calendarView.dataset.calendarView==='week'?'week':'month';renderCalendar();return; }
-      const calendarMove=event.target.closest('[data-calendar-move]');if (calendarMove) { moveCalendar(calendarMove.dataset.calendarMove);return; }
-      if (event.target.closest('[data-calendar-today]')) { state.calendarAnchor=MODEL.localDate(MODEL.todayIso());state.selectedDate=MODEL.todayIso();renderLog();renderCalendar();return; }
-      const day=event.target.closest('[data-calendar-date]');if (day && !MODEL.isFutureDate(day.dataset.calendarDate)) { state.selectedDate=day.dataset.calendarDate;state.calendarAnchor=MODEL.localDate(state.selectedDate);activateView('log'); }
     });
     root.addEventListener('input',(event)=>{
       if (event.target.id==='routineActionSearch') { renderActionPicker();setActionPickerOpen(true);return; }
@@ -343,7 +294,7 @@
       if (event.target.matches('[data-field]')) { updateItemField(event.target);renderPlan(); }
       if (event.target.matches('[data-day]')) toggleDay(event.target);
       if (event.target.matches('[data-log-complete]')) { updateCompletionInPlace(event.target); }
-      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);state.calendarAnchor=MODEL.localDate(state.selectedDate);renderLog();renderCalendar(); }
+      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);renderLog(); }
       if (event.target.id==='routineVisibility') { state.visibility=event.target.value==='public'?'public':'private';scheduleSave(); }
     });
     root.addEventListener('keydown',(event)=>{
@@ -357,13 +308,14 @@
     global.addEventListener('popstate',restoreRoute);
   }
 
-  function renderAll() { renderPlan();renderSummary();renderLog();renderCalendar();renderPublicProfiles(); }
+  function renderAll() { renderPlan();renderSummary();renderLog();renderPublicProfiles(); }
   async function init() {
     const routing=locationTargetsRoutine();
     state.activeView=routeViewFromLocation();
     try { global.sessionStorage?.setItem(VIEW_KEY,state.activeView); } catch (_error) {}
 
-    ensureShell();
+    const root=$('#routine');
+    if(!root || !$('.routine-shell',root)) return;
     bindEvents();
     loadLocalState();
 

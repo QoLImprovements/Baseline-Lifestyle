@@ -7,12 +7,18 @@ import {fileURLToPath} from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read = relativePath => readFile(path.join(root,relativePath),'utf8');
 
-test('Float Summary displays the exact approved labels',async()=>{
-  const source = await read('systems/charity-shop/js/charity-shop.js');
-  assert.match(source,/key === 'gbp5' \? '6 \(Max\)'/);
-  assert.match(source,/key === 'gbp1' \? '55 \(Max\)'/);
-  assert.match(source,/: '15>'\);/);
-  assert.doesNotMatch(source,/Maximum 6|Maximum 55|Aim for 15/);
+test('Cashing Up shell and approved Float Summary labels are present before JavaScript',async()=>{
+  const [page,source] = await Promise.all([
+    read('systems/charity-shop/charity-shop.php'),
+    read('systems/charity-shop/js/charity-shop.js')
+  ]);
+  assert.match(page,/id="operations-cashing"[\s\S]*class="charity-cashup"/);
+  assert.match(page,/<td>6 \(Max\)<\/td>/);
+  assert.match(page,/<td>55 \(Max\)<\/td>/);
+  assert.equal((page.match(/<td>15><\/td>/g) || []).length,6);
+  assert.doesNotMatch(page,/Maximum 6|Maximum 55|Aim for 15/);
+  assert.doesNotMatch(source,/panel\.innerHTML\s*=|function cashRows\(|function floatRows\(|function bankBookRows\(/);
+  assert.match(source,/if\(!panel \|\| !panel\.querySelector\('\.charity-cashup'\)\) return;/);
 });
 
 test('Charity Shop dropdown has one controller instead of two click toggles',async()=>{

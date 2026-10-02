@@ -557,27 +557,36 @@
       return inputEl;
     }
 
-    try{
-      const existing = inputEl.parentElement;
-      if(existing && existing.classList && existing.classList.contains('bl-number')) return existing;
-    }catch(_e){}
+    let wrapper = inputEl.parentElement;
+    let stepper = null;
+    let upBtn = null;
+    let downBtn = null;
+    const preauthored = !!(wrapper && wrapper.classList && wrapper.classList.contains('bl-number'));
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'bl-number' + (inputEl.className ? (' ' + inputEl.className) : '');
+    if(preauthored){
+      stepper = q('.bl-number-stepper', wrapper);
+      upBtn = q('.bl-step-up', wrapper);
+      downBtn = q('.bl-step-down', wrapper);
+      if(!stepper || !upBtn || !downBtn) return wrapper;
+      if(wrapper.dataset.stepperBound === '1') return wrapper;
+    }else{
+      wrapper = document.createElement('div');
+      wrapper.className = 'bl-number' + (inputEl.className ? (' ' + inputEl.className) : '');
 
-    const stepper = document.createElement('div');
-    stepper.className = 'bl-number-stepper';
-    stepper.setAttribute('aria-hidden', 'false');
+      stepper = document.createElement('div');
+      stepper.className = 'bl-number-stepper';
+      stepper.setAttribute('aria-hidden', 'false');
 
-    const upBtn = document.createElement('button');
-    upBtn.type = 'button';
-    upBtn.className = 'bl-step bl-step-up';
-    upBtn.innerHTML = '<span aria-hidden="true">&#9650;</span>';
+      upBtn = document.createElement('button');
+      upBtn.type = 'button';
+      upBtn.className = 'bl-step bl-step-up';
+      upBtn.innerHTML = '<span aria-hidden="true">&#9650;</span>';
 
-    const downBtn = document.createElement('button');
-    downBtn.type = 'button';
-    downBtn.className = 'bl-step bl-step-down';
-    downBtn.innerHTML = '<span aria-hidden="true">&#9660;</span>';
+      downBtn = document.createElement('button');
+      downBtn.type = 'button';
+      downBtn.className = 'bl-step bl-step-down';
+      downBtn.innerHTML = '<span aria-hidden="true">&#9660;</span>';
+    }
 
     function getConfiguredStep(){
       const datasetRaw = parseFloat(String((inputEl.dataset && inputEl.dataset.stepperStep) || '').replace(',', '.'));
@@ -634,13 +643,15 @@
       nudge(-1);
     });
 
-    wrapper.appendChild(inputEl);
-    stepper.appendChild(upBtn);
-    stepper.appendChild(downBtn);
-    wrapper.appendChild(stepper);
+    if(!preauthored){
+      wrapper.appendChild(inputEl);
+      stepper.appendChild(upBtn);
+      stepper.appendChild(downBtn);
+      wrapper.appendChild(stepper);
+    }
+    wrapper.dataset.stepperBound = '1';
     return wrapper;
   }
-
 
 
   // ---------------------------
@@ -3865,23 +3876,33 @@ function parseViewStateHash(hash){
     }
 
 function buildControls(recipeEl){
-      if(q('.recipe-controls', recipeEl)) return;
+      if(!recipeEl || (recipeEl.dataset && recipeEl.dataset.recipeControlsBound === '1')) return;
 
       const h3 = q('h3,h2,h1', recipeEl);
       if(!h3) return;
 
       let titleRow = (h3.parentElement && h3.parentElement.classList && h3.parentElement.classList.contains('recipe-title-row'))
         ? h3.parentElement : null;
-      if(!titleRow){
-        titleRow = document.createElement('div');
-        titleRow.className = 'recipe-title-row';
-        h3.insertAdjacentElement('beforebegin', titleRow);
-        titleRow.appendChild(h3);
-      }
 
-      const controls = document.createElement('div');
-      controls.className = 'multiplier recipe-controls';
-      controls.setAttribute('data-layout-contract', 'title-batch-measurement-scale');
+      let controls = q('.recipe-controls[data-static-recipe-controls="1"]', recipeEl);
+      const preauthored = !!controls;
+      if(!preauthored && q('.recipe-controls', recipeEl)) return;
+
+      let multInput = null;
+      let measSelect = null;
+      let applyBtn = null;
+      let resetBtn = null;
+      let printSummary = null;
+
+      const isOatPorridge = (recipeEl && recipeEl.dataset && recipeEl.dataset.oatToggle === '1');
+      let oatType = 'jumbo';
+      let oatLabelEl = null;
+      let oatToggleEl = null;
+      let oatBtnJumbo = null;
+      let oatBtnPorridge = null;
+      let thickSelect = null;
+      let thickLabelEl = null;
+      const hasThickness = !!q('.thickness-swap', recipeEl);
 
       function makeControlRow(rowClass, labelValue, controlEl, trailingEl, labelClass){
         const row = document.createElement('div');
@@ -3898,137 +3919,154 @@ function buildControls(recipeEl){
 
         if(labelClass && label.classList) label.classList.add(labelClass);
         row.appendChild(label);
-
         if(controlEl) row.appendChild(controlEl);
 
         const trailingEls = Array.isArray(trailingEl) ? trailingEl : (trailingEl ? [trailingEl] : []);
-        trailingEls.forEach(function(el){
-          if(el) row.appendChild(el);
-        });
-
+        trailingEls.forEach(function(el){ if(el) row.appendChild(el); });
         return row;
       }
 
-      const multLabel = document.createElement('span');
-      multLabel.className = 'label batch-label';
-      multLabel.textContent = 'Batch Multiplier';
-      const multInput = document.createElement('input');
-      multInput.type = 'number';
-      multInput.min = '0';
-      multInput.step = 'any';
-      multInput.dataset.stepperStep = '0.5';
-      multInput.dataset.stepperMin = '0.5';
-      multInput.value = '1';
-      multInput.inputMode = 'decimal';
-      multInput.className = 'multiplier-input batch-input';
-      multInput.setAttribute('aria-label', 'Batch multiplier');
-      const batchField = enhanceNumberStepper(multInput);
-      if(batchField && batchField.classList) batchField.classList.add('batch-input');
+      if(preauthored){
+        multInput = q('input.multiplier-input', controls);
+        measSelect = q('.measure-select', controls);
+        applyBtn = q('.recipe-apply', controls);
+        resetBtn = q('.reset', controls);
+        printSummary = q('.print-summary', recipeEl);
+        thickSelect = q('.thickness-select', controls);
 
-      const measLabel = document.createElement('span');
-      measLabel.className = 'label meas-label';
-      measLabel.textContent = 'Measurement Type';
-      const measSelect = document.createElement('select');
-      measSelect.className = 'measure-select';
-      measSelect.setAttribute('aria-label', 'Measurement Type');
-      measSelect.innerHTML = `
-        <option value="standard">Standard Variance</option>
-        <option value="weight">Weight</option>
-        <option value="volume">Volume</option>
-        <option value="cups">Measuring Cups &amp; Spoons</option>
-      `;
+        if(isOatPorridge){
+          oatToggleEl = q('.oat-toggle', controls);
+          oatBtnJumbo = oatToggleEl ? q('.oat-option[data-oat-type="jumbo"], .oat-option:first-child', oatToggleEl) : null;
+          oatBtnPorridge = oatToggleEl ? q('.oat-option[data-oat-type="porridge"], .oat-option:last-child', oatToggleEl) : null;
+        }
 
-      const isOatPorridge = (recipeEl && recipeEl.dataset && recipeEl.dataset.oatToggle === '1');
-      let oatType = 'jumbo';
-      let oatLabelEl = null;
-      let oatToggleEl = null;
-      let oatBtnJumbo = null;
-      let oatBtnPorridge = null;
+        if(!multInput || !measSelect || !resetBtn || !printSummary) return;
+        enhanceNumberStepper(multInput);
+        buildScaleByIngredient(recipeEl, controls, multInput, apply);
+        autosizeSelect(measSelect);
+        if(thickSelect) autosizeSelect(thickSelect);
+        enhanceSelect(measSelect);
+        if(thickSelect) enhanceSelect(thickSelect);
+      }else{
+        if(!titleRow){
+          titleRow = document.createElement('div');
+          titleRow.className = 'recipe-title-row';
+          h3.insertAdjacentElement('beforebegin', titleRow);
+          titleRow.appendChild(h3);
+        }
 
-      if(isOatPorridge){
-        oatLabelEl = document.createElement('span');
-        oatLabelEl.className = 'label oat-label';
-        oatLabelEl.textContent = 'Type of oats';
+        controls = document.createElement('div');
+        controls.className = 'multiplier recipe-controls';
+        controls.setAttribute('data-layout-contract', 'title-batch-measurement-scale');
 
-        oatToggleEl = document.createElement('div');
-        oatToggleEl.className = 'oat-toggle';
-        oatToggleEl.setAttribute('role', 'group');
-        oatToggleEl.setAttribute('aria-label', 'Type of oats');
+        const multLabel = document.createElement('span');
+        multLabel.className = 'label batch-label';
+        multLabel.textContent = 'Batch Multiplier';
+        multInput = document.createElement('input');
+        multInput.type = 'number';
+        multInput.min = '0';
+        multInput.step = 'any';
+        multInput.dataset.stepperStep = '0.5';
+        multInput.dataset.stepperMin = '0.5';
+        multInput.value = '1';
+        multInput.inputMode = 'decimal';
+        multInput.className = 'multiplier-input batch-input';
+        multInput.setAttribute('aria-label', 'Batch multiplier');
+        const batchField = enhanceNumberStepper(multInput);
+        if(batchField && batchField.classList) batchField.classList.add('batch-input');
 
-        oatBtnJumbo = document.createElement('button');
-        oatBtnJumbo.type = 'button';
-        oatBtnJumbo.className = 'oat-option is-active';
-        oatBtnJumbo.textContent = 'Jumbo Oats';
-
-        oatBtnPorridge = document.createElement('button');
-        oatBtnPorridge.type = 'button';
-        oatBtnPorridge.className = 'oat-option';
-        oatBtnPorridge.textContent = 'Porridge Oats';
-
-        oatToggleEl.appendChild(oatBtnJumbo);
-        oatToggleEl.appendChild(oatBtnPorridge);
-      }
-
-      let thickSelect = null;
-      let thickLabelEl = null;
-      const hasThickness = !!q('.thickness-swap', recipeEl);
-      if(isOatPorridge) controls.classList.add('has-oat-toggle');
-      if(hasThickness) controls.classList.add('has-thickness');
-      if(hasThickness){
-        thickLabelEl = document.createElement('span');
-        thickLabelEl.className = 'label thickness-label';
-        thickLabelEl.textContent = 'Thickness';
-        thickSelect = document.createElement('select');
-        thickSelect.className = 'thickness-select';
-        thickSelect.setAttribute('aria-label', 'Thickness');
-        thickSelect.innerHTML = `
-          <option value="thin">Thin</option>
-          <option value="moderate" selected>Moderate</option>
-          <option value="thick">Thick</option>
+        const measLabel = document.createElement('span');
+        measLabel.className = 'label meas-label';
+        measLabel.textContent = 'Measurement Type';
+        measSelect = document.createElement('select');
+        measSelect.className = 'measure-select';
+        measSelect.setAttribute('aria-label', 'Measurement Type');
+        measSelect.innerHTML = `
+          <option value="standard">Standard Variance</option>
+          <option value="weight">Weight</option>
+          <option value="volume">Volume</option>
+          <option value="cups">Measuring Cups &amp; Spoons</option>
         `;
+
+        if(isOatPorridge){
+          oatLabelEl = document.createElement('span');
+          oatLabelEl.className = 'label oat-label';
+          oatLabelEl.textContent = 'Type of oats';
+
+          oatToggleEl = document.createElement('div');
+          oatToggleEl.className = 'oat-toggle';
+          oatToggleEl.setAttribute('role', 'group');
+          oatToggleEl.setAttribute('aria-label', 'Type of oats');
+
+          oatBtnJumbo = document.createElement('button');
+          oatBtnJumbo.type = 'button';
+          oatBtnJumbo.className = 'oat-option is-active';
+          oatBtnJumbo.dataset.oatType = 'jumbo';
+          oatBtnJumbo.textContent = 'Jumbo Oats';
+
+          oatBtnPorridge = document.createElement('button');
+          oatBtnPorridge.type = 'button';
+          oatBtnPorridge.className = 'oat-option';
+          oatBtnPorridge.dataset.oatType = 'porridge';
+          oatBtnPorridge.textContent = 'Porridge Oats';
+
+          oatToggleEl.appendChild(oatBtnJumbo);
+          oatToggleEl.appendChild(oatBtnPorridge);
+        }
+
+        if(isOatPorridge) controls.classList.add('has-oat-toggle');
+        if(hasThickness) controls.classList.add('has-thickness');
+        if(hasThickness){
+          thickLabelEl = document.createElement('span');
+          thickLabelEl.className = 'label thickness-label';
+          thickLabelEl.textContent = 'Thickness';
+          thickSelect = document.createElement('select');
+          thickSelect.className = 'thickness-select';
+          thickSelect.setAttribute('aria-label', 'Thickness');
+          thickSelect.innerHTML = `
+            <option value="thin">Thin</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="thick">Thick</option>
+          `;
+        }
+
+        applyBtn = document.createElement('button');
+        applyBtn.type = 'button';
+        applyBtn.className = 'apply recipe-apply batch-apply';
+        applyBtn.textContent = 'Apply';
+        applyBtn.setAttribute('aria-label', 'Apply batch multiplier changes');
+        try{ applyBtn.dataset.mobileBatchApply = '1'; }catch(_e){}
+
+        resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'reset';
+        resetBtn.textContent = 'Reset';
+
+        controls.appendChild(makeControlRow('recipe-control-row--batch', multLabel, batchField, applyBtn));
+        controls.appendChild(makeControlRow('recipe-control-row--measurement', measLabel, measSelect, resetBtn));
+
+        (titleRow || h3).insertAdjacentElement('afterend', controls);
+        buildScaleByIngredient(recipeEl, controls, multInput, apply);
+
+        if(oatToggleEl){
+          controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
+        }
+        if(thickSelect){
+          controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
+        }
+
+        autosizeSelect(measSelect);
+        if(thickSelect) autosizeSelect(thickSelect);
+        enhanceSelect(measSelect);
+        if(thickSelect) enhanceSelect(thickSelect);
+
+        printSummary = document.createElement('div');
+        printSummary.className = 'print-summary';
+        printSummary.textContent = 'Batch quantity: 1 • Measurement: Standard Variance';
+        controls.insertAdjacentElement('afterend', printSummary);
       }
 
-      const applyBtn = document.createElement('button');
-      applyBtn.type = 'button';
-      applyBtn.className = 'apply recipe-apply batch-apply';
-      applyBtn.textContent = 'Apply';
-      applyBtn.setAttribute('aria-label', 'Apply batch multiplier changes');
-      try{ applyBtn.dataset.mobileBatchApply = '1'; }catch(_e){}
-
-      const resetBtn = document.createElement('button');
-      resetBtn.type = 'button';
-      resetBtn.className = 'reset';
-      resetBtn.textContent = 'Reset';
-
-      controls.appendChild(makeControlRow('recipe-control-row--batch', multLabel, batchField, applyBtn));
-      controls.appendChild(makeControlRow('recipe-control-row--measurement', measLabel, measSelect, resetBtn));
-
-      (titleRow || h3).insertAdjacentElement('afterend', controls);
-
-      // Shared control order contract:
-      // 1. Title
-      // 2. Batch multiplier - text field - arrows - mobile Apply
-      // 3. Measurement type - reset/top reset
-      // 4. Scale by ingredient
-      // Any recipe-specific controls (for example thickness or oat type) stay below that block.
-      buildScaleByIngredient(recipeEl, controls, multInput, apply);
-
-      if(oatToggleEl){
-        controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
-      }
-      if(thickSelect){
-        controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
-      }
-
-      autosizeSelect(measSelect);
-      if(thickSelect) autosizeSelect(thickSelect);
-      enhanceSelect(measSelect);
-      if(thickSelect) enhanceSelect(thickSelect);
-
-      const printSummary = document.createElement('div');
-      printSummary.className = 'print-summary';
-      printSummary.textContent = 'Batch quantity: 1 • Measurement: Standard Variance';
-      controls.insertAdjacentElement('afterend', printSummary);
+      if(recipeEl.dataset) recipeEl.dataset.recipeControlsBound = '1';
 
       (function tagIngredientsList(){
         const headings = qsa('h4', recipeEl);
@@ -4279,87 +4317,98 @@ function buildControls(recipeEl){
     }
 
     function buildScaleByIngredient(recipeEl, controlsEl, multInput, applyFn){
-      if(q('.scale-block', recipeEl)) return;
+      let block = q('.scale-block', recipeEl);
+      const preauthored = !!block;
+      let toggle = block ? q('.scale-toggle', block) : null;
+      let panel = block ? q('.scale-tools', block) : null;
+      let label = panel ? q('.label', panel) : null;
+      let ingSelect = panel ? q('.scale-ingredient-select', panel) : null;
+      let unitSelect = panel ? q('.scale-unit-select', panel) : null;
+      let amountInput = panel ? q('.scale-amount-input', panel) : null;
+      let btn = panel ? q('.scale-apply', panel) : null;
+      let msg = block ? q('.scale-msg', block) : null;
 
-      const block = document.createElement('div');
-      block.className = 'scale-block';
+      if(preauthored && block.dataset.scaleBound === '1') return;
 
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'scale-toggle';
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.textContent = 'Scale By Ingredient';
+      if(!preauthored){
+        block = document.createElement('div');
+        block.className = 'scale-block';
 
-      const panel = document.createElement('div');
-      panel.className = 'multiplier scale-tools';
-      panel.hidden = true;
+        toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.className = 'scale-toggle';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.textContent = 'Scale By Ingredient';
 
-      const label = document.createElement('span');
-      label.className = 'label';
-      label.textContent = 'Use:';
+        panel = document.createElement('div');
+        panel.className = 'multiplier scale-tools';
+        panel.hidden = true;
 
-      const ingSelect = document.createElement('select');
-      ingSelect.className = 'scale-ingredient-select';
-      ingSelect.setAttribute('aria-label', 'Ingredient');
-      ingSelect.innerHTML = '<option value="" selected disabled>Choose ingredient…</option>';
+        label = document.createElement('span');
+        label.className = 'label';
+        label.textContent = 'Use:';
 
-      const unitSelect = document.createElement('select');
-      unitSelect.className = 'scale-unit-select';
-      unitSelect.setAttribute('aria-label', 'Unit');
-      unitSelect.innerHTML = `
-        <option value="g">g</option>
-        <option value="kg">kg</option>
-        <option value="ml">ml</option>
-        <option value="l">l</option>
-        <option value="tsp">tsp</option>
-        <option value="tbsp">tbsp</option>
-        <option value="cup">cup</option>
-        <option value="count">count</option>
-        <option value="drop">drop</option>
-      `;
+        ingSelect = document.createElement('select');
+        ingSelect.className = 'scale-ingredient-select';
+        ingSelect.setAttribute('aria-label', 'Ingredient');
+        ingSelect.innerHTML = '<option value="" selected disabled>Choose ingredient…</option>';
 
-      const amountInput = document.createElement('input');
-      amountInput.type = 'number';
-      amountInput.min = '0';
-      amountInput.step = 'any';
-      amountInput.inputMode = 'decimal';
-      // Keep placeholder short so it fits comfortably on smaller viewports.
-      amountInput.placeholder = 'Enter Quantity';
-      amountInput.className = 'scale-amount-input';
-      // More explicit naming for accessibility.
-      amountInput.setAttribute('aria-label', 'Ingredient quantity');
-      amountInput.title = 'Ingredient quantity';
+        unitSelect = document.createElement('select');
+        unitSelect.className = 'scale-unit-select';
+        unitSelect.setAttribute('aria-label', 'Unit');
+        unitSelect.innerHTML = `
+          <option value="g">g</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="l">l</option>
+          <option value="tsp">tsp</option>
+          <option value="tbsp">tbsp</option>
+          <option value="cup">cup</option>
+          <option value="count">count</option>
+          <option value="drop">drop</option>
+        `;
 
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'scale-apply';
-      btn.textContent = 'Scale Recipe';
+        amountInput = document.createElement('input');
+        amountInput.type = 'number';
+        amountInput.min = '0';
+        amountInput.step = 'any';
+        amountInput.inputMode = 'decimal';
+        amountInput.placeholder = 'Enter Quantity';
+        amountInput.className = 'scale-amount-input';
+        amountInput.setAttribute('aria-label', 'Ingredient quantity');
+        amountInput.title = 'Ingredient quantity';
 
-      const msg = document.createElement('div');
-      msg.className = 'scale-msg note';
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'scale-apply';
+        btn.textContent = 'Scale Recipe';
 
-      panel.appendChild(label);
-      panel.appendChild(ingSelect);
-      panel.appendChild(unitSelect);
-      panel.appendChild(amountInput);
-      panel.appendChild(btn);
+        msg = document.createElement('div');
+        msg.className = 'scale-msg note';
 
-      // Themed dropdown UI (menu matches the site rather than the OS default list).
+        panel.appendChild(label);
+        panel.appendChild(ingSelect);
+        panel.appendChild(unitSelect);
+        panel.appendChild(amountInput);
+        panel.appendChild(btn);
+
+        block.appendChild(toggle);
+        block.appendChild(panel);
+        block.appendChild(msg);
+
+        if(controlsEl){
+          controlsEl.appendChild(block);
+        }else{
+          const controls = q('.recipe-controls', recipeEl);
+          if(controls) controls.appendChild(block);
+          else recipeEl.insertAdjacentElement('afterbegin', block);
+        }
+      }
+
+      if(!toggle || !panel || !ingSelect || !unitSelect || !amountInput || !btn || !msg) return;
       enhanceSelect(ingSelect);
       enhanceSelect(unitSelect);
-
-      block.appendChild(toggle);
-      block.appendChild(panel);
-      block.appendChild(msg);
-
-      // Keep Scale By Ingredient inside the main recipe controls card so it stays on its own line.
-      if(controlsEl){
-        controlsEl.appendChild(block);
-      }else{
-        const controls = q('.recipe-controls', recipeEl);
-        if(controls) controls.appendChild(block);
-        else recipeEl.insertAdjacentElement('afterbegin', block);
-      }
+      block.dataset.scaleBound = '1';
 
       let items = [];
 
@@ -4695,6 +4744,7 @@ function buildControls(recipeEl){
     }
 
     function ensureLiteralRecipeStructure(recipeEl){
+      if(recipeEl && recipeEl.dataset && recipeEl.dataset.staticRecipeShell === '1') return;
       qsa('.variant-switcher', recipeEl).forEach(sw=>{
         const prev = sw.previousElementSibling;
         if(prev && prev.tagName === 'H4' && /^variants$/i.test((prev.textContent || '').trim())) return;
@@ -4738,15 +4788,22 @@ function buildControls(recipeEl){
       const titleRow = q('.recipe-title-row', recipeEl) || q('h3,h2,h1', recipeEl);
       if(!titleRow || !controls || !printSummary) return;
 
-      const strip = document.createElement('div');
-      strip.className = 'recipe-option-strip recipe-standard-controls print-hide';
+      let strip = q('.recipe-option-strip[data-static-recipe-shell="1"]', recipeEl);
+      let editBody = q('.recipe-edit-options[data-static-recipe-shell="1"]', recipeEl);
+      let adjustmentsBtn = q('.recipe-adjustments-toggle[data-static-recipe-shell="1"]', recipeEl);
+      const preauthored = !!(strip && editBody && adjustmentsBtn);
+
+      if(!strip){
+        strip = document.createElement('div');
+        strip.className = 'recipe-option-strip recipe-standard-controls print-hide';
+      }
       ['pointerdown','mousedown','touchstart','click'].forEach(function(evtName){
         strip.addEventListener(evtName, function(e){ e.stopPropagation(); });
       });
 
       const variantSwitcher = q('.variant-switcher', recipeEl);
       let variantSelect = null;
-      if(variantSwitcher){
+      if(variantSwitcher && !preauthored){
         variantSwitcher.classList.add('recipe-native-variant-switcher', 'print-hide');
         const field = document.createElement('div');
         field.className = 'recipe-variant-field';
@@ -4790,36 +4847,40 @@ function buildControls(recipeEl){
         });
       }
 
-      // Recipe-defining choices remain in the default recipe view. They are not
-      // utility adjustments: changing oat type or thickness can materially change
-      // the recipe the user is making.
-      const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
-      if(formulaRows.length){
-        const formulaControls = document.createElement('div');
-        formulaControls.className = 'recipe-formula-controls';
-        formulaRows.forEach(row=> formulaControls.appendChild(row));
-        strip.appendChild(formulaControls);
+      if(!preauthored){
+        const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
+        if(formulaRows.length){
+          const formulaControls = document.createElement('div');
+          formulaControls.className = 'recipe-formula-controls';
+          formulaRows.forEach(row=> formulaControls.appendChild(row));
+          strip.appendChild(formulaControls);
+        }
+
+        adjustmentsBtn = document.createElement('button');
+        adjustmentsBtn.type = 'button';
+        adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
+        adjustmentsBtn.setAttribute('aria-expanded', 'false');
+        adjustmentsBtn.textContent = 'Adjustments';
+
+        editBody = document.createElement('div');
+        editBody.className = 'recipe-edit-options recipe-adjustments-panel print-hide';
+        editBody.hidden = true;
+
+        titleRow.insertAdjacentElement('afterend', printSummary);
+        printSummary.insertAdjacentElement('afterend', strip);
+        strip.insertAdjacentElement('afterend', editBody);
+        controls.classList.add('recipe-edit-controls');
+        editBody.appendChild(controls);
+      }else{
+        controls.classList.add('recipe-edit-controls');
       }
 
-      const adjustmentsBtn = document.createElement('button');
-      adjustmentsBtn.type = 'button';
-      adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
-      adjustmentsBtn.setAttribute('aria-expanded', 'false');
-      adjustmentsBtn.textContent = 'Adjustments';
-
-      const editBody = document.createElement('div');
-      editBody.className = 'recipe-edit-options recipe-adjustments-panel print-hide';
-      editBody.hidden = true;
       try{
         recipeEl.classList.remove('recipe-options-open');
         recipeEl.classList.remove('recipe-adjustments-open');
       }catch(_e){}
-
-      titleRow.insertAdjacentElement('afterend', printSummary);
-      printSummary.insertAdjacentElement('afterend', strip);
-      strip.insertAdjacentElement('afterend', editBody);
-      controls.classList.add('recipe-edit-controls');
-      editBody.appendChild(controls);
+      editBody.hidden = true;
+      adjustmentsBtn.setAttribute('aria-expanded', 'false');
 
       adjustmentsBtn.addEventListener('click', ()=>{
         const open = !recipeEl.classList.contains('recipe-adjustments-open');
@@ -4890,11 +4951,11 @@ function buildControls(recipeEl){
 
       recipeEl.classList.add('recipe-universal-template');
 
-      const metaRow = document.createElement('div');
-      metaRow.className = 'recipe-meta-row';
-      const metaSummary = document.createElement('div');
-      metaSummary.className = 'recipe-meta-summary';
-      metaRow.appendChild(metaSummary);
+      let metaRow = q('.recipe-meta-row[data-static-recipe-shell="1"]', recipeEl);
+      let metaSummary = metaRow ? q('.recipe-meta-summary', metaRow) : null;
+      let adjustmentsRow = q('.recipe-adjustments-row[data-static-recipe-shell="1"]', recipeEl);
+      let tabs = q('.recipe-subtabs[data-static-recipe-shell="1"]', recipeEl);
+      const preauthored = !!(metaRow && metaSummary && adjustmentsRow && tabs);
 
       function normaliseMetaValue(value){
         return String(value || '').replace(/\s+/g, ' ').replace(/^[\s:–—-]+|[\s.;]+$/g, '').trim();
@@ -4914,74 +4975,88 @@ function buildControls(recipeEl){
         metaSummary.appendChild(item);
         return val;
       }
-      function firstMatch(re, text){
-        const match = String(text || '').match(re);
+      function firstMatch(re, value){
+        const match = String(value || '').match(re);
         return match && match[1] ? normaliseMetaValue(match[1]) : '';
       }
 
       const recipeText = String(recipeEl.textContent || '').replace(/\s+/g, ' ');
-      let yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
-      if(!yieldValue){
-        yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
-      }
-      if(!yieldValue){
-        yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
-          .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
-      }
-      if(!yieldValue){
-        const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
-        if(serves) yieldValue = serves;
-      }
-      if(!yieldValue) yieldValue = '1 recipe batch';
-      const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
-      const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
-      const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
+      let yieldValue = '';
+      let yieldMetaValue = null;
+      let batchMetaValue = null;
 
-      const yieldMetaValue = addMeta('Yield', yieldValue);
-      const batchMetaValue = addMeta('Batch', '1×');
-      addMeta('Equipment', equipmentValue);
-      addMeta('Allergens', allergensValue);
-      addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
-      if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
-      if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
+      if(preauthored){
+        yieldMetaValue = q('.recipe-yield-meta-value', metaRow);
+        batchMetaValue = q('.recipe-batch-meta-value', metaRow);
+        yieldValue = normaliseMetaValue((yieldMetaValue && yieldMetaValue.dataset && yieldMetaValue.dataset.baseYield) || (yieldMetaValue && yieldMetaValue.textContent) || '1 recipe batch');
+      }else{
+        metaRow = document.createElement('div');
+        metaRow.className = 'recipe-meta-row';
+        metaSummary = document.createElement('div');
+        metaSummary.className = 'recipe-meta-summary';
+        metaRow.appendChild(metaSummary);
+
+        yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
+        if(!yieldValue){
+          yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
+        }
+        if(!yieldValue){
+          yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
+            .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
+        }
+        if(!yieldValue){
+          const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
+          if(serves) yieldValue = serves;
+        }
+        if(!yieldValue) yieldValue = '1 recipe batch';
+        const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
+        const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
+        const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
+
+        yieldMetaValue = addMeta('Yield', yieldValue);
+        batchMetaValue = addMeta('Batch', '1×');
+        addMeta('Equipment', equipmentValue);
+        addMeta('Allergens', allergensValue);
+        addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
+        if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
+        if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
+
+        const adjustmentsBtnForRow = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
+        adjustmentsRow = document.createElement('div');
+        adjustmentsRow.className = 'recipe-adjustments-row print-hide';
+        if(adjustmentsBtnForRow) adjustmentsRow.appendChild(adjustmentsBtnForRow);
+
+        tabs = document.createElement('div');
+        tabs.className = 'recipe-subtabs print-hide';
+        tabs.setAttribute('role', 'tablist');
+        tabs.setAttribute('aria-label', 'Recipe views');
+        const tabDefs = [
+          ['standard', 'Standard View'],
+          ['details', 'Details'],
+          ['guidance', 'Guidance'],
+          ['show-all', 'Show All']
+        ];
+        tabDefs.forEach(([id, label])=>{
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'recipe-subtab';
+          button.dataset.recipeSubtab = id;
+          button.setAttribute('role', 'tab');
+          button.setAttribute('aria-selected', id === 'standard' ? 'true' : 'false');
+          button.textContent = label;
+          tabs.appendChild(button);
+        });
+
+        titleRow.insertAdjacentElement('afterend', metaRow);
+        metaRow.insertAdjacentElement('afterend', adjustmentsRow);
+        adjustmentsRow.insertAdjacentElement('afterend', editBody);
+        editBody.insertAdjacentElement('afterend', tabs);
+        tabs.insertAdjacentElement('afterend', strip);
+      }
 
       const adjustmentsBtn = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
-      const adjustmentsRow = document.createElement('div');
-      adjustmentsRow.className = 'recipe-adjustments-row print-hide';
-      if(adjustmentsBtn) adjustmentsRow.appendChild(adjustmentsBtn);
-
       const legacyPrintSummary = q('.print-summary', recipeEl);
       if(legacyPrintSummary) legacyPrintSummary.classList.add('recipe-legacy-print-summary');
-
-      const tabs = document.createElement('div');
-      tabs.className = 'recipe-subtabs print-hide';
-      tabs.setAttribute('role', 'tablist');
-      tabs.setAttribute('aria-label', 'Recipe views');
-      const tabDefs = [
-        ['standard', 'Standard View'],
-        ['details', 'Details'],
-        ['guidance', 'Guidance'],
-        ['show-all', 'Show All']
-      ];
-      tabDefs.forEach(([id, label])=>{
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'recipe-subtab';
-        button.dataset.recipeSubtab = id;
-        button.setAttribute('role', 'tab');
-        button.setAttribute('aria-selected', id === 'standard' ? 'true' : 'false');
-        button.textContent = label;
-        tabs.appendChild(button);
-      });
-
-      // Canonical order: title -> information line -> Adjustments -> adjustments panel ->
-      // subtabs -> the selected view content. There is intentionally no visible
-      // "Standard View" heading inside the content.
-      titleRow.insertAdjacentElement('afterend', metaRow);
-      metaRow.insertAdjacentElement('afterend', adjustmentsRow);
-      adjustmentsRow.insertAdjacentElement('afterend', editBody);
-      editBody.insertAdjacentElement('afterend', tabs);
-      tabs.insertAdjacentElement('afterend', strip);
 
       const batchInput = q('input.multiplier-input', recipeEl);
       const baseYieldMatch = String(yieldValue || '').match(/^([0-9]+(?:\.[0-9]+)?)\s*(g|kg|ml|l)\b/i);
@@ -5051,58 +5126,60 @@ function buildControls(recipeEl){
         });
       }
 
-      markContainer(recipeEl);
-      qsa('.variant-panel', recipeEl).forEach(markContainer);
-
-      // Recipe-specific controls are part of Standard View, never hidden behind
-      // the Adjustments utility panel.
-      strip.dataset.recipeViewGroup = 'standard';
-      qsa('.glide-controller', recipeEl).forEach(controller=>{
-        controller.dataset.recipeViewGroup = 'standard';
-        const previous = controller.previousElementSibling;
-        if(previous && previous.matches && previous.matches('p')){
-          previous.classList.add('recipe-slider-intro-legacy');
-        }
-      });
-
-      // Existing status/meta prose is deeper information once the compact metadata
-      // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
-      // from cluttering Standard View.
-      qsa(':scope > p.note', recipeEl).forEach(note=>{
-        const text = String(note.textContent || '');
-        if(/formulation currently being tested/i.test(text) || /\b(?:Yield|Equipment|Allergens?)\s*:/i.test(text) || /Barrier-first.*Vegan/i.test(text)){
-          note.dataset.recipeViewGroup = 'details';
-        }
-      });
-      qsa('p', recipeEl).forEach(p=>{
-        if(/^\s*Total\s*[–—:-]/i.test(String(p.textContent || ''))){
-          p.dataset.recipeViewGroup = 'details';
-        }
-      });
-
-      // The ingredient-library link is supporting information, not part of the
-      // minimal make-the-recipe view. Keep it available in Details and Show All.
-      qsa('.recipe-info-view-link, .info-link', recipeEl).forEach(link=>{
-        link.dataset.recipeViewGroup = 'details';
-      });
-
-      function normalizeEmphasis(){
-        qsa('ol > li > strong:first-child', recipeEl).forEach(strong=>{
-          const value = String(strong.textContent || '').trim();
-          if(!value) return;
-          if(/^[0-9¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/.test(value)) return;
-          strong.classList.add('recipe-method-action');
-          const next = strong.nextSibling;
-          if(next && next.nodeType === Node.TEXT_NODE && /^\s*:/.test(next.nodeValue || '') && !/:$/.test(value)){
-            strong.textContent = value + ':';
-            next.nodeValue = String(next.nodeValue || '').replace(/^\s*:\s*/, ' ');
+      if(!preauthored){
+        markContainer(recipeEl);
+        qsa('.variant-panel', recipeEl).forEach(markContainer);
+  
+        // Recipe-specific controls are part of Standard View, never hidden behind
+        // the Adjustments utility panel.
+        strip.dataset.recipeViewGroup = 'standard';
+        qsa('.glide-controller', recipeEl).forEach(controller=>{
+          controller.dataset.recipeViewGroup = 'standard';
+          const previous = controller.previousElementSibling;
+          if(previous && previous.matches && previous.matches('p')){
+            previous.classList.add('recipe-slider-intro-legacy');
           }
         });
-        qsa('.ing-subhead > strong', recipeEl).forEach(strong=> strong.classList.add('recipe-subgroup-label'));
-        qsa('[data-recipe-view-group="details"] li > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-detail-label'));
-        qsa('[data-recipe-view-group="guidance"] li > strong:first-child, [data-recipe-view-group="guidance"] p > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-guidance-label'));
+  
+        // Existing status/meta prose is deeper information once the compact metadata
+        // row represents it. This prevents the Testing sentence and ad-hoc Meta prose
+        // from cluttering Standard View.
+        qsa(':scope > p.note', recipeEl).forEach(note=>{
+          const text = String(note.textContent || '');
+          if(/formulation currently being tested/i.test(text) || /\b(?:Yield|Equipment|Allergens?)\s*:/i.test(text) || /Barrier-first.*Vegan/i.test(text)){
+            note.dataset.recipeViewGroup = 'details';
+          }
+        });
+        qsa('p', recipeEl).forEach(p=>{
+          if(/^\s*Total\s*[–—:-]/i.test(String(p.textContent || ''))){
+            p.dataset.recipeViewGroup = 'details';
+          }
+        });
+  
+        // The ingredient-library link is supporting information, not part of the
+        // minimal make-the-recipe view. Keep it available in Details and Show All.
+        qsa('.recipe-info-view-link, .info-link', recipeEl).forEach(link=>{
+          link.dataset.recipeViewGroup = 'details';
+        });
+  
+        function normalizeEmphasis(){
+          qsa('ol > li > strong:first-child', recipeEl).forEach(strong=>{
+            const value = String(strong.textContent || '').trim();
+            if(!value) return;
+            if(/^[0-9¼½¾⅓⅔⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/.test(value)) return;
+            strong.classList.add('recipe-method-action');
+            const next = strong.nextSibling;
+            if(next && next.nodeType === Node.TEXT_NODE && /^\s*:/.test(next.nodeValue || '') && !/:$/.test(value)){
+              strong.textContent = value + ':';
+              next.nodeValue = String(next.nodeValue || '').replace(/^\s*:\s*/, ' ');
+            }
+          });
+          qsa('.ing-subhead > strong', recipeEl).forEach(strong=> strong.classList.add('recipe-subgroup-label'));
+          qsa('[data-recipe-view-group="details"] li > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-detail-label'));
+          qsa('[data-recipe-view-group="guidance"] li > strong:first-child, [data-recipe-view-group="guidance"] p > strong:first-child', recipeEl).forEach(strong=> strong.classList.add('recipe-guidance-label'));
+        }
+        normalizeEmphasis();
       }
-      normalizeEmphasis();
 
       function setView(view){
         const next = ['standard','details','guidance','show-all'].includes(view) ? view : 'standard';

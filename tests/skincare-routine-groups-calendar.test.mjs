@@ -6,7 +6,6 @@ import { resolve } from 'node:path';
 const root=resolve(import.meta.dirname,'..');
 const html=readFileSync(resolve(root,'systems/baseline-natural-skincare/baseline-natural-skincare.html'),'utf8');
 const loader=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-enhancements.js'),'utf8');
-const recipeBootstrap=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-recipe-bootstrap-20260906.js'),'utf8');
 const routine=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine.js'),'utf8');
 const sitewide=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js'),'utf8');
 const coherence=readFileSync(resolve(root,'sitewide/js/baseline-routine-coherence-v12.js'),'utf8');
@@ -27,20 +26,28 @@ test('Skincare identifies the exact My Routine panel before body paint',() => {
   assert.ok(routine.indexOf('loadLocalState();')<routine.indexOf('await loadRemoteState()'));
 });
 
-test('Skincare has one controlled group/calendar renderer and recipe UX cannot race it',() => {
+test('My Routine static workspace shell is authored exactly once in HTML',() => {
+  for (const id of [
+    'routineSubtabs','routineLogDate','routineLogProgress','routineLogItems','routineCalendarLabel',
+    'routineCalendarWeekdays','routineCalendarGrid','routineVisibility','routineSummary',
+    'routineGroupName','createRoutineGroup','routineActionSearch','routineActionMenu',
+    'routineActionSelect','addRoutineAction','routineItems','publicRoutineName',
+    'findPublicRoutineBtn','publicRoutineResult'
+  ]) {
+    assert.equal((html.match(new RegExp('id="' + id + '"','g')) || []).length,1,id+' must exist exactly once in initial HTML');
+  }
+  assert.match(html,/class="routine-group-manager bl-routine-group-manager"/);
+  assert.doesNotMatch(routine,/ensureShell\s*\(/);
+  assert.doesNotMatch(sitewide,/createElement\(['"](?:section|nav)['"]\).*routine-group-manager/);
+});
+
+test('Skincare has one canonical calendar renderer and no dynamic bootstrap fallback',() => {
   assert.match(loader,/canonical My Routine bootstrap v35/);
-  assert.match(loader,/skincare-routine-sitewide-v5\.js/);
-  assert.match(loader,/skincare-recipe-bootstrap-20260906\.js/);
-  assert.doesNotMatch(loader,/skincare-recipe-navigation-20260906|skincare-recipe-ux-20260906|skincare-routine-sitewide-v4\.js|skincare-routine-group-ui|state-bridge/);
+  assert.doesNotMatch(loader,/skincare-recipe-bootstrap-20260906\.js|loadOrdered\(|loadScript\(|createElement\(['"]script['"]\)/);
+  assert.match(sitewide,/function renderCalendar\(\)/);
   assert.match(sitewide,/UI\.observe\(root,patch\)/);
   assert.doesNotMatch(sitewide,/skincare-recipe-|sitewide-v5-core|new MutationObserver|setInterval|Loading My Routine/);
-
-  assert.doesNotMatch(recipeBootstrap,/__BASELINE_SKINCARE_ROUTINE_SITEWIDE_V5__/);
-  assert.doesNotMatch(recipeBootstrap,/global\.BASELINE_RoutineSystem/);
-  assert.doesNotMatch(recipeBootstrap,/startAfterRoutine/);
-  assert.match(recipeBootstrap,/function startRecipeModules\(\)/);
-  assert.match(recipeBootstrap,/DOMContentLoaded/);
-  assert.doesNotMatch(recipeBootstrap,/setInterval|setTimeout|routine-subtab|data-routine-view|data-routine-panel|skincare-routine-sitewide-v5\.js/);
+  assert.doesNotMatch(routine,/function renderCalendar\(|function calendarButton\(|calendarView|calendarAnchor|data-calendar-view|data-calendar-move|data-calendar-today/);
 });
 
 test('My Routine subtabs retain their own canonical labels',() => {
@@ -58,12 +65,12 @@ test('Routine Summary remains the comprehensive shared template with session-sid
   assert.match(coherence,/skinSummaryFilter/);
   assert.match(coherence,/SUMMARY_STORAGE_KEY/);
   assert.match(coherence,/persistSummaryFilter/);
-  assert.doesNotMatch(coherence,/searchParams\.set\(['\"]routine-filter/);
+  assert.doesNotMatch(coherence,/searchParams\.set\(['"]routine-filter/);
 });
 
-test('group creation is separate from group Settings and settings own schedule directly',() => {
-  assert.match(sitewide,/Create Routine Group/);
-  assert.match(sitewide,/Configure its time and frequency from Settings on the group itself/);
+test('group creation shell is static and group Settings own schedule directly',() => {
+  assert.match(html,/Create Routine Group/);
+  assert.match(html,/Configure its time and frequency from Settings on the group itself/);
   assert.match(sitewide,/data-plan-group-settings/);
   assert.match(sitewide,/Group time/);
   assert.match(sitewide,/Group frequency/);
@@ -79,9 +86,10 @@ test('Routine Plan group header is title count Settings then collapse control',(
   assert.match(sitewide,/Expand group/);
 });
 
-test('calendar includes Week Month and shared marker navigation',() => {
-  assert.match(sitewide,/data-skincare-calendar-view="week"/);
-  assert.match(sitewide,/data-skincare-calendar-view="month"/);
+test('calendar shell is static and canonical controller supplies Week Month behaviour',() => {
+  assert.match(html,/data-skincare-calendar-view="week"/);
+  assert.match(html,/data-skincare-calendar-view="month"/);
+  assert.match(html,/id="routineCalendarWeekdays"[^>]*><span>Mon<\/span><span>Tue<\/span><span>Wed<\/span><span>Thu<\/span><span>Fri<\/span><span>Sat<\/span><span>Sun<\/span>/);
   assert.match(sitewide,/UI\.weekRow/);
   assert.match(sitewide,/UI\.monthDates/);
   assert.match(coherence,/data-caption/);
