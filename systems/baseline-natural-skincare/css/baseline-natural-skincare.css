@@ -913,14 +913,29 @@ html body[data-app="skin"] #recipes .glide-scale>span{display:block!important;ma
 html body[data-app="skin"] #recipes .glide-scale>span:last-child{text-align:right}
 html body[data-app="skin"] #recipes .glide-scale small{font-size:inherit;opacity:1}
 html body[data-app="skin"] #recipes .slider-save-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-top:.7rem}
-html body[data-app="skin"] #recipes .recipe-details-intro{display:grid;gap:.7rem;margin-top:.75rem}
+html body[data-app="skin"] #recipes .recipe-details-intro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  column-gap:1.75rem;
+  row-gap:1rem;
+  margin-top:.75rem
+}
 html body[data-app="skin"] #recipes .recipe-details-intro[hidden]{display:none!important}
 html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden):not([hidden]){display:grid!important}
-html body[data-app="skin"] #recipes .recipe-detail-block{padding:.8rem .9rem;border:1px solid rgba(73,48,40,.15);border-radius:.7rem;background:rgba(255,255,255,.12)}
-html body[data-app="skin"] #recipes .recipe-detail-block h4{margin:0 0 .28rem}
+html body[data-app="skin"] #recipes .recipe-detail-block{
+  min-width:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent
+}
+html body[data-app="skin"] #recipes .recipe-detail-block h4{margin:0 0 .3rem}
 html body[data-app="skin"] #recipes .recipe-detail-block p{margin:0;line-height:1.5}
+html body[data-app="skin"] #recipes .recipe-detail-block p + p{margin-top:.45rem}
+html body[data-app="skin"] #recipes .recipe-comedogenic-rating{font-size:.95em}
 html body[data-app="skin"] #recipes .recipe-view-hidden{display:none!important}
 @media (max-width:720px){
+  html body[data-app="skin"] #recipes .recipe-details-intro{grid-template-columns:1fr;column-gap:0}
   html body[data-app="skin"] #recipes .variant-switcher{width:100%;border-radius:.8rem}
   html body[data-app="skin"] #recipes .variant-switcher .variant-tab{flex:1 1 auto}
   html body[data-app="skin"] #recipes .glide-scale{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}
