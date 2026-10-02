@@ -540,6 +540,89 @@ test('Skincare Details is useful while Food keeps its existing placeholder behav
   await expect(food.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
 });
 
+test('Skincare Adjustments starts collapsed and only appears on Recipe and Show All', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
+  const card = page.locator('#r3');
+  const row = card.locator('.recipe-adjustments-row');
+  const toggle = card.locator('.recipe-adjustments-toggle');
+  const panel = card.locator('.recipe-adjustments-panel');
+
+  await expect(row).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(panel).toBeHidden();
+
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded','true');
+  await expect(panel).toBeVisible();
+
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(row).toBeHidden();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(panel).toBeHidden();
+
+  await card.locator('[data-recipe-subtab="show-all"]').click();
+  await expect(row).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(panel).toBeHidden();
+
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await card.locator('[data-recipe-subtab="guidance"]').click();
+  await expect(row).toBeHidden();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(panel).toBeHidden();
+
+  await card.locator('[data-recipe-subtab="standard"]').click();
+  await expect(row).toBeVisible();
+  await expect(panel).toBeHidden();
+
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await card.locator('.back-btn').click();
+  await expect(page.locator('#recipes-landing')).toBeVisible();
+  await page.locator('#recipes-landing a.recipe-open[data-recipe-id="r3"]').click();
+  await expect(card).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded','false');
+  await expect(panel).toBeHidden();
+});
+
+test('Skincare Show All is visually ordered Recipe then Details then Guidance', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const card = page.locator('#r2');
+  await card.locator('[data-recipe-subtab="show-all"]').click();
+  await expect(card).toHaveAttribute('data-recipe-view','show-all');
+
+  const positions = await card.evaluate((el) => {
+    const activeVariant = el.querySelector('.variant-panel:not([hidden])');
+    const eligible = (node) => node.parentElement === el || node.parentElement === activeVariant;
+    const visible = (node) => {
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.display !== 'none' && style.visibility !== 'hidden' && rect.height > 0;
+    };
+    const rects = (group) => Array.from(el.querySelectorAll('[data-recipe-view-group="' + group + '"]'))
+      .filter(node => eligible(node) && visible(node))
+      .map(node => node.getBoundingClientRect());
+
+    const standard = rects('standard');
+    const details = rects('details');
+    const guidance = rects('guidance');
+    return {
+      standardBottom: Math.max(...standard.map(r => r.bottom)),
+      detailsTop: Math.min(...details.map(r => r.top)),
+      detailsBottom: Math.max(...details.map(r => r.bottom)),
+      guidanceTop: Math.min(...guidance.map(r => r.top)),
+      counts: { standard:standard.length, details:details.length, guidance:guidance.length }
+    };
+  });
+
+  expect(positions.counts.standard).toBeGreaterThan(0);
+  expect(positions.counts.details).toBeGreaterThan(0);
+  expect(positions.counts.guidance).toBeGreaterThan(0);
+  expect(positions.standardBottom).toBeLessThanOrEqual(positions.detailsTop + 1);
+  expect(positions.detailsBottom).toBeLessThanOrEqual(positions.guidanceTop + 1);
+});
+
 test('system-specific recipe themes remain owned by the active system', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel');
   const skinCard = page.locator('#r10');
