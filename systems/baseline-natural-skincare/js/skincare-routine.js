@@ -3,7 +3,7 @@
    OWNERSHIP CONTRACT
    ------------------
    This module owns the signed-in user's Skincare routine data, editable Plan,
-   completion Log, base calendar, visibility setting, public-profile list and
+   completion Log, visibility setting, public-profile list and
    canonical My Routine subview routing.
 
    Public My Routine URLs are clean page paths:
@@ -37,7 +37,7 @@
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
   const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
-  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),calendarView:'month',calendarAnchor:MODEL.localDate(MODEL.todayIso()),pendingRemoveId:'',saveTimer:0,profileLoading:false };
+  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false };
 
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
@@ -234,23 +234,6 @@
     refreshLogProgress();
     emit('log');
   }
-  function completedCount(date) { const entries=state.logs[date] || {};return Object.values(entries).filter((entry)=>entry?.completed).length; }
-  function calendarButton(date,inMonth=true) {
-    const iso=MODEL.isoDate(date);const count=completedCount(iso);const selected=iso===state.selectedDate;const today=iso===MODEL.todayIso();const future=MODEL.isFutureDate(iso);
-    return `<button type="button" class="routine-calendar-day${count?' has-routine':''}${selected?' selected':''}${today?' today':''}${future?' future-date':''}${inMonth?'':' outside-month'}" data-calendar-date="${iso}"${future?' disabled aria-disabled="true"':''} aria-label="${esc(date.toLocaleDateString('en-GB',{ weekday:'long',day:'numeric',month:'long',year:'numeric' }))}${count?`, ${count} completed action${count===1?'':'s'}`:''}"><span>${date.getDate()}</span>${count?`<span class="routine-calendar-count">${count}</span>`:''}</button>`;
-  }
-  function renderCalendar() {
-    const grid=$('#routineCalendarGrid');const label=$('#routineCalendarLabel');const weekdays=$('.routine-calendar-weekdays');if (!grid || !label || !weekdays) return;
-    $$('.routine-calendar-view').forEach((button)=>{ const selected=button.dataset.calendarView===state.calendarView;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false'); });
-    weekdays.innerHTML=(global.BASELINE_RoutineSystem?.orderedDays?.(MODEL.DAYS) || MODEL.DAYS).map((day)=>`<span>${esc(day.slice(0,3))}</span>`).join('');
-    if (state.calendarView==='week') {
-      const bounds=global.BASELINE_RoutineSystem?.weekBounds?.(state.calendarAnchor) || MODEL.weekBounds(state.calendarAnchor);label.textContent=`${bounds.start.toLocaleDateString('en-GB',{ day:'numeric',month:'short' })} – ${bounds.end.toLocaleDateString('en-GB',{ day:'numeric',month:'short',year:'numeric' })}`;grid.className='routine-calendar-grid week-view';grid.innerHTML=(global.BASELINE_RoutineSystem?.weekDates?.(state.calendarAnchor) || Array.from({ length:7 },(_,index)=>{ const date=new Date(bounds.start);date.setDate(date.getDate()+index);return date; })).map((date)=>global.BASELINE_RoutineSystem?.weekRow?global.BASELINE_RoutineSystem.weekRow(date,{ count:completedCount(MODEL.isoDate(date)),selectedDate:state.selectedDate,details:[] }):calendarButton(date)).join('');return;
-    }
-    const month=new Date(state.calendarAnchor.getFullYear(),state.calendarAnchor.getMonth(),1);label.textContent=month.toLocaleDateString('en-GB',{ month:'long',year:'numeric' });grid.className='routine-calendar-grid month-view';const dates=global.BASELINE_RoutineSystem?.monthDates?.(month) || [];
-    if (dates.length) { grid.innerHTML=dates.map((date)=>calendarButton(date,date.getMonth()===month.getMonth())).join('');return; }
-    const first=new Date(month);const startIndex=global.BASELINE_RoutineSystem?.startDayIndex?.() ?? 1;first.setDate(first.getDate()-(((month.getDay()-startIndex)+7)%7));grid.innerHTML=Array.from({ length:42 },(_,index)=>{ const date=new Date(first);date.setDate(date.getDate()+index);return calendarButton(date,date.getMonth()===month.getMonth()); }).join('');
-  }
-
   function ensureLogDate(date) { if (!state.logs[date]) state.logs[date]={};return state.logs[date]; }
   function updateLog(itemId,date,patch) {
     const entries=ensureLogDate(date);entries[itemId]=Object.assign({ completed:false,note:'',completedAt:'' },entries[itemId] || {},patch);if (entries[itemId].completed && !entries[itemId].completedAt) entries[itemId].completedAt=new Date().toISOString();if (!entries[itemId].completed) entries[itemId].completedAt='';scheduleSave();
@@ -265,7 +248,7 @@
   function addRoutineItem() {
     const select=$('#routineActionSelect');const actionId=select?.value || '';if (!actionId) { $('#routineActionSearch')?.focus();return; }const item=MODEL.createItem(actionId);state.routine.push(item);state.pendingRemoveId='';if (select) select.value='';const search=$('#routineActionSearch');if (search) search.value='';setActionPickerOpen(false);renderPlan();scheduleSave();
   }
-  function removeRoutineItem(id) { state.routine=state.routine.filter((item)=>item.id!==id);Object.values(state.logs).forEach((entries)=>{ if (entries && typeof entries==='object') delete entries[id]; });state.pendingRemoveId='';renderPlan();renderSummary();renderLog();renderCalendar();scheduleSave(); }
+  function removeRoutineItem(id) { state.routine=state.routine.filter((item)=>item.id!==id);Object.values(state.logs).forEach((entries)=>{ if (entries && typeof entries==='object') delete entries[id]; });state.pendingRemoveId='';renderPlan();renderSummary();renderLog();scheduleSave(); }
   function moveRoutineItem(id,direction) {
     const index=state.routine.findIndex((item)=>item.id===id);if (index<0) return;const target=direction==='up'?index-1:index+1;if (target<0 || target>=state.routine.length) return;const [item]=state.routine.splice(index,1);state.routine.splice(target,0,item);renderPlan();scheduleSave();
   }
@@ -284,8 +267,6 @@
   function toggleDay(control) {
     const item=itemById(control.dataset.id);if (!item) return;const day=control.dataset.day;const days=new Set(item.frequency.days);if (control.checked) days.add(day);else days.delete(day);item.frequency.days=MODEL.DAYS.filter((entry)=>days.has(entry));scheduleSave();
   }
-  function moveCalendar(direction) { const anchor=new Date(state.calendarAnchor);if (state.calendarView==='week') anchor.setDate(anchor.getDate()+(direction==='next'?7:-7));else anchor.setMonth(anchor.getMonth()+(direction==='next'?1:-1),1);state.calendarAnchor=anchor;renderCalendar(); }
-
   function enterRoutineFromOuterTab() {
     state.activeView=routeViewFromLocation();
     selectOuterRoutine();
@@ -303,10 +284,6 @@
       if (event.target.closest('[data-remove-cancel]')) { state.pendingRemoveId='';renderPlan();return; }
       const removeConfirm=event.target.closest('[data-remove-confirm]');if (removeConfirm) { removeRoutineItem(removeConfirm.dataset.removeConfirm);return; }
       if (event.target.closest('[data-open-routine-plan]')) { activateView('plan');return; }
-      const calendarView=event.target.closest('[data-calendar-view]');if (calendarView) { state.calendarView=calendarView.dataset.calendarView==='week'?'week':'month';renderCalendar();return; }
-      const calendarMove=event.target.closest('[data-calendar-move]');if (calendarMove) { moveCalendar(calendarMove.dataset.calendarMove);return; }
-      if (event.target.closest('[data-calendar-today]')) { state.calendarAnchor=MODEL.localDate(MODEL.todayIso());state.selectedDate=MODEL.todayIso();renderLog();renderCalendar();return; }
-      const day=event.target.closest('[data-calendar-date]');if (day && !MODEL.isFutureDate(day.dataset.calendarDate)) { state.selectedDate=day.dataset.calendarDate;state.calendarAnchor=MODEL.localDate(state.selectedDate);activateView('log'); }
     });
     root.addEventListener('input',(event)=>{
       if (event.target.id==='routineActionSearch') { renderActionPicker();setActionPickerOpen(true);return; }
@@ -317,7 +294,7 @@
       if (event.target.matches('[data-field]')) { updateItemField(event.target);renderPlan(); }
       if (event.target.matches('[data-day]')) toggleDay(event.target);
       if (event.target.matches('[data-log-complete]')) { updateCompletionInPlace(event.target); }
-      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);state.calendarAnchor=MODEL.localDate(state.selectedDate);renderLog(); }
+      if (event.target.id==='routineLogDate') { state.selectedDate=MODEL.configureLogDateInput?.(event.target,event.target.value) || MODEL.clampLogDate(event.target.value);renderLog(); }
       if (event.target.id==='routineVisibility') { state.visibility=event.target.value==='public'?'public':'private';scheduleSave(); }
     });
     root.addEventListener('keydown',(event)=>{
