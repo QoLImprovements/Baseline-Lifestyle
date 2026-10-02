@@ -3876,23 +3876,33 @@ function parseViewStateHash(hash){
     }
 
 function buildControls(recipeEl){
-      if(q('.recipe-controls', recipeEl)) return;
+      if(!recipeEl || (recipeEl.dataset && recipeEl.dataset.recipeControlsBound === '1')) return;
 
       const h3 = q('h3,h2,h1', recipeEl);
       if(!h3) return;
 
       let titleRow = (h3.parentElement && h3.parentElement.classList && h3.parentElement.classList.contains('recipe-title-row'))
         ? h3.parentElement : null;
-      if(!titleRow){
-        titleRow = document.createElement('div');
-        titleRow.className = 'recipe-title-row';
-        h3.insertAdjacentElement('beforebegin', titleRow);
-        titleRow.appendChild(h3);
-      }
 
-      const controls = document.createElement('div');
-      controls.className = 'multiplier recipe-controls';
-      controls.setAttribute('data-layout-contract', 'title-batch-measurement-scale');
+      let controls = q('.recipe-controls[data-static-recipe-controls="1"]', recipeEl);
+      const preauthored = !!controls;
+      if(!preauthored && q('.recipe-controls', recipeEl)) return;
+
+      let multInput = null;
+      let measSelect = null;
+      let applyBtn = null;
+      let resetBtn = null;
+      let printSummary = null;
+
+      const isOatPorridge = (recipeEl && recipeEl.dataset && recipeEl.dataset.oatToggle === '1');
+      let oatType = 'jumbo';
+      let oatLabelEl = null;
+      let oatToggleEl = null;
+      let oatBtnJumbo = null;
+      let oatBtnPorridge = null;
+      let thickSelect = null;
+      let thickLabelEl = null;
+      const hasThickness = !!q('.thickness-swap', recipeEl);
 
       function makeControlRow(rowClass, labelValue, controlEl, trailingEl, labelClass){
         const row = document.createElement('div');
@@ -3909,137 +3919,154 @@ function buildControls(recipeEl){
 
         if(labelClass && label.classList) label.classList.add(labelClass);
         row.appendChild(label);
-
         if(controlEl) row.appendChild(controlEl);
 
         const trailingEls = Array.isArray(trailingEl) ? trailingEl : (trailingEl ? [trailingEl] : []);
-        trailingEls.forEach(function(el){
-          if(el) row.appendChild(el);
-        });
-
+        trailingEls.forEach(function(el){ if(el) row.appendChild(el); });
         return row;
       }
 
-      const multLabel = document.createElement('span');
-      multLabel.className = 'label batch-label';
-      multLabel.textContent = 'Batch Multiplier';
-      const multInput = document.createElement('input');
-      multInput.type = 'number';
-      multInput.min = '0';
-      multInput.step = 'any';
-      multInput.dataset.stepperStep = '0.5';
-      multInput.dataset.stepperMin = '0.5';
-      multInput.value = '1';
-      multInput.inputMode = 'decimal';
-      multInput.className = 'multiplier-input batch-input';
-      multInput.setAttribute('aria-label', 'Batch multiplier');
-      const batchField = enhanceNumberStepper(multInput);
-      if(batchField && batchField.classList) batchField.classList.add('batch-input');
+      if(preauthored){
+        multInput = q('.multiplier-input', controls);
+        measSelect = q('.measure-select', controls);
+        applyBtn = q('.recipe-apply', controls);
+        resetBtn = q('.reset', controls);
+        printSummary = q('.print-summary', recipeEl);
+        thickSelect = q('.thickness-select', controls);
 
-      const measLabel = document.createElement('span');
-      measLabel.className = 'label meas-label';
-      measLabel.textContent = 'Measurement Type';
-      const measSelect = document.createElement('select');
-      measSelect.className = 'measure-select';
-      measSelect.setAttribute('aria-label', 'Measurement Type');
-      measSelect.innerHTML = `
-        <option value="standard">Standard Variance</option>
-        <option value="weight">Weight</option>
-        <option value="volume">Volume</option>
-        <option value="cups">Measuring Cups &amp; Spoons</option>
-      `;
+        if(isOatPorridge){
+          oatToggleEl = q('.oat-toggle', controls);
+          oatBtnJumbo = oatToggleEl ? q('.oat-option[data-oat-type="jumbo"], .oat-option:first-child', oatToggleEl) : null;
+          oatBtnPorridge = oatToggleEl ? q('.oat-option[data-oat-type="porridge"], .oat-option:last-child', oatToggleEl) : null;
+        }
 
-      const isOatPorridge = (recipeEl && recipeEl.dataset && recipeEl.dataset.oatToggle === '1');
-      let oatType = 'jumbo';
-      let oatLabelEl = null;
-      let oatToggleEl = null;
-      let oatBtnJumbo = null;
-      let oatBtnPorridge = null;
+        if(!multInput || !measSelect || !resetBtn || !printSummary) return;
+        enhanceNumberStepper(multInput);
+        buildScaleByIngredient(recipeEl, controls, multInput, apply);
+        autosizeSelect(measSelect);
+        if(thickSelect) autosizeSelect(thickSelect);
+        enhanceSelect(measSelect);
+        if(thickSelect) enhanceSelect(thickSelect);
+      }else{
+        if(!titleRow){
+          titleRow = document.createElement('div');
+          titleRow.className = 'recipe-title-row';
+          h3.insertAdjacentElement('beforebegin', titleRow);
+          titleRow.appendChild(h3);
+        }
 
-      if(isOatPorridge){
-        oatLabelEl = document.createElement('span');
-        oatLabelEl.className = 'label oat-label';
-        oatLabelEl.textContent = 'Type of oats';
+        controls = document.createElement('div');
+        controls.className = 'multiplier recipe-controls';
+        controls.setAttribute('data-layout-contract', 'title-batch-measurement-scale');
 
-        oatToggleEl = document.createElement('div');
-        oatToggleEl.className = 'oat-toggle';
-        oatToggleEl.setAttribute('role', 'group');
-        oatToggleEl.setAttribute('aria-label', 'Type of oats');
+        const multLabel = document.createElement('span');
+        multLabel.className = 'label batch-label';
+        multLabel.textContent = 'Batch Multiplier';
+        multInput = document.createElement('input');
+        multInput.type = 'number';
+        multInput.min = '0';
+        multInput.step = 'any';
+        multInput.dataset.stepperStep = '0.5';
+        multInput.dataset.stepperMin = '0.5';
+        multInput.value = '1';
+        multInput.inputMode = 'decimal';
+        multInput.className = 'multiplier-input batch-input';
+        multInput.setAttribute('aria-label', 'Batch multiplier');
+        const batchField = enhanceNumberStepper(multInput);
+        if(batchField && batchField.classList) batchField.classList.add('batch-input');
 
-        oatBtnJumbo = document.createElement('button');
-        oatBtnJumbo.type = 'button';
-        oatBtnJumbo.className = 'oat-option is-active';
-        oatBtnJumbo.textContent = 'Jumbo Oats';
-
-        oatBtnPorridge = document.createElement('button');
-        oatBtnPorridge.type = 'button';
-        oatBtnPorridge.className = 'oat-option';
-        oatBtnPorridge.textContent = 'Porridge Oats';
-
-        oatToggleEl.appendChild(oatBtnJumbo);
-        oatToggleEl.appendChild(oatBtnPorridge);
-      }
-
-      let thickSelect = null;
-      let thickLabelEl = null;
-      const hasThickness = !!q('.thickness-swap', recipeEl);
-      if(isOatPorridge) controls.classList.add('has-oat-toggle');
-      if(hasThickness) controls.classList.add('has-thickness');
-      if(hasThickness){
-        thickLabelEl = document.createElement('span');
-        thickLabelEl.className = 'label thickness-label';
-        thickLabelEl.textContent = 'Thickness';
-        thickSelect = document.createElement('select');
-        thickSelect.className = 'thickness-select';
-        thickSelect.setAttribute('aria-label', 'Thickness');
-        thickSelect.innerHTML = `
-          <option value="thin">Thin</option>
-          <option value="moderate" selected>Moderate</option>
-          <option value="thick">Thick</option>
+        const measLabel = document.createElement('span');
+        measLabel.className = 'label meas-label';
+        measLabel.textContent = 'Measurement Type';
+        measSelect = document.createElement('select');
+        measSelect.className = 'measure-select';
+        measSelect.setAttribute('aria-label', 'Measurement Type');
+        measSelect.innerHTML = `
+          <option value="standard">Standard Variance</option>
+          <option value="weight">Weight</option>
+          <option value="volume">Volume</option>
+          <option value="cups">Measuring Cups &amp; Spoons</option>
         `;
+
+        if(isOatPorridge){
+          oatLabelEl = document.createElement('span');
+          oatLabelEl.className = 'label oat-label';
+          oatLabelEl.textContent = 'Type of oats';
+
+          oatToggleEl = document.createElement('div');
+          oatToggleEl.className = 'oat-toggle';
+          oatToggleEl.setAttribute('role', 'group');
+          oatToggleEl.setAttribute('aria-label', 'Type of oats');
+
+          oatBtnJumbo = document.createElement('button');
+          oatBtnJumbo.type = 'button';
+          oatBtnJumbo.className = 'oat-option is-active';
+          oatBtnJumbo.dataset.oatType = 'jumbo';
+          oatBtnJumbo.textContent = 'Jumbo Oats';
+
+          oatBtnPorridge = document.createElement('button');
+          oatBtnPorridge.type = 'button';
+          oatBtnPorridge.className = 'oat-option';
+          oatBtnPorridge.dataset.oatType = 'porridge';
+          oatBtnPorridge.textContent = 'Porridge Oats';
+
+          oatToggleEl.appendChild(oatBtnJumbo);
+          oatToggleEl.appendChild(oatBtnPorridge);
+        }
+
+        if(isOatPorridge) controls.classList.add('has-oat-toggle');
+        if(hasThickness) controls.classList.add('has-thickness');
+        if(hasThickness){
+          thickLabelEl = document.createElement('span');
+          thickLabelEl.className = 'label thickness-label';
+          thickLabelEl.textContent = 'Thickness';
+          thickSelect = document.createElement('select');
+          thickSelect.className = 'thickness-select';
+          thickSelect.setAttribute('aria-label', 'Thickness');
+          thickSelect.innerHTML = `
+            <option value="thin">Thin</option>
+            <option value="moderate" selected>Moderate</option>
+            <option value="thick">Thick</option>
+          `;
+        }
+
+        applyBtn = document.createElement('button');
+        applyBtn.type = 'button';
+        applyBtn.className = 'apply recipe-apply batch-apply';
+        applyBtn.textContent = 'Apply';
+        applyBtn.setAttribute('aria-label', 'Apply batch multiplier changes');
+        try{ applyBtn.dataset.mobileBatchApply = '1'; }catch(_e){}
+
+        resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'reset';
+        resetBtn.textContent = 'Reset';
+
+        controls.appendChild(makeControlRow('recipe-control-row--batch', multLabel, batchField, applyBtn));
+        controls.appendChild(makeControlRow('recipe-control-row--measurement', measLabel, measSelect, resetBtn));
+
+        (titleRow || h3).insertAdjacentElement('afterend', controls);
+        buildScaleByIngredient(recipeEl, controls, multInput, apply);
+
+        if(oatToggleEl){
+          controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
+        }
+        if(thickSelect){
+          controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
+        }
+
+        autosizeSelect(measSelect);
+        if(thickSelect) autosizeSelect(thickSelect);
+        enhanceSelect(measSelect);
+        if(thickSelect) enhanceSelect(thickSelect);
+
+        printSummary = document.createElement('div');
+        printSummary.className = 'print-summary';
+        printSummary.textContent = 'Batch quantity: 1 • Measurement: Standard Variance';
+        controls.insertAdjacentElement('afterend', printSummary);
       }
 
-      const applyBtn = document.createElement('button');
-      applyBtn.type = 'button';
-      applyBtn.className = 'apply recipe-apply batch-apply';
-      applyBtn.textContent = 'Apply';
-      applyBtn.setAttribute('aria-label', 'Apply batch multiplier changes');
-      try{ applyBtn.dataset.mobileBatchApply = '1'; }catch(_e){}
-
-      const resetBtn = document.createElement('button');
-      resetBtn.type = 'button';
-      resetBtn.className = 'reset';
-      resetBtn.textContent = 'Reset';
-
-      controls.appendChild(makeControlRow('recipe-control-row--batch', multLabel, batchField, applyBtn));
-      controls.appendChild(makeControlRow('recipe-control-row--measurement', measLabel, measSelect, resetBtn));
-
-      (titleRow || h3).insertAdjacentElement('afterend', controls);
-
-      // Shared control order contract:
-      // 1. Title
-      // 2. Batch multiplier - text field - arrows - mobile Apply
-      // 3. Measurement type - reset/top reset
-      // 4. Scale by ingredient
-      // Any recipe-specific controls (for example thickness or oat type) stay below that block.
-      buildScaleByIngredient(recipeEl, controls, multInput, apply);
-
-      if(oatToggleEl){
-        controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
-      }
-      if(thickSelect){
-        controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
-      }
-
-      autosizeSelect(measSelect);
-      if(thickSelect) autosizeSelect(thickSelect);
-      enhanceSelect(measSelect);
-      if(thickSelect) enhanceSelect(thickSelect);
-
-      const printSummary = document.createElement('div');
-      printSummary.className = 'print-summary';
-      printSummary.textContent = 'Batch quantity: 1 • Measurement: Standard Variance';
-      controls.insertAdjacentElement('afterend', printSummary);
+      if(recipeEl.dataset) recipeEl.dataset.recipeControlsBound = '1';
 
       (function tagIngredientsList(){
         const headings = qsa('h4', recipeEl);
