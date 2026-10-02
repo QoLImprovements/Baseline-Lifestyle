@@ -3927,7 +3927,7 @@ function buildControls(recipeEl){
       }
 
       if(preauthored){
-        multInput = q('.multiplier-input', controls);
+        multInput = q('input.multiplier-input', controls);
         measSelect = q('.measure-select', controls);
         applyBtn = q('.recipe-apply', controls);
         resetBtn = q('.reset', controls);
