@@ -557,27 +557,36 @@
       return inputEl;
     }
 
-    try{
-      const existing = inputEl.parentElement;
-      if(existing && existing.classList && existing.classList.contains('bl-number')) return existing;
-    }catch(_e){}
+    let wrapper = inputEl.parentElement;
+    let stepper = null;
+    let upBtn = null;
+    let downBtn = null;
+    const preauthored = !!(wrapper && wrapper.classList && wrapper.classList.contains('bl-number'));
 
-    const wrapper = document.createElement('div');
-    wrapper.className = 'bl-number' + (inputEl.className ? (' ' + inputEl.className) : '');
+    if(preauthored){
+      stepper = q('.bl-number-stepper', wrapper);
+      upBtn = q('.bl-step-up', wrapper);
+      downBtn = q('.bl-step-down', wrapper);
+      if(!stepper || !upBtn || !downBtn) return wrapper;
+      if(wrapper.dataset.stepperBound === '1') return wrapper;
+    }else{
+      wrapper = document.createElement('div');
+      wrapper.className = 'bl-number' + (inputEl.className ? (' ' + inputEl.className) : '');
 
-    const stepper = document.createElement('div');
-    stepper.className = 'bl-number-stepper';
-    stepper.setAttribute('aria-hidden', 'false');
+      stepper = document.createElement('div');
+      stepper.className = 'bl-number-stepper';
+      stepper.setAttribute('aria-hidden', 'false');
 
-    const upBtn = document.createElement('button');
-    upBtn.type = 'button';
-    upBtn.className = 'bl-step bl-step-up';
-    upBtn.innerHTML = '<span aria-hidden="true">&#9650;</span>';
+      upBtn = document.createElement('button');
+      upBtn.type = 'button';
+      upBtn.className = 'bl-step bl-step-up';
+      upBtn.innerHTML = '<span aria-hidden="true">&#9650;</span>';
 
-    const downBtn = document.createElement('button');
-    downBtn.type = 'button';
-    downBtn.className = 'bl-step bl-step-down';
-    downBtn.innerHTML = '<span aria-hidden="true">&#9660;</span>';
+      downBtn = document.createElement('button');
+      downBtn.type = 'button';
+      downBtn.className = 'bl-step bl-step-down';
+      downBtn.innerHTML = '<span aria-hidden="true">&#9660;</span>';
+    }
 
     function getConfiguredStep(){
       const datasetRaw = parseFloat(String((inputEl.dataset && inputEl.dataset.stepperStep) || '').replace(',', '.'));
@@ -634,13 +643,15 @@
       nudge(-1);
     });
 
-    wrapper.appendChild(inputEl);
-    stepper.appendChild(upBtn);
-    stepper.appendChild(downBtn);
-    wrapper.appendChild(stepper);
+    if(!preauthored){
+      wrapper.appendChild(inputEl);
+      stepper.appendChild(upBtn);
+      stepper.appendChild(downBtn);
+      wrapper.appendChild(stepper);
+    }
+    wrapper.dataset.stepperBound = '1';
     return wrapper;
   }
-
 
 
   // ---------------------------
