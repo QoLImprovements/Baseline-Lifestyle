@@ -2155,8 +2155,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.draftExpression = String(input.value || '');
     if(!raw) return;
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
-    if(!/^[\d\s()+\-*/.]+$/.test(raw)){
-      make24State.lastMessage = 'Only digits, brackets, and + - × ÷ are allowed.';
+    if(!/^[\d\s()+\-*/]+$/.test(raw)){
+      make24State.lastMessage = 'Only whole shown numbers, brackets, and + - × ÷ are allowed.';
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
