@@ -27,6 +27,37 @@
   }
   function recipeById(id){ return document.getElementById(resolveId(id) || ''); }
 
+  function normaliseRecipeView(value){
+    const next=String(value || '').trim().toLowerCase();
+    return ['standard','details','guidance','show-all'].includes(next)?next:'standard';
+  }
+
+  function recipeViewFromLocation(){
+    try{ return normaliseRecipeView(new URLSearchParams(global.location?.search || '').get('view')); }
+    catch(_error){ return 'standard'; }
+  }
+
+  function syncRecipeViewUrl(view){
+    try{
+      const next=normaliseRecipeView(view);
+      const url=new URL(global.location.href);
+      if(next==='standard') url.searchParams.delete('view');
+      else url.searchParams.set('view',next);
+      global.history.replaceState(global.history.state,'',url.pathname+(url.search || '')+(url.hash || ''));
+    }catch(_error){}
+  }
+
+  function recipeForCurrentPath(){
+    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
+    const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
+    if(!match) return null;
+    const slug=String(match[1] || '').toLowerCase();
+    const oldId=OLD_SLUGS[slug];
+    if(oldId) return recipeById(oldId);
+    return Array.from(document.querySelectorAll('#recipes .recipe-page[data-recipe-slug]'))
+      .find(recipe=>String(recipe.dataset.recipeSlug || '').toLowerCase()===slug) || null;
+  }
+
   function collapseAdjustments(recipe){
     if(!recipe) return;
     recipe.classList.remove('recipe-options-open');
@@ -39,7 +70,7 @@
 
   function visibleGroups(recipe,view){
     if(!recipe) return;
-    const next=['standard','details','guidance','show-all'].includes(view)?view:'standard';
+    const next=normaliseRecipeView(view);
     recipe.dataset.recipeView=next;
     recipe.querySelectorAll(':scope > .recipe-subtabs .recipe-subtab').forEach(button=>{
       const selected=button.dataset.recipeSubtab===next;
@@ -63,11 +94,12 @@
     if(!adjustmentsAvailable) collapseAdjustments(recipe);
   }
 
-  function resetRecipeView(recipe){
+  function resetRecipeView(recipe,options){
     if(!recipe) return;
     collapseAdjustments(recipe);
     try{ recipe.__baselineSetRecipeView?.('standard'); }catch(_error){}
     visibleGroups(recipe,'standard');
+    if(options && options.syncUrl) syncRecipeViewUrl('standard');
   }
 
   function bindRecipeSubtabs(){
@@ -76,7 +108,9 @@
         if(button.dataset.recipeUxBound==='1') return;
         button.dataset.recipeUxBound='1';
         button.addEventListener('click',()=>{
-          visibleGroups(recipe,String(button.dataset.recipeSubtab || 'standard'));
+          const next=normaliseRecipeView(button.dataset.recipeSubtab || 'standard');
+          visibleGroups(recipe,next);
+          syncRecipeViewUrl(next);
         });
       });
     });
@@ -220,10 +254,23 @@
     global.BASELINE_openRecipe=function(id,opts){
       let next=String(id || '');
       if(REPLACED_IDS[next]) next=REPLACED_IDS[next];
-      const result=original.call(this,next,opts || {});
-      resetRecipeView(recipeById(next));
+      const options=opts || {};
+      const result=original.call(this,next,options);
+      resetRecipeView(recipeById(next),{syncUrl:options.silentHistory!==true});
       return result;
     };
+  }
+
+  function restoreRecipeViewFromLocation(){
+    const recipe=recipeForCurrentPath();
+    if(!recipe) return;
+    visibleGroups(recipe,recipeViewFromLocation());
+  }
+
+  function bindRecipeViewHistoryRestore(){
+    if(global.__BASELINE_SKINCARE_RECIPE_VIEW_HISTORY_20261003__) return;
+    global.__BASELINE_SKINCARE_RECIPE_VIEW_HISTORY_20261003__=true;
+    global.addEventListener('popstate',restoreRecipeViewFromLocation);
   }
 
   function startRecipeUx(){
@@ -234,6 +281,8 @@
     wrapShowAllRecipes();
     wrapRecipeOpen();
     openPromotedRecipeForPath();
+    restoreRecipeViewFromLocation();
+    bindRecipeViewHistoryRestore();
   }
 
   startRecipeUx();
