@@ -1,0 +1,87 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+import { GAME_IDS, validateRouteText, remainingAfterHit } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
+import {
+  GAMES,
+  TIER_DEFINITIONS,
+  CHECKOUT_SCENARIOS,
+  RECOVERY_SCENARIOS,
+  DECISION_QUESTION_POOLS
+} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
+import { panelHtml } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js';
+import { boardSvg } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-board.js';
+
+const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js',import.meta.url),'utf8');
+
+test('Darts content authority exposes the canonical ten games and three tiers',()=>{
+  assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
+  assert.equal(new Set(GAMES.map(game=>game.id)).size,10);
+  assert.deepEqual(TIER_DEFINITIONS.map(tier=>tier.id),[1,2,3]);
+});
+
+test('every canonical checkout scenario remains a legal double-out route',()=>{
+  for(const scenario of CHECKOUT_SCENARIOS){
+    const result=validateRouteText(scenario.score,scenario.correct,scenario.darts);
+    assert.equal(result.valid,true,scenario.key+' canonical route must remain legal');
+    assert.equal(result.remaining,0);
+    assert.ok(scenario.options.includes(scenario.correct),scenario.key+' correct route must remain selectable');
+  }
+});
+
+test('every route-recovery canonical answer checks out the actual remaining score',()=>{
+  for(const scenario of RECOVERY_SCENARIOS){
+    const remaining=remainingAfterHit(scenario.start,scenario.actual).remaining;
+    const result=validateRouteText(remaining,scenario.correct,scenario.dartsLeft);
+    assert.equal(result.valid,true,scenario.key+' recovery route must remain legal');
+    assert.equal(result.remaining,0);
+    assert.ok(scenario.options.includes(scenario.correct),scenario.key+' recovery answer must remain selectable');
+  }
+});
+
+test('decision-training content keeps valid selectable answers where options are used',()=>{
+  for(const [category,pool] of Object.entries(DECISION_QUESTION_POOLS)){
+    assert.ok(Array.isArray(pool)&&pool.length>0,category+' must have questions');
+    for(const question of pool){
+      if(Array.isArray(question.options)&&typeof question.correct==='string'){
+        assert.ok(question.options.includes(question.correct),question.key+' correct answer must be selectable');
+      }
+    }
+  }
+});
+
+test('Darts UI authority builds selectors for all ten games',()=>{
+  const html=panelHtml({games:GAMES,selectedId:GAME_IDS[0],progressLabel:id=>'Progress '+id});
+  for(const id of GAME_IDS)assert.match(html,new RegExp('data-darts-game="'+id+'"'));
+  assert.match(html,/id="dartsFocusedPanel"/);
+});
+
+test('Darts board authority renders physical number order and interactive targets',()=>{
+  const svg=boardSvg({interactive:true,highlight:'T20'});
+  assert.match(svg,/data-board-target="T20"/);
+  assert.match(svg,/is-highlight/);
+  for(const number of [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5]){
+    assert.match(svg,new RegExp('>'+number+'<\\/text>'));
+  }
+});
+
+test('Darts controller delegates extracted authorities without parallel implementations',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-content\.js'/);
+  assert.match(runtime,/from '\.\/darts-focused-timing\.js'/);
+  assert.match(runtime,/from '\.\/darts-focused-storage\.js'/);
+  assert.match(runtime,/from '\.\/darts-focused-board\.js'/);
+  assert.match(runtime,/from '\.\/darts-focused-ui\.js'/);
+
+  assert.doesNotMatch(runtime,/const CHECKOUT_SCENARIOS|const MENTAL_RESET_QUESTIONS|const GAMES =/);
+  assert.doesNotMatch(runtime,/function boardSvg|function polar|function annularPath/);
+  assert.doesNotMatch(runtime,/function escapeHtml|function feedbackHtml|function choiceButtons|function gameSelectorHtml/);
+  assert.doesNotMatch(runtime,/ui\.gameTimers|ui\.autoTimer|ui\.sessionToken/);
+  assert.doesNotMatch(runtime,/function loadProfile|localStorage\.getItem\(STORAGE_KEY\)/);
+});
+
+test('Darts controller uses arithmetic route validation rather than canonical string equality',()=>{
+  assert.match(runtime,/validateRouteText\(checkoutScore,value,dartsAvailable\)/);
+  assert.match(runtime,/validateRouteText\(state\.scenario\.score,value,state\.scenario\.darts\)/);
+  assert.doesNotMatch(runtime,/correct = value === state\.scenario\.correct/);
+});
