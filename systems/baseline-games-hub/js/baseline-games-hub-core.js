@@ -2692,7 +2692,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     cancelTrackCoinAnimation();
     const cups = trackCoinState.cups;
     const positions = trackCoinCupPositions(cups.length);
-    const order = trackCoinGenerateOrder(cups);
+    const order = Array.isArray(step.order) && step.order.length === cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
+    if(!Array.isArray(step.order) || step.order.length !== cups.length) step.order = order.slice();
     const targetIndex = Object.fromEntries(order.map((id, index) => [id, index]));
     const starts = cups.map(cup => ({ left:cup.left, top:cup.top, tilt:cup.tilt }));
     const targets = cups.map((cup, currentIndex) => {
@@ -2858,6 +2859,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     trackCoinState.phase = 'show';
     trackCoinState.pickLocked = true;
     const positions = trackCoinCupPositions(trackCoinState.cups.length);
+    trackCoinState.cups.sort(function(a, b){
+      return Number(String(a.id).replace(/\D+/g, '')) - Number(String(b.id).replace(/\D+/g, ''));
+    });
     trackCoinState.cups.forEach(function(cup, index){
       cup.left = positions[index];
       cup.top = trackCoinState.baseTop;
