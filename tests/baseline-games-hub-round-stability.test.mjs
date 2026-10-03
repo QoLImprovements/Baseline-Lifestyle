@@ -1,0 +1,58 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+
+const corePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
+const core = fs.readFileSync(corePath, 'utf8');
+
+function functionBody(name, nextName) {
+  const start = core.indexOf('function ' + name + '(');
+  assert.notEqual(start, -1, name + ' must exist');
+  const end = nextName ? core.indexOf('function ' + nextName + '(', start + 1) : core.length;
+  assert.notEqual(end, -1, nextName + ' must exist after ' + name);
+  return core.slice(start, end);
+}
+
+test('Pairs delayed callbacks are bound to the board that created them', () => {
+  const start = functionBody('startPairsBoard', 'pairsMismatchDelay');
+  const mismatch = functionBody('handlePairsMismatch', 'handlePairsCardFlip');
+  const hint = functionBody('usePairsHint', 'spendPairsSkill');
+
+  assert.match(core, /let pairsRoundToken = 0;/);
+  assert.match(start, /const roundToken = \+\+pairsRoundToken;/);
+  assert.match(start, /roundToken:roundToken/);
+  assert.match(mismatch, /const roundToken = pairsBoardState && pairsBoardState\.roundToken;/);
+  assert.match(mismatch, /pairsBoardState\.roundToken !== roundToken/);
+  assert.match(hint, /const roundToken = pairsBoardState\.roundToken;/);
+  assert.match(hint, /pairsBoardState\.roundToken !== roundToken/);
+});
+
+test('Track the Coin animation and shuffle callbacks cannot cross round boundaries', () => {
+  const start = functionBody('startTrackCoinRound', 'runTrackCoinShuffle');
+  const run = functionBody('runTrackCoinShuffle', 'grantTrackCoinRewards');
+  const motion = functionBody('applyTrackCoinMotionStep', 'startTrackCoinRound');
+
+  assert.match(core, /let trackCoinRoundToken = 0;/);
+  assert.match(start, /const roundToken = \+\+trackCoinRoundToken;/);
+  assert.match(start, /trackCoinState\.roundToken = roundToken;/);
+  assert.match(start, /trackCoinState\.roundToken !== roundToken/);
+  assert.match(run, /trackCoinState\.roundToken !== roundToken/);
+  assert.match(run, /applyTrackCoinMotionStep\(step,[\s\S]*roundToken\);/);
+  assert.match(motion, /trackCoinState\.roundToken !== roundToken/);
+  assert.match(motion, /trackCoinState\.phase !== 'hide'/);
+});
+
+test('Rule Shift preserves the remaining answer window while the document is hidden', () => {
+  const remaining = functionBody('ruleShiftRemainingMs', 'pauseRuleShiftTimer');
+  const pause = functionBody('pauseRuleShiftTimer', 'resumeRuleShiftTimer');
+  const resume = functionBody('resumeRuleShiftTimer', 'syncRuleShiftVisibility');
+  const visibility = functionBody('syncRuleShiftVisibility', 'ruleShiftTimerText');
+
+  assert.match(remaining, /pausedRemainingMs/);
+  assert.match(pause, /ruleShiftState\.pausedRemainingMs = ruleShiftRemainingMs\(\)/);
+  assert.match(pause, /clearRuleShiftTimer\(\)/);
+  assert.match(resume, /ruleShiftState\.deadlineAt = Date\.now\(\) \+ remaining/);
+  assert.match(resume, /startRuleShiftTimer\(\)/);
+  assert.match(visibility, /document\.visibilityState === 'hidden'/);
+  assert.match(core, /document\.addEventListener\('visibilitychange', syncRuleShiftVisibility\)/);
+});
