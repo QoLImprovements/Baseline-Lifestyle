@@ -60,6 +60,22 @@ export function oppositeSegment(segment) {
   return index < 0 ? null : DARTBOARD_ORDER[(index + 10) % DARTBOARD_ORDER.length];
 }
 
+export function parseRouteText(value) {
+  if (Array.isArray(value)) return value.map(normaliseTargetCode).filter(Boolean);
+  return String(value ?? '')
+    .split(/\s*(?:→|->|>|,|\/|then)\s*/i)
+    .map(normaliseTargetCode)
+    .filter(Boolean);
+}
+
+export function validateRouteText(startScore, routeText, darts = 3) {
+  const route = parseRouteText(routeText);
+  const maxDarts = clamp(Math.trunc(darts),1,3);
+  if (!route.length) return { valid:false, remaining:Math.trunc(Number(startScore)), reason:'The route contains no recognised targets.', route:[] };
+  if (route.length > maxDarts) return { valid:false, remaining:Math.trunc(Number(startScore)), reason:`Only ${maxDarts} dart${maxDarts === 1 ? '' : 's'} are available.`, route };
+  return validateRoute(startScore,route);
+}
+
 export function validateRoute(startScore, route) {
   const score = Math.trunc(Number(startScore));
   const codes = Array.isArray(route) ? route.map(normaliseTargetCode) : [];
