@@ -41,10 +41,18 @@ import {
 import { createDartsTimerManager } from './darts-focused-timing.js';
 import { loadDartsProfile, persistDartsProfile } from './darts-focused-storage.js';
 import { boardSvg, scenarioHeader, routeRecoveryHeader } from './darts-focused-board.js';
+import {
+  DARTS_ART_URL as ART_URL,
+  escapeHtml,
+  feedbackHtml,
+  choiceButtons,
+  nextButton as buildNextButton,
+  overviewEntryHtml,
+  panelHtml as buildPanelHtml
+} from './darts-focused-ui.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
 const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=${BUILD}`;
-const ART_URL = '/systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg';
 
 const ui = {
   selected:'checkout-pressure',
@@ -58,9 +66,6 @@ const ui = {
 let profile = loadDartsProfile();
 ui.selected = GAME_IDS.includes(profile.selectedGame) ? profile.selectedGame : GAME_IDS[0];
 
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[character]));
-}
 function byId(id) { return document.getElementById(id); }
 function selectedMeta() { return GAMES.find((game) => game.id === ui.selected) || GAMES[0]; }
 function nowMs() { return typeof performance !== 'undefined' ? performance.now() : Date.now(); }
@@ -173,14 +178,7 @@ function progressLabel(id) {
   return `Level ${stats.level} · ${tier} · ${accuracyFor(stats)}% · ${stats.attempts} rounds`;
 }
 function formatTime(ms) { return ms ? `${(ms / 1000).toFixed(1)}s` : '—'; }
-function feedbackHtml(state) {
-  if (!state.feedback) return '';
-  return `<div class="darts-feedback ${state.feedback.correct ? 'is-correct' : 'is-wrong'}" role="status"><strong>${escapeHtml(state.feedback.title)}</strong><p>${escapeHtml(state.feedback.text)}</p></div>`;
-}
-function choiceButtons(options, gameId, disabled = false, extra = '') {
-  return `<div class="darts-choice-grid">${options.map((option) => `<button class="darts-choice" data-darts-answer="${escapeHtml(gameId)}" data-value="${escapeHtml(option)}" type="button"${disabled ? ' disabled' : ''}${extra}>${escapeHtml(option)}</button>`).join('')}</div>`;
-}
-function nextButton(label = 'Next round') { return `<button class="action primary" data-darts-new-round="${escapeHtml(ui.selected)}" type="button">${escapeHtml(label)}</button>`; }
+function nextButton(label = 'Next round') { return buildNextButton(ui.selected,label); }
 function autoAdvance(callback, delay = 1900) {
   return timing.scheduleAuto(callback,delay);
 }
@@ -218,13 +216,6 @@ function closeInfo() {
   document.body.classList.remove('games-modal-open');
 }
 
-function overviewEntryHtml() {
-  return '<div class="games-list-group darts-task-group" data-darts-entry><span>Darts Focused Games</span></div>' +
-    '<div class="game-row-wrap darts-focused-overview-row" data-darts-entry>' +
-      `<button class="game-row darts-overview-row" data-open-darts-focused type="button"><img class="darts-overview-art" src="${ART_URL}" alt="Realistic dartboard"><div><h3>Darts Focused</h3><p>10 distinct website games with tiers for calculation, attention, board knowledge, memory and decision control.</p></div><div class="game-row-meta"><strong>10 games</strong><span class="inline-note">Open games</span></div></button>` +
-      '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Darts calculation, selective attention, visual memory, pressure control, board geography, routine stability and recovery after mistakes." type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-    '</div>';
-}
 function ensureOverviewEntry() {
   const list = byId('gamesList');
   if (!list || list.querySelector('[data-open-darts-focused]')) return;
@@ -237,29 +228,7 @@ function queueOverviewSync() {
   ui.overviewSyncQueued = true;
   requestAnimationFrame(() => { ui.overviewSyncQueued = false; ensureOverviewEntry(); });
 }
-function gameSelectorHtml(game) {
-  const selected = game.id === ui.selected;
-  return '<div class="darts-selector-wrap">' +
-    `<button class="darts-game-selector${selected ? ' is-selected' : ''}" data-darts-game="${game.id}" type="button" aria-selected="${selected}" role="tab"><span>${escapeHtml(game.name)}</span><small>${escapeHtml(progressLabel(game.id))}</small></button>` +
-    `<button class="darts-selector-info bl-info-button" data-bl-info-button data-bl-info-title="${escapeHtml(game.name)}" data-bl-info-text="${escapeHtml(game.intention)}" type="button" aria-label="What ${escapeHtml(game.name)} develops" aria-expanded="false"><span aria-hidden="true">i</span></button>` +
-  '</div>';
-}
-function panelHtml() {
-  return '<section class="card game-panel darts-focused-panel" id="dartsFocusedPanel" aria-labelledby="dartsFocusedTitle">' +
-    '<div class="game-shell">' +
-      '<div class="game-header darts-focused-header"><div class="darts-heading-lockup">' +
-        `<img src="${ART_URL}" class="darts-header-art" alt="Realistic dartboard"><div><h2 id="dartsFocusedTitle" tabindex="-1">Darts Focused</h2><p>Distinct website games with selectable tiers and shared progression into Baseline Realm.</p></div></div>` +
-        '<div class="link-actions"><button class="action secondary bl-info-button" data-bl-info-button data-bl-info-title="Darts Focused" data-bl-info-text="Website-based darts training for calculation, attention, memory, board knowledge, routines and pressure decisions." type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button><button class="action secondary game-howto-toggle" data-darts-how="darts-focused" type="button">How To Play</button><button class="action secondary" data-close-darts-focused type="button">Back To Games Overview</button></div>' +
-      '</div>' +
-      '<details class="game-info-details"><summary><span>Progression Record</span><span class="inline-note">Experience, levels and Realm links</span></summary><div class="progress-shell progress-shell--trackcoin" id="dartsProgressSummary"></div></details>' +
-      '<div class="darts-focused-layout"><nav class="darts-game-selectors" role="tablist" aria-label="Darts Focused games">' + GAMES.map(gameSelectorHtml).join('') + '</nav>' +
-        '<section class="card game-card game-play-root darts-game-card" id="dartsGameCard" data-game-play-root="darts-focused">' +
-          '<div class="darts-active-header"><div><h3 id="dartsActiveTitle"></h3><p class="inline-note" id="dartsActiveStatus"></p></div><div class="link-actions darts-active-actions"><button class="action secondary bl-info-button" id="dartsActiveInfoBtn" data-bl-info-button type="button" aria-expanded="false"><span aria-hidden="true">i</span></button><button class="action secondary game-howto-toggle" id="dartsActiveHowBtn" type="button">How To Play</button><button class="action secondary darts-auto-next-toggle" id="dartsAutoNextBtn" type="button" aria-pressed="false">Auto-Next: Off</button><button class="action secondary" id="dartsFullscreenBtn" type="button" aria-pressed="false">Full Screen</button></div></div>' +
-          '<section class="darts-tier-panel" aria-label="Difficulty tiers"><div><strong>Difficulty Tiers</strong><span id="dartsTierDescription"></span></div><div class="darts-tier-list" id="dartsTierList"></div></section>' +
-          '<div class="darts-game-surface game-play-surface" id="dartsGameSurface" data-game-play-surface="darts-focused" tabindex="-1"></div>' +
-        '</section></div>' +
-    '</div></section>';
-}
+function panelHtml() { return buildPanelHtml({games:GAMES,selectedId:ui.selected,progressLabel}); }
 function ensurePanel() {
   let panel = byId('dartsFocusedPanel');
   if (panel) return panel;
