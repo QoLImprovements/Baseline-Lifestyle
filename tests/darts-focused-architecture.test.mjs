@@ -161,3 +161,10 @@ test('Darts controller delegates DOM event routing to event authority',()=>{
   assert.match(runtime,/createDartsEventHandlers\(/);
   assert.doesNotMatch(runtime,/function handleClick|function handleChange|function handleKeydown/);
 });
+
+
+test('Darts public API retains Realm contribution access after modularisation',()=>{
+  assert.match(runtime,/realmContributionForDarts/);
+  assert.match(runtime,/getRealmContribution:\(\) => realmContributionForDarts\(profile\)/);
+  assert.match(runtime,/globalThis\.DartsFocusedGames = Object\.freeze/);
+});
