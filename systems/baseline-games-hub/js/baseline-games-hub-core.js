@@ -247,6 +247,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
           hadFailure:!!word.hadFailure
         };
       }else{
+        wordState = null;
         clearCoreActiveRound('detectword');
       }
     }
@@ -276,6 +277,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
           completed:false
         };
       }else{
+        make24State = null;
         clearCoreActiveRound('make24');
       }
     }
@@ -1550,6 +1552,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   async function loadAllProfiles(){
     authState = getAuth();
     await Promise.allSettled(GAME_APPS.map(loadProfile));
+    restoreCoreActiveRounds();
     resolveNinjaBonuses();
     renderAuthState();
     applyOfflineNinjaProgress();
@@ -2330,6 +2333,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
     if(!/^[\d\s()+\-*/]+$/.test(raw)){
       make24State.lastMessage = 'Only whole shown numbers, brackets, and + - × ÷ are allowed.';
+      persistMake24Round();
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
@@ -2337,6 +2341,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const usedNumbers = (raw.match(/\d+/g) || []).map(Number);
     if(usedNumbers.length !== 4 || !sameNumberMultiset(usedNumbers, make24State.numbers)){
       make24State.lastMessage = 'Use each shown number exactly once. Concatenation is not allowed.';
+      persistMake24Round();
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
@@ -2565,9 +2570,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const guess = String(input.value || '').trim().toLowerCase();
     wordState.draftGuess = String(input.value || '');
     persistWordRound();
-    if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
-    if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
-    if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     const evaluation = evaluateWordGuess(guess, wordState.secret);
     wordState.guesses.push({ word:guess, evaluation });
     wordState.draftGuess = '';
