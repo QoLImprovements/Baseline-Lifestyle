@@ -98,7 +98,7 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
   assert.match(shared,/\['details', 'Details'\]/);
   assert.match(shared,/\['guidance', 'Guidance'\]/);
   assert.match(shared,/\['show-all', 'Show All'\]/);
-  assert.match(shared,/setView\('standard'\)/);
+  assert.match(shared,/setView\('standard', \{ syncRoute:false \}\)/);
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
