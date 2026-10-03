@@ -8,7 +8,8 @@ import {
   normaliseBadmintonProfile,
   loadBadmintonProfile,
   persistBadmintonProfile,
-  recordBadmintonResult
+  recordBadmintonResult,
+  buildBadmintonRealmContribution
 } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-profile.js';
 
 function memoryStorage(initial={}){
@@ -85,4 +86,24 @@ test('Badminton scoring authority distinguishes ordinary, premature and late fai
   assert.equal(profile.xp,8);
   assert.equal(profile.bank,0);
   assert.equal(profile.rounds,2);
+});
+
+
+test('Badminton Realm contribution remains derived from Badminton progression only',()=>{
+  const profile=defaultBadmintonProfile(GAMES);
+  profile.level=5;
+  profile.games['shot-choice'].level=3;
+  profile.games['attack-purpose'].level=2;
+  profile.games['read-racket'].level=2;
+  profile.games['deception-filter'].level=3;
+  profile.games['pressure-ladder'].level=4;
+
+  const contribution=buildBadmintonRealmContribution(profile,GAMES);
+
+  assert.equal(contribution.level,5);
+  assert.equal(contribution.linkedLevels,5+(2+1+1+2+3));
+  assert.equal(contribution.attackMult,1.009);
+  assert.equal(contribution.critChance,0.0105);
+  assert.equal(contribution.bossDamageMult,1.018);
+  assert.deepEqual(contribution.unlockedTraits,['Badminton Focused: Visual Discipline']);
 });
