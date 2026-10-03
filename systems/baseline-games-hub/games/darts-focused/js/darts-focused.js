@@ -9,11 +9,7 @@ import {
 import {
   GAMES,
   TIER_DEFINITIONS,
-  CHECKOUT_SCENARIOS,
-  RECOVERY_SCENARIOS,
-  TARGETS_BY_TIER,
-  DISTRACTION_MISSIONS,
-  ROUTINE_SCENARIOS
+  TARGETS_BY_TIER
 } from './darts-focused-content.js';
 import { createDartsTimerManager } from './darts-focused-timing.js';
 import { loadDartsProfile, persistDartsProfile } from './darts-focused-storage.js';
@@ -51,6 +47,7 @@ import {
 } from './darts-focused-progress.js';
 import { createDartsDrillActions } from './darts-focused-actions.js';
 import { createDartsDecisionActions } from './darts-focused-decision-actions.js';
+import { createDartsStateFactory } from './darts-focused-state.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
 const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=${BUILD}`;
@@ -103,11 +100,19 @@ function clearAutoTimer() { timing.clearAuto(); }
 function scheduleGame(callback, delay) { return timing.scheduleGame(callback,delay); }
 function managedTimerRemaining(timer) { return timing.remaining(timer); }
 function syncDartsVisibility() { timing.handleVisibilityChange(); }
+const stateFactory=createDartsStateFactory({
+  getTier:(id)=>tierId(id),
+  shuffledScenario,
+  pickScenario,
+  shuffle,
+  randomItem,
+  nowMs
+});
 function stateFor(id = ui.selected) {
-  if (!ui.states[id]) ui.states[id] = createState(id);
+  if (!ui.states[id]) ui.states[id] = stateFactory.createState(id);
   return ui.states[id];
 }
-function resetState(id = ui.selected) { ui.states[id] = createState(id); return ui.states[id]; }
+function resetState(id = ui.selected) { ui.states[id] = stateFactory.createState(id); return ui.states[id]; }
 function tierId(id = ui.selected) { return Math.max(1,Math.min(3,Number(profile.custom.selectedTiers?.[id] || 1))); }
 function tierMeta(id = ui.selected) { return TIER_DEFINITIONS[tierId(id) - 1]; }
 function gameLevel(id = ui.selected) { return profile.stats[id]?.level || 1; }
@@ -128,25 +133,7 @@ function targetsForCurrentTier() { return targetsForTier(tierId()); }
 function sequenceLengthForTier() { return roundSequenceLength(tierId('sequence-recall')); }
 function sequenceDelayForTier() { return roundSequenceDelay(tierId('sequence-recall')); }
 function buildSequence() { return buildTargetSequence(tierId('sequence-recall')); }
-function createState(id) {
-  if (id === 'checkout-pressure') return { scenario:shuffledScenario(CHECKOUT_SCENARIOS,'checkout'), startedAt:nowMs(), feedback:'' };
-  if (id === 'route-recovery') return { scenario:shuffledScenario(RECOVERY_SCENARIOS,'recovery'), startedAt:nowMs(), feedback:'' };
-  if (id === 'target-lock') return { phase:'ready', target:randomItem(TARGETS_BY_TIER[tierId(id)]), feedback:'' };
-  if (id === 'hold-picture') return { phase:'ready', target:randomItem(TARGETS_BY_TIER[tierId(id)]), options:[], feedback:'' };
-  if (id === 'distraction-resistance') return { phase:'ready', mission:shuffledScenario(DISTRACTION_MISSIONS,'distraction'), feedback:'' };
-  if (id === 'pressure-ladder') return { phase:'ready', scenario:null, feedback:'' };
-  if (id === 'board-geography') return newGeographyState();
-  if (id === 'routine-builder') {
-    const scenario = pickScenario(ROUTINE_SCENARIOS,'routine',id);
-    return { scenario, order:shuffle(scenario.correct), startedAt:nowMs(), feedback:'' };
-  }
-  if (id === 'sequence-recall') return { phase:'ready', sequence:[], showIndex:0, input:[], feedback:'' };
-  if (id === 'decision-training') return { phase:'categories', category:'', queue:[], index:0, score:0, question:null, options:[], selected:[], confidence:50, paceStage:'', paceResults:{}, feedback:'' };
-  return {};
-}
-function newGeographyState() {
-  return { ...createGeographyPrompt(tierId('board-geography')), startedAt:nowMs(), feedback:'' };
-}
+
 function record(gameId, correct, responseMs = 0, confidence = null, category = '') {
   profile = recordResult(profile, gameId, { correct, responseMs, confidence, tier:tierId(gameId), category });
   saveProfile();
