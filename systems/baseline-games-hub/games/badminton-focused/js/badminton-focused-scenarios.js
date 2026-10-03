@@ -109,3 +109,13 @@ export const purposes=[
  {prompt:'You receive an early high shuttle while the opponent is balanced but slightly deep. What is the tactical purpose?',correctPurpose:'Build',purposeOptions:['Attack','Build','Neutralise','Defend','Reset the rally'],shots:{Build:{correct:'Fast drop to move them forward',options:['Fast drop to move them forward','Emergency lift','Passive block','Maximum-power smash at the body']}},explanation:'The position is favourable for creating imbalance without forcing a low-percentage winner.'}
 
 ];
+
+
+export function pickBadmintonScenario(profile,id,pool,random=Math.random){
+  const recent=profile.recent[id]||[];
+  let choices=pool.map((item,index)=>({item,index})).filter(choice=>!recent.includes(choice.index));
+  if(!choices.length)choices=pool.map((item,index)=>({item,index}));
+  const picked=choices[Math.floor(random()*choices.length)];
+  profile.recent[id]=[picked.index,...recent.filter(index=>index!==picked.index)].slice(0,Math.min(8,pool.length-1));
+  return JSON.parse(JSON.stringify(picked.item));
+}

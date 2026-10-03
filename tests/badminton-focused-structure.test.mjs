@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { GAMES, TIERS, ZONES, ZONE_COORDS } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-config.js';
-import { choicePools, purposes } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-scenarios.js';
+import { choicePools, purposes, pickBadmintonScenario } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-scenarios.js';
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
 
@@ -60,4 +60,42 @@ test('Badminton runtime consumes extracted scenario banks',()=>{
   assert.match(runtime,/import \{ choicePools, purposes \} from '\.\/badminton-focused-scenarios\.js'/);
   assert.doesNotMatch(runtime,/const choicePools=/);
   assert.doesNotMatch(runtime,/const purposes=/);
+});
+
+
+test('Badminton runtime delegates distinct responsibilities to owned modules',()=>{
+  assert.match(runtime,/from '\.\/badminton-focused-timing\.js'/);
+  assert.match(runtime,/from '\.\/badminton-focused-profile\.js'/);
+  assert.match(runtime,/from '\.\/badminton-focused-scenes\.js'/);
+  assert.doesNotMatch(runtime,/function normaliseBadmintonProfile|function loadBadmintonProfile|function persistBadmintonProfile/);
+  assert.doesNotMatch(runtime,/function courtSvg|function tacticalScene|function racketScene|function contactCueScene/);
+});
+
+test('Badminton runtime keeps scoring mutations out of the UI controller',()=>{
+  assert.match(runtime,/recordBadmintonResult\(profile,ui\.selected,correct,extra\)/);
+  assert.doesNotMatch(runtime,/s\.xp\+=correct\?14:5/);
+  assert.doesNotMatch(runtime,/profile\.bank\+=correct\?2:0/);
+});
+
+
+test('Badminton scenario rotation avoids recently used scenarios when alternatives exist',()=>{
+  const profile={recent:{'read-racket':[0]}};
+  const pool=choicePools['read-racket'].slice(0,3);
+  const picked=pickBadmintonScenario(profile,'read-racket',pool,()=>0);
+
+  assert.notDeepEqual(picked,pool[0]);
+  assert.equal(profile.recent['read-racket'][0],1);
+});
+
+test('Badminton runtime delegates scenario history and Realm-link rules',()=>{
+  assert.match(runtime,/pickBadmintonScenario\(profile,id,pool\)/);
+  assert.match(runtime,/buildBadmintonRealmContribution\(profile,GAMES\)/);
+});
+
+
+test('Badminton controller delegates generic markup to the UI authority',()=>{
+  assert.match(runtime,/from '\.\/badminton-focused-ui\.js'/);
+  assert.doesNotMatch(runtime,/function iconSvg|function selectorHtml/);
+  assert.doesNotMatch(runtime,/function choiceButtons|function feedbackHtml|function nextButton/);
+  assert.doesNotMatch(runtime,/const ART_URL=/);
 });
