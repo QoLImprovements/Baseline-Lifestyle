@@ -36,8 +36,8 @@ test('Badminton hidden time is excluded from contact-response timing',()=>{
 
   const wait=runtimeSection('answerWait','tempoContact');
   const tempo=runtimeSection('tempoContact','newRound');
-  assert.match(wait,/performance\.now\(\)-s\.contactAt/);
-  assert.match(tempo,/performance\.now\(\)-s\.contactAt/);
+  assert.match(wait,/performance\.now\(\)\s*-\s*s\.contactAt/);
+  assert.match(tempo,/performance\.now\(\)\s*-\s*s\.contactAt/);
 });
 
 test('Badminton installs one document visibility listener for timer coordination',()=>{
