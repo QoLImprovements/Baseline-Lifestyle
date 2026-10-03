@@ -133,3 +133,10 @@ test('Darts controller delegates non-Decision drill mutations to action authorit
   assert.match(runtime,/createDartsDrillActions\(/);
   assert.doesNotMatch(runtime,/function answerStandard|function startTargetLock|function startPressure|function sequenceClick/);
 });
+
+
+test('Darts controller delegates Decision Training mutations to action authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-decision-actions\.js'/);
+  assert.match(runtime,/createDartsDecisionActions\(/);
+  assert.doesNotMatch(runtime,/function startDecisionCategory|function answerDecisionChoice|function finishPaceAnswer/);
+});
