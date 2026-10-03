@@ -100,3 +100,26 @@ export function recordBadmintonResult(profile,gameId,correct,extra={}){
 
   return {profile,stat};
 }
+
+
+export function buildBadmintonRealmContribution(profile,games){
+  const stat=id=>profile.games[id]||defaultGameStat();
+  const above=id=>Math.max(0,stat(id).level-1);
+  const level=profile.level;
+  return {
+    level,
+    linkedLevels:level+games.reduce((total,game)=>total+above(game.id),0),
+    attackMult:1+Math.min(.06,(above('shot-choice')+above('attack-purpose'))*.003),
+    critChance:Math.min(.07,(above('read-racket')+above('deception-filter'))*.0035),
+    offlineGainMult:1+Math.min(.05,(above('badminton-reset')+above('landing-picture'))*.0025),
+    upgradeCostMult:1-Math.min(.04,above('decision-recovery')*.004),
+    bossDamageMult:1+Math.min(.06,above('pressure-ladder')*.006),
+    passiveEfficiencyMult:1+Math.min(.06,(above('shuttle-first')+above('four-corner'))*.003),
+    enemyRevealChance:Math.min(.08,(above('rally-pattern')+above('opponent-balance'))*.004),
+    clueDropChance:Math.min(.05,above('court-recovery')*.005),
+    coinGainMult:1+Math.min(.05,above('opponent-balance')*.005),
+    manualDamageMult:1+Math.min(.06,(above('wait-contact')+above('tempo-break'))*.003),
+    shurikenDamageMult:1+Math.min(.05,above('decision-recovery')*.005),
+    unlockedTraits:level>=5?['Badminton Focused: Visual Discipline']:[]
+  };
+}
