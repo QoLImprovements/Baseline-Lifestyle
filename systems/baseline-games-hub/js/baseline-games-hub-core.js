@@ -8,7 +8,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }catch(_buildMarkerError){}
 
   const API_PATH = '/systems/baseline-games-hub/api/games_profile.php';
-  const GAME_APPS = ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
+  const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
+  const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
+  const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const TRACKCOIN_STORAGE_KEY = '__bl_trackcoin_v1__';
   const GUEST_PROFILES_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
   const AUTO_NEXT_STORAGE_KEY = '__bl_games_auto_next_v1__';
@@ -191,25 +193,27 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
   let desktopKeypadOpenGame = '';
-  const GAME_IDS = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
+  const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
-  const GAME_ID_TO_ROUTE_SLUG = Object.freeze({
-    pairs:'pairs',
-    detectword:'detect-the-word',
-    make24:'make-the-number',
-    trackcoin:'track-the-coin',
-    ruleshift:'rule-shift',
-    ninja:'baseline-realm'
-  });
-  const GAME_ROUTE_SLUG_TO_ID = Object.freeze({
-    pairs:'pairs',
-    'detect-the-word':'detectword',
-    make24:'make24',
-    'make-the-number':'make24',
-    'track-the-coin':'trackcoin',
-    'rule-shift':'ruleshift',
-    'baseline-realm':'ninja'
-  });
+  const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
+    if(!REGISTERED_CORE_GAMES.length) return {
+      pairs:'pairs', detectword:'detect-the-word', make24:'make-the-number',
+      trackcoin:'track-the-coin', ruleshift:'rule-shift', ninja:'baseline-realm'
+    };
+    return REGISTERED_CORE_GAMES.reduce(function(map, game){ map[game.runtimeId] = game.route; return map; }, {});
+  })());
+  const GAME_ROUTE_SLUG_TO_ID = Object.freeze((function(){
+    if(!REGISTERED_CORE_GAMES.length) return {
+      pairs:'pairs', 'detect-the-word':'detectword', make24:'make24', 'make-the-number':'make24',
+      'track-the-coin':'trackcoin', 'rule-shift':'ruleshift', 'baseline-realm':'ninja'
+    };
+    return REGISTERED_CORE_GAMES.reduce(function(map, game){
+      map[game.route] = game.runtimeId;
+      map[game.runtimeId] = game.runtimeId;
+      (game.legacyIds || []).forEach(function(alias){ map[alias] = game.runtimeId; });
+      return map;
+    }, {});
+  })());
 
   const GAME_PANEL_MAP = Object.freeze({
     pairs:{ panels:['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
@@ -3853,6 +3857,9 @@ function toggleGameFullscreen(gameId){
     loadAllProfiles().then(function(){ startNinjaLoop(); }).catch(function(){ safeRenderAll(); });
     window.BASELINE_GAMES_HUB_CORE_READY = true;
     document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
+    try{
+      window.dispatchEvent(new CustomEvent('baseline:games-hub:core-ready', { detail:{ dependencies:coreDependencies } }));
+    }catch(_coreReadyEventError){}
   }
   init();
 })();
