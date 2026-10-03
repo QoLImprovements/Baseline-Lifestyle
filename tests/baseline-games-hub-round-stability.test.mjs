@@ -108,3 +108,15 @@ test('Detect The Word and Make The Number preserve unfinished input across reren
   assert.match(core, /target\.id === 'make24ExpressionInput' && make24State/);
   assert.match(core, /target\.id === 'wordGuessInput' && wordState/);
 });
+
+
+test('Rule Shift failure feedback identifies which rule dimensions matched', () => {
+  const feedback = functionBody('ruleShiftMismatchFeedback', 'ruleShiftTimeLimitMs');
+  const choose = functionBody('chooseRuleShiftOption', 'spendRuleShiftSkill');
+
+  assert.match(feedback,/Colour ' \+ \(colourMatch \? 'matched' : 'did not match'\)/);
+  assert.match(feedback,/shape ' \+ \(shapeMatch \? 'matched' : 'did not match'\)/);
+  assert.match(feedback,/size ' \+ \(sizeMatch \? 'matched' : 'did not match'\)/);
+  assert.match(choose,/const mismatchFeedback = ruleShiftMismatchFeedback/);
+  assert.match(choose,/Incorrect choice\. ' \+ mismatchFeedback/);
+});
