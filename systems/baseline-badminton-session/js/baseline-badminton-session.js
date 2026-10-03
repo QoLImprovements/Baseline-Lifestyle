@@ -2963,14 +2963,14 @@
     let result;
     if(attendingPlayers.length === 2){
       result = { courts: [makeCourt('singles', attendingPlayers.slice(0, 2))], sitOutPlayers: [] };
+    }else if(normalizedFormat === 'singles'){
+      result = buildSinglesDayCourtSet(attendingPlayers, courtLimit);
     }else if(isSpecialFourPlayerLadder(attendingPlayers, normalizedFormat)){
       result = { courts: buildSpecialFourPlayerSequence(attendingPlayers, state.plan.specialFourPlayerIndex || 0).slice(0, courtLimit), sitOutPlayers: [] };
     }else{
       result = generateNovelCourtSet(attendingPlayers, normalizedFormat, usedSet, courtLimit);
       if(!result || !Array.isArray(result.courts) || !result.courts.length){
-        result = normalizedFormat === 'singles'
-          ? buildSinglesDayCourtSet(attendingPlayers, courtLimit)
-          : buildDoublesDayCourtSet(attendingPlayers, courtLimit);
+        result = buildDoublesDayCourtSet(attendingPlayers, courtLimit);
       }
     }
     const courts = (result.courts || []).filter(Boolean).slice(0, courtLimit);
@@ -3789,6 +3789,24 @@
     return '';
   }
 
+  function ensureGeneratedCurrentSet(attendingPlayers, usedSet){
+    const format = state.plan.format || 'doubles';
+    const courtLimit = normaliseCourtLimit(state.plan.courtCount || 4, 1);
+    let courts = buildCurrentCourtSet(attendingPlayers, format, usedSet, courtLimit).slice(0, courtLimit);
+    if(attendingPlayers.length >= 2 && !courts.length){
+      courts = format === 'singles'
+        ? buildSinglesDayCourtSet(attendingPlayers, courtLimit).courts
+        : buildDoublesDayCourtSet(attendingPlayers, courtLimit).courts;
+      courts = (courts || []).filter(Boolean).slice(0, courtLimit).map((court, index) =>
+        attachVariableBasePlayers(resetUnsubmittedCourtScoreDraft(
+          evaluateCourtRestrictions(Object.assign({ courtNumber:index + 1 }, JSON.parse(JSON.stringify(court))))
+        ))
+      );
+      courts = orderCourtsByLadder(courts);
+    }
+    return courts;
+  }
+
   function rollFinishedGamesForward(){
     state.plan.finished = [createFinishedBatchFromCurrent()].concat(state.plan.finished || []).slice(0, 20);
     const attendingPlayers = getAttendingPlayers();
@@ -3817,7 +3835,7 @@
     }else{
       state.plan.twoPlayerFlipIndex = 0;
     }
-    state.plan.current = buildCurrentCourtSet(attendingPlayers, state.plan.format || 'doubles', usedSet, state.plan.courtCount || 4).slice(0, normaliseCourtLimit(state.plan.courtCount, 1));
+    state.plan.current = ensureGeneratedCurrentSet(attendingPlayers, usedSet);
     refreshCurrentCourtRestrictionsFromMemory();
     clearGeneratedCourtDrafts();
     state.plan.generatedAt = state.plan.generatedAt || new Date().toISOString();
@@ -3856,11 +3874,17 @@
     if(!court || !refs.currentGamesGrid) return;
     const score1Input = refs.currentGamesGrid.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-score-side="1"]');
     const score2Input = refs.currentGamesGrid.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-score-side="2"]');
-    if(score1Input){
+    const generationToken = String(state.plan.currentGenerationToken || '');
+    const inputMatchesGeneration = function(input){
+      if(!input) return false;
+      const inputToken = String(input.getAttribute('data-generation-token') || '');
+      return !generationToken || !inputToken || inputToken === generationToken;
+    };
+    if(score1Input && inputMatchesGeneration(score1Input)){
       const raw1 = sanitizeScoreInput(score1Input);
       court.score1 = raw1 === '' ? null : Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(raw1, 0))));
     }
-    if(score2Input){
+    if(score2Input && inputMatchesGeneration(score2Input)){
       const raw2 = sanitizeScoreInput(score2Input);
       court.score2 = raw2 === '' ? null : Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(raw2, 0))));
     }
