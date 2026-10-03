@@ -3082,6 +3082,25 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return false;
   }
 
+  function ruleShiftMismatchFeedback(rule, option){
+    if(!rule || !option) return 'The selected card did not satisfy the active rule.';
+    const colourMatch = option.colour === rule.colour;
+    const shapeMatch = option.shape === rule.shape;
+    const sizeMatch = option.size === rule.size;
+    const colourName = ruleShiftName(RULESHIFT_COLOURS, option.colour);
+    const shapeName = ruleShiftName(RULESHIFT_SHAPES, option.shape);
+    const sizeName = ruleShiftName(RULESHIFT_SIZES, option.size);
+    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'Colour did not match: you chose ' + colourName + '.';
+    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'Shape did not match: you chose ' + shapeName + '.';
+    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'Size did not match: you chose ' + sizeName + '.';
+    if(rule.type === 'notColour') return !colourMatch ? 'Colour correctly avoided the excluded colour.' : 'The selected colour was the one the rule excluded.';
+    if(rule.type === 'notShape') return !shapeMatch ? 'Shape correctly avoided the excluded shape.' : 'The selected shape was the one the rule excluded.';
+    if(rule.type === 'colourShape') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; shape ' + (shapeMatch ? 'matched' : 'did not match') + '.';
+    if(rule.type === 'colourSize') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
+    if(rule.type === 'shapeSize') return 'Shape ' + (shapeMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
+    return 'The selected card did not satisfy the active rule.';
+  }
+
   function ruleShiftTimeLimitMs(tier){
     return Math.max(3000, Number(tier && tier.timeLimitMs) || 5000);
   }
@@ -3376,7 +3395,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       return;
     }
     profile.wrongAnswers += 1;
-    failRuleShiftRun('Incorrect choice. Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
+    const mismatchFeedback = ruleShiftMismatchFeedback(ruleShiftState.currentRule, option);
+    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
   }
   function spendRuleShiftSkill(skillId){
     const profile = profiles.ruleshift;
