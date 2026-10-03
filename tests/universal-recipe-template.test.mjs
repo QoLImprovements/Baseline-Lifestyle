@@ -75,7 +75,7 @@ test('recipe subview first-paint guard honours clean-route view state before run
   assert.match(skincareHtml, /data-initial-recipe-view/);
   assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)\.get\('view'\)/);
   assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
-  assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\[hidden\][\s\S]*display:grid!important/);
+  assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\.recipe-view-hidden[\s\S]*display:grid!important/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
 });
 
@@ -112,7 +112,7 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
 
 test('Skincare Details is authored hidden while Food keeps its placeholder behaviour', () => {
   for (const {id,html} of skincareRecipeBlocks()) {
-    assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/,id+' Details starts hidden');
+    assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/,id+' Details starts hidden');
     assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,id+' Details blocks');
     assert.match(html,/class="recipe-comedogenic-rating"[^>]*><strong>Comedogenic Rating —<\/strong> <span class="recipe-comedogenic-rating-value">[^<]+<\/span>/,id+' concise comedogenic rating');
     assert.match(html,/<h4>Limitations &amp; Trade-offs<\/h4>/,id+' limitations heading');
