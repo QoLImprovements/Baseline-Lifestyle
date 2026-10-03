@@ -61,3 +61,18 @@ test('Badminton runtime consumes extracted scenario banks',()=>{
   assert.doesNotMatch(runtime,/const choicePools=/);
   assert.doesNotMatch(runtime,/const purposes=/);
 });
+
+
+test('Badminton runtime delegates distinct responsibilities to owned modules',()=>{
+  assert.match(runtime,/from '\.\/badminton-focused-timing\.js'/);
+  assert.match(runtime,/from '\.\/badminton-focused-profile\.js'/);
+  assert.match(runtime,/from '\.\/badminton-focused-scenes\.js'/);
+  assert.doesNotMatch(runtime,/function normaliseBadmintonProfile|function loadBadmintonProfile|function persistBadmintonProfile/);
+  assert.doesNotMatch(runtime,/function courtSvg|function tacticalScene|function racketScene|function contactCueScene/);
+});
+
+test('Badminton runtime keeps scoring mutations out of the UI controller',()=>{
+  assert.match(runtime,/recordBadmintonResult\(profile,ui\.selected,correct,extra\)/);
+  assert.doesNotMatch(runtime,/s\.xp\+=correct\?14:5/);
+  assert.doesNotMatch(runtime,/profile\.bank\+=correct\?2:0/);
+});
