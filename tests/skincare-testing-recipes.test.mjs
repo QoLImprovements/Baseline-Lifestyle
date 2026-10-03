@@ -54,7 +54,7 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm is embedded in the canonical Skincare shell', () => {
+test('Comfort Barrier Balm is embedded in the canonical Skincare shell', () => {
   assert.match(html, /data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12"/);
   assert.match(html, /<h3>Lip\/ balm<\/h3>/);
   assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
@@ -145,7 +145,7 @@ test('method ingredient amount tags use the visible ingredient state as their so
   assert.match(shared, /function bestExplicitMatch\(entry\)/);
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
-test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
+test('Comfort Barrier Balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
   assert.match(lipBalm, /class="[^"]*glide-controller[^"]*glide-controller--paired[^"]*recipe-slider-template[^"]*"/);
   assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);
   assert.match(lipBalm, /class="glide-control-explainer"/);
@@ -160,7 +160,7 @@ test('Lip/ balm uses the shared slider/explainer structure and explicit first-us
   assert.match(lipBalm, /<li data-method-step="5"[^>]*>[\s\S]*?Vitamin E \(Tocopherol\)<\/a><\/li>/);
 });
 
-test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
+test('Comfort Barrier Balm default formula and slider compensation remain exactly 100 g', () => {
   const expected = [
     ['cocoa', '20'],
     ['mango', '15'],
@@ -180,7 +180,7 @@ test('Lip/ balm default formula and slider compensation remain exactly 100 g', (
   assert.match(recipeUx, /const apricot=28\.5-candelilla/);
 });
 
-test('Lip/ balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
+test('Comfort Barrier Balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
   const ingredients = [
     ['ing-cocoa-butter', 'cocoa-butter'],
     ['ing-mango-butter', 'mango-butter'],
