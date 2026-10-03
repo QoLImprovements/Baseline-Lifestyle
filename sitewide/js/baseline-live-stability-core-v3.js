@@ -28,14 +28,18 @@
     let slug = match[2];
     try{ slug = decodeURIComponent(slug); }catch(_error){}
     let view = 'standard';
+    let variant = '';
     try{
-      const requested = String(new URLSearchParams(location.search || '').get('view') || '').trim().toLowerCase();
+      const params = new URLSearchParams(location.search || '');
+      const requested = String(params.get('view') || '').trim().toLowerCase();
       if(['details','guidance','show-all'].includes(requested)) view = requested;
+      variant = String(params.get('variant') || '').trim();
     }catch(_error){}
     return {
       app:match[1].toLowerCase(),
       slug:String(slug || '').trim().toLowerCase(),
-      view:view
+      view:view,
+      variant:variant
     };
   }
 
@@ -77,17 +81,20 @@
         const requestedView = ['details','guidance','show-all'].includes(String(pending.view || '').toLowerCase())
           ? String(pending.view).toLowerCase()
           : 'standard';
-        if(requestedView !== 'standard'){
-          const applyView = function(){
-            const liveCard = document.getElementById(recipeId);
-            if(liveCard && typeof liveCard.__baselineSetRecipeView === 'function'){
-              liveCard.__baselineSetRecipeView(requestedView, { syncRoute:true });
-              return true;
-            }
-            return false;
-          };
-          if(!applyView()) window.setTimeout(applyView, 0);
-        }
+        const requestedVariant = String(pending.variant || '').trim();
+        const applyRecipeState = function(){
+          const liveCard = document.getElementById(recipeId);
+          if(!liveCard) return false;
+          if(requestedVariant && typeof liveCard.__baselineSetRecipeVariant === 'function'){
+            liveCard.__baselineSetRecipeVariant(requestedVariant, { syncRoute:false });
+          }
+          if(typeof liveCard.__baselineSetRecipeView === 'function'){
+            liveCard.__baselineSetRecipeView(requestedView, { syncRoute:true });
+            return true;
+          }
+          return false;
+        };
+        if(!applyRecipeState()) window.setTimeout(applyRecipeState, 0);
         return;
       }
       if(attempts < 80) window.setTimeout(open, 50);
