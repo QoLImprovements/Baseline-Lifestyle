@@ -148,7 +148,7 @@ test('every authored Skincare recipe has one coherent Batch metadata item before
   for (const {id,html} of skincareRecipeBlocks()) {
     assert.doesNotMatch(html,/recipe-yield-meta-value|>Yield:</,'unexpected Yield metadata in '+id);
     assert.match(html,/recipe-batch-meta-value/,'missing Batch metadata in '+id);
-    assert.equal((html.match(/class="recipe-meta-item"/g) || []).length,1,'extra metadata item in '+id);
+    assert.equal((html.match(/class="recipe-meta-item(?:\s[^"]*)?"/g) || []).length,1,'extra metadata item in '+id);
   }
   assert.doesNotMatch(shared, /yieldValue|recipe-yield-meta-value|addMeta\('Yield'/);
   assert.match(shared, /addMeta\('Batch', '1×'\)/);
