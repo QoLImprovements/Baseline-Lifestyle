@@ -27,3 +27,14 @@ test('Badminton delayed and auto-next callbacks cannot cross selected-game sessi
   assert.match(badminton,/ui\.sessionToken\+=1/);
   assert.match(badminton,/token!==ui\.sessionToken\|\|id!==ui\.selected/);
 });
+
+
+test('Ninja Training invalidates delayed shuriken hits when leaving the training scene', () => {
+  const ninja = fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js', import.meta.url),'utf8');
+  assert.match(ninja,/let ninjaShurikenVolleyToken = 0/);
+  assert.match(ninja,/const volleyToken = \+\+ninjaShurikenVolleyToken/);
+  assert.match(ninja,/volleyToken !== ninjaShurikenVolleyToken \|\| realmView !== 'training'/);
+  assert.match(ninja,/if\(realmView === 'training' && nextView !== 'training'\)/);
+  assert.match(ninja,/ninjaShurikenVolleyToken \+= 1/);
+  assert.match(ninja,/ninjaShurikenVolleyActive = false/);
+});
