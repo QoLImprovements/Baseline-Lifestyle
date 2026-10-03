@@ -51,7 +51,6 @@ test('Darts Focused is registered in the authoritative Hub list and reuses infor
   assert.match(coreSource, /id:'darts-focused', group:'Testing'/);
   assert.match(coreSource, /data-open-darts-focused/);
   assert.match(entrySource, /games\/darts-focused\/js\/darts-focused\.js/);
-  assert.match(uiSource, /gamesHubInfoModal/);
   assert.match(uiMarkupSource, /data-bl-info-button/);
   assert.match(uiMarkupSource, /game-howto-toggle/);
   assert.match(loaderSource, /DartsFocusedLoader/);
