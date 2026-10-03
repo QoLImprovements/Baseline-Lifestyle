@@ -25,6 +25,7 @@ Badminton Focused contains 15 supporting perceptual, attention, timing and tacti
 - `badminton-focused-timing.js` owns delayed-work lifecycle, selected-game session binding, hidden-tab pause/resume and Auto-Next timing.
 - `badminton-focused-profile.js` owns profile normalisation, persistence compatibility, XP/Bank/streak mutations and Baseline Realm contribution formulas.
 - `badminton-focused-scenes.js` owns court, racket, contact and tactical SVG/scene construction.
+- `badminton-focused-ui.js` owns generic Games Hub shell markup, selector/icon templates, feedback/next controls and reusable Badminton UI markup.
 - `badminton-focused.js` remains the controller for mounting the Games Hub UI, routing interaction, coordinating drill state and calling those authorities.
 
 Do not reintroduce parallel implementations of these responsibilities into the controller. Extend the owning module instead.
