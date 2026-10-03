@@ -94,4 +94,55 @@ export function useAreaAbility(state,id,x,y){if(state.phase!=='playing')return f
 export function endTurn(state){if(state.phase!=='playing')return;state.turn++;const living=Math.max(1,state.units.filter((u)=>u.hp>0).length);if(state.turn%living===0){state.round++;state.mission.zones.forEach((z)=>{if(z.turns<99)z.turns--;});state.mission.zones=state.mission.zones.filter((z)=>z.turns>0);}checkVictory(state);checkDefeat(state);if(state.phase!=='playing')return;seedTimeline(state);state.activeUnitId=state.timeline[state.turn%Math.max(1,state.timeline.length)]||state.timeline[0]||null;state.selectedUnitId=state.activeUnitId;if(activeUnit(state)?.faction==='enemy')runEnemyTurn(state);}
 export function runEnemyTurn(state){const e=activeUnit(state);if(!e||e.faction!=='enemy')return;const targets=state.units.filter((u)=>u.faction==='player'&&u.hp>0).sort((a,b)=>manhattan(e,a)-manhattan(e,b)),target=targets[0];if(!target)return checkDefeat(state);if(attackRange(state,e.id).some((p)=>p.x===target.x&&p.y===target.y))basicAttack(state,e.id,target.id);else{const moves=movementRange(state,e.id).sort((a,b)=>manhattan(a,target)-manhattan(b,target));if(moves[0]){e.x=moves[0].x;e.y=moves[0].y;e.facing='SW';state.log.unshift(`${e.name} advanced through the terrain.`);}}checkVictory(state);checkDefeat(state);}
 export function checkVictory(state){if(state.phase!=='playing')return state.phase==='victory';const players=state.units.filter((u)=>u.faction==='player'&&u.hp>0),enemies=state.units.filter((u)=>u.faction==='enemy'),down=enemies.every((u)=>u.hp<=0),captured=players.some((u)=>u.x===state.mission.captureTile.x&&u.y===state.mission.captureTile.y),bossDown=state.mission.bossId?state.units.find((u)=>u.id===state.mission.bossId)?.hp<=0:false;if(state.mission.type==='elimination'&&down)return completeMission(state,'all hostile units eliminated.');if(['capture','escape','rescue'].includes(state.mission.type)&&captured)return completeMission(state,`${state.mission.objectiveLabel.toLowerCase()} secured.`);if(['defence','survival'].includes(state.mission.type)&&state.round>state.mission.targetRounds)return completeMission(state,`the party held through round ${state.mission.targetRounds}.`);if(state.mission.type==='boss'&&bossDown)return completeMission(state,'the Hollow-Crown Warden was defeated.');return false;}
+export function tacticalStateSnapshot(state){
+  return {
+    missionId:state.missionId,
+    phase:state.phase,
+    round:state.round,
+    turn:state.turn,
+    activeUnitId:state.activeUnitId,
+    selectedUnitId:state.selectedUnitId,
+    completedMissions:[...(state.completedMissions||[])],
+    unlockedMissions:[...(state.unlockedMissions||[])],
+    campaignComplete:Boolean(state.campaignComplete),
+    zones:(state.mission?.zones||[]).map((zone)=>({...zone})),
+    units:(state.units||[]).map((unit)=>({
+      id:unit.id,
+      faction:unit.faction,
+      x:unit.x,
+      y:unit.y,
+      facing:unit.facing,
+      hp:unit.hp,
+      maxHp:unit.maxHp,
+      level:unit.level,
+      xp:unit.xp,
+      jobLevel:unit.jobLevel,
+      acted:Boolean(unit.acted)
+    }))
+  };
+}
+
+export function applyTacticalAction(state,action={}){
+  const type=String(action.type||'');
+  if(type==='move')return moveUnit(state,action.unitId,Number(action.x),Number(action.y));
+  if(type==='attack')return basicAttack(state,action.attackerId,action.targetId);
+  if(type==='area-ability')return useAreaAbility(state,action.unitId,Number(action.x),Number(action.y));
+  if(type==='end-turn'){endTurn(state);return true;}
+  if(type==='check-victory')return checkVictory(state);
+  if(type==='check-defeat')return checkDefeat(state);
+  return false;
+}
+
+export function simulateTacticalActions({selectedIds,saved=null,missionId=null,actions=[]}={}){
+  const state=createInitialState({selectedIds,saved,missionId});
+  const trace=[tacticalStateSnapshot(state)];
+  const results=[];
+  for(const action of actions){
+    const applied=applyTacticalAction(state,action);
+    results.push({action:JSON.parse(JSON.stringify(action)),applied:Boolean(applied)});
+    trace.push(tacticalStateSnapshot(state));
+  }
+  return {state,results,trace,snapshot:tacticalStateSnapshot(state)};
+}
+
 export function checkDefeat(state){if(state.phase!=='playing')return state.phase==='defeat';const players=state.units.filter((u)=>u.faction==='player'),noPlayers=players.every((u)=>u.hp<=0),anyDown=players.some((u)=>u.hp<=0),enemyObjective=state.mission.type==='defence'&&state.units.some((u)=>u.faction==='enemy'&&u.hp>0&&u.x===state.mission.captureTile.x&&u.y===state.mission.captureTile.y),timedOut=state.mission.roundLimit>0&&state.round>state.mission.roundLimit;if(noPlayers||state.mission.failOnAnyPlayerDown&&anyDown||enemyObjective||timedOut){state.phase='defeat';state.log.unshift(`Defeat: ${state.mission.defeat}`);}return state.phase==='defeat';}
