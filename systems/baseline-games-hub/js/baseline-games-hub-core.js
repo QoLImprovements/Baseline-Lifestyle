@@ -461,6 +461,29 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       refs.make24Board.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-make24-keypad" data-keypad="make24" aria-label="Number expression keypad">' + keysHtml + keypadButton('make24','backspace','⌫','mobile-game-key--utility') + keypadButton('make24','clear','Clear','mobile-game-key--utility') + keypadButton('make24','submit','Submit','mobile-game-key--submit') + '</div>');
     }
   }
+  function wordLetterKnowledge(){
+    const rank = { absent:1, present:2, correct:3 };
+    const knowledge = Object.create(null);
+    if(!wordState || !Array.isArray(wordState.guesses)) return knowledge;
+    wordState.guesses.forEach(function(guess){
+      (guess.evaluation || []).forEach(function(entry){
+        const letter = String(entry.letter || '').toLowerCase();
+        if(!letter) return;
+        const state = rank[entry.state] ? entry.state : 'absent';
+        if(!knowledge[letter] || rank[state] > rank[knowledge[letter]]) knowledge[letter] = state;
+      });
+    });
+    return knowledge;
+  }
+  function syncWordKeypadKnowledge(){
+    const knowledge = wordLetterKnowledge();
+    qsa('.mobile-word-keypad .mobile-game-key--letter').forEach(function(button){
+      const raw = button.getAttribute('data-mobile-game-key') || '';
+      const letter = raw.split(':')[1] || '';
+      button.classList.remove('is-word-correct','is-word-present','is-word-absent');
+      if(knowledge[letter]) button.classList.add('is-word-' + knowledge[letter]);
+    });
+  }
   function injectAllMobileGameControls(){ injectMobileGameControls('detectword'); injectMobileGameControls('make24'); }
   function isDesktopKeypadGame(gameId){ return gameId === 'detectword' || gameId === 'make24'; }
   function syncDesktopKeypadState(){
@@ -2351,7 +2374,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       maxGuesses: 6 + (profiles.detectword.skills.reserve || 0),
       roundBank:0,
       draftGuess:'',
-      lastMessage:'Round ready. Submit a valid dictionary word.',
+      lastMessage:'Round ready. Submit a ' + tier.letters + '-letter guess.',
       hadFailure:false
     };
     scheduleSave('detectword');
@@ -2518,6 +2541,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       : '<div class="solution-box word-result-box"><strong>Word was ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>';
     refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" value="' + escapeHtml(wordState.draftGuess || '') + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
+    injectMobileGameControls('detectword');
+    syncWordKeypadKnowledge();
     refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(wordState.lastMessage) + '</span>';
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
