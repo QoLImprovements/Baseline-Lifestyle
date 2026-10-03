@@ -1690,8 +1690,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const chosenFaces = shuffle(PAIRS_FACES).slice(0, tier.pairs);
     const deck = [];
     chosenFaces.forEach((face, index) => {
-      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false });
-      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false });
+      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
+      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
     });
     return shuffle(deck);
   }
@@ -1703,7 +1703,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     pairsBoardState = {
       roundToken:roundToken,
       cards: buildPairsDeck(tier), selected: [], matchedPairs:0, moves:0, roundBank:0, flipLock:false,
-      hintsLeft: profiles.pairs.skills.insight || 0, faceSeen:{}, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
+      hintsLeft: profiles.pairs.skills.insight || 0, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
     };
     scheduleSave('pairs');
     applyPairsTempoPreview();
@@ -1747,6 +1747,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function handlePairsMismatch(selectedCards){
     const roundToken = pairsBoardState && pairsBoardState.roundToken;
+    const cleanBreak = selectedCards.some(card => card.wasKnown);
     const penaltyEligible = selectedCards.every(card => card.wasKnown);
     let penalty = 0;
     if(penaltyEligible){
@@ -1754,9 +1755,15 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       profiles.pairs.bank = Math.max(0, profiles.pairs.bank - penalty);
       pairsBoardState.roundBank -= penalty;
     }
-    pairsBoardState.hadFailure = true;
+    if(cleanBreak) pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
-    pairsBoardState.lastMessage = penaltyEligible && penalty > 0 ? ('Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.') : 'Learning miss. Clean bonus lost for this board. Streak reset.';
+    if(penaltyEligible && penalty > 0){
+      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.';
+    }else if(cleanBreak){
+      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean bonus lost. Streak reset.';
+    }else{
+      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
+    }
     scheduleSave('pairs');
     window.setTimeout(function(){
       if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
@@ -1770,8 +1777,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!pairsBoardState || pairsBoardState.flipLock) return;
     const card = pairsBoardState.cards.find(item => item.id === cardId);
     if(!card || card.open || card.matched) return;
-    card.wasKnown = (pairsBoardState.faceSeen[card.face] || 0) >= 1;
-    pairsBoardState.faceSeen[card.face] = (pairsBoardState.faceSeen[card.face] || 0) + 1;
+    card.wasKnown = Number(card.selections || 0) >= 1;
+    card.selections = Number(card.selections || 0) + 1;
     card.open = true;
     pairsBoardState.selected.push(card);
     renderPairsBoard();
