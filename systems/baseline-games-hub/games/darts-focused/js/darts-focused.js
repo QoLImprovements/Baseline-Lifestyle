@@ -39,10 +39,9 @@ import {
   DECISION_QUESTION_POOLS
 } from './darts-focused-content.js';
 import { createDartsTimerManager } from './darts-focused-timing.js';
+import { loadDartsProfile, persistDartsProfile } from './darts-focused-storage.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
-const STORAGE_KEY = '__bl_darts_focused_v1__';
-const LEGACY_STORAGE_KEY = '__bl_darts_focused_v2__';
 const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=${BUILD}`;
 const ART_URL = '/systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg';
 
@@ -55,7 +54,7 @@ const ui = {
   lastDecisionQuestion:{},
   fullscreen:false
 };
-let profile = loadProfile();
+let profile = loadDartsProfile();
 ui.selected = GAME_IDS.includes(profile.selectedGame) ? profile.selectedGame : GAME_IDS[0];
 
 function escapeHtml(value) {
@@ -74,23 +73,10 @@ function shuffle(items) {
   }
   return copy;
 }
-function loadProfile() {
-  try {
-    const primary = localStorage.getItem(STORAGE_KEY);
-    const legacy = localStorage.getItem(LEGACY_STORAGE_KEY);
-    const loaded = normaliseDartsProfile(JSON.parse(primary || legacy || 'null'));
-    if (!primary && legacy) localStorage.setItem(STORAGE_KEY, JSON.stringify(loaded));
-    return loaded;
-  } catch (_) { return createDefaultDartsProfile(); }
-}
 function saveProfile() {
   profile.selectedGame = ui.selected;
   profile.lastPlayedAt = profile.lastPlayedAt || Date.now();
-  const serialised = JSON.stringify(profile);
-  try {
-    localStorage.setItem(STORAGE_KEY, serialised);
-    localStorage.setItem(LEGACY_STORAGE_KEY, serialised);
-  } catch (_) {}
+  const {serialised} = persistDartsProfile(profile);
   try { document.dispatchEvent(new CustomEvent('baseline:darts-progress', { detail:{ profile:JSON.parse(serialised) } })); } catch (_) {}
   renderProgressSummary();
 }
