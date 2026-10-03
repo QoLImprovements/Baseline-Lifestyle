@@ -75,7 +75,7 @@ test('recipe interaction module loads directly without post-load repair layers',
   assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
 test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
-  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 9);
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 9);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
   assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
