@@ -1248,8 +1248,13 @@
       const id = recipeIdForToken(m[1]);
       if(!id) return null;
       let recipeView = 'standard';
-      try{ recipeView = normalizeRecipeSubView(new URLSearchParams(location.search || '').get('view')); }catch(_e){}
-      return { kind:'recipe', recipeId:id, recipeView:recipeView, raw:path };
+      let recipeVariant = '';
+      try{
+        const params = new URLSearchParams(location.search || '');
+        recipeView = normalizeRecipeSubView(params.get('view'));
+        recipeVariant = String(params.get('variant') || '').trim();
+      }catch(_e){}
+      return { kind:'recipe', recipeId:id, recipeView:recipeView, recipeVariant:recipeVariant, raw:path };
     }catch(_e){ return null; }
   }
 
@@ -1415,7 +1420,12 @@
     if(state && state.kind === 'recipe' && state.recipeId){
       const base = recipeUrlForId(state.recipeId);
       const recipeView = normalizeRecipeSubView(state.recipeView || 'standard');
-      return recipeView === 'standard' ? base : (base + '?view=' + encodeURIComponent(recipeView));
+      const recipeVariant = String(state.recipeVariant || '').trim();
+      const params = new URLSearchParams();
+      if(recipeView !== 'standard') params.set('view', recipeView);
+      if(recipeVariant) params.set('variant', recipeVariant);
+      const query = params.toString();
+      return query ? (base + '?' + query) : base;
     }
     if(state && state.kind === 'ingredient' && state.ingredientId){
       const routePageFile = routePageFileFromPath(location.pathname || '');
@@ -4884,7 +4894,7 @@ function buildControls(recipeEl){
         });
       }
 
-      let detailsVariantSelect = null;
+      let detailsVariantSwitcher = null;
       const detailsIntro = q(':scope > .recipe-details-intro', recipeEl);
       if(variantSwitcher && detailsIntro){
         const variantButtons = qsa('.variant-tab', variantSwitcher);
@@ -4892,22 +4902,32 @@ function buildControls(recipeEl){
           const detailsField = document.createElement('div');
           detailsField.className = 'recipe-details-variant-field print-hide';
 
-          const detailsLabel = document.createElement('label');
+          const detailsLabel = document.createElement('div');
           detailsLabel.className = 'recipe-details-variant-label';
           detailsLabel.textContent = 'Variance';
 
-          detailsVariantSelect = document.createElement('select');
-          detailsVariantSelect.className = 'recipe-details-variant-select';
-          detailsVariantSelect.setAttribute('aria-label', 'Select recipe variance');
+          detailsVariantSwitcher = document.createElement('div');
+          detailsVariantSwitcher.className = 'recipe-details-variant-switcher';
+          detailsVariantSwitcher.setAttribute('role', 'tablist');
+          detailsVariantSwitcher.setAttribute('aria-label', 'Select recipe variance');
 
           variantButtons.forEach(btn=>{
-            const opt = document.createElement('option');
-            opt.value = btn.getAttribute('data-variant') || btn.textContent.trim();
-            opt.textContent = btn.textContent.trim();
-            detailsVariantSelect.appendChild(opt);
+            const tag = document.createElement('button');
+            tag.type = 'button';
+            tag.className = 'recipe-variant-tag';
+            tag.setAttribute('role', 'tab');
+            tag.setAttribute('data-variant', btn.getAttribute('data-variant') || btn.textContent.trim());
+            tag.textContent = btn.textContent.trim();
+            tag.addEventListener('click', event=>{
+              try{ if(event) event.stopPropagation(); }catch(_e){}
+              const value = tag.getAttribute('data-variant') || '';
+              const nativeBtn = q('.variant-tab[data-variant="' + CSS.escape(value) + '"]', variantSwitcher);
+              if(nativeBtn) nativeBtn.click();
+            });
+            detailsVariantSwitcher.appendChild(tag);
           });
-          detailsLabel.appendChild(detailsVariantSelect);
-          detailsField.appendChild(detailsLabel);
+
+          detailsField.append(detailsLabel, detailsVariantSwitcher);
           detailsIntro.insertAdjacentElement('afterbegin', detailsField);
 
           const detailSummary = document.createElement('div');
@@ -4918,13 +4938,25 @@ function buildControls(recipeEl){
           detailSummary.append(summaryHeading, summaryText);
           detailsField.insertAdjacentElement('afterend', detailSummary);
 
+          const selectedVariantValue = ()=>{
+            const active = q('.variant-tab[aria-selected="true"]', variantSwitcher) || variantButtons[0];
+            return active ? (active.getAttribute('data-variant') || active.textContent.trim()) : '';
+          };
+
           const syncVariantDetailState = ()=>{
             const active = q('.variant-tab[aria-selected="true"]', variantSwitcher) || variantButtons[0];
             if(!active) return;
             const value = active.getAttribute('data-variant') || active.textContent.trim();
             const label = active.textContent.trim();
-            if(detailsVariantSelect && value) detailsVariantSelect.value = value;
             if(variantSelect && value) variantSelect.value = value;
+
+            if(detailsVariantSwitcher){
+              qsa('.recipe-variant-tag', detailsVariantSwitcher).forEach(tag=>{
+                const selected = tag.getAttribute('data-variant') === value;
+                tag.setAttribute('aria-selected', selected ? 'true' : 'false');
+                tag.tabIndex = selected ? 0 : -1;
+              });
+            }
 
             const activePanel = value
               ? q('.variant-panel[data-variant-panel="' + CSS.escape(value) + '"]', recipeEl)
@@ -4945,16 +4977,54 @@ function buildControls(recipeEl){
             });
           };
 
-          detailsVariantSelect.addEventListener('change', event=>{
-            try{ if(event) event.stopPropagation(); }catch(_e){}
-            const chosen = detailsVariantSelect.value;
-            if(!chosen) return;
+          const syncVariantRoute = ()=>{
+            if(!(recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))) return;
+            try{
+              const value = selectedVariantValue();
+              const nextState = {
+                kind:'recipe',
+                recipeId:recipeEl.id,
+                recipeView:normalizeRecipeSubView(recipeEl.dataset.recipeView || 'standard'),
+                recipeVariant:value,
+                scrollY:getScrollTop()
+              };
+              setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+            }catch(_e){}
+          };
+
+          const setVariant = (value, options={})=>{
+            const chosen = String(value || '').trim();
+            if(!chosen) return false;
             const btn = q('.variant-tab[data-variant="' + CSS.escape(chosen) + '"]', variantSwitcher);
-            if(btn) btn.click();
-            window.setTimeout(syncVariantDetailState, 0);
+            if(!btn) return false;
+            if(btn.getAttribute('aria-selected') !== 'true') btn.click();
+            syncVariantDetailState();
+            if(options.syncRoute) syncVariantRoute();
+            return true;
+          };
+
+          variantButtons.forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+              window.setTimeout(()=>{
+                syncVariantDetailState();
+                syncVariantRoute();
+              }, 0);
+            });
           });
 
-          try{ recipeEl.__baselineSyncVariantDetailState = syncVariantDetailState; }catch(_e){}
+          try{
+            recipeEl.__baselineSyncVariantDetailState = syncVariantDetailState;
+            recipeEl.__baselineSetRecipeVariant = setVariant;
+            recipeEl.__baselineGetRecipeVariant = selectedVariantValue;
+          }catch(_e){}
+
+          let routeVariant = '';
+          try{
+            const routeState = recipePathStateFromLocation();
+            const routeId = routeState && routeState.recipeId ? recipeIdForToken(routeState.recipeId) : '';
+            if(routeState && routeId === recipeEl.id) routeVariant = String(routeState.recipeVariant || '').trim();
+          }catch(_e){}
+          if(routeVariant) setVariant(routeVariant, { syncRoute:false });
           syncVariantDetailState();
         }
       }
@@ -5304,6 +5374,7 @@ function buildControls(recipeEl){
               kind:'recipe',
               recipeId:recipeEl.id,
               recipeView:next,
+              recipeVariant:(typeof recipeEl.__baselineGetRecipeVariant === 'function' ? recipeEl.__baselineGetRecipeVariant() : ''),
               scrollY:getScrollTop()
             };
             setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
@@ -5561,8 +5632,13 @@ function buildControls(recipeEl){
           window.BASELINE_openRecipe(state.recipeId, { silentHistory:true, noScroll:true });
           try{
             const card=document.getElementById(recipeIdForToken(state.recipeId));
-            if(card && typeof card.__baselineSetRecipeView === 'function'){
-              card.__baselineSetRecipeView(normalizeRecipeSubView(state.recipeView || 'standard'), { syncRoute:false });
+            if(card){
+              if(typeof card.__baselineSetRecipeVariant === 'function' && state.recipeVariant){
+                card.__baselineSetRecipeVariant(state.recipeVariant, { syncRoute:false });
+              }
+              if(typeof card.__baselineSetRecipeView === 'function'){
+                card.__baselineSetRecipeView(normalizeRecipeSubView(state.recipeView || 'standard'), { syncRoute:false });
+              }
             }
           }catch(_e){}
         }
@@ -7692,15 +7768,25 @@ function setupRecipeFavourites(){
         window.BASELINE_openRecipe(rid, { silentHistory:true, noScroll: !!recipePathStateFromLocation() });
         try{
           const card=document.getElementById(recipeIdForToken(rid));
-          if(card && typeof card.__baselineSetRecipeView === 'function'){
-            card.__baselineSetRecipeView(normalizeRecipeSubView(initialView.recipeView || 'standard'), { syncRoute:false });
+          if(card){
+            if(typeof card.__baselineSetRecipeVariant === 'function' && initialView.recipeVariant){
+              card.__baselineSetRecipeVariant(initialView.recipeVariant, { syncRoute:false });
+            }
+            if(typeof card.__baselineSetRecipeView === 'function'){
+              card.__baselineSetRecipeView(normalizeRecipeSubView(initialView.recipeView || 'standard'), { syncRoute:false });
+            }
           }
         }catch(_e){}
       }
       // Canonicalise legacy #recipe=rN/#rN links to the named path URL without adding history.
       // Preserve a recipe subview carried by the clean route so refresh can reconstruct it.
       try{
-        const nextState = { kind: 'recipe', recipeId: rid, recipeView: normalizeRecipeSubView(initialView.recipeView || 'standard') };
+        const nextState = {
+          kind:'recipe',
+          recipeId:rid,
+          recipeView:normalizeRecipeSubView(initialView.recipeView || 'standard'),
+          recipeVariant:String(initialView.recipeVariant || '').trim()
+        };
         setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
       }catch(_e){}
     }else if(initialView && initialView.kind === 'tab'){
