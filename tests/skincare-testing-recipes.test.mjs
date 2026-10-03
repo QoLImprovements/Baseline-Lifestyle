@@ -113,7 +113,10 @@ test('Anhydrous Massage Oil Blend is one olive-led recipe with no Avocado varian
   assert.doesNotMatch(massage, /aria-label="Massage oil variants"|class="variant-switcher"/);
   assert.match(massage, /Jojoba remains fixed at 15%|jojoba remains fixed at 15%/i);
   assert.match(massage, /id="r6Glide"/);
-  assert.doesNotMatch(html, /id="ing-fractionated-coconut"[\s\S]*?Relevant recipes:[\s\S]*?Anhydrous Massage Oil Blend/);
+  const fcoStart = html.indexOf('id="ing-fractionated-coconut"');
+  const fcoEnd = html.indexOf('<div class="card" id="ing-watermelon">', fcoStart);
+  const fcoCard = html.slice(fcoStart, fcoEnd);
+  assert.doesNotMatch(fcoCard, /Anhydrous Massage Oil Blend/);
   assert.doesNotMatch(html, /function syncMassageAvocado|function getAvocadoFeel|function initMassageVariantTabs/);
 });
 
