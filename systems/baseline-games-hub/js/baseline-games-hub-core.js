@@ -3022,8 +3022,27 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
   }
   function ruleShiftRemainingMs(){
-    if(!ruleShiftState || !ruleShiftState.deadlineAt) return 0;
+    if(!ruleShiftState) return 0;
+    if(Number.isFinite(ruleShiftState.pausedRemainingMs)) return Math.max(0, ruleShiftState.pausedRemainingMs);
+    if(!ruleShiftState.deadlineAt) return 0;
     return Math.max(0, ruleShiftState.deadlineAt - Date.now());
+  }
+  function pauseRuleShiftTimer(){
+    if(!ruleShiftState || ruleShiftState.finished || Number.isFinite(ruleShiftState.pausedRemainingMs)) return;
+    ruleShiftState.pausedRemainingMs = ruleShiftRemainingMs();
+    clearRuleShiftTimer();
+    syncRuleShiftTimer();
+  }
+  function resumeRuleShiftTimer(){
+    if(!ruleShiftState || ruleShiftState.finished || !Number.isFinite(ruleShiftState.pausedRemainingMs)) return;
+    const remaining = Math.max(0, ruleShiftState.pausedRemainingMs);
+    ruleShiftState.pausedRemainingMs = null;
+    ruleShiftState.deadlineAt = Date.now() + remaining;
+    startRuleShiftTimer();
+  }
+  function syncRuleShiftVisibility(){
+    if(document.visibilityState === 'hidden') pauseRuleShiftTimer();
+    else resumeRuleShiftTimer();
   }
   function ruleShiftTimerText(ms){
     return (Math.max(0, Math.ceil(ms / 1000))).toString() + 's';
@@ -3198,6 +3217,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       lastMessage:'Run started. Read the rule before choosing.',
       lastWasRuleChange:false,
       deadlineAt:0,
+      pausedRemainingMs:null,
       resolvingTimeout:false
     };
     advanceRuleShiftRound(true);
@@ -3213,6 +3233,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const rule = buildRuleShiftRule(tier, previousRule);
     ruleShiftState.currentRule = rule;
     ruleShiftState.options = buildRuleShiftOptions(tier, rule);
+    ruleShiftState.pausedRemainingMs = null;
     ruleShiftState.deadlineAt = Date.now() + ruleShiftTimeLimitMs(tier);
     ruleShiftState.lastWasRuleChange = !!(previousRule && previousRule.type !== rule.type);
     if(overrideMessage){
@@ -3855,6 +3876,7 @@ function toggleGameFullscreen(gameId){
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
       window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });
       window.addEventListener('orientationchange', function(){ syncAllMobileInputModes(); syncDesktopKeypadState(); if(selectedGame) focusGamePlaySurface(selectedGame, { scroll:false, mobileMode:!isDesktopKeypadGame(selectedGame) }); });
+      document.addEventListener('visibilitychange', syncRuleShiftVisibility);
       try{ document.documentElement.setAttribute('data-baseline-games-resize-mobile-input-sync','1'); }catch(_e){}
     }
     restoreFromHashState({ useStored:true });
