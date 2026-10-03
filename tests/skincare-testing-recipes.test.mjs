@@ -38,14 +38,14 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
   assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
   assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Comfort Barrier Balm'/);
 });
 
 test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
   assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
   assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
-  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Comfort Barrier Balm — rich butter-and-oil balm that softens dry areas and helps reduce moisture loss\./);
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
   assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
@@ -56,7 +56,7 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
 
 test('Comfort Barrier Balm is embedded in the canonical Skincare shell', () => {
   assert.match(html, /data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12"/);
-  assert.match(html, /<h3>Lip\/ balm<\/h3>/);
+  assert.match(html, /<h3>Comfort Barrier Balm<\/h3>/);
   assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
   assert.doesNotMatch(html, /baseline-lip-balm-route-prefetch/);
   assert.doesNotMatch(recipeUx, /testing-lip-balm\.html/);
