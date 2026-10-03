@@ -745,7 +745,12 @@
     // The compact recipe variant chooser must remain native. Enhancing it creates
     // a cloned button plus the native select, which produces ghost/overlap text in
     // the recipe option strip.
-    try{ if(selectEl.classList && selectEl.classList.contains('recipe-variant-select')) return; }catch(_e){}
+    try{
+      if(selectEl.classList && (
+        selectEl.classList.contains('recipe-variant-select') ||
+        selectEl.classList.contains('recipe-details-variant-select')
+      )) return;
+    }catch(_e){}
     try{ if(selectEl.matches && (selectEl.matches('[data-native-select="true"]') || selectEl.matches('select[data-hardship]'))) return; }catch(_e){}
     if(!shouldEnhanceSelect()) return;
 
