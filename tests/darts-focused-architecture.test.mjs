@@ -147,3 +147,10 @@ test('Darts controller delegates canonical state construction to state factory',
   assert.match(runtime,/createDartsStateFactory\(/);
   assert.doesNotMatch(runtime,/function createState|function newGeographyState/);
 });
+
+
+test('Darts controller delegates Games Hub shell behavior',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-shell\.js'/);
+  assert.match(runtime,/createDartsShell\(/);
+  assert.doesNotMatch(runtime,/function ensureStylesheet|function openHowToPlay|function openPanel|function closePanel|function toggleFullscreen/);
+});
