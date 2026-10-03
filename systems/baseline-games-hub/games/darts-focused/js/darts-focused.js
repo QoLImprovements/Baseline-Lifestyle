@@ -3,12 +3,9 @@ import {
   accuracyFor,
   arraysEqual,
   averageResponseMs,
-  calibrationScore,
   createDefaultDartsProfile,
-  dartsXpNeededForLevel,
   normaliseTargetCode,
   recordResult,
-  realmContributionForDarts,
   remainingAfterHit,
   sameSet,
   seededPick,
@@ -50,6 +47,13 @@ import {
   createGeographyPrompt
 } from './darts-focused-rounds.js';
 import { createDartsRenderers } from './darts-focused-renderers.js';
+import {
+  refreshDartsSelectors,
+  syncDartsOverviewProgress,
+  dartsProgressSummaryHtml,
+  renderDartsTierControls,
+  syncDartsActiveControls
+} from './darts-focused-progress.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
 const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=${BUILD}`;
@@ -251,82 +255,44 @@ function closePanel({ restoreOverview = true } = {}) {
   }
 }
 function refreshSelectors() {
-  document.querySelectorAll('[data-darts-game]').forEach((button) => {
-    const selected = button.getAttribute('data-darts-game') === ui.selected;
-    button.classList.toggle('is-selected',selected);
-    button.setAttribute('aria-selected',String(selected));
-    const small = button.querySelector('small');
-    if (small) small.textContent = progressLabel(button.getAttribute('data-darts-game'));
-  });
+  refreshDartsSelectors({selectedId:ui.selected,progressLabel});
 }
 function syncOverviewProgress() {
-  document.querySelectorAll('[data-game-card="darts-focused"] .game-row-meta strong, .darts-focused-overview-row .game-row-meta strong').forEach((node) => {
-    node.textContent = `Level ${profile.level} · ${GAME_IDS.length} games`;
-  });
+  syncDartsOverviewProgress({level:profile.level,gameCount:GAME_IDS.length});
 }
 function renderProgressSummary() {
-  const root = byId('dartsProgressSummary');
-  const attempted = GAME_IDS.filter((id) => profile.stats[id].attempts > 0).length;
-  const totalCorrect = GAME_IDS.reduce((sum,id) => sum + profile.stats[id].correct,0);
-  const totalAttempts = GAME_IDS.reduce((sum,id) => sum + profile.stats[id].attempts,0);
-  const overall = totalAttempts ? Math.round(totalCorrect / totalAttempts * 100) : 0;
-  const confidence = calibrationScore(profile.stats['decision-training']);
-  const realm = realmContributionForDarts(profile);
-  const needed = dartsXpNeededForLevel(profile.level);
-  const xpPct = Math.max(0,Math.min(100,(profile.xp / Math.max(1,needed)) * 100));
-  if (root) root.innerHTML =
-    '<div class="darts-xp-block"><div class="xp-meta"><strong>Level ' + profile.level + '</strong><span class="inline-note">Experience ' + profile.xp + ' / ' + needed + '</span></div><div class="xp-bar"><div class="xp-fill" style="width:' + xpPct.toFixed(2) + '%"></div></div></div>' +
-    '<div class="stat-pills trackcoin-stat-pills">' +
-      `<div class="stat-pill">Darts Bank <span>${profile.bank}</span></div>` +
-      `<div class="stat-pill">Skill Points <span>${profile.skillPoints}</span></div>` +
-      `<div class="stat-pill">Clean Streak <span>${profile.cleanWinStreak}</span></div>` +
-      `<div class="stat-pill">Games Attempted <span>${attempted} / ${GAME_IDS.length}</span></div>` +
-      `<div class="stat-pill">On-screen Rounds <span>${profile.totalRounds}</span></div>` +
-      `<div class="stat-pill">Overall Accuracy <span>${overall}%</span></div>` +
-      `<div class="stat-pill">Pressure Level <span>${profile.custom.pressureLevel} / 5</span></div>` +
-      `<div class="stat-pill">Decision Calibration <span>${confidence === null ? 'Not measured' : `${confidence}%`}</span></div>` +
-      `<div class="stat-pill">Realm Links <span>${GAME_IDS.length} / ${GAME_IDS.length}</span></div>` +
-      `<div class="stat-pill">Realm Dash <span>×${realm.manualDamageMult.toFixed(2)}</span></div>` +
-      `<div class="stat-pill">Realm Shuriken <span>×${realm.shurikenDamageMult.toFixed(2)}</span></div>` +
-    '</div>';
+  const root=byId('dartsProgressSummary');
+  if(root)root.innerHTML=dartsProgressSummaryHtml(profile,GAME_IDS);
   syncOverviewProgress();
   refreshSelectors();
 }
 function renderTierControls() {
-  const list = byId('dartsTierList');
-  const description = byId('dartsTierDescription');
-  if (!list || !description) return;
-  const selected = tierId();
-  const level = gameLevel();
-  list.innerHTML = TIER_DEFINITIONS.map((tier) => {
-    const unlocked = level >= tier.unlockLevel;
-    return `<button class="darts-tier-button${selected === tier.id ? ' is-active' : ''}" data-darts-tier="${tier.id}" type="button" ${unlocked ? '' : 'disabled'}><strong>${tier.name}</strong><span>${unlocked ? `Tier ${tier.id}` : `Unlocks at level ${tier.unlockLevel}`}</span></button>`;
-  }).join('');
-  description.textContent = TIER_DEFINITIONS[selected - 1].description;
+  renderDartsTierControls({
+    list:byId('dartsTierList'),
+    description:byId('dartsTierDescription'),
+    tierDefinitions:TIER_DEFINITIONS,
+    selectedTier:tierId(),
+    gameLevel:gameLevel()
+  });
 }
 function syncActiveControls() {
-  const info = byId('dartsActiveInfoBtn');
-  const meta = selectedMeta();
-  if (info) {
-    info.setAttribute('data-bl-info-title',meta.name);
-    info.setAttribute('data-bl-info-text',meta.intention);
-    info.setAttribute('aria-label',`What ${meta.name} develops`);
-  }
-  byId('dartsActiveHowBtn')?.setAttribute('data-darts-how',meta.id);
-  const auto = byId('dartsAutoNextBtn');
-  if (auto) {
-    const enabled = autoNextEnabled();
-    auto.setAttribute('aria-pressed',String(enabled));
-    auto.textContent = `Auto-Next: ${enabled ? 'On' : 'Off'}`;
-  }
-  syncFullscreenButton();
+  syncDartsActiveControls({
+    info:byId('dartsActiveInfoBtn'),
+    how:byId('dartsActiveHowBtn'),
+    auto:byId('dartsAutoNextBtn'),
+    fullscreen:byId('dartsFullscreenBtn'),
+    meta:selectedMeta(),
+    autoNext:autoNextEnabled(),
+    fullscreenActive:document.fullscreenElement===byId('dartsGameCard')
+  });
 }
 function syncFullscreenButton() {
-  const button = byId('dartsFullscreenBtn');
-  if (!button) return;
-  const active = document.fullscreenElement === byId('dartsGameCard');
-  button.setAttribute('aria-pressed',String(active));
-  button.textContent = active ? 'Exit Full Screen' : 'Full Screen';
+  syncDartsActiveControls({
+    info:null,how:null,auto:null,fullscreen:byId('dartsFullscreenBtn'),
+    meta:selectedMeta(),
+    autoNext:autoNextEnabled(),
+    fullscreenActive:document.fullscreenElement===byId('dartsGameCard')
+  });
 }
 function toggleFullscreen() {
   const card = byId('dartsGameCard');
