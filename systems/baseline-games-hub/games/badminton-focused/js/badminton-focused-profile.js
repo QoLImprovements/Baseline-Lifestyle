@@ -74,3 +74,29 @@ export function levelUp(target){
   }
   return target;
 }
+
+
+export function recordBadmintonResult(profile,gameId,correct,extra={}){
+  if(!profile.games)profile.games={};
+  if(!profile.games[gameId])profile.games[gameId]=defaultGameStat();
+  const stat=profile.games[gameId];
+
+  stat.attempts+=1;
+  stat.correct+=correct?1:0;
+  stat.streak=correct?stat.streak+1:0;
+  stat.bestStreak=Math.max(stat.bestStreak,stat.streak);
+  stat.premature+=extra.premature?1:0;
+  stat.late+=extra.late?1:0;
+  stat.xp+=correct?14:5;
+  levelUp(stat);
+
+  profile.rounds+=1;
+  profile.correct+=correct?1:0;
+  profile.currentStreak=correct?profile.currentStreak+1:0;
+  profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);
+  profile.xp+=correct?11:4;
+  profile.bank+=correct?2:0;
+  levelUp(profile);
+
+  return {profile,stat};
+}
