@@ -163,6 +163,19 @@
       "cutoverRule": "This controls device-specific automatic round progression and is not account progression."
     },
     {
+      "id": "games-active-rounds",
+      "inventoryPatterns": [
+        "__bl_games_active_rounds_v1__"
+      ],
+      "knownKeys": [
+        "__bl_games_active_rounds_v1__"
+      ],
+      "classification": "device-local-transient-game-state",
+      "decision": "keep-local",
+      "target": null,
+      "cutoverRule": "This contains unfinished Detect The Word and Make The Number round continuity only. It is not account progression, must never be promoted or merged into account game resources, and may be discarded when the stored round no longer matches the loaded tier or profile."
+    },
+    {
       "id": "games-guest-profiles",
       "inventoryPatterns": [
         "__bl_games_guest_profiles_v1__"
