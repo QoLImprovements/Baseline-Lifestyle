@@ -26,15 +26,21 @@ test('Detect The Word restores an unfinished round and draft across reload',asyn
   await page.locator('#newWordRoundBtn').click();
   await expect(page.locator('#wordGuessInput')).toBeVisible();
 
+  await page.locator('#wordGuessInput').fill('zzz');
+  await page.locator('#wordGuessInput').press('Enter');
+  await expect(page.locator('#wordBoard .word-row').first().locator('.letter-cell')).toHaveCount(3);
+  await expect(page.locator('#wordBoard .word-row').first()).toContainText('ZZZ');
+
   await page.locator('#wordGuessInput').fill('ab');
   await expect(page.locator('#wordGuessInput')).toHaveValue('ab');
-  const rowsBefore=await page.locator('#wordBoard .word-row').count();
+  const classesBefore=await page.locator('#wordBoard .word-row').first().locator('.letter-cell').evaluateAll(nodes=>nodes.map(node=>node.className));
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_GAMES_HUB_CORE_READY===true);
   await expect(page.locator('#detectwordPanel')).toHaveClass(/is-active/);
   await expect(page.locator('#wordGuessInput')).toHaveValue('ab');
-  await expect(page.locator('#wordBoard .word-row')).toHaveCount(rowsBefore);
+  await expect(page.locator('#wordBoard .word-row').first()).toContainText('ZZZ');
+  expect(await page.locator('#wordBoard .word-row').first().locator('.letter-cell').evaluateAll(nodes=>nodes.map(node=>node.className))).toEqual(classesBefore);
 });
 
 test('Make The Number restores the same unfinished puzzle and draft across reload',async({page})=>{
