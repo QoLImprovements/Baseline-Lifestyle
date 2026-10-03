@@ -27,7 +27,16 @@
     if(!match) return null;
     let slug = match[2];
     try{ slug = decodeURIComponent(slug); }catch(_error){}
-    return { app:match[1].toLowerCase(), slug:String(slug || '').trim().toLowerCase() };
+    let view = 'standard';
+    try{
+      const requested = String(new URLSearchParams(location.search || '').get('view') || '').trim().toLowerCase();
+      if(['details','guidance','show-all'].includes(requested)) view = requested;
+    }catch(_error){}
+    return {
+      app:match[1].toLowerCase(),
+      slug:String(slug || '').trim().toLowerCase(),
+      view:view
+    };
   }
 
   function redirectStandaloneRecipeShell(){
@@ -65,6 +74,20 @@
       if(card && recipeId && typeof window.BASELINE_openRecipe === 'function'){
         try{ sessionStorage.removeItem(RECIPE_PENDING_KEY); }catch(_error){}
         window.BASELINE_openRecipe(recipeId, { silentHistory:false, noScroll:true });
+        const requestedView = ['details','guidance','show-all'].includes(String(pending.view || '').toLowerCase())
+          ? String(pending.view).toLowerCase()
+          : 'standard';
+        if(requestedView !== 'standard'){
+          const applyView = function(){
+            const liveCard = document.getElementById(recipeId);
+            if(liveCard && typeof liveCard.__baselineSetRecipeView === 'function'){
+              liveCard.__baselineSetRecipeView(requestedView, { syncRoute:true });
+              return true;
+            }
+            return false;
+          };
+          if(!applyView()) window.setTimeout(applyView, 0);
+        }
         return;
       }
       if(attempts < 80) window.setTimeout(open, 50);

@@ -173,7 +173,7 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
 
   await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
   expect(new URL(page.url()).pathname).toBe(lipBalmPath);
-  await expect(page.locator('html')).toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
+  await expect(page.locator('html')).not.toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
   await expect(page.locator('#system')).toBeHidden();

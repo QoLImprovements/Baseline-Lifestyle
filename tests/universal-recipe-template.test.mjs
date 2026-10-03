@@ -8,6 +8,7 @@ const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/basel
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const foodHtml = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
+const liveStability = fs.readFileSync('sitewide/js/baseline-live-stability-core-v3.js', 'utf8');
 
 function skincareRecipeBlocks(){
   const matches=[...skincareHtml.matchAll(/<div class="recipe card recipe-page recipe-universal-template"[^>]*\bid="(r\d+)"[^>]*>/g)];
@@ -29,6 +30,14 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
   assert.match(css, /html\[data-initial-recipe-slug="testing-lip-balm"\] #recipes #r12\{display:block!important;visibility:visible!important/);
   assert.match(shared, /removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
+});
+
+test('standalone recipe recovery preserves the selected recipe subview', () => {
+  assert.match(liveStability, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
+  assert.match(liveStability, /view:view/);
+  assert.match(liveStability, /pending\.view/);
+  assert.match(liveStability, /__baselineSetRecipeView/);
+  assert.match(liveStability, /syncRoute:true/);
 });
 
 test('shared method-tag engine maps every ingredient source to one first-use method step', () => {
@@ -71,6 +80,37 @@ test('Skincare adjustment visibility and Show All ordering are explicit contract
   assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
+test('recipe subview first-paint guard honours clean-route view state before runtime', () => {
+  assert.match(skincareHtml, /data-initial-recipe-view/);
+  assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)\.get\('view'\)/);
+  assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
+  assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\.recipe-view-hidden[\s\S]*display:grid!important/);
+  assert.match(shared, /removeAttribute\('data-initial-recipe-slug'\)/);
+  assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
+});
+
+test('clean recipe slugs resolve in embedded and standalone recipe shells', () => {
+  assert.match(shared, /const recipes = qsa\('\.recipe-page\[id\]'\)/);
+  assert.doesNotMatch(shared, /const recipes = qsa\('#recipes \.recipe-page\[id\]'\)/);
+});
+
+test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
+  assert.match(shared, /function normalizeRecipeSubView\(value\)/);
+  assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
+  assert.match(shared, /base \+ '\?view=' \+ encodeURIComponent\(recipeView\)/);
+  assert.match(shared, /function setView\(view, options=\{\}\)/);
+  assert.match(shared, /options && options\.syncRoute/);
+  assert.match(shared, /recipeView:next/);
+  assert.match(shared, /setNavState\(nextState, \{ replace:true, url:urlForNavState\(nextState\) \}\)/);
+  assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
+  assert.match(recipeUx, /function recipeViewFromLocation\(\)/);
+  assert.match(recipeUx, /restoreRecipeViewFromLocation\(\)/);
+  assert.match(recipeUx, /addEventListener\('popstate',restoreRecipeViewFromLocation\)/);
+  assert.doesNotMatch(recipeUx, /syncRecipeViewUrl/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page,[\s\S]*recipe-detail-open \.recipe-page\{ display:none!important; \}/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
+});
+
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
   assert.match(shared,/const preauthored = !!controls/);
   assert.match(shared,/q\('input\.multiplier-input', controls\)/);
@@ -81,13 +121,15 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
   assert.match(shared,/\['details', 'Details'\]/);
   assert.match(shared,/\['guidance', 'Guidance'\]/);
   assert.match(shared,/\['show-all', 'Show All'\]/);
-  assert.match(shared,/setView\('standard'\)/);
+  assert.match(shared,/let authoredInitialView = 'standard'/);
+  assert.match(shared,/authoredInitialView = normalizeRecipeSubView\(routeState\.recipeView \|\| 'standard'\)/);
+  assert.match(shared,/setView\(authoredInitialView, \{ syncRoute:false \}\)/);
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
 test('Skincare Details is authored hidden while Food keeps its placeholder behaviour', () => {
   for (const {id,html} of skincareRecipeBlocks()) {
-    assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/,id+' Details starts hidden');
+    assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/,id+' Details starts hidden');
     assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,id+' Details blocks');
     assert.match(html,/class="recipe-comedogenic-rating"[^>]*><strong>Comedogenic Rating —<\/strong> <span class="recipe-comedogenic-rating-value">[^<]+<\/span>/,id+' concise comedogenic rating');
     assert.match(html,/<h4>Limitations &amp; Trade-offs<\/h4>/,id+' limitations heading');
@@ -95,8 +137,10 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   }
   assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
   assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
-  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\);/);
+  assert.doesNotMatch(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
+  assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
@@ -123,10 +167,10 @@ test('Adjustments owns scaling utilities and static Skincare shells hydrate rath
 });
 
 test('Skincare slider recipes already contain the final layout and save controls', () => {
-  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,6);
   assert.doesNotMatch(skincareHtml,/class="glide-control-stack"/);
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);

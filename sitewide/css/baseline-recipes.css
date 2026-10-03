@@ -4456,3 +4456,55 @@ html[data-initial-recipe-slug="tooth-polishing-powder"] #recipes #r9{display:blo
 
 html[data-initial-recipe-slug$="-shave-gel"] #recipes #r5{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{display:block!important;visibility:visible!important;max-width:none!important}
+
+
+/* BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003
+   A clean recipe route can carry ?view=details|guidance|show-all. Honour that
+   route before external JavaScript runs so refresh never paints Recipe first. */
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="standard"],
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="guidance"],
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-adjustments-row,
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .variant-heading,
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .variant-switcher{
+  display:none!important;
+}
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro.recipe-view-hidden{
+  display:grid!important;
+  visibility:visible!important;
+}
+
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="standard"],
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro,
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .recipe-adjustments-row,
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .variant-heading,
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .variant-switcher{
+  display:none!important;
+}
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="guidance"]{
+  display:revert!important;
+}
+
+html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro.recipe-view-hidden{
+  display:grid!important;
+  visibility:visible!important;
+}
+html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="guidance"]{
+  display:revert!important;
+}
+
+html[data-initial-recipe-view]:not([data-initial-recipe-view="standard"]) body[data-app] #recipes .recipe-universal-template .recipe-subtab[aria-selected="true"]{
+  background:var(--showall-bg,var(--accent-soft,rgba(255,255,255,.18)))!important;
+  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
+  color:var(--accent-2,var(--ink))!important;
+  font-weight:780!important;
+  box-shadow:none!important;
+}
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="details"],
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="guidance"],
+html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="show-all"]{
+  background:var(--accent-soft,var(--showall-bg))!important;
+  border-color:var(--accent,var(--showall-border,var(--border)))!important;
+  color:var(--ink)!important;
+  font-weight:900!important;
+  box-shadow:0 8px 18px -16px rgba(35,23,19,.42)!important;
+}

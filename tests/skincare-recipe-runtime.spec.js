@@ -37,6 +37,24 @@ test('Skincare first-paint lock releases on tab interaction before full page loa
   await expect(page.locator('#system')).toBeHidden();
 });
 
+test('Skincare Details clean route paints Details before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel?view=details', { waitUntil:'load' });
+
+  await expect(page.locator('html')).toHaveAttribute('data-initial-recipe-view','details');
+  await expect(page.locator('#r10')).toBeVisible();
+  await expect(page.locator('#r10 .recipe-details-intro')).toBeVisible();
+  await expect(page.locator('#r10 [data-recipe-view-group="standard"]:visible')).toHaveCount(0);
+  await expect(page.locator('#r10 [data-recipe-view-group="guidance"]:visible')).toHaveCount(0);
+  await expect(page.locator('#r10').locator(':scope > .recipe-adjustments-row')).toBeHidden();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+});
+
 test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
   const requested = [];
   page.on('request', request => requested.push(new URL(request.url()).pathname));

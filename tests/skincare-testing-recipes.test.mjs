@@ -13,6 +13,7 @@ const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
+const standaloneMassage = fs.readFileSync('systems/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend.html', 'utf8');
 const lipBalmStart = html.indexOf('<!-- Testing Recipe 12 -->');
 const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
 const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
@@ -74,7 +75,7 @@ test('recipe interaction module loads directly without post-load repair layers',
   assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
 test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
-  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 9);
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 9);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
   assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
@@ -95,11 +96,28 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
   assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);
-  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 8);
-  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 8);
-  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 8);
-  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 7);
+  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 7);
+  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 7);
+  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 7);
+  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 6);
   assert.doesNotMatch(html, /class="glide-control-stack"/);
+});
+
+test('Anhydrous Massage Oil Blend is one olive-led recipe with no Avocado variant', () => {
+  const start = html.indexOf('data-recipe-slug="anhydrous-massage-oil-blend"');
+  const end = html.indexOf('data-recipe-slug="restorative-hydration-layer"', start);
+  const massage = html.slice(start, end);
+  for (const source of [massage, standaloneMassage]) {
+    assert.doesNotMatch(source, /Avocado Blend|r6Avocado|r6-avocado|fractionated coconut|watermelon seed/i);
+  }
+  assert.doesNotMatch(massage, /aria-label="Massage oil variants"|class="variant-switcher"/);
+  assert.match(massage, /Jojoba remains fixed at 15%|jojoba remains fixed at 15%/i);
+  assert.match(massage, /id="r6Glide"/);
+  const fcoStart = html.indexOf('id="ing-fractionated-coconut"');
+  const fcoEnd = html.indexOf('<div class="card" id="ing-watermelon">', fcoStart);
+  const fcoCard = html.slice(fcoStart, fcoEnd);
+  assert.doesNotMatch(fcoCard, /Anhydrous Massage Oil Blend/);
+  assert.doesNotMatch(html, /function syncMassageAvocado|function getAvocadoFeel|function initMassageVariantTabs/);
 });
 
 test('Skincare recipe methods never instruct the viewer to operate optional sliders', () => {

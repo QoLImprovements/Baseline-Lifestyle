@@ -1213,7 +1213,13 @@
     const lower = token.toLowerCase();
     const direct = document.getElementById(lower);
     if(direct && direct.classList && direct.classList.contains('recipe-page')) return lower;
-    const recipes = qsa('#recipes .recipe-page[id]');
+
+    // Recipe routes exist in two legitimate shells:
+    // 1. embedded catalogue cards inside #recipes;
+    // 2. standalone recipe documents containing one .recipe-page card.
+    // Resolve against both so a clean slug route can reconstruct the same
+    // recipe/subview state after refresh regardless of which shell served it.
+    const recipes = qsa('.recipe-page[id]');
     for(const el of recipes){
       const id = String(el.id || '').toLowerCase();
       if(id === lower) return id;
@@ -1223,6 +1229,11 @@
     return lower;
   }
 
+  function normalizeRecipeSubView(value){
+    const next = String(value || '').trim().toLowerCase();
+    return ['details','guidance','show-all'].includes(next) ? next : 'standard';
+  }
+
   function recipePathStateFromLocation(){
     try{
       const path = decodeURIComponent(String(location.pathname || ''));
@@ -1230,7 +1241,10 @@
         || path.match(/\.html\/([^\/?#]+)\/?$/i);
       if(!m || !m[1]) return null;
       const id = recipeIdForToken(m[1]);
-      return id ? { kind:'recipe', recipeId:id, raw:path } : null;
+      if(!id) return null;
+      let recipeView = 'standard';
+      try{ recipeView = normalizeRecipeSubView(new URLSearchParams(location.search || '').get('view')); }catch(_e){}
+      return { kind:'recipe', recipeId:id, recipeView:recipeView, raw:path };
     }catch(_e){ return null; }
   }
 
@@ -1393,7 +1407,11 @@
   }
 
   function urlForNavState(state){
-    if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
+    if(state && state.kind === 'recipe' && state.recipeId){
+      const base = recipeUrlForId(state.recipeId);
+      const recipeView = normalizeRecipeSubView(state.recipeView || 'standard');
+      return recipeView === 'standard' ? base : (base + '?view=' + encodeURIComponent(recipeView));
+    }
     if(state && state.kind === 'ingredient' && state.ingredientId){
       const routePageFile = routePageFileFromPath(location.pathname || '');
       if(routePageFile === 'baseline-natural-skincare.html'){
@@ -1883,11 +1901,27 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-slug');
+        document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
       // Keep existing back links/buttons available; no extra banner is injected.
 
       if(!opts.silentHistory){
-        setNavState({ kind: 'recipe', recipeId: id }, { url: recipeUrlForId(id) });
+        // If startup or another harmless caller re-opens the recipe that is
+        // already represented by the current clean URL, preserve that route's
+        // selected subview. Opening a different recipe still begins on Recipe.
+        let recipeView = 'standard';
+        try{
+          const currentRoute = recipePathStateFromLocation();
+          const currentId = currentRoute && currentRoute.recipeId
+            ? recipeIdForToken(currentRoute.recipeId)
+            : '';
+          if(currentId === id){
+            recipeView = normalizeRecipeSubView(currentRoute.recipeView || 'standard');
+          }
+        }catch(_e){}
+        const nextState = { kind: 'recipe', recipeId: id, recipeView: recipeView };
+        setNavState(nextState, { url: urlForNavState(nextState) });
       }
 
       // Auto-scroll to the top of the focused recipe card (offset for the fixed home bar).
@@ -1919,6 +1953,8 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-slug');
+        document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
 
       if(!opts.silentHistory){
@@ -5181,8 +5217,8 @@ function buildControls(recipeEl){
         normalizeEmphasis();
       }
 
-      function setView(view){
-        const next = ['standard','details','guidance','show-all'].includes(view) ? view : 'standard';
+      function setView(view, options={}){
+        const next = normalizeRecipeSubView(view);
         recipeEl.dataset.recipeView = next;
         qsa('.recipe-subtab', tabs).forEach(button=>{
           button.setAttribute('aria-selected', button.dataset.recipeSubtab === next ? 'true' : 'false');
@@ -5207,18 +5243,44 @@ function buildControls(recipeEl){
         }
         metaRow.classList.remove('recipe-view-hidden');
         tabs.classList.remove('recipe-view-hidden');
+
+        // Recipe subview is route state, not transient DOM state. Replace the
+        // current recipe history entry so refresh and Back/Forward reconstruct
+        // the same Recipe / Details / Guidance / Show All selection.
+        if(options && options.syncRoute && recipeEl.id
+          && (recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))){
+          try{
+            const nextState = {
+              kind:'recipe',
+              recipeId:recipeEl.id,
+              recipeView:next,
+              scrollY:getScrollTop()
+            };
+            setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+          }catch(_e){}
+        }
       }
 
       qsa('.recipe-subtab', tabs).forEach(button=>{
         button.addEventListener('click', event=>{
           event.preventDefault();
           event.stopPropagation();
-          setView(button.dataset.recipeSubtab || 'standard');
+          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true });
         });
       });
 
-      // Default every newly opened recipe to Standard View.
-      setView('standard');
+      // Initialise from the clean recipe route when this card is the current
+      // recipe. This prevents a late template enhancement from resetting a
+      // refreshed ?view=details|guidance|show-all route back to Recipe.
+      let authoredInitialView = 'standard';
+      try{
+        const routeState = recipePathStateFromLocation();
+        const routeId = routeState && routeState.recipeId ? recipeIdForToken(routeState.recipeId) : '';
+        if(routeState && routeId === recipeEl.id){
+          authoredInitialView = normalizeRecipeSubView(routeState.recipeView || 'standard');
+        }
+      }catch(_e){}
+      setView(authoredInitialView, { syncRoute:false });
       try{ recipeEl.__baselineSetRecipeView = setView; }catch(_e){}
       if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
@@ -5447,6 +5509,12 @@ function buildControls(recipeEl){
       if(state.kind === 'recipe'){
         if(typeof window.BASELINE_openRecipe === 'function' && state.recipeId){
           window.BASELINE_openRecipe(state.recipeId, { silentHistory:true, noScroll:true });
+          try{
+            const card=document.getElementById(recipeIdForToken(state.recipeId));
+            if(card && typeof card.__baselineSetRecipeView === 'function'){
+              card.__baselineSetRecipeView(normalizeRecipeSubView(state.recipeView || 'standard'), { syncRoute:false });
+            }
+          }catch(_e){}
         }
         return;
       }
@@ -7572,9 +7640,19 @@ function setupRecipeFavourites(){
       const rid = initialView.recipeId || '';
       if(typeof window.BASELINE_openRecipe === 'function' && rid){
         window.BASELINE_openRecipe(rid, { silentHistory:true, noScroll: !!recipePathStateFromLocation() });
+        try{
+          const card=document.getElementById(recipeIdForToken(rid));
+          if(card && typeof card.__baselineSetRecipeView === 'function'){
+            card.__baselineSetRecipeView(normalizeRecipeSubView(initialView.recipeView || 'standard'), { syncRoute:false });
+          }
+        }catch(_e){}
       }
       // Canonicalise legacy #recipe=rN/#rN links to the named path URL without adding history.
-      try{ const nextState = { kind: 'recipe', recipeId: rid }; setNavState(nextState, { replace:true, url: urlForNavState(nextState) }); }catch(_e){}
+      // Preserve a recipe subview carried by the clean route so refresh can reconstruct it.
+      try{
+        const nextState = { kind: 'recipe', recipeId: rid, recipeView: normalizeRecipeSubView(initialView.recipeView || 'standard') };
+        setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
+      }catch(_e){}
     }else if(initialView && initialView.kind === 'tab'){
       const tabId = initialView.tabId || 'system';
       if(typeof window.BASELINE_selectTab === 'function' && tabId){
@@ -7670,7 +7748,7 @@ function setupRecipeFavourites(){
 /* BASELINE-LIVE-STABILITY-LOADER-20260803 */
 (function(){
   'use strict';
-  const build = 'SAVED_DATA_REVISION_CLIENT_20260823_1';
+  const build = 'RECIPE_VIEW_STATE_20261003_2';
   if(!document.querySelector('link[data-baseline-live-stability-style]')){
     const link = document.createElement('link');
     link.rel = 'stylesheet';

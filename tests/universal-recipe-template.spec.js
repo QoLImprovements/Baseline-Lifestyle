@@ -147,11 +147,13 @@ for (const recipe of foodRecipes) {
     await expect(page.locator('#system')).toBeHidden();
     await expect(page.locator('#recipes')).toBeVisible();
     await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
     await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
 
     await page.reload({ waitUntil:'domcontentloaded' });
     expect(new URL(page.url()).pathname).toBe(url);
     await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
     await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
 
     await page.locator('#' + recipe.id + ' .back-btn').click();
@@ -167,6 +169,31 @@ for (const recipe of foodRecipes) {
     await expect(page.locator('#recipes-landing')).toBeVisible();
   });
 }
+
+test('Food recipe subtab route state also survives refresh without exposing another recipe', async ({ page }) => {
+  await page.goto('/baseline-food-approach/recipes/tomato-and-red-pepper-sauce');
+  const card = page.locator('#r10');
+  await expect(card).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.reload();
+  await expect(card).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.goto('/baseline-food-approach/recipes/creamy-mushroom-sauce');
+  const next = page.locator('#r5');
+  await expect(next).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBeNull();
+});
 
 test('Food recipe ingredient links preserve recipe filter through refresh Back and Forward', async ({ page }) => {
   const recipeUrl = '/baseline-food-approach/recipes/creamy-mushroom-sauce';
@@ -388,16 +415,14 @@ test('Food recipes keep repeated water quantities at their authored first-use st
   expect(waterPills.some(text => /1\s*[–—-]\s*2 tbsp hot water/i.test(text))).toBe(true);
 });
 
-test('Skincare recipe uses segmented variants and compact explanatory sliders in Recipe view', async ({ page }) => {
+test('Skincare massage recipe uses one compact explanatory slider in Recipe view', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend');
   const card = page.locator('#r6');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
   await expectUniversalTabs(card, 'Recipe');
 
-  const variants = card.locator('.variant-switcher .variant-tab');
-  await expect(variants).toHaveCount(2);
-  await expect(variants.filter({ hasText:/^Olive Blend$/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(card.locator('.variant-switcher, .variant-tab')).toHaveCount(0);
   await expect(card.locator('.recipe-variant-field')).toHaveCount(0);
   await expect(card.locator('.glide-controller').first()).toBeVisible();
   await expect(card.locator('.recipe-slider-instruction')).toHaveCount(0);
@@ -525,7 +550,7 @@ test('numeric Yield updates when Batch is changed', async ({ page }) => {
   await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('200 g');
 });
 
-test('Skincare Details uses a continuous two-column layout without card separation', async ({ page }) => {
+test('Skincare Details uses one full-width continuous column without card separation', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const details = page.locator('#r3 .recipe-details-intro');
   await page.locator('#r3 [data-recipe-subtab="details"]').click();
@@ -535,17 +560,34 @@ test('Skincare Details uses a continuous two-column layout without card separati
     const style = getComputedStyle(el);
     const first = el.querySelector('.recipe-detail-block');
     const firstStyle = getComputedStyle(first);
+    const detailsRect = el.getBoundingClientRect();
+    const firstRect = first.getBoundingClientRect();
     return {
       columns: style.gridTemplateColumns,
+      detailsWidth: detailsRect.width,
+      blockWidth: firstRect.width,
       borderStyle: firstStyle.borderStyle,
       backgroundImage: firstStyle.backgroundImage,
       backgroundColor: firstStyle.backgroundColor
     };
   });
-  expect(layout.columns.split(' ').length).toBeGreaterThanOrEqual(2);
+  expect(layout.columns.trim().split(/\s+/)).toHaveLength(1);
+  expect(layout.blockWidth).toBeGreaterThanOrEqual(layout.detailsWidth - 2);
   expect(layout.borderStyle).toBe('none');
   expect(layout.backgroundImage).toBe('none');
   expect(['rgba(0, 0, 0, 0)','transparent']).toContain(layout.backgroundColor);
+});
+
+test('Skincare read-only subtabs do not expose recipe variant selectors', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const card = page.locator('#r2');
+  await expect(card.locator(':scope > .variant-switcher')).toBeVisible();
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeHidden();
+  await card.locator('[data-recipe-subtab="guidance"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeHidden();
+  await card.locator('[data-recipe-subtab="standard"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeVisible();
 });
 
 test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {

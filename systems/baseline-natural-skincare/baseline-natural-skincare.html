@@ -18,7 +18,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b8644d"/>
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
-<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',(p.split('/').pop()||'').toLowerCase())}}}catch(_e){}}()</script>
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var v=String(new URLSearchParams(location.search||'').get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -29,8 +29,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=CONTENT_SIZED_BANNER_DROPDOWN_20260607" rel="stylesheet"/><link rel="stylesheet" href="/sitewide/css/baseline-routine-system.css?v=SITEWIDE_MY_ROUTINE_SYSTEM_20260806_2">
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
-<link href="/sitewide/css/baseline-recipes.css?v=RECIPE_ROUTE_STABILITY_20260925_1" rel="stylesheet"/>
-<link href="/systems/baseline-natural-skincare/css/baseline-natural-skincare.css?v=SKINCARE_CANONICAL_CSS_20260712" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-recipes.css?v=RECIPE_SUBVIEW_FIRST_PAINT_20261003_1" rel="stylesheet"/>
+<link href="/systems/baseline-natural-skincare/css/baseline-natural-skincare.css?v=SKINCARE_RECIPE_VIEW_STATE_20261003_1" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/skincare-routine.css?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/skincare-routine-enhancements.css?v=SKINCARE_ROUTINE_CALENDAR_GROUPS_20260804_2" rel="stylesheet"/>
 <link href="/systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css?v=SKINCARE_ROUTINE_FIRST_PAINT_20260811_1" rel="stylesheet"/>
@@ -221,7 +221,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A rich emollient and occlusive finishing layer used after water-based hydration to reduce evaporation and soften dry-feeling skin.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>Anhydrous • vegan • whipped butter-and-oil texture • rich finish • preservative-free because no water is present.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">1.1 (Low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Shea butter provides the main structure and occlusive body; cucumber seed, argan and jojoba improve spread and emollience; lavender is present as the aromatic phase.</p></div>
@@ -278,7 +278,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>An oil cleanser designed to loosen oil-soluble residue while keeping the cleansing phase simple and lipid-led.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>Anhydrous • preservative-free • three variants • wipe/rinse cleanser • adjustable cleansing pull and after-feel.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">0.5 (Low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Safflower is the main light cleansing oil; castor increases cling and cleansing pull; olive is used only in Enhanced Barrier to increase cushion and the richer after-feel.</p></div>
@@ -455,7 +455,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A targeted barrier balm for lips and dry areas where a more persistent protective film and controlled glide are useful.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>100 g reference batch • anhydrous • vegan • preservative-free • adjustable oil balance and firmness.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">1.4 (Low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Jojoba supplies smoother glide, castor adds cling, shea gives soft body, carnauba raises firmness and heat resistance, calendula adds an infused emollient phase, and vitamin E supports oxidation resistance.</p></div>
@@ -548,18 +548,13 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>An anhydrous massage medium that lets glide, traction and body be adjusted without introducing water or a conventional cream base.</p></div>
-<div class="recipe-detail-block"><h4>Formula Profile</h4><p>100 ml reference blend • anhydrous • preservative-free • Olive Blend and Avocado Blend variants.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">1.9 (Moderate likelihood of clogging pores)</span></p></div>
-<div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>The Olive Blend uses fixed jojoba for balanced slip while castor changes traction against olive. The Avocado Blend separates richness from lasting glide using two independent balances.</p></div>
-<div class="recipe-detail-block"><h4>Design Rationale</h4><p>Each slider changes one sensory property while a paired oil compensates so the blend remains at 100%.</p></div>
-<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Olive Blend: castor varies against olive while jojoba stays fixed at 15%. Avocado Blend: avocado varies against fractionated coconut; castor varies against watermelon.</p></div>
+<div class="recipe-detail-block"><h4>Formula Profile</h4><p>100 ml reference blend • anhydrous • preservative-free • olive, jojoba and castor oils.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">1.9 (Moderate likelihood of clogging pores)</span></p></div>
+<div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Jojoba remains fixed at 15% for balanced slip while castor changes traction against olive, keeping the total blend at 100%.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>One glide slider changes castor against olive so traction can be adjusted without changing the fixed jojoba balancing phase.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Castor varies from 0–15% against olive while jojoba remains fixed at 15%.</p></div>
 <div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>This is primarily a body-massage formula. Richer settings increase persistence and drag and may be more than is wanted on congestion-prone facial skin.</p></div>
-</div>
-<h4 class="variant-heading">Variants</h4>
-<div aria-label="Massage oil variants" class="variant-switcher" role="tablist">
-<button aria-controls="r6VariantOlive" aria-selected="true" class="variant-tab" data-variant="olive" role="tab" type="button">Olive Blend</button>
-<button aria-controls="r6VariantAvocado" aria-selected="false" class="variant-tab" data-variant="avocado" role="tab" type="button">Avocado Blend</button>
 </div>
 <div class="recipe-controls-anchor"></div>
 <div class="variant-panel" data-variant-panel="olive" id="r6VariantOlive" role="tabpanel">
@@ -578,7 +573,7 @@ Method steps MUST follow this format:
 <div class="glide-control-explainer">
 <div class="glide-explain-title">Overall Feel</div>
 <p class="glide-explain" id="r6GlideExplain">Balanced olive setting. Controlled glide with enough grip to keep the stroke deliberate.</p>
-<div class="glide-breakdown" hidden aria-hidden="true" id="r6GlideBreakdown"><strong>Selected variant:</strong> 15% jojoba • <span class="glide-castor">7.5%</span> castor • <span class="glide-olive">77.5%</span> olive</div>
+<div class="glide-breakdown" hidden aria-hidden="true" id="r6GlideBreakdown"><strong>Current blend:</strong> 15% jojoba • <span class="glide-castor">7.5%</span> castor • <span class="glide-olive">77.5%</span> olive</div>
 
 <div class="slider-save-row"><button type="button" class="slider-save-btn">Save as my setting</button><button type="button" class="slider-save-btn slider-default-btn">Reset to recipe default</button><span class="slider-save-status"></span></div>
 </div>
@@ -608,65 +603,6 @@ Method steps MUST follow this format:
 <li>This is the simpler blend: one fixed balancing oil, one variable traction oil, and one main body oil.</li>
 </ul>
 </div>
-<div class="variant-panel" data-variant-panel="avocado" hidden="" id="r6VariantAvocado" role="tabpanel">
-<p class="note recipe-slider-intro-legacy" data-recipe-view-group="standard">100 ml master blend. Richness changes <strong>avocado</strong> against <strong>fractionated coconut</strong>. Lasting glide changes <strong>castor</strong> against <strong>watermelon</strong>.</p>
-<div aria-label="Avocado massage blend controls" class="glide-controller glide-controller--paired recipe-slider-template" data-slider-count="2" data-recipe-view-group="standard">
-
-<div aria-label="Avocado massage blend richness control" class="glide-control-main">
-<div class="glide-slider-head">
-<div class="glide-label">Richness</div>
-<div class="glide-readout"><span class="r6-avocado-avocado-readout">60.0</span>% avocado • <span class="r6-avocado-fco-readout">20.0</span>% fractionated coconut</div>
-</div>
-<div class="glide-slider-wrap">
-<input aria-describedby="r6AvocadoOverallExplain r6AvocadoBreakdown" aria-label="Avocado blend avocado percentage" class="glide-slider" data-default-value="60" id="r6AvocadoRichness" max="70" min="50" step="0.1" type="range" value="60"/>
-</div>
-<div class="glide-scale"><span>50% avocado — Lighter body</span><span>70% avocado — Richer body</span></div>
-</div>
-<div aria-label="Avocado massage blend lasting glide control" class="glide-control-main">
-<div class="glide-slider-head">
-<div class="glide-label">Lasting glide</div>
-<div class="glide-readout"><span class="r6-avocado-castor-readout">5.0</span>% castor • <span class="r6-avocado-watermelon-readout">15.0</span>% watermelon</div>
-</div>
-<div class="glide-slider-wrap">
-<input aria-describedby="r6AvocadoOverallExplain r6AvocadoBreakdown" aria-label="Avocado blend castor percentage" class="glide-slider" data-default-value="5" id="r6AvocadoCastor" max="10" min="2" step="0.1" type="range" value="5"/>
-</div>
-<div class="glide-scale"><span>2% castor — Quicker slip</span><span>10% castor — Longer glide</span></div>
-</div>
-
-<div class="glide-control-explainer">
-<div class="glide-explain-title">Overall Feel</div>
-<p class="glide-explain" id="r6AvocadoOverallExplain">Balanced body with controlled lasting glide. Richer than Protective Touch Balm, but still smooth through the hand.</p>
-<div class="glide-breakdown" hidden aria-hidden="true" id="r6AvocadoBreakdown"><strong>Selected variant:</strong> <span class="r6-avocado-avocado-readout">60.0</span>% avocado • <span class="r6-avocado-fco-readout">20.0</span>% fractionated coconut • <span class="r6-avocado-watermelon-readout">15.0</span>% watermelon • <span class="r6-avocado-castor-readout">5.0</span>% castor</div>
-
-<div class="slider-save-row"><button type="button" class="slider-save-btn">Save as my setting</button><button type="button" class="slider-save-btn slider-default-btn">Reset to recipe default</button><span class="slider-save-status"></span></div>
-</div>
-</div>
-<h4 data-recipe-view-group="standard">Ingredients</h4>
-<ul data-recipe-view-group="standard">
-<li data-tip="Rich, cushioning carrier oil; increases body and richness as the richness slider rises."><span class="amt r6-avocado-avocado-amt" data-base-display="60 ml" data-base-max="60" data-base-min="60" data-base-unit="ml">60 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-avocado" href="/baseline-natural-skincare/ingredient-library/avocado">Avocado Oil</a></li>
-<li data-tip="Very light spreadability phase; becomes the balancing remainder as avocado rises or falls."><span class="amt r6-avocado-fco-amt" data-base-display="20 ml" data-base-max="20" data-base-min="20" data-base-unit="ml">20 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-fractionated-coconut" href="/baseline-natural-skincare/ingredient-library/fractionated-coconut">Fractionated Coconut Oil</a></li>
-<li data-tip="Silky, quicker-finishing seed oil; falls as lasting glide rises so the finish stays more anchored."><span class="amt r6-avocado-watermelon-amt" data-base-display="15 ml" data-base-max="15" data-base-min="15" data-base-unit="ml">15 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-watermelon" href="/baseline-natural-skincare/ingredient-library/watermelon">Watermelon Seed Oil</a></li>
-<li data-tip="Viscous ricinoleic-rich oil; raises drag and persistence as lasting glide increases."><span class="amt r6-avocado-castor-amt" data-base-display="5 ml" data-base-max="5" data-base-min="5" data-base-unit="ml">5 ml</span> <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-castor" href="/baseline-natural-skincare/ingredient-library/castor-oil">Castor Oil</a></li>
-</ul>
-<h4 data-recipe-view-group="standard">Method</h4>
-<ol data-recipe-view-group="standard">
-<li>Make sure the bottle, cap, funnel, and all tools are completely dry.</li>
-<li>Add the oils in the amounts shown for your selected richness and lasting glide.</li>
-<li>Cap and roll or swirl until fully uniform.</li>
-<li>Let the blend settle for <strong>30 minutes</strong>, then label.</li>
-</ol>
-<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Storage &amp; Use</h4>
-<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
-<li>Massage onto dry skin. Reapply in small amounts rather than flooding the skin at the start.</li>
-<li>Lower lasting glide keeps the finish quicker; higher lasting glide keeps the stroke anchored for longer.</li>
-<li>Store cool and dark. Shelf life: ~9–12 months, depending on the freshness of the oils used.</li>
-</ul>
-<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Notes</h4>
-<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
-<li>Richness only changes avocado against fractionated coconut.</li>
-<li>Lasting glide only changes castor against watermelon.</li>
-</ul>
-</div>
 </div>
 <div class="recipe card recipe-page recipe-universal-template" data-recipe-slug="restorative-hydration-layer" id="r7" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
@@ -689,7 +625,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A simple humectant hydration layer applied before an occlusive product to increase surface water and reduce a depleted post-wash feel.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>Water-based • two-component formula • unpreserved • adjustable water-to-glycerin ratio.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">0 (Very low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Water supplies the aqueous phase; glycerin binds water and increases humectant persistence at the skin surface.</p></div>
@@ -764,7 +700,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A shaving gel designed to provide wet glide, mucilage cushion and a small emollient phase so the blade moves with less drag.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>Water-based • rinse-off • slippery-elm/guar gel • small jojoba phase • unpreserved unless a preservation system is added.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">0 (Very low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Slippery elm supplies mucilage and cushioning; glycerin adds glide and water retention; guar builds gel structure; jojoba adds a light lubricating emollient layer; water hydrates the gums.</p></div>
@@ -826,7 +762,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A dry tooth-polishing powder for occasional removal of surface staining without peroxide, acids, charcoal or baking soda.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>Dry powder • oral-care use • fixed 30 g batch • 80% kaolin, 15% sage and 5% peppermint.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">0 (Very low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Superfine white kaolin provides the polishing phase; very finely powdered sage provides the supporting herb phase; peppermint provides mild flavour and freshness.</p></div>
@@ -891,7 +827,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A water-based conductive working gel that keeps a microcurrent device moving smoothly while maintaining an electrolyte-containing wet contact layer.</p></div>
 <div class="recipe-detail-block"><h4>Formula profile</h4><p>Water-based gel • leave on during device treatment, then rinse or wipe away • vegan • 40 g batch • unpreserved / freshly prepared • thick gel • wet, high-glide finish.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">0 (Very low likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the formulation works</h4><p>Water provides the conductive medium; glycerin extends wet glide; dissolved Dead Sea salt provides electrolytes; guar gives the gel enough stationary structure to remain underneath the device.</p></div>
@@ -961,7 +897,7 @@ Method steps MUST follow this format:
 </div>
 <div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
 <div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
-<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
 <div class="recipe-detail-block"><h4>Purpose</h4><p>A rich anhydrous balm designed for lips and targeted dry areas, with a protective winter-friendly finish and adjustable physical character.</p></div>
 <div class="recipe-detail-block"><h4>Formula Profile</h4><p>100 g reference batch • anhydrous • vegan • Testing • 45% butters at the default • adjustable butter character and structure.</p><p class="recipe-comedogenic-rating"><strong>Comedogenic Rating —</strong> <span class="recipe-comedogenic-rating-value">2.4 (Moderate likelihood of clogging pores)</span></p></div>
 <div class="recipe-detail-block"><h4>How the Formulation Works</h4><p>Cocoa butter provides the main rich body; mango softens the butter phase; kokum raises firmness with a relatively dry finish; apricot kernel oil supplies spread; avocado adds richness; red raspberry seed oil diversifies the liquid-oil phase; candelilla reinforces structure; vitamin E supports oxidation resistance.</p></div>
@@ -1390,7 +1326,6 @@ Method steps MUST follow this format:
 <li>Useful when you want a cleaner, faster-moving oil phase.</li>
 <li>Often used to offset richer oils without making the blend feel dry.</li>
 </ul>
-<p><strong>Relevant recipes:</strong> <a class="recipe-open" data-recipe-id="r6" href="/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend">Anhydrous Massage Oil Blend</a>.</p>
 </div>
 <div class="card" id="ing-watermelon">
 <h3>Watermelon Seed Oil</h3>
@@ -1929,7 +1864,7 @@ Method steps MUST follow this format:
 </script>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=SKINCARE_INGREDIENT_CONVERSIONS_20260920_2"></script>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
-<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1"></script>
+<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=SKINCARE_RECIPE_VIEW_STATE_20261003_1"></script>
 <script src="/sitewide/js/baseline-tabs.js?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1"></script>
 <script>
 (function(){
@@ -2048,20 +1983,6 @@ Method steps MUST follow this format:
   }
 
 
-  function activateMassageVariant(name){
-    var recipe = document.getElementById('r6');
-    if(!recipe) return;
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
-      var active = btn.getAttribute('data-variant') === name;
-      btn.setAttribute('aria-selected', active ? 'true' : 'false');
-      btn.tabIndex = active ? 0 : -1;
-    });
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-panel'), function(panel){
-      var active = panel.getAttribute('data-variant-panel') === name;
-      panel.hidden = !active;
-    });
-  }
-
   function normalizeRecipeId(raw){
     if(!raw) return null;
     raw = String(raw).trim();
@@ -2078,7 +1999,9 @@ Method steps MUST follow this format:
     if(!id) return;
     section.classList.add('recipe-detail-open');
     Array.prototype.forEach.call(section.querySelectorAll('.recipe-page'), function(page){
-      page.classList.toggle('is-open', page.id === id);
+      var active = page.id === id;
+      page.classList.toggle('is-open', active);
+      page.classList.toggle('active', active);
     });
   }
 
@@ -2088,6 +2011,7 @@ Method steps MUST follow this format:
     section.classList.remove('recipe-detail-open');
     Array.prototype.forEach.call(section.querySelectorAll('.recipe-page'), function(page){
       page.classList.remove('is-open');
+      page.classList.remove('active');
     });
   }
 
@@ -2337,37 +2261,6 @@ Method steps MUST follow this format:
     return 'Most anchored olive setting. Slowest glide, richest drag, and the strongest lingering cushion.';
   }
 
-  function getAvocadoFeel(avocado, castor){
-    var body = avocado <= 56 ? 'lighter body' : (avocado >= 64 ? 'richer body' : 'balanced body');
-    var glide = castor <= 4 ? 'quicker release' : (castor >= 7 ? 'longer working glide' : 'controlled lasting glide');
-
-    if(body === 'balanced body' && glide === 'controlled lasting glide'){
-      return 'Balanced body with controlled lasting glide. Richer than Protective Touch Balm, but still smooth through the hand.';
-    }
-    if(body === 'lighter body' && glide === 'quicker release'){
-      return 'Lighter body with quicker release. Closer to Protective Touch Balm in weight, but smoother and faster through the hand.';
-    }
-    if(body === 'lighter body' && glide === 'controlled lasting glide'){
-      return 'Lighter body with controlled lasting glide. Cleaner than Protective Touch Balm, with less lingering weight.';
-    }
-    if(body === 'lighter body'){
-      return 'Lighter body with longer working glide. More persistence than Protective Touch Balm, without becoming heavy.';
-    }
-    if(body === 'balanced body' && glide === 'quicker release'){
-      return 'Balanced body with quicker release. Smoother and faster than Protective Touch Balm.';
-    }
-    if(body === 'balanced body'){
-      return 'Balanced body with longer working glide. Fuller than Protective Touch Balm, with more hold through the stroke.';
-    }
-    if(glide === 'quicker release'){
-      return 'Richer body with a cleaner release. More cushion than Protective Touch Balm, without the slowest drag.';
-    }
-    if(glide === 'controlled lasting glide'){
-      return 'Richer body with controlled lasting glide. Fuller and more cushioned than Protective Touch Balm.';
-    }
-    return 'Richer body with longer working glide. The heaviest, most anchored option in this blend.';
-  }
-
   function syncMassageSlider(){
     var recipe = document.getElementById('r6');
     if(!recipe) return;
@@ -2385,43 +2278,9 @@ Method steps MUST follow this format:
     if(explainEl) explainEl.textContent = explainOliveMassage(castor);
     var breakdownEl = document.getElementById('r6GlideBreakdown');
     if(breakdownEl){
-      breakdownEl.innerHTML = '<strong>Selected variant:</strong> 15% jojoba • <span class="glide-castor">' + fmt(castor) + '%</span> castor • <span class="glide-olive">' + fmt(olive) + '%</span> olive';
+      breakdownEl.innerHTML = '<strong>Current blend:</strong> 15% jojoba • <span class="glide-castor">' + fmt(castor) + '%</span> castor • <span class="glide-olive">' + fmt(olive) + '%</span> olive';
     }
     paintTrack(slider);
-    if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
-  }
-
-  function syncMassageAvocado(){
-    var recipe = document.getElementById('r6');
-    if(!recipe) return;
-    var richnessSlider = document.getElementById('r6AvocadoRichness');
-    var castorSlider = document.getElementById('r6AvocadoCastor');
-    if(!richnessSlider || !castorSlider) return;
-
-    var avocado = Number(richnessSlider.value || 60);
-    var castor = Number(castorSlider.value || 5);
-    var fractionated = 80 - avocado;
-    var watermelon = 20 - castor;
-
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r6-avocado-avocado-readout'), function(el){ el.textContent = fmt(avocado); });
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r6-avocado-fco-readout'), function(el){ el.textContent = fmt(fractionated); });
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r6-avocado-castor-readout'), function(el){ el.textContent = fmt(castor); });
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r6-avocado-watermelon-readout'), function(el){ el.textContent = fmt(watermelon); });
-
-    applyScaledDisplay(recipe, recipe.querySelectorAll('.r6-avocado-avocado-amt'), avocado, 'ml');
-    applyScaledDisplay(recipe, recipe.querySelectorAll('.r6-avocado-fco-amt'), fractionated, 'ml');
-    applyScaledDisplay(recipe, recipe.querySelectorAll('.r6-avocado-watermelon-amt'), watermelon, 'ml');
-    applyScaledDisplay(recipe, recipe.querySelectorAll('.r6-avocado-castor-amt'), castor, 'ml');
-
-    var explainEl = document.getElementById('r6AvocadoOverallExplain');
-    if(explainEl) explainEl.textContent = getAvocadoFeel(avocado, castor);
-    var breakdownEl = document.getElementById('r6AvocadoBreakdown');
-    if(breakdownEl){
-      breakdownEl.innerHTML = '<strong>Selected variant:</strong> <span class="r6-avocado-avocado-readout">' + fmt(avocado) + '%</span> avocado • <span class="r6-avocado-fco-readout">' + fmt(fractionated) + '%</span> fractionated coconut • <span class="r6-avocado-watermelon-readout">' + fmt(watermelon) + '%</span> watermelon • <span class="r6-avocado-castor-readout">' + fmt(castor) + '%</span> castor';
-    }
-
-    paintTrack(richnessSlider);
-    paintTrack(castorSlider);
     if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
   }
 
@@ -2666,10 +2525,7 @@ Method steps MUST follow this format:
         else if(recipe.id === 'r2') syncOilCleanser();
         else if(recipe.id === 'r3') syncProtectiveTouchBalm();
         else if(recipe.id === 'r5') syncShaveCushion();
-        else if(recipe.id === 'r6'){
-          if(panel && panel.getAttribute('data-variant-panel') === 'avocado') syncMassageAvocado();
-          else syncMassageSlider();
-        }
+        else if(recipe.id === 'r6') syncMassageSlider();
         else if(recipe.id === 'r7') syncHydrationLayer();
       };
 
@@ -2708,40 +2564,22 @@ Method steps MUST follow this format:
   }
   window.BASELINE_decorateRecipeSliderSaves = decorateSliderSaves;
 
-  function initMassageVariantTabs(){
-    var recipe = document.getElementById('r6');
-    if(!recipe) return;
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
-      if(btn.dataset.bound === '1') return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', function(){
-        activateMassageVariant(btn.getAttribute('data-variant'));
-      });
-    });
-    var active = recipe.querySelector('.variant-tab[aria-selected="true"]');
-    activateMassageVariant(active ? active.getAttribute('data-variant') : 'olive');
-  }
-
   function initRecipeSliders(){
     initRecipeNavigationWrapper();
     initMultiplierControlFixes();
     initCleanserVariantTabs();
-    initMassageVariantTabs();
     bindSlider('r2BalancedCastor', syncOilCleanser);
     bindSlider('r2EnhancedOlive', syncOilCleanser);
     bindSlider('r3BalanceCastor', syncProtectiveTouchBalm);
     bindSlider('r3FirmnessWax', syncProtectiveTouchBalm);
     bindSlider('r5Cushion', syncShaveCushion);
     bindSlider('r6Glide', syncMassageSlider);
-    bindSlider('r6AvocadoRichness', syncMassageAvocado);
-    bindSlider('r6AvocadoCastor', syncMassageAvocado);
     bindSlider('r7Hydration', syncHydrationLayer);
     decorateSliderSaves();
     syncOilCleanser();
     syncProtectiveTouchBalm();
     syncShaveCushion();
     syncMassageSlider();
-    syncMassageAvocado();
     syncHydrationLayer();
     Array.prototype.forEach.call(document.querySelectorAll('.recipe-page'), function(recipe){
       if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
@@ -2751,7 +2589,7 @@ Method steps MUST follow this format:
   initRecipeSliders();
 })();
 </script>
-<script src="/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=RECIPE_ROUTE_STABILITY_20260925_1"></script>
+<script src="/systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js?v=SKINCARE_RECIPE_VIEW_STATE_20261003_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-model.js?v=SKINCARE_ROUTINE_WORKSPACE_20260804_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-comprehensive-benefits.js?v=SKINCARE_ROUTINE_COMPREHENSIVE_20260804_1"></script>
 <script src="/systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js?v=SKINCARE_ROUTINE_CATALOGUE_V2_20260804_1"></script>
