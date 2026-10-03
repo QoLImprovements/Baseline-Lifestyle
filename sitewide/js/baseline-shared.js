@@ -1213,7 +1213,13 @@
     const lower = token.toLowerCase();
     const direct = document.getElementById(lower);
     if(direct && direct.classList && direct.classList.contains('recipe-page')) return lower;
-    const recipes = qsa('#recipes .recipe-page[id]');
+
+    // Recipe routes exist in two legitimate shells:
+    // 1. embedded catalogue cards inside #recipes;
+    // 2. standalone recipe documents containing one .recipe-page card.
+    // Resolve against both so a clean slug route can reconstruct the same
+    // recipe/subview state after refresh regardless of which shell served it.
+    const recipes = qsa('.recipe-page[id]');
     for(const el of recipes){
       const id = String(el.id || '').toLowerCase();
       if(id === lower) return id;
