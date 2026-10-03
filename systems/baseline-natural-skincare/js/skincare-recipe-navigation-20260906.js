@@ -15,7 +15,6 @@
     ['r9','tooth-polishing-powder','Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal.']
   ];
   const TESTING=[
-    ['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash','colloidal oatmeal, marshmallow root, inulin and sunflower lecithin powder wash.',false],
     ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',true]
   ];
   function list(items,descriptions){

@@ -36,7 +36,7 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   }
   assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
   assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
-  assert.match(navigation, /\['r11','testing-soap-free-powdered-hair-wash','Soap-Free Powdered Hair Wash'/);
+  assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
   assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
 });
 
@@ -74,7 +74,7 @@ test('recipe interaction module loads directly without post-load repair layers',
   assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
 test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
-  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 10);
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/g) || []).length, 9);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
   assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
@@ -271,15 +271,10 @@ test('retired and Testing URLs redirect to permanent promoted URLs', () => {
   }
 });
 
-test('Soap-Free Powdered Hair Wash remains the active Testing recipe', () => {
-  const opening = /<div class="recipe card recipe-page recipe-universal-template"[^>]*data-category="Testing"[^>]*data-recipe-slug="testing-soap-free-powdered-hair-wash"[^>]*id="r11"[^>]*>/;
-  const openingMatch = opening.exec(html);
-  const start = openingMatch ? openingMatch.index : -1;
-  assert.notEqual(start, -1, 'missing embedded Testing recipe r11');
-  const block = html.slice(start);
-  for (const heading of ['Method', 'Storage &amp; Use', 'Comedogenic Considerations', 'Notes']) {
-    assert.match(block, new RegExp(`<h4[^>]*>(?:<a[^>]*>)?${heading}`), `r11 missing ${heading}`);
-  }
+test('removed powdered hair wash is absent from Skincare recipe surfaces', () => {
+  assert.doesNotMatch(html, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|data-recipe-id="r11"|id="r11"/);
+  assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
+  assert.doesNotMatch(recipeCss, /testing-soap-free-powdered-hair-wash/);
 });
 
 test('Recipes and My Routine remain separate section siblings', () => {

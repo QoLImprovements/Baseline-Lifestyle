@@ -44,7 +44,7 @@ test('shared method-tag engine maps every ingredient source to one first-use met
 
 test('Skincare universal recipe chrome is authored once in canonical HTML', () => {
   const blocks=skincareRecipeBlocks();
-  assert.equal(blocks.length,10);
+  assert.equal(blocks.length,9);
   for (const {id,html} of blocks) {
     assert.equal((html.match(/data-static-recipe-controls="1"/g)||[]).length,1,id+' static controls');
     assert.equal((html.match(/class="recipe-meta-row/g)||[]).length,1,id+' metadata row');
@@ -58,6 +58,17 @@ test('Skincare universal recipe chrome is authored once in canonical HTML', () =
     assert.doesNotMatch(html,/<[^>]+data-recipe-view-group="standard"[^>]*class="[^"]*recipe-view-hidden|<[^>]+class="[^"]*recipe-view-hidden[^"]*"[^>]*data-recipe-view-group="standard"/);
   }
   assert.doesNotMatch(recipeUx,/createElement|MutationObserver|setTimeout|requestAnimationFrame/);
+});
+
+
+test('Skincare adjustment visibility and Show All ordering are explicit contracts', () => {
+  assert.match(shared, /const adjustmentsAvailable = next === 'standard' \|\| next === 'show-all'/);
+  assert.match(shared, /adjustmentsRow\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
+  assert.match(shared, /editBody\.hidden = true/);
+  assert.match(skincareCss, /SKINCARE-SHOW-ALL-TAB-ORDER-20261003/);
+  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="standard"[\s\S]*order:10/);
+  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*recipe-details-intro[\s\S]*order:20/);
+  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
@@ -78,9 +89,14 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   for (const {id,html} of skincareRecipeBlocks()) {
     assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details" hidden/,id+' Details starts hidden');
     assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,id+' Details blocks');
+    assert.match(html,/class="recipe-comedogenic-rating"[^>]*><strong>Comedogenic Rating —<\/strong> <span class="recipe-comedogenic-rating-value">[^<]+<\/span>/,id+' concise comedogenic rating');
+    assert.match(html,/<h4>Limitations &amp; Trade-offs<\/h4>/,id+' limitations heading');
+    assert.doesNotMatch(html,/Comedogenic Considerations/,id+' no comedogenic guidance subsection');
   }
   assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
   assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
+  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
