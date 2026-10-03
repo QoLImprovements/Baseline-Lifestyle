@@ -55,6 +55,16 @@ import {
   paceSecondsForTier,
   renderDecisionTrainingView
 } from './darts-focused-decision.js';
+import {
+  poolForTier as roundPoolForTier,
+  pickScenarioWithHistory,
+  shuffledScenarioOptions,
+  targetsForTier,
+  sequenceLengthForTier as roundSequenceLength,
+  sequenceDelayForTier as roundSequenceDelay,
+  buildTargetSequence,
+  createGeographyPrompt
+} from './darts-focused-rounds.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
 const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=${BUILD}`;
@@ -118,38 +128,20 @@ function gameLevel(id = ui.selected) { return profile.stats[id]?.level || 1; }
 function tierIsUnlocked(id,value) { return gameLevel(id) >= TIER_DEFINITIONS[value - 1].unlockLevel; }
 function autoNextEnabled(id = ui.selected) { return Boolean(profile.custom.autoNext?.[id]); }
 function poolForTier(pool,id = ui.selected) {
-  const level = tierId(id);
-  const filtered = pool.filter((item) => Number(item.tier || 1) <= level);
-  return filtered.length ? filtered : pool;
+  return roundPoolForTier(pool,tierId(id));
 }
 function pickScenario(pool,key,id = ui.selected) {
-  const available = poolForTier(pool,id);
-  const stored = ui.lastScenario[key];
-  const history = Array.isArray(stored) ? stored : (stored ? [stored] : []);
-  const avoidCount = Math.min(3,Math.max(0,available.length - 1));
-  const recent = new Set(history.slice(-avoidCount));
-  const choices = available.length > 1 ? available.filter((item) => !recent.has(item.key)) : available;
-  const picked = randomItem(choices.length ? choices : available);
-  if (picked?.key) ui.lastScenario[key] = [...history,picked.key].slice(-4);
-  return picked;
+  const result=pickScenarioWithHistory(pool,tierId(id),ui.lastScenario[key]);
+  ui.lastScenario[key]=result.history;
+  return result.scenario;
 }
 function shuffledScenario(pool,key,id = ui.selected) {
-  const source = pickScenario(pool,key,id);
-  return source ? { ...source, options:Array.isArray(source.options) ? shuffle(source.options) : source.options } : null;
+  return shuffledScenarioOptions(pickScenario(pool,key,id));
 }
-function targetsForCurrentTier() { return TARGETS_BY_TIER[tierId()] || TARGETS_BY_TIER[1]; }
-function sequenceLengthForTier() { return [3,4,5][tierId('sequence-recall') - 1]; }
-function sequenceDelayForTier() { return [1150,900,720][tierId('sequence-recall') - 1]; }
-function buildSequence() {
-  const pool = TARGETS_BY_TIER[tierId('sequence-recall')] || TARGETS_BY_TIER[1];
-  const length = sequenceLengthForTier();
-  const sequence = [];
-  while (sequence.length < length) {
-    const options = pool.filter((item) => item !== sequence[sequence.length - 1]);
-    sequence.push(randomItem(options));
-  }
-  return sequence;
-}
+function targetsForCurrentTier() { return targetsForTier(tierId()); }
+function sequenceLengthForTier() { return roundSequenceLength(tierId('sequence-recall')); }
+function sequenceDelayForTier() { return roundSequenceDelay(tierId('sequence-recall')); }
+function buildSequence() { return buildTargetSequence(tierId('sequence-recall')); }
 function createState(id) {
   if (id === 'checkout-pressure') return { scenario:shuffledScenario(CHECKOUT_SCENARIOS,'checkout'), startedAt:nowMs(), feedback:'' };
   if (id === 'route-recovery') return { scenario:shuffledScenario(RECOVERY_SCENARIOS,'recovery'), startedAt:nowMs(), feedback:'' };
@@ -167,11 +159,7 @@ function createState(id) {
   return {};
 }
 function newGeographyState() {
-  const segment = randomItem(DARTBOARD_ORDER);
-  const relationships = tierId('board-geography') === 1 ? ['clockwise','anticlockwise'] : ['clockwise','anticlockwise','opposite'];
-  const relationship = randomItem(relationships);
-  const answer = relationship === 'clockwise' ? clockwiseNeighbour(segment) : relationship === 'anticlockwise' ? anticlockwiseNeighbour(segment) : oppositeSegment(segment);
-  return { segment, relationship, answer, startedAt:nowMs(), feedback:'' };
+  return { ...createGeographyPrompt(tierId('board-geography')), startedAt:nowMs(), feedback:'' };
 }
 function record(gameId, correct, responseMs = 0, confidence = null, category = '') {
   profile = recordResult(profile, gameId, { correct, responseMs, confidence, tier:tierId(gameId), category });
