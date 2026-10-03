@@ -1895,6 +1895,7 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-slug');
         document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
       // Keep existing back links/buttons available; no extra banner is injected.
@@ -1932,6 +1933,7 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-slug');
         document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
 
@@ -5247,9 +5249,18 @@ function buildControls(recipeEl){
         });
       });
 
-      // Default every newly opened recipe to Recipe. Route restoration below may
-      // then select a non-default subview from the canonical URL.
-      setView('standard', { syncRoute:false });
+      // Initialise from the clean recipe route when this card is the current
+      // recipe. This prevents a late template enhancement from resetting a
+      // refreshed ?view=details|guidance|show-all route back to Recipe.
+      let authoredInitialView = 'standard';
+      try{
+        const routeState = recipePathStateFromLocation();
+        const routeId = routeState && routeState.recipeId ? recipeIdForToken(routeState.recipeId) : '';
+        if(routeState && routeId === recipeEl.id){
+          authoredInitialView = normalizeRecipeSubView(routeState.recipeView || 'standard');
+        }
+      }catch(_e){}
+      setView(authoredInitialView, { syncRoute:false });
       try{ recipeEl.__baselineSetRecipeView = setView; }catch(_e){}
       if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
