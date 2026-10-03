@@ -140,3 +140,10 @@ test('Darts controller delegates Decision Training mutations to action authority
   assert.match(runtime,/createDartsDecisionActions\(/);
   assert.doesNotMatch(runtime,/function startDecisionCategory|function answerDecisionChoice|function finishPaceAnswer/);
 });
+
+
+test('Darts controller delegates canonical state construction to state factory',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-state\.js'/);
+  assert.match(runtime,/createDartsStateFactory\(/);
+  assert.doesNotMatch(runtime,/function createState|function newGeographyState/);
+});
