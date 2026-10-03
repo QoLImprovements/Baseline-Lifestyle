@@ -18,7 +18,8 @@ import {
   remainingAfterHit,
   sameSet,
   scoreTarget,
-  seededPick
+  seededPick,
+  validateRouteText
 } from './darts-focused-engine.mjs?v=DARTS_REBUILD_20260707_4';
 import {
   GAMES,
@@ -595,8 +596,16 @@ function answerStandard(gameId,value) {
   let correct = false;
   let explanation = '';
   if (gameId === 'checkout-pressure' || gameId === 'route-recovery') {
-    correct = value === state.scenario.correct;
-    explanation = state.scenario.explanation;
+    const scenario = state.scenario;
+    const checkoutScore = gameId === 'route-recovery'
+      ? remainingAfterHit(scenario.start,scenario.actual).remaining
+      : scenario.score;
+    const dartsAvailable = gameId === 'route-recovery' ? scenario.dartsLeft : scenario.darts;
+    const routeResult = validateRouteText(checkoutScore,value,dartsAvailable);
+    correct = routeResult.valid && routeResult.remaining === 0;
+    explanation = correct && value !== scenario.correct
+      ? `${value} is also a legal checkout from ${checkoutScore} in ${dartsAvailable} dart${dartsAvailable === 1 ? '' : 's'}. The listed route was ${scenario.correct}.`
+      : scenario.explanation;
   } else if (gameId === 'hold-picture') {
     correct = value === state.target;
     explanation = `The highlighted target was ${state.target}.`;
@@ -604,8 +613,11 @@ function answerStandard(gameId,value) {
     correct = value === state.mission.correct;
     explanation = `The retained answer was ${state.mission.correct}.`;
   } else if (gameId === 'pressure-ladder') {
-    correct = value === state.scenario.correct;
-    explanation = state.scenario.explanation;
+    const routeResult = validateRouteText(state.scenario.score,value,state.scenario.darts);
+    correct = routeResult.valid && routeResult.remaining === 0;
+    explanation = correct && value !== state.scenario.correct
+      ? `${value} is also a legal checkout from ${state.scenario.score}. The listed route was ${state.scenario.correct}.`
+      : state.scenario.explanation;
     profile.custom.pressureLevel = Math.max(1,Math.min(5,profile.custom.pressureLevel + (correct ? 1 : -1)));
     explanation += ` The next pressure level is ${profile.custom.pressureLevel}.`;
   }
