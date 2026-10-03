@@ -215,8 +215,12 @@ test('A deliberate recipe open always starts on Recipe even after Details was pr
     await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
     expect(new URL(page.url()).searchParams.get('view')).toBe('details');
 
-    await page.goto(system.overview);
-    const link = page.locator('a.recipe-open[href="' + system.recipe + '"]').first();
+    const back = card.locator('.back-btn').first();
+    await expect(back).toBeVisible();
+    await back.click();
+    await expect(page).toHaveURL(system.overview);
+
+    const link = page.locator('#recipes-overview a.recipe-open[href="' + system.recipe + '"], .recipe-overview a.recipe-open[href="' + system.recipe + '"]').first();
     await expect(link).toBeVisible();
     await link.click();
 
