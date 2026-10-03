@@ -415,16 +415,14 @@ test('Food recipes keep repeated water quantities at their authored first-use st
   expect(waterPills.some(text => /1\s*[–—-]\s*2 tbsp hot water/i.test(text))).toBe(true);
 });
 
-test('Skincare recipe uses segmented variants and compact explanatory sliders in Recipe view', async ({ page }) => {
+test('Skincare massage recipe uses one compact explanatory slider in Recipe view', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend');
   const card = page.locator('#r6');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
   await expectUniversalTabs(card, 'Recipe');
 
-  const variants = card.locator('.variant-switcher .variant-tab');
-  await expect(variants).toHaveCount(2);
-  await expect(variants.filter({ hasText:/^Olive Blend$/ })).toHaveAttribute('aria-selected', 'true');
+  await expect(card.locator('.variant-switcher, .variant-tab')).toHaveCount(0);
   await expect(card.locator('.recipe-variant-field')).toHaveCount(0);
   await expect(card.locator('.glide-controller').first()).toBeVisible();
   await expect(card.locator('.recipe-slider-instruction')).toHaveCount(0);
