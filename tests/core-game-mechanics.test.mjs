@@ -42,3 +42,26 @@ test('Make The Number accepts only whole shown numbers in expressions',()=>{
   assert.doesNotMatch(submit,/\*\/\.\]\+\$/);
   assert.match(submit,/Only whole shown numbers, brackets, and \+ - × ÷ are allowed\./);
 });
+
+
+test('Detect The Word keypad knowledge promotes the strongest known state per letter',()=>{
+  const knowledgeSource=extractFunction('wordLetterKnowledge','syncWordKeypadKnowledge');
+  const evaluateSource=extractFunction('evaluateWordGuess','computeWordRewardMultiplier');
+  const factory=Function('wordState',evaluateSource+';'+knowledgeSource+'; return {evaluateWordGuess,wordLetterKnowledge};');
+  const firstFactory=factory({guesses:[]});
+  const guessA={word:'allee',evaluation:firstFactory.evaluateWordGuess('allee','apple')};
+  const guessB={word:'amply',evaluation:firstFactory.evaluateWordGuess('amply','apple')};
+  const api=factory({guesses:[guessA,guessB]});
+  const knowledge=api.wordLetterKnowledge();
+
+  assert.equal(knowledge.a,'correct');
+  assert.equal(knowledge.l,'present');
+  assert.equal(knowledge.e,'correct');
+  assert.equal(knowledge.m,'absent');
+});
+
+test('Detect The Word no longer claims unrestricted dictionary validation',()=>{
+  const start=extractFunction('startWordRound','evaluateWordGuess');
+  assert.doesNotMatch(start,/valid dictionary word/);
+  assert.match(start,/Submit a ' \+ tier\.letters \+ '-letter guess/);
+});
