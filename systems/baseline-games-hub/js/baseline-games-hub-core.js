@@ -4028,7 +4028,7 @@ function toggleGameFullscreen(gameId){
       const wordTier = event.target.closest('[data-word-tier]');
       if(wordTier){
         const tier = WORD_TIERS.find(item => item.id === wordTier.getAttribute('data-word-tier'));
-        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
+        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; wordState = null; clearCoreActiveRound('detectword'); wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
         return;
       }
       const make24Tier = event.target.closest('[data-make24-tier]');
