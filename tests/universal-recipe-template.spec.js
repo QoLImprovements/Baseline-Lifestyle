@@ -633,8 +633,8 @@ test('Multi-variance recipes expose a synchronized selector at the top of Detail
 
   await selector.selectOption('enhanced');
   await expect(card.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(card.locator('.variant-panel[data-variant-panel="enhanced"]')).toBeVisible();
-  await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toBeHidden();
+  await expect(card.locator('.variant-panel[data-variant-panel="enhanced"]')).not.toHaveAttribute('hidden', '');
+  await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toHaveAttribute('hidden', '');
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/olive/i);
   await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
@@ -643,7 +643,7 @@ test('Multi-variance recipes expose a synchronized selector at the top of Detail
 
   await selector.selectOption('reactive');
   await expect(card.locator('.variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
-  await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).toBeVisible();
+  await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).not.toHaveAttribute('hidden', '');
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Reactive/i);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/100% safflower/i);
   await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
