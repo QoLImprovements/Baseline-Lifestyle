@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   createInitialState, createMissionDefinition, serialiseState, movementRange, attackRange, hasLineOfSight,
   moveUnit, basicAttack, useAreaAbility, endTurn, checkVictory, nextMissionId, isBlocked,
+  tacticalStateSnapshot, applyTacticalAction, simulateTacticalActions,
   MISSION_TYPES, MISSION_ORDER, MISSION_DEFINITIONS
 } from '../systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
 
@@ -108,4 +109,36 @@ test('campaign unlocks all seven missions sequentially and serialises completion
   }
   assert.equal(saved.campaignComplete, true);
   assert.deepEqual(saved.completedMissions, [...MISSION_ORDER]);
+});
+
+
+test('scripted Tactical Operations simulations are deterministic and UI-independent',()=>{
+  const actions=[
+    {type:'end-turn'},
+    {type:'end-turn'},
+    {type:'end-turn'}
+  ];
+  const first=simulateTacticalActions({missionId:'watchtower-break',actions});
+  const second=simulateTacticalActions({missionId:'watchtower-break',actions});
+
+  assert.deepEqual(first.snapshot,second.snapshot);
+  assert.deepEqual(first.trace,second.trace);
+  assert.deepEqual(first.results,second.results);
+  assert.equal(first.trace.length,actions.length+1);
+});
+
+test('simulation snapshots exclude logs and wall-clock save metadata',()=>{
+  const state=createInitialState();
+  const snapshot=tacticalStateSnapshot(state);
+  assert.equal(Object.hasOwn(snapshot,'log'),false);
+  assert.equal(Object.hasOwn(snapshot,'completedAt'),false);
+  assert.equal(snapshot.missionId,state.missionId);
+  assert.equal(snapshot.units.length,state.units.length);
+});
+
+test('Tactical action dispatcher rejects unknown actions without mutating state',()=>{
+  const state=createInitialState();
+  const before=tacticalStateSnapshot(state);
+  assert.equal(applyTacticalAction(state,{type:'unknown-action'}),false);
+  assert.deepEqual(tacticalStateSnapshot(state),before);
 });
