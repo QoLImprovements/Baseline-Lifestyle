@@ -518,10 +518,11 @@ function configureFromAvailableCore() {
 }
 
 if (!configureFromAvailableCore()) {
-  const startedAt = Date.now();
-  const timer = globalThis.setInterval?.(() => {
-    if (configureFromAvailableCore() || Date.now() - startedAt > 10000) globalThis.clearInterval?.(timer);
-  }, 25);
+  const onCoreReady = () => {
+    if (configureFromAvailableCore()) globalThis.removeEventListener?.('baseline:games-hub:core-ready', onCoreReady);
+  };
+  globalThis.addEventListener?.('baseline:games-hub:core-ready', onCoreReady, { once: true });
+  Promise.resolve().then(onCoreReady);
 }
 
 export { host as BaselineRealmHost };
