@@ -65,6 +65,8 @@
         sitOutCounts: {},
         lastSitOutPlayerIds: [],
         currentSitOutPlayerIds: [],
+        currentCircumstantialSitOutPlayerIds: [],
+        currentOptionalSitOutPlayerIds: [],
         format: 'doubles',
         durationMinutes: 60,
         current: [],
@@ -360,6 +362,10 @@
         sitOutCounts: parsed.plan && typeof parsed.plan.sitOutCounts === 'object' && parsed.plan.sitOutCounts ? parsed.plan.sitOutCounts : {},
         lastSitOutPlayerIds: Array.isArray(parsed.plan && parsed.plan.lastSitOutPlayerIds) ? parsed.plan.lastSitOutPlayerIds : [],
         currentSitOutPlayerIds: Array.isArray(parsed.plan && parsed.plan.currentSitOutPlayerIds) ? parsed.plan.currentSitOutPlayerIds : [],
+        currentCircumstantialSitOutPlayerIds: Array.isArray(parsed.plan && parsed.plan.currentCircumstantialSitOutPlayerIds)
+          ? parsed.plan.currentCircumstantialSitOutPlayerIds
+          : (Array.isArray(parsed.plan && parsed.plan.currentSitOutPlayerIds) ? parsed.plan.currentSitOutPlayerIds : []),
+        currentOptionalSitOutPlayerIds: Array.isArray(parsed.plan && parsed.plan.currentOptionalSitOutPlayerIds) ? parsed.plan.currentOptionalSitOutPlayerIds : [],
         currentSavedCourtKeys: Array.isArray(parsed.plan && parsed.plan.currentSavedCourtKeys) ? parsed.plan.currentSavedCourtKeys : [],
         currentSetReadyForNext: !!(parsed.plan && parsed.plan.currentSetReadyForNext),
         finished: Array.isArray(parsed.plan && parsed.plan.finished) ? parsed.plan.finished : [],
@@ -944,13 +950,28 @@
     }
   }
 
-  function renderCurrentSitOutInfo(){
-    if(!refs.currentSitOutWrap) return;
-    const names = (state.plan.currentSitOutPlayerIds || []).map(id => {
+  function getSitOutNames(ids){
+    return (ids || []).map(function(id){
       const player = getPlayer(id);
       return player ? player.name : '';
     }).filter(Boolean);
-    refs.currentSitOutWrap.innerHTML = names.length ? ('<div class="status-box"><strong>Sitting out this batch</strong><br/>' + escapeHtml(names.join(' · ')) + '</div>') : '';
+  }
+
+  function syncCurrentSitOutUnion(){
+    const circumstantial = Array.isArray(state.plan.currentCircumstantialSitOutPlayerIds) ? state.plan.currentCircumstantialSitOutPlayerIds : [];
+    const optional = Array.isArray(state.plan.currentOptionalSitOutPlayerIds) ? state.plan.currentOptionalSitOutPlayerIds : [];
+    state.plan.currentSitOutPlayerIds = Array.from(new Set(circumstantial.concat(optional)));
+  }
+
+  function renderCurrentSitOutInfo(){
+    if(!refs.currentSitOutWrap) return;
+    syncCurrentSitOutUnion();
+    const circumstantialNames = getSitOutNames(state.plan.currentCircumstantialSitOutPlayerIds);
+    const optionalNames = getSitOutNames(state.plan.currentOptionalSitOutPlayerIds);
+    const rows = [];
+    if(circumstantialNames.length) rows.push('<strong>Circumstantial sit-out</strong><br/>' + escapeHtml(circumstantialNames.join(' · ')));
+    if(optionalNames.length) rows.push('<strong>Optional sit-out</strong><br/>' + escapeHtml(optionalNames.join(' · ')));
+    refs.currentSitOutWrap.innerHTML = rows.length ? ('<div class="status-box">' + rows.join('<br/><br/>') + '</div>') : '';
   }
 
   function getSitOutCount(playerId){
@@ -2890,9 +2911,14 @@
     }
     const courts = (result.courts || []).filter(Boolean).slice(0, courtLimit);
     courts.forEach(court => usedSet.add(buildMatchupKey(court)));
-    state.plan.currentSitOutPlayerIds = Array.from(new Set((result.sitOutPlayers || []).map(function(player){ return player && player.id; }).filter(Boolean)));
-    state.plan.lastSitOutPlayerIds = state.plan.currentSitOutPlayerIds.slice();
-    state.plan.currentSitOutPlayerIds.forEach(playerId => { state.plan.sitOutCounts[playerId] = Number(state.plan.sitOutCounts[playerId] || 0) + 1; });
+    state.plan.currentCircumstantialSitOutPlayerIds = Array.from(new Set((result.sitOutPlayers || []).map(function(player){ return player && player.id; }).filter(Boolean)));
+    state.plan.currentOptionalSitOutPlayerIds = [];
+    syncCurrentSitOutUnion();
+    // Only circumstantial sit-outs participate in automatic fairness balancing.
+    // A player choosing to sit out from a court must not earn rotation credit or
+    // cause somebody else to be prioritised for a future forced sit-out.
+    state.plan.lastSitOutPlayerIds = state.plan.currentCircumstantialSitOutPlayerIds.slice();
+    state.plan.currentCircumstantialSitOutPlayerIds.forEach(playerId => { state.plan.sitOutCounts[playerId] = Number(state.plan.sitOutCounts[playerId] || 0) + 1; });
     const rebuiltCourts = courts.map((court, index) => attachVariableBasePlayers(resetUnsubmittedCourtScoreDraft(evaluateCourtRestrictions(Object.assign({ courtNumber:index + 1 }, JSON.parse(JSON.stringify(court)))))));
     return orderCourtsByLadder(rebuiltCourts);
   }
@@ -2913,6 +2939,8 @@
       state.plan.currentSavedCourtKeys = [];
       state.plan.currentSetReadyForNext = false;
       state.plan.currentSitOutPlayerIds = [];
+      state.plan.currentCircumstantialSitOutPlayerIds = [];
+      state.plan.currentOptionalSitOutPlayerIds = [];
       saveSessionData();
       renderAll();
       return;
@@ -3316,11 +3344,13 @@
     rebuilt.variableSitOutIds = selectedIds.slice();
     rebuilt.currentCourtKey = ['current-set', String(state.plan.generatedAt || 'unstarted'), 'slot', String(Number(index) + 1), 'edit', Date.now().toString(36), buildMatchupKey(rebuilt)].join('::');
     state.plan.current[index] = rebuilt;
-    const sitOutSet = new Set(Array.isArray(state.plan.currentSitOutPlayerIds) ? state.plan.currentSitOutPlayerIds : []);
-    baseIds.forEach(function(id){ sitOutSet.delete(id); });
-    selectedIds.forEach(function(id){ sitOutSet.add(id); });
-    state.plan.currentSitOutPlayerIds = Array.from(sitOutSet);
-    state.plan.lastSitOutPlayerIds = state.plan.currentSitOutPlayerIds.slice();
+    const optionalSet = new Set(Array.isArray(state.plan.currentOptionalSitOutPlayerIds) ? state.plan.currentOptionalSitOutPlayerIds : []);
+    baseIds.forEach(function(id){ optionalSet.delete(id); });
+    selectedIds.forEach(function(id){ optionalSet.add(id); });
+    state.plan.currentOptionalSitOutPlayerIds = Array.from(optionalSet);
+    syncCurrentSitOutUnion();
+    // Deliberately do not alter lastSitOutPlayerIds or sitOutCounts here:
+    // these are player-selected optional sit-outs, not circumstantial rotation events.
     state.plan.currentSavedCourtKeys = (state.plan.currentSavedCourtKeys || []).filter(function(key){ return key !== oldKey; });
     state.plan.currentSavedSignatures = (state.plan.currentSavedSignatures || []).filter(function(signature){ return signature !== (court.signature || buildMatchupKey(court)); });
     state.plan.currentSetReadyForNext = false;
@@ -3605,6 +3635,8 @@
       format: state.plan.format,
       durationMinutes: state.plan.durationMinutes,
       activePairs: state.plan.current.filter(court => !courtMarkedNoGame(court) && court.kind === 'doubles').length,
+      circumstantialSitOutPlayerIds: (state.plan.currentCircumstantialSitOutPlayerIds || []).slice(),
+      optionalSitOutPlayerIds: (state.plan.currentOptionalSitOutPlayerIds || []).slice(),
       courts: state.plan.current.map(court => ({
         courtNumber: court.courtNumber,
         kind: court.kind,
