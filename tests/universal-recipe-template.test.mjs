@@ -73,7 +73,7 @@ test('Skincare adjustment visibility and Show All ordering are explicit contract
 
 test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
-  assert.match(shared, /searchParams\.get\('view'\)/);
+  assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
   assert.match(shared, /base \+ '\?view=' \+ encodeURIComponent\(recipeView\)/);
   assert.match(shared, /function setView\(view, options=\{\}\)/);
   assert.match(shared, /options && options\.syncRoute/);
