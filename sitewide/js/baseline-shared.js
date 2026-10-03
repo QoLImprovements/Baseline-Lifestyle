@@ -4993,12 +4993,7 @@ function buildControls(recipeEl){
       let tabs = q('.recipe-subtabs[data-static-recipe-shell="1"]', recipeEl);
       const preauthored = !!(metaRow && metaSummary && adjustmentsRow && tabs);
 
-      function normaliseMetaValue(value){
-        return String(value || '').replace(/\s+/g, ' ').replace(/^[\s:–—-]+|[\s.;]+$/g, '').trim();
-      }
       function addMeta(label, value, className){
-        value = normaliseMetaValue(value);
-        if(!value) return;
         const item = document.createElement('span');
         item.className = 'recipe-meta-item' + (className ? (' ' + className) : '');
         const key = document.createElement('span');
@@ -5006,25 +5001,28 @@ function buildControls(recipeEl){
         key.textContent = label + ':';
         const val = document.createElement('span');
         val.className = 'recipe-meta-value';
-        val.textContent = value;
+        val.textContent = String(value || '').trim();
         item.append(key, document.createTextNode(' '), val);
         metaSummary.appendChild(item);
         return val;
       }
-      function firstMatch(re, value){
-        const match = String(value || '').match(re);
-        return match && match[1] ? normaliseMetaValue(match[1]) : '';
-      }
 
-      const recipeText = String(recipeEl.textContent || '').replace(/\s+/g, ' ');
-      let yieldValue = '';
-      let yieldMetaValue = null;
       let batchMetaValue = null;
 
       if(preauthored){
-        yieldMetaValue = q('.recipe-yield-meta-value', metaRow);
-        batchMetaValue = q('.recipe-batch-meta-value', metaRow);
-        yieldValue = normaliseMetaValue((yieldMetaValue && yieldMetaValue.dataset && yieldMetaValue.dataset.baseYield) || (yieldMetaValue && yieldMetaValue.textContent) || '1 recipe batch');
+        // Canonical metadata policy: every recipe shows one Batch item only.
+        // Remove older Yield/extra metadata so no recipe displays contradictory
+        // or redundant values such as "Yield: 1 recipe batch • Batch: 1×".
+        qsa('.recipe-meta-item', metaSummary).forEach(item=>{
+          const key = q('.recipe-meta-key', item);
+          const label = String(key ? key.textContent : '').replace(/:\s*$/,'').trim().toLowerCase();
+          if(label !== 'batch') item.remove();
+        });
+        batchMetaValue = q('.recipe-batch-meta-value', metaRow) || q('.recipe-meta-item .recipe-meta-value', metaRow);
+        if(batchMetaValue){
+          batchMetaValue.classList.add('recipe-batch-meta-value');
+          batchMetaValue.textContent = '1×';
+        }
       }else{
         metaRow = document.createElement('div');
         metaRow.className = 'recipe-meta-row';
@@ -5032,29 +5030,7 @@ function buildControls(recipeEl){
         metaSummary.className = 'recipe-meta-summary';
         metaRow.appendChild(metaSummary);
 
-        yieldValue = firstMatch(/\bYield\s*:\s*([^.;]+)/i, recipeText);
-        if(!yieldValue){
-          yieldValue = firstMatch(/\bTotal\s*[–—:-]\s*([0-9]+(?:\.[0-9]+)?\s*(?:g|kg|ml|l)\b)/i, recipeText);
-        }
-        if(!yieldValue){
-          yieldValue = firstMatch(/\b([0-9]+(?:\.[0-9]+)?\s*(?:g|ml)\s+(?:master\s+)?(?:batch|blend|balm))\b/i, recipeText)
-            .replace(/\s+(?:master\s+)?(?:batch|blend|balm)$/i, '');
-        }
-        if(!yieldValue){
-          const serves = firstMatch(/\b(?:Serves|Makes)\s*:?\s*([^.;]+)/i, recipeText);
-          if(serves) yieldValue = serves;
-        }
-        if(!yieldValue) yieldValue = '1 recipe batch';
-        const equipmentValue = firstMatch(/\bEquipment\s*:\s*([^.;]+)/i, recipeText);
-        const allergensValue = firstMatch(/\bAllergens?\s*:\s*([^.;]+)/i, recipeText);
-        const categoryValue = (recipeEl.dataset && recipeEl.dataset.category) ? recipeEl.dataset.category : '';
-
-        yieldMetaValue = addMeta('Yield', yieldValue);
         batchMetaValue = addMeta('Batch', '1×');
-        addMeta('Equipment', equipmentValue);
-        addMeta('Allergens', allergensValue);
-        addMeta('Category', categoryValue, /^testing$/i.test(categoryValue) ? 'recipe-meta-status' : '');
-        if(yieldMetaValue) yieldMetaValue.classList.add('recipe-yield-meta-value');
         if(batchMetaValue) batchMetaValue.classList.add('recipe-batch-meta-value');
 
         const adjustmentsBtnForRow = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
@@ -5095,7 +5071,6 @@ function buildControls(recipeEl){
       if(legacyPrintSummary) legacyPrintSummary.classList.add('recipe-legacy-print-summary');
 
       const batchInput = q('input.multiplier-input', recipeEl);
-      const baseYieldMatch = String(yieldValue || '').match(/^([0-9]+(?:\.[0-9]+)?)\s*(g|kg|ml|l)\b/i);
       function tidyNumber(value){
         const rounded = Math.round(Number(value) * 100) / 100;
         return Number.isInteger(rounded) ? String(rounded) : String(rounded);
@@ -5104,11 +5079,6 @@ function buildControls(recipeEl){
         let batch = batchInput ? parseFloat(batchInput.value || '1') : 1;
         if(!Number.isFinite(batch) || batch <= 0) batch = 1;
         if(batchMetaValue) batchMetaValue.textContent = tidyNumber(batch) + '×';
-        if(yieldMetaValue && baseYieldMatch){
-          yieldMetaValue.textContent = tidyNumber(parseFloat(baseYieldMatch[1]) * batch) + ' ' + baseYieldMatch[2];
-        }else if(yieldMetaValue && /^1 recipe batch$/i.test(String(yieldValue || ''))){
-          yieldMetaValue.textContent = tidyNumber(batch) + ' recipe ' + (batch === 1 ? 'batch' : 'batches');
-        }
       }
       if(batchInput){
         batchInput.addEventListener('input', syncUniversalRecipeMeta);
@@ -5225,8 +5195,11 @@ function buildControls(recipeEl){
         });
         qsa('[data-recipe-view-group]', recipeEl).forEach(el=>{
           const group = el.dataset.recipeViewGroup || '';
-          const visible = group !== 'details' && (next === 'show-all' || group === next);
+          const visible = next === 'show-all' || group === next;
           el.classList.toggle('recipe-view-hidden', !visible);
+          if(el.classList && el.classList.contains('recipe-details-intro')){
+            el.hidden = !visible;
+          }
         });
         // Adjustments only belong to the make-the-recipe surfaces.
         // Leaving Recipe/Show All also closes the panel so no adjustment state
