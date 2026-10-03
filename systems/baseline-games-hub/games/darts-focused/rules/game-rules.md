@@ -28,3 +28,16 @@ Darts Focused is a Games Hub subsystem containing ten distinct website-based tra
 - `darts-focused.js` remains the controller for drill state transitions, game-specific rendering and interaction routing.
 
 Do not reintroduce parallel implementations of these responsibilities into the controller. Extend the owning module instead.
+
+
+## Additional extracted authorities
+
+- `darts-focused-renderers.js` owns game-specific presentation.
+- `darts-focused-progress.js` owns progress, tier and active-control presentation.
+- `darts-focused-actions.js` owns non-Decision drill transitions and answer handling.
+- `darts-focused-decision-actions.js` owns Decision Training series, answer and pace transitions.
+- `darts-focused-state.js` owns canonical initial state shapes for each Darts game.
+- `darts-focused-shell.js` owns Games Hub mounting, modal/how-to, overview insertion, panel open/close and fullscreen shell behavior.
+- `darts-focused-events.js` owns click, change and keyboard dispatch.
+
+The remaining `darts-focused.js` file is the coordinator that connects these authorities and exposes the subsystem to the Games Hub.
