@@ -71,6 +71,14 @@ test('Skincare adjustment visibility and Show All ordering are explicit contract
   assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
+test('recipe subview first-paint guard honours clean-route view state before runtime', () => {
+  assert.match(skincareHtml, /data-initial-recipe-view/);
+  assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)\.get\('view'\)/);
+  assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
+  assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\[hidden\][\s\S]*display:grid!important/);
+  assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
+});
+
 test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
   assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
