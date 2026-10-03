@@ -14,6 +14,7 @@ import { panelHtml } from '../systems/baseline-games-hub/games/darts-focused/js/
 import { boardSvg } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-board.js';
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js',import.meta.url),'utf8');
+const decisionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision.js',import.meta.url),'utf8');
 
 test('Darts content authority exposes the canonical ten games and three tiers',()=>{
   assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
@@ -93,7 +94,8 @@ test('Darts pressure and pace countdowns derive display time from managed timers
   assert.match(runtime,/state\.paceTimer = scheduleGame/);
   assert.match(runtime,/--pressure-start-scale:\$\{startScale\}/);
   assert.match(runtime,/managedTimerRemaining\(state\.timer\)/);
-  assert.match(runtime,/managedTimerRemaining\(state\.paceTimer\)/);
+  assert.match(decisionSource,/remainingMsForTimer\(state\.paceTimer\)/);
+  assert.match(decisionSource,/--pressure-start-scale:\$\{startScale\}/);
 });
 
 
