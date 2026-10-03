@@ -23,6 +23,7 @@ Darts Focused is a Games Hub subsystem containing ten distinct website-based tra
 - `darts-focused-storage.js` owns browser persistence and legacy-key migration.
 - `darts-focused-board.js` owns dartboard geometry and reusable board/scenario SVG markup.
 - `darts-focused-ui.js` owns generic Games Hub shell markup and reusable choice/feedback controls.
+- `darts-focused-decision.js` owns Decision Training category metadata, tier-sized question pools, category/pace presentation helpers and specialist Decision Training rendering.
 - `darts-focused.js` remains the controller for drill state transitions, game-specific rendering and interaction routing.
 
 Do not reintroduce parallel implementations of these responsibilities into the controller. Extend the owning module instead.
