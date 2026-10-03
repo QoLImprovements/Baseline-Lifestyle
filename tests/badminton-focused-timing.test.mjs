@@ -38,3 +38,17 @@ test('Badminton installs one document visibility listener for timer coordination
   const init=section('init',null);
   assert.match(init,/document\.addEventListener\('visibilitychange',syncBadmintonVisibility\)/);
 });
+
+
+test('Pressure Ladder visual countdown uses the managed remaining timer',()=>{
+  const pressure=section('renderPressure','pressureTimeout');
+  assert.match(pressure,/s\.pressureTimer=later\(\(\)=>pressureTimeout\(\),totalMs\)/);
+  assert.match(pressure,/managedTimerRemaining\(s\.pressureTimer\)/);
+  assert.match(pressure,/--badminton-start-scale:\$\{startScale\}/);
+  assert.match(pressure,/--badminton-seconds:\$\{Math\.max\(\.001,remainingMs\/1000\)\}s/);
+});
+
+test('Badminton rerenders the active panel after visibility resume',()=>{
+  const visibility=section('syncBadmintonVisibility','shuffle');
+  assert.match(visibility,/if\(byId\('badmintonFocusedPanel'\)\?\.classList\.contains\('is-active'\)\)renderSelected\(\)/);
+});
