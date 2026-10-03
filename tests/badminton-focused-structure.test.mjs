@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 import { GAMES, TIERS, ZONES, ZONE_COORDS } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-config.js';
+import { choicePools, purposes } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-scenarios.js';
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
 
@@ -31,4 +32,32 @@ test('Badminton Auto-Next advances after timed failures',()=>{
   assert.match(pressure,/scheduleAuto\(\(\)=>newRound\(\),2100\)/);
   assert.match(wait,/Late reaction[\s\S]*scheduleAuto\(\(\)=>newRound\(\),2200\)/);
   assert.match(tempo,/Late contact response[\s\S]*scheduleAuto\(\(\)=>newRound\(\),2100\)/);
+});
+
+
+test('Badminton scenario banks preserve valid answer structures',()=>{
+  for(const [gameId,pool] of Object.entries(choicePools)){
+    assert.ok(Array.isArray(pool)&&pool.length>0,gameId+' must have scenarios');
+    for(const scenario of pool){
+      assert.equal(typeof scenario.prompt,'string',gameId+' scenario must have a prompt');
+      assert.equal(typeof scenario.correct,'string',gameId+' scenario must have a correct answer');
+      assert.ok(Array.isArray(scenario.options),gameId+' scenario must have options');
+      assert.ok(scenario.options.includes(scenario.correct),gameId+' correct answer must be selectable');
+      assert.equal(typeof scenario.explanation,'string',gameId+' scenario must explain the answer');
+    }
+  }
+
+  assert.ok(Array.isArray(purposes)&&purposes.length>0);
+  for(const scenario of purposes){
+    assert.ok(scenario.purposeOptions.includes(scenario.correctPurpose),'correct tactical purpose must be selectable');
+    const shot=scenario.shots[scenario.correctPurpose];
+    assert.ok(shot,'correct tactical purpose must have a shot stage');
+    assert.ok(shot.options.includes(shot.correct),'correct shot must be selectable');
+  }
+});
+
+test('Badminton runtime consumes extracted scenario banks',()=>{
+  assert.match(runtime,/import \{ choicePools, purposes \} from '\.\/badminton-focused-scenarios\.js'/);
+  assert.doesNotMatch(runtime,/const choicePools=/);
+  assert.doesNotMatch(runtime,/const purposes=/);
 });
