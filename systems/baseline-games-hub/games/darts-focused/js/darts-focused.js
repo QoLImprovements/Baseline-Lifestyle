@@ -4,6 +4,7 @@ import {
   averageResponseMs,
   createDefaultDartsProfile,
   recordResult,
+  realmContributionForDarts,
   seededPick
 } from './darts-focused-engine.mjs?v=DARTS_REBUILD_20260707_4';
 import {
