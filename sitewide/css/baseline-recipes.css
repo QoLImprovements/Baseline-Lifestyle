@@ -2608,8 +2608,7 @@
 #recipes .recipe-page .glide-controller{
   border-color:color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 72%, transparent) !important;
 }
-#recipes .recipe-page .variant-heading,
-#recipes .recipe-page .recipe-native-variant-switcher{
+#recipes .recipe-page .variant-heading{
   display:none !important;
 }
 #recipes .recipe-page:not(.recipe-options-open) .glide-controller{
