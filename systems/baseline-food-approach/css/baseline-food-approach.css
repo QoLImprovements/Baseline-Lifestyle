@@ -320,8 +320,10 @@
   .recipes{ gap:14px; }
   @media (min-width:900px){ .recipes{ grid-template-columns:1fr 1fr; } }
   #recipes .recipe-page{ display:none; }
-  #recipes.recipe-open-mode .recipe-page.is-open,
-  #recipes.recipe-detail-open .recipe-page.is-open{ display:block; }
+  #recipes.recipe-open-mode .recipe-page,
+  #recipes.recipe-detail-open .recipe-page{ display:none!important; }
+  #recipes.recipe-open-mode .recipe-page.active,
+  #recipes.recipe-detail-open .recipe-page.active{ display:block!important; }
   #recipes.recipe-open-mode #recipes-landing,
   #recipes.recipe-detail-open #recipes-landing{ display:none; }
   .recipe.card{ break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
