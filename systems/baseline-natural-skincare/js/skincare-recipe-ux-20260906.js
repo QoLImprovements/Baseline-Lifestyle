@@ -37,16 +37,6 @@
     catch(_error){ return 'standard'; }
   }
 
-  function syncRecipeViewUrl(view){
-    try{
-      const next=normaliseRecipeView(view);
-      const url=new URL(global.location.href);
-      if(next==='standard') url.searchParams.delete('view');
-      else url.searchParams.set('view',next);
-      global.history.replaceState(global.history.state,'',url.pathname+(url.search || '')+(url.hash || ''));
-    }catch(_error){}
-  }
-
   function recipeForCurrentPath(){
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
     const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
@@ -94,12 +84,11 @@
     if(!adjustmentsAvailable) collapseAdjustments(recipe);
   }
 
-  function resetRecipeView(recipe,options){
+  function resetRecipeView(recipe){
     if(!recipe) return;
     collapseAdjustments(recipe);
-    try{ recipe.__baselineSetRecipeView?.('standard'); }catch(_error){}
+    try{ recipe.__baselineSetRecipeView?.('standard',{syncRoute:false}); }catch(_error){}
     visibleGroups(recipe,'standard');
-    if(options && options.syncUrl) syncRecipeViewUrl('standard');
   }
 
   function bindRecipeSubtabs(){
@@ -110,7 +99,6 @@
         button.addEventListener('click',()=>{
           const next=normaliseRecipeView(button.dataset.recipeSubtab || 'standard');
           visibleGroups(recipe,next);
-          syncRecipeViewUrl(next);
         });
       });
     });
@@ -256,7 +244,7 @@
       if(REPLACED_IDS[next]) next=REPLACED_IDS[next];
       const options=opts || {};
       const result=original.call(this,next,options);
-      resetRecipeView(recipeById(next),{syncUrl:options.silentHistory!==true});
+      resetRecipeView(recipeById(next));
       return result;
     };
   }
