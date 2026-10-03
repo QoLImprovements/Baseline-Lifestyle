@@ -38,14 +38,14 @@ test('promoted skincare recipes are in the main catalogue under permanent names'
   assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
   assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
   assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Lip\/ balm'/);
+  assert.match(navigation, /\['r12','testing-lip-balm','Comfort Barrier Balm'/);
 });
 
 test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
   assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
   assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
-  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Lip\/ balm — adjustable butter character and structure with a balanced 100 g default formula\./);
+  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Comfort Barrier Balm — rich butter-and-oil balm that softens dry areas and helps reduce moisture loss\./);
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
   assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
@@ -54,9 +54,9 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 
-test('Lip/ balm is embedded in the canonical Skincare shell', () => {
+test('Comfort Barrier Balm is embedded in the canonical Skincare shell', () => {
   assert.match(html, /data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12"/);
-  assert.match(html, /<h3>Lip\/ balm<\/h3>/);
+  assert.match(html, /<h3>Comfort Barrier Balm<\/h3>/);
   assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
   assert.doesNotMatch(html, /baseline-lip-balm-route-prefetch/);
   assert.doesNotMatch(recipeUx, /testing-lip-balm\.html/);
@@ -145,7 +145,7 @@ test('method ingredient amount tags use the visible ingredient state as their so
   assert.match(shared, /function bestExplicitMatch\(entry\)/);
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
-test('Lip/ balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
+test('Comfort Barrier Balm uses the shared slider/explainer structure and explicit first-use method steps', () => {
   assert.match(lipBalm, /class="[^"]*glide-controller[^"]*glide-controller--paired[^"]*recipe-slider-template[^"]*"/);
   assert.equal((lipBalm.match(/class="glide-control-main"/g) || []).length, 2);
   assert.match(lipBalm, /class="glide-control-explainer"/);
@@ -160,7 +160,7 @@ test('Lip/ balm uses the shared slider/explainer structure and explicit first-us
   assert.match(lipBalm, /<li data-method-step="5"[^>]*>[\s\S]*?Vitamin E \(Tocopherol\)<\/a><\/li>/);
 });
 
-test('Lip/ balm default formula and slider compensation remain exactly 100 g', () => {
+test('Comfort Barrier Balm default formula and slider compensation remain exactly 100 g', () => {
   const expected = [
     ['cocoa', '20'],
     ['mango', '15'],
@@ -180,7 +180,7 @@ test('Lip/ balm default formula and slider compensation remain exactly 100 g', (
   assert.match(recipeUx, /const apricot=28\.5-candelilla/);
 });
 
-test('Lip/ balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
+test('Comfort Barrier Balm ingredients use canonical clean ingredient URLs with origin, records and conversions', () => {
   const ingredients = [
     ['ing-cocoa-butter', 'cocoa-butter'],
     ['ing-mango-butter', 'mango-butter'],

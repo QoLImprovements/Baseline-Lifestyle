@@ -175,7 +175,7 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
   expect(new URL(page.url()).pathname).toBe(lipBalmPath);
   await expect(page.locator('html')).not.toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
   await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
@@ -183,7 +183,7 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
   await page.reload({ waitUntil:'domcontentloaded' });
   expect(new URL(page.url()).pathname).toBe(lipBalmPath);
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 
@@ -201,7 +201,7 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
   await page.goForward({ waitUntil:'domcontentloaded' });
   expect(new URL(page.url()).pathname).toBe(lipBalmPath);
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3').first()).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 });

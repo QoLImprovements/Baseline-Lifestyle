@@ -15,7 +15,7 @@
     ['r9','tooth-polishing-powder','Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal.']
   ];
   const TESTING=[
-    ['r12','testing-lip-balm','Lip/ balm','adjustable butter character and structure with a balanced 100 g default formula.',true]
+    ['r12','testing-lip-balm','Comfort Barrier Balm','rich butter-and-oil balm that softens dry areas and helps reduce moisture loss.',true]
   ];
   function list(items,descriptions){
     const ul=document.createElement('ul');
