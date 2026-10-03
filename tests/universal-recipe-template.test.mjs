@@ -124,6 +124,9 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
   assert.match(shared,/let authoredInitialView = 'standard'/);
   assert.match(shared,/authoredInitialView = normalizeRecipeSubView\(routeState\.recipeView \|\| 'standard'\)/);
   assert.match(shared,/setView\(authoredInitialView, \{ syncRoute:false \}\)/);
+  assert.match(shared, /const nextState = \{ kind: 'recipe', recipeId: id, recipeView: 'standard' \}/);
+  assert.match(shared, /liveCard\.__baselineSetRecipeView\('standard', \{ syncRoute:false \}\)/);
+  assert.doesNotMatch(shared, /currentId === id[\s\S]*recipeView = normalizeRecipeSubView/);
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
@@ -141,6 +144,12 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   assert.doesNotMatch(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
+  assert.match(shared,/recipe-details-variant-field/);
+  assert.match(shared,/recipe-details-variant-select/);
+  assert.match(shared,/__baselineSyncVariantDetailState/);
+  assert.match(shared,/data-recipe-variant-detail/);
+  assert.match(css,/recipe-details-variant-field/);
+  assert.match(css,/recipe-details-variant-select/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
