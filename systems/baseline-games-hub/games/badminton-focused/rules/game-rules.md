@@ -12,5 +12,6 @@ Badminton Focused contains 15 supporting perceptual, attention, timing and tacti
 6. Wait for Contact and Tempo Break must continue to distinguish premature commitment from a late response.
 7. Pressure Ladder must continue to move its pressure level according to success or failure rather than resetting the ladder on every round.
 8. Court zones and stable game metadata are owned by `badminton-focused-config.js`; changing runtime structure must not silently change those identities.
-9. Badminton progression and Realm contribution must not overwrite Darts, core Games Hub, or Baseline Realm mechanics.
-10. Structural extraction must preserve current storage compatibility under `__bl_badminton_focused_v1__`.
+9. Scenario/question banks are owned by `badminton-focused-scenarios.js`; structural refactors must preserve each prompt, selectable correct answer and explanation unless the gameplay content is intentionally being revised.
+10. Badminton progression and Realm contribution must not overwrite Darts, core Games Hub, or Baseline Realm mechanics.
+11. Structural extraction must preserve current storage compatibility under `__bl_badminton_focused_v1__`.
