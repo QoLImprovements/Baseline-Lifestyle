@@ -130,6 +130,8 @@ test('recipe variant is part of clean route state and survives refresh/history r
   assert.match(shared, /recipeVariant:\(typeof recipeEl\.__baselineGetRecipeVariant/);
   assert.match(shared, /initialView\.recipeVariant/);
   assert.match(shared, /state\.recipeVariant/);
+  assert.match(shared, /if\(routeVariant\)[\s\S]*setVariant\(routeVariant, \{ syncRoute:false \}\)[\s\S]*window\.setTimeout/);
+  assert.match(shared, /selectedVariantValue\(\) !== routeVariant/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
