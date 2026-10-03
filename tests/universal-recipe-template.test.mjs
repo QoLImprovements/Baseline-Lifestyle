@@ -80,6 +80,11 @@ test('recipe subview first-paint guard honours clean-route view state before run
   assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
 });
 
+test('clean recipe slugs resolve in embedded and standalone recipe shells', () => {
+  assert.match(shared, /const recipes = qsa\('\.recipe-page\[id\]'\)/);
+  assert.doesNotMatch(shared, /const recipes = qsa\('#recipes \.recipe-page\[id\]'\)/);
+});
+
 test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
   assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
