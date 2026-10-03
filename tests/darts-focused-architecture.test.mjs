@@ -85,3 +85,13 @@ test('Darts controller uses arithmetic route validation rather than canonical st
   assert.match(runtime,/validateRouteText\(state\.scenario\.score,value,state\.scenario\.darts\)/);
   assert.doesNotMatch(runtime,/correct = value === state\.scenario\.correct/);
 });
+
+
+test('Darts pressure and pace countdowns derive display time from managed timers',()=>{
+  assert.match(runtime,/function managedTimerRemaining\(timer\) \{ return timing\.remaining\(timer\); \}/);
+  assert.match(runtime,/state\.timer = scheduleGame/);
+  assert.match(runtime,/state\.paceTimer = scheduleGame/);
+  assert.match(runtime,/--pressure-start-scale:\$\{startScale\}/);
+  assert.match(runtime,/managedTimerRemaining\(state\.timer\)/);
+  assert.match(runtime,/managedTimerRemaining\(state\.paceTimer\)/);
+});
