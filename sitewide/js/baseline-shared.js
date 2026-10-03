@@ -1901,7 +1901,21 @@ function parseViewStateHash(hash){
       // Keep existing back links/buttons available; no extra banner is injected.
 
       if(!opts.silentHistory){
-        setNavState({ kind: 'recipe', recipeId: id }, { url: recipeUrlForId(id) });
+        // If startup or another harmless caller re-opens the recipe that is
+        // already represented by the current clean URL, preserve that route's
+        // selected subview. Opening a different recipe still begins on Recipe.
+        let recipeView = 'standard';
+        try{
+          const currentRoute = recipePathStateFromLocation();
+          const currentId = currentRoute && currentRoute.recipeId
+            ? recipeIdForToken(currentRoute.recipeId)
+            : '';
+          if(currentId === id){
+            recipeView = normalizeRecipeSubView(currentRoute.recipeView || 'standard');
+          }
+        }catch(_e){}
+        const nextState = { kind: 'recipe', recipeId: id, recipeView: recipeView };
+        setNavState(nextState, { url: urlForNavState(nextState) });
       }
 
       // Auto-scroll to the top of the focused recipe card (offset for the fixed home bar).
