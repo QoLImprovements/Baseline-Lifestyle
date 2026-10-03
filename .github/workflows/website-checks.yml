@@ -98,7 +98,7 @@ jobs:
           retention-days: 7
 
       - name: Run Games Hub unit tests
-        run: npm run test:realm-stage2
+        run: npm run test:games-hub
 
       - name: Lint PHP endpoints
         run: |
