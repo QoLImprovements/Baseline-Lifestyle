@@ -130,8 +130,10 @@ test('recipe variant is part of clean route state and survives refresh/history r
   assert.match(shared, /recipeVariant:\(typeof recipeEl\.__baselineGetRecipeVariant/);
   assert.match(shared, /initialView\.recipeVariant/);
   assert.match(shared, /state\.recipeVariant/);
-  assert.match(shared, /if\(routeVariant\)[\s\S]*setVariant\(routeVariant, \{ syncRoute:false \}\)[\s\S]*window\.setTimeout/);
-  assert.match(shared, /selectedVariantValue\(\) !== routeVariant/);
+  assert.match(shared, /if\(routeVariant\) setVariant\(routeVariant, \{ syncRoute:false \}\)/);
+  assert.match(skincareHtml, /new URLSearchParams\(location\.search \|\| ''\)\.get\('variant'\)/);
+  assert.match(skincareHtml, /\/baseline-natural-skincare\\\/recipes\\\/anhydrous-oil-cleanser\$/);
+  assert.match(skincareHtml, /routedButton \|\| recipe\.querySelector\('\.variant-tab\[aria-selected="true"\]'\)/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
