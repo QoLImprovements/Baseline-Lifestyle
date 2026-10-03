@@ -2766,9 +2766,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       }, 700);
     }, startWindowMs);
   }
-  function runTrackCoinShuffle(stepIndex, roundToken){
+  function runTrackCoinShuffle(stepIndex, roundToken, onComplete){
     if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
     if(stepIndex >= trackCoinState.sequence.length){
+      if(typeof onComplete === 'function'){
+        onComplete();
+        return;
+      }
       trackCoinState.phase = 'pick';
       trackCoinState.pickLocked = false;
       trackCoinState.message = 'Select the cup holding the coin.';
@@ -2777,7 +2781,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
     const step = trackCoinState.sequence[stepIndex];
     applyTrackCoinMotionStep(step, function(){
-      runTrackCoinShuffle(stepIndex + 1, roundToken);
+      runTrackCoinShuffle(stepIndex + 1, roundToken, onComplete);
     }, roundToken);
   }
   function grantTrackCoinRewards(correct){
@@ -2842,6 +2846,46 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+  }
+  function replayTrackCoinShuffle(){
+    if(!trackCoinState || !trackCoinState.resolved || trackCoinState.reviewActive) return;
+    clearAutoNextTimer('trackcoin');
+    cancelTrackCoinAnimation();
+    const roundToken = ++trackCoinRoundToken;
+    trackCoinState.roundToken = roundToken;
+    trackCoinState.reviewActive = true;
+    trackCoinState.revealAll = false;
+    trackCoinState.phase = 'show';
+    trackCoinState.pickLocked = true;
+    const positions = trackCoinCupPositions(trackCoinState.cups.length);
+    trackCoinState.cups.forEach(function(cup, index){
+      cup.left = positions[index];
+      cup.top = trackCoinState.baseTop;
+      cup.tilt = 0;
+    });
+    trackCoinState.message = 'Reviewing the same shuffle. No additional reward or progression is awarded.';
+    renderTrackCoin();
+    trackCoinShuffleTimer = window.setTimeout(function(){
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+      trackCoinState.phase = 'cover';
+      trackCoinState.message = 'Review: the coin is covered. Follow the same shuffle again.';
+      renderTrackCoin();
+      trackCoinShuffleTimer = window.setTimeout(function(){
+        if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+        trackCoinState.phase = 'hide';
+        trackCoinState.message = 'Review: replaying the exact previous shuffle.';
+        renderTrackCoin();
+        runTrackCoinShuffle(0, roundToken, function(){
+          if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+          trackCoinState.reviewActive = false;
+          trackCoinState.phase = 'review';
+          trackCoinState.revealAll = true;
+          trackCoinState.message = 'Review complete. The same correct cup and your original selection are shown again. No reward was awarded.';
+          renderTrackCoin();
+          scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+        });
+      }, 700);
+    }, 1100);
   }
   function renderTrackCoinTierList(){
     const profile = profiles.trackcoin;
@@ -2910,8 +2954,16 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
     setTrackCoinPanel(trackCoinOpenPanel || 'trackCoinGamePanel');
 
-    const trackCoinResultClass = trackCoinState && trackCoinState.resolved ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
-    const trackCoinStatusTitle = trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status';
+    const replayButton = document.getElementById('replayTrackCoinShuffleBtn');
+    if(replayButton){
+      replayButton.hidden = !(trackCoinState && trackCoinState.resolved);
+      replayButton.disabled = !!(trackCoinState && trackCoinState.reviewActive);
+      replayButton.textContent = trackCoinState && trackCoinState.reviewActive ? 'Replaying…' : 'Replay Last Shuffle';
+    }
+    const trackCoinResultClass = trackCoinState && trackCoinState.resolved && !trackCoinState.reviewActive ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
+    const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
+      ? 'Round Status — Reviewing'
+      : (trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status');
     const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press Start New Game when you are ready.';
     const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
     const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
@@ -3777,6 +3829,7 @@ function toggleGameFullscreen(gameId){
       const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
       const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
       const trackCoinStart = event.target.closest('[data-action="start-trackcoin"], #newTrackCoinRoundBtn'); if(trackCoinStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); return; }
+      const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
       const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
       const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
