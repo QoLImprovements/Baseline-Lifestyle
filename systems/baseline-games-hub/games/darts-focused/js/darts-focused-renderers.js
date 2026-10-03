@@ -3,7 +3,7 @@ import { DARTS_ART_URL as ART_URL, escapeHtml, feedbackHtml, choiceButtons } fro
 import { boardSvg, scenarioHeader, routeRecoveryHeader } from './darts-focused-board.js';
 
 export function createDartsRenderers({
-  profile,
+  getProfile,
   tierId,
   nextButton,
   managedTimerRemaining,
@@ -37,6 +37,7 @@ export function createDartsRenderers({
       return `<div class="darts-game-stack"><h4>${escapeHtml(m.question)}</h4>${choiceButtons(m.options,'distraction-resistance',Boolean(state.feedback))}${feedbackHtml(state)}${state.feedback ? nextButton('New instruction') : ''}</div>`;
     },
     'pressure-ladder':(state) => {
+      const profile=getProfile();
       const level = state.phase === 'ready' ? profile.custom.pressureLevel : (state.level || profile.custom.pressureLevel);
       const baseTimes = tierId('pressure-ladder') === 1 ? [18,16,14,12,10] : tierId('pressure-ladder') === 2 ? [16,14,12,10,8] : [14,12,10,8,6];
       if (state.phase === 'ready') return `<div class="darts-game-stack"><div class="darts-pressure-track">${[1,2,3,4,5].map((n) => `<span class="${n === level ? 'is-current' : n < level ? 'is-complete' : ''}">${n}</span>`).join('')}</div><h4>Pressure level ${level}</h4><p>You will have ${baseTimes[level - 1]} seconds to choose a legal route. Accuracy moves you upward; an error moves you down.</p><button class="action primary" data-start-pressure type="button">Begin level ${level}</button>${feedbackHtml(state)}</div>`;
