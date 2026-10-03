@@ -71,6 +71,19 @@ test('Skincare adjustment visibility and Show All ordering are explicit contract
   assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
+test('Skincare recipe subview is encoded in the canonical route and restored after reload', () => {
+  assert.match(shared, /function normalizeRecipeSubView\(value\)/);
+  assert.match(shared, /searchParams\.get\('view'\)/);
+  assert.match(shared, /base \+ '\?view=' \+ encodeURIComponent\(recipeView\)/);
+  assert.match(recipeUx, /function recipeViewFromLocation\(\)/);
+  assert.match(recipeUx, /function syncRecipeViewUrl\(view\)/);
+  assert.match(recipeUx, /url\.searchParams\.set\('view',next\)/);
+  assert.match(recipeUx, /restoreRecipeViewFromLocation\(\)/);
+  assert.match(recipeUx, /addEventListener\('popstate',restoreRecipeViewFromLocation\)/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page\{ display:none!important; \}/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active[\s\S]*display:block!important/);
+});
+
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
   assert.match(shared,/const preauthored = !!controls/);
   assert.match(shared,/q\('input\.multiplier-input', controls\)/);
@@ -95,8 +108,10 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   }
   assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
   assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
-  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\);/);
+  assert.doesNotMatch(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
+  assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
