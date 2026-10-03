@@ -187,6 +187,31 @@
     resetRecipeView(recipeById(id));
   }
 
+  function collapseAllAdjustments(){
+    document.querySelectorAll('#recipes .recipe-page').forEach(collapseAdjustments);
+  }
+
+  function bindRecipeOpenAdjustmentReset(){
+    if(global.__BASELINE_SKINCARE_RECIPE_ADJUSTMENT_RESET_20261003__) return;
+    global.__BASELINE_SKINCARE_RECIPE_ADJUSTMENT_RESET_20261003__=true;
+    document.addEventListener('click', event=>{
+      const link=event.target && event.target.closest ? event.target.closest('#recipes a.recipe-open[data-recipe-id]') : null;
+      if(!link) return;
+      collapseAdjustments(recipeById(link.dataset.recipeId));
+    }, true);
+  }
+
+  function wrapShowAllRecipes(){
+    if(global.__BASELINE_SKINCARE_SHOW_ALL_RESET_20261003__) return;
+    global.__BASELINE_SKINCARE_SHOW_ALL_RESET_20261003__=true;
+    const original=typeof global.BASELINE_showAllRecipes==='function'?global.BASELINE_showAllRecipes:null;
+    if(!original) return;
+    global.BASELINE_showAllRecipes=function(opts){
+      collapseAllAdjustments();
+      return original.call(this,opts || {});
+    };
+  }
+
   function wrapRecipeOpen(){
     if(global.__BASELINE_SKINCARE_RECIPE_OPEN_RESET_20260906__) return;
     global.__BASELINE_SKINCARE_RECIPE_OPEN_RESET_20260906__=true;
@@ -205,6 +230,8 @@
     canonicaliseOldRecipePath();
     bindRecipeSubtabs();
     bindLipBalmFormula(recipeById('r12'));
+    bindRecipeOpenAdjustmentReset();
+    wrapShowAllRecipes();
     wrapRecipeOpen();
     openPromotedRecipeForPath();
   }
