@@ -4180,8 +4180,10 @@
       '</tr>';
     }).join('');
     const activePairs = Number(batch.activePairs || 0);
+    const circumstantialSitOuts = Array.isArray(batch.circumstantialSitOutPlayerIds) ? batch.circumstantialSitOutPlayerIds.length : 0;
+    const optionalSitOuts = Array.isArray(batch.optionalSitOutPlayerIds) ? batch.optionalSitOutPlayerIds.length : 0;
     return '<div class="finished-batch">' +
-      '<div class="finished-batch-head"><div><div class="finished-batch-title">Finished Set ' + escapeHtml(String(index + 1)) + '</div><div class="note">Generated ' + escapeHtml(formatDateTime(batch.generatedAt)) + ' · Completed ' + escapeHtml(formatDateTime(batch.completedAt)) + '</div></div><div class="metric-strip"><span class="metric-chip"><strong>' + escapeHtml(String((batch.courts || []).length)) + '</strong> Courts</span><span class="metric-chip"><strong>' + escapeHtml(batch.format === 'singles' ? 'Singles' : 'Doubles') + '</strong> Format</span><span class="metric-chip"><strong>' + escapeHtml(String(activePairs)) + '</strong> Active pairs</span></div></div>' +
+      '<div class="finished-batch-head"><div><div class="finished-batch-title">Finished Set ' + escapeHtml(String(index + 1)) + '</div><div class="note">Generated ' + escapeHtml(formatDateTime(batch.generatedAt)) + ' · Completed ' + escapeHtml(formatDateTime(batch.completedAt)) + '</div></div><div class="metric-strip"><span class="metric-chip"><strong>' + escapeHtml(String((batch.courts || []).length)) + '</strong> Courts</span><span class="metric-chip"><strong>' + escapeHtml(batch.format === 'singles' ? 'Singles' : 'Doubles') + '</strong> Format</span><span class="metric-chip"><strong>' + escapeHtml(String(activePairs)) + '</strong> Active pairs</span><span class="metric-chip"><strong>' + escapeHtml(String(circumstantialSitOuts)) + '</strong> Circumstantial sit-outs</span><span class="metric-chip"><strong>' + escapeHtml(String(optionalSitOuts)) + '</strong> Optional sit-outs</span></div></div>' +
       '<div class="table-wrap"><table class="finished-summary-table"><colgroup><col style="width:28%"/><col style="width:12%"/><col style="width:18%"/><col style="width:20%"/><col style="width:12%"/><col style="width:10%"/></colgroup><thead><tr><th>Court</th><th>Score</th><th>Winner</th><th>Altered rules</th><th>Hardship Adjustment</th><th>Rating shift</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '</div>';
   }
@@ -4353,12 +4355,41 @@
     return '<label class="admin-star-toggle" title="Toggle Badminton Sessions admin"><input data-player-admin="' + escapeHtml(player.id) + '" type="checkbox"' + (isPlayerAdmin(player) ? ' checked' : '') + '/><span class="admin-star admin-star--admin" aria-hidden="true">★</span><span class="hidden">Badminton Sessions admin</span></label>';
   }
 
+  function normalizePairSummaryKeys(){
+    if(!state.pairSummary || typeof state.pairSummary !== 'object') state.pairSummary = {};
+    const normalized = {};
+    Object.keys(state.pairSummary).forEach(function(key){
+      const summary = state.pairSummary[key] && typeof state.pairSummary[key] === 'object' ? state.pairSummary[key] : {};
+      let pairId = String(summary.pairId || '');
+      if(!pairId || !pairId.startsWith('pair:')){
+        const names = String(summary.label || '').split('/').map(function(name){ return name.trim(); }).filter(Boolean);
+        if(names.length === 2){
+          const players = names.map(getPlayerByNameForRatingMigration).filter(Boolean);
+          pairId = getPairIdFromPlayers(players);
+        }
+      }
+      if(!pairId) return;
+      const existing = normalized[pairId] || { pairId:pairId, ids:[], label:getPairLabelFromId(pairId), count:0, wins:0, losses:0, lastSeenAt:'' };
+      existing.ids = Array.isArray(summary.ids) && summary.ids.every(function(id){ return !!getPlayer(id); })
+        ? summary.ids.slice().sort()
+        : String(pairId).replace(/^pair:/, '').split('::').filter(Boolean);
+      existing.label = getPairLabelFromId(pairId);
+      existing.count += Number(summary.count || 0);
+      existing.wins += Number(summary.wins || 0);
+      existing.losses += Number(summary.losses || 0);
+      if(String(summary.lastSeenAt || '') > String(existing.lastSeenAt || '')) existing.lastSeenAt = summary.lastSeenAt;
+      normalized[pairId] = existing;
+    });
+    state.pairSummary = normalized;
+  }
+
   function renderPlayers(){
     const wrap = refs.playersTableWrap;
     const manager = currentUserIsManager();
     migrateKnownModeratorPlayer();
     normalizePlayerPreferenceFlags();
     ensureRatingStores();
+    normalizePairSummaryKeys();
     if(!state.players.length){
       wrap.innerHTML = manager ? '<div class="empty-state">Add players to begin building the session.</div>' : '<div class="empty-state">No players have been added yet.</div>';
       return;
@@ -4377,7 +4408,20 @@
     const head = manager
       ? '<thead><tr><th>Player Name</th><th>Player Rating</th><th>Linked login</th><th>Doubles-day preferences</th><th class="player-actions-head">Actions</th></tr></thead>'
       : '<thead><tr><th>Player Name</th><th>Player Rating</th><th>Linked login</th><th>Doubles-day preferences</th></tr></thead>';
-    wrap.innerHTML = '<table>' + head + '<tbody>' + rows + '</tbody></table>';
+    const pairRows = Object.entries(state.pairRatings || {}).sort(function(a, b){
+      return Number(b[1]) - Number(a[1]) || getPairLabelFromId(a[0]).localeCompare(getPairLabelFromId(b[0]));
+    }).map(function(entry){
+      const summary = state.pairSummary && state.pairSummary[entry[0]] ? state.pairSummary[entry[0]] : {};
+      const games = Number(summary.count || 0);
+      const wins = Number(summary.wins || 0);
+      const losses = Number(summary.losses || 0);
+      const last = summary.lastSeenAt ? formatDateTime(summary.lastSeenAt) : 'Not yet played';
+      return '<tr><td><strong>' + escapeHtml(getPairLabelFromId(entry[0])) + '</strong></td><td class="small-cell">' + escapeHtml(clampRating(entry[1]).toFixed(1)) + '</td><td class="small-cell">' + escapeHtml(String(games)) + '</td><td class="small-cell">' + escapeHtml(String(wins) + '-' + String(losses)) + '</td><td>' + escapeHtml(last) + '</td></tr>';
+    }).join('');
+    wrap.innerHTML = '<table>' + head + '<tbody>' + rows + '</tbody></table>' +
+      '<hr class="rule"/><h3>Pairs</h3><p class="note">Each partnership has one canonical Pair ID, regardless of player order.</p>' +
+      '<div class="table-wrap"><table><thead><tr><th>Pair</th><th>Pair Rating</th><th>Games together</th><th>W-L</th><th>Last played</th></tr></thead><tbody>' +
+      (pairRows || '<tr><td colspan="5">No pair ratings yet.</td></tr>') + '</tbody></table></div>';
   }
 
   function bindRosterActions(){
@@ -4631,12 +4675,27 @@
       refs.matchHistoryWrap.innerHTML = '<div class="empty-state">No games have been recorded yet in this session.</div>';
       return;
     }
+    const closest = state.matches.slice().sort(function(a, b){
+      return Math.abs(Number(a.score1 || 0) - Number(a.score2 || 0)) - Math.abs(Number(b.score1 || 0) - Number(b.score2 || 0));
+    })[0] || null;
+    const pairIds = new Set();
+    state.matches.forEach(function(match){
+      if(match.side1PairId) pairIds.add(match.side1PairId);
+      if(match.side2PairId) pairIds.add(match.side2PairId);
+    });
+    const hardshipCount = state.matches.filter(function(match){ return !!match.hardshipRegistered; }).length;
+    const summary = '<div class="metric-strip">' +
+      '<span class="metric-chip"><strong>' + escapeHtml(String(state.matches.length)) + '</strong> Games</span>' +
+      '<span class="metric-chip"><strong>' + escapeHtml(String(pairIds.size)) + '</strong> Pairs used</span>' +
+      '<span class="metric-chip"><strong>' + escapeHtml(String(hardshipCount)) + '</strong> Hardship changes</span>' +
+      (closest ? '<span class="metric-chip"><strong>' + escapeHtml(String(closest.score1) + '-' + String(closest.score2)) + '</strong> Closest score</span>' : '') +
+    '</div>';
     const rows = state.matches.map(match => {
       const rules = ['<div class="note">Target area: ' + escapeHtml(match.targetAreaText || 'Full court') + '</div>'];
       if(match.shotRestrictionText) rules.push('<div class="note">Restricted Shots: ' + escapeHtml(match.shotRestrictionText) + '</div>');
       return '<tr><td>' + escapeHtml(formatDateTime(match.createdAt)) + '</td><td><strong>' + escapeHtml('Court ' + match.courtNumber + ' · ' + (match.kind === '2v1' ? '2 vs 1' : match.kind)) + '</strong><div class="note">' + escapeHtml(match.side1Label + ' vs ' + match.side2Label) + '</div></td><td class="small-cell">' + escapeHtml(String(match.score1)) + ' - ' + escapeHtml(String(match.score2)) + '</td><td>' + escapeHtml(match.winnerLabel) + '</td><td>' + rules.join('') + '</td><td>' + escapeHtml(match.hardshipRegistered ? getHardshipLabel(match.hardshipRegistered) : '—') + '</td><td class="small-cell">' + escapeHtml(match.ratingContext.summaryText || '') + '</td></tr>';
     }).join('');
-    refs.matchHistoryWrap.innerHTML = '<table><thead><tr><th>Date / time</th><th>Court</th><th>Score</th><th>Winner</th><th>Altered rules</th><th>Hardship Adjustment</th><th>Rating shift</th></tr></thead><tbody>' + rows + '</tbody></table>';
+    refs.matchHistoryWrap.innerHTML = summary + '<table><thead><tr><th>Date / time</th><th>Court</th><th>Score</th><th>Winner</th><th>Altered rules</th><th>Hardship Adjustment</th><th>Rating shift</th></tr></thead><tbody>' + rows + '</tbody></table>';
   }
 
   function syncAuthState(){
