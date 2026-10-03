@@ -4468,7 +4468,7 @@ html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-univers
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .variant-switcher{
   display:none!important;
 }
-html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro[hidden]{
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro.recipe-view-hidden{
   display:grid!important;
   visibility:visible!important;
 }
@@ -4484,7 +4484,7 @@ html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-univer
   display:revert!important;
 }
 
-html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro[hidden]{
+html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro.recipe-view-hidden{
   display:grid!important;
   visibility:visible!important;
 }
