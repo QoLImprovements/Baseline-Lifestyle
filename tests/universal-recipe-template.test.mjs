@@ -76,6 +76,7 @@ test('recipe subview first-paint guard honours clean-route view state before run
   assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)\.get\('view'\)/);
   assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
   assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\.recipe-view-hidden[\s\S]*display:grid!important/);
+  assert.match(shared, /removeAttribute\('data-initial-recipe-slug'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
 });
 
@@ -106,7 +107,9 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
   assert.match(shared,/\['details', 'Details'\]/);
   assert.match(shared,/\['guidance', 'Guidance'\]/);
   assert.match(shared,/\['show-all', 'Show All'\]/);
-  assert.match(shared,/setView\('standard', \{ syncRoute:false \}\)/);
+  assert.match(shared,/let authoredInitialView = 'standard'/);
+  assert.match(shared,/authoredInitialView = normalizeRecipeSubView\(routeState\.recipeView \|\| 'standard'\)/);
+  assert.match(shared,/setView\(authoredInitialView, \{ syncRoute:false \}\)/);
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
