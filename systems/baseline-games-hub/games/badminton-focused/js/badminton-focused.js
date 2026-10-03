@@ -7,7 +7,7 @@ const STYLE_URL=`/systems/baseline-games-hub/games/badminton-focused/css/badmint
 const ART_URL='/systems/baseline-games-hub/games/badminton-focused/art/badminton-focused-overview.svg';
 const zoneCoords=ZONE_COORDS;
 
-const ui={selected:'read-racket',states:{},timers:[],autoTimer:0,sessionToken:0,listObserver:null,overviewSyncQueued:false};
+const ui={selected:'read-racket',states:{},timers:[],autoTimer:null,sessionToken:0,visibilityPausedAt:null,listObserver:null,overviewSyncQueued:false};
 let profile=loadProfile();
 ui.selected=GAMES.some(g=>g.id===profile.selectedGame)?profile.selectedGame:GAMES[0].id;
 function defaultGameStat(){return {xp:0,level:1,attempts:0,correct:0,streak:0,bestStreak:0,premature:0,late:0};}
@@ -23,9 +23,71 @@ function stat(id=ui.selected){return profile.games[id]||defaultGameStat();}
 function tierId(id=ui.selected){return Math.max(1,Math.min(3,Number(profile.selectedTiers[id]||1)));}
 function tierUnlocked(id,tier){return stat(id).level>=TIERS[tier-1].unlock;}
 function autoNext(){return Boolean(profile.autoNext[ui.selected]);}
-function clearTimers(){ui.sessionToken+=1;ui.timers.forEach(t=>clearTimeout(t));ui.timers=[];if(ui.autoTimer){clearTimeout(ui.autoTimer);ui.autoTimer=0;}}
-function later(fn,ms){const token=ui.sessionToken,id=ui.selected;const t=setTimeout(()=>{ui.timers=ui.timers.filter(x=>x!==t);if(token!==ui.sessionToken||id!==ui.selected)return;fn();},ms);ui.timers.push(t);return t;}
-function scheduleAuto(fn,ms=1900){if(!autoNext())return;if(ui.autoTimer)clearTimeout(ui.autoTimer);const token=ui.sessionToken,id=ui.selected;ui.autoTimer=setTimeout(()=>{ui.autoTimer=0;if(token!==ui.sessionToken||id!==ui.selected)return;fn();},ms);}
+function cancelManagedTimer(timer){
+  if(!timer)return;
+  if(timer.timeoutId)clearTimeout(timer.timeoutId);
+  timer.timeoutId=0;
+}
+function armManagedTimer(timer){
+  if(!timer||timer.cancelled||timer.timeoutId||document.visibilityState==='hidden')return;
+  timer.startedAt=Date.now();
+  timer.timeoutId=setTimeout(()=>{
+    timer.timeoutId=0;
+    if(timer.cancelled)return;
+    timer.remaining=0;
+    if(timer.kind==='auto')ui.autoTimer=null;
+    else ui.timers=ui.timers.filter(item=>item!==timer);
+    if(timer.token!==ui.sessionToken||timer.gameId!==ui.selected)return;
+    timer.fn();
+  },Math.max(0,timer.remaining));
+}
+function createManagedTimer(fn,ms,kind='game'){
+  const timer={fn,remaining:Math.max(0,Number(ms)||0),startedAt:0,timeoutId:0,token:ui.sessionToken,gameId:ui.selected,kind,cancelled:false};
+  armManagedTimer(timer);
+  return timer;
+}
+function pauseManagedTimer(timer){
+  if(!timer||timer.cancelled||!timer.timeoutId)return;
+  const elapsed=Math.max(0,Date.now()-timer.startedAt);
+  timer.remaining=Math.max(0,timer.remaining-elapsed);
+  cancelManagedTimer(timer);
+}
+function resumeManagedTimer(timer){
+  if(!timer||timer.cancelled||timer.token!==ui.sessionToken||timer.gameId!==ui.selected)return;
+  armManagedTimer(timer);
+}
+function clearTimers(){
+  ui.sessionToken+=1;
+  ui.timers.forEach(timer=>{timer.cancelled=true;cancelManagedTimer(timer);});
+  ui.timers=[];
+  if(ui.autoTimer){ui.autoTimer.cancelled=true;cancelManagedTimer(ui.autoTimer);ui.autoTimer=null;}
+}
+function later(fn,ms){
+  const timer=createManagedTimer(fn,ms,'game');
+  ui.timers.push(timer);
+  return timer;
+}
+function scheduleAuto(fn,ms=1900){
+  if(!autoNext())return;
+  if(ui.autoTimer){ui.autoTimer.cancelled=true;cancelManagedTimer(ui.autoTimer);}
+  ui.autoTimer=createManagedTimer(fn,ms,'auto');
+}
+function syncBadmintonVisibility(){
+  if(document.visibilityState==='hidden'){
+    if(ui.visibilityPausedAt===null)ui.visibilityPausedAt=performance.now();
+    ui.timers.forEach(pauseManagedTimer);
+    pauseManagedTimer(ui.autoTimer);
+    return;
+  }
+  if(ui.visibilityPausedAt!==null){
+    const hiddenFor=Math.max(0,performance.now()-ui.visibilityPausedAt);
+    const activeState=ui.states[ui.selected];
+    if(activeState&&Number.isFinite(activeState.contactAt))activeState.contactAt+=hiddenFor;
+    ui.visibilityPausedAt=null;
+  }
+  ui.timers.forEach(resumeManagedTimer);
+  resumeManagedTimer(ui.autoTimer);
+}
 function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function pickScenario(id,pool){const recent=profile.recent[id]||[];let choices=pool.map((x,i)=>({x,i})).filter(o=>!recent.includes(o.i));if(!choices.length)choices=pool.map((x,i)=>({x,i}));const picked=choices[Math.floor(Math.random()*choices.length)];profile.recent[id]=[picked.i,...recent.filter(i=>i!==picked.i)].slice(0,Math.min(8,pool.length-1));return JSON.parse(JSON.stringify(picked.x));}
 function levelUp(obj){while(obj.xp>=xpNeed(obj.level)){obj.xp-=xpNeed(obj.level);obj.level+=1;}}
@@ -146,6 +208,6 @@ function handleClick(e){const t=e.target instanceof Element?e.target:null;if(!t)
 function handleKey(e){if(!byId('badmintonFocusedPanel')?.classList.contains('is-active'))return;if(e.key==='Escape'&&document.fullscreenElement===byId('badmintonGameCard'))return;if(e.key==='Escape'){closePanel();return;}const sel=e.target.closest?.('[data-badminton-game]');if(!sel||!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const buttons=[...document.querySelectorAll('[data-badminton-game]')],i=buttons.indexOf(sel),d=e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1;buttons[(i+d+buttons.length)%buttons.length]?.focus();}
 function installObserver(){const list=byId('gamesList');if(!list||ui.listObserver)return;ui.listObserver=new MutationObserver(()=>{if(ui.overviewSyncQueued)return;ui.overviewSyncQueued=true;requestAnimationFrame(()=>{ui.overviewSyncQueued=false;ensureOverviewEntry();});});ui.listObserver.observe(list,{childList:true});}
 function realmContribution(){const above=id=>Math.max(0,stat(id).level-1),level=profile.level;return {level,linkedLevels:level+GAMES.reduce((n,g)=>n+above(g.id),0),attackMult:1+Math.min(.06,(above('shot-choice')+above('attack-purpose'))*.003),critChance:Math.min(.07,(above('read-racket')+above('deception-filter'))*.0035),offlineGainMult:1+Math.min(.05,(above('badminton-reset')+above('landing-picture'))*.0025),upgradeCostMult:1-Math.min(.04,above('decision-recovery')*.004),bossDamageMult:1+Math.min(.06,above('pressure-ladder')*.006),passiveEfficiencyMult:1+Math.min(.06,(above('shuttle-first')+above('four-corner'))*.003),enemyRevealChance:Math.min(.08,(above('rally-pattern')+above('opponent-balance'))*.004),clueDropChance:Math.min(.05,above('court-recovery')*.005),coinGainMult:1+Math.min(.05,above('opponent-balance')*.005),manualDamageMult:1+Math.min(.06,(above('wait-contact')+above('tempo-break'))*.003),shurikenDamageMult:1+Math.min(.05,above('decision-recovery')*.005),unlockedTraits:level>=5?['Badminton Focused: Visual Discipline']:[]};}
-function init(){ensureStyle();ensurePanel();ensureOverviewEntry();installObserver();document.addEventListener('click',handleClick,true);document.addEventListener('keydown',handleKey,true);document.addEventListener('fullscreenchange',syncFullscreen);window.addEventListener('beforeunload',clearTimers);document.documentElement.dataset.badmintonFocusedRuntime=BUILD;globalThis.BadmintonFocusedGames=Object.freeze({build:BUILD,open:openPanel,close:closePanel,getProfile:()=>JSON.parse(JSON.stringify(profile)),getRealmContribution:realmContribution,reset:()=>{profile=defaultProfile();ui.states={};saveProfile();renderSelected();}});}
+function init(){ensureStyle();ensurePanel();ensureOverviewEntry();installObserver();document.addEventListener('click',handleClick,true);document.addEventListener('keydown',handleKey,true);document.addEventListener('visibilitychange',syncBadmintonVisibility);document.addEventListener('fullscreenchange',syncFullscreen);window.addEventListener('beforeunload',clearTimers);document.documentElement.dataset.badmintonFocusedRuntime=BUILD;globalThis.BadmintonFocusedGames=Object.freeze({build:BUILD,open:openPanel,close:closePanel,getProfile:()=>JSON.parse(JSON.stringify(profile)),getRealmContribution:realmContribution,reset:()=>{profile=defaultProfile();ui.states={};saveProfile();renderSelected();}});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 
