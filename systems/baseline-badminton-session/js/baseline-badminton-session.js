@@ -67,6 +67,11 @@
         currentSitOutPlayerIds: [],
         currentCircumstantialSitOutPlayerIds: [],
         currentOptionalSitOutPlayerIds: [],
+        sessionPlayCounts: {},
+        sessionPairCounts: {},
+        sessionOpponentCounts: {},
+        sessionSolo2v1Counts: {},
+        generationIndex: 0,
         format: 'doubles',
         durationMinutes: 60,
         current: [],
@@ -366,6 +371,11 @@
           ? parsed.plan.currentCircumstantialSitOutPlayerIds
           : (Array.isArray(parsed.plan && parsed.plan.currentSitOutPlayerIds) ? parsed.plan.currentSitOutPlayerIds : []),
         currentOptionalSitOutPlayerIds: Array.isArray(parsed.plan && parsed.plan.currentOptionalSitOutPlayerIds) ? parsed.plan.currentOptionalSitOutPlayerIds : [],
+        sessionPlayCounts: parsed.plan && parsed.plan.sessionPlayCounts && typeof parsed.plan.sessionPlayCounts === 'object' ? parsed.plan.sessionPlayCounts : {},
+        sessionPairCounts: parsed.plan && parsed.plan.sessionPairCounts && typeof parsed.plan.sessionPairCounts === 'object' ? parsed.plan.sessionPairCounts : {},
+        sessionOpponentCounts: parsed.plan && parsed.plan.sessionOpponentCounts && typeof parsed.plan.sessionOpponentCounts === 'object' ? parsed.plan.sessionOpponentCounts : {},
+        sessionSolo2v1Counts: parsed.plan && parsed.plan.sessionSolo2v1Counts && typeof parsed.plan.sessionSolo2v1Counts === 'object' ? parsed.plan.sessionSolo2v1Counts : {},
+        generationIndex: Math.max(0, Math.round(Number(parsed.plan && parsed.plan.generationIndex || 0) || 0)),
         currentSavedCourtKeys: Array.isArray(parsed.plan && parsed.plan.currentSavedCourtKeys) ? parsed.plan.currentSavedCourtKeys : [],
         currentSetReadyForNext: !!(parsed.plan && parsed.plan.currentSetReadyForNext),
         finished: Array.isArray(parsed.plan && parsed.plan.finished) ? parsed.plan.finished : [],
@@ -978,6 +988,32 @@
     return Number(state.plan.sitOutCounts && state.plan.sitOutCounts[playerId] || 0);
   }
 
+  function getSessionPlayCount(playerId){
+    return Number(state.plan.sessionPlayCounts && state.plan.sessionPlayCounts[playerId] || 0);
+  }
+
+  function stableGenerationHash(value){
+    const text = String(value || '');
+    let hash = 2166136261;
+    for(let i = 0; i < text.length; i += 1){
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+
+  function orderPlayersForGeneration(players, salt){
+    const generation = Math.max(0, Math.round(Number(state.plan.generationIndex || 0)));
+    const key = String(generation) + '::' + String(salt || 0);
+    return (players || []).slice().sort(function(a, b){
+      const playDiff = getSessionPlayCount(a.id) - getSessionPlayCount(b.id);
+      if(playDiff) return playDiff;
+      const hashDiff = stableGenerationHash(key + '::' + a.id) - stableGenerationHash(key + '::' + b.id);
+      if(hashDiff) return hashDiff;
+      return String(a.id).localeCompare(String(b.id));
+    });
+  }
+
   function chooseSitOutPlayers(attendingPlayers, benchCount){
     if(benchCount <= 0) return [];
     const protectedIds = new Set(Array.isArray(state.plan.lastSitOutPlayerIds) ? state.plan.lastSitOutPlayerIds : []);
@@ -985,11 +1021,13 @@
       const aCount = getSitOutCount(a.id);
       const bCount = getSitOutCount(b.id);
       if(aCount !== bCount) return aCount - bCount;
-      return a.name.localeCompare(b.name);
+      const playDiff = getSessionPlayCount(b.id) - getSessionPlayCount(a.id);
+      if(playDiff) return playDiff;
+      return String(a.id).localeCompare(String(b.id));
     };
-    const pool = shuffle(attendingPlayers.filter(player => !protectedIds.has(player.id))).sort(compare)
-      .concat(shuffle(attendingPlayers.filter(player => protectedIds.has(player.id))).sort(compare));
-    return pool.slice(0, benchCount);
+    const fresh = attendingPlayers.filter(player => !protectedIds.has(player.id)).sort(compare);
+    const protectedPool = attendingPlayers.filter(player => protectedIds.has(player.id)).sort(compare);
+    return fresh.concat(protectedPool).slice(0, benchCount);
   }
   function splitTeamLabel(label){
     return String(label || '').split('/').map(part => part.trim()).filter(Boolean);
@@ -1284,7 +1322,7 @@
   }
 
   function getPairSummaryKey(side){
-    return getTeamIds(side).join('::');
+    return getPairIdFromPlayers(side && side.players ? side.players : []);
   }
 
   function buildMatchupKey(court){
@@ -2776,6 +2814,35 @@
     return layouts.slice(0, 16);
   }
 
+  function getOpponentMemoryKey(playerAId, playerBId){
+    const ids = [String(playerAId || ''), String(playerBId || '')].filter(Boolean).sort();
+    return ids.length === 2 ? ids.join('::') : '';
+  }
+
+  function getCourtRotationPenalty(court){
+    let penalty = 0;
+    [court.side1, court.side2].forEach(function(side){
+      const players = side && Array.isArray(side.players) ? side.players : [];
+      if(players.length === 2){
+        const pairId = getPairIdFromPlayers(players);
+        penalty += Number(state.plan.sessionPairCounts && state.plan.sessionPairCounts[pairId] || 0) * 18;
+      }
+    });
+    const side1Players = court.side1 && court.side1.players ? court.side1.players : [];
+    const side2Players = court.side2 && court.side2.players ? court.side2.players : [];
+    side1Players.forEach(function(a){
+      side2Players.forEach(function(b){
+        const key = getOpponentMemoryKey(a.id, b.id);
+        penalty += Number(state.plan.sessionOpponentCounts && state.plan.sessionOpponentCounts[key] || 0) * 4;
+      });
+    });
+    if(court.kind === '2v1'){
+      const solo = side1Players.length === 1 ? side1Players[0] : (side2Players.length === 1 ? side2Players[0] : null);
+      if(solo) penalty += Number(state.plan.sessionSolo2v1Counts && state.plan.sessionSolo2v1Counts[solo.id] || 0) * 14;
+    }
+    return penalty;
+  }
+
   function scoreCandidate(courts, usedSet){
     let score = 0;
     const seen = new Set();
@@ -2786,6 +2853,7 @@
       if(seen.has(signature)) score -= 240;
       seen.add(signature);
       score -= gap * 3;
+      score -= getCourtRotationPenalty(court);
     });
     score += courts.length * 12;
     return score;
@@ -2807,16 +2875,18 @@
       layout.courts === top.courts &&
       getLayoutPriorityValue(layout, format) === targetPriority
     );
-    return candidates[Math.floor(Math.random() * candidates.length)] || top;
+    return candidates.slice().sort(function(a, b){
+      return JSON.stringify(a).localeCompare(JSON.stringify(b));
+    })[0] || top;
   }
 
-  function buildCandidate(attendingPlayers, format, usedSet, maxCourts){
+  function buildCandidate(attendingPlayers, format, usedSet, maxCourts, attemptIndex){
     const layouts = enumerateLayouts(attendingPlayers.length, format, maxCourts);
     const layout = choosePreferredLayout(layouts, format) || layouts[0];
     if(!layout) return { courts: [], score: -Infinity, sitOutPlayers: [] };
     const benchPlayers = chooseSitOutPlayers(attendingPlayers, Math.max(0, attendingPlayers.length - layout.used));
     const sitOutIds = new Set(benchPlayers.map(player => player.id));
-    const selected = shuffle(attendingPlayers.filter(player => !sitOutIds.has(player.id)));
+    const selected = orderPlayersForGeneration(attendingPlayers.filter(player => !sitOutIds.has(player.id)), attemptIndex || 0);
     const order = format === 'doubles'
       ? [
         ...Array(layout.doubles).fill('doubles'),
@@ -2848,7 +2918,7 @@
   function generateNovelCourtSet(attendingPlayers, format, usedSet, maxCourts){
     let best = null;
     for(let i = 0; i < 250; i += 1){
-      const candidate = buildCandidate(attendingPlayers, format, usedSet, maxCourts);
+      const candidate = buildCandidate(attendingPlayers, format, usedSet, maxCourts, i);
       if(!best || candidate.score > best.score) best = candidate;
     }
     if(best && best.courts.every(court => usedSet.has(buildMatchupKey(court))) && usedSet.size){
@@ -2863,7 +2933,7 @@
     const usedCount = singlesCount * 2;
     const sitOutPlayers = chooseSitOutPlayers(attendingPlayers, Math.max(0, attendingPlayers.length - usedCount));
     const sitOutIds = new Set(sitOutPlayers.map(function(player){ return player.id; }));
-    const selected = shuffle(attendingPlayers.filter(function(player){ return !sitOutIds.has(player.id); }));
+    const selected = orderPlayersForGeneration(attendingPlayers.filter(function(player){ return !sitOutIds.has(player.id); }), 'singles');
     const courts = [];
     for(let i = 0; i < singlesCount; i += 1){
       const group = selected.slice(i * 2, i * 2 + 2);
@@ -2891,7 +2961,7 @@
     const counts = getDoublesDayCounts(attendingPlayers.length, courtLimit);
     const sitOutPlayers = chooseSitOutPlayers(attendingPlayers, Math.max(0, attendingPlayers.length - counts.used));
     const sitOutIds = new Set(sitOutPlayers.map(function(player){ return player.id; }));
-    const selected = shuffle(attendingPlayers.filter(function(player){ return !sitOutIds.has(player.id); }));
+    const selected = orderPlayersForGeneration(attendingPlayers.filter(function(player){ return !sitOutIds.has(player.id); }), 'doubles');
     const courts = [];
     let cursor = 0;
     for(let i = 0; i < counts.doubles; i += 1){
@@ -2942,7 +3012,18 @@
       result = buildDoublesDayCourtSet(attendingPlayers, courtLimit);
     }
     const courts = (result.courts || []).filter(Boolean).slice(0, courtLimit);
-    courts.forEach(court => usedSet.add(buildMatchupKey(court)));
+    courts.forEach(function(court){
+      const signature = buildMatchupKey(court);
+      const gap = Math.round(Math.abs(getSideRatingForCourt(court, court.side1) - getSideRatingForCourt(court, court.side2)) * 10) / 10;
+      const rotationPenalty = getCourtRotationPenalty(court);
+      const reasons = [];
+      reasons.push(usedSet.has(signature) ? 'This matchup has appeared before, but higher-priority court and fairness constraints selected it again.' : 'This is a new matchup within the current rotation memory.');
+      reasons.push('Rating gap: ' + gap.toFixed(1) + '.');
+      if(rotationPenalty > 0) reasons.push('Recent partner/opponent repetition was considered and penalised during selection.');
+      else reasons.push('No recent partner/opponent repetition penalty applied.');
+      court.matchupReason = reasons.join(' ');
+      usedSet.add(signature);
+    });
     state.plan.currentCircumstantialSitOutPlayerIds = Array.from(new Set((result.sitOutPlayers || []).map(function(player){ return player && player.id; }).filter(Boolean)));
     state.plan.currentOptionalSitOutPlayerIds = [];
     syncCurrentSitOutUnion();
@@ -2987,6 +3068,7 @@
     state.plan.generatedAt = new Date().toISOString();
     state.plan.currentGenerationToken = uid('current-set');
     state.plan.blankCurrentScoreInputs = true;
+    state.plan.generationIndex = Math.max(0, Math.round(Number(state.plan.generationIndex || 0))) + 1;
     prepareSpecialFourPlayerIndexForManualGenerate(attendingPlayers, state.plan.format);
     if(attendingPlayers.length === 2){
       state.plan.twoPlayerFlipIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0)) + 1;
@@ -3486,6 +3568,9 @@
     const lockNote = canScore || saved ? '' : '<div class="hardship-note">Score entry is limited to players on this court, the moderator, or an approved admin.</div>';
     const cardClass = 'court-card' + (saved ? ' is-saved' : '') + (noGame ? ' is-no-game' : '');
     let body = renderCourtSummary(court);
+    if(court.matchupReason){
+      body += '<details class="court-matchup-reason"><summary>Why this matchup?</summary><div class="note">' + escapeHtml(court.matchupReason) + '</div></details>';
+    }
     if(canScore) body += renderCourtVariableEditor(court, index);
     if(noGame){
       body += '<div class="status-box"><strong>No Game</strong><br/>This court has been confirmed as inactive. It will not require score submission.</div>';
@@ -3638,23 +3723,58 @@
 
   function incrementCourtPlayerMatchCounts(court){
     const seen = new Set();
+    if(!state.plan.sessionPlayCounts || typeof state.plan.sessionPlayCounts !== 'object') state.plan.sessionPlayCounts = {};
     ((court.side1 && court.side1.players) || []).concat((court.side2 && court.side2.players) || []).forEach(player => {
       if(!player || seen.has(player.id)) return;
       seen.add(player.id);
       const live = getPlayer(player.id);
       if(live) live.matchCount = Number(live.matchCount || 0) + 1;
+      state.plan.sessionPlayCounts[player.id] = Number(state.plan.sessionPlayCounts[player.id] || 0) + 1;
     });
   }
 
-  function updatePairSummaryFromCourt(court){
-    [court.side1, court.side2].forEach(side => {
+  function updateRotationMemoryFromCourt(court){
+    if(!state.plan.sessionPairCounts || typeof state.plan.sessionPairCounts !== 'object') state.plan.sessionPairCounts = {};
+    if(!state.plan.sessionOpponentCounts || typeof state.plan.sessionOpponentCounts !== 'object') state.plan.sessionOpponentCounts = {};
+    if(!state.plan.sessionSolo2v1Counts || typeof state.plan.sessionSolo2v1Counts !== 'object') state.plan.sessionSolo2v1Counts = {};
+    [court.side1, court.side2].forEach(function(side){
+      const players = side && Array.isArray(side.players) ? side.players : [];
+      if(players.length === 2){
+        const pairId = getPairIdFromPlayers(players);
+        if(pairId) state.plan.sessionPairCounts[pairId] = Number(state.plan.sessionPairCounts[pairId] || 0) + 1;
+      }
+    });
+    const side1Players = court.side1 && court.side1.players ? court.side1.players : [];
+    const side2Players = court.side2 && court.side2.players ? court.side2.players : [];
+    side1Players.forEach(function(a){
+      side2Players.forEach(function(b){
+        const key = getOpponentMemoryKey(a.id, b.id);
+        if(key) state.plan.sessionOpponentCounts[key] = Number(state.plan.sessionOpponentCounts[key] || 0) + 1;
+      });
+    });
+    if(court.kind === '2v1'){
+      const solo = side1Players.length === 1 ? side1Players[0] : (side2Players.length === 1 ? side2Players[0] : null);
+      if(solo) state.plan.sessionSolo2v1Counts[solo.id] = Number(state.plan.sessionSolo2v1Counts[solo.id] || 0) + 1;
+    }
+  }
+
+  function updatePairSummaryFromCourt(court, winnerSideNumber){
+    [1, 2].forEach(function(sideNumber){
+      const side = sideNumber === 1 ? court.side1 : court.side2;
       if((side.players || []).length < 2) return;
       const key = getPairSummaryKey(side);
+      if(!key) return;
       if(!state.pairSummary[key]){
-        state.pairSummary[key] = { ids:getTeamIds(side), label:getTeamLabel(side), count:0, lastSeenAt:'' };
+        state.pairSummary[key] = { pairId:key, ids:(side.players || []).map(function(player){ return player.id; }).filter(Boolean).sort(), label:getTeamLabel(side), count:0, wins:0, losses:0, lastSeenAt:'' };
       }
-      state.pairSummary[key].count += 1;
-      state.pairSummary[key].lastSeenAt = new Date().toISOString();
+      const summary = state.pairSummary[key];
+      summary.pairId = key;
+      summary.ids = (side.players || []).map(function(player){ return player.id; }).filter(Boolean).sort();
+      summary.label = getTeamLabel(side);
+      summary.count = Number(summary.count || 0) + 1;
+      summary.wins = Number(summary.wins || 0) + (Number(winnerSideNumber) === sideNumber ? 1 : 0);
+      summary.losses = Number(summary.losses || 0) + (Number(winnerSideNumber) !== sideNumber ? 1 : 0);
+      summary.lastSeenAt = new Date().toISOString();
     });
   }
 
@@ -3728,6 +3848,7 @@
     state.plan.generatedAt = new Date().toISOString();
     state.plan.currentGenerationToken = uid('current-set');
     state.plan.blankCurrentScoreInputs = true;
+    state.plan.generationIndex = Math.max(0, Math.round(Number(state.plan.generationIndex || 0))) + 1;
     advanceSpecialFourPlayerIndex(attendingPlayers, state.plan.format || 'doubles');
     if(attendingPlayers.length === 2){
       state.plan.twoPlayerFlipIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0)) + 1;
@@ -3931,7 +4052,8 @@
       : applyRatingChanges(court, score1, score2);
 
     incrementCourtPlayerMatchCounts(court);
-    updatePairSummaryFromCourt(court);
+    updateRotationMemoryFromCourt(court);
+    updatePairSummaryFromCourt(court, winnerSideNumber);
     court.savedWinnerLabel = getTeamLabel(winnerSide);
     court.savedHardship = hardshipIntent.requiresSelection ? (hardshipIntent.action === 'reduce' ? (hardship === 'movement' ? 'reducedMovement' : (hardship === 'shots' ? 'reducedShots' : '')) : hardship) : '';
     court.savedRatingSummary = ratingContext.summaryText;
@@ -3943,6 +4065,10 @@
       kind: court.kind,
       side1Label: getTeamLabel(court.side1),
       side2Label: getTeamLabel(court.side2),
+      side1PlayerIds: (court.side1.players || []).map(function(player){ return player.id; }).filter(Boolean),
+      side2PlayerIds: (court.side2.players || []).map(function(player){ return player.id; }).filter(Boolean),
+      side1PairId: getPairIdFromPlayers(court.side1.players || []),
+      side2PairId: getPairIdFromPlayers(court.side2.players || []),
       score1,
       score2,
       winnerLabel: getTeamLabel(winnerSide),
