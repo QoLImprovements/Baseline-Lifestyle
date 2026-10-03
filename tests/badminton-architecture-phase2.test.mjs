@@ -77,3 +77,12 @@ test("optional and circumstantial sit-outs remain separate in finished-set repor
   assert.match(source, /Circumstantial sit-outs/);
   assert.match(source, /Optional sit-outs/);
 });
+
+test("hardship compatibility APIs delegate to one dominant mutation authority", () => {
+  assert.match(source, /function getDominantHardshipLedger\(\)\{\s*return getActiveHardshipLedger\(\);\s*\}/);
+  assert.match(source, /function getHardshipRuleForSide\(court, sideNumber\)\{\s*return getDominantHardshipRuleForSide\(court, sideNumber\);\s*\}/);
+  assert.match(source, /function increaseHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return increaseDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
+  assert.match(source, /function reduceHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return reduceDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
+  assert.match(source, /function applyHardshipSaveIntent[\s\S]*increaseDominantHardshipForSide/);
+  assert.match(source, /function applyHardshipSaveIntent[\s\S]*reduceDominantHardshipForSide/);
+});
