@@ -1036,16 +1036,41 @@
     }
   }
 
+  function getPlayerRatingId(player){
+    return String(player && (player.id || player.playerId) || '').trim();
+  }
+
   function getPairNamesFromPlayers(players){
     return (players || []).map(function(player){ return String(player && player.name || '').trim(); }).filter(Boolean).sort(function(a,b){ return a.localeCompare(b); });
   }
 
-  function getPairKeyFromPlayers(players){
-    return getPairNamesFromPlayers(players).join(' / ');
+  function getPairIdFromPlayers(players){
+    const ids = (players || []).map(getPlayerRatingId).filter(Boolean).sort();
+    return ids.length === 2 ? ('pair:' + ids.join('::')) : '';
   }
 
-  function getLegacyPairKeyFromPlayers(players){
-    return getPairNamesFromPlayers(players).join(' + ');
+  function getLegacyPairKeysFromPlayers(players){
+    const names = getPairNamesFromPlayers(players);
+    if(names.length !== 2) return [];
+    return [names.join(' / '), names.join(' + ')];
+  }
+
+  function getPlayerByNameForRatingMigration(name){
+    const needle = String(name || '').trim().toLowerCase();
+    if(!needle) return null;
+    return (state.players || []).find(function(player){
+      return String(player && player.name || '').trim().toLowerCase() === needle;
+    }) || null;
+  }
+
+  function getPairLabelFromId(pairId){
+    const ids = String(pairId || '').replace(/^pair:/, '').split('::').filter(Boolean);
+    if(ids.length !== 2) return String(pairId || '');
+    const names = ids.map(function(id){
+      const player = getPlayer(id);
+      return player ? player.name : id;
+    });
+    return names.join(' / ');
   }
 
   function normalizePairRatingKeys(){
@@ -1053,71 +1078,78 @@
     const normalized = {};
     Object.keys(state.pairRatings).forEach(function(key){
       const value = clampRating(state.pairRatings[key]);
-      const parts = String(key || '').split(/\s*(?:\/|\+)\s*/).map(function(part){ return part.trim(); }).filter(Boolean);
-      if(parts.length === 2){
-        parts.sort(function(a,b){ return a.localeCompare(b); });
-        normalized[parts.join(' / ')] = value;
-      }else if(key){
-        normalized[key] = value;
+      if(String(key).startsWith('pair:')){
+        normalized[String(key)] = value;
+        return;
       }
+      const parts = String(key || '').split(/\s*(?:\/|\+)\s*/).map(function(part){ return part.trim(); }).filter(Boolean);
+      if(parts.length !== 2) return;
+      const players = parts.map(getPlayerByNameForRatingMigration).filter(Boolean);
+      const pairId = getPairIdFromPlayers(players);
+      if(pairId && !Object.prototype.hasOwnProperty.call(normalized, pairId)) normalized[pairId] = value;
     });
     state.pairRatings = normalized;
   }
 
+  function normalizeOneVsTwoRatingKeys(){
+    if(!state.oneVsTwoRatings || typeof state.oneVsTwoRatings !== 'object') state.oneVsTwoRatings = {};
+    const normalized = {};
+    Object.keys(state.oneVsTwoRatings).forEach(function(key){
+      const value = clampRating(state.oneVsTwoRatings[key]);
+      const directPlayer = getPlayer(String(key));
+      if(directPlayer){
+        normalized[getPlayerRatingId(directPlayer)] = value;
+        return;
+      }
+      const legacyPlayer = getPlayerByNameForRatingMigration(key);
+      if(legacyPlayer){
+        const playerId = getPlayerRatingId(legacyPlayer);
+        if(playerId && !Object.prototype.hasOwnProperty.call(normalized, playerId)) normalized[playerId] = value;
+      }
+    });
+    state.oneVsTwoRatings = normalized;
+  }
+
   function getPairRatingForPlayers(players){
-    ensureRatingStores();
-    const key = getPairKeyFromPlayers(players);
-    const legacyKey = getLegacyPairKeyFromPlayers(players);
-    if(key && Object.prototype.hasOwnProperty.call(state.pairRatings, key)) return clampRating(state.pairRatings[key]);
-    if(legacyKey && Object.prototype.hasOwnProperty.call(state.pairRatings, legacyKey)){
-      const value = clampRating(state.pairRatings[legacyKey]);
-      state.pairRatings[key] = value;
-      delete state.pairRatings[legacyKey];
-      return value;
-    }
+    const pairId = getPairIdFromPlayers(players);
+    if(pairId && Object.prototype.hasOwnProperty.call(state.pairRatings || {}, pairId)) return clampRating(state.pairRatings[pairId]);
     const ratings = (players || []).map(getPlayerRating);
     return ratings.length ? clampRating(average(ratings)) : START_RATING;
   }
 
   function setPairRatingForPlayers(players, value){
-    ensureRatingStores();
-    const key = getPairKeyFromPlayers(players);
-    const legacyKey = getLegacyPairKeyFromPlayers(players);
-    if(key){
-      state.pairRatings[key] = clampRating(value);
-      if(legacyKey && legacyKey !== key) delete state.pairRatings[legacyKey];
-    }
+    const pairId = getPairIdFromPlayers(players);
+    if(pairId) state.pairRatings[pairId] = clampRating(value);
   }
 
   function getOneVsTwoRatingForPlayer(player){
-    ensureRatingStores();
-    const name = String(player && player.name || '').trim();
-    if(name && Object.prototype.hasOwnProperty.call(state.oneVsTwoRatings, name)) return clampRating(state.oneVsTwoRatings[name]);
+    const playerId = getPlayerRatingId(player);
+    if(playerId && Object.prototype.hasOwnProperty.call(state.oneVsTwoRatings || {}, playerId)) return clampRating(state.oneVsTwoRatings[playerId]);
     return getPlayerRating(player);
   }
 
   function setOneVsTwoRatingForPlayer(player, value){
-    ensureRatingStores();
-    const name = String(player && player.name || '').trim();
-    if(name) state.oneVsTwoRatings[name] = clampRating(value);
+    const playerId = getPlayerRatingId(player);
+    if(playerId) state.oneVsTwoRatings[playerId] = clampRating(value);
   }
 
   function ensureRatingStores(){
     if(!state.pairRatings || typeof state.pairRatings !== 'object') state.pairRatings = {};
     normalizePairRatingKeys();
     if(!state.oneVsTwoRatings || typeof state.oneVsTwoRatings !== 'object') state.oneVsTwoRatings = {};
+    normalizeOneVsTwoRatingKeys();
     (state.players || []).forEach(function(player){
       player.playerRating = getPlayerRating(player);
       player.rating = player.playerRating;
-      const name = String(player.name || '').trim();
-      if(name && !Object.prototype.hasOwnProperty.call(state.oneVsTwoRatings, name)) state.oneVsTwoRatings[name] = player.playerRating;
+      const playerId = getPlayerRatingId(player);
+      if(playerId && !Object.prototype.hasOwnProperty.call(state.oneVsTwoRatings, playerId)) state.oneVsTwoRatings[playerId] = player.playerRating;
     });
     const players = state.players || [];
     for(let i = 0; i < players.length; i += 1){
       for(let j = i + 1; j < players.length; j += 1){
-        const key = getPairKeyFromPlayers([players[i], players[j]]);
-        if(key && !Object.prototype.hasOwnProperty.call(state.pairRatings, key)){
-          state.pairRatings[key] = clampRating((getPlayerRating(players[i]) + getPlayerRating(players[j])) / 2);
+        const pairId = getPairIdFromPlayers([players[i], players[j]]);
+        if(pairId && !Object.prototype.hasOwnProperty.call(state.pairRatings, pairId)){
+          state.pairRatings[pairId] = clampRating((getPlayerRating(players[i]) + getPlayerRating(players[j])) / 2);
         }
       }
     }
@@ -4459,7 +4491,7 @@
   function renderStandings(){
     ensureRatingStores();
     const playerRows = state.players.slice().sort((a, b) => getPlayerRating(b) - getPlayerRating(a) || a.name.localeCompare(b.name)).map((player, index) => '<tr><td class="small-cell">' + escapeHtml(String(index + 1)) + '</td><td>' + escapeHtml(isModeratorPlayer(player) ? 'Peter Bates-Wilkinson' : player.name) + renderAdminStar(player) + '</td><td class="small-cell">' + escapeHtml(String(getPlayerRating(player))) + '</td><td>' + escapeHtml(isModeratorPlayer(player) ? SITE_MODERATOR_CANONICAL_LOGIN : (player.loginUsername || '—')) + '</td></tr>').join('');
-    const pairRows = Object.entries(state.pairRatings || {}).sort((a,b) => Number(b[1]) - Number(a[1]) || a[0].localeCompare(b[0])).map((entry, index) => '<tr><td class="small-cell">' + escapeHtml(String(index + 1)) + '</td><td>' + escapeHtml(entry[0]) + '</td><td class="small-cell">' + escapeHtml(clampRating(entry[1]).toFixed(1)) + '</td></tr>').join('');
+    const pairRows = Object.entries(state.pairRatings || {}).sort((a,b) => Number(b[1]) - Number(a[1]) || getPairLabelFromId(a[0]).localeCompare(getPairLabelFromId(b[0]))).map((entry, index) => '<tr><td class="small-cell">' + escapeHtml(String(index + 1)) + '</td><td>' + escapeHtml(getPairLabelFromId(entry[0])) + '</td><td class="small-cell">' + escapeHtml(clampRating(entry[1]).toFixed(1)) + '</td></tr>').join('');
     const oneVsTwoRows = state.players.slice().sort((a,b) => getOneVsTwoRatingForPlayer(b) - getOneVsTwoRatingForPlayer(a) || a.name.localeCompare(b.name)).map((player, index) => '<tr><td class="small-cell">' + escapeHtml(String(index + 1)) + '</td><td>' + escapeHtml(isModeratorPlayer(player) ? 'Peter Bates-Wilkinson' : player.name) + renderAdminStar(player) + '</td><td class="small-cell">' + escapeHtml(getOneVsTwoRatingForPlayer(player).toFixed(1)) + '</td></tr>').join('');
     refs.standingsWrap.innerHTML =
       '<h3>Player Rating</h3><p class="note">Singles only.</p><div class="table-wrap"><table><thead><tr><th>#</th><th>Player</th><th>Player Rating</th><th>Linked login</th></tr></thead><tbody>' + (playerRows || '<tr><td colspan="4">No players yet.</td></tr>') + '</tbody></table></div>' +
