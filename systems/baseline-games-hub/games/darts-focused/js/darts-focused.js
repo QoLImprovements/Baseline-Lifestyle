@@ -229,7 +229,7 @@ function renderSelectedGame() {
 }
 
 const RENDERERS = createDartsRenderers({
-  profile,
+  getProfile:()=>profile,
   tierId,
   nextButton,
   managedTimerRemaining,
