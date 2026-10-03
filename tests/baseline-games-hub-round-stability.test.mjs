@@ -56,3 +56,17 @@ test('Rule Shift preserves the remaining answer window while the document is hid
   assert.match(visibility, /document\.visibilityState === 'hidden'/);
   assert.match(core, /document\.addEventListener\('visibilitychange', syncRuleShiftVisibility\)/);
 });
+
+
+test('Track the Coin replay records and reuses the original cup permutation without granting rewards', () => {
+  const motion = functionBody('applyTrackCoinMotionStep', 'startTrackCoinRound');
+  const replay = functionBody('replayTrackCoinShuffle', 'renderTrackCoinTierList');
+
+  assert.match(motion, /Array\.isArray\(step\.order\)/);
+  assert.match(motion, /step\.order = order\.slice\(\)/);
+  assert.match(replay, /trackCoinState\.cups\.sort/);
+  assert.match(replay, /runTrackCoinShuffle\(0, roundToken,/);
+  assert.doesNotMatch(replay, /grantTrackCoinRewards\(/);
+  assert.doesNotMatch(replay, /profile\.totalRounds/);
+  assert.match(replay, /No reward was awarded/);
+});
