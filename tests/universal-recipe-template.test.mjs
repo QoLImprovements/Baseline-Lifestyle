@@ -144,14 +144,22 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
-test('every authored Skincare recipe has Yield and Batch metadata before JavaScript', () => {
+test('every authored Skincare recipe has one coherent Batch metadata item before JavaScript', () => {
   for (const {id,html} of skincareRecipeBlocks()) {
-    assert.match(html,/recipe-yield-meta-value/,'missing Yield metadata in '+id);
+    assert.doesNotMatch(html,/recipe-yield-meta-value|>Yield:</,'unexpected Yield metadata in '+id);
     assert.match(html,/recipe-batch-meta-value/,'missing Batch metadata in '+id);
+    assert.equal((html.match(/class="recipe-meta-item"/g) || []).length,1,'extra metadata item in '+id);
   }
-  assert.match(shared, /yieldValue = '1 recipe batch'/);
-  assert.match(shared, /addMeta\('Yield', yieldValue\)/);
+  assert.doesNotMatch(shared, /yieldValue|recipe-yield-meta-value|addMeta\('Yield'/);
   assert.match(shared, /addMeta\('Batch', '1×'\)/);
+});
+
+test('shared recipe engine owns Details visibility immediately on click', () => {
+  assert.match(shared, /const visible = next === 'show-all' \|\| group === next/);
+  assert.match(shared, /classList\.contains\('recipe-details-intro'\)/);
+  assert.match(shared, /el\.hidden = !visible/);
+  assert.doesNotMatch(shared, /group !== 'details'/);
+  assert.doesNotMatch(recipeUx, /function bindRecipeSubtabs/);
 });
 
 test('Adjustments owns scaling utilities and static Skincare shells hydrate rather than duplicate', () => {
