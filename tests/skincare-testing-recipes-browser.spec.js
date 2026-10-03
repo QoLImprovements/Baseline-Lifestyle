@@ -195,7 +195,7 @@ test('Details survives refresh without exposing another recipe and fresh recipe 
   await massage.locator('[data-recipe-subtab="details"]').click();
   await expect(massage.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
   await expect(massage.locator('.recipe-details-intro')).toBeVisible();
-  await expect(massage.locator('> .variant-heading, > .variant-switcher')).toHaveCount(0);
+  await expect(massage.locator(':scope > .variant-heading, :scope > .variant-switcher')).toHaveCount(0);
   expect(new URL(page.url()).searchParams.get('view')).toBe('details');
 
   await page.reload();
