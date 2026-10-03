@@ -620,7 +620,7 @@ test('Multi-variance recipes expose a synchronized selector at the top of Detail
   await expect(details).toBeVisible();
   await expect(selector).toBeVisible();
   await expect(selector).toHaveValue('balanced');
-  await expect(details.locator('.recipe-details-variant-field')).toBe(details.locator(':scope > *').first());
+  await expect(details.locator(':scope > *').first()).toHaveClass(/recipe-details-variant-field/);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Balanced/i);
 
   await selector.selectOption('enhanced');
