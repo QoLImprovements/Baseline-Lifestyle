@@ -220,7 +220,7 @@ test('A deliberate recipe open always starts on Recipe even after Details was pr
     await back.click();
     await expect(page).toHaveURL(system.overview);
 
-    const link = page.locator('#recipes-overview a.recipe-open[href="' + system.recipe + '"], .recipe-overview a.recipe-open[href="' + system.recipe + '"]').first();
+    const link = page.locator('#recipes-landing a.recipe-open[href="' + system.recipe + '"]').first();
     await expect(link).toBeVisible();
     await link.click();
 
