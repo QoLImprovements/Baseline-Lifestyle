@@ -1223,6 +1223,11 @@
     return lower;
   }
 
+  function normalizeRecipeSubView(value){
+    const next = String(value || '').trim().toLowerCase();
+    return ['details','guidance','show-all'].includes(next) ? next : 'standard';
+  }
+
   function recipePathStateFromLocation(){
     try{
       const path = decodeURIComponent(String(location.pathname || ''));
@@ -1230,7 +1235,10 @@
         || path.match(/\.html\/([^\/?#]+)\/?$/i);
       if(!m || !m[1]) return null;
       const id = recipeIdForToken(m[1]);
-      return id ? { kind:'recipe', recipeId:id, raw:path } : null;
+      if(!id) return null;
+      let recipeView = 'standard';
+      try{ recipeView = normalizeRecipeSubView(new URLSearchParams(location.search || '').get('view')); }catch(_e){}
+      return { kind:'recipe', recipeId:id, recipeView:recipeView, raw:path };
     }catch(_e){ return null; }
   }
 
@@ -1393,7 +1401,11 @@
   }
 
   function urlForNavState(state){
-    if(state && state.kind === 'recipe' && state.recipeId){ return recipeUrlForId(state.recipeId); }
+    if(state && state.kind === 'recipe' && state.recipeId){
+      const base = recipeUrlForId(state.recipeId);
+      const recipeView = normalizeRecipeSubView(state.recipeView || 'standard');
+      return recipeView === 'standard' ? base : (base + '?view=' + encodeURIComponent(recipeView));
+    }
     if(state && state.kind === 'ingredient' && state.ingredientId){
       const routePageFile = routePageFileFromPath(location.pathname || '');
       if(routePageFile === 'baseline-natural-skincare.html'){
@@ -7574,7 +7586,11 @@ function setupRecipeFavourites(){
         window.BASELINE_openRecipe(rid, { silentHistory:true, noScroll: !!recipePathStateFromLocation() });
       }
       // Canonicalise legacy #recipe=rN/#rN links to the named path URL without adding history.
-      try{ const nextState = { kind: 'recipe', recipeId: rid }; setNavState(nextState, { replace:true, url: urlForNavState(nextState) }); }catch(_e){}
+      // Preserve a recipe subview carried by the clean route so refresh can reconstruct it.
+      try{
+        const nextState = { kind: 'recipe', recipeId: rid, recipeView: normalizeRecipeSubView(initialView.recipeView || 'standard') };
+        setNavState(nextState, { replace:true, url: urlForNavState(nextState) });
+      }catch(_e){}
     }else if(initialView && initialView.kind === 'tab'){
       const tabId = initialView.tabId || 'system';
       if(typeof window.BASELINE_selectTab === 'function' && tabId){
