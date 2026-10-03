@@ -525,7 +525,7 @@ test('numeric Yield updates when Batch is changed', async ({ page }) => {
   await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('200 g');
 });
 
-test('Skincare Details uses a continuous two-column layout without card separation', async ({ page }) => {
+test('Skincare Details uses one full-width continuous column without card separation', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const details = page.locator('#r3 .recipe-details-intro');
   await page.locator('#r3 [data-recipe-subtab="details"]').click();
@@ -535,17 +535,34 @@ test('Skincare Details uses a continuous two-column layout without card separati
     const style = getComputedStyle(el);
     const first = el.querySelector('.recipe-detail-block');
     const firstStyle = getComputedStyle(first);
+    const detailsRect = el.getBoundingClientRect();
+    const firstRect = first.getBoundingClientRect();
     return {
       columns: style.gridTemplateColumns,
+      detailsWidth: detailsRect.width,
+      blockWidth: firstRect.width,
       borderStyle: firstStyle.borderStyle,
       backgroundImage: firstStyle.backgroundImage,
       backgroundColor: firstStyle.backgroundColor
     };
   });
-  expect(layout.columns.split(' ').length).toBeGreaterThanOrEqual(2);
+  expect(layout.columns.trim().split(/\s+/)).toHaveLength(1);
+  expect(layout.blockWidth).toBeGreaterThanOrEqual(layout.detailsWidth - 2);
   expect(layout.borderStyle).toBe('none');
   expect(layout.backgroundImage).toBe('none');
   expect(['rgba(0, 0, 0, 0)','transparent']).toContain(layout.backgroundColor);
+});
+
+test('Skincare read-only subtabs do not expose recipe variant selectors', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const card = page.locator('#r2');
+  await expect(card.locator(':scope > .variant-switcher')).toBeVisible();
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeHidden();
+  await card.locator('[data-recipe-subtab="guidance"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeHidden();
+  await card.locator('[data-recipe-subtab="standard"]').click();
+  await expect(card.locator(':scope > .variant-switcher')).toBeVisible();
 });
 
 test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {
