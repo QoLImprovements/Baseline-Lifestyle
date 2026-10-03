@@ -8,16 +8,13 @@ import {
   calibrationScore,
   clockwiseNeighbour,
   createDefaultDartsProfile,
-  dartsGameXpNeededForLevel,
   dartsXpNeededForLevel,
-  normaliseDartsProfile,
   normaliseTargetCode,
   oppositeSegment,
   recordResult,
   realmContributionForDarts,
   remainingAfterHit,
   sameSet,
-  scoreTarget,
   seededPick,
   validateRouteText
 } from './darts-focused-engine.mjs?v=DARTS_REBUILD_20260707_4';
