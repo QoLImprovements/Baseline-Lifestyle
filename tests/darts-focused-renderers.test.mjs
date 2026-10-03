@@ -7,7 +7,7 @@ import { createDartsRenderers } from '../systems/baseline-games-hub/games/darts-
 function build(){
   const profile=createDefaultDartsProfile();
   const renderers=createDartsRenderers({
-    profile,
+    getProfile:()=>profile,
     tierId:()=>1,
     nextButton:(label='Next round')=>'<button data-next>'+label+'</button>',
     managedTimerRemaining:()=>5000,
