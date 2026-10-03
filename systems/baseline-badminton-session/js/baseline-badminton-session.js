@@ -2963,10 +2963,15 @@
     let result;
     if(attendingPlayers.length === 2){
       result = { courts: [makeCourt('singles', attendingPlayers.slice(0, 2))], sitOutPlayers: [] };
-    }else if(normalizedFormat === 'singles'){
-      result = buildSinglesDayCourtSet(attendingPlayers, courtLimit);
+    }else if(isSpecialFourPlayerLadder(attendingPlayers, normalizedFormat)){
+      result = { courts: buildSpecialFourPlayerSequence(attendingPlayers, state.plan.specialFourPlayerIndex || 0).slice(0, courtLimit), sitOutPlayers: [] };
     }else{
-      result = buildDoublesDayCourtSet(attendingPlayers, courtLimit);
+      result = generateNovelCourtSet(attendingPlayers, normalizedFormat, usedSet, courtLimit);
+      if(!result || !Array.isArray(result.courts) || !result.courts.length){
+        result = normalizedFormat === 'singles'
+          ? buildSinglesDayCourtSet(attendingPlayers, courtLimit)
+          : buildDoublesDayCourtSet(attendingPlayers, courtLimit);
+      }
     }
     const courts = (result.courts || []).filter(Boolean).slice(0, courtLimit);
     courts.forEach(function(court){
