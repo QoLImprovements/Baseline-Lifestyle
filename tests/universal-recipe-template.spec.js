@@ -147,11 +147,13 @@ for (const recipe of foodRecipes) {
     await expect(page.locator('#system')).toBeHidden();
     await expect(page.locator('#recipes')).toBeVisible();
     await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
     await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
 
     await page.reload({ waitUntil:'domcontentloaded' });
     expect(new URL(page.url()).pathname).toBe(url);
     await expect(page.locator('#' + recipe.id)).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
     await expect(page.locator('#' + recipe.id + ' h3')).toHaveText(recipe.title);
 
     await page.locator('#' + recipe.id + ' .back-btn').click();
