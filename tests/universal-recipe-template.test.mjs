@@ -71,17 +71,21 @@ test('Skincare adjustment visibility and Show All ordering are explicit contract
   assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
-test('Skincare recipe subview is encoded in the canonical route and restored after reload', () => {
+test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
   assert.match(shared, /searchParams\.get\('view'\)/);
   assert.match(shared, /base \+ '\?view=' \+ encodeURIComponent\(recipeView\)/);
+  assert.match(shared, /function setView\(view, options=\{\}\)/);
+  assert.match(shared, /options && options\.syncRoute/);
+  assert.match(shared, /recipeView:next/);
+  assert.match(shared, /setNavState\(nextState, \{ replace:true, url:urlForNavState\(nextState\) \}\)/);
+  assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
   assert.match(recipeUx, /function recipeViewFromLocation\(\)/);
-  assert.match(recipeUx, /function syncRecipeViewUrl\(view\)/);
-  assert.match(recipeUx, /url\.searchParams\.set\('view',next\)/);
   assert.match(recipeUx, /restoreRecipeViewFromLocation\(\)/);
   assert.match(recipeUx, /addEventListener\('popstate',restoreRecipeViewFromLocation\)/);
-  assert.match(skincareCss, /recipe-open-mode \.recipe-page\{ display:none!important; \}/);
-  assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active[\s\S]*display:block!important/);
+  assert.doesNotMatch(recipeUx, /syncRecipeViewUrl/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page,[\s\S]*recipe-detail-open \.recipe-page\{ display:none!important; \}/);
+  assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
