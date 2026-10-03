@@ -13,6 +13,10 @@ const source = fs.readFileSync(
   "utf8",
 );
 
+test("Badminton Session controller remains syntactically valid JavaScript", () => {
+  assert.doesNotThrow(() => new Function(source));
+});
+
 test("rotation state distinguishes participation, partnerships, opponents and 2v1 solo assignments", () => {
   for (const field of [
     "sessionPlayCounts",
