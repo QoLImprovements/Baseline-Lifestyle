@@ -126,3 +126,10 @@ test('Darts controller delegates progress presentation authority',()=>{
   assert.doesNotMatch(runtime,/darts-xp-block/);
   assert.doesNotMatch(runtime,/darts-tier-button/);
 });
+
+
+test('Darts controller delegates non-Decision drill mutations to action authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-actions\.js'/);
+  assert.match(runtime,/createDartsDrillActions\(/);
+  assert.doesNotMatch(runtime,/function answerStandard|function startTargetLock|function startPressure|function sequenceClick/);
+});
