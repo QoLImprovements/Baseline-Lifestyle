@@ -112,3 +112,10 @@ test('Darts controller delegates round preparation authority',()=>{
   assert.match(runtime,/buildTargetSequence\(tierId\('sequence-recall'\)\)/);
   assert.match(runtime,/createGeographyPrompt\(tierId\('board-geography'\)\)/);
 });
+
+
+test('Darts controller delegates game-specific presentation to renderer authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-renderers\.js'/);
+  assert.match(runtime,/const RENDERERS = createDartsRenderers\(/);
+  assert.doesNotMatch(runtime,/const RENDERERS = \{/);
+});
