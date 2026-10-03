@@ -40,16 +40,20 @@ function ready(){
 function waitCore(){
   if(ready())return Promise.resolve(window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES);
   return new Promise((resolve,reject)=>{
-    const start=Date.now();
-    const timer=setInterval(()=>{
-      if(ready()){
-        clearInterval(timer);
-        resolve(window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES);
-      }else if(Date.now()-start>6000){
-        clearInterval(timer);
-        reject(new Error('Games Hub core unavailable'));
-      }
-    },25);
+    let settled=false;
+    const finish=(callback,value)=>{
+      if(settled)return;
+      settled=true;
+      window.removeEventListener('baseline:games-hub:core-ready',onReady);
+      window.clearTimeout(timeout);
+      callback(value);
+    };
+    const onReady=()=>{
+      if(ready())finish(resolve,window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES);
+    };
+    const timeout=window.setTimeout(()=>finish(reject,new Error('Games Hub core unavailable')),6000);
+    window.addEventListener('baseline:games-hub:core-ready',onReady,{once:true});
+    Promise.resolve().then(onReady);
   });
 }
 
