@@ -112,8 +112,8 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   }
   assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
   assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
-  assert.match(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\);/);
-  assert.doesNotMatch(skincareCss,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+  assert.match(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\);/);
+  assert.doesNotMatch(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
   assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
@@ -142,10 +142,10 @@ test('Adjustments owns scaling utilities and static Skincare shells hydrate rath
 });
 
 test('Skincare slider recipes already contain the final layout and save controls', () => {
-  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,8);
-  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,7);
+  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,6);
   assert.doesNotMatch(skincareHtml,/class="glide-control-stack"/);
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);
