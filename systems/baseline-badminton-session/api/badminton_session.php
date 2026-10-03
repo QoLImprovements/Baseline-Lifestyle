@@ -114,7 +114,15 @@ function bl_badminton_rating_value($value): float {
   return is_numeric($value) ? (float)$value : 25.0;
 }
 
-function bl_badminton_pair_key(string $a, string $b): string {
+function bl_badminton_pair_id(string $a, string $b): string {
+  $ids = [trim($a), trim($b)];
+  sort($ids, SORT_STRING);
+  return count(array_filter($ids, static fn($x) => $x !== '')) === 2
+    ? 'pair:' . implode('::', $ids)
+    : '';
+}
+
+function bl_badminton_legacy_pair_key(string $a, string $b): string {
   $names = [trim($a), trim($b)];
   sort($names, SORT_NATURAL | SORT_FLAG_CASE);
   return implode(' / ', $names);
@@ -130,30 +138,72 @@ function bl_badminton_enrich_rating_state(array $state): array {
   if(!is_array($players)) return $state;
   if(!isset($state['pairRatings']) || !is_array($state['pairRatings'])) $state['pairRatings'] = [];
   if(!isset($state['oneVsTwoRatings']) || !is_array($state['oneVsTwoRatings'])) $state['oneVsTwoRatings'] = [];
+
   $normalizedPlayers = [];
+  $playersByName = [];
+  $playersById = [];
   foreach($players as $player){
     if(!is_array($player)) continue;
+    $id = trim((string)($player['id'] ?? $player['playerId'] ?? ''));
     $name = trim((string)($player['name'] ?? $player['playerName'] ?? ''));
-    if($name === '') continue;
+    if($id === '' || $name === '') continue;
     $playerRating = bl_badminton_rating_value($player['playerRating'] ?? $player['rating'] ?? 25);
-    $normalizedPlayers[] = ['name' => $name, 'playerRating' => $playerRating];
-    if(!array_key_exists($name, $state['oneVsTwoRatings'])){
-      $state['oneVsTwoRatings'][$name] = $playerRating;
+    $row = ['id' => $id, 'name' => $name, 'playerRating' => $playerRating];
+    $normalizedPlayers[] = $row;
+    $playersById[$id] = $row;
+    $playersByName[bl_badminton_normalize($name)] = $row;
+  }
+
+  $pairRatings = [];
+  foreach($state['pairRatings'] as $key => $value){
+    $rating = bl_badminton_rating_value($value);
+    $key = (string)$key;
+    if(str_starts_with($key, 'pair:')){
+      $pairRatings[$key] = $rating;
+      continue;
+    }
+    $parts = preg_split('~\s*(?:/|\+)\s*~', $key) ?: [];
+    if(count($parts) !== 2) continue;
+    $a = $playersByName[bl_badminton_normalize((string)$parts[0])] ?? null;
+    $b = $playersByName[bl_badminton_normalize((string)$parts[1])] ?? null;
+    if(!$a || !$b) continue;
+    $pairId = bl_badminton_pair_id($a['id'], $b['id']);
+    if($pairId !== '' && !array_key_exists($pairId, $pairRatings)) $pairRatings[$pairId] = $rating;
+  }
+  $state['pairRatings'] = $pairRatings;
+
+  $oneVsTwoRatings = [];
+  foreach($state['oneVsTwoRatings'] as $key => $value){
+    $rating = bl_badminton_rating_value($value);
+    $key = (string)$key;
+    if(isset($playersById[$key])){
+      $oneVsTwoRatings[$key] = $rating;
+      continue;
+    }
+    $legacy = $playersByName[bl_badminton_normalize($key)] ?? null;
+    if($legacy && !array_key_exists($legacy['id'], $oneVsTwoRatings)) $oneVsTwoRatings[$legacy['id']] = $rating;
+  }
+  $state['oneVsTwoRatings'] = $oneVsTwoRatings;
+
+  foreach($normalizedPlayers as $player){
+    if(!array_key_exists($player['id'], $state['oneVsTwoRatings'])){
+      $state['oneVsTwoRatings'][$player['id']] = $player['playerRating'];
     }
   }
+
   $count = count($normalizedPlayers);
   for($i = 0; $i < $count; $i++){
     for($j = $i + 1; $j < $count; $j++){
-      $key = bl_badminton_pair_key($normalizedPlayers[$i]['name'], $normalizedPlayers[$j]['name']);
-      if(!array_key_exists($key, $state['pairRatings'])){
-        $state['pairRatings'][$key] = ($normalizedPlayers[$i]['playerRating'] + $normalizedPlayers[$j]['playerRating']) / 2;
+      $pairId = bl_badminton_pair_id($normalizedPlayers[$i]['id'], $normalizedPlayers[$j]['id']);
+      if($pairId !== '' && !array_key_exists($pairId, $state['pairRatings'])){
+        $state['pairRatings'][$pairId] = ($normalizedPlayers[$i]['playerRating'] + $normalizedPlayers[$j]['playerRating']) / 2;
       }
     }
   }
   $state['ratingModel'] = [
-    'playerRating' => 'singles_only',
-    'pairRating' => 'doubles_pair_and_pair_side_of_2v1',
-    'oneVsTwoRating' => 'solo_side_of_2v1',
+    'playerRating' => 'singles_only_by_player_id',
+    'pairRating' => 'doubles_pair_id_and_pair_side_of_2v1',
+    'oneVsTwoRating' => 'solo_side_of_2v1_by_player_id',
   ];
   return $state;
 }
@@ -420,21 +470,29 @@ function bl_badminton_find_side_rating_in_state(array $state, array $court, int 
       if($name !== '') $names[] = $name;
     }
   }
-  if(count($names) === 2){
-    $key = bl_badminton_pair_key($names[0], $names[1]);
-    $value = $state['pairRatings'][$key] ?? null;
+  $ids = [];
+  foreach($players as $player){
+    if(is_array($player)){
+      $id = trim((string)($player['id'] ?? $player['playerId'] ?? ''));
+      if($id !== '') $ids[] = $id;
+    }
+  }
+  if(count($ids) === 2){
+    $pairId = bl_badminton_pair_id($ids[0], $ids[1]);
+    $value = $state['pairRatings'][$pairId] ?? null;
     return is_numeric($value) ? (float)$value : $fallback;
   }
-  if(count($names) === 1){
+  if(count($ids) === 1){
     if($kind === '2v1'){
-      $value = $state['oneVsTwoRatings'][$names[0]] ?? null;
+      $value = $state['oneVsTwoRatings'][$ids[0]] ?? null;
       if(is_numeric($value)) return (float)$value;
     }
     $playersState = $state['players'] ?? [];
     if(is_array($playersState)){
       foreach($playersState as $player){
         if(!is_array($player)) continue;
-        if(trim((string)($player['name'] ?? '')) === $names[0]){
+        $playerId = trim((string)($player['id'] ?? $player['playerId'] ?? ''));
+        if($playerId === $ids[0]){
           $value = $player['playerRating'] ?? $player['rating'] ?? null;
           return is_numeric($value) ? (float)$value : $fallback;
         }
