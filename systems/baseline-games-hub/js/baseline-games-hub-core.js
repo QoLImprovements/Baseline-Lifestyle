@@ -14,6 +14,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const TRACKCOIN_STORAGE_KEY = '__bl_trackcoin_v1__';
   const GUEST_PROFILES_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
   const AUTO_NEXT_STORAGE_KEY = '__bl_games_auto_next_v1__';
+  const CORE_ACTIVE_ROUNDS_STORAGE_KEY = '__bl_games_active_rounds_v1__';
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900 });
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
@@ -164,6 +165,120 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       all[app] = JSON.parse(JSON.stringify(profile));
       localStorage.setItem(GUEST_PROFILES_STORAGE_KEY, JSON.stringify(all));
     }catch(_e){}
+  }
+
+  function readCoreActiveRounds(){
+    try{
+      const raw = localStorage.getItem(CORE_ACTIVE_ROUNDS_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      return parsed && typeof parsed === 'object' ? parsed : {};
+    }catch(_e){
+      return {};
+    }
+  }
+  function writeCoreActiveRound(gameId, state){
+    try{
+      const all = readCoreActiveRounds();
+      if(state) all[gameId] = JSON.parse(JSON.stringify(state));
+      else delete all[gameId];
+      if(Object.keys(all).length) localStorage.setItem(CORE_ACTIVE_ROUNDS_STORAGE_KEY, JSON.stringify(all));
+      else localStorage.removeItem(CORE_ACTIVE_ROUNDS_STORAGE_KEY);
+    }catch(_e){}
+  }
+  function clearCoreActiveRound(gameId){ writeCoreActiveRound(gameId, null); }
+  function persistWordRound(){
+    if(!wordState){ clearCoreActiveRound('detectword'); return; }
+    const tier = currentWordTier();
+    const ended = wordState.guesses.some(function(entry){ return entry.word === wordState.secret; }) || wordState.guesses.length >= wordState.maxGuesses;
+    if(ended){ clearCoreActiveRound('detectword'); return; }
+    writeCoreActiveRound('detectword', {
+      version:1,
+      tierId:tier.id,
+      secret:wordState.secret,
+      guesses:wordState.guesses.map(function(entry){ return { word:entry.word }; }),
+      maxGuesses:wordState.maxGuesses,
+      roundBank:wordState.roundBank,
+      draftGuess:wordState.draftGuess || '',
+      lastMessage:wordState.lastMessage || '',
+      hadFailure:!!wordState.hadFailure
+    });
+  }
+  function persistMake24Round(){
+    if(!make24State || make24State.completed){ clearCoreActiveRound('make24'); return; }
+    writeCoreActiveRound('make24', {
+      version:1,
+      tierId:currentMake24Tier().id,
+      target:make24State.target,
+      numbers:make24State.numbers,
+      hintsLeft:make24State.hintsLeft,
+      rerollsLeft:make24State.rerollsLeft,
+      mistakes:make24State.mistakes,
+      hadFailure:!!make24State.hadFailure,
+      roundBank:make24State.roundBank,
+      draftExpression:make24State.draftExpression || '',
+      lastMessage:make24State.lastMessage || '',
+      revealSolution:make24State.revealSolution || '',
+      hintsUsed:make24State.hintsUsed || 0,
+      generationIndex:make24State.generationIndex || 0
+    });
+  }
+  function restoreCoreActiveRounds(){
+    const stored = readCoreActiveRounds();
+    const word = stored.detectword;
+    if(word && profiles.detectword){
+      const tier = currentWordTier();
+      const secret = String(word.secret || '').toLowerCase();
+      const storedGuesses = Array.isArray(word.guesses) ? word.guesses : [];
+      const maxGuesses = Math.max(1, Math.min(20, Math.round(Number(word.maxGuesses || (6 + (profiles.detectword.skills.reserve || 0))))));
+      const validSecret = word.tierId === tier.id && secret.length === tier.letters && /^[a-z]+$/.test(secret);
+      const guesses = validSecret ? storedGuesses.map(function(entry){
+        const guess = String(entry && entry.word || '').toLowerCase();
+        return guess.length === tier.letters && /^[a-z]+$/.test(guess) ? { word:guess, evaluation:evaluateWordGuess(guess, secret) } : null;
+      }).filter(Boolean).slice(0, maxGuesses) : [];
+      const ended = !validSecret || guesses.some(function(entry){ return entry.word === secret; }) || guesses.length >= maxGuesses;
+      if(!ended){
+        wordState = {
+          secret:secret,
+          guesses:guesses,
+          maxGuesses:maxGuesses,
+          roundBank:Number(word.roundBank || 0),
+          draftGuess:String(word.draftGuess || '').slice(0, tier.letters),
+          lastMessage:String(word.lastMessage || ('Restored ' + tier.letters + '-letter round.')),
+          hadFailure:!!word.hadFailure
+        };
+      }else{
+        clearCoreActiveRound('detectword');
+      }
+    }
+
+    const make = stored.make24;
+    if(make && profiles.make24){
+      const tier = currentMake24Tier();
+      const numbers = Array.isArray(make.numbers) ? make.numbers.map(Number) : [];
+      const target = Math.round(Number(make.target));
+      const validNumbers = make.tierId === tier.id && numbers.length === 4 && numbers.every(function(num){ return Number.isInteger(num) && num >= 1 && num <= tier.maxNumber; });
+      const solutions = validNumbers && Number.isFinite(target) && target > 0 ? allMakeNumberSolutions(numbers, target) : [];
+      if(validNumbers && Number.isFinite(target) && target > 0 && solutions.length){
+        make24State = {
+          target:target,
+          numbers:numbers,
+          solutions:solutions,
+          hintsLeft:Math.max(0, Math.round(Number(make.hintsLeft || 0))),
+          rerollsLeft:Math.max(0, Math.round(Number(make.rerollsLeft || 0))),
+          mistakes:Math.max(0, Math.round(Number(make.mistakes || 0))),
+          hadFailure:!!make.hadFailure,
+          roundBank:Number(make.roundBank || 0),
+          draftExpression:String(make.draftExpression || '').slice(0, 160),
+          lastMessage:String(make.lastMessage || ('Restored puzzle. Make ' + target + '.')),
+          revealSolution:String(make.revealSolution || '').slice(0, 240),
+          hintsUsed:Math.max(0, Math.round(Number(make.hintsUsed || 0))),
+          generationIndex:Math.max(0, Math.round(Number(make.generationIndex || 0))),
+          completed:false
+        };
+      }else{
+        clearCoreActiveRound('make24');
+      }
+    }
   }
   const saveTimers = Object.create(null);
   let authState = { authed:false, name:'', email:'' };
@@ -2051,6 +2166,35 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     ]
   });
 
+  function makeNumberSeedFromText(value){
+    const text = String(value || '');
+    let hash = 2166136261;
+    for(let index = 0; index < text.length; index += 1){
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+    return hash >>> 0;
+  }
+  function makeNumberSeededRandom(seed){
+    let state = (Number(seed) >>> 0) || 0x6d2b79f5;
+    return function(){
+      state += 0x6d2b79f5;
+      let value = state;
+      value = Math.imul(value ^ (value >>> 15), value | 1);
+      value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+      return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function makeNumberSeededShuffle(list, seed){
+    const copy = list.slice();
+    const random = makeNumberSeededRandom(seed);
+    for(let index = copy.length - 1; index > 0; index -= 1){
+      const swap = Math.floor(random() * (index + 1));
+      const tmp = copy[index]; copy[index] = copy[swap]; copy[swap] = tmp;
+    }
+    return copy;
+  }
+
   const MAKE_NUMBER_GENERATED_BANKS = Object.create(null);
 
   function makeNumberFormulaTemplates(band){
@@ -2110,12 +2254,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       }
     }
     let guard = 0;
+    const bankRandom = makeNumberSeededRandom(makeNumberSeedFromText('make-number-bank:' + tier.id + ':' + maxNumber));
     while(bank.length < 100 && guard < 5000){
       guard += 1;
-      const a = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const b = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const c = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const d = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      const a = minNumber + Math.floor(bankRandom() * (maxNumber - minNumber + 1));
+      const b = minNumber + Math.floor(bankRandom() * (maxNumber - minNumber + 1));
+      const c = minNumber + Math.floor(bankRandom() * (maxNumber - minNumber + 1));
+      const d = minNumber + Math.floor(bankRandom() * (maxNumber - minNumber + 1));
       if(new Set([a,b,c,d]).size < 2) continue;
       const template = templates[guard % templates.length];
       addPuzzle([a,b,c,d], template(a,b,c,d));
@@ -2124,9 +2269,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return MAKE_NUMBER_GENERATED_BANKS[tier.id];
   }
 
-  function buildMake24Puzzle(tier){
+  function buildMake24Puzzle(tier, seedKey){
     const previous = make24State && Array.isArray(make24State.numbers) ? make24PuzzleSignature({ target:make24State.target || 24, numbers:make24State.numbers }) : '';
-    const bank = shuffle(buildMakeNumberPuzzleBank(tier));
+    const seed = makeNumberSeedFromText('make-number-puzzle:' + tier.id + ':' + String(seedKey || '0'));
+    const bank = makeNumberSeededShuffle(buildMakeNumberPuzzleBank(tier), seed);
     for(const puzzle of bank){
       if(make24PuzzleSignature(puzzle) === previous && bank.length > 1) continue;
       return { target:puzzle.target, numbers:puzzle.numbers.slice(), solutions:puzzle.solutions.slice() };
@@ -2137,8 +2283,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function startMake24Puzzle(){
     clearAutoNextTimer('make24');
     const tier = currentMake24Tier();
-    const puzzle = buildMake24Puzzle(tier);
-    profiles.make24.gamesPlayed += 1;
+    const nextGameNumber = profiles.make24.gamesPlayed + 1;
+    const puzzle = buildMake24Puzzle(tier, 'game:' + nextGameNumber + ':generation:0');
+    profiles.make24.gamesPlayed = nextGameNumber;
     make24State = {
       target:puzzle.target,
       numbers:puzzle.numbers,
@@ -2152,8 +2299,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       lastMessage:'Puzzle ready. Use all shown numbers exactly once to make ' + puzzle.target + '.',
       revealSolution:'',
       hintsUsed:0,
+      generationIndex:0,
       completed:false
     };
+    persistMake24Round();
     scheduleSave('make24');
     renderAll();
   }
@@ -2176,6 +2325,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!input) return;
     let raw = String(input.value || '').trim();
     make24State.draftExpression = String(input.value || '');
+    persistMake24Round();
     if(!raw) return;
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
     if(!/^[\d\s()+\-*/]+$/.test(raw)){
@@ -2208,6 +2358,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
+      clearCoreActiveRound('make24');
       scheduleSave('make24');
       resolveNinjaBonuses();
       renderAll();
@@ -2225,6 +2376,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }else{
       make24State.lastMessage = 'Not ' + (make24State.target || 24) + ' yet. No Bank deduction on the first miss.';
     }
+    persistMake24Round();
     scheduleSave('make24');
     renderAll();
     focusGameInput('make24ExpressionInput');
@@ -2236,12 +2388,14 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.hintsUsed = hintIndex + 1;
     make24State.revealSolution = make24HintFromSolution(make24State.solutions[0] || '', hintIndex);
     make24State.lastMessage = 'Guide used. You received a light tactical prompt only.';
+    persistMake24Round();
     renderMake24Board();
   }
   function rerollMake24Puzzle(){
     if(!make24State || make24State.completed || make24State.rerollsLeft <= 0) return;
     make24State.rerollsLeft -= 1;
-    const puzzle = buildMake24Puzzle(currentMake24Tier());
+    make24State.generationIndex = Math.max(0, Number(make24State.generationIndex || 0)) + 1;
+    const puzzle = buildMake24Puzzle(currentMake24Tier(), 'game:' + profiles.make24.gamesPlayed + ':generation:' + make24State.generationIndex);
     make24State.target = puzzle.target;
     make24State.numbers = puzzle.numbers;
     make24State.solutions = puzzle.solutions;
@@ -2250,6 +2404,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.hintsUsed = 0;
     make24State.mistakes = 0;
     make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
+    persistMake24Round();
     renderAll();
   }
   function spendMake24Skill(skillId){
@@ -2377,6 +2532,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       lastMessage:'Round ready. Submit a ' + tier.letters + '-letter guess.',
       hadFailure:false
     };
+    persistWordRound();
     scheduleSave('detectword');
     renderAll();
   }
@@ -2408,6 +2564,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const tier = currentWordTier();
     const guess = String(input.value || '').trim().toLowerCase();
     wordState.draftGuess = String(input.value || '');
+    persistWordRound();
     if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
@@ -2428,6 +2585,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
       wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      clearCoreActiveRound('detectword');
       scheduleSave('detectword');
       resolveNinjaBonuses();
       renderAll();
@@ -2439,12 +2597,14 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
       wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
+      clearCoreActiveRound('detectword');
       scheduleSave('detectword');
       renderAll();
       scheduleAutoNext('detectword', startWordRound);
       return;
     }
     wordState.lastMessage = 'Guess logged. Keep reading the pattern.';
+    persistWordRound();
     renderAll();
     focusGameInput('wordGuessInput');
   }
@@ -3871,7 +4031,7 @@ function toggleGameFullscreen(gameId){
       if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
       if(make24Tier){
         const tier = MAKE24_TIERS.find(item => item.id === make24Tier.getAttribute('data-make24-tier'));
-        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
+        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; make24State = null; clearCoreActiveRound('make24'); make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
         return;
       }
       const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
@@ -3902,8 +4062,8 @@ function toggleGameFullscreen(gameId){
     document.addEventListener('input', function(event){
       const target = event.target;
       if(!target || !target.id) return;
-      if(target.id === 'wordGuessInput' && wordState) wordState.draftGuess = String(target.value || '');
-      if(target.id === 'make24ExpressionInput' && make24State) make24State.draftExpression = String(target.value || '');
+      if(target.id === 'wordGuessInput' && wordState){ wordState.draftGuess = String(target.value || ''); persistWordRound(); }
+      if(target.id === 'make24ExpressionInput' && make24State){ make24State.draftExpression = String(target.value || ''); persistMake24Round(); }
     });
     document.addEventListener('keydown', function(event){
       const input = event.target;
@@ -3985,6 +4145,7 @@ function toggleGameFullscreen(gameId){
     setupGamePlayContractObserver();
     ensureGameFullscreenButtons();
     seedProfilesForImmediateRender();
+    restoreCoreActiveRounds();
     resolveNinjaBonuses();
     wireTabs();
     bindEvents();
