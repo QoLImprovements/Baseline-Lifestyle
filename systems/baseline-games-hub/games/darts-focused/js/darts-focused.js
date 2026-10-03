@@ -8,8 +8,7 @@ import {
 } from './darts-focused-engine.mjs?v=DARTS_REBUILD_20260707_4';
 import {
   GAMES,
-  TIER_DEFINITIONS,
-  TARGETS_BY_TIER
+  TIER_DEFINITIONS
 } from './darts-focused-content.js';
 import { createDartsTimerManager } from './darts-focused-timing.js';
 import { loadDartsProfile, persistDartsProfile } from './darts-focused-storage.js';
@@ -34,8 +33,7 @@ import {
   targetsForTier,
   sequenceLengthForTier as roundSequenceLength,
   sequenceDelayForTier as roundSequenceDelay,
-  buildTargetSequence,
-  createGeographyPrompt
+  buildTargetSequence
 } from './darts-focused-rounds.js';
 import { createDartsRenderers } from './darts-focused-renderers.js';
 import {
