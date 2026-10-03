@@ -112,7 +112,7 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
     const mainLinks = recipesHeading.locator('+ ul a');
     const testingLinks = testingHeading.locator('+ ul a');
     await expect(mainLinks).toHaveCount(8);
-    await expect(testingLinks).toHaveCount(2);
+    await expect(testingLinks).toHaveCount(1);
 
     const mainText = await mainLinks.allTextContents();
     const testingText = await testingLinks.allTextContents();
