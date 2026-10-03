@@ -91,3 +91,11 @@ test('Badminton runtime delegates scenario history and Realm-link rules',()=>{
   assert.match(runtime,/pickBadmintonScenario\(profile,id,pool\)/);
   assert.match(runtime,/buildBadmintonRealmContribution\(profile,GAMES\)/);
 });
+
+
+test('Badminton controller delegates generic markup to the UI authority',()=>{
+  assert.match(runtime,/from '\.\/badminton-focused-ui\.js'/);
+  assert.doesNotMatch(runtime,/function iconSvg|function selectorHtml/);
+  assert.doesNotMatch(runtime,/function choiceButtons|function feedbackHtml|function nextButton/);
+  assert.doesNotMatch(runtime,/const ART_URL=/);
+});
