@@ -123,4 +123,5 @@ test('checkout text validation accepts legal alternative routes and enforces dar
   assert.equal(validateRouteText(81,'T15 → D18',2).valid,true);
   assert.equal(validateRouteText(100,'T20 → S20 → D10',2).valid,false);
   assert.equal(validateRouteText(50,'BULL',1).valid,true);
+  assert.equal(validateRouteText(100,'T20 → NOT-A-TARGET → D20',3).valid,false);
 });
