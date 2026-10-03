@@ -21,6 +21,7 @@ async function expectCanonicalRecipeView(page, recipe) {
   await expect(page.locator('#routine')).toBeHidden();
   await expect(page.locator('#recipes')).toHaveClass(/recipe-open-mode|recipe-detail-open/);
   await expect(card).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
   await expect(card.locator('h3')).toHaveText(recipe.title);
   await expect(card.locator('.recipe-actions')).toBeVisible();
   await expect(card.locator('.back-btn')).toBeVisible();
@@ -36,6 +37,7 @@ async function expectCanonicalRecipeView(page, recipe) {
 
   const url = new URL(page.url());
   expect(url.pathname).toBe(`/baseline-natural-skincare/recipes/${recipe.slug}`);
+  expect(url.searchParams.get('view')).toBeNull();
   expect(url.hash).not.toContain('-html');
 }
 
@@ -170,6 +172,7 @@ test('recipe subtab choice is not carried into the next recipe', async ({ page }
   const first = page.locator('#r2');
   await first.locator('[data-recipe-subtab="details"]').click();
   await expect(first.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'true');
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
 
   await first.locator('.back-btn').click();
   await expect(page.locator('#recipes-landing')).toBeVisible();
@@ -177,8 +180,47 @@ test('recipe subtab choice is not carried into the next recipe', async ({ page }
   await page.locator('#recipes-landing a.recipe-open[data-recipe-id="r3"]').click();
   const next = page.locator('#r3');
   await expect(next).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
   await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'true');
   await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveText('Recipe');
+  expect(new URL(page.url()).searchParams.get('view')).toBeNull();
+});
+
+test('Details survives refresh without exposing another recipe and fresh recipe routes still start on Recipe', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend');
+  const massage = page.locator('#r6');
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(massage.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+
+  await massage.locator('[data-recipe-subtab="details"]').click();
+  await expect(massage.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  await expect(massage.locator('.recipe-details-intro')).toBeVisible();
+  await expect(massage.locator('> .variant-heading, > .variant-switcher')).toHaveCount(0);
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.reload();
+  await expect(massage).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(massage.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  await expect(massage.locator('.recipe-details-intro')).toBeVisible();
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel');
+  const microcurrent = page.locator('#r10');
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(massage).toBeHidden();
+  await expect(microcurrent).toBeVisible();
+  await expect(microcurrent.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBeNull();
+
+  await microcurrent.locator('[data-recipe-subtab="details"]').click();
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+  await page.reload();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(massage).toBeHidden();
+  await expect(microcurrent).toBeVisible();
+  await expect(microcurrent.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  await expect(microcurrent.locator('.recipe-details-intro')).toBeVisible();
 });
 
 test('leaving My Routine for Recipes hides Routine Log and Calendar completely', async ({ page }) => {
