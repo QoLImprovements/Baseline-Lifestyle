@@ -256,8 +256,36 @@
   }
 
   function announceServerSaveConflict(message){
-    const alert=document.querySelector('[data-plan-alert],#planAlert,.plan-alert');
-    if(alert) alert.textContent=message || 'Badminton changed elsewhere. Nothing was overwritten; reload before making further changes.';
+    const text = message || 'Badminton changed elsewhere. Nothing was overwritten; reload before making further changes.';
+    window.__BASELINE_BADMINTON_SERVER_STATUS__ = text;
+    try{ console.warn('[Baseline Badminton]', text); }catch(_e){}
+  }
+
+  function mergeNewestLocalHardshipsIntoServerState(serverState, localState){
+    const merged = JSON.parse(JSON.stringify(serverState && typeof serverState === 'object' ? serverState : {}));
+    if(!merged.plan || typeof merged.plan !== 'object') merged.plan = {};
+    const serverLedger = merged.plan.activeHardships && typeof merged.plan.activeHardships === 'object'
+      ? merged.plan.activeHardships
+      : {};
+    const localLedger = localState && localState.plan && localState.plan.activeHardships && typeof localState.plan.activeHardships === 'object'
+      ? localState.plan.activeHardships
+      : {};
+    const nextLedger = Object.assign({}, serverLedger);
+    let recovered = false;
+    Object.keys(localLedger).forEach(function(key){
+      if(String(key).indexOf('hardship::') !== 0) return;
+      const localRule = localLedger[key];
+      if(!localRule || typeof localRule !== 'object') return;
+      const serverRule = nextLedger[key];
+      const localUpdatedAt = Number(localRule.updatedAt || 0);
+      const serverUpdatedAt = Number(serverRule && serverRule.updatedAt || 0);
+      if(!serverRule || localUpdatedAt > serverUpdatedAt){
+        nextLedger[key] = JSON.parse(JSON.stringify(localRule));
+        recovered = true;
+      }
+    });
+    merged.plan.activeHardships = nextLedger;
+    return { state:merged, recovered:recovered };
   }
 
   function serverPayload(candidate){
@@ -430,15 +458,23 @@
         const serverState = data.state && typeof data.state === 'object' ? data.state : createInitialState();
         const serverHasContent = stateHasSessionContent(serverState);
         const localHasContent = stateHasSessionContent(localSnapshot);
+        let nextState = serverState;
+        let recoveredHardships = false;
         if(localHasContent&&(!serverHasContent||localStateIsNewerThanServer(localSnapshot,serverState))){
           preserveConflictingLocalState(localSnapshot);
-          announceServerSaveConflict(hasAuthoritativeRevision&&serverRevision===0
-            ? 'A browser Badminton copy was preserved separately. The empty shared server state is authoritative and was not replaced automatically.'
-            : 'A browser Badminton copy was preserved separately. The successful shared server response is authoritative and was not overwritten.');
+          const recovery = mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot);
+          nextState = recovery.state;
+          recoveredHardships = recovery.recovered;
+          announceServerSaveConflict('A newer browser Badminton copy was preserved internally while the shared server state was loaded.');
         }
-        state=hydrateLoadedState(serverState);
+        state=hydrateLoadedState(nextState);
         persistSessionLocalOnly();
         renderAll(false);
+        if(recoveredHardships){
+          markLocalChange();
+          persistSessionLocalOnly();
+          queueServerSave();
+        }
       })
       .catch(function(_error){
         serverSaveBlocked=true;
@@ -3519,6 +3555,31 @@
     setPlanAlert('Court ' + String(Number(index) + 1) + ' marked as No Game. Waiting for the remaining current court results.');
   }
 
+  function getHardshipHelpText(court){
+    const entry = getDominantHardshipEntryForCourt(court);
+    if(!entry || !entry.rule || !entry.sideNumber) return '';
+    const restrictedSide = getSideByNumber(court, entry.sideNumber);
+    const adjustedLabel = getTeamLabel(restrictedSide);
+    const opponentLabel = getTeamLabel(getSideByNumber(court, getOppositeSideNumber(entry.sideNumber)));
+    const rule = entry.rule;
+    const parts = [
+      adjustedLabel + ' previously won strongly enough in this exact ' + adjustedLabel + ' vs ' + opponentLabel + ' context to trigger an adaptive hardship.',
+      'The hardship remains with this side in this matchup until later results reduce or remove it.'
+    ];
+    if(rule.targetPreset && rule.targetPreset !== 'full-court'){
+      parts.push('Current target area: ' + (court.targetAreaText || getTargetAreaTextFromPreset(rule.targetPreset, rule.mode) || 'reduced court area') + '.');
+    }
+    const shotText = getShotRestrictionText(rule.shotStage);
+    if(shotText) parts.push('Current shot restriction: ' + shotText + '.');
+    return parts.join(' ');
+  }
+
+  function renderHardshipHelp(court){
+    const text = getHardshipHelpText(court);
+    if(!text) return '';
+    return '<details class="court-hardship-help"><summary aria-label="Why this hardship?" title="Why this hardship?">?</summary><div class="court-hardship-help__caption"><strong>Why this hardship?</strong><span>' + escapeHtml(text) + '</span></div></details>';
+  }
+
   function renderCourtCard(court, phase, index){
     const noGame = courtMarkedNoGame(court);
     const score1 = court.score1 == null ? '' : String(court.score1);
@@ -3530,15 +3591,12 @@
     const lockNote = canScore || saved ? '' : '<div class="hardship-note">Score entry is limited to players on this court, the moderator, or an approved admin.</div>';
     const cardClass = 'court-card' + (saved ? ' is-saved' : '') + (noGame ? ' is-no-game' : '');
     let body = renderCourtSummary(court);
-    if(court.matchupReason){
-      body += '<details class="court-matchup-reason"><summary>Why this matchup?</summary><div class="note">' + escapeHtml(court.matchupReason) + '</div></details>';
-    }
     if(canScore) body += renderCourtVariableEditor(court, index);
     if(noGame){
       body += '<div class="status-box"><strong>No Game</strong><br/>This court has been confirmed as inactive. It will not require score submission.</div>';
     }else{
       body += renderRuleGuidance(court) +
-        '<div class="court-visual-row"><div class="court-frame">' + renderCourtDiagram(court) + renderBoundaryMask(court) + '</div></div>' +
+        '<div class="court-visual-row"><div class="court-frame">' + renderCourtDiagram(court) + renderBoundaryMask(court) + renderHardshipHelp(court) + '</div></div>' +
         '<div class="court-meta">' +
           '<div class="score-grid">' +
             '<label class="score-side">' + renderScoreHeading(court, court.side1) + '<input data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-score-side="1" name="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" id="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" type="text" maxlength="2" pattern="[0-9]*" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" data-generation-token="' + escapeHtml(String(state.plan.currentGenerationToken || '')) + '" value="' + escapeHtml(score1) + '"' + disabled + '/></label>' +
