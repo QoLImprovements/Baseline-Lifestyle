@@ -87,3 +87,24 @@ test('Pairs gives every physical card one clean selection before a repeat can br
   assert.match(mismatch, /if\(cleanBreak\) pairsBoardState\.hadFailure = true/);
   assert.match(mismatch, /Both cards were first selections, so clean status is preserved/);
 });
+
+
+test('Detect The Word and Make The Number preserve unfinished input across rerenders', () => {
+  const wordStart = functionBody('startWordRound', 'evaluateWordGuess');
+  const wordRender = functionBody('renderWordBoard', 'renderDetectWordSummary');
+  const wordSubmit = functionBody('submitWordGuess', 'spendWordSkill');
+  const makeStart = functionBody('startMake24Puzzle', 'countNumbers');
+  const makeSubmit = functionBody('submitMake24Expression', 'useMake24Hint');
+  const makeRender = functionBody('renderMake24Board', 'renderMake24Summary');
+
+  assert.match(wordStart, /draftGuess:''/);
+  assert.match(wordRender, /value="' \+ escapeHtml\(wordState\.draftGuess \|\| ''\)/);
+  assert.match(wordSubmit, /wordState\.draftGuess = String\(input\.value \|\| ''\)/);
+  assert.match(wordSubmit, /wordState\.draftGuess = ''/);
+
+  assert.match(makeStart, /draftExpression:''/);
+  assert.match(makeRender, /value="' \+ escapeHtml\(make24State\.draftExpression \|\| ''\)/);
+  assert.match(makeSubmit, /make24State\.draftExpression = String\(input\.value \|\| ''\)/);
+  assert.match(core, /target\.id === 'make24ExpressionInput' && make24State/);
+  assert.match(core, /target\.id === 'wordGuessInput' && wordState/);
+});
