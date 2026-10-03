@@ -19,9 +19,19 @@ systems/baseline-games-hub/games/make-the-number/
 systems/baseline-games-hub/games/track-the-coin/
 systems/baseline-games-hub/games/rule-shift/
 systems/baseline-games-hub/games/baseline-realm/
+systems/baseline-games-hub/games/darts-focused/
+systems/baseline-games-hub/games/badminton-focused/
 ```
 
 Individual game mechanics stay separate from hub-level rules.
+
+Canonical game identity and routing are defined in:
+
+```text
+systems/baseline-games-hub/js/games-registry.js
+```
+
+Public IDs/routes use canonical names such as `make-the-number` and `baseline-realm`. Legacy runtime/save IDs such as `make24` and `ninja` are compatibility aliases only and must not become new public identifiers.
 
 ## Runtime ownership
 

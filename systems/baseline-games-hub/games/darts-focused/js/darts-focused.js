@@ -273,6 +273,7 @@ const ui = {
   states:{},
   gameTimers:new Set(),
   autoTimer:0,
+  sessionToken:0,
   listObserver:null,
   overviewSyncQueued:false,
   lastScenario:{},
@@ -319,6 +320,7 @@ function saveProfile() {
   renderProgressSummary();
 }
 function clearGameTimers() {
+  ui.sessionToken += 1;
   ui.gameTimers.forEach((timer) => clearTimeout(timer));
   ui.gameTimers.clear();
 }
@@ -327,7 +329,13 @@ function clearAutoTimer() {
   ui.autoTimer = 0;
 }
 function scheduleGame(callback, delay) {
-  const timer = setTimeout(() => { ui.gameTimers.delete(timer); callback(); }, delay);
+  const sessionToken = ui.sessionToken;
+  const gameId = ui.selected;
+  const timer = setTimeout(() => {
+    ui.gameTimers.delete(timer);
+    if (sessionToken !== ui.sessionToken || gameId !== ui.selected) return;
+    callback();
+  }, delay);
   ui.gameTimers.add(timer);
   return timer;
 }

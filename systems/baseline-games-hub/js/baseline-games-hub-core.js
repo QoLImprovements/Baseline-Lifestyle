@@ -8,7 +8,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }catch(_buildMarkerError){}
 
   const API_PATH = '/systems/baseline-games-hub/api/games_profile.php';
-  const GAME_APPS = ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
+  const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
+  const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
+  const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const TRACKCOIN_STORAGE_KEY = '__bl_trackcoin_v1__';
   const GUEST_PROFILES_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
   const AUTO_NEXT_STORAGE_KEY = '__bl_games_auto_next_v1__';
@@ -168,6 +170,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let selectedGame = '';
   let currentTab = 'hub';
   let pairsBoardState = null;
+  let pairsRoundToken = 0;
   let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
   let make24State = null;
   let make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
@@ -177,6 +180,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let ruleShiftTimer = 0;
   let ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
   let trackCoinState = null;
+  let trackCoinRoundToken = 0;
   let trackCoinAnimationFrame = 0;
   let trackCoinShuffleTimer = 0;
   let trackCoinOpenPanel = 'trackCoinGamePanel';
@@ -191,25 +195,27 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
   let desktopKeypadOpenGame = '';
-  const GAME_IDS = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
+  const GAME_IDS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.runtimeId; }) : ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
 
-  const GAME_ID_TO_ROUTE_SLUG = Object.freeze({
-    pairs:'pairs',
-    detectword:'detect-the-word',
-    make24:'make-the-number',
-    trackcoin:'track-the-coin',
-    ruleshift:'rule-shift',
-    ninja:'baseline-realm'
-  });
-  const GAME_ROUTE_SLUG_TO_ID = Object.freeze({
-    pairs:'pairs',
-    'detect-the-word':'detectword',
-    make24:'make24',
-    'make-the-number':'make24',
-    'track-the-coin':'trackcoin',
-    'rule-shift':'ruleshift',
-    'baseline-realm':'ninja'
-  });
+  const GAME_ID_TO_ROUTE_SLUG = Object.freeze((function(){
+    if(!REGISTERED_CORE_GAMES.length) return {
+      pairs:'pairs', detectword:'detect-the-word', make24:'make-the-number',
+      trackcoin:'track-the-coin', ruleshift:'rule-shift', ninja:'baseline-realm'
+    };
+    return REGISTERED_CORE_GAMES.reduce(function(map, game){ map[game.runtimeId] = game.route; return map; }, {});
+  })());
+  const GAME_ROUTE_SLUG_TO_ID = Object.freeze((function(){
+    if(!REGISTERED_CORE_GAMES.length) return {
+      pairs:'pairs', 'detect-the-word':'detectword', make24:'make24', 'make-the-number':'make24',
+      'track-the-coin':'trackcoin', 'rule-shift':'ruleshift', 'baseline-realm':'ninja'
+    };
+    return REGISTERED_CORE_GAMES.reduce(function(map, game){
+      map[game.route] = game.runtimeId;
+      map[game.runtimeId] = game.runtimeId;
+      (game.legacyIds || []).forEach(function(alias){ map[alias] = game.runtimeId; });
+      return map;
+    }, {});
+  })());
 
   const GAME_PANEL_MAP = Object.freeze({
     pairs:{ panels:['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], defaultPanel:'pairsGameCard', get:function(){ return pairsOpenPanel; }, set:function(value){ pairsOpenPanel = value; } },
@@ -454,6 +460,29 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const keysHtml = keys.map(function(key){ return keypadButton('make24', key, symbols[key] || key, /[0-9]/.test(key) ? 'mobile-game-key--number' : 'mobile-game-key--operator'); }).join('');
       refs.make24Board.insertAdjacentHTML('beforeend', '<div class="mobile-game-keypad mobile-make24-keypad" data-keypad="make24" aria-label="Number expression keypad">' + keysHtml + keypadButton('make24','backspace','⌫','mobile-game-key--utility') + keypadButton('make24','clear','Clear','mobile-game-key--utility') + keypadButton('make24','submit','Submit','mobile-game-key--submit') + '</div>');
     }
+  }
+  function wordLetterKnowledge(){
+    const rank = { absent:1, present:2, correct:3 };
+    const knowledge = Object.create(null);
+    if(!wordState || !Array.isArray(wordState.guesses)) return knowledge;
+    wordState.guesses.forEach(function(guess){
+      (guess.evaluation || []).forEach(function(entry){
+        const letter = String(entry.letter || '').toLowerCase();
+        if(!letter) return;
+        const state = rank[entry.state] ? entry.state : 'absent';
+        if(!knowledge[letter] || rank[state] > rank[knowledge[letter]]) knowledge[letter] = state;
+      });
+    });
+    return knowledge;
+  }
+  function syncWordKeypadKnowledge(){
+    const knowledge = wordLetterKnowledge();
+    qsa('.mobile-word-keypad .mobile-game-key--letter').forEach(function(button){
+      const raw = button.getAttribute('data-mobile-game-key') || '';
+      const letter = raw.split(':')[1] || '';
+      button.classList.remove('is-word-correct','is-word-present','is-word-absent');
+      if(knowledge[letter]) button.classList.add('is-word-' + knowledge[letter]);
+    });
   }
   function injectAllMobileGameControls(){ injectMobileGameControls('detectword'); injectMobileGameControls('make24'); }
   function isDesktopKeypadGame(gameId){ return gameId === 'detectword' || gameId === 'make24'; }
@@ -1684,18 +1713,20 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const chosenFaces = shuffle(PAIRS_FACES).slice(0, tier.pairs);
     const deck = [];
     chosenFaces.forEach((face, index) => {
-      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false });
-      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false });
+      deck.push({ id:'a-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
+      deck.push({ id:'b-' + index, face, open:false, matched:false, wasKnown:false, selections:0 });
     });
     return shuffle(deck);
   }
   function startPairsBoard(){
     clearAutoNextTimer('pairs');
     const tier = currentPairsTier();
+    const roundToken = ++pairsRoundToken;
     profiles.pairs.gamesPlayed += 1;
     pairsBoardState = {
+      roundToken:roundToken,
       cards: buildPairsDeck(tier), selected: [], matchedPairs:0, moves:0, roundBank:0, flipLock:false,
-      hintsLeft: profiles.pairs.skills.insight || 0, faceSeen:{}, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
+      hintsLeft: profiles.pairs.skills.insight || 0, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
     };
     scheduleSave('pairs');
     applyPairsTempoPreview();
@@ -1738,6 +1769,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     scheduleAutoNext('pairs', startPairsBoard);
   }
   function handlePairsMismatch(selectedCards){
+    const roundToken = pairsBoardState && pairsBoardState.roundToken;
+    const cleanBreak = selectedCards.some(card => card.wasKnown);
     const penaltyEligible = selectedCards.every(card => card.wasKnown);
     let penalty = 0;
     if(penaltyEligible){
@@ -1745,12 +1778,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       profiles.pairs.bank = Math.max(0, profiles.pairs.bank - penalty);
       pairsBoardState.roundBank -= penalty;
     }
-    pairsBoardState.hadFailure = true;
+    if(cleanBreak) pairsBoardState.hadFailure = true;
     profiles.pairs.currentStreak = 0;
-    pairsBoardState.lastMessage = penaltyEligible && penalty > 0 ? ('Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.') : 'Learning miss. Clean bonus lost for this board. Streak reset.';
+    if(penaltyEligible && penalty > 0){
+      pairsBoardState.lastMessage = 'Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.';
+    }else if(cleanBreak){
+      pairsBoardState.lastMessage = 'A previously selected card was chosen again in a miss. Clean bonus lost. Streak reset.';
+    }else{
+      pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
+    }
     scheduleSave('pairs');
     window.setTimeout(function(){
-      if(!pairsBoardState) return;
+      if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       selectedCards.forEach(card => { card.open = false; });
       pairsBoardState.selected = [];
       pairsBoardState.flipLock = false;
@@ -1761,8 +1800,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!pairsBoardState || pairsBoardState.flipLock) return;
     const card = pairsBoardState.cards.find(item => item.id === cardId);
     if(!card || card.open || card.matched) return;
-    card.wasKnown = (pairsBoardState.faceSeen[card.face] || 0) >= 1;
-    pairsBoardState.faceSeen[card.face] = (pairsBoardState.faceSeen[card.face] || 0) + 1;
+    card.wasKnown = Number(card.selections || 0) >= 1;
+    card.selections = Number(card.selections || 0) + 1;
     card.open = true;
     pairsBoardState.selected.push(card);
     renderPairsBoard();
@@ -1784,6 +1823,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function usePairsHint(){
     if(!pairsBoardState || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || pairsBoardState.hintBusy) return;
+    const roundToken = pairsBoardState.roundToken;
     const hiddenCards = pairsBoardState.cards.filter(card => !card.matched && !card.open);
     if(!hiddenCards.length) return;
     const card = hiddenCards[Math.floor(Math.random() * hiddenCards.length)];
@@ -1793,7 +1833,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     pairsBoardState.lastMessage = 'Hint used. One unmatched card was flashed briefly.';
     renderAll();
     window.setTimeout(function(){
-      if(!pairsBoardState) return;
+      if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       if(!card.matched && !pairsBoardState.selected.includes(card)) card.open = false;
       pairsBoardState.hintBusy = false;
       renderPairsBoard();
@@ -2108,6 +2148,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       mistakes:0,
       hadFailure:false,
       roundBank:0,
+      draftExpression:'',
       lastMessage:'Puzzle ready. Use all shown numbers exactly once to make ' + puzzle.target + '.',
       revealSolution:'',
       hintsUsed:0,
@@ -2134,10 +2175,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const input = (event && event.target && event.target.querySelector) ? event.target.querySelector('#make24ExpressionInput') : refs.make24ExpressionInput;
     if(!input) return;
     let raw = String(input.value || '').trim();
+    make24State.draftExpression = String(input.value || '');
     if(!raw) return;
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
-    if(!/^[\d\s()+\-*/.]+$/.test(raw)){
-      make24State.lastMessage = 'Only digits, brackets, and + - × ÷ are allowed.';
+    if(!/^[\d\s()+\-*/]+$/.test(raw)){
+      make24State.lastMessage = 'Only whole shown numbers, brackets, and + - × ÷ are allowed.';
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
@@ -2164,6 +2206,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       make24State.roundBank += bankGain;
       make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
       make24State.revealSolution = '';
+      make24State.draftExpression = '';
       make24State.completed = true;
       scheduleSave('make24');
       resolveNinjaBonuses();
@@ -2203,6 +2246,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.numbers = puzzle.numbers;
     make24State.solutions = puzzle.solutions;
     make24State.revealSolution = '';
+    make24State.draftExpression = '';
     make24State.hintsUsed = 0;
     make24State.mistakes = 0;
     make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
@@ -2286,7 +2330,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; refs.make24HintBtn.textContent = countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft); }
     if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; refs.make24RerollBtn.textContent = countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft); }
     const make24Closed = !!make24State.completed;
-    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
+    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" value="' + escapeHtml(make24State.draftExpression || '') + '" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
     refs.make24ExpressionInput = document.getElementById('make24ExpressionInput');
     refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
     if(refs.make24ExpressionInput && !make24State.completed) focusGameInput('make24ExpressionInput');
@@ -2329,7 +2373,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       guesses:[],
       maxGuesses: 6 + (profiles.detectword.skills.reserve || 0),
       roundBank:0,
-      lastMessage:'Round ready. Submit a valid dictionary word.',
+      draftGuess:'',
+      lastMessage:'Round ready. Submit a ' + tier.letters + '-letter guess.',
       hadFailure:false
     };
     scheduleSave('detectword');
@@ -2362,11 +2407,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!input) return;
     const tier = currentWordTier();
     const guess = String(input.value || '').trim().toLowerCase();
+    wordState.draftGuess = String(input.value || '');
     if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     const evaluation = evaluateWordGuess(guess, wordState.secret);
     wordState.guesses.push({ word:guess, evaluation });
+    wordState.draftGuess = '';
     if(guess === wordState.secret){
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
@@ -2492,8 +2539,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const resultHtml = solved
       ? '<div class="solution-box word-result-box"><strong>Word solved: ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>'
       : '<div class="solution-box word-result-box"><strong>Word was ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>';
-    refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
+    refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" value="' + escapeHtml(wordState.draftGuess || '') + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
+    injectMobileGameControls('detectword');
+    syncWordKeypadKnowledge();
     refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(wordState.lastMessage) + '</span>';
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
   }
@@ -2677,12 +2726,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
   }
 
-  function applyTrackCoinMotionStep(step, onDone){
-    if(!trackCoinState) return;
+  function applyTrackCoinMotionStep(step, onDone, roundToken){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
     cancelTrackCoinAnimation();
     const cups = trackCoinState.cups;
     const positions = trackCoinCupPositions(cups.length);
-    const order = trackCoinGenerateOrder(cups);
+    const order = Array.isArray(step.order) && step.order.length === cups.length ? step.order.slice() : trackCoinGenerateOrder(cups);
+    if(!Array.isArray(step.order) || step.order.length !== cups.length) step.order = order.slice();
     const targetIndex = Object.fromEntries(order.map((id, index) => [id, index]));
     const starts = cups.map(cup => ({ left:cup.left, top:cup.top, tilt:cup.tilt }));
     const targets = cups.map((cup, currentIndex) => {
@@ -2699,7 +2749,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
     const startAt = performance.now();
     function frame(now){
-      if(!trackCoinState || trackCoinState.phase !== 'hide') return;
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
       const raw = clamp((now - startAt) / step.duration, 0, 1);
       const eased = 0.5 - (0.5 * Math.cos(Math.PI * raw));
       cups.forEach((cup, idx) => {
@@ -2723,7 +2773,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         });
         trackCoinAnimationFrame = 0;
         syncTrackCoinMotionDom();
-        if(typeof onDone === 'function') onDone();
+        if(typeof onDone === 'function' && trackCoinState && trackCoinState.roundToken === roundToken) onDone();
       }
     }
     trackCoinAnimationFrame = window.requestAnimationFrame(frame);
@@ -2731,32 +2781,38 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function startTrackCoinRound(options){
     clearAutoNextTimer('trackcoin');
     cancelTrackCoinAnimation();
+    const roundToken = ++trackCoinRoundToken;
     const profile = profiles.trackcoin;
     profile.selectedTier = currentTrackCoinTier().id;
     profile.currentTier = profile.selectedTier;
     trackCoinState = buildTrackCoinRound();
+    trackCoinState.roundToken = roundToken;
     const startWindowMs = options && Number(options.startWindowMs) ? Number(options.startWindowMs) : 1100;
     if(startWindowMs >= 3000){
       trackCoinState.message = 'Auto-next started. You have a 3 second start window: lock onto the visible coin before the cup drops. ' + trackCoinSpeedStatusText(profile) + '.';
     }
     renderTrackCoin();
     trackCoinShuffleTimer = window.setTimeout(function(){
-      if(!trackCoinState) return;
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
       trackCoinState.phase = 'cover';
       trackCoinState.message = 'The coin is covered. Hold the starting position, then follow the full shuffle. ' + trackCoinSpeedStatusText(profile) + '.';
       renderTrackCoin();
       trackCoinShuffleTimer = window.setTimeout(function(){
-        if(!trackCoinState) return;
+        if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
         trackCoinState.phase = 'hide';
         trackCoinState.message = 'Shuffle started. Follow every cup movement. ' + trackCoinSpeedStatusText(profile) + '.';
         renderTrackCoin();
-        runTrackCoinShuffle(0);
+        runTrackCoinShuffle(0, roundToken);
       }, 700);
     }, startWindowMs);
   }
-  function runTrackCoinShuffle(stepIndex){
-    if(!trackCoinState) return;
+  function runTrackCoinShuffle(stepIndex, roundToken, onComplete){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
     if(stepIndex >= trackCoinState.sequence.length){
+      if(typeof onComplete === 'function'){
+        onComplete();
+        return;
+      }
       trackCoinState.phase = 'pick';
       trackCoinState.pickLocked = false;
       trackCoinState.message = 'Select the cup holding the coin.';
@@ -2765,8 +2821,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
     const step = trackCoinState.sequence[stepIndex];
     applyTrackCoinMotionStep(step, function(){
-      runTrackCoinShuffle(stepIndex + 1);
-    });
+      runTrackCoinShuffle(stepIndex + 1, roundToken, onComplete);
+    }, roundToken);
   }
   function grantTrackCoinRewards(correct){
     const profile = profiles.trackcoin;
@@ -2830,6 +2886,49 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+  }
+  function replayTrackCoinShuffle(){
+    if(!trackCoinState || !trackCoinState.resolved || trackCoinState.reviewActive) return;
+    clearAutoNextTimer('trackcoin');
+    cancelTrackCoinAnimation();
+    const roundToken = ++trackCoinRoundToken;
+    trackCoinState.roundToken = roundToken;
+    trackCoinState.reviewActive = true;
+    trackCoinState.revealAll = false;
+    trackCoinState.phase = 'show';
+    trackCoinState.pickLocked = true;
+    const positions = trackCoinCupPositions(trackCoinState.cups.length);
+    trackCoinState.cups.sort(function(a, b){
+      return Number(String(a.id).replace(/\D+/g, '')) - Number(String(b.id).replace(/\D+/g, ''));
+    });
+    trackCoinState.cups.forEach(function(cup, index){
+      cup.left = positions[index];
+      cup.top = trackCoinState.baseTop;
+      cup.tilt = 0;
+    });
+    trackCoinState.message = 'Reviewing the same shuffle. No additional reward or progression is awarded.';
+    renderTrackCoin();
+    trackCoinShuffleTimer = window.setTimeout(function(){
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+      trackCoinState.phase = 'cover';
+      trackCoinState.message = 'Review: the coin is covered. Follow the same shuffle again.';
+      renderTrackCoin();
+      trackCoinShuffleTimer = window.setTimeout(function(){
+        if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+        trackCoinState.phase = 'hide';
+        trackCoinState.message = 'Review: replaying the exact previous shuffle.';
+        renderTrackCoin();
+        runTrackCoinShuffle(0, roundToken, function(){
+          if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
+          trackCoinState.reviewActive = false;
+          trackCoinState.phase = 'review';
+          trackCoinState.revealAll = true;
+          trackCoinState.message = 'Review complete. The same correct cup and your original selection are shown again. No reward was awarded.';
+          renderTrackCoin();
+          scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
+        });
+      }, 700);
+    }, 1100);
   }
   function renderTrackCoinTierList(){
     const profile = profiles.trackcoin;
@@ -2898,8 +2997,16 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
     setTrackCoinPanel(trackCoinOpenPanel || 'trackCoinGamePanel');
 
-    const trackCoinResultClass = trackCoinState && trackCoinState.resolved ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
-    const trackCoinStatusTitle = trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status';
+    const replayButton = document.getElementById('replayTrackCoinShuffleBtn');
+    if(replayButton){
+      replayButton.hidden = !(trackCoinState && trackCoinState.resolved);
+      replayButton.disabled = !!(trackCoinState && trackCoinState.reviewActive);
+      replayButton.textContent = trackCoinState && trackCoinState.reviewActive ? 'Replaying…' : 'Replay Last Shuffle';
+    }
+    const trackCoinResultClass = trackCoinState && trackCoinState.resolved && !trackCoinState.reviewActive ? (' trackcoin-status-result--' + (trackCoinState.lastResult || 'resolved')) : '';
+    const trackCoinStatusTitle = trackCoinState && trackCoinState.reviewActive
+      ? 'Round Status — Reviewing'
+      : (trackCoinState && trackCoinState.resolved ? (trackCoinState.lastResult === 'correct' ? 'Round Status — Correct' : 'Round Status — Missed') : 'Round Status');
     const trackCoinStatusMessage = trackCoinState ? trackCoinState.message : 'No round active yet. Press Start New Game when you are ready.';
     const passiveText = 'Passive to Ninja Training: +' + Math.round((Math.min(0.10, profile.level * 0.0025) + Math.min(0.04, (profile.skills.read || 0) * 0.01)) * 100) + '% efficiency from Track the Coin progression.';
     const roundStatusHtml = '<div class="summary-box round-status-card trackcoin-game-status' + trackCoinResultClass + '" id="trackCoinSummary"><strong>' + escapeHtml(trackCoinStatusTitle) + '</strong><span class="inline-note">' + escapeHtml(trackCoinStatusMessage) + '</span><span class="inline-note">' + escapeHtml(passiveText) + '</span></div>';
@@ -3000,6 +3107,25 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return false;
   }
 
+  function ruleShiftMismatchFeedback(rule, option){
+    if(!rule || !option) return 'The selected card did not satisfy the active rule.';
+    const colourMatch = option.colour === rule.colour;
+    const shapeMatch = option.shape === rule.shape;
+    const sizeMatch = option.size === rule.size;
+    const colourName = ruleShiftName(RULESHIFT_COLOURS, option.colour);
+    const shapeName = ruleShiftName(RULESHIFT_SHAPES, option.shape);
+    const sizeName = ruleShiftName(RULESHIFT_SIZES, option.size);
+    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'Colour did not match: you chose ' + colourName + '.';
+    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'Shape did not match: you chose ' + shapeName + '.';
+    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'Size did not match: you chose ' + sizeName + '.';
+    if(rule.type === 'notColour') return !colourMatch ? 'Colour correctly avoided the excluded colour.' : 'The selected colour was the one the rule excluded.';
+    if(rule.type === 'notShape') return !shapeMatch ? 'Shape correctly avoided the excluded shape.' : 'The selected shape was the one the rule excluded.';
+    if(rule.type === 'colourShape') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; shape ' + (shapeMatch ? 'matched' : 'did not match') + '.';
+    if(rule.type === 'colourSize') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
+    if(rule.type === 'shapeSize') return 'Shape ' + (shapeMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
+    return 'The selected card did not satisfy the active rule.';
+  }
+
   function ruleShiftTimeLimitMs(tier){
     return Math.max(3000, Number(tier && tier.timeLimitMs) || 5000);
   }
@@ -3010,8 +3136,27 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
   }
   function ruleShiftRemainingMs(){
-    if(!ruleShiftState || !ruleShiftState.deadlineAt) return 0;
+    if(!ruleShiftState) return 0;
+    if(Number.isFinite(ruleShiftState.pausedRemainingMs)) return Math.max(0, ruleShiftState.pausedRemainingMs);
+    if(!ruleShiftState.deadlineAt) return 0;
     return Math.max(0, ruleShiftState.deadlineAt - Date.now());
+  }
+  function pauseRuleShiftTimer(){
+    if(!ruleShiftState || ruleShiftState.finished || Number.isFinite(ruleShiftState.pausedRemainingMs)) return;
+    ruleShiftState.pausedRemainingMs = ruleShiftRemainingMs();
+    clearRuleShiftTimer();
+    syncRuleShiftTimer();
+  }
+  function resumeRuleShiftTimer(){
+    if(!ruleShiftState || ruleShiftState.finished || !Number.isFinite(ruleShiftState.pausedRemainingMs)) return;
+    const remaining = Math.max(0, ruleShiftState.pausedRemainingMs);
+    ruleShiftState.pausedRemainingMs = null;
+    ruleShiftState.deadlineAt = Date.now() + remaining;
+    startRuleShiftTimer();
+  }
+  function syncRuleShiftVisibility(){
+    if(document.visibilityState === 'hidden') pauseRuleShiftTimer();
+    else resumeRuleShiftTimer();
   }
   function ruleShiftTimerText(ms){
     return (Math.max(0, Math.ceil(ms / 1000))).toString() + 's';
@@ -3186,6 +3331,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       lastMessage:'Run started. Read the rule before choosing.',
       lastWasRuleChange:false,
       deadlineAt:0,
+      pausedRemainingMs:null,
       resolvingTimeout:false
     };
     advanceRuleShiftRound(true);
@@ -3201,6 +3347,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const rule = buildRuleShiftRule(tier, previousRule);
     ruleShiftState.currentRule = rule;
     ruleShiftState.options = buildRuleShiftOptions(tier, rule);
+    ruleShiftState.pausedRemainingMs = null;
     ruleShiftState.deadlineAt = Date.now() + ruleShiftTimeLimitMs(tier);
     ruleShiftState.lastWasRuleChange = !!(previousRule && previousRule.type !== rule.type);
     if(overrideMessage){
@@ -3273,7 +3420,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       return;
     }
     profile.wrongAnswers += 1;
-    failRuleShiftRun('Incorrect choice. Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
+    const mismatchFeedback = ruleShiftMismatchFeedback(ruleShiftState.currentRule, option);
+    failRuleShiftRun('Incorrect choice. ' + mismatchFeedback + ' Run failed — no reward awarded. The rule was: ' + ruleShiftState.currentRule.label);
   }
   function spendRuleShiftSkill(skillId){
     const profile = profiles.ruleshift;
@@ -3744,11 +3892,18 @@ function toggleGameFullscreen(gameId){
       const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
       const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
       const trackCoinStart = event.target.closest('[data-action="start-trackcoin"], #newTrackCoinRoundBtn'); if(trackCoinStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); return; }
+      const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
       const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
       const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
       const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
       const pairCard = event.target.closest('[data-card]'); if(pairCard){ handlePairsCardFlip(pairCard.getAttribute('data-card')); return; }
+    });
+    document.addEventListener('input', function(event){
+      const target = event.target;
+      if(!target || !target.id) return;
+      if(target.id === 'wordGuessInput' && wordState) wordState.draftGuess = String(target.value || '');
+      if(target.id === 'make24ExpressionInput' && make24State) make24State.draftExpression = String(target.value || '');
     });
     document.addEventListener('keydown', function(event){
       const input = event.target;
@@ -3843,6 +3998,7 @@ function toggleGameFullscreen(gameId){
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });
       window.addEventListener('resize', function(){ syncAllMobileInputModes(); if(selectedGame) ensureGamePlayContract(); syncDesktopKeypadState(); });
       window.addEventListener('orientationchange', function(){ syncAllMobileInputModes(); syncDesktopKeypadState(); if(selectedGame) focusGamePlaySurface(selectedGame, { scroll:false, mobileMode:!isDesktopKeypadGame(selectedGame) }); });
+      document.addEventListener('visibilitychange', syncRuleShiftVisibility);
       try{ document.documentElement.setAttribute('data-baseline-games-resize-mobile-input-sync','1'); }catch(_e){}
     }
     restoreFromHashState({ useStored:true });
@@ -3853,6 +4009,9 @@ function toggleGameFullscreen(gameId){
     loadAllProfiles().then(function(){ startNinjaLoop(); }).catch(function(){ safeRenderAll(); });
     window.BASELINE_GAMES_HUB_CORE_READY = true;
     document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
+    try{
+      window.dispatchEvent(new CustomEvent('baseline:games-hub:core-ready', { detail:{ dependencies:coreDependencies } }));
+    }catch(_coreReadyEventError){}
   }
   init();
 })();

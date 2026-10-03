@@ -50,6 +50,8 @@ export function createNinjaTrainingRuntime(dependencies) {
 
   let ninjaShurikenVolleyActive = false;
 
+  let ninjaShurikenVolleyToken = 0;
+
   let ninjaShurikenCooldownFrame = 0;
 
   // Baseline Realm always opens at its navigation hub. Ninja Training is a
@@ -926,6 +928,7 @@ export function createNinjaTrainingRuntime(dependencies) {
     const profile = profiles.ninja;
     const now = Date.now();
     if(!profile || realmView !== 'training' || ninjaShurikenVolleyActive || now < ninjaShurikenReadyAt) return;
+    const volleyToken = ++ninjaShurikenVolleyToken;
     ninjaShurikenVolleyActive = true;
     ninjaShurikenReadyAt = now + NINJA_SHURIKEN_COOLDOWN_MS;
     updateNinjaShurikenButton(now);
@@ -934,7 +937,7 @@ export function createNinjaTrainingRuntime(dependencies) {
     for(let index = 0; index < NINJA_SHURIKEN_VOLLEY_HITS; index += 1){
       window.setTimeout(function(){
         const currentProfile = profiles.ninja;
-        if(!currentProfile) return;
+        if(!currentProfile || volleyToken !== ninjaShurikenVolleyToken || realmView !== 'training') return;
         animateNinjaShuriken(index);
         ninjaAnimationTick = Date.now();
         applyNinjaManualDamage(ninjaShurikenDamage(currentProfile));
@@ -950,7 +953,12 @@ export function createNinjaTrainingRuntime(dependencies) {
   }
 
 function setRealmView(view){
-  realmView = ['training','basecamp','exploration'].includes(view) ? view : 'training';
+  const nextView = ['training','basecamp','exploration'].includes(view) ? view : 'training';
+  if(realmView === 'training' && nextView !== 'training'){
+    ninjaShurikenVolleyToken += 1;
+    ninjaShurikenVolleyActive = false;
+  }
+  realmView = nextView;
   if(realmView !== 'training' && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
   if(realmView === 'training' && !realmDrawerTabsForView('training').includes(realmDrawerTab)) realmDrawerTab = 'upgrades';
   if(realmView !== 'training') realmDrawerOpen = false;
