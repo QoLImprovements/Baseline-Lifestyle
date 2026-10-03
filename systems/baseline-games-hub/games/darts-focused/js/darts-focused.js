@@ -38,6 +38,7 @@ import {
   PACE_QUESTIONS,
   DECISION_QUESTION_POOLS
 } from './darts-focused-content.js';
+import { createDartsTimerManager } from './darts-focused-timing.js';
 
 const BUILD = 'DARTS_REBUILD_20260707_4';
 const STORAGE_KEY = '__bl_darts_focused_v1__';
@@ -48,9 +49,6 @@ const ART_URL = '/systems/baseline-games-hub/games/darts-focused/art/realistic-d
 const ui = {
   selected:'checkout-pressure',
   states:{},
-  gameTimers:new Set(),
-  autoTimer:0,
-  sessionToken:0,
   listObserver:null,
   overviewSyncQueued:false,
   lastScenario:{},
@@ -96,26 +94,21 @@ function saveProfile() {
   try { document.dispatchEvent(new CustomEvent('baseline:darts-progress', { detail:{ profile:JSON.parse(serialised) } })); } catch (_) {}
   renderProgressSummary();
 }
-function clearGameTimers() {
-  ui.sessionToken += 1;
-  ui.gameTimers.forEach((timer) => clearTimeout(timer));
-  ui.gameTimers.clear();
-}
-function clearAutoTimer() {
-  if (ui.autoTimer) clearTimeout(ui.autoTimer);
-  ui.autoTimer = 0;
-}
-function scheduleGame(callback, delay) {
-  const sessionToken = ui.sessionToken;
-  const gameId = ui.selected;
-  const timer = setTimeout(() => {
-    ui.gameTimers.delete(timer);
-    if (sessionToken !== ui.sessionToken || gameId !== ui.selected) return;
-    callback();
-  }, delay);
-  ui.gameTimers.add(timer);
-  return timer;
-}
+const timing = createDartsTimerManager({
+  getGameId:()=>ui.selected,
+  shouldAutoNext:()=>autoNextEnabled(),
+  onHiddenDuration:hiddenFor=>{
+    const active = ui.states[ui.selected];
+    if(active && Number.isFinite(active.startedAt)) active.startedAt += hiddenFor;
+  },
+  onVisibleResume:()=>{
+    if(byId('dartsFocusedPanel')?.classList.contains('is-active')) renderSelectedGame();
+  }
+});
+function clearGameTimers() { timing.clearGame(); }
+function clearAutoTimer() { timing.clearAuto(); }
+function scheduleGame(callback, delay) { return timing.scheduleGame(callback,delay); }
+function syncDartsVisibility() { timing.handleVisibilityChange(); }
 function stateFor(id = ui.selected) {
   if (!ui.states[id]) ui.states[id] = createState(id);
   return ui.states[id];
@@ -202,9 +195,7 @@ function choiceButtons(options, gameId, disabled = false, extra = '') {
 }
 function nextButton(label = 'Next round') { return `<button class="action primary" data-darts-new-round="${escapeHtml(ui.selected)}" type="button">${escapeHtml(label)}</button>`; }
 function autoAdvance(callback, delay = 1900) {
-  clearAutoTimer();
-  if (!autoNextEnabled()) return;
-  ui.autoTimer = setTimeout(() => { ui.autoTimer = 0; callback(); }, delay);
+  return timing.scheduleAuto(callback,delay);
 }
 
 function ensureStylesheet() {
@@ -1003,6 +994,7 @@ function installObserver() {
 function init() {
   ensureStylesheet(); ensurePanel(); ensureOverviewEntry(); installObserver();
   document.addEventListener('click',handleClick,true);
+  document.addEventListener('visibilitychange',syncDartsVisibility);
   document.addEventListener('change',handleChange,true);
   document.addEventListener('input',handleChange,true);
   document.addEventListener('keydown',handleKeydown,true);
