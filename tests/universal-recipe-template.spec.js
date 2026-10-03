@@ -626,6 +626,10 @@ test('Multi-variance recipes expose a synchronized selector at the top of Detail
   await expect(selector).toHaveValue('balanced');
   await expect(details.locator(':scope > *').first()).toHaveClass(/recipe-details-variant-field/);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Balanced/i);
+  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
+  await expect(details.locator('[data-recipe-variant-detail="balanced"]').first()).toContainText(/adjustable castor phase/i);
+  await expect(details.locator('[data-recipe-variant-detail="reactive"]:visible')).toHaveCount(0);
+  await expect(details.locator('[data-recipe-variant-detail="enhanced"]:visible')).toHaveCount(0);
 
   await selector.selectOption('enhanced');
   await expect(card.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
@@ -633,12 +637,18 @@ test('Multi-variance recipes expose a synchronized selector at the top of Detail
   await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toBeHidden();
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/olive/i);
+  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
+  await expect(details.locator('[data-recipe-variant-detail="enhanced"]').first()).toContainText(/adjustable barrier richness/i);
+  await expect(details.locator('[data-recipe-variant-detail="balanced"]:visible')).toHaveCount(0);
 
   await selector.selectOption('reactive');
   await expect(card.locator('.variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
   await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).toBeVisible();
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Reactive/i);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/100% safflower/i);
+  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
+  await expect(details.locator('[data-recipe-variant-detail="reactive"]').first()).toContainText(/single-oil safflower cleanser/i);
+  await expect(details.locator('[data-recipe-variant-detail="enhanced"]:visible')).toHaveCount(0);
 
   await card.locator('[data-recipe-subtab="guidance"]').click();
   await expect(selector).toBeHidden();
