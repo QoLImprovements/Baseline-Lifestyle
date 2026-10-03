@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
+const timerAuthority=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js',import.meta.url),'utf8');
 
-function section(startName,endName){
+function runtimeSection(startName,endName){
   const start=runtime.indexOf('function '+startName);
   assert.notEqual(start,-1,startName+' must exist');
   const end=endName?runtime.indexOf('function '+endName,start+1):runtime.length;
@@ -12,36 +13,40 @@ function section(startName,endName){
   return runtime.slice(start,end);
 }
 
-test('Badminton managed timers preserve remaining delay across hidden time',()=>{
-  const timers=section('cancelManagedTimer','shuffle');
-  assert.match(timers,/timer\.remaining=Math\.max\(0,timer\.remaining-elapsed\)/);
-  assert.match(timers,/document\.visibilityState==='hidden'/);
-  assert.match(timers,/ui\.timers\.forEach\(pauseManagedTimer\)/);
-  assert.match(timers,/ui\.timers\.forEach\(resumeManagedTimer\)/);
-  assert.match(timers,/pauseManagedTimer\(ui\.autoTimer\)/);
-  assert.match(timers,/resumeManagedTimer\(ui\.autoTimer\)/);
+test('Badminton runtime delegates delayed work to the timing authority',()=>{
+  assert.match(runtime,/createBadmintonTimerManager/);
+  assert.match(runtime,/function clearTimers\(\)\{timing\.clear\(\);\}/);
+  assert.match(runtime,/function later\(fn,ms\)\{return timing\.later\(fn,ms\);\}/);
+  assert.match(runtime,/function scheduleAuto\(fn,ms=1900\)\{return timing\.scheduleAuto\(fn,ms\);\}/);
+  assert.match(runtime,/function managedTimerRemaining\(timer\)\{return timing\.remaining\(timer\);\}/);
+  assert.doesNotMatch(runtime,/function cancelManagedTimer|function armManagedTimer|ui\.timers|ui\.autoTimer|ui\.sessionToken/);
+});
+
+test('Badminton timing authority preserves remaining delay across hidden time',()=>{
+  assert.match(timerAuthority,/timer\.remaining=remaining\(timer\)/);
+  assert.match(timerAuthority,/getVisibilityState\(\)==='hidden'/);
+  assert.match(timerAuthority,/timers\.forEach\(pause\)/);
+  assert.match(timerAuthority,/timers\.forEach\(resume\)/);
+  assert.match(timerAuthority,/pause\(autoTimer\)/);
+  assert.match(timerAuthority,/resume\(autoTimer\)/);
 });
 
 test('Badminton hidden time is excluded from contact-response timing',()=>{
-  const visibility=section('syncBadmintonVisibility','shuffle');
-  assert.match(visibility,/ui\.visibilityPausedAt=performance\.now\(\)/);
-  assert.match(visibility,/const hiddenFor=Math\.max\(0,performance\.now\(\)-ui\.visibilityPausedAt\)/);
-  assert.match(visibility,/activeState\.contactAt\+=hiddenFor/);
+  assert.match(runtime,/onHiddenDuration:hiddenFor=>\{[\s\S]*activeState\.contactAt\+=hiddenFor/);
 
-  const wait=section('answerWait','tempoContact');
-  const tempo=section('tempoContact','newRound');
+  const wait=runtimeSection('answerWait','tempoContact');
+  const tempo=runtimeSection('tempoContact','newRound');
   assert.match(wait,/performance\.now\(\)-s\.contactAt/);
   assert.match(tempo,/performance\.now\(\)-s\.contactAt/);
 });
 
 test('Badminton installs one document visibility listener for timer coordination',()=>{
-  const init=section('init',null);
+  const init=runtimeSection('init',null);
   assert.match(init,/document\.addEventListener\('visibilitychange',syncBadmintonVisibility\)/);
 });
 
-
 test('Pressure Ladder visual countdown uses the managed remaining timer',()=>{
-  const pressure=section('renderPressure','pressureTimeout');
+  const pressure=runtimeSection('renderPressure','pressureTimeout');
   assert.match(pressure,/s\.pressureTimer=later\(\(\)=>pressureTimeout\(\),totalMs\)/);
   assert.match(pressure,/managedTimerRemaining\(s\.pressureTimer\)/);
   assert.match(pressure,/--badminton-start-scale:\$\{startScale\}/);
@@ -49,6 +54,5 @@ test('Pressure Ladder visual countdown uses the managed remaining timer',()=>{
 });
 
 test('Badminton rerenders the active panel after visibility resume',()=>{
-  const visibility=section('syncBadmintonVisibility','shuffle');
-  assert.match(visibility,/if\(byId\('badmintonFocusedPanel'\)\?\.classList\.contains\('is-active'\)\)renderSelected\(\)/);
+  assert.match(runtime,/onVisibleResume:\(\)=>\{[\s\S]*renderSelected\(\)/);
 });
