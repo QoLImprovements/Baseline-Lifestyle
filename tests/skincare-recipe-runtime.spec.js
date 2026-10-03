@@ -72,7 +72,7 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3')).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#r12 #r12ButterCharacter')).toBeVisible();
   await expect(page.locator('#r12 #r12Structure')).toBeVisible();
 
@@ -104,11 +104,11 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
   expect(requested).not.toContain('/systems/baseline-natural-skincare/recipes/testing-lip-balm.html');
 });
 
-test('Embedded Testing Lip/ balm preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
+test('Embedded Testing Comfort Barrier Balm preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
 
   const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/testing-lip-balm"]');
-  await expect(link).toContainText('Lip/ balm');
+  await expect(link).toContainText('Comfort Barrier Balm');
   await expect(link).toHaveAttribute('data-recipe-id', 'r12');
 
   await link.click();
@@ -116,7 +116,7 @@ test('Embedded Testing Lip/ balm preserves 100 g slider balance and returns from
   await expect(page.locator('.bl-homebar')).toBeVisible();
   await expect(page.locator('#recipes')).toHaveClass(/recipe-focus/);
   await expect(page.locator('#r12')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3')).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
   await expect(page.locator('#r12 .recipe-subtabs')).toBeVisible();
   const adjustments = page.locator('#r12 .recipe-adjustments-toggle');
@@ -207,7 +207,7 @@ test('Embedded Testing Lip/ balm preserves 100 g slider balance and returns from
   await page.goBack();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
   await expect(page.locator('.bl-homebar')).toBeVisible();
-  await expect(page.locator('#r12 h3')).toHaveText('Lip/ balm');
+  await expect(page.locator('#r12 h3')).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
   await expect(page.locator('#side-nav')).toHaveCount(0);
   await expect(page.locator('.side-recipe-nav')).toHaveCount(0);
