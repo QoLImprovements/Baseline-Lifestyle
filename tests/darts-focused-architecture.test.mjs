@@ -119,3 +119,10 @@ test('Darts controller delegates game-specific presentation to renderer authorit
   assert.match(runtime,/const RENDERERS = createDartsRenderers\(/);
   assert.doesNotMatch(runtime,/const RENDERERS = \{/);
 });
+
+
+test('Darts controller delegates progress presentation authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-progress\.js'/);
+  assert.doesNotMatch(runtime,/darts-xp-block/);
+  assert.doesNotMatch(runtime,/darts-tier-button/);
+});
