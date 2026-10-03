@@ -5193,8 +5193,8 @@ function buildControls(recipeEl){
         normalizeEmphasis();
       }
 
-      function setView(view){
-        const next = ['standard','details','guidance','show-all'].includes(view) ? view : 'standard';
+      function setView(view, options={}){
+        const next = normalizeRecipeSubView(view);
         recipeEl.dataset.recipeView = next;
         qsa('.recipe-subtab', tabs).forEach(button=>{
           button.setAttribute('aria-selected', button.dataset.recipeSubtab === next ? 'true' : 'false');
@@ -5219,18 +5219,35 @@ function buildControls(recipeEl){
         }
         metaRow.classList.remove('recipe-view-hidden');
         tabs.classList.remove('recipe-view-hidden');
+
+        // Recipe subview is route state, not transient DOM state. Replace the
+        // current recipe history entry so refresh and Back/Forward reconstruct
+        // the same Recipe / Details / Guidance / Show All selection.
+        if(options && options.syncRoute && recipeEl.id
+          && (recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))){
+          try{
+            const nextState = {
+              kind:'recipe',
+              recipeId:recipeEl.id,
+              recipeView:next,
+              scrollY:getScrollTop()
+            };
+            setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+          }catch(_e){}
+        }
       }
 
       qsa('.recipe-subtab', tabs).forEach(button=>{
         button.addEventListener('click', event=>{
           event.preventDefault();
           event.stopPropagation();
-          setView(button.dataset.recipeSubtab || 'standard');
+          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true });
         });
       });
 
-      // Default every newly opened recipe to Standard View.
-      setView('standard');
+      // Default every newly opened recipe to Recipe. Route restoration below may
+      // then select a non-default subview from the canonical URL.
+      setView('standard', { syncRoute:false });
       try{ recipeEl.__baselineSetRecipeView = setView; }catch(_e){}
       if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
@@ -5459,6 +5476,12 @@ function buildControls(recipeEl){
       if(state.kind === 'recipe'){
         if(typeof window.BASELINE_openRecipe === 'function' && state.recipeId){
           window.BASELINE_openRecipe(state.recipeId, { silentHistory:true, noScroll:true });
+          try{
+            const card=document.getElementById(recipeIdForToken(state.recipeId));
+            if(card && typeof card.__baselineSetRecipeView === 'function'){
+              card.__baselineSetRecipeView(normalizeRecipeSubView(state.recipeView || 'standard'), { syncRoute:false });
+            }
+          }catch(_e){}
         }
         return;
       }
@@ -7584,6 +7607,12 @@ function setupRecipeFavourites(){
       const rid = initialView.recipeId || '';
       if(typeof window.BASELINE_openRecipe === 'function' && rid){
         window.BASELINE_openRecipe(rid, { silentHistory:true, noScroll: !!recipePathStateFromLocation() });
+        try{
+          const card=document.getElementById(recipeIdForToken(rid));
+          if(card && typeof card.__baselineSetRecipeView === 'function'){
+            card.__baselineSetRecipeView(normalizeRecipeSubView(initialView.recipeView || 'standard'), { syncRoute:false });
+          }
+        }catch(_e){}
       }
       // Canonicalise legacy #recipe=rN/#rN links to the named path URL without adding history.
       // Preserve a recipe subview carried by the clean route so refresh can reconstruct it.
