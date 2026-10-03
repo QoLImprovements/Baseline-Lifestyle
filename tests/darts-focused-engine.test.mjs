@@ -14,10 +14,13 @@ import {
   recordResult,
   sameSet,
   scoreTarget,
-  validateRoute
+  validateRoute,
+  validateRouteText
 } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
+import { GAMES } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
 
 const uiSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused.js', 'utf8');
+const contentSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js', 'utf8');
 const loaderSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js', 'utf8');
 const boardSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg', 'utf8');
 const coreSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js', 'utf8');
@@ -25,7 +28,8 @@ const entrySource = fs.readFileSync('systems/baseline-games-hub/js/baseline-game
 
 test('Darts Focused keeps one named entry with ten distinct website games', () => {
   assert.equal(GAME_IDS.length, 10);
-  for (const id of GAME_IDS) assert.match(uiSource, new RegExp(`id:'${id}'`));
+  assert.deepEqual(GAMES.map((game) => game.id), GAME_IDS);
+  for (const id of GAME_IDS) assert.match(contentSource, new RegExp(`id:'${id}'`));
   assert.match(uiSource, /Darts Focused/);
   assert.match(uiSource, /10 distinct website games/);
   assert.doesNotMatch(uiSource, /throw three physical darts|physically throw at each|record the actual landing/i);
@@ -110,4 +114,13 @@ test('profile normalisation repairs malformed values and migrates legacy questio
 test('relevant-information answers compare sets rather than checkbox order', () => {
   assert.equal(sameSet(['score','darts'],['darts','score']), true);
   assert.equal(sameSet(['score','crowd'],['score','darts']), false);
+});
+
+
+test('checkout text validation accepts legal alternative routes and enforces dart count',()=>{
+  assert.equal(validateRouteText(100,'T20 → D20',2).valid,true);
+  assert.equal(validateRouteText(100,'T16 → D26',2).valid,false);
+  assert.equal(validateRouteText(81,'T15 → D18',2).valid,true);
+  assert.equal(validateRouteText(100,'T20 → S20 → D10',2).valid,false);
+  assert.equal(validateRouteText(50,'BULL',1).valid,true);
 });
