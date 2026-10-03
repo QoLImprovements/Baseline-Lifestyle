@@ -5029,6 +5029,7 @@ function buildControls(recipeEl){
             if(variantSelect && v) variantSelect.value = v;
             if(detailsVariantSelect && v) detailsVariantSelect.value = v;
             if(typeof recipeEl.__baselineSyncVariantDetailState === 'function') recipeEl.__baselineSyncVariantDetailState();
+            if(typeof window.refreshRecipeComedogenic === 'function') window.refreshRecipeComedogenic(recipeEl);
             if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
             refreshMethodAmountsFromVisibleIngredients();
           }, 0);
