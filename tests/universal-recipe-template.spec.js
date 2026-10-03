@@ -613,45 +613,59 @@ test('Skincare Details uses one full-width continuous column without card separa
   expect(['rgba(0, 0, 0, 0)','transparent']).toContain(layout.backgroundColor);
 });
 
-test('Multi-variance recipes expose a synchronized selector at the top of Details', async ({ page }) => {
+test('Multi-variance recipes use visible selected tags and preserve the exact variant through refresh', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
   const card = page.locator('#r2');
-  await expect(card.locator(':scope > .variant-switcher')).toBeVisible();
+  const recipeTags = card.locator(':scope > .variant-switcher .variant-tab');
+  await expect(recipeTags).toHaveCount(3);
+  await expect(card.locator(':scope > .variant-switcher .variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected','true');
+
+  const selectedStyle = await card.locator(':scope > .variant-switcher .variant-tab[data-variant="balanced"]').evaluate(el=>{
+    const s=getComputedStyle(el);
+    return { background:s.backgroundColor, border:s.borderColor, weight:s.fontWeight };
+  });
+  const unselectedStyle = await card.locator(':scope > .variant-switcher .variant-tab[data-variant="reactive"]').evaluate(el=>{
+    const s=getComputedStyle(el);
+    return { background:s.backgroundColor, border:s.borderColor, weight:s.fontWeight };
+  });
+  expect(selectedStyle.background).not.toBe(unselectedStyle.background);
+  expect(selectedStyle.border).not.toBe(unselectedStyle.border);
 
   await card.locator('[data-recipe-subtab="details"]').click();
   const details = card.locator('.recipe-details-intro');
-  const selector = details.locator('.recipe-details-variant-select');
+  const detailTags = details.locator('.recipe-details-variant-switcher .recipe-variant-tag');
   await expect(details).toBeVisible();
-  await expect(selector).toBeVisible();
-  await expect(selector).toHaveValue('balanced');
+  await expect(detailTags).toHaveCount(3);
+  await expect(details.locator('.recipe-details-variant-select')).toHaveCount(0);
+  await expect(details.locator('.recipe-variant-tag[data-variant="balanced"]')).toHaveAttribute('aria-selected','true');
   await expect(details.locator(':scope > *').first()).toHaveClass(/recipe-details-variant-field/);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Balanced/i);
-  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
-  await expect(details.locator('[data-recipe-variant-detail="balanced"]').first()).toContainText(/adjustable castor phase/i);
-  await expect(details.locator('[data-recipe-variant-detail="reactive"]:visible')).toHaveCount(0);
-  await expect(details.locator('[data-recipe-variant-detail="enhanced"]:visible')).toHaveCount(0);
 
-  await selector.selectOption('enhanced');
+  await details.locator('.recipe-variant-tag[data-variant="enhanced"]').click();
   await expect(card.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(card.locator('.variant-panel[data-variant-panel="enhanced"]')).not.toHaveAttribute('hidden', '');
-  await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toHaveAttribute('hidden', '');
+  await expect(details.locator('.recipe-variant-tag[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
+  await expect(details.locator('.recipe-variant-tag[data-variant="balanced"]')).toHaveAttribute('aria-selected','false');
+  await expect(page).toHaveURL(/view=details/);
+  await expect(page).toHaveURL(/variant=enhanced/);
   await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
-  await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/olive/i);
-  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
   await expect(details.locator('[data-recipe-variant-detail="enhanced"]').first()).toContainText(/adjustable barrier richness/i);
-  await expect(details.locator('[data-recipe-variant-detail="balanced"]:visible')).toHaveCount(0);
 
-  await selector.selectOption('reactive');
-  await expect(card.locator('.variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
-  await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).not.toHaveAttribute('hidden', '');
-  await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Reactive/i);
-  await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/100% safflower/i);
-  await expect(details.locator('[data-recipe-variant-detail]:visible')).toHaveCount(5);
-  await expect(details.locator('[data-recipe-variant-detail="reactive"]').first()).toContainText(/single-oil safflower cleanser/i);
-  await expect(details.locator('[data-recipe-variant-detail="enhanced"]:visible')).toHaveCount(0);
+  await page.reload();
+  const refreshed = page.locator('#r2');
+  await expect(refreshed).toBeVisible();
+  await expect(refreshed.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  await expect(refreshed.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
+  await expect(refreshed.locator('.recipe-details-intro .recipe-variant-tag[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
+  await expect(refreshed.locator('.recipe-details-intro .recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
+  await expect(page).toHaveURL(/view=details/);
+  await expect(page).toHaveURL(/variant=enhanced/);
 
-  await card.locator('[data-recipe-subtab="guidance"]').click();
-  await expect(selector).toBeHidden();
+  await refreshed.locator('.recipe-details-intro .recipe-variant-tag[data-variant="reactive"]').click();
+  await expect(page).toHaveURL(/variant=reactive/);
+  await page.reload();
+  await expect(page.locator('#r2 .variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#r2 .recipe-details-intro .recipe-variant-tag[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#r2 .recipe-details-intro .recipe-selected-variance-detail')).toContainText(/100% safflower/i);
 });
 
 test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {
