@@ -49,6 +49,14 @@ test("candidate quality penalises recent repeated partners, opponents and solo 2
   assert.match(source, /score -= getCourtRotationPenalty\(court\)/);
 });
 
+test("main current-set generation actually uses the scored candidate path", () => {
+  const start = source.indexOf("function buildCurrentCourtSet");
+  const end = source.indexOf("function generateGamePlan", start);
+  const currentSetSource = source.slice(start, end);
+  assert.match(currentSetSource, /generateNovelCourtSet\(attendingPlayers, normalizedFormat, usedSet, courtLimit\)/);
+  assert.match(currentSetSource, /buildSpecialFourPlayerSequence/);
+});
+
 test("current courts explain why the matchup was selected", () => {
   assert.match(source, /court\.matchupReason = reasons\.join\(' '\)/);
   assert.match(source, /Why this matchup\?/);
