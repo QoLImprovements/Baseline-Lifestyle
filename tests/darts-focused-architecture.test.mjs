@@ -154,3 +154,10 @@ test('Darts controller delegates Games Hub shell behavior',()=>{
   assert.match(runtime,/createDartsShell\(/);
   assert.doesNotMatch(runtime,/function ensureStylesheet|function openHowToPlay|function openPanel|function closePanel|function toggleFullscreen/);
 });
+
+
+test('Darts controller delegates DOM event routing to event authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-events\.js'/);
+  assert.match(runtime,/createDartsEventHandlers\(/);
+  assert.doesNotMatch(runtime,/function handleClick|function handleChange|function handleKeydown/);
+});
