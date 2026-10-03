@@ -1,21 +1,50 @@
 import { GAMES, TIERS, ZONES, ZONE_COORDS } from './badminton-focused-config.js';
 import { choicePools, purposes } from './badminton-focused-scenarios.js';
+import { createBadmintonTimerManager } from './badminton-focused-timing.js';
+import {
+  BADMINTON_STORAGE_KEY,
+  defaultBadmintonProfile,
+  defaultGameStat,
+  loadBadmintonProfile,
+  persistBadmintonProfile,
+  xpNeed,
+  accuracy,
+  levelUp
+} from './badminton-focused-profile.js';
 
 const BUILD='BADMINTON_FOCUSED_REFINED_20260707_2';
-const STORAGE_KEY='__bl_badminton_focused_v1__';
 const STYLE_URL=`/systems/baseline-games-hub/games/badminton-focused/css/badminton-focused.css?v=${BUILD}`;
 const ART_URL='/systems/baseline-games-hub/games/badminton-focused/art/badminton-focused-overview.svg';
 const zoneCoords=ZONE_COORDS;
 
-const ui={selected:'read-racket',states:{},timers:[],autoTimer:null,sessionToken:0,visibilityPausedAt:null,listObserver:null,overviewSyncQueued:false};
-let profile=loadProfile();
+const ui={selected:'read-racket',states:{},listObserver:null,overviewSyncQueued:false};
+let profile=loadBadmintonProfile(GAMES);
 ui.selected=GAMES.some(g=>g.id===profile.selectedGame)?profile.selectedGame:GAMES[0].id;
-function defaultGameStat(){return {xp:0,level:1,attempts:0,correct:0,streak:0,bestStreak:0,premature:0,late:0};}
-function defaultProfile(){const games={};GAMES.forEach(g=>games[g.id]=defaultGameStat());return {version:1,xp:0,level:1,bank:0,rounds:0,correct:0,currentStreak:0,bestStreak:0,selectedGame:GAMES[0].id,selectedTiers:{},autoNext:{},recent:{},games};}
-function loadProfile(){try{const raw=localStorage.getItem(STORAGE_KEY);return normaliseProfile(raw?JSON.parse(raw):null);}catch(_){return defaultProfile();}}
-function normaliseProfile(data){const base=defaultProfile(),p=Object.assign(base,data||{});p.games=p.games||{};GAMES.forEach(g=>p.games[g.id]=Object.assign(defaultGameStat(),p.games[g.id]||{}));p.selectedGame=GAMES.some(g=>g.id===p.selectedGame)?p.selectedGame:GAMES[0].id;p.selectedTiers=p.selectedTiers||{};p.autoNext=p.autoNext||{};p.recent=p.recent||{};p.level=Math.max(1,Number(p.level)||1);p.xp=Math.max(0,Number(p.xp)||0);p.bank=Math.max(0,Number(p.bank)||0);return p;}
-function saveProfile(){profile.selectedGame=ui.selected;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(profile));}catch(_){};renderProgress();ensureOverviewEntry();}
-function xpNeed(level){return 70+Math.max(1,level)*35;}
+
+function saveProfile(){
+  profile.selectedGame=ui.selected;
+  persistBadmintonProfile(profile,{key:BADMINTON_STORAGE_KEY});
+  renderProgress();
+  ensureOverviewEntry();
+}
+
+const timing=createBadmintonTimerManager({
+  getGameId:()=>ui.selected,
+  shouldAutoNext:autoNext,
+  onHiddenDuration:hiddenFor=>{
+    const activeState=ui.states[ui.selected];
+    if(activeState&&Number.isFinite(activeState.contactAt))activeState.contactAt+=hiddenFor;
+  },
+  onVisibleResume:()=>{
+    if(byId('badmintonFocusedPanel')?.classList.contains('is-active'))renderSelected();
+  }
+});
+function clearTimers(){timing.clear();}
+function later(fn,ms){return timing.later(fn,ms);}
+function scheduleAuto(fn,ms=1900){return timing.scheduleAuto(fn,ms);}
+function managedTimerRemaining(timer){return timing.remaining(timer);}
+function syncBadmintonVisibility(){timing.handleVisibilityChange();}
+
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function byId(id){return document.getElementById(id);}
 function game(){return GAMES.find(g=>g.id===ui.selected)||GAMES[0];}
@@ -96,7 +125,6 @@ function syncBadmintonVisibility(){
 }
 function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function pickScenario(id,pool){const recent=profile.recent[id]||[];let choices=pool.map((x,i)=>({x,i})).filter(o=>!recent.includes(o.i));if(!choices.length)choices=pool.map((x,i)=>({x,i}));const picked=choices[Math.floor(Math.random()*choices.length)];profile.recent[id]=[picked.i,...recent.filter(i=>i!==picked.i)].slice(0,Math.min(8,pool.length-1));return JSON.parse(JSON.stringify(picked.x));}
-function levelUp(obj){while(obj.xp>=xpNeed(obj.level)){obj.xp-=xpNeed(obj.level);obj.level+=1;}}
 function record(correct,extra={}){const s=stat();s.attempts+=1;s.correct+=correct?1:0;s.streak=correct?s.streak+1:0;s.bestStreak=Math.max(s.bestStreak,s.streak);s.premature+=extra.premature?1:0;s.late+=extra.late?1:0;s.xp+=correct?14:5;levelUp(s);profile.rounds+=1;profile.correct+=correct?1:0;profile.currentStreak=correct?profile.currentStreak+1:0;profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);profile.xp+=correct?11:4;profile.bank+=correct?2:0;levelUp(profile);saveProfile();refreshSelectors();}
 function accuracy(s){return s.attempts?Math.round(s.correct/s.attempts*100):0;}
 function progressLabel(id){const s=stat(id);return `Level ${s.level} · ${s.attempts?accuracy(s)+'% · '+s.attempts+' rounds':'Ready'}`;}
@@ -214,6 +242,6 @@ function handleClick(e){const t=e.target instanceof Element?e.target:null;if(!t)
 function handleKey(e){if(!byId('badmintonFocusedPanel')?.classList.contains('is-active'))return;if(e.key==='Escape'&&document.fullscreenElement===byId('badmintonGameCard'))return;if(e.key==='Escape'){closePanel();return;}const sel=e.target.closest?.('[data-badminton-game]');if(!sel||!['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const buttons=[...document.querySelectorAll('[data-badminton-game]')],i=buttons.indexOf(sel),d=e.key==='ArrowDown'||e.key==='ArrowRight'?1:-1;buttons[(i+d+buttons.length)%buttons.length]?.focus();}
 function installObserver(){const list=byId('gamesList');if(!list||ui.listObserver)return;ui.listObserver=new MutationObserver(()=>{if(ui.overviewSyncQueued)return;ui.overviewSyncQueued=true;requestAnimationFrame(()=>{ui.overviewSyncQueued=false;ensureOverviewEntry();});});ui.listObserver.observe(list,{childList:true});}
 function realmContribution(){const above=id=>Math.max(0,stat(id).level-1),level=profile.level;return {level,linkedLevels:level+GAMES.reduce((n,g)=>n+above(g.id),0),attackMult:1+Math.min(.06,(above('shot-choice')+above('attack-purpose'))*.003),critChance:Math.min(.07,(above('read-racket')+above('deception-filter'))*.0035),offlineGainMult:1+Math.min(.05,(above('badminton-reset')+above('landing-picture'))*.0025),upgradeCostMult:1-Math.min(.04,above('decision-recovery')*.004),bossDamageMult:1+Math.min(.06,above('pressure-ladder')*.006),passiveEfficiencyMult:1+Math.min(.06,(above('shuttle-first')+above('four-corner'))*.003),enemyRevealChance:Math.min(.08,(above('rally-pattern')+above('opponent-balance'))*.004),clueDropChance:Math.min(.05,above('court-recovery')*.005),coinGainMult:1+Math.min(.05,above('opponent-balance')*.005),manualDamageMult:1+Math.min(.06,(above('wait-contact')+above('tempo-break'))*.003),shurikenDamageMult:1+Math.min(.05,above('decision-recovery')*.005),unlockedTraits:level>=5?['Badminton Focused: Visual Discipline']:[]};}
-function init(){ensureStyle();ensurePanel();ensureOverviewEntry();installObserver();document.addEventListener('click',handleClick,true);document.addEventListener('keydown',handleKey,true);document.addEventListener('visibilitychange',syncBadmintonVisibility);document.addEventListener('fullscreenchange',syncFullscreen);window.addEventListener('beforeunload',clearTimers);document.documentElement.dataset.badmintonFocusedRuntime=BUILD;globalThis.BadmintonFocusedGames=Object.freeze({build:BUILD,open:openPanel,close:closePanel,getProfile:()=>JSON.parse(JSON.stringify(profile)),getRealmContribution:realmContribution,reset:()=>{profile=defaultProfile();ui.states={};saveProfile();renderSelected();}});}
+function init(){ensureStyle();ensurePanel();ensureOverviewEntry();installObserver();document.addEventListener('click',handleClick,true);document.addEventListener('keydown',handleKey,true);document.addEventListener('visibilitychange',syncBadmintonVisibility);document.addEventListener('fullscreenchange',syncFullscreen);window.addEventListener('beforeunload',clearTimers);document.documentElement.dataset.badmintonFocusedRuntime=BUILD;globalThis.BadmintonFocusedGames=Object.freeze({build:BUILD,open:openPanel,close:closePanel,getProfile:()=>JSON.parse(JSON.stringify(profile)),getRealmContribution:realmContribution,reset:()=>{profile=defaultBadmintonProfile(GAMES);ui.states={};saveProfile();renderSelected();}});}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 
