@@ -51,7 +51,7 @@ test('Skincare Details clean route paints Details before external JavaScript run
   await expect(page.locator('#r10 .recipe-details-intro')).toBeVisible();
   await expect(page.locator('#r10 [data-recipe-view-group="standard"]')).toBeHidden();
   await expect(page.locator('#r10 [data-recipe-view-group="guidance"]').first()).toBeHidden();
-  await expect(page.locator('#r10 :scope > .recipe-adjustments-row')).toBeHidden();
+  await expect(page.locator('#r10').locator(':scope > .recipe-adjustments-row')).toBeHidden();
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
 });
 
