@@ -35,7 +35,10 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
 test('standalone recipe recovery preserves the selected recipe subview', () => {
   assert.match(liveStability, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
   assert.match(liveStability, /view:view/);
+  assert.match(liveStability, /variant:variant/);
   assert.match(liveStability, /pending\.view/);
+  assert.match(liveStability, /pending\.variant/);
+  assert.match(liveStability, /__baselineSetRecipeVariant/);
   assert.match(liveStability, /__baselineSetRecipeView/);
   assert.match(liveStability, /syncRoute:true/);
 });
@@ -97,11 +100,14 @@ test('clean recipe slugs resolve in embedded and standalone recipe shells', () =
 test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
   assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
-  assert.match(shared, /base \+ '\?view=' \+ encodeURIComponent\(recipeView\)/);
+  assert.match(shared, /params\.set\('view', recipeView\)/);
+  assert.match(shared, /params\.set\('variant', recipeVariant\)/);
   assert.match(shared, /function setView\(view, options=\{\}\)/);
   assert.match(shared, /options && options\.syncRoute/);
   assert.match(shared, /recipeView:next/);
+  assert.match(shared, /recipeVariant:/);
   assert.match(shared, /setNavState\(nextState, \{ replace:true, url:urlForNavState\(nextState\) \}\)/);
+  assert.match(shared, /card\.__baselineSetRecipeVariant/);
   assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
   assert.match(recipeUx, /function recipeViewFromLocation\(\)/);
   assert.match(recipeUx, /restoreRecipeViewFromLocation\(\)/);
@@ -109,6 +115,17 @@ test('recipe subview is encoded by the shared router and Skincare restores its D
   assert.doesNotMatch(recipeUx, /syncRecipeViewUrl/);
   assert.match(skincareCss, /recipe-open-mode \.recipe-page,[\s\S]*recipe-detail-open \.recipe-page\{ display:none!important; \}/);
   assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
+});
+
+test('recipe variant is part of clean route state and survives refresh/history restoration', () => {
+  assert.match(shared, /params\.get\('variant'\)/);
+  assert.match(shared, /recipeVariant:recipeVariant/);
+  assert.match(shared, /params\.set\('variant', recipeVariant\)/);
+  assert.match(shared, /__baselineGetRecipeVariant/);
+  assert.match(shared, /__baselineSetRecipeVariant/);
+  assert.match(shared, /recipeVariant:\(typeof recipeEl\.__baselineGetRecipeVariant/);
+  assert.match(shared, /initialView\.recipeVariant/);
+  assert.match(shared, /state\.recipeVariant/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
@@ -145,11 +162,15 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
   assert.match(shared,/recipe-details-variant-field/);
-  assert.match(shared,/recipe-details-variant-select/);
+  assert.match(shared,/recipe-details-variant-switcher/);
+  assert.match(shared,/recipe-variant-tag/);
+  assert.doesNotMatch(shared,/detailsVariantSelect/);
   assert.match(shared,/__baselineSyncVariantDetailState/);
+  assert.match(shared,/__baselineSetRecipeVariant/);
   assert.match(shared,/data-recipe-variant-detail/);
   assert.match(css,/recipe-details-variant-field/);
-  assert.match(css,/recipe-details-variant-select/);
+  assert.match(css,/recipe-details-variant-switcher/);
+  assert.match(css,/recipe-variant-tag\[aria-selected="true"\]/);
   assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
 });
 
