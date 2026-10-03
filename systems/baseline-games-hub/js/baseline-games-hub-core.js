@@ -170,6 +170,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let selectedGame = '';
   let currentTab = 'hub';
   let pairsBoardState = null;
+  let pairsRoundToken = 0;
   let pairsIdleMessage = 'Choose a board tier and press Start New Game when you are ready.';
   let make24State = null;
   let make24IdleMessage = 'Choose a number tier and press Start New Game when you are ready.';
@@ -179,6 +180,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   let ruleShiftTimer = 0;
   let ruleShiftIdleMessage = 'Choose a rule tier and press Start New Game when you are ready.';
   let trackCoinState = null;
+  let trackCoinRoundToken = 0;
   let trackCoinAnimationFrame = 0;
   let trackCoinShuffleTimer = 0;
   let trackCoinOpenPanel = 'trackCoinGamePanel';
@@ -1696,8 +1698,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function startPairsBoard(){
     clearAutoNextTimer('pairs');
     const tier = currentPairsTier();
+    const roundToken = ++pairsRoundToken;
     profiles.pairs.gamesPlayed += 1;
     pairsBoardState = {
+      roundToken:roundToken,
       cards: buildPairsDeck(tier), selected: [], matchedPairs:0, moves:0, roundBank:0, flipLock:false,
       hintsLeft: profiles.pairs.skills.insight || 0, faceSeen:{}, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
     };
@@ -1742,6 +1746,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     scheduleAutoNext('pairs', startPairsBoard);
   }
   function handlePairsMismatch(selectedCards){
+    const roundToken = pairsBoardState && pairsBoardState.roundToken;
     const penaltyEligible = selectedCards.every(card => card.wasKnown);
     let penalty = 0;
     if(penaltyEligible){
@@ -1754,7 +1759,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     pairsBoardState.lastMessage = penaltyEligible && penalty > 0 ? ('Repeated miss. -' + penalty + ' Bank. Clean bonus lost. Streak reset.') : 'Learning miss. Clean bonus lost for this board. Streak reset.';
     scheduleSave('pairs');
     window.setTimeout(function(){
-      if(!pairsBoardState) return;
+      if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       selectedCards.forEach(card => { card.open = false; });
       pairsBoardState.selected = [];
       pairsBoardState.flipLock = false;
@@ -1788,6 +1793,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function usePairsHint(){
     if(!pairsBoardState || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || pairsBoardState.hintBusy) return;
+    const roundToken = pairsBoardState.roundToken;
     const hiddenCards = pairsBoardState.cards.filter(card => !card.matched && !card.open);
     if(!hiddenCards.length) return;
     const card = hiddenCards[Math.floor(Math.random() * hiddenCards.length)];
@@ -1797,7 +1803,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     pairsBoardState.lastMessage = 'Hint used. One unmatched card was flashed briefly.';
     renderAll();
     window.setTimeout(function(){
-      if(!pairsBoardState) return;
+      if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       if(!card.matched && !pairsBoardState.selected.includes(card)) card.open = false;
       pairsBoardState.hintBusy = false;
       renderPairsBoard();
@@ -2681,8 +2687,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
   }
 
-  function applyTrackCoinMotionStep(step, onDone){
-    if(!trackCoinState) return;
+  function applyTrackCoinMotionStep(step, onDone, roundToken){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
     cancelTrackCoinAnimation();
     const cups = trackCoinState.cups;
     const positions = trackCoinCupPositions(cups.length);
@@ -2703,7 +2709,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
     const startAt = performance.now();
     function frame(now){
-      if(!trackCoinState || trackCoinState.phase !== 'hide') return;
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
       const raw = clamp((now - startAt) / step.duration, 0, 1);
       const eased = 0.5 - (0.5 * Math.cos(Math.PI * raw));
       cups.forEach((cup, idx) => {
@@ -2727,7 +2733,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         });
         trackCoinAnimationFrame = 0;
         syncTrackCoinMotionDom();
-        if(typeof onDone === 'function') onDone();
+        if(typeof onDone === 'function' && trackCoinState && trackCoinState.roundToken === roundToken) onDone();
       }
     }
     trackCoinAnimationFrame = window.requestAnimationFrame(frame);
@@ -2735,31 +2741,33 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function startTrackCoinRound(options){
     clearAutoNextTimer('trackcoin');
     cancelTrackCoinAnimation();
+    const roundToken = ++trackCoinRoundToken;
     const profile = profiles.trackcoin;
     profile.selectedTier = currentTrackCoinTier().id;
     profile.currentTier = profile.selectedTier;
     trackCoinState = buildTrackCoinRound();
+    trackCoinState.roundToken = roundToken;
     const startWindowMs = options && Number(options.startWindowMs) ? Number(options.startWindowMs) : 1100;
     if(startWindowMs >= 3000){
       trackCoinState.message = 'Auto-next started. You have a 3 second start window: lock onto the visible coin before the cup drops. ' + trackCoinSpeedStatusText(profile) + '.';
     }
     renderTrackCoin();
     trackCoinShuffleTimer = window.setTimeout(function(){
-      if(!trackCoinState) return;
+      if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
       trackCoinState.phase = 'cover';
       trackCoinState.message = 'The coin is covered. Hold the starting position, then follow the full shuffle. ' + trackCoinSpeedStatusText(profile) + '.';
       renderTrackCoin();
       trackCoinShuffleTimer = window.setTimeout(function(){
-        if(!trackCoinState) return;
+        if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
         trackCoinState.phase = 'hide';
         trackCoinState.message = 'Shuffle started. Follow every cup movement. ' + trackCoinSpeedStatusText(profile) + '.';
         renderTrackCoin();
-        runTrackCoinShuffle(0);
+        runTrackCoinShuffle(0, roundToken);
       }, 700);
     }, startWindowMs);
   }
-  function runTrackCoinShuffle(stepIndex){
-    if(!trackCoinState) return;
+  function runTrackCoinShuffle(stepIndex, roundToken){
+    if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
     if(stepIndex >= trackCoinState.sequence.length){
       trackCoinState.phase = 'pick';
       trackCoinState.pickLocked = false;
@@ -2769,8 +2777,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
     const step = trackCoinState.sequence[stepIndex];
     applyTrackCoinMotionStep(step, function(){
-      runTrackCoinShuffle(stepIndex + 1);
-    });
+      runTrackCoinShuffle(stepIndex + 1, roundToken);
+    }, roundToken);
   }
   function grantTrackCoinRewards(correct){
     const profile = profiles.trackcoin;
