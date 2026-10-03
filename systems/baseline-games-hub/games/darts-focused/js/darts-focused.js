@@ -100,6 +100,7 @@ const timing = createDartsTimerManager({
 function clearGameTimers() { timing.clearGame(); }
 function clearAutoTimer() { timing.clearAuto(); }
 function scheduleGame(callback, delay) { return timing.scheduleGame(callback,delay); }
+function managedTimerRemaining(timer) { return timing.remaining(timer); }
 function syncDartsVisibility() { timing.handleVisibilityChange(); }
 function stateFor(id = ui.selected) {
   if (!ui.states[id]) ui.states[id] = createState(id);
@@ -404,7 +405,10 @@ const RENDERERS = {
     const baseTimes = tierId('pressure-ladder') === 1 ? [18,16,14,12,10] : tierId('pressure-ladder') === 2 ? [16,14,12,10,8] : [14,12,10,8,6];
     if (state.phase === 'ready') return `<div class="darts-game-stack"><div class="darts-pressure-track">${[1,2,3,4,5].map((n) => `<span class="${n === level ? 'is-current' : n < level ? 'is-complete' : ''}">${n}</span>`).join('')}</div><h4>Pressure level ${level}</h4><p>You will have ${baseTimes[level - 1]} seconds to choose a legal route. Accuracy moves you upward; an error moves you down.</p><button class="action primary" data-start-pressure type="button">Begin level ${level}</button>${feedbackHtml(state)}</div>`;
     const s = state.scenario;
-    return `<div class="darts-game-stack"><div class="darts-pressure-bar" style="--pressure-seconds:${state.seconds}s"><span></span></div>${scenarioHeader(`Pressure level ${level}`,[['Require',s.score],['Darts',s.darts],['Opponent',s.opponent],['Time',`${state.seconds}s`]])}<h4>Choose now, without abandoning calculation.</h4>${choiceButtons(s.options,'pressure-ladder',Boolean(state.feedback))}${feedbackHtml(state)}${state.feedback ? nextButton('Return to ladder') : ''}</div>`;
+    const totalMs = state.seconds * 1000;
+    const remainingMs = state.timer ? managedTimerRemaining(state.timer) : totalMs;
+    const startScale = Math.max(0,Math.min(1,remainingMs / Math.max(1,totalMs)));
+    return `<div class="darts-game-stack"><div class="darts-pressure-bar" style="--pressure-seconds:${Math.max(.001,remainingMs/1000)}s;--pressure-start-scale:${startScale}"><span></span></div>${scenarioHeader(`Pressure level ${level}`,[['Require',s.score],['Darts',s.darts],['Opponent',s.opponent],['Time',`${state.seconds}s`]])}<h4>Choose now, without abandoning calculation.</h4>${choiceButtons(s.options,'pressure-ladder',Boolean(state.feedback))}${feedbackHtml(state)}${state.feedback ? nextButton('Return to ladder') : ''}</div>`;
   },
   'board-geography':(state) => {
     const relation = state.relationship === 'clockwise' ? 'clockwise neighbour' : state.relationship === 'anticlockwise' ? 'anticlockwise neighbour' : 'number directly opposite';
@@ -474,7 +478,10 @@ function renderDecisionTraining(state) {
   if (state.category === 'pace-control') {
     const condition = state.paceStage === 'rushed' ? q.rushed : q.calm;
     const seconds = paceSeconds(state.paceStage || 'calm');
-    return `<div class="darts-game-stack">${progress}<div class="darts-pressure-bar ${state.paceStage === 'rushed' ? 'is-rushed' : ''}" style="--pressure-seconds:${seconds}s"><span></span></div><span class="darts-eyebrow">${state.paceStage === 'rushed' ? `Faster condition · ${seconds} seconds` : `Deliberate condition · ${seconds} seconds`}</span><h4>${escapeHtml(condition.prompt)}</h4>${choiceButtons(state.options,'decision-training',false)}</div>`;
+    const totalMs = seconds * 1000;
+    const remainingMs = state.paceTimer ? managedTimerRemaining(state.paceTimer) : totalMs;
+    const startScale = Math.max(0,Math.min(1,remainingMs / Math.max(1,totalMs)));
+    return `<div class="darts-game-stack">${progress}<div class="darts-pressure-bar ${state.paceStage === 'rushed' ? 'is-rushed' : ''}" style="--pressure-seconds:${Math.max(.001,remainingMs/1000)}s;--pressure-start-scale:${startScale}"><span></span></div><span class="darts-eyebrow">${state.paceStage === 'rushed' ? `Faster condition · ${seconds} seconds` : `Deliberate condition · ${seconds} seconds`}</span><h4>${escapeHtml(condition.prompt)}</h4>${choiceButtons(state.options,'decision-training',false)}</div>`;
   }
   const label = state.category === 'mental-reset' ? 'Mental reset situation' : 'Pressure and temptation';
   return `<div class="darts-game-stack">${progress}<div class="darts-situation-card"><span class="darts-eyebrow">${escapeHtml(label)}</span><h4>${escapeHtml(q.prompt)}</h4></div><p>Choose the disciplined response.</p>${choiceButtons(state.options,'decision-training',Boolean(state.feedback))}${feedbackHtml(state)}${state.feedback ? `<button class="action primary" data-decision-advance type="button">${state.index + 1 >= state.queue.length ? 'Finish series' : 'Next question'}</button>` : ''}</div>`;
@@ -573,7 +580,7 @@ function startPressure() {
   state.seconds = times[state.level - 1];
   state.startedAt = nowMs();
   renderSelectedGame();
-  scheduleGame(() => {
+  state.timer = scheduleGame(() => {
     if (state.phase !== 'question' || state.feedback) return;
     profile.custom.pressureLevel = Math.max(1,profile.custom.pressureLevel - 1);
     record('pressure-ladder',false,state.seconds * 1000);
@@ -740,7 +747,7 @@ function paceSeconds(stage) {
 function currentPaceQuestion(state) { return state.paceStage === 'rushed' ? state.question.rushed : state.question.calm; }
 function schedulePaceTimeout(state,stage) {
   const seconds = paceSeconds(stage);
-  scheduleGame(() => {
+  state.paceTimer = scheduleGame(() => {
     if (state.category !== 'pace-control' || state.phase !== 'question' || state.paceStage !== stage) return;
     finishPaceAnswer(false,true);
   },seconds * 1000);
