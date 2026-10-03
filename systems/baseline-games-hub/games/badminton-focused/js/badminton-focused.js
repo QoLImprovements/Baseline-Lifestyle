@@ -52,81 +52,9 @@ function stat(id=ui.selected){return profile.games[id]||defaultGameStat();}
 function tierId(id=ui.selected){return Math.max(1,Math.min(3,Number(profile.selectedTiers[id]||1)));}
 function tierUnlocked(id,tier){return stat(id).level>=TIERS[tier-1].unlock;}
 function autoNext(){return Boolean(profile.autoNext[ui.selected]);}
-function cancelManagedTimer(timer){
-  if(!timer)return;
-  if(timer.timeoutId)clearTimeout(timer.timeoutId);
-  timer.timeoutId=0;
-}
-function armManagedTimer(timer){
-  if(!timer||timer.cancelled||timer.timeoutId||document.visibilityState==='hidden')return;
-  timer.startedAt=Date.now();
-  timer.timeoutId=setTimeout(()=>{
-    timer.timeoutId=0;
-    if(timer.cancelled)return;
-    timer.remaining=0;
-    if(timer.kind==='auto')ui.autoTimer=null;
-    else ui.timers=ui.timers.filter(item=>item!==timer);
-    if(timer.token!==ui.sessionToken||timer.gameId!==ui.selected)return;
-    timer.fn();
-  },Math.max(0,timer.remaining));
-}
-function createManagedTimer(fn,ms,kind='game'){
-  const timer={fn,remaining:Math.max(0,Number(ms)||0),startedAt:0,timeoutId:0,token:ui.sessionToken,gameId:ui.selected,kind,cancelled:false};
-  armManagedTimer(timer);
-  return timer;
-}
-function managedTimerRemaining(timer){
-  if(!timer||timer.cancelled)return 0;
-  if(!timer.timeoutId)return Math.max(0,timer.remaining);
-  return Math.max(0,timer.remaining-Math.max(0,Date.now()-timer.startedAt));
-}
-function pauseManagedTimer(timer){
-  if(!timer||timer.cancelled||!timer.timeoutId)return;
-  const elapsed=Math.max(0,Date.now()-timer.startedAt);
-  timer.remaining=Math.max(0,timer.remaining-elapsed);
-  cancelManagedTimer(timer);
-}
-function resumeManagedTimer(timer){
-  if(!timer||timer.cancelled||timer.token!==ui.sessionToken||timer.gameId!==ui.selected)return;
-  armManagedTimer(timer);
-}
-function clearTimers(){
-  ui.sessionToken+=1;
-  ui.timers.forEach(timer=>{timer.cancelled=true;cancelManagedTimer(timer);});
-  ui.timers=[];
-  if(ui.autoTimer){ui.autoTimer.cancelled=true;cancelManagedTimer(ui.autoTimer);ui.autoTimer=null;}
-}
-function later(fn,ms){
-  const timer=createManagedTimer(fn,ms,'game');
-  ui.timers.push(timer);
-  return timer;
-}
-function scheduleAuto(fn,ms=1900){
-  if(!autoNext())return;
-  if(ui.autoTimer){ui.autoTimer.cancelled=true;cancelManagedTimer(ui.autoTimer);}
-  ui.autoTimer=createManagedTimer(fn,ms,'auto');
-}
-function syncBadmintonVisibility(){
-  if(document.visibilityState==='hidden'){
-    if(ui.visibilityPausedAt===null)ui.visibilityPausedAt=performance.now();
-    ui.timers.forEach(pauseManagedTimer);
-    pauseManagedTimer(ui.autoTimer);
-    return;
-  }
-  if(ui.visibilityPausedAt!==null){
-    const hiddenFor=Math.max(0,performance.now()-ui.visibilityPausedAt);
-    const activeState=ui.states[ui.selected];
-    if(activeState&&Number.isFinite(activeState.contactAt))activeState.contactAt+=hiddenFor;
-    ui.visibilityPausedAt=null;
-  }
-  ui.timers.forEach(resumeManagedTimer);
-  resumeManagedTimer(ui.autoTimer);
-  if(byId('badmintonFocusedPanel')?.classList.contains('is-active'))renderSelected();
-}
 function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function pickScenario(id,pool){const recent=profile.recent[id]||[];let choices=pool.map((x,i)=>({x,i})).filter(o=>!recent.includes(o.i));if(!choices.length)choices=pool.map((x,i)=>({x,i}));const picked=choices[Math.floor(Math.random()*choices.length)];profile.recent[id]=[picked.i,...recent.filter(i=>i!==picked.i)].slice(0,Math.min(8,pool.length-1));return JSON.parse(JSON.stringify(picked.x));}
 function record(correct,extra={}){const s=stat();s.attempts+=1;s.correct+=correct?1:0;s.streak=correct?s.streak+1:0;s.bestStreak=Math.max(s.bestStreak,s.streak);s.premature+=extra.premature?1:0;s.late+=extra.late?1:0;s.xp+=correct?14:5;levelUp(s);profile.rounds+=1;profile.correct+=correct?1:0;profile.currentStreak=correct?profile.currentStreak+1:0;profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);profile.xp+=correct?11:4;profile.bank+=correct?2:0;levelUp(profile);saveProfile();refreshSelectors();}
-function accuracy(s){return s.attempts?Math.round(s.correct/s.attempts*100):0;}
 function progressLabel(id){const s=stat(id);return `Level ${s.level} · ${s.attempts?accuracy(s)+'% · '+s.attempts+' rounds':'Ready'}`;}
 function ensureStyle(){if(document.querySelector('link[data-badminton-focused-style]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=STYLE_URL;l.dataset.badmintonFocusedStyle=BUILD;document.head.appendChild(l);}
 function iconSvg(id){const common='fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"';const map={
