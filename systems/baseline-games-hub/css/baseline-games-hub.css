@@ -2013,6 +2013,22 @@ body[data-app="games"] .mobile-game-key[data-mobile-game-key$=":clear"]{
 
 /* 20260605 alphabet keypad 50/50 patch:
    Detect The Word only. Make The Number numerical keypad is intentionally untouched. */
+body[data-app="games"] .mobile-word-keypad .mobile-game-key--letter.is-word-correct{
+  background:linear-gradient(180deg,#6F8F63 0%,#517A57 100%)!important;
+  border-color:rgba(38,70,42,.55)!important;
+  color:#F7F0E3!important;
+  -webkit-text-fill-color:#F7F0E3!important;
+}
+body[data-app="games"] .mobile-word-keypad .mobile-game-key--letter.is-word-present{
+  background:linear-gradient(180deg,#D1AE62 0%,#B58A3D 100%)!important;
+  border-color:rgba(122,88,38,.55)!important;
+  color:#173438!important;
+  -webkit-text-fill-color:#173438!important;
+}
+body[data-app="games"] .mobile-word-keypad .mobile-game-key--letter.is-word-absent{
+  opacity:.58!important;
+}
+
 body[data-app="games"] .mobile-word-keypad .mobile-game-key--letter{
   display:flex!important;
   align-items:center!important;
