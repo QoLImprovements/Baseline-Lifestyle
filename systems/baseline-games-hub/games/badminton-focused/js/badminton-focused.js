@@ -18,7 +18,7 @@ import {
   persistBadmintonProfile,
   xpNeed,
   accuracy,
-  levelUp
+  recordBadmintonResult
 } from './badminton-focused-profile.js';
 
 const BUILD='BADMINTON_FOCUSED_REFINED_20260707_2';
@@ -63,7 +63,7 @@ function tierUnlocked(id,tier){return stat(id).level>=TIERS[tier-1].unlock;}
 function autoNext(){return Boolean(profile.autoNext[ui.selected]);}
 function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}return out;}
 function pickScenario(id,pool){const recent=profile.recent[id]||[];let choices=pool.map((x,i)=>({x,i})).filter(o=>!recent.includes(o.i));if(!choices.length)choices=pool.map((x,i)=>({x,i}));const picked=choices[Math.floor(Math.random()*choices.length)];profile.recent[id]=[picked.i,...recent.filter(i=>i!==picked.i)].slice(0,Math.min(8,pool.length-1));return JSON.parse(JSON.stringify(picked.x));}
-function record(correct,extra={}){const s=stat();s.attempts+=1;s.correct+=correct?1:0;s.streak=correct?s.streak+1:0;s.bestStreak=Math.max(s.bestStreak,s.streak);s.premature+=extra.premature?1:0;s.late+=extra.late?1:0;s.xp+=correct?14:5;levelUp(s);profile.rounds+=1;profile.correct+=correct?1:0;profile.currentStreak=correct?profile.currentStreak+1:0;profile.bestStreak=Math.max(profile.bestStreak,profile.currentStreak);profile.xp+=correct?11:4;profile.bank+=correct?2:0;levelUp(profile);saveProfile();refreshSelectors();}
+function record(correct,extra={}){recordBadmintonResult(profile,ui.selected,correct,extra);saveProfile();refreshSelectors();}
 function progressLabel(id){const s=stat(id);return `Level ${s.level} · ${s.attempts?accuracy(s)+'% · '+s.attempts+' rounds':'Ready'}`;}
 function ensureStyle(){if(document.querySelector('link[data-badminton-focused-style]'))return;const l=document.createElement('link');l.rel='stylesheet';l.href=STYLE_URL;l.dataset.badmintonFocusedStyle=BUILD;document.head.appendChild(l);}
 function iconSvg(id){const common='fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"';const map={
