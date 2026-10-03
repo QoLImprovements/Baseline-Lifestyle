@@ -102,3 +102,11 @@ test('Darts controller delegates Decision Training presentation authority',()=>{
   assert.doesNotMatch(runtime,/function decisionCategoryIconSvg/);
   assert.match(runtime,/renderDecisionTrainingView\(state,/);
 });
+
+
+test('Darts controller delegates round preparation authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-rounds\.js'/);
+  assert.match(runtime,/pickScenarioWithHistory\(pool,tierId\(id\),ui\.lastScenario\[key\]\)/);
+  assert.match(runtime,/buildTargetSequence\(tierId\('sequence-recall'\)\)/);
+  assert.match(runtime,/createGeographyPrompt\(tierId\('board-geography'\)\)/);
+});
