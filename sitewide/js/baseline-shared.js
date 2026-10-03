@@ -5021,17 +5021,7 @@ function buildControls(recipeEl){
             const routeId = routeState && routeState.recipeId ? recipeIdForToken(routeState.recipeId) : '';
             if(routeState && routeId === recipeEl.id) routeVariant = String(routeState.recipeVariant || '').trim();
           }catch(_e){}
-          if(routeVariant){
-            // The shared recipe shell can initialize before a system-specific variant
-            // handler is bound. Apply once immediately, then once on the next task so
-            // the existing native variant authority can reconstruct the route exactly.
-            setVariant(routeVariant, { syncRoute:false });
-            window.setTimeout(()=>{
-              if(selectedVariantValue() !== routeVariant){
-                setVariant(routeVariant, { syncRoute:false });
-              }
-            }, 0);
-          }
+          if(routeVariant) setVariant(routeVariant, { syncRoute:false });
           syncVariantDetailState();
         }
       }
