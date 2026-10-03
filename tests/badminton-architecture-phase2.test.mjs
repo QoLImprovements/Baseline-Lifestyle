@@ -38,7 +38,7 @@ test("generator exploration is deterministic rather than Math.random driven", ()
   const generatorSlice = source.slice(layoutStart, candidateEnd);
   assert.doesNotMatch(generatorSlice, /Math\.random/);
   assert.match(generatorSlice, /orderPlayersForGeneration/);
-  assert.match(generatorSlice, /stableGenerationHash/);
+  assert.match(source, /function stableGenerationHash\(value\)/);
 });
 
 test("candidate quality penalises recent repeated partners, opponents and solo 2v1 roles", () => {
