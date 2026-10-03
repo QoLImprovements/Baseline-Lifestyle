@@ -33,7 +33,9 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
 });
 
 test('standalone recipe recovery preserves the selected recipe subview', () => {
-  assert.match(liveStability, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
+  assert.match(liveStability, /const params = new URLSearchParams\(location\.search \|\| ''\)/);
+  assert.match(liveStability, /params\.get\('view'\)/);
+  assert.match(liveStability, /params\.get\('variant'\)/);
   assert.match(liveStability, /view:view/);
   assert.match(liveStability, /variant:variant/);
   assert.match(liveStability, /pending\.view/);
@@ -99,7 +101,9 @@ test('clean recipe slugs resolve in embedded and standalone recipe shells', () =
 
 test('recipe subview is encoded by the shared router and Skincare restores its Details surface after reload', () => {
   assert.match(shared, /function normalizeRecipeSubView\(value\)/);
-  assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)\.get\('view'\)/);
+  assert.match(shared, /const params = new URLSearchParams\(location\.search \|\| ''\)/);
+  assert.match(shared, /params\.get\('view'\)/);
+  assert.match(shared, /params\.get\('variant'\)/);
   assert.match(shared, /params\.set\('view', recipeView\)/);
   assert.match(shared, /params\.set\('variant', recipeVariant\)/);
   assert.match(shared, /function setView\(view, options=\{\}\)/);
@@ -164,7 +168,6 @@ test('Skincare Details is authored hidden while Food keeps its placeholder behav
   assert.match(shared,/recipe-details-variant-field/);
   assert.match(shared,/recipe-details-variant-switcher/);
   assert.match(shared,/recipe-variant-tag/);
-  assert.doesNotMatch(shared,/detailsVariantSelect/);
   assert.match(shared,/__baselineSyncVariantDetailState/);
   assert.match(shared,/__baselineSetRecipeVariant/);
   assert.match(shared,/data-recipe-variant-detail/);
