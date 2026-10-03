@@ -54,7 +54,7 @@ test('every embedded Skincare recipe preserves Details through refresh while fre
   const recipes = [
     ...ordinary,
     ...promoted,
-    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm' }
+    { id:'r12', slug:'testing-lip-balm', title:'Comfort Barrier Balm' }
   ];
 
   for (const recipe of recipes) {
@@ -110,7 +110,7 @@ for (const recipe of promoted) {
   });
 }
 
-test('Testing catalogue keeps only Lip/ balm', async ({ page }) => {
+test('Testing catalogue keeps only Comfort Barrier Balm', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
@@ -153,7 +153,7 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
     expect(mainText.some(text => text.startsWith('Calming Shave Gel — '))).toBe(true);
     expect(mainText.some(text => text.startsWith('Microcurrent Glide Gel — '))).toBe(true);
     expect(mainText.some(text => text.startsWith('Tooth Polishing Powder — '))).toBe(true);
-    expect(testingText.some(text => text.startsWith('Lip/ balm — '))).toBe(true);
+    expect(testingText.some(text => text.startsWith('Comfort Barrier Balm — '))).toBe(true);
 
     return { mainText, testingText };
   };
