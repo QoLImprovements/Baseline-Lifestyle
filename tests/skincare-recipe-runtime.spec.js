@@ -78,8 +78,9 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
 
   // The final recipe chrome must already exist with external JS blocked.
   await expect(page.locator('#r12 .recipe-meta-row')).toBeVisible();
-  await expect(page.locator('#r12 .recipe-meta-item').filter({ hasText:/^Yield:/ })).toContainText('100 g');
-  await expect(page.locator('#r12 .recipe-meta-item').filter({ hasText:/^Batch:/ })).toContainText('1×');
+  await expect(page.locator('#r12 .recipe-meta-item')).toHaveCount(1);
+  await expect(page.locator('#r12 .recipe-meta-item')).toHaveText('Batch: 1×');
+  await expect(page.locator('#r12 .recipe-meta-row')).not.toContainText('Yield:');
   await expect(page.locator('#r12 .recipe-adjustments-toggle')).toBeVisible();
   await expect(page.locator('#r12 .recipe-adjustments-toggle')).toHaveAttribute('aria-expanded','false');
   await expect(page.locator('#r12 .recipe-adjustments-panel')).toBeHidden();
