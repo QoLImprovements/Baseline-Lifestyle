@@ -1860,14 +1860,7 @@
   }
 
   function getHardshipRuleForSide(court, sideNumber){
-    const side = getSideByNumber(court, sideNumber);
-    const key = getExactHardshipContextKey(court, sideNumber);
-    if(!key) return null;
-    const ledger = getActiveHardshipLedger();
-    const rule = normaliseHardshipRule(ledger[key], side, sideNumber, court);
-    if(!hardshipRuleIsActive(rule)) return null;
-    ledger[key] = rule;
-    return { key, sideNumber:Number(sideNumber), side, rule };
+    return getDominantHardshipRuleForSide(court, sideNumber);
   }
 
   function getActiveHardshipRuleEntryForCourt(court){
@@ -1905,57 +1898,23 @@
   }
 
   function writeHardshipRuleForSide(court, sideNumber, patch){
-    const side = getSideByNumber(court, sideNumber);
-    const key = getExactHardshipContextKey(court, sideNumber);
-    if(!key) return null;
-    const ledger = getActiveHardshipLedger();
-    const current = normaliseHardshipRule(ledger[key], side, sideNumber, court);
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const next = Object.assign({}, current, patch || {}, {
-      adjustedSideIds: getTeamIds(side),
-      adjustedSideNumber: Number(sideNumber),
-      mode,
-      memoryScope:'exact-competitive-context',
-      updatedAt: Date.now()
-    });
-    if(!getPresetOrder(mode).includes(String(next.targetPreset || ''))) next.targetPreset = '';
-    next.shotStage = Math.min(1, Math.max(0, Math.round(Number(next.shotStage || 0))));
-    if(!hardshipRuleIsActive(next)){
-      delete ledger[key];
-      return null;
-    }
-    ledger[key] = next;
-    return next;
+    const current = getDominantHardshipRuleForSide(court, sideNumber);
+    const currentRule = current && current.rule ? current.rule : {};
+    const nextPreset = patch && Object.prototype.hasOwnProperty.call(patch, 'targetPreset')
+      ? patch.targetPreset
+      : (currentRule.targetPreset || 'full-court');
+    const nextShotStage = patch && Object.prototype.hasOwnProperty.call(patch, 'shotStage')
+      ? patch.shotStage
+      : Number(currentRule.shotStage || 0);
+    return setDominantHardshipRuleForSide(court, sideNumber, nextPreset, nextShotStage);
   }
 
   function increaseHardshipRuleForSide(court, sideNumber, hardshipType){
-    if(!court || !sideNumber || !hardshipType) return null;
-    const existing = getHardshipRuleForSide(court, sideNumber);
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const source = existing ? existing.rule : normaliseHardshipRule(null, getSideByNumber(court, sideNumber), sideNumber, court);
-    let targetPreset = source.targetPreset || '';
-    let shotStage = source.shotStage || 0;
-    if(hardshipType === 'movement'){
-      const currentPreset = getPresetOrder(mode).includes(targetPreset) && targetPreset ? targetPreset : 'full-court';
-      targetPreset = tightenPreset(currentPreset, 1, mode);
-    }
-    if(hardshipType === 'shots') shotStage = 1;
-    return writeHardshipRuleForSide(court, sideNumber, { targetPreset, shotStage });
+    return increaseDominantHardshipForSide(court, sideNumber, hardshipType);
   }
 
   function reduceHardshipRuleForSide(court, sideNumber, hardshipType){
-    if(!court || !sideNumber || !hardshipType) return null;
-    const existing = getHardshipRuleForSide(court, sideNumber);
-    if(!existing) return null;
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    let targetPreset = existing.rule.targetPreset || '';
-    let shotStage = existing.rule.shotStage || 0;
-    if(hardshipType === 'movement'){
-      const currentPreset = getPresetOrder(mode).includes(targetPreset) && targetPreset ? targetPreset : 'full-court';
-      targetPreset = loosenPreset(currentPreset, 1, mode);
-    }
-    if(hardshipType === 'shots') shotStage = 0;
-    return writeHardshipRuleForSide(court, sideNumber, { targetPreset, shotStage });
+    return reduceDominantHardshipForSide(court, sideNumber, hardshipType);
   }
 
   function memoryShapeFromActiveRule(court, sideNumber){
@@ -2352,9 +2311,7 @@
   // Single dominant hardship path. Score-selected hardship must become a rule
   // before ratings are allowed to change.
   function getDominantHardshipLedger(){
-    if(!state.plan) state.plan = createInitialState().plan;
-    if(!state.plan.activeHardships || typeof state.plan.activeHardships !== 'object') state.plan.activeHardships = {};
-    return state.plan.activeHardships;
+    return getActiveHardshipLedger();
   }
 
   function getDominantHardshipKeyForSide(court, sideNumber, side){
