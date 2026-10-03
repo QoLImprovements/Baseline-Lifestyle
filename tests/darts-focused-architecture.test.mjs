@@ -95,3 +95,10 @@ test('Darts pressure and pace countdowns derive display time from managed timers
   assert.match(runtime,/managedTimerRemaining\(state\.timer\)/);
   assert.match(runtime,/managedTimerRemaining\(state\.paceTimer\)/);
 });
+
+
+test('Darts controller delegates Decision Training presentation authority',()=>{
+  assert.match(runtime,/from '\.\/darts-focused-decision\.js'/);
+  assert.doesNotMatch(runtime,/function decisionCategoryIconSvg/);
+  assert.match(runtime,/renderDecisionTrainingView\(state,/);
+});
