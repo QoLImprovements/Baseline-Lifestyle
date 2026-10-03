@@ -170,6 +170,31 @@ for (const recipe of foodRecipes) {
   });
 }
 
+test('Food recipe subtab route state also survives refresh without exposing another recipe', async ({ page }) => {
+  await page.goto('/baseline-food-approach/recipes/tomato-and-red-pepper-sauce');
+  const card = page.locator('#r10');
+  await expect(card).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.reload();
+  await expect(card).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+  await page.goto('/baseline-food-approach/recipes/creamy-mushroom-sauce');
+  const next = page.locator('#r5');
+  await expect(next).toBeVisible();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(next.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+  expect(new URL(page.url()).searchParams.get('view')).toBeNull();
+});
+
 test('Food recipe ingredient links preserve recipe filter through refresh Back and Forward', async ({ page }) => {
   const recipeUrl = '/baseline-food-approach/recipes/creamy-mushroom-sauce';
   const ingredientUrl = '/baseline-food-approach/ingredient-library?filter=r5#ing-mushrooms';
