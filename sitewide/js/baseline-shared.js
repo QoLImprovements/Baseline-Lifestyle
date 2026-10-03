@@ -4891,7 +4891,6 @@ function buildControls(recipeEl){
         if(variantButtons.length > 1){
           const detailsField = document.createElement('div');
           detailsField.className = 'recipe-details-variant-field print-hide';
-          detailsField.dataset.recipeViewGroup = 'details';
 
           const detailsLabel = document.createElement('label');
           detailsLabel.className = 'recipe-details-variant-label';
@@ -4913,7 +4912,6 @@ function buildControls(recipeEl){
 
           const detailSummary = document.createElement('div');
           detailSummary.className = 'recipe-detail-block recipe-selected-variance-detail';
-          detailSummary.dataset.recipeViewGroup = 'details';
           const summaryHeading = document.createElement('h4');
           summaryHeading.textContent = 'Selected Variance';
           const summaryText = document.createElement('p');
