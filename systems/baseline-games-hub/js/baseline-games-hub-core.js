@@ -2125,6 +2125,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       mistakes:0,
       hadFailure:false,
       roundBank:0,
+      draftExpression:'',
       lastMessage:'Puzzle ready. Use all shown numbers exactly once to make ' + puzzle.target + '.',
       revealSolution:'',
       hintsUsed:0,
@@ -2151,6 +2152,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const input = (event && event.target && event.target.querySelector) ? event.target.querySelector('#make24ExpressionInput') : refs.make24ExpressionInput;
     if(!input) return;
     let raw = String(input.value || '').trim();
+    make24State.draftExpression = String(input.value || '');
     if(!raw) return;
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
     if(!/^[\d\s()+\-*/.]+$/.test(raw)){
@@ -2181,6 +2183,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       make24State.roundBank += bankGain;
       make24State.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + (nextClean ? ' · clean bonus +' + cleanWinBonusPct(nextClean) + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
       make24State.revealSolution = '';
+      make24State.draftExpression = '';
       make24State.completed = true;
       scheduleSave('make24');
       resolveNinjaBonuses();
@@ -2220,6 +2223,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.numbers = puzzle.numbers;
     make24State.solutions = puzzle.solutions;
     make24State.revealSolution = '';
+    make24State.draftExpression = '';
     make24State.hintsUsed = 0;
     make24State.mistakes = 0;
     make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
@@ -2303,7 +2307,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; refs.make24HintBtn.textContent = countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft); }
     if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; refs.make24RerollBtn.textContent = countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft); }
     const make24Closed = !!make24State.completed;
-    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
+    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" value="' + escapeHtml(make24State.draftExpression || '') + '" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
     refs.make24ExpressionInput = document.getElementById('make24ExpressionInput');
     refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
     if(refs.make24ExpressionInput && !make24State.completed) focusGameInput('make24ExpressionInput');
@@ -2346,6 +2350,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       guesses:[],
       maxGuesses: 6 + (profiles.detectword.skills.reserve || 0),
       roundBank:0,
+      draftGuess:'',
       lastMessage:'Round ready. Submit a valid dictionary word.',
       hadFailure:false
     };
@@ -2379,11 +2384,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!input) return;
     const tier = currentWordTier();
     const guess = String(input.value || '').trim().toLowerCase();
+    wordState.draftGuess = String(input.value || '');
     if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     const evaluation = evaluateWordGuess(guess, wordState.secret);
     wordState.guesses.push({ word:guess, evaluation });
+    wordState.draftGuess = '';
     if(guess === wordState.secret){
       const profile = profiles.detectword;
       profile.wordsSolved += 1;
@@ -2509,7 +2516,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const resultHtml = solved
       ? '<div class="solution-box word-result-box"><strong>Word solved: ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>'
       : '<div class="solution-box word-result-box"><strong>Word was ' + escapeHtml(wordState.secret.toUpperCase()) + '</strong><span class="inline-note">Round complete.</span></div>';
-    refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
+    refs.wordBoard.innerHTML = '<div class="word-box word-box--active"><div class="word-grid">' + rows.join('') + '</div>' + legendHtml + (!ended ? '<form id="wordGuessForm" class="stack word-entry-stack"><div class="word-form-row"><input id="wordGuessInput" class="text-input" autocomplete="off" maxlength="' + tier.letters + '" value="' + escapeHtml(wordState.draftGuess || '') + '" placeholder="Enter a ' + tier.letters + '-letter word"/></div>' + mobileSubmitButtonHtml() + '</form>' : resultHtml) + '</div>';
     refs.wordGuessInput = document.getElementById('wordGuessInput');
     refs.wordRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(wordState.lastMessage) + '</span>';
     if(refs.wordGuessInput && !ended) focusGameInput('wordGuessInput');
@@ -3846,6 +3853,12 @@ function toggleGameFullscreen(gameId){
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
       const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
       const pairCard = event.target.closest('[data-card]'); if(pairCard){ handlePairsCardFlip(pairCard.getAttribute('data-card')); return; }
+    });
+    document.addEventListener('input', function(event){
+      const target = event.target;
+      if(!target || !target.id) return;
+      if(target.id === 'wordGuessInput' && wordState) wordState.draftGuess = String(target.value || '');
+      if(target.id === 'make24ExpressionInput' && make24State) make24State.draftExpression = String(target.value || '');
     });
     document.addEventListener('keydown', function(event){
       const input = event.target;
