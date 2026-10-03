@@ -15,6 +15,10 @@ import { boardSvg } from '../systems/baseline-games-hub/games/darts-focused/js/d
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js',import.meta.url),'utf8');
 const decisionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision.js',import.meta.url),'utf8');
+const rendererSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-renderers.js',import.meta.url),'utf8');
+const actionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-actions.js',import.meta.url),'utf8');
+const decisionActionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision-actions.js',import.meta.url),'utf8');
+const stateSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-state.js',import.meta.url),'utf8');
 
 test('Darts content authority exposes the canonical ten games and three tiers',()=>{
   assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
@@ -71,7 +75,6 @@ test('Darts controller delegates extracted authorities without parallel implemen
   assert.match(runtime,/from '\.\/darts-focused-content\.js'/);
   assert.match(runtime,/from '\.\/darts-focused-timing\.js'/);
   assert.match(runtime,/from '\.\/darts-focused-storage\.js'/);
-  assert.match(runtime,/from '\.\/darts-focused-board\.js'/);
   assert.match(runtime,/from '\.\/darts-focused-ui\.js'/);
 
   assert.doesNotMatch(runtime,/const CHECKOUT_SCENARIOS|const MENTAL_RESET_QUESTIONS|const GAMES =/);
@@ -81,19 +84,19 @@ test('Darts controller delegates extracted authorities without parallel implemen
   assert.doesNotMatch(runtime,/function loadProfile|localStorage\.getItem\(STORAGE_KEY\)/);
 });
 
-test('Darts controller uses arithmetic route validation rather than canonical string equality',()=>{
-  assert.match(runtime,/validateRouteText\(checkoutScore,value,dartsAvailable\)/);
-  assert.match(runtime,/validateRouteText\(state\.scenario\.score,value,state\.scenario\.darts\)/);
-  assert.doesNotMatch(runtime,/correct = value === state\.scenario\.correct/);
+test('Darts action authority uses arithmetic route validation rather than canonical string equality',()=>{
+  assert.match(actionSource,/validateRouteText\(checkoutScore,value,dartsAvailable\)/);
+  assert.match(actionSource,/validateRouteText\(state\.scenario\.score,value,state\.scenario\.darts\)/);
+  assert.doesNotMatch(actionSource,/correct\s*=\s*value\s*===\s*state\.scenario\.correct/);
 });
 
 
 test('Darts pressure and pace countdowns derive display time from managed timers',()=>{
   assert.match(runtime,/function managedTimerRemaining\(timer\) \{ return timing\.remaining\(timer\); \}/);
-  assert.match(runtime,/state\.timer = scheduleGame/);
-  assert.match(runtime,/state\.paceTimer = scheduleGame/);
-  assert.match(runtime,/--pressure-start-scale:\$\{startScale\}/);
-  assert.match(runtime,/managedTimerRemaining\(state\.timer\)/);
+  assert.match(actionSource,/state\.timer\s*=\s*scheduleGame/);
+  assert.match(decisionActionSource,/state\.paceTimer\s*=\s*scheduleGame/);
+  assert.match(rendererSource,/managedTimerRemaining\(state\.timer\)/);
+  assert.match(rendererSource,/--pressure-start-scale:\$\{startScale\}/);
   assert.match(decisionSource,/remainingMsForTimer\(state\.paceTimer\)/);
   assert.match(decisionSource,/--pressure-start-scale:\$\{startScale\}/);
 });
@@ -110,7 +113,7 @@ test('Darts controller delegates round preparation authority',()=>{
   assert.match(runtime,/from '\.\/darts-focused-rounds\.js'/);
   assert.match(runtime,/pickScenarioWithHistory\(pool,tierId\(id\),ui\.lastScenario\[key\]\)/);
   assert.match(runtime,/buildTargetSequence\(tierId\('sequence-recall'\)\)/);
-  assert.match(runtime,/createGeographyPrompt\(tierId\('board-geography'\)\)/);
+  assert.match(stateSource,/createGeographyPrompt\(getTier\('board-geography'\)\)/);
 });
 
 
