@@ -745,7 +745,12 @@
     // The compact recipe variant chooser must remain native. Enhancing it creates
     // a cloned button plus the native select, which produces ghost/overlap text in
     // the recipe option strip.
-    try{ if(selectEl.classList && selectEl.classList.contains('recipe-variant-select')) return; }catch(_e){}
+    try{
+      if(selectEl.classList && (
+        selectEl.classList.contains('recipe-variant-select') ||
+        selectEl.classList.contains('recipe-details-variant-select')
+      )) return;
+    }catch(_e){}
     try{ if(selectEl.matches && (selectEl.matches('[data-native-select="true"]') || selectEl.matches('select[data-hardship]'))) return; }catch(_e){}
     if(!shouldEnhanceSelect()) return;
 
@@ -1907,21 +1912,17 @@ function parseViewStateHash(hash){
       // Keep existing back links/buttons available; no extra banner is injected.
 
       if(!opts.silentHistory){
-        // If startup or another harmless caller re-opens the recipe that is
-        // already represented by the current clean URL, preserve that route's
-        // selected subview. Opening a different recipe still begins on Recipe.
-        let recipeView = 'standard';
+        // A deliberate recipe-open action always starts on Recipe.
+        // Subview restoration belongs only to router/history restoration
+        // (silentHistory), so a stale ?view=details route can never leak into
+        // a newly opened recipe.
+        const nextState = { kind: 'recipe', recipeId: id, recipeView: 'standard' };
+        setNavState(nextState, { url: urlForNavState(nextState) });
         try{
-          const currentRoute = recipePathStateFromLocation();
-          const currentId = currentRoute && currentRoute.recipeId
-            ? recipeIdForToken(currentRoute.recipeId)
-            : '';
-          if(currentId === id){
-            recipeView = normalizeRecipeSubView(currentRoute.recipeView || 'standard');
+          if(typeof liveCard.__baselineSetRecipeView === 'function'){
+            liveCard.__baselineSetRecipeView('standard', { syncRoute:false });
           }
         }catch(_e){}
-        const nextState = { kind: 'recipe', recipeId: id, recipeView: recipeView };
-        setNavState(nextState, { url: urlForNavState(nextState) });
       }
 
       // Auto-scroll to the top of the focused recipe card (offset for the fixed home bar).
@@ -4883,6 +4884,81 @@ function buildControls(recipeEl){
         });
       }
 
+      let detailsVariantSelect = null;
+      const detailsIntro = q(':scope > .recipe-details-intro', recipeEl);
+      if(variantSwitcher && detailsIntro){
+        const variantButtons = qsa('.variant-tab', variantSwitcher);
+        if(variantButtons.length > 1){
+          const detailsField = document.createElement('div');
+          detailsField.className = 'recipe-details-variant-field print-hide';
+
+          const detailsLabel = document.createElement('label');
+          detailsLabel.className = 'recipe-details-variant-label';
+          detailsLabel.textContent = 'Variance';
+
+          detailsVariantSelect = document.createElement('select');
+          detailsVariantSelect.className = 'recipe-details-variant-select';
+          detailsVariantSelect.setAttribute('aria-label', 'Select recipe variance');
+
+          variantButtons.forEach(btn=>{
+            const opt = document.createElement('option');
+            opt.value = btn.getAttribute('data-variant') || btn.textContent.trim();
+            opt.textContent = btn.textContent.trim();
+            detailsVariantSelect.appendChild(opt);
+          });
+          detailsLabel.appendChild(detailsVariantSelect);
+          detailsField.appendChild(detailsLabel);
+          detailsIntro.insertAdjacentElement('afterbegin', detailsField);
+
+          const detailSummary = document.createElement('div');
+          detailSummary.className = 'recipe-detail-block recipe-selected-variance-detail';
+          const summaryHeading = document.createElement('h4');
+          summaryHeading.textContent = 'Selected Variance';
+          const summaryText = document.createElement('p');
+          detailSummary.append(summaryHeading, summaryText);
+          detailsField.insertAdjacentElement('afterend', detailSummary);
+
+          const syncVariantDetailState = ()=>{
+            const active = q('.variant-tab[aria-selected="true"]', variantSwitcher) || variantButtons[0];
+            if(!active) return;
+            const value = active.getAttribute('data-variant') || active.textContent.trim();
+            const label = active.textContent.trim();
+            if(detailsVariantSelect && value) detailsVariantSelect.value = value;
+            if(variantSelect && value) variantSelect.value = value;
+
+            const activePanel = value
+              ? q('.variant-panel[data-variant-panel="' + CSS.escape(value) + '"]', recipeEl)
+              : q('.variant-panel:not([hidden])', recipeEl);
+            const feel = activePanel ? q('.glide-explain', activePanel) : null;
+            const breakdown = activePanel ? q('.glide-breakdown', activePanel) : null;
+            const detailParts = [];
+            if(feel && String(feel.textContent || '').trim()) detailParts.push(String(feel.textContent || '').trim());
+            if(breakdown && String(breakdown.textContent || '').trim()){
+              detailParts.push(String(breakdown.textContent || '').replace(/^\s*(?:Selected variant|Current blend):\s*/i,'').replace(/\s+/g,' ').trim());
+            }
+            summaryText.textContent = label + (detailParts.length ? ' — ' + detailParts.join(' ') : '');
+
+            qsa('[data-recipe-variant-detail]', detailsIntro).forEach(el=>{
+              const allowed = String(el.getAttribute('data-recipe-variant-detail') || '')
+                .split(/\s+/).map(v=>v.trim()).filter(Boolean);
+              el.hidden = allowed.length > 0 && !allowed.includes(value);
+            });
+          };
+
+          detailsVariantSelect.addEventListener('change', event=>{
+            try{ if(event) event.stopPropagation(); }catch(_e){}
+            const chosen = detailsVariantSelect.value;
+            if(!chosen) return;
+            const btn = q('.variant-tab[data-variant="' + CSS.escape(chosen) + '"]', variantSwitcher);
+            if(btn) btn.click();
+            window.setTimeout(syncVariantDetailState, 0);
+          });
+
+          try{ recipeEl.__baselineSyncVariantDetailState = syncVariantDetailState; }catch(_e){}
+          syncVariantDetailState();
+        }
+      }
+
       if(!preauthored){
         const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
         if(formulaRows.length){
@@ -4949,10 +5025,11 @@ function buildControls(recipeEl){
       qsa('.variant-tab', recipeEl).forEach(btn=>{
         btn.addEventListener('click', ()=>{
           window.setTimeout(()=>{
-            if(variantSelect){
-              const v = btn.getAttribute('data-variant') || btn.textContent.trim();
-              if(v) variantSelect.value = v;
-            }
+            const v = btn.getAttribute('data-variant') || btn.textContent.trim();
+            if(variantSelect && v) variantSelect.value = v;
+            if(detailsVariantSelect && v) detailsVariantSelect.value = v;
+            if(typeof recipeEl.__baselineSyncVariantDetailState === 'function') recipeEl.__baselineSyncVariantDetailState();
+            if(typeof window.refreshRecipeComedogenic === 'function') window.refreshRecipeComedogenic(recipeEl);
             if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
             refreshMethodAmountsFromVisibleIngredients();
           }, 0);
