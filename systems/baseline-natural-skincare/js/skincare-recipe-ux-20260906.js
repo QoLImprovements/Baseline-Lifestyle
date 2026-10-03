@@ -91,19 +91,6 @@
     visibleGroups(recipe,'standard');
   }
 
-  function bindRecipeSubtabs(){
-    document.querySelectorAll('#recipes .recipe-page').forEach(recipe=>{
-      recipe.querySelectorAll(':scope > .recipe-subtabs .recipe-subtab').forEach(button=>{
-        if(button.dataset.recipeUxBound==='1') return;
-        button.dataset.recipeUxBound='1';
-        button.addEventListener('click',()=>{
-          const next=normaliseRecipeView(button.dataset.recipeSubtab || 'standard');
-          visibleGroups(recipe,next);
-        });
-      });
-    });
-  }
-
   function bindLipBalmFormula(recipe){
     if(!recipe || recipe.id!=='r12' || recipe.dataset.lipBalmFormulaBound==='1') return;
     recipe.dataset.lipBalmFormulaBound='1';
@@ -263,7 +250,6 @@
 
   function startRecipeUx(){
     canonicaliseOldRecipePath();
-    bindRecipeSubtabs();
     bindLipBalmFormula(recipeById('r12'));
     bindRecipeOpenAdjustmentReset();
     wrapShowAllRecipes();

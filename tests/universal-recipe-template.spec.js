@@ -88,8 +88,9 @@ async function expectDirectRecipeFirstPaint(page, url, targetSelector) {
 async function expectAdjustmentsContract(card) {
   const meta = card.locator('.recipe-meta-row');
   await expect(meta).toBeVisible();
-  await expect(meta.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toHaveCount(1);
+  await expect(meta.locator('.recipe-meta-item')).toHaveCount(1);
   await expect(meta.locator('.recipe-meta-item').filter({ hasText: /^Batch:/ })).toHaveCount(1);
+  await expect(meta.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toHaveCount(0);
 
   const adjustmentsRow = card.locator('.recipe-adjustments-row');
   await expect(adjustmentsRow).toBeVisible();
@@ -517,44 +518,43 @@ test('Food thickness is a Standard View recipe choice while scaling remains unde
   await expect(card.locator('.recipe-adjustments-panel .scale-toggle')).toBeVisible();
 });
 
-test('every Food and Skincare recipe receives Yield and Batch metadata', async ({ page }) => {
+test('every Food and Skincare recipe uses one coherent Batch metadata item', async ({ page }) => {
   for (const url of ['/baseline-natural-skincare/recipes', '/baseline-food-approach/recipes']) {
     await page.goto(url);
     const cards = page.locator('.recipe-page.recipe-universal-template');
     await expect.poll(async () => cards.count()).toBeGreaterThan(0);
     const results = await cards.evaluateAll(items => items.map(card => {
       const meta = Array.from(card.querySelectorAll('.recipe-meta-item')).map(item => item.textContent.trim());
-      return {
-        id: card.id,
-        yield: meta.find(value => value.startsWith('Yield:')) || '',
-        batch: meta.find(value => value.startsWith('Batch:')) || '',
-      };
+      return { id: card.id, meta };
     }));
     expect(results.length).toBeGreaterThan(0);
     for (const result of results) {
-      expect(result.yield, `${url} ${result.id} yield`).toMatch(/^Yield:\s*\S/);
-      expect(result.batch, `${url} ${result.id} batch`).toMatch(/^Batch:\s*\S/);
+      expect(result.meta, `${url} ${result.id} metadata`).toEqual(['Batch: 1×']);
+      expect(result.meta.join(' ')).not.toContain('&#x31;');
+      expect(result.meta.join(' ')).not.toContain('Yield:');
     }
   }
 });
 
-test('numeric Yield updates when Batch is changed', async ({ page }) => {
+test('Batch metadata updates coherently when the batch multiplier changes', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const card = page.locator('#r3');
-  await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('100 g');
+  await expect(card.locator('.recipe-meta-item')).toHaveText('Batch: 1×');
   await card.locator('.recipe-adjustments-toggle').click();
   const batchInput = card.locator('input.multiplier-input');
   await batchInput.fill('2');
   await batchInput.dispatchEvent('input');
-  await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Batch:/ })).toContainText('2×');
-  await expect(card.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toContainText('200 g');
+  await expect(card.locator('.recipe-meta-item')).toHaveText('Batch: 2×');
 });
 
 test('Skincare Details uses one full-width continuous column without card separation', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
-  const details = page.locator('#r3 .recipe-details-intro');
-  await page.locator('#r3 [data-recipe-subtab="details"]').click();
+  const card = page.locator('#r3');
+  const details = card.locator('.recipe-details-intro');
+  await card.locator('[data-recipe-subtab="details"]').click();
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
   await expect(details).toBeVisible();
+  await expect(card.locator('[data-recipe-view-group="standard"]:visible')).toHaveCount(0);
 
   const layout = await details.evaluate(el => {
     const style = getComputedStyle(el);
