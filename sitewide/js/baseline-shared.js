@@ -746,10 +746,7 @@
     // a cloned button plus the native select, which produces ghost/overlap text in
     // the recipe option strip.
     try{
-      if(selectEl.classList && (
-        selectEl.classList.contains('recipe-variant-select') ||
-        selectEl.classList.contains('recipe-details-variant-select')
-      )) return;
+      if(selectEl.classList && selectEl.classList.contains('recipe-variant-select')) return;
     }catch(_e){}
     try{ if(selectEl.matches && (selectEl.matches('[data-native-select="true"]') || selectEl.matches('select[data-hardship]'))) return; }catch(_e){}
     if(!shouldEnhanceSelect()) return;
@@ -5097,7 +5094,6 @@ function buildControls(recipeEl){
           window.setTimeout(()=>{
             const v = btn.getAttribute('data-variant') || btn.textContent.trim();
             if(variantSelect && v) variantSelect.value = v;
-            if(detailsVariantSelect && v) detailsVariantSelect.value = v;
             if(typeof recipeEl.__baselineSyncVariantDetailState === 'function') recipeEl.__baselineSyncVariantDetailState();
             if(typeof window.refreshRecipeComedogenic === 'function') window.refreshRecipeComedogenic(recipeEl);
             if(typeof recipeEl.__baselineUpdatePrintSummary === 'function') recipeEl.__baselineUpdatePrintSummary();
