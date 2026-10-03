@@ -1,16 +1,12 @@
 import {
-  DARTBOARD_ORDER,
   GAME_IDS,
   accuracyFor,
-  anticlockwiseNeighbour,
   arraysEqual,
   averageResponseMs,
   calibrationScore,
-  clockwiseNeighbour,
   createDefaultDartsProfile,
   dartsXpNeededForLevel,
   normaliseTargetCode,
-  oppositeSegment,
   recordResult,
   realmContributionForDarts,
   remainingAfterHit,
@@ -25,24 +21,12 @@ import {
   RECOVERY_SCENARIOS,
   TARGETS_BY_TIER,
   DISTRACTION_MISSIONS,
-  ROUTINE_SCENARIOS,
-  DECISION_CATEGORIES,
-  MENTAL_RESET_QUESTIONS,
-  EVIDENCE_QUESTIONS,
-  RELEVANCE_QUESTIONS,
-  IMPULSE_QUESTIONS,
-  CONFIDENCE_QUESTIONS,
-  PACE_QUESTIONS,
-  DECISION_QUESTION_POOLS
+  ROUTINE_SCENARIOS
 } from './darts-focused-content.js';
 import { createDartsTimerManager } from './darts-focused-timing.js';
 import { loadDartsProfile, persistDartsProfile } from './darts-focused-storage.js';
-import { boardSvg, scenarioHeader, routeRecoveryHeader } from './darts-focused-board.js';
 import {
-  DARTS_ART_URL as ART_URL,
   escapeHtml,
-  feedbackHtml,
-  choiceButtons,
   nextButton as buildNextButton,
   overviewEntryHtml,
   panelHtml as buildPanelHtml
