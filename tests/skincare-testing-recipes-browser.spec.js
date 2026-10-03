@@ -50,6 +50,35 @@ for (const recipe of [...ordinary, ...promoted, ...testing]) {
   });
 }
 
+test('every embedded Skincare recipe preserves Details through refresh while fresh routes start on Recipe', async ({ page }) => {
+  const recipes = [
+    ...ordinary,
+    ...promoted,
+    { id:'r12', slug:'testing-lip-balm', title:'Lip/ balm' }
+  ];
+
+  for (const recipe of recipes) {
+    await page.goto(`/baseline-natural-skincare/recipes/${recipe.slug}`);
+    const card = page.locator(`#${recipe.id}`);
+    await expect(card).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+    await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected','true');
+    expect(new URL(page.url()).searchParams.get('view')).toBeNull();
+
+    await card.locator('[data-recipe-subtab="details"]').click();
+    await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+    await expect(card.locator('.recipe-details-intro')).toBeVisible();
+    expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+
+    await page.reload();
+    await expect(card).toBeVisible();
+    await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+    await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
+    await expect(card.locator('.recipe-details-intro')).toBeVisible();
+    expect(new URL(page.url()).searchParams.get('view')).toBe('details');
+  }
+});
+
 test('all embedded Skincare recipe routes preserve exact selection through Back and Forward', async ({ page }) => {
   const sequence = [...ordinary, ...promoted, ...testing];
 
