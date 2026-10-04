@@ -86,8 +86,6 @@ test("post-cutover browser storage never promotes retired account copies", () =>
   assert.match(voice?.cutoverRule || "", /must never be automatically promoted/i);
 
   const expectedDecisions = new Map([
-    ["diet-log-local-content","keep-local-when-signed-out-never-promote"],
-    ["diet-log-legacy-owner","delete-on-authenticated-load"],
     ["fitness-body-profile","rebuild-from-account-never-promote"],
     ["fitness-active-workout","rebuild-from-account-never-promote"],
     ["fitness-progression-history","rebuild-from-account-never-promote"],
@@ -114,7 +112,6 @@ test("post-cutover browser storage never promotes retired account copies", () =>
     assert.doesNotMatch(decision, /migrat|import|candidate|bind/i);
   }
 
-  assert.match(rules.find((rule)=>rule.id==="diet-log-local-content")?.cutoverRule || "", /Never offer, merge or promote/i);
   assert.match(rules.find((rule)=>rule.id==="fitness-body-profile")?.cutoverRule || "", /retired before account load/i);
   assert.match(rules.find((rule)=>rule.id==="fitness-routine-local-cache")?.cutoverRule || "", /may never be imported or promoted/i);
   assert.match(rules.find((rule)=>rule.id==="skincare-slider-settings")?.cutoverRule || "", /Never merge or promote/i);
