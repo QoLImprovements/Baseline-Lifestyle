@@ -24,6 +24,10 @@ const restrictionsSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-restrictions.js"),
   "utf8",
 );
+const hardshipsSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-hardships.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -106,7 +110,7 @@ test("optional and circumstantial sit-outs remain separate in finished-set repor
 });
 
 test("hardship compatibility APIs delegate to one dominant mutation authority", () => {
-  assert.match(source, /function getDominantHardshipLedger\(\)\{\s*return getActiveHardshipLedger\(\);\s*\}/);
+  assert.match(hardshipsSource, /function getDominantHardshipLedger\(\)\{\s*return getActiveHardshipLedger\(\);\s*\}/);
   assert.match(source, /function getHardshipRuleForSide\(court, sideNumber\)\{\s*return getDominantHardshipRuleForSide\(court, sideNumber\);\s*\}/);
   assert.match(source, /function increaseHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return increaseDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
   assert.match(source, /function reduceHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return reduceDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
@@ -143,4 +147,15 @@ test("Badminton restriction model is a separate syntactically valid module", () 
   assert.doesNotMatch(source, /function getPresetOrder\(/);
   assert.match(restrictionsSource, /function normaliseShotRestrictions\(/);
   assert.match(restrictionsSource, /function getPresetOrder\(/);
+});
+
+
+test("Badminton hardship ledger is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(hardshipsSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_HARDSHIPS/);
+  assert.match(source, /hardshipModule\.create/);
+  assert.doesNotMatch(source, /function getActiveHardshipLedger\(/);
+  assert.doesNotMatch(source, /function setDominantHardshipRuleForSide\(/);
+  assert.match(hardshipsSource, /function getActiveHardshipLedger\(/);
+  assert.match(hardshipsSource, /function setDominantHardshipRuleForSide\(/);
 });

@@ -18,6 +18,10 @@ const runtimeSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const hardshipSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-hardships.js"),
+  "utf8",
+);
 
 function loadCore(){
   const context = {};
@@ -75,11 +79,12 @@ test("failed Badminton saves block further writes until authoritative reload", (
   assert.doesNotMatch(save, /scheduleServerSaveRetry|localStorage|sessionStorage/);
 });
 
-test("controller delegates stable Player and Pair identity to extracted core", () => {
+test("Badminton modules delegate stable Player and Pair identity to extracted core", () => {
   assert.match(runtimeSource, /window\.BASELINE_BADMINTON_SESSION_CORE/);
-  assert.match(runtimeSource, /sessionCore\.getStableSideKey\(ids\)/);
-  assert.match(runtimeSource, /sessionCore\.getHardshipContextKey\(/);
+  assert.match(hardshipSource, /sessionCore\.getStableSideKey\(ids\)/);
+  assert.match(hardshipSource, /sessionCore\.getHardshipContextKey\(/);
   assert.doesNotMatch(runtimeSource, /sessionCore\.mergeNewestHardshipRecords/);
+  assert.doesNotMatch(hardshipSource, /sessionCore\.mergeNewestHardshipRecords/);
 });
 
 

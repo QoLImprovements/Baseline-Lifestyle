@@ -124,6 +124,47 @@
   const getHardshipLabel = restrictionModel.getHardshipLabel;
   const hardshipValueFromVisibleText = restrictionModel.hardshipValueFromVisibleText;
 
+  const hardshipModule = window.BASELINE_BADMINTON_HARDSHIPS;
+  if(!hardshipModule) throw new Error('Badminton Session hardship ledger failed to load.');
+  const hardshipEngine = hardshipModule.create({
+    sessionCore:sessionCore,
+    getState:function(){ return state; },
+    setState:function(next){ state = next; },
+    createInitialState:function(){ return createInitialState(); },
+    getTeamIds:function(side){ return getTeamIds(side); },
+    getSideByNumber:function(court, sideNumber){ return getSideByNumber(court, sideNumber); },
+    getOppositeSideNumber:function(sideNumber){ return getOppositeSideNumber(sideNumber); },
+    getRestrictionZoneMode:function(court, sideNumber){ return getRestrictionZoneMode(court, sideNumber); },
+    getPresetOrder:function(mode){ return getPresetOrder(mode); },
+    normaliseShotRestrictions:function(restrictions, stage){ return normaliseShotRestrictions(restrictions, stage); },
+    tightenPreset:function(preset, steps, mode){ return tightenPreset(preset, steps, mode); },
+    loosenPreset:function(preset, steps, mode){ return loosenPreset(preset, steps, mode); },
+    sanitizeZones:function(zones, mode){ return sanitizeZones(zones, mode); },
+    presetZoneMap:PRESET_ZONE_MAP,
+    getTargetAreaTextFromPreset:function(preset, mode){ return getTargetAreaTextFromPreset(preset, mode); },
+    getTargetAreaTextFromZones:function(zones, mode){ return getTargetAreaTextFromZones(zones, mode); }
+  });
+  const getSideRestrictionKeyFromIds = hardshipEngine.getSideRestrictionKeyFromIds;
+  const getSideRestrictionKey = hardshipEngine.getSideRestrictionKey;
+  const getExactHardshipContextKey = hardshipEngine.getExactHardshipContextKey;
+  const getActiveHardshipLedger = hardshipEngine.getActiveHardshipLedger;
+  const normaliseHardshipRule = hardshipEngine.normaliseHardshipRule;
+  const hardshipRuleIsActive = hardshipEngine.hardshipRuleIsActive;
+  const getActiveHardshipRuleEntryForCourt = hardshipEngine.getActiveHardshipRuleEntryForCourt;
+  const writeHardshipRuleForSide = hardshipEngine.writeHardshipRuleForSide;
+  const getDominantHardshipLedger = hardshipEngine.getDominantHardshipLedger;
+  const getDominantHardshipKeyForSide = hardshipEngine.getDominantHardshipKeyForSide;
+  const getDominantHardshipRuleForSide = hardshipEngine.getDominantHardshipRuleForSide;
+  const getDominantHardshipEntryForCourt = hardshipEngine.getDominantHardshipEntryForCourt;
+  const setDominantHardshipRuleForSide = hardshipEngine.setDominantHardshipRuleForSide;
+  const increaseDominantHardshipForSide = hardshipEngine.increaseDominantHardshipForSide;
+  const reduceDominantHardshipForSide = hardshipEngine.reduceDominantHardshipForSide;
+  const getDominantMovementStepForSide = hardshipEngine.getDominantMovementStepForSide;
+  const getDominantShotStageForSide = hardshipEngine.getDominantShotStageForSide;
+  const getDominantIncreaseOptionsForSide = hardshipEngine.getDominantIncreaseOptionsForSide;
+  const getDominantReduceOptionsForSide = hardshipEngine.getDominantReduceOptionsForSide;
+  const applyDominantRuleToCourt = hardshipEngine.applyDominantRuleToCourt;
+
   function createInitialState(){
     return {
       version: APP_VERSION,
@@ -1556,116 +1597,8 @@
   // Hardships are remembered server-side, but only by exact competitive context:
   // game type + restricted side + opponent side.
   // They must not attach broadly to a player or pair outside that context.
-  function getSideRestrictionKeyFromIds(ids){
-    return sessionCore.getStableSideKey(ids);
-  }
-
-  function getSideRestrictionKey(side){
-    return getSideRestrictionKeyFromIds(getTeamIds(side));
-  }
-
-  function getExactHardshipContextKey(court, sideNumber){
-    if(!court || !sideNumber) return '';
-    const restrictedSide = getSideByNumber(court, sideNumber);
-    const opponentSide = getSideByNumber(court, getOppositeSideNumber(sideNumber));
-    return sessionCore.getHardshipContextKey(
-      court.kind,
-      getTeamIds(restrictedSide),
-      getTeamIds(opponentSide)
-    );
-  }
-
-
-  // BASELINE-BADMINTON-DOMINANT-HARDSHIP-LEDGER-20260608
-  // This is the single live source of truth for score-selected hardships.
-  // Matchup memory is still mirrored for history/backwards compatibility, but
-  // instructions and SVG restrictions read this ledger first.
-  function getActiveHardshipLedger(){
-    if(!state || typeof state !== 'object') state = createInitialState();
-    if(!state.plan) state.plan = createInitialState().plan;
-    if(!state.hardshipRecords || typeof state.hardshipRecords !== 'object'){
-      state.hardshipRecords = state.plan.activeHardships && typeof state.plan.activeHardships === 'object'
-        ? state.plan.activeHardships
-        : {};
-    }
-    Object.keys(state.hardshipRecords).forEach(function(key){
-      if(String(key).indexOf('hardship::') !== 0) delete state.hardshipRecords[key];
-    });
-    // Legacy mirror only. Persistent hardship ownership is top-level.
-    state.plan.activeHardships = state.hardshipRecords;
-    return state.hardshipRecords;
-  }
-
-  function normaliseHardshipRule(rule, side, sideNumber, court){
-    rule = rule && typeof rule === 'object' ? rule : {};
-    const ids = Array.isArray(rule.adjustedSideIds) && rule.adjustedSideIds.length ? rule.adjustedSideIds.slice() : getTeamIds(side);
-    const mode = rule.mode && ['singles','doubles'].includes(rule.mode) ? rule.mode : (sideNumber ? getRestrictionZoneMode(court || {}, sideNumber) : 'doubles');
-    let targetPreset = String(rule.targetPreset || '').trim();
-    if(!getPresetOrder(mode).includes(targetPreset)) targetPreset = '';
-    const shotStage = Math.min(1, Math.max(0, Math.round(Number(rule.shotStage || 0))));
-    return {
-      adjustedSideIds: ids.slice().sort(),
-      adjustedSideNumber: Number(rule.adjustedSideNumber || sideNumber || 0) || null,
-      mode,
-      targetPreset: targetPreset || '',
-      shotStage,
-      shotRestrictions: normaliseShotRestrictions(rule.shotRestrictions, shotStage),
-      updatedAt: Number(rule.updatedAt || 0) || Date.now()
-    };
-  }
-
-  function hardshipRuleIsActive(rule){
-    return !!(rule && ((rule.targetPreset && rule.targetPreset !== 'full-court') || Number(rule.shotStage || 0) > 0));
-  }
-
   function getHardshipRuleForSide(court, sideNumber){
     return getDominantHardshipRuleForSide(court, sideNumber);
-  }
-
-  function getActiveHardshipRuleEntryForCourt(court){
-    if(!court) return null;
-    const entries = [1, 2].map(function(sideNumber){ return getHardshipRuleForSide(court, sideNumber); }).filter(Boolean);
-    if(!entries.length) return null;
-    entries.sort(function(a, b){
-      const strongDiff = (b.sideNumber === court.strongerSide ? 1 : 0) - (a.sideNumber === court.strongerSide ? 1 : 0);
-      if(strongDiff) return strongDiff;
-      const shotDiff = Number(b.rule.shotStage || 0) - Number(a.rule.shotStage || 0);
-      if(shotDiff) return shotDiff;
-      const moveDiff = getPresetOrder(b.rule.mode).indexOf(b.rule.targetPreset || 'full-court') - getPresetOrder(a.rule.mode).indexOf(a.rule.targetPreset || 'full-court');
-      if(moveDiff) return moveDiff;
-      return String(b.rule.updatedAt || 0).localeCompare(String(a.rule.updatedAt || 0));
-    });
-    const entry = entries[0];
-    return {
-      key: entry.key,
-      sideNumber: entry.sideNumber,
-      memory: {
-        hardships: [],
-        hardshipCounts: { movement: entry.rule.targetPreset && entry.rule.targetPreset !== 'full-court' ? Math.max(1, getPresetOrder(entry.rule.mode).indexOf(entry.rule.targetPreset)) : 0, shots: entry.rule.shotStage ? 1 : 0 },
-        singlesMaxLossCount: 0,
-        expandStrongerCourt: false,
-        expandStrongerCourtCount: 0,
-        shotReliefCount: 0,
-        singlesPreset: entry.rule.mode === 'singles' ? (entry.rule.targetPreset || '') : '',
-        targetPreset: entry.rule.targetPreset || '',
-        shotStage: entry.rule.shotStage || 0,
-        adjustedSideIds: entry.rule.adjustedSideIds.slice(),
-        adjustedSideNumber: entry.sideNumber,
-        mode: entry.rule.mode
-      }
-    };
-  }
-
-  function writeHardshipRuleForSide(court, sideNumber, patch){
-    const current = getDominantHardshipRuleForSide(court, sideNumber);
-    const currentRule = current && current.rule ? current.rule : {};
-    const nextPreset = patch && Object.prototype.hasOwnProperty.call(patch, 'targetPreset')
-      ? patch.targetPreset
-      : (currentRule.targetPreset || 'full-court');
-    const nextShotStage = patch && Object.prototype.hasOwnProperty.call(patch, 'shotStage')
-      ? patch.shotStage
-      : Number(currentRule.shotStage || 0);
-    return setDominantHardshipRuleForSide(court, sideNumber, nextPreset, nextShotStage);
   }
 
   function increaseHardshipRuleForSide(court, sideNumber, hardshipType){
@@ -2069,192 +2002,6 @@
   // BASELINE-BADMINTON-DOMINANT-HARDSHIP-REBUILD-20260609
   // Single dominant hardship path. Score-selected hardship must become a rule
   // before ratings are allowed to change.
-  function getDominantHardshipLedger(){
-    return getActiveHardshipLedger();
-  }
-
-  function getDominantHardshipKeyForSide(court, sideNumber, side){
-    return getExactHardshipContextKey(court, sideNumber);
-  }
-
-  function getDominantHardshipRuleForSide(court, sideNumber){
-    const side = getSideByNumber(court, sideNumber);
-    const key = getDominantHardshipKeyForSide(court, sideNumber, side);
-    if(!key) return null;
-    const ledger = getDominantHardshipLedger();
-    const raw = ledger[key];
-    if(!raw || typeof raw !== 'object') return null;
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const order = getPresetOrder(mode);
-    let targetPreset = String(raw.targetPreset || '').trim();
-    if(!order.includes(targetPreset)) targetPreset = 'full-court';
-    const shotRestrictions = normaliseShotRestrictions(raw.shotRestrictions, raw.shotStage);
-    const shotStage = shotRestrictions.length ? 1 : 0;
-    const movementStep = Math.max(0, order.indexOf(targetPreset));
-    if(movementStep <= 0 && shotStage <= 0) return null;
-    const rule = {
-      targetPreset: movementStep > 0 ? targetPreset : 'full-court',
-      shotStage,
-      shotRestrictions,
-      mode,
-      adjustedSideIds: getTeamIds(side),
-      adjustedSideNumber: Number(sideNumber),
-      memoryScope:'exact-competitive-context',
-      updatedAt: Number(raw.updatedAt || 0) || Date.now()
-    };
-    ledger[key] = rule;
-    return { key, sideNumber:Number(sideNumber), side, rule };
-  }
-
-  function getDominantHardshipEntryForCourt(court){
-    if(!court) return null;
-    const entries = [1, 2].map(function(sideNumber){
-      return getDominantHardshipRuleForSide(court, sideNumber);
-    }).filter(Boolean);
-    if(!entries.length) return null;
-    entries.sort(function(a, b){
-      const strongDiff = (b.sideNumber === court.strongerSide ? 1 : 0) - (a.sideNumber === court.strongerSide ? 1 : 0);
-      if(strongDiff) return strongDiff;
-      const shotDiff = Number(b.rule.shotStage || 0) - Number(a.rule.shotStage || 0);
-      if(shotDiff) return shotDiff;
-      const moveDiff = getPresetOrder(b.rule.mode).indexOf(b.rule.targetPreset || 'full-court') - getPresetOrder(a.rule.mode).indexOf(a.rule.targetPreset || 'full-court');
-      if(moveDiff) return moveDiff;
-      return Number(b.rule.updatedAt || 0) - Number(a.rule.updatedAt || 0);
-    });
-    return entries[0];
-  }
-
-  function setDominantHardshipRuleForSide(court, sideNumber, targetPreset, shotStage, shotRestrictions){
-    const side = getSideByNumber(court, sideNumber);
-    const key = getDominantHardshipKeyForSide(court, sideNumber, side);
-    if(!key) return null;
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const order = getPresetOrder(mode);
-    let preset = String(targetPreset || 'full-court').trim();
-    if(!order.includes(preset)) preset = 'full-court';
-    const activeShotRestrictions = normaliseShotRestrictions(shotRestrictions, shotStage);
-    const shots = activeShotRestrictions.length ? 1 : 0;
-    const movementStep = Math.max(0, order.indexOf(preset));
-    const ledger = getDominantHardshipLedger();
-    if(movementStep <= 0 && shots <= 0){
-      // Keep a timestamped inactive record so a refresh cannot resurrect an
-      // older server-side hardship after the local rule was deliberately cleared.
-      ledger[key] = {
-        adjustedSideIds: getTeamIds(side),
-        adjustedSideNumber: Number(sideNumber),
-        mode,
-        targetPreset:'full-court',
-        shotStage:0,
-        shotRestrictions:[],
-        memoryScope:'exact-competitive-context',
-        cleared:true,
-        updatedAt:Date.now()
-      };
-      return null;
-    }
-    const rule = {
-      adjustedSideIds: getTeamIds(side),
-      adjustedSideNumber: Number(sideNumber),
-      mode,
-      targetPreset: movementStep > 0 ? preset : 'full-court',
-      shotStage: shots,
-      shotRestrictions: activeShotRestrictions,
-      memoryScope:'exact-competitive-context',
-      updatedAt: Date.now()
-    };
-    ledger[key] = rule;
-    return rule;
-  }
-
-  function increaseDominantHardshipForSide(court, sideNumber, hardshipType){
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const current = getDominantHardshipRuleForSide(court, sideNumber);
-    const currentPreset = current && current.rule && current.rule.targetPreset ? current.rule.targetPreset : 'full-court';
-    const currentShots = current && current.rule ? Number(current.rule.shotStage || 0) : 0;
-    let nextPreset = currentPreset;
-    let nextShots = currentShots;
-    if(hardshipType === 'movement') nextPreset = tightenPreset(currentPreset, 1, mode);
-    if(hardshipType === 'shots') nextShots = 1;
-    return setDominantHardshipRuleForSide(
-      court,
-      sideNumber,
-      nextPreset,
-      nextShots,
-      hardshipType === 'shots'
-        ? ['no-smashes', 'no-downward-shots']
-        : (current && current.rule ? current.rule.shotRestrictions : [])
-    );
-  }
-
-  function reduceDominantHardshipForSide(court, sideNumber, hardshipType){
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const current = getDominantHardshipRuleForSide(court, sideNumber);
-    const currentPreset = current && current.rule && current.rule.targetPreset ? current.rule.targetPreset : 'full-court';
-    const currentShots = current && current.rule ? Number(current.rule.shotStage || 0) : 0;
-    let nextPreset = currentPreset;
-    let nextShots = currentShots;
-    if(hardshipType === 'movement') nextPreset = loosenPreset(currentPreset, 1, mode);
-    if(hardshipType === 'shots') nextShots = 0;
-    return setDominantHardshipRuleForSide(
-      court,
-      sideNumber,
-      nextPreset,
-      nextShots,
-      hardshipType === 'shots' ? [] : (current && current.rule ? current.rule.shotRestrictions : [])
-    );
-  }
-
-  function getDominantMovementStepForSide(court, sideNumber){
-    const current = getDominantHardshipRuleForSide(court, sideNumber);
-    if(!current || !current.rule) return 0;
-    return Math.max(0, getPresetOrder(current.rule.mode).indexOf(current.rule.targetPreset || 'full-court'));
-  }
-
-  function getDominantShotStageForSide(court, sideNumber){
-    const current = getDominantHardshipRuleForSide(court, sideNumber);
-    return current && current.rule ? Math.min(1, Math.max(0, Math.round(Number(current.rule.shotStage || 0)))) : 0;
-  }
-
-  function getDominantIncreaseOptionsForSide(court, sideNumber){
-    const options = [];
-    if(!sideNumber) return options;
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const movementStep = getDominantMovementStepForSide(court, sideNumber);
-    if(movementStep < getPresetOrder(mode).length - 1) options.push({ value:'movement', label:'Reduce Target Area' });
-    if(getDominantShotStageForSide(court, sideNumber) < 1) options.push({ value:'shots', label:'Remove Shot Options' });
-    return options;
-  }
-
-  function getDominantReduceOptionsForSide(court, sideNumber){
-    const options = [];
-    if(!sideNumber) return options;
-    if(getDominantMovementStepForSide(court, sideNumber) > 0) options.push({ value:'movement', label:'Expand Target Area' });
-    if(getDominantShotStageForSide(court, sideNumber) > 0) options.push({ value:'shots', label:'Restore Shot Options' });
-    return options;
-  }
-
-  function applyDominantRuleToCourt(court, entry){
-    if(!court || !entry || !entry.rule) return court;
-    const mode = entry.rule.mode || getRestrictionZoneMode(court, entry.sideNumber);
-    const preset = entry.rule.targetPreset && entry.rule.targetPreset !== 'full-court' ? entry.rule.targetPreset : 'full-court';
-    const shotRestrictions = normaliseShotRestrictions(entry.rule.shotRestrictions, entry.rule.shotStage);
-    const shotStage = shotRestrictions.length ? 1 : 0;
-    const appliedZones = preset !== 'full-court' ? sanitizeZones(PRESET_ZONE_MAP[preset] || [], mode) : [];
-    court.restrictedSide = Number(entry.sideNumber);
-    court.restrictionTargetSide = getOppositeSideNumber(entry.sideNumber);
-    court.restrictionMode = mode;
-    court.mode = mode;
-    court.targetPreset = preset;
-    court.appliedZones = appliedZones;
-    court.targetAreaText = getTargetAreaTextFromPreset(preset, mode) || getTargetAreaTextFromZones(appliedZones, mode);
-    court.shotRestrictionStage = shotStage;
-    court.shotRestrictions = shotRestrictions;
-    court.boundaryActive = appliedZones.length > 0;
-    court.alteredRulesActive = court.boundaryActive || shotStage > 0;
-    court.discoveryGame = false;
-    return court;
-  }
-
   function syncDominantRuleToMemory(court, signature, sideNumber){
     const entry = getDominantHardshipRuleForSide(court, sideNumber);
     const side = getSideByNumber(court, sideNumber);

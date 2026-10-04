@@ -25,6 +25,10 @@ const restrictions = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-restrictions.js"),
   "utf8",
 );
+const hardships = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-hardships.js"),
+  "utf8",
+);
 const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
@@ -54,13 +58,21 @@ function restrictionSection(startName, endName) {
   return restrictions.slice(start, end);
 }
 
+function hardshipSection(startName, endName) {
+  const start = hardships.indexOf("function " + startName);
+  assert.notEqual(start, -1, startName + " must exist in hardship ledger");
+  const end = endName ? hardships.indexOf("function " + endName, start + 1) : hardships.length;
+  assert.notEqual(end, -1, endName + " must follow " + startName + " in hardship ledger");
+  return hardships.slice(start, end);
+}
+
 test("hardships are owned by persistent top-level state, not today's plan", () => {
   const initial = section("createInitialState", "uid");
   assert.match(initial, /hardshipRecords: {}/);
-  const ledger = section("getActiveHardshipLedger", "normaliseHardshipRule");
-  assert.match(ledger, /state\.hardshipRecords/);
-  assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
-  assert.match(ledger, /return state\.hardshipRecords/);
+  const ledger = hardshipSection("getActiveHardshipLedger", "normaliseHardshipRule");
+  assert.match(ledger, /current\.hardshipRecords/);
+  assert.match(ledger, /current\.plan\.activeHardships = current\.hardshipRecords/);
+  assert.match(ledger, /return current\.hardshipRecords/);
 });
 
 test("legacy server document hardship data migrates into persistent hardshipRecords", () => {
@@ -162,15 +174,15 @@ test("visible shot guidance semantically bolds both restriction names", () => {
 });
 
 test("saved hardship rules retain shot restriction detail without changing hardship ownership", () => {
-  const getRule = section("getDominantHardshipRuleForSide", "getDominantHardshipEntryForCourt");
+  const getRule = hardshipSection("getDominantHardshipRuleForSide", "getActiveHardshipRuleEntryForCourt");
   assert.match(getRule, /normaliseShotRestrictions\(raw\.shotRestrictions, raw\.shotStage\)/);
   assert.match(getRule, /ledger\[key\] = rule/);
-  const setter = section("setDominantHardshipRuleForSide", "increaseDominantHardshipForSide");
+  const setter = hardshipSection("setDominantHardshipRuleForSide", "writeHardshipRuleForSide");
   assert.match(setter, /shotRestrictions: activeShotRestrictions/);
   assert.doesNotMatch(setter, /state\.(?!hardshipRecords|plan)/);
-  const ledger = section("getActiveHardshipLedger", "normaliseHardshipRule");
-  assert.match(ledger, /state\.hardshipRecords/);
-  assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
+  const ledger = hardshipSection("getActiveHardshipLedger", "normaliseHardshipRule");
+  assert.match(ledger, /current\.hardshipRecords/);
+  assert.match(ledger, /current\.plan\.activeHardships = current\.hardshipRecords/);
 });
 
 
