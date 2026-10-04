@@ -1286,14 +1286,7 @@
     return { x: zoneRect.x, y: 220 - zoneRect.y - zoneRect.h, w: zoneRect.w, h: zoneRect.h };
   }
 
-  function getLossSeverity(score){
-    const n = Number(score);
-    if(!Number.isFinite(n)) return 0;
-    if(n <= 4) return 3;
-    if(n <= 9) return 2;
-    if(n <= 15) return 1;
-    return 0;
-  }
+
 
 
 
@@ -1364,54 +1357,7 @@
 
 
 
-  function getMovementRestrictionStatus(court){
-    const mode = getZoneMode(court);
-    let activeZones = sanitizeZones((court && court.appliedZones) || [], mode);
-    const presetOrder = getPresetOrder(mode);
-    let explicitPreset = String(court && court.targetPreset || '').trim();
 
-    // BASELINE-BADMINTON-HARDSHIP-SUBMISSION-FIX-20260608
-    // The explicit preset is dominant. Several presets intentionally share zone masks,
-    // so inferring only from zones can make a maxed restriction look reducible/addable again.
-    if(!presetOrder.includes(explicitPreset)) explicitPreset = '';
-    if(explicitPreset && explicitPreset !== 'full-court'){
-      activeZones = sanitizeZones(PRESET_ZONE_MAP[explicitPreset] || [], mode);
-    }
-
-    const inferredPreset = getPresetFromZones(activeZones, mode);
-    const currentPreset = explicitPreset || inferredPreset;
-    if(!activeZones.length && (!currentPreset || currentPreset === 'full-court')){
-      const nextPreset = tightenPreset('full-court', 1, mode);
-      return {
-        currentPreset:'full-court',
-        canAdd: nextPreset !== 'full-court',
-        canReduce:false,
-        reducedPreset:'full-court',
-        hasRestriction:false,
-        isCustom:false
-      };
-    }
-    if(currentPreset){
-      const nextPreset = tightenPreset(currentPreset, 1, mode);
-      const reducedPreset = loosenPreset(currentPreset, 1, mode);
-      return {
-        currentPreset,
-        canAdd: nextPreset !== currentPreset,
-        canReduce: reducedPreset !== currentPreset,
-        reducedPreset,
-        hasRestriction: currentPreset !== 'full-court',
-        isCustom:false
-      };
-    }
-    return {
-      currentPreset:'custom',
-      canAdd: activeZones.length > 1,
-      canReduce: activeZones.length < getAllowedZones(mode).length,
-      reducedPreset:'custom',
-      hasRestriction:true,
-      isCustom:true
-    };
-  }
 
   
 
@@ -1461,9 +1407,7 @@
   // Hardships are remembered server-side, but only by exact competitive context:
   // game type + restricted side + opponent side.
   // They must not attach broadly to a player or pair outside that context.
-  function getHardshipRuleForSide(court, sideNumber){
-    return getDominantHardshipRuleForSide(court, sideNumber);
-  }
+
 
 
 
