@@ -1,7 +1,7 @@
 import { calorieEscapeModules } from './calorie-escape-game.js';
 
 function inventorySummary(service){const inventory=service?.read().realm.inventory||{food:{},equipment:{}};return{food:{...(inventory.food||{})},equipment:Object.values(inventory.equipment||{})};}
-function ensureStyle(){let link=document.getElementById('calorieEscapeStyle');if(!link){link=document.createElement('link');link.id='calorieEscapeStyle';link.rel='stylesheet';document.head.appendChild(link);}link.href='/systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/a.css?v=FOUR_ZONE_COMPLETE_20260628';}
+function ensureStyle(){let link=document.getElementById('calorieEscapeStyle');if(!link){link=document.createElement('link');link.id='calorieEscapeStyle';link.rel='stylesheet';document.head.appendChild(link);}link.href='/systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/calorie-escape.css?v=REALM_STABILITY_20261004_1';}
 
 export function createCalorieEscapeScene({inventoryService,workshopService}={}){
   let root=null;
