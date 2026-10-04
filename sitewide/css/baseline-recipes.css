@@ -4709,21 +4709,4 @@ html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button
   transform:rotate(180deg) !important;
 }
 
-/* BASELINE-STANDALONE-SYSTEM-TABS-20261004
-   Focused record pages inherit primary navigation from baseline-shared.js.
-   Hide obsolete page-authored substitute links before JS paints and give the
-   shared tab row the same full-width position on every standalone recipe. */
-body:has(.standalone-recipe-card) .food-recipe-top .top-links{
-  display:none;
-}
-body:has(.standalone-recipe-card) .baseline-standalone-primary-tabs{
-  display:flex;
-  flex:1 1 100%;
-  width:100%;
-  flex-wrap:wrap;
-  gap:10px;
-}
-body:has(.standalone-recipe-card) .baseline-standalone-primary-tabs .tab{
-  text-decoration:none;
-}
 
