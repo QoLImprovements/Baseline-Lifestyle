@@ -17,7 +17,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b11226"/>
 <style>html[data-app="food"],body[data-app="food"]{margin:0;min-height:100%;color:#1b0b09;background:linear-gradient(90deg,#b11226 0%,#f08a24 18%,#ffb000 34%,#ffd26a 50%,#ffb000 66%,#f08a24 82%,#b11226 100%);}</style>
 
-<script id="baseline-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,''),t=/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)?'recipes':/^\/baseline-food-approach\/ingredient-library(?:\/|$)/i.test(p)?'ingredients':/^\/baseline-food-approach\/diet-log(?:\/|$)/i.test(p)?'diet-log':'system';d.setAttribute('data-initial-section',t);if(t==='recipes'&&/^\/baseline-food-approach\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,''),t=/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)?'recipes':/^\/baseline-food-approach\/ingredient-library(?:\/|$)/i.test(p)?'ingredients':/^\/baseline-food-approach\/diet-log(?:\/|$)/i.test(p)?'diet-log':'system';d.setAttribute('data-initial-section',t);if(t==='recipes'&&/^\/baseline-food-approach\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-food-approach/system">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Food Approach">
@@ -38,7 +38,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Shared system components -->
 <!-- Recipes UI (cards + multiplier + thickness controls) -->
 <!-- Shared CSS loaded via <link> tags above. -->
-<style id="baseline-route-first-paint-style">
+<style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section] body[data-app="food"] main.wrap>.section{display:none!important}
 html[data-initial-section="system"] body[data-app="food"] #system.section,
 html[data-initial-section="recipes"] body[data-app="food"] #recipes.section,
