@@ -292,3 +292,23 @@ test("Badminton score and result workflow is a separate syntactically valid modu
   assert.match(resultsSource, /function markCourtSaved\(/);
   assert.match(resultsSource, /function canSaveCourtNow\(/);
 });
+
+
+test("Badminton split preserves runtime callback contracts", () => {
+  assert.match(source, /syncCourtScoresFromInputs:function\(index\)\{ return syncCourtScoresFromInputs\(index\); \}/);
+  assert.match(source, /refreshCourtInputUi:function\(index\)\{ return refreshCourtInputUi\(index\); \}/);
+  assert.match(source, /requestNoGameConfirmation:function\(index, input\)\{ return requestNoGameConfirmation\(index, input\); \}/);
+  assert.match(source, /protectLocalCurrentState:function\(ms\)\{ return protectLocalCurrentState\(ms\); \}/);
+  assert.match(source, /ensureCurrentCourtSaveKeys:function\(force\)\{ return ensureCurrentCourtSaveKeys\(force\); \}/);
+  assert.match(source, /getPlayer:function\(id\)\{ return getPlayer\(id\); \}/);
+  assert.match(source, /abortServerLoad:function\(\)\{/);
+  assert.doesNotMatch(gamePlanSource, /\bserverLoadAbortController\b/);
+  assert.match(gamePlanSource, /const getPlayer = options\.getPlayer;/);
+  assert.match(gamePlanSource, /const abortServerLoad = options\.abortServerLoad;/);
+});
+
+test("Badminton moderator display name and login identity remain distinct", () => {
+  assert.match(source, /const SITE_MODERATOR_CANONICAL_LOGIN = 'PeterBW';/);
+  assert.match(source, /player\.name = 'Peter Bates-Wilkinson';/);
+  assert.match(source, /player\.loginUsername = SITE_MODERATOR_CANONICAL_LOGIN;/);
+});
