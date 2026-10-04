@@ -17,7 +17,7 @@ async function mockProfiles(page) {
 
 async function openRealm(page) {
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => (document.documentElement.getAttribute('data-baseline-realm-stage-one') || '').includes('COMPLETE'));
+  await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.sceneRouter));
   await page.waitForFunction(() => globalThis.BASELINE_GAMES_HUB_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await page.locator('[data-select-game="ninja"]:visible').first().click();
