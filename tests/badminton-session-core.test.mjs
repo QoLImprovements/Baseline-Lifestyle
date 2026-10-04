@@ -94,3 +94,23 @@ test("Save Results waits for server confirmation before advancing the court", ()
   assert.match(saveCourt, /saved on the server/);
   assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true \}\);\s*refreshCurrentCourtCard/);
 });
+
+
+test("server writer has no removed state-timestamp helper reference", () => {
+  const start = runtimeSource.indexOf("function postServerState");
+  const end = runtimeSource.indexOf("function queueServerSave", start);
+  const writer = runtimeSource.slice(start, end);
+  assert.ok(start >= 0);
+  assert.doesNotMatch(writer, /getStateUpdatedAt\(/);
+  assert.match(writer, /latestStateUpdatedAt/);
+  assert.match(writer, /requestLocalUpdatedAt/);
+});
+
+test("Badminton HTML does not render escaped newline artifacts around Game Plan controls or scripts", () => {
+  const html = fs.readFileSync(
+    path.join(root, "systems/baseline-badminton-session/baseline-badminton-session.html"),
+    "utf8",
+  );
+  assert.doesNotMatch(html, /<\/div>\\n\s*<div id="persistenceStatus"/);
+  assert.doesNotMatch(html, /<\/script>\\n<script src="\/systems\/baseline-badminton-session\/js\/baseline-badminton-session\.js/);
+});
