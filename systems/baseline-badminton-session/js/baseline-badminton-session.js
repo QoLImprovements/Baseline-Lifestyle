@@ -134,6 +134,7 @@
     getSideByNumber:function(court, sideNumber){ return getSideByNumber(court, sideNumber); },
     getOppositeSideNumber:function(sideNumber){ return getOppositeSideNumber(sideNumber); },
     getRestrictionZoneMode:function(court, sideNumber){ return getRestrictionZoneMode(court, sideNumber); },
+    getRestrictionSideNumberFromMemory:function(c,m){return getRestrictionSideNumberFromMemory(c,m);},
     getPresetOrder:function(mode){ return getPresetOrder(mode); },
     normaliseShotRestrictions:function(restrictions, stage){ return normaliseShotRestrictions(restrictions, stage); },
     tightenPreset:function(preset, steps, mode){ return tightenPreset(preset, steps, mode); },
@@ -154,6 +155,7 @@
   const getDominantHardshipLedger = hardshipEngine.getDominantHardshipLedger;
   const getDominantHardshipKeyForSide = hardshipEngine.getDominantHardshipKeyForSide;
   const getDominantHardshipRuleForSide = hardshipEngine.getDominantHardshipRuleForSide;
+  const promoteLegacyMatchupMemoryForCourt=hardshipEngine.promoteLegacyMatchupMemoryForCourt;
   const getDominantHardshipEntryForCourt = hardshipEngine.getDominantHardshipEntryForCourt;
   const setDominantHardshipRuleForSide = hardshipEngine.setDominantHardshipRuleForSide;
   const increaseDominantHardshipForSide = hardshipEngine.increaseDominantHardshipForSide;
@@ -628,7 +630,7 @@
   }catch(_e){}
 
   function markLocalChange(){
-    state.localUpdatedAt = Date.now();
+    state.localUpdatedAt=Math.max(Date.now(),(Number(state && state.localUpdatedAt || 0)||0)+1);
   }
 
 
@@ -678,8 +680,9 @@
     serverSaveInFlight = true;
     serverSaveAbortController = window.AbortController ? new AbortController() : null;
     const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
+    const requestState=JSON.parse(JSON.stringify(state));
 
-    serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(state), serverSaveAbortController && serverSaveAbortController.signal)
+    serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(requestState), serverSaveAbortController && serverSaveAbortController.signal)
       .then(function(data){
         updateServerAuth(data && data.auth);
         if(data && data.error==='revision_conflict'){
@@ -702,7 +705,7 @@
             announceServerSaveConflict('Badminton save could not be verified from the authoritative server. Reload before making further changes.', 'error');
             return false;
           }
-          const expected = sessionCore.hardshipSnapshot(state.hardshipRecords);
+          const expected = sessionCore.hardshipSnapshot(requestState.hardshipRecords);
           const actual = sessionCore.hardshipSnapshot(verified.state.hardshipRecords);
           if(expected !== actual){
             serverSaveBlocked=true;
@@ -711,7 +714,8 @@
           }
           const verifiedRevision=Number(verified.revision);
           if(Number.isInteger(verifiedRevision)&&verifiedRevision>=0) serverRevision=verifiedRevision;
-          state=hydrateLoadedState(verified.state);
+
+          if((Number(state&&state.localUpdatedAt||0)||0)<=requestLocalUpdatedAt) state=hydrateLoadedState(verified.state);
           return true;
         });
       })
@@ -1536,6 +1540,7 @@
     const weakerSide = strongerSide ? (strongerSide === 1 ? 2 : 1) : null;
     const signature = buildMatchupKey(court);
     const memory = ensureRestrictionMemory(signature);
+    promoteLegacyMatchupMemoryForCourt(court,memory);
     const activeHardshipEntry = getActiveHardshipRuleEntryForCourt(court);
     const dominantEntry = activeHardshipEntry || getDominantRestrictionEntryForCourt(court, signature, memory);
     const effectiveMemory = dominantEntry ? syncDominantRestrictionMemoryForCourt(court, signature, dominantEntry) : memory;

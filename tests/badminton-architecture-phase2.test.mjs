@@ -341,7 +341,9 @@ test("Badminton repaired modules carry fresh cache revisions", () => {
   assert.match(htmlSource, /badminton-session-state-hydration\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_SCORE_ENTRY_RACE_FIX_20261004_7/);
-  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_6/);
+  assert.match(htmlSource, /badminton-session-hardships\.js\?v=BADMINTON_HARDSHIP_MEMORY_REPAIR_20261004_8/);
+  assert.match(htmlSource, /badminton-session-game-plan\.js\?v=BADMINTON_LIVE_SCORE_STATE_REPAIR_20261004_8/);
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_LIVE_STATE_VERIFY_REPAIR_20261004_8/);
 });
 
 
@@ -427,4 +429,39 @@ test("delayed score autofill blanking never erases player-entered court scores",
   assert.match(blanking, /if\(score1AlreadyEntered \|\| score2AlreadyEntered\) return;/);
   assert.doesNotMatch(blanking, /court\.score1 = null;/);
   assert.doesNotMatch(blanking, /court\.score2 = null;/);
+});
+
+
+test("server verification cannot overwrite newer live Badminton court state", () => {
+  const start = source.indexOf("function postServerState");
+  const end = source.indexOf("function queueServerSave", start);
+  const saveBlock = source.slice(start, end);
+  assert.match(saveBlock, /const requestState=JSON\.parse\(JSON\.stringify\(state\)\)/);
+  assert.match(saveBlock, /serverPayload\(requestState\)/);
+  assert.match(saveBlock, /hardshipSnapshot\(requestState\.hardshipRecords\)/);
+  assert.match(saveBlock, /if\(\(Number\(state&&state\.localUpdatedAt\|\|0\)\|\|0\)<=requestLocalUpdatedAt\) state=hydrateLoadedState\(verified\.state\)/);
+});
+
+test("score and hardship draft edits are marked as newer server-side state", () => {
+  const start = gamePlanSource.indexOf("function bindPlanActions");
+  const end = gamePlanSource.indexOf("function applyCourtSitOutSelection", start);
+  const actions = gamePlanSource.slice(start, end);
+  const scoreStart = actions.indexOf("const handleScoreEdit");
+  const scoreEnd = actions.indexOf("refs().currentGamesGrid.addEventListener", scoreStart);
+  const scoreBlock = actions.slice(scoreStart, scoreEnd);
+  assert.match(scoreBlock, /markLocalChange\(\)/);
+  assert.match(scoreBlock, /queueServerSave\(\)/);
+
+  const hardshipStart = actions.indexOf("const commitHardshipChoice");
+  const hardshipEnd = actions.indexOf("const handleScoreEdit", hardshipStart);
+  const hardshipBlock = actions.slice(hardshipStart, hardshipEnd);
+  assert.match(hardshipBlock, /markLocalChange\(\)/);
+  assert.match(hardshipBlock, /queueServerSave\(\)/);
+});
+
+test("local Badminton revision marker is strictly monotonic", () => {
+  const start = source.indexOf("function markLocalChange");
+  const end = source.indexOf("function updateServerAuth", start);
+  const block = source.slice(start, end);
+  assert.match(block, /Math\.max\(Date\.now\(\),\(Number\(state && state\.localUpdatedAt \|\| 0\)\|\|0\)\+1\)/);
 });
