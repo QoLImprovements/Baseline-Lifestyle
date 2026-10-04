@@ -3,7 +3,7 @@
    - Recipe card layout (grid + print button)
    - Recipe control contract: Title -> Batch Multiplier -> Measurement Type
      -> Scale By Ingredient -> any recipe-specific controls
-   - Optional “open one recipe” mode with side navigation
+   - Optional focused “open one recipe” mode without secondary navigation
    --------------------------------------------------------------------------
    Designed to be dropped into any Baseline page that already defines:
    --ink, --muted, --accent-2, --accent-soft, --ring, --shadow, --homebar-h
@@ -314,16 +314,12 @@
 
 #recipes.recipe-open-mode.recipe-focus .recipe-top-bar{ display:flex; }
 
-#recipes.recipe-focus .side-recipe-nav{ display:none !important; }
 #recipes.recipe-focus .recipe-layout{ display:block; }
 
 /* Layout wrapper */
 .recipe-layout{ display:block; }
 #recipes.recipe-open-mode .recipe-layout{
-  display:grid;
-  grid-template-columns: 260px 1fr;
-  gap: 16px;
-  align-items:start;
+  display:block;
 }
 
 /* When using the focused view, keep it single-column even in open mode */
@@ -331,41 +327,6 @@
   display:block;
 }
 
-/* Side navigation panel */
-.side-recipe-nav{
-  display:none;
-  position:sticky;
-  top: calc(var(--homebar-h) + 18px);
-  align-self:start;
-  padding: 14px;
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(122,74,58,0.14);
-  border-radius: 18px;
-  box-shadow: 0 16px 34px -26px rgba(35,23,19,0.28);
-}
-#recipes.recipe-open-mode .side-recipe-nav{ display:block; }
-
-.side-recipe-nav h4{ margin: 12px 0 10px 0; }
-.side-recipe-nav ul{ margin: 0; padding-left: 18px; }
-.side-recipe-nav li{ margin: 8px 0; }
-.side-recipe-nav a{ font-weight: 750; }
-
-.side-recipe-nav .back-link{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px;
-  border-radius:999px;
-  border:1px solid rgba(122,74,58,0.16);
-  background: rgba(255,255,255,0.24);
-  color: var(--accent-2);
-  text-decoration:none;
-}
-
-@media (max-width: 900px){
-  #recipes.recipe-open-mode .recipe-layout{ grid-template-columns: 1fr; }
-  .side-recipe-nav{ position:relative; top:auto; }
-}
 
 /* --------------------------------------------------------------------------
    Overrides requested (sitewide consistency)
@@ -2740,7 +2701,7 @@ html body[data-app] #recipes .recipe-variant-field select.recipe-variant-select,
 html body[data-app] #recipes .recipe-options-toggle{
   min-height:46px !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, var(--card-bg, rgba(255,255,255,.22))) !important;
   background-image:var(--showall-bg, var(--card-bg, none)) !important;
   color:var(--ink, #111) !important;
@@ -2986,7 +2947,7 @@ html body[data-app] #recipes .recipe-variant-field select.recipe-variant-select{
   padding:7px 34px 7px 88px !important;
   box-sizing:border-box !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, rgba(255,255,255,.22)) !important;
   background-image:var(--showall-bg, none) !important;
   color:var(--accent-2, var(--ink, #111)) !important;
@@ -3010,7 +2971,7 @@ html body[data-app] #recipes .recipe-edit-options .scale-apply{
   width:auto !important;
   max-width:max-content !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, rgba(255,255,255,.22)) !important;
   background-image:var(--showall-bg, none) !important;
   color:var(--accent-2, var(--ink, #111)) !important;
@@ -3193,7 +3154,7 @@ html body[data-app] #recipes .recipe-variant-field select.recipe-variant-select{
   padding:7px 34px 7px 14px !important;
   box-sizing:border-box !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, rgba(255,255,255,.22)) !important;
   background-image:var(--showall-bg, none) !important;
   color:var(--accent-2, var(--ink, #111)) !important;
@@ -3228,7 +3189,7 @@ html body[data-app] #recipes .recipe-option-strip > .recipe-top-reset{
   padding:7px 14px !important;
   box-sizing:border-box !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, rgba(255,255,255,.22)) !important;
   background-image:var(--showall-bg, none) !important;
   color:var(--accent-2, var(--ink, #111)) !important;
@@ -3369,7 +3330,7 @@ body[data-app] #recipes .recipe-ingredients-heading .recipe-info-view-link{
   margin:0 !important;
   padding:3px 9px !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
   background:var(--showall-bg, var(--bl-surface-control-solid, rgba(255,255,255,.22))) !important;
   background-image:var(--showall-bg, none) !important;
   color:var(--accent-2, var(--ink, #111)) !important;
@@ -4038,8 +3999,8 @@ html body[data-app] .recipe-universal-template .recipe-subtab{
   margin:0 !important;
   padding:7px 12px !important;
   border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
-  background:var(--showall-bg, var(--accent-soft, rgba(255,255,255,.18))) !important;
+  border:1px solid var(--recipe-tab-border, var(--showall-border, var(--border, rgba(0,0,0,.18)))) !important;
+  background:var(--recipe-tab-bg, var(--showall-bg, var(--accent-soft, rgba(255,255,255,.18)))) !important;
   color:var(--accent-2, var(--ink)) !important;
   -webkit-text-fill-color:currentColor !important;
   font:inherit !important;
@@ -4050,9 +4011,9 @@ html body[data-app] .recipe-universal-template .recipe-subtab{
   cursor:pointer !important;
 }
 html body[data-app] .recipe-universal-template .recipe-subtab[aria-selected="true"]{
-  background:var(--accent-soft, var(--showall-bg)) !important;
-  border-color:var(--accent, var(--showall-border, var(--border))) !important;
-  color:var(--ink) !important;
+  background:var(--recipe-tab-active, var(--accent-soft, var(--showall-bg))) !important;
+  border-color:var(--recipe-tab-border, var(--accent, var(--showall-border, var(--border)))) !important;
+  color:var(--recipe-tab-active-ink, var(--ink)) !important;
   font-weight:900 !important;
   box-shadow:0 8px 18px -16px rgba(35,23,19,.42) !important;
 }
@@ -4178,9 +4139,9 @@ body[data-app] .recipe-universal-template .recipe-guidance-label{
   font-weight:850 !important;
 }
 
-/* Standalone Food Phase-4B pages use the same card template; remove the development-only duplicate title/note. */
-body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-note,
-body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-top > h1{
+/* Standalone Food standalone Food pages use the same card template; remove the development-only duplicate title/note. */
+body[data-app="food"] .food-recipe-shell > .food-recipe-note,
+body[data-app="food"] .food-recipe-shell > .food-recipe-top > h1{
   display:none !important;
 }
 
@@ -4478,7 +4439,6 @@ html[data-initial-recipe-route="1"] #recipes .recipes{display:grid!important;vis
 html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!important}
 html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
-html[data-initial-recipe-route="1"] #recipes .side-recipe-nav{display:none!important}
 
 /* Section 2: Food exact-route selectors, group 1. */
 html[data-initial-recipe-slug="raw-40-c-almond-flax-pizza-base"] #recipes .recipe-page[data-recipe-slug="raw-40-c-almond-flax-pizza-base"]{display:block!important;visibility:visible!important;max-width:none!important}
@@ -4557,8 +4517,8 @@ html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-univer
 }
 
 html[data-initial-recipe-view]:not([data-initial-recipe-view="standard"]) body[data-app] #recipes .recipe-universal-template .recipe-subtab[aria-selected="true"]{
-  background:var(--showall-bg,var(--accent-soft,rgba(255,255,255,.18)))!important;
-  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
+  background:var(--recipe-tab-bg,var(--showall-bg,var(--accent-soft,rgba(255,255,255,.18))))!important;
+  border-color:var(--recipe-tab-border,var(--showall-border,var(--border,rgba(0,0,0,.18))))!important;
   color:var(--accent-2,var(--ink))!important;
   font-weight:780!important;
   box-shadow:none!important;
@@ -4566,9 +4526,9 @@ html[data-initial-recipe-view]:not([data-initial-recipe-view="standard"]) body[d
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="details"],
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="guidance"],
 html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="show-all"]{
-  background:var(--accent-soft,var(--showall-bg))!important;
-  border-color:var(--accent,var(--showall-border,var(--border)))!important;
-  color:var(--ink)!important;
+  background:var(--recipe-tab-active,var(--accent-soft,var(--showall-bg)))!important;
+  border-color:var(--recipe-tab-border,var(--accent,var(--showall-border,var(--border))))!important;
+  color:var(--recipe-tab-active-ink,var(--ink))!important;
   font-weight:900!important;
   box-shadow:0 8px 18px -16px rgba(35,23,19,.42)!important;
 }

@@ -1975,15 +1975,6 @@ function parseViewStateHash(hash){
     window.BASELINE_openRecipe = (id, opts={}) => openRecipe(id, opts);
     window.BASELINE_showAllRecipes = (opts={}) => showAll(opts);
 
-    // Side-nav back link (legacy structure)
-    const legacyBack = q('#backToAllRecipes') || q('#back-to-list', recipesSection);
-    if(legacyBack){
-      legacyBack.addEventListener('click', (e)=>{
-        e.preventDefault();
-        showAll();
-      });
-    }
-
     // Link clicks inside recipes section
     qsa('a.recipe-open', recipesSection).forEach(a=>{
       a.addEventListener('click', function(e){
@@ -1992,6 +1983,8 @@ function parseViewStateHash(hash){
         if(!id) id = recipeTokenFromHref(href);
         id = recipeIdForToken(id);
         if(!id) return;
+        const liveCard = document.getElementById(id);
+        if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
         e.preventDefault();
         openRecipe(id);
       });
@@ -2007,6 +2000,8 @@ function parseViewStateHash(hash){
       if(!id) id = recipeTokenFromHref(href);
       id = recipeIdForToken(id);
       if(!id) return;
+      const liveCard = document.getElementById(id);
+      if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
       e.preventDefault();
       openRecipe(id);
     }, { capture:true });
@@ -2060,10 +2055,6 @@ function parseViewStateHash(hash){
   function setupRecipeOverviewAndOrdering(){
     const recipesSection = document.getElementById('recipes');
     if(!recipesSection) return;
-    // Natural Skincare has no recipe side navigation. Keep any legacy/shared
-    // side-nav support available only to systems that still intentionally own it.
-    const allowSideNav = routePageFileFromPath(location.pathname || '') !== 'baseline-natural-skincare.html';
-
     const recipesContainer = recipesSection.querySelector('.recipes');
     const recipeCards = Array.from(recipesSection.querySelectorAll('.recipe-page[id]'));
     if(!recipesContainer || !recipeCards.length) return;
@@ -2113,41 +2104,6 @@ function parseViewStateHash(hash){
         return a.localeCompare(b);
       });
 
-      // Side nav rebuild (preserve back link and the primary "Recipes" heading)
-      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
-      if(sideNav){
-        const children = Array.from(sideNav.children);
-        const firstHeadingIndex = children.findIndex(el => el.tagName === 'H4');
-        if(firstHeadingIndex !== -1){
-          for(let i = children.length - 1; i > firstHeadingIndex; i--){
-            sideNav.removeChild(children[i]);
-          }
-        }
-
-        cats.forEach(cat => {
-          // The default recipe collection already has the primary Recipes
-          // heading. Only named sub-categories need another heading.
-          if(cat !== 'Recipes'){
-            const h4 = document.createElement('h4');
-            h4.textContent = cat;
-            sideNav.appendChild(h4);
-          }
-
-          const ul = document.createElement('ul');
-          (byCategory.get(cat) || []).forEach(item => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            try{ a.href = recipeUrlForId(item.id); }catch(_e){ a.href = `#${item.id}`; }
-            a.textContent = item.title;
-            a.className = 'recipe-open';
-            a.dataset.recipeId = item.id;
-            li.appendChild(a);
-            ul.appendChild(li);
-          });
-          sideNav.appendChild(ul);
-        });
-      }
-
       // Landing overview rebuild (remove existing lists/headings, keep intro copy)
       const landingCard = recipesSection.querySelector('#recipes-landing');
       if(landingCard){
@@ -2192,10 +2148,6 @@ function parseViewStateHash(hash){
         items.forEach(li => ul.appendChild(li));
       };
 
-      const sideNav = allowSideNav ? recipesSection.querySelector('#side-nav') : null;
-      if(sideNav){
-        sideNav.querySelectorAll('ul').forEach(sortList);
-      }
       const landingCard = recipesSection.querySelector('#recipes-landing');
       if(landingCard){
         landingCard.querySelectorAll('ul').forEach(sortList);
@@ -2236,6 +2188,17 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
+    if(isFood && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)){
+      window.BASELINE_FOOD_RECIPE_INDEX.forEach(recipe=>{
+        if(!recipe || !recipe.id || recipes.some(existing=>existing.id===recipe.id)) return;
+        recipes.push({
+          id:String(recipe.id),
+          name:String(recipe.title || recipe.id),
+          external:true,
+          href:String(recipe.href || '')
+        });
+      });
+    }
     if(isSkincare){
       recipes.push({
         id:'r12',
@@ -2250,6 +2213,14 @@ function parseViewStateHash(hash){
     // hashes. This keeps one public URL responsible for one visible record and
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
+    if(isFood && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)){
+      window.BASELINE_FOOD_RECIPE_INDEX.forEach(recipe=>{
+        if(!recipe || !recipe.id) return;
+        recipeToIngredients.set(String(recipe.id), new Set(
+          Array.isArray(recipe.ingredients) ? recipe.ingredients.map(String) : []
+        ));
+      });
+    }
     if(isSkincare){
       recipeToIngredients.set('r12', new Set([
         'ing-cocoa-butter','ing-mango-butter','ing-kokum-butter',
@@ -4478,7 +4449,7 @@ function buildControls(recipeEl){
           const seen = new Set();
 
           function excluded(li){
-            return !li || !!li.closest('.side-recipe-nav, .recipe-landing, #recipes-landing, .recipe-top-bar, .recipe-actions, .recipe-option-strip, .recipe-edit-options, .scale-block, .print-summary, .method-amt-inject');
+            return !li || !!li.closest('.recipe-landing, #recipes-landing, .recipe-top-bar, .recipe-actions, .recipe-option-strip, .recipe-edit-options, .scale-block, .print-summary, .method-amt-inject');
           }
 
           function addLi(li){

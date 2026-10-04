@@ -23,14 +23,14 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta property="og:title" content="Baseline Food Approach">
 <meta property="og:description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
 <meta property="og:url" content="https://baselinelifestyle.org/baseline-food-approach/system">
-<link href="/sitewide/css/baseline-themes.css?v=FOOD_WARM_SURFACE_AUTHORITY_20261004_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-themes.css?v=FOOD_DEEP_CLEANUP_20261004_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
-<link href="/sitewide/css/baseline-recipes.css?v=RECIPE_BARE_CONTROLS_20261004_1" rel="stylesheet"/>
-<link href="/systems/baseline-food-approach/css/baseline-diet-log.css?v=FOOD_WARM_SURFACE_AUTHORITY_20261004_1" rel="stylesheet"/>
-<link href="/systems/baseline-food-approach/css/baseline-food-approach.css?v=FOOD_WARM_SURFACE_AUTHORITY_20261004_1" rel="stylesheet"/>
-<link href="/systems/baseline-food-approach/css/baseline-food-main.css?v=FOOD_WARM_SURFACE_AUTHORITY_20261004_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-recipes.css?v=FOOD_RECIPE_TAB_AUTHORITY_20261004_1" rel="stylesheet"/>
+<link href="/systems/baseline-food-approach/css/baseline-diet-log.css?v=FOOD_DEEP_CLEANUP_20261004_1" rel="stylesheet"/>
+<link href="/systems/baseline-food-approach/css/baseline-food-approach.css?v=FOOD_DEEP_CLEANUP_20261004_1" rel="stylesheet"/>
+<link href="/systems/baseline-food-approach/css/baseline-food-main.css?v=FOOD_DEEP_CLEANUP_20261004_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
@@ -41,8 +41,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
-html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
+html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="system"]{background:var(--food-tab-bg)!important;border-color:var(--food-tab-border)!important;color:var(--ink)!important;filter:none!important}
+html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="recipes"]{background:var(--food-tab-active)!important;border-color:var(--food-deep)!important;color:#fff7e8!important;filter:none!important}
 </style>
 
 
@@ -140,30 +140,10 @@ Recommended structure:
 <div class="card">
 <h2>Recipes</h2>
 <div class="recipe-layout">
-<aside aria-label="Recipe navigation" class="side-recipe-nav" id="side-nav">
-<h4>Recipes</h4>
-<h4>Dehydrator</h4>
-<ul>
-<li><a class="recipe-open" data-recipe-id="r1" href="/baseline-food-approach/recipes/raw-40-c-almond-flax-pizza-base">Raw 40°C Almond–Flax Pizza Base</a></li>
-</ul>
-<h4>Pressure Cooker</h4>
-<ul>
-<li><a class="recipe-open" data-recipe-id="r6" href="/baseline-food-approach/recipes/mushroom-and-rosemary-oat-groats-risotto">Mushroom and Rosemary Oat Groats Risotto</a></li>
-</ul>
-<h4>Stovetop</h4>
-<ul>
-<li><a class="recipe-open" data-recipe-id="r5" href="/baseline-food-approach/recipes/creamy-mushroom-sauce">Creamy Mushroom Sauce</a></li>
-<li><a class="recipe-open" data-recipe-id="r7" href="/baseline-food-approach/recipes/sattu-balanced-nut-butter-spread-base">Sattu-Balanced Nut Butter Spread Base</a></li>
-<li><a class="recipe-open" data-recipe-id="r2" href="/baseline-food-approach/recipes/creamy-stovetop-polenta">Creamy Stovetop Polenta</a></li>
-<li><a class="recipe-open" data-recipe-id="r4" href="/baseline-food-approach/recipes/hearty-oat-porridge-with-apple-pear-and-vanilla">Hearty Oat Porridge with Apple, Pear &amp; Vanilla</a></li>
-<li><a class="recipe-open" data-recipe-id="r3" href="/baseline-food-approach/recipes/pure-stovetop-chickpea-baked-beans">Pure Stovetop Chickpea Baked Beans</a></li>
-<li><a class="recipe-open" data-recipe-id="r11" href="/baseline-food-approach/recipes/potato-and-carrot-vegan-cheese">Potato &amp; Carrot Vegan Cheese</a></li>
-<li><a class="recipe-open" data-recipe-id="r8" href="/baseline-food-approach/recipes/sweet-potato-and-bell-pepper-sauce">Sweet Potato &amp; Bell Pepper Sauce</a></li><li><a class="recipe-open" data-recipe-id="r9" href="/baseline-food-approach/recipes/aubergine-and-carrot-sauce">Aubergine &amp; Carrot Sauce</a></li><li><a class="recipe-open" data-recipe-id="r10" href="/baseline-food-approach/recipes/tomato-and-red-pepper-sauce">Tomato &amp; Red Pepper Sauce</a></li></ul>
-</aside>
 <div class="recipe-main">
 <div class="card recipe-landing" id="recipes-landing">
 <h2>Recipes</h2>
-<p>Select a recipe to view it. Each recipe opens alone with a side navigation.</p>
+<p>Select a recipe to view it. Each recipe opens as its own focused page.</p>
 <h4>Dehydrator</h4>
 <ul>
 <li><a class="recipe-open" data-recipe-id="r1" href="/baseline-food-approach/recipes/raw-40-c-almond-flax-pizza-base">Raw 40°C Almond–Flax Pizza Base</a></li>
@@ -181,431 +161,6 @@ Recommended structure:
 <li><a class="recipe-open" data-recipe-id="r11" href="/baseline-food-approach/recipes/potato-and-carrot-vegan-cheese">Potato &amp; Carrot Vegan Cheese</a></li>
 <li><a class="recipe-open" data-recipe-id="r8" href="/baseline-food-approach/recipes/sweet-potato-and-bell-pepper-sauce">Sweet Potato &amp; Bell Pepper Sauce</a></li><li><a class="recipe-open" data-recipe-id="r9" href="/baseline-food-approach/recipes/aubergine-and-carrot-sauce">Aubergine &amp; Carrot Sauce</a></li><li><a class="recipe-open" data-recipe-id="r10" href="/baseline-food-approach/recipes/tomato-and-red-pepper-sauce">Tomato &amp; Red Pepper Sauce</a></li></ul>
 </div>
-<div class="recipes">
-<!-- Recipe 1 -->
-<div class="recipe card recipe-page" data-category="Dehydrator" data-recipe-slug="raw-40-c-almond-flax-pizza-base" id="r1">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r1')">Print This Recipe</button>
-</div>
-<h3>Raw 40°C Almond–Flax Pizza Base</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Allergens: Tree nuts (almonds).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li><li data-method-step="1" data-tip="Vitamin E, magnesium; generally neutral for body odour.">1 cup <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-almonds" href="#ing-almonds">almonds</a> </li>
-<li data-method-step="1" data-tip="Simple solvent for blending and binding.">¾ cup <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Seasoning</strong></li><li data-method-step="2" data-tip="Omega-3 (ALA), fibre; generally neutral.">½ cup <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-flaxseed" href="#ing-flaxseed">Linseed/Flaxseed (Whole or Ground)</a></li>
-<li data-method-step="2" data-tip="B-vitamins; savoury flavour without heavy spices.">¼ cup <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-nutritional-yeast" href="#ing-nutritional-yeast">nutritional yeast</a></li>
-<li data-method-step="2" data-tip="Gentle herb; commonly considered freshening.">1 tsp <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-parsley" href="#ing-parsley">dried parsley</a></li>
-<li data-method-step="2" data-tip="Gentle aromatic herb; not usually linked to odour.">1 tsp <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-basil" href="#ing-basil">dried basil</a></li>
-<li data-method-step="2" data-tip="Useful for flavour; excess can increase sweating for some.">½ tsp <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-<li data-method-step="2" data-tip="Brightens flavour; often perceived as ‘fresh’.">2 tbsp <a class="ing-link" data-from-recipe="r1" data-ingredient="ing-lemon" href="#ing-lemon">lemon juice</a></li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Prepare almonds:</strong> If using whole almonds, soak them in enough water to cover for 8–12 hours, then drain and rinse. Blend the almonds with the water into a coarse paste. If using ground almonds, mix the almonds with the water into a soft paste.</li><li><strong>Make dough:</strong> Stir in the linseed/flaxseed, nutritional yeast, dried parsley, dried basil, sea salt, and lemon juice. Rest for 10 minutes so the linseed/flaxseed can thicken the mixture.</li><li><strong>Shape:</strong> Spread the dough 5–7 mm thick on a lined dehydrator tray. Score lightly if you want easier portions later.</li><li><strong>Dehydrate:</strong> Dehydrate at 40°C for 6 hours, flip, then continue 8–10 hours until the base is firm yet flexible.</li><li><strong>Store:</strong> Cool fully before storing.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Spread with a mild tomato base + herbs</li>
-<li>Top with mashed avocado + lemon</li>
-<li>Serve with steamed greens on the side</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Generally low‑odour ingredients; lemon and herbs tend to keep the profile fresh.</li>
-<li>Dose notes: At larger servings, nuts/flax can feel heavier for some—start smaller, chew well, and increase gradually if needed.</li>
-<li>Energy: Higher‑fat, higher‑fibre; typically steadier energy than refined carbs.</li>
-</ul>
-</div>
-<!-- Recipe 2 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="creamy-stovetop-polenta" id="r2">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r2')">Print This Recipe</button>
-</div>
-<h3>Creamy Stovetop Polenta</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Allergens: Sesame (tahini).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li><li data-method-step="1" data-tip="Cornmeal base; gentle, plain carbs.">½ cup <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-polenta" href="#ing-polenta">polenta</a></li>
-<li data-method-step="1" data-tip="Herb blend; adds flavour without onion/garlic.">1 tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-herbes-de-provence" href="#ing-herbes-de-provence">Herbes de Provence</a></li>
-<li data-method-step="1" data-tip="Useful for flavour; keep moderate.">¼ tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-<li class="ing-subhead"><strong>Creamy finish</strong></li><li data-method-step="2" data-tip="Sesame paste; adds richness and minerals.">2 tbsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-tahini" href="#ing-tahini">roasted unhulled tahini</a> </li>
-<li data-method-step="4" data-tip="B vitamins; savoury depth.">¼ cup <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-nutritional-yeast" href="#ing-nutritional-yeast">nutritional yeast</a></li>
-<li data-method-step="2" data-tip="Adjust for texture (firmer vs softer).">1½–2 cups <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Avocado topping</strong></li><li data-method-step="5" data-tip="Creamy fats; neutral-to-mild for odour for many people.">2 <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-avocado" href="#ing-avocado">avocados</a></li>
-<li data-method-step="5" data-tip="Brightens flavour.">13 g <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-lemon" href="#ing-lemon">lemon juice</a></li>
-<li data-method-step="5" data-tip="Season lightly.">⅛ tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Mix dry base:</strong> In a saucepan, whisk together the polenta, Herbes de Provence, and sea salt.</li><li><strong>Cook:</strong> Add the water and tahini. Bring to a gentle simmer over low–medium heat, stirring or whisking frequently until thick and creamy (about 8–12 minutes, depending on grind).</li><li><strong>Adjust texture:</strong> For softer polenta, add small splashes of water and stir until smooth and glossy.</li><li><strong>Finish off-heat:</strong> Remove from heat and stir in the nutritional yeast until fully incorporated.</li><li><strong>Top:</strong> Mash the avocados with the lemon juice and sea salt. Spoon over the polenta and serve immediately.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Serve soft as a bowl, or chill and slice into squares</li>
-<li>Top with avocado + lemon</li>
-<li>Pair with steamed greens or a plain tomato side</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Mild, neutral base; pairs well with fresh herbs without strong aromatics.</li>
-<li>Dose notes: At very large servings this can feel heavier for some—start smaller and balance with vegetables/protein for best tolerance.</li>
-<li>Energy: Carb‑forward; can be quick energy—add fats/protein for steadier release.</li>
-</ul>
-</div>
-<!-- Recipe 3 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="pure-stovetop-chickpea-baked-beans" id="r3">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r3')">Print This Recipe</button>
-</div>
-<h3>Pure Stovetop Chickpea Baked Beans</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Allergens: Nuts (nut butter).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Chickpeas</strong></li>
-<li data-method-step="1" data-tip="Legume base; protein + fibre.">250 g <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-chickpeas" href="#ing-chickpeas">Chickpeas Dried</a></li>
-<li class="ing-subhead"><strong>Sauce</strong></li>
-<li data-method-step="3" data-tip="Sauce body; lycopene; gentle acidity.">4–5 ripe <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-tomatoes" href="#ing-tomatoes">tomatoes</a></li>
-<li data-method-step="3" data-tip="Adds sweetness/body without sugar.">1 medium <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-carrot" href="#ing-carrot">carrot</a></li>
-<li data-method-step="3" data-tip="Adds umami without strong spices.">250 g <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-mushrooms" href="#ing-mushrooms">white mushrooms</a> (finely chopped)</li>
-<li data-method-step="3" data-tip="Adjust sauce consistency.">200 ml <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Seasoning</strong></li>
-<li data-method-step="3" data-tip="Herb blend; gentle.">2 tsp <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-herbes-de-provence" href="#ing-herbes-de-provence">Herbes de Provence</a></li>
-<li data-method-step="3" data-tip="Optional depth.">¼ tsp <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-sage" href="#ing-sage">sage</a></li>
-<li data-method-step="3" data-tip="Season to taste.">¾ tsp <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="5" data-tip="Adds richness and body; add gradually and taste as you go.">⅛–¼ cup <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-brazil-nut-butter" href="#ing-brazil-nut-butter">Brazil Nut Butter</a> (or nut butter of your choosing)</li>
-<li data-method-step="6" data-tip="Brightness at the end; balances tomato and nut butter.">½–1 tsp <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-lemon" href="#ing-lemon">lemon juice</a></li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Soak chickpeas:</strong> Rinse the chickpeas. Soak them in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked chickpeas to the Pressure Cooker with fresh water to cover well. Cook on High Pressure for 15 minutes. Natural release, then drain.</li><li><strong>Sauce:</strong> Water-sauté the carrot and white mushrooms for 6–8 minutes. Add the tomatoes, 200 ml water, Herbes de Provence, sage, and sea salt. Simmer 25–30 minutes.</li><li><strong>Combine:</strong> Add the cooked chickpeas and simmer 10–15 minutes.</li><li><strong>Nut butter:</strong> Stir in the Brazil Nut Butter and simmer 10–15 minutes.</li><li><strong>Finish:</strong> Add the lemon juice. Rest covered 5 minutes, then serve.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Over baked/mashed sweet potato</li>
-<li>With steamed greens</li>
-<li>With roasted potatoes or sweet potato wedges</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Mild seasoning; legumes are generally neutral but can increase fermentation-related odour for some.</li>
-<li>Dose notes: Larger portions of chickpeas may increase gas; consider smaller servings and thorough cooking.</li>
-<li>Energy: Fibre + protein support steadier energy and satiety.</li>
-</ul>
-</div>
-<!-- Recipe 4 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-oat-toggle="1" data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla" id="r4">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r4')">Print This Recipe</button>
-</div>
-<h3>Hearty Oat Porridge with Apple, Pear &amp; Vanilla</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Dairy-free, no added sugar. Allergens: Oats (choose certified gluten-free if needed); nuts (nut butter).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Prepare fruit</strong></li>
-<li data-method-step="1" data-tip="Fruit base for natural sweetness + fibre.">2 <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-apple" href="#ing-apple">apples</a>, chopped (with peel)</li>
-<li data-method-step="1" data-tip="Soft, sweet fruit for the compote.">2 <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-pear" href="#ing-pear">pears</a>, chopped (with peel)</li>
-<li data-method-step="2" data-tip="Measured water for simmering the fruit.">2 tbsp <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Cook porridge</strong></li>
-<li data-method-step="4" data-tip="Wholegrain base. Choose the oat type below.">125 g <a class="ing-link oat-type-link" data-from-recipe="r4" data-ingredient="ing-jumbo-oats" data-jumbo-ingredient="ing-jumbo-oats" data-jumbo-label="Oats (Jumbo, Gluten-Free)" data-porridge-ingredient="ing-porridge-oats" data-porridge-label="Oats (Porridge, Gluten-Free)" href="#ing-jumbo-oats">Oats (Jumbo, Gluten-Free)</a></li>
-<li data-method-step="4" data-oat-water="1" data-oat-water-jumbo="600" data-oat-water-porridge="550" data-tip="Measured porridge water.">600 ml <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li data-method-step="3" data-tip="Warm aroma without sweetness.">½ tsp <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-vanilla-bean-powder" href="#ing-vanilla-bean-powder">vanilla bean powder</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="2" data-tip="Brightness + balance for the fruit.">½ <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-lemon" href="#ing-lemon">lemon</a> juiced</li>
-<li data-method-step="5" data-tip="Use only if the porridge tightens too much off-heat.">1–2 tbsp hot <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-water" href="#ing-water">water</a> (optional)</li>
-<li data-method-step="6" data-tip="Adds fats + satiety; stir in at the end or use as a topping.">2 tbsp <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-peanut-butter" href="#ing-peanut-butter">Peanut Butter</a> (or nut butter of your choosing)</li>
-<li data-method-step="3" data-tip="Optional warmth; keep light if you prefer.">½ tsp <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-ground-cinnamon" href="#ing-ground-cinnamon">ground cinnamon</a> (optional)</li>
-<li data-method-step="4" data-tip="A tiny amount helps the oats taste fuller.">Pinch of <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-sea-salt" href="#ing-sea-salt">salt</a></li>
-</ul>
-<p class="note"><strong>Water guide:</strong> A typical starting point is <em>1 part oats to ~2 parts water</em> (porridge/rolled oats) and <em>1:2 to 1:2.25</em> (jumbo oats) by volume. For this recipe (125 g oats): use <strong>550 ml</strong> for porridge oats or <strong>600 ml</strong> for jumbo oats, then adjust thickness as you prefer.</p>
-<h4>Method</h4>
-<ol><li><strong>Prepare fruit:</strong> Chop the apples and pears (leave the peel on).</li><li><strong>Simmer compote:</strong> Add the apples and pears to a small saucepan with the lemon juice and 2 tbsp water. Cover and simmer 10–15 minutes, stirring occasionally, until soft and juicy.</li><li><strong>Finish compote:</strong> Stir in the vanilla bean powder and the ground cinnamon (optional). Keep warm on the lowest heat or set aside with the lid on.</li><li><strong>Cook porridge:</strong> Bring the water and a pinch of sea salt to a boil. Add the oats, reduce to low, and simmer 10–12 minutes, stirring often, until creamy.</li><li><strong>Adjust + rest:</strong> If it thickens too much, add 1–2 tbsp hot water and stir. Rest 2 minutes off-heat to settle.</li><li><strong>Add nut butter:</strong> Stir in the Peanut Butter until melted through.</li><li><strong>Serve:</strong> Spoon into bowls and top with the warm apple–pear compote.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Add extra fruit on top (fresh or cooked)</li>
-<li>Make it thicker for “oat pudding” by cooking a few minutes longer</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Light and sweet; fruit and vanilla are not typically associated with strong body odour.</li>
-<li>Dose notes: Higher fruit servings increase sugars; adjust portion if sensitive to glycaemic swings.</li>
-<li>Energy: Light, quick energy; pair with protein/fat for longer-lasting satiety.</li>
-</ul>
-</div>
-<!-- Recipe 5 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="creamy-mushroom-sauce" id="r5">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r5')">Print This Recipe</button>
-</div>
-<h3>Creamy Mushroom Sauce</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Butter-free, dairy-free. Allergens: Sesame (tahini).</p>
-<h4>Ingredients</h4>
-<ul data-ingredients-list="">
-<li class="ing-subhead"><strong>Sauté stage</strong></li>
-<li data-method-step="1" data-tip="Slice to your preferred texture.">500 g <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-mushrooms" href="#ing-mushrooms">mushrooms</a>, sliced</li>
-<li data-method-step="1" data-tip="Light seasoning for the first stage.">⅛ tsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-<li data-method-step="1" data-tip="Gentle herb flavour without harshness.">1 tsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-parsley" href="#ing-parsley">dried parsley</a></li>
-<li data-method-step="1" data-tip="Measured sauté water for the first stage.">4 tbsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Sauce base</strong></li>
-<li data-method-step="2" data-tip="Acts as the butter/fat base for the sauce.">3 tbsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-tahini" href="#ing-tahini">tahini</a></li>
-<li data-method-step="3" data-tip="Main liquid base.">1 litre <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Thickening slurry</strong></li>
-<li data-method-step="4" data-tip="Choose one starch; amount depends on your thickness selection."><span class="thickness-swap" data-thickness-moderate="4" data-thickness-thick="4½" data-thickness-thin="3">4</span> <span class="thickness-unit">tbsp</span> <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-cornflour" href="#ing-cornflour">cornflour</a> or <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-cassava-flour" href="#ing-cassava-flour">cassava flour</a></li>
-<li data-method-step="4" data-tip="Cold water prevents lumps."><span class="thickness-swap" data-thickness-moderate="8" data-thickness-thick="9" data-thickness-thin="6">8</span> <span class="thickness-unit">tbsp</span> cold <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="5" data-tip="Finish seasoning at the end.">¼ tsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Sauté mushrooms:</strong> Add the mushrooms to a wide pan over medium heat. Add 4 tbsp water. Stir in the sea salt and dried parsley. Sauté 5–7 minutes until the mushrooms are softened and reduced.</li><li><strong>Add tahini:</strong> Stir in the tahini and cook 1–2 minutes to coat the mushrooms.</li><li><strong>Simmer:</strong> Add 1 litre water and bring to a gentle simmer.</li><li><strong>Thicken:</strong> In a small bowl, whisk the cornflour or cassava flour with 8 tbsp cold water to make a slurry. Pour in slowly while stirring. Simmer 2–4 minutes until thickened.</li><li><strong>Finish:</strong> Add the sea salt and adjust to taste. Remove from heat once creamy.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Use as a creamy pasta sauce (stir through hot pasta and loosen with hot water if needed).</li>
-<li>Spoon over baked potatoes or roasted vegetables.</li>
-<li>Serve with rice or gluten-free noodles.</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Earthy but not pungent; herbs help keep the aroma clean.</li>
-<li>Dose notes: Larger amounts of mushrooms and nut butter can be richer and more aromatic for some.</li>
-<li>Energy: Calorie-dense; fats can increase satiety and steadiness when portioned appropriately.</li>
-</ul>
-</div>
-<!-- Recipe 6 -->
-<div class="recipe card recipe-page" data-category="Pressure Cooker" data-recipe-slug="mushroom-and-rosemary-oat-groats-risotto" id="r6">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r6')">Print This Recipe</button>
-</div>
-<h3>Mushroom and Rosemary Oat Groats Risotto</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<div class="meta">
-<h4>Meta</h4>
-<p><strong>Equipment:</strong> Pressure Cooker + saucepan</p>
-<p><strong>Allergens:</strong> Oats; nuts (nut butter)</p>
-</div>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Pressure Cooker cook</strong></li>
-<li data-method-step="1" data-tip="Wholegrain base; steady starch and fibre.">1½ cups <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-oat-groats" href="#ing-oat-groats">Oats</a></li>
-<li data-method-step="2" data-tip="Measured cooking liquid for the pressure-cooker stage.">2½ cups <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li class="ing-subhead"><strong>Mushrooms</strong></li>
-<li data-method-step="3" data-tip="Adds umami and moisture without heavy seasoning.">1 cup <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-mushrooms" href="#ing-mushrooms">mushrooms</a>, sliced</li>
-<li data-method-step="3" data-tip="Small measured sauté water for the mushroom stage.">2 tbsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-water" href="#ing-water">water</a></li>
-<li data-method-step="3" data-tip="Aromatic herb; keeps the finish savoury and clean.">1 tsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-rosemary" href="#ing-rosemary">dried rosemary</a></li>
-<li data-method-step="3" data-tip="Earthy herb; use lightly for depth.">¼ tsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-sage" href="#ing-sage">dried sage</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="5" data-tip="Creamy fat source; rounds the risotto and boosts satiety.">3 tbsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-brazil-nut-butter" href="#ing-brazil-nut-butter">Brazil Nut Butter</a> (or nut butter of your choosing)</li>
-<li data-method-step="5" data-tip="Bright finish; balances the earthy grains and mushrooms.">1 tsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-lemon" href="#ing-lemon">lemon juice</a></li>
-<li data-method-step="5" data-tip="Savoury depth; adds B-vitamins and a cheesy note.">2 tbsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-nutritional-yeast" href="#ing-nutritional-yeast">nutritional yeast</a></li>
-<li data-method-step="5" data-tip="Final seasoning; lifts the grain and mushroom flavour.">½ tsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-sea-salt" href="#ing-sea-salt">sea salt</a></li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Soak:</strong> Rinse the oat groats. Soak the oat groats in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked oat groats and 2½ cups water to the Pressure Cooker. Cook on High Pressure for 10 minutes. Natural release 10 minutes, then quick release. Drain well.</li><li><strong>Mushrooms:</strong> Add the mushrooms, 2 tbsp water, dried rosemary, and dried sage to a saucepan over medium heat. Cook 2–3 minutes, stirring.</li><li><strong>Combine:</strong> Add the cooked oat groats to the saucepan. Stir and simmer 3–6 minutes until creamy.</li><li><strong>Finish:</strong> Remove from heat. Stir in the Brazil Nut Butter until fully combined, then stir in the lemon juice, nutritional yeast, and sea salt.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Serve as-is for a warm, creamy bowl, or pair with steamed greens and an extra squeeze of lemon.</li>
-<li>Top with extra nutritional yeast or sliced mushrooms for a richer finish.</li>
-<li>If you want it looser, add hot water gradually until it settles into a soft risotto texture.</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li><strong>Odour impact:</strong> Earthy during cooking; rosemary and lemon keep the aroma clean and bright.</li>
-<li><strong>Texture:</strong> Creamy with a gentle chew from the intact groats.</li>
-<li><strong>Energy:</strong> Fibre + fat tends to feel steadier than refined starches when portioned appropriately.</li>
-</ul>
-</div>
-<!-- Recipe 7 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="sattu-balanced-nut-butter-spread-base" id="r7">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r7')">Print This Recipe</button>
-</div>
-<h3>Sattu-Balanced Nut Butter Spread Base</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<div class="meta">
-<h4>Meta</h4>
-<p class="note">Gluten-free, vegan, no-cook base. Allergens: Tree nuts (almond butter).</p>
-</div>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base Mix</strong></li>
-<li data-method-step="1" data-tip="Main fat base; creamy texture with steady energy.">150 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-almond-butter" href="#ing-almond-butter">Almond Butter</a></li>
-<li data-method-step="1" data-tip="Roasted gram flour; adds body, protein, and a dry nutty note.">120 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-sattu" href="#ing-sattu">Sattu (Roasted Gram Flour)</a></li>
-<li data-method-step="1" data-tip="Adds fibre and light binding as the mix settles.">15 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-flaxseed" href="#ing-flaxseed">Linseed/Flaxseed (Whole or Ground)</a></li>
-<li data-method-step="1" data-tip="Small seasoning lift; keeps the spread from tasting flat.">2–3 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-sea-salt" href="#ing-sea-salt">Sea Salt</a></li>
-<li class="ing-subhead"><strong>Liquids</strong></li>
-<li data-method-step="4" data-tip="Optional brightness; cuts the density of the base.">15 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-lemon" href="#ing-lemon">Lemon Juice</a> (optional)</li>
-<li data-method-step="5" data-tip="Use only as needed to loosen the spread at serving time.">0–15 g <a class="ing-link" data-from-recipe="r7" data-ingredient="ing-water" href="#ing-water">Water</a> (as needed)</li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Make the base:</strong> In a bowl, mix sattu, flaxseed, and salt until uniform. Stir into almond butter until fully combined and thick.</li><li><strong>Store:</strong> Transfer to a clean, dry, airtight jar. Keep the jar dry (no water added to the storage jar).</li><li><strong>Portion:</strong> Scoop 45 g of the base into a small bowl.</li><li><strong>Optional lemon:</strong> Add 15 g lemon juice and mix thoroughly.</li><li><strong>Hydrate to spreadable:</strong> Add water gradually up to 0–15 g, mixing until spreadable.</li><li><strong>Rest + remix:</strong> Wait 30–60 seconds, then remix (sattu and flax continue to hydrate and thicken slightly).</li></ol>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Generally mild/neutral; lemon is optional for a clean finish.</li>
-<li>Texture: Thick, creamy base; hydrates into a smooth spread with staged water addition.</li>
-<li>Energy: Higher-fat plus fibre/protein; typically steadier than refined spreads.</li>
-</ul>
-</div>
-<!-- Recipe 8 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="sweet-potato-and-bell-pepper-sauce" id="r8">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r8')">Print This Recipe</button>
-</div>
-<h3>Sweet Potato &amp; Bell Pepper Sauce</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Smooth blended sauce. Equipment: Soup maker + blender, or hob + blender. Allergens: Tree nuts (cashews).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li>
-<li data-method-step="1" data-tip="Cooked root base; gives body and natural sweetness.">500 g <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-sweet-potato" href="#ing-sweet-potato">Sweet Potato</a></li>
-<li data-method-step="1" data-tip="Cooked pepper base; adds sweetness and colour.">300 g <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-red-pepper" href="#ing-red-pepper">Red Pepper</a></li>
-<li data-method-step="1" data-tip="Creamy element; use whole cashews or the butter version."><span class="amt" data-base-max="70" data-base-min="70" data-base-unit="g" data-ingredient="ing-cashews">70 g</span> <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-cashews" href="#ing-cashews">Cashews</a> or <span class="amt" data-base-max="2.5" data-base-min="2.5" data-base-unit="tbsp" data-ingredient="ing-cashew-butter">2½ tbsp</span> <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-cashew-butter" href="#ing-cashew-butter">Cashew Butter</a></li>
-<li data-method-step="1" data-tip="Measured liquid for a sauce consistency rather than a dip.">300 ml <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-water" href="#ing-water">Water</a></li>
-<li data-method-step="1" data-tip="Gentle dried herb note; keep it light.">½ tsp <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-dried-herbs" href="#ing-dried-herbs">Dried Mixed Herbs</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="3" data-tip="Brightens the sauce after blending.">2 tbsp <a class="ing-link" data-from-recipe="r8" data-ingredient="ing-lemon" href="#ing-lemon">Lemon Juice</a></li>
-<li data-method-step="3" data-tip="Final seasoning; add to taste after blending."><a class="ing-link" data-from-recipe="r8" data-ingredient="ing-sea-salt" href="#ing-sea-salt">Sea Salt</a>, to taste</li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Option 1 — Soup maker + blender:</strong> Add the Sweet Potato, Red Pepper, Cashews or Cashew Butter, Water, and Dried Mixed Herbs. Run the smooth soup cycle. Add the Lemon Juice and Sea Salt, then blend briefly again until fully smooth.</li><li><strong>Option 2 — Hob:</strong> Add the Sweet Potato, Red Pepper, Cashews or Cashew Butter, Water, and Dried Mixed Herbs to a saucepan. Heat gently for 3–5 minutes, just until hot and the cashews are softened if using them.</li><li><strong>Blend + finish:</strong> Blend until smooth. Add the Lemon Juice and Sea Salt, blend or stir again, then use for chips or pasta.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Use for chips</li>
-<li>Stir through hot pasta</li>
-<li>Spoon over baked potato or roasted vegetables</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Mild and softly sweet; not heavily aromatic.</li>
-<li>Texture: Smooth, creamy sauce rather than a dip.</li>
-<li>Energy: Root vegetable + nut base gives a steadier feel than a thin tomato-only sauce.</li>
-</ul>
-</div>
-<!-- Recipe 9 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="aubergine-and-carrot-sauce" id="r9">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r9')">Print This Recipe</button>
-</div>
-<h3>Aubergine &amp; Carrot Sauce</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Smooth blended pasta sauce. Equipment: Soup maker + blender, or hob + blender. Allergens: Tree nuts (cashews).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li>
-<li data-method-step="1" data-tip="Cooked aubergine gives the sauce a soft, silky body.">300 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-aubergine" href="#ing-aubergine">Aubergine</a></li>
-<li data-method-step="1" data-tip="Cooked carrot adds sweetness and rounds the flavour.">100 g <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-carrot" href="#ing-carrot">Carrot</a></li>
-<li data-method-step="1" data-tip="Creamy element; use whole cashews or the butter version."><span class="amt" data-base-max="30" data-base-min="30" data-base-unit="g" data-ingredient="ing-cashews">30 g</span> <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-cashews" href="#ing-cashews">Cashews</a> or <span class="amt" data-base-max="1" data-base-min="1" data-base-unit="tbsp" data-ingredient="ing-cashew-butter">1 tbsp</span> <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-cashew-butter" href="#ing-cashew-butter">Cashew Butter</a></li>
-<li data-method-step="1" data-tip="Measured liquid for a smooth pasta sauce.">110 ml <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-water" href="#ing-water">Water</a></li>
-<li data-method-step="1" data-tip="Gentle herb note that keeps the sauce soft rather than sharp.">½ tsp <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-parsley" href="#ing-parsley">Dried Parsley</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="3" data-tip="Brightens the sauce once blended.">1 tbsp <a class="ing-link" data-from-recipe="r9" data-ingredient="ing-lemon" href="#ing-lemon">Lemon Juice</a></li>
-<li data-method-step="3" data-tip="Final seasoning; add to taste after blending."><a class="ing-link" data-from-recipe="r9" data-ingredient="ing-sea-salt" href="#ing-sea-salt">Sea Salt</a>, to taste</li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Option 1 — Soup maker + blender:</strong> Add the Aubergine, Carrot, Cashews or Cashew Butter, Water, and Dried Parsley. Blend until smooth and heated through. Add the Lemon Juice and Sea Salt, then blend or stir briefly again.</li><li><strong>Option 2 — Hob:</strong> Add the Aubergine, Carrot, Cashews or Cashew Butter, Water, and Dried Parsley to a saucepan. Heat gently for 3–5 minutes, just until hot and the cashews are softened if using them.</li><li><strong>Blend + pasta finish:</strong> Blend until smooth. Stir in the Lemon Juice and Sea Salt, then add to hot pasta with 40 ml pasta water.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Toss through hot pasta</li>
-<li>Use as a soft sauce for baked potato or wedges</li>
-<li>Spoon over roasted vegetables</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Soft and low-aromatic; no sharp spices.</li>
-<li>Texture: Smooth, mellow, and slightly silky from the aubergine.</li>
-<li>Energy: Vegetable-led sauce with a small nut base for extra staying power.</li>
-</ul>
-</div>
-<!-- Recipe 10 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="tomato-and-red-pepper-sauce" id="r10">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r10')">Print This Recipe</button>
-</div>
-<h3>Tomato &amp; Red Pepper Sauce</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Smooth blended sauce. Equipment: Soup maker + blender, or hob + blender. Allergens: Tree nuts (cashews).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li>
-<li data-method-step="1" data-tip="Tomato base; gives acidity and a classic sauce profile.">200 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-tomatoes" href="#ing-tomatoes">Tomatoes</a></li>
-<li data-method-step="1" data-tip="Cooked pepper adds sweetness and helps round the tomato.">150 g <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-red-pepper" href="#ing-red-pepper">Red Pepper</a></li>
-<li data-method-step="1" data-tip="Creamy element; use whole cashews or the butter version."><span class="amt" data-base-max="30" data-base-min="30" data-base-unit="g" data-ingredient="ing-cashews">30 g</span> <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-cashews" href="#ing-cashews">Cashews</a> or <span class="amt" data-base-max="1" data-base-min="1" data-base-unit="tbsp" data-ingredient="ing-cashew-butter">1 tbsp</span> <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-cashew-butter" href="#ing-cashew-butter">Cashew Butter</a></li>
-<li data-method-step="1" data-tip="Measured liquid for a sauce consistency.">90 ml <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-water" href="#ing-water">Water</a></li>
-<li data-method-step="1" data-tip="Soft dried herb note that suits tomato without making it heavy.">½ tsp <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-basil" href="#ing-basil">Dried Basil</a></li>
-<li class="ing-subhead"><strong>Finish</strong></li>
-<li data-method-step="3" data-tip="Bright finish after blending.">1 tbsp <a class="ing-link" data-from-recipe="r10" data-ingredient="ing-lemon" href="#ing-lemon">Lemon Juice</a></li>
-<li data-method-step="3" data-tip="Final seasoning; add to taste after blending."><a class="ing-link" data-from-recipe="r10" data-ingredient="ing-sea-salt" href="#ing-sea-salt">Sea Salt</a>, to taste</li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Option 1 — Soup maker + blender:</strong> Add the Tomatoes, Red Pepper, Cashews or Cashew Butter, Water, and Dried Basil. Run the smooth soup cycle. Add the Lemon Juice and Sea Salt, then blend briefly again until fully smooth.</li><li><strong>Option 2 — Hob:</strong> Add the Tomatoes, Red Pepper, Cashews or Cashew Butter, Water, and Dried Basil to a saucepan. Simmer for 8–10 minutes, until the tomatoes are fully soft and the cashews are softened if using them.</li><li><strong>Blend + finish:</strong> Blend until smooth. Add the Lemon Juice and Sea Salt, blend or stir again, then use for chips or pasta.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Use for chips</li>
-<li>Stir through hot pasta</li>
-<li>Use as a simple sauce for roasted vegetables</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Odour profile: Bright and mild; tomato-led without heavy aromatics.</li>
-<li>Texture: Smooth and sauce-like rather than thick like a dip.</li>
-<li>Energy: Lighter-feeling than a richer nut-heavy sauce.</li>
-</ul>
-</div>
-<!-- Recipe 11 -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="potato-and-carrot-vegan-cheese" id="r11">
-<div class="recipe-actions">
-<button class="back-btn" onclick="BASELINE_showAllRecipes()" type="button">Back To Recipe Overview</button>
-<button class="print-btn" onclick="printCard('r11')">Print This Recipe</button>
-</div>
-<h3>Potato &amp; Carrot Vegan Cheese</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="#ingredients">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Smooth blended vegan cheese. Equipment: Soup maker + blender, or hob + blender. Allergens: Tree nuts (almond butter).</p>
-<h4>Ingredients</h4>
-<ul>
-<li class="ing-subhead"><strong>Base</strong></li>
-<li data-method-step="1" data-tip="Soft cooked potato forms the main body and helps the cheese set more firmly when cold.">600 g <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-potato" href="#ing-potato">Potato</a></li>
-<li data-method-step="1" data-tip="Fresh carrot adds colour, sweetness, and extra body once fully softened.">320 g <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-carrot" href="#ing-carrot">Fresh Carrot</a></li>
-<li data-method-step="1" data-tip="Use some of the vegetable cooking water to control thickness and help everything blend smoothly.">240 ml <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-water" href="#ing-water">Cooking Water</a></li>
-<li data-method-step="2" data-tip="Nutritional yeast gives the main cheesy, savoury note.">6 tbsp <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-nutritional-yeast" href="#ing-nutritional-yeast">Nutritional Yeast</a></li>
-<li data-method-step="2" data-tip="Almond butter adds fat and helps the blend feel richer and smoother.">4 tbsp <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-almond-butter" href="#ing-almond-butter">Almond Butter</a></li>
-<li data-method-step="2" data-tip="Lemon juice brightens the cheese and stops it tasting flat.">4 tbsp <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-lemon" href="#ing-lemon">Lemon Juice</a></li>
-<li data-method-step="2" data-tip="Salt sharpens the savoury profile and makes the cheese read more clearly.">2 tsp <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-sea-salt" href="#ing-sea-salt">Sea Salt</a></li>
-<li data-method-step="2" data-tip="Tapioca starch is the critical stretchy thickener; it activates fully when heated and stirred.">2 tbsp <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-tapioca-starch" href="#ing-tapioca-starch">Tapioca Starch</a></li>
-<li data-method-step="2" data-tip="Optional tiny colour adjustment only; keep it very light.">Pinch <a class="ing-link" data-from-recipe="r11" data-ingredient="ing-turmeric" href="#ing-turmeric">Turmeric</a> (optional)</li>
-</ul>
-<h4>Method</h4>
-<ol><li><strong>Soften the vegetables:</strong> Cut the Potato and Fresh Carrot into smaller pieces. Boil until very soft, about 15 minutes, then reserve 240 ml of the cooking water.</li><li><strong>Option 1 — Soup maker + blender:</strong> Add the Potato, Fresh Carrot, 240 ml Cooking Water, Nutritional Yeast, Almond Butter, Lemon Juice, Sea Salt, Tapioca Starch, and optional Turmeric. Run the smooth soup setting. If needed, add a little more Cooking Water and blend again until completely smooth, thick, glossy, and smooth.</li><li><strong>Option 2 — Hob:</strong> Add the Potato, Fresh Carrot, 240 ml Cooking Water, Nutritional Yeast, Almond Butter, Lemon Juice, Sea Salt, Tapioca Starch, and optional Turmeric to a blender. Blend until completely smooth. Pour into a saucepan and cook over medium heat for 3–5 minutes, stirring continuously, until thick, glossy, and smooth. Add a little more Cooking Water if needed.</li><li><strong>Use or chill:</strong> Use warm while soft, or chill for 2–4 hours if you want a firmer set.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
-<li>Use warm over potatoes, vegetables, or gluten-free pasta</li>
-<li>Spoon into wraps, bowls, or baked-potato fillings</li>
-<li>Chill, then spoon or dollop into cold meal prep boxes</li>
-</ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
-<li>Texture: Warm it is thick, glossy, and smooth; cold it turns firmer, denser, and holds shape better.</li>
-<li>Prep note: Frozen carrot can be used with no other changes.</li>
-<li>Consistency note: Make sure the carrot is fully soft before blending to avoid graininess.</li>
-</ul>
-</div>
-</div><!-- /.recipes -->
 </div><!-- /.recipe-main -->
 </div><!-- /.recipe-layout -->
 </div><!-- /.card -->
@@ -616,7 +171,7 @@ Recommended structure:
 <div class="grid">
 <div class="card">
 <h2>Ingredient Library</h2>
-<p class="note">A quick reference for core ingredients used across recipes (nutrition + odour notes).</p>
+<p class="note">Browse the ingredients used across Food Approach recipes. Each ingredient opens as its own focused record.</p>
 <div aria-label="Ingredient filters" class="filter-bar">
 <label for="ingredientFilter"><strong>Filter ingredients by recipe</strong></label>
 <select aria-label="Filter ingredients by recipe" id="ingredientFilter">
@@ -625,460 +180,212 @@ Recommended structure:
 <button aria-label="Clear ingredient filter" class="clear" id="clearIngredientFilter" type="button">Show all</button>
 <span id="ingredientRecipeLink" style="display:none; margin-left:6px;"></span>
 </div>
-<div class="lib">
-<div class="card" id="ing-almond-butter">
-<h3>Almond Butter</h3>
+<div class="lib ingredient-index">
+<article class="card ingredient-index-card" id="ing-almond-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/almond-butter">Almond Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground nut butter (almond)</p>
-<p>💚 <strong>Benefits:</strong> Dense source of fats, vitamin E, and some protein; useful for creamy no-cook bases.</p>
-<p>👃 <strong>Odour note:</strong> Usually mild and neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Acts as the fatty binding phase in spreads and sauces.</li>
-<li>Good for: no-cook bases, dressings, and creamy savoury or sweet applications.</li>
-</ul>
-</div>
-<div class="card" id="ing-sattu">
-<h3>Sattu (Roasted Gram Flour)</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Roasted pulse flour (typically gram/chickpea)</p>
-<p>💚 <strong>Benefits:</strong> Adds protein, fibre, body, and a dry binding matrix without gluten.</p>
-<p>👃 <strong>Odour note:</strong> Mild roasted-legume aroma; usually low-intensity.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Hydrates quickly and continues to thicken after mixing, so add water in stages.</li>
-<li>Good for: spread bases, drink mixes, and quick thickening where a roasted pulse note is acceptable.</li>
-</ul>
-</div>
-<div class="card" id="ing-almonds">
-<h3>Almonds</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/almond-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-almonds">
+<h3><a href="/baseline-food-approach/ingredient-library/almonds">Almonds</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Edible seed (Prunus dulcis)</p>
-<p class="meta-line">🗺️ <strong>Regions:</strong> Mediterranean climates, Middle East, California</p>
-<p>💚 <strong>Benefits:</strong> Vitamin E, healthy fats, fibre, minerals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Good for: snackable fats + fibre; adds crunch to bowls and salads.</li>
-<li>Use: whole, chopped, or blended into sauces; soak if you prefer softer texture.</li>
-</ul>
-</div>
-<div class="card" id="ing-apple">
-<h3>Apple</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/almonds">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-apple">
+<h3><a href="/baseline-food-approach/ingredient-library/apple">Apple</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Malus domestica)</p>
-<p>💚 <strong>Benefits:</strong> Fibre + gentle sweetness; works well cooked or raw.</p>
-<p>👃 <strong>Odour note:</strong> Mild/neutral; generally not associated with lingering body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds sweetness and moisture; works well grated or stewed.</li>
-<li>Good for: oats/porridge bowls and snacks.</li>
-</ul>
-</div>
-<div class="card" id="ing-aubergine">
-<h3>Aubergine</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/apple">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-aubergine">
+<h3><a href="/baseline-food-approach/ingredient-library/aubergine">Aubergine</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit used as a vegetable (Solanum melongena)</p>
-<p>💚 <strong>Benefits:</strong> Soft cooked body; useful for smooth blended sauces.</p>
-<p>👃 <strong>Odour note:</strong> Mild and low-aromatic when cooked plainly.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Aubergine goes silky when cooked and blended.</li>
-<li>Good for: pasta sauces, bakes, and soft savoury bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-cashews">
-<h3>Cashews</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Tree nut (Anacardium occidentale)</p>
-<p>💚 <strong>Benefits:</strong> Mild, creamy nut that blends smoothly into sauces.</p>
-<p>👃 <strong>Odour note:</strong> Nutty but usually soft in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cashews soften and blend into a smooth cream-style base.</li>
-<li>Good for: sauces, blended soups, and dairy-free creamy textures.</li>
-</ul>
-</div>
-<div class="card" id="ing-dried-herbs">
-<h3>Dried Mixed Herbs</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Generic dried mixed herb blend</p>
-<p>💚 <strong>Benefits:</strong> Simple savoury lift without relying on stronger aromatics.</p>
-<p>👃 <strong>Odour note:</strong> Gentle herbal aroma; usually clean rather than heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Useful when you want a mild herb note without choosing one strong herb.</li>
-<li>Good for: sauces, soups, and soft savoury blends.</li>
-</ul>
-</div>
-<div class="card" id="ing-red-pepper">
-<h3>Red Pepper</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Sweet pepper fruit (Capsicum annuum)</p>
-<p>💚 <strong>Benefits:</strong> Adds sweetness, colour, and vitamin C.</p>
-<p>👃 <strong>Odour note:</strong> Sweet pepper aroma; usually not persistent.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Red pepper adds sweetness and softness once cooked and blended.</li>
-<li>Good for: sauces, soups, and vegetable bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-sweet-potato">
-<h3>Sweet Potato</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Ipomoea batatas)</p>
-<p>💚 <strong>Benefits:</strong> Adds body, natural sweetness, and beta-carotene.</p>
-<p>👃 <strong>Odour note:</strong> Mild, softly sweet, and not strongly aromatic.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sweet potato thickens blended sauces while keeping them soft rather than sharp.</li>
-<li>Good for: sauces, mash-style bowls, and roasted vegetable meals.</li>
-</ul>
-</div>
-<div class="card" id="ing-avocado">
-<h3>Avocado</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/aubergine">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-avocado">
+<h3><a href="/baseline-food-approach/ingredient-library/avocado">Avocado</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Persea americana)</p>
-<p>💚 <strong>Benefits:</strong> Creamy fats + fibre; supports satiety and texture.</p>
-<p>👃 <strong>Odour note:</strong> Typically mild/neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds creaminess and fats without dairy.</li>
-<li>Good for: bowls, spreads, and blending into sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-basil">
-<h3>Basil (Dried)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/avocado">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-basil">
+<h3><a href="/baseline-food-approach/ingredient-library/basil">Basil (Dried)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Herb leaf (Ocimum basilicum)</p>
-<p>💚 <strong>Benefits:</strong> Aromatic flavour without harshness.</p>
-<p>👃 <strong>Odour note:</strong> Gentle culinary aromatic; typically not linked to strong body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Basil (dried) brings sweet-herbal flavour to tomato-forward meals.</li>
-<li>Good for: pasta sauces, soups, dressings; add earlier so it rehydrates.</li>
-</ul>
-</div>
-<div class="card" id="ing-brazil-nut-butter">
-<h3>Brazil Nut Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/basil">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-brazil-nut-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/brazil-nut-butter">Brazil Nut Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground Brazil nuts (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Rich and distinctive; adds calories and creaminess in small amounts.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Brazil nut butter is rich and distinctive; use smaller amounts for flavour.</li>
-<li>Good for: occasional rotation; blends into porridges and sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-carrot">
-<h3>Carrot</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/brazil-nut-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-carrot">
+<h3><a href="/baseline-food-approach/ingredient-library/carrot">Carrot</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Daucus carota)</p>
-<p>💚 <strong>Benefits:</strong> Adds sweetness/body without sugar; carotenoids.</p>
-<p>👃 <strong>Odour note:</strong> Mild; generally neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds sweetness and body; supports a richer mouthfeel when blended.</li>
-<li>Good for: soups, stews, and sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-cashew-butter">
-<h3>Cashew Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/carrot">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cashew-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/cashew-butter">Cashew Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground cashews (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Very creamy; blends into sauces and ‘nut milk’ bases easily.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cashew butter is mild and creamy; blends very smoothly.</li>
-<li>Good for: sauces, ‘cream’ bases, and porridge.</li>
-</ul>
-</div>
-<div class="card" id="ing-cassava-flour">
-<h3>Cassava Flour</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cashew-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cashews">
+<h3><a href="/baseline-food-approach/ingredient-library/cashews">Cashews</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Tree nut (Anacardium occidentale)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cashews">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cassava-flour">
+<h3><a href="/baseline-food-approach/ingredient-library/cassava-flour">Cassava Flour</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root flour (cassava)</p>
-<p>💚 <strong>Benefits:</strong> Gluten-free thickener; can create a slightly more “hearty” body.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Gluten‑free flour/starch for thickening and baking-style uses.</li>
-<li>Good for: thickening and binding; adjust liquids as it absorbs.</li>
-</ul>
-</div>
-<div class="card" id="ing-chickpeas">
-<h3>Chickpeas</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cassava-flour">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-chickpeas">
+<h3><a href="/baseline-food-approach/ingredient-library/chickpeas">Chickpeas</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Legume (Cicer arietinum)</p>
-<p>💚 <strong>Benefits:</strong> Protein + fibre; dependable staple for repeatable meals.</p>
-<p>👃 <strong>Odour note:</strong> Can increase gas for some people (soaking/cooking well can help); not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Protein + fibre staple; versatile base.</li>
-<li>Good for: stews, salads, hummus-style sauces; rinse canned for cleaner flavour.</li>
-</ul>
-</div>
-<div class="card" id="ing-ground-cinnamon">
-<h3>Cinnamon (Ground)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/chickpeas">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-ground-cinnamon">
+<h3><a href="/baseline-food-approach/ingredient-library/ground-cinnamon">Cinnamon (Ground)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Spice bark (Cinnamomum spp.)</p>
-<p>💚 <strong>Benefits:</strong> Warm flavour; use lightly if you prefer a very clean profile.</p>
-<p>👃 <strong>Odour note:</strong> Mild spice aroma; typically not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cinnamon (ground) adds warmth and perceived sweetness.</li>
-<li>Good for: oats, stewed fruit, and desserts.</li>
-</ul>
-</div>
-<div class="card" id="ing-cornflour">
-<h3>Cornflour (Cornstarch)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/ground-cinnamon">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cornflour">
+<h3><a href="/baseline-food-approach/ingredient-library/cornflour">Cornflour (Cornstarch)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Starch thickener (maize)</p>
-<p>💚 <strong>Benefits:</strong> Quick thickening with a clean finish when simmered briefly.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Thickener (cornstarch) that stabilises sauces.</li>
-<li>Good for: quick thickening; mix with cold water before adding to hot liquids.</li>
-</ul>
-</div>
-<div class="card" id="ing-herbes-de-provence">
-<h3>Herbes de Provence</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cornflour">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-dried-herbs">
+<h3><a href="/baseline-food-approach/ingredient-library/dried-herbs">Dried Mixed Herbs</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Generic dried mixed herb blend</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/dried-herbs">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-herbes-de-provence">
+<h3><a href="/baseline-food-approach/ingredient-library/herbes-de-provence">Herbes de Provence</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Dried herb blend (typically thyme, rosemary, oregano, etc.)</p>
-<p>💚 <strong>Benefits:</strong> Adds flavour without onion/garlic; supports a “clean” savoury profile.</p>
-<p>👃 <strong>Odour note:</strong> Herbal, light; typically not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Classic herb blend that adds complexity quickly.</li>
-<li>Good for: soups, stews, and roasted vegetables.</li>
-</ul>
-</div>
-<div class="card" id="ing-lemon">
-<h3>Lemon Juice</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/herbes-de-provence">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-lemon">
+<h3><a href="/baseline-food-approach/ingredient-library/lemon">Lemon Juice</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Citrus juice (Citrus limon)</p>
-<p>💚 <strong>Benefits:</strong> Bright flavour; vitamin C (small per serving).</p>
-<p>👃 <strong>Odour note:</strong> Usually associated with freshness.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Lemon juice brightens flavour and balances richness.</li>
-<li>Good for: dressings, sauces, and ‘lift’ in stews; add to taste at the end.</li>
-</ul>
-</div>
-<div class="card" id="ing-flaxseed">
-<h3>Linseed/Flaxseed (Whole or Ground)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/lemon">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-flaxseed">
+<h3><a href="/baseline-food-approach/ingredient-library/flaxseed">Linseed/Flaxseed (Whole or Ground)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Seed (Linum usitatissimum)</p>
-<p class="meta-line">🗺️ <strong>Regions:</strong> Canada, Northern Europe, India</p>
-<p>💚 <strong>Benefits:</strong> Omega-3 (ALA), fibre, lignans.</p>
-<p>👃 <strong>Odour note:</strong> Usually neutral; fibre can support digestive clearance for some people.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Linseed/flaxseed is the same seed; whole or ground changes texture and digestibility.</li>
-<li>Good for: omega‑3 (ALA) + fibre; thickens porridges/smoothies.</li>
-<li>Storage: ground goes rancid faster—keep airtight and cool.</li>
-</ul>
-</div>
-<div class="card" id="ing-macadamia-butter">
-<h3>Macadamia Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/flaxseed">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-macadamia-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/macadamia-butter">Macadamia Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground macadamias (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Very rich, buttery flavour; makes bowls and sauces feel luxurious.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Macadamia butter is very rich and buttery in flavour.</li>
-<li>Good for: creamy bowls and sauces when you want extra richness.</li>
-</ul>
-</div>
-<div class="card" id="ing-nutritional-yeast">
-<h3>Nutritional Yeast</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/macadamia-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-nutritional-yeast">
+<h3><a href="/baseline-food-approach/ingredient-library/nutritional-yeast">Nutritional Yeast</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Inactivated yeast flakes</p>
-<p>💚 <strong>Benefits:</strong> B-vitamins (often B12-fortified), savoury satisfaction.</p>
-<p>👃 <strong>Odour note:</strong> Strong aroma in the packet, but gentle in recipes compared with garlic/onion.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds a savoury ‘cheesy’ umami note without dairy.</li>
-<li>Good for: sauces, tofu scrambles, soups; provides B‑vitamins (check fortification).</li>
-</ul>
-</div>
-<div class="card" id="ing-oat-groats">
-<h3>Oats (Groats, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/nutritional-yeast">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-oat-groats">
+<h3><a href="/baseline-food-approach/ingredient-library/oat-groats">Oats (Groats, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole oat kernel (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Intact grain texture; steady, slow-release carbohydrate base with fibre.</p>
-<p>👃 <strong>Odour note:</strong> Mild cereal aroma; pressure cooking keeps it contained.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (groats, gluten‑free) are least processed and take longer to cook/soak.</li>
-<li>Good for: hearty texture and slower-digesting bowl bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-jumbo-oats">
-<h3>Oats (Jumbo, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/oat-groats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-jumbo-oats">
+<h3><a href="/baseline-food-approach/ingredient-library/jumbo-oats">Oats (Jumbo, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole grain (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Slow-release carbs + beta-glucan fibre; comforting base for repeat meals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; choose certified gluten-free if needed.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (jumbo, gluten‑free) hold texture and bite.</li>
-<li>Good for: thick porridges; soak longer if you want softer.</li>
-</ul>
-</div>
-<div class="card" id="ing-porridge-oats">
-<h3>Oats (Porridge, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/jumbo-oats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-porridge-oats">
+<h3><a href="/baseline-food-approach/ingredient-library/porridge-oats">Oats (Porridge, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole grain (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Faster-cooking oats; soft texture and gentle digestion for repeat meals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; choose certified gluten-free if needed.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (porridge, gluten‑free) cook quickly into a creamy texture.</li>
-<li>Good for: everyday porridge; easy thickness control with water.</li>
-</ul>
-</div>
-<div class="card" id="ing-parsley">
-<h3>Parsley (Dried)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/porridge-oats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-parsley">
+<h3><a href="/baseline-food-approach/ingredient-library/parsley">Parsley (Dried)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Herb leaf (Petroselinum crispum)</p>
-<p>💚 <strong>Benefits:</strong> Antioxidants, vitamin K (small amounts dried).</p>
-<p>👃 <strong>Odour note:</strong> Often perceived as freshening.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Parsley (dried) adds herbal lift and colour to savoury dishes.</li>
-<li>Good for: finishing soups, stews, and salad dressings.</li>
-</ul>
-</div>
-<div class="card" id="ing-peanut-butter">
-<h3>Peanut Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/parsley">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-peanut-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/peanut-butter">Peanut Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground peanuts (ideally 100% peanuts)</p>
-<p>💚 <strong>Benefits:</strong> Optional richness; helps thicken sauces.</p>
-<p>👃 <strong>Odour note:</strong> Nutty aroma; typically mild in small amounts.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Peanut butter adds thickness, fat, and savoury sweetness.</li>
-<li>Good for: sauces and porridges; choose no added sugar if preferred.</li>
-</ul>
-</div>
-<div class="card" id="ing-pear">
-<h3>Pear</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/peanut-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-pear">
+<h3><a href="/baseline-food-approach/ingredient-library/pear">Pear</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Pyrus communis)</p>
-<p>💚 <strong>Benefits:</strong> Hydrating fruit with gentle sweetness; softens beautifully when simmered.</p>
-<p>👃 <strong>Odour note:</strong> Mild/neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Soft sweetness and moisture; pairs well with oats and cinnamon.</li>
-<li>Good for: breakfast bowls and snacks.</li>
-</ul>
-</div>
-<div class="card" id="ing-polenta">
-<h3>Polenta (Cornmeal)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/pear">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-polenta">
+<h3><a href="/baseline-food-approach/ingredient-library/polenta">Polenta (Cornmeal)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground maize (corn) meal</p>
-<p>💚 <strong>Benefits:</strong> Simple carbohydrate base; naturally gluten-free (check cross-contamination).</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; mild aroma.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cornmeal used as a base starch; thickens into a porridge-like texture.</li>
-<li>Good for: creamy bowls and savoury bases; whisk to avoid lumps.</li>
-</ul>
-</div>
-<div class="card" id="ing-rosemary">
-<h3>Rosemary (Dried)</h3>
-<p class="meta-line">🌿 <strong>Type:</strong> Dried herb</p>
-<p>💚 <strong>Benefits:</strong> Aromatic accent that supports savoury depth without heaviness.</p>
-<p>👃 <strong>Odour note:</strong> Herbal and piney; use lightly for a clean finish.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Rosemary (dried) is aromatic and robust—use sparingly.</li>
-<li>Good for: roasted veg, tomato dishes, and savoury marinades.</li>
-</ul>
-</div>
-<div class="card" id="ing-sage">
-<h3>Sage</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Dried herb (Salvia officinalis)</p>
-<p>💚 <strong>Benefits:</strong> Warm savoury depth; use lightly.</p>
-<p>👃 <strong>Odour note:</strong> Aromatic, but not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sage is earthy and strong—use sparingly.</li>
-<li>Good for: hearty stews and savoury bowls.</li>
-</ul>
-</div>
-<div class="card" id="ing-sea-salt">
-<h3>Sea Salt</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Mineral salt</p>
-<p>💚 <strong>Benefits:</strong> Sodium for fluid balance (small amounts).</p>
-<p>👃 <strong>Odour note:</strong> Not a direct odour cause, but excess can increase sweating for some people.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Seasoning; use to taste.</li>
-<li>Good for: bringing flavours into focus—add gradually and adjust.</li>
-</ul>
-</div>
-<div class="card" id="ing-tahini">
-<h3>Tahini (100%, Raw Whole or Roasted)</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Sesame seed paste</p>
-<p>💚 <strong>Benefits:</strong> Minerals and healthy fats; adds richness without cooking oil.</p>
-<p>👃 <strong>Odour note:</strong> Nutty aroma; usually mild once mixed into meals.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sesame paste that adds fat, body, and a nutty bitterness.</li>
-<li>Good for: sauces/dressings; balances acid (lemon) and salt.</li>
-</ul>
-</div>
-<div class="card" id="ing-tomatoes">
-<h3>Tomatoes</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Fruit (Solanum lycopersicum)</p>
-<p>💚 <strong>Benefits:</strong> Sauce base with gentle acidity; lycopene.</p>
-<p>👃 <strong>Odour note:</strong> Bright aroma; usually not linked to lingering body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Foundation for many savoury recipes; acidity + umami.</li>
-<li>Good for: sauces and stews; choose tinned for consistency.</li>
-</ul>
-</div>
-<div class="card" id="ing-vanilla-bean-powder">
-<h3>Vanilla Bean Powder</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Ground vanilla bean</p>
-<p>💚 <strong>Benefits:</strong> Adds warmth and sweetness perception without sugar.</p>
-<p>👃 <strong>Odour note:</strong> Aromatic but gentle in food.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds vanilla aroma without liquid sweeteners.</li>
-<li>Good for: porridge, smoothies, and desserts.</li>
-</ul>
-</div>
-<div class="card" id="ing-potato">
-<h3>Potato</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/polenta">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-potato">
+<h3><a href="/baseline-food-approach/ingredient-library/potato">Potato</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root vegetable / tuber (Solanum tuberosum)</p>
-<p>💚 <strong>Benefits:</strong> Smooth starchy body, useful for thicker blends and firmer chilled textures.</p>
-<p>👃 <strong>Odour note:</strong> Mild and neutral once cooked.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Potato gives blended sauces and cheese-style bases body without a heavy aroma.</li>
-<li>Good for: mash-style meals, thick sauces, and set vegan cheese bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-tapioca-starch">
-<h3>Tapioca Starch</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/potato">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-red-pepper">
+<h3><a href="/baseline-food-approach/ingredient-library/red-pepper">Red Pepper</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Sweet pepper fruit (Capsicum annuum)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/red-pepper">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-rosemary">
+<h3><a href="/baseline-food-approach/ingredient-library/rosemary">Rosemary (Dried)</a></h3>
+<p class="meta-line">🌿 <strong>Type:</strong> Dried herb</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/rosemary">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sage">
+<h3><a href="/baseline-food-approach/ingredient-library/sage">Sage</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Dried herb (Salvia officinalis)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sage">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sattu">
+<h3><a href="/baseline-food-approach/ingredient-library/sattu">Sattu (Roasted Gram Flour)</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Roasted pulse flour (typically gram/chickpea)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sattu">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sea-salt">
+<h3><a href="/baseline-food-approach/ingredient-library/sea-salt">Sea Salt</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Mineral salt</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sea-salt">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sweet-potato">
+<h3><a href="/baseline-food-approach/ingredient-library/sweet-potato">Sweet Potato</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Ipomoea batatas)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sweet-potato">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tahini">
+<h3><a href="/baseline-food-approach/ingredient-library/tahini">Tahini (100%, Raw Whole or Roasted)</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Sesame seed paste</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tahini">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tapioca-starch">
+<h3><a href="/baseline-food-approach/ingredient-library/tapioca-starch">Tapioca Starch</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Starch thickener (cassava root)</p>
-<p>💚 <strong>Benefits:</strong> Gives a glossy, stretchy finish when heated properly.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Tapioca starch is especially useful when you want stretch rather than a floury thickness.</li>
-<li>Good for: vegan cheese, glossy sauces, and elastic starch-thickened blends.</li>
-</ul>
-</div>
-<div class="card" id="ing-turmeric">
-<h3>Turmeric</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tapioca-starch">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tomatoes">
+<h3><a href="/baseline-food-approach/ingredient-library/tomatoes">Tomatoes</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Fruit (Solanum lycopersicum)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tomatoes">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-turmeric">
+<h3><a href="/baseline-food-approach/ingredient-library/turmeric">Turmeric</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground spice root (Curcuma longa)</p>
-<p>💚 <strong>Benefits:</strong> Strong colour in tiny amounts; useful for warm yellow tone.</p>
-<p>👃 <strong>Odour note:</strong> Earthy spice aroma; best kept light if you want a clean result.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Turmeric is mainly useful here for colour, not as a dominant flavour.</li>
-<li>Good for: tiny colour adjustments in savoury blends, soups, and sauce bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-water">
-<h3>Water</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/turmeric">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-vanilla-bean-powder">
+<h3><a href="/baseline-food-approach/ingredient-library/vanilla-bean-powder">Vanilla Bean Powder</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Ground vanilla bean</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/vanilla-bean-powder">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-water">
+<h3><a href="/baseline-food-approach/ingredient-library/water">Water</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Solvent/hydration base</p>
-<p>💚 <strong>Benefits:</strong> Supports cooking and texture control.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Main cooking liquid; also used for quick nut ‘milk’ bases.</li>
-<li>Good for: controlling thickness; add gradually for preferred texture.</li>
-</ul>
-</div>
-<div class="card" id="ing-mushrooms">
-<h3>White Mushrooms</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/water">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-mushrooms">
+<h3><a href="/baseline-food-approach/ingredient-library/white-mushroom">White Mushrooms</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fungus (Agaricus bisporus)</p>
-<p>💚 <strong>Benefits:</strong> Umami depth without strong spices.</p>
-<p>👃 <strong>Odour note:</strong> Earthy aroma while cooking; typically not persistent.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Umami booster; adds depth to savoury dishes.</li>
-<li>Good for: mince-style fillings, stews, and sauces.</li>
-</ul>
-</div>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/white-mushroom">View ingredient record</a></p>
+</article>
 </div>
 </div>
 </div>
@@ -1285,10 +592,13 @@ Recommended structure:
 </footer>
 </div>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=20260527gradienttruth"></script>
+<script src="/systems/baseline-food-approach/js/baseline-food-recipe-index.js?v=FOOD_RECIPE_INDEX_20261004_1"></script>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
-<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=RECIPE_SLIDER_ORDER_20261004_1"></script>
+<script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script>
+<script src="/systems/baseline-food-approach/js/food-data-service.js?v=FOOD_DATA_SERVICE_20261004_1"></script>
+<script src="/sitewide/js/baseline-shared.js?v=FOOD_FOLDER_RECIPE_AUTHORITY_20261004_1"></script>
 <script defer="" src="/systems/baseline-food-approach/js/baseline-diet-food-library.js?v=COMPLETE_OFFICIAL_FOOD_LIBRARY_20260617"></script>
-<script defer="" src="/systems/baseline-food-approach/js/baseline-diet-log.js?v=DIET_LIBRARY_READY_WAIT_20260617"></script>
+<script defer="" src="/systems/baseline-food-approach/js/baseline-diet-log.js?v=FOOD_SERVER_AUTHORITY_20261004_1"></script>
 <script src="/sitewide/js/baseline-tabs.js?v=EDIT_VERSION_20260607_NO_VISIBLE_TAB_HASHES"></script>
 <script id="baseline-recipe-authoring-template" type="application/json">
 {
@@ -1308,8 +618,8 @@ Recommended structure:
     "Allergens: list the allergens here."
   ],
   "navigation_rule": {
-    "instruction": "Use BASELINE_openRecipe(), BASELINE_showAllRecipes(), and BASELINE_selectTab() so refresh/back restore from safe hashes like #recipe=, #tab=, #support=, and #ing-. Do not rely on plain #rN anchors or visibility-only toggles as the source of truth.",
-    "why": "The browser refresh button and the offline embed shell both reopen the current view from the shared URL state."
+    "instruction": "Use clean Food routes. Recipe bodies live in /baseline-food-approach/recipes/<slug> and ingredient records live in /baseline-food-approach/ingredient-library/<slug>. Do not create public #recipe, #ing, or filter-hash routes.",
+    "why": "Each public URL owns one focused record and browser refresh/back restore that record directly."
   },
   "ingredientSections": [
     {
