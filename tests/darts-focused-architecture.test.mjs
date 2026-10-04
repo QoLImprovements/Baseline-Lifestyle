@@ -171,3 +171,9 @@ test('Darts public API retains Realm contribution access after modularisation',(
   assert.match(runtime,/getRealmContribution:\(\) => realmContributionForDarts\(profile\)/);
   assert.match(runtime,/globalThis\.DartsFocusedGames = Object\.freeze/);
 });
+
+
+test('Darts coordinator wires ensurePanel from shell authority',()=>{
+  assert.match(runtime,/ensureOverviewEntry,[\s\S]*queueOverviewSync,[\s\S]*ensurePanel,[\s\S]*openPanel/);
+  assert.match(runtime,/ensureStylesheet\(\); ensurePanel\(\); ensureOverviewEntry\(\); installObserver\(\);/);
+});
