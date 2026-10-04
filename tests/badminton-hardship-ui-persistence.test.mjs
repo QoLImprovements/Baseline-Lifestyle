@@ -17,6 +17,10 @@ const css = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/css/baseline-badminton-session.css"),
   "utf8",
 );
+const renderer = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
+  "utf8",
+);
 
 function section(startName, endName) {
   const start = js.indexOf("function " + startName);
@@ -47,8 +51,8 @@ test("court cards no longer render Why this matchup", () => {
 });
 
 test("active hardship explanation is a compact question-mark control on the artwork", () => {
-  assert.match(js, /function renderHardshipHelp\(court\)/);
-  assert.match(js, /aria-label="Why this hardship\?"/);
+  assert.match(renderer, /function renderHardshipHelp\(court\)/);
+  assert.match(renderer, /aria-label="Why this hardship\?"/);
   assert.match(js, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
   assert.match(css, /\.court-hardship-help\{position:absolute;top:8px;right:8px/);
   assert.match(css, /\.court-hardship-help>summary/);
