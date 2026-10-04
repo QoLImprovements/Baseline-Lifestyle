@@ -10,6 +10,7 @@ const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-cor
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
 const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css','utf8');
 const realmWood=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
+const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
 const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
 const rootHtaccess=fs.readFileSync('.htaccess','utf8');
 const hubHtaccess=fs.readFileSync('systems/baseline-games-hub/.htaccess','utf8');
@@ -72,6 +73,17 @@ test('core remains the sole owner of normal Hub controls',()=>{
   assert.match(core,/BASELINE_GAMES_HUB_CORE_READY = true/);
   assert.match(core,/function wireTabs\(\)/);
   assert.match(core,/event\.target\.closest\('\[data-select-game\]'\)/);
+});
+
+test('Basecamp exposes every registered Realm destination through positioned landmarks',()=>{
+  for(const landmark of ['ninja-training','workshop','cooking','merchant','exploration','calorie-escape','storage','tactical-operations','party-preparation','campfire-rest']){
+    assert.match(html,new RegExp('data-basecamp-landmark="'+landmark+'"'));
+    assert.match(basecampCss,new RegExp('data-basecamp-landmark="'+landmark+'"'));
+  }
+  assert.match(html,/data-realm-view="calorie-escape"/);
+  assert.match(html,/data-realm-view="tactical-operations"/);
+  assert.match(html,/data-realm-open-tab="workshop" data-workshop-category="cooking"/);
+  assert.ok((html.match(/class="realm-location-caption"/g)||[]).length>=10);
 });
 
 test('Realm root is not transformed by inherited Games Hub card hover effects',()=>{
