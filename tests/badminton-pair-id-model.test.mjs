@@ -13,28 +13,32 @@ const js = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const ratings = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-ratings.js"),
+  "utf8",
+);
 const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
 );
 
 test("doubles ratings use canonical Pair IDs made from two Player IDs", () => {
-  assert.match(js, /function getPairIdFromPlayers\(players\)/);
-  assert.match(js, /return ids\.length === 2 \? \('pair:' \+ ids\.join\('::'\)\) : ''/);
+  assert.match(ratings, /function getPairIdFromPlayers\(players\)/);
+  assert.match(ratings, /return ids\.length === 2 \? \('pair:' \+ ids\.join\('::'\)\) : ''/);
   assert.match(php, /function bl_badminton_pair_id\(string \$a, string \$b\): string/);
   assert.match(php, /'pair:' \. implode\('::', \$ids\)/);
 });
 
 test("legacy name-keyed pair ratings migrate to Pair IDs", () => {
-  assert.match(js, /getPlayerByNameForRatingMigration/);
-  assert.match(js, /normalizePairRatingKeys/);
+  assert.match(ratings, /getPlayerByNameForRatingMigration/);
+  assert.match(ratings, /normalizePairRatingKeys/);
   assert.match(php, /\$playersByName\[bl_badminton_normalize/);
   assert.match(php, /\$pairRatings\[\$pairId\] = \$rating/);
 });
 
 test("solo 1v2 ratings use Player IDs rather than names", () => {
-  assert.match(js, /const playerId = getPlayerRatingId\(player\)/);
-  assert.match(js, /state\.oneVsTwoRatings\[playerId\]/);
+  assert.match(ratings, /const playerId = getPlayerRatingId\(player\)/);
+  assert.match(ratings, /oneVsTwoRatings\[playerId\]/);
   assert.match(php, /\$state\['oneVsTwoRatings'\]\[\$player\['id'\]\]/);
 });
 

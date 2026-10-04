@@ -12,6 +12,10 @@ const source = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const ratingsSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-ratings.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -100,4 +104,13 @@ test("hardship compatibility APIs delegate to one dominant mutation authority", 
   assert.match(source, /function reduceHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return reduceDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
   assert.match(source, /function applyHardshipSaveIntent[\s\S]*increaseDominantHardshipForSide/);
   assert.match(source, /function applyHardshipSaveIntent[\s\S]*reduceDominantHardshipForSide/);
+});
+
+
+test("Badminton rating engine is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(ratingsSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_RATINGS/);
+  assert.match(source, /ratingModule\.create/);
+  assert.doesNotMatch(source, /function applyRatingChanges\(/);
+  assert.match(ratingsSource, /function applyRatingChanges\(/);
 });
