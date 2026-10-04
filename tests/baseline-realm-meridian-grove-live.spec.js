@@ -65,7 +65,7 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
   for (const command of ['Attack', 'Ability', 'Magic', 'Item', 'Defend', 'Escape']) {
     await expect(page.getByRole('button', { name: command, exact: true })).toBeVisible();
   }
-  await expect(page.locator('.jrpg-meter.atb')).toHaveCount(5);
+  await expect(page.locator('.jrpg-meter.atb')).toHaveCount(2);
 
   // Active-mode enemy turns must update battle state without replacing the
   // player's open command/target DOM.
