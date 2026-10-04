@@ -338,9 +338,10 @@ test("entering the top-level Game Plan tab returns to the primary Game Plan subt
 });
 
 test("Badminton repaired modules carry fresh cache revisions", () => {
-  assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
+  assert.match(htmlSource, /badminton-session-state-hydration\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
+  assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
-  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
 });
 
 
@@ -368,4 +369,41 @@ test("Results owns score-generation matching locally instead of calling a missin
 test("Badminton render failure diagnostics never instruct users to clear browser session data", () => {
   assert.doesNotMatch(source, /clear stale local session data/i);
   assert.match(source, /render failed during/);
+});
+
+
+test("Badminton server auth is authoritative for moderator/admin score permission", () => {
+  const start = source.indexOf("function serverAuthIsLoggedIn");
+  const end = source.indexOf("function currentUserCanEditPlayerPrefs", start);
+  const authBlock = source.slice(start, end);
+  assert.match(authBlock, /lastServerAuth\.logged_in/);
+  assert.match(authBlock, /lastServerAuth\.is_developer \|\| lastServerAuth\.is_badminton_admin/);
+  const managerStart = authBlock.indexOf("function currentUserIsManager");
+  const managerBlock = authBlock.slice(managerStart);
+  assert.ok(
+    managerBlock.indexOf("if(currentUserIsModerator()) return true;") <
+      managerBlock.indexOf("auth\.authed !== true"),
+    "server-authoritative moderator/admin check must run before generic sitewide auth gating"
+  );
+});
+
+test("Badminton account matching includes authoritative user IDs", () => {
+  assert.match(source, /tokens\.push\('uid:' \+ String\(serverUserId\)\)/);
+  assert.match(rosterSource, /player\.loginUserId \|\| player\.linkedUserId \|\| player\.userId \|\| player\.uid/);
+  assert.match(hydrationSource, /loginUserId: String\(player && \(player\.loginUserId \|\| player\.linkedUserId \|\| player\.userId \|\| player\.uid/);
+});
+
+test("Players & Pairs retains real account metadata behind canonical login labels", () => {
+  assert.match(rosterSource, /data-login-user-id=/);
+  assert.match(rosterSource, /data-login-email=/);
+  assert.match(rosterSource, /const selectedUserId = selectedOption/);
+  assert.match(rosterSource, /player\.loginUserId = nextLogin/);
+  assert.match(rosterSource, /player\.loginEmail = nextLogin/);
+  const buildStart = rosterSource.indexOf("function buildLoginOptions");
+  const buildEnd = rosterSource.indexOf("function loadLoginOptions", buildStart);
+  const buildBlock = rosterSource.slice(buildStart, buildEnd);
+  assert.ok(
+    buildBlock.indexOf("loginOptions.forEach") < buildBlock.indexOf("if(!map[canonicalModeratorKey])"),
+    "real login records must be considered before the PeterBW fallback alias"
+  );
 });
