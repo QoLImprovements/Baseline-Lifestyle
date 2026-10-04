@@ -68,7 +68,7 @@
   /* Sticky hero header (ported) */
   .care-line{margin-top:6px; font-size:18px; color:var(--muted); max-width:58ch;}
   .badge{
-    background:var(--food-surface-subtle); color:var(--accent-2);
+    background:var(--food-tab-bg); color:var(--accent-2);
     padding:7px 11px; border-radius:999px; font-size:16px; font-weight:760;
     border:1px solid var(--border-2); box-shadow:var(--shadow-soft);
   }
@@ -86,13 +86,13 @@
   }
   .tab:hover{
     transform:translateY(-1px);
-    background:var(--food-surface-panel);
+    background:var(--food-tab-hover);
     border-color:rgba(200,100,50,0.22);
     box-shadow:0 16px 30px -24px rgba(200,100,50,0.30);
   }
   .tab[aria-selected="true"]{
     color: var(--ink) !important;
-    background:var(--food-surface-selected);
+    background:var(--food-tab-active);
     border-color:rgba(27,7,4,0.18);
     box-shadow:0 22px 46px -34px rgba(200,100,50,0.60);
   }
@@ -683,3 +683,46 @@ body[data-app] #recipes .recipe-edit-options .scale-block:not(.is-open) .scale-t
     max-width:100% !important;
   }
 }
+
+/* --- Food visual authority -------------------------------------------------
+   Final Food-only cascade authority. Universal recipe CSS deliberately owns
+   geometry/behaviour; Food owns the rendered card and tab colours. */
+html body[data-app="food"] .card,
+html body[data-app="food"] #recipes .recipe.card,
+html body[data-app="food"] #recipes .recipe-page.card,
+html body[data-app="food"] .recipe-page.standalone-recipe-card{
+  background:var(--food-surface-card) !important;
+  background-color:transparent !important;
+  border-color:var(--food-surface-border) !important;
+}
+
+html body[data-app="food"] .tab,
+html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab,
+html[data-initial-recipe-view] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab{
+  background:var(--food-tab-bg) !important;
+  border-color:var(--food-tab-border) !important;
+  color:var(--ink) !important;
+  -webkit-text-fill-color:currentColor !important;
+  box-shadow:0 10px 22px -20px rgba(90,12,21,.42) !important;
+}
+
+html body[data-app="food"] .tab:hover,
+html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab:hover{
+  background:var(--food-tab-hover) !important;
+  border-color:var(--food-deep) !important;
+}
+
+html body[data-app="food"] .tab[aria-selected="true"],
+html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[aria-selected="true"],
+html[data-initial-recipe-view="standard"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="standard"],
+html[data-initial-recipe-view="details"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="details"],
+html[data-initial-recipe-view="guidance"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="guidance"],
+html[data-initial-recipe-view="show-all"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="show-all"]{
+  background:var(--food-tab-active) !important;
+  border-color:var(--food-deep) !important;
+  color:#fff7e8 !important;
+  -webkit-text-fill-color:currentColor !important;
+  font-weight:900 !important;
+  box-shadow:0 12px 24px -18px rgba(90,12,21,.72) !important;
+}
+
