@@ -11,6 +11,7 @@
     const getSideByNumber = options.getSideByNumber;
     const getOppositeSideNumber = options.getOppositeSideNumber;
     const getRestrictionZoneMode = options.getRestrictionZoneMode;
+    const getRestrictionSideNumberFromMemory = options.getRestrictionSideNumberFromMemory;
     const getPresetOrder = options.getPresetOrder;
     const normaliseShotRestrictions = options.normaliseShotRestrictions;
     const tightenPreset = options.tightenPreset;
@@ -120,6 +121,42 @@
       };
       ledger[key] = rule;
       return { key, sideNumber:Number(sideNumber), side, rule };
+    }
+
+
+    function promoteLegacyMatchupMemoryForCourt(court, memory){
+      if(!court || !memory || typeof memory !== 'object') return null;
+      const hasLegacyMovement = !!(memory.targetPreset && memory.targetPreset !== 'full-court') ||
+        !!(memory.singlesPreset && memory.singlesPreset !== 'full-court');
+      const hasLegacyShots = Number(memory.shotStage || 0) > 0 ||
+        Number(memory.hardshipCounts && memory.hardshipCounts.shots || 0) > 0;
+      if(!hasLegacyMovement && !hasLegacyShots) return null;
+
+      let sideNumber = typeof getRestrictionSideNumberFromMemory === 'function'
+        ? getRestrictionSideNumberFromMemory(court, memory)
+        : null;
+      if(!sideNumber && Number(memory.adjustedSideNumber || 0)) sideNumber = Number(memory.adjustedSideNumber);
+      if(!sideNumber) sideNumber = Number(court.strongerSide || 0) || null;
+      if(!sideNumber) return null;
+
+      const key = getDominantHardshipKeyForSide(court, sideNumber);
+      if(!key) return null;
+      const ledger = getDominantHardshipLedger();
+
+      // If the authoritative ledger already knows this exact context, including
+      // an explicit cleared record, never resurrect older matchupMemory over it.
+      if(Object.prototype.hasOwnProperty.call(ledger, key)){
+        return getDominantHardshipRuleForSide(court, sideNumber);
+      }
+
+      const mode = getRestrictionZoneMode(court, sideNumber);
+      const order = getPresetOrder(mode);
+      let targetPreset = String(memory.targetPreset || memory.singlesPreset || 'full-court').trim();
+      if(!order.includes(targetPreset)) targetPreset = 'full-court';
+      const shotStage = hasLegacyShots ? 1 : 0;
+      const shotRestrictions = normaliseShotRestrictions(memory.shotRestrictions, shotStage);
+      const rule = setDominantHardshipRuleForSide(court, sideNumber, targetPreset, shotStage, shotRestrictions);
+      return rule ? getDominantHardshipRuleForSide(court, sideNumber) : null;
     }
 
     function getActiveHardshipRuleEntryForCourt(court){
@@ -332,6 +369,7 @@
       getDominantHardshipLedger,
       getDominantHardshipKeyForSide,
       getDominantHardshipRuleForSide,
+      promoteLegacyMatchupMemoryForCourt,
       getDominantHardshipEntryForCourt,
       setDominantHardshipRuleForSide,
       increaseDominantHardshipForSide,
