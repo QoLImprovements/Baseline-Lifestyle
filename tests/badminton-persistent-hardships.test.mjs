@@ -77,3 +77,74 @@ test("hardship help stays concise and neutral", () => {
   assert.doesNotMatch(help, /won strongly enough/i);
   assert.doesNotMatch(help, /adaptive hardship/i);
 });
+
+
+test("shot restriction markers read the persistent hardship rule rather than a second store", () => {
+  const active = section("getActiveShotRestrictionsForCourt", "renderCourtShotRestrictionIcon");
+  assert.match(active, /getDominantHardshipEntryForCourt\(court\)/);
+  assert.match(active, /entry\.rule\.shotRestrictions/);
+  assert.match(active, /entry\.rule\.shotStage/);
+  assert.doesNotMatch(active, /localStorage|sessionStorage|activeShotRestrictions\s*=/);
+});
+
+test("legacy shotStage hardships map to both explicit shot restrictions", () => {
+  const normalise = section("normaliseShotRestrictions", "getShotRestrictionText");
+  assert.match(normalise, /\['no-smashes', 'no-downward-shots'\]/);
+  assert.match(normalise, /Number\(stage \|\| 0\) > 0 \? allowed\.slice\(\) : \[\]/);
+});
+
+test("court restriction overlay is one side-level stack in the restricted half", () => {
+  const overlay = section("renderCourtShotRestrictionOverlay", "getZoneRectsForSide");
+  assert.match(overlay, /data-restricted-side=/);
+  assert.match(overlay, /is-side-/);
+  assert.match(overlay, /active\.restrictions\.map\(renderCourtShotRestrictionIcon\)/);
+  assert.doesNotMatch(overlay, /player|adjustedSideIds|side\.players/);
+  assert.match(css, /\.court-shot-restrictions\.is-side-1\{top:25%\}/);
+  assert.match(css, /\.court-shot-restrictions\.is-side-2\{top:75%\}/);
+  assert.match(css, /\.court-shot-restrictions\{[\s\S]*left:50%/);
+});
+
+test("No Smashes and No Downward Shots markers are independently conditional", () => {
+  const icon = section("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
+  assert.match(icon, /type === 'no-smashes'/);
+  assert.match(icon, /No Smashes/);
+  assert.match(icon, /No Downward Shots/);
+  assert.match(icon, /court-shot-restriction--/);
+  assert.match(icon, /<circle[^>]+stroke="#c8273d"/);
+  assert.match(icon, /<line x1="7\.5" y1="28\.5" x2="28\.5" y2="7\.5"[^>]+stroke="#c8273d"/);
+  assert.match(icon, /M18 7 L12\.5 17/);
+  assert.match(icon, /M11 10 L25 24/);
+  const overlay = section("renderCourtShotRestrictionOverlay", "getZoneRectsForSide");
+  assert.match(overlay, /if\(!active\.sideNumber \|\| !active\.restrictions\.length\) return ''/);
+});
+
+test("shot restriction marker captions are compact click/tap details on the court artwork", () => {
+  const icon = section("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
+  assert.match(icon, /<details class="court-shot-restriction/);
+  assert.match(icon, /<summary aria-label="/);
+  assert.match(icon, /court-shot-restriction__caption/);
+  const card = section("renderCourtCard", "sanitizeScoreInput");
+  assert.match(card, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
+  assert.match(css, /touch-action:manipulation/);
+  assert.match(css, /\.court-shot-restriction__caption\{/);
+});
+
+test("visible shot guidance semantically bolds both restriction names", () => {
+  const guidance = section("renderRuleGuidance", "getActiveShotRestrictionsForCourt");
+  assert.match(guidance, /getShotRestrictionHtml\(court\.shotRestrictionStage, court\.shotRestrictions\)/);
+  const html = section("getShotRestrictionHtml", "getLossSeverity");
+  assert.match(html, /'<strong>' \+ escapeHtml\(label\) \+ '<\/strong>'/);
+  assert.match(html, /labels\.join\(' or '\)/);
+});
+
+test("saved hardship rules retain shot restriction detail without changing hardship ownership", () => {
+  const getRule = section("getDominantHardshipRuleForSide", "getDominantHardshipEntryForCourt");
+  assert.match(getRule, /normaliseShotRestrictions\(raw\.shotRestrictions, raw\.shotStage\)/);
+  assert.match(getRule, /ledger\[key\] = rule/);
+  const setter = section("setDominantHardshipRuleForSide", "increaseDominantHardshipForSide");
+  assert.match(setter, /shotRestrictions: activeShotRestrictions/);
+  assert.doesNotMatch(setter, /state\.(?!hardshipRecords|plan)/);
+  const ledger = section("getActiveHardshipLedger", "normaliseHardshipRule");
+  assert.match(ledger, /state\.hardshipRecords/);
+  assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
+});
