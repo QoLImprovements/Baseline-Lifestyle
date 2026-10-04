@@ -7651,6 +7651,16 @@ function setupRecipeFavourites(){
         row.appendChild(h3);
       }
 
+      try{
+        const titleStyle = getComputedStyle(h3);
+        if(titleStyle && titleStyle.fontSize) row.style.setProperty('--recipe-title-font-size', titleStyle.fontSize);
+        if(titleStyle && titleStyle.lineHeight && titleStyle.lineHeight !== 'normal'){
+          row.style.setProperty('--recipe-title-line-height', titleStyle.lineHeight);
+        }else{
+          row.style.setProperty('--recipe-title-line-height', '1.15');
+        }
+      }catch(_e){}
+
       if(!q('.fav-btn', row)){
         const btn = document.createElement('button');
         btn.type = 'button';

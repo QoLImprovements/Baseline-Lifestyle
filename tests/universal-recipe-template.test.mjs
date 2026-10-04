@@ -295,3 +295,16 @@ test('structural recipe card class remains required by the universal enhancer', 
   assert.match(skincareHtml, /class="recipe card recipe-page recipe-universal-template"/);
   assert.doesNotMatch(css, /\.recipe\.card\s*\{[^}]*background/);
 });
+
+
+test('recipe favourite star is one sitewide title-aligned rule', () => {
+  assert.match(shared, /getComputedStyle\(h3\)/);
+  assert.match(shared, /--recipe-title-font-size/);
+  assert.match(shared, /--recipe-title-line-height/);
+  assert.match(css, /font-size:var\(--recipe-title-font-size, 1em\) !important/);
+  assert.match(css, /line-height:var\(--recipe-title-line-height, 1\) !important/);
+  assert.match(css, /justify-content:space-between !important/);
+  assert.match(css, /align-items:baseline !important/);
+  assert.doesNotMatch(css, /data-app="skin"[^{}]*fav-btn[^{}]*font-size/);
+  assert.doesNotMatch(css, /data-app="food"[^{}]*fav-btn[^{}]*font-size/);
+});
