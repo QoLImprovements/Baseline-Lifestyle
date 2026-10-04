@@ -61,9 +61,13 @@ test('standalone Food recipes do not load Diet Log runtime or migration copy', (
 test('Food recipe ownership is folder-backed with no legacy side navigation', () => {
   assert.doesNotMatch(foodHtml, /id="side-nav"/);
   assert.doesNotMatch(foodHtml, /class="side-recipe-nav"/);
+  assert.doesNotMatch(recipeCss, /side-recipe-nav|#side-nav/);
   assert.doesNotMatch(foodHtml, /class="recipe card recipe-page"/);
   assert.match(foodHtml, /baseline-food-recipe-index\.js/);
-  assert.match(htaccess, /baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/recipes\/\$1\.html/);
+  assert.ok(
+    htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]'),
+    'Food clean recipe routes must serve accountable standalone recipe files'
+  );
 });
 
 test('Food Diet Log persistence is server-authoritative', () => {
