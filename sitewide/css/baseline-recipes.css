@@ -3955,13 +3955,13 @@ body[data-app] .recipe-universal-template .recipe-meta-status .recipe-meta-value
   color:var(--accent-2, var(--ink)) !important;
 }
 
-/* Adjustments is intentionally text-scale, not a large control pill. */
+/* Adjustments is plain text in the recipe viewbar: no pill, fill, underline or arrow. */
 html body[data-app] .recipe-universal-template .recipe-adjustments-toggle{
   appearance:none !important;
   -webkit-appearance:none !important;
   display:inline-flex !important;
   align-items:center !important;
-  gap:.35em !important;
+  gap:0 !important;
   flex:0 0 auto !important;
   width:auto !important;
   min-width:0 !important;
@@ -3972,6 +3972,7 @@ html body[data-app] .recipe-universal-template .recipe-adjustments-toggle{
   border:0 !important;
   border-radius:0 !important;
   background:transparent !important;
+  background-color:transparent !important;
   background-image:none !important;
   color:var(--accent-2, var(--ink)) !important;
   -webkit-text-fill-color:currentColor !important;
@@ -3980,19 +3981,24 @@ html body[data-app] .recipe-universal-template .recipe-adjustments-toggle{
   font-weight:800 !important;
   line-height:inherit !important;
   box-shadow:none !important;
-  text-decoration:underline !important;
-  text-decoration-thickness:1px !important;
-  text-underline-offset:3px !important;
+  text-decoration:none !important;
   cursor:pointer !important;
 }
-html body[data-app] .recipe-universal-template .recipe-adjustments-toggle::after{
-  content:'▾' !important;
-  display:inline-block !important;
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle:hover,
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle:focus-visible,
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle:active,
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle[aria-expanded="true"]{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
   text-decoration:none !important;
-  transition:transform .16s ease !important;
+  filter:none !important;
 }
-html body[data-app] .recipe-universal-template .recipe-adjustments-toggle[aria-expanded="true"]::after{
-  transform:rotate(180deg) !important;
+html body[data-app] .recipe-universal-template .recipe-adjustments-toggle::after{
+  content:none !important;
+  display:none !important;
 }
 
 body[data-app] .recipe-universal-template .recipe-adjustments-panel[hidden]{
@@ -4600,12 +4606,14 @@ html body[data-app] .recipe-universal-template .recipe-viewbar > .recipe-adjustm
 }
 body[data-app] .recipe-universal-template > .recipe-title-row{
   justify-content:flex-start !important;
-  gap:.3em !important;
+  gap:.18em !important;
 }
 html body[data-app] .recipe-universal-template > .recipe-title-row > h1,
 html body[data-app] .recipe-universal-template > .recipe-title-row > h2,
 html body[data-app] .recipe-universal-template > .recipe-title-row > h3{
   flex:0 1 auto !important;
+  width:auto !important;
+  max-width:max-content !important;
 }
 html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn{
   display:inline-flex !important;

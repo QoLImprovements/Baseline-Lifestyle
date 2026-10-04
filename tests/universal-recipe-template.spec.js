@@ -117,9 +117,15 @@ async function expectAdjustmentsContract(card) {
   const adjustmentSurface = await adjustments.evaluate(el => ({
     backgroundColor: getComputedStyle(el).backgroundColor,
     backgroundImage: getComputedStyle(el).backgroundImage,
+    textDecorationLine: getComputedStyle(el).textDecorationLine,
+    afterContent: getComputedStyle(el, '::after').content,
+    afterDisplay: getComputedStyle(el, '::after').display,
   }));
   expect(adjustmentSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(adjustmentSurface.backgroundImage).toBe('none');
+  expect(adjustmentSurface.textDecorationLine).toBe('none');
+  expect(['none', 'normal', '""']).toContain(adjustmentSurface.afterContent);
+  expect(adjustmentSurface.afterDisplay).toBe('none');
   await expect(card.locator('.recipe-adjustments-row')).toBeHidden();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expect(card.locator('.recipe-legacy-print-summary')).toBeHidden();
