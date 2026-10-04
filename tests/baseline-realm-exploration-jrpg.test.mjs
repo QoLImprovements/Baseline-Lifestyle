@@ -58,6 +58,9 @@ test('battle runtime keeps command DOM stable between ATB ticks and always expos
   assert.doesNotMatch(ui, /actorChanged \|\| readyEnemies\.length \|\| battleResolved/);
   assert.doesNotMatch(ui, /time - this\.lastBattleRender > 85/);
   assert.match(ui, /data-battle-basecamp/);
+  assert.match(ui, /returnButton\.disabled = false/);
+  assert.match(ui, /if \(this\.state\.battle\) \{\s*this\.returnToBasecampFromBattle\(\);/);
+  assert.match(ui, /key === 'b' && this\.state\.battle/);
   assert.match(ui, /returnToBasecampFromBattle\(\)/);
   assert.match(ui, /finishBattle\(this\.state\)/);
 });
