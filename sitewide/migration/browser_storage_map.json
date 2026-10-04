@@ -22,45 +22,6 @@
   },
   "rules": [
     {
-      "id": "badminton-shared-v3-legacy",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v3__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v3__"
-      ],
-      "classification": "migration-only-legacy-state",
-      "decision": "normalise-and-compare",
-      "target": "Shared/Badminton/badminton.json",
-      "cutoverRule": "Import only through the protected Badminton administrator path. Compare with the current server state and never let a browser copy silently overwrite a newer shared revision."
-    },
-    {
-      "id": "badminton-shared-v4-cache",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v4__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v4__"
-      ],
-      "classification": "rebuildable-cache",
-      "decision": "retain-as-non-authoritative-cache-until-cutover",
-      "target": "Shared/Badminton/badminton.json",
-      "cutoverRule": "The protected shared Badminton resource is authoritative after cutover. Clear or refresh the local cache only after a verified server load and enforce established Badminton administration permissions."
-    },
-    {
-      "id": "badminton-shared-conflict-backup",
-      "inventoryPatterns": [
-        "__baseline_badminton_session_v4_conflict_backup__"
-      ],
-      "knownKeys": [
-        "__baseline_badminton_session_v4_conflict_backup__"
-      ],
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-local-until-reviewed",
-      "target": "Shared/Badminton/badminton.json",
-      "cutoverRule": "Created only when the browser and protected shared resource conflict. Never auto-import or auto-delete it; an administrator must compare it with the authoritative revision before resolving the backup."
-    },
-    {
       "id": "diet-log-local-content",
       "inventoryPatterns": [
         "__baseline_food_diet_log_v1__"
