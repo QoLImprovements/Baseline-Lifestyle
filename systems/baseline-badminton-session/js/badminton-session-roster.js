@@ -18,7 +18,6 @@
     const normalizeKnownLoginName = options.normalizeKnownLoginName;
     const currentUserCanEditPlayerPrefs = options.currentUserCanEditPlayerPrefs;
     const getPlayer = options.getPlayer;
-    const getPlayerByNameForRatingMigration = options.getPlayerByNameForRatingMigration;
     const renderAll = options.renderAll;
     const setPlayerRating = options.setPlayerRating;
     const normalizeLoginName = options.normalizeLoginName;
@@ -43,6 +42,14 @@
     }
 
     function refs(){ return getRefs() || {}; }
+
+    function getPlayerByNameForRatingMigration(name){
+      const needle = String(name || '').trim().toLowerCase();
+      if(!needle) return null;
+      return (state().players || []).find(function(player){
+        return String(player && player.name || '').trim().toLowerCase() === needle;
+      }) || null;
+    }
 
 
   function renderPlayers(){

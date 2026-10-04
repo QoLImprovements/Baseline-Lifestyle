@@ -211,7 +211,6 @@
     normalizeKnownLoginName:function(value){ return normalizeKnownLoginName(value); },
     currentUserCanEditPlayerPrefs:function(player){ return currentUserCanEditPlayerPrefs(player); },
     getPlayer:function(id){ return getPlayer(id); },
-    getPlayerByNameForRatingMigration:function(name){ return getPlayerByNameForRatingMigration(name); },
     renderAll:function(){ return renderAll(); },
     setPlayerRating:function(player, value){ return setPlayerRating(player, value); },
     normalizeLoginName:function(value){ return normalizeLoginName(value); },
@@ -397,7 +396,6 @@
     hardshipValueFromVisibleText:function(value){ return hardshipValueFromVisibleText(value); },
     renderCurrentSitOutInfo:function(){ return renderCurrentSitOutInfo(); },
     renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
-    inputMatchesGeneration:function(input){ return inputMatchesGeneration(input); },
     createInitialState:function(){ return createInitialState(); },
     maxScore:MAX_SCORE
   });
@@ -2318,27 +2316,31 @@
 
   function renderAll(_persist){
     if(pageIsLeaving) return;
+    let renderStage = 'starting';
     try{
-    syncAllCurrentCourtDraftsFromInputs();
-    syncAuthState();
-    normalizePlayerNames();
-    normalizePlayerPreferenceFlags();
-    normalizeAttendingPlayerIds();
-    normalizeLoadedCurrentCourts();
-    renderPlayers();
-    renderRuleAdmin();
-    renderStandings();
-    renderGamePlan();
-    renderMatchHistory();
-    bindRosterActions();
-    bindRuleAdminActions();
-    if(refs.heroPlayerCount) refs.heroPlayerCount.textContent = String(state.players.length);
-    if(refs.heroPairCount) refs.heroPairCount.textContent = String(state.plan.current.filter(court => court.kind === 'doubles').length);
-    refreshDynamicSelects();
+      renderStage = 'score draft sync'; syncAllCurrentCourtDraftsFromInputs();
+      renderStage = 'auth state'; syncAuthState();
+      renderStage = 'player names'; normalizePlayerNames();
+      renderStage = 'player preferences'; normalizePlayerPreferenceFlags();
+      renderStage = 'attendance'; normalizeAttendingPlayerIds();
+      renderStage = 'current courts'; normalizeLoadedCurrentCourts();
+      renderStage = 'players and pairs'; renderPlayers();
+      renderStage = 'rule admin'; renderRuleAdmin();
+      renderStage = 'standings'; renderStandings();
+      renderStage = 'game plan'; renderGamePlan();
+      renderStage = 'match history'; renderMatchHistory();
+      renderStage = 'roster actions'; bindRosterActions();
+      renderStage = 'rule actions'; bindRuleAdminActions();
+      if(refs.heroPlayerCount) refs.heroPlayerCount.textContent = String(state.players.length);
+      if(refs.heroPairCount) refs.heroPairCount.textContent = String(state.plan.current.filter(court => court.kind === 'doubles').length);
+      renderStage = 'enhanced selects'; refreshDynamicSelects();
     }catch(error){
-      console.error('[Baseline Badminton] render failed', error);
+      console.error('[Baseline Badminton] render failed during ' + renderStage, error);
       try{
-        if(refs.planAlert) refs.planAlert.innerHTML = '<div class="empty-state">The badminton view could not finish rendering. Refresh the page or clear stale local session data.</div>';
+        if(refs.planAlert){
+          const detail = error && error.message ? ': ' + String(error.message) : '';
+          refs.planAlert.innerHTML = '<div class="empty-state">Badminton could not finish rendering during ' + escapeHtml(renderStage) + escapeHtml(detail) + '.</div>';
+        }
       }catch(_e){}
     }
   }
