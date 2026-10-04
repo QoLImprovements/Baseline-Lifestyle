@@ -13,7 +13,6 @@ export function createRealmLazySceneAuthority({
   }
   function prepareExternalSceneView(id){
     if(!ids.has(id))return;
-    getRuntime()?.setView?.('basecamp');
     const frame=document.getElementById('realmSceneFrame');
     if(frame){
       frame.classList.remove('is-training-view','is-basecamp-view','is-exploration-view');
@@ -30,7 +29,8 @@ export function createRealmLazySceneAuthority({
       frame.classList.remove('is-external-realm-view',`is-${id}-view`);
       frame.removeAttribute('data-realm-external-view');
     }
-    setHidden('#ninjaScene, .realm-command-banner, .realm-action-dock',false);
+    // Do not guess which persistent Realm surfaces should be restored here.
+    // The destination scene's runtime.setView() is the sole visibility authority.
     document.documentElement.removeAttribute('data-baseline-realm-external-scene');
   }
   function clearSceneFailure(id){
