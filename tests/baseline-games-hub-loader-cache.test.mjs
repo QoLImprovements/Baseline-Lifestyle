@@ -26,6 +26,8 @@ test('Games Hub first paint waits for one stable optional-loader render',()=>{
   assert.match(html,/baseline:games-hub:visual-ready/);
   assert.match(html,/visibility:hidden!important/);
   assert.match(optional,/signalVisualReady/);
+  assert.match(optional,/await Promise\.allSettled\(\[/);
+  assert.match(optional,/return loadRealm\(\)\.catch/);
   assert.match(optional,/requestAnimationFrame\(\(\)=>signalVisualReady\(\)\)/);
 });
 
