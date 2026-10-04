@@ -88,11 +88,11 @@ test("Save Results waits for server confirmation before advancing the court", ()
   const end = runtimeSource.indexOf("window.__baselineSaveCourtResult", start);
   const saveCourt = runtimeSource.slice(start, end);
   assert.ok(start >= 0);
-  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true \}\)/);
+  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true, verify:true \}\)/);
   assert.match(saveCourt, /if\(!serverSaved\)/);
   assert.match(saveCourt, /Reloading the authoritative Badminton state/);
   assert.match(saveCourt, /saved on the server/);
-  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true \}\);\s*refreshCurrentCourtCard/);
+  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true, verify:true \}\);\s*refreshCurrentCourtCard/);
 });
 
 
