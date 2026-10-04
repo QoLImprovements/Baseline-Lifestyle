@@ -22,6 +22,16 @@ export function createRealmLazySceneAuthority({
     setHidden('#realmBasecampScreen, #realmTrainingHud, #realmExplorationScreen, #ninjaScene, .realm-command-banner, .realm-action-dock',true);
     document.documentElement.setAttribute('data-baseline-realm-external-scene',id);
   }
+  function restorePersistentSceneView(){
+    const frame=document.getElementById('realmSceneFrame');
+    if(frame){
+      ids.forEach((id)=>frame.classList.remove(`is-${id}-view`));
+      frame.classList.remove('is-external-realm-view');
+      frame.removeAttribute('data-realm-external-view');
+    }
+    setHidden('#ninjaScene, .realm-command-banner, .realm-action-dock',false);
+    document.documentElement.removeAttribute('data-baseline-realm-external-scene');
+  }
   function restoreExternalSceneView(id){
     if(!ids.has(id))return;
     const frame=document.getElementById('realmSceneFrame');
@@ -117,5 +127,5 @@ export function createRealmLazySceneAuthority({
       }
     };
   }
-  return Object.freeze({createLazyScene,prepareExternalSceneView,restoreExternalSceneView,clearSceneFailure});
+  return Object.freeze({createLazyScene,prepareExternalSceneView,restorePersistentSceneView,restoreExternalSceneView,clearSceneFailure});
 }
