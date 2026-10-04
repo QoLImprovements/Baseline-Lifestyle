@@ -29,6 +29,10 @@ const hardships = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-hardships.js"),
   "utf8",
 );
+const stateHydration = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-state-hydration.js"),
+  "utf8",
+);
 const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
@@ -76,9 +80,10 @@ test("hardships are owned by persistent top-level state, not today's plan", () =
 });
 
 test("legacy server document hardship data migrates into persistent hardshipRecords", () => {
+  assert.match(stateHydration, /hardshipRecords: parsed\.hardshipRecords/);
+  assert.match(stateHydration, /parsed\.plan && parsed\.plan\.activeHardships/);
   const hydrate = section("hydrateLoadedState", "hydrateSessionFromServer");
-  assert.match(hydrate, /hardshipRecords: parsed\.hardshipRecords/);
-  assert.match(hydrate, /parsed\.plan\.activeHardships/);
+  assert.match(hydrate, /state = stateHydrator\.hydrate\(parsed\)/);
   assert.match(hydrate, /state\.plan\.activeHardships = state\.hardshipRecords/);
 });
 
