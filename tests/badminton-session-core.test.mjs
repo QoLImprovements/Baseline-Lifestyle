@@ -139,7 +139,7 @@ test("confirmed score saves verify hardships by fresh server GET before success"
   assert.match(writer, /serverClient\.save\(/);
   assert.match(writer, /if\(!options\.verify\) return true/);
   assert.match(writer, /serverClient\.load\(API_STATE_URL\)/);
-  assert.match(writer, /sessionCore\.hardshipSnapshot\(state\.hardshipRecords\)/);
+  assert.match(writer, /sessionCore\.hardshipSnapshot\(requestState\.hardshipRecords\)/);
   assert.match(writer, /sessionCore\.hardshipSnapshot\(verified\.state\.hardshipRecords\)/);
   assert.match(writer, /hardship data did not survive the server round-trip/);
   const saveCourtStart = runtimeSource.indexOf("async function saveCourtResult");
