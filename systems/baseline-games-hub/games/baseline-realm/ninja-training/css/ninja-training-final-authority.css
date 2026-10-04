@@ -15,15 +15,8 @@
   pointer-events:none!important;
 }
 
-/* Large animated SVG backgrounds were repainting the entire game surface.
-   Keep the forest art but let only the small character sprites animate. */
-#ninjaPanel .ninja-forest-layer,
-#ninjaPanel .ninja-scene__layer,
-#ninjaPanel .ninja-forest-ground::before{
-  animation:none!important;
-  will-change:auto!important;
-}
-
+/* Forest motion is owned by the current Ninja/Realm presentation.
+   Reduced-motion rules remain the only authority allowed to disable it. */
 
 /* REALM_VISIBLE_ART_20260706
    Direct character sprite elements and explicit forest fallbacks prevent the
