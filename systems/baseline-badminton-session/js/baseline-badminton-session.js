@@ -287,6 +287,7 @@
     renderBoundaryMask:function(court){ return renderBoundaryMask(court); },
     renderCourtShotRestrictionOverlay:function(court){ return renderCourtShotRestrictionOverlay(court); },
     renderHardshipHelp:function(court){ return renderHardshipHelp(court); },
+    renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
     renderScoreHeading:function(court, side){ return renderScoreHeading(court, side); },
     createCourtScoreInputName:function(court, index, side){ return createCourtScoreInputName(court, index, side); },
     getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); }
