@@ -1881,13 +1881,18 @@ function parseViewStateHash(hash){
     }
   }
 
-  async function hydrateFolderBackedRecipeRoute(){
+  async function hydrateFolderBackedRecipeCollection(){
     try{
-      const path = decodeURIComponent(String(location.pathname || '')).replace(/\/+$/,'');
-      const match = path.match(/^\/baseline-food-approach\/recipes\/([^\/?#]+)$/i);
-      if(!match || !match[1]) return null;
-      return await hydrateFolderBackedRecipeSource(match[1]);
-    }catch(_e){ return null; }
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-food-approach.html') return [];
+      if(!Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)) return [];
+      const cards = await Promise.all(
+        window.BASELINE_FOOD_RECIPE_INDEX.map(recipe=>hydrateFolderBackedRecipeSource(recipe && (recipe.id || recipe.slug)))
+      );
+      return cards.filter(Boolean);
+    }catch(error){
+      console.error('[Baseline recipe] Food recipe collection hydration failed:', error);
+      return [];
+    }
   }
 
   function setupRecipeActionBars(){
@@ -2049,17 +2054,8 @@ function parseViewStateHash(hash){
         if(!id) id = recipeTokenFromHref(href);
         id = recipeIdForToken(id);
         if(!id) return;
-        let liveCard = document.getElementById(id);
-        if(!liveCard || !recipesSection.contains(liveCard)){
-          const token = (a.dataset && a.dataset.recipeId) ? a.dataset.recipeId : recipeTokenFromHref(href);
-          if(foodRecipeRecordForToken(token)){
-            e.preventDefault();
-            hydrateFolderBackedRecipeSource(token).then(card=>{
-              if(card) openRecipe(card.id);
-            });
-          }
-          return;
-        }
+        const liveCard = document.getElementById(id);
+        if(!liveCard || !recipesSection.contains(liveCard)) return;
         e.preventDefault();
         openRecipe(id);
       });
@@ -7721,8 +7717,6 @@ function setupRecipeFavourites(){
       try{ window.setTimeout(fn, 0); }catch(_e){ try{ fn(); }catch(__e){} }
     };
 
-    await hydrateFolderBackedRecipeRoute();
-
     const contentViewHash = String(location.hash || '');
     const cleanContentRoute = cleanRouteStateFromPath();
     const routePageFile = routePageFileFromPath(location.pathname || '');
@@ -7766,10 +7760,17 @@ function setupRecipeFavourites(){
     };
 
     let contentUiStarted = false;
+    let contentUiPromise = null;
     const ensureContentUi = ()=>{
-      if(contentUiStarted) return;
+      if(contentUiPromise) return contentUiPromise;
       contentUiStarted = true;
-      initContentUi();
+      contentUiPromise = (async()=>{
+        if(routePageFile === 'baseline-food-approach.html'){
+          await hydrateFolderBackedRecipeCollection();
+        }
+        initContentUi();
+      })();
+      return contentUiPromise;
     };
     try{
       window.BASELINE_ensureContentUi = ensureContentUi;
@@ -7834,7 +7835,7 @@ function setupRecipeFavourites(){
     };
 
     if(needsImmediateContentUi){
-      ensureContentUi();
+      await ensureContentUi();
       runAfterFirstPaint(initSecondaryUi);
     }else{
       bindLazyContentUi();
