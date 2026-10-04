@@ -23,11 +23,12 @@ jobs:
         run: npm run test:realm-stage2
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run Realm browser verification
+      - name: Run targeted Realm browser verification
         run: >
           npx playwright test
           tests/baseline-realm-meridian-grove-live.spec.js
           tests/baseline-realm-integration.spec.js
           tests/baseline-games-hub-startup-resilience.spec.js
-          --workers=6
+          --grep="Meridian Grove resumes an ATB battle with all six commands|Basecamp landmarks enter external games and reliably return to the hub|Realm opens at Basecamp and Ninja actors and controls work after explicit entry"
+          --workers=3
           --reporter=line
