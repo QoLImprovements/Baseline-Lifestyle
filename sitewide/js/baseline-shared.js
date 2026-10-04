@@ -2089,6 +2089,19 @@ function parseViewStateHash(hash){
     window.BASELINE_openRecipe = (id, opts={}) => openRecipe(id, opts);
     window.BASELINE_showAllRecipes = (opts={}) => showAll(opts);
 
+    // Sitewide recipe back navigation must stay inside the shared shell.
+    // Some folder-backed Food recipes author this control as a real <a href>,
+    // while Skincare historically used an inline onclick. Capture the action
+    // before either native navigation or legacy target handlers can reload the
+    // document and briefly repaint the primary tab strip.
+    recipesSection.addEventListener('click', (e)=>{
+      const back = e.target && e.target.closest ? e.target.closest('.back-btn') : null;
+      if(!back || !recipesSection.contains(back)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      showAll({ silentHistory:false });
+    }, { capture:true });
+
     // Link clicks inside recipes section
     qsa('a.recipe-open', recipesSection).forEach(a=>{
       a.addEventListener('click', function(e){
