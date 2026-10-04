@@ -1066,7 +1066,8 @@ body[data-app="badminton"] #currentGamesGrid .court-card.is-no-game .status-box{
   background:linear-gradient(180deg,rgba(181,139,211,.38),rgba(126,72,166,.28)),var(--bl-badminton-panel-bg)!important;
   border-color:rgba(79,25,125,.36)!important;
 }
-.court-no-game-range-label{display:grid;gap:8px;max-width:240px;font-weight:950;color:var(--accent-2)}
+.court-no-game-range-label{display:grid;grid-template-columns:minmax(0,180px) auto;align-items:center;gap:10px;width:max-content;max-width:100%;font-weight:950;color:var(--accent-2)}
+.court-no-game-range-label>span{white-space:nowrap;align-self:center}
 .court-no-game-range{appearance:none;width:180px!important;height:26px!important;padding:0!important;border-radius:999px!important;border:1px solid var(--bl-badminton-border-soft)!important;background:linear-gradient(90deg,rgba(106,31,179,.22),rgba(106,31,179,.09))!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.22)!important;cursor:grab}
 .court-no-game-range:active{cursor:grabbing}
 .court-no-game-range::-webkit-slider-thumb{appearance:none;width:30px;height:30px;border-radius:999px;background:var(--accent-2);border:2px solid rgba(255,255,255,.35);box-shadow:0 8px 18px -10px rgba(74,23,116,.80)}
