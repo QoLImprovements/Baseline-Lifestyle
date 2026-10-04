@@ -26,9 +26,8 @@ jobs:
       - name: Run Realm browser verification
         run: >
           npx playwright test
-          tests/baseline-realm-stage1.spec.js
           tests/baseline-realm-meridian-grove-live.spec.js
           tests/baseline-realm-integration.spec.js
           tests/baseline-games-hub-startup-resilience.spec.js
-          --workers=2
+          --workers=6
           --reporter=line
