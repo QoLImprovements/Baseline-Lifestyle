@@ -109,6 +109,8 @@
       if(store) store.value = selectedValue;
       const button = refs().currentGamesGrid.querySelector('[data-save-court="' + idx + '"]');
       if(button) button.setAttribute('data-hardship-value', selectedValue);
+      markLocalChange();
+      queueServerSave();
     };
 
     const handleScoreEdit = function(event){
@@ -119,6 +121,8 @@
       if(!court || courtSaved(court, index) || !currentUserCanScoreCourt(court)) return;
       syncCourtScoresFromInputs(index);
       refreshCourtInputUi(index);
+      markLocalChange();
+      queueServerSave();
     };
 
     refs().currentGamesGrid.addEventListener('input', handleScoreEdit);
