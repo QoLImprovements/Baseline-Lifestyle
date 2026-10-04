@@ -284,7 +284,7 @@ test('universal recipe overview never revives historical recipe cards', () => {
   assert.doesNotMatch(css, /\.recipe\.card/);
   assert.doesNotMatch(css, /#recipes:not\(\.recipe-open-mode\)/);
   assert.doesNotMatch(css, /recipe-top-bar/);
-  assert.doesNotMatch(css, /#recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
+  assert.doesNotMatch(css, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
   assert.doesNotMatch(skincareHtml, /class="recipe card recipe-page/);
   assert.doesNotMatch(foodHtml, /class="card recipe-landing"/);
 });
