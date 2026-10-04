@@ -197,6 +197,13 @@ body[data-app="food"]{
   );
   --food-tab-border: rgba(90,12,21,0.42);
 
+  /* Universal recipe controls consume these system-owned aliases. */
+  --recipe-tab-bg: var(--food-tab-bg);
+  --recipe-tab-hover: var(--food-tab-hover);
+  --recipe-tab-active: var(--food-tab-active);
+  --recipe-tab-border: var(--food-tab-border);
+  --recipe-tab-active-ink: #fff7e8;
+
   --card-bg: var(--food-surface-card);
   --filter-bg: var(--food-surface-panel);
   --showall-bg: var(--food-surface-control);
