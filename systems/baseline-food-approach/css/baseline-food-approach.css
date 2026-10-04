@@ -22,9 +22,9 @@
   html[data-app="food"],
   body[data-app="food"],
   body[data-app="food"] .bl-scroll{
-    background:var(--page-bg)!important;
-    background-size:100% 100%!important;
-    background-attachment:fixed!important;
+    background:var(--page-bg);
+    background-size:100% 100%;
+    background-attachment:fixed;
   }
 
   /* Ensure layout fits viewport without manual zoom (ported from holistic) */
@@ -43,7 +43,7 @@
     which can show visible seams/bands. To prevent this we render the whole background on a
     single fixed pseudo-element that is *larger than the viewport*, slightly blurred, and GPU-promoted.
   */
-  body::before{ content:none !important; display:none !important; }
+  body[data-app="food"]::before{ content:none; display:none; }
 
   /* Base text size comes from baseline-pattern.css */
   /* Background comes from baseline-themes.css (single sitewide rule). */
@@ -91,7 +91,7 @@
     box-shadow:0 16px 30px -24px rgba(200,100,50,0.30);
   }
   .tab[aria-selected="true"]{
-    color:#fff7e8 !important;
+    color:#fff7e8;
     background:var(--food-tab-active);
     border-color:rgba(27,7,4,0.18);
     box-shadow:0 22px 46px -34px rgba(200,100,50,0.60);
@@ -293,7 +293,7 @@
   /* Print (ported) */
   @page { size: A4; margin: 12mm; }
   @media print{
-    body::before{ content:none !important; display:none !important; }
+    body[data-app="food"]::before{ content:none; display:none; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -376,13 +376,3 @@
   .scale-toggle:hover,
   .scale-apply:hover{ color:var(--accent-2); filter:brightness(1.02); }
 
-/* --- Food visual authority -------------------------------------------------
-   Universal recipe CSS owns recipe-control geometry. Food owns card colour. */
-html body[data-app="food"] .card,
-html body[data-app="food"] #recipes .recipe.card,
-html body[data-app="food"] #recipes .recipe-page.card,
-html body[data-app="food"] .recipe-page.standalone-recipe-card{
-  background:var(--food-surface-card) !important;
-  background-color:transparent !important;
-  border-color:var(--food-surface-border) !important;
-}

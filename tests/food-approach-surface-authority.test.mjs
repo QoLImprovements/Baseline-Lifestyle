@@ -122,9 +122,9 @@ test('Food first paint and standalone assets use the same visual authority', () 
 
   for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
-    assert.match(html, /baseline-themes\.css\?v=FOOD_DEEP_CLEANUP_20261004_1/);
+    assert.match(html, /baseline-themes\.css\?v=FOOD_FINAL_CSS_AUTHORITY_20261004_1/);
     assert.match(html, /baseline-recipes\.css\?v=FOOD_RECIPE_TAB_AUTHORITY_20261004_1/);
-    assert.match(html, /baseline-food-approach\.css\?v=FOOD_DEEP_CLEANUP_20261004_1/);
+    assert.match(html, /baseline-food-approach\.css\?v=FOOD_FINAL_CSS_AUTHORITY_20261004_1/);
   }
 });
 
@@ -137,7 +137,7 @@ test('Food ingredient files are real canonical records, not placeholders', () =>
     assert.doesNotMatch(html, /Food Approach ingredient record\./);
     assert.match(html, /class="card food-ingredient-record"/);
     assert.match(html, /rel="canonical"/);
-    assert.match(html, /FOOD_DEEP_CLEANUP_20261004_1/);
+    assert.match(html, /FOOD_FINAL_CSS_AUTHORITY_20261004_1/);
   }
 });
 
@@ -145,4 +145,13 @@ test('folder-backed recipe links are not cancelled by embedded-card handlers', (
   const shared = read('sitewide/js/baseline-shared.js');
   assert.doesNotMatch(shared, /side-recipe-nav|#side-nav/);
   assert.match(shared, /if\(liveCard && recipesSection && recipesSection\.contains\(liveCard\)\)\{\s*e\.preventDefault\(\)/);
+});
+
+
+test('Food parent keeps only overview first-paint state and normal CSS has no override debt', () => {
+  const importantCount = (foodCss.match(/!important/g) || []).length;
+  assert.equal(importantCount, 3, 'Food CSS should retain only reduced-motion !important overrides');
+  assert.doesNotMatch(foodHtml, /data-initial-recipe-route|data-initial-recipe-slug|data-initial-recipe-view/);
+  assert.match(foodHtml, /id="baseline-food-section-first-paint"/);
+  assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint"/);
 });
