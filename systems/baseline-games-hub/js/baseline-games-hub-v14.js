@@ -427,6 +427,11 @@ function init(){
   addRealmCss();
   waitCore().then(async()=>{
     watchDarts();
+    try{
+      await Promise.resolve(window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY);
+    }catch(error){
+      console.warn('[Baseline Games Hub] Initial profile hydration was incomplete.',error);
+    }
     await Promise.allSettled([
       openDartsFromRoute(),
       openBadmintonFromRoute(),
