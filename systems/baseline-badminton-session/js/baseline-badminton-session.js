@@ -396,7 +396,6 @@
     hardshipValueFromVisibleText:function(value){ return hardshipValueFromVisibleText(value); },
     renderCurrentSitOutInfo:function(){ return renderCurrentSitOutInfo(); },
     renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
-    inputMatchesGeneration:function(input){ return inputMatchesGeneration(input); },
     createInitialState:function(){ return createInitialState(); },
     maxScore:MAX_SCORE
   });
