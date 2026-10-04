@@ -158,23 +158,20 @@ body[data-app="food"]{
     var(--bg) 100%
   );
 
-  /* Food surfaces: one warm hierarchy shared by System, Recipes,
-     Ingredient Library and Diet Log. Orange is the primary Food surface;
-     gold/yellow is reserved for controls and red for active emphasis. */
-  --food-surface-card: linear-gradient(180deg,
+  /* One live Food content surface.
+     System, Recipes, Ingredient Library and Diet Log share this exact surface.
+     Controls have their own control fill; content containers do not fork colour. */
+  --food-surface-card: linear-gradient(145deg,
     var(--food-gold) 0%,
-    var(--food-orange) 72%,
+    var(--food-orange) 46%,
     var(--food-red) 100%
   );
-  --food-surface-panel: linear-gradient(180deg,
-    rgba(255,176,0,0.78),
-    rgba(240,138,36,0.82)
-  );
+  --food-surface-panel: var(--food-surface-card);
+  --food-surface-subtle: var(--food-surface-card);
   --food-surface-control: linear-gradient(180deg,
     var(--food-yellow),
     var(--food-gold)
   );
-  --food-surface-subtle: rgba(240,138,36,0.38);
   --food-surface-selected: linear-gradient(135deg,
     var(--food-red),
     var(--food-orange)
