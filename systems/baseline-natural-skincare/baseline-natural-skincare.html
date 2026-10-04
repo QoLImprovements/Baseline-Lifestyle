@@ -1841,8 +1841,8 @@ Method steps MUST follow this format:
       "Skin feel: note any important skin, scent, or tolerance context here."
     ],
     "navigation_rule": {
-      "instruction": "Use BASELINE_openRecipe(), BASELINE_showAllRecipes(), and BASELINE_selectTab() so refresh/back restore from safe hashes like #recipe=, #tab=, #support=, and #ing-. Do not treat plain #rN anchors or display-only toggles as the source of truth.",
-      "why": "The browser refresh button and the offline embed shell both rely on shared view-state URLs to reopen the current screen correctly."
+      "instruction": "Use BASELINE_openRecipe(), BASELINE_showAllRecipes(), and BASELINE_selectTab() so Refresh, Back and Forward restore from the canonical clean route. Recipe state belongs in /recipes/<slug> with supported query state such as ?view=details&variant=reactive; legacy hashes are compatibility-only.",
+      "why": "The shared router owns section, recipe, subview and variant restoration. Skincare-specific code must not create a second URL/history authority."
     },
     "ingredient_sections": [
       {
@@ -1989,8 +1989,8 @@ Method steps MUST follow this format:
       panel.hidden = !active;
     });
 
-    // Keep every recipe surface synchronized to the one native variant authority.
-    // This also runs during refresh-route restoration, where no click event occurs.
+    // Keep derived Skincare surfaces synchronized after the selected variant changes.
+    // URL/history ownership remains in the shared recipe router.
     if(typeof recipe.__baselineSyncVariantDetailState === 'function'){
       recipe.__baselineSyncVariantDetailState();
     }
@@ -2036,18 +2036,7 @@ Method steps MUST follow this format:
       });
     });
 
-    var routedVariant = '';
-    try{
-      var recipePath = String(location.pathname || '').replace(/\/+$/,'').toLowerCase();
-      if(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/.test(recipePath)){
-        routedVariant = String(new URLSearchParams(location.search || '').get('variant') || '').trim();
-      }
-    }catch(_e){}
-
-    var routedButton = routedVariant
-      ? recipe.querySelector('.variant-tab[data-variant="' + CSS.escape(routedVariant) + '"]')
-      : null;
-    var active = routedButton || recipe.querySelector('.variant-tab[aria-selected="true"]');
+    var active = recipe.querySelector('.variant-tab[aria-selected="true"]');
     activateCleanserVariant(active ? active.getAttribute('data-variant') : 'balanced');
   }
 
