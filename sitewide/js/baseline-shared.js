@@ -370,64 +370,6 @@
     }catch(_e){ return ''; }
   }
 
-  const BASELINE_TAB_LABELS = Object.freeze({
-    system:'System',
-    recipes:'Recipes',
-    ingredients:'Ingredient Library',
-    'diet-log':'Diet Log',
-    library:'Library',
-    planner:'Planner',
-    support:'Skin Support System',
-    routine:'My Routine',
-    gameplan:'Game Plan',
-    standings:'Ratings & Standings',
-    roster:'Players & Pairs',
-    history:'Session History',
-    achievements:'Achievements',
-    'my-plan':'My Plan',
-    'my-routine':'My Plan',
-    'my-body':'My Body'
-  });
-
-  function ensureStandaloneSystemTabs(){
-    const standaloneRecipe = q('.standalone-recipe-card');
-    if(!standaloneRecipe) return;
-
-    const cfg = cleanRouteConfigForCurrentPage();
-    if(!cfg || !cfg.tabs) return;
-
-    const existingPrimary = q('.baseline-standalone-primary-tabs');
-    if(existingPrimary) return;
-
-    const routeState = cleanRouteStateFromPath();
-    const selectedTab = routeState && routeState.tabId
-      ? routeState.tabId
-      : (routeState && routeState.kind === 'recipe' ? 'recipes' : cfg.defaultTab);
-
-    const nav = document.createElement('nav');
-    nav.className = 'tabs baseline-standalone-primary-tabs';
-    nav.setAttribute('aria-label', 'Primary navigation tabs');
-
-    Object.keys(cfg.tabs).forEach((tabId)=>{
-      const href = cleanUrlForTab(tabId);
-      if(!href) return;
-      const a = document.createElement('a');
-      a.className = 'tab';
-      a.href = href;
-      a.textContent = BASELINE_TAB_LABELS[tabId] || tabId.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-      const selected = tabId === selectedTab;
-      a.classList.toggle('active', selected);
-      a.setAttribute('aria-selected', selected ? 'true' : 'false');
-      nav.appendChild(a);
-    });
-
-    const recipeTop = q('.food-recipe-top') || standaloneRecipe.parentElement;
-    if(!recipeTop) return;
-
-    const legacyLinks = q('.top-links', recipeTop);
-    if(legacyLinks) legacyLinks.replaceWith(nav);
-    else recipeTop.appendChild(nav);
-  }
   function cleanRouteForPageHref(hrefRaw, labelText){
     const href = String(hrefRaw || '').trim();
     const label = String(labelText || '').trim().toLowerCase();
@@ -520,28 +462,46 @@
 
   window.BASELINE_RECIPE_CAPTION_MODEL = BASELINE_RECIPE_CAPTION_MODEL;
 
-  window.BASELINE_getRecipeAuthoringTemplate = function(){
+  window.BASELINE_getRecipeAuthoringTemplate = function(app){
+    const system = String(app || (document.body && document.body.dataset && document.body.dataset.app) || '').trim().toLowerCase();
+    const sections = system === 'skin'
+      ? ['Method', 'Storage & Use', 'Notes']
+      : system === 'food'
+        ? ['Method', 'Serving ideas', 'Body & Sensory Notes']
+        : ['Method', 'Notes'];
+
     return {
+      authority: 'sitewide',
+      shell: [
+        'Title',
+        'Batch',
+        'Recipe views',
+        'Adjustments',
+        'Batch multiplier',
+        'Measurement Type',
+        'Scale By Ingredient',
+        'Recipe-specific controls'
+      ],
+      sections,
       id: 'r-next',
-      category: 'Stovetop',
+      category: system === 'skin' ? 'Recipe' : 'Stovetop',
       title: 'Recipe title',
       infoLinkText: 'Recipe Ingredient Information',
-      meta: [
-        'Equipment: list the equipment here.',
-        'Allergens: list the allergens here.'
-      ],
+      meta: system === 'skin'
+        ? ['Skin feel: note any important skin, scent, or tolerance context here.']
+        : ['Equipment: list the equipment here.', 'Allergens: list the allergens here.'],
       navigationRule: {
-        summary: 'Use the shared router helpers and safe hashes for any in-page view changes.',
-        instruction: 'Use BASELINE_openRecipe, BASELINE_showAllRecipes, and BASELINE_selectTab so refresh/back can restore from clean page routes such as /recipes/a-recipe-name and /ingredient-library, with legacy hashes only as fallback.'
+        summary: 'One sitewide recipe shell owns Food and Skincare recipe navigation and view state.',
+        instruction: 'Use BASELINE_openRecipe, BASELINE_showAllRecipes, and BASELINE_selectTab. Clean /recipes/<slug> routes keep the parent system shell; recipe content may come from an accountable source file but must be rendered through the universal recipe template.'
       },
       ingredientSections: [
         {
           title: 'Base',
           items: [
             {
-              ingredientId: 'ing-water',
-              label: 'water',
-              quantity: { value: 250, unit: 'ml' },
+              ingredientId: 'ing-example',
+              label: 'Example ingredient',
+              quantity: { value: 10, unit: 'g' },
               caption: 'Primary role; secondary effect.',
               methodStep: 1
             }
@@ -550,9 +510,7 @@
       ],
       method: [
         { title: 'Step title', text: 'Write the method instruction here.' }
-      ],
-      servingIdeas: ['Optional serving idea.'],
-      bodySensoryNotes: ['Optional body or sensory note.']
+      ]
     };
   };
 
@@ -1884,6 +1842,75 @@ function parseViewStateHash(hash){
   // ---------------------------
   // Recipes: open-one mode
   // ---------------------------
+  function foodRecipeRecordForToken(token){
+    try{
+      const value = String(token || '').trim().toLowerCase().replace(/^#/, '').replace(/^recipe=/i, '');
+      if(!value || !Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)) return null;
+      return window.BASELINE_FOOD_RECIPE_INDEX.find(recipe=>{
+        if(!recipe) return false;
+        return String(recipe.id || '').toLowerCase() === value
+          || String(recipe.slug || '').toLowerCase() === value;
+      }) || null;
+    }catch(_e){ return null; }
+  }
+
+  async function hydrateFolderBackedRecipeSource(token){
+    try{
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-food-approach.html') return null;
+      const record = foodRecipeRecordForToken(token);
+      if(!record || !record.slug) return null;
+
+      const slug = String(record.slug || '').trim().toLowerCase();
+      const recipesSection = q('#recipes');
+      const host = recipesSection ? q('.recipes', recipesSection) : null;
+      if(!recipesSection || !host) return null;
+
+      const existingById = record.id ? document.getElementById(String(record.id)) : null;
+      if(existingById && recipesSection.contains(existingById)) return existingById;
+      const existingBySlug = q('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]', host);
+      if(existingBySlug) return existingBySlug;
+
+      const sourceUrl = '/systems/baseline-food-approach/recipes/' + encodeURIComponent(slug) + '.html';
+      const response = await fetch(sourceUrl, {
+        method:'GET',
+        credentials:'same-origin',
+        cache:'no-store',
+        headers:{'Accept':'text/html'}
+      });
+      if(!response.ok) throw new Error('recipe_source_' + response.status);
+
+      const sourceHtml = await response.text();
+      const sourceDoc = new DOMParser().parseFromString(sourceHtml, 'text/html');
+      const sourceCard = sourceDoc.querySelector('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]')
+        || sourceDoc.querySelector('.standalone-recipe-card');
+      if(!sourceCard) throw new Error('recipe_source_missing_card');
+
+      const card = document.importNode(sourceCard, true);
+      card.classList.remove('standalone-recipe-card', 'active', 'is-open');
+      card.classList.add('recipe-universal-template');
+      card.style.display = '';
+      host.appendChild(card);
+      return card;
+    }catch(error){
+      console.error('[Baseline recipe] Food recipe hydration failed:', error);
+      return null;
+    }
+  }
+
+  async function hydrateFolderBackedRecipeCollection(){
+    try{
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-food-approach.html') return [];
+      if(!Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)) return [];
+      const cards = await Promise.all(
+        window.BASELINE_FOOD_RECIPE_INDEX.map(recipe=>hydrateFolderBackedRecipeSource(recipe && (recipe.id || recipe.slug)))
+      );
+      return cards.filter(Boolean);
+    }catch(error){
+      console.error('[Baseline recipe] Food recipe collection hydration failed:', error);
+      return [];
+    }
+  }
+
   function setupRecipeActionBars(){
     const recipesSection = q('#recipes');
     if(!recipesSection) return;
@@ -1972,6 +1999,7 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-pending');
         document.documentElement.removeAttribute('data-initial-recipe-slug');
         document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
@@ -2043,7 +2071,7 @@ function parseViewStateHash(hash){
         id = recipeIdForToken(id);
         if(!id) return;
         const liveCard = document.getElementById(id);
-        if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
+        if(!liveCard || !recipesSection.contains(liveCard)) return;
         e.preventDefault();
         openRecipe(id);
       });
@@ -2059,8 +2087,17 @@ function parseViewStateHash(hash){
       if(!id) id = recipeTokenFromHref(href);
       id = recipeIdForToken(id);
       if(!id) return;
-      const liveCard = document.getElementById(id);
-      if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
+      let liveCard = document.getElementById(id);
+      if(!liveCard || !recipesSection.contains(liveCard)){
+        const token = (a.dataset && a.dataset.recipeId) ? a.dataset.recipeId : recipeTokenFromHref(href);
+        if(foodRecipeRecordForToken(token)){
+          e.preventDefault();
+          hydrateFolderBackedRecipeSource(token).then(card=>{
+            if(card) openRecipe(card.id);
+          });
+        }
+        return;
+      }
       e.preventDefault();
       openRecipe(id);
     }, { capture:true });
@@ -2131,8 +2168,11 @@ function parseViewStateHash(hash){
     // Natural Skincare has promoted and folder-backed recipes with authored
     // descriptors. Its canonical recipe-navigation module owns that landing
     // content; the generic category rebuilder must never strip those labels.
-    const isSkincareRecipeCollection = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
-    if(isSkincareRecipeCollection) return;
+    const recipePageFile = routePageFileFromPath(location.pathname || '');
+    const isSkincareRecipeCollection = recipePageFile === 'baseline-natural-skincare.html';
+    const isFoodRecipeCollection = recipePageFile === 'baseline-food-approach.html'
+      && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX);
+    if(isSkincareRecipeCollection || isFoodRecipeCollection) return;
 
     const hasCategories = sortedCards.some(c => c.dataset && typeof c.dataset.category === 'string' && c.dataset.category.trim() !== '');
 
@@ -5620,7 +5660,7 @@ function buildControls(recipeEl){
 // ---------------------------
   // Boot
   // ---------------------------
-  function bootBaselineShared(){
+  async function bootBaselineShared(){
     try{ if(window.__BL_SHARED_BOOTED__) return; window.__BL_SHARED_BOOTED__ = true; }catch(_e){}
     // Load one final geometry/alignment authority after each system's theme.
     // Every full-width gradient is painted in viewport coordinates, so its
@@ -7713,7 +7753,6 @@ function setupRecipeFavourites(){
     safeInit('scroll persistence', setupScrollPersistence);
     safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
-    safeInit('standalone system tabs', ensureStandaloneSystemTabs);
     safeInit('tabs', setupTabs);
 
     try{
@@ -7737,10 +7776,17 @@ function setupRecipeFavourites(){
     };
 
     let contentUiStarted = false;
+    let contentUiPromise = null;
     const ensureContentUi = ()=>{
-      if(contentUiStarted) return;
+      if(contentUiPromise) return contentUiPromise;
       contentUiStarted = true;
-      initContentUi();
+      contentUiPromise = (async()=>{
+        if(routePageFile === 'baseline-food-approach.html'){
+          await hydrateFolderBackedRecipeCollection();
+        }
+        initContentUi();
+      })();
+      return contentUiPromise;
     };
     try{
       window.BASELINE_ensureContentUi = ensureContentUi;
@@ -7805,7 +7851,7 @@ function setupRecipeFavourites(){
     };
 
     if(needsImmediateContentUi){
-      ensureContentUi();
+      await ensureContentUi();
       runAfterFirstPaint(initSecondaryUi);
     }else{
       bindLazyContentUi();

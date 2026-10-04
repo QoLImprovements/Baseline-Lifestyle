@@ -58,16 +58,22 @@ test('standalone Food recipes do not load Diet Log runtime or migration copy', (
 });
 
 
-test('Food recipe ownership is folder-backed with no legacy side navigation', () => {
+test('Food recipe content ownership uses the same shell-first system as Skincare', () => {
   assert.doesNotMatch(foodHtml, /id="side-nav"/);
   assert.doesNotMatch(foodHtml, /class="side-recipe-nav"/);
   assert.doesNotMatch(recipeCss, /side-recipe-nav|#side-nav/);
   assert.doesNotMatch(foodHtml, /class="recipe card recipe-page"/);
   assert.match(foodHtml, /baseline-food-recipe-index\.js/);
+  assert.match(foodHtml, /class="recipes" data-recipe-source-host="1"/);
   assert.ok(
-    htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]'),
-    'Food clean recipe routes must serve accountable standalone recipe files'
+    htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]'),
+    'Food clean recipe routes must keep the Food system shell'
   );
+  assert.match(shared, /async function hydrateFolderBackedRecipeCollection\(\)/);
+  assert.match(shared, /Promise\.all\([\s\S]*BASELINE_FOOD_RECIPE_INDEX/);
+  assert.match(shared, /\/systems\/baseline-food-approach\/recipes\//);
+  assert.match(shared, /card\.classList\.add\('recipe-universal-template'\)/);
+  assert.doesNotMatch(shared, /ensureStandaloneSystemTabs|baseline-standalone-primary-tabs/);
 });
 
 test('Food Diet Log persistence is server-authoritative', () => {
@@ -148,26 +154,23 @@ test('folder-backed recipe links are not cancelled by embedded-card handlers', (
 });
 
 
-test('Food parent keeps only overview first-paint state and normal CSS has no override debt', () => {
+test('Food parent uses the universal recipe-route first-paint contract', () => {
   const importantCount = (foodCss.match(/!important/g) || []).length;
   assert.equal(importantCount, 3, 'Food CSS should retain only reduced-motion !important overrides');
-  assert.doesNotMatch(foodHtml, /data-initial-recipe-route|data-initial-recipe-slug|data-initial-recipe-view/);
-  assert.match(foodHtml, /id="baseline-food-section-first-paint"/);
-  assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint"/);
+  assert.match(foodHtml, /id="baseline-recipe-route-first-paint"/);
+  assert.match(foodHtml, /data-initial-recipe-route','1'/);
+  assert.match(foodHtml, /data-initial-recipe-pending','1'/);
+  assert.match(foodHtml, /data-initial-recipe-slug/);
+  assert.match(foodHtml, /data-initial-recipe-view/);
+  assert.doesNotMatch(foodHtml, /id="baseline-food-section-first-paint"/);
 });
 
 
-test('standalone Food recipes inherit primary tabs from the shared sitewide router', () => {
-  assert.match(shared, /function ensureStandaloneSystemTabs\(\)/);
-  assert.match(shared, /BASELINE_CLEAN_PAGE_ROUTES/);
-  assert.match(shared, /baseline-standalone-primary-tabs/);
-  assert.match(shared, /legacyLinks\.replaceWith\(nav\)/);
-  assert.match(recipeCss, /BASELINE-STANDALONE-SYSTEM-TABS-20261004/);
-  assert.match(recipeCss, /\.food-recipe-top \.top-links\{\s*display:none;/);
-
+test('Food recipe source files do not define a second primary navigation system', () => {
+  assert.doesNotMatch(shared, /function ensureStandaloneSystemTabs\(\)/);
+  assert.doesNotMatch(recipeCss, /BASELINE-STANDALONE-SYSTEM-TABS-20261004|baseline-standalone-primary-tabs/);
   for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
     assert.doesNotMatch(html, /baseline-standalone-primary-tabs|food-primary-tabs/);
-    assert.match(html, /baseline-shared\.js/);
   }
 });
