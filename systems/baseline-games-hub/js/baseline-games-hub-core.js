@@ -1133,13 +1133,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function defaultMake24Profile(){
     return {
-      app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0,
+      app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0, roundSeedCounter:0,
       skills:{ clarity:0, flow:0, banker:0, reserve:0, precision:0 }, selectedTier:'starter'
     };
   }
   function defaultWordProfile(){
     return {
-      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
+      app:'detectword', bank:0, xp:0, level:1, skillPoints:1, wordsSolved:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, activeRound:null,
       skills:{ flow:0, banker:0, reserve:0, focus:0 }, selectedTier:'tier3'
     };
   }
@@ -1246,6 +1246,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     merged.puzzlesSolved = Math.max(0, Math.round(Number(merged.puzzlesSolved || 0)));
     merged.gamesPlayed = Math.max(0, Math.round(Number(merged.gamesPlayed || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    merged.roundSeedCounter = Math.max(0, Math.round(Number(merged.roundSeedCounter || 0)));
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
     refundLockedSkills(merged, MAKE24_SKILLS);
     applyLevelCurve(merged);
@@ -1266,6 +1267,27 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
+    if(merged.activeRound && typeof merged.activeRound === 'object'){
+      const secret = String(merged.activeRound.secret || '').toLowerCase();
+      const tierId = String(merged.activeRound.tierId || merged.selectedTier || '');
+      const tier = WORD_TIERS.find(item => item.id === tierId);
+      if(tier && /^[a-z]+$/.test(secret) && secret.length === tier.letters){
+        const guesses = Array.isArray(merged.activeRound.guesses) ? merged.activeRound.guesses.slice(0, 12).map(function(entry){
+          const word = String(entry && entry.word || '').toLowerCase();
+          return /^[a-z]+$/.test(word) && word.length === tier.letters ? { word:word, evaluation:evaluateWordGuess(word, secret) } : null;
+        }).filter(Boolean) : [];
+        merged.activeRound = {
+          tierId:tier.id,
+          secret:secret,
+          guesses:guesses,
+          maxGuesses:Math.max(1, Math.min(12, Math.round(Number(merged.activeRound.maxGuesses || (6 + (merged.skills?.reserve || 0)))))),
+          roundBank:Math.round(Number(merged.activeRound.roundBank || 0)),
+          draftGuess:String(merged.activeRound.draftGuess || '').slice(0, tier.letters),
+          lastMessage:String(merged.activeRound.lastMessage || ('Round restored. Submit a ' + tier.letters + '-letter guess.')).slice(0, 240),
+          hadFailure:Boolean(merged.activeRound.hadFailure)
+        };
+      }else merged.activeRound = null;
+    }else merged.activeRound = null;
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
     try{ delete merged.skills.lexicon; }catch(_e){}
     refundLockedSkills(merged, WORD_SKILLS);
@@ -1427,6 +1449,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         profiles[app] = defaultProfileForApp(app);
       }
     });
+    restoreSavedCoreRounds();
   }
   function safeRenderAll(){
     try{ renderAll(); }catch(error){ try{ console.error('baseline-games-hub render failure', error); }catch(_e){} }
@@ -1435,6 +1458,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   async function loadAllProfiles(){
     authState = getAuth();
     await Promise.allSettled(GAME_APPS.map(loadProfile));
+    wordState = null;
+    restoreSavedCoreRounds();
     resolveNinjaBonuses();
     renderAuthState();
     applyOfflineNinjaProgress();
@@ -2053,6 +2078,40 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
 
   const MAKE_NUMBER_GENERATED_BANKS = Object.create(null);
 
+  function makeNumberSeedHash(value){
+    const input = String(value || 'make-number');
+    let hash = 2166136261 >>> 0;
+    for(let index = 0; index < input.length; index += 1){
+      hash ^= input.charCodeAt(index);
+      hash = Math.imul(hash, 16777619) >>> 0;
+    }
+    return hash || 1;
+  }
+  function makeNumberSeededRandom(seed){
+    let state = makeNumberSeedHash(seed);
+    return function(){
+      state += 0x6D2B79F5;
+      let t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function seededShuffle(items, seed){
+    const copy = items.slice();
+    const random = makeNumberSeededRandom(seed);
+    for(let index = copy.length - 1; index > 0; index -= 1){
+      const swap = Math.floor(random() * (index + 1));
+      [copy[index], copy[swap]] = [copy[swap], copy[index]];
+    }
+    return copy;
+  }
+  function nextMake24Seed(tier){
+    const profile = profiles.make24 || defaultMake24Profile();
+    profile.roundSeedCounter = Math.max(0, Math.round(Number(profile.roundSeedCounter || 0))) + 1;
+    return String(tier.id) + ':' + profile.roundSeedCounter;
+  }
+
   function makeNumberFormulaTemplates(band){
     const simple = [
       function(a,b,c,d){ return { target:(a + b) * c - d, solution:'((' + a + '+' + b + ')×' + c + ')-' + d }; },
@@ -2110,12 +2169,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       }
     }
     let guard = 0;
+    const random = makeNumberSeededRandom('bank:' + tier.id + ':' + minNumber + ':' + maxNumber);
     while(bank.length < 100 && guard < 5000){
       guard += 1;
-      const a = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const b = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const c = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
-      const d = minNumber + Math.floor(Math.random() * (maxNumber - minNumber + 1));
+      const a = minNumber + Math.floor(random() * (maxNumber - minNumber + 1));
+      const b = minNumber + Math.floor(random() * (maxNumber - minNumber + 1));
+      const c = minNumber + Math.floor(random() * (maxNumber - minNumber + 1));
+      const d = minNumber + Math.floor(random() * (maxNumber - minNumber + 1));
       if(new Set([a,b,c,d]).size < 2) continue;
       const template = templates[guard % templates.length];
       addPuzzle([a,b,c,d], template(a,b,c,d));
@@ -2124,9 +2184,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return MAKE_NUMBER_GENERATED_BANKS[tier.id];
   }
 
-  function buildMake24Puzzle(tier){
+  function buildMake24Puzzle(tier, seed){
     const previous = make24State && Array.isArray(make24State.numbers) ? make24PuzzleSignature({ target:make24State.target || 24, numbers:make24State.numbers }) : '';
-    const bank = shuffle(buildMakeNumberPuzzleBank(tier));
+    const bank = seededShuffle(buildMakeNumberPuzzleBank(tier), seed || ('preview:' + tier.id));
     for(const puzzle of bank){
       if(make24PuzzleSignature(puzzle) === previous && bank.length > 1) continue;
       return { target:puzzle.target, numbers:puzzle.numbers.slice(), solutions:puzzle.solutions.slice() };
@@ -2137,9 +2197,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function startMake24Puzzle(){
     clearAutoNextTimer('make24');
     const tier = currentMake24Tier();
-    const puzzle = buildMake24Puzzle(tier);
+    const seed = nextMake24Seed(tier);
+    const puzzle = buildMake24Puzzle(tier, seed);
     profiles.make24.gamesPlayed += 1;
     make24State = {
+      seed:seed,
       target:puzzle.target,
       numbers:puzzle.numbers,
       solutions:puzzle.solutions,
@@ -2241,7 +2303,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function rerollMake24Puzzle(){
     if(!make24State || make24State.completed || make24State.rerollsLeft <= 0) return;
     make24State.rerollsLeft -= 1;
-    const puzzle = buildMake24Puzzle(currentMake24Tier());
+    const tier = currentMake24Tier();
+    const seed = nextMake24Seed(tier);
+    const puzzle = buildMake24Puzzle(tier, seed);
+    make24State.seed = seed;
     make24State.target = puzzle.target;
     make24State.numbers = puzzle.numbers;
     make24State.solutions = puzzle.solutions;
@@ -2363,12 +2428,55 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     wordRecentByLength[length] = recent.slice(0, memory);
     return chosen;
   }
+  function savedWordRoundSnapshot(){
+    if(!wordState || !profiles.detectword) return null;
+    const tier = WORD_TIERS.find(item => item.id === wordState.tierId) || currentWordTier();
+    if(!tier || !wordState.secret) return null;
+    return {
+      tierId:tier.id,
+      secret:String(wordState.secret || ''),
+      guesses:(wordState.guesses || []).map(entry => ({ word:entry.word })),
+      maxGuesses:wordState.maxGuesses,
+      roundBank:wordState.roundBank,
+      draftGuess:String(wordState.draftGuess || '').slice(0, tier.letters),
+      lastMessage:String(wordState.lastMessage || ''),
+      hadFailure:Boolean(wordState.hadFailure)
+    };
+  }
+  function persistWordRound(){
+    if(!profiles.detectword) return;
+    profiles.detectword.activeRound = savedWordRoundSnapshot();
+    scheduleSave('detectword');
+  }
+  function restoreSavedWordRound(){
+    const saved = profiles.detectword && profiles.detectword.activeRound;
+    if(!saved || typeof saved !== 'object') return false;
+    const tier = WORD_TIERS.find(item => item.id === saved.tierId);
+    if(!tier || profiles.detectword.level < tier.unlockLevel) return false;
+    profiles.detectword.selectedTier = tier.id;
+    wordState = {
+      tierId:tier.id,
+      secret:saved.secret,
+      guesses:(saved.guesses || []).map(entry => ({ word:entry.word, evaluation:evaluateWordGuess(entry.word, saved.secret) })),
+      maxGuesses:saved.maxGuesses,
+      roundBank:saved.roundBank,
+      draftGuess:saved.draftGuess || '',
+      lastMessage:saved.lastMessage || ('Round restored. Submit a ' + tier.letters + '-letter guess.'),
+      hadFailure:Boolean(saved.hadFailure)
+    };
+    return true;
+  }
+  function restoreSavedCoreRounds(){
+    if(!wordState) restoreSavedWordRound();
+  }
+
   function startWordRound(){
     clearAutoNextTimer('detectword');
     const tier = currentWordTier();
     const secret = chooseRandomWord(tier.letters);
     profiles.detectword.gamesPlayed += 1;
     wordState = {
+      tierId:tier.id,
       secret,
       guesses:[],
       maxGuesses: 6 + (profiles.detectword.skills.reserve || 0),
@@ -2377,7 +2485,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       lastMessage:'Round ready. Submit a ' + tier.letters + '-letter guess.',
       hadFailure:false
     };
-    scheduleSave('detectword');
+    persistWordRound();
     renderAll();
   }
   function evaluateWordGuess(guess, secret){
@@ -2428,6 +2536,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const levels = levelUpFromGain(profile, xpGain);
       wordState.roundBank += bankGain;
       wordState.lastMessage = 'Solved. +' + bankGain + ' Bank · +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
+      profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       resolveNinjaBonuses();
       renderAll();
@@ -2439,12 +2548,14 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       profiles.detectword.currentStreak = 0;
       profiles.detectword.cleanWinStreak = 0;
       wordState.lastMessage = 'Round ended. Word was ' + wordState.secret.toUpperCase() + '.';
+      profiles.detectword.activeRound = null;
       scheduleSave('detectword');
       renderAll();
       scheduleAutoNext('detectword', startWordRound);
       return;
     }
     wordState.lastMessage = 'Guess logged. Keep reading the pattern.';
+    persistWordRound();
     renderAll();
     focusGameInput('wordGuessInput');
   }
