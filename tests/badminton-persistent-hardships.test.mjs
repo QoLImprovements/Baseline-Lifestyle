@@ -21,6 +21,10 @@ const renderer = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
   "utf8",
 );
+const restrictions = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-restrictions.js"),
+  "utf8",
+);
 const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
@@ -40,6 +44,14 @@ function rendererSection(startName, endName) {
   const end = endName ? renderer.indexOf("function " + endName, start + 1) : renderer.length;
   assert.notEqual(end, -1, endName + " must follow " + startName + " in court renderer");
   return renderer.slice(start, end);
+}
+
+function restrictionSection(startName, endName) {
+  const start = restrictions.indexOf("function " + startName);
+  assert.notEqual(start, -1, startName + " must exist in restriction model");
+  const end = endName ? restrictions.indexOf("function " + endName, start + 1) : restrictions.length;
+  assert.notEqual(end, -1, endName + " must follow " + startName + " in restriction model");
+  return restrictions.slice(start, end);
 }
 
 test("hardships are owned by persistent top-level state, not today's plan", () => {
@@ -100,7 +112,7 @@ test("shot restriction markers read the persistent hardship rule rather than a s
 });
 
 test("legacy shotStage hardships map to both explicit shot restrictions", () => {
-  const normalise = section("normaliseShotRestrictions", "getShotRestrictionText");
+  const normalise = restrictionSection("normaliseShotRestrictions", "getShotRestrictionText");
   assert.match(normalise, /\['no-smashes', 'no-downward-shots'\]/);
   assert.match(normalise, /Number\(stage \|\| 0\) > 0 \? allowed\.slice\(\) : \[\]/);
 });
@@ -144,7 +156,7 @@ test("shot restriction marker captions are compact click/tap details on the cour
 test("visible shot guidance semantically bolds both restriction names", () => {
   const guidance = rendererSection("renderRuleGuidance", "renderCourtDiagram");
   assert.match(guidance, /getShotRestrictionHtml\(court\.shotRestrictionStage, court\.shotRestrictions\)/);
-  const html = section("getShotRestrictionHtml", "getLossSeverity");
+  const html = restrictionSection("getShotRestrictionHtml", "getHardshipLabel");
   assert.match(html, /'<strong>' \+ escapeHtml\(label\) \+ '<\/strong>'/);
   assert.match(html, /labels\.join\(' or '\)/);
 });
