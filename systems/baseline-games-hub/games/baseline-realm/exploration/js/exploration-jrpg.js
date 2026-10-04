@@ -134,7 +134,7 @@ function portrait(symbol, label, className = '') {
 }
 
 function meter(label, value, max, className = '') {
-  return `<div class="jrpg-meter ${className}" aria-label="${escapeHtml(label)} ${Math.round(value)} of ${Math.round(max)}"><span style="width:${percent(value, max)}"></span><b>${Math.round(value)} / ${Math.round(max)}</b></div>`;
+  return `<div class="jrpg-meter ${className}" data-meter="${escapeHtml(className || label.toLowerCase())}" aria-label="${escapeHtml(label)} ${Math.round(value)} of ${Math.round(max)}"><span style="width:${percent(value, max)}"></span><b>${Math.round(value)} / ${Math.round(max)}</b></div>`;
 }
 
 export class MeridianGroveGame {
@@ -455,19 +455,37 @@ export class MeridianGroveGame {
     </article>`;
   }
 
-  refreshBattleMeters() {
+  refreshBattleMeter(card, className, label, value, max) {
+    const meterNode = card?.querySelector(`.jrpg-meter.${className}`);
+    if (!meterNode) return;
+    const fill = meterNode.querySelector(':scope>span');
+    const valueNode = meterNode.querySelector(':scope>b');
+    if (fill) fill.style.width = percent(value, max);
+    if (valueNode) valueNode.textContent = `${Math.round(value)} / ${Math.round(max)}`;
+    meterNode.setAttribute('aria-label', `${label} ${Math.round(value)} of ${Math.round(max)}`);
+  }
+
+  refreshBattleState() {
     const battle = this.state.battle;
     if (!battle) return;
     battle.enemies.forEach((enemy, index) => {
       const card = this.root.querySelector(`.jrpg-enemy-card[data-enemy-index="${index}"]`);
-      const atb = card?.querySelector('.jrpg-meter.atb>span');
-      if (atb) atb.style.width = percent(enemy.atb, 100);
+      if (!card) return;
+      card.classList.toggle('is-defeated', enemy.hp <= 0);
+      this.refreshBattleMeter(card, 'hp', 'Enemy HP', enemy.hp, enemy.maxHp);
+      this.refreshBattleMeter(card, 'atb', 'Enemy ATB', enemy.atb, 100);
     });
     this.state.party.forEach((member, index) => {
       const card = this.root.querySelector(`.jrpg-battle-party-card[data-party-index="${index}"]`);
-      const atb = card?.querySelector('.jrpg-meter.atb>span');
-      if (atb) atb.style.width = percent(member.atb, 100);
+      if (!card) return;
+      card.classList.toggle('is-ko', member.hp <= 0);
+      card.classList.toggle('is-commanding', battle.activeActorIndex === index);
+      this.refreshBattleMeter(card, 'hp', 'HP', member.hp, member.maxHp);
+      this.refreshBattleMeter(card, 'mp', 'MP', member.mp, member.maxMp);
+      this.refreshBattleMeter(card, 'atb', 'ATB', member.atb, 100);
     });
+    const log = this.root.querySelector('.jrpg-battle-log>ol');
+    if (log) log.innerHTML = battle.log.slice(-7).reverse().map((entry) => `<li>${escapeHtml(entry)}</li>`).join('');
   }
 
   commandTemplate(actor, actorIndex) {
@@ -545,14 +563,15 @@ export class MeridianGroveGame {
         if (readyEnemies.length) this.save('enemy-turn');
         const actorChanged = this.lastBattleActorIndex !== this.state.battle.activeActorIndex;
         const battleResolved = this.state.battle.victory || this.state.battle.escaped || livingParty(this.state).length === 0;
-        if (actorChanged || readyEnemies.length || battleResolved) {
+        if (actorChanged || battleResolved) {
           this.lastBattleActorIndex = this.state.battle.activeActorIndex;
           this.lastBattleRender = time;
           this.renderBattle();
         } else {
-          // ATB animation updates only the meter fills. Do not destroy and
-          // recreate the command buttons every animation frame.
-          this.refreshBattleMeters();
+          // Enemy turns and ATB ticks update the existing cards/log in place.
+          // Active-mode enemy actions must not erase a player's open command
+          // or target-selection screen.
+          this.refreshBattleState();
         }
       }
     }
