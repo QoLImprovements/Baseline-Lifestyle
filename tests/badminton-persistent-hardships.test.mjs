@@ -70,9 +70,9 @@ test("hardships are owned by persistent top-level state, not today's plan", () =
   const initial = section("createInitialState", "uid");
   assert.match(initial, /hardshipRecords: {}/);
   const ledger = hardshipSection("getActiveHardshipLedger", "normaliseHardshipRule");
-  assert.match(ledger, /state\.hardshipRecords/);
-  assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
-  assert.match(ledger, /return state\.hardshipRecords/);
+  assert.match(ledger, /current\.hardshipRecords/);
+  assert.match(ledger, /current\.plan\.activeHardships = current\.hardshipRecords/);
+  assert.match(ledger, /return current\.hardshipRecords/);
 });
 
 test("legacy server document hardship data migrates into persistent hardshipRecords", () => {
@@ -181,8 +181,8 @@ test("saved hardship rules retain shot restriction detail without changing hards
   assert.match(setter, /shotRestrictions: activeShotRestrictions/);
   assert.doesNotMatch(setter, /state\.(?!hardshipRecords|plan)/);
   const ledger = hardshipSection("getActiveHardshipLedger", "normaliseHardshipRule");
-  assert.match(ledger, /state\.hardshipRecords/);
-  assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
+  assert.match(ledger, /current\.hardshipRecords/);
+  assert.match(ledger, /current\.plan\.activeHardships = current\.hardshipRecords/);
 });
 
 
