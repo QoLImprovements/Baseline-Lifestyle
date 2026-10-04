@@ -27,7 +27,6 @@
     const getDominantReduceOptionsForSide = options.getDominantReduceOptionsForSide;
     const hardshipValueFromVisibleText = options.hardshipValueFromVisibleText;
     const renderCurrentSitOutInfo = options.renderCurrentSitOutInfo;
-    const inputMatchesGeneration = options.inputMatchesGeneration;
     const createInitialState = options.createInitialState;
     const maxScore = Number(options.maxScore || 30);
 
