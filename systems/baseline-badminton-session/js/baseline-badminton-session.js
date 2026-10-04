@@ -1396,21 +1396,11 @@
     return legacyActive ? court.strongerSide : null;
   }
 
-  // BASELINE-BADMINTON-HARDSHIP-CONTEXT-MEMORY-20260609
-  // Hardships are remembered server-side, but only by exact competitive context:
-  // game type + restricted side + opponent side.
-  // They must not attach broadly to a player or pair outside that context.
 
 
 
 
 
-
-
-
-
-
-  // BASELINE-BADMINTON-HARDSHIP-SAVE-INTENT-FIX-20260608
     function getHardshipSaveIntent(court, score1, score2, hardship){
     const selected = String(hardship || '').trim();
     const context = getHardshipResultContext(Object.assign({}, JSON.parse(JSON.stringify(court || {})), { score1:score1, score2:score2 }));
@@ -1462,9 +1452,6 @@
 
 
 
-  // BASELINE-BADMINTON-DOMINANT-HARDSHIP-RULE-20260608
-  // One dominant hardship rule: active hardship memory beats passive court generation,
-  // duplicated zone inference, and admin/default rule fallbacks.
   function getExactRestrictionEntryForCourt(court, memory, signature){
     if(!court || !restrictionMemoryHasActiveRule(memory)) return null;
     let sideNumber = getRestrictionSideNumberFromMemory(court, memory);
@@ -1606,9 +1593,6 @@
   }
 
 
-  // BASELINE-BADMINTON-DOMINANT-HARDSHIP-REBUILD-20260609
-  // Single dominant hardship path. Score-selected hardship must become a rule
-  // before ratings are allowed to change.
   function syncDominantRuleToMemory(court, signature, sideNumber){
     const entry = getDominantHardshipRuleForSide(court, sideNumber);
     const side = getSideByNumber(court, sideNumber);
@@ -2078,6 +2062,9 @@
       return;
     }
 
+    const hardshipContextKey=hardshipIntent.sideNumber?getDominantHardshipKeyForSide(court,hardshipIntent.sideNumber):'';
+    const hardshipRuleAfter=hardshipContextKey&&state.hardshipRecords&&state.hardshipRecords[hardshipContextKey]?JSON.parse(JSON.stringify(state.hardshipRecords[hardshipContextKey])):null;
+
     const evaluatedNow = evaluateCourtRestrictions(Object.assign({}, JSON.parse(JSON.stringify(court)), { score1:score1, score2:score2 }));
     Object.assign(court, evaluatedNow, { score1:score1, score2:score2, pendingHardship:hardship });
 
@@ -2122,6 +2109,8 @@
       targetAreaText: court.targetAreaText || 'Full court',
       shotRestrictionText: getShotRestrictionText(court.shotRestrictionStage),
       hardshipRegistered: court.savedHardship || '',
+      hardshipContextKey: hardshipContextKey || '',
+      hardshipRuleAfter: hardshipRuleAfter,
       ratingContext
     });
 

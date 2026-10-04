@@ -313,3 +313,59 @@ test('legacy matchup hardship is remembered and promoted when the same matchup r
   expect(debug).toBeTruthy();
   expect(Object.keys(debug.activeHardships || {}).length).toBeGreaterThan(0);
 });
+
+
+test('saved hardship is immediately applied to the next generated game and remains in server state', async ({ page }) => {
+  let state = initialState();
+  let revision = 1;
+  const badmintonAuth = {
+    logged_in:true,
+    is_developer:true,
+    is_badminton_admin:true,
+    user:{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com' }
+  };
+
+  await page.route('**/sitewide/api/me.php**', route => json(route, { ok:true, authed:false, providers:{password:true,google:false} }));
+  await page.route('**/sitewide/api/auth_providers.php**', route => json(route, { ok:true, providers:{password:true,google:false} }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_logins.php**', route => json(route, {
+    ok:true,
+    users:[{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com', provider:'password' }]
+  }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_session.php**', async route => {
+    if(route.request().method() === 'POST'){
+      const body = route.request().postDataJSON();
+      if(body && body.state){
+        state = JSON.parse(JSON.stringify(body.state));
+        const newest = Array.isArray(state.matches) ? state.matches[0] : null;
+        if(newest && newest.hardshipContextKey && newest.hardshipRuleAfter){
+          state.hardshipRecords = {};
+          state.plan.activeHardships = {};
+          state.hardshipRecords[newest.hardshipContextKey] = newest.hardshipRuleAfter;
+          state.plan.activeHardships = state.hardshipRecords;
+        }
+      }
+      revision += 1;
+    }
+    return json(route, { ok:true, state, revision, updated_at:Date.now(), auth:badmintonAuth });
+  });
+
+  await page.goto(PATH, { waitUntil:'domcontentloaded' });
+  await page.locator('#generatePlanBtn').click();
+
+  const court = page.locator('[data-current-court-index="0"]');
+  await court.locator('[data-score-side="1"]').fill('21');
+  await court.locator('[data-score-side="2"]').fill('4');
+  await court.locator('[data-hardship-option="true"][value="movement"]').check();
+  await court.locator('[data-save-court="0"]').click();
+
+  await expect(page.getByText('All current games were submitted and confirmed by the server. Finished games were saved and the next set was generated.')).toBeVisible();
+
+  const nextCourt = page.locator('[data-current-court-index="0"]');
+  await expect(nextCourt.locator('.boundary-mask')).toHaveCount(1);
+  await expect(nextCourt.locator('.status-box').filter({ hasText:'Instruction' })).not.toContainText('No hardship alteration is active');
+
+  expect(state.matches[0].hardshipContextKey).toMatch(/^hardship::singles::restricted::side::/);
+  expect(state.matches[0].hardshipRuleAfter).toBeTruthy();
+  expect(Object.keys(state.hardshipRecords || {}).length).toBeGreaterThan(0);
+  expect(Object.keys(state.plan && state.plan.activeHardships || {}).length).toBeGreaterThan(0);
+});

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -227,4 +228,39 @@ test("legacy matchupMemory hardship is promoted into the authoritative exact-con
       evaluate.indexOf("getActiveHardshipRuleEntryForCourt(court)"),
     "legacy memory must be promoted before the active hardship lookup"
   );
+});
+
+
+test("submitted match carries a recoverable authoritative hardship snapshot", () => {
+  const saveStart = js.indexOf("async function saveCourtResult");
+  const saveEnd = js.indexOf("window.__baselineSaveCourtResult", saveStart);
+  const save = js.slice(saveStart, saveEnd);
+  assert.match(save, /hardshipContextKey/);
+  assert.match(save, /hardshipRuleAfter/);
+  assert.match(save, /state\.hardshipRecords\[hardshipContextKey\]/);
+
+  assert.match(php, /function bl_badminton_apply_added_match_hardship_snapshots/);
+  assert.match(php, /bl_badminton_match_accepts_hardship_key/);
+  assert.match(php, /\$match\['hardshipContextKey'\]/);
+  assert.match(php, /\$match\['hardshipRuleAfter'\]/);
+  assert.match(php, /\$state = bl_badminton_apply_added_match_hardship_snapshots\(\$storedState, \$state\)/);
+});
+
+
+test("server can recover a missing hardship ledger from saved match history", () => {
+  assert.match(php, /function bl_badminton_hardship_records_from_match_history/);
+  assert.match(php, /hardshipRegistered/);
+  assert.match(php, /\['movement','shots','reducedMovement','reducedShots'\]/);
+  assert.match(php, /bl_badminton_match_hardship_context_key/);
+  assert.match(php, /bl_badminton_hardship_preset_order/);
+  const storageFn = php.match(/function bl_badminton_storage_state\(array \$state\): array \{[\s\S]*?\n\}/)?.[0] || "";
+  assert.match(storageFn, /bl_badminton_hardship_records_from_match_history\(\$state\)/);
+  assert.match(storageFn, /if\(!array_key_exists\(\$key, \$state\['hardshipRecords'\]\)\)/);
+});
+
+
+test("Badminton PHP authority remains syntactically valid after hardship recovery changes", () => {
+  const endpoint = path.join(root, "systems/baseline-badminton-session/api/badminton_session.php");
+  const lint = spawnSync("php", ["-l", endpoint], { encoding:"utf8" });
+  assert.equal(lint.status, 0, (lint.stdout || "") + (lint.stderr || ""));
 });
