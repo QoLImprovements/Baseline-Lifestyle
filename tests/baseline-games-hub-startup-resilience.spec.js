@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH='/baseline-games-hub/games-hub';
-const LOADER_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
+const LOADER_BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 
 async function stubProfiles(page){
   await page.route('**/systems/baseline-games-hub/api/games_profile.php**',async route=>{
@@ -25,6 +25,8 @@ async function openRealm(page){
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
   await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-runtime-active',LOADER_BUILD);
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 async function health(page){
@@ -64,12 +66,16 @@ test('Darts Focused is registered, visible and operational',async({page})=>{
   await expect(page.locator('.darts-feedback')).toBeVisible();
 });
 
-test('Realm shows both actors and live controls without freezing',async({page})=>{
+test('Realm opens at Basecamp and Ninja actors and controls work after explicit entry',async({page})=>{
   await stubProfiles(page);
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(PATH,{waitUntil:'domcontentloaded'});
   await openRealm(page);
+  await expect(page.locator('[data-basecamp-landmark="calorie-escape"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="tactical-operations"]')).toBeVisible();
+  await page.locator('#realmCampNinjaBtn').click();
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('ninja-training');
   await expect(page.locator('#ninjaRunnerWrap')).toBeVisible();
   await expect(page.locator('#ninjaEnemyWrap')).toBeVisible();
   await expect(page.locator('#realmCommandBanner')).toBeVisible();
@@ -101,11 +107,15 @@ test('Realm shows both actors and live controls without freezing',async({page})=
   expect(errors).toEqual([]);
 });
 
-test('direct Realm route opens the same functional runtime',async({page})=>{
+test('direct Realm route opens the same Basecamp-first functional runtime',async({page})=>{
   await stubProfiles(page);
   await page.goto(PATH+'/baseline-realm',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
-  await expect(page.locator('#ninjaRunnerWrap')).toBeVisible();
-  await expect(page.locator('#ninjaManualStrikeBtn')).toBeEnabled();
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="ninja-training"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="exploration"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="calorie-escape"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="tactical-operations"]')).toBeVisible();
 });
