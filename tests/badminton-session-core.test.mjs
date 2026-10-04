@@ -81,3 +81,16 @@ test("controller delegates stable Player and Pair identity to extracted core", (
   assert.match(runtimeSource, /sessionCore\.getHardshipContextKey\(/);
   assert.doesNotMatch(runtimeSource, /sessionCore\.mergeNewestHardshipRecords/);
 });
+
+
+test("Save Results waits for server confirmation before advancing the court", () => {
+  const start = runtimeSource.indexOf("async function saveCourtResult");
+  const end = runtimeSource.indexOf("window.__baselineSaveCourtResult", start);
+  const saveCourt = runtimeSource.slice(start, end);
+  assert.ok(start >= 0);
+  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true \}\)/);
+  assert.match(saveCourt, /if\(!serverSaved\)/);
+  assert.match(saveCourt, /Reloading the authoritative Badminton state/);
+  assert.match(saveCourt, /saved on the server/);
+  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true \}\);\s*refreshCurrentCourtCard/);
+});
