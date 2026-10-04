@@ -1281,15 +1281,7 @@
   }
 
   function getPlayerStableRuleKey(player){
-    if(!player || typeof player !== 'object') return '';
-    const name = normaliseRuleIdentity(player.name || player.playerName || '');
-    if(name) return 'name:' + name;
-    const email = normaliseRuleIdentity(player.loginEmail || player.email || player.linkedEmail || '');
-    if(email) return 'email:' + email;
-    const login = normaliseRuleIdentity(player.loginUsername || player.loginName || player.username || player.login || '');
-    if(login) return 'login:' + login;
-    const id = String(player.id || player.playerId || '').trim();
-    return id ? ('id:' + id) : '';
+    return sessionCore.stablePlayerId(player);
   }
 
   function getTeamIds(side){
