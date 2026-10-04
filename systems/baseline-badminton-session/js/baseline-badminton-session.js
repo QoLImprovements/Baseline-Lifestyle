@@ -262,16 +262,7 @@
     return text.replace(/(["\\])/g, '\\$1');
   }
 
-  function shuffle(array){
-    const copy = array.slice();
-    for(let i = copy.length - 1; i > 0; i -= 1){
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = copy[i];
-      copy[i] = copy[j];
-      copy[j] = tmp;
-    }
-    return copy;
-  }
+
 
   let serverSaveTimer = null;
   let serverSaveInFlight = false;
@@ -594,10 +585,7 @@
     return {};
   }
 
-  function getSitewideUser(){
-    const auth = getSitewideAuth();
-    return String(auth.name || '').trim();
-  }
+
 
   function getAuthTokens(){
     const auth = getSitewideAuth();
@@ -619,19 +607,7 @@
     return !!(auth && auth.authed !== false && getAuthTokens().some(isKnownModeratorToken));
   }
 
-  function getApprovedAdminUsernames(){
-    const names = new Set(DEFAULT_APPROVED_ADMIN_USERNAMES.map(normalizeLoginName).filter(Boolean));
-    try{
-      const extra = window.BASELINE_APPROVED_ADMIN_USERNAMES;
-      if(Array.isArray(extra)) extra.forEach(function(name){ const value = normalizeLoginName(name); if(value) names.add(value); });
-    }catch(_e){}
-    try{
-      const fromState = state && Array.isArray(state.approvedAdminUsernames) ? state.approvedAdminUsernames : [];
-      fromState.forEach(function(name){ const value = normalizeLoginName(name); if(value) names.add(value); });
-    }catch(_e){}
-    SITE_MODERATOR_ALIASES.forEach(function(name){ names.add(name); });
-    return Array.from(names);
-  }
+
 
   function playerLoginTokens(player){
     const tokens = [];
@@ -739,10 +715,7 @@
     return makeCourt(kind, group);
   }
 
-  function applyDoublesDayOptOutsToCourts(courts, format, maxCourts){
-    const limit = Math.max(1, Math.min(8, Math.round(Number(maxCourts || 1))));
-    return (courts || []).filter(court => courtAllowedByDoublesDayOptOuts(court, format)).slice(0, limit);
-  }
+
 
   function addLoginOption(map, value, label, email, id){
     const raw = String(value || '').trim();
@@ -887,13 +860,7 @@
     return court;
   }
 
-  function resetUnsubmittedCurrentCourtScoreDrafts(){
-    if(!state || !state.plan || !Array.isArray(state.plan.current)) return;
-    ensureCurrentCourtSaveKeys();
-    state.plan.current.forEach(function(court, index){
-      if(!courtSaved(court, index)) resetUnsubmittedCourtScoreDraft(court);
-    });
-  }
+
 
   function createCourtScoreInputName(court, index, sideNumber){
     const generation = String(state && state.plan && state.plan.currentGenerationToken || 'gen').replace(/[^a-zA-Z0-9_-]+/g, '_');
@@ -1185,11 +1152,7 @@
     return (players || []).map(function(player){ return String(player && player.name || '').trim(); }).filter(Boolean).sort(function(a,b){ return a.localeCompare(b); });
   }
 
-  function getLegacyPairKeysFromPlayers(players){
-    const names = getPairNamesFromPlayers(players);
-    if(names.length !== 2) return [];
-    return [names.join(' / '), names.join(' + ')];
-  }
+
 
   function getPairLabelFromId(pairId){
     const ids = String(pairId || '').replace(/^pair:/, '').split('::').filter(Boolean);
@@ -1216,9 +1179,7 @@
     });
   }
 
-  function sideAverage(side){
-    return Math.round(average((side.players || []).map(getPlayerRating)) * 10) / 10;
-  }
+
 
   // BASELINE-BADMINTON-GAME-PLAN-LADDER-FIX-20260607
   // Current games should read as a clean ladder: strongest court first, then downwards.
@@ -1254,13 +1215,7 @@
     });
   }
 
-  function getSideRatingLabel(court, side){
-    const players = side && Array.isArray(side.players) ? side.players : [];
-    if(court && court.kind === 'doubles' && players.length === 2) return 'Pair Rating';
-    if(court && court.kind === '2v1' && players.length === 1) return '1v2 Rating';
-    if(court && court.kind === '2v1' && players.length === 2) return 'Pair Rating';
-    return 'Player Rating';
-  }
+
 
   function getTeamLabel(side){
     if(!side) return 'Unknown side';
@@ -1270,9 +1225,7 @@
   // BASELINE-BADMINTON-HARDSHIP-NAME-ANCHOR-FIX-20260608
   // Hardship rules must follow the player by stable name first. Ratings are name-based,
   // so hardship storage must not silently fail when ids are missing or volatile.
-  function normaliseRuleIdentity(value){
-    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
-  }
+
 
   function getPlayerStableRuleKey(player){
     return sessionCore.stablePlayerId(player);
@@ -1424,9 +1377,7 @@
     return Math.max(0, Math.round(Number(counts.movement || 0)));
   }
 
-  function getMemoryShotStage(memory){
-    return Math.max(0, Math.round(Number(memory && memory.shotStage || 0)));
-  }
+
 
   function getPresetFromZones(zones, mode){
     const cleaned = sanitizeZones(zones || [], mode);
@@ -1466,39 +1417,9 @@
     return current.length >= allowed.length ? [] : current;
   }
 
-  function applyMovementPressureToZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0){
-      const preset = getPresetFromZones(current, mode);
-      if(preset){
-        const nextPreset = tightenPreset(preset, 1, mode);
-        if(nextPreset === preset) return current;
-        current = sanitizeZones(PRESET_ZONE_MAP[nextPreset] || [], mode);
-      }else{
-        current = contractCustomTargetZones(current, 1, mode);
-      }
-      remaining -= 1;
-    }
-    return current;
-  }
 
-  function applyMovementReliefToZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0 && current.length){
-      const preset = getPresetFromZones(current, mode);
-      if(preset){
-        const reducedPreset = loosenPreset(preset, 1, mode);
-        if(reducedPreset === preset) return current;
-        current = sanitizeZones(PRESET_ZONE_MAP[reducedPreset] || [], mode);
-      }else{
-        current = expandCustomTargetZones(current, 1, mode);
-      }
-      remaining -= 1;
-    }
-    return current;
-  }
+
+
 
   function getMovementRestrictionStatus(court){
     const mode = getZoneMode(court);
@@ -1636,12 +1557,7 @@
     });
   }
 
-  function syncSelectedHardshipRuleToMemory(court, signature, sideNumber){
-    if(!court || !sideNumber) return;
-    const snapshot = memoryShapeFromActiveRule(court, sideNumber);
-    snapshot.memoryScope = 'exact-competitive-context';
-    if(signature) copyRestrictionMemoryState(ensureRestrictionMemory(signature), snapshot);
-  }
+
 
   // BASELINE-BADMINTON-HARDSHIP-SAVE-INTENT-FIX-20260608
     function getHardshipSaveIntent(court, score1, score2, hardship){
@@ -1693,25 +1609,7 @@
     ));
   }
 
-  function getActiveSideRestrictionForCourt(court){
-    if(!court) return null;
-    const candidates = [1, 2].map(function(sideNumber){
-      const side = getSideByNumber(court, sideNumber);
-      const key = getSideRestrictionKey(side);
-      if(!key) return null;
-      const memory = getRestrictionMemory(key);
-      return restrictionMemoryHasActiveRule(memory) ? { key:key, memory:memory, sideNumber:sideNumber } : null;
-    }).filter(Boolean);
-    if(!candidates.length) return null;
-    candidates.sort(function(a, b){
-      const strongDiff = (b.sideNumber === court.strongerSide ? 1 : 0) - (a.sideNumber === court.strongerSide ? 1 : 0);
-      if(strongDiff) return strongDiff;
-      const shotDiff = Number(b.memory.shotStage || 0) - Number(a.memory.shotStage || 0);
-      if(shotDiff) return shotDiff;
-      return getMemoryMovementSteps(b.memory) - getMemoryMovementSteps(a.memory);
-    });
-    return candidates[0];
-  }
+
 
   // BASELINE-BADMINTON-DOMINANT-HARDSHIP-RULE-20260608
   // One dominant hardship rule: active hardship memory beats passive court generation,
@@ -1791,14 +1689,7 @@
     }));
   }
 
-  function getReducedHardshipOptions(court){
-    if(!court || court.score1 == null || court.score2 == null || !isOfficialCompleteBadmintonScore(Number(court.score1), Number(court.score2))) return [];
-    const options = [];
-    const movement = getMovementRestrictionStatus(court);
-    if(movement.canReduce) options.push({ value:'movement', label:'Reduce Hardship: Expand Target Area' });
-    if(Number(court && court.shotRestrictionStage || 0) > 0) options.push({ value:'shots', label:'Reduce Hardship: Restore Shot Options' });
-    return options;
-  }
+
 
   function applyHardshipToRestrictionMemory(memory, hardshipType, adjustedIds, adjustedSideNumber, resultScore, court, sourceMemory){
     if(!memory || !hardshipType) return;
@@ -1842,25 +1733,7 @@
     }].concat(history).slice(0, 24);
   }
 
-  function registerHardship(signature, hardshipType, adjustedSideIds, resultScore, court){
-    if(!hardshipType) return;
-    const memory = ensureRestrictionMemory(signature);
-    const adjustedIds = (adjustedSideIds || []).slice();
-    const adjustedSideNumber = court ? getSideNumberForIds(court, adjustedIds) : null;
-    const activeRule = adjustedSideNumber ? increaseHardshipRuleForSide(court, adjustedSideNumber, hardshipType) : null;
-    const sourceSnapshot = activeRule ? Object.assign(cloneRestrictionMemoryState(memory), {
-      targetPreset: activeRule.targetPreset || '',
-      singlesPreset: activeRule.mode === 'singles' ? (activeRule.targetPreset || '') : '',
-      shotStage: activeRule.shotStage || 0,
-      adjustedSideIds: activeRule.adjustedSideIds.slice(),
-      adjustedSideNumber: adjustedSideNumber,
-      memoryScope:'exact-competitive-context'
-    }) : cloneRestrictionMemoryState(memory);
 
-    sourceSnapshot.memoryScope = 'exact-competitive-context';
-    applyHardshipToRestrictionMemory(memory, hardshipType, adjustedIds, adjustedSideNumber, resultScore, court, sourceSnapshot);
-    memory.memoryScope = 'exact-competitive-context';
-  }
 
   function applyRestrictionReductionToMemory(memory, court, adjustedSideNumber, reducedType, sourceMemory){
     if(!memory) return;
@@ -1908,22 +1781,7 @@
     }
   }
 
-  function reduceRestrictionAfterBoundaryWin(signature, court, reducedType){
-    const memory = ensureRestrictionMemory(signature);
-    const adjustedSideNumber = getRestrictionSideNumberFromMemory(court, memory) || Number(court && court.restrictedSide || 0) || null;
-    const reducedRule = adjustedSideNumber ? reduceHardshipRuleForSide(court, adjustedSideNumber, reducedType) : null;
-    const sourceSnapshot = reducedRule ? Object.assign(cloneRestrictionMemoryState(memory), {
-      targetPreset: reducedRule.targetPreset || '',
-      singlesPreset: reducedRule.mode === 'singles' ? (reducedRule.targetPreset || '') : '',
-      shotStage: reducedRule.shotStage || 0,
-      adjustedSideIds: reducedRule.adjustedSideIds.slice(),
-      adjustedSideNumber: adjustedSideNumber,
-      memoryScope:'exact-competitive-context'
-    }) : memory;
 
-    applyRestrictionReductionToMemory(memory, court, adjustedSideNumber, reducedType, sourceSnapshot);
-    memory.memoryScope = 'exact-competitive-context';
-  }
 
   function evaluateCourtRestrictionsBase(court){
     ensureRatingStores();
@@ -2038,12 +1896,7 @@
     return d.toLocaleString(undefined, { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
   }
 
-  function getAttendingPlayersForCount(count){
-    const attending = getAttendingPlayers();
-    if(attending.length) return attending.slice(0, Math.min(Math.max(0, count), attending.length));
-    const available = state.players.slice().sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    return available.slice(0, Math.min(Math.max(0, count), available.length));
-  }
+
 
   function chooseDoublesSides(group){
     const pairings = [
@@ -2126,27 +1979,7 @@
     state.plan.specialFourPlayerIndex = 0;
   }
 
-  function applyTwoPlayerSideRotation(courts, attendingPlayers){
-    if(attendingPlayers.length !== 2 || courts.length !== 1) return courts;
-    const court = courts[0];
-    if(!court || court.kind !== 'singles' || !court.side1 || !court.side2) return courts;
-    const rotationIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0));
-    if(rotationIndex % 2 === 0) return courts;
-    return courts.map(function(item){
-      const clone = JSON.parse(JSON.stringify(item));
-      const tmpSide = clone.side1;
-      clone.side1 = clone.side2;
-      clone.side2 = tmpSide;
-      const tmpRating = clone.side1Rating;
-      clone.side1Rating = clone.side2Rating;
-      clone.side2Rating = tmpRating;
-      if(clone.strongerSide === 1) clone.strongerSide = 2;
-      else if(clone.strongerSide === 2) clone.strongerSide = 1;
-      if(clone.weakerSide === 1) clone.weakerSide = 2;
-      else if(clone.weakerSide === 2) clone.weakerSide = 1;
-      return clone;
-    });
-  }
+
 
   function enumerateLayouts(playerCount, format, maxCourts){
     const layouts = [];
@@ -2473,9 +2306,7 @@
     renderAll();
   }
 
-  function renderPlayerPill(player){
-    return '<span class="player-pill">' + escapeHtml(player.name) + ' · ' + escapeHtml(getPlayerRating(player).toFixed(1)) + '</span>';
-  }
+
 
   function getCourtSaveKey(court, index){
     if(!court || typeof court !== 'object') return '';
@@ -2523,32 +2354,15 @@
     if(signature) state.plan.currentSavedSignatures = Array.from(new Set([...(state.plan.currentSavedSignatures || []), signature]));
   }
 
-  function getCourtLosingScore(court){
-    if(court.score1 == null || court.score2 == null) return null;
-    return Math.min(Number(court.score1), Number(court.score2));
-  }
 
-  function getCurrentWinnerSideNumber(court){
-    if(court.score1 == null || court.score2 == null || Number(court.score1) === Number(court.score2)) return null;
-    return Number(court.score1) > Number(court.score2) ? 1 : 2;
-  }
 
-  function getShotRestrictionStageForSide(court, sideNumber){
-    const dominantRule = getDominantHardshipRuleForSide(court, sideNumber);
-    if(dominantRule && dominantRule.rule) return Math.min(1, Math.max(0, Math.round(Number(dominantRule.rule.shotStage || 0))));
-    const activeRule = getHardshipRuleForSide(court, sideNumber);
-    if(activeRule && hardshipRuleIsActive(activeRule.rule)) return Math.min(1, Math.max(0, Math.round(Number(activeRule.rule.shotStage || 0))));
-    if(Number(court && court.restrictedSide || 0) === Number(sideNumber)) return Math.min(1, Math.max(0, Math.round(Number(court && court.shotRestrictionStage || 0))));
-    return 0;
-  }
 
-  function getIncreaseHardshipOptionsForSide(court, sideNumber){
-    return getDominantIncreaseOptionsForSide(court, sideNumber);
-  }
 
-  function getReduceHardshipOptionsForSide(court, sideNumber){
-    return getDominantReduceOptionsForSide(court, sideNumber);
-  }
+
+
+
+
+
 
     function getHardshipResultContext(court){
     const empty = { valid:false, active:false, action:'none', adjustmentSideNumber:null, options:[], losingScore:null, ratingHold:false };
@@ -2698,9 +2512,7 @@
     return (side && Array.isArray(side.players) ? side.players : []).map(function(player){ return abbreviatePlayerName(player.name); });
   }
 
-  function getShortTeamLabel(side){
-    return getShortTeamLines(side).join(' & ');
-  }
+
 
   function getDisplayLengthForTeamLine(value){
     return String(value || '').replace(/\s+/g, '').length;
@@ -2990,17 +2802,9 @@
     return '';
   }
 
-  function applyDeltaToSideForCourt(court, side, delta){
-    const entity = getCourtSideRatingEntity(court, side);
-    return setCourtSideRatingEntity(court, side, entity.value + delta) - entity.value;
-  }
 
-  function applyTargetAverageToSideForCourt(court, side, targetAverage){
-    const entity = getCourtSideRatingEntity(court, side);
-    const before = entity.value;
-    const target = setCourtSideRatingEntity(court, side, targetAverage);
-    return Math.round((target - before) * 10) / 10;
-  }
+
+
 
   function incrementCourtPlayerMatchCounts(court){
     const seen = new Set();
@@ -3100,13 +2904,9 @@
     return !!(court && (court.noGame || court.status === 'no-game'));
   }
 
-  function getActiveCurrentCourtCount(){
-    return (state.plan.current || []).filter(function(court){ return !courtMarkedNoGame(court); }).length;
-  }
 
-  function renderNextSetAction(){
-    return '';
-  }
+
+
 
   function ensureGeneratedCurrentSet(attendingPlayers, usedSet){
     const format = state.plan.format || 'doubles';
@@ -3844,31 +3644,7 @@
     '</div></details>';
   }
 
-  function renderPairSummary(){
-    const wrap = refs.pairSummaryWrap;
-    if(!wrap) return;
-    const sections = [];
-    if(state.plan.current.length){
-      sections.push(renderPairHandlingBatch(
-        'Current generated set',
-        state.plan.generatedAt ? ('Generated ' + formatDateTime(state.plan.generatedAt)) : '',
-        state.plan.current
-      ));
-    }
-    (state.plan.finished || []).forEach((batch, index) => {
-      sections.push(renderPairHandlingBatch(
-        'Finished set ' + String(index + 1),
-        'Generated ' + formatDateTime(batch.generatedAt) + ' · Completed ' + formatDateTime(batch.completedAt),
-        batch.courts || []
-      ));
-    });
-    const items = Object.values(state.pairSummary || {}).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-    if(items.length){
-      const recurring = items.slice(0, 12).map(item => '<div class="pair-summary-item"><strong>' + escapeHtml(item.label) + '</strong><div class="note">Seen ' + escapeHtml(String(item.count)) + ' time(s) · Last seen ' + escapeHtml(formatDateTime(item.lastSeenAt)) + '</div></div>').join('');
-      sections.push('<details class="finished-details"><summary><span>Recurring system pairs</span><span>' + escapeHtml(String(Math.min(items.length, 12))) + '</span></summary><div class="finished-details-body">' + recurring + '</div></details>');
-    }
-    wrap.innerHTML = sections.length ? sections.join('') : '<div class="empty-state">No generated pair handling summaries yet.</div>';
-  }
+
 
   function getZoneChecklistMarkup(prefix, selected){
     return '<div class="rule-zone-grid">' + DOUBLES_ZONES.map(zone => '<label class="rule-zone-pill"><input type="checkbox" data-zone-checkbox="' + escapeHtml(prefix) + '" value="' + escapeHtml(zone) + '"' + (selected.includes(zone) ? ' checked' : '') + '/><span>' + escapeHtml(zone) + '</span></label>').join('') + '</div>';
