@@ -65,3 +65,34 @@ test('Detect The Word no longer claims unrestricted dictionary validation',()=>{
   assert.doesNotMatch(start,/valid dictionary word/);
   assert.match(start,/Submit a ' \+ tier\.letters \+ '-letter guess/);
 });
+
+
+test('Detect The Word persists unresolved rounds and clears finished rounds',()=>{
+  const start=extractFunction('savedWordRoundSnapshot','evaluateWordGuess');
+  const submit=extractFunction('submitWordGuess','spendWordSkill');
+  assert.match(start,/profiles\.detectword\.activeRound = savedWordRoundSnapshot\(\)/);
+  assert.match(start,/restoreSavedWordRound/);
+  assert.match(start,/tierId:tier\.id/);
+  assert.match(submit,/profiles\.detectword\.activeRound = null/);
+  assert.match(submit,/persistWordRound\(\)/);
+});
+
+test('Make The Number seeded shuffle is reproducible and bank fill avoids Math.random',()=>{
+  const seedSource=extractFunction('makeNumberSeedHash','makeNumberFormulaTemplates');
+  const api=Function(seedSource+'; return {makeNumberSeededRandom,seededShuffle};')();
+  assert.deepEqual(api.seededShuffle([1,2,3,4,5,6],'starter:8'),api.seededShuffle([1,2,3,4,5,6],'starter:8'));
+  assert.notDeepEqual(api.seededShuffle([1,2,3,4,5,6],'starter:8'),api.seededShuffle([1,2,3,4,5,6],'starter:9'));
+  const bank=extractFunction('buildMakeNumberPuzzleBank','buildMake24Puzzle');
+  assert.doesNotMatch(bank,/Math\.random/);
+  assert.match(bank,/makeNumberSeededRandom\('bank:'/);
+});
+
+test('Make The Number advances an explicit round seed for starts and rerolls',()=>{
+  const start=extractFunction('buildMake24Puzzle','countNumbers');
+  const reroll=extractFunction('rerollMake24Puzzle','spendMake24Skill');
+  assert.match(start,/const seed = nextMake24Seed\(tier\)/);
+  assert.match(start,/seed:seed/);
+  assert.match(reroll,/const seed = nextMake24Seed\(tier\)/);
+  assert.match(reroll,/make24State\.seed = seed/);
+  assert.match(reroll,/scheduleSave\('make24'\)/);
+});

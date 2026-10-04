@@ -3,7 +3,7 @@ import { ABILITIES, LEVELS, LEVEL_BY_ID, MATERIAL_NAMES, ZONES } from '../data/c
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const percent = (value, max) => `${Math.max(0, Math.min(100, Number(value || 0) / Math.max(1, Number(max || 1)) * 100)).toFixed(1)}%`;
 
-export const moduleE = {
+export const uiMethods = {
   template() {
     return `<div class="ce-game" data-module="calorie-escape">
       <header class="ce-header"><div><span class="ce-kicker">Baseline Realm · Calorie Escape</span><h2>Four-Zone Escape</h2><p>Run toward the camera through City, Desert, Forest, and Snow Mountain routes. Move, jump, attack, and slide while each zone’s pursuer closes in.</p></div><div class="ce-header-actions"><button data-ce-action="sound">Sound</button><button data-ce-action="basecamp">Basecamp [B]</button></div></header>

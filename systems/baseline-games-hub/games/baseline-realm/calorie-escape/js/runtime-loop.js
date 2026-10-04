@@ -3,7 +3,7 @@ import { completeRun, failRun, materialRewardsFromRun, obstacleDefinition } from
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-export const q = {
+export const runtimeLoop = {
   update(dt) {
     const run = this.run;
     const level = this.level;

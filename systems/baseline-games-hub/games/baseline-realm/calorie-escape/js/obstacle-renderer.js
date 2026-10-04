@@ -1,6 +1,6 @@
 import { OBSTACLE_TYPES } from '../data/calorie-escape-data.js';
 
-export const moduleB = {
+export const obstacleRenderer = {
   drawObstacle(ctx, obstacle) {
     const definition = OBSTACLE_TYPES[obstacle.type];
     if (!definition) return;

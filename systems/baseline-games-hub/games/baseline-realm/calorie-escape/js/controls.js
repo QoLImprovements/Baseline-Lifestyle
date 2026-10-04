@@ -3,7 +3,7 @@ import { createRunSnapshot, mulberry32, trainAbility } from './calorie-escape-en
 
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-export const x = {
+export const controls = {
   bind() {
     this.root.addEventListener('click', (event) => {
       const action = event.target.closest('[data-ce-action]')?.dataset.ceAction;

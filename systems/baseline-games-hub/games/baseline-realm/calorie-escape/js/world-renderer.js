@@ -37,7 +37,7 @@ function road(ctx, { horizon = 142, road = '#222a2f', line = '#d7bd73', shoulder
   }
 }
 
-export const world = {
+export const worldRenderer = {
   draw() {
     if (!this.context || !this.canvas) return;
     const ctx = this.context;

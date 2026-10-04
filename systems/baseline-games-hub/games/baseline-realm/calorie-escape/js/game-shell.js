@@ -6,7 +6,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const quietSound = (enabled) => ({ enabled, ensure() {}, beat() {}, action() {} });
 const embeddedStyle = `<style>.calorie-escape-screen{position:absolute;inset:0;z-index:80;overflow:hidden;background:#08111c;color:#f7edd8}.ce-game{position:absolute;inset:0;display:grid;grid-template-rows:auto 1fr;background:#102237}.ce-header{display:flex;justify-content:space-between;padding:12px;background:#0d1d2d}.ce-body{position:relative}.ce-menu,.ce-run,.ce-result{position:absolute;inset:0}.ce-menu[hidden],.ce-run[hidden],.ce-result[hidden]{display:none!important}.ce-stage-shell canvas{width:100%;height:100%}</style>`;
 
-export const moduleC = {
+export const gameShell = {
   setup({ root, loadState, persistState, resolveEffects, getInventorySummary, useFood, onExit } = {}) {
     if (!root) throw new TypeError('Calorie Escape requires a root element.');
     this.root = root;
