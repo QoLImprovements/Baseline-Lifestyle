@@ -1760,6 +1760,19 @@ function parseViewStateHash(hash){
       if(!id || !sectionsById.has(id)) return;
       clearPendingNavScroll();
 
+      // First-paint route markers are bootstrap-only. Once the live tab
+      // controller is running, they must never keep a section or tab pinned.
+      try{
+        document.documentElement.removeAttribute('data-initial-section');
+        if(id !== 'recipes'){
+          document.documentElement.removeAttribute('data-initial-recipe-route');
+          document.documentElement.removeAttribute('data-initial-recipe-pending');
+          document.documentElement.removeAttribute('data-initial-recipe-slug');
+          document.documentElement.removeAttribute('data-initial-recipe-view');
+          document.documentElement.removeAttribute('data-initial-recipe-variant');
+        }
+      }catch(_e){}
+
       // Skincare's first-paint routine markers are bootstrap-only. Once the
       // user leaves My Routine they must not keep forcing #routine visible.
       try{
