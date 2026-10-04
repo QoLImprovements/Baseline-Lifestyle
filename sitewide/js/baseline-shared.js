@@ -2075,8 +2075,17 @@ function parseViewStateHash(hash){
       if(!id) id = recipeTokenFromHref(href);
       id = recipeIdForToken(id);
       if(!id) return;
-      const liveCard = document.getElementById(id);
-      if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
+      let liveCard = document.getElementById(id);
+      if(!liveCard || !recipesSection.contains(liveCard)){
+        const token = (a.dataset && a.dataset.recipeId) ? a.dataset.recipeId : recipeTokenFromHref(href);
+        if(foodRecipeRecordForToken(token)){
+          e.preventDefault();
+          hydrateFolderBackedRecipeSource(token).then(card=>{
+            if(card) openRecipe(card.id);
+          });
+        }
+        return;
+      }
       e.preventDefault();
       openRecipe(id);
     }, { capture:true });
