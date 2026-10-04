@@ -228,3 +228,19 @@ test("legacy matchupMemory hardship is promoted into the authoritative exact-con
     "legacy memory must be promoted before the active hardship lookup"
   );
 });
+
+
+test("submitted match carries a recoverable authoritative hardship snapshot", () => {
+  const saveStart = js.indexOf("async function saveCourtResult");
+  const saveEnd = js.indexOf("window.__baselineSaveCourtResult", saveStart);
+  const save = js.slice(saveStart, saveEnd);
+  assert.match(save, /hardshipContextKey/);
+  assert.match(save, /hardshipRuleAfter/);
+  assert.match(save, /state\.hardshipRecords\[hardshipContextKey\]/);
+
+  assert.match(php, /function bl_badminton_apply_added_match_hardship_snapshots/);
+  assert.match(php, /bl_badminton_match_accepts_hardship_key/);
+  assert.match(php, /\$match\['hardshipContextKey'\]/);
+  assert.match(php, /\$match\['hardshipRuleAfter'\]/);
+  assert.match(php, /\$state = bl_badminton_apply_added_match_hardship_snapshots\(\$storedState, \$state\)/);
+});
