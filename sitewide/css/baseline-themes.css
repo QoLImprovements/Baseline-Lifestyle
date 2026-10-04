@@ -161,11 +161,7 @@ body[data-app="food"]{
   /* One live Food content surface.
      System, Recipes, Ingredient Library and Diet Log share this exact surface.
      Controls have their own control fill; content containers do not fork colour. */
-  --food-surface-card: linear-gradient(145deg,
-    var(--food-gold) 0%,
-    var(--food-orange) 46%,
-    var(--food-red) 100%
-  );
+  --food-surface-card: var(--food-orange);
   --food-surface-panel: var(--food-surface-card);
   --food-surface-subtle: var(--food-surface-card);
   --food-surface-control: linear-gradient(180deg,
