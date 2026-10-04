@@ -51,6 +51,15 @@ test('battle implementation exposes ATB, Active and Wait modes, and all six comm
   assert.match(ui, /data-battle-mode="wait"/);
 });
 
+test('battle runtime keeps command DOM stable between ATB ticks and always exposes Basecamp', () => {
+  assert.match(ui, /refreshBattleMeters\(\)/);
+  assert.match(ui, /this\.refreshBattleMeters\(\)/);
+  assert.doesNotMatch(ui, /time - this\.lastBattleRender > 85/);
+  assert.match(ui, /data-battle-basecamp/);
+  assert.match(ui, /returnToBasecampFromBattle\(\)/);
+  assert.match(ui, /finishBattle\(this\.state\)/);
+});
+
 test('progression, equipment, status, drops, and save/resume systems are present', () => {
   assert.match(engine, /applyExperience/);
   assert.match(engine, /equipItem/);
