@@ -349,3 +349,12 @@ test("Badminton repaired modules carry a fresh cache revision", () => {
     assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
   }
 });
+
+
+test("score permission resolves generated court snapshots back to canonical Player ID records", () => {
+  const start = source.indexOf("function currentUserCanScoreCourt");
+  const end = source.indexOf("function refreshCurrentCourtCard", start);
+  const permission = source.slice(start, end);
+  assert.match(permission, /courtPlayer && courtPlayer\.id \? getPlayer\(courtPlayer\.id\) : null/);
+  assert.match(permission, /currentUserMatchesPlayer\(canonicalPlayer \|\| courtPlayer\)/);
+});
