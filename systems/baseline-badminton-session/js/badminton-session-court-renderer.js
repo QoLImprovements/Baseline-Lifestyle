@@ -82,9 +82,9 @@
     }
 
     function renderHardshipHelp(court){
-      const text = getHardshipHelpText(court);
-      if(!text) return '';
-      return '<details class="court-hardship-help"><summary aria-label="Why this hardship?" title="Why this hardship?">?</summary><div class="court-hardship-help__caption"><strong>Why this hardship?</strong><span>' + escapeHtml(text) + '</span></div></details>';
+      const hardshipText = getHardshipHelpText(court);
+      const text = hardshipText || 'No saved hardship is active for this matchup. The court diagram shows the playable court area and any active restrictions for this game.';
+      return '<details class="court-hardship-help"><summary aria-label="Game information" title="Game information">i</summary><div class="court-hardship-help__caption"><strong>Game information</strong><span>' + escapeHtml(text) + '</span></div></details>';
     }
 
     function renderRuleGuidance(court){
