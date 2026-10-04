@@ -13,20 +13,24 @@ const source = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const gamePlanSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-game-plan.js"),
+  "utf8",
+);
 
 test("Generate Game Plan never auto-selects roster members as attendees", () => {
   assert.doesNotMatch(source, /function autoSelectAllPlayersForPlan\(/);
-  const start = source.indexOf("function generateGamePlan");
-  const end = source.indexOf("function getCourtSaveKey", start);
-  const generate = source.slice(start, end);
+  const start = gamePlanSource.indexOf("function generateGamePlan");
+  const end = gamePlanSource.indexOf("function rollFinishedGamesForward", start);
+  const generate = gamePlanSource.slice(start, end);
   assert.doesNotMatch(generate, /state\.players\.map\(player => player\.id\)/);
   assert.doesNotMatch(generate, /autoSelectAllPlayersForPlan/);
 });
 
 test("zero and one attendee are preserved and generation is refused", () => {
-  const start = source.indexOf("function generateGamePlan");
-  const end = source.indexOf("function getCourtSaveKey", start);
-  const generate = source.slice(start, end);
+  const start = gamePlanSource.indexOf("function generateGamePlan");
+  const end = gamePlanSource.indexOf("function rollFinishedGamesForward", start);
+  const generate = gamePlanSource.slice(start, end);
   assert.match(generate, /const attendingPlayers = getAttendingPlayers\(\)/);
   assert.match(generate, /if\(attendingPlayers\.length < 2\)/);
   assert.match(generate, /No attendees are selected/);

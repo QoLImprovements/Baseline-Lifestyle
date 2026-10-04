@@ -28,7 +28,6 @@
 
   const refs = {};
   let state = createInitialState();
-  let loginOptions = [];
 
   const ratingModule = window.BASELINE_BADMINTON_RATINGS;
   if(!ratingModule) throw new Error('Badminton Session rating engine failed to load.');
@@ -194,6 +193,56 @@
   const buildMatchupRulePayload = ruleAdminEngine.buildMatchupRulePayload;
   const bindRuleAdminActions = ruleAdminEngine.bindRuleAdminActions;
 
+  const rosterModule = window.BASELINE_BADMINTON_ROSTER;
+  if(!rosterModule) throw new Error('Badminton Session roster module failed to load.');
+  const rosterEngine = rosterModule.create({
+    getState:function(){ return state; },
+    getRefs:function(){ return refs; },
+    clampRating:function(value){ return clampRating(value); },
+    escapeHtml:function(value){ return escapeHtml(value); },
+    isModeratorPlayer:function(player){ return isModeratorPlayer(player); },
+    currentUserIsManager:function(){ return currentUserIsManager(); },
+    normalizePlayerPreferenceFlags:function(){ return normalizePlayerPreferenceFlags(); },
+    formatDateTime:function(value){ return formatDateTime(value); },
+    ensureRatingStores:function(){ return ensureRatingStores(); },
+    getPlayerRating:function(player){ return getPlayerRating(player); },
+    cssEscape:function(value){ return cssEscape(value); },
+    saveSessionData:function(options){ return saveSessionData(options); },
+    normalizeKnownLoginName:function(value){ return normalizeKnownLoginName(value); },
+    currentUserCanEditPlayerPrefs:function(player){ return currentUserCanEditPlayerPrefs(player); },
+    getPlayer:function(id){ return getPlayer(id); },
+    getPlayerByNameForRatingMigration:function(name){ return getPlayerByNameForRatingMigration(name); },
+    renderAll:function(){ return renderAll(); },
+    setPlayerRating:function(player, value){ return setPlayerRating(player, value); },
+    normalizeLoginName:function(value){ return normalizeLoginName(value); },
+    getPairIdFromPlayers:function(players){ return getPairIdFromPlayers(players); },
+    getPairSummaryKey:function(side){ return getPairSummaryKey(side); },
+    getTeamLabel:function(side){ return getTeamLabel(side); },
+    getSitewideAuth:function(){ return getSitewideAuth(); },
+    addLoginOption:function(map, value, label, email, id){ return addLoginOption(map, value, label, email, id); },
+    isPlayerAdmin:function(player){ return isPlayerAdmin(player); },
+    uid:function(prefix){ return uid(prefix); },
+    formatPersonName:function(value){ return formatPersonName(value); },
+    startRating:START_RATING,
+    moderatorCanonicalLogin:SITE_MODERATOR_CANONICAL_LOGIN,
+    moderatorAliases:SITE_MODERATOR_ALIASES,
+    loginOptionsUrl:LOGIN_OPTIONS_URL
+  });
+  const renderPlayers = rosterEngine.renderPlayers;
+  const bindRosterActions = rosterEngine.bindRosterActions;
+  const renderPlayerPreferenceControls = rosterEngine.renderPlayerPreferenceControls;
+  const normalizePairSummaryKeys = rosterEngine.normalizePairSummaryKeys;
+  const updatePairSummaryFromCourt = rosterEngine.updatePairSummaryFromCourt;
+  const migrateKnownModeratorPlayer = rosterEngine.migrateKnownModeratorPlayer;
+  const renderLoginSelect = rosterEngine.renderLoginSelect;
+  const buildLoginOptions = rosterEngine.buildLoginOptions;
+  const loadLoginOptions = rosterEngine.loadLoginOptions;
+  const addPlayer = rosterEngine.addPlayer;
+  const renderAdminStarToggle = rosterEngine.renderAdminStarToggle;
+  const playerLoginTokens = rosterEngine.playerLoginTokens;
+  const getPairLabelFromId = rosterEngine.getPairLabelFromId;
+  const renderAdminStar = rosterEngine.renderAdminStar;
+
   const reportingModule = window.BASELINE_BADMINTON_REPORTING;
   if(!reportingModule) throw new Error('Badminton Session reporting renderer failed to load.');
   const reportingRenderer = reportingModule.create({
@@ -241,13 +290,129 @@
     renderHardshipHelp:function(court){ return renderHardshipHelp(court); },
     renderScoreHeading:function(court, side){ return renderScoreHeading(court, side); },
     createCourtScoreInputName:function(court, index, side){ return createCourtScoreInputName(court, index, side); },
-    renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
     getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); }
   });
   const renderAttendanceSelector = courtCardRenderer.renderAttendanceSelector;
   const renderCurrentSitOutInfo = courtCardRenderer.renderCurrentSitOutInfo;
   const renderCourtVariableEditor = courtCardRenderer.renderCourtVariableEditor;
   const renderCourtCard = courtCardRenderer.renderCourtCard;
+
+  const gamePlanModule = window.BASELINE_BADMINTON_GAME_PLAN;
+  if(!gamePlanModule) throw new Error('Badminton Session game-plan module failed to load.');
+  const gamePlanEngine = gamePlanModule.create({
+    getState:function(){ return state; },
+    getRefs:function(){ return refs; },
+    getPageIsLeaving:function(){ return pageIsLeaving; },
+    cssEscape:function(value){ return cssEscape(value); },
+    courtSaved:function(court, index){ return courtSaved(court, index); },
+    refreshCourtInputUi:function(card, court, index){ return refreshCourtInputUi(card, court, index); },
+    requestNoGameConfirmation:function(court, index, slider){ return requestNoGameConfirmation(court, index, slider); },
+    handleNoGameDialogAction:function(action){ return handleNoGameDialogAction(action); },
+    generateNextSetFromCompletedCurrent:function(){ return generateNextSetFromCompletedCurrent(); },
+    syncCourtScoresFromInputs:function(){ return syncCourtScoresFromInputs(); },
+    currentUserCanScoreCourt:function(court){ return currentUserCanScoreCourt(court); },
+    handleSaveCourtButton:function(button, event){ return handleSaveCourtButton(button, event); },
+    markLocalChange:function(){ return markLocalChange(); },
+    queueServerSave:function(options){ return queueServerSave(options); },
+    currentUserIsManager:function(){ return currentUserIsManager(); },
+    resetUnsubmittedCourtScoreDraft:function(court){ return resetUnsubmittedCourtScoreDraft(court); },
+    syncCurrentSitOutUnion:function(){ return syncCurrentSitOutUnion(); },
+    buildMatchupKey:function(court){ return buildMatchupKey(court); },
+    evaluateCourtRestrictions:function(court){ return evaluateCourtRestrictions(court); },
+    setPlanAlert:function(message, kind){ return setPlanAlert(message, kind); },
+    getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); },
+    getCourtVariableBasePlayerIds:function(court){ return getCourtVariableBasePlayerIds(court); },
+    getCourtSitOutLimit:function(court){ return getCourtSitOutLimit(court); },
+    makeBestCourtFromVariablePlayers:function(players, format, court){ return makeBestCourtFromVariablePlayers(players, format, court); },
+    courtMarkedNoGame:function(court){ return courtMarkedNoGame(court); },
+    syncAllCurrentCourtDraftsFromInputs:function(){ return syncAllCurrentCourtDraftsFromInputs(); },
+    refreshCurrentCourtCard:function(index){ return refreshCurrentCourtCard(index); },
+    capCurrentCourtsToCourtLimit:function(){ return capCurrentCourtsToCourtLimit(); },
+    enforceCurrentScoreInputsFromState:function(root){ return enforceCurrentScoreInputsFromState(root); },
+    scheduleHardBlankCurrentScoreInputs:function(root){ return scheduleHardBlankCurrentScoreInputs(root); },
+    refreshCurrentCourtRestrictionsFromMemory:function(){ return refreshCurrentCourtRestrictionsFromMemory(); },
+    uid:function(prefix){ return uid(prefix); },
+    protectLocalCurrentState:function(){ return protectLocalCurrentState(); },
+    saveSessionData:function(options){ return saveSessionData(options); },
+    syncPlanSettingsFromInputs:function(){ return syncPlanSettingsFromInputs(); },
+    getAttendingPlayers:function(){ return getAttendingPlayers(); },
+    clearGeneratedCourtDrafts:function(){ return clearGeneratedCourtDrafts(); },
+    isSpecialFourPlayerLadder:function(players, format){ return isSpecialFourPlayerLadder(players, format); },
+    ensureCurrentCourtSaveKeys:function(){ return ensureCurrentCourtSaveKeys(); },
+    renderAll:function(){ return renderAll(); },
+    advanceSpecialFourPlayerIndex:function(players, format){ return advanceSpecialFourPlayerIndex(players, format); },
+    ensureGeneratedCurrentSet:function(players, usedSet){ return ensureGeneratedCurrentSet(players, usedSet); },
+    getTeamLabel:function(side){ return getTeamLabel(side); },
+    renderAttendanceSelector:function(){ return renderAttendanceSelector(); },
+    renderCourtCard:function(court, phase, index){ return renderCourtCard(court, phase, index); },
+    renderCurrentSitOutInfo:function(){ return renderCurrentSitOutInfo(); },
+    renderFinishedGames:function(){ return renderFinishedGames(); },
+    prepareSpecialFourPlayerIndexForManualGenerate:function(players, format){ return prepareSpecialFourPlayerIndexForManualGenerate(players, format); },
+    buildCurrentCourtSet:function(players, format, usedSet, maxCourts){ return buildCurrentCourtSet(players, format, usedSet, maxCourts); },
+    commitHardshipChoice:function(){ return commitHardshipChoice.apply(null, arguments); },
+    getShotRestrictionText:function(stage, restrictions){ return getShotRestrictionText(stage, restrictions); }
+  });
+  const wireGamePlanSubtabs = gamePlanEngine.wireGamePlanSubtabs;
+  const bindPlanActions = gamePlanEngine.bindPlanActions;
+  const applyCourtSitOutSelection = gamePlanEngine.applyCourtSitOutSelection;
+  const renderGamePlan = gamePlanEngine.renderGamePlan;
+  const syncGamePlanSubtabVisibility = gamePlanEngine.syncGamePlanSubtabVisibility;
+  const generateGamePlan = gamePlanEngine.generateGamePlan;
+  const rollFinishedGamesForward = gamePlanEngine.rollFinishedGamesForward;
+  const createFinishedBatchFromCurrent = gamePlanEngine.createFinishedBatchFromCurrent;
+  const normalizeAttendingPlayerIds = gamePlanEngine.normalizeAttendingPlayerIds;
+
+  const resultsModule = window.BASELINE_BADMINTON_RESULTS;
+  if(!resultsModule) throw new Error('Badminton Session result workflow failed to load.');
+  const resultsEngine = resultsModule.create({
+    getState:function(){ return state; },
+    getRefs:function(){ return refs; },
+    safeNumber:function(value, fallback){ return safeNumber(value, fallback); },
+    escapeHtml:function(value){ return escapeHtml(value); },
+    cssEscape:function(value){ return cssEscape(value); },
+    buildMatchupKey:function(court){ return buildMatchupKey(court); },
+    evaluateCourtRestrictions:function(court){ return evaluateCourtRestrictions(court); },
+    getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); },
+    protectLocalCurrentState:function(){ return protectLocalCurrentState(); },
+    saveSessionData:function(options){ return saveSessionData(options); },
+    currentUserIsManager:function(){ return currentUserIsManager(); },
+    clearGeneratedCourtDrafts:function(){ return clearGeneratedCourtDrafts(); },
+    setPlanAlert:function(message, kind){ return setPlanAlert(message, kind); },
+    allCurrentCourtsSaved:function(){ return allCurrentCourtsSaved(); },
+    courtMarkedNoGame:function(court){ return courtMarkedNoGame(court); },
+    rollFinishedGamesForward:function(){ return rollFinishedGamesForward(); },
+    syncAllCurrentCourtDraftsFromInputs:function(){ return syncAllCurrentCourtDraftsFromInputs(); },
+    refreshCurrentCourtCard:function(index){ return refreshCurrentCourtCard(index); },
+    renderAll:function(){ return renderAll(); },
+    getDominantHardshipEntryForCourt:function(court){ return getDominantHardshipEntryForCourt(court); },
+    getDominantIncreaseOptionsForSide:function(court, sideNumber){ return getDominantIncreaseOptionsForSide(court, sideNumber); },
+    getDominantReduceOptionsForSide:function(court, sideNumber){ return getDominantReduceOptionsForSide(court, sideNumber); },
+    hardshipValueFromVisibleText:function(value){ return hardshipValueFromVisibleText(value); },
+    renderCurrentSitOutInfo:function(){ return renderCurrentSitOutInfo(); },
+    renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
+    inputMatchesGeneration:function(input){ return inputMatchesGeneration(input); },
+    createInitialState:function(){ return createInitialState(); },
+    maxScore:MAX_SCORE
+  });
+  const canSaveCourtNow = resultsEngine.canSaveCourtNow;
+  const renderHardshipControl = resultsEngine.renderHardshipControl;
+  const syncCourtScoresFromInputs = resultsEngine.syncCourtScoresFromInputs;
+  const syncCourtHardshipFromInput = resultsEngine.syncCourtHardshipFromInput;
+  const markCourtSaved = resultsEngine.markCourtSaved;
+  const getHardshipResultContext = resultsEngine.getHardshipResultContext;
+  const hardBlankCurrentScoreInputs = resultsEngine.hardBlankCurrentScoreInputs;
+  const confirmNoGameForCourt = resultsEngine.confirmNoGameForCourt;
+  const requestNoGameConfirmation = resultsEngine.requestNoGameConfirmation;
+  const handleNoGameDialogAction = resultsEngine.handleNoGameDialogAction;
+  const validateScores = resultsEngine.validateScores;
+  const enforceCurrentScoreInputsFromState = resultsEngine.enforceCurrentScoreInputsFromState;
+  const renderNoGameDialog = resultsEngine.renderNoGameDialog;
+  const ensureCurrentCourtSaveKeys = resultsEngine.ensureCurrentCourtSaveKeys;
+  const courtSaved = resultsEngine.courtSaved;
+  const getHardshipControlStateKey = resultsEngine.getHardshipControlStateKey;
+  const scheduleHardBlankCurrentScoreInputs = resultsEngine.scheduleHardBlankCurrentScoreInputs;
+  const normalisePendingHardship = resultsEngine.normalisePendingHardship;
+  const sanitizeScoreInput = resultsEngine.sanitizeScoreInput;
 
   const stateHydrationModule = window.BASELINE_BADMINTON_STATE_HYDRATION;
   if(!stateHydrationModule) throw new Error('Badminton Session state hydration model failed to load.');
@@ -680,17 +845,6 @@
 
 
 
-  function playerLoginTokens(player){
-    const tokens = [];
-    if(!player) return tokens;
-    [player.loginUsername, player.loginEmail, player.email, player.username, player.login].forEach(function(value){
-      const normalized = normalizeLoginName(value);
-      if(normalized) tokens.push(normalized);
-      if(SITE_MODERATOR_ALIASES.includes(normalized)) tokens.push(SITE_MODERATOR_CANONICAL_LOGIN.toLowerCase());
-    });
-    return Array.from(new Set(tokens));
-  }
-
   function isModeratorPlayer(player){
     if(!player) return false;
     if(playerLoginTokens(player).some(isKnownModeratorToken)) return true;
@@ -783,69 +937,6 @@
     };
   }
 
-  function buildLoginOptions(){
-    const map = {};
-    addLoginOption(map, SITE_MODERATOR_CANONICAL_LOGIN, 'Peter Bates-Wilkinson', 'Bateswilkinson@gmail.com', 'moderator');
-    loginOptions.forEach(function(item){
-      if(!item) return;
-      addLoginOption(map, item.value || item.name || item.email, item.label || item.name || item.email, item.email || '', item.id || item.userId || '');
-    });
-    (state.players || []).forEach(function(player){
-      addLoginOption(map, player.loginUsername, player.loginUsername, player.loginEmail || player.email || '', player.loginUserId || player.userId || '');
-    });
-    const auth = getSitewideAuth();
-    if(auth && auth.authed !== false){
-      addLoginOption(map, auth.name || auth.email, auth.name || auth.email, auth.email || '', auth.id || '');
-    }
-    return Object.values(map).sort(function(a, b){ return a.label.localeCompare(b.label); });
-  }
-
-  function loadLoginOptions(){
-    if(!LOGIN_OPTIONS_URL || !window.fetch || !currentUserIsManager()) return;
-    fetch(LOGIN_OPTIONS_URL, { method:'GET', credentials:'same-origin' })
-      .then(function(response){ return response.json().catch(function(){ return null; }); })
-      .then(function(data){
-        if(!data || !data.ok || !Array.isArray(data.users)) return;
-        loginOptions = data.users.map(function(user){
-          const name = String(user.name || '').trim();
-          const email = String(user.email || '').trim();
-          return {
-            id: user.id || '',
-            value: normalizeKnownLoginName(name || email),
-            label: name && email ? (name + ' · ' + email) : (name || email),
-            email: email
-          };
-        });
-        renderPlayers();
-        bindRosterActions();
-      })
-      .catch(function(_error){});
-  }
-
-  function renderLoginSelect(player){
-    const current = normalizeKnownLoginName(isModeratorPlayer(player) ? SITE_MODERATOR_CANONICAL_LOGIN : (player.loginUsername || ''));
-    const options = buildLoginOptions();
-    const hasCurrent = current && !options.some(function(option){ return normalizeLoginName(option.value) === normalizeLoginName(current); });
-    if(hasCurrent){
-      options.unshift({ value:current, label:current, email:'', id:'' });
-    }
-    const optionMarkup = ['<option value="">No linked login</option>'].concat(options.map(function(option){
-      const selected = normalizeLoginName(option.value) === normalizeLoginName(current) ? ' selected' : '';
-      return '<option value="' + escapeHtml(option.value) + '"' + selected + '>' + escapeHtml(option.label) + '</option>';
-    })).join('');
-    return '<select class="player-login-input login-select" data-player-login="' + escapeHtml(player.id) + '">' + optionMarkup + '</select>';
-  }
-
-  function renderPlayerPreferenceControls(player){
-    const canEdit = currentUserCanEditPlayerPrefs(player);
-    const disabled = canEdit ? '' : ' disabled';
-    const playerName = escapeHtml(player.name || 'player');
-    return '<div class="player-pref-stack" aria-label="Doubles-day preferences for ' + playerName + '">' +
-      '<label class="player-pref-toggle"><span><span class="player-pref-label">No singles</span><span class="player-pref-hint">Doubles-day fallback only</span></span><input type="checkbox" data-player-pref="singles" data-player-id="' + escapeHtml(player.id) + '"' + (player.doublesDaySinglesOptOut ? ' checked' : '') + disabled + '/></label>' +
-      '<label class="player-pref-toggle"><span><span class="player-pref-label">No 2v1 solo</span><span class="player-pref-hint">Do not make this player the 1</span></span><input type="checkbox" data-player-pref="solo" data-player-id="' + escapeHtml(player.id) + '"' + (player.doublesDaySoloOptOut ? ' checked' : '') + disabled + '/></label>' +
-    '</div>';
-  }
-
   function normaliseCourtLimit(value, fallback){
     return Math.max(1, Math.min(8, Math.round(safeNumber(value, fallback || 1))));
   }
@@ -870,24 +961,6 @@
 
   function getPlayer(playerId){
     return state.players.find(item => item.id === playerId) || null;
-  }
-
-  function normalizeAttendingPlayerIds(options){
-    const opts = options || {};
-    const existingIds = new Set(state.players.map(player => player.id));
-    let ids = Array.isArray(state.plan.attendingPlayerIds) ? state.plan.attendingPlayerIds.filter(id => existingIds.has(id)) : [];
-    if(opts.allowAttendanceFallback !== false && !ids.length && Number(state.plan.attendance || 0) > 0){
-      ids = state.players.slice(0, Math.min(state.players.length, Number(state.plan.attendance || 0))).map(player => player.id);
-    }
-    state.plan.attendingPlayerIds = Array.from(new Set(ids));
-    state.plan.attendance = state.plan.attendingPlayerIds.length;
-    if(!state.plan.sitOutCounts || typeof state.plan.sitOutCounts !== 'object') state.plan.sitOutCounts = {};
-    state.plan.lastSitOutPlayerIds = Array.isArray(state.plan.lastSitOutPlayerIds) ? state.plan.lastSitOutPlayerIds.filter(id => existingIds.has(id)) : [];
-    state.plan.currentSitOutPlayerIds = Array.isArray(state.plan.currentSitOutPlayerIds) ? state.plan.currentSitOutPlayerIds.filter(id => existingIds.has(id)) : [];
-    Object.keys(state.plan.sitOutCounts).forEach(id => { if(!existingIds.has(id)) delete state.plan.sitOutCounts[id]; });
-    state.players.forEach(player => {
-      if(!Object.prototype.hasOwnProperty.call(state.plan.sitOutCounts, player.id)) state.plan.sitOutCounts[player.id] = 0;
-    });
   }
 
   function getAttendingPlayers(){
@@ -921,21 +994,6 @@
     return 'badminton_score_' + generation + '_' + key + '_side_' + String(sideNumber);
   }
 
-  function enforceCurrentScoreInputsFromState(root){
-    if(!root || !state || !state.plan || !Array.isArray(state.plan.current)) return;
-    state.plan.current.forEach(function(court, index){
-      if(!court || courtMarkedNoGame(court)) return;
-      [1, 2].forEach(function(sideNumber){
-        const input = root.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-score-side="' + String(sideNumber) + '"]');
-        if(!input) return;
-        const stored = sideNumber === 1 ? court.score1 : court.score2;
-        const expected = stored == null ? '' : String(stored);
-        if(input.value !== expected) input.value = expected;
-        input.defaultValue = expected;
-      });
-    });
-  }
-
   function freshCurrentGenerationToken(){
     const token = uid('current-set');
     state.plan.currentGenerationToken = token;
@@ -958,46 +1016,6 @@
     state.plan.currentSavedCourtKeys = [];
     state.plan.currentSetReadyForNext = false;
     state.plan.blankCurrentScoreInputs = true;
-  }
-
-  function hardBlankCurrentScoreInputs(root){
-    if(!root || !state || !state.plan || !Array.isArray(state.plan.current)) return;
-    state.plan.current.forEach(function(court, index){
-      if(!court || courtSaved(court, index) || courtMarkedNoGame(court)) return;
-      court.score1 = null;
-      court.score2 = null;
-      court.pendingHardship = '';
-      [1, 2].forEach(function(sideNumber){
-        const selector = '[data-index="' + cssEscape(String(index)) + '"][data-score-side="' + String(sideNumber) + '"]';
-        const input = root.querySelector(selector);
-        if(!input) return;
-        input.value = '';
-        input.defaultValue = '';
-        input.setAttribute('value', '');
-        input.setAttribute('autocomplete', 'off');
-      });
-      const store = root.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-hardship-store="true"]');
-      if(store){
-        store.value = '';
-        store.defaultValue = '';
-        store.setAttribute('value', '');
-      }
-      root.querySelectorAll('[data-index="' + cssEscape(String(index)) + '"][data-hardship-option="true"]').forEach(function(input){
-        input.checked = false;
-        input.defaultChecked = false;
-      });
-      const wrap = root.querySelector('[data-hardship-wrap="' + cssEscape(String(index)) + '"]');
-      if(wrap) wrap.outerHTML = renderHardshipControl(court, 'current', index);
-    });
-  }
-
-  function scheduleHardBlankCurrentScoreInputs(root){
-    const target = root || refs.currentGamesGrid;
-    hardBlankCurrentScoreInputs(target);
-    try{ window.requestAnimationFrame(function(){ hardBlankCurrentScoreInputs(target); }); }catch(_e){}
-    [25, 120, 300].forEach(function(ms){
-      try{ window.setTimeout(function(){ hardBlankCurrentScoreInputs(target); }, ms); }catch(_e){}
-    });
   }
 
   function normalizeLoadedCurrentCourts(){
@@ -1139,36 +1157,6 @@
 
 
 
-  function getPairLabelFromId(pairId){
-    const ids = String(pairId || '').replace(/^pair:/, '').split('::').filter(Boolean);
-    if(ids.length !== 2) return String(pairId || '');
-    const names = ids.map(function(id){
-      const player = getPlayer(id);
-      return player ? player.name : id;
-    });
-    return names.join(' / ');
-  }
-
-  function migrateKnownModeratorPlayer(){
-    (state.players || []).forEach(function(player){
-      if(!player) return;
-      const login = normalizeLoginName(player.loginUsername || player.loginEmail || player.email || '');
-      const name = normalizeLoginName(player.name || '');
-      if(SITE_MODERATOR_ALIASES.includes(login) || SITE_MODERATOR_ALIASES.includes(name) || name === 'peter bates-wilkinson' || name === 'peter bates wilkinson'){
-        player.name = 'Peter Bates-Wilkinson';
-        player.loginUsername = SITE_MODERATOR_CANONICAL_LOGIN;
-        player.badmintonSessionsAdmin = true;
-      }else if(player.loginUsername){
-        player.loginUsername = normalizeKnownLoginName(player.loginUsername);
-      }
-    });
-  }
-
-
-
-  // BASELINE-BADMINTON-GAME-PLAN-LADDER-FIX-20260607
-  // Current games should read as a clean ladder: strongest court first, then downwards.
-  // This keeps the generated plan visually ordered without changing the public tab/URL system.
   function getCourtLadderRating(court){
     const side1 = court && court.side1 ? getSideRatingForCourt(court, court.side1) : START_RATING;
     const side2 = court && court.side2 ? getSideRatingForCourt(court, court.side2) : START_RATING;
@@ -1772,64 +1760,6 @@
     return court;
   }
 
-  function generateGamePlan(){
-    if(!currentUserIsManager()) return;
-    normalizeAttendingPlayerIds();
-    syncPlanSettingsFromInputs();
-    const attendingPlayers = getAttendingPlayers();
-    state.plan.attendance = attendingPlayers.length;
-    if(attendingPlayers.length < 2){
-      setPlanAlert(attendingPlayers.length === 0
-        ? 'No attendees are selected. Mark the players who are here before generating the game plan.'
-        : 'At least two attendees are needed to generate a game plan.');
-      state.plan.current = [];
-      state.plan.currentSavedSignatures = [];
-      state.plan.currentSavedCourtKeys = [];
-      state.plan.currentSetReadyForNext = false;
-      state.plan.currentSitOutPlayerIds = [];
-      state.plan.currentCircumstantialSitOutPlayerIds = [];
-      state.plan.currentOptionalSitOutPlayerIds = [];
-      saveSessionData({ immediate:true, verify:true });
-      renderAll();
-      return;
-    }
-    protectLocalCurrentState(5000);
-    try{ if(serverLoadAbortController && typeof serverLoadAbortController.abort === 'function') serverLoadAbortController.abort(); serverLoadAbortController = null; }catch(_e){}
-    const usedSet = new Set((state.plan.usedCourtSignatures || []).slice());
-    state.plan.current = [];
-    state.plan.currentSavedSignatures = [];
-    state.plan.currentSavedCourtKeys = [];
-    state.plan.currentSetReadyForNext = false;
-    state.plan.generatedAt = new Date().toISOString();
-    state.plan.currentGenerationToken = uid('current-set');
-    state.plan.blankCurrentScoreInputs = true;
-    state.plan.generationIndex = Math.max(0, Math.round(Number(state.plan.generationIndex || 0))) + 1;
-    prepareSpecialFourPlayerIndexForManualGenerate(attendingPlayers, state.plan.format);
-    if(attendingPlayers.length === 2){
-      state.plan.twoPlayerFlipIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0)) + 1;
-    }else{
-      state.plan.twoPlayerFlipIndex = 0;
-    }
-    state.plan.current = buildCurrentCourtSet(attendingPlayers, state.plan.format, usedSet, state.plan.courtCount).slice(0, state.plan.courtCount);
-    refreshCurrentCourtRestrictionsFromMemory();
-    clearGeneratedCourtDrafts();
-    state.plan.generatedAt = state.plan.generatedAt || new Date().toISOString();
-    state.plan.usedCourtSignatures = Array.from(usedSet).slice(-400);
-    state.plan.currentSavedSignatures = [];
-    state.plan.currentSavedCourtKeys = [];
-    state.plan.currentSetReadyForNext = false;
-    ensureCurrentCourtSaveKeys(false);
-    setPlanAlert(attendingPlayers.length === 2
-      ? 'Game plan generated. With two players, repeated singles alternate Side 1 and Side 2 each game for fairness.'
-      : (isSpecialFourPlayerLadder(attendingPlayers, state.plan.format)
-        ? 'Game plan generated. The four-player doubles ladder now rotates cleanly instead of resetting to the first pairing.'
-        : 'Game plan generated with the selected session format: Singles Day uses singles; Doubles Day prioritises doubles, then 2v1, then singles. Courts are ordered as a clean strongest-to-lowest ladder.'));
-    saveSessionData();
-    renderAll();
-  }
-
-
-
   function getCourtSaveKey(court, index){
     if(!court || typeof court !== 'object') return '';
     if(court.currentCourtKey) return String(court.currentCourtKey);
@@ -1839,164 +1769,12 @@
     return ['current-set', generated, 'slot', slot, signature].join('::');
   }
 
-  function ensureCurrentCourtSaveKeys(force){
-    if(!state.plan) state.plan = createInitialState().plan;
-    if(!Array.isArray(state.plan.current)) state.plan.current = [];
-    if(!Array.isArray(state.plan.currentSavedCourtKeys)) state.plan.currentSavedCourtKeys = [];
-    state.plan.current.forEach(function(court, index){
-      if(!court || typeof court !== 'object') return;
-      if(force || !court.currentCourtKey){
-        court.currentCourtKey = getCourtSaveKey(court, index);
-      }
-    });
-  }
-
   function pruneCurrentSavedCourtKeys(){
     ensureCurrentCourtSaveKeys();
     const activeKeys = new Set(state.plan.current.map(function(court, index){ return getCourtSaveKey(court, index); }).filter(Boolean));
     state.plan.currentSavedCourtKeys = (state.plan.currentSavedCourtKeys || []).filter(function(key){ return activeKeys.has(key); });
     const activeSignatures = new Set(state.plan.current.map(function(court){ return court.signature || buildMatchupKey(court); }).filter(Boolean));
     state.plan.currentSavedSignatures = (state.plan.currentSavedSignatures || []).filter(function(signature){ return activeSignatures.has(signature); });
-  }
-
-  function courtSaved(courtOrSignature, index){
-    if(courtOrSignature && typeof courtOrSignature === 'object'){
-      const key = getCourtSaveKey(courtOrSignature, index);
-      return !!(key && Array.isArray(state.plan.currentSavedCourtKeys) && state.plan.currentSavedCourtKeys.includes(key));
-    }
-    const signature = String(courtOrSignature || '');
-    return !!(signature && Array.isArray(state.plan.currentSavedSignatures) && state.plan.currentSavedSignatures.includes(signature));
-  }
-
-  function markCourtSaved(court, index){
-    ensureCurrentCourtSaveKeys();
-    const key = getCourtSaveKey(court, index);
-    if(key) state.plan.currentSavedCourtKeys = Array.from(new Set([...(state.plan.currentSavedCourtKeys || []), key]));
-    const signature = court && (court.signature || buildMatchupKey(court));
-    if(signature) state.plan.currentSavedSignatures = Array.from(new Set([...(state.plan.currentSavedSignatures || []), signature]));
-  }
-
-
-
-
-
-
-
-
-
-
-
-    function getHardshipResultContext(court){
-    const empty = { valid:false, active:false, action:'none', adjustmentSideNumber:null, options:[], losingScore:null, ratingHold:false };
-    if(!court || court.score1 == null || court.score2 == null) return empty;
-    const score1 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score1, 0))));
-    const score2 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score2, 0))));
-    if(validateScores(score1, score2) !== '') return empty;
-
-    const winnerSideNumber = score1 > score2 ? 1 : 2;
-    const losingScore = Math.min(score1, score2);
-    const evaluated = evaluateCourtRestrictions(Object.assign({}, JSON.parse(JSON.stringify(court)), { score1:score1, score2:score2 }));
-    const activeEntry = getDominantHardshipEntryForCourt(evaluated);
-
-    if(activeEntry && activeEntry.sideNumber){
-      const action = winnerSideNumber === activeEntry.sideNumber ? 'increase' : 'reduce';
-      return {
-        valid:true,
-        active:true,
-        action,
-        adjustmentSideNumber:activeEntry.sideNumber,
-        winnerSideNumber,
-        losingScore,
-        ratingHold: action === 'reduce',
-        options: action === 'increase'
-          ? getDominantIncreaseOptionsForSide(evaluated, activeEntry.sideNumber)
-          : getDominantReduceOptionsForSide(evaluated, activeEntry.sideNumber)
-      };
-    }
-
-    if(losingScore <= 15){
-      return {
-        valid:true,
-        active:false,
-        action:'initiate',
-        adjustmentSideNumber:winnerSideNumber,
-        winnerSideNumber,
-        losingScore,
-        ratingHold:false,
-        options:getDominantIncreaseOptionsForSide(evaluated, winnerSideNumber)
-      };
-    }
-
-    return Object.assign({}, empty, { valid:true, losingScore, winnerSideNumber });
-  }
-
-  function normalisePendingHardship(court){
-    const context = getHardshipResultContext(court);
-    const options = (context.options || []).map(item => item.value);
-    if(!options.length){ court.pendingHardship = ''; return; }
-    if(!options.includes(court.pendingHardship || '')) court.pendingHardship = options.length === 1 ? options[0] : '';
-  }
-
-  function getHardshipControlStateKey(court){
-    const context = getHardshipResultContext(court);
-    return [context.action || 'none', context.active ? 'active' : 'inactive', String(context.adjustmentSideNumber || ''), (context.options || []).map(function(option){ return option.value; }).join('|'), String(court && court.pendingHardship || ''), String(court && court.score1 != null ? court.score1 : ''), String(court && court.score2 != null ? court.score2 : '')].join('::');
-  }
-
-  function canSaveCourtNow(court){
-    if(!court || court.score1 == null || court.score2 == null) return false;
-    const score1 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score1, 0))));
-    const score2 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score2, 0))));
-    return validateScores(score1, score2) === '';
-  }
-
-  // BASELINE-BADMINTON-HARDSHIP-DOMINANT-RADIO-REIMPLEMENTATION-20260608
-  // The hardship control is deliberately no longer a dropdown. The visible choice is
-  // now a real radio input, so Save Results cannot miss a not-yet-committed select value.
-    function renderHardshipControl(court, phase, index){
-    const context = getHardshipResultContext(court);
-    const options = context.options || [];
-    const selectedValue = String(court && court.pendingHardship || '').trim();
-    const stateKey = getHardshipControlStateKey(court);
-    const wrapOpen = '<div class="hardship-control" data-hardship-wrap="' + escapeHtml(String(index)) + '" data-hardship-state-key="' + escapeHtml(stateKey) + '" data-selected-hardship="' + escapeHtml(selectedValue) + '">';
-    const saveButton = '<button class="action hardship-save" data-save-court="' + escapeHtml(String(index)) + '" data-save-signature="' + escapeHtml(String(court.signature || '')) + '" data-hardship-save-button="true" data-hardship-value="' + escapeHtml(selectedValue) + '" type="button" onclick="return window.BASELINE_saveCourtResultButton ? window.BASELINE_saveCourtResultButton(event,this) : false;">Save Results</button>';
-
-    if(!canSaveCourtNow(court)){
-      if(court) court.pendingHardship = '';
-      return wrapOpen + '<div class="hardship-row"><div class="hardship-field"><div class="hardship-note">Enter a valid score to see whether a hardship adjustment is needed.</div><input type="hidden" data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-hardship-store="true" value=""/></div>' + saveButton + '</div></div>';
-    }
-
-    if(!options.length){
-      let text = 'No hardship adjustment is triggered by this score.';
-      if(context.active && context.action === 'increase') text = 'No further hardship options available.';
-      if(context.active && context.action === 'reduce') text = 'No further hardship restoration options available.';
-      if(!context.active && context.valid && Number(context.losingScore) > 15) text = 'No hardship initiation is triggered by this score.';
-      return wrapOpen + '<div class="hardship-row"><div class="hardship-field"><div class="hardship-note">' + escapeHtml(text) + '</div><input type="hidden" data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-hardship-store="true" value="' + escapeHtml(selectedValue) + '"/></div>' + saveButton + '</div></div>';
-    }
-
-    let selected = options.some(function(option){ return option.value === selectedValue; }) ? selectedValue : '';
-    if(options.length === 1 && !selected) selected = options[0].value;
-    if(selected && court) court.pendingHardship = selected;
-
-    const noteText = context.action === 'reduce'
-      ? 'Hardship is active. Choose what to restore for the next game.'
-      : (context.action === 'initiate'
-        ? 'This result activates the first hardship for the winner in the next game.'
-        : 'Hardship is active. Choose what to make harder for the next game.');
-
-    const radioName = 'hardship-' + escapeHtml(String(index)) + '-' + escapeHtml(String(stateKey).replace(/[^a-zA-Z0-9_-]/g, '-'));
-    const optionMarkup = options.map(function(option){
-      const checked = selected === option.value ? ' checked' : '';
-      return '<label class="hardship-radio-option">' +
-        '<input type="radio" data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-hardship="true" data-hardship-option="true" name="' + radioName + '" value="' + escapeHtml(option.value) + '"' + checked + '/>' +
-        '<span>' + escapeHtml(option.label) + '</span>' +
-      '</label>';
-    }).join('');
-
-    return wrapOpen +
-      '<div class="hardship-row"><div class="hardship-field"><div class="hardship-label">Hardship Adjustment</div>' +
-      '<div class="hardship-radio-group" role="radiogroup" aria-label="Hardship Adjustment">' + optionMarkup + '</div>' +
-      '<input type="hidden" data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-hardship-store="true" value="' + escapeHtml(selected) + '"/>' +
-      '<div class="hardship-note">' + escapeHtml(noteText) + '</div></div>' + saveButton + '</div></div>';
   }
 
   function stabilizeHardshipSelects(root){
@@ -2121,161 +1899,6 @@
     return null;
   }
 
-  function applyCourtSitOutSelection(index){
-    if(!currentUserIsManager()) return;
-    const court = state.plan.current[index];
-    if(!court || courtSaved(court, index) || courtMarkedNoGame(court)) return;
-    syncAllCurrentCourtDraftsFromInputs();
-    const originalKind = String(court.variableOriginalKind || court.kind || '');
-    const limit = getCourtSitOutLimit(court);
-    const selector = '[data-court-sitout-player="' + cssEscape(String(index)) + '"]';
-    let selectedIds = Array.from(refs.currentGamesGrid.querySelectorAll(selector + ':checked')).map(function(input){ return String(input.value || '').trim(); }).filter(Boolean);
-    if(selectedIds.length > limit){
-      selectedIds = selectedIds.slice(0, limit);
-      refs.currentGamesGrid.querySelectorAll(selector).forEach(function(input){ input.checked = selectedIds.includes(String(input.value || '').trim()); });
-      setPlanAlert('Only ' + String(limit) + ' player' + (limit === 1 ? '' : 's') + ' can sit out from this court type.');
-    }
-    const baseIds = getCourtVariableBasePlayerIds(court);
-    const selectedSet = new Set(selectedIds);
-    const remainingPlayers = baseIds.filter(function(id){ return !selectedSet.has(id); }).map(getPlayer).filter(Boolean);
-    const nextCourt = makeBestCourtFromVariablePlayers(remainingPlayers, originalKind || court.kind);
-    if(!nextCourt){
-      setPlanAlert('That court cannot stay playable after those sit-outs. Use No Game instead.');
-      return;
-    }
-    const oldKey = getCourtSaveKey(court, index);
-    const rebuilt = resetUnsubmittedCourtScoreDraft(evaluateCourtRestrictions(Object.assign({ courtNumber:Number(index) + 1 }, JSON.parse(JSON.stringify(nextCourt)))));
-    rebuilt.variableBasePlayerIds = baseIds.slice();
-    rebuilt.variableOriginalKind = originalKind || court.kind;
-    rebuilt.variableSitOutIds = selectedIds.slice();
-    rebuilt.currentCourtKey = ['current-set', String(state.plan.generatedAt || 'unstarted'), 'slot', String(Number(index) + 1), 'edit', Date.now().toString(36), buildMatchupKey(rebuilt)].join('::');
-    state.plan.current[index] = rebuilt;
-    const optionalSet = new Set(Array.isArray(state.plan.currentOptionalSitOutPlayerIds) ? state.plan.currentOptionalSitOutPlayerIds : []);
-    baseIds.forEach(function(id){ optionalSet.delete(id); });
-    selectedIds.forEach(function(id){ optionalSet.add(id); });
-    state.plan.currentOptionalSitOutPlayerIds = Array.from(optionalSet);
-    syncCurrentSitOutUnion();
-    // Deliberately do not alter lastSitOutPlayerIds or sitOutCounts here:
-    // these are player-selected optional sit-outs, not circumstantial rotation events.
-    state.plan.currentSavedCourtKeys = (state.plan.currentSavedCourtKeys || []).filter(function(key){ return key !== oldKey; });
-    state.plan.currentSavedSignatures = (state.plan.currentSavedSignatures || []).filter(function(signature){ return signature !== (court.signature || buildMatchupKey(court)); });
-    state.plan.currentSetReadyForNext = false;
-    markLocalChange();
-    queueServerSave();
-    refreshCurrentCourtCard(index);
-    renderCurrentSitOutInfo();
-    setPlanAlert('Court ' + String(Number(index) + 1) + ' variables updated. Other current courts were left unchanged.');
-  }
-
-  function renderNoGameDialog(index){
-    return '<div class="no-game-dialog" data-no-game-dialog="true" data-no-game-index="' + escapeHtml(String(index)) + '" role="dialog" aria-modal="true" aria-label="Confirm No Game">' +
-      '<div class="no-game-dialog-card">' +
-        '<strong>Confirm “No Game”</strong>' +
-        '<div class="note">This will lock this court as No Game. It will not require scores and it will not erase other courts.</div>' +
-        '<div class="row"><button class="action" type="button" data-no-game-action="yes">Yes</button><button class="action secondary" type="button" data-no-game-action="no">No</button></div>' +
-      '</div>' +
-    '</div>';
-  }
-
-  function requestNoGameConfirmation(index, input){
-    if(!currentUserIsManager()) return;
-    const court = state.plan.current[index];
-    if(!court || courtSaved(court, index) || courtMarkedNoGame(court)) return;
-    document.querySelectorAll('[data-no-game-dialog="true"]').forEach(function(node){ node.remove(); });
-    document.body.insertAdjacentHTML('beforeend', renderNoGameDialog(index));
-    const dialog = document.body.querySelector('[data-no-game-dialog="true"][data-no-game-index="' + cssEscape(String(index)) + '"]');
-    if(dialog){
-      dialog.querySelectorAll('[data-no-game-action]').forEach(function(button){
-        button.addEventListener('click', function(event){
-          try{ event.preventDefault(); }catch(_e){}
-          try{ event.stopPropagation(); }catch(_e){}
-          handleNoGameDialogAction(button);
-        });
-      });
-    }
-    if(input) input.value = '0';
-  }
-
-  function handleNoGameDialogAction(button){
-    const dialog = button && button.closest ? button.closest('[data-no-game-dialog="true"]') : null;
-    if(!dialog) return;
-    const index = Number(dialog.getAttribute('data-no-game-index'));
-    const action = String(button.getAttribute('data-no-game-action') || '');
-    dialog.remove();
-    if(action === 'yes') confirmNoGameForCourt(index);
-  }
-
-  try{
-    document.addEventListener('click', function(event){
-      const button = event && event.target && event.target.closest ? event.target.closest('[data-no-game-action]') : null;
-      if(!button) return;
-      try{ event.preventDefault(); }catch(_e){}
-      try{ event.stopPropagation(); }catch(_e){}
-      handleNoGameDialogAction(button);
-    }, true);
-  }catch(_e){}
-
-  function confirmNoGameForCourt(index){
-    if(!currentUserIsManager()) return;
-    const court = state.plan.current[index];
-    if(!court || courtSaved(court, index) || courtMarkedNoGame(court)) return;
-    syncAllCurrentCourtDraftsFromInputs();
-    court.noGame = true;
-    court.status = 'no-game';
-    court.score1 = null;
-    court.score2 = null;
-    court.pendingHardship = '';
-    court.savedWinnerLabel = 'No Game';
-    court.savedHardship = '';
-    court.savedRatingSummary = 'No rating change';
-    markCourtSaved(court, index);
-    const completedCurrentSet = allCurrentCourtsSaved();
-    if(completedCurrentSet){
-      rollFinishedGamesForward();
-      clearGeneratedCourtDrafts();
-      setPlanAlert('Court marked No Game. The current set is complete and the next set was generated.');
-      protectLocalCurrentState(3500);
-      saveSessionData();
-      renderAll();
-      scheduleHardBlankCurrentScoreInputs(refs.currentGamesGrid);
-      return;
-    }
-    state.plan.currentSetReadyForNext = false;
-    protectLocalCurrentState(3500);
-    saveSessionData();
-    refreshCurrentCourtCard(index);
-    renderCurrentSitOutInfo();
-    setPlanAlert('Court ' + String(Number(index) + 1) + ' marked as No Game. Waiting for the remaining current court results.');
-  }
-
-  function sanitizeScoreInput(input){
-    if(!input) return '';
-    const original = String(input.value || '');
-    let cleaned = original.replace(/\D/g, '').slice(0, 2);
-    if(cleaned !== '' && Number(cleaned) > MAX_SCORE) cleaned = String(MAX_SCORE);
-    if(cleaned !== original) input.value = cleaned;
-    return cleaned;
-  }
-
-
-
-  function validateScores(score1, score2){
-    if(!Number.isInteger(score1) || !Number.isInteger(score2)) return 'Scores must be whole numbers.';
-    if(score1 < 0 || score2 < 0) return 'Scores must be zero or higher.';
-    if(score1 > MAX_SCORE || score2 > MAX_SCORE) return 'Do not enter a number above 30.';
-    if(score1 === score2) return 'A saved result needs a winner.';
-    const winner = Math.max(score1, score2);
-    const loser = Math.min(score1, score2);
-    if(winner < 21) return 'Winner must reach at least 21.';
-    if(winner < MAX_SCORE && winner - loser < 2) return 'Winner must lead by 2 unless the score reaches 30.';
-    if(winner === MAX_SCORE && loser > 29) return 'Official maximum is 30/29.';
-    return '';
-  }
-
-
-
-
-
   function incrementCourtPlayerMatchCounts(court){
     const seen = new Set();
     if(!state.plan.sessionPlayCounts || typeof state.plan.sessionPlayCounts !== 'object') state.plan.sessionPlayCounts = {};
@@ -2286,54 +1909,6 @@
       if(live) live.matchCount = Number(live.matchCount || 0) + 1;
       state.plan.sessionPlayCounts[player.id] = Number(state.plan.sessionPlayCounts[player.id] || 0) + 1;
     });
-  }
-
-  function updatePairSummaryFromCourt(court, winnerSideNumber){
-    [1, 2].forEach(function(sideNumber){
-      const side = sideNumber === 1 ? court.side1 : court.side2;
-      if((side.players || []).length < 2) return;
-      const key = getPairSummaryKey(side);
-      if(!key) return;
-      if(!state.pairSummary[key]){
-        state.pairSummary[key] = { pairId:key, ids:(side.players || []).map(function(player){ return player.id; }).filter(Boolean).sort(), label:getTeamLabel(side), count:0, wins:0, losses:0, lastSeenAt:'' };
-      }
-      const summary = state.pairSummary[key];
-      summary.pairId = key;
-      summary.ids = (side.players || []).map(function(player){ return player.id; }).filter(Boolean).sort();
-      summary.label = getTeamLabel(side);
-      summary.count = Number(summary.count || 0) + 1;
-      summary.wins = Number(summary.wins || 0) + (Number(winnerSideNumber) === sideNumber ? 1 : 0);
-      summary.losses = Number(summary.losses || 0) + (Number(winnerSideNumber) !== sideNumber ? 1 : 0);
-      summary.lastSeenAt = new Date().toISOString();
-    });
-  }
-
-  function createFinishedBatchFromCurrent(){
-    return {
-      id: uid('finished-batch'),
-      generatedAt: state.plan.generatedAt,
-      completedAt: new Date().toISOString(),
-      attendance: state.plan.attendance,
-      format: state.plan.format,
-      durationMinutes: state.plan.durationMinutes,
-      activePairs: state.plan.current.filter(court => !courtMarkedNoGame(court) && court.kind === 'doubles').length,
-      circumstantialSitOutPlayerIds: (state.plan.currentCircumstantialSitOutPlayerIds || []).slice(),
-      optionalSitOutPlayerIds: (state.plan.currentOptionalSitOutPlayerIds || []).slice(),
-      courts: state.plan.current.map(court => ({
-        courtNumber: court.courtNumber,
-        kind: court.kind,
-        noGame: courtMarkedNoGame(court),
-        side1Label: getTeamLabel(court.side1),
-        side2Label: getTeamLabel(court.side2),
-        score1: court.score1,
-        score2: court.score2,
-        winnerLabel: court.savedWinnerLabel || '',
-        targetAreaText: court.targetAreaText || 'Full court',
-        shotRestrictionText: getShotRestrictionText(court.shotRestrictionStage, court.shotRestrictions),
-        hardshipRegistered: court.savedHardship || '',
-        ratingSummary: court.savedRatingSummary || ''
-      }))
-    };
   }
 
   function allCurrentCourtsSaved(){
@@ -2371,45 +1946,6 @@
     return courts;
   }
 
-  function rollFinishedGamesForward(){
-    state.plan.finished = [createFinishedBatchFromCurrent()].concat(state.plan.finished || []).slice(0, 20);
-    const attendingPlayers = getAttendingPlayers();
-    if(attendingPlayers.length < 2){
-      state.plan.current = [];
-      state.plan.currentSavedSignatures = [];
-      state.plan.currentSavedCourtKeys = [];
-      state.plan.currentSetReadyForNext = false;
-      state.plan.currentSitOutPlayerIds = [];
-      state.plan.generatedAt = '';
-      return;
-    }
-    syncPlanSettingsFromInputs();
-    const usedSet = new Set((state.plan.usedCourtSignatures || []).slice());
-    state.plan.current = [];
-    state.plan.currentSavedSignatures = [];
-    state.plan.currentSavedCourtKeys = [];
-    state.plan.currentSetReadyForNext = false;
-    state.plan.generatedAt = new Date().toISOString();
-    state.plan.currentGenerationToken = uid('current-set');
-    state.plan.blankCurrentScoreInputs = true;
-    state.plan.generationIndex = Math.max(0, Math.round(Number(state.plan.generationIndex || 0))) + 1;
-    advanceSpecialFourPlayerIndex(attendingPlayers, state.plan.format || 'doubles');
-    if(attendingPlayers.length === 2){
-      state.plan.twoPlayerFlipIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0)) + 1;
-    }else{
-      state.plan.twoPlayerFlipIndex = 0;
-    }
-    state.plan.current = ensureGeneratedCurrentSet(attendingPlayers, usedSet);
-    refreshCurrentCourtRestrictionsFromMemory();
-    clearGeneratedCourtDrafts();
-    state.plan.generatedAt = state.plan.generatedAt || new Date().toISOString();
-    state.plan.usedCourtSignatures = Array.from(usedSet).slice(-400);
-    state.plan.currentSavedSignatures = [];
-    state.plan.currentSavedCourtKeys = [];
-    state.plan.currentSetReadyForNext = false;
-    ensureCurrentCourtSaveKeys(false);
-  }
-
   function generateNextSetFromCompletedCurrent(){
     if(!currentUserIsManager()) return;
     if(!currentSetReadyForNext()){
@@ -2431,72 +1967,6 @@
       syncCourtScoresFromInputs(index);
       syncCourtHardshipFromInput(index);
     });
-  }
-
-  function syncCourtScoresFromInputs(index){
-    const court = state.plan.current[index];
-    if(!court || !refs.currentGamesGrid) return;
-    const score1Input = refs.currentGamesGrid.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-score-side="1"]');
-    const score2Input = refs.currentGamesGrid.querySelector('[data-index="' + cssEscape(String(index)) + '"][data-score-side="2"]');
-    const generationToken = String(state.plan.currentGenerationToken || '');
-    const inputMatchesGeneration = function(input){
-      if(!input) return false;
-      const inputToken = String(input.getAttribute('data-generation-token') || '');
-      return !generationToken || !inputToken || inputToken === generationToken;
-    };
-    if(score1Input && inputMatchesGeneration(score1Input)){
-      const raw1 = sanitizeScoreInput(score1Input);
-      court.score1 = raw1 === '' ? null : Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(raw1, 0))));
-    }
-    if(score2Input && inputMatchesGeneration(score2Input)){
-      const raw2 = sanitizeScoreInput(score2Input);
-      court.score2 = raw2 === '' ? null : Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(raw2, 0))));
-    }
-    normalisePendingHardship(court);
-  }
-
-    function syncCourtHardshipFromInput(index){
-    const court = state.plan.current[index];
-    if(!court || !refs.currentGamesGrid) return '';
-    const idx = cssEscape(String(index));
-    let selected = '';
-
-    const checked = refs.currentGamesGrid.querySelector('[data-index="' + idx + '"][data-hardship-option="true"]:checked');
-    if(checked) selected = String(checked.value || '').trim();
-
-    if(!selected){
-      const store = refs.currentGamesGrid.querySelector('[data-index="' + idx + '"][data-hardship-store="true"]');
-      if(store) selected = String(store.value || '').trim();
-    }
-
-    if(!selected){
-      const button = refs.currentGamesGrid.querySelector('[data-save-court="' + idx + '"]');
-      if(button) selected = String(button.getAttribute('data-hardship-value') || '').trim();
-    }
-
-    if(!selected){
-      const wrap = refs.currentGamesGrid.querySelector('[data-hardship-wrap="' + idx + '"]');
-      if(wrap) selected = String(wrap.getAttribute('data-selected-hardship') || '').trim();
-    }
-
-    if(!selected){
-      const visible = refs.currentGamesGrid.querySelector('[data-hardship-wrap="' + idx + '"] .hardship-radio-group');
-      const text = visible ? visible.textContent || '' : '';
-      selected = hardshipValueFromVisibleText(text);
-    }
-
-    if(selected === 'movement' || selected === 'shots'){
-      court.pendingHardship = selected;
-      const store = refs.currentGamesGrid.querySelector('[data-index="' + idx + '"][data-hardship-store="true"]');
-      if(store) store.value = selected;
-      const button = refs.currentGamesGrid.querySelector('[data-save-court="' + idx + '"]');
-      if(button) button.setAttribute('data-hardship-value', selected);
-      const wrap = refs.currentGamesGrid.querySelector('[data-hardship-wrap="' + idx + '"]');
-      if(wrap) wrap.setAttribute('data-selected-hardship', selected);
-      return selected;
-    }
-
-    return String(court.pendingHardship || '').trim();
   }
 
   function getCourtPlayers(court){
@@ -2714,312 +2184,6 @@
   window.BASELINE_saveCourtResultButton = function(event, button){
     return handleSaveCourtButton(button, event);
   };
-
-  function renderGamePlan(){
-    if(pageIsLeaving) return;
-    normalizeAttendingPlayerIds();
-    capCurrentCourtsToCourtLimit();
-    const manager = currentUserIsManager();
-    refs.planFormatSelect.value = state.plan.format || 'doubles';
-    refs.planDurationSelect.value = String(state.plan.durationMinutes || 60);
-    refs.planCourtCountInput.value = String(state.plan.courtCount || 4);
-    if(refs.gamePlanSetupCard) refs.gamePlanSetupCard.hidden = false;
-    if(refs.generatePlanBtn){
-      refs.generatePlanBtn.hidden = false;
-      refs.generatePlanBtn.disabled = !manager;
-      refs.generatePlanBtn.title = manager ? '' : 'Only the moderator or an approved Badminton Sessions admin can generate a new game plan.';
-    }
-    [refs.planFormatSelect, refs.planDurationSelect, refs.planCourtCountInput].forEach(function(input){ if(input) input.disabled = !manager; });
-    renderAttendanceSelector();
-    refreshCurrentCourtRestrictionsFromMemory();
-    const currentCourtCount = state.plan.current.length;
-    refs.currentGamesGrid.setAttribute('data-court-count', String(currentCourtCount));
-    refs.currentGamesGrid.classList.toggle('has-current-courts', currentCourtCount > 0);
-    refs.currentGamesGrid.classList.toggle('has-single-current-court', currentCourtCount === 1);
-    refs.currentGamesGrid.innerHTML = currentCourtCount
-      ? state.plan.current.map((court, index) => renderCourtCard(court, 'current', index)).join('')
-      : '<div class="empty-state">No current games generated yet. A moderator or approved admin can create the next plan from the Game Plan Generator.</div>';
-    if(state.plan.blankCurrentScoreInputs){
-      scheduleHardBlankCurrentScoreInputs(refs.currentGamesGrid);
-      state.plan.blankCurrentScoreInputs = false;
-    }else{
-      enforceCurrentScoreInputsFromState(refs.currentGamesGrid);
-    }
-    renderCurrentSitOutInfo();
-    renderFinishedGames();
-    bindPlanActions();
-    syncGamePlanSubtabVisibility();
-  }
-
-  function syncGamePlanSubtabVisibility(){
-    const active = document.querySelector('.gameplan-subtab[aria-selected="true"]');
-    const target = active ? active.getAttribute('data-gameplan-tab') : 'plan';
-    document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){
-      panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === target);
-    });
-  }
-
-  function wireGamePlanSubtabs(){
-    document.querySelectorAll('.gameplan-subtab').forEach(function(button){
-      button.addEventListener('click', function(){
-        const target = button.getAttribute('data-gameplan-tab');
-        document.querySelectorAll('.gameplan-subtab').forEach(function(tab){ tab.setAttribute('aria-selected', String(tab === button)); });
-        document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){ panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === target); });
-      });
-    });
-  }
-
-    function bindPlanActions(){
-    if(refs.currentGamesGrid.dataset.bound === 'true') return;
-    refs.currentGamesGrid.dataset.bound = 'true';
-
-    const commitHardshipChoice = function(target){
-      const option = target && target.closest ? target.closest('[data-hardship-option]') : null;
-      if(!option) return;
-      const index = Number(option.getAttribute('data-index'));
-      const court = state.plan.current[index];
-      if(!court || courtSaved(court, index) || !currentUserCanScoreCourt(court)) return;
-      const selectedValue = String(option.value || '').trim();
-      if(selectedValue !== 'movement' && selectedValue !== 'shots') return;
-      court.pendingHardship = selectedValue;
-      const idx = cssEscape(String(index));
-      const wrap = refs.currentGamesGrid.querySelector('[data-hardship-wrap="' + idx + '"]');
-      if(wrap) wrap.setAttribute('data-selected-hardship', selectedValue);
-      const store = refs.currentGamesGrid.querySelector('[data-index="' + idx + '"][data-hardship-store="true"]');
-      if(store) store.value = selectedValue;
-      const button = refs.currentGamesGrid.querySelector('[data-save-court="' + idx + '"]');
-      if(button) button.setAttribute('data-hardship-value', selectedValue);
-    };
-
-    const handleScoreEdit = function(event){
-      const input = event.target.closest('[data-score-side]');
-      if(!input) return;
-      const index = Number(input.getAttribute('data-index'));
-      const court = state.plan.current[index];
-      if(!court || courtSaved(court, index) || !currentUserCanScoreCourt(court)) return;
-      syncCourtScoresFromInputs(index);
-      refreshCourtInputUi(index);
-    };
-
-    refs.currentGamesGrid.addEventListener('input', handleScoreEdit);
-    refs.currentGamesGrid.addEventListener('change', handleScoreEdit);
-    refs.currentGamesGrid.addEventListener('input', function(event){ commitHardshipChoice(event.target); }, true);
-    refs.currentGamesGrid.addEventListener('change', function(event){ commitHardshipChoice(event.target); }, true);
-    refs.currentGamesGrid.addEventListener('click', function(event){ commitHardshipChoice(event.target); }, true);
-
-    refs.currentGamesGrid.addEventListener('change', function(event){
-      const sitout = event.target.closest('[data-court-sitout-player]');
-      if(sitout){
-        const index = Number(sitout.getAttribute('data-court-sitout-player'));
-        if(Number.isNaN(index)) return;
-        applyCourtSitOutSelection(index);
-        return;
-      }
-      const noGame = event.target.closest('[data-court-no-game-slider]');
-      if(noGame){
-        const index = Number(noGame.getAttribute('data-court-no-game-slider'));
-        if(Number.isNaN(index)) return;
-        if(Number(noGame.value || 0) >= 95){
-          requestNoGameConfirmation(index, noGame);
-        }
-      }
-    });
-
-    refs.currentGamesGrid.addEventListener('click', function(event){
-      const next = event.target.closest('[data-generate-next-set]');
-      if(next){
-        event.preventDefault();
-        event.stopPropagation();
-        generateNextSetFromCompletedCurrent();
-        return;
-      }
-      const modalAction = event.target.closest('[data-no-game-action]');
-      if(modalAction){
-        event.preventDefault();
-        event.stopPropagation();
-        handleNoGameDialogAction(modalAction);
-        return;
-      }
-      const button = event.target.closest('[data-save-court]');
-      if(!button) return;
-      handleSaveCourtButton(button, event);
-    });
-  }
-
-  function addPlayer(){
-    if(!currentUserIsManager()){
-      window.alert('Only the site developer or approved admins can add players.');
-      return;
-    }
-    const name = formatPersonName(refs.playerNameInput.value);
-    if(!name){
-      window.alert('Enter a player name first.');
-      return;
-    }
-    state.players.push({ id: uid('player'), name, rating: START_RATING, playerRating: START_RATING, loginUsername:'', loginEmail:'', badmintonSessionsAdmin:false, matchCount:0, doublesDaySinglesOptOut:false, doublesDaySoloOptOut:false, createdAt:new Date().toISOString() });
-    refs.playerNameInput.value = '';
-    saveSessionData();
-    renderAll();
-  }
-
-  function renderAdminStar(player){
-    if(isModeratorPlayer(player)) return '<span class="admin-star admin-star--developer" title="Moderator">★</span>';
-    if(isPlayerAdmin(player)) return '<span class="admin-star admin-star--admin" title="Badminton Sessions admin">★</span>';
-    return '';
-  }
-
-  function renderAdminStarToggle(player){
-    if(!currentUserIsManager() || isModeratorPlayer(player)) return renderAdminStar(player);
-    return '<label class="admin-star-toggle" title="Toggle Badminton Sessions admin"><input data-player-admin="' + escapeHtml(player.id) + '" type="checkbox"' + (isPlayerAdmin(player) ? ' checked' : '') + '/><span class="admin-star admin-star--admin" aria-hidden="true">★</span><span class="hidden">Badminton Sessions admin</span></label>';
-  }
-
-  function normalizePairSummaryKeys(){
-    if(!state.pairSummary || typeof state.pairSummary !== 'object') state.pairSummary = {};
-    const normalized = {};
-    Object.keys(state.pairSummary).forEach(function(key){
-      const summary = state.pairSummary[key] && typeof state.pairSummary[key] === 'object' ? state.pairSummary[key] : {};
-      let pairId = String(summary.pairId || '');
-      if(!pairId || !pairId.startsWith('pair:')){
-        const names = String(summary.label || '').split('/').map(function(name){ return name.trim(); }).filter(Boolean);
-        if(names.length === 2){
-          const players = names.map(getPlayerByNameForRatingMigration).filter(Boolean);
-          pairId = getPairIdFromPlayers(players);
-        }
-      }
-      if(!pairId) return;
-      const existing = normalized[pairId] || { pairId:pairId, ids:[], label:getPairLabelFromId(pairId), count:0, wins:0, losses:0, lastSeenAt:'' };
-      existing.ids = Array.isArray(summary.ids) && summary.ids.every(function(id){ return !!getPlayer(id); })
-        ? summary.ids.slice().sort()
-        : String(pairId).replace(/^pair:/, '').split('::').filter(Boolean);
-      existing.label = getPairLabelFromId(pairId);
-      existing.count += Number(summary.count || 0);
-      existing.wins += Number(summary.wins || 0);
-      existing.losses += Number(summary.losses || 0);
-      if(String(summary.lastSeenAt || '') > String(existing.lastSeenAt || '')) existing.lastSeenAt = summary.lastSeenAt;
-      normalized[pairId] = existing;
-    });
-    state.pairSummary = normalized;
-  }
-
-  function renderPlayers(){
-    const wrap = refs.playersTableWrap;
-    const manager = currentUserIsManager();
-    migrateKnownModeratorPlayer();
-    normalizePlayerPreferenceFlags();
-    ensureRatingStores();
-    normalizePairSummaryKeys();
-    if(!state.players.length){
-      wrap.innerHTML = manager ? '<div class="empty-state">Add players to begin building the session.</div>' : '<div class="empty-state">No players have been added yet.</div>';
-      return;
-    }
-    const rows = state.players.slice().sort((a, b) => getPlayerRating(b) - getPlayerRating(a) || a.name.localeCompare(b.name)).map(player => {
-      const displayName = isModeratorPlayer(player) ? 'Peter Bates-Wilkinson' : player.name;
-      const ratingCell = manager
-        ? ('<td class="small-cell"><input data-player-rating="' + escapeHtml(player.id) + '" type="number" min="0" max="50" step="0.5" value="' + escapeHtml(String(getPlayerRating(player))) + '"/></td>')
-        : ('<td class="small-cell">' + escapeHtml(String(getPlayerRating(player))) + '</td>');
-      const loginCell = manager
-        ? ('<td>' + renderLoginSelect(player) + '</td>')
-        : ('<td>' + escapeHtml(isModeratorPlayer(player) ? SITE_MODERATOR_CANONICAL_LOGIN : (player.loginUsername || '—')) + '</td>');
-      const prefCell = '<td>' + renderPlayerPreferenceControls(player) + '</td>';
-      return '<tr><td><strong>' + escapeHtml(displayName) + '</strong>' + renderAdminStarToggle(player) + '</td>' + ratingCell + loginCell + prefCell + (manager ? '<td class="small-cell player-actions"><div class="player-action-row"><button class="action tight secondary" type="button" data-player-save="' + escapeHtml(player.id) + '">Save</button>' + (isModeratorPlayer(player) ? '' : '<button class="action tight danger" type="button" data-player-remove="' + escapeHtml(player.id) + '">Remove</button>') + '</div></td>' : '') + '</tr>';
-    }).join('');
-    const head = manager
-      ? '<thead><tr><th>Player Name</th><th>Player Rating</th><th>Linked login</th><th>Doubles-day preferences</th><th class="player-actions-head">Actions</th></tr></thead>'
-      : '<thead><tr><th>Player Name</th><th>Player Rating</th><th>Linked login</th><th>Doubles-day preferences</th></tr></thead>';
-    const pairRows = Object.entries(state.pairRatings || {}).sort(function(a, b){
-      return Number(b[1]) - Number(a[1]) || getPairLabelFromId(a[0]).localeCompare(getPairLabelFromId(b[0]));
-    }).map(function(entry){
-      const summary = state.pairSummary && state.pairSummary[entry[0]] ? state.pairSummary[entry[0]] : {};
-      const games = Number(summary.count || 0);
-      const wins = Number(summary.wins || 0);
-      const losses = Number(summary.losses || 0);
-      const last = summary.lastSeenAt ? formatDateTime(summary.lastSeenAt) : 'Not yet played';
-      return '<tr><td><strong>' + escapeHtml(getPairLabelFromId(entry[0])) + '</strong></td><td class="small-cell">' + escapeHtml(clampRating(entry[1]).toFixed(1)) + '</td><td class="small-cell">' + escapeHtml(String(games)) + '</td><td class="small-cell">' + escapeHtml(String(wins) + '-' + String(losses)) + '</td><td>' + escapeHtml(last) + '</td></tr>';
-    }).join('');
-    wrap.innerHTML = '<table>' + head + '<tbody>' + rows + '</tbody></table>' +
-      '<hr class="rule"/><h3>Pairs</h3><p class="note">Each partnership has one canonical Pair ID, regardless of player order.</p>' +
-      '<div class="table-wrap"><table><thead><tr><th>Pair</th><th>Pair Rating</th><th>Games together</th><th>W-L</th><th>Last played</th></tr></thead><tbody>' +
-      (pairRows || '<tr><td colspan="5">No pair ratings yet.</td></tr>') + '</tbody></table></div>';
-  }
-
-  function bindRosterActions(){
-    refs.playersTableWrap.querySelectorAll('[data-player-admin]').forEach(input => {
-      input.addEventListener('change', function(){
-        const player = getPlayer(input.getAttribute('data-player-admin'));
-        if(!player || !currentUserIsManager() || isModeratorPlayer(player)) return renderAll();
-        if(input.checked && !String(player.loginUsername || '').trim()){
-          input.checked = false;
-          window.alert('Link a login before making this player an admin.');
-          return;
-        }
-        player.badmintonSessionsAdmin = !!input.checked;
-        saveSessionData();
-        renderAll();
-      });
-    });
-    refs.playersTableWrap.querySelectorAll('[data-player-pref]').forEach(input => {
-      input.addEventListener('change', function(){
-        const player = getPlayer(input.getAttribute('data-player-id'));
-        if(!player || !currentUserCanEditPlayerPrefs(player)){
-          renderAll();
-          return;
-        }
-        if(input.getAttribute('data-player-pref') === 'singles'){
-          player.doublesDaySinglesOptOut = !!input.checked;
-        }
-        if(input.getAttribute('data-player-pref') === 'solo'){
-          player.doublesDaySoloOptOut = !!input.checked;
-        }
-        saveSessionData();
-        renderAll();
-      });
-    });
-    refs.playersTableWrap.querySelectorAll('[data-player-save]').forEach(button => {
-      button.addEventListener('click', function(){
-        const playerId = button.getAttribute('data-player-save');
-        const player = getPlayer(playerId);
-        if(!player) return;
-        if(!currentUserIsManager()) return;
-        const ratingInput = refs.playersTableWrap.querySelector('[data-player-rating="' + cssEscape(playerId) + '"]');
-        const loginInput = refs.playersTableWrap.querySelector('[data-player-login="' + cssEscape(playerId) + '"]');
-        const adminInput = refs.playersTableWrap.querySelector('[data-player-admin="' + cssEscape(playerId) + '"]');
-        setPlayerRating(player, ratingInput ? ratingInput.value : getPlayerRating(player));
-        player.loginUsername = normalizeKnownLoginName(loginInput ? loginInput.value : player.loginUsername || '');
-        if(isModeratorPlayer(player)){
-          player.name = 'Peter Bates-Wilkinson';
-          player.loginUsername = SITE_MODERATOR_CANONICAL_LOGIN;
-          player.badmintonSessionsAdmin = true;
-        }else if(adminInput){
-          player.badmintonSessionsAdmin = !!adminInput.checked && !!String(player.loginUsername || '').trim();
-        }
-        saveSessionData();
-        renderAll();
-      });
-    });
-    refs.playersTableWrap.querySelectorAll('[data-player-remove]').forEach(button => {
-      button.addEventListener('click', function(){
-        if(!currentUserIsManager()) return;
-        const playerId = button.getAttribute('data-player-remove');
-        const existing = getPlayer(playerId);
-        if(isModeratorPlayer(existing)) return;
-        state.players = state.players.filter(player => player.id !== playerId);
-        state.plan.attendingPlayerIds = (state.plan.attendingPlayerIds || []).filter(id => id !== playerId);
-        state.plan.lastSitOutPlayerIds = (state.plan.lastSitOutPlayerIds || []).filter(id => id !== playerId);
-        state.plan.currentSitOutPlayerIds = (state.plan.currentSitOutPlayerIds || []).filter(id => id !== playerId);
-        if(state.plan.sitOutCounts && Object.prototype.hasOwnProperty.call(state.plan.sitOutCounts, playerId)) delete state.plan.sitOutCounts[playerId];
-        saveSessionData();
-        renderAll();
-      });
-    });
-  }
-
-
-
-
-
-
-
-
 
   function getZoneChecklistMarkup(prefix, selected){
     return '<div class="rule-zone-grid">' + DOUBLES_ZONES.map(zone => '<label class="rule-zone-pill"><input type="checkbox" data-zone-checkbox="' + escapeHtml(prefix) + '" value="' + escapeHtml(zone) + '"' + (selected.includes(zone) ? ' checked' : '') + '/><span>' + escapeHtml(zone) + '</span></label>').join('') + '</div>';

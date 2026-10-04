@@ -48,6 +48,18 @@ const courtCardsSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-cards.js"),
   "utf8",
 );
+const rosterSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-roster.js"),
+  "utf8",
+);
+const gamePlanSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-game-plan.js"),
+  "utf8",
+);
+const resultsSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-results.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -104,11 +116,11 @@ test("matchup scoring remains internal and is not exposed as a viewer-facing exp
 });
 
 test("Players & Pairs exposes Pair-ID statistics", () => {
-  assert.match(source, /function normalizePairSummaryKeys\(\)/);
-  assert.match(source, /Games together/);
-  assert.match(source, /W-L/);
-  assert.match(source, /Last played/);
-  assert.match(source, /getPairLabelFromId/);
+  assert.match(rosterSource, /function normalizePairSummaryKeys\(\)/);
+  assert.match(rosterSource, /Games together/);
+  assert.match(rosterSource, /W-L/);
+  assert.match(rosterSource, /Last played/);
+  assert.match(rosterSource, /getPairLabelFromId/);
 });
 
 test("history exposes session summary metrics and stable match identities", () => {
@@ -183,8 +195,8 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3225, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 154000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 2400, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 113000, `controller grew back to ${source.length} characters`);
 });
 
 
@@ -246,4 +258,37 @@ test("Badminton court-card presentation is a separate syntactically valid module
   assert.doesNotMatch(source, /function renderCourtVariableEditor\(/);
   assert.match(courtCardsSource, /function renderCourtCard\(/);
   assert.match(courtCardsSource, /function renderCourtVariableEditor\(/);
+});
+
+
+test("Badminton roster and pair management is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(rosterSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_ROSTER/);
+  assert.match(source, /rosterModule\.create/);
+  assert.doesNotMatch(source, /function renderPlayers\(/);
+  assert.doesNotMatch(source, /function bindRosterActions\(/);
+  assert.match(rosterSource, /function renderPlayers\(/);
+  assert.match(rosterSource, /function bindRosterActions\(/);
+  assert.match(rosterSource, /function normalizePairSummaryKeys\(/);
+});
+
+test("Badminton game-plan orchestration is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(gamePlanSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_GAME_PLAN/);
+  assert.match(source, /gamePlanModule\.create/);
+  assert.doesNotMatch(source, /function generateGamePlan\(/);
+  assert.doesNotMatch(source, /function renderGamePlan\(/);
+  assert.match(gamePlanSource, /function generateGamePlan\(/);
+  assert.match(gamePlanSource, /function renderGamePlan\(/);
+});
+
+test("Badminton score and result workflow is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(resultsSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_RESULTS/);
+  assert.match(source, /resultsModule\.create/);
+  assert.doesNotMatch(source, /function syncCourtScoresFromInputs\(/);
+  assert.doesNotMatch(source, /function markCourtSaved\(/);
+  assert.match(resultsSource, /function syncCourtScoresFromInputs\(/);
+  assert.match(resultsSource, /function markCourtSaved\(/);
+  assert.match(resultsSource, /function canSaveCourtNow\(/);
 });
