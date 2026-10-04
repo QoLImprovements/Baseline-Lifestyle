@@ -38,6 +38,7 @@ test('every approved persistence surface has a file-backed path', () => {
     'systems/baseline-fitness/api/routine_state.php',
     'systems/baseline-fitness/api/routine_groups.php',
     'systems/baseline-badminton-session/api/badminton_session.php',
+    'systems/baseline-massage/api/massage_data.php',
   ];
   for(const file of files){
     const source = read(file);
