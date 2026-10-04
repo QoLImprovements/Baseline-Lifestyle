@@ -11,7 +11,6 @@
     r9: { slug:'tooth-polishing-powder' },
     r10:{ slug:'microcurrent-glide-gel' }
   });
-  const REPLACED_IDS = Object.freeze({ r4:'r10', r5:'r8' });
   const OLD_SLUGS = Object.freeze({
     'hydrating-conductive-mist':'r10',
     'testing-microcurrent-conductive-gel':'r10',
@@ -27,27 +26,6 @@
   }
   function recipeById(id){ return document.getElementById(resolveId(id) || ''); }
 
-  function normaliseRecipeView(value){
-    const next=String(value || '').trim().toLowerCase();
-    return ['standard','details','guidance','show-all'].includes(next)?next:'standard';
-  }
-
-  function recipeViewFromLocation(){
-    try{ return normaliseRecipeView(new URLSearchParams(global.location?.search || '').get('view')); }
-    catch(_error){ return 'standard'; }
-  }
-
-  function recipeForCurrentPath(){
-    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
-    const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
-    if(!match) return null;
-    const slug=String(match[1] || '').toLowerCase();
-    const oldId=OLD_SLUGS[slug];
-    if(oldId) return recipeById(oldId);
-    return Array.from(document.querySelectorAll('#recipes .recipe-page[data-recipe-slug]'))
-      .find(recipe=>String(recipe.dataset.recipeSlug || '').toLowerCase()===slug) || null;
-  }
-
   function collapseAdjustments(recipe){
     if(!recipe) return;
     recipe.classList.remove('recipe-options-open');
@@ -56,39 +34,6 @@
     const button=recipe.querySelector(':scope > .recipe-adjustments-row .recipe-adjustments-toggle');
     if(panel) panel.hidden=true;
     if(button) button.setAttribute('aria-expanded','false');
-  }
-
-  function visibleGroups(recipe,view){
-    if(!recipe) return;
-    const next=normaliseRecipeView(view);
-    recipe.dataset.recipeView=next;
-    recipe.querySelectorAll(':scope > .recipe-subtabs .recipe-subtab').forEach(button=>{
-      const selected=button.dataset.recipeSubtab===next;
-      button.setAttribute('aria-selected',selected?'true':'false');
-    });
-    recipe.querySelectorAll('[data-recipe-view-group]').forEach(el=>{
-      const group=String(el.dataset.recipeViewGroup || '');
-      const show=next==='show-all' || group===next;
-      el.classList.toggle('recipe-view-hidden',!show);
-    });
-    const details=recipe.querySelector(':scope > .recipe-details-intro');
-    if(details){
-      const showDetails=next==='details' || next==='show-all';
-      details.classList.toggle('recipe-view-hidden',!showDetails);
-      details.hidden=!showDetails;
-    }
-
-    const adjustmentsRow=recipe.querySelector(':scope > .recipe-adjustments-row');
-    const adjustmentsAvailable=next==='standard' || next==='show-all';
-    if(adjustmentsRow) adjustmentsRow.classList.toggle('recipe-view-hidden',!adjustmentsAvailable);
-    if(!adjustmentsAvailable) collapseAdjustments(recipe);
-  }
-
-  function resetRecipeView(recipe){
-    if(!recipe) return;
-    collapseAdjustments(recipe);
-    try{ recipe.__baselineSetRecipeView?.('standard',{syncRoute:false}); }catch(_error){}
-    visibleGroups(recipe,'standard');
   }
 
   function bindLipBalmFormula(recipe){
