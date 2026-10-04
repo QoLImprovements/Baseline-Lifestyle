@@ -28,6 +28,10 @@ const hardshipsSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-hardships.js"),
   "utf8",
 );
+const hydrationSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-state-hydration.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -166,6 +170,20 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3900, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 200000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 3650, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 185000, `controller grew back to ${source.length} characters`);
+});
+
+
+test("Badminton state hydration is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(hydrationSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_STATE_HYDRATION/);
+  assert.match(source, /stateHydrationModule\.create/);
+  const start = source.indexOf("function hydrateLoadedState");
+  const end = source.indexOf("function hydrateSessionFromServer", start);
+  const wrapper = source.slice(start, end);
+  assert.match(wrapper, /stateHydrator\.hydrate\(parsed\)/);
+  assert.ok(wrapper.length < 400, "controller hydration wrapper should remain small");
+  assert.match(hydrationSource, /currentCircumstantialSitOutPlayerIds/);
+  assert.match(hydrationSource, /hardshipRecords:/);
 });
