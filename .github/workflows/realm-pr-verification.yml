@@ -1,0 +1,37 @@
+name: Realm PR verification
+
+on:
+  push:
+    branches:
+      - realm-stability-phase1-20261004
+
+permissions:
+  contents: read
+
+jobs:
+  realm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run Games Hub unit tests
+        run: npm run test:games-hub
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run Realm browser verification
+        run: >
+          npx playwright test
+          tests/baseline-realm-stage1.spec.js
+          tests/baseline-realm-stage1-real-mobile.spec.js
+          tests/baseline-realm-meridian-grove-live.spec.js
+          tests/baseline-realm-integration.spec.js
+          tests/baseline-games-hub-startup-resilience.spec.js
+          tests/baseline-games-hub-independent-core.spec.js
+          tests/baseline-games-hub-core-controls.spec.js
+          tests/baseline-realm-context-menu.spec.js
+          --reporter=line
