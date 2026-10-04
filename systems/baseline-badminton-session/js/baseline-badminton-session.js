@@ -138,6 +138,7 @@
 
   let serverSaveTimer = null;
   let serverSaveInFlight = false;
+  let serverSavePromise = null;
   let serverSaveAbortController = null;
   let serverLoadAbortController = null;
   let pageIsLeaving = false;
@@ -230,71 +231,97 @@
     return { state:candidate,expectedRevision:Number.isInteger(serverRevision)&&serverRevision>=0?serverRevision:0 };
   }
 
-  function queueServerSave(options){
-    options = options && typeof options === 'object' ? options : {};
-    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch) return;
-    if(serverSaveTimer){
-      window.clearTimeout(serverSaveTimer);
-      serverSaveTimer = null;
+  function postServerState(){
+    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch){
+      return Promise.resolve(false);
     }
-    const delay = options.immediate ? 0 : 180;
-    const send = function(){
-      serverSaveTimer = null;
-      if(serverSaveInFlight) return;
-      serverSaveInFlight = true;
-      serverSaveAbortController = window.AbortController ? new AbortController() : null;
-      const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
-      const requestOptions = {
-        method:'POST',
-        credentials:'same-origin',
-        keepalive:true,
-        headers:{ 'Content-Type':'application/json' },
-        body:JSON.stringify(serverPayload(state))
-      };
-      if(serverSaveAbortController) requestOptions.signal = serverSaveAbortController.signal;
-      fetch(API_STATE_URL, requestOptions).then(function(response){
+    if(serverSaveInFlight && serverSavePromise){
+      return serverSavePromise.then(function(saved){
+        return saved ? postServerState() : false;
+      });
+    }
+
+    serverSaveInFlight = true;
+    serverSaveAbortController = window.AbortController ? new AbortController() : null;
+    const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
+    const requestOptions = {
+      method:'POST',
+      credentials:'same-origin',
+      keepalive:true,
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(serverPayload(state))
+    };
+    if(serverSaveAbortController) requestOptions.signal = serverSaveAbortController.signal;
+
+    serverSavePromise = fetch(API_STATE_URL, requestOptions)
+      .then(function(response){
         return response.json().catch(function(){ return { ok:false, error:'bad_json' }; }).then(function(data){
           data.__status = response.status;
           return data;
         });
-      }).then(function(data){
+      })
+      .then(function(data){
         updateServerAuth(data && data.auth);
         if(data && data.error==='revision_conflict'){
           serverSaveConflict=true;
           serverSaveBlocked=true;
           announceServerSaveConflict('Badminton changed on the server before this save completed. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
-          return;
+          return false;
         }
         if(!data || !data.ok){
           serverSaveBlocked=true;
           announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
-          return;
+          return false;
         }
         const revision=Number(data.revision);
         if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
         serverSaveBlocked=false;
         clearPersistenceStatus();
-      }).catch(function(_error){
-        if(pageIsLeaving) return;
+        return true;
+      })
+      .catch(function(_error){
+        if(pageIsLeaving) return false;
         serverSaveBlocked=true;
         announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
-      }).finally(function(){
+        return false;
+      })
+      .finally(function(){
         serverSaveInFlight = false;
         serverSaveAbortController = null;
-        if(!pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && getStateUpdatedAt(state) > requestLocalUpdatedAt){
-          queueServerSave({ immediate:true });
-        }
+        serverSavePromise = null;
       });
-    };
-    if(delay <= 0) send();
-    else serverSaveTimer = window.setTimeout(send, delay);
+
+    return serverSavePromise.then(function(saved){
+      if(saved && !pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && getStateUpdatedAt(state) > requestLocalUpdatedAt){
+        return postServerState();
+      }
+      return saved;
+    });
+  }
+
+  function queueServerSave(options){
+    options = options && typeof options === 'object' ? options : {};
+    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch){
+      return Promise.resolve(false);
+    }
+    if(serverSaveTimer){
+      window.clearTimeout(serverSaveTimer);
+      serverSaveTimer = null;
+    }
+    if(options.immediate) return postServerState();
+    return new Promise(function(resolve){
+      serverSaveTimer = window.setTimeout(function(){
+        serverSaveTimer = null;
+        postServerState().then(resolve);
+      }, 180);
+    });
   }
 
   function saveSessionData(options){
     markLocalChange();
     migrateKnownModeratorPlayer();
     ensureRatingStores();
-    queueServerSave(options);
+    return queueServerSave(options);
   }
 
   function ensureRuleAdminShape(ruleAdmin){
@@ -4020,7 +4047,7 @@
     }
   }
 
-    function saveCourtResult(index){
+    async function saveCourtResult(index){
     const court = state.plan.current[index];
     if(!court){
       setPlanAlert('Save Results could not find this court. Regenerate the game plan and try again.');
@@ -4131,18 +4158,28 @@
     if(completedCurrentSet){
       rollFinishedGamesForward();
       clearGeneratedCourtDrafts();
-      setPlanAlert('All current games were submitted. Finished games were saved and the next set was generated.');
       protectLocalCurrentState(5000);
-      saveSessionData({ immediate:true });
+      const serverSaved = await saveSessionData({ immediate:true });
+      if(!serverSaved){
+        setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
+        hydrateSessionFromServer();
+        return;
+      }
+      setPlanAlert('All current games were submitted and confirmed by the server. Finished games were saved and the next set was generated.');
       renderAll();
       scheduleHardBlankCurrentScoreInputs(refs.currentGamesGrid);
       return;
     }
 
     state.plan.currentSetReadyForNext = false;
-    setPlanAlert('Court ' + String(index + 1) + ' saved. Waiting for the remaining current court results.');
     protectLocalCurrentState(5000);
-    saveSessionData({ immediate:true });
+    const serverSaved = await saveSessionData({ immediate:true });
+    if(!serverSaved){
+      setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
+      hydrateSessionFromServer();
+      return;
+    }
+    setPlanAlert('Court ' + String(index + 1) + ' saved on the server. Waiting for the remaining current court results.');
     refreshCurrentCourtCard(index);
     renderMatchHistory();
     renderStandings();
@@ -4188,14 +4225,12 @@
     const now = Date.now();
     if(lastSaveCourtButtonActivation.key === key && now - lastSaveCourtButtonActivation.at < 600) return false;
     lastSaveCourtButtonActivation = { key, at:now };
-    try{
-      saveCourtResult(index);
-    }catch(error){
+    Promise.resolve(saveCourtResult(index)).catch(function(error){
       console.error('Save Results failed', error);
       const message = error && error.message ? error.message : String(error || 'unknown error');
       try{ setPlanAlert('Save Results failed: ' + message); }catch(_e){}
       window.alert('Save Results failed: ' + message);
-    }
+    });
     return false;
   }
 
