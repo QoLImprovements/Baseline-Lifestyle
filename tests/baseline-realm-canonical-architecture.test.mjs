@@ -12,6 +12,7 @@ const bootstrap=read('systems/baseline-games-hub/js/baseline-games-hub.js');
 const optional=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
 const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
 const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
+const lazyScenes=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js');
 const inputs=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-manager.js');
 const runtimeCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css');
 const finalCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css');
@@ -41,7 +42,7 @@ test('optional Realm scenes remain lazy and isolated',()=>{
   assert.equal(staticImports.some(line=>line.includes('calorie-escape-scene')),false);
   assert.equal(staticImports.some(line=>line.includes('tactical-operations-scene')),false);
   assert.match(realm,/createLazyScene/);
-  assert.match(realm,/realm:scene:load-failed/);
+  assert.match(lazyScenes,/realm:scene:load-failed/);
 });
 
 test('Realm controls retain their own native input owner',()=>{

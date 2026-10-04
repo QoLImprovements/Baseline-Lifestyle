@@ -51,6 +51,28 @@ test('battle implementation exposes ATB, Active and Wait modes, and all six comm
   assert.match(ui, /data-battle-mode="wait"/);
 });
 
+test('battle command layout keeps all six command positions stable for every actor', () => {
+  assert.match(ui, /BATTLE_COMMANDS\.map\(\(label\) =>/);
+  assert.match(ui, /No ability learned/);
+  assert.match(ui, /No magic learned/);
+  assert.match(ui, /disabled aria-disabled="true"/);
+  assert.doesNotMatch(ui, /const availableCommands = BATTLE_COMMANDS\.filter/);
+});
+
+test('battle runtime keeps command DOM stable between ATB ticks and always exposes Basecamp', () => {
+  assert.match(ui, /refreshBattleState\(\)/);
+  assert.match(ui, /this\.refreshBattleState\(\)/);
+  assert.match(ui, /refreshBattleMeter\(card, className, label, value, max\)/);
+  assert.doesNotMatch(ui, /actorChanged \|\| readyEnemies\.length \|\| battleResolved/);
+  assert.doesNotMatch(ui, /time - this\.lastBattleRender > 85/);
+  assert.match(ui, /data-battle-basecamp/);
+  assert.match(ui, /returnButton\.disabled = false/);
+  assert.match(ui, /if \(this\.state\.battle\) \{\s*this\.returnToBasecampFromBattle\(\);/);
+  assert.match(ui, /key === 'b' && this\.state\.battle/);
+  assert.match(ui, /returnToBasecampFromBattle\(\)/);
+  assert.match(ui, /finishBattle\(this\.state\)/);
+});
+
 test('progression, equipment, status, drops, and save/resume systems are present', () => {
   assert.match(engine, /applyExperience/);
   assert.match(engine, /equipItem/);

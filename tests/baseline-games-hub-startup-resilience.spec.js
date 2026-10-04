@@ -1,7 +1,7 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH='/baseline-games-hub/games-hub';
-const LOADER_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
+const LOADER_BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 
 async function stubProfiles(page){
   await page.route('**/systems/baseline-games-hub/api/games_profile.php**',async route=>{
@@ -25,6 +25,8 @@ async function openRealm(page){
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
   await expect(page.locator('html')).toHaveAttribute('data-baseline-realm-runtime-active',LOADER_BUILD);
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 async function health(page){
@@ -64,24 +66,38 @@ test('Darts Focused is registered, visible and operational',async({page})=>{
   await expect(page.locator('.darts-feedback')).toBeVisible();
 });
 
-test('Realm shows both actors and live controls without freezing',async({page})=>{
+test('Realm opens at Basecamp and Ninja actors and controls work after explicit entry',async({page})=>{
   await stubProfiles(page);
   const errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   await page.goto(PATH,{waitUntil:'domcontentloaded'});
   await openRealm(page);
+  await expect(page.locator('[data-basecamp-landmark="calorie-escape"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="tactical-operations"]')).toBeVisible();
+  await page.locator('#realmCampNinjaBtn').click();
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('ninja-training');
   await expect(page.locator('#ninjaRunnerWrap')).toBeVisible();
   await expect(page.locator('#ninjaEnemyWrap')).toBeVisible();
   await expect(page.locator('#realmCommandBanner')).toBeVisible();
   await expect(page.locator('#ninjaManualStrikeBtn')).toBeEnabled();
   await expect(page.locator('#ninjaShurikenBtn')).toBeEnabled();
   await expect.poll(()=>page.evaluate(()=>({
-    runner:getComputedStyle(document.getElementById('ninjaRunnerWrap'),'::before').backgroundImage,
-    enemy:getComputedStyle(document.getElementById('ninjaEnemyWrap'),'::before').backgroundImage
+    runner:getComputedStyle(document.querySelector('.ninja-runtime-sprite--runner')).backgroundImage,
+    enemy:getComputedStyle(document.querySelector('.ninja-runtime-sprite--enemy')).backgroundImage
   }))).toEqual(expect.objectContaining({
     runner:expect.stringContaining('alder-veil-run.svg'),
     enemy:expect.stringContaining('mossblade-pursuer.svg')
   }));
+  const parallax=await page.evaluate(()=>['distant','middle','foreground'].map(kind=>{
+    const node=document.querySelector('.ninja-forest-layer--'+kind);
+    const style=getComputedStyle(node);
+    return {kind,animationName:style.animationName,backgroundRepeat:style.backgroundRepeat,backgroundSize:style.backgroundSize};
+  }));
+  for(const layer of parallax){
+    expect(layer.animationName).not.toBe('none');
+    expect(layer.backgroundRepeat).toContain('repeat');
+    expect(layer.backgroundSize).toContain('100%');
+  }
   const layers=await page.evaluate(()=>({
     foreground:Number(getComputedStyle(document.querySelector('.ninja-forest-layer--foreground')).zIndex),
     runner:Number(getComputedStyle(document.getElementById('ninjaRunnerWrap')).zIndex),
@@ -91,9 +107,21 @@ test('Realm shows both actors and live controls without freezing',async({page})=
   expect(layers.runner).toBeGreaterThan(layers.foreground);
   expect(layers.banner).toBeGreaterThan(layers.runner);
   expect(layers.dock).toBeGreaterThan(layers.banner);
-  const before=await health(page);
+  const before=await page.evaluate(()=>{
+    const save=globalThis.BaselineRealmHost.syncProfileRealm();
+    return {hp:save.realm.ninjaTraining.enemyHp,kills:save.realm.ninjaTraining.totalKills};
+  });
   await page.locator('#ninjaManualStrikeBtn').click();
-  await expect.poll(async()=>(await health(page)).current).toBeLessThan(before.current);
+  await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-dash-cut/);
+  await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-dash.svg');
+  await expect.poll(()=>page.evaluate((previous)=>{
+    const save=globalThis.BaselineRealmHost.syncProfileRealm();
+    return save.realm.ninjaTraining.enemyHp!==previous.hp || save.realm.ninjaTraining.totalKills>previous.kills;
+  },before)).toBe(true);
+  await page.locator('#ninjaShurikenBtn').click();
+  await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-throwing/);
+  await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-throw.svg');
+  await expect.poll(()=>page.locator('#ninjaShurikenLayer .ninja-shuriken-projectile').count()).toBeGreaterThan(0);
   await page.locator('#realmMenuBtn').click();
   await expect(page.locator('#realmPanelDrawer')).toBeVisible();
   await page.locator('#realmBasecampBtn').click();
@@ -101,11 +129,15 @@ test('Realm shows both actors and live controls without freezing',async({page})=
   expect(errors).toEqual([]);
 });
 
-test('direct Realm route opens the same functional runtime',async({page})=>{
+test('direct Realm route opens the same Basecamp-first functional runtime',async({page})=>{
   await stubProfiles(page);
   await page.goto(PATH+'/baseline-realm',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-active/);
-  await expect(page.locator('#ninjaRunnerWrap')).toBeVisible();
-  await expect(page.locator('#ninjaManualStrikeBtn')).toBeEnabled();
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="ninja-training"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="exploration"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="calorie-escape"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="tactical-operations"]')).toBeVisible();
 });

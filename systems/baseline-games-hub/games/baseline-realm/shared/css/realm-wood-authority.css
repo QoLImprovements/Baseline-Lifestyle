@@ -29,6 +29,22 @@
   -webkit-text-fill-color:currentColor!important;
 }
 
+/* Realm is an interactive world, not a hover-lift Games Hub card.
+   Keeping the panel on whole CSS pixels prevents transformed descendants/text
+   from becoming soft while the pointer is over the game. */
+#ninjaPanel,
+#ninjaPanel:hover,
+#ninjaPanel:focus-within{
+  transform:none!important;
+  filter:none!important;
+  backface-visibility:visible!important;
+}
+#ninjaPanel #realmSceneFrame{
+  transform:none!important;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
 #ninjaPanel .realm-window{
   background:#0a1712!important;
   background-image:none!important;
@@ -214,6 +230,19 @@
   box-shadow:none!important;
 }
 #ninjaPanel .jrpg-command-grid button{min-height:42px!important;pointer-events:auto!important;opacity:1!important}
+#ninjaPanel .jrpg-game :is(.jrpg-party-mini span,.jrpg-party-mini small,.jrpg-battle-party-card span,.jrpg-battle-party-card small,.jrpg-enemy-card small,.jrpg-battle-log ol,.jrpg-command-title span,.jrpg-skill-list span,.jrpg-target-list span,.jrpg-route-card ol,.jrpg-section-head span){
+  font-size:max(10px,0.68rem)!important;
+  line-height:1.3!important;
+  text-shadow:none!important;
+}
+#ninjaPanel .jrpg-meter>b{
+  font-size:max(9px,0.62rem)!important;
+  text-shadow:none!important;
+}
+#ninjaPanel .jrpg-game :is(button,strong,h1,h2,h3,h4,h5,h6,p,span,small,label){
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
 #ninjaPanel .jrpg-top-actions [data-jrpg-action="abandon"]{border-color:#d39a89!important;color:#ffe7df!important;-webkit-text-fill-color:#ffe7df!important}
 
 /* Calorie Escape and Tactical Operations are full Realm destinations. Their
@@ -272,6 +301,18 @@
 #ninjaPanel .ninja-runtime-sprite{
   image-rendering:auto!important;
   filter:drop-shadow(0 14px 9px rgba(0,0,0,.58)) drop-shadow(0 0 2px rgba(220,239,211,.32))!important;
+}
+/* This file is the final Realm visual authority. Keep action sheet selection
+   here as well as in Ninja's module stylesheet so later Realm styling can
+   never collapse Dash Cut or Shuriken back to the running sheet. */
+#ninjaPanel .ninja-scene__runner.is-dash-cut .ninja-runtime-sprite--runner,
+#ninjaPanel .ninja-scene__runner.is-idle-attacking .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-dash.svg')!important;
+  background-size:800% 100%!important;
+}
+#ninjaPanel .ninja-scene__runner.is-throwing .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-throw.svg')!important;
+  background-size:600% 100%!important;
 }
 #ninjaPanel .ninja-scene__enemy.is-entering{animation:ninjaRealmEnemyEntry 1.25s cubic-bezier(.16,.72,.2,1) both!important}
 @keyframes ninjaRealmEnemyEntry{from{transform:translateX(58vw);opacity:.25}to{transform:translateX(0);opacity:1}}

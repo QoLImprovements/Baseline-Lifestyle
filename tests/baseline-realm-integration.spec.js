@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/baseline-games-hub/games-hub';
-const REALM_BUILD = 'REALM_RUNTIME_ISOLATED_20260629_4';
 
 function ninjaProfile() {
   return {
@@ -68,7 +67,7 @@ async function mockProfiles(page) {
 async function openRealm(page, { mobile = false } = {}) {
   const profiles = await mockProfiles(page);
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction((build) => document.documentElement.getAttribute('data-baseline-realm-integration') === build, REALM_BUILD);
+  await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.getStateService?.()) && Boolean(document.documentElement.getAttribute('data-baseline-realm-integration')));
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await page.locator('[data-select-game="ninja"]:visible').first().click();
   await page.evaluate(({ mobile }) => {
@@ -78,6 +77,8 @@ async function openRealm(page, { mobile = false } = {}) {
     dispatchEvent(new Event('resize'));
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.evaluate(() => globalThis.BaselineRealmHost.whenAssetsReady());
   return profiles;
 }
@@ -143,6 +144,25 @@ test('navigation reaches every completed Realm module', async ({ page }) => {
     const result = await page.evaluate((id) => globalThis.BaselineRealmHost.sceneRouter.navigate(id).then(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId()), scene);
     expect(result).toBe(scene);
   }
+});
+
+test('Basecamp landmarks enter external games and reliably return to the hub', async ({ page }) => {
+  await openRealm(page);
+
+  await page.locator('[data-basecamp-landmark="calorie-escape"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('calorie-escape');
+  await expect(page.locator('#calorieEscapeScreen')).toBeVisible();
+  await page.locator('#calorieEscapeScreen [data-ce-action="basecamp"]').first().click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+
+  await page.locator('[data-basecamp-landmark="tactical-operations"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('tactical-operations');
+  await expect(page.locator('#tacticalOperationsScreen')).toBeVisible();
+  await page.locator('#tacticalOperationsScreen [data-action="exit"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  await expect(page.locator('.realm-command-banner')).toBeVisible();
 });
 
 test('authenticated save/load, shared wallet, crafting, battle and inventory transfer remain connected', async ({ browser }) => {

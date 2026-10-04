@@ -1,1 +1,270 @@
-#ninjaPanel .calorie-escape-screen{position:absolute;inset:0}
+/* Canonical Calorie Escape presentation.
+   This file owns the complete game UI; no embedded or Hub-theme styling. */
+#ninjaPanel .calorie-escape-screen{
+  position:absolute;
+  inset:0;
+  z-index:80;
+  display:block;
+  overflow:hidden;
+  background:#0b1411;
+  color:#f4ead6;
+  isolation:isolate;
+}
+#ninjaPanel .calorie-escape-screen[hidden]{display:none!important}
+#ninjaPanel .ce-game{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr);
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(179,139,73,.16),transparent 34%),
+    linear-gradient(180deg,#1b2c24 0%,#0b1512 100%);
+  color:#f4ead6;
+}
+#ninjaPanel .ce-game *{box-sizing:border-box}
+#ninjaPanel .ce-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:12px 16px;
+  border-bottom:6px solid #26150d;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,rgba(31,13,5,.045) 2px 5px),
+    linear-gradient(180deg,#704328,#432719 55%,#2a180f);
+  box-shadow:0 10px 24px -18px #000;
+}
+#ninjaPanel .ce-header>div:first-child{min-width:0}
+#ninjaPanel .ce-header h2{margin:2px 0;color:#fff0cf;font-size:clamp(20px,2vw,28px);line-height:1.05}
+#ninjaPanel .ce-header p{margin:0;max-width:780px;color:#dbc9a8;font-size:12px;line-height:1.35}
+#ninjaPanel .ce-kicker{color:#e8c378;font-size:10px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+#ninjaPanel .ce-header-actions{display:flex;gap:7px;flex:0 0 auto}
+#ninjaPanel .ce-game button{
+  min-height:38px;
+  padding:8px 11px;
+  border:1px solid rgba(245,212,150,.38);
+  border-radius:9px;
+  background:linear-gradient(180deg,#75472b,#4a2a19);
+  color:#fff0d2;
+  font:800 12px/1.1 inherit;
+  cursor:pointer;
+  box-shadow:inset 0 1px rgba(255,255,255,.12);
+}
+#ninjaPanel .ce-game button:is(:hover,:focus-visible,.is-selected){
+  border-color:#ffd98a;
+  background:linear-gradient(180deg,#91603a,#5a341f);
+  outline:2px solid rgba(255,217,138,.38);
+  outline-offset:1px;
+}
+#ninjaPanel .ce-game button:disabled{opacity:.46;cursor:not-allowed}
+#ninjaPanel .ce-body{position:relative;min-height:0}
+#ninjaPanel .ce-menu,#ninjaPanel .ce-run,#ninjaPanel .ce-result{position:absolute;inset:0}
+#ninjaPanel .ce-menu[hidden],#ninjaPanel .ce-run[hidden],#ninjaPanel .ce-result[hidden]{display:none!important}
+
+#ninjaPanel .ce-menu{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:10px;
+  padding:10px;
+  overflow:hidden;
+}
+#ninjaPanel .ce-progress-card{
+  display:grid;
+  grid-template-columns:minmax(120px,.6fr) minmax(260px,1.7fr) minmax(120px,.6fr);
+  align-items:center;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid rgba(234,207,153,.22);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(55,38,26,.96),rgba(29,20,14,.96));
+}
+#ninjaPanel .ce-progress-card>div{display:grid;gap:3px}
+#ninjaPanel .ce-progress-card span{color:#cdbb9c;font-size:10px}
+#ninjaPanel .ce-progress-card strong,#ninjaPanel .ce-progress-card b{color:#f4deb0;font-size:15px}
+#ninjaPanel .ce-menu-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-rows:minmax(0,1fr) minmax(0,1fr);
+  gap:10px;
+  min-height:0;
+}
+#ninjaPanel .ce-panel{
+  min-height:0;
+  padding:10px;
+  border:1px solid rgba(234,207,153,.20);
+  border-radius:14px;
+  background:linear-gradient(180deg,rgba(45,33,24,.96),rgba(24,18,14,.96));
+  overflow:auto;
+  scrollbar-color:#9b6a3f #1c100a;
+}
+#ninjaPanel .ce-section-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:8px}
+#ninjaPanel .ce-section-head h3{margin:1px 0;color:#f5dfb2;font-size:17px}
+#ninjaPanel .ce-section-head small{max-width:54%;color:#b9aa90;font-size:10px;text-align:right}
+#ninjaPanel .ce-zone-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+#ninjaPanel .ce-zone-card{
+  display:grid;
+  gap:4px;
+  min-width:0;
+  padding:9px;
+  text-align:left;
+  border-color:color-mix(in srgb,var(--zone-c,#d9b36b) 52%,#5a341f);
+  background:
+    linear-gradient(180deg,color-mix(in srgb,var(--zone-a,#284b3b) 76%,#24140c),color-mix(in srgb,var(--zone-b,#15251f) 72%,#160d08));
+}
+#ninjaPanel .ce-zone-card span,#ninjaPanel .ce-zone-card small{font-size:9px;color:#d5c6aa}
+#ninjaPanel .ce-zone-card h4{margin:0;color:#fff0cf;font-size:14px}
+#ninjaPanel .ce-zone-card strong{font-size:10px;color:#e8cd96}
+#ninjaPanel .ce-zone-card p{margin:0;font-size:10px;line-height:1.3;color:#c7baa2}
+#ninjaPanel .ce-zone-card.is-selected{box-shadow:inset 0 0 0 2px #e4bf75}
+#ninjaPanel .ce-level-list,#ninjaPanel .ce-ability-list{display:grid;gap:6px}
+#ninjaPanel .ce-level-card{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:2px 9px;
+  text-align:left;
+  background:#2b2119;
+}
+#ninjaPanel .ce-level-card>span{grid-column:1;font-size:9px;color:#c9b795}
+#ninjaPanel .ce-level-card>strong{grid-column:2;color:#f4dfb5}
+#ninjaPanel .ce-level-card>small{grid-column:2;color:#bba98d;font-size:10px}
+#ninjaPanel .ce-level-card>div{grid-column:1/-1;display:flex;gap:5px;flex-wrap:wrap}
+#ninjaPanel .ce-level-card b{padding:3px 5px;border-radius:6px;background:#1b1510;color:#d7c39e;font-size:9px}
+#ninjaPanel .ce-level-card.is-selected{border-color:#e3bd73}
+#ninjaPanel .ce-ability-card{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:8px;
+  border:1px solid rgba(233,207,158,.16);
+  border-radius:10px;
+  background:#2b2119;
+}
+#ninjaPanel .ce-ability-card>div{display:grid;gap:2px}
+#ninjaPanel .ce-ability-card span{font-size:9px;color:#c6b596}
+#ninjaPanel .ce-ability-card strong{color:#f0d9aa}
+#ninjaPanel .ce-ability-card p{margin:0;color:#b8aa92;font-size:10px}
+#ninjaPanel .ce-support{display:grid;gap:8px}
+#ninjaPanel .ce-support-effects,#ninjaPanel .ce-support-equipment{display:flex;gap:5px;flex-wrap:wrap}
+#ninjaPanel .ce-support span{padding:5px 7px;border-radius:8px;background:#1b1510;color:#ccb996;font-size:10px}
+#ninjaPanel .ce-start-dock{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+  border:1px solid rgba(234,207,153,.22);
+  border-radius:12px;
+  background:linear-gradient(180deg,#3c2a1e,#231810);
+}
+#ninjaPanel .ce-start-dock>div{display:grid;gap:2px}
+#ninjaPanel .ce-start-dock strong{color:#f5dfb2}
+#ninjaPanel .ce-start-dock span{color:#bfae91;font-size:10px}
+#ninjaPanel .ce-primary{min-width:132px;background:linear-gradient(180deg,#6d7138,#414a28)!important;border-color:#cdd58a!important}
+
+#ninjaPanel .ce-meter{height:10px;overflow:hidden;border-radius:999px;background:#160f0a;box-shadow:inset 0 0 0 1px rgba(240,211,159,.14)}
+#ninjaPanel .ce-meter>span{display:block;height:100%;background:linear-gradient(90deg,#5f8a59,#d6b75f,#d47643)}
+#ninjaPanel .ce-meter--pressure>span{background:linear-gradient(90deg,#5a946b,#dfbb62,#d66542)}
+
+#ninjaPanel .ce-run{
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:8px;
+  padding:9px;
+  background:#101915;
+}
+#ninjaPanel .ce-run-hud{
+  display:grid;
+  grid-template-columns:minmax(120px,.8fr) minmax(180px,1.25fr) minmax(100px,.65fr) minmax(220px,1.5fr);
+  gap:8px;
+  padding:8px 10px;
+  border:1px solid rgba(229,205,160,.18);
+  border-radius:12px;
+  background:#241a13;
+}
+#ninjaPanel .ce-run-hud>div{display:grid;gap:3px}
+#ninjaPanel .ce-run-hud span{font-size:10px;color:#c6b495}
+#ninjaPanel .ce-run-hud strong,#ninjaPanel .ce-run-hud b{color:#f3ddb0}
+#ninjaPanel .ce-stage-shell{
+  position:relative;
+  min-height:0;
+  overflow:hidden;
+  border:2px solid #6a5136;
+  border-radius:14px;
+  background:#101a16;
+  box-shadow:inset 0 0 0 1px rgba(255,225,166,.09),0 14px 26px -22px #000;
+}
+#ninjaPanel .ce-stage-shell canvas{width:100%;height:100%;display:block;touch-action:none}
+#ninjaPanel .ce-readability-key{position:absolute;left:10px;top:10px;display:flex;gap:6px;pointer-events:none}
+#ninjaPanel .ce-readability-key span{padding:5px 8px;border-radius:999px;font-size:9px;font-weight:900}
+#ninjaPanel .ce-readability-key .is-breakable{background:#b95a32;color:#fff0d9}
+#ninjaPanel .ce-readability-key .is-hazard{background:#252b2a;color:#f0d586;border:1px solid #6e6f5c}
+#ninjaPanel .ce-run-toast{
+  position:absolute;
+  left:50%;
+  bottom:20px;
+  transform:translateX(-50%);
+  padding:8px 12px;
+  border:1px solid rgba(242,210,147,.28);
+  border-radius:999px;
+  background:#1b1510;
+  color:#ffe3a8;
+}
+#ninjaPanel .ce-run-toast[hidden],#ninjaPanel .ce-pause[hidden]{display:none!important}
+#ninjaPanel .ce-pause{position:absolute;inset:0;display:grid;place-content:center;gap:3px;background:rgba(5,10,8,.80);text-align:center}
+#ninjaPanel .ce-pause strong{font-size:24px;color:#f5deb0}
+#ninjaPanel .ce-pause span{color:#c8b696}
+#ninjaPanel .ce-run-footer{
+  display:grid;
+  grid-template-columns:minmax(190px,1fr) minmax(220px,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:8px 10px;
+  border:1px solid rgba(229,205,160,.18);
+  border-radius:12px;
+  background:#241a13;
+}
+#ninjaPanel .ce-objective{display:grid;grid-template-columns:auto 1fr;gap:2px 6px}
+#ninjaPanel .ce-objective span{font-size:9px;color:#bdab8e}
+#ninjaPanel .ce-objective strong{color:#f0d8a7}
+#ninjaPanel .ce-objective small{grid-column:1/-1;color:#cab797}
+#ninjaPanel .ce-control-copy{color:#d4c19f;font-size:11px;text-align:center}
+#ninjaPanel .ce-touch-controls{display:grid;grid-template-columns:repeat(5,auto);gap:4px;touch-action:none}
+#ninjaPanel .ce-touch-controls button{min-width:44px;touch-action:manipulation;pointer-events:auto}
+
+#ninjaPanel .ce-result{display:grid;place-items:center;padding:16px;background:#111711}
+#ninjaPanel .ce-result-card{
+  width:min(720px,96%);
+  display:grid;
+  gap:12px;
+  padding:20px;
+  border:1px solid rgba(238,209,153,.24);
+  border-radius:16px;
+  background:linear-gradient(180deg,#38271c,#21170f);
+}
+#ninjaPanel .ce-result-card h3{margin:0;color:#f6dfae}
+#ninjaPanel .ce-result-card p{margin:0;color:#c4b294}
+#ninjaPanel .ce-result-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+#ninjaPanel .ce-result-stats span{padding:10px;border-radius:10px;background:#1b1510;text-align:center;color:#cbb895}
+#ninjaPanel .ce-result-stats b{display:block;color:#f0d6a2;font-size:18px}
+#ninjaPanel .ce-result-materials,#ninjaPanel .ce-result-actions{display:flex;gap:7px;flex-wrap:wrap}
+#ninjaPanel .ce-result-materials span{padding:5px 8px;border-radius:999px;background:#1b1510;color:#d8c49e}
+#ninjaPanel .ce-result-notes{color:#bfae92;font-size:10px}
+
+@media(max-width:900px){
+  #ninjaPanel .ce-zone-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #ninjaPanel .ce-run-hud{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #ninjaPanel .ce-run-footer{grid-template-columns:1fr}
+  #ninjaPanel .ce-touch-controls{grid-template-columns:repeat(5,minmax(52px,1fr))}
+}
+@media(max-width:760px){
+  #ninjaPanel .ce-header{align-items:flex-start}
+  #ninjaPanel .ce-header p{display:none}
+  #ninjaPanel .ce-progress-card{grid-template-columns:1fr}
+  #ninjaPanel .ce-menu-grid{grid-template-columns:1fr;grid-template-rows:none;overflow:auto}
+  #ninjaPanel .ce-result-stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(prefers-reduced-motion:reduce){
+  #ninjaPanel .ce-game *,#ninjaPanel .ce-game *::before,#ninjaPanel .ce-game *::after{animation:none!important;transition:none!important}
+}

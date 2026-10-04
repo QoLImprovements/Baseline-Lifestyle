@@ -173,12 +173,11 @@ function mountNinjaPresentation() {
 
   const synth = createSynthAudio();
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let active = true;
+  let active = false;
   let intersecting = true;
   let actionTimer = 0;
   let hitTimer = 0;
   let defeatTimer = 0;
-  let idleTimer = 0;
   let lastHp = Number.NaN;
   let lastStage = parseStage(runState?.textContent);
 
@@ -247,14 +246,14 @@ function mountNinjaPresentation() {
       actionTimer = window.setTimeout(() => {
         runner.classList.remove('is-dash-cut');
         scene.classList.remove('is-dash-hit-frame');
-      }, reducedMotion.matches ? 180 : 790);
+      }, reducedMotion.matches ? 180 : 980);
       return;
     }
 
     if (action === 'throw') {
       runner.classList.add('is-throwing');
       if (audio) synth.shuriken();
-      actionTimer = window.setTimeout(() => runner.classList.remove('is-throwing'), reducedMotion.matches ? 160 : 620);
+      actionTimer = window.setTimeout(() => runner.classList.remove('is-throwing'), reducedMotion.matches ? 160 : 820);
       return;
     }
 
@@ -267,18 +266,8 @@ function mountNinjaPresentation() {
     return active && intersecting && document.visibilityState === 'visible' && frame.classList.contains('is-training-view');
   }
 
-  function scheduleIdleAttack() {
-    window.clearTimeout(idleTimer);
-    const delay = reducedMotion.matches ? 2400 : 1050;
-    idleTimer = window.setTimeout(() => {
-      if (presentationIsVisible() && !runner.classList.contains('is-dash-cut') && !runner.classList.contains('is-throwing')) {
-        playRunnerAction('idle', { audio: false });
-      }
-      scheduleIdleAttack();
-    }, delay);
-  }
-
   function onAction(event) {
+    if (!presentationIsVisible()) return;
     const target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
     if (target.id === 'ninjaManualStrikeBtn') playRunnerAction('dash');
@@ -286,7 +275,7 @@ function mountNinjaPresentation() {
   }
 
   function onKeydown(event) {
-    if (!document.getElementById('ninjaPanel')?.classList.contains('is-active')) return;
+    if (!presentationIsVisible()) return;
     if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
     const key = event.key.toLowerCase();
     if (key === 'd') playRunnerAction('dash');
@@ -298,11 +287,13 @@ function mountNinjaPresentation() {
     const nextStage = parseStage(runState?.textContent);
     const hpParts = String(hpValue?.textContent || '').split('/');
     const nextHp = Number(String(hpParts[0] || '').replace(/[^0-9.]/g, ''));
-    if (nextStage && lastStage && nextStage > lastStage) {
-      showDefeat();
-      window.setTimeout(playEnemyEntry, reducedMotion.matches ? 90 : 520);
+    if (presentationIsVisible()) {
+      if (nextStage && lastStage && nextStage > lastStage) {
+        showDefeat();
+        window.setTimeout(playEnemyEntry, reducedMotion.matches ? 90 : 520);
+      }
+      if (Number.isFinite(nextHp) && Number.isFinite(lastHp) && nextHp < lastHp && nextStage === lastStage) showHit();
     }
-    if (Number.isFinite(nextHp) && Number.isFinite(lastHp) && nextHp < lastHp && nextStage === lastStage) showHit();
     if (nextStage) lastStage = nextStage;
     if (Number.isFinite(nextHp)) lastHp = nextHp;
   });
@@ -332,14 +323,14 @@ function mountNinjaPresentation() {
   reducedMotion.addEventListener?.('change', setReducedMotion);
   setReducedMotion();
   syncEnemyPresentation();
-  playEnemyEntry();
-  scheduleIdleAttack();
 
   return Object.freeze({
     resume() {
+      const wasActive = active;
       active = true;
       scene.classList.remove('is-paused');
       syncEnemyPresentation();
+      if (!wasActive && presentationIsVisible()) playEnemyEntry();
     },
     pause() {
       active = false;
@@ -353,8 +344,8 @@ export function createNinjaTrainingScene({ runtime }) {
   return {
     id: 'ninja-training',
     async enter() {
-      presentation.resume();
       runtime?.setView('training');
+      presentation.resume();
     },
     async exit() {
       presentation.pause();

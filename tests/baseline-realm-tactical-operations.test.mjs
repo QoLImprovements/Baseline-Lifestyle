@@ -1,4 +1,5 @@
 import test from 'node:test';
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {
   createInitialState, createMissionDefinition, serialiseState, movementRange, attackRange, hasLineOfSight,
@@ -6,6 +7,14 @@ import {
   tacticalStateSnapshot, applyTacticalAction, simulateTacticalActions,
   MISSION_TYPES, MISSION_ORDER, MISSION_DEFINITIONS
 } from '../systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
+
+const tacticalSceneSource=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js','utf8');
+
+test('Tactical Operations always exposes a direct Basecamp escape path',()=>{
+  assert.match(tacticalSceneSource,/data-action="exit">Return to Basecamp/);
+  assert.match(tacticalSceneSource,/if\(key==='b'\)\{event\.preventDefault\(\);void handleCommand\('exit'\);return;\}/);
+  assert.match(tacticalSceneSource,/B returns to Basecamp/);
+});
 
 test('tactical campaign implements every advertised mission family', () => {
   assert.equal(MISSION_ORDER.length, 7);

@@ -134,7 +134,7 @@ function portrait(symbol, label, className = '') {
 }
 
 function meter(label, value, max, className = '') {
-  return `<div class="jrpg-meter ${className}" aria-label="${escapeHtml(label)} ${Math.round(value)} of ${Math.round(max)}"><span style="width:${percent(value, max)}"></span><b>${Math.round(value)} / ${Math.round(max)}</b></div>`;
+  return `<div class="jrpg-meter ${className}" data-meter="${escapeHtml(className || label.toLowerCase())}" aria-label="${escapeHtml(label)} ${Math.round(value)} of ${Math.round(max)}"><span style="width:${percent(value, max)}"></span><b>${Math.round(value)} / ${Math.round(max)}</b></div>`;
 }
 
 export class MeridianGroveGame {
@@ -148,6 +148,7 @@ export class MeridianGroveGame {
     this.mounted = false;
     this.lastFrame = performance.now();
     this.lastBattleRender = 0;
+    this.lastBattleActorIndex = null;
     this.frame = 0;
     this.moveLockUntil = 0;
     this.gamepadLockUntil = 0;
@@ -321,10 +322,16 @@ export class MeridianGroveGame {
     this.renderRouteLog();
     this.renderResourceRibbon();
     this.renderEncounterMeter();
-    this.root.querySelectorAll('[data-jrpg-action="return-basecamp"],[data-jrpg-action="abandon"]').forEach((button) => {
-      button.disabled = Boolean(this.state.battle);
-      button.title = this.state.battle ? 'Finish the battle before leaving the route.' : '';
-    });
+    const returnButton = this.root.querySelector('[data-jrpg-action="return-basecamp"]');
+    if (returnButton) {
+      returnButton.disabled = false;
+      returnButton.title = this.state.battle ? 'Withdraw from this encounter and return to Basecamp.' : 'Return to Basecamp.';
+    }
+    const abandonButton = this.root.querySelector('[data-jrpg-action="abandon"]');
+    if (abandonButton) {
+      abandonButton.disabled = Boolean(this.state.battle);
+      abandonButton.title = this.state.battle ? 'Return to Basecamp first if you want to abandon the route.' : '';
+    }
     if (this.state.battle) this.renderBattle();
   }
 
@@ -427,7 +434,7 @@ export class MeridianGroveGame {
     const result = partyDown || battle.escaped || battle.victory || enemiesDown;
     layer.innerHTML = `<div class="jrpg-battle-scene battle-${battle.kind}">
       <header class="jrpg-battle-head"><div><span class="jrpg-kicker">${escapeHtml(routeStage(this.state).name)}</span><h3>${battle.kind === 'boss' ? 'Boss Battle' : battle.kind === 'elite' ? 'Elite Encounter' : 'Field Encounter'}</h3></div>
-      <div class="jrpg-battle-mode"><button type="button" data-battle-mode="active" class="${this.state.settings.battleMode === 'active' ? 'is-active' : ''}">Active</button><button type="button" data-battle-mode="wait" class="${this.state.settings.battleMode === 'wait' ? 'is-active' : ''}">Wait</button></div></header>
+      <div class="jrpg-battle-head-actions"><div class="jrpg-battle-mode"><button type="button" data-battle-mode="active" class="${this.state.settings.battleMode === 'active' ? 'is-active' : ''}">Active</button><button type="button" data-battle-mode="wait" class="${this.state.settings.battleMode === 'wait' ? 'is-active' : ''}">Wait</button></div><button type="button" data-battle-basecamp class="jrpg-battle-basecamp">Basecamp</button></div></header>
       <div class="jrpg-battlefield">
         <div class="jrpg-enemy-line">${battle.enemies.map((enemy, index) => this.enemyBattleCard(enemy, index)).join('')}</div>
         <div class="jrpg-party-line">${this.state.party.map((member, index) => this.partyBattleCard(member, index, actorIndex)).join('')}</div>
@@ -449,20 +456,54 @@ export class MeridianGroveGame {
   }
 
   partyBattleCard(member, index, activeActorIndex) {
-    return `<article class="jrpg-battle-party-card${member.hp <= 0 ? ' is-ko' : ''}${activeActorIndex === index ? ' is-commanding' : ''}">
+    return `<article class="jrpg-battle-party-card${member.hp <= 0 ? ' is-ko' : ''}${activeActorIndex === index ? ' is-commanding' : ''}" data-party-index="${index}">
       ${portrait(heroArt(member.id), member.name)}<div><strong>${escapeHtml(member.name)}</strong><span>Lv ${member.level} · ${escapeHtml(member.role)}</span>${meter('HP', member.hp, member.maxHp, 'hp')}${meter('MP', member.mp, member.maxMp, 'mp')}${meter('ATB', member.atb, 100, 'atb')}<small>${member.statuses.length ? escapeHtml(member.statuses.map(statusLabel).join(' · ')) : 'Ready'}</small></div>
     </article>`;
+  }
+
+  refreshBattleMeter(card, className, label, value, max) {
+    const meterNode = card?.querySelector(`.jrpg-meter.${className}`);
+    if (!meterNode) return;
+    const fill = meterNode.querySelector(':scope>span');
+    const valueNode = meterNode.querySelector(':scope>b');
+    if (fill) fill.style.width = percent(value, max);
+    if (valueNode) valueNode.textContent = `${Math.round(value)} / ${Math.round(max)}`;
+    meterNode.setAttribute('aria-label', `${label} ${Math.round(value)} of ${Math.round(max)}`);
+  }
+
+  refreshBattleState() {
+    const battle = this.state.battle;
+    if (!battle) return;
+    battle.enemies.forEach((enemy, index) => {
+      const card = this.root.querySelector(`.jrpg-enemy-card[data-enemy-index="${index}"]`);
+      if (!card) return;
+      card.classList.toggle('is-defeated', enemy.hp <= 0);
+      this.refreshBattleMeter(card, 'hp', 'Enemy HP', enemy.hp, enemy.maxHp);
+      this.refreshBattleMeter(card, 'atb', 'Enemy ATB', enemy.atb, 100);
+    });
+    this.state.party.forEach((member, index) => {
+      const card = this.root.querySelector(`.jrpg-battle-party-card[data-party-index="${index}"]`);
+      if (!card) return;
+      card.classList.toggle('is-ko', member.hp <= 0);
+      card.classList.toggle('is-commanding', battle.activeActorIndex === index);
+      this.refreshBattleMeter(card, 'hp', 'HP', member.hp, member.maxHp);
+      this.refreshBattleMeter(card, 'mp', 'MP', member.mp, member.maxMp);
+      this.refreshBattleMeter(card, 'atb', 'ATB', member.atb, 100);
+    });
+    const log = this.root.querySelector('.jrpg-battle-log>ol');
+    if (log) log.innerHTML = battle.log.slice(-7).reverse().map((entry) => `<li>${escapeHtml(entry)}</li>`).join('');
   }
 
   commandTemplate(actor, actorIndex) {
     if (!actor) return '<div class="jrpg-command-wait"><strong>ATB running</strong><span>Commands appear when a party gauge is full.</span></div>';
     if (this.battleMenu.screen === 'commands') {
-      const availableCommands = BATTLE_COMMANDS.filter((label) => {
-        if (label === 'Ability') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'ability');
-        if (label === 'Magic') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'magic');
-        return true;
-      });
-      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${availableCommands.map((label) => `<button type="button" data-battle-command="${label.toLowerCase()}">${label}</button>`).join('')}</div>`;
+      const hasAbility = actor.abilities.some((id) => ABILITIES[id]?.kind === 'ability');
+      const hasMagic = actor.abilities.some((id) => ABILITIES[id]?.kind === 'magic');
+      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${BATTLE_COMMANDS.map((label) => {
+        const unavailable = (label === 'Ability' && !hasAbility) || (label === 'Magic' && !hasMagic);
+        const reason = label === 'Ability' ? 'No ability learned' : label === 'Magic' ? 'No magic learned' : '';
+        return `<button type="button" data-battle-command="${label.toLowerCase()}" ${unavailable ? `disabled aria-disabled="true" title="${reason}"` : ''}>${label}</button>`;
+      }).join('')}</div>`;
     }
     if (this.battleMenu.screen === 'abilities' || this.battleMenu.screen === 'magic') {
       const kind = this.battleMenu.screen === 'abilities' ? 'ability' : 'magic';
@@ -527,9 +568,17 @@ export class MeridianGroveGame {
           this.save('battle-victory');
         }
         if (readyEnemies.length) this.save('enemy-turn');
-        if (time - this.lastBattleRender > 85 || readyEnemies.length) {
+        const actorChanged = this.lastBattleActorIndex !== this.state.battle.activeActorIndex;
+        const battleResolved = this.state.battle.victory || this.state.battle.escaped || livingParty(this.state).length === 0;
+        if (actorChanged || battleResolved) {
+          this.lastBattleActorIndex = this.state.battle.activeActorIndex;
           this.lastBattleRender = time;
           this.renderBattle();
+        } else {
+          // Enemy turns and ATB ticks update the existing cards/log in place.
+          // Active-mode enemy actions must not erase a player's open command
+          // or target-selection screen.
+          this.refreshBattleState();
         }
       }
     }
@@ -560,6 +609,11 @@ export class MeridianGroveGame {
     if (key === 'i') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('inventory'); }
     if (key === 'o') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('settings'); }
     if (key === 'escape' && this.modal) { event.preventDefault(); this.closeModal(); }
+    if (key === 'b' && this.state.battle) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.returnToBasecampFromBattle();
+    }
   }
 
   handlePointer(event) {
@@ -587,6 +641,10 @@ export class MeridianGroveGame {
     if (button.dataset.unequip) {
       const [partyIndex, slot] = button.dataset.unequip.split(',');
       if (unequipItem(this.state, Number(partyIndex), slot)) { this.save('unequip'); this.openPanel('party'); this.renderAll(); }
+    }
+    if (button.dataset.battleBasecamp !== undefined) {
+      this.returnToBasecampFromBattle();
+      return;
     }
     if (button.dataset.battleMode) {
       this.state.settings.battleMode = button.dataset.battleMode;
@@ -755,8 +813,22 @@ export class MeridianGroveGame {
     this.renderAll();
   }
 
+  returnToBasecampFromBattle() {
+    if (this.state.battle) {
+      finishBattle(this.state);
+      this.state.encounterMeter = Math.max(0, this.state.encounterMeter - 20);
+      this.log('The party withdraws from the encounter and returns to Basecamp.');
+    }
+    this.save('battle-return-basecamp');
+    this.music.setActive(false);
+    Promise.resolve(this.onExit?.()).catch((error) => console.error('Unable to return to Basecamp.', error));
+  }
+
   leaveExploration(abandon = false) {
-    if (this.state.battle) return;
+    if (this.state.battle) {
+      this.returnToBasecampFromBattle();
+      return;
+    }
     if (abandon) this.state = createInitialState();
     this.save(abandon ? 'route-abandoned' : 'return-basecamp');
     this.music.setActive(false);
