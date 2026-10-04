@@ -15,7 +15,7 @@
   const DEFAULT_APPROVED_ADMIN_USERNAMES = [];
   const API_STATE_URL = '/systems/baseline-badminton-session/api/badminton_session.php';
   const LOGIN_OPTIONS_URL = '/systems/baseline-badminton-session/api/badminton_logins.php';
-  const SITE_MODERATOR_CANONICAL_LOGIN = 'Peter Bates-Wilkinson';
+  const SITE_MODERATOR_CANONICAL_LOGIN = 'PeterBW';
   const SITE_MODERATOR_ALIASES = ['bateswilkinson@gmail.com','peterbw','peter bates-wilkinson','peter bates wilkinson','peter bates-wilkinson'];
   window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__ = true;
   const sessionCore = window.BASELINE_BADMINTON_SESSION_CORE;
@@ -305,11 +305,11 @@
     getPageIsLeaving:function(){ return pageIsLeaving; },
     cssEscape:function(value){ return cssEscape(value); },
     courtSaved:function(court, index){ return courtSaved(court, index); },
-    refreshCourtInputUi:function(card, court, index){ return refreshCourtInputUi(card, court, index); },
-    requestNoGameConfirmation:function(court, index, slider){ return requestNoGameConfirmation(court, index, slider); },
+    refreshCourtInputUi:function(index){ return refreshCourtInputUi(index); },
+    requestNoGameConfirmation:function(index, input){ return requestNoGameConfirmation(index, input); },
     handleNoGameDialogAction:function(action){ return handleNoGameDialogAction(action); },
     generateNextSetFromCompletedCurrent:function(){ return generateNextSetFromCompletedCurrent(); },
-    syncCourtScoresFromInputs:function(){ return syncCourtScoresFromInputs(); },
+    syncCourtScoresFromInputs:function(index){ return syncCourtScoresFromInputs(index); },
     currentUserCanScoreCourt:function(court){ return currentUserCanScoreCourt(court); },
     handleSaveCourtButton:function(button, event){ return handleSaveCourtButton(button, event); },
     markLocalChange:function(){ return markLocalChange(); },
@@ -332,13 +332,13 @@
     scheduleHardBlankCurrentScoreInputs:function(root){ return scheduleHardBlankCurrentScoreInputs(root); },
     refreshCurrentCourtRestrictionsFromMemory:function(){ return refreshCurrentCourtRestrictionsFromMemory(); },
     uid:function(prefix){ return uid(prefix); },
-    protectLocalCurrentState:function(){ return protectLocalCurrentState(); },
+    protectLocalCurrentState:function(ms){ return protectLocalCurrentState(ms); },
     saveSessionData:function(options){ return saveSessionData(options); },
     syncPlanSettingsFromInputs:function(){ return syncPlanSettingsFromInputs(); },
     getAttendingPlayers:function(){ return getAttendingPlayers(); },
     clearGeneratedCourtDrafts:function(){ return clearGeneratedCourtDrafts(); },
     isSpecialFourPlayerLadder:function(players, format){ return isSpecialFourPlayerLadder(players, format); },
-    ensureCurrentCourtSaveKeys:function(){ return ensureCurrentCourtSaveKeys(); },
+    ensureCurrentCourtSaveKeys:function(force){ return ensureCurrentCourtSaveKeys(force); },
     renderAll:function(){ return renderAll(); },
     advanceSpecialFourPlayerIndex:function(players, format){ return advanceSpecialFourPlayerIndex(players, format); },
     ensureGeneratedCurrentSet:function(players, usedSet){ return ensureGeneratedCurrentSet(players, usedSet); },
@@ -350,7 +350,14 @@
     prepareSpecialFourPlayerIndexForManualGenerate:function(players, format){ return prepareSpecialFourPlayerIndexForManualGenerate(players, format); },
     buildCurrentCourtSet:function(players, format, usedSet, maxCourts){ return buildCurrentCourtSet(players, format, usedSet, maxCourts); },
     commitHardshipChoice:function(){ return commitHardshipChoice.apply(null, arguments); },
-    getShotRestrictionText:function(stage, restrictions){ return getShotRestrictionText(stage, restrictions); }
+    getShotRestrictionText:function(stage, restrictions){ return getShotRestrictionText(stage, restrictions); },
+    getPlayer:function(id){ return getPlayer(id); },
+    abortServerLoad:function(){
+      try{
+        if(serverLoadAbortController && typeof serverLoadAbortController.abort === 'function') serverLoadAbortController.abort();
+      }catch(_e){}
+      serverLoadAbortController = null;
+    }
   });
   const wireGamePlanSubtabs = gamePlanEngine.wireGamePlanSubtabs;
   const bindPlanActions = gamePlanEngine.bindPlanActions;
