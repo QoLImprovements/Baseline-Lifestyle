@@ -469,11 +469,12 @@
   }
 
   function comedogenicBand(score){
-    if(score < 0.5) return 'Very low likelihood of clogging pores';
-    if(score < 1.5) return 'Low likelihood of clogging pores';
-    if(score < 2.5) return 'Moderate likelihood of clogging pores';
-    if(score < 3.5) return 'Moderately high likelihood of clogging pores';
-    return 'High likelihood of clogging pores';
+    if(score < 0.5) return 'Very low relative clogging potential';
+    if(score < 1.5) return 'Low relative clogging potential';
+    if(score < 2.5) return 'Low–Moderate relative clogging potential';
+    if(score < 3.5) return 'Moderate relative clogging potential';
+    if(score < 4.5) return 'Moderately high relative clogging potential';
+    return 'High relative clogging potential';
   }
 
   function updateRecipeComedogenic(recipeEl){
