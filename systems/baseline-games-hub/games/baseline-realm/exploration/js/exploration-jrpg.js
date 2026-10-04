@@ -148,6 +148,7 @@ export class MeridianGroveGame {
     this.mounted = false;
     this.lastFrame = performance.now();
     this.lastBattleRender = 0;
+    this.lastBattleActorIndex = null;
     this.frame = 0;
     this.moveLockUntil = 0;
     this.gamepadLockUntil = 0;
@@ -427,7 +428,7 @@ export class MeridianGroveGame {
     const result = partyDown || battle.escaped || battle.victory || enemiesDown;
     layer.innerHTML = `<div class="jrpg-battle-scene battle-${battle.kind}">
       <header class="jrpg-battle-head"><div><span class="jrpg-kicker">${escapeHtml(routeStage(this.state).name)}</span><h3>${battle.kind === 'boss' ? 'Boss Battle' : battle.kind === 'elite' ? 'Elite Encounter' : 'Field Encounter'}</h3></div>
-      <div class="jrpg-battle-mode"><button type="button" data-battle-mode="active" class="${this.state.settings.battleMode === 'active' ? 'is-active' : ''}">Active</button><button type="button" data-battle-mode="wait" class="${this.state.settings.battleMode === 'wait' ? 'is-active' : ''}">Wait</button></div></header>
+      <div class="jrpg-battle-head-actions"><div class="jrpg-battle-mode"><button type="button" data-battle-mode="active" class="${this.state.settings.battleMode === 'active' ? 'is-active' : ''}">Active</button><button type="button" data-battle-mode="wait" class="${this.state.settings.battleMode === 'wait' ? 'is-active' : ''}">Wait</button></div><button type="button" data-battle-basecamp class="jrpg-battle-basecamp">Basecamp</button></div></header>
       <div class="jrpg-battlefield">
         <div class="jrpg-enemy-line">${battle.enemies.map((enemy, index) => this.enemyBattleCard(enemy, index)).join('')}</div>
         <div class="jrpg-party-line">${this.state.party.map((member, index) => this.partyBattleCard(member, index, actorIndex)).join('')}</div>
@@ -449,9 +450,24 @@ export class MeridianGroveGame {
   }
 
   partyBattleCard(member, index, activeActorIndex) {
-    return `<article class="jrpg-battle-party-card${member.hp <= 0 ? ' is-ko' : ''}${activeActorIndex === index ? ' is-commanding' : ''}">
+    return `<article class="jrpg-battle-party-card${member.hp <= 0 ? ' is-ko' : ''}${activeActorIndex === index ? ' is-commanding' : ''}" data-party-index="${index}">
       ${portrait(heroArt(member.id), member.name)}<div><strong>${escapeHtml(member.name)}</strong><span>Lv ${member.level} · ${escapeHtml(member.role)}</span>${meter('HP', member.hp, member.maxHp, 'hp')}${meter('MP', member.mp, member.maxMp, 'mp')}${meter('ATB', member.atb, 100, 'atb')}<small>${member.statuses.length ? escapeHtml(member.statuses.map(statusLabel).join(' · ')) : 'Ready'}</small></div>
     </article>`;
+  }
+
+  refreshBattleMeters() {
+    const battle = this.state.battle;
+    if (!battle) return;
+    battle.enemies.forEach((enemy, index) => {
+      const card = this.root.querySelector(`.jrpg-enemy-card[data-enemy-index="${index}"]`);
+      const atb = card?.querySelector('.jrpg-meter.atb>span');
+      if (atb) atb.style.width = percent(enemy.atb, 100);
+    });
+    this.state.party.forEach((member, index) => {
+      const card = this.root.querySelector(`.jrpg-battle-party-card[data-party-index="${index}"]`);
+      const atb = card?.querySelector('.jrpg-meter.atb>span');
+      if (atb) atb.style.width = percent(member.atb, 100);
+    });
   }
 
   commandTemplate(actor, actorIndex) {
@@ -527,9 +543,16 @@ export class MeridianGroveGame {
           this.save('battle-victory');
         }
         if (readyEnemies.length) this.save('enemy-turn');
-        if (time - this.lastBattleRender > 85 || readyEnemies.length) {
+        const actorChanged = this.lastBattleActorIndex !== this.state.battle.activeActorIndex;
+        const battleResolved = this.state.battle.victory || this.state.battle.escaped || livingParty(this.state).length === 0;
+        if (actorChanged || readyEnemies.length || battleResolved) {
+          this.lastBattleActorIndex = this.state.battle.activeActorIndex;
           this.lastBattleRender = time;
           this.renderBattle();
+        } else {
+          // ATB animation updates only the meter fills. Do not destroy and
+          // recreate the command buttons every animation frame.
+          this.refreshBattleMeters();
         }
       }
     }
@@ -587,6 +610,10 @@ export class MeridianGroveGame {
     if (button.dataset.unequip) {
       const [partyIndex, slot] = button.dataset.unequip.split(',');
       if (unequipItem(this.state, Number(partyIndex), slot)) { this.save('unequip'); this.openPanel('party'); this.renderAll(); }
+    }
+    if (button.dataset.battleBasecamp !== undefined) {
+      this.returnToBasecampFromBattle();
+      return;
     }
     if (button.dataset.battleMode) {
       this.state.settings.battleMode = button.dataset.battleMode;
@@ -753,6 +780,17 @@ export class MeridianGroveGame {
     }
     this.save(`modal-${action}`);
     this.renderAll();
+  }
+
+  returnToBasecampFromBattle() {
+    if (this.state.battle) {
+      finishBattle(this.state);
+      this.state.encounterMeter = Math.max(0, this.state.encounterMeter - 20);
+      this.log('The party withdraws from the encounter and returns to Basecamp.');
+    }
+    this.save('battle-return-basecamp');
+    this.music.setActive(false);
+    Promise.resolve(this.onExit?.()).catch((error) => console.error('Unable to return to Basecamp.', error));
   }
 
   leaveExploration(abandon = false) {
