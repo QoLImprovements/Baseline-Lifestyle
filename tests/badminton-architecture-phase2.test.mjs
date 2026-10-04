@@ -109,13 +109,16 @@ test("optional and circumstantial sit-outs remain separate in finished-set repor
   assert.match(source, /Optional sit-outs/);
 });
 
-test("hardship compatibility APIs delegate to one dominant mutation authority", () => {
+test("hardship save flow delegates directly to one dominant mutation authority", () => {
   assert.match(hardshipsSource, /function getDominantHardshipLedger\(\)\{\s*return getActiveHardshipLedger\(\);\s*\}/);
-  assert.match(source, /function getHardshipRuleForSide\(court, sideNumber\)\{\s*return getDominantHardshipRuleForSide\(court, sideNumber\);\s*\}/);
-  assert.match(source, /function increaseHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return increaseDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
-  assert.match(source, /function reduceHardshipRuleForSide\(court, sideNumber, hardshipType\)\{\s*return reduceDominantHardshipForSide\(court, sideNumber, hardshipType\);\s*\}/);
-  assert.match(source, /function applyHardshipSaveIntent[\s\S]*increaseDominantHardshipForSide/);
-  assert.match(source, /function applyHardshipSaveIntent[\s\S]*reduceDominantHardshipForSide/);
+  const start = source.indexOf("function applyHardshipSaveIntent");
+  const end = source.indexOf("function restrictionMemoryHasActiveRule", start);
+  const saveIntent = source.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.match(saveIntent, /increaseDominantHardshipForSide/);
+  assert.match(saveIntent, /reduceDominantHardshipForSide/);
+  assert.doesNotMatch(source, /function increaseHardshipRuleForSide\(/);
+  assert.doesNotMatch(source, /function reduceHardshipRuleForSide\(/);
 });
 
 
@@ -158,4 +161,11 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
   assert.doesNotMatch(source, /function setDominantHardshipRuleForSide\(/);
   assert.match(hardshipsSource, /function getActiveHardshipLedger\(/);
   assert.match(hardshipsSource, /function setDominantHardshipRuleForSide\(/);
+});
+
+
+test("Badminton controller stays below the post-split size ceiling", () => {
+  const lines = source.split("\n").length;
+  assert.ok(lines < 3900, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 200000, `controller grew back to ${source.length} characters`);
 });
