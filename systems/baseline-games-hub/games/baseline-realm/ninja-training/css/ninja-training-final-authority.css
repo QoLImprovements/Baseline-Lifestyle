@@ -61,12 +61,39 @@
   background-size:600% 100%!important;
   animation:ninjaRuntimeEnemy 1.05s steps(6,end) infinite!important;
 }
-#ninjaPanel .ninja-runtime-sprite--enemy[data-enemy-kind="raider"]{
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="raider"] .ninja-runtime-sprite--enemy{
   background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/gloam-rope-raider.svg')!important;
 }
-#ninjaPanel .ninja-runtime-sprite--enemy[data-enemy-kind="boss"]{
+#ninjaPanel .ninja-scene__enemy[data-enemy-kind="boss"] .ninja-runtime-sprite--enemy{
   background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/hollow-crown-warden.svg')!important;
 }
+
+/* Runtime sprites are the visible actor authority, so action states must swap
+   the runtime sprite sheet rather than the hidden legacy ::before artwork. */
+#ninjaPanel .ninja-scene__runner.is-dash-cut .ninja-runtime-sprite--runner,
+#ninjaPanel .ninja-scene__runner.is-idle-attacking .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-dash.svg')!important;
+  background-size:800% 100%!important;
+  animation:ninjaRuntimeDashCut .76s steps(7,end) 1 both!important;
+}
+#ninjaPanel .ninja-scene__runner.is-throwing .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-throw.svg')!important;
+  background-size:600% 100%!important;
+  animation:ninjaRuntimeThrow .60s steps(5,end) 1 both!important;
+}
+#ninjaPanel .ninja-scene__enemy.is-hit .ninja-runtime-sprite--enemy{
+  filter:brightness(1.85) saturate(.45) sepia(.18) drop-shadow(0 10px 9px rgba(0,0,0,.52))!important;
+}
+#ninjaPanel .ninja-scene__enemy.is-heavy-hit .ninja-runtime-sprite--enemy{
+  filter:brightness(2.2) saturate(.28) drop-shadow(0 0 18px rgba(232,255,236,.72))!important;
+}
+#ninjaPanel .ninja-scene__enemy.is-defeated .ninja-runtime-sprite--enemy{
+  opacity:.18!important;
+  transform:translateY(24%) rotate(12deg) scale(.82)!important;
+  transition:transform .55s ease,opacity .55s ease!important;
+}
+@keyframes ninjaRuntimeDashCut{to{background-position:100% 0}}
+@keyframes ninjaRuntimeThrow{to{background-position:100% 0}}
 @media (prefers-reduced-motion:reduce){
   #ninjaPanel .ninja-runtime-sprite{animation:none!important;}
 }
