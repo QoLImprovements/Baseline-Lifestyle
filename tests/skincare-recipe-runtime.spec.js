@@ -81,6 +81,41 @@ test('Oil Cleanser route applies Details and Reactive before external JavaScript
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
 });
 
+test('Oil Cleanser route-state matrix survives reload for every view and variant', async ({ page }) => {
+  const variants = ['reactive', 'balanced', 'enhanced'];
+  const views = ['standard', 'details', 'guidance', 'show-all'];
+
+  for (const variant of variants) {
+    for (const view of views) {
+      const params = new URLSearchParams();
+      if (view !== 'standard') params.set('view', view);
+      params.set('variant', variant);
+      const url = '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?' + params.toString();
+
+      await page.goto(url, { waitUntil:'domcontentloaded' });
+      const card = page.locator('#r2');
+      await expect(card, url).toBeVisible();
+      await expect(page.locator('#recipes .recipe-page:visible'), url).toHaveCount(1);
+      await expect(card.locator('.variant-tab[data-variant="' + variant + '"]'), url)
+        .toHaveAttribute('aria-selected', 'true');
+      await expect(card.locator('[data-recipe-subtab="' + view + '"]'), url)
+        .toHaveAttribute('aria-selected', 'true');
+
+      await page.reload({ waitUntil:'domcontentloaded' });
+      await expect(card, url + ' after reload').toBeVisible();
+      await expect(card.locator('.variant-tab[data-variant="' + variant + '"]'), url + ' after reload')
+        .toHaveAttribute('aria-selected', 'true');
+      await expect(card.locator('[data-recipe-subtab="' + view + '"]'), url + ' after reload')
+        .toHaveAttribute('aria-selected', 'true');
+
+      const current = new URL(page.url());
+      expect(current.pathname, url).toBe('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+      expect(current.searchParams.get('variant'), url).toBe(variant);
+      expect(current.searchParams.get('view'), url).toBe(view === 'standard' ? null : view);
+    }
+  }
+});
+
 test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
   const requested = [];
   page.on('request', request => requested.push(new URL(request.url()).pathname));
