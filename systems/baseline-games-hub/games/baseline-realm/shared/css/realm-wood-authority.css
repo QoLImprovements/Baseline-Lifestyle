@@ -302,6 +302,18 @@
   image-rendering:auto!important;
   filter:drop-shadow(0 14px 9px rgba(0,0,0,.58)) drop-shadow(0 0 2px rgba(220,239,211,.32))!important;
 }
+/* This file is the final Realm visual authority. Keep action sheet selection
+   here as well as in Ninja's module stylesheet so later Realm styling can
+   never collapse Dash Cut or Shuriken back to the running sheet. */
+#ninjaPanel .ninja-scene__runner.is-dash-cut .ninja-runtime-sprite--runner,
+#ninjaPanel .ninja-scene__runner.is-idle-attacking .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-dash.svg')!important;
+  background-size:800% 100%!important;
+}
+#ninjaPanel .ninja-scene__runner.is-throwing .ninja-runtime-sprite--runner{
+  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-throw.svg')!important;
+  background-size:600% 100%!important;
+}
 #ninjaPanel .ninja-scene__enemy.is-entering{animation:ninjaRealmEnemyEntry 1.25s cubic-bezier(.16,.72,.2,1) both!important}
 @keyframes ninjaRealmEnemyEntry{from{transform:translateX(58vw);opacity:.25}to{transform:translateX(0);opacity:1}}
 
