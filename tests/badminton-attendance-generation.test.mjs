@@ -17,7 +17,7 @@ const source = fs.readFileSync(
 test("Generate Game Plan never auto-selects roster members as attendees", () => {
   assert.doesNotMatch(source, /function autoSelectAllPlayersForPlan\(/);
   const start = source.indexOf("function generateGamePlan");
-  const end = source.indexOf("function renderPlayerPill", start);
+  const end = source.indexOf("function getCourtSaveKey", start);
   const generate = source.slice(start, end);
   assert.doesNotMatch(generate, /state\.players\.map\(player => player\.id\)/);
   assert.doesNotMatch(generate, /autoSelectAllPlayersForPlan/);
@@ -25,7 +25,7 @@ test("Generate Game Plan never auto-selects roster members as attendees", () => 
 
 test("zero and one attendee are preserved and generation is refused", () => {
   const start = source.indexOf("function generateGamePlan");
-  const end = source.indexOf("function renderPlayerPill", start);
+  const end = source.indexOf("function getCourtSaveKey", start);
   const generate = source.slice(start, end);
   assert.match(generate, /const attendingPlayers = getAttendingPlayers\(\)/);
   assert.match(generate, /if\(attendingPlayers\.length < 2\)/);
