@@ -20,23 +20,11 @@
   const SITE_MODERATOR_CANONICAL_LOGIN = 'Peter Bates-Wilkinson';
   const SITE_MODERATOR_ALIASES = ['bateswilkinson@gmail.com','peterbw','peter bates-wilkinson','peter bates wilkinson','peter bates-wilkinson'];
   window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__ = true;
-  const DOUBLES_ZONES = ['C1','L1','L2','C2','S1','M1','M2','S2','FS1','F1','FS2'];
-  const SINGLES_ZONES = ['L1','L2','M1','M2','S1','S2','F1'];
-  const PRESET_ZONE_MAP = {
-    'full-court': [],
-    'f1m1m2l1l2': ['F1','M1','M2','L1','L2'],
-    'm1s1m2s2f1fs1fs2': ['M1','S1','M2','S2','F1','FS1','FS2'],
-    'm1m2f1': ['M1','M2','F1'],
-    'm1l1m2l2': ['M1','L1','M2','L2'],
-    'm1f1m2f1': ['M1','M2','F1'],
-    'm1m2': ['M1','M2'],
-    'm1l1-or-m2l2': ['M1','L1','M2','L2'],
-    'm1f1-or-m2f1': ['M1','M2','F1'],
-    'm1s1-or-m2s2': ['M1','S1','M2','S2'],
-    'm1-or-m2': ['M1','M2'],
-    'serve-m-s': ['M1','S1','M2','S2'],
-    'serve-m': ['M1','M2']
-  };
+  const sessionCore = window.BASELINE_BADMINTON_SESSION_CORE;
+  if(!sessionCore) throw new Error('Badminton Session core failed to load.');
+  const DOUBLES_ZONES = sessionCore.DOUBLES_ZONES;
+  const SINGLES_ZONES = sessionCore.SINGLES_ZONES;
+  const PRESET_ZONE_MAP = sessionCore.PRESET_ZONE_MAP;
 
   const refs = {};
   let state = createInitialState();
@@ -159,6 +147,8 @@
   let serverRevision = 0;
   let serverSaveConflict = false;
   let serverSaveBlocked = false;
+  let serverSaveRetryTimer = null;
+  let serverSaveRetryCount = 0;
   let suppressServerHydrationUntil = 0;
 
   function protectLocalCurrentState(ms){
@@ -182,6 +172,10 @@
     if(serverSaveTimer){
       window.clearTimeout(serverSaveTimer);
       serverSaveTimer = null;
+    }
+    if(serverSaveRetryTimer){
+      window.clearTimeout(serverSaveRetryTimer);
+      serverSaveRetryTimer = null;
     }
     try{
       if(serverSaveAbortController && typeof serverSaveAbortController.abort === 'function') serverSaveAbortController.abort();
@@ -256,10 +250,25 @@
     try{ localStorage.setItem(CONFLICT_BACKUP_KEY,JSON.stringify(candidate)); }catch(_error){}
   }
 
-  function announceServerSaveConflict(message){
-    const text = message || 'Badminton changed elsewhere. Nothing was overwritten; reload before making further changes.';
+  function setPersistenceStatus(message, level){
+    const text = String(message || '').trim();
     window.__BASELINE_BADMINTON_SERVER_STATUS__ = text;
+    const node = refs && refs.persistenceStatus;
+    if(node){
+      node.hidden = !text;
+      node.className = 'badminton-persistence-status' + (level ? (' is-' + level) : '');
+      node.textContent = text;
+    }
+  }
+
+  function announceServerSaveConflict(message, level){
+    const text = message || 'Badminton changed elsewhere. Nothing was overwritten; reload before making further changes.';
+    setPersistenceStatus(text, level || 'warning');
     try{ console.warn('[Baseline Badminton]', text); }catch(_e){}
+  }
+
+  function clearPersistenceStatus(){
+    setPersistenceStatus('', '');
   }
 
   function mergeNewestLocalHardshipsIntoServerState(serverState, localState){
@@ -271,27 +280,25 @@
     const localLedger = localState && localState.hardshipRecords && typeof localState.hardshipRecords === 'object'
       ? localState.hardshipRecords
       : (localState && localState.plan && localState.plan.activeHardships && typeof localState.plan.activeHardships === 'object' ? localState.plan.activeHardships : {});
-    const nextLedger = Object.assign({}, serverLedger);
-    let recovered = false;
-    Object.keys(localLedger).forEach(function(key){
-      if(String(key).indexOf('hardship::') !== 0) return;
-      const localRule = localLedger[key];
-      if(!localRule || typeof localRule !== 'object') return;
-      const serverRule = nextLedger[key];
-      const localUpdatedAt = Number(localRule.updatedAt || 0);
-      const serverUpdatedAt = Number(serverRule && serverRule.updatedAt || 0);
-      if(!serverRule || localUpdatedAt > serverUpdatedAt){
-        nextLedger[key] = JSON.parse(JSON.stringify(localRule));
-        recovered = true;
-      }
-    });
-    merged.hardshipRecords = nextLedger;
-    merged.plan.activeHardships = nextLedger;
-    return { state:merged, recovered:recovered };
+    const reconciliation = sessionCore.mergeNewestHardshipRecords(serverLedger, localLedger);
+    merged.hardshipRecords = reconciliation.ledger;
+    merged.plan.activeHardships = reconciliation.ledger;
+    return { state:merged, recovered:reconciliation.recovered };
   }
 
   function serverPayload(candidate){
     return { state:candidate,expectedRevision:Number.isInteger(serverRevision)&&serverRevision>=0?serverRevision:0 };
+  }
+
+  function scheduleServerSaveRetry(){
+    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !window.fetch) return;
+    if(serverSaveRetryTimer) window.clearTimeout(serverSaveRetryTimer);
+    const delay = Math.min(30000, Math.max(1000, Math.pow(2, Math.min(serverSaveRetryCount, 5)) * 1000));
+    serverSaveRetryCount += 1;
+    serverSaveRetryTimer = window.setTimeout(function(){
+      serverSaveRetryTimer = null;
+      queueServerSave();
+    }, delay);
   }
 
   function queueServerSave(){
@@ -321,31 +328,45 @@
         if(data && data.error==='revision_conflict'){
           serverSaveConflict=true;
           preserveConflictingLocalState(state);
-          announceServerSaveConflict();
+          announceServerSaveConflict(undefined, 'error');
           return;
         }
-        if(data && data.ok){
-          const revision=Number(data.revision);
-          if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
-          serverSaveBlocked=false;
-          // The local page is the source of truth immediately after a POST.
-          // Do not hydrate from the echoed server payload here: doing so can
-          // rebuild the whole current-games grid after one court saves, which
-          // wipes score drafts typed into the other live courts and can prevent
-          // the just-saved court from visibly locking. Server GET hydration is
-          // still used on page load; POST responses only confirm persistence/auth.
-          persistSessionLocalOnly();
+        if(!data || !data.ok){
+          throw new Error('badminton_save_failed');
         }
+        const revision=Number(data.revision);
+        if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
+        serverSaveBlocked=false;
+        serverSaveRetryCount=0;
+        if(serverSaveRetryTimer){
+          window.clearTimeout(serverSaveRetryTimer);
+          serverSaveRetryTimer=null;
+        }
+        clearPersistenceStatus();
+        // The local page remains the immediate source of truth after POST.
+        persistSessionLocalOnly();
       }).catch(function(_error){
-        serverSaveBlocked=true;
+        if(pageIsLeaving) return;
         preserveConflictingLocalState(state);
-        announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the page to load the authoritative shared state before making more persistent changes.');
+        announceServerSaveConflict('Badminton could not reach shared saving. Your browser copy is preserved and saving will retry automatically.', 'warning');
+        scheduleServerSaveRetry();
       }).finally(function(){
         serverSaveInFlight = false;
         serverSaveAbortController = null;
+        if(!pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && getStateUpdatedAt(state) > requestLocalUpdatedAt){
+          queueServerSave();
+        }
       });
     }, 180);
   }
+
+  try{
+    window.addEventListener('online', function(){
+      if(pageIsLeaving || serverSaveConflict || serverSaveBlocked) return;
+      serverSaveRetryCount = 0;
+      queueServerSave();
+    });
+  }catch(_e){}
 
   function saveSessionData(){
     markLocalChange();
@@ -464,14 +485,14 @@
         const serverState = data.state && typeof data.state === 'object' ? data.state : createInitialState();
         const serverHasContent = stateHasSessionContent(serverState);
         const localHasContent = stateHasSessionContent(localSnapshot);
-        let nextState = serverState;
-        let recoveredHardships = false;
+        // Hardship records reconcile independently of whole-session freshness.
+        // A just-saved Player ID / Pair ID hardship must survive refresh even if
+        // another server-side field makes the server session look newer overall.
+        const hardshipRecovery = mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot);
+        let nextState = hardshipRecovery.state;
+        const recoveredHardships = hardshipRecovery.recovered;
         if(localHasContent&&(!serverHasContent||localStateIsNewerThanServer(localSnapshot,serverState))){
           preserveConflictingLocalState(localSnapshot);
-          const recovery = mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot);
-          nextState = recovery.state;
-          recoveredHardships = recovery.recovered;
-          announceServerSaveConflict('A newer browser Badminton copy was preserved internally while the shared server state was loaded.');
         }
         state=hydrateLoadedState(nextState);
         persistSessionLocalOnly();
@@ -480,6 +501,8 @@
           markLocalChange();
           persistSessionLocalOnly();
           queueServerSave();
+        }else{
+          clearPersistenceStatus();
         }
       })
       .catch(function(_error){
@@ -1863,8 +1886,7 @@
   // game type + restricted side + opponent side.
   // They must not attach broadly to a player or pair outside that context.
   function getSideRestrictionKeyFromIds(ids){
-    const cleaned = (ids || []).slice().filter(Boolean).sort();
-    return cleaned.length ? ('side::' + cleaned.join('::')) : '';
+    return sessionCore.getStableSideKey(ids);
   }
 
   function getSideRestrictionKey(side){
@@ -1875,11 +1897,11 @@
     if(!court || !sideNumber) return '';
     const restrictedSide = getSideByNumber(court, sideNumber);
     const opponentSide = getSideByNumber(court, getOppositeSideNumber(sideNumber));
-    const restrictedKey = getSideRestrictionKey(restrictedSide);
-    const opponentKey = getSideRestrictionKey(opponentSide);
-    const kind = String(court.kind || '').trim() || 'unknown';
-    if(!restrictedKey || !opponentKey) return '';
-    return ['hardship', kind, 'restricted', restrictedKey, 'opponent', opponentKey].join('::');
+    return sessionCore.getHardshipContextKey(
+      court.kind,
+      getTeamIds(restrictedSide),
+      getTeamIds(opponentSide)
+    );
   }
 
 
@@ -2444,7 +2466,19 @@
     const movementStep = Math.max(0, order.indexOf(preset));
     const ledger = getDominantHardshipLedger();
     if(movementStep <= 0 && shots <= 0){
-      delete ledger[key];
+      // Keep a timestamped inactive record so a refresh cannot resurrect an
+      // older server-side hardship after the local rule was deliberately cleared.
+      ledger[key] = {
+        adjustedSideIds: getTeamIds(side),
+        adjustedSideNumber: Number(sideNumber),
+        mode,
+        targetPreset:'full-court',
+        shotStage:0,
+        shotRestrictions:[],
+        memoryScope:'exact-competitive-context',
+        cleared:true,
+        updatedAt:Date.now()
+      };
       return null;
     }
     const rule = {
@@ -4854,7 +4888,7 @@
   }
 
   function cacheRefs(){
-    ['heroPlayerCount','heroPairCount','heroMatchCount','attendanceCountLabel','attendanceSelectorWrap','attendanceSelectAllBtn','attendanceClearBtn','planCourtCountInput','planFormatSelect','planDurationSelect','generatePlanBtn','planAlert','gamePlanSetupCard','attendanceCard','currentGamesCard','currentGamesGrid','currentSitOutWrap','finishedGamesWrap','standingsWrap','playerAdminControls','playerAdminNotice','playerNameInput','addPlayerBtn','playersTableWrap','ruleAdminCard','ruleAdminWrap','matchHistoryWrap'].forEach(id => { refs[id] = document.getElementById(id); });
+    ['heroPlayerCount','heroPairCount','heroMatchCount','attendanceCountLabel','attendanceSelectorWrap','attendanceSelectAllBtn','attendanceClearBtn','planCourtCountInput','planFormatSelect','planDurationSelect','generatePlanBtn','planAlert','persistenceStatus','gamePlanSetupCard','attendanceCard','currentGamesCard','currentGamesGrid','currentSitOutWrap','finishedGamesWrap','standingsWrap','playerAdminControls','playerAdminNotice','playerNameInput','addPlayerBtn','playersTableWrap','ruleAdminCard','ruleAdminWrap','matchHistoryWrap'].forEach(id => { refs[id] = document.getElementById(id); });
   }
 
   function wireStaticActions(){
