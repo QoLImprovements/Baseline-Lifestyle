@@ -341,7 +341,7 @@ test("Badminton repaired modules carry fresh cache revisions", () => {
   assert.match(htmlSource, /badminton-session-state-hydration\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
-  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_6/);
 });
 
 
@@ -406,4 +406,13 @@ test("Players & Pairs retains real account metadata behind canonical login label
     buildBlock.indexOf("loginOptions.forEach") < buildBlock.indexOf("if(!map[canonicalModeratorKey])"),
     "real login records must be considered before the PeterBW fallback alias"
   );
+});
+
+
+test("court cards receive the Results hardship renderer after the module split", () => {
+  const start = source.indexOf("const courtCardRenderer = courtCardsModule.create");
+  const end = source.indexOf("const renderAttendanceSelector", start);
+  const wiring = source.slice(start, end);
+  assert.match(wiring, /renderHardshipControl:function\(court, phase, index\)\{ return renderHardshipControl\(court, phase, index\); \}/);
+  assert.match(courtCardsSource, /const renderHardshipControl = options\.renderHardshipControl;/);
 });
