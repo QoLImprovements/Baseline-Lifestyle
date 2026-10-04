@@ -309,6 +309,6 @@ test("Badminton split preserves runtime callback contracts", () => {
 
 test("Badminton moderator display name and login identity remain distinct", () => {
   assert.match(source, /const SITE_MODERATOR_CANONICAL_LOGIN = 'PeterBW';/);
-  assert.match(source, /player\.name = 'Peter Bates-Wilkinson';/);
-  assert.match(source, /player\.loginUsername = SITE_MODERATOR_CANONICAL_LOGIN;/);
+  assert.match(rosterSource, /player\.name = 'Peter Bates-Wilkinson';/);
+  assert.match(rosterSource, /player\.loginUsername = moderatorCanonicalLogin;/);
 });
