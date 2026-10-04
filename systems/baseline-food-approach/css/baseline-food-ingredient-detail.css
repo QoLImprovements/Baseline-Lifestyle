@@ -1,0 +1,42 @@
+/* Focused Food ingredient record pages. */
+body[data-app="food"] .food-ingredient-shell{
+  width:min(980px, calc(100% - 48px));
+  margin:0 auto;
+  padding:32px 0 56px;
+}
+body[data-app="food"] .food-ingredient-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:0 0 16px;
+}
+body[data-app="food"] .food-ingredient-actions a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:42px;
+  padding:9px 14px;
+  border-radius:999px;
+  border:1px solid var(--food-tab-border);
+  background:var(--food-tab-bg);
+  color:var(--ink);
+  font-weight:850;
+  text-decoration:none;
+}
+body[data-app="food"] .food-ingredient-actions a:hover{
+  background:var(--food-tab-hover);
+}
+body[data-app="food"] .food-ingredient-record h1{
+  margin:0 0 var(--space-2);
+  font-family:var(--font-soft);
+  font-size:clamp(32px, 4vw, 48px);
+}
+body[data-app="food"] .food-ingredient-record .meta-line{
+  font-weight:760;
+}
+@media (max-width:720px){
+  body[data-app="food"] .food-ingredient-shell{
+    width:min(100% - 28px, 980px);
+    padding:22px 0 42px;
+  }
+}
