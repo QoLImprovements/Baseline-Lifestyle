@@ -4119,14 +4119,15 @@ function buildControls(recipeEl){
         let el = ingH.nextElementSibling;
         while(el && el.tagName !== 'UL') el = el.nextElementSibling;
         if(el && !el.classList.contains('ingredients-list')) el.classList.add('ingredients-list');
+
+        // A single ingredient group needs no synthetic heading. Preserve only
+        // authored subgroup headings when the recipe genuinely has categories.
         try{
           if(el){
-            const hasSub = !!el.querySelector('li.ing-subhead');
-            if(!hasSub){
-              const li = document.createElement('li');
-              li.className = 'ing-subhead';
-              li.innerHTML = '<strong>Main</strong>';
-              el.insertBefore(li, el.firstChild);
+            const subheads = qsa(':scope > li.ing-subhead', el);
+            if(subheads.length === 1){
+              const label = String(subheads[0].textContent || '').trim().toLowerCase();
+              if(label === 'main') subheads[0].remove();
             }
           }
         }catch(_e){}

@@ -194,6 +194,16 @@ test('recipe title favourite and subtab rhythm stay visually consistent', async 
   await expect(card.locator('.recipe-viewbar > .recipe-adjustments-toggle')).toBeHidden();
 });
 
+test('single-group ingredient lists do not show a Main subgroup heading', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend', { waitUntil:'domcontentloaded' });
+
+  const card = page.locator('#r6');
+  const ingredients = card.locator('.ingredients-list').first();
+  await expect(ingredients).toBeVisible();
+  await expect(ingredients.locator(':scope > li.ing-subhead')).toHaveCount(0);
+  await expect(ingredients).not.toContainText(/^\s*Main\s*$/m);
+});
+
 test('direct Food and Skincare recipe routes never paint the System section first', async ({ page }) => {
   await expectDirectRecipeFirstPaint(
     page,
