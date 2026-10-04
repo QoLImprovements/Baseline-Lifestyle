@@ -4178,9 +4178,9 @@ body[data-app] .recipe-universal-template .recipe-guidance-label{
   font-weight:850 !important;
 }
 
-/* Standalone Food Phase-4B pages use the same card template; remove the development-only duplicate title/note. */
-body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-note,
-body[data-app="food"] .phase4b-recipe-shell > .phase4b-recipe-top > h1{
+/* Standalone Food standalone Food pages use the same card template; remove the development-only duplicate title/note. */
+body[data-app="food"] .food-recipe-shell > .food-recipe-note,
+body[data-app="food"] .food-recipe-shell > .food-recipe-top > h1{
   display:none !important;
 }
 
