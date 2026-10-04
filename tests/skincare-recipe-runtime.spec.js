@@ -55,6 +55,41 @@ test('Skincare Details clean route paints Details before external JavaScript run
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
 });
 
+test('Skincare Details tab retains authored detail content after the presentation cleanup', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
+
+  const card = page.locator('#r3');
+  await card.locator('[data-recipe-subtab="details"]').click();
+
+  await expect(card).toHaveAttribute('data-recipe-view', 'details');
+  await expect(card.locator('.recipe-details-intro')).toBeVisible();
+  await expect(card.locator('.recipe-detail-block')).toHaveCount(6);
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'Purpose' })).toBeVisible();
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'Formula Profile' })).toBeVisible();
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'How the Formulation Works' })).toBeVisible();
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'Design Rationale' })).toBeVisible();
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'Variables & Fixed Elements' })).toBeVisible();
+  await expect(card.locator('.recipe-detail-block').filter({ hasText:'Limitations & Trade-offs' })).toBeVisible();
+  await expect(card.getByText('Barrier-first balm with a high-glide, protective finish.', { exact:false })).toBeVisible();
+  await expect(card.getByText('100 g balm. One batch;', { exact:false })).toBeVisible();
+});
+
+test('Oil Cleanser head CSS owns the requested variant before runtime enhancement', async ({ page }) => {
+  await page.route('**/*', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?variant=reactive', { waitUntil:'load' });
+
+  const style = page.locator('#baseline-recipe-route-first-paint-style');
+  await expect(style).toContainText('data-initial-recipe-variant="reactive"');
+  await expect(style).toContainText('.variant-tab[data-variant="reactive"]');
+  await expect(page.locator('#r2 .variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
+  await expect(page.locator('#r2 .variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected','false');
+});
+
 test('Oil Cleanser route applies Details and Reactive before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', route => {
     const pathname = new URL(route.request().url()).pathname;

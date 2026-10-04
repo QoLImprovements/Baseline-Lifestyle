@@ -921,6 +921,14 @@ html body[data-app="skin"] #recipes .recipe-view-hidden{
 html body[data-app="skin"] #recipes .recipe-page.recipe-universal-template .recipe-details-intro[data-recipe-view-group="details"]:not(.recipe-view-hidden):not([hidden]){
   display:grid;
 }
+
+/* The recipe's own view state is authoritative. If Details/Show All is active,
+   do not let stale hidden markup suppress the authored detail content. */
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="details"] > .recipe-details-intro,
+html body[data-app="skin"] #recipes .recipe-universal-template[data-recipe-view="show-all"] > .recipe-details-intro{
+  display:grid !important;
+  visibility:visible !important;
+}
 html body[data-app="skin"] #recipes .recipe-detail-block{
   min-width:0;
   padding:0;
