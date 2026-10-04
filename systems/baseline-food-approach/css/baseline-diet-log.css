@@ -21,7 +21,7 @@
 .diet-log-panel{
   border:1px solid rgba(200,100,50,0.18);
   border-radius:18px;
-  background:linear-gradient(180deg, rgba(255,210,106,0.40), rgba(240,138,36,0.14));
+  background:var(--food-surface-panel);
   box-shadow:0 14px 26px -26px rgba(200,100,50,0.18);
   padding:16px;
 }
@@ -65,7 +65,7 @@
   font:inherit;
   font-size:16px;
   color:var(--ink);
-  background:rgba(255,210,106,0.30);
+  background:var(--food-surface-control);
   outline:none;
 }
 .diet-field textarea{ resize:vertical; min-height:120px; }
@@ -101,7 +101,7 @@
 .diet-mini-stat{
   border:1px solid rgba(200,100,50,0.18);
   border-radius:16px;
-  background:rgba(255,255,255,0.18);
+  background:var(--food-surface-subtle);
   padding:14px;
   box-shadow:0 12px 22px -22px rgba(35,23,19,0.20);
 }
@@ -137,7 +137,7 @@
   padding:7px 10px;
   border-radius:999px;
   border:1px solid rgba(200,100,50,0.18);
-  background:rgba(255,255,255,0.22);
+  background:var(--food-surface-control);
   font-size:15px;
 }
 

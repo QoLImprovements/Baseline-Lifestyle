@@ -2,15 +2,7 @@
 
 /* --- Food system foundation --- */
 :root{
-    /* Page-specific tokens only. The food palette + background are defined in baseline-themes.css */
-    --header-gradient: linear-gradient(90deg,
-      var(--bg) 0%,
-      var(--accent-3) 25%,
-      var(--accent-4) 50%,
-      var(--accent-3) 75%,
-      var(--bg) 100%
-    );
-    --page-bg: var(--header-gradient);
+    /* Colour authority lives in baseline-themes.css. */
     --hero-bg: var(--header-gradient);
   }
 
@@ -30,7 +22,7 @@
   html[data-app="food"],
   body[data-app="food"],
   body[data-app="food"] .bl-scroll{
-    background:linear-gradient(90deg,#b11226 0%,#f08a24 18%,#ffb000 34%,#ffd26a 50%,#ffb000 66%,#f08a24 82%,#b11226 100%)!important;
+    background:var(--page-bg)!important;
     background-size:100% 100%!important;
     background-attachment:fixed!important;
   }
@@ -76,7 +68,7 @@
   /* Sticky hero header (ported) */
   .care-line{margin-top:6px; font-size:18px; color:var(--muted); max-width:58ch;}
   .badge{
-    background:rgba(255,176,0,0.22); color:var(--accent-2);
+    background:var(--food-surface-subtle); color:var(--accent-2);
     padding:7px 11px; border-radius:999px; font-size:16px; font-weight:760;
     border:1px solid var(--border-2); box-shadow:var(--shadow-soft);
   }
@@ -84,7 +76,7 @@
   /* Tabs (routing like skincare) */
   .tab{
     appearance:none; border:none; cursor:pointer;
-    background:rgba(255,176,0,0.20);
+    background:var(--food-surface-subtle);
     padding:10px 14px; border-radius:999px; font-size:16px; font-weight:760;
     color:var(--muted);
     border:1px solid rgba(122,74,58,0.12);
@@ -94,13 +86,13 @@
   }
   .tab:hover{
     transform:translateY(-1px);
-    background:rgba(240,138,36,0.28);
+    background:var(--food-surface-panel);
     border-color:rgba(200,100,50,0.22);
     box-shadow:0 16px 30px -24px rgba(200,100,50,0.30);
   }
   .tab[aria-selected="true"]{
     color: var(--ink) !important;
-    background:linear-gradient(135deg, var(--accent), var(--accent-3));
+    background:var(--food-surface-selected);
     border-color:rgba(27,7,4,0.18);
     box-shadow:0 22px 46px -34px rgba(200,100,50,0.60);
   }
@@ -116,7 +108,7 @@
   /* Cards */
   .card{
     position:relative; overflow:hidden;
-    background:linear-gradient(180deg, rgba(255,210,106,0.96), rgba(240,138,36,0.26));
+    background:var(--food-surface-card);
     border:1px solid var(--border);
     border-radius:var(--radius-lg);
     padding:20px;
@@ -152,7 +144,7 @@
     border:1px solid rgba(200,100,50,0.18);
     border-radius:16px;
     padding:12px 12px;
-    background: rgba(255,210,106,0.26);
+    background: var(--food-surface-subtle);
     box-shadow: 0 12px 22px -22px rgba(35,23,19,0.20);
   }
   .avoid-item h4{ margin:0 0 6px 0; }
@@ -186,7 +178,7 @@
   .action,.print-btn,.multiplier button,.back-fab,.top-fab,.side-recipe-nav a{
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.18);
-    background:linear-gradient(180deg, rgba(255,210,106,0.70), rgba(240,138,36,0.20));
+    background:var(--food-surface-control);
     color:var(--accent-2);
     box-shadow:0 14px 26px -24px rgba(200,100,50,0.18);
     transition:transform var(--dur-2) var(--ease-cushion), box-shadow var(--dur-2) var(--ease-soft), filter var(--dur-2) var(--ease-soft);
@@ -243,7 +235,7 @@
     padding:12px 12px; margin:12px 0 14px 0;
     border:1px solid rgba(200,100,50,0.18);
     border-radius:16px;
-    background:linear-gradient(180deg, rgba(255,210,106,0.60), rgba(240,138,36,0.18));
+    background:var(--food-surface-panel);
     box-shadow:0 14px 26px -26px rgba(200,100,50,0.16);
   }
   .multiplier label{ font-size:16px; font-weight:800; color:var(--muted); }
@@ -253,7 +245,7 @@
     border:1px solid rgba(122,74,58,0.14);
     font-weight:850;
     outline:none;
-    background:rgba(255,210,106,0.30);
+    background:var(--food-surface-control);
     color:var(--ink);
   }
   .multiplier select:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
@@ -262,11 +254,11 @@
     border-radius:14px;
     border:1px solid rgba(122,74,58,0.14);
     font-weight:800; outline:none;
-    background:rgba(255,210,106,0.30);
+    background:var(--food-surface-control);
   }
   .multiplier input:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
   .multiplier button{ padding:9px 11px; border-radius:999px; font-weight:850; cursor:pointer; font-size:16px; }
-  .multiplier button.secondary{ background:rgba(255,207,84,0.22); border-color:rgba(122,78,58,0.18); }
+  .multiplier button.secondary{ background:var(--food-surface-subtle); border-color:rgba(122,78,58,0.18); }
   .multiplier .mini-note{ font-size:16px; color:var(--muted); }
 
   /* Recipes: keep overview visible by default; show one recipe at a time when opened */
@@ -286,7 +278,7 @@
     top: calc(var(--homebar-h) + 18px);
     align-self:start;
     padding: 14px;
-    background: rgba(255,176,0,0.18);
+    background: var(--food-surface-panel);
     border: 1px solid rgba(200,100,50,0.18);
     border-radius: 18px;
     box-shadow: 0 16px 34px -26px rgba(35,23,19,0.28);
@@ -302,7 +294,7 @@
     padding:10px 12px;
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.22);
-    background: rgba(255,207,84,0.18);
+    background: var(--food-surface-subtle);
     color: var(--accent-2);
     text-decoration:none;
   }
@@ -372,7 +364,7 @@
     padding: 12px 12px;
     border:1px solid rgba(200,100,50,0.18);
     border-radius:16px;
-    background:linear-gradient(180deg, rgba(255,210,106,0.60), rgba(240,138,36,0.18));
+    background:var(--food-surface-panel);
     box-shadow:0 14px 26px -26px rgba(200,100,50,0.16);
   }
   .filter-bar label{ font-size:16px; font-weight:850; color:var(--muted); }
@@ -383,7 +375,7 @@
     border:1px solid rgba(122,74,58,0.14);
     font-weight:850;
     outline:none;
-    background:rgba(255,210,106,0.30);
+    background:var(--food-surface-control);
     color:var(--ink);
   }
   .filter-bar select:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
@@ -392,7 +384,7 @@
     padding:9px 12px;
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.22);
-    background:linear-gradient(180deg, rgba(255,210,106,0.42), rgba(240,138,36,0.16));
+    background:var(--food-surface-control);
     font-weight:850; font-size:16px; cursor:pointer;
     color:var(--accent-2);
   }
@@ -409,7 +401,7 @@
     padding:8px 12px;
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.22);
-    background:linear-gradient(180deg, rgba(255,210,106,0.40), rgba(240,138,36,0.14));
+    background:var(--food-surface-control);
     text-decoration:none;
     box-shadow:0 10px 22px -20px rgba(200,100,50,0.22);
   }
@@ -427,7 +419,7 @@
     padding:9px 14px;
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.22);
-    background:linear-gradient(180deg, rgba(255,210,106,0.42), rgba(240,138,36,0.16));
+    background:var(--food-surface-control);
     color:var(--accent-2);
     font-size:16px;
     font-weight:850;

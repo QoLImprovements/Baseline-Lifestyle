@@ -12,7 +12,7 @@
     padding: 9px 14px;
     border-radius: 999px;
     border: 1px solid rgba(0,0,0,.22);
-    background: rgba(240,138,36,0.28);
+    background: var(--food-surface-panel);
     backdrop-filter: blur(8px) saturate(120%);
     color: var(--ink);
     font-weight: 850;
@@ -35,7 +35,7 @@
     border-radius: 16px;
     padding: 10px;
     border: 1px solid rgba(0,0,0,.18);
-    background: linear-gradient(180deg, rgba(255,210,106,.96), rgba(240,138,36,.90));
+    background: var(--food-surface-card);
     backdrop-filter: blur(10px) saturate(140%);
     box-shadow: 0 22px 56px -38px rgba(0,0,0,.55);
     color: var(--ink);
@@ -49,7 +49,7 @@
     text-decoration:none;
   }
   .bl-system-menu a:hover{
-    background: rgba(194,31,43,.10);
+    background: var(--food-surface-selected);
   }
   .bl-system-menu .small{
     display:block;
