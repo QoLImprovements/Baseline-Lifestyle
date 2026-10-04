@@ -124,8 +124,8 @@ async function expectAdjustmentsContract(card) {
   expect(adjustmentSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(adjustmentSurface.backgroundImage).toBe('none');
   expect(adjustmentSurface.textDecorationLine).toBe('none');
-  expect(['none', 'normal', '""']).toContain(adjustmentSurface.afterContent);
-  expect(adjustmentSurface.afterDisplay).toBe('none');
+  expect(adjustmentSurface.afterContent).toContain('▾');
+  expect(adjustmentSurface.afterDisplay).toBe('inline-block');
   await expect(card.locator('.recipe-adjustments-row')).toBeHidden();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expect(card.locator('.recipe-legacy-print-summary')).toBeHidden();
@@ -172,6 +172,14 @@ test('recipe title favourite and subtab rhythm stay visually consistent', async 
   });
   expect(favouriteSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(favouriteSurface.backgroundImage).toBe('none');
+
+  await favourite.hover();
+  const favouriteHoverSurface = await favourite.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { backgroundColor:style.backgroundColor, backgroundImage:style.backgroundImage };
+  });
+  expect(favouriteHoverSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(favouriteHoverSurface.backgroundImage).toBe('none');
 
   const viewbarGeometry = await card.evaluate((el) => {
     const tabs = el.querySelector('.recipe-viewbar > .recipe-subtabs').getBoundingClientRect();
