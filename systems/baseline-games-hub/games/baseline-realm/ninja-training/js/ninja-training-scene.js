@@ -173,7 +173,7 @@ function mountNinjaPresentation() {
 
   const synth = createSynthAudio();
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  let active = true;
+  let active = false;
   let intersecting = true;
   let actionTimer = 0;
   let hitTimer = 0;
@@ -267,6 +267,7 @@ function mountNinjaPresentation() {
   }
 
   function onAction(event) {
+    if (!presentationIsVisible()) return;
     const target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
     if (target.id === 'ninjaManualStrikeBtn') playRunnerAction('dash');
@@ -322,13 +323,14 @@ function mountNinjaPresentation() {
   reducedMotion.addEventListener?.('change', setReducedMotion);
   setReducedMotion();
   syncEnemyPresentation();
-  playEnemyEntry();
 
   return Object.freeze({
     resume() {
+      const wasActive = active;
       active = true;
       scene.classList.remove('is-paused');
       syncEnemyPresentation();
+      if (!wasActive && presentationIsVisible()) playEnemyEntry();
     },
     pause() {
       active = false;
@@ -342,8 +344,8 @@ export function createNinjaTrainingScene({ runtime }) {
   return {
     id: 'ninja-training',
     async enter() {
-      presentation.resume();
       runtime?.setView('training');
+      presentation.resume();
     },
     async exit() {
       presentation.pause();
