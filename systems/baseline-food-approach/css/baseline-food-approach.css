@@ -175,7 +175,7 @@
   .ing-link{ border-bottom:1px dotted rgba(122,74,58,0.35); padding-bottom:1px; }
 
   /* Buttons (ported language) */
-  .action,.print-btn,.multiplier button,.back-fab,.top-fab,.side-recipe-nav a{
+  .action,.print-btn,.multiplier button,.back-fab,.top-fab{
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.18);
     background:var(--food-surface-control);
@@ -183,12 +183,12 @@
     box-shadow:0 14px 26px -24px rgba(200,100,50,0.18);
     transition:transform var(--dur-2) var(--ease-cushion), box-shadow var(--dur-2) var(--ease-soft), filter var(--dur-2) var(--ease-soft);
   }
-  .action:hover,.print-btn:hover,.multiplier button:hover,.back-fab:hover,.top-fab:hover,.side-recipe-nav a:hover{
+  .action:hover,.print-btn:hover,.multiplier button:hover,.back-fab:hover,.top-fab:hover:hover{
     transform:translateY(-1px);
     box-shadow:0 18px 36px -30px rgba(200,100,50,0.26);
     filter:saturate(1.02);
   }
-  .action:focus-visible,.print-btn:focus-visible,.multiplier button:focus-visible,.back-fab:focus-visible,.top-fab:focus-visible,.side-recipe-nav a:focus-visible{
+  .action:focus-visible,.print-btn:focus-visible,.multiplier button:focus-visible,.back-fab:focus-visible,.top-fab:focus-visible:focus-visible{
     outline:none;
     box-shadow:0 0 0 4px var(--ring), 0 18px 36px -30px rgba(200,100,50,0.26);
   }
@@ -261,64 +261,9 @@
   .multiplier button.secondary{ background:var(--food-surface-subtle); border-color:rgba(122,78,58,0.18); }
   .multiplier .mini-note{ font-size:16px; color:var(--muted); }
 
-  /* Recipes: keep overview visible by default; show one recipe at a time when opened */
-
+  /* Recipes are folder-backed. The parent page owns only the overview. */
   .recipe-layout{ display:block; }
-  #recipes.recipe-open-mode .recipe-layout,
-  #recipes.recipe-detail-open .recipe-layout{
-    display:grid;
-    grid-template-columns: 260px 1fr;
-    gap: 16px;
-    align-items:start;
-  }
-
-  .side-recipe-nav{
-    display:none;
-    position:sticky;
-    top: calc(var(--homebar-h) + 18px);
-    align-self:start;
-    padding: 14px;
-    background: var(--food-surface-panel);
-    border: 1px solid rgba(200,100,50,0.18);
-    border-radius: 18px;
-    box-shadow: 0 16px 34px -26px rgba(35,23,19,0.28);
-  }
-  #recipes.recipe-open-mode .side-recipe-nav,
-  #recipes.recipe-detail-open .side-recipe-nav{ display:block; }
-  .side-recipe-nav h4{ margin: 12px 0 10px 0; }
-  .side-recipe-nav ul{ margin: 0; padding-left: 18px; }
-  .side-recipe-nav li{ margin: 8px 0; }
-  .side-recipe-nav a{ font-weight: 750; }
-  .side-recipe-nav .back-link{
-    display:flex; align-items:center; gap:8px;
-    padding:10px 12px;
-    border-radius:999px;
-    border:1px solid rgba(200,100,50,0.22);
-    background: var(--food-surface-subtle);
-    color: var(--accent-2);
-    text-decoration:none;
-  }
-
-  @media (max-width: 900px){
-    #recipes.recipe-open-mode .recipe-layout,
-    #recipes.recipe-detail-open .recipe-layout{ grid-template-columns: 1fr; }
-    .side-recipe-nav{ position:relative; top:auto; }
-  }
-
   #recipes .recipe-main{ min-width:0; }
-  #recipes .recipes{ display:none; }
-  #recipes.recipe-open-mode .recipes,
-  #recipes.recipe-detail-open .recipes{ display:block; }
-  .recipes{ gap:14px; }
-  @media (min-width:900px){ .recipes{ grid-template-columns:1fr 1fr; } }
-  #recipes .recipe-page{ display:none; }
-  #recipes.recipe-open-mode .recipe-page,
-  #recipes.recipe-detail-open .recipe-page{ display:none!important; }
-  #recipes.recipe-open-mode .recipe-page.active,
-  #recipes.recipe-detail-open .recipe-page.active{ display:block!important; }
-  #recipes.recipe-open-mode #recipes-landing,
-  #recipes.recipe-detail-open #recipes-landing{ display:none; }
-  .recipe.card{ break-inside: avoid; page-break-inside: avoid; -webkit-column-break-inside: avoid; }
 
   /* Ingredient library cards (reuse card styling) */
   .lib .card{ margin-top: var(--space-4); }
@@ -430,259 +375,6 @@
   .back-btn:hover,
   .scale-toggle:hover,
   .scale-apply:hover{ color:var(--accent-2); filter:brightness(1.02); }
-
-/* --- Compact recipe layout --- */
-/* Final page-local recipe compact override: keeps the card design, removes only darker editable-option slabs. */
-body[data-app] #recipes .recipe-controls,
-body[data-app] #recipes .multiplier.recipe-controls,
-body[data-app] #recipes .scale-block,
-body[data-app] #recipes .scale-tools,
-body[data-app] #recipes .variant-switcher,
-body[data-app] #recipes .glide-controller,
-body[data-app] #recipes .glide-control-explainer{
-  background:transparent!important;
-  background-image:none!important;
-  background-color:transparent!important;
-  box-shadow:none!important;
-}
-body[data-app] #recipes .variant-heading,
-body[data-app] #recipes .recipe-native-variant-switcher{display:none!important;}
-body[data-app] #recipes .recipe-page:not(.recipe-options-open) .glide-controller{display:none!important;}
-body[data-app] #recipes .recipe-page.recipe-options-open .glide-controller{display:grid!important;}
-body[data-app] #recipes .recipe-edit-options[hidden]{display:none!important;}
-@media print{
-  body[data-app] #recipes .recipe-option-strip,
-  body[data-app] #recipes .recipe-edit-options,
-  body[data-app] #recipes .variant-switcher,
-  body[data-app] #recipes .variant-heading,
-  body[data-app] #recipes .glide-controller,
-  body[data-app] #recipes .slider-save-row,
-  body[data-app] #recipes .recipe-controls,
-  body[data-app] #recipes .multiplier,
-  body[data-app] #recipes .scale-block,
-  body[data-app] #recipes .scale-tools,
-  body[data-app] #recipes .back-btn,
-  body[data-app] #recipes .print-btn,
-  body[data-app] #recipes .recipe-actions{display:none!important;}
-  body[data-app] #recipes .print-summary{display:block!important;}
-}
-
-/* --- Recipe page safety --- */
-body[data-app] #recipes .recipe-page:not(.recipe-options-open) .recipe-edit-options,
-body[data-app] #recipes .recipe-page:not(.recipe-options-open) > .multiplier.recipe-controls,
-body[data-app] #recipes .recipe-page:not(.recipe-options-open) .glide-controller{display:none!important;}
-body[data-app] #recipes .recipe-page.recipe-options-open .recipe-edit-options{display:block!important;}
-html body[data-app] #recipes .recipe-variant-field select.recipe-variant-select{background:var(--showall-bg,var(--card-bg,rgba(255,255,255,.22)))!important;color:var(--ink,#111)!important;-webkit-text-fill-color:currentColor!important;}
-
-/* --- Recipe options --- */
-/* BASELINE-RECIPE-OPTIONS-ACTUAL-FIX-20260527 */
-body[data-app] #recipes .recipe-option-strip{
-  position:relative !important;
-  z-index:30 !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:12px !important;
-  flex-wrap:wrap !important;
-  margin:6px 0 12px 0 !important;
-  overflow:visible !important;
-}
-body[data-app] #recipes .recipe-variant-field{
-  position:relative !important;
-  display:block !important;
-  flex:0 0 320px !important;
-  width:320px !important;
-  min-width:0 !important;
-  max-width:min(320px, 100%) !important;
-  margin:0 !important;
-  padding:0 !important;
-}
-body[data-app] #recipes .recipe-variant-field::before{
-  content:'Variant:' !important;
-  position:absolute !important;
-  left:12px !important;
-  top:50% !important;
-  transform:translateY(-50%) !important;
-  z-index:2 !important;
-  pointer-events:none !important;
-  color:var(--accent-2, var(--ink, #111)) !important;
-  -webkit-text-fill-color:currentColor !important;
-  font-family:inherit !important;
-  font-size:16px !important;
-  font-weight:850 !important;
-  line-height:1 !important;
-}
-body[data-app] #recipes .recipe-variant-field > .label,
-body[data-app] #recipes .recipe-option-strip > .recipe-variant-field > span.label{
-  display:none !important;
-  visibility:hidden !important;
-  width:0 !important;
-  height:0 !important;
-  overflow:hidden !important;
-  margin:0 !important;
-  padding:0 !important;
-}
-html body[data-app] #recipes .recipe-variant-field select.recipe-variant-select{
-  display:block !important;
-  width:100% !important;
-  min-width:0 !important;
-  max-width:100% !important;
-  height:40px !important;
-  min-height:40px !important;
-  margin:0 !important;
-  padding:7px 34px 7px 88px !important;
-  box-sizing:border-box !important;
-  border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
-  background:var(--showall-bg, rgba(255,255,255,.22)) !important;
-  background-image:var(--showall-bg, none) !important;
-  color:var(--accent-2, var(--ink, #111)) !important;
-  -webkit-text-fill-color:currentColor !important;
-  font-family:inherit !important;
-  font-size:16px !important;
-  font-weight:850 !important;
-  line-height:1.15 !important;
-  letter-spacing:normal !important;
-  box-shadow:0 10px 22px rgba(0,0,0,0.12) !important;
-  appearance:auto !important;
-  -webkit-appearance:auto !important;
-}
-html body[data-app] #recipes .recipe-options-toggle,
-html body[data-app] #recipes .recipe-edit-options .reset,
-html body[data-app] #recipes .recipe-edit-options .apply,
-html body[data-app] #recipes .recipe-edit-options .scale-toggle,
-html body[data-app] #recipes .recipe-edit-options .scale-apply{
-  min-height:40px !important;
-  height:40px !important;
-  width:auto !important;
-  max-width:max-content !important;
-  border-radius:999px !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
-  background:var(--showall-bg, rgba(255,255,255,.22)) !important;
-  background-image:var(--showall-bg, none) !important;
-  color:var(--accent-2, var(--ink, #111)) !important;
-  -webkit-text-fill-color:currentColor !important;
-  font-family:inherit !important;
-  font-size:16px !important;
-  font-weight:850 !important;
-  line-height:1.15 !important;
-  padding:7px 12px !important;
-  box-shadow:0 10px 22px rgba(0,0,0,0.12) !important;
-  box-sizing:border-box !important;
-  align-self:center !important;
-  cursor:pointer !important;
-}
-html body[data-app] #recipes .recipe-edit-options .reset{
-  color:#9b2f22 !important;
-  -webkit-text-fill-color:#9b2f22 !important;
-}
-body[data-app] #recipes .recipe-edit-options[hidden]{
-  display:none !important;
-}
-body[data-app] #recipes .recipe-page.recipe-options-open .recipe-edit-options{
-  display:block !important;
-  width:100% !important;
-  margin:0 0 14px 0 !important;
-  padding:0 !important;
-  background:transparent !important;
-  background-image:none !important;
-  border:0 !important;
-  box-shadow:none !important;
-}
-body[data-app] #recipes .recipe-page.recipe-options-open .recipe-edit-options > .multiplier.recipe-controls,
-body[data-app] #recipes .recipe-page.recipe-options-open .recipe-edit-options > .recipe-controls{
-  display:grid !important;
-  grid-template-columns:1fr !important;
-  width:100% !important;
-  max-width:100% !important;
-  gap:12px !important;
-  padding:0 !important;
-  margin:0 0 14px 0 !important;
-  background:transparent !important;
-  background-image:none !important;
-  border:0 !important;
-  box-shadow:none !important;
-}
-body[data-app] #recipes .recipe-edit-options .recipe-control-row{
-  --recipe-edit-label-col:220px;
-  --recipe-edit-field-col:300px;
-  display:grid !important;
-  grid-template-columns:var(--recipe-edit-label-col) var(--recipe-edit-field-col) max-content !important;
-  justify-content:start !important;
-  align-items:center !important;
-  column-gap:12px !important;
-  row-gap:8px !important;
-  width:100% !important;
-  max-width:100% !important;
-  margin:0 !important;
-}
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .label{
-  grid-column:1 !important;
-  margin:0 !important;
-  white-space:nowrap !important;
-  justify-self:start !important;
-}
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .bl-number,
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .bl-select,
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > select,
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > input,
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .oat-toggle{
-  grid-column:2 !important;
-  width:100% !important;
-  min-width:0 !important;
-  max-width:none !important;
-  justify-self:start !important;
-  box-sizing:border-box !important;
-}
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .reset,
-body[data-app] #recipes .recipe-edit-options .recipe-control-row > .apply{
-  grid-column:3 !important;
-  justify-self:start !important;
-  margin:0 !important;
-}
-body[data-app] #recipes .recipe-edit-options .recipe-control-row--scale,
-body[data-app] #recipes .recipe-edit-options .scale-block{
-  display:block !important;
-  width:100% !important;
-  margin:0 !important;
-}
-body[data-app] #recipes .recipe-edit-options .scale-tools{
-  display:flex !important;
-  flex-wrap:wrap !important;
-  align-items:center !important;
-  gap:10px !important;
-  background:transparent !important;
-  background-image:none !important;
-  box-shadow:none !important;
-}
-body[data-app] #recipes .recipe-edit-options .scale-block:not(.is-open) .scale-tools{
-  display:none !important;
-}
-@media (max-width:720px){
-  body[data-app] #recipes .recipe-option-strip{
-    align-items:stretch !important;
-  }
-  body[data-app] #recipes .recipe-variant-field,
-  body[data-app] #recipes .recipe-options-toggle{
-    width:100% !important;
-    max-width:100% !important;
-    flex:1 1 100% !important;
-  }
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row{
-    grid-template-columns:1fr !important;
-  }
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .label,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .bl-number,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .bl-select,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > select,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > input,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .oat-toggle,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .reset,
-  body[data-app] #recipes .recipe-edit-options .recipe-control-row > .apply{
-    grid-column:1 !important;
-    width:100% !important;
-    max-width:100% !important;
-  }
-}
 
 /* --- Food visual authority -------------------------------------------------
    Universal recipe CSS owns recipe-control geometry. Food owns card colour. */
