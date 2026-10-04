@@ -16,6 +16,10 @@ const ratingsSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-ratings.js"),
   "utf8",
 );
+const rendererSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -113,4 +117,15 @@ test("Badminton rating engine is a separate syntactically valid module", () => {
   assert.match(source, /ratingModule\.create/);
   assert.doesNotMatch(source, /function applyRatingChanges\(/);
   assert.match(ratingsSource, /function applyRatingChanges\(/);
+});
+
+
+test("Badminton court renderer is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(rendererSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_COURT_RENDERER/);
+  assert.match(source, /courtRendererModule\.create/);
+  assert.doesNotMatch(source, /function renderCourtDiagram\(/);
+  assert.doesNotMatch(source, /function renderBoundaryMask\(/);
+  assert.match(rendererSource, /function renderCourtDiagram\(/);
+  assert.match(rendererSource, /function renderBoundaryMask\(/);
 });
