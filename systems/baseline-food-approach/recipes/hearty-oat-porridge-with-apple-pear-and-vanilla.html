@@ -1,16 +1,31 @@
 <!-- Canonical Food recipe content source.
-     Sitewide recipe shell/runtime owns navigation, surfaces and behaviour. -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-oat-toggle="1" data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla" id="r4">
+     Sitewide recipe shell/runtime owns navigation, typography, surfaces and behaviour. -->
+<div class="recipe card recipe-page recipe-universal-template" data-category="Stovetop" data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla" id="r4" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
 <a class="back-btn" href="/baseline-food-approach/recipes">Back To Recipe Overview</a>
 <button class="print-btn" onclick="printCard('r4')">Print This Recipe</button>
 </div>
-<h3>Hearty Oat Porridge with Apple, Pear &amp; Vanilla</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="/baseline-food-approach/ingredient-library">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Dairy-free, no added sugar. Allergens: Oats (choose certified gluten-free if needed); nuts (nut butter).</p>
-<h4>Ingredients</h4>
-<ul>
+<div class="recipe-title-row"><h3>Hearty Oat Porridge with Apple, Pear &amp; Vanilla</h3></div>
+<div class="recipe-meta-row" data-static-recipe-shell="1"><div class="recipe-meta-summary"><span class="recipe-meta-item"><span class="recipe-meta-key">Batch:</span> <span class="recipe-meta-value recipe-batch-meta-value">1×</span></span></div></div>
+<div class="recipe-adjustments-row print-hide" data-static-recipe-shell="1"><button type="button" class="recipe-adjustments-toggle print-hide" data-static-recipe-shell="1" aria-expanded="false">Adjustments</button></div>
+<div class="recipe-edit-options recipe-adjustments-panel print-hide" data-static-recipe-shell="1" hidden>
+<div class="multiplier recipe-controls recipe-edit-controls" data-static-recipe-controls="1" data-layout-contract="title-batch-measurement-scale">
+<div class="recipe-control-row recipe-control-row--batch"><span class="label batch-label">Batch Multiplier</span><div class="bl-number multiplier-input batch-input"><input type="number" min="0" step="0.1" data-stepper-step="0.5" data-stepper-min="0.5" value="1" inputmode="decimal" class="multiplier-input batch-input" aria-label="Batch multiplier"/><div class="bl-number-stepper" aria-hidden="false"><button type="button" class="bl-step bl-step-up" aria-label="Increase value by 0.5"><span aria-hidden="true">&#9650;</span></button><button type="button" class="bl-step bl-step-down" aria-label="Decrease value by 0.5"><span aria-hidden="true">&#9660;</span></button></div></div><button type="button" class="apply recipe-apply batch-apply" data-mobile-batch-apply="1">Apply</button></div>
+<div class="recipe-control-row recipe-control-row--measurement"><span class="label meas-label">Measurement Type</span><select class="measure-select" aria-label="Measurement Type"><option value="standard">Standard Variance</option><option value="weight">Weight</option><option value="volume">Volume</option><option value="cups">Measuring Cups &amp; Spoons</option></select><button type="button" class="reset">Reset</button></div>
+<div class="scale-block"><button type="button" class="scale-toggle" aria-expanded="false">Scale By Ingredient</button><div class="multiplier scale-tools" hidden><span class="label">Use:</span><select class="scale-ingredient-select" aria-label="Ingredient"><option value="" selected disabled>Choose ingredient…</option></select><select class="scale-unit-select" aria-label="Unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="count">count</option></select><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter Quantity" class="scale-amount-input" aria-label="Ingredient quantity"/><button type="button" class="scale-apply">Scale Recipe</button></div><div class="scale-msg note"></div></div>
+</div><div class="print-summary">Batch quantity: 1 • Measurement: Standard Variance</div></div>
+<div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
+<div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
+<div class="recipe-detail-block"><h4>Purpose</h4><p>A fruit-sweetened oat porridge designed as a warm, filling breakfast without added sugar.</p></div>
+<div class="recipe-detail-block"><h4>Recipe Profile</h4><p>Stovetop recipe • vegan • dairy-free • no added sugar • use certified gluten-free oats where required. Dairy-free, no added sugar. Allergens: Oats (choose certified gluten-free if needed); nuts (nut butter).</p></div>
+<div class="recipe-detail-block"><h4>How the Recipe Works</h4><p>Jumbo oats provide starch and fibre; apple and pear soften into the porridge for sweetness and moisture; vanilla and cinnamon add aroma; nut butter increases richness.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>The recipe relies on whole fruit rather than added sweeteners and keeps the flavour profile familiar, gentle and repeatable.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Cooking time and water control thickness. Fruit quantity and nut-butter amount can alter sweetness and richness; the oat-and-fruit base remains fixed.</p></div>
+<div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>More fruit increases sweetness and total sugars, while longer cooking produces a denser pudding-like texture. Oats must be certified gluten-free when cross-contamination matters.</p></div>
+</div>
+<h4 class="recipe-ingredients-heading" data-recipe-view-group="standard">Ingredients <a class="info-link recipe-info-view-link print-hide recipe-view-hidden" data-scroll-to-ingredients="" data-recipe-view-group="details" href="/baseline-food-approach/ingredient-library" aria-label="View recipe ingredient information">(View)</a></h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Prepare fruit</strong></li>
 <li data-method-step="1" data-tip="Fruit base for natural sweetness + fibre.">2 <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-apple" href="/baseline-food-approach/ingredient-library/apple">apples</a>, chopped (with peel)</li>
 <li data-method-step="1" data-tip="Soft, sweet fruit for the compote.">2 <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-pear" href="/baseline-food-approach/ingredient-library/pear">pears</a>, chopped (with peel)</li>
@@ -26,16 +41,15 @@
 <li data-method-step="3" data-tip="Optional warmth; keep light if you prefer.">½ tsp <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-ground-cinnamon" href="/baseline-food-approach/ingredient-library/ground-cinnamon">ground cinnamon</a> (optional)</li>
 <li data-method-step="4" data-tip="A tiny amount helps the oats taste fuller.">Pinch of <a class="ing-link" data-from-recipe="r4" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">salt</a></li>
 </ul>
-<p class="note"><strong>Water guide:</strong> A typical starting point is <em>1 part oats to ~2 parts water</em> (porridge/rolled oats) and <em>1:2 to 1:2.25</em> (jumbo oats) by volume. For this recipe (125 g oats): use <strong>550 ml</strong> for porridge oats or <strong>600 ml</strong> for jumbo oats, then adjust thickness as you prefer.</p>
-<h4>Method</h4>
-<ol><li><strong>Prepare fruit:</strong> Chop the apples and pears (leave the peel on).</li><li><strong>Simmer compote:</strong> Add the apples and pears to a small saucepan with the lemon juice and 2 tbsp water. Cover and simmer 10–15 minutes, stirring occasionally, until soft and juicy.</li><li><strong>Finish compote:</strong> Stir in the vanilla bean powder and the ground cinnamon (optional). Keep warm on the lowest heat or set aside with the lid on.</li><li><strong>Cook porridge:</strong> Bring the water and a pinch of sea salt to a boil. Add the oats, reduce to low, and simmer 10–12 minutes, stirring often, until creamy.</li><li><strong>Adjust + rest:</strong> If it thickens too much, add 1–2 tbsp hot water and stir. Rest 2 minutes off-heat to settle.</li><li><strong>Add nut butter:</strong> Stir in the Peanut Butter until melted through.</li><li><strong>Serve:</strong> Spoon into bowls and top with the warm apple–pear compote.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
+<h4 data-recipe-view-group="standard">Method</h4>
+<ol data-recipe-view-group="standard"><li><strong>Prepare fruit:</strong> Chop the apples and pears (leave the peel on).</li><li><strong>Simmer compote:</strong> Add the apples and pears to a small saucepan with the lemon juice and 2 tbsp water. Cover and simmer 10–15 minutes, stirring occasionally, until soft and juicy.</li><li><strong>Finish compote:</strong> Stir in the vanilla bean powder and the ground cinnamon (optional). Keep warm on the lowest heat or set aside with the lid on.</li><li><strong>Cook porridge:</strong> Bring the water and a pinch of sea salt to a boil. Add the oats, reduce to low, and simmer 10–12 minutes, stirring often, until creamy.</li><li><strong>Adjust + rest:</strong> If it thickens too much, add 1–2 tbsp hot water and stir. Rest 2 minutes off-heat to settle.</li><li><strong>Add nut butter:</strong> Stir in the Peanut Butter until melted through.</li><li><strong>Serve:</strong> Spoon into bowls and top with the warm apple–pear compote.</li></ol>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Serving &amp; Use</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Add extra fruit on top (fresh or cooked)</li>
 <li>Make it thicker for “oat pudding” by cooking a few minutes longer</li>
 </ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Body &amp; Sensory Notes</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Odour profile: Light and sweet; fruit and vanilla are not typically associated with strong body odour.</li>
 <li>Dose notes: Higher fruit servings increase sugars; adjust portion if sensitive to glycaemic swings.</li>
 <li>Energy: Light, quick energy; pair with protein/fat for longer-lasting satiety.</li>

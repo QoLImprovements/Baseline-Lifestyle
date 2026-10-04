@@ -1,16 +1,31 @@
 <!-- Canonical Food recipe content source.
-     Sitewide recipe shell/runtime owns navigation, surfaces and behaviour. -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="creamy-stovetop-polenta" id="r2">
+     Sitewide recipe shell/runtime owns navigation, typography, surfaces and behaviour. -->
+<div class="recipe card recipe-page recipe-universal-template" data-category="Stovetop" data-recipe-slug="creamy-stovetop-polenta" id="r2" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
 <a class="back-btn" href="/baseline-food-approach/recipes">Back To Recipe Overview</a>
 <button class="print-btn" onclick="printCard('r2')">Print This Recipe</button>
 </div>
-<h3>Creamy Stovetop Polenta</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="/baseline-food-approach/ingredient-library">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Allergens: Sesame (tahini).</p>
-<h4>Ingredients</h4>
-<ul>
+<div class="recipe-title-row"><h3>Creamy Stovetop Polenta</h3></div>
+<div class="recipe-meta-row" data-static-recipe-shell="1"><div class="recipe-meta-summary"><span class="recipe-meta-item"><span class="recipe-meta-key">Batch:</span> <span class="recipe-meta-value recipe-batch-meta-value">1×</span></span></div></div>
+<div class="recipe-adjustments-row print-hide" data-static-recipe-shell="1"><button type="button" class="recipe-adjustments-toggle print-hide" data-static-recipe-shell="1" aria-expanded="false">Adjustments</button></div>
+<div class="recipe-edit-options recipe-adjustments-panel print-hide" data-static-recipe-shell="1" hidden>
+<div class="multiplier recipe-controls recipe-edit-controls" data-static-recipe-controls="1" data-layout-contract="title-batch-measurement-scale">
+<div class="recipe-control-row recipe-control-row--batch"><span class="label batch-label">Batch Multiplier</span><div class="bl-number multiplier-input batch-input"><input type="number" min="0" step="0.1" data-stepper-step="0.5" data-stepper-min="0.5" value="1" inputmode="decimal" class="multiplier-input batch-input" aria-label="Batch multiplier"/><div class="bl-number-stepper" aria-hidden="false"><button type="button" class="bl-step bl-step-up" aria-label="Increase value by 0.5"><span aria-hidden="true">&#9650;</span></button><button type="button" class="bl-step bl-step-down" aria-label="Decrease value by 0.5"><span aria-hidden="true">&#9660;</span></button></div></div><button type="button" class="apply recipe-apply batch-apply" data-mobile-batch-apply="1">Apply</button></div>
+<div class="recipe-control-row recipe-control-row--measurement"><span class="label meas-label">Measurement Type</span><select class="measure-select" aria-label="Measurement Type"><option value="standard">Standard Variance</option><option value="weight">Weight</option><option value="volume">Volume</option><option value="cups">Measuring Cups &amp; Spoons</option></select><button type="button" class="reset">Reset</button></div>
+<div class="scale-block"><button type="button" class="scale-toggle" aria-expanded="false">Scale By Ingredient</button><div class="multiplier scale-tools" hidden><span class="label">Use:</span><select class="scale-ingredient-select" aria-label="Ingredient"><option value="" selected disabled>Choose ingredient…</option></select><select class="scale-unit-select" aria-label="Unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="count">count</option></select><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter Quantity" class="scale-amount-input" aria-label="Ingredient quantity"/><button type="button" class="scale-apply">Scale Recipe</button></div><div class="scale-msg note"></div></div>
+</div><div class="print-summary">Batch quantity: 1 • Measurement: Standard Variance</div></div>
+<div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
+<div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
+<div class="recipe-detail-block"><h4>Purpose</h4><p>A soft, creamy polenta bowl with tahini and nutritional yeast for richness, finished with avocado and lemon.</p></div>
+<div class="recipe-detail-block"><h4>Recipe Profile</h4><p>Stovetop recipe • vegan • gluten-free when ingredients are verified • soft, spoonable texture. Allergens: Sesame (tahini).</p></div>
+<div class="recipe-detail-block"><h4>How the Recipe Works</h4><p>Polenta supplies the starch base; water controls softness; tahini adds fat and creaminess; nutritional yeast adds savoury depth; avocado and lemon provide a fresh, rich topping.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>The recipe is deliberately mild and low-aromatic, using texture and gentle savoury ingredients rather than strong seasoning.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Water is the main texture variable: less gives firmer polenta and more gives a softer bowl. Batch size and measurement display can also be scaled.</p></div>
+<div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>Polenta thickens quickly as it stands and may need extra water when reheated. Larger servings are carbohydrate-forward and the tahini/avocado finish makes the dish richer.</p></div>
+</div>
+<h4 class="recipe-ingredients-heading" data-recipe-view-group="standard">Ingredients <a class="info-link recipe-info-view-link print-hide recipe-view-hidden" data-scroll-to-ingredients="" data-recipe-view-group="details" href="/baseline-food-approach/ingredient-library" aria-label="View recipe ingredient information">(View)</a></h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Base</strong></li><li data-method-step="1" data-tip="Cornmeal base; gentle, plain carbs.">½ cup <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-polenta" href="/baseline-food-approach/ingredient-library/polenta">polenta</a></li>
 <li data-method-step="1" data-tip="Herb blend; adds flavour without onion/garlic.">1 tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-herbes-de-provence" href="/baseline-food-approach/ingredient-library/herbes-de-provence">Herbes de Provence</a></li>
 <li data-method-step="1" data-tip="Useful for flavour; keep moderate.">¼ tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">sea salt</a></li>
@@ -21,16 +36,16 @@
 <li data-method-step="5" data-tip="Brightens flavour.">13 g <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-lemon" href="/baseline-food-approach/ingredient-library/lemon">lemon juice</a></li>
 <li data-method-step="5" data-tip="Season lightly.">⅛ tsp <a class="ing-link" data-from-recipe="r2" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">sea salt</a></li>
 </ul>
-<h4>Method</h4>
-<ol><li><strong>Mix dry base:</strong> In a saucepan, whisk together the polenta, Herbes de Provence, and sea salt.</li><li><strong>Cook:</strong> Add the water and tahini. Bring to a gentle simmer over low–medium heat, stirring or whisking frequently until thick and creamy (about 8–12 minutes, depending on grind).</li><li><strong>Adjust texture:</strong> For softer polenta, add small splashes of water and stir until smooth and glossy.</li><li><strong>Finish off-heat:</strong> Remove from heat and stir in the nutritional yeast until fully incorporated.</li><li><strong>Top:</strong> Mash the avocados with the lemon juice and sea salt. Spoon over the polenta and serve immediately.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
+<h4 data-recipe-view-group="standard">Method</h4>
+<ol data-recipe-view-group="standard"><li><strong>Mix dry base:</strong> In a saucepan, whisk together the polenta, Herbes de Provence, and sea salt.</li><li><strong>Cook:</strong> Add the water and tahini. Bring to a gentle simmer over low–medium heat, stirring or whisking frequently until thick and creamy (about 8–12 minutes, depending on grind).</li><li><strong>Adjust texture:</strong> For softer polenta, add small splashes of water and stir until smooth and glossy.</li><li><strong>Finish off-heat:</strong> Remove from heat and stir in the nutritional yeast until fully incorporated.</li><li><strong>Top:</strong> Mash the avocados with the lemon juice and sea salt. Spoon over the polenta and serve immediately.</li></ol>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Serving &amp; Use</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Serve soft as a bowl, or chill and slice into squares</li>
 <li>Top with avocado + lemon</li>
 <li>Pair with steamed greens or a plain tomato side</li>
 </ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Body &amp; Sensory Notes</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Odour profile: Mild, neutral base; pairs well with fresh herbs without strong aromatics.</li>
 <li>Dose notes: At very large servings this can feel heavier for some—start smaller and balance with vegetables/protein for best tolerance.</li>
 <li>Energy: Carb‑forward; can be quick energy—add fats/protein for steadier release.</li>

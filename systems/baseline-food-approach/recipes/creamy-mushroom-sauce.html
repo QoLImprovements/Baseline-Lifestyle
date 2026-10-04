@@ -1,16 +1,31 @@
 <!-- Canonical Food recipe content source.
-     Sitewide recipe shell/runtime owns navigation, surfaces and behaviour. -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="creamy-mushroom-sauce" id="r5">
+     Sitewide recipe shell/runtime owns navigation, typography, surfaces and behaviour. -->
+<div class="recipe card recipe-page recipe-universal-template" data-category="Stovetop" data-recipe-slug="creamy-mushroom-sauce" id="r5" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
 <a class="back-btn" href="/baseline-food-approach/recipes">Back To Recipe Overview</a>
 <button class="print-btn" onclick="printCard('r5')">Print This Recipe</button>
 </div>
-<h3>Creamy Mushroom Sauce</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="/baseline-food-approach/ingredient-library">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Butter-free, dairy-free. Allergens: Sesame (tahini).</p>
-<h4>Ingredients</h4>
-<ul data-ingredients-list="">
+<div class="recipe-title-row"><h3>Creamy Mushroom Sauce</h3></div>
+<div class="recipe-meta-row" data-static-recipe-shell="1"><div class="recipe-meta-summary"><span class="recipe-meta-item"><span class="recipe-meta-key">Batch:</span> <span class="recipe-meta-value recipe-batch-meta-value">1×</span></span></div></div>
+<div class="recipe-adjustments-row print-hide" data-static-recipe-shell="1"><button type="button" class="recipe-adjustments-toggle print-hide" data-static-recipe-shell="1" aria-expanded="false">Adjustments</button></div>
+<div class="recipe-edit-options recipe-adjustments-panel print-hide" data-static-recipe-shell="1" hidden>
+<div class="multiplier recipe-controls recipe-edit-controls" data-static-recipe-controls="1" data-layout-contract="title-batch-measurement-scale">
+<div class="recipe-control-row recipe-control-row--batch"><span class="label batch-label">Batch Multiplier</span><div class="bl-number multiplier-input batch-input"><input type="number" min="0" step="0.1" data-stepper-step="0.5" data-stepper-min="0.5" value="1" inputmode="decimal" class="multiplier-input batch-input" aria-label="Batch multiplier"/><div class="bl-number-stepper" aria-hidden="false"><button type="button" class="bl-step bl-step-up" aria-label="Increase value by 0.5"><span aria-hidden="true">&#9650;</span></button><button type="button" class="bl-step bl-step-down" aria-label="Decrease value by 0.5"><span aria-hidden="true">&#9660;</span></button></div></div><button type="button" class="apply recipe-apply batch-apply" data-mobile-batch-apply="1">Apply</button></div>
+<div class="recipe-control-row recipe-control-row--measurement"><span class="label meas-label">Measurement Type</span><select class="measure-select" aria-label="Measurement Type"><option value="standard">Standard Variance</option><option value="weight">Weight</option><option value="volume">Volume</option><option value="cups">Measuring Cups &amp; Spoons</option></select><button type="button" class="reset">Reset</button></div>
+<div class="scale-block"><button type="button" class="scale-toggle" aria-expanded="false">Scale By Ingredient</button><div class="multiplier scale-tools" hidden><span class="label">Use:</span><select class="scale-ingredient-select" aria-label="Ingredient"><option value="" selected disabled>Choose ingredient…</option></select><select class="scale-unit-select" aria-label="Unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="count">count</option></select><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter Quantity" class="scale-amount-input" aria-label="Ingredient quantity"/><button type="button" class="scale-apply">Scale Recipe</button></div><div class="scale-msg note"></div></div>
+</div><div class="print-summary">Batch quantity: 1 • Measurement: Standard Variance</div></div>
+<div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
+<div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
+<div class="recipe-detail-block"><h4>Purpose</h4><p>A dairy-free creamy mushroom sauce for pasta, potatoes, rice or vegetables.</p></div>
+<div class="recipe-detail-block"><h4>Recipe Profile</h4><p>Stovetop recipe • vegan • gluten-free when starches are verified • creamy, savoury finish. Butter-free, dairy-free. Allergens: Sesame (tahini).</p></div>
+<div class="recipe-detail-block"><h4>How the Recipe Works</h4><p>Mushrooms provide the savoury base; tahini gives body and fat; cornflour or cassava flour thickens the water phase; parsley and salt keep the seasoning restrained.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>The formula creates creaminess without dairy, butter or extracted oil while keeping the ingredient list short and the flavour relatively mild.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Water and starch determine thickness. More liquid makes a pourable sauce; more reduction or starch gives a thicker coating consistency.</p></div>
+<div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>Mushrooms become more aromatic as they cook, and excess starch can make the sauce pasty. Tahini also makes the sauce richer as the portion increases.</p></div>
+</div>
+<h4 class="recipe-ingredients-heading" data-recipe-view-group="standard">Ingredients <a class="info-link recipe-info-view-link print-hide recipe-view-hidden" data-scroll-to-ingredients="" data-recipe-view-group="details" href="/baseline-food-approach/ingredient-library" aria-label="View recipe ingredient information">(View)</a></h4>
+<ul data-ingredients-list="" data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Sauté stage</strong></li>
 <li data-method-step="1" data-tip="Slice to your preferred texture.">500 g <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-mushrooms" href="/baseline-food-approach/ingredient-library/white-mushroom">mushrooms</a>, sliced</li>
 <li data-method-step="1" data-tip="Light seasoning for the first stage.">⅛ tsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">sea salt</a></li>
@@ -25,16 +40,16 @@
 <li class="ing-subhead"><strong>Finish</strong></li>
 <li data-method-step="5" data-tip="Finish seasoning at the end.">¼ tsp <a class="ing-link" data-from-recipe="r5" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">sea salt</a></li>
 </ul>
-<h4>Method</h4>
-<ol><li><strong>Sauté mushrooms:</strong> Add the mushrooms to a wide pan over medium heat. Add 4 tbsp water. Stir in the sea salt and dried parsley. Sauté 5–7 minutes until the mushrooms are softened and reduced.</li><li><strong>Add tahini:</strong> Stir in the tahini and cook 1–2 minutes to coat the mushrooms.</li><li><strong>Simmer:</strong> Add 1 litre water and bring to a gentle simmer.</li><li><strong>Thicken:</strong> In a small bowl, whisk the cornflour or cassava flour with 8 tbsp cold water to make a slurry. Pour in slowly while stirring. Simmer 2–4 minutes until thickened.</li><li><strong>Finish:</strong> Add the sea salt and adjust to taste. Remove from heat once creamy.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
+<h4 data-recipe-view-group="standard">Method</h4>
+<ol data-recipe-view-group="standard"><li><strong>Sauté mushrooms:</strong> Add the mushrooms to a wide pan over medium heat. Add 4 tbsp water. Stir in the sea salt and dried parsley. Sauté 5–7 minutes until the mushrooms are softened and reduced.</li><li><strong>Add tahini:</strong> Stir in the tahini and cook 1–2 minutes to coat the mushrooms.</li><li><strong>Simmer:</strong> Add 1 litre water and bring to a gentle simmer.</li><li><strong>Thicken:</strong> In a small bowl, whisk the cornflour or cassava flour with 8 tbsp cold water to make a slurry. Pour in slowly while stirring. Simmer 2–4 minutes until thickened.</li><li><strong>Finish:</strong> Add the sea salt and adjust to taste. Remove from heat once creamy.</li></ol>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Serving &amp; Use</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Use as a creamy pasta sauce (stir through hot pasta and loosen with hot water if needed).</li>
 <li>Spoon over baked potatoes or roasted vegetables.</li>
 <li>Serve with rice or gluten-free noodles.</li>
 </ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Body &amp; Sensory Notes</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Odour profile: Earthy but not pungent; herbs help keep the aroma clean.</li>
 <li>Dose notes: Larger amounts of mushrooms and nut butter can be richer and more aromatic for some.</li>
 <li>Energy: Calorie-dense; fats can increase satiety and steadiness when portioned appropriately.</li>
