@@ -59,6 +59,7 @@ async function enterRealmThroughRealHandler(page) {
   await expect(page.locator('body')).toHaveClass(/bl-mobile-game-mode/);
   await expect(page.locator('#ninjaPanel')).toHaveClass(/is-mobile-game-root/);
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
 }
 
 async function expectFullViewport(page, width, height) {
@@ -116,8 +117,10 @@ test('real phone rotation produces one full-viewport landscape stage and returns
   await expectFullViewport(page, 844, 390);
   await expect(page.locator('.realm-orientation-gate')).toBeHidden();
   await expect(page.locator('.realm-command-banner')).toBeVisible();
-  await expect(page.locator('.ninja-scene')).toBeVisible();
-  await expect(page.locator('.realm-action-dock')).toBeVisible();
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  await expect(page.locator('.realm-action-dock')).toBeHidden();
+  await expect(page.locator('[data-basecamp-landmark="ninja-training"]')).toBeVisible();
+  await expect(page.locator('[data-basecamp-landmark="exploration"]')).toBeVisible();
   await expect(page.locator('#realmExploreBtn')).toHaveCount(0);
   await expect(page.locator('#ninjaPanel > .mobile-game-exit')).toHaveCount(0);
   await expect(page.locator('#realmSceneFrame')).toHaveCount(1);
