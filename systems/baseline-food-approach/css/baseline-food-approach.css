@@ -68,7 +68,7 @@
   /* Sticky hero header (ported) */
   .care-line{margin-top:6px; font-size:18px; color:var(--muted); max-width:58ch;}
   .badge{
-    background:var(--food-tab-bg); color:var(--accent-2);
+    background:var(--food-surface-subtle); color:var(--accent-2);
     padding:7px 11px; border-radius:999px; font-size:16px; font-weight:760;
     border:1px solid var(--border-2); box-shadow:var(--shadow-soft);
   }
@@ -76,7 +76,7 @@
   /* Tabs (routing like skincare) */
   .tab{
     appearance:none; border:none; cursor:pointer;
-    background:var(--food-surface-subtle);
+    background:var(--food-tab-bg);
     padding:10px 14px; border-radius:999px; font-size:16px; font-weight:760;
     color:var(--muted);
     border:1px solid rgba(122,74,58,0.12);
@@ -91,7 +91,7 @@
     box-shadow:0 16px 30px -24px rgba(200,100,50,0.30);
   }
   .tab[aria-selected="true"]{
-    color: var(--ink) !important;
+    color:#fff7e8 !important;
     background:var(--food-tab-active);
     border-color:rgba(27,7,4,0.18);
     box-shadow:0 22px 46px -34px rgba(200,100,50,0.60);
