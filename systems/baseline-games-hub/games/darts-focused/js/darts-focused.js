@@ -154,6 +154,7 @@ const {
   closeInfo,
   ensureOverviewEntry,
   queueOverviewSync,
+  ensurePanel,
   openPanel,
   closePanel,
   toggleFullscreen
