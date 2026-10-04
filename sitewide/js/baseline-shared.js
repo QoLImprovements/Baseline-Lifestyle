@@ -7537,14 +7537,14 @@ function setupRecipeFavourites(){
         row.appendChild(h3);
       }
 
-      if(!q('.fav-btn', row)){
+      if(!q('.fav-btn', h3)){
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'fav-btn';
         btn.setAttribute('aria-pressed','false');
         btn.textContent = '☆';
         btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFav(id); });
-        row.appendChild(btn);
+        h3.appendChild(btn);
       }
 
       // Safety: remove any legacy fav buttons that were injected into action bars.
