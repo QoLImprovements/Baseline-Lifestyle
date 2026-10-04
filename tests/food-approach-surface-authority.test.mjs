@@ -19,7 +19,7 @@ const recipeDir = path.join(root, 'systems/baseline-food-approach/recipes');
 const ingredientDir = path.join(root, 'systems/baseline-food-approach/ingredients');
 
 test('Food content containers share one warmer theme surface', () => {
-  assert.match(theme, /--food-surface-card:\s*linear-gradient\(145deg,/);
+  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
   assert.match(theme, /--food-surface-panel:\s*var\(--food-surface-card\)/);
   assert.match(theme, /--food-surface-subtle:\s*var\(--food-surface-card\)/);
   assert.match(foodCss, /\.card\s*\{[\s\S]*?background:var\(--food-surface-card\)/);
@@ -31,7 +31,7 @@ test('Recipes overview contains no historical visible recipe-card grid', () => {
   assert.match(recipeCss, /\.recipe-page\{\s*display:none;/);
   assert.doesNotMatch(recipeCss, /\.recipe-page\{\s*display:block;/);
   assert.doesNotMatch(recipeCss, /#recipes:not\(\.recipe-open-mode\)/);
-  assert.doesNotMatch(recipeCss, /\.recipe\.card/);
+  assert.doesNotMatch(recipeCss, /\.recipe\.card\s*\{/);
   assert.doesNotMatch(recipeCss, /recipe-top-bar/);
   assert.doesNotMatch(foodHtml, /class="card recipe-landing"/);
   assert.match(foodHtml, /class="recipe-landing" id="recipes-landing"/);
@@ -44,9 +44,9 @@ test('Food recipe sources are content fragments only', () => {
   for (const name of files) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
     assert.match(html, /^<!-- Canonical Food recipe content source\./);
-    assert.match(html, /class="recipe recipe-page"/);
+    assert.match(html, /class="recipe card recipe-page"/);
     assert.doesNotMatch(html, /<!DOCTYPE|<html\b|<head\b|<body\b|<script\b|<link\b/i);
-    assert.doesNotMatch(html, /standalone-recipe-card|food-recipe-shell|food-recipe-top|class="recipe card/);
+    assert.doesNotMatch(html, /standalone-recipe-card|food-recipe-shell|food-recipe-top/);
     assert.doesNotMatch(html, /ingredient-library#ing-|href="#ing-/);
     assert.match(html, /\/baseline-food-approach\/ingredient-library\//);
   }
@@ -105,4 +105,17 @@ test('legacy recipe and side-navigation authorities stay deleted', () => {
   assert.doesNotMatch(recipeCss, /side-recipe-nav|#side-nav/);
   assert.doesNotMatch(foodHtml, /phase4b|Phase 4B/i);
   assert.doesNotMatch(recipeCss, /Food exact-route selectors/);
+});
+
+
+test('universal recipe enhancer still owns Food and Skincare controls', () => {
+  assert.match(shared, /const recipeSelectorBase = recipeScope[\s\S]*'#recipes \.recipe\.card\.recipe-page'/);
+  assert.match(shared, /function setupRecipeTools\(opts\)/);
+  assert.match(shared, /adjustmentsBtn\.textContent = 'Adjustments'/);
+  assert.match(shared, /recipeEl\.classList\.toggle\('recipe-options-open', open\)/);
+
+  for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
+    const html = read(path.join('systems/baseline-food-approach/recipes', name));
+    assert.match(html, /class="recipe card recipe-page"/);
+  }
 });
