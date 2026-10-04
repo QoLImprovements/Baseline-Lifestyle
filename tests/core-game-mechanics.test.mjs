@@ -94,4 +94,5 @@ test('Make The Number advances an explicit round seed for starts and rerolls',()
   assert.match(start,/seed:seed/);
   assert.match(reroll,/const seed = nextMake24Seed\(tier\)/);
   assert.match(reroll,/make24State\.seed = seed/);
+  assert.match(reroll,/scheduleSave\('make24'\)/);
 });
