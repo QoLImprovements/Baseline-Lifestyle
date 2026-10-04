@@ -1982,7 +1982,10 @@
 
   function currentUserCanScoreCourt(court){
     if(currentUserIsManager()) return true;
-    return getCourtPlayers(court).some(currentUserMatchesPlayer);
+    return getCourtPlayers(court).some(function(courtPlayer){
+      const canonicalPlayer = courtPlayer && courtPlayer.id ? getPlayer(courtPlayer.id) : null;
+      return currentUserMatchesPlayer(canonicalPlayer || courtPlayer);
+    });
   }
 
   function refreshCurrentCourtCard(index){
