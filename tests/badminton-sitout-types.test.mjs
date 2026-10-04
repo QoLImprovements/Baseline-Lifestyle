@@ -13,6 +13,10 @@ const source = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const matchmakerSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
+  "utf8",
+);
 
 test("badminton state distinguishes circumstantial and optional sit-outs", () => {
   assert.match(source, /currentCircumstantialSitOutPlayerIds:\s*\[\]/);
@@ -22,16 +26,16 @@ test("badminton state distinguishes circumstantial and optional sit-outs", () =>
 
 test("only circumstantial sit-outs affect automatic rotation fairness", () => {
   assert.match(
-    source,
-    /lastSitOutPlayerIds\s*=\s*state\.plan\.currentCircumstantialSitOutPlayerIds\.slice\(\)/,
+    matchmakerSource,
+    /lastSitOutPlayerIds\s*=\s*getState\(\)\.plan\.currentCircumstantialSitOutPlayerIds\.slice\(\)/,
   );
   assert.match(
-    source,
-    /currentCircumstantialSitOutPlayerIds\.forEach\(playerId\s*=>\s*\{\s*state\.plan\.sitOutCounts\[playerId\]/,
+    matchmakerSource,
+    /currentCircumstantialSitOutPlayerIds\.forEach\(playerId\s*=>\s*\{\s*getState\(\)\.plan\.sitOutCounts\[playerId\]/,
   );
   assert.doesNotMatch(
-    source,
-    /currentOptionalSitOutPlayerIds\.forEach\(playerId\s*=>\s*\{\s*state\.plan\.sitOutCounts\[playerId\]/,
+    matchmakerSource,
+    /currentOptionalSitOutPlayerIds\.forEach\(playerId\s*=>\s*\{\s*getState\(\)\.plan\.sitOutCounts\[playerId\]/,
   );
 });
 
