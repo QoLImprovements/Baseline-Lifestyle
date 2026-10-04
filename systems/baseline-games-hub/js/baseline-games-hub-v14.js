@@ -419,6 +419,10 @@ function openRealmFromRoute(){
   else loadRealm().catch(error=>console.error(error));
 }
 
+function signalVisualReady(){
+  try{window.dispatchEvent(new CustomEvent('baseline:games-hub:visual-ready',{detail:{build:BUILD}}));}
+  catch(_error){document.documentElement.removeAttribute('data-games-hub-boot');}
+}
 function init(){
   addRealmCss();
   waitCore().then(()=>{
@@ -426,7 +430,11 @@ function init(){
     openDartsFromRoute();
     openBadmintonFromRoute();
     openRealmFromRoute();
-  }).catch(error=>console.error(error));
+    requestAnimationFrame(()=>signalVisualReady());
+  }).catch(error=>{
+    console.error(error);
+    signalVisualReady();
+  });
 }
 
 window.addEventListener('hashchange',()=>{openDartsFromRoute();openBadmintonFromRoute();openRealmFromRoute();});
