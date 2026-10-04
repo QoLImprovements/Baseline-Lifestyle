@@ -181,8 +181,99 @@ function bl_badminton_canonical_hardship_records(array $state): array {
   return $canonical;
 }
 
+
+function bl_badminton_hardship_preset_order(string $mode): array {
+  return $mode === 'singles'
+    ? ['full-court','m1l1m2l2','m1m2f1','m1m2','m1l1-or-m2l2','m1f1-or-m2f1','m1s1-or-m2s2','m1-or-m2']
+    : ['full-court','f1m1m2l1l2','m1s1m2s2f1fs1fs2','m1m2f1','serve-m-s','m1m2','serve-m'];
+}
+
+function bl_badminton_match_hardship_mode(array $match, int $adjustedSide): string {
+  $kind = strtolower(trim((string)($match['kind'] ?? '')));
+  if($kind === 'singles') return 'singles';
+  if($kind === 'doubles') return 'doubles';
+  $field = $adjustedSide === 1 ? 'side1PlayerIds' : 'side2PlayerIds';
+  $ids = $match[$field] ?? [];
+  return is_array($ids) && count(array_filter($ids, static fn($id) => trim((string)$id) !== '')) === 1 ? 'singles' : 'doubles';
+}
+
+function bl_badminton_match_hardship_context_key(array $match, int $adjustedSide): string {
+  $kind = strtolower(trim((string)($match['kind'] ?? '')));
+  if($kind === '') return '';
+  $restrictedField = $adjustedSide === 1 ? 'side1PlayerIds' : 'side2PlayerIds';
+  $opponentField = $adjustedSide === 1 ? 'side2PlayerIds' : 'side1PlayerIds';
+  $restricted = implode('::', bl_badminton_match_hardship_side_ids($match, $restrictedField));
+  $opponent = implode('::', bl_badminton_match_hardship_side_ids($match, $opponentField));
+  if($restricted === '' || $opponent === '') return '';
+  return 'hardship::' . $kind . '::restricted::side::' . $restricted . '::opponent::side::' . $opponent;
+}
+
+function bl_badminton_hardship_records_from_match_history(array $state): array {
+  $matches = $state['matches'] ?? [];
+  if(!is_array($matches)) return [];
+  $records = [];
+  foreach(array_reverse($matches) as $match){
+    if(!is_array($match)) continue;
+
+    $snapshotKey = trim((string)($match['hardshipContextKey'] ?? ''));
+    $snapshotRule = $match['hardshipRuleAfter'] ?? null;
+    if($snapshotKey !== '' && is_array($snapshotRule) && bl_badminton_match_accepts_hardship_key($match, $snapshotKey)){
+      $records[$snapshotKey] = $snapshotRule;
+      continue;
+    }
+
+    $registered = trim((string)($match['hardshipRegistered'] ?? ''));
+    if(!in_array($registered, ['movement','shots','reducedMovement','reducedShots'], true)) continue;
+    $score1 = is_numeric($match['score1'] ?? null) ? (int)$match['score1'] : null;
+    $score2 = is_numeric($match['score2'] ?? null) ? (int)$match['score2'] : null;
+    if($score1 === null || $score2 === null || $score1 === $score2) continue;
+
+    $winnerSide = $score1 > $score2 ? 1 : 2;
+    $reduced = str_starts_with($registered, 'reduced');
+    $adjustedSide = $reduced ? ($winnerSide === 1 ? 2 : 1) : $winnerSide;
+    $key = bl_badminton_match_hardship_context_key($match, $adjustedSide);
+    if($key === '') continue;
+
+    $mode = bl_badminton_match_hardship_mode($match, $adjustedSide);
+    $order = bl_badminton_hardship_preset_order($mode);
+    $current = $records[$key] ?? [
+      'targetPreset'=>'full-court',
+      'shotStage'=>0,
+      'shotRestrictions'=>[],
+    ];
+    $preset = (string)($current['targetPreset'] ?? 'full-court');
+    $index = array_search($preset, $order, true);
+    if($index === false) $index = 0;
+    $shotStage = !empty($current['shotStage']) ? 1 : 0;
+
+    if($registered === 'movement') $index = min(count($order) - 1, $index + 1);
+    if($registered === 'reducedMovement') $index = max(0, $index - 1);
+    if($registered === 'shots') $shotStage = 1;
+    if($registered === 'reducedShots') $shotStage = 0;
+
+    $adjustedIds = bl_badminton_match_hardship_side_ids($match, $adjustedSide === 1 ? 'side1PlayerIds' : 'side2PlayerIds');
+    $active = $index > 0 || $shotStage > 0;
+    $records[$key] = [
+      'adjustedSideIds'=>$adjustedIds,
+      'adjustedSideNumber'=>$adjustedSide,
+      'mode'=>$mode,
+      'targetPreset'=>$order[$index] ?? 'full-court',
+      'shotStage'=>$shotStage,
+      'shotRestrictions'=>$shotStage > 0 ? ['no-smashes','no-downward-shots'] : [],
+      'memoryScope'=>'exact-competitive-context',
+      'cleared'=>!$active,
+      'updatedAt'=>strtotime((string)($match['createdAt'] ?? '')) * 1000 ?: 0,
+    ];
+  }
+  return $records;
+}
+
 function bl_badminton_storage_state(array $state): array {
   unset($state['approvedAdminUsernames'], $state['adminUsernames'], $state['approvedBadmintonAdmins'], $state['badmintonAdminRequired']);
+  $state['hardshipRecords'] = bl_badminton_canonical_hardship_records($state);
+  foreach(bl_badminton_hardship_records_from_match_history($state) as $key => $rule){
+    if(!array_key_exists($key, $state['hardshipRecords'])) $state['hardshipRecords'][$key] = $rule;
+  }
   $state['hardshipRecords'] = bl_badminton_canonical_hardship_records($state);
   if(!isset($state['plan']) || !is_array($state['plan'])) $state['plan'] = [];
   $state['plan']['activeHardships'] = $state['hardshipRecords'];
