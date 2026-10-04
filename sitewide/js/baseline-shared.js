@@ -5210,6 +5210,26 @@ function buildControls(recipeEl){
       }
 
       const adjustmentsBtn = recipeEl.__baselineAdjustmentsButton || q('.recipe-adjustments-toggle', recipeEl);
+
+      let viewbar = q(':scope > .recipe-viewbar', recipeEl);
+      if(!viewbar){
+        viewbar = document.createElement('div');
+        viewbar.className = 'recipe-viewbar print-hide';
+        metaRow.insertAdjacentElement('afterend', viewbar);
+      }
+      if(tabs.parentElement !== viewbar) viewbar.appendChild(tabs);
+      if(adjustmentsBtn && adjustmentsBtn.parentElement !== viewbar) viewbar.appendChild(adjustmentsBtn);
+      if(adjustmentsRow){
+        adjustmentsRow.classList.add('recipe-adjustments-row-retired');
+        adjustmentsRow.hidden = true;
+      }
+      if(editBody.previousElementSibling !== viewbar){
+        viewbar.insertAdjacentElement('afterend', editBody);
+      }
+      if(strip.previousElementSibling !== editBody){
+        editBody.insertAdjacentElement('afterend', strip);
+      }
+
       const legacyPrintSummary = q('.print-summary', recipeEl);
       if(legacyPrintSummary) legacyPrintSummary.classList.add('recipe-legacy-print-summary');
 
@@ -5348,7 +5368,7 @@ function buildControls(recipeEl){
         // Leaving Recipe/Show All also closes the panel so no adjustment state
         // remains open while Details or Guidance is being read.
         const adjustmentsAvailable = next === 'standard' || next === 'show-all';
-        adjustmentsRow.classList.toggle('recipe-view-hidden', !adjustmentsAvailable);
+        if(adjustmentsBtn) adjustmentsBtn.classList.toggle('recipe-view-hidden', !adjustmentsAvailable);
         if(!adjustmentsAvailable){
           recipeEl.classList.remove('recipe-options-open');
           recipeEl.classList.remove('recipe-adjustments-open');
@@ -5359,6 +5379,7 @@ function buildControls(recipeEl){
         }
         metaRow.classList.remove('recipe-view-hidden');
         tabs.classList.remove('recipe-view-hidden');
+        viewbar.classList.remove('recipe-view-hidden');
 
         // Recipe subview is route state, not transient DOM state. Replace the
         // current recipe history entry so refresh and Back/Forward reconstruct
