@@ -43,7 +43,7 @@ test('saved data paths require private absolute host configuration', () => {
 
 test('saved resources preserve the agreed physical file structure', () => {
   const source = read('sitewide/api/saved_data.php');
-  for(const file of ['account.json','favourites.json','binaural.json','fitness.json','voice.json']){
+  for(const file of ['account.json','favourites.json','binaural.json','fitness.json','voice.json','massage.json']){
     assert.ok(source.includes(`'${file}'`), `${file} is missing`);
   }
   for(const file of [

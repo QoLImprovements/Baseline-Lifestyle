@@ -253,7 +253,7 @@ function bl_rollback_preserved_saved_data_resources(string $savedData): array {
 
   foreach(bl_rollback_user_directories($savedData) as $uid=>$directory){
     $folder = sprintf('%06d', $uid);
-    foreach(['fitness-routine.json','food.json','skincare.json'] as $filename){
+    foreach(['fitness-routine.json','food.json','skincare.json','massage.json'] as $filename){
       if(is_file($directory . '/' . $filename)) $preserved[] = 'Users/' . $folder . '/' . $filename;
     }
 

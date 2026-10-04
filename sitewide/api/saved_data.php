@@ -108,6 +108,7 @@ function bl_saved_user_resource_path(int $userId, string $resource): string {
     'voice' => 'voice.json',
     'food' => 'food.json',
     'skincare' => 'skincare.json',
+    'massage' => 'massage.json',
   ];
   if(!isset($files[$resource])) throw new InvalidArgumentException('invalid_user_resource');
   return bl_saved_join(bl_saved_root(), 'Users', bl_saved_user_folder($userId), $files[$resource]);

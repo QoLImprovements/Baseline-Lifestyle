@@ -75,7 +75,7 @@ These Markdown rules are a human reference point, not live runtime config.
         </ul>
         <div class="system-note-block">
           <p><strong>Communication comes first:</strong> The massage is not built for someone who refuses to communicate. The planner exists so the receiver can state preferences clearly.</p>
-          <p><strong>Account-bound preference:</strong> Massage preferences are linked to the receiver’s account and visible only to the massage provider.</p>
+          <p><strong>Account-bound preference:</strong> When signed in, massage preferences are saved to the receiver’s account rather than browser storage.</p>
         </div>
       </article>
     </div>
@@ -396,7 +396,8 @@ These Markdown rules are a human reference point, not live runtime config.
       <article class="card planner-intro">
         <h2>Plan my massage</h2>
         <p class="lead">Choose how much control you want: let the provider shape the session, select broad focus areas, or build the full massage in detail.</p>
-        <p class="note">The massage preference is bound to the receiver’s account and visible only to the massage provider.</p>
+        <p class="note">When signed in, massage preferences are saved to the receiver’s account rather than this browser.</p>
+        <p class="note" id="massageSaveStatus" aria-live="polite">Checking saved massage preferences…</p>
       </article>
 
       <div class="subtabs planner-subtabs" role="tablist" aria-label="Massage planning level">
@@ -1148,44 +1149,6 @@ These Markdown rules are a human reference point, not live runtime config.
   }
 
 
-  const massageInnerKeys = {
-    library:'baselineMassageLibraryTab',
-    planner:'baselineMassagePlannerMode'
-  };
-
-  function safeGet(key){
-    try{return localStorage.getItem(key) || '';}catch(e){return '';}
-  }
-  function safeSet(key, value){
-    try{localStorage.setItem(key, value);}catch(e){}
-  }
-
-  function restoreMassageInnerTabs(){
-    const savedPlanner = safeGet(massageInnerKeys.planner);
-    if(savedPlanner && qs('[data-planner-mode="' + savedPlanner + '"]')){
-      qsa('[data-planner-mode]').forEach(btn => btn.setAttribute('aria-selected', btn.dataset.plannerMode === savedPlanner ? 'true' : 'false'));
-      qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === savedPlanner));
-    }
-
-    const savedLibraryRaw = safeGet(massageInnerKeys.library);
-    const savedLibrary = (savedLibraryRaw === 'Sports Massage Focus' || savedLibraryRaw === 'Swedish / Full Body Flow') ? 'Types Of Massage' : savedLibraryRaw;
-    let libraryButton = null;
-    if(savedLibrary){
-      try{ libraryButton = qs('[data-library-category="' + CSS.escape(savedLibrary) + '"]'); }
-      catch(_e){ libraryButton = qsa('[data-library-category]').find(btn => btn.dataset.libraryCategory === savedLibrary) || null; }
-    }
-    if(libraryButton) libraryButton.click();
-  }
-
-  qsa('[data-planner-mode]').forEach(btn => btn.addEventListener('click', () => safeSet(massageInnerKeys.planner, btn.dataset.plannerMode)));
-  const massageLibraryTabs = qs('#massageLibraryTabs');
-  if(massageLibraryTabs){
-    massageLibraryTabs.addEventListener('click', event => {
-      const btn = event.target.closest('[data-library-category]');
-      if(btn) safeSet(massageInnerKeys.library, btn.dataset.libraryCategory);
-    });
-  }
-
   function numericOptionValue(text){
     const value = String(text || '').trim();
     let match = value.match(/^(\d+(?:\.\d+)?)\s*minutes?$/i);
@@ -1245,10 +1208,9 @@ These Markdown rules are a human reference point, not live runtime config.
   bindPlannerModes();
   bindPlanner();
   sortAllDropdowns();
-  restoreMassageInnerTabs();
-  window.addEventListener('pageshow', restoreMassageInnerTabs);
 })();
 
 </script>
+<script src="/systems/baseline-massage/js/baseline-massage-persistence.js?v=MASSAGE_ACCOUNT_PERSISTENCE_20261004_1"></script>
 </body>
 </html>
