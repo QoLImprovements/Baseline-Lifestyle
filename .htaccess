@@ -268,14 +268,10 @@ Options -Indexes
   RewriteRule ^baseline-natural-skincare/ingredient-library/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
   RewriteRule ^baseline-food-approach/diet-log/([^/]+)/?$ "systems/baseline-food-approach/Diet Log/$1.html" [L,QSA]
 
-  # BASELINE-CLEAN-RECIPE-DETAIL-ROUTES-20260607
-  # Clean recipe detail URLs:
-  # /baseline-food-approach/recipes/a-recipe-name
-  # /baseline-natural-skincare/recipes/a-recipe-name
-  # Keep the clean recipe URL, but serve the complete parent application shell.
-  # The parent router opens the matching data-recipe-slug and preserves the banner,
-  # tabs, favourites, batch controls and account/binaural controls on refresh.
-  RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
+  # BASELINE-CLEAN-RECIPE-DETAIL-ROUTES-20261004
+  # Food recipe bodies are accountable standalone files. Skincare retains its
+  # parent-shell recipe router because that system still owns embedded recipes.
+  RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]
   RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 
   # Baseline Charity Shop uses the same virtual clean-route structure as every other system.
