@@ -231,8 +231,13 @@
     if(!root || !state() || !state().plan || !Array.isArray(state().plan.current)) return;
     state().plan.current.forEach(function(court, index){
       if(!court || courtSaved(court, index) || courtMarkedNoGame(court)) return;
-      court.score1 = null;
-      court.score2 = null;
+
+      // This guard exists to defeat browser autofill on a newly generated court.
+      // It must never erase a score after the player has begun entering it.
+      const score1AlreadyEntered = court.score1 != null;
+      const score2AlreadyEntered = court.score2 != null;
+      if(score1AlreadyEntered || score2AlreadyEntered) return;
+
       court.pendingHardship = '';
       [1, 2].forEach(function(sideNumber){
         const selector = '[data-index="' + cssEscape(String(index)) + '"][data-score-side="' + String(sideNumber) + '"]';

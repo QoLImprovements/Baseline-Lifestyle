@@ -136,7 +136,19 @@
         const loginInput = refs().playersTableWrap.querySelector('[data-player-login="' + cssEscape(playerId) + '"]');
         const adminInput = refs().playersTableWrap.querySelector('[data-player-admin="' + cssEscape(playerId) + '"]');
         setPlayerRating(player, ratingInput ? ratingInput.value : getPlayerRating(player));
-        player.loginUsername = normalizeKnownLoginName(loginInput ? loginInput.value : player.loginUsername || '');
+        const previousLogin = normalizeLoginName(player.loginUsername || '');
+        const nextLogin = normalizeKnownLoginName(loginInput ? loginInput.value : player.loginUsername || '');
+        const selectedOption = loginInput && loginInput.options ? loginInput.options[loginInput.selectedIndex] : null;
+        const selectedUserId = selectedOption ? String(selectedOption.getAttribute('data-login-user-id') || '').trim() : '';
+        const selectedEmail = selectedOption ? String(selectedOption.getAttribute('data-login-email') || '').trim() : '';
+        const sameLinkedLogin = normalizeLoginName(nextLogin) === previousLogin;
+        player.loginUsername = nextLogin;
+        player.loginUserId = nextLogin
+          ? (selectedUserId || (sameLinkedLogin ? String(player.loginUserId || player.userId || '') : ''))
+          : '';
+        player.loginEmail = nextLogin
+          ? (selectedEmail || (sameLinkedLogin ? String(player.loginEmail || player.email || '') : ''))
+          : '';
         if(isModeratorPlayer(player)){
           player.name = 'Peter Bates-Wilkinson';
           player.loginUsername = moderatorCanonicalLogin;
@@ -254,11 +266,16 @@
     const options = buildLoginOptions();
     const hasCurrent = current && !options.some(function(option){ return normalizeLoginName(option.value) === normalizeLoginName(current); });
     if(hasCurrent){
-      options.unshift({ value:current, label:current, email:'', id:'' });
+      options.unshift({
+        value:current,
+        label:current,
+        email:String(player.loginEmail || player.email || ''),
+        id:String(player.loginUserId || player.userId || '')
+      });
     }
-    const optionMarkup = ['<option value="">No linked login</option>'].concat(options.map(function(option){
+    const optionMarkup = ['<option value="" data-login-user-id="" data-login-email="">No linked login</option>'].concat(options.map(function(option){
       const selected = normalizeLoginName(option.value) === normalizeLoginName(current) ? ' selected' : '';
-      return '<option value="' + escapeHtml(option.value) + '"' + selected + '>' + escapeHtml(option.label) + '</option>';
+      return '<option value="' + escapeHtml(option.value) + '" data-login-user-id="' + escapeHtml(String(option.id || '')) + '" data-login-email="' + escapeHtml(String(option.email || '')) + '"' + selected + '>' + escapeHtml(option.label) + '</option>';
     })).join('');
     return '<select class="player-login-input login-select" data-player-login="' + escapeHtml(player.id) + '">' + optionMarkup + '</select>';
   }
@@ -280,7 +297,9 @@
         id || ''
       );
     };
-    addCanonicalLoginOption(moderatorCanonicalLogin, moderatorCanonicalLogin, 'Bateswilkinson@gmail.com', 'moderator');
+
+    // Real account records must win over display-only fallback aliases so the
+    // linked player retains the account's stable user ID and email.
     loginOptions.forEach(function(item){
       if(!item) return;
       addCanonicalLoginOption(item.value || item.name || item.email, item.label || item.name || item.email, item.email || '', item.id || item.userId || '');
@@ -289,8 +308,11 @@
       addCanonicalLoginOption(player.loginUsername, player.loginUsername, player.loginEmail || player.email || '', player.loginUserId || player.userId || '');
     });
     const auth = getSitewideAuth();
-    if(auth && auth.authed !== false){
+    if(auth && auth.authed === true){
       addCanonicalLoginOption(auth.username || auth.login || auth.name || auth.email, auth.username || auth.login || auth.name || auth.email, auth.email || '', auth.id || '');
+    }
+    if(!map[canonicalModeratorKey]){
+      addCanonicalLoginOption(moderatorCanonicalLogin, moderatorCanonicalLogin, 'Bateswilkinson@gmail.com', '');
     }
     return Object.values(map).sort(function(a, b){ return a.label.localeCompare(b.label); });
   }
@@ -329,7 +351,7 @@
       global.alert('Enter a player name first.');
       return;
     }
-    state().players.push({ id: uid('player'), name, rating: startRating, playerRating: startRating, loginUsername:'', loginEmail:'', badmintonSessionsAdmin:false, matchCount:0, doublesDaySinglesOptOut:false, doublesDaySoloOptOut:false, createdAt:new Date().toISOString() });
+    state().players.push({ id: uid('player'), name, rating: startRating, playerRating: startRating, loginUsername:'', loginUserId:'', loginEmail:'', badmintonSessionsAdmin:false, matchCount:0, doublesDaySinglesOptOut:false, doublesDaySoloOptOut:false, createdAt:new Date().toISOString() });
     refs().playerNameInput.value = '';
     saveSessionData();
     renderAll();
@@ -350,6 +372,8 @@
       if(normalized) tokens.push(normalized);
       if(moderatorAliases.includes(normalized)) tokens.push(moderatorCanonicalLogin.toLowerCase());
     });
+    const linkedUserId = Number(player.loginUserId || player.linkedUserId || player.userId || player.uid || 0);
+    if(linkedUserId > 0) tokens.push('uid:' + String(linkedUserId));
     return Array.from(new Set(tokens));
   }
 

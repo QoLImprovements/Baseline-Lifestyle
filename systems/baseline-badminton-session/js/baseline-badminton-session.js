@@ -287,6 +287,7 @@
     renderBoundaryMask:function(court){ return renderBoundaryMask(court); },
     renderCourtShotRestrictionOverlay:function(court){ return renderCourtShotRestrictionOverlay(court); },
     renderHardshipHelp:function(court){ return renderHardshipHelp(court); },
+    renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
     renderScoreHeading:function(court, side){ return renderScoreHeading(court, side); },
     createCourtScoreInputName:function(court, index, side){ return createCourtScoreInputName(court, index, side); },
     getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); }
@@ -830,11 +831,17 @@
 
   function getAuthTokens(){
     const auth = getSitewideAuth();
+    const serverUser = lastServerAuth && lastServerAuth.user && typeof lastServerAuth.user === 'object'
+      ? lastServerAuth.user
+      : {};
     const tokens = [];
-    [auth.name, auth.email, auth.login, auth.username, auth.displayName].forEach(function(value){
+    const add = function(value){
       const normalized = normalizeLoginName(value);
       if(normalized) tokens.push(normalized);
-    });
+    };
+    [auth.name, auth.email, auth.login, auth.username, auth.displayName, serverUser.name, serverUser.email].forEach(add);
+    const serverUserId = Number(serverUser.id || 0);
+    if(serverUserId > 0) tokens.push('uid:' + String(serverUserId));
     return Array.from(new Set(tokens));
   }
 
@@ -842,10 +849,14 @@
     return SITE_MODERATOR_ALIASES.includes(normalizeLoginName(value));
   }
 
+  function serverAuthIsLoggedIn(){
+    return !!(lastServerAuth && lastServerAuth.logged_in && lastServerAuth.user && Number(lastServerAuth.user.id || 0) > 0);
+  }
+
   function currentUserIsModerator(){
+    if(serverAuthIsLoggedIn() && (lastServerAuth.is_developer || lastServerAuth.is_badminton_admin)) return true;
     const auth = getSitewideAuth();
-    if(lastServerAuth && (lastServerAuth.is_developer || lastServerAuth.is_badminton_admin)) return true;
-    return !!(auth && auth.authed !== false && getAuthTokens().some(isKnownModeratorToken));
+    return !!(auth && auth.authed === true && getAuthTokens().some(isKnownModeratorToken));
   }
 
 
@@ -865,13 +876,17 @@
     const authTokens = getAuthTokens();
     if(!authTokens.length || !player) return false;
     const tokens = playerLoginTokens(player);
-    return tokens.some(function(token){ return authTokens.includes(token) || (isKnownModeratorToken(token) && authTokens.some(isKnownModeratorToken)); });
+    return tokens.some(function(token){
+      return authTokens.includes(token) || (isKnownModeratorToken(token) && authTokens.some(isKnownModeratorToken));
+    });
   }
 
   function currentUserIsManager(){
-    const auth = getSitewideAuth();
-    if(!auth || auth.authed === false) return false;
+    // The Badminton API is authoritative for moderator/admin status. Do not let
+    // the independently refreshed sitewide auth client temporarily override it.
     if(currentUserIsModerator()) return true;
+    const auth = getSitewideAuth();
+    if(!serverAuthIsLoggedIn() && (!auth || auth.authed !== true)) return false;
     const authTokens = getAuthTokens();
     if(!authTokens.length) return false;
     return (state.players || []).some(function(player){
