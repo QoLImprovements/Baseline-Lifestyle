@@ -194,6 +194,42 @@ test('recipe title favourite and subtab rhythm stay visually consistent', async 
   await expect(card.locator('.recipe-viewbar > .recipe-adjustments-toggle')).toBeHidden();
 });
 
+test('recipe sliders always sit immediately above their Ingredients heading', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+
+  const violations = await page.locator('#recipes .recipe-page').evaluateAll((cards) => {
+    const problems = [];
+
+    cards.forEach((card) => {
+      const scopes = [card, ...card.querySelectorAll('.variant-panel')];
+
+      scopes.forEach((scope) => {
+        const children = Array.from(scope.children || []);
+        const ingredients = children.find((el) =>
+          /^H[1-4]$/i.test(el.tagName || '') &&
+          /^ingredients\b/i.test(String(el.textContent || '').trim())
+        );
+        if (!ingredients) return;
+
+        const sliders = children.filter((el) => el.classList && el.classList.contains('glide-controller'));
+        sliders.forEach((slider) => {
+          if (slider.nextElementSibling !== ingredients) {
+            problems.push({
+              recipe: card.id || '',
+              variant: scope.getAttribute('data-variant-panel') || '',
+              slider: slider.getAttribute('aria-label') || ''
+            });
+          }
+        });
+      });
+    });
+
+    return problems;
+  });
+
+  expect(violations).toEqual([]);
+});
+
 test('single-group ingredient lists do not show a Main subgroup heading', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend', { waitUntil:'domcontentloaded' });
 

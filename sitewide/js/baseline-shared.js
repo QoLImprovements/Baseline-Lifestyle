@@ -5424,6 +5424,28 @@ function buildControls(recipeEl){
       if(recipeEl.dataset) recipeEl.dataset.universalTemplateReady = '1';
     }
 
+    function normalizeRecipeSliderPlacement(recipeEl){
+      const scopes = [recipeEl, ...qsa('.variant-panel', recipeEl)];
+      scopes.forEach(scope=>{
+        const directChildren = Array.from(scope.children || []);
+        const ingredientHeading = directChildren.find(el =>
+          /^H[1-4]$/i.test(el.tagName || '') &&
+          /^ingredients\b/i.test(String(el.textContent || '').trim())
+        );
+        if(!ingredientHeading) return;
+
+        const sliders = directChildren.filter(el =>
+          el.classList && el.classList.contains('glide-controller')
+        );
+        if(!sliders.length) return;
+
+        sliders.forEach(slider=>{
+          if(slider.nextElementSibling === ingredientHeading) return;
+          scope.insertBefore(slider, ingredientHeading);
+        });
+      });
+    }
+
     function normalizeRecipeSliderTemplate(recipeEl){
       qsa('.glide-controller', recipeEl).forEach(controller=>{
         // Paired sliders used to be wrapped in .glide-control-stack. Physically
@@ -5469,6 +5491,7 @@ function buildControls(recipeEl){
       setupRecipeCompactOptions(recipeEl);
       setupRecipeUniversalTemplate(recipeEl);
       normalizeRecipeSliderTemplate(recipeEl);
+      normalizeRecipeSliderPlacement(recipeEl);
 
       // Ensure method "Amounts:" pills exist immediately on first render.
       // Each ingredient is emitted only at its first assigned/actual-use step.
