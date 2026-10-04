@@ -32,6 +32,10 @@ const hydrationSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-state-hydration.js"),
   "utf8",
 );
+const matchmakerSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -46,37 +50,37 @@ test("rotation state distinguishes participation, partnerships, opponents and 2v
   ]) {
     assert.match(source, new RegExp(field + ": \\{\\}"));
   }
-  assert.match(source, /function updateRotationMemoryFromCourt\(court\)/);
+  assert.match(matchmakerSource, /function updateRotationMemoryFromCourt\(court\)/);
 });
 
 test("circumstantial bench choice considers both sit-out count and games played", () => {
-  assert.match(source, /function chooseSitOutPlayers\(attendingPlayers, benchCount\)/);
-  assert.match(source, /getSitOutCount\(a\.id\)/);
-  assert.match(source, /getSessionPlayCount\(b\.id\) - getSessionPlayCount\(a\.id\)/);
-  assert.match(source, /lastSitOutPlayerIds/);
+  assert.match(matchmakerSource, /function chooseSitOutPlayers\(attendingPlayers, benchCount\)/);
+  assert.match(matchmakerSource, /getSitOutCount\(a\.id\)/);
+  assert.match(matchmakerSource, /getSessionPlayCount\(b\.id\) - getSessionPlayCount\(a\.id\)/);
+  assert.match(matchmakerSource, /lastSitOutPlayerIds/);
 });
 
 test("generator exploration is deterministic rather than Math.random driven", () => {
-  const layoutStart = source.indexOf("function choosePreferredLayout");
-  const candidateEnd = source.indexOf("function buildSinglesDayCourtSet", layoutStart);
-  const generatorSlice = source.slice(layoutStart, candidateEnd);
+  const layoutStart = matchmakerSource.indexOf("function choosePreferredLayout");
+  const candidateEnd = matchmakerSource.indexOf("function buildSinglesDayCourtSet", layoutStart);
+  const generatorSlice = matchmakerSource.slice(layoutStart, candidateEnd);
   assert.doesNotMatch(generatorSlice, /Math\.random/);
   assert.match(generatorSlice, /orderPlayersForGeneration/);
-  assert.match(source, /function stableGenerationHash\(value\)/);
+  assert.match(matchmakerSource, /function stableGenerationHash\(value\)/);
 });
 
 test("candidate quality penalises recent repeated partners, opponents and solo 2v1 roles", () => {
-  assert.match(source, /function getCourtRotationPenalty\(court\)/);
-  assert.match(source, /sessionPairCounts/);
-  assert.match(source, /sessionOpponentCounts/);
-  assert.match(source, /sessionSolo2v1Counts/);
+  assert.match(matchmakerSource, /function getCourtRotationPenalty\(court\)/);
+  assert.match(matchmakerSource, /sessionPairCounts/);
+  assert.match(matchmakerSource, /sessionOpponentCounts/);
+  assert.match(matchmakerSource, /sessionSolo2v1Counts/);
   assert.match(source, /score -= getCourtRotationPenalty\(court\)/);
 });
 
 test("main current-set generation actually uses the scored candidate path", () => {
-  const start = source.indexOf("function buildCurrentCourtSet");
-  const end = source.indexOf("function generateGamePlan", start);
-  const currentSetSource = source.slice(start, end);
+  const start = matchmakerSource.indexOf("function buildCurrentCourtSet");
+  const end = matchmakerSource.indexOf("function updateRotationMemoryFromCourt", start);
+  const currentSetSource = matchmakerSource.slice(start, end);
   assert.match(currentSetSource, /generateNovelCourtSet\(attendingPlayers, normalizedFormat, usedSet, courtLimit\)/);
   assert.match(currentSetSource, /buildSpecialFourPlayerSequence/);
 });
@@ -170,8 +174,8 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3650, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 185000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 3450, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 175000, `controller grew back to ${source.length} characters`);
 });
 
 
@@ -186,4 +190,15 @@ test("Badminton state hydration is a separate syntactically valid module", () =>
   assert.ok(wrapper.length < 400, "controller hydration wrapper should remain small");
   assert.match(hydrationSource, /currentCircumstantialSitOutPlayerIds/);
   assert.match(hydrationSource, /hardshipRecords:/);
+});
+
+
+test("Badminton matchmaker is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(matchmakerSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_MATCHMAKER/);
+  assert.match(source, /matchmakerModule\.create/);
+  assert.doesNotMatch(source, /function buildCurrentCourtSet\(/);
+  assert.doesNotMatch(source, /function chooseSitOutPlayers\(/);
+  assert.match(matchmakerSource, /function buildCurrentCourtSet\(/);
+  assert.match(matchmakerSource, /function chooseSitOutPlayers\(/);
 });
