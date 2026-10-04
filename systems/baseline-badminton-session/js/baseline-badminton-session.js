@@ -292,7 +292,8 @@
       });
 
     return serverSavePromise.then(function(saved){
-      if(saved && !pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && getStateUpdatedAt(state) > requestLocalUpdatedAt){
+      const latestStateUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
+      if(saved && !pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && latestStateUpdatedAt > requestLocalUpdatedAt){
         return postServerState();
       }
       return saved;
