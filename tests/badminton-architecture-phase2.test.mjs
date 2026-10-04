@@ -61,10 +61,13 @@ test("main current-set generation actually uses the scored candidate path", () =
   assert.match(currentSetSource, /buildSpecialFourPlayerSequence/);
 });
 
-test("current courts explain why the matchup was selected", () => {
+test("matchup scoring remains internal and is not exposed as a viewer-facing explanation", () => {
   assert.match(source, /court\.matchupReason = reasons\.join\(' '\)/);
-  assert.match(source, /Why this matchup\?/);
-  assert.match(source, /Rating gap:/);
+  const start = source.indexOf("function renderCourtCard");
+  const end = source.indexOf("function sanitizeScoreInput", start);
+  const card = source.slice(start, end);
+  assert.doesNotMatch(card, /Why this matchup\?/);
+  assert.doesNotMatch(card, /court-matchup-reason/);
 });
 
 test("Players & Pairs exposes Pair-ID statistics", () => {
