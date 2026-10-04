@@ -9,6 +9,7 @@ const storageUi=fs.readFileSync('systems/baseline-games-hub/js/games-server-stor
 const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js','utf8');
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
 const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css','utf8');
+const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
 const rootHtaccess=fs.readFileSync('.htaccess','utf8');
 const hubHtaccess=fs.readFileSync('systems/baseline-games-hub/.htaccess','utf8');
 
@@ -60,6 +61,13 @@ test('core remains the sole owner of normal Hub controls',()=>{
   assert.match(core,/BASELINE_GAMES_HUB_CORE_READY = true/);
   assert.match(core,/function wireTabs\(\)/);
   assert.match(core,/event\.target\.closest\('\[data-select-game\]'\)/);
+});
+
+test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
+  assert.doesNotMatch(hubTheme,/#ninjaPanel/);
+  assert.doesNotMatch(hubTheme,/\.jrpg-/);
+  assert.doesNotMatch(hubTheme,/\.basecamp-service/);
+  assert.doesNotMatch(hubTheme,/\.realm-mini-action|\.realm-close-btn|\.realm-tab-btn/);
 });
 
 test('final Realm authority guarantees characters and controls',()=>{
