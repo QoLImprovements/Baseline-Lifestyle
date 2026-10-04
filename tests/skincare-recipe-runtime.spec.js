@@ -55,6 +55,32 @@ test('Skincare Details clean route paints Details before external JavaScript run
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
 });
 
+test('Oil Cleanser route applies Details and Reactive before external JavaScript runs', async ({ page }) => {
+  await page.route('**/*', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
+
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?view=details&variant=reactive', { waitUntil:'load' });
+
+  const html = page.locator('html');
+  const card = page.locator('#r2');
+  await expect(html).toHaveAttribute('data-initial-recipe-view', 'details');
+  await expect(html).toHaveAttribute('data-initial-recipe-variant', 'reactive');
+  await expect(html).not.toHaveAttribute('data-initial-recipe-pending', '1');
+  await expect(card).toBeVisible();
+  await expect(card).toHaveAttribute('data-recipe-view', 'details');
+  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'false');
+  await expect(card.locator('.variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(card.locator('.variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected', 'false');
+  await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).not.toHaveAttribute('hidden', '');
+  await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toHaveAttribute('hidden', '');
+  await expect(page.locator('#system')).toBeHidden();
+  await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+});
+
 test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
   const requested = [];
   page.on('request', request => requested.push(new URL(request.url()).pathname));
