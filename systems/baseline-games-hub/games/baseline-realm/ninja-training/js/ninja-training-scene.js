@@ -178,7 +178,6 @@ function mountNinjaPresentation() {
   let actionTimer = 0;
   let hitTimer = 0;
   let defeatTimer = 0;
-  let idleTimer = 0;
   let lastHp = Number.NaN;
   let lastStage = parseStage(runState?.textContent);
 
@@ -267,17 +266,6 @@ function mountNinjaPresentation() {
     return active && intersecting && document.visibilityState === 'visible' && frame.classList.contains('is-training-view');
   }
 
-  function scheduleIdleAttack() {
-    window.clearTimeout(idleTimer);
-    const delay = reducedMotion.matches ? 2400 : 1050;
-    idleTimer = window.setTimeout(() => {
-      if (presentationIsVisible() && !runner.classList.contains('is-dash-cut') && !runner.classList.contains('is-throwing')) {
-        playRunnerAction('idle', { audio: false });
-      }
-      scheduleIdleAttack();
-    }, delay);
-  }
-
   function onAction(event) {
     const target = event.target instanceof Element ? event.target.closest('button') : null;
     if (!target) return;
@@ -333,7 +321,6 @@ function mountNinjaPresentation() {
   setReducedMotion();
   syncEnemyPresentation();
   playEnemyEntry();
-  scheduleIdleAttack();
 
   return Object.freeze({
     resume() {
