@@ -44,6 +44,10 @@ const reportingSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-reporting.js"),
   "utf8",
 );
+const courtCardsSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-cards.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -95,11 +99,8 @@ test("main current-set generation actually uses the scored candidate path", () =
 
 test("matchup scoring remains internal and is not exposed as a viewer-facing explanation", () => {
   assert.match(matchmakerSource, /court\.matchupReason = reasons\.join\(' '\)/);
-  const start = source.indexOf("function renderCourtCard");
-  const end = source.indexOf("function sanitizeScoreInput", start);
-  const card = source.slice(start, end);
-  assert.doesNotMatch(card, /Why this matchup\?/);
-  assert.doesNotMatch(card, /court-matchup-reason/);
+  assert.doesNotMatch(courtCardsSource, /Why this matchup\?/);
+  assert.doesNotMatch(courtCardsSource, /court-matchup-reason/);
 });
 
 test("Players & Pairs exposes Pair-ID statistics", () => {
@@ -182,8 +183,8 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3275, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 158000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 3225, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 154000, `controller grew back to ${source.length} characters`);
 });
 
 
@@ -234,4 +235,15 @@ test("Badminton reporting views are a separate syntactically valid module", () =
   assert.match(reportingSource, /function renderStandings\(/);
   assert.match(reportingSource, /function renderMatchHistory\(/);
   assert.match(reportingSource, /function renderFinishedGames\(/);
+});
+
+
+test("Badminton court-card presentation is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(courtCardsSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_COURT_CARDS/);
+  assert.match(source, /courtCardsModule\.create/);
+  assert.doesNotMatch(source, /function renderCourtCard\(/);
+  assert.doesNotMatch(source, /function renderCourtVariableEditor\(/);
+  assert.match(courtCardsSource, /function renderCourtCard\(/);
+  assert.match(courtCardsSource, /function renderCourtVariableEditor\(/);
 });
