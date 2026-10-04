@@ -4162,6 +4162,7 @@
       const serverSaved = await saveSessionData({ immediate:true });
       if(!serverSaved){
         setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
+        suppressServerHydrationUntil = 0;
         hydrateSessionFromServer();
         return;
       }
@@ -4176,6 +4177,7 @@
     const serverSaved = await saveSessionData({ immediate:true });
     if(!serverSaved){
       setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
+      suppressServerHydrationUntil = 0;
       hydrateSessionFromServer();
       return;
     }
