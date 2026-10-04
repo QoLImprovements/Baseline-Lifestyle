@@ -369,6 +369,65 @@
       return slug ? (cfg.base + '/' + slug) : cfg.base;
     }catch(_e){ return ''; }
   }
+
+  const BASELINE_TAB_LABELS = Object.freeze({
+    system:'System',
+    recipes:'Recipes',
+    ingredients:'Ingredient Library',
+    'diet-log':'Diet Log',
+    library:'Library',
+    planner:'Planner',
+    support:'Skin Support System',
+    routine:'My Routine',
+    gameplan:'Game Plan',
+    standings:'Ratings & Standings',
+    roster:'Players & Pairs',
+    history:'Session History',
+    achievements:'Achievements',
+    'my-plan':'My Plan',
+    'my-routine':'My Plan',
+    'my-body':'My Body'
+  });
+
+  function ensureStandaloneSystemTabs(){
+    const standaloneRecipe = q('.standalone-recipe-card');
+    if(!standaloneRecipe) return;
+
+    const cfg = cleanRouteConfigForCurrentPage();
+    if(!cfg || !cfg.tabs) return;
+
+    const existingPrimary = q('.baseline-standalone-primary-tabs');
+    if(existingPrimary) return;
+
+    const routeState = cleanRouteStateFromPath();
+    const selectedTab = routeState && routeState.tabId
+      ? routeState.tabId
+      : (routeState && routeState.kind === 'recipe' ? 'recipes' : cfg.defaultTab);
+
+    const nav = document.createElement('nav');
+    nav.className = 'tabs baseline-standalone-primary-tabs';
+    nav.setAttribute('aria-label', 'Primary navigation tabs');
+
+    Object.keys(cfg.tabs).forEach((tabId)=>{
+      const href = cleanUrlForTab(tabId);
+      if(!href) return;
+      const a = document.createElement('a');
+      a.className = 'tab';
+      a.href = href;
+      a.textContent = BASELINE_TAB_LABELS[tabId] || tabId.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
+      const selected = tabId === selectedTab;
+      a.classList.toggle('active', selected);
+      a.setAttribute('aria-selected', selected ? 'true' : 'false');
+      nav.appendChild(a);
+    });
+
+    const recipeTop = q('.food-recipe-top') || standaloneRecipe.parentElement;
+    if(!recipeTop) return;
+
+    const legacyLinks = q('.top-links', recipeTop);
+    if(legacyLinks) legacyLinks.replaceWith(nav);
+    else recipeTop.appendChild(nav);
+  }
   function cleanRouteForPageHref(hrefRaw, labelText){
     const href = String(hrefRaw || '').trim();
     const label = String(labelText || '').trim().toLowerCase();
@@ -7654,6 +7713,7 @@ function setupRecipeFavourites(){
     safeInit('scroll persistence', setupScrollPersistence);
     safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
+    safeInit('standalone system tabs', ensureStandaloneSystemTabs);
     safeInit('tabs', setupTabs);
 
     try{
