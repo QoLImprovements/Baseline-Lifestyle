@@ -325,3 +325,25 @@ test('recipe title typography is one sitewide Skincare-reference contract', () =
   assert.match(css, /recipe-title-row > h3\{[\s\S]*font-family:var\(--font-soft\) !important;[\s\S]*font-size:28px !important;[\s\S]*line-height:1\.25 !important;/);
   assert.doesNotMatch(skincareCss, /SKINCARE-RECIPE-PRESENTATION-CONTRACT-20261004/);
 });
+
+
+test('all Food recipes use the authored universal shell before runtime enhancement', () => {
+  for (const {name,html} of foodRecipeBlocks()) {
+    assert.match(html,/class="recipe card recipe-page recipe-universal-template"/,name+' universal class');
+    assert.match(html,/data-static-recipe-shell="1"/,name+' static shell');
+    assert.equal((html.match(/data-static-recipe-controls="1"/g)||[]).length,1,name+' static controls');
+    assert.equal((html.match(/class="recipe-meta-row/g)||[]).length,1,name+' metadata row');
+    assert.equal((html.match(/class="recipe-adjustments-row/g)||[]).length,1,name+' adjustments row');
+    assert.equal((html.match(/class="recipe-subtabs/g)||[]).length,1,name+' tab set');
+    assert.equal((html.match(/class="recipe-details-intro/g)||[]).length,1,name+' details block');
+    assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,name+' six Details sections');
+    assert.equal((html.match(/data-recipe-subtab=/g)||[]).length,4,name+' four recipe views');
+    assert.equal((html.match(/data-recipe-view-group="guidance">/g)||[]).length,4,name+' two guidance headings + two lists');
+  }
+});
+
+test('preauthored Food shells still receive recipe-specific variables from shared runtime', () => {
+  assert.match(shared,/if\(isOatPorridge\)[\s\S]*if\(!oatToggleEl\)[\s\S]*recipe-control-row--oat/);
+  assert.match(shared,/if\(hasThickness && !thickSelect\)[\s\S]*recipe-control-row--thickness/);
+  assert.match(shared,/thickSelect\.className = 'thickness-select'/);
+});
