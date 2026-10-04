@@ -134,7 +134,7 @@
     getSideByNumber:function(court, sideNumber){ return getSideByNumber(court, sideNumber); },
     getOppositeSideNumber:function(sideNumber){ return getOppositeSideNumber(sideNumber); },
     getRestrictionZoneMode:function(court, sideNumber){ return getRestrictionZoneMode(court, sideNumber); },
-    getRestrictionSideNumberFromMemory:function(court,memory){return getRestrictionSideNumberFromMemory(court,memory);},
+    getRestrictionSideNumberFromMemory:function(c,m){return getRestrictionSideNumberFromMemory(c,m);},
     getPresetOrder:function(mode){ return getPresetOrder(mode); },
     normaliseShotRestrictions:function(restrictions, stage){ return normaliseShotRestrictions(restrictions, stage); },
     tightenPreset:function(preset, steps, mode){ return tightenPreset(preset, steps, mode); },
@@ -715,7 +715,7 @@
           const verifiedRevision=Number(verified.revision);
           if(Number.isInteger(verifiedRevision)&&verifiedRevision>=0) serverRevision=verifiedRevision;
 
-          if((Number(state && state.localUpdatedAt || 0)||0)<=requestLocalUpdatedAt) state=hydrateLoadedState(verified.state);
+          if((Number(state&&state.localUpdatedAt||0)||0)<=requestLocalUpdatedAt) state=hydrateLoadedState(verified.state);
           return true;
         });
       })
