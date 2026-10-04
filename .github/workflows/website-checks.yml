@@ -103,6 +103,9 @@ jobs:
       - name: Run Badminton Games Hub browser smoke
         run: npx playwright test tests/badminton-focused-browser.spec.js --reporter=line
 
+      - name: Run Darts Games Hub browser smoke
+        run: npx playwright test tests/darts-focused-browser.spec.js --reporter=line
+
       - name: Lint PHP endpoints
         run: |
           while IFS= read -r -d '' file; do

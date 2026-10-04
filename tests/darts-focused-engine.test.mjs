@@ -14,10 +14,15 @@ import {
   recordResult,
   sameSet,
   scoreTarget,
-  validateRoute
+  validateRoute,
+  validateRouteText
 } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
+import { GAMES } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
 
 const uiSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused.js', 'utf8');
+const contentSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js', 'utf8');
+const uiMarkupSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js', 'utf8');
+const storageSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-storage.js', 'utf8');
 const loaderSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js', 'utf8');
 const boardSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg', 'utf8');
 const coreSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js', 'utf8');
@@ -25,16 +30,17 @@ const entrySource = fs.readFileSync('systems/baseline-games-hub/js/baseline-game
 
 test('Darts Focused keeps one named entry with ten distinct website games', () => {
   assert.equal(GAME_IDS.length, 10);
-  for (const id of GAME_IDS) assert.match(uiSource, new RegExp(`id:'${id}'`));
-  assert.match(uiSource, /Darts Focused/);
-  assert.match(uiSource, /10 distinct website games/);
+  assert.deepEqual(GAMES.map((game) => game.id), GAME_IDS);
+  for (const id of GAME_IDS) assert.match(contentSource, new RegExp(`id:'${id}'`));
+  assert.match(uiMarkupSource, /Darts Focused/);
+  assert.match(uiMarkupSource, /10 distinct website games/);
   assert.doesNotMatch(uiSource, /throw three physical darts|physically throw at each|record the actual landing/i);
 });
 
 test('overview and panel use the realistic dartboard artwork', () => {
   assert.match(loaderSource, /realistic-dartboard\.svg/);
   assert.match(loaderSource, /10 distinct website games/);
-  assert.match(uiSource, /realistic-dartboard\.svg/);
+  assert.match(uiMarkupSource, /realistic-dartboard\.svg/);
   assert.match(boardSource, /traditional numbered dartboard/i);
   for (const number of [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5]) {
     assert.match(boardSource, new RegExp(`>${number}<\\/text>`));
@@ -45,11 +51,10 @@ test('Darts Focused is registered in the authoritative Hub list and reuses infor
   assert.match(coreSource, /id:'darts-focused', group:'Testing'/);
   assert.match(coreSource, /data-open-darts-focused/);
   assert.match(entrySource, /games\/darts-focused\/js\/darts-focused\.js/);
-  assert.match(uiSource, /gamesHubInfoModal/);
-  assert.match(uiSource, /data-bl-info-button/);
-  assert.match(uiSource, /game-howto-toggle/);
+  assert.match(uiMarkupSource, /data-bl-info-button/);
+  assert.match(uiMarkupSource, /game-howto-toggle/);
   assert.match(loaderSource, /DartsFocusedLoader/);
-  assert.match(uiSource, /__bl_darts_focused_v2__/);
+  assert.match(storageSource, /__bl_darts_focused_v2__/);
 });
 
 test('board relationships follow the physical dartboard number order', () => {
@@ -110,4 +115,14 @@ test('profile normalisation repairs malformed values and migrates legacy questio
 test('relevant-information answers compare sets rather than checkbox order', () => {
   assert.equal(sameSet(['score','darts'],['darts','score']), true);
   assert.equal(sameSet(['score','crowd'],['score','darts']), false);
+});
+
+
+test('checkout text validation accepts legal alternative routes and enforces dart count',()=>{
+  assert.equal(validateRouteText(100,'T20 → D20',2).valid,true);
+  assert.equal(validateRouteText(100,'T16 → D26',2).valid,false);
+  assert.equal(validateRouteText(81,'T15 → D18',2).valid,true);
+  assert.equal(validateRouteText(100,'T20 → S20 → D10',2).valid,false);
+  assert.equal(validateRouteText(50,'BULL',1).valid,true);
+  assert.equal(validateRouteText(100,'T20 → NOT-A-TARGET → D20',3).valid,false);
 });
