@@ -334,7 +334,16 @@ test('saved hardship is immediately applied to the next generated game and remai
   await page.route('**/systems/baseline-badminton-session/api/badminton_session.php**', async route => {
     if(route.request().method() === 'POST'){
       const body = route.request().postDataJSON();
-      if(body && body.state) state = body.state;
+      if(body && body.state){
+        state = JSON.parse(JSON.stringify(body.state));
+        const newest = Array.isArray(state.matches) ? state.matches[0] : null;
+        if(newest && newest.hardshipContextKey && newest.hardshipRuleAfter){
+          state.hardshipRecords = {};
+          state.plan.activeHardships = {};
+          state.hardshipRecords[newest.hardshipContextKey] = newest.hardshipRuleAfter;
+          state.plan.activeHardships = state.hardshipRecords;
+        }
+      }
       revision += 1;
     }
     return json(route, { ok:true, state, revision, updated_at:Date.now(), auth:badmintonAuth });
@@ -355,6 +364,8 @@ test('saved hardship is immediately applied to the next generated game and remai
   await expect(nextCourt.locator('.boundary-mask')).toHaveCount(1);
   await expect(nextCourt.locator('.status-box').filter({ hasText:'Instruction' })).not.toContainText('No hardship alteration is active');
 
+  expect(state.matches[0].hardshipContextKey).toMatch(/^hardship::singles::restricted::side::/);
+  expect(state.matches[0].hardshipRuleAfter).toBeTruthy();
   expect(Object.keys(state.hardshipRecords || {}).length).toBeGreaterThan(0);
   expect(Object.keys(state.plan && state.plan.activeHardships || {}).length).toBeGreaterThan(0);
 });
