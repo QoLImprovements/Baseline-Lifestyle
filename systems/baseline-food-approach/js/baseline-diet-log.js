@@ -1118,6 +1118,13 @@
         state.noteDraft = getNote(state.date);
         if(!bindAppMarkup(host)) return;
         renderAll();
+
+        document.addEventListener("baseline:food-data", function(event){
+          const detail = event && event.detail ? event.detail : {};
+          if(detail.status !== "ready" || !refs) return;
+          state.noteDraft = getNote(state.date);
+          renderAll();
+        });
       }
     
       if(document.readyState === "loading"){
