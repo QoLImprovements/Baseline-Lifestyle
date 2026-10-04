@@ -20,6 +20,14 @@ test('HTML loads storage authority, core, then normal modules',()=>{
   assert.ok(guardIndex>=0&&coreIndex>guardIndex&&moduleIndex>coreIndex);
 });
 
+test('Games Hub first paint waits for one stable optional-loader render',()=>{
+  assert.match(html,/data-games-hub-boot/);
+  assert.match(html,/baseline:games-hub:visual-ready/);
+  assert.match(html,/visibility:hidden!important/);
+  assert.match(optional,/signalVisualReady/);
+  assert.match(optional,/requestAnimationFrame\(\(\)=>signalVisualReady\(\)\)/);
+});
+
 test('module entry loads non-blocking storage messaging before optional loaders',()=>{
   const storageIndex=bootstrap.indexOf('games-server-storage-ui.js');
   const optionalIndex=bootstrap.indexOf('baseline-games-hub-v14.js');
