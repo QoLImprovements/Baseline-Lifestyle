@@ -1987,6 +1987,21 @@ Method steps MUST follow this format:
       var active = panel.getAttribute('data-variant-panel') === name;
       panel.hidden = !active;
     });
+
+    // Keep every recipe surface synchronized to the one native variant authority.
+    // This also runs during refresh-route restoration, where no click event occurs.
+    if(typeof recipe.__baselineSyncVariantDetailState === 'function'){
+      recipe.__baselineSyncVariantDetailState();
+    }
+    if(typeof window.refreshRecipeComedogenic === 'function'){
+      window.refreshRecipeComedogenic(recipe);
+    }
+    if(typeof recipe.__baselineUpdatePrintSummary === 'function'){
+      recipe.__baselineUpdatePrintSummary();
+    }
+    if(typeof recipe.__baselineRefreshMethodAmounts === 'function'){
+      recipe.__baselineRefreshMethodAmounts();
+    }
   }
 
 
