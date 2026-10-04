@@ -269,9 +269,10 @@ Options -Indexes
   RewriteRule ^baseline-food-approach/diet-log/([^/]+)/?$ "systems/baseline-food-approach/Diet Log/$1.html" [L,QSA]
 
   # BASELINE-CLEAN-RECIPE-DETAIL-ROUTES-20261004
-  # Food recipe bodies are accountable standalone files. Skincare retains its
-  # parent-shell recipe router because that system still owns embedded recipes.
-  RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/recipes/$1.html [L,QSA]
+  # Food and Skincare share the same shell-first recipe architecture.
+  # Clean detail routes keep their system shell; canonical recipe sources feed
+  # the shared recipe runtime instead of becoming separate page experiences.
+  RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
   RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 
   # Baseline Charity Shop uses the same virtual clean-route structure as every other system.
