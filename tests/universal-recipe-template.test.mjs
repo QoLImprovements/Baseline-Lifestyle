@@ -347,3 +347,17 @@ test('preauthored Food shells still receive recipe-specific variables from share
   assert.match(shared,/if\(hasThickness && !thickSelect\)[\s\S]*recipe-control-row--thickness/);
   assert.match(shared,/thickSelect\.className = 'thickness-select'/);
 });
+
+
+test('recipe overview return cannot leave first-paint tab state pinned', () => {
+  assert.match(shared, /function selectTab\(id, opts=\{\}\)[\s\S]*removeAttribute\('data-initial-section'\)/);
+  assert.match(shared, /if\(id !== 'recipes'\)[\s\S]*removeAttribute\('data-initial-recipe-route'\)/);
+  assert.match(shared, /function showAll\(opts=\{\}\)[\s\S]*activateRecipesTabSilently\(\)/);
+  assert.match(foodHtml, /id="baseline-recipe-route-first-paint"/);
+  assert.doesNotMatch(foodHtml, /id="baseline-food-route-first-paint"/);
+  assert.equal((foodHtml.match(/id="baseline-recipe-route-first-paint"/g) || []).length, 1);
+  assert.match(foodHtml, /data-initial-section="ingredients"/);
+  assert.match(foodHtml, /data-initial-section="diet-log"/);
+  assert.doesNotMatch(foodHtml, /\/sitewide\/js\/baseline-tabs\.js/);
+  assert.doesNotMatch(skincareHtml, /\/sitewide\/js\/baseline-tabs\.js/);
+});
