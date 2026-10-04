@@ -17,7 +17,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b11226"/>
 <style>html[data-app="food"],body[data-app="food"]{margin:0;min-height:100%;color:#1b0b09;background:linear-gradient(90deg,#b11226 0%,#f08a24 18%,#ffb000 34%,#ffd26a 50%,#ffb000 66%,#f08a24 82%,#b11226 100%);}</style>
 
-<script id="baseline-food-section-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/baseline-food-approach\/recipes$/i.test(p))d.setAttribute('data-initial-section','recipes')}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/baseline-food-approach\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-food-approach/system">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Food Approach">
@@ -38,11 +38,13 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Shared system components -->
 <!-- Recipes UI (cards + multiplier + thickness controls) -->
 <!-- Shared CSS loaded via <link> tags above. -->
-<style id="baseline-food-section-first-paint-style">
+<style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
 html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="system"]{background:var(--food-tab-bg)!important;border-color:var(--food-tab-border)!important;color:var(--ink)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="recipes"]{background:var(--food-tab-active)!important;border-color:var(--food-deep)!important;color:#fff7e8!important;filter:none!important}
+html[data-initial-recipe-route="1"] body[data-app="food"] #recipes #recipes-landing{display:none!important}
+html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:grid!important;grid-template-columns:1fr!important}
 </style>
 
 
@@ -161,6 +163,7 @@ Recommended structure:
 <li><a class="recipe-open" data-recipe-id="r11" href="/baseline-food-approach/recipes/potato-and-carrot-vegan-cheese">Potato &amp; Carrot Vegan Cheese</a></li>
 <li><a class="recipe-open" data-recipe-id="r8" href="/baseline-food-approach/recipes/sweet-potato-and-bell-pepper-sauce">Sweet Potato &amp; Bell Pepper Sauce</a></li><li><a class="recipe-open" data-recipe-id="r9" href="/baseline-food-approach/recipes/aubergine-and-carrot-sauce">Aubergine &amp; Carrot Sauce</a></li><li><a class="recipe-open" data-recipe-id="r10" href="/baseline-food-approach/recipes/tomato-and-red-pepper-sauce">Tomato &amp; Red Pepper Sauce</a></li></ul>
 </div>
+<div class="recipes" data-recipe-source-host="1"></div>
 </div><!-- /.recipe-main -->
 </div><!-- /.recipe-layout -->
 </div><!-- /.card -->
@@ -618,8 +621,8 @@ Recommended structure:
     "Allergens: list the allergens here."
   ],
   "navigation_rule": {
-    "instruction": "Use clean Food routes. Recipe bodies live in /baseline-food-approach/recipes/<slug> and ingredient records live in /baseline-food-approach/ingredient-library/<slug>. Do not create public #recipe, #ing, or filter-hash routes.",
-    "why": "Each public URL owns one focused record and browser refresh/back restore that record directly."
+    "instruction": "Use the sitewide recipe shell for clean Food recipe routes. Canonical Food recipe files supply recipe content; the Food system shell owns navigation, focus, recipe views and browser history.",
+    "why": "Food and Skincare use one coherent sitewide recipe experience while keeping recipe content accountable to its canonical source file."
   },
   "ingredientSections": [
     {
