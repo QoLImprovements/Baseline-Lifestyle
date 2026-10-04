@@ -628,7 +628,8 @@
   }catch(_e){}
 
   function markLocalChange(){
-    state.localUpdatedAt = Date.now();
+    const previous = Number(state && state.localUpdatedAt || 0) || 0;
+    state.localUpdatedAt = Math.max(Date.now(), previous + 1);
   }
 
 
@@ -678,8 +679,9 @@
     serverSaveInFlight = true;
     serverSaveAbortController = window.AbortController ? new AbortController() : null;
     const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
+    const requestState = JSON.parse(JSON.stringify(state));
 
-    serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(state), serverSaveAbortController && serverSaveAbortController.signal)
+    serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(requestState), serverSaveAbortController && serverSaveAbortController.signal)
       .then(function(data){
         updateServerAuth(data && data.auth);
         if(data && data.error==='revision_conflict'){
@@ -702,7 +704,7 @@
             announceServerSaveConflict('Badminton save could not be verified from the authoritative server. Reload before making further changes.', 'error');
             return false;
           }
-          const expected = sessionCore.hardshipSnapshot(state.hardshipRecords);
+          const expected = sessionCore.hardshipSnapshot(requestState.hardshipRecords);
           const actual = sessionCore.hardshipSnapshot(verified.state.hardshipRecords);
           if(expected !== actual){
             serverSaveBlocked=true;
@@ -711,7 +713,13 @@
           }
           const verifiedRevision=Number(verified.revision);
           if(Number.isInteger(verifiedRevision)&&verifiedRevision>=0) serverRevision=verifiedRevision;
-          state=hydrateLoadedState(verified.state);
+
+          // A verification response confirms the snapshot that was sent. It must
+          // not replace newer live court edits made while that request was in flight.
+          const liveLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
+          if(liveLocalUpdatedAt <= requestLocalUpdatedAt){
+            state=hydrateLoadedState(verified.state);
+          }
           return true;
         });
       })
