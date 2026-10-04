@@ -322,10 +322,16 @@ export class MeridianGroveGame {
     this.renderRouteLog();
     this.renderResourceRibbon();
     this.renderEncounterMeter();
-    this.root.querySelectorAll('[data-jrpg-action="return-basecamp"],[data-jrpg-action="abandon"]').forEach((button) => {
-      button.disabled = Boolean(this.state.battle);
-      button.title = this.state.battle ? 'Finish the battle before leaving the route.' : '';
-    });
+    const returnButton = this.root.querySelector('[data-jrpg-action="return-basecamp"]');
+    if (returnButton) {
+      returnButton.disabled = false;
+      returnButton.title = this.state.battle ? 'Withdraw from this encounter and return to Basecamp.' : 'Return to Basecamp.';
+    }
+    const abandonButton = this.root.querySelector('[data-jrpg-action="abandon"]');
+    if (abandonButton) {
+      abandonButton.disabled = Boolean(this.state.battle);
+      abandonButton.title = this.state.battle ? 'Return to Basecamp first if you want to abandon the route.' : '';
+    }
     if (this.state.battle) this.renderBattle();
   }
 
@@ -602,6 +608,11 @@ export class MeridianGroveGame {
     if (key === 'i') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('inventory'); }
     if (key === 'o') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('settings'); }
     if (key === 'escape' && this.modal) { event.preventDefault(); this.closeModal(); }
+    if (key === 'b' && this.state.battle) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.returnToBasecampFromBattle();
+    }
   }
 
   handlePointer(event) {
@@ -813,7 +824,10 @@ export class MeridianGroveGame {
   }
 
   leaveExploration(abandon = false) {
-    if (this.state.battle) return;
+    if (this.state.battle) {
+      this.returnToBasecampFromBattle();
+      return;
+    }
     if (abandon) this.state = createInitialState();
     this.save(abandon ? 'route-abandoned' : 'return-basecamp');
     this.music.setActive(false);
