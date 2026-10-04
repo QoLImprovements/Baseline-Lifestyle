@@ -4468,12 +4468,6 @@ html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn[ar
   box-shadow:none !important;
   filter:none !important;
 }
-html body[data-app="skin"] .recipe-universal-template > .recipe-title-row > .fav-btn{
-  font-size:28px !important;
-}
-html body[data-app="food"] .recipe-universal-template > .recipe-title-row > .fav-btn{
-  font-size:22px !important;
-}
 @media (max-width:720px){
   body[data-app] .recipe-universal-template .recipe-viewbar{
     flex-wrap:wrap !important;
@@ -4492,19 +4486,20 @@ html body[data-app="food"] .recipe-universal-template > .recipe-title-row > .fav
    Final authority: favourite is a bare star immediately after the title;
    Adjustments is bare text with only its disclosure arrow. */
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row{
-  display:inline-flex !important;
+  display:flex !important;
   align-items:baseline !important;
-  justify-content:flex-start !important;
-  flex-wrap:wrap !important;
-  gap:.18em !important;
-  width:auto !important;
+  justify-content:space-between !important;
+  flex-wrap:nowrap !important;
+  gap:.35em !important;
+  width:100% !important;
   max-width:100% !important;
 }
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h1,
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h2,
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h3{
-  flex:0 1 auto !important;
+  flex:1 1 auto !important;
   width:auto !important;
+  min-width:0 !important;
   max-width:100% !important;
 }
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn,
@@ -4515,11 +4510,16 @@ html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > bu
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn.is-fav,
 html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn[aria-pressed="true"]{
   all:unset !important;
-  display:inline-block !important;
+  display:inline-flex !important;
+  align-items:baseline !important;
+  justify-content:center !important;
+  align-self:baseline !important;
   flex:0 0 auto !important;
   margin:0 !important;
   padding:0 !important;
-  line-height:1 !important;
+  font-family:inherit !important;
+  font-size:var(--recipe-title-font-size, 1em) !important;
+  line-height:var(--recipe-title-line-height, 1) !important;
   color:var(--accent-2, var(--ink)) !important;
   background:none !important;
   border:0 !important;
@@ -4528,13 +4528,6 @@ html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > bu
   text-decoration:none !important;
   cursor:pointer !important;
 }
-html body[data-app="skin"] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn{
-  font-size:28px !important;
-}
-html body[data-app="food"] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn{
-  font-size:22px !important;
-}
-
 html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle,
 html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:hover,
 html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:focus,
