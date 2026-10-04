@@ -69,7 +69,8 @@ test('Food recipe content ownership uses the same shell-first system as Skincare
     htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]'),
     'Food clean recipe routes must keep the Food system shell'
   );
-  assert.match(shared, /async function hydrateFolderBackedRecipeRoute\(\)/);
+  assert.match(shared, /async function hydrateFolderBackedRecipeCollection\(\)/);
+  assert.match(shared, /Promise\.all\([\s\S]*BASELINE_FOOD_RECIPE_INDEX/);
   assert.match(shared, /\/systems\/baseline-food-approach\/recipes\//);
   assert.match(shared, /card\.classList\.add\('recipe-universal-template'\)/);
   assert.doesNotMatch(shared, /ensureStandaloneSystemTabs|baseline-standalone-primary-tabs/);
