@@ -96,7 +96,7 @@ function escapeHtml(value) {
   }[character]));
 }
 
-const { createLazyScene, prepareExternalSceneView } = createRealmLazySceneAuthority({
+const { createLazyScene, prepareExternalSceneView, restorePersistentSceneView } = createRealmLazySceneAuthority({
   eventBus,
   getRuntime:()=>runtime,
   externalSceneIds:EXTERNAL_SCENE_IDS,
@@ -170,8 +170,12 @@ function registerScenes() {
   const sceneRuntime = Object.freeze({
     ...runtime,
     setView(view) {
-      if (EXTERNAL_SCENE_IDS.includes(view)) prepareExternalSceneView(view);
-      else runtime?.setView?.(view);
+      if (EXTERNAL_SCENE_IDS.includes(view)) {
+        prepareExternalSceneView(view);
+      } else {
+        restorePersistentSceneView();
+        runtime?.setView?.(view);
+      }
     }
   });
   const shared = { runtime: sceneRuntime, inventoryService, workshopService, stateService, eventBus };
