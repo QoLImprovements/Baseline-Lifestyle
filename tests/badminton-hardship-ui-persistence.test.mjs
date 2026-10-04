@@ -21,6 +21,10 @@ const renderer = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
   "utf8",
 );
+const courtCards = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-cards.js"),
+  "utf8",
+);
 
 function section(startName, endName) {
   const start = js.indexOf("function " + startName);
@@ -45,15 +49,14 @@ test("reload takes Player-ID and Pair-ID hardships from authoritative server sta
 });
 
 test("court cards no longer render Why this matchup", () => {
-  const card = section("renderCourtCard", "sanitizeScoreInput");
-  assert.doesNotMatch(card, /Why this matchup\?/);
-  assert.doesNotMatch(card, /court-matchup-reason/);
+  assert.doesNotMatch(courtCards, /Why this matchup\?/);
+  assert.doesNotMatch(courtCards, /court-matchup-reason/);
 });
 
 test("active hardship explanation is a compact question-mark control on the artwork", () => {
   assert.match(renderer, /function renderHardshipHelp\(court\)/);
   assert.match(renderer, /aria-label="Why this hardship\?"/);
-  assert.match(js, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
+  assert.match(courtCards, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
   assert.match(css, /\.court-hardship-help\{position:absolute;top:8px;right:8px/);
   assert.match(css, /\.court-hardship-help>summary/);
 });
