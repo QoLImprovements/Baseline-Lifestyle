@@ -1,6 +1,9 @@
 export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }) {
   const active = () => !!document.getElementById('ninjaPanel')?.classList.contains('is-active');
-  const externalSceneActive = () => Boolean(document.documentElement.getAttribute('data-baseline-realm-external-scene'));
+  const externalSceneActive = () => Boolean(
+    document.documentElement.getAttribute('data-baseline-realm-external-scene')
+    || ['calorie-escape','tactical-operations'].includes(sceneRouter.getCurrentSceneId())
+  );
   const standardActive = () => active() && !externalSceneActive();
   const jrpgActive = () => runtime.getView() === 'exploration' && !!document.getElementById('realmSceneFrame')?.classList.contains('is-exploration-jrpg');
   const payload = (event) => event.detail?.payload || {};
