@@ -163,8 +163,8 @@ body[data-app="food"]{
      gold/yellow is reserved for controls and red for active emphasis. */
   --food-surface-card: linear-gradient(180deg,
     var(--food-gold) 0%,
-    var(--food-orange) 68%,
-    #df7023 100%
+    var(--food-orange) 72%,
+    var(--food-red) 100%
   );
   --food-surface-panel: linear-gradient(180deg,
     rgba(255,176,0,0.78),
