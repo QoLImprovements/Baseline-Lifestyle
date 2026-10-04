@@ -62,18 +62,7 @@ function initialState(){
       generationIndex:1,
       format:'doubles',
       durationMinutes:60,
-      current:[{
-        courtNumber:1,
-        currentCourtKey:'test-court-1',
-        kind:'singles',
-        side1:{kind:'single',players:[peter]},
-        side2:{kind:'single',players:[other]},
-        score1:null,
-        score2:null,
-        pendingHardship:'',
-        noGame:false,
-        status:''
-      }],
+      current:[],
       generatedAt:'2026-10-04T12:00:00.000Z',
       usedCourtSignatures:[],
       currentSavedSignatures:[],
@@ -135,6 +124,11 @@ test('authoritative Badminton moderator auth enables score entry and Save Result
   page.on('pageerror', error => errors.push(error.message));
 
   await page.goto(PATH, { waitUntil:'domcontentloaded' });
+
+  const generate = page.locator('#generatePlanBtn');
+  await expect(generate).toBeVisible();
+  await expect(generate).toBeEnabled();
+  await generate.click();
 
   const side1 = page.locator('[data-current-court-index="0"] [data-score-side="1"]');
   const side2 = page.locator('[data-current-court-index="0"] [data-score-side="2"]');
