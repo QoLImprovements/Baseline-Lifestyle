@@ -33,16 +33,11 @@ test("serious persistence failures use a dedicated status surface instead of the
   assert.doesNotMatch(status, /planAlert|data-plan-alert|\.plan-alert/);
 });
 
-test("reload reconciles Player-ID and Pair-ID hardships independently of whole-session freshness", () => {
-  const merge = section("mergeNewestLocalHardshipsIntoServerState", "serverPayload");
-  assert.match(merge, /activeHardships/);
-  assert.match(merge, /sessionCore\.mergeNewestHardshipRecords/);
+test("reload takes Player-ID and Pair-ID hardships from authoritative server state only", () => {
   const hydrate = section("hydrateSessionFromServer", "normalizeLoginName");
-  const mergeAt = hydrate.indexOf("mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot)");
-  const freshnessAt = hydrate.indexOf("localStateIsNewerThanServer(localSnapshot,serverState)");
-  assert.ok(mergeAt >= 0);
-  assert.ok(freshnessAt < 0 || mergeAt < freshnessAt);
-  assert.match(hydrate, /if\(recoveredHardships\)[\s\S]*queueServerSave\(\)/);
+  assert.match(hydrate, /state=hydrateLoadedState\(data\.state/);
+  assert.doesNotMatch(hydrate, /localSnapshot|localStateIsNewerThanServer|mergeNewestLocalHardshipsIntoServerState/);
+  assert.doesNotMatch(js, /localStorage|sessionStorage|persistSessionLocalOnly/);
 });
 
 test("court cards no longer render Why this matchup", () => {
