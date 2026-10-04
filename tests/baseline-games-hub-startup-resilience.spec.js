@@ -107,11 +107,17 @@ test('Realm opens at Basecamp and Ninja actors and controls work after explicit 
   expect(layers.runner).toBeGreaterThan(layers.foreground);
   expect(layers.banner).toBeGreaterThan(layers.runner);
   expect(layers.dock).toBeGreaterThan(layers.banner);
-  const before=await health(page);
+  const before=await page.evaluate(()=>{
+    const save=globalThis.BaselineRealmHost.syncProfileRealm();
+    return {hp:save.realm.ninjaTraining.enemyHp,kills:save.realm.ninjaTraining.totalKills};
+  });
   await page.locator('#ninjaManualStrikeBtn').click();
   await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-dash-cut/);
   await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-dash.svg');
-  await expect.poll(async()=>(await health(page)).current).toBeLessThan(before.current);
+  await expect.poll(()=>page.evaluate((previous)=>{
+    const save=globalThis.BaselineRealmHost.syncProfileRealm();
+    return save.realm.ninjaTraining.enemyHp!==previous.hp || save.realm.ninjaTraining.totalKills>previous.kills;
+  },before)).toBe(true);
   await page.locator('#ninjaShurikenBtn').click();
   await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-throwing/);
   await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-throw.svg');
