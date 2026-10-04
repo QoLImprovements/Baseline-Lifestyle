@@ -51,7 +51,8 @@ function createHarness() {
 }
 
 test('external games own their keyboard and controller input without standard Realm shortcut collisions', () => {
-  assert.match(inputBindingsSource,/const externalSceneActive = \(\) => Boolean\(document\.documentElement\.getAttribute\('data-baseline-realm-external-scene'\)\)/);
+  assert.match(inputBindingsSource,/data-baseline-realm-external-scene/);
+  assert.match(inputBindingsSource,/\['calorie-escape','tactical-operations'\]\.includes\(sceneRouter\.getCurrentSceneId\(\)\)/);
   assert.match(inputBindingsSource,/const standardActive = \(\) => active\(\) && !externalSceneActive\(\)/);
   assert.match(inputBindingsSource,/bindKeyboard\('realm-primary',[\s\S]*when: standardActive/);
   assert.match(inputBindingsSource,/const standardOnly = \(handler\)/);
