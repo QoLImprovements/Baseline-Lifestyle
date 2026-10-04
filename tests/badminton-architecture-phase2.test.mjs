@@ -338,16 +338,9 @@ test("entering the top-level Game Plan tab returns to the primary Game Plan subt
 });
 
 test("Badminton repaired modules carry fresh cache revisions", () => {
-  for (const file of [
-    "badminton-session-roster.js",
-    "badminton-session-game-plan.js",
-    "badminton-session-results.js",
-    "badminton-session-court-renderer.js",
-    "badminton-session-court-cards.js",
-  ]) {
-    assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
-  }
-  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_SCORE_PERMISSION_FIX_20261004_3/);
+  assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
+  assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
 });
 
 
@@ -357,4 +350,22 @@ test("score permission resolves generated court snapshots back to canonical Play
   const permission = source.slice(start, end);
   assert.match(permission, /courtPlayer && courtPlayer\.id \? getPlayer\(courtPlayer\.id\) : null/);
   assert.match(permission, /currentUserMatchesPlayer\(canonicalPlayer \|\| courtPlayer\)/);
+});
+
+
+test("legacy pair-summary migration helper is owned by the roster module after the split", () => {
+  assert.match(rosterSource, /function getPlayerByNameForRatingMigration\(name\)/);
+  assert.match(rosterSource, /names\.map\(getPlayerByNameForRatingMigration\)/);
+  assert.doesNotMatch(source, /getPlayerByNameForRatingMigration:function/);
+});
+
+test("Results owns score-generation matching locally instead of calling a missing controller helper", () => {
+  assert.doesNotMatch(resultsSource, /const inputMatchesGeneration = options\.inputMatchesGeneration/);
+  assert.doesNotMatch(source, /inputMatchesGeneration:function/);
+  assert.match(resultsSource, /const inputMatchesGeneration = function\(input\)/);
+});
+
+test("Badminton render failure diagnostics never instruct users to clear browser session data", () => {
+  assert.doesNotMatch(source, /clear stale local session data/i);
+  assert.match(source, /render failed during/);
 });
