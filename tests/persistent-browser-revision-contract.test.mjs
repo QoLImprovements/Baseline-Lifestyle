@@ -67,15 +67,16 @@ test('Skincare clients never retry a stale document with a freshly fetched revis
   assert.doesNotMatch(bridge,/409[\s\S]{0,300}nativeFetch\(/);
 });
 
-test('shared Badminton treats successful empty Saved Data as authoritative',()=>{
+test('shared Badminton keeps server state authoritative while reconciling only newer hardship memory',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
   assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
   assert.match(hydrate,/const serverState = data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\);/);
-  assert.match(hydrate,/state=hydrateLoadedState\(serverState\);/);
-  assert.match(hydrate,/serverRevision===0[\s\S]{0,500}empty shared server state is authoritative/);
-  assert.match(hydrate,/successful shared server response is authoritative/);
-  assert.doesNotMatch(hydrate,/else if\(localHasContent && localStateIsNewerThanServer/);
+  assert.match(hydrate,/let nextState = serverState;/);
+  assert.match(hydrate,/mergeNewestLocalHardshipsIntoServerState\(serverState, localSnapshot\)/);
+  assert.match(hydrate,/state=hydrateLoadedState\(nextState\);/);
+  assert.match(hydrate,/if\(recoveredHardships\)[\s\S]{0,220}queueServerSave\(\)/);
+  assert.doesNotMatch(hydrate,/state=hydrateLoadedState\(localSnapshot\)/);
   assert.doesNotMatch(hydrate,/if\(currentUserIsManager\(\)\) queueServerSave\(\)/);
   assert.doesNotMatch(hydrate,/else if\(localHasContent && currentUserIsManager\(\)\)/);
 });
