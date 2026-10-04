@@ -146,6 +146,25 @@ test('navigation reaches every completed Realm module', async ({ page }) => {
   }
 });
 
+test('Basecamp landmarks enter external games and reliably return to the hub', async ({ page }) => {
+  await openRealm(page);
+
+  await page.locator('[data-basecamp-landmark="calorie-escape"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('calorie-escape');
+  await expect(page.locator('#calorieEscapeScreen')).toBeVisible();
+  await page.locator('#calorieEscapeScreen [data-ce-action="basecamp"]').first().click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+
+  await page.locator('[data-basecamp-landmark="tactical-operations"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('tactical-operations');
+  await expect(page.locator('#tacticalOperationsScreen')).toBeVisible();
+  await page.locator('#tacticalOperationsScreen [data-action="exit"]').click();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
+  await expect(page.locator('.realm-command-banner')).toBeVisible();
+});
+
 test('authenticated save/load, shared wallet, crafting, battle and inventory transfer remain connected', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const page = await context.newPage();
