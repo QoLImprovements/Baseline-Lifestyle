@@ -1881,12 +1881,11 @@ function parseViewStateHash(hash){
 
       const sourceHtml = await response.text();
       const sourceDoc = new DOMParser().parseFromString(sourceHtml, 'text/html');
-      const sourceCard = sourceDoc.querySelector('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]')
-        || sourceDoc.querySelector('.standalone-recipe-card');
+      const sourceCard = sourceDoc.querySelector('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]');
       if(!sourceCard) throw new Error('recipe_source_missing_card');
 
       const card = document.importNode(sourceCard, true);
-      card.classList.remove('standalone-recipe-card', 'active', 'is-open');
+      card.classList.remove('active', 'is-open');
       card.classList.add('recipe-universal-template');
       card.style.display = '';
       host.appendChild(card);

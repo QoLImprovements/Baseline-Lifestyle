@@ -12,7 +12,7 @@ const liveStability = fs.readFileSync('sitewide/js/baseline-live-stability-core-
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 
 function skincareRecipeBlocks(){
-  const matches=[...skincareHtml.matchAll(/<div class="recipe card recipe-page recipe-universal-template"[^>]*\bid="(r\d+)"[^>]*>/g)];
+  const matches=[...skincareHtml.matchAll(/<div class="recipe recipe-page recipe-universal-template"[^>]*\bid="(r\d+)"[^>]*>/g)];
   return matches.map((match,index)=>{
     const end=index+1<matches.length ? matches[index+1].index : skincareHtml.indexOf('<!-- INGREDIENT LIBRARY -->',match.index);
     return { id:match[1], html:skincareHtml.slice(match.index,end) };
@@ -276,4 +276,15 @@ test('recipe authoring authority is sitewide, not duplicated per system', () => 
   assert.doesNotMatch(skincareHtml, /id="baseline-recipe-authoring-template"/);
   assert.match(foodHtml, /SITEWIDE RECIPE TEMPLATE — FOOD CONTENT NOTES/);
   assert.match(skincareHtml, /SITEWIDE RECIPE TEMPLATE — SKINCARE CONTENT NOTES/);
+});
+
+
+test('universal recipe overview never revives historical recipe cards', () => {
+  assert.match(css, /\.recipe-page\{\s*display:none;/);
+  assert.doesNotMatch(css, /\.recipe\.card/);
+  assert.doesNotMatch(css, /#recipes:not\(\.recipe-open-mode\)/);
+  assert.doesNotMatch(css, /recipe-top-bar/);
+  assert.doesNotMatch(css, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
+  assert.doesNotMatch(skincareHtml, /class="recipe card recipe-page/);
+  assert.doesNotMatch(foodHtml, /class="card recipe-landing"/);
 });
