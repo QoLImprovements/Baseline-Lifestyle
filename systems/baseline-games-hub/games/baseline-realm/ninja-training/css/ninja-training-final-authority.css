@@ -24,19 +24,22 @@
 #ninjaPanel .ninja-scene__layer--a,
 #ninjaPanel .ninja-forest-layer--distant{
   background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-distant.svg')!important;
-  background-size:cover!important;
-  background-position:center bottom!important;
+  background-repeat:repeat-x!important;
+  background-size:auto 100%!important;
+  background-position:0 bottom!important;
 }
 #ninjaPanel .ninja-scene__layer--b,
 #ninjaPanel .ninja-forest-layer--middle{
   background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-middle.svg')!important;
-  background-size:cover!important;
-  background-position:center bottom!important;
+  background-repeat:repeat-x!important;
+  background-size:auto 100%!important;
+  background-position:0 bottom!important;
 }
 #ninjaPanel .ninja-forest-layer--foreground{
   background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/forest-foreground.svg')!important;
-  background-size:cover!important;
-  background-position:center bottom!important;
+  background-repeat:repeat-x!important;
+  background-size:auto 100%!important;
+  background-position:0 bottom!important;
 }
 #ninjaPanel .ninja-scene.has-runtime-sprites .ninja-scene__runner::before,
 #ninjaPanel .ninja-scene.has-runtime-sprites .ninja-scene__enemy::before{display:none!important;}
