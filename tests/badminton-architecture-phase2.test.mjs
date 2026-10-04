@@ -159,3 +159,10 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
   assert.match(hardshipsSource, /function getActiveHardshipLedger\(/);
   assert.match(hardshipsSource, /function setDominantHardshipRuleForSide\(/);
 });
+
+
+test("Badminton controller stays below the post-split size ceiling", () => {
+  const lines = source.split("\n").length;
+  assert.ok(lines < 3900, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 200000, `controller grew back to ${source.length} characters`);
+});
