@@ -53,9 +53,12 @@ test("court cards no longer render Why this matchup", () => {
   assert.doesNotMatch(courtCards, /court-matchup-reason/);
 });
 
-test("active hardship explanation is a compact question-mark control on the artwork", () => {
+test("court information is a persistent compact i control on the artwork", () => {
   assert.match(renderer, /function renderHardshipHelp\(court\)/);
-  assert.match(renderer, /aria-label="Why this hardship\?"/);
+  assert.match(renderer, /aria-label="Game information"/);
+  assert.match(renderer, />i<\/summary>/);
+  assert.match(renderer, /No saved hardship is active for this matchup/);
+  assert.doesNotMatch(renderer, /if\(!text\) return ''/);
   assert.match(courtCards, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
   assert.match(css, /\.court-hardship-help\{position:absolute;top:8px;right:8px/);
   assert.match(css, /\.court-hardship-help>summary/);

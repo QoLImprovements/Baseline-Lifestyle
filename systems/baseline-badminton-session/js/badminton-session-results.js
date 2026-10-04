@@ -56,7 +56,7 @@
     const selectedValue = String(court && court.pendingHardship || '').trim();
     const stateKey = getHardshipControlStateKey(court);
     const wrapOpen = '<div class="hardship-control" data-hardship-wrap="' + escapeHtml(String(index)) + '" data-hardship-state-key="' + escapeHtml(stateKey) + '" data-selected-hardship="' + escapeHtml(selectedValue) + '">';
-    const saveButton = '<button class="action hardship-save" data-save-court="' + escapeHtml(String(index)) + '" data-save-signature="' + escapeHtml(String(court.signature || '')) + '" data-hardship-save-button="true" data-hardship-value="' + escapeHtml(selectedValue) + '" type="button" onclick="return global.BASELINE_saveCourtResultButton ? global.BASELINE_saveCourtResultButton(event,this) : false;">Save Results</button>';
+    const saveButton = '<button class="action hardship-save" data-save-court="' + escapeHtml(String(index)) + '" data-save-signature="' + escapeHtml(String(court.signature || '')) + '" data-hardship-save-button="true" data-hardship-value="' + escapeHtml(selectedValue) + '" type="button" onclick="return window.BASELINE_saveCourtResultButton ? window.BASELINE_saveCourtResultButton(event,this) : false;">Save Results</button>';
 
     if(!canSaveCourtNow(court)){
       if(court) court.pendingHardship = '';

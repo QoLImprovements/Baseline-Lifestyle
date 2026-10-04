@@ -259,17 +259,31 @@
 
   function buildLoginOptions(){
     const map = {};
-    addLoginOption(map, moderatorCanonicalLogin, 'Peter Bates-Wilkinson', 'Bateswilkinson@gmail.com', 'moderator');
+    const canonicalModeratorKey = normalizeLoginName(moderatorCanonicalLogin);
+    const addCanonicalLoginOption = function(value, label, email, id){
+      const raw = String(value || '').trim();
+      if(!raw) return;
+      const canonical = normalizeKnownLoginName(raw);
+      const isModeratorLogin = normalizeLoginName(canonical) === canonicalModeratorKey;
+      addLoginOption(
+        map,
+        canonical,
+        isModeratorLogin ? moderatorCanonicalLogin : (label || canonical),
+        email || '',
+        id || ''
+      );
+    };
+    addCanonicalLoginOption(moderatorCanonicalLogin, moderatorCanonicalLogin, 'Bateswilkinson@gmail.com', 'moderator');
     loginOptions.forEach(function(item){
       if(!item) return;
-      addLoginOption(map, item.value || item.name || item.email, item.label || item.name || item.email, item.email || '', item.id || item.userId || '');
+      addCanonicalLoginOption(item.value || item.name || item.email, item.label || item.name || item.email, item.email || '', item.id || item.userId || '');
     });
     (state().players || []).forEach(function(player){
-      addLoginOption(map, player.loginUsername, player.loginUsername, player.loginEmail || player.email || '', player.loginUserId || player.userId || '');
+      addCanonicalLoginOption(player.loginUsername, player.loginUsername, player.loginEmail || player.email || '', player.loginUserId || player.userId || '');
     });
     const auth = getSitewideAuth();
     if(auth && auth.authed !== false){
-      addLoginOption(map, auth.name || auth.email, auth.name || auth.email, auth.email || '', auth.id || '');
+      addCanonicalLoginOption(auth.username || auth.login || auth.name || auth.email, auth.username || auth.login || auth.name || auth.email, auth.email || '', auth.id || '');
     }
     return Object.values(map).sort(function(a, b){ return a.label.localeCompare(b.label); });
   }
