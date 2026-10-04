@@ -4668,3 +4668,85 @@ html body[data-app="food"] .recipe-universal-template > .recipe-title-row > .fav
   }
 }
 
+/* BASELINE-RECIPE-BARE-CONTROLS-20261004
+   Final authority: favourite is a bare star immediately after the title;
+   Adjustments is bare text with only its disclosure arrow. */
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row{
+  display:inline-flex !important;
+  align-items:baseline !important;
+  justify-content:flex-start !important;
+  flex-wrap:wrap !important;
+  gap:.18em !important;
+  width:auto !important;
+  max-width:100% !important;
+}
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h1,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h2,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > h3{
+  flex:0 1 auto !important;
+  width:auto !important;
+  max-width:100% !important;
+}
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn:hover,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn:focus,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn:focus-visible,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn:active,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn.is-fav,
+html body[data-app] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn[aria-pressed="true"]{
+  all:unset !important;
+  display:inline-block !important;
+  flex:0 0 auto !important;
+  margin:0 !important;
+  padding:0 !important;
+  line-height:1 !important;
+  color:var(--accent-2, var(--ink)) !important;
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+  text-decoration:none !important;
+  cursor:pointer !important;
+}
+html body[data-app="skin"] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn{
+  font-size:28px !important;
+}
+html body[data-app="food"] #recipes .recipe-universal-template > .recipe-title-row > button.fav-btn{
+  font-size:22px !important;
+}
+
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle,
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:hover,
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:focus,
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:focus-visible,
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle:active,
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle[aria-expanded="true"]{
+  all:unset !important;
+  display:inline-flex !important;
+  align-items:center !important;
+  flex:0 0 auto !important;
+  margin:0 0 0 auto !important;
+  padding:0 !important;
+  color:var(--accent-2, var(--ink)) !important;
+  font:inherit !important;
+  font-size:1em !important;
+  font-weight:800 !important;
+  line-height:1.2 !important;
+  background:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
+  text-decoration:none !important;
+  cursor:pointer !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle::after{
+  content:'▾' !important;
+  display:inline-block !important;
+  margin-left:.35em !important;
+  line-height:1 !important;
+  text-decoration:none !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle[aria-expanded="true"]::after{
+  transform:rotate(180deg) !important;
+}
+
