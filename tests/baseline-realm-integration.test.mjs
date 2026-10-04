@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import test from 'node:test';
 
 import { RealmAccessibilityService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-accessibility-service.js';
@@ -11,6 +12,11 @@ import { RealmPerformanceMonitor } from '../systems/baseline-games-hub/games/bas
 import { RealmSaveAdapter, realmSaveKeys } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-save-adapter.js';
 import { RealmStateService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-state-service.js';
 import { RealmWorkshopService } from '../systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-service.js';
+
+const lazyScenesSource = fs.readFileSync(
+  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js', import.meta.url),
+  'utf8'
+);
 
 function createStorage() {
   const values = new Map();
@@ -39,6 +45,12 @@ function createHarness() {
   });
   return { getState: () => state, inventoryService, workshopService, stateService };
 }
+
+test('external Realm scenes do not impersonate Basecamp or restore guessed surfaces', () => {
+  assert.doesNotMatch(lazyScenesSource,/getRuntime\(\)\?\.setView\?\.\('basecamp'\)/);
+  assert.doesNotMatch(lazyScenesSource,/setHidden\('#ninjaScene, \.realm-command-banner, \.realm-action-dock',false\)/);
+  assert.match(lazyScenesSource,/destination scene's runtime\.setView\(\) is the sole visibility authority/);
+});
 
 test('Realm v3 shares wallet, all inventory buckets, roster and party data', () => {
   const harness = createHarness();
