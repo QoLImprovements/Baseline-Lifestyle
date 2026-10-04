@@ -1960,6 +1960,7 @@ function parseViewStateHash(hash){
       try{
         document.documentElement.removeAttribute('data-initial-section');
         document.documentElement.removeAttribute('data-initial-recipe-route');
+        document.documentElement.removeAttribute('data-initial-recipe-pending');
         document.documentElement.removeAttribute('data-initial-recipe-slug');
         document.documentElement.removeAttribute('data-initial-recipe-view');
       }catch(_e){}
