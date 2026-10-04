@@ -1973,9 +1973,10 @@ Method steps MUST follow this format:
     return 'Firmest set in this range. Best when you want stronger structure and more heat resistance.';
   }
 
-  function activateCleanserVariant(name){
+  function activateCleanserVariant(name, options){
     var recipe = document.getElementById('r2');
     if(!recipe) return;
+    options = options || {};
 
     Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
       var active = btn.getAttribute('data-variant') === name;
@@ -2001,6 +2002,23 @@ Method steps MUST follow this format:
     }
     if(typeof recipe.__baselineRefreshMethodAmounts === 'function'){
       recipe.__baselineRefreshMethodAmounts();
+    }
+
+    // A visible variant selection and its refresh route must become one atomic
+    // state change. Do not defer this to a later shared click listener.
+    if(options.syncRoute){
+      try{
+        var url = new URL(window.location.href);
+        var recipePath = String(url.pathname || '').replace(/\/+$/,'').toLowerCase();
+        if(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/.test(recipePath)){
+          url.searchParams.set('variant', String(name || '').trim());
+          window.history.replaceState(
+            window.history.state,
+            '',
+            url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams.toString()) : '') + url.hash
+          );
+        }
+      }catch(_e){}
     }
   }
 
@@ -2107,7 +2125,7 @@ Method steps MUST follow this format:
       if(btn.dataset.bound === '1') return;
       btn.dataset.bound = '1';
       btn.addEventListener('click', function(){
-        activateCleanserVariant(btn.getAttribute('data-variant'));
+        activateCleanserVariant(btn.getAttribute('data-variant'), { syncRoute:true });
       });
     });
 
