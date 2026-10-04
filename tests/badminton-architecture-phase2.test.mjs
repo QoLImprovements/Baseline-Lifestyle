@@ -436,11 +436,10 @@ test("server verification cannot overwrite newer live Badminton court state", ()
   const start = source.indexOf("function postServerState");
   const end = source.indexOf("function queueServerSave", start);
   const saveBlock = source.slice(start, end);
-  assert.match(saveBlock, /const requestState = JSON\.parse\(JSON\.stringify\(state\)\)/);
+  assert.match(saveBlock, /const requestState=JSON\.parse\(JSON\.stringify\(state\)\)/);
   assert.match(saveBlock, /serverPayload\(requestState\)/);
   assert.match(saveBlock, /hardshipSnapshot\(requestState\.hardshipRecords\)/);
-  assert.match(saveBlock, /const liveLocalUpdatedAt = Number\(state && state\.localUpdatedAt/);
-  assert.match(saveBlock, /if\(liveLocalUpdatedAt <= requestLocalUpdatedAt\)\{\s*state=hydrateLoadedState\(verified\.state\)/);
+  assert.match(saveBlock, /if\(\(Number\(state&&state\.localUpdatedAt\|\|0\)\|\|0\)<=requestLocalUpdatedAt\) state=hydrateLoadedState\(verified\.state\)/);
 });
 
 test("score and hardship draft edits are marked as newer server-side state", () => {
@@ -464,5 +463,5 @@ test("local Badminton revision marker is strictly monotonic", () => {
   const start = source.indexOf("function markLocalChange");
   const end = source.indexOf("function updateServerAuth", start);
   const block = source.slice(start, end);
-  assert.match(block, /Math\.max\(Date\.now\(\), previous \+ 1\)/);
+  assert.match(block, /Math\.max\(Date\.now\(\),\(Number\(state && state\.localUpdatedAt \|\| 0\)\|\|0\)\+1\)/);
 });
