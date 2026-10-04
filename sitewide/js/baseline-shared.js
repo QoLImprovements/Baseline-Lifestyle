@@ -370,64 +370,6 @@
     }catch(_e){ return ''; }
   }
 
-  const BASELINE_TAB_LABELS = Object.freeze({
-    system:'System',
-    recipes:'Recipes',
-    ingredients:'Ingredient Library',
-    'diet-log':'Diet Log',
-    library:'Library',
-    planner:'Planner',
-    support:'Skin Support System',
-    routine:'My Routine',
-    gameplan:'Game Plan',
-    standings:'Ratings & Standings',
-    roster:'Players & Pairs',
-    history:'Session History',
-    achievements:'Achievements',
-    'my-plan':'My Plan',
-    'my-routine':'My Plan',
-    'my-body':'My Body'
-  });
-
-  function ensureStandaloneSystemTabs(){
-    const standaloneRecipe = q('.standalone-recipe-card');
-    if(!standaloneRecipe) return;
-
-    const cfg = cleanRouteConfigForCurrentPage();
-    if(!cfg || !cfg.tabs) return;
-
-    const existingPrimary = q('.baseline-standalone-primary-tabs');
-    if(existingPrimary) return;
-
-    const routeState = cleanRouteStateFromPath();
-    const selectedTab = routeState && routeState.tabId
-      ? routeState.tabId
-      : (routeState && routeState.kind === 'recipe' ? 'recipes' : cfg.defaultTab);
-
-    const nav = document.createElement('nav');
-    nav.className = 'tabs baseline-standalone-primary-tabs';
-    nav.setAttribute('aria-label', 'Primary navigation tabs');
-
-    Object.keys(cfg.tabs).forEach((tabId)=>{
-      const href = cleanUrlForTab(tabId);
-      if(!href) return;
-      const a = document.createElement('a');
-      a.className = 'tab';
-      a.href = href;
-      a.textContent = BASELINE_TAB_LABELS[tabId] || tabId.replace(/-/g,' ').replace(/\b\w/g, c=>c.toUpperCase());
-      const selected = tabId === selectedTab;
-      a.classList.toggle('active', selected);
-      a.setAttribute('aria-selected', selected ? 'true' : 'false');
-      nav.appendChild(a);
-    });
-
-    const recipeTop = q('.food-recipe-top') || standaloneRecipe.parentElement;
-    if(!recipeTop) return;
-
-    const legacyLinks = q('.top-links', recipeTop);
-    if(legacyLinks) legacyLinks.replaceWith(nav);
-    else recipeTop.appendChild(nav);
-  }
   function cleanRouteForPageHref(hrefRaw, labelText){
     const href = String(hrefRaw || '').trim();
     const label = String(labelText || '').trim().toLowerCase();
@@ -1884,6 +1826,52 @@ function parseViewStateHash(hash){
   // ---------------------------
   // Recipes: open-one mode
   // ---------------------------
+  async function hydrateFolderBackedRecipeRoute(){
+    try{
+      const pageFile = routePageFileFromPath(location.pathname || '');
+      if(pageFile !== 'baseline-food-approach.html') return null;
+
+      const path = decodeURIComponent(String(location.pathname || '')).replace(/\/+$/,'');
+      const match = path.match(/^\/baseline-food-approach\/recipes\/([^\/?#]+)$/i);
+      if(!match || !match[1]) return null;
+
+      const slug = String(match[1] || '').trim().toLowerCase();
+      if(!slug) return null;
+
+      const recipesSection = q('#recipes');
+      const host = recipesSection ? q('.recipes', recipesSection) : null;
+      if(!recipesSection || !host) return null;
+
+      const existing = q('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]', host);
+      if(existing) return existing;
+
+      const sourceUrl = '/systems/baseline-food-approach/recipes/' + encodeURIComponent(slug) + '.html';
+      const response = await fetch(sourceUrl, {
+        method:'GET',
+        credentials:'same-origin',
+        cache:'no-store',
+        headers:{'Accept':'text/html'}
+      });
+      if(!response.ok) throw new Error('recipe_source_' + response.status);
+
+      const sourceHtml = await response.text();
+      const sourceDoc = new DOMParser().parseFromString(sourceHtml, 'text/html');
+      const sourceCard = sourceDoc.querySelector('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]')
+        || sourceDoc.querySelector('.standalone-recipe-card');
+      if(!sourceCard) throw new Error('recipe_source_missing_card');
+
+      const card = document.importNode(sourceCard, true);
+      card.classList.remove('standalone-recipe-card', 'active', 'is-open');
+      card.classList.add('recipe-universal-template');
+      card.style.display = '';
+      host.appendChild(card);
+      return card;
+    }catch(error){
+      console.error('[Baseline recipe] Food recipe hydration failed:', error);
+      return null;
+    }
+  }
+
   function setupRecipeActionBars(){
     const recipesSection = q('#recipes');
     if(!recipesSection) return;
@@ -5620,7 +5608,7 @@ function buildControls(recipeEl){
 // ---------------------------
   // Boot
   // ---------------------------
-  function bootBaselineShared(){
+  async function bootBaselineShared(){
     try{ if(window.__BL_SHARED_BOOTED__) return; window.__BL_SHARED_BOOTED__ = true; }catch(_e){}
     // Load one final geometry/alignment authority after each system's theme.
     // Every full-width gradient is painted in viewport coordinates, so its
@@ -7693,6 +7681,8 @@ function setupRecipeFavourites(){
       try{ window.setTimeout(fn, 0); }catch(_e){ try{ fn(); }catch(__e){} }
     };
 
+    await hydrateFolderBackedRecipeRoute();
+
     const contentViewHash = String(location.hash || '');
     const cleanContentRoute = cleanRouteStateFromPath();
     const routePageFile = routePageFileFromPath(location.pathname || '');
@@ -7713,7 +7703,6 @@ function setupRecipeFavourites(){
     safeInit('scroll persistence', setupScrollPersistence);
     safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
-    safeInit('standalone system tabs', ensureStandaloneSystemTabs);
     safeInit('tabs', setupTabs);
 
     try{
