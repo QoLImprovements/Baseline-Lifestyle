@@ -83,7 +83,7 @@
       const sitOutNote = limit > 0
         ? ('Choose up to ' + String(limit) + ' player' + (limit === 1 ? '' : 's') + ' to sit out from this court only.')
         : 'Singles cannot sit a player out. Use No Game if this court should not happen.';
-      return '<details class="court-variable-editor"><summary>Edit variables</summary>' +
+      return '<details class="court-variable-editor"><summary>Edit Variables</summary>' +
         '<div class="court-variable-body">' +
           '<div class="court-variable-section"><strong>Sitting out</strong><div class="note">' + escapeHtml(sitOutNote) + '</div><div class="court-sitout-grid">' + checkboxes + '</div></div>' +
           '<div class="court-variable-section court-no-game-section">' +
