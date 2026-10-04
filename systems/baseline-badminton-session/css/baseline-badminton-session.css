@@ -209,6 +209,62 @@ hr.rule{border:none;border-top:1px solid rgba(79,25,125,0.16);margin:16px 0}
 .court-hardship-help__caption{position:absolute;top:36px;right:0;width:min(285px,calc(100vw - 64px));display:grid;gap:5px;padding:10px 11px;border-radius:12px;border:1px solid rgba(106,31,179,.34);background:rgba(239,220,251,.98);color:var(--ink);font-size:12px;line-height:1.4;text-align:left;box-shadow:0 14px 30px -18px rgba(74,23,116,.58)}
 .court-hardship-help__caption strong{color:var(--accent-2);font-size:13px}
 .court-hardship-help:not([open]) .court-hardship-help__caption{display:none}
+
+
+/* BASELINE-BADMINTON-SIDE-SHOT-RESTRICTIONS-20261004
+   Side-level shot hardship markers live on the restricted team's own court half.
+   The portrait court uses upper/lower halves, so this is the geometry-equivalent
+   of centring one stack in the left/right side of a horizontal court. */
+.court-shot-restrictions{
+  position:absolute;
+  left:50%;
+  z-index:5;
+  display:grid;
+  gap:9px;
+  justify-items:center;
+  transform:translate(-50%,-50%);
+  pointer-events:auto;
+}
+.court-shot-restrictions.is-side-1{top:25%}
+.court-shot-restrictions.is-side-2{top:75%}
+.court-shot-restriction{position:relative;width:34px;height:34px}
+.court-shot-restriction>summary{
+  list-style:none;
+  display:block;
+  width:34px;
+  height:34px;
+  padding:0;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  cursor:pointer;
+  touch-action:manipulation;
+  user-select:none;
+}
+.court-shot-restriction>summary::-webkit-details-marker{display:none}
+.court-shot-restriction>summary:focus-visible{outline:2px solid #5f2394;outline-offset:3px}
+.court-shot-restriction>summary svg{display:block;width:34px;height:34px;filter:drop-shadow(0 4px 5px rgba(74,23,116,.24))}
+.court-shot-restriction__caption{
+  position:absolute;
+  left:50%;
+  top:39px;
+  z-index:7;
+  width:max-content;
+  max-width:132px;
+  transform:translateX(-50%);
+  padding:5px 8px;
+  border:1px solid rgba(106,31,179,.34);
+  border-radius:9px;
+  background:rgba(239,220,251,.98);
+  color:var(--accent-2);
+  box-shadow:0 9px 20px -14px rgba(74,23,116,.60);
+  font-size:11px;
+  font-weight:900;
+  line-height:1.2;
+  text-align:center;
+  white-space:nowrap;
+}
+.court-shot-restriction:not([open]) .court-shot-restriction__caption{display:none}
 @media (max-width:1180px){.court-frame{max-width:420px}}
 @media (max-width:720px){.court-frame{max-width:360px}}
 
