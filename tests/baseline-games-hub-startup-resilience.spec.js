@@ -82,12 +82,22 @@ test('Realm opens at Basecamp and Ninja actors and controls work after explicit 
   await expect(page.locator('#ninjaManualStrikeBtn')).toBeEnabled();
   await expect(page.locator('#ninjaShurikenBtn')).toBeEnabled();
   await expect.poll(()=>page.evaluate(()=>({
-    runner:getComputedStyle(document.getElementById('ninjaRunnerWrap'),'::before').backgroundImage,
-    enemy:getComputedStyle(document.getElementById('ninjaEnemyWrap'),'::before').backgroundImage
+    runner:getComputedStyle(document.querySelector('.ninja-runtime-sprite--runner')).backgroundImage,
+    enemy:getComputedStyle(document.querySelector('.ninja-runtime-sprite--enemy')).backgroundImage
   }))).toEqual(expect.objectContaining({
     runner:expect.stringContaining('alder-veil-run.svg'),
     enemy:expect.stringContaining('mossblade-pursuer.svg')
   }));
+  const parallax=await page.evaluate(()=>['distant','middle','foreground'].map(kind=>{
+    const node=document.querySelector('.ninja-forest-layer--'+kind);
+    const style=getComputedStyle(node);
+    return {kind,animationName:style.animationName,backgroundRepeat:style.backgroundRepeat,backgroundSize:style.backgroundSize};
+  }));
+  for(const layer of parallax){
+    expect(layer.animationName).not.toBe('none');
+    expect(layer.backgroundRepeat).toContain('repeat');
+    expect(layer.backgroundSize).toContain('100%');
+  }
   const layers=await page.evaluate(()=>({
     foreground:Number(getComputedStyle(document.querySelector('.ninja-forest-layer--foreground')).zIndex),
     runner:Number(getComputedStyle(document.getElementById('ninjaRunnerWrap')).zIndex),
@@ -99,7 +109,13 @@ test('Realm opens at Basecamp and Ninja actors and controls work after explicit 
   expect(layers.dock).toBeGreaterThan(layers.banner);
   const before=await health(page);
   await page.locator('#ninjaManualStrikeBtn').click();
+  await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-dash-cut/);
+  await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-dash.svg');
   await expect.poll(async()=>(await health(page)).current).toBeLessThan(before.current);
+  await page.locator('#ninjaShurikenBtn').click();
+  await expect(page.locator('#ninjaRunnerWrap')).toHaveClass(/is-throwing/);
+  await expect.poll(()=>page.locator('.ninja-runtime-sprite--runner').evaluate(node=>getComputedStyle(node).backgroundImage)).toContain('alder-veil-throw.svg');
+  await expect.poll(()=>page.locator('#ninjaShurikenLayer .ninja-shuriken-projectile').count()).toBeGreaterThan(0);
   await page.locator('#realmMenuBtn').click();
   await expect(page.locator('#realmPanelDrawer')).toBeVisible();
   await page.locator('#realmBasecampBtn').click();
