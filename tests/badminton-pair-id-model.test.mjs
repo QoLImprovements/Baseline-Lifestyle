@@ -24,7 +24,7 @@ const php = fs.readFileSync(
 
 test("doubles ratings use canonical Pair IDs made from two Player IDs", () => {
   assert.match(ratings, /function getPairIdFromPlayers\(players\)/);
-  assert.match(js, /return ids\.length === 2 \? \('pair:' \+ ids\.join\('::'\)\) : ''/);
+  assert.match(ratings, /return ids\.length === 2 \? \('pair:' \+ ids\.join\('::'\)\) : ''/);
   assert.match(php, /function bl_badminton_pair_id\(string \$a, string \$b\): string/);
   assert.match(php, /'pair:' \. implode\('::', \$ids\)/);
 });
