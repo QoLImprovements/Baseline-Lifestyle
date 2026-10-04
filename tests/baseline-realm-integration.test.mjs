@@ -17,6 +17,10 @@ const lazyScenesSource = fs.readFileSync(
   new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js', import.meta.url),
   'utf8'
 );
+const inputBindingsSource = fs.readFileSync(
+  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js', import.meta.url),
+  'utf8'
+);
 
 function createStorage() {
   const values = new Map();
@@ -45,6 +49,15 @@ function createHarness() {
   });
   return { getState: () => state, inventoryService, workshopService, stateService };
 }
+
+test('external games own their keyboard and controller input without standard Realm shortcut collisions', () => {
+  assert.match(inputBindingsSource,/const externalSceneActive = \(\) => Boolean\(document\.documentElement\.getAttribute\('data-baseline-realm-external-scene'\)\)/);
+  assert.match(inputBindingsSource,/const standardActive = \(\) => active\(\) && !externalSceneActive\(\)/);
+  assert.match(inputBindingsSource,/bindKeyboard\('realm-primary',[\s\S]*when: standardActive/);
+  assert.match(inputBindingsSource,/const standardOnly = \(handler\)/);
+  assert.match(inputBindingsSource,/realm:input:realm-primary', standardOnly/);
+  assert.match(inputBindingsSource,/sceneRouter\.getCurrentSceneId\(\) === 'basecamp'/);
+});
 
 test('external Realm scenes do not impersonate Basecamp and standard scenes restore the persistent shell', () => {
   assert.doesNotMatch(lazyScenesSource,/getRuntime\(\)\?\.setView\?\.\('basecamp'\)/);
