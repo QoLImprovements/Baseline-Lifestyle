@@ -54,6 +54,7 @@
       matches: [],
       matchupMemory: {},
       pairSummary: {},
+      hardshipRecords: {},
       ruleAdmin: {
         globalRules: {},
         matchupOverrides: {}
@@ -264,12 +265,12 @@
   function mergeNewestLocalHardshipsIntoServerState(serverState, localState){
     const merged = JSON.parse(JSON.stringify(serverState && typeof serverState === 'object' ? serverState : {}));
     if(!merged.plan || typeof merged.plan !== 'object') merged.plan = {};
-    const serverLedger = merged.plan.activeHardships && typeof merged.plan.activeHardships === 'object'
-      ? merged.plan.activeHardships
-      : {};
-    const localLedger = localState && localState.plan && localState.plan.activeHardships && typeof localState.plan.activeHardships === 'object'
-      ? localState.plan.activeHardships
-      : {};
+    const serverLedger = merged.hardshipRecords && typeof merged.hardshipRecords === 'object'
+      ? merged.hardshipRecords
+      : (merged.plan.activeHardships && typeof merged.plan.activeHardships === 'object' ? merged.plan.activeHardships : {});
+    const localLedger = localState && localState.hardshipRecords && typeof localState.hardshipRecords === 'object'
+      ? localState.hardshipRecords
+      : (localState && localState.plan && localState.plan.activeHardships && typeof localState.plan.activeHardships === 'object' ? localState.plan.activeHardships : {});
     const nextLedger = Object.assign({}, serverLedger);
     let recovered = false;
     Object.keys(localLedger).forEach(function(key){
@@ -284,6 +285,7 @@
         recovered = true;
       }
     });
+    merged.hardshipRecords = nextLedger;
     merged.plan.activeHardships = nextLedger;
     return { state:merged, recovered:recovered };
   }
@@ -387,6 +389,9 @@
       matches: storedMatches,
       matchupMemory: parsed.matchupMemory && typeof parsed.matchupMemory === 'object' ? parsed.matchupMemory : {},
       pairSummary: parsed.pairSummary && typeof parsed.pairSummary === 'object' ? parsed.pairSummary : {},
+      hardshipRecords: parsed.hardshipRecords && typeof parsed.hardshipRecords === 'object'
+        ? parsed.hardshipRecords
+        : (parsed.plan && parsed.plan.activeHardships && typeof parsed.plan.activeHardships === 'object' ? parsed.plan.activeHardships : {}),
       ruleAdmin: ensureRuleAdminShape(parsed.ruleAdmin),
       plan: Object.assign({}, base.plan, parsed.plan || {}, {
         attendance: Number(parsed.plan && parsed.plan.attendance || 0),
@@ -415,6 +420,7 @@
       })
     };
     state = hydrated;
+    state.plan.activeHardships = state.hardshipRecords;
     migrateKnownModeratorPlayer();
     ensureRatingStores();
     return state;
@@ -1866,12 +1872,19 @@
   // Matchup memory is still mirrored for history/backwards compatibility, but
   // instructions and SVG restrictions read this ledger first.
   function getActiveHardshipLedger(){
+    if(!state || typeof state !== 'object') state = createInitialState();
     if(!state.plan) state.plan = createInitialState().plan;
-    if(!state.plan.activeHardships || typeof state.plan.activeHardships !== 'object') state.plan.activeHardships = {};
-    Object.keys(state.plan.activeHardships).forEach(function(key){
-      if(String(key).indexOf('hardship::') !== 0) delete state.plan.activeHardships[key];
+    if(!state.hardshipRecords || typeof state.hardshipRecords !== 'object'){
+      state.hardshipRecords = state.plan.activeHardships && typeof state.plan.activeHardships === 'object'
+        ? state.plan.activeHardships
+        : {};
+    }
+    Object.keys(state.hardshipRecords).forEach(function(key){
+      if(String(key).indexOf('hardship::') !== 0) delete state.hardshipRecords[key];
     });
-    return state.plan.activeHardships;
+    // Legacy mirror only. Persistent hardship ownership is top-level.
+    state.plan.activeHardships = state.hardshipRecords;
+    return state.hardshipRecords;
   }
 
   function normaliseHardshipRule(rule, side, sideNumber, court){
@@ -3411,8 +3424,9 @@
     return '<details class="court-variable-editor"><summary>Edit variables</summary>' +
       '<div class="court-variable-body">' +
         '<div class="court-variable-section"><strong>Sitting out</strong><div class="note">' + escapeHtml(sitOutNote) + '</div><div class="court-sitout-grid">' + checkboxes + '</div></div>' +
-        '<div class="court-variable-section court-no-game-section"><strong>No Game</strong><div class="note">Slide fully right only when this generated court should not be played.</div>' +
-          '<label class="court-no-game-range-label"><span>No Game</span><input class="court-no-game-range" type="range" min="0" max="100" step="1" value="0" data-court-no-game-slider="' + escapeHtml(String(index)) + '" aria-label="Slide fully right to confirm No Game"/></label>' +
+        '<div class="court-variable-section court-no-game-section">' +
+          '<label class="court-no-game-range-label"><input class="court-no-game-range" type="range" min="0" max="100" step="1" value="0" data-court-no-game-slider="' + escapeHtml(String(index)) + '" aria-label="Move the slider right to register No Game"/><span>No Game</span></label>' +
+          '<div class="note">Move the slider right to register \'No Game\'</div>' +
         '</div>' +
       '</div>' +
     '</details>';
@@ -3558,19 +3572,16 @@
   function getHardshipHelpText(court){
     const entry = getDominantHardshipEntryForCourt(court);
     if(!entry || !entry.rule || !entry.sideNumber) return '';
-    const restrictedSide = getSideByNumber(court, entry.sideNumber);
-    const adjustedLabel = getTeamLabel(restrictedSide);
+    const adjustedLabel = getTeamLabel(getSideByNumber(court, entry.sideNumber));
     const opponentLabel = getTeamLabel(getSideByNumber(court, getOppositeSideNumber(entry.sideNumber)));
     const rule = entry.rule;
-    const parts = [
-      adjustedLabel + ' previously won strongly enough in this exact ' + adjustedLabel + ' vs ' + opponentLabel + ' context to trigger an adaptive hardship.',
-      'The hardship remains with this side in this matchup until later results reduce or remove it.'
-    ];
+    const parts = ['Saved hardship for ' + adjustedLabel + ' vs ' + opponentLabel + '.'];
     if(rule.targetPreset && rule.targetPreset !== 'full-court'){
-      parts.push('Current target area: ' + (court.targetAreaText || getTargetAreaTextFromPreset(rule.targetPreset, rule.mode) || 'reduced court area') + '.');
+      parts.push('Target area: ' + (court.targetAreaText || getTargetAreaTextFromPreset(rule.targetPreset, rule.mode) || 'reduced court area') + '.');
     }
     const shotText = getShotRestrictionText(rule.shotStage);
-    if(shotText) parts.push('Current shot restriction: ' + shotText + '.');
+    if(shotText) parts.push('Shot restriction: ' + shotText + '.');
+    parts.push('This remains saved until a later result changes it.');
     return parts.join(' ');
   }
 
