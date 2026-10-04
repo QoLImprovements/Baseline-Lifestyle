@@ -19,8 +19,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - name: Run Games Hub unit tests
-        run: npm run test:games-hub
+      - name: Run Realm unit tests
+        run: npm run test:realm-stage2
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Run Realm browser verification
