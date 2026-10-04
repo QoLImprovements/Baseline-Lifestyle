@@ -3,7 +3,7 @@
    - Recipe card layout (grid + print button)
    - Recipe control contract: Title -> Batch Multiplier -> Measurement Type
      -> Scale By Ingredient -> any recipe-specific controls
-   - Optional “open one recipe” mode with side navigation
+   - Optional focused “open one recipe” mode without secondary navigation
    --------------------------------------------------------------------------
    Designed to be dropped into any Baseline page that already defines:
    --ink, --muted, --accent-2, --accent-soft, --ring, --shadow, --homebar-h
