@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import test from "node:test";
@@ -255,4 +256,11 @@ test("server can recover a missing hardship ledger from saved match history", ()
   const storageFn = php.match(/function bl_badminton_storage_state\(array \$state\): array \{[\s\S]*?\n\}/)?.[0] || "";
   assert.match(storageFn, /bl_badminton_hardship_records_from_match_history\(\$state\)/);
   assert.match(storageFn, /if\(!array_key_exists\(\$key, \$state\['hardshipRecords'\]\)\)/);
+});
+
+
+test("Badminton PHP authority remains syntactically valid after hardship recovery changes", () => {
+  const endpoint = path.join(root, "systems/baseline-badminton-session/api/badminton_session.php");
+  const lint = spawnSync("php", ["-l", endpoint], { encoding:"utf8" });
+  assert.equal(lint.status, 0, (lint.stdout || "") + (lint.stderr || ""));
 });
