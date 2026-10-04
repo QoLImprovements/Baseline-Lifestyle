@@ -158,19 +158,33 @@ body[data-app="food"]{
     var(--bg) 100%
   );
 
-  --card-bg: linear-gradient(180deg,
-    rgba(255,210,106,0.96),
-    rgba(240,138,36,0.26)
+  /* Food surfaces: one warm hierarchy shared by System, Recipes,
+     Ingredient Library and Diet Log. Orange is the primary Food surface;
+     gold/yellow is reserved for controls and red for active emphasis. */
+  --food-surface-card: linear-gradient(180deg,
+    var(--food-gold) 0%,
+    var(--food-orange) 68%,
+    #df7023 100%
   );
-  --filter-bg: linear-gradient(180deg,
-    rgba(255,210,106,0.60),
-    rgba(240,138,36,0.18)
+  --food-surface-panel: linear-gradient(180deg,
+    rgba(255,176,0,0.78),
+    rgba(240,138,36,0.82)
   );
-  --showall-bg: linear-gradient(180deg,
-    rgba(255,210,106,0.42),
-    rgba(240,138,36,0.16)
+  --food-surface-control: linear-gradient(180deg,
+    var(--food-yellow),
+    var(--food-gold)
   );
-  --showall-border: rgba(200,100,50,0.22);
+  --food-surface-subtle: rgba(240,138,36,0.38);
+  --food-surface-selected: linear-gradient(135deg,
+    var(--food-red),
+    var(--food-orange)
+  );
+  --food-surface-border: rgba(90,12,21,0.30);
+
+  --card-bg: var(--food-surface-card);
+  --filter-bg: var(--food-surface-panel);
+  --showall-bg: var(--food-surface-control);
+  --showall-border: var(--food-surface-border);
 
   --homebar-bg: var(--header-gradient);
   --homebar-border: #8c3a16;
