@@ -19,6 +19,13 @@ function skincareRecipeBlocks(){
   });
 }
 
+function foodRecipeBlocks(){
+  return fs.readdirSync('systems/baseline-food-approach/recipes')
+    .filter((name)=>name.endsWith('.html'))
+    .sort()
+    .map((name)=>({ name, html:fs.readFileSync('systems/baseline-food-approach/recipes/'+name,'utf8') }));
+}
+
 test('Food and Skincare declare exact recipe routes before first paint', () => {
   for (const html of [skincareHtml, foodHtml]) {
     assert.match(html, /id="baseline-recipe-route-first-paint"/);
@@ -76,14 +83,14 @@ test('Skincare universal recipe chrome is authored once in canonical HTML', () =
 });
 
 
-test('Skincare adjustment visibility and Show All ordering are explicit contracts', () => {
+test('Universal adjustment visibility and Show All ordering are shared by Food and Skincare', () => {
   assert.match(shared, /const adjustmentsAvailable = next === 'standard' \|\| next === 'show-all'/);
   assert.match(shared, /adjustmentsRow\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
   assert.match(shared, /editBody\.hidden = true/);
-  assert.match(skincareCss, /SKINCARE-SHOW-ALL-TAB-ORDER-20261003/);
-  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="standard"[\s\S]*order:10/);
-  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*recipe-details-intro[\s\S]*order:20/);
-  assert.match(skincareCss, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
+  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
+  assert.match(css, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="standard"[\s\S]*order:10/);
+  assert.match(css, /data-recipe-view="show-all"[\s\S]*recipe-details-intro[\s\S]*order:20/);
+  assert.match(css, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
 });
 
 test('recipe subview first-paint guard honours clean-route view state before runtime', () => {
@@ -156,32 +163,35 @@ test('shared recipe engine retains one fallback renderer for recipes without aut
   assert.doesNotMatch(shared, /<h[1-6][^>]*>Standard View<\/h[1-6]>/i);
 });
 
-test('Skincare Details is authored hidden while Food keeps its placeholder behaviour', () => {
+test('Food and Skincare use the same authored Details structure with domain-specific content', () => {
   for (const {id,html} of skincareRecipeBlocks()) {
     assert.match(html,/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/,id+' Details starts hidden');
     assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,id+' Details blocks');
-    assert.match(html,/class="recipe-comedogenic-rating"[^>]*><strong>Comedogenic Rating —<\/strong> <span class="recipe-comedogenic-rating-value">[^<]+<\/span>/,id+' concise comedogenic rating');
+    assert.match(html,/class="recipe-comedogenic-rating"/,id+' skincare comedogenic rating');
     assert.match(html,/<h4>Limitations &amp; Trade-offs<\/h4>/,id+' limitations heading');
-    assert.doesNotMatch(html,/Comedogenic Considerations/,id+' no comedogenic guidance subsection');
   }
-  assert.match(skincareCss,/recipe-details-intro\[hidden\]\{display:none!important\}/);
-  assert.match(skincareCss,/recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
-  assert.match(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\);/);
-  assert.doesNotMatch(skincareCss,/recipe-details-intro\{[^}]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
-  assert.match(skincareCss,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
-  assert.match(skincareCss,/data-recipe-view="details"[\s\S]*variant-switcher[\s\S]*display:none!important/);
-  assert.match(shared,/recipe-details-variant-field/);
-  assert.match(shared,/recipe-details-variant-switcher/);
-  assert.match(shared,/recipe-variant-tag/);
-  assert.match(shared,/__baselineSyncVariantDetailState/);
-  assert.match(shared,/__baselineSetRecipeVariant/);
-  assert.match(shared,/data-recipe-variant-detail/);
-  assert.match(css,/recipe-details-variant-field/);
-  assert.match(css,/recipe-details-variant-switcher/);
-  assert.match(css,/recipe-variant-tag\[aria-selected="true"\]/);
-  assert.match(css, /\[data-recipe-view-group="details"\]\{\s*display:none !important;/s);
-});
 
+  const expectedFoodHeadings=['Purpose','Recipe Profile','How the Recipe Works','Design Rationale','Variables &amp; Fixed Elements','Limitations &amp; Trade-offs'];
+  for (const {name,html} of foodRecipeBlocks()) {
+    assert.match(html,/class="recipe card recipe-page recipe-universal-template"/,name+' universal shell');
+    assert.match(html,/data-static-recipe-shell="1"/,name+' static shell');
+    assert.equal((html.match(/class="recipe-detail-block"/g)||[]).length,6,name+' Details blocks');
+    for (const heading of expectedFoodHeadings) assert.ok(html.includes('<h4>'+heading+'</h4>'),name+' '+heading);
+    assert.doesNotMatch(html,/Comedogenic Rating|recipe-comedogenic-rating/,name+' no skincare-only rating');
+    assert.match(html,/data-recipe-view-group="guidance">Serving &amp; Use<\/h4>/,name+' serving guidance');
+    assert.match(html,/data-recipe-view-group="guidance">Body &amp; Sensory Notes<\/h4>/,name+' sensory guidance');
+    assert.equal((html.match(/class="recipe-subtab"/g)||[]).length,4,name+' four recipe views');
+    assert.equal((html.match(/class="recipe-meta-item"/g)||[]).length,1,name+' one Batch metadata item');
+  }
+
+  assert.match(css,/BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
+  assert.match(css,/recipe-details-intro\[hidden\][\s\S]*display:none !important/);
+  assert.match(css,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(css,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
+  assert.match(shared,/recipe-details-variant-field/);
+  assert.match(shared,/__baselineSetRecipeVariant/);
+  assert.match(css,/recipe-details-variant-field/);
+});
 test('every authored Skincare recipe has one coherent Batch metadata item before JavaScript', () => {
   for (const {id,html} of skincareRecipeBlocks()) {
     assert.doesNotMatch(html,/recipe-yield-meta-value|>Yield:</,'unexpected Yield metadata in '+id);
@@ -307,4 +317,11 @@ test('recipe favourite star is one sitewide title-aligned rule', () => {
   assert.match(css, /align-items:baseline !important/);
   assert.doesNotMatch(css, /data-app="skin"[^{}]*fav-btn[^{}]*font-size/);
   assert.doesNotMatch(css, /data-app="food"[^{}]*fav-btn[^{}]*font-size/);
+});
+
+
+test('recipe title typography is one sitewide Skincare-reference contract', () => {
+  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
+  assert.match(css, /recipe-title-row > h3\{[\s\S]*font-family:var\(--font-soft\) !important;[\s\S]*font-size:28px !important;[\s\S]*line-height:1\.25 !important;/);
+  assert.doesNotMatch(skincareCss, /SKINCARE-RECIPE-PRESENTATION-CONTRACT-20261004/);
 });
