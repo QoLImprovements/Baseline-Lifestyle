@@ -428,3 +428,39 @@ test("delayed score autofill blanking never erases player-entered court scores",
   assert.doesNotMatch(blanking, /court\.score1 = null;/);
   assert.doesNotMatch(blanking, /court\.score2 = null;/);
 });
+
+
+test("server verification cannot overwrite newer live Badminton court state", () => {
+  const start = source.indexOf("function postServerState");
+  const end = source.indexOf("function queueServerSave", start);
+  const saveBlock = source.slice(start, end);
+  assert.match(saveBlock, /const requestState = JSON\.parse\(JSON\.stringify\(state\)\)/);
+  assert.match(saveBlock, /serverPayload\(requestState\)/);
+  assert.match(saveBlock, /hardshipSnapshot\(requestState\.hardshipRecords\)/);
+  assert.match(saveBlock, /const liveLocalUpdatedAt = Number\(state && state\.localUpdatedAt/);
+  assert.match(saveBlock, /if\(liveLocalUpdatedAt <= requestLocalUpdatedAt\)\{\s*state=hydrateLoadedState\(verified\.state\)/);
+});
+
+test("score and hardship draft edits are marked as newer server-side state", () => {
+  const start = gamePlanSource.indexOf("function bindPlanActions");
+  const end = gamePlanSource.indexOf("function applyCourtSitOutSelection", start);
+  const actions = gamePlanSource.slice(start, end);
+  const scoreStart = actions.indexOf("const handleScoreEdit");
+  const scoreEnd = actions.indexOf("refs().currentGamesGrid.addEventListener", scoreStart);
+  const scoreBlock = actions.slice(scoreStart, scoreEnd);
+  assert.match(scoreBlock, /markLocalChange\(\)/);
+  assert.match(scoreBlock, /queueServerSave\(\)/);
+
+  const hardshipStart = actions.indexOf("const commitHardshipChoice");
+  const hardshipEnd = actions.indexOf("const handleScoreEdit", hardshipStart);
+  const hardshipBlock = actions.slice(hardshipStart, hardshipEnd);
+  assert.match(hardshipBlock, /markLocalChange\(\)/);
+  assert.match(hardshipBlock, /queueServerSave\(\)/);
+});
+
+test("local Badminton revision marker is strictly monotonic", () => {
+  const start = source.indexOf("function markLocalChange");
+  const end = source.indexOf("function updateServerAuth", start);
+  const block = source.slice(start, end);
+  assert.match(block, /Math\.max\(Date\.now\(\), previous \+ 1\)/);
+});
