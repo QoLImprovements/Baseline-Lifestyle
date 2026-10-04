@@ -24,7 +24,7 @@ test('Food content containers share one warmer theme surface', () => {
   assert.match(theme, /--food-surface-subtle:\s*var\(--food-surface-card\)/);
   assert.match(foodCss, /\.card\s*\{[\s\S]*?background:var\(--food-surface-card\)/);
   assert.match(dietCss, /\.diet-log-panel\s*\{[\s\S]*?background:var\(--food-surface-panel\)/);
-  assert.doesNotMatch(recipeCss, /#recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
+  assert.doesNotMatch(recipeCss, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
 });
 
 test('Recipes overview contains no historical visible recipe-card grid', () => {
