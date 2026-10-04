@@ -51,6 +51,14 @@ test('battle implementation exposes ATB, Active and Wait modes, and all six comm
   assert.match(ui, /data-battle-mode="wait"/);
 });
 
+test('battle command layout keeps all six command positions stable for every actor', () => {
+  assert.match(ui, /BATTLE_COMMANDS\.map\(\(label\) =>/);
+  assert.match(ui, /No ability learned/);
+  assert.match(ui, /No magic learned/);
+  assert.match(ui, /disabled aria-disabled="true"/);
+  assert.doesNotMatch(ui, /const availableCommands = BATTLE_COMMANDS\.filter/);
+});
+
 test('battle runtime keeps command DOM stable between ATB ticks and always exposes Basecamp', () => {
   assert.match(ui, /refreshBattleState\(\)/);
   assert.match(ui, /this\.refreshBattleState\(\)/);
