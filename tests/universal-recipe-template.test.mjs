@@ -349,6 +349,22 @@ test('preauthored Food shells still receive recipe-specific variables from share
 });
 
 
+test('Food and Skincare have one static card/tab colour authority with no first-paint theme fork', () => {
+  const sitewideCss = fs.readFileSync('sitewide/css/baseline-sitewide.css', 'utf8');
+  const themesCss = fs.readFileSync('sitewide/css/baseline-themes.css', 'utf8');
+  const foodCss = fs.readFileSync('systems/baseline-food-approach/css/baseline-food-approach.css', 'utf8');
+
+  assert.match(sitewideCss, /BASELINE-FOOD-SKIN-VISUAL-AUTHORITY-20261004/);
+  assert.match(sitewideCss, /body\[data-app="food"\] \.tabs \.tab\[aria-selected="true"\]/);
+  assert.match(sitewideCss, /body\[data-app="skin"\] \.tabs \.tab\[aria-selected="true"\]/);
+  assert.match(sitewideCss, /--bl-surface-card-solid:#e99a5f;[\s\S]*--bl-surface-recipe-card-solid:#e99a5f;/);
+  assert.match(themesCss, /--food-surface-card: #e99a5f;/);
+  assert.doesNotMatch(foodCss, /\.tab\[aria-selected="true"\]\s*\{/);
+  assert.doesNotMatch(skincareCss, /\.tab\[aria-selected="true"\]\s*\{/);
+  assert.doesNotMatch(foodHtml, /baseline-recipe-route-first-paint-style[\s\S]*food-tab-bg/);
+  assert.doesNotMatch(skincareHtml, /baseline-recipe-route-first-paint-style[\s\S]*bl-surface-control-solid/);
+});
+
 test('recipe overview back buttons stay inside the shared shell without document navigation', () => {
   assert.match(shared, /closest\('\.back-btn'\)/);
   assert.match(shared, /e\.preventDefault\(\)/);
