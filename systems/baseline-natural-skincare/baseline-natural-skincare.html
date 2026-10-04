@@ -18,7 +18,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b8644d"/>
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-first-paint">!function(){var d=document.documentElement,p=location.pathname.replace(/\/+$/,''),v='',m;try{m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(/^\/baseline-natural-skincare\/my-routine$/i.test(p)){var s=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(s)?s:'log'}else{var u=new URL(location.href),q=String(u.searchParams.get('routine-view')||'');if(['log','summary','plan','public'].includes(q))v=q;else if(String(location.hash||'').toLowerCase()==='#tab=routine'){var h=String(sessionStorage.getItem('__bl_skincare_routine_view__')||'');v=['log','summary','plan','public'].includes(h)?h:'log'}}if(v){d.setAttribute('data-initial-skincare-tab','routine');d.setAttribute('data-initial-routine-view',v);sessionStorage.setItem('__bl_skincare_routine_view__',v)}}catch(_e){}}()</script>
-<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase(),r=String(q.get('variant')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard');if(r)d.setAttribute('data-initial-recipe-variant',r)}}}catch(_e){}}()</script>
+<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase(),r=String(q.get('variant')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard');if(r)d.setAttribute('data-initial-recipe-variant',r)}}}catch(_e){}}()</script>
 <meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
@@ -43,14 +43,7 @@ html[data-initial-section="recipes"] body[data-app] #system.section{display:none
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant] body[data-app="skin"] #r2 .variant-panel{display:none!important}
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="reactive"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="reactive"],
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="balanced"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="balanced"],
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="enhanced"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="enhanced"]{display:block!important}
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant] body[data-app="skin"] #r2 .variant-tab[aria-selected="true"]{background:transparent!important;border-color:var(--border,rgba(0,0,0,.18))!important;color:var(--ink)!important;box-shadow:none!important}
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="reactive"] body[data-app="skin"] #r2 .variant-tab[data-variant="reactive"],
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="balanced"] body[data-app="skin"] #r2 .variant-tab[data-variant="balanced"],
-html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="enhanced"] body[data-app="skin"] #r2 .variant-tab[data-variant="enhanced"]{background:var(--accent,var(--ink))!important;border-color:var(--accent,var(--ink))!important;color:var(--page-bg,#fff)!important;font-weight:850!important}
+html[data-initial-recipe-route="1"][data-initial-recipe-pending="1"] body[data-app] #recipes .recipe-page{visibility:hidden!important}
 </style>
 
 
@@ -455,7 +448,6 @@ Method steps MUST follow this format:
 </ul>
 </div>
 </div>
-<script id="baseline-cleanser-route-state-first-paint">!function(){try{var d=document.documentElement;if(d.getAttribute('data-initial-recipe-slug')!=='anhydrous-oil-cleanser')return;var recipe=document.getElementById('r2');if(!recipe)return;var variant=d.getAttribute('data-initial-recipe-variant')||'',view=d.getAttribute('data-initial-recipe-view')||'standard';if(variant){var valid=false;recipe.querySelectorAll('.variant-tab').forEach(function(btn){var on=btn.getAttribute('data-variant')===variant;if(on)valid=true;btn.setAttribute('aria-selected',on?'true':'false');btn.tabIndex=on?0:-1});if(valid)recipe.querySelectorAll('.variant-panel').forEach(function(panel){panel.hidden=panel.getAttribute('data-variant-panel')!==variant})}recipe.setAttribute('data-recipe-view',view);recipe.querySelectorAll('.recipe-subtab').forEach(function(btn){var on=btn.getAttribute('data-recipe-subtab')===view;btn.setAttribute('aria-selected',on?'true':'false');btn.tabIndex=on?0:-1})}catch(_e){}}()</script>
 <!-- Recipe 3 -->
 <div class="recipe card recipe-page recipe-universal-template" data-recipe-slug="protective-touch-balm" id="r3" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
@@ -1880,6 +1872,7 @@ Method steps MUST follow this format:
 </script>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=SKINCARE_INGREDIENT_CONVERSIONS_20260920_2"></script>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
+<script id="baseline-recipe-route-state-first-paint-apply">!function(){try{var d=document.documentElement;if(d.getAttribute('data-initial-recipe-route')!=='1')return;var slug=String(d.getAttribute('data-initial-recipe-slug')||''),view=String(d.getAttribute('data-initial-recipe-view')||'standard'),variant=String(d.getAttribute('data-initial-recipe-variant')||''),recipe=null;document.querySelectorAll('#recipes .recipe-page[data-recipe-slug]').forEach(function(card){if(!recipe&&String(card.getAttribute('data-recipe-slug')||'').toLowerCase()===slug)recipe=card});if(recipe){recipe.setAttribute('data-recipe-view',view);recipe.querySelectorAll('.recipe-subtab').forEach(function(btn){var on=btn.getAttribute('data-recipe-subtab')===view;btn.setAttribute('aria-selected',on?'true':'false');btn.tabIndex=on?0:-1});if(variant){var valid=false;recipe.querySelectorAll('.variant-tab').forEach(function(btn){var on=btn.getAttribute('data-variant')===variant;if(on)valid=true;btn.setAttribute('aria-selected',on?'true':'false');btn.tabIndex=on?0:-1});if(valid)recipe.querySelectorAll('.variant-panel').forEach(function(panel){panel.hidden=panel.getAttribute('data-variant-panel')!==variant})}}d.removeAttribute('data-initial-recipe-pending')}catch(_e){try{document.documentElement.removeAttribute('data-initial-recipe-pending')}catch(__e){}}}()</script>
 <script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script><script src="/sitewide/js/baseline-shared.js?v=RECIPE_DETAILS_METADATA_COHERENCE_20261003_1"></script>
 <script src="/sitewide/js/baseline-tabs.js?v=SITEWIDE_REFRESH_HISTORY_ROUTING_20260920_1"></script>
 <script>
@@ -1982,11 +1975,9 @@ Method steps MUST follow this format:
     return 'Firmest set in this range. Best when you want stronger structure and more heat resistance.';
   }
 
-  function activateCleanserVariant(name, options){
+  function activateCleanserVariant(name){
     var recipe = document.getElementById('r2');
     if(!recipe) return;
-    options = options || {};
-
     Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
       var active = btn.getAttribute('data-variant') === name;
       btn.setAttribute('aria-selected', active ? 'true' : 'false');
@@ -2013,101 +2004,8 @@ Method steps MUST follow this format:
       recipe.__baselineRefreshMethodAmounts();
     }
 
-    // A visible variant selection and its refresh route must become one atomic
-    // state change. Do not defer this to a later shared click listener.
-    if(options.syncRoute){
-      try{
-        var url = new URL(window.location.href);
-        var recipePath = String(url.pathname || '').replace(/\/+$/,'').toLowerCase();
-        if(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/.test(recipePath)){
-          url.searchParams.set('variant', String(name || '').trim());
-          window.history.replaceState(
-            window.history.state,
-            '',
-            url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams.toString()) : '') + url.hash
-          );
-        }
-      }catch(_e){}
-    }
   }
 
-
-  function normalizeRecipeId(raw){
-    if(!raw) return null;
-    raw = String(raw).trim();
-    if(/^#r\d+$/i.test(raw)) return raw.slice(1).toLowerCase();
-    if(/^r\d+$/i.test(raw)) return raw.toLowerCase();
-    var match = raw.match(/recipe=(r\d+)/i);
-    return match ? match[1].toLowerCase() : null;
-  }
-
-  function applyRecipeDetailState(id){
-    var section = document.getElementById('recipes');
-    if(!section) return;
-    id = normalizeRecipeId(id);
-    if(!id) return;
-    section.classList.add('recipe-detail-open');
-    Array.prototype.forEach.call(section.querySelectorAll('.recipe-page'), function(page){
-      var active = page.id === id;
-      page.classList.toggle('is-open', active);
-      page.classList.toggle('active', active);
-    });
-  }
-
-  function applyRecipeOverviewState(){
-    var section = document.getElementById('recipes');
-    if(!section) return;
-    section.classList.remove('recipe-detail-open');
-    Array.prototype.forEach.call(section.querySelectorAll('.recipe-page'), function(page){
-      page.classList.remove('is-open');
-      page.classList.remove('active');
-    });
-  }
-
-  function initRecipeNavigationWrapper(){
-    if(window.__BASELINE_SHARED__){
-      return;
-    }
-    if(document.body && document.body.dataset.recipeNavWrapped === '1'){
-      return;
-    }
-    if(document.body){
-      document.body.dataset.recipeNavWrapped = '1';
-    }
-
-    var originalOpenRecipe = (typeof window.BASELINE_openRecipe === 'function') ? window.BASELINE_openRecipe : null;
-    var originalShowAllRecipes = (typeof window.BASELINE_showAllRecipes === 'function') ? window.BASELINE_showAllRecipes : null;
-
-    window.BASELINE_openRecipe = function(id, opts){
-      if(originalOpenRecipe){
-        try{ originalOpenRecipe(id, opts || {}); }catch(err){}
-      }
-      applyRecipeDetailState(id);
-    };
-
-    window.BASELINE_showAllRecipes = function(opts){
-      if(originalShowAllRecipes){
-        try{ originalShowAllRecipes(opts || {}); }catch(err){}
-      }
-      applyRecipeOverviewState();
-    };
-
-    window.addEventListener('hashchange', function(){
-      var hashId = normalizeRecipeId(window.location.hash || '');
-      if(hashId){
-        applyRecipeDetailState(hashId);
-      }else{
-        applyRecipeOverviewState();
-      }
-    });
-
-    var initialId = normalizeRecipeId(window.location.hash || '');
-    if(initialId){
-      applyRecipeDetailState(initialId);
-    }else{
-      applyRecipeOverviewState();
-    }
-  }
 
   function normalizeMultiplierControls(root){
     root = root || document;
@@ -2134,7 +2032,7 @@ Method steps MUST follow this format:
       if(btn.dataset.bound === '1') return;
       btn.dataset.bound = '1';
       btn.addEventListener('click', function(){
-        activateCleanserVariant(btn.getAttribute('data-variant'), { syncRoute:true });
+        activateCleanserVariant(btn.getAttribute('data-variant'));
       });
     });
 
@@ -2625,7 +2523,6 @@ Method steps MUST follow this format:
   window.BASELINE_decorateRecipeSliderSaves = decorateSliderSaves;
 
   function initRecipeSliders(){
-    initRecipeNavigationWrapper();
     initMultiplierControlFixes();
     initCleanserVariantTabs();
     bindSlider('r2BalancedCastor', syncOilCleanser);
