@@ -262,29 +262,6 @@
     return text.replace(/(["\\])/g, '\\$1');
   }
 
-  function shuffle(array){
-    const copy = array.slice();
-    for(let i = copy.length - 1; i > 0; i -= 1){
-      const j = Math.floor(Math.random() * (i + 1));
-      const tmp = copy[i];
-      copy[i] = copy[j];
-      copy[j] = tmp;
-    }
-    return copy;
-  }
-
-  let serverSaveTimer = null;
-  let serverSaveInFlight = false;
-  let serverSavePromise = null;
-  let serverSaveAbortController = null;
-  let serverLoadAbortController = null;
-  let pageIsLeaving = false;
-  let lastServerAuth = null;
-  let serverRevision = 0;
-  let serverSaveConflict = false;
-  let serverSaveBlocked = false;
-  let suppressServerHydrationUntil = 0;
-
   function protectLocalCurrentState(ms){
     suppressServerHydrationUntil = Math.max(suppressServerHydrationUntil, Date.now() + Math.max(0, Number(ms || 2500)));
   }
@@ -594,11 +571,6 @@
     return {};
   }
 
-  function getSitewideUser(){
-    const auth = getSitewideAuth();
-    return String(auth.name || '').trim();
-  }
-
   function getAuthTokens(){
     const auth = getSitewideAuth();
     const tokens = [];
@@ -617,20 +589,6 @@
     const auth = getSitewideAuth();
     if(lastServerAuth && (lastServerAuth.is_developer || lastServerAuth.is_badminton_admin)) return true;
     return !!(auth && auth.authed !== false && getAuthTokens().some(isKnownModeratorToken));
-  }
-
-  function getApprovedAdminUsernames(){
-    const names = new Set(DEFAULT_APPROVED_ADMIN_USERNAMES.map(normalizeLoginName).filter(Boolean));
-    try{
-      const extra = window.BASELINE_APPROVED_ADMIN_USERNAMES;
-      if(Array.isArray(extra)) extra.forEach(function(name){ const value = normalizeLoginName(name); if(value) names.add(value); });
-    }catch(_e){}
-    try{
-      const fromState = state && Array.isArray(state.approvedAdminUsernames) ? state.approvedAdminUsernames : [];
-      fromState.forEach(function(name){ const value = normalizeLoginName(name); if(value) names.add(value); });
-    }catch(_e){}
-    SITE_MODERATOR_ALIASES.forEach(function(name){ names.add(name); });
-    return Array.from(names);
   }
 
   function playerLoginTokens(player){
@@ -737,11 +695,6 @@
     }
 
     return makeCourt(kind, group);
-  }
-
-  function applyDoublesDayOptOutsToCourts(courts, format, maxCourts){
-    const limit = Math.max(1, Math.min(8, Math.round(Number(maxCourts || 1))));
-    return (courts || []).filter(court => courtAllowedByDoublesDayOptOuts(court, format)).slice(0, limit);
   }
 
   function addLoginOption(map, value, label, email, id){
@@ -885,14 +838,6 @@
     delete court.savedHardship;
     delete court.savedRatingSummary;
     return court;
-  }
-
-  function resetUnsubmittedCurrentCourtScoreDrafts(){
-    if(!state || !state.plan || !Array.isArray(state.plan.current)) return;
-    ensureCurrentCourtSaveKeys();
-    state.plan.current.forEach(function(court, index){
-      if(!courtSaved(court, index)) resetUnsubmittedCourtScoreDraft(court);
-    });
   }
 
   function createCourtScoreInputName(court, index, sideNumber){
@@ -1185,12 +1130,6 @@
     return (players || []).map(function(player){ return String(player && player.name || '').trim(); }).filter(Boolean).sort(function(a,b){ return a.localeCompare(b); });
   }
 
-  function getLegacyPairKeysFromPlayers(players){
-    const names = getPairNamesFromPlayers(players);
-    if(names.length !== 2) return [];
-    return [names.join(' / '), names.join(' + ')];
-  }
-
   function getPairLabelFromId(pairId){
     const ids = String(pairId || '').replace(/^pair:/, '').split('::').filter(Boolean);
     if(ids.length !== 2) return String(pairId || '');
@@ -1216,13 +1155,6 @@
     });
   }
 
-  function sideAverage(side){
-    return Math.round(average((side.players || []).map(getPlayerRating)) * 10) / 10;
-  }
-
-  // BASELINE-BADMINTON-GAME-PLAN-LADDER-FIX-20260607
-  // Current games should read as a clean ladder: strongest court first, then downwards.
-  // This keeps the generated plan visually ordered without changing the public tab/URL system.
   function getCourtLadderRating(court){
     const side1 = court && court.side1 ? getSideRatingForCourt(court, court.side1) : START_RATING;
     const side2 = court && court.side2 ? getSideRatingForCourt(court, court.side2) : START_RATING;
@@ -1254,14 +1186,6 @@
     });
   }
 
-  function getSideRatingLabel(court, side){
-    const players = side && Array.isArray(side.players) ? side.players : [];
-    if(court && court.kind === 'doubles' && players.length === 2) return 'Pair Rating';
-    if(court && court.kind === '2v1' && players.length === 1) return '1v2 Rating';
-    if(court && court.kind === '2v1' && players.length === 2) return 'Pair Rating';
-    return 'Player Rating';
-  }
-
   function getTeamLabel(side){
     if(!side) return 'Unknown side';
     return (side.players || []).map(player => player.name).join(' / ');
@@ -1270,10 +1194,6 @@
   // BASELINE-BADMINTON-HARDSHIP-NAME-ANCHOR-FIX-20260608
   // Hardship rules must follow the player by stable name first. Ratings are name-based,
   // so hardship storage must not silently fail when ids are missing or volatile.
-  function normaliseRuleIdentity(value){
-    return String(value || '').trim().replace(/\s+/g, ' ').toLowerCase();
-  }
-
   function getPlayerStableRuleKey(player){
     return sessionCore.stablePlayerId(player);
   }
@@ -1424,10 +1344,6 @@
     return Math.max(0, Math.round(Number(counts.movement || 0)));
   }
 
-  function getMemoryShotStage(memory){
-    return Math.max(0, Math.round(Number(memory && memory.shotStage || 0)));
-  }
-
   function getPresetFromZones(zones, mode){
     const cleaned = sanitizeZones(zones || [], mode);
     if(!cleaned.length || cleaned.length >= getAllowedZones(mode).length) return 'full-court';
@@ -1464,40 +1380,6 @@
       remaining -= 1;
     }
     return current.length >= allowed.length ? [] : current;
-  }
-
-  function applyMovementPressureToZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0){
-      const preset = getPresetFromZones(current, mode);
-      if(preset){
-        const nextPreset = tightenPreset(preset, 1, mode);
-        if(nextPreset === preset) return current;
-        current = sanitizeZones(PRESET_ZONE_MAP[nextPreset] || [], mode);
-      }else{
-        current = contractCustomTargetZones(current, 1, mode);
-      }
-      remaining -= 1;
-    }
-    return current;
-  }
-
-  function applyMovementReliefToZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0 && current.length){
-      const preset = getPresetFromZones(current, mode);
-      if(preset){
-        const reducedPreset = loosenPreset(preset, 1, mode);
-        if(reducedPreset === preset) return current;
-        current = sanitizeZones(PRESET_ZONE_MAP[reducedPreset] || [], mode);
-      }else{
-        current = expandCustomTargetZones(current, 1, mode);
-      }
-      remaining -= 1;
-    }
-    return current;
   }
 
   function getMovementRestrictionStatus(court){
@@ -1636,56 +1518,6 @@
     });
   }
 
-  function syncSelectedHardshipRuleToMemory(court, signature, sideNumber){
-    if(!court || !sideNumber) return;
-    const snapshot = memoryShapeFromActiveRule(court, sideNumber);
-    snapshot.memoryScope = 'exact-competitive-context';
-    if(signature) copyRestrictionMemoryState(ensureRestrictionMemory(signature), snapshot);
-  }
-
-  // BASELINE-BADMINTON-HARDSHIP-SAVE-INTENT-FIX-20260608
-    function getHardshipSaveIntent(court, score1, score2, hardship){
-    const selected = String(hardship || '').trim();
-    const context = getHardshipResultContext(Object.assign({}, JSON.parse(JSON.stringify(court || {})), { score1:score1, score2:score2 }));
-    const options = Array.isArray(context.options) ? context.options : [];
-    const action = context.action || 'none';
-    const triggered = !!(context.valid && action !== 'none');
-    const requiresSelection = triggered && options.length > 0;
-    const selectedIsAvailable = !!selected && options.some(function(option){ return option.value === selected; });
-    return {
-      triggered,
-      active:!!context.active,
-      action,
-      sideNumber:context.adjustmentSideNumber || null,
-      winnerSideNumber:context.winnerSideNumber || (score1 > score2 ? 1 : 2),
-      losingScore:context.losingScore != null ? context.losingScore : Math.min(score1, score2),
-      hardship:selected,
-      options,
-      requiresSelection,
-      selectedIsAvailable,
-      ratingHold:!!context.ratingHold
-    };
-  }
-
-    function applyHardshipSaveIntent(court, signature, intent){
-    if(!intent || !intent.triggered || !intent.sideNumber) return false;
-    if(!intent.requiresSelection) return true;
-    const hardship = String(intent.hardship || '').trim();
-    if(hardship !== 'movement' && hardship !== 'shots') return false;
-    if(intent.options && intent.options.length && !intent.options.some(function(option){ return option.value === hardship; })) return false;
-
-    let rule = null;
-    if(intent.action === 'reduce'){
-      rule = reduceDominantHardshipForSide(court, intent.sideNumber, hardship);
-      syncDominantRuleToMemory(court, signature || buildMatchupKey(court), intent.sideNumber);
-      return true;
-    }
-
-    rule = increaseDominantHardshipForSide(court, intent.sideNumber, hardship);
-    syncDominantRuleToMemory(court, signature || buildMatchupKey(court), intent.sideNumber);
-    return !!rule;
-  }
-
   function restrictionMemoryHasActiveRule(memory){
     return !!(memory && (
       (typeof memory.targetPreset === 'string' && memory.targetPreset && memory.targetPreset !== 'full-court') ||
@@ -1693,29 +1525,6 @@
     ));
   }
 
-  function getActiveSideRestrictionForCourt(court){
-    if(!court) return null;
-    const candidates = [1, 2].map(function(sideNumber){
-      const side = getSideByNumber(court, sideNumber);
-      const key = getSideRestrictionKey(side);
-      if(!key) return null;
-      const memory = getRestrictionMemory(key);
-      return restrictionMemoryHasActiveRule(memory) ? { key:key, memory:memory, sideNumber:sideNumber } : null;
-    }).filter(Boolean);
-    if(!candidates.length) return null;
-    candidates.sort(function(a, b){
-      const strongDiff = (b.sideNumber === court.strongerSide ? 1 : 0) - (a.sideNumber === court.strongerSide ? 1 : 0);
-      if(strongDiff) return strongDiff;
-      const shotDiff = Number(b.memory.shotStage || 0) - Number(a.memory.shotStage || 0);
-      if(shotDiff) return shotDiff;
-      return getMemoryMovementSteps(b.memory) - getMemoryMovementSteps(a.memory);
-    });
-    return candidates[0];
-  }
-
-  // BASELINE-BADMINTON-DOMINANT-HARDSHIP-RULE-20260608
-  // One dominant hardship rule: active hardship memory beats passive court generation,
-  // duplicated zone inference, and admin/default rule fallbacks.
   function getExactRestrictionEntryForCourt(court, memory, signature){
     if(!court || !restrictionMemoryHasActiveRule(memory)) return null;
     let sideNumber = getRestrictionSideNumberFromMemory(court, memory);
@@ -1791,15 +1600,6 @@
     }));
   }
 
-  function getReducedHardshipOptions(court){
-    if(!court || court.score1 == null || court.score2 == null || !isOfficialCompleteBadmintonScore(Number(court.score1), Number(court.score2))) return [];
-    const options = [];
-    const movement = getMovementRestrictionStatus(court);
-    if(movement.canReduce) options.push({ value:'movement', label:'Reduce Hardship: Expand Target Area' });
-    if(Number(court && court.shotRestrictionStage || 0) > 0) options.push({ value:'shots', label:'Reduce Hardship: Restore Shot Options' });
-    return options;
-  }
-
   function applyHardshipToRestrictionMemory(memory, hardshipType, adjustedIds, adjustedSideNumber, resultScore, court, sourceMemory){
     if(!memory || !hardshipType) return;
     const source = sourceMemory || memory;
@@ -1840,26 +1640,6 @@
       severityLabel: getLossSeverityLabel(resultScore),
       createdAt: new Date().toISOString()
     }].concat(history).slice(0, 24);
-  }
-
-  function registerHardship(signature, hardshipType, adjustedSideIds, resultScore, court){
-    if(!hardshipType) return;
-    const memory = ensureRestrictionMemory(signature);
-    const adjustedIds = (adjustedSideIds || []).slice();
-    const adjustedSideNumber = court ? getSideNumberForIds(court, adjustedIds) : null;
-    const activeRule = adjustedSideNumber ? increaseHardshipRuleForSide(court, adjustedSideNumber, hardshipType) : null;
-    const sourceSnapshot = activeRule ? Object.assign(cloneRestrictionMemoryState(memory), {
-      targetPreset: activeRule.targetPreset || '',
-      singlesPreset: activeRule.mode === 'singles' ? (activeRule.targetPreset || '') : '',
-      shotStage: activeRule.shotStage || 0,
-      adjustedSideIds: activeRule.adjustedSideIds.slice(),
-      adjustedSideNumber: adjustedSideNumber,
-      memoryScope:'exact-competitive-context'
-    }) : cloneRestrictionMemoryState(memory);
-
-    sourceSnapshot.memoryScope = 'exact-competitive-context';
-    applyHardshipToRestrictionMemory(memory, hardshipType, adjustedIds, adjustedSideNumber, resultScore, court, sourceSnapshot);
-    memory.memoryScope = 'exact-competitive-context';
   }
 
   function applyRestrictionReductionToMemory(memory, court, adjustedSideNumber, reducedType, sourceMemory){
@@ -1906,23 +1686,6 @@
       memory.adjustedSideIds = [];
       memory.adjustedSideNumber = null;
     }
-  }
-
-  function reduceRestrictionAfterBoundaryWin(signature, court, reducedType){
-    const memory = ensureRestrictionMemory(signature);
-    const adjustedSideNumber = getRestrictionSideNumberFromMemory(court, memory) || Number(court && court.restrictedSide || 0) || null;
-    const reducedRule = adjustedSideNumber ? reduceHardshipRuleForSide(court, adjustedSideNumber, reducedType) : null;
-    const sourceSnapshot = reducedRule ? Object.assign(cloneRestrictionMemoryState(memory), {
-      targetPreset: reducedRule.targetPreset || '',
-      singlesPreset: reducedRule.mode === 'singles' ? (reducedRule.targetPreset || '') : '',
-      shotStage: reducedRule.shotStage || 0,
-      adjustedSideIds: reducedRule.adjustedSideIds.slice(),
-      adjustedSideNumber: adjustedSideNumber,
-      memoryScope:'exact-competitive-context'
-    }) : memory;
-
-    applyRestrictionReductionToMemory(memory, court, adjustedSideNumber, reducedType, sourceSnapshot);
-    memory.memoryScope = 'exact-competitive-context';
   }
 
   function evaluateCourtRestrictionsBase(court){
@@ -2038,13 +1801,6 @@
     return d.toLocaleString(undefined, { year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit' });
   }
 
-  function getAttendingPlayersForCount(count){
-    const attending = getAttendingPlayers();
-    if(attending.length) return attending.slice(0, Math.min(Math.max(0, count), attending.length));
-    const available = state.players.slice().sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    return available.slice(0, Math.min(Math.max(0, count), available.length));
-  }
-
   function chooseDoublesSides(group){
     const pairings = [
       [[group[0], group[1]], [group[2], group[3]]],
@@ -2124,28 +1880,6 @@
       return;
     }
     state.plan.specialFourPlayerIndex = 0;
-  }
-
-  function applyTwoPlayerSideRotation(courts, attendingPlayers){
-    if(attendingPlayers.length !== 2 || courts.length !== 1) return courts;
-    const court = courts[0];
-    if(!court || court.kind !== 'singles' || !court.side1 || !court.side2) return courts;
-    const rotationIndex = Math.max(0, Math.round(Number(state.plan.twoPlayerFlipIndex || 0) || 0));
-    if(rotationIndex % 2 === 0) return courts;
-    return courts.map(function(item){
-      const clone = JSON.parse(JSON.stringify(item));
-      const tmpSide = clone.side1;
-      clone.side1 = clone.side2;
-      clone.side2 = tmpSide;
-      const tmpRating = clone.side1Rating;
-      clone.side1Rating = clone.side2Rating;
-      clone.side2Rating = tmpRating;
-      if(clone.strongerSide === 1) clone.strongerSide = 2;
-      else if(clone.strongerSide === 2) clone.strongerSide = 1;
-      if(clone.weakerSide === 1) clone.weakerSide = 2;
-      else if(clone.weakerSide === 2) clone.weakerSide = 1;
-      return clone;
-    });
   }
 
   function enumerateLayouts(playerCount, format, maxCourts){
@@ -2473,10 +2207,6 @@
     renderAll();
   }
 
-  function renderPlayerPill(player){
-    return '<span class="player-pill">' + escapeHtml(player.name) + ' · ' + escapeHtml(getPlayerRating(player).toFixed(1)) + '</span>';
-  }
-
   function getCourtSaveKey(court, index){
     if(!court || typeof court !== 'object') return '';
     if(court.currentCourtKey) return String(court.currentCourtKey);
@@ -2521,77 +2251,6 @@
     if(key) state.plan.currentSavedCourtKeys = Array.from(new Set([...(state.plan.currentSavedCourtKeys || []), key]));
     const signature = court && (court.signature || buildMatchupKey(court));
     if(signature) state.plan.currentSavedSignatures = Array.from(new Set([...(state.plan.currentSavedSignatures || []), signature]));
-  }
-
-  function getCourtLosingScore(court){
-    if(court.score1 == null || court.score2 == null) return null;
-    return Math.min(Number(court.score1), Number(court.score2));
-  }
-
-  function getCurrentWinnerSideNumber(court){
-    if(court.score1 == null || court.score2 == null || Number(court.score1) === Number(court.score2)) return null;
-    return Number(court.score1) > Number(court.score2) ? 1 : 2;
-  }
-
-  function getShotRestrictionStageForSide(court, sideNumber){
-    const dominantRule = getDominantHardshipRuleForSide(court, sideNumber);
-    if(dominantRule && dominantRule.rule) return Math.min(1, Math.max(0, Math.round(Number(dominantRule.rule.shotStage || 0))));
-    const activeRule = getHardshipRuleForSide(court, sideNumber);
-    if(activeRule && hardshipRuleIsActive(activeRule.rule)) return Math.min(1, Math.max(0, Math.round(Number(activeRule.rule.shotStage || 0))));
-    if(Number(court && court.restrictedSide || 0) === Number(sideNumber)) return Math.min(1, Math.max(0, Math.round(Number(court && court.shotRestrictionStage || 0))));
-    return 0;
-  }
-
-  function getIncreaseHardshipOptionsForSide(court, sideNumber){
-    return getDominantIncreaseOptionsForSide(court, sideNumber);
-  }
-
-  function getReduceHardshipOptionsForSide(court, sideNumber){
-    return getDominantReduceOptionsForSide(court, sideNumber);
-  }
-
-    function getHardshipResultContext(court){
-    const empty = { valid:false, active:false, action:'none', adjustmentSideNumber:null, options:[], losingScore:null, ratingHold:false };
-    if(!court || court.score1 == null || court.score2 == null) return empty;
-    const score1 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score1, 0))));
-    const score2 = Math.max(0, Math.min(MAX_SCORE, Math.round(safeNumber(court.score2, 0))));
-    if(validateScores(score1, score2) !== '') return empty;
-
-    const winnerSideNumber = score1 > score2 ? 1 : 2;
-    const losingScore = Math.min(score1, score2);
-    const evaluated = evaluateCourtRestrictions(Object.assign({}, JSON.parse(JSON.stringify(court)), { score1:score1, score2:score2 }));
-    const activeEntry = getDominantHardshipEntryForCourt(evaluated);
-
-    if(activeEntry && activeEntry.sideNumber){
-      const action = winnerSideNumber === activeEntry.sideNumber ? 'increase' : 'reduce';
-      return {
-        valid:true,
-        active:true,
-        action,
-        adjustmentSideNumber:activeEntry.sideNumber,
-        winnerSideNumber,
-        losingScore,
-        ratingHold: action === 'reduce',
-        options: action === 'increase'
-          ? getDominantIncreaseOptionsForSide(evaluated, activeEntry.sideNumber)
-          : getDominantReduceOptionsForSide(evaluated, activeEntry.sideNumber)
-      };
-    }
-
-    if(losingScore <= 15){
-      return {
-        valid:true,
-        active:false,
-        action:'initiate',
-        adjustmentSideNumber:winnerSideNumber,
-        winnerSideNumber,
-        losingScore,
-        ratingHold:false,
-        options:getDominantIncreaseOptionsForSide(evaluated, winnerSideNumber)
-      };
-    }
-
-    return Object.assign({}, empty, { valid:true, losingScore, winnerSideNumber });
   }
 
   function normalisePendingHardship(court){
@@ -2696,10 +2355,6 @@
 
   function getShortTeamLines(side){
     return (side && Array.isArray(side.players) ? side.players : []).map(function(player){ return abbreviatePlayerName(player.name); });
-  }
-
-  function getShortTeamLabel(side){
-    return getShortTeamLines(side).join(' & ');
   }
 
   function getDisplayLengthForTeamLine(value){
@@ -2990,18 +2645,6 @@
     return '';
   }
 
-  function applyDeltaToSideForCourt(court, side, delta){
-    const entity = getCourtSideRatingEntity(court, side);
-    return setCourtSideRatingEntity(court, side, entity.value + delta) - entity.value;
-  }
-
-  function applyTargetAverageToSideForCourt(court, side, targetAverage){
-    const entity = getCourtSideRatingEntity(court, side);
-    const before = entity.value;
-    const target = setCourtSideRatingEntity(court, side, targetAverage);
-    return Math.round((target - before) * 10) / 10;
-  }
-
   function incrementCourtPlayerMatchCounts(court){
     const seen = new Set();
     if(!state.plan.sessionPlayCounts || typeof state.plan.sessionPlayCounts !== 'object') state.plan.sessionPlayCounts = {};
@@ -3098,14 +2741,6 @@
 
   function courtMarkedNoGame(court){
     return !!(court && (court.noGame || court.status === 'no-game'));
-  }
-
-  function getActiveCurrentCourtCount(){
-    return (state.plan.current || []).filter(function(court){ return !courtMarkedNoGame(court); }).length;
-  }
-
-  function renderNextSetAction(){
-    return '';
   }
 
   function ensureGeneratedCurrentSet(attendingPlayers, usedSet){
@@ -3842,32 +3477,6 @@
       (metaLine ? '<div class="note">' + escapeHtml(metaLine) + '</div>' : '') +
       rows +
     '</div></details>';
-  }
-
-  function renderPairSummary(){
-    const wrap = refs.pairSummaryWrap;
-    if(!wrap) return;
-    const sections = [];
-    if(state.plan.current.length){
-      sections.push(renderPairHandlingBatch(
-        'Current generated set',
-        state.plan.generatedAt ? ('Generated ' + formatDateTime(state.plan.generatedAt)) : '',
-        state.plan.current
-      ));
-    }
-    (state.plan.finished || []).forEach((batch, index) => {
-      sections.push(renderPairHandlingBatch(
-        'Finished set ' + String(index + 1),
-        'Generated ' + formatDateTime(batch.generatedAt) + ' · Completed ' + formatDateTime(batch.completedAt),
-        batch.courts || []
-      ));
-    });
-    const items = Object.values(state.pairSummary || {}).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
-    if(items.length){
-      const recurring = items.slice(0, 12).map(item => '<div class="pair-summary-item"><strong>' + escapeHtml(item.label) + '</strong><div class="note">Seen ' + escapeHtml(String(item.count)) + ' time(s) · Last seen ' + escapeHtml(formatDateTime(item.lastSeenAt)) + '</div></div>').join('');
-      sections.push('<details class="finished-details"><summary><span>Recurring system pairs</span><span>' + escapeHtml(String(Math.min(items.length, 12))) + '</span></summary><div class="finished-details-body">' + recurring + '</div></details>');
-    }
-    wrap.innerHTML = sections.length ? sections.join('') : '<div class="empty-state">No generated pair handling summaries yet.</div>';
   }
 
   function getZoneChecklistMarkup(prefix, selected){
