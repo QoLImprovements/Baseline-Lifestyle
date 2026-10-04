@@ -349,6 +349,16 @@ test('preauthored Food shells still receive recipe-specific variables from share
 });
 
 
+test('recipe overview back buttons stay inside the shared shell without document navigation', () => {
+  assert.match(shared, /closest\('\.back-btn'\)/);
+  assert.match(shared, /e\.preventDefault\(\)/);
+  assert.match(shared, /e\.stopPropagation\(\)/);
+  assert.match(shared, /showAll\(\{ silentHistory:false \}\)/);
+  for (const {name,html} of foodRecipeBlocks()) {
+    assert.match(html, /class="back-btn"[^>]*href="\/baseline-food-approach\/recipes"/, name+' authored clean fallback href');
+  }
+});
+
 test('recipe overview return cannot leave first-paint tab state pinned', () => {
   assert.match(shared, /function selectTab\(id, opts=\{\}\)[\s\S]*removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /if\(id !== 'recipes'\)[\s\S]*removeAttribute\('data-initial-recipe-route'\)/);
