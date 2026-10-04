@@ -181,6 +181,22 @@ body[data-app="food"]{
   );
   --food-surface-border: rgba(90,12,21,0.30);
 
+  /* Food navigation controls deliberately avoid pale/translucent fills. */
+  --food-tab-bg: linear-gradient(180deg,
+    var(--food-orange),
+    var(--food-gold)
+  );
+  --food-tab-hover: linear-gradient(180deg,
+    var(--food-gold),
+    var(--food-orange)
+  );
+  --food-tab-active: linear-gradient(135deg,
+    var(--food-deep),
+    var(--food-red) 56%,
+    var(--food-orange)
+  );
+  --food-tab-border: rgba(90,12,21,0.42);
+
   --card-bg: var(--food-surface-card);
   --filter-bg: var(--food-surface-panel);
   --showall-bg: var(--food-surface-control);
