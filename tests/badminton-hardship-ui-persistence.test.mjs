@@ -26,19 +26,23 @@ function section(startName, endName) {
   return js.slice(start, end);
 }
 
-test("server reconciliation status stays internal instead of leaking into the plan UI", () => {
-  const announce = section("announceServerSaveConflict", "mergeNewestLocalHardshipsIntoServerState");
-  assert.doesNotMatch(announce, /planAlert|data-plan-alert|\.plan-alert/);
-  assert.match(announce, /__BASELINE_BADMINTON_SERVER_STATUS__/);
+test("serious persistence failures use a dedicated status surface instead of the plan alert", () => {
+  const status = section("setPersistenceStatus", "announceServerSaveConflict");
+  assert.match(status, /__BASELINE_BADMINTON_SERVER_STATUS__/);
+  assert.match(status, /refs\.persistenceStatus/);
+  assert.doesNotMatch(status, /planAlert|data-plan-alert|\.plan-alert/);
 });
 
-test("newer local hardship rules are merged by exact hardship key and timestamp", () => {
+test("reload reconciles Player-ID and Pair-ID hardships independently of whole-session freshness", () => {
   const merge = section("mergeNewestLocalHardshipsIntoServerState", "serverPayload");
   assert.match(merge, /activeHardships/);
-  assert.match(merge, /hardship::/);
-  assert.match(merge, /localUpdatedAt > serverUpdatedAt/);
-  assert.match(js, /mergeNewestLocalHardshipsIntoServerState\(serverState, localSnapshot\)/);
-  assert.match(js, /if\(recoveredHardships\)[\s\S]*queueServerSave\(\)/);
+  assert.match(merge, /sessionCore\.mergeNewestHardshipRecords/);
+  const hydrate = section("hydrateSessionFromServer", "normalizeLoginName");
+  const mergeAt = hydrate.indexOf("mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot)");
+  const freshnessAt = hydrate.indexOf("localStateIsNewerThanServer(localSnapshot,serverState)");
+  assert.ok(mergeAt >= 0);
+  assert.ok(freshnessAt < 0 || mergeAt < freshnessAt);
+  assert.match(hydrate, /if\(recoveredHardships\)[\s\S]*queueServerSave\(\)/);
 });
 
 test("court cards no longer render Why this matchup", () => {
