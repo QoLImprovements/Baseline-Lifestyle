@@ -35,7 +35,8 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
   assert.match(optional,/data-open-darts-focused/);
   assert.doesNotMatch(optional,/requestIdleCallback|showTab\(|showGame\(|function canProgress/);
   assert.match(optional,/renderGamesList=function\(\)\{\}/);
-  assert.match(optional,/sceneRouter\.navigate\('ninja-training'\)/);
+  assert.match(optional,/sceneRouter\.navigate\('basecamp'/);
+  assert.doesNotMatch(optional,/sceneRouter\.navigate\('ninja-training'\)/);
   assert.match(optional,/host\.applyOfflineProgress\(\);host\.render\(\)/);
   assert.match(optional,/host\.startLoop\(\)/);
   assert.match(optional,/baselineRealmSaving=canSave\(\)\?'account':'temporary'/);
