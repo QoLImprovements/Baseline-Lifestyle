@@ -462,28 +462,46 @@
 
   window.BASELINE_RECIPE_CAPTION_MODEL = BASELINE_RECIPE_CAPTION_MODEL;
 
-  window.BASELINE_getRecipeAuthoringTemplate = function(){
+  window.BASELINE_getRecipeAuthoringTemplate = function(app){
+    const system = String(app || (document.body && document.body.dataset && document.body.dataset.app) || '').trim().toLowerCase();
+    const sections = system === 'skin'
+      ? ['Method', 'Storage & Use', 'Notes']
+      : system === 'food'
+        ? ['Method', 'Serving ideas', 'Body & Sensory Notes']
+        : ['Method', 'Notes'];
+
     return {
+      authority: 'sitewide',
+      shell: [
+        'Title',
+        'Batch',
+        'Recipe views',
+        'Adjustments',
+        'Batch multiplier',
+        'Measurement Type',
+        'Scale By Ingredient',
+        'Recipe-specific controls'
+      ],
+      sections,
       id: 'r-next',
-      category: 'Stovetop',
+      category: system === 'skin' ? 'Recipe' : 'Stovetop',
       title: 'Recipe title',
       infoLinkText: 'Recipe Ingredient Information',
-      meta: [
-        'Equipment: list the equipment here.',
-        'Allergens: list the allergens here.'
-      ],
+      meta: system === 'skin'
+        ? ['Skin feel: note any important skin, scent, or tolerance context here.']
+        : ['Equipment: list the equipment here.', 'Allergens: list the allergens here.'],
       navigationRule: {
-        summary: 'Use the shared router helpers and safe hashes for any in-page view changes.',
-        instruction: 'Use BASELINE_openRecipe, BASELINE_showAllRecipes, and BASELINE_selectTab so refresh/back can restore from clean page routes such as /recipes/a-recipe-name and /ingredient-library, with legacy hashes only as fallback.'
+        summary: 'One sitewide recipe shell owns Food and Skincare recipe navigation and view state.',
+        instruction: 'Use BASELINE_openRecipe, BASELINE_showAllRecipes, and BASELINE_selectTab. Clean /recipes/<slug> routes keep the parent system shell; recipe content may come from an accountable source file but must be rendered through the universal recipe template.'
       },
       ingredientSections: [
         {
           title: 'Base',
           items: [
             {
-              ingredientId: 'ing-water',
-              label: 'water',
-              quantity: { value: 250, unit: 'ml' },
+              ingredientId: 'ing-example',
+              label: 'Example ingredient',
+              quantity: { value: 10, unit: 'g' },
               caption: 'Primary role; secondary effect.',
               methodStep: 1
             }
@@ -492,9 +510,7 @@
       ],
       method: [
         { title: 'Step title', text: 'Write the method instruction here.' }
-      ],
-      servingIdeas: ['Optional serving idea.'],
-      bodySensoryNotes: ['Optional body or sensory note.']
+      ]
     };
   };
 
