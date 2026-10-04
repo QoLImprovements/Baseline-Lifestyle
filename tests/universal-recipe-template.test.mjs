@@ -253,13 +253,11 @@ test('Skincare semantic emphasis is present before JavaScript mutates anything',
 
 
 test('Food and Skincare share one shell-first universal recipe architecture', () => {
-  assert.match(
-    htaccess,
-    /RewriteRule \^baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/baseline-food-approach\.html \[L,QSA\]/
+  assert.ok(
+    htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]')
   );
-  assert.match(
-    htaccess,
-    /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html \[L,QSA\]/
+  assert.ok(
+    htaccess.includes('RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]')
   );
   assert.match(shared, /async function hydrateFolderBackedRecipeCollection\(\)/);
   assert.match(shared, /card\.classList\.add\('recipe-universal-template'\)/);
