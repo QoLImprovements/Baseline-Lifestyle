@@ -51,6 +51,8 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     state.flags.introSeen = true;
     state.party[0].atb = 100;
     state.battle.activeActorIndex = 0;
+    state.settings.battleMode = 'active';
+    state.battle.enemies[0].atb = 99;
     localStorage.setItem(saveKey, JSON.stringify(state));
   }, { saveKey: SAVE_KEY });
 
@@ -63,5 +65,15 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     await expect(page.getByRole('button', { name: command, exact: true })).toBeVisible();
   }
   await expect(page.locator('.jrpg-meter.atb')).toHaveCount(5);
+
+  // Active-mode enemy turns must update battle state without replacing the
+  // player's open command/target DOM.
+  await page.getByRole('button', { name: 'Attack', exact: true }).click();
+  const targetButton = page.locator('[data-battle-target]').first();
+  await expect(targetButton).toBeVisible();
+  await targetButton.evaluate(node => { node.dataset.stabilityProbe = 'same-node'; });
+  await page.waitForTimeout(650);
+  await expect(page.locator('[data-battle-target][data-stability-probe="same-node"]')).toBeVisible();
+
   await expect(page.getByText('Exploration Route', { exact: true })).toHaveCount(0);
 });
