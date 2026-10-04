@@ -198,7 +198,7 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(cutover, /readyForSavedDataMode/);
   assert.match(cutover, /evidence_inside_saved_data/);
   assert.match(cutover, /productionAuthorityChanged.*false/s);
-  assert.match(cutover, /fitness-routine\|food\|skincare/);
+  assert.match(cutover, /fitness-routine\|food\|skincare\|massage/);
   assert.match(cutover, /Games\/baseline-realm/);
   assert.match(cutover, /'profile'=>is_array\(\$data\['profile'\]/);
   assert.match(cutover, /nativeResourceCount/);
@@ -215,7 +215,7 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(rollback, /savedDataResourcesPreservedOutsideSQLite/);
   assert.match(rollback, /fitness-routine\.json/);
   assert.match(rollback, /food\.json/);
-  assert.match(rollback, /skincare\.json/);
+  assert.match(rollback, /skincare\.json/);\n  assert.match(rollback, /massage\\.json/);
   assert.match(rollback, /Account Index\/accounts\.json/);
   assert.match(rollback, /Games\/baseline-realm\.json#/);
   assert.match(rollback, /'badminton-focused\.json'=>'badmintonfocused'/);
