@@ -86,7 +86,7 @@ function bl_cutover_saved_data_native_resource(string $relative, array $resource
     return ($data['byName'] ?? []) === [] && ($data['byEmail'] ?? []) === [];
   }
 
-  if(preg_match('#^Users/([0-9]{6})/(fitness-routine|food|skincare)\\.json$#', $relative, $match) === 1){
+  if(preg_match('#^Users/([0-9]{6})/(fitness-routine|food|skincare|massage)\\.json$#', $relative, $match) === 1){
     return isset($expectedUsers[$match[1]]);
   }
 
