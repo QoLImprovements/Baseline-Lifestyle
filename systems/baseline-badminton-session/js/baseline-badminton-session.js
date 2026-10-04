@@ -681,16 +681,7 @@
     return null;
   }
 
-  function courtAllowedByDoublesDayOptOuts(court, format){
-    if(format !== 'doubles' || !court) return true;
-    if(court.kind === 'singles'){
-      return !sideHasDoublesDaySinglesOptOut(court.side1) && !sideHasDoublesDaySinglesOptOut(court.side2);
-    }
-    if(court.kind === '2v1'){
-      return !playerOptsOutOfDoublesDaySolo(getSoloPlayerFromTwoVsOneCourt(court));
-    }
-    return true;
-  }
+
 
   function makeCourtRespectingOptOuts(kind, group, format){
     if(format !== 'doubles') return makeCourt(kind, group);
@@ -1148,9 +1139,7 @@
     return values.reduce((sum, value) => sum + value, 0) / values.length;
   }
 
-  function getPairNamesFromPlayers(players){
-    return (players || []).map(function(player){ return String(player && player.name || '').trim(); }).filter(Boolean).sort(function(a,b){ return a.localeCompare(b); });
-  }
+
 
 
 
@@ -1337,12 +1326,7 @@
     };
   }
 
-  function getRestrictionMemory(signature){
-    const memory = state.matchupMemory[signature];
-    return memory && typeof memory === 'object'
-      ? memory
-      : getDefaultRestrictionMemory();
-  }
+
 
   function ensureRestrictionMemory(signature){
     if(!signature) return getDefaultRestrictionMemory();
@@ -1372,10 +1356,7 @@
     return memory;
   }
 
-  function getMemoryMovementSteps(memory){
-    const counts = memory && memory.hardshipCounts ? memory.hardshipCounts : {};
-    return Math.max(0, Math.round(Number(counts.movement || 0)));
-  }
+
 
 
 
@@ -1390,32 +1371,9 @@
     return '';
   }
 
-  function expandCustomTargetZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    const allowed = getAllowedZones(mode);
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0 && current.length && current.length < allowed.length){
-      const set = new Set(current);
-      const candidate = allowed.find(zone => !set.has(zone));
-      if(!candidate) break;
-      set.add(candidate);
-      current = allowed.filter(zone => set.has(zone));
-      remaining -= 1;
-    }
-    return current.length >= allowed.length ? [] : current;
-  }
 
-  function contractCustomTargetZones(zones, steps, mode){
-    let current = sanitizeZones(zones || [], mode);
-    const allowed = getAllowedZones(mode);
-    if(!current.length) current = allowed.slice();
-    let remaining = Math.max(0, Math.round(Number(steps || 0)));
-    while(remaining > 0 && current.length > 1){
-      current = current.slice(0, -1);
-      remaining -= 1;
-    }
-    return current.length >= allowed.length ? [] : current;
-  }
+
+
 
 
 
@@ -1522,40 +1480,11 @@
     return getDominantHardshipRuleForSide(court, sideNumber);
   }
 
-  function increaseHardshipRuleForSide(court, sideNumber, hardshipType){
-    return increaseDominantHardshipForSide(court, sideNumber, hardshipType);
-  }
 
-  function reduceHardshipRuleForSide(court, sideNumber, hardshipType){
-    return reduceDominantHardshipForSide(court, sideNumber, hardshipType);
-  }
 
-  function memoryShapeFromActiveRule(court, sideNumber){
-    const active = getHardshipRuleForSide(court, sideNumber);
-    if(active && hardshipRuleIsActive(active.rule)){
-      return {
-        hardships: [],
-        hardshipCounts: {
-          movement: active.rule.targetPreset && active.rule.targetPreset !== 'full-court' ? Math.max(1, getPresetOrder(active.rule.mode).indexOf(active.rule.targetPreset)) : 0,
-          shots: active.rule.shotStage ? 1 : 0
-        },
-        singlesMaxLossCount: 0,
-        expandStrongerCourt: false,
-        expandStrongerCourtCount: 0,
-        shotReliefCount: 0,
-        singlesPreset: active.rule.mode === 'singles' ? (active.rule.targetPreset || '') : '',
-        targetPreset: active.rule.targetPreset || '',
-        shotStage: active.rule.shotStage || 0,
-        adjustedSideIds: active.rule.adjustedSideIds.slice(),
-        adjustedSideNumber: sideNumber,
-        mode: active.rule.mode
-      };
-    }
-    return Object.assign(getDefaultRestrictionMemory(), {
-      adjustedSideIds: getTeamIds(getSideByNumber(court, sideNumber)),
-      adjustedSideNumber: sideNumber
-    });
-  }
+
+
+
 
 
 
@@ -1691,95 +1620,11 @@
 
 
 
-  function applyHardshipToRestrictionMemory(memory, hardshipType, adjustedIds, adjustedSideNumber, resultScore, court, sourceMemory){
-    if(!memory || !hardshipType) return;
-    const source = sourceMemory || memory;
-    const severity = getLossSeverity(resultScore) || 1;
-    const mode = adjustedSideNumber ? getRestrictionZoneMode(court, adjustedSideNumber) : getZoneMode(court || { kind:'doubles' });
-    memory.adjustedSideIds = (adjustedIds || []).slice();
-    memory.adjustedSideNumber = adjustedSideNumber || memory.adjustedSideNumber || null;
-    memory.hardshipCounts = Object.assign({ movement:0, shots:0 }, source.hardshipCounts || {});
-    if(hardshipType === 'movement'){
-      let currentPreset = String(source.targetPreset || (court && Number(court.restrictedSide) === Number(adjustedSideNumber) ? court.targetPreset : '') || 'full-court');
-      if(!getPresetOrder(mode).includes(currentPreset)) currentPreset = 'full-court';
-      const nextPreset = tightenPreset(currentPreset, 1, mode);
-      memory.targetPreset = nextPreset;
-      if(mode === 'singles') memory.singlesPreset = memory.targetPreset;
-      memory.hardshipCounts.movement = Math.max(0, Math.round(Number(memory.hardshipCounts.movement || 0))) + (nextPreset === currentPreset ? 0 : 1);
-      memory.expandStrongerCourtCount = 0;
-      memory.expandStrongerCourt = false;
-    }else{
-      memory.targetPreset = typeof source.targetPreset === 'string' ? source.targetPreset : (memory.targetPreset || '');
-      memory.singlesPreset = typeof source.singlesPreset === 'string' ? source.singlesPreset : (memory.singlesPreset || '');
-    }
-    if(hardshipType === 'shots'){
-      memory.shotStage = 1;
-      memory.hardshipCounts.shots = 1;
-      memory.shotReliefCount = 0;
-    }else{
-      memory.shotStage = Math.max(0, Math.round(Number(source.shotStage || 0)));
-      memory.shotReliefCount = Math.max(0, Math.round(Number(source.shotReliefCount || 0)));
-    }
-
-    const history = Array.isArray(source.hardships) ? source.hardships.slice() : [];
-    memory.hardships = [{
-      type: hardshipType,
-      adjustedSideIds: (adjustedIds || []).slice(),
-      adjustedSideNumber: adjustedSideNumber,
-      resultScore,
-      severity,
-      severityLabel: getLossSeverityLabel(resultScore),
-      createdAt: new Date().toISOString()
-    }].concat(history).slice(0, 24);
-  }
 
 
 
-  function applyRestrictionReductionToMemory(memory, court, adjustedSideNumber, reducedType, sourceMemory){
-    if(!memory) return;
-    const source = sourceMemory || memory;
-    const movement = adjustedSideNumber ? getMovementRestrictionStatusForSide(court, adjustedSideNumber) : getMovementRestrictionStatus(court);
-    const movementActive = !!(movement && movement.hasRestriction);
-    const shotsActive = Number(source.shotStage || court && court.shotRestrictionStage || 0) > 0;
-    let type = reducedType;
-    if(type !== 'movement' && type !== 'shots'){
-      if(movementActive && movement.canReduce) type = 'movement';
-      else if(shotsActive) type = 'shots';
-      else type = '';
-    }
-    memory.hardshipCounts = Object.assign({ movement:0, shots:0 }, source.hardshipCounts || {});
-    memory.hardships = Array.isArray(source.hardships) ? source.hardships.slice(0, 24) : [];
-    memory.adjustedSideIds = Array.isArray(source.adjustedSideIds) ? source.adjustedSideIds.slice() : [];
-    memory.adjustedSideNumber = source.adjustedSideNumber || adjustedSideNumber || null;
 
-    if(type === 'movement' && movement.canReduce){
-      const mode = adjustedSideNumber ? getRestrictionZoneMode(court, adjustedSideNumber) : getZoneMode(court);
-      let currentPreset = String(source.targetPreset || (court && court.targetPreset) || movement.currentPreset || getPresetFromZones((court && court.appliedZones) || [], mode) || 'full-court');
-      if(!getPresetOrder(mode).includes(currentPreset)) currentPreset = 'full-court';
-      memory.targetPreset = loosenPreset(currentPreset, 1, mode);
-      if(mode === 'singles') memory.singlesPreset = memory.targetPreset;
-      memory.hardshipCounts.movement = Math.max(0, Math.round(Number(memory.hardshipCounts.movement || 0)) - 1);
-      memory.expandStrongerCourtCount = 0;
-      memory.expandStrongerCourt = false;
-    }else{
-      memory.targetPreset = typeof source.targetPreset === 'string' ? source.targetPreset : (memory.targetPreset || '');
-      memory.singlesPreset = typeof source.singlesPreset === 'string' ? source.singlesPreset : (memory.singlesPreset || '');
-    }
 
-    if(type === 'shots' && shotsActive){
-      memory.shotStage = Math.max(0, Math.round(Number(source.shotStage || 0)) - 1);
-      memory.hardshipCounts.shots = Math.max(0, Math.round(Number(memory.hardshipCounts.shots || 0)) - 1);
-      memory.shotReliefCount = Math.max(0, Math.round(Number(source.shotReliefCount || 0))) + 1;
-    }else{
-      memory.shotStage = Math.max(0, Math.round(Number(source.shotStage || 0)));
-      memory.shotReliefCount = Math.max(0, Math.round(Number(source.shotReliefCount || 0)));
-    }
-
-    if(Math.max(0, Math.round(Number(memory.shotStage || 0))) <= 0 && (!memory.targetPreset || memory.targetPreset === 'full-court')){
-      memory.adjustedSideIds = [];
-      memory.adjustedSideNumber = null;
-    }
-  }
 
 
 
@@ -2785,9 +2630,7 @@
     return cleaned;
   }
 
-  function isOfficialCompleteBadmintonScore(score1, score2){
-    return validateScores(score1, score2) === '';
-  }
+
 
   function validateScores(score1, score2){
     if(!Number.isInteger(score1) || !Number.isInteger(score2)) return 'Scores must be whole numbers.';
@@ -3627,22 +3470,7 @@
     return parts.length ? parts.join(' · ') : 'No courts';
   }
 
-  function renderPairHandlingBatch(title, metaLine, courts){
-    if(!courts || !courts.length) return '';
-    const rows = courts.map(court => {
-      const side1Label = court.side1Label || getTeamLabel(court.side1);
-      const side2Label = court.side2Label || getTeamLabel(court.side2);
-      return '<div class="pair-summary-item">' +
-        '<strong>' + escapeHtml('Court ' + court.courtNumber + ' · ' + formatCourtKindLabel(court.kind)) + '</strong>' +
-        '<div class="note">Side 1: ' + escapeHtml(side1Label) + '</div>' +
-        '<div class="note">Side 2: ' + escapeHtml(side2Label) + '</div>' +
-      '</div>';
-    }).join('');
-    return '<details class="finished-details"><summary><span>' + escapeHtml(title) + '</span><span>' + escapeHtml(getPairHandlingBatchSummary(courts)) + '</span></summary><div class="finished-details-body">' +
-      (metaLine ? '<div class="note">' + escapeHtml(metaLine) + '</div>' : '') +
-      rows +
-    '</div></details>';
-  }
+
 
 
 
