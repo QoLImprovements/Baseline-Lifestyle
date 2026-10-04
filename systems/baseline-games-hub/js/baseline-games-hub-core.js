@@ -2315,6 +2315,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.hintsUsed = 0;
     make24State.mistakes = 0;
     make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
+    scheduleSave('make24');
     renderAll();
   }
   function spendMake24Skill(skillId){
