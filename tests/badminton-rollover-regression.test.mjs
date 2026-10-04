@@ -13,11 +13,15 @@ const source = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const matchmakerSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
+  "utf8",
+);
 
 test("Singles Day routes directly through the singles-only builder", () => {
-  const start = source.indexOf("function buildCurrentCourtSet");
-  const end = source.indexOf("function generateGamePlan", start);
-  const slice = source.slice(start, end);
+  const start = matchmakerSource.indexOf("function buildCurrentCourtSet");
+  const end = matchmakerSource.indexOf("function updateRotationMemoryFromCourt", start);
+  const slice = matchmakerSource.slice(start, end);
   assert.match(slice, /else if\(normalizedFormat === 'singles'\)\{\s*result = buildSinglesDayCourtSet/);
 });
 
