@@ -15,6 +15,7 @@ const dietJs = read('systems/baseline-food-approach/js/baseline-diet-log.js');
 const foodDataService = read('systems/baseline-food-approach/js/food-data-service.js');
 const htaccess = read('.htaccess');
 const recipeDir = path.join(root, 'systems/baseline-food-approach/recipes');
+const ingredientDir = path.join(root, 'systems/baseline-food-approach/ingredients');
 
 test('Food surfaces have one theme authority', () => {
   for (const token of [
@@ -80,5 +81,31 @@ test('standalone Food recipes use clean ingredient record URLs', () => {
     assert.doesNotMatch(html, /ingredient-library#ing-/);
     assert.doesNotMatch(html, /href="#ing-/);
     assert.match(html, /\/baseline-food-approach\/ingredient-library\//);
+  }
+});
+
+
+test('canonical Food ingredient files own the detailed records', () => {
+  const files = fs.readdirSync(ingredientDir).filter((entry) => entry.endsWith('.html'));
+  assert.equal(files.length, 41);
+  assert.match(foodHtml, /class="lib ingredient-index"/);
+  assert.match(foodHtml, /class="card ingredient-index-card"/);
+  assert.doesNotMatch(foodHtml, /<div class="card" id="ing-apple">/);
+
+  for (const name of files) {
+    const html = read(path.join('systems/baseline-food-approach/ingredients', name));
+    assert.doesNotMatch(html, /Food Approach ingredient record\./);
+    assert.match(html, /class="card food-ingredient-record"/);
+    assert.match(html, /baseline-food-ingredient-detail\.css/);
+    assert.match(html, /rel="canonical"/);
+  }
+});
+
+test('Food production markup contains no Phase 4B recipe naming', () => {
+  assert.doesNotMatch(foodHtml, /phase4b|Phase 4B/i);
+  const recipeDetailCss = read('systems/baseline-food-approach/css/baseline-food-recipe-detail.css');
+  assert.doesNotMatch(recipeDetailCss, /phase4b|Phase 4B/i);
+  for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
+    assert.doesNotMatch(read(path.join('systems/baseline-food-approach/recipes', name)), /phase4b|Phase 4B/i);
   }
 });
