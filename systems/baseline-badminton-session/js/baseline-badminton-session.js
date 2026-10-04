@@ -415,7 +415,6 @@
     }catch(_e){}
     serverLoadAbortController = window.AbortController ? new AbortController() : null;
     serverClient.load(API_STATE_URL, serverLoadAbortController && serverLoadAbortController.signal)
-      .then(function(response){ return response.json().catch(function(){ return null; }); })
       .then(function(data){
         if(pageIsLeaving || serverHydrationSuppressed()) return;
         if(!data || !data.ok){
