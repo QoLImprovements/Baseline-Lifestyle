@@ -36,6 +36,10 @@ const matchmakerSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
   "utf8",
 );
+const ruleAdminSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-rule-admin.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -174,8 +178,8 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3450, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 175000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 3350, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 166000, `controller grew back to ${source.length} characters`);
 });
 
 
@@ -201,4 +205,16 @@ test("Badminton matchmaker is a separate syntactically valid module", () => {
   assert.doesNotMatch(source, /function chooseSitOutPlayers\(/);
   assert.match(matchmakerSource, /function buildCurrentCourtSet\(/);
   assert.match(matchmakerSource, /function chooseSitOutPlayers\(/);
+});
+
+
+test("Badminton rule-admin logic is a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(ruleAdminSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_RULE_ADMIN/);
+  assert.match(source, /ruleAdminModule\.create/);
+  assert.doesNotMatch(source, /function renderRuleAdmin\(/);
+  assert.doesNotMatch(source, /function bindRuleAdminActions\(/);
+  assert.match(ruleAdminSource, /function renderRuleAdmin\(/);
+  assert.match(ruleAdminSource, /function bindRuleAdminActions\(/);
+  assert.match(ruleAdminSource, /function ensureRuleAdminShape\(/);
 });
