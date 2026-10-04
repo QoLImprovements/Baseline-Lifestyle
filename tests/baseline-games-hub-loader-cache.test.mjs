@@ -101,6 +101,11 @@ test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
   assert.doesNotMatch(hubTheme,/\.realm-mini-action|\.realm-close-btn|\.realm-tab-btn/);
 });
 
+test('final Realm visual authority preserves visible Ninja action sprite sheets',()=>{
+  assert.match(realmWood,/is-dash-cut \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-dash\.svg/);
+  assert.match(realmWood,/is-throwing \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-throw\.svg/);
+});
+
 test('final Realm authority guarantees characters and controls',()=>{
   assert.match(realmAuthority,/alder-veil-run\.svg/);
   assert.match(realmAuthority,/mossblade-pursuer\.svg/);
