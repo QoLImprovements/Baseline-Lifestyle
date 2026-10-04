@@ -17,6 +17,14 @@ const matchmakerSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
   "utf8",
 );
+const gamePlanSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-game-plan.js"),
+  "utf8",
+);
+const resultsSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-results.js"),
+  "utf8",
+);
 
 test("Singles Day routes directly through the singles-only builder", () => {
   const start = matchmakerSource.indexOf("function buildCurrentCourtSet");
@@ -28,13 +36,13 @@ test("Singles Day routes directly through the singles-only builder", () => {
 test("completed-set rollover cannot leave 2+ attendees with zero current courts", () => {
   assert.match(source, /function ensureGeneratedCurrentSet\(attendingPlayers, usedSet\)/);
   assert.match(source, /if\(attendingPlayers\.length >= 2 && !courts\.length\)/);
-  assert.match(source, /state\.plan\.current = ensureGeneratedCurrentSet\(attendingPlayers, usedSet\)/);
+  assert.match(gamePlanSource, /state\(\)\.plan\.current = ensureGeneratedCurrentSet\(attendingPlayers, usedSet\)/);
 });
 
 test("old DOM scores cannot bleed into a newly generated set", () => {
-  const start = source.indexOf("function syncCourtScoresFromInputs");
-  const end = source.indexOf("function syncCourtHardshipFromInput", start);
-  const slice = source.slice(start, end);
+  const start = resultsSource.indexOf("function syncCourtScoresFromInputs");
+  const end = resultsSource.indexOf("function markCourtSaved", start);
+  const slice = resultsSource.slice(start, end);
   assert.match(slice, /data-generation-token/);
   assert.match(slice, /inputToken === generationToken/);
 });
