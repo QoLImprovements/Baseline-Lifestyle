@@ -21,6 +21,10 @@ const renderer = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
   "utf8",
 );
+const courtCards = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-cards.js"),
+  "utf8",
+);
 const restrictions = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-restrictions.js"),
   "utf8",
@@ -52,6 +56,14 @@ function rendererSection(startName, endName) {
   const end = endName ? renderer.indexOf("function " + endName, start + 1) : renderer.length;
   assert.notEqual(end, -1, endName + " must follow " + startName + " in court renderer");
   return renderer.slice(start, end);
+}
+
+function courtCardSection(startName, endName) {
+  const start = courtCards.indexOf("function " + startName);
+  assert.notEqual(start, -1, startName + " must exist in court-card renderer");
+  const end = endName ? courtCards.indexOf("function " + endName, start + 1) : courtCards.length;
+  assert.notEqual(end, -1, endName + " must follow " + startName + " in court-card renderer");
+  return courtCards.slice(start, end);
 }
 
 function restrictionSection(startName, endName) {
@@ -102,7 +114,7 @@ test("server storage preserves and canonicalises persistent hardshipRecords", ()
 });
 
 test("No Game slider has one inline label and requested instruction", () => {
-  const editor = section("renderCourtVariableEditor", "makeBestCourtFromVariablePlayers");
+  const editor = courtCardSection("renderCourtVariableEditor", "renderCourtCard");
   assert.doesNotMatch(editor, /<strong>No Game<\/strong>/);
   assert.match(editor, /<label class="court-no-game-range-label"><input[^>]+><span>No Game<\/span><\/label>/);
   assert.match(editor, /Move the slider right to register \\'No Game\\'/);
@@ -164,7 +176,7 @@ test("shot restriction marker captions are compact click/tap details on the cour
   assert.match(icon, /<details class="court-shot-restriction/);
   assert.match(icon, /<summary aria-label="/);
   assert.match(icon, /court-shot-restriction__caption/);
-  const card = section("renderCourtCard", "sanitizeScoreInput");
+  const card = courtCardSection("renderCourtCard");
   assert.match(card, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
   assert.match(css, /touch-action:manipulation/);
   assert.match(css, /\.court-shot-restriction__caption\{/);
