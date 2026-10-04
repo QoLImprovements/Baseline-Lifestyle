@@ -9,6 +9,7 @@ const storageUi=fs.readFileSync('systems/baseline-games-hub/js/games-server-stor
 const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js','utf8');
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
 const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css','utf8');
+const realmWood=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
 const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
 const rootHtaccess=fs.readFileSync('.htaccess','utf8');
 const hubHtaccess=fs.readFileSync('systems/baseline-games-hub/.htaccess','utf8');
@@ -69,6 +70,11 @@ test('core remains the sole owner of normal Hub controls',()=>{
   assert.match(core,/BASELINE_GAMES_HUB_CORE_READY = true/);
   assert.match(core,/function wireTabs\(\)/);
   assert.match(core,/event\.target\.closest\('\[data-select-game\]'\)/);
+});
+
+test('Realm root is not transformed by inherited Games Hub card hover effects',()=>{
+  assert.match(realmWood,/#ninjaPanel,\s*#ninjaPanel:hover,\s*#ninjaPanel:focus-within\{[\s\S]*?transform:none!important/);
+  assert.match(realmWood,/#ninjaPanel #realmSceneFrame\{[\s\S]*?text-rendering:optimizeLegibility/);
 });
 
 test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
