@@ -2078,6 +2078,11 @@
       return;
     }
 
+    const hardshipContextKey = hardshipIntent.sideNumber ? getDominantHardshipKeyForSide(court, hardshipIntent.sideNumber) : '';
+    const hardshipRuleAfter = hardshipContextKey && state.hardshipRecords && state.hardshipRecords[hardshipContextKey]
+      ? JSON.parse(JSON.stringify(state.hardshipRecords[hardshipContextKey]))
+      : null;
+
     const evaluatedNow = evaluateCourtRestrictions(Object.assign({}, JSON.parse(JSON.stringify(court)), { score1:score1, score2:score2 }));
     Object.assign(court, evaluatedNow, { score1:score1, score2:score2, pendingHardship:hardship });
 
@@ -2122,6 +2127,8 @@
       targetAreaText: court.targetAreaText || 'Full court',
       shotRestrictionText: getShotRestrictionText(court.shotRestrictionStage),
       hardshipRegistered: court.savedHardship || '',
+      hardshipContextKey: hardshipContextKey || '',
+      hardshipRuleAfter: hardshipRuleAfter,
       ratingContext
     });
 
