@@ -126,6 +126,46 @@ async function expectAdjustmentsContract(card) {
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 }
 
+test('recipe title favourite and subtab rhythm stay visually consistent', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm', { waitUntil:'domcontentloaded' });
+
+  const card = page.locator('#r3');
+  const title = card.locator('.recipe-title-row > h3');
+  const favourite = card.locator('.recipe-title-row > .fav-btn');
+  await expect(title).toBeVisible();
+  await expect(favourite).toBeVisible();
+
+  const titleGeometry = await card.evaluate((el) => {
+    const heading = el.querySelector('.recipe-title-row > h3');
+    const star = el.querySelector('.recipe-title-row > .fav-btn');
+    const headingRect = heading.getBoundingClientRect();
+    const starRect = star.getBoundingClientRect();
+    return {
+      titleFontSize: parseFloat(getComputedStyle(heading).fontSize),
+      starFontSize: parseFloat(getComputedStyle(star).fontSize),
+      titleRight: headingRect.right,
+      starLeft: starRect.left
+    };
+  });
+  expect(Math.abs(titleGeometry.starFontSize - titleGeometry.titleFontSize)).toBeLessThan(0.5);
+  expect(titleGeometry.starLeft - titleGeometry.titleRight).toBeGreaterThanOrEqual(0);
+  expect(titleGeometry.starLeft - titleGeometry.titleRight).toBeLessThan(14);
+
+  const measureLeadIn = () => card.evaluate((el) => {
+    const meta = el.querySelector('.recipe-meta-row').getBoundingClientRect();
+    const tabs = el.querySelector('.recipe-subtabs').getBoundingClientRect();
+    return tabs.top - meta.bottom;
+  });
+
+  const recipeGap = await measureLeadIn();
+  await card.locator('[data-recipe-subtab="details"]').click();
+  const detailsGap = await measureLeadIn();
+
+  expect(recipeGap).toBeGreaterThan(20);
+  expect(recipeGap).toBeLessThan(50);
+  expect(Math.abs(recipeGap - detailsGap)).toBeLessThan(2);
+});
+
 test('direct Food and Skincare recipe routes never paint the System section first', async ({ page }) => {
   await expectDirectRecipeFirstPaint(
     page,
