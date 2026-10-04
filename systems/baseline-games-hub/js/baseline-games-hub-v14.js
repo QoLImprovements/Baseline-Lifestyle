@@ -387,8 +387,8 @@ function wantsDarts(){
 }
 
 function openDartsFromRoute(){
-  if(!wantsDarts())return;
-  openDarts().catch(error=>console.error(error));
+  if(!wantsDarts())return Promise.resolve(null);
+  return openDarts().catch(error=>{console.error(error);return null;});
 }
 
 
@@ -399,8 +399,8 @@ function wantsBadminton(){
   return params.get('game')==='badminton-focused'||hash==='badminton-focused';
 }
 function openBadmintonFromRoute(){
-  if(!wantsBadminton())return;
-  openBadminton().catch(error=>console.error(error));
+  if(!wantsBadminton())return Promise.resolve(null);
+  return openBadminton().catch(error=>{console.error(error);return null;});
 }
 
 function wantsRealm(){
@@ -412,11 +412,11 @@ function wantsRealm(){
 }
 
 function openRealmFromRoute(){
-  if(!wantsRealm())return;
+  if(!wantsRealm())return Promise.resolve(null);
   const button=document.querySelector('[data-select-game="ninja"]');
   const panel=document.getElementById('ninjaPanel');
   if(button&&!(panel&&panel.classList.contains('is-active')))button.click();
-  else loadRealm().catch(error=>console.error(error));
+  return loadRealm().catch(error=>{console.error(error);return null;});
 }
 
 function signalVisualReady(){
@@ -425,11 +425,13 @@ function signalVisualReady(){
 }
 function init(){
   addRealmCss();
-  waitCore().then(()=>{
+  waitCore().then(async()=>{
     watchDarts();
-    openDartsFromRoute();
-    openBadmintonFromRoute();
-    openRealmFromRoute();
+    await Promise.allSettled([
+      openDartsFromRoute(),
+      openBadmintonFromRoute(),
+      openRealmFromRoute()
+    ]);
     requestAnimationFrame(()=>signalVisualReady());
   }).catch(error=>{
     console.error(error);
