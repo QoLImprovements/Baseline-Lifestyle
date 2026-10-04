@@ -4566,3 +4566,55 @@ html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-univer
   font-weight:900!important;
   box-shadow:0 8px 18px -16px rgba(35,23,19,.42)!important;
 }
+
+/* BASELINE-UNIVERSAL-RECIPE-RHYTHM-20261004
+   Keep the metadata-to-subtab rhythm stable regardless of whether Adjustments
+   is available in the current recipe subview. The favourite control is inline
+   with the title and inherits the title's own type size. */
+body[data-app] .recipe-universal-template .recipe-meta-row{
+  margin-bottom:6px !important;
+}
+body[data-app] .recipe-universal-template .recipe-adjustments-row{
+  min-height:24px !important;
+  margin:0 0 8px !important;
+}
+body[data-app] .recipe-universal-template .recipe-adjustments-row.recipe-view-hidden{
+  display:flex !important;
+  visibility:hidden !important;
+  pointer-events:none !important;
+}
+body[data-app] .recipe-universal-template .recipe-subtabs{
+  margin-top:0 !important;
+}
+body[data-app] .recipe-universal-template > .recipe-title-row{
+  justify-content:flex-start !important;
+  gap:0 !important;
+}
+html body[data-app] .recipe-universal-template > .recipe-title-row > h1,
+html body[data-app] .recipe-universal-template > .recipe-title-row > h2,
+html body[data-app] .recipe-universal-template > .recipe-title-row > h3{
+  flex:0 1 auto !important;
+}
+html body[data-app] .recipe-universal-template > .recipe-title-row > h1 .fav-btn,
+html body[data-app] .recipe-universal-template > .recipe-title-row > h2 .fav-btn,
+html body[data-app] .recipe-universal-template > .recipe-title-row > h3 .fav-btn{
+  display:inline-block !important;
+  margin:0 0 0 .28em !important;
+  padding:0 !important;
+  font:inherit !important;
+  font-size:1em !important;
+  font-weight:inherit !important;
+  line-height:1 !important;
+  vertical-align:baseline !important;
+  color:var(--accent-2, var(--ink)) !important;
+  background:transparent !important;
+  border:0 !important;
+  box-shadow:none !important;
+}
+@media (max-width:720px){
+  body[data-app] .recipe-universal-template .recipe-adjustments-row{
+    min-height:22px !important;
+    margin-bottom:8px !important;
+  }
+}
+
