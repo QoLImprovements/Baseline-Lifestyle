@@ -128,9 +128,11 @@ async function activateRealm(host){
   }
 
   try{
-    await host.sceneRouter.navigate('ninja-training');
+    // Basecamp is the canonical Realm entry point. Individual Realm
+    // destinations are entered only after an explicit player choice.
+    await host.sceneRouter.navigate('basecamp',{initial:true,source:'games-hub'});
   }catch(error){
-    console.error('[Baseline Games Hub] Ninja Training scene navigation failed.',error);
+    console.error('[Baseline Games Hub] Basecamp scene navigation failed.',error);
   }
 
   ensureActorElements();
