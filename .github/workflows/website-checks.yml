@@ -5,13 +5,6 @@ on:
     branches:
       - main
   pull_request:
-  workflow_dispatch:
-    inputs:
-      full_regression:
-        description: Run the full historical regression suite
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: read
@@ -21,244 +14,103 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  detect:
-    runs-on: ubuntu-latest
-    outputs:
-      recipe: ${{ steps.scope.outputs.recipe }}
-      fitness: ${{ steps.scope.outputs.fitness }}
-      games: ${{ steps.scope.outputs.games }}
-      badminton: ${{ steps.scope.outputs.badminton }}
-      backend: ${{ steps.scope.outputs.backend }}
-      shared: ${{ steps.scope.outputs.shared }}
-      full: ${{ steps.scope.outputs.full }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - id: scope
-        name: Detect relevant check domains
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.full_regression }}" == "true" ]]; then
-            {
-              echo "recipe=true"
-              echo "fitness=true"
-              echo "games=true"
-              echo "badminton=true"
-              echo "backend=true"
-              echo "shared=true"
-              echo "full=true"
-            } >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-            if [[ -z "$base" || "$base" == "0000000000000000000000000000000000000000" ]]; then
-              base="$(git rev-parse HEAD^)"
-            fi
-          fi
-
-          git diff --name-only "$base" HEAD > changed-files.txt
-
-          recipe=false
-          fitness=false
-          games=false
-          badminton=false
-          backend=false
-          shared=false
-
-          while IFS= read -r path; do
-            case "$path" in
-              sitewide/js/baseline-shared.js|              sitewide/js/baseline-live-stability-core-v3.js|              sitewide/css/baseline-recipes.css|              systems/baseline-natural-skincare/baseline-natural-skincare.html|              systems/baseline-natural-skincare/css/baseline-natural-skincare.css|              systems/baseline-natural-skincare/js/skincare-recipe-*.js|              systems/baseline-food-approach/*|              tests/*recipe*.mjs|tests/*recipe*.spec.js|              tests/ingredient-library-linkage.test.mjs)
-                recipe=true
-                ;;
-
-              systems/baseline-fitness/*|              sitewide/js/*voice*.js|              tests/*fitness*.mjs|tests/*fitness*.spec.js|              tests/*voice*.mjs|tests/*voice*.spec.js)
-                fitness=true
-                ;;
-
-              systems/baseline-games-hub/*|              tests/*games-hub*.mjs|tests/*games-hub*.spec.js|              tests/baseline-realm-*.mjs|tests/baseline-realm-*.spec.js|              tests/darts-*.mjs|tests/darts-*.spec.js|              tests/calorie-escape-*.mjs|tests/calorie-escape-*.spec.js)
-                games=true
-                ;;
-
-              systems/baseline-badminton-session/*|              tests/badminton-*.mjs|tests/badminton-*.spec.js)
-                badminton=true
-                ;;
-
-              *.php|api/*|server/*|              sitewide/js/baseline-api.js|              sitewide/js/baseline-store.js|              sitewide/js/baseline-auth.js|              tests/*.php|              tests/*saved-data*.mjs|              tests/*resource-authority*.mjs|              tests/*browser-storage*.mjs|              tests/*persistent-browser-revision*.mjs|              tests/baseline-api-client.test.mjs|              tests/baseline-store-client.test.mjs|              tests/baseline-auth-client.test.mjs)
-                backend=true
-                ;;
-
-              sitewide/js/baseline-sitewide.js|              sitewide/css/baseline-sitewide.css|              sitewide/css/baseline-themes.css|              sitewide/css/baseline-header-canonical.css|              tests/site-structure-integrity.test.mjs|              tests/live-stability-contract.test.mjs|              tests/stability-release-smoke.spec.js)
-                shared=true
-                ;;
-            esac
-          done < changed-files.txt
-
-          {
-            echo "recipe=$recipe"
-            echo "fitness=$fitness"
-            echo "games=$games"
-            echo "badminton=$badminton"
-            echo "backend=$backend"
-            echo "shared=$shared"
-            echo "full=false"
-          } >> "$GITHUB_OUTPUT"
-
-  recipe:
-    needs: detect
-    if: needs.detect.outputs.recipe == 'true'
+  validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 18
+    timeout-minutes: 25
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
-      - name: Run recipe contracts
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run structure safeguards
         run: |
-          node --test             tests/skincare-testing-recipes.test.mjs             tests/universal-recipe-template.test.mjs             tests/ingredient-library-linkage.test.mjs             tests/live-stability-contract.test.mjs
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run recipe browser checks
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-results.json
-        run: |
-          npx playwright test             tests/skincare-recipe-runtime.spec.js             tests/skincare-testing-recipes-browser.spec.js             tests/universal-recipe-template.spec.js             --reporter=line,json
-      - name: Preserve recipe browser failure report
+          set -o pipefail
+          npm test 2>&1 | tee structure-test-output.txt
+
+      - name: Preserve structure failure output
         if: failure()
         uses: actions/upload-artifact@v7
         with:
-          name: recipe-browser-failure-report
+          name: structure-failure-output
+          path: structure-test-output.txt
+          if-no-files-found: ignore
+          retention-days: 1
+
+      - name: Run Fitness and voice unit tests
+        run: npm run test:fitness && npm run test:voice
+
+      - name: Install Chromium for voice UI checks
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Fitness voice browser test
+        run: npm run test:voice-ui
+
+      - name: Run Phase 3 first-half contract verification
+        run: |
+          node --test \
+            tests/resource-authority-contract.test.mjs \
+            tests/browser-storage-inventory.test.mjs \
+            tests/games-server-storage.test.mjs \
+            tests/persistent-browser-revision-contract.test.mjs \
+            tests/baseline-api-client.test.mjs
+          php tests/resource-authority-contract.php
+
+      - name: Run Phase 3 second-half regression verification
+        run: |
+          node --test \
+            tests/public-routine-calendar-sync.test.mjs \
+            tests/public-routine-summary-mirror.test.mjs \
+            tests/site-structure-integrity.test.mjs \
+            tests/live-stability-contract.test.mjs
+          npx playwright test \
+            tests/baseline-fitness-voice.spec.js \
+            tests/fitness-saved-plan-reload-browser.spec.js \
+            tests/routine-system-browser.spec.js \
+            tests/skincare-recipe-runtime.spec.js \
+            tests/stability-release-smoke.spec.js \
+            --reporter=line
+
+      - name: Run Phase 3 migration and cutover PHP verification
+        run: npm run test:migration-exporter
+
+      - name: Run finite stability, release and routine interaction smoke tests
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: playwright-results.json
+        run: npx playwright test tests/stability-release-smoke.spec.js tests/routine-system-browser.spec.js tests/fitness-saved-plan-reload-browser.spec.js tests/skincare-testing-recipes-browser.spec.js tests/universal-recipe-template.spec.js --reporter=line,json
+
+      - name: Preserve browser failure report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-failure-report
           path: |
             playwright-results.json
             test-results
           if-no-files-found: ignore
           retention-days: 7
 
-  fitness:
-    needs: detect
-    if: needs.detect.outputs.fitness == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run Fitness and voice unit tests
-        run: npm run test:fitness && npm run test:voice
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run Fitness voice browser checks
-        run: npm run test:voice-ui
-
-  games:
-    needs: detect
-    if: needs.detect.outputs.games == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
       - name: Run Games Hub unit tests
         run: npm run test:games-hub
 
-  badminton:
-    needs: detect
-    if: needs.detect.outputs.badminton == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run Badminton contracts
-        run: |
-          node --test             tests/badminton-architecture-phase2.test.mjs             tests/badminton-rollover-regression.test.mjs             tests/badminton-sitout-types.test.mjs             tests/badminton-focused-structure.test.mjs             tests/badminton-focused-timing.test.mjs             tests/badminton-focused-timer-manager.test.mjs             tests/badminton-focused-profile.test.mjs             tests/badminton-focused-ui.test.mjs
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run Badminton browser smoke
+      - name: Run Badminton Games Hub browser smoke
         run: npx playwright test tests/badminton-focused-browser.spec.js --reporter=line
 
-  backend:
-    needs: detect
-    if: needs.detect.outputs.backend == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run backend client and storage contracts
-        run: |
-          node --test             tests/resource-authority-contract.test.mjs             tests/browser-storage-inventory.test.mjs             tests/persistent-browser-revision-contract.test.mjs             tests/baseline-api-client.test.mjs             tests/baseline-store-client.test.mjs             tests/baseline-auth-client.test.mjs
       - name: Lint PHP endpoints
         run: |
           while IFS= read -r -d '' file; do
             php -l "$file"
-          done < <(find . -type f -name '*.php'             -not -path './vendor/*'             -not -path './node_modules/*'             -print0)
-      - name: Run saved-data PHP contracts
-        run: npm run test:saved-data-php
+          done < <(find . -type f -name '*.php' \
+            -not -path './vendor/*' \
+            -not -path './node_modules/*' \
+            -print0)
 
-  shared:
-    needs: detect
-    if: needs.detect.outputs.shared == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run shared structure and stability contracts
-        run: |
-          node --test             tests/site-structure-integrity.test.mjs             tests/live-stability-contract.test.mjs
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run shared stability smoke
-        run: npx playwright test tests/stability-release-smoke.spec.js --reporter=line
-
-  full-regression:
-    needs: detect
-    if: needs.detect.outputs.full == 'true'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: npm
-      - run: npm ci
-      - name: Run full historical regression suite
-        run: npm test
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Run full browser regression suite
-        run: |
-          npx playwright test             tests/stability-release-smoke.spec.js             tests/routine-system-browser.spec.js             tests/fitness-saved-plan-reload-browser.spec.js             tests/skincare-testing-recipes-browser.spec.js             tests/universal-recipe-template.spec.js             tests/baseline-fitness-voice.spec.js             tests/badminton-focused-browser.spec.js             --reporter=line
-      - name: Run backend migration and saved-data regression
+      - name: Exercise saved-data atomic-write contract
         run: npm run test:saved-data-php
