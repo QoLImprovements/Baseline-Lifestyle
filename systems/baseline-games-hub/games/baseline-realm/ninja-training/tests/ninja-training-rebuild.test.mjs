@@ -56,6 +56,13 @@ test('current Ninja authority keeps parallax live and player actions explicit', 
   assert.doesNotMatch(authority, /ninja-forest-layer[\s\S]{0,180}animation:none!important/);
 });
 
+test('Ninja presentation cannot react to hotkeys or combat mutations while another Realm scene owns the stage', async () => {
+  const scene = await read('js/ninja-training-scene.js');
+  assert.match(scene,/function presentationIsVisible\(\)/);
+  assert.match(scene,/function onKeydown\(event\) \{\s*if \(!presentationIsVisible\(\)\) return;/);
+  assert.match(scene,/const stateObserver = new MutationObserver\(\(\) => \{[\s\S]*?if \(presentationIsVisible\(\)\) \{/);
+});
+
 test('visible runtime sprites switch to dash, throw and enemy-variant artwork', async () => {
   const authority = await read('css/ninja-training-final-authority.css');
   assert.match(authority, /is-dash-cut \.ninja-runtime-sprite--runner/);
