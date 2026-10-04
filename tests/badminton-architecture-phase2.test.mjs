@@ -256,7 +256,7 @@ test("Badminton reporting views are a separate syntactically valid module", () =
 
 test("Badminton court-card presentation is a separate syntactically valid module", () => {
   assert.doesNotThrow(() => new Function(courtCardsSource));
-  assert.match(courtCardsSource, /<summary>Edit Variables<\/summary>/);
+  assert.match(courtCardsSource, /<summary>Edit Variables<\/summary>/); // court adjustments control; separate from score submission
   assert.match(source, /window\.BASELINE_BADMINTON_COURT_CARDS/);
   assert.match(source, /courtCardsModule\.create/);
   assert.doesNotMatch(source, /function renderCourtCard\(/);
