@@ -45,6 +45,16 @@ test('the dense forest uses three independently paced repeatable layers', async 
   assert.match(css, /-2048px/);
 });
 
+test('current Ninja authority keeps parallax live and player actions explicit', async () => {
+  const scene = await read('js/ninja-training-scene.js');
+  const authority = await read('css/ninja-training-final-authority.css');
+  assert.doesNotMatch(scene, /scheduleIdleAttack/);
+  assert.match(scene, /target\.id === 'ninjaManualStrikeBtn'/);
+  assert.match(scene, /target\.id === 'ninjaShurikenBtn'/);
+  assert.match(authority, /background-repeat:repeat-x!important/);
+  assert.doesNotMatch(authority, /ninja-forest-layer[\s\S]{0,180}animation:none!important/);
+});
+
 test('combat presentation includes run, idle, dash, throw, hit and defeat states', async () => {
   const css = await read('css/ninja-training-rebuild.css');
   for (const state of ['is-idle-attacking', 'is-dash-cut', 'is-throwing', 'is-hit', 'is-heavy-hit', 'is-defeated']) {
