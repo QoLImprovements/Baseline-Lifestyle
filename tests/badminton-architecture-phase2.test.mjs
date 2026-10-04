@@ -256,6 +256,7 @@ test("Badminton reporting views are a separate syntactically valid module", () =
 
 test("Badminton court-card presentation is a separate syntactically valid module", () => {
   assert.doesNotThrow(() => new Function(courtCardsSource));
+  assert.match(courtCardsSource, /<summary>Edit Variables<\/summary>/);
   assert.match(source, /window\.BASELINE_BADMINTON_COURT_CARDS/);
   assert.match(source, /courtCardsModule\.create/);
   assert.doesNotMatch(source, /function renderCourtCard\(/);
@@ -342,6 +343,7 @@ test("Badminton repaired modules carry a fresh cache revision", () => {
     "badminton-session-game-plan.js",
     "badminton-session-results.js",
     "badminton-session-court-renderer.js",
+    "badminton-session-court-cards.js",
     "baseline-badminton-session.js",
   ]) {
     assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
