@@ -1992,6 +1992,8 @@ function parseViewStateHash(hash){
         if(!id) id = recipeTokenFromHref(href);
         id = recipeIdForToken(id);
         if(!id) return;
+        const liveCard = document.getElementById(id);
+        if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
         e.preventDefault();
         openRecipe(id);
       });
@@ -2007,6 +2009,8 @@ function parseViewStateHash(hash){
       if(!id) id = recipeTokenFromHref(href);
       id = recipeIdForToken(id);
       if(!id) return;
+      const liveCard = document.getElementById(id);
+      if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
       e.preventDefault();
       openRecipe(id);
     }, { capture:true });
@@ -2236,6 +2240,17 @@ function parseViewStateHash(hash){
       const name = (h && h.textContent ? h.textContent : (card.id || '')).trim();
       return { id: card.id, name, external:false, href:'' };
     });
+    if(isFood && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)){
+      window.BASELINE_FOOD_RECIPE_INDEX.forEach(recipe=>{
+        if(!recipe || !recipe.id || recipes.some(existing=>existing.id===recipe.id)) return;
+        recipes.push({
+          id:String(recipe.id),
+          name:String(recipe.title || recipe.id),
+          external:true,
+          href:String(recipe.href || '')
+        });
+      });
+    }
     if(isSkincare){
       recipes.push({
         id:'r12',
@@ -2250,6 +2265,14 @@ function parseViewStateHash(hash){
     // hashes. This keeps one public URL responsible for one visible record and
     // lets browser Back/Forward restore the originating recipe naturally.
     const recipeToIngredients = new Map();
+    if(isFood && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)){
+      window.BASELINE_FOOD_RECIPE_INDEX.forEach(recipe=>{
+        if(!recipe || !recipe.id) return;
+        recipeToIngredients.set(String(recipe.id), new Set(
+          Array.isArray(recipe.ingredients) ? recipe.ingredients.map(String) : []
+        ));
+      });
+    }
     if(isSkincare){
       recipeToIngredients.set('r12', new Set([
         'ing-cocoa-butter','ing-mango-butter','ing-kokum-butter',
