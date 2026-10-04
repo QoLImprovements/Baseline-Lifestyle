@@ -198,37 +198,6 @@
   }
 
 
-  function stateHasSessionContent(candidate){
-    candidate = candidate && typeof candidate === 'object' ? candidate : {};
-    const plan = candidate.plan && typeof candidate.plan === 'object' ? candidate.plan : {};
-    return !!(
-      (Array.isArray(candidate.players) && candidate.players.length) ||
-      (Array.isArray(candidate.matches) && candidate.matches.length) ||
-      (Array.isArray(plan.current) && plan.current.length) ||
-      (Array.isArray(plan.finished) && plan.finished.length)
-    );
-  }
-
-  // BASELINE-BADMINTON-SERVER-OVERRIDE-GUARD-20260607
-  // Server hydration must not overwrite newer local court state after a hardship is selected.
-  // This directly protects against the visible flicker where the hardship appears, then
-  // an older server payload re-renders the court as "No hardship alteration is active".
-  function getStateUpdatedAt(candidate){
-    return Number(candidate && candidate.localUpdatedAt || 0) || 0;
-  }
-
-  function getStateMatchCount(candidate){
-    return Array.isArray(candidate && candidate.matches) ? candidate.matches.length : 0;
-  }
-
-  function localStateIsNewerThanServer(localCandidate, serverCandidate){
-    const localUpdatedAt = getStateUpdatedAt(localCandidate);
-    const serverUpdatedAt = getStateUpdatedAt(serverCandidate);
-    if(localUpdatedAt && serverUpdatedAt && localUpdatedAt > serverUpdatedAt) return true;
-    if(localUpdatedAt && !serverUpdatedAt && stateHasSessionContent(localCandidate)) return true;
-    return getStateMatchCount(localCandidate) > getStateMatchCount(serverCandidate);
-  }
-
   function updateServerAuth(auth){
     if(auth && typeof auth === 'object'){
       lastServerAuth = auth;
@@ -397,12 +366,6 @@
     migrateKnownModeratorPlayer();
     ensureRatingStores();
     return state;
-  }
-
-  function loadSessionData(){
-    // Server state is authoritative. The browser does not restore persistent
-    // Badminton state from localStorage.
-    return hydrateLoadedState(createInitialState());
   }
 
   function hydrateSessionFromServer(){
@@ -4307,7 +4270,6 @@
     if(state.plan.blankCurrentScoreInputs){
       scheduleHardBlankCurrentScoreInputs(refs.currentGamesGrid);
       state.plan.blankCurrentScoreInputs = false;
-      persistSessionLocalOnly();
     }else{
       enforceCurrentScoreInputsFromState(refs.currentGamesGrid);
     }
