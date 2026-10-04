@@ -2156,8 +2156,11 @@ function parseViewStateHash(hash){
     // Natural Skincare has promoted and folder-backed recipes with authored
     // descriptors. Its canonical recipe-navigation module owns that landing
     // content; the generic category rebuilder must never strip those labels.
-    const isSkincareRecipeCollection = routePageFileFromPath(location.pathname || '') === 'baseline-natural-skincare.html';
-    if(isSkincareRecipeCollection) return;
+    const recipePageFile = routePageFileFromPath(location.pathname || '');
+    const isSkincareRecipeCollection = recipePageFile === 'baseline-natural-skincare.html';
+    const isFoodRecipeCollection = recipePageFile === 'baseline-food-approach.html'
+      && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX);
+    if(isSkincareRecipeCollection || isFoodRecipeCollection) return;
 
     const hasCategories = sortedCards.some(c => c.dataset && typeof c.dataset.category === 'string' && c.dataset.category.trim() !== '');
 
