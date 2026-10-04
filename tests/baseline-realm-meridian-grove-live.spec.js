@@ -18,18 +18,17 @@ async function mockProfiles(page) {
 async function openRealm(page) {
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => (document.documentElement.getAttribute('data-baseline-realm-stage-one') || '').includes('COMPLETE'));
-  await page.evaluate(() => {
-    document.getElementById('games')?.classList.add('has-active-game', 'active');
-    document.querySelectorAll('.game-panel').forEach(panel => panel.classList.remove('is-active'));
-    document.getElementById('ninjaPanel')?.classList.add('is-active');
-  });
+  await page.getByRole('button', { name: 'Games', exact: true }).click();
+  await page.locator('[data-select-game="ninja"]:visible').first().click();
+  await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 test('Exploration Gate removes the legacy route and mounts Meridian Grove', async ({ page }) => {
   await mockProfiles(page);
   await openRealm(page);
 
-  await page.locator('#realmBasecampBtn').click();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.locator('#realmCampExplorationBtn').click();
 
@@ -55,7 +54,6 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     localStorage.setItem(saveKey, JSON.stringify(state));
   }, { saveKey: SAVE_KEY });
 
-  await page.locator('#realmBasecampBtn').click();
   await page.locator('#realmCampExplorationBtn').click();
 
   await expect(page.locator('#jrpgBattleLayer')).toBeVisible();
