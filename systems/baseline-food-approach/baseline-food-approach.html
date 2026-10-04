@@ -171,7 +171,7 @@ Recommended structure:
 <div class="grid">
 <div class="card">
 <h2>Ingredient Library</h2>
-<p class="note">A quick reference for core ingredients used across recipes (nutrition + odour notes).</p>
+<p class="note">Browse the ingredients used across Food Approach recipes. Each ingredient opens as its own focused record.</p>
 <div aria-label="Ingredient filters" class="filter-bar">
 <label for="ingredientFilter"><strong>Filter ingredients by recipe</strong></label>
 <select aria-label="Filter ingredients by recipe" id="ingredientFilter">
@@ -180,460 +180,212 @@ Recommended structure:
 <button aria-label="Clear ingredient filter" class="clear" id="clearIngredientFilter" type="button">Show all</button>
 <span id="ingredientRecipeLink" style="display:none; margin-left:6px;"></span>
 </div>
-<div class="lib">
-<div class="card" id="ing-almond-butter">
-<h3>Almond Butter</h3>
+<div class="lib ingredient-index">
+<article class="card ingredient-index-card" id="ing-almond-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/almond-butter">Almond Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground nut butter (almond)</p>
-<p>💚 <strong>Benefits:</strong> Dense source of fats, vitamin E, and some protein; useful for creamy no-cook bases.</p>
-<p>👃 <strong>Odour note:</strong> Usually mild and neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Acts as the fatty binding phase in spreads and sauces.</li>
-<li>Good for: no-cook bases, dressings, and creamy savoury or sweet applications.</li>
-</ul>
-</div>
-<div class="card" id="ing-sattu">
-<h3>Sattu (Roasted Gram Flour)</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Roasted pulse flour (typically gram/chickpea)</p>
-<p>💚 <strong>Benefits:</strong> Adds protein, fibre, body, and a dry binding matrix without gluten.</p>
-<p>👃 <strong>Odour note:</strong> Mild roasted-legume aroma; usually low-intensity.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Hydrates quickly and continues to thicken after mixing, so add water in stages.</li>
-<li>Good for: spread bases, drink mixes, and quick thickening where a roasted pulse note is acceptable.</li>
-</ul>
-</div>
-<div class="card" id="ing-almonds">
-<h3>Almonds</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/almond-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-almonds">
+<h3><a href="/baseline-food-approach/ingredient-library/almonds">Almonds</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Edible seed (Prunus dulcis)</p>
-<p class="meta-line">🗺️ <strong>Regions:</strong> Mediterranean climates, Middle East, California</p>
-<p>💚 <strong>Benefits:</strong> Vitamin E, healthy fats, fibre, minerals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Good for: snackable fats + fibre; adds crunch to bowls and salads.</li>
-<li>Use: whole, chopped, or blended into sauces; soak if you prefer softer texture.</li>
-</ul>
-</div>
-<div class="card" id="ing-apple">
-<h3>Apple</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/almonds">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-apple">
+<h3><a href="/baseline-food-approach/ingredient-library/apple">Apple</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Malus domestica)</p>
-<p>💚 <strong>Benefits:</strong> Fibre + gentle sweetness; works well cooked or raw.</p>
-<p>👃 <strong>Odour note:</strong> Mild/neutral; generally not associated with lingering body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds sweetness and moisture; works well grated or stewed.</li>
-<li>Good for: oats/porridge bowls and snacks.</li>
-</ul>
-</div>
-<div class="card" id="ing-aubergine">
-<h3>Aubergine</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/apple">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-aubergine">
+<h3><a href="/baseline-food-approach/ingredient-library/aubergine">Aubergine</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit used as a vegetable (Solanum melongena)</p>
-<p>💚 <strong>Benefits:</strong> Soft cooked body; useful for smooth blended sauces.</p>
-<p>👃 <strong>Odour note:</strong> Mild and low-aromatic when cooked plainly.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Aubergine goes silky when cooked and blended.</li>
-<li>Good for: pasta sauces, bakes, and soft savoury bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-cashews">
-<h3>Cashews</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Tree nut (Anacardium occidentale)</p>
-<p>💚 <strong>Benefits:</strong> Mild, creamy nut that blends smoothly into sauces.</p>
-<p>👃 <strong>Odour note:</strong> Nutty but usually soft in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cashews soften and blend into a smooth cream-style base.</li>
-<li>Good for: sauces, blended soups, and dairy-free creamy textures.</li>
-</ul>
-</div>
-<div class="card" id="ing-dried-herbs">
-<h3>Dried Mixed Herbs</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Generic dried mixed herb blend</p>
-<p>💚 <strong>Benefits:</strong> Simple savoury lift without relying on stronger aromatics.</p>
-<p>👃 <strong>Odour note:</strong> Gentle herbal aroma; usually clean rather than heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Useful when you want a mild herb note without choosing one strong herb.</li>
-<li>Good for: sauces, soups, and soft savoury blends.</li>
-</ul>
-</div>
-<div class="card" id="ing-red-pepper">
-<h3>Red Pepper</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Sweet pepper fruit (Capsicum annuum)</p>
-<p>💚 <strong>Benefits:</strong> Adds sweetness, colour, and vitamin C.</p>
-<p>👃 <strong>Odour note:</strong> Sweet pepper aroma; usually not persistent.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Red pepper adds sweetness and softness once cooked and blended.</li>
-<li>Good for: sauces, soups, and vegetable bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-sweet-potato">
-<h3>Sweet Potato</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Ipomoea batatas)</p>
-<p>💚 <strong>Benefits:</strong> Adds body, natural sweetness, and beta-carotene.</p>
-<p>👃 <strong>Odour note:</strong> Mild, softly sweet, and not strongly aromatic.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sweet potato thickens blended sauces while keeping them soft rather than sharp.</li>
-<li>Good for: sauces, mash-style bowls, and roasted vegetable meals.</li>
-</ul>
-</div>
-<div class="card" id="ing-avocado">
-<h3>Avocado</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/aubergine">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-avocado">
+<h3><a href="/baseline-food-approach/ingredient-library/avocado">Avocado</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Persea americana)</p>
-<p>💚 <strong>Benefits:</strong> Creamy fats + fibre; supports satiety and texture.</p>
-<p>👃 <strong>Odour note:</strong> Typically mild/neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds creaminess and fats without dairy.</li>
-<li>Good for: bowls, spreads, and blending into sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-basil">
-<h3>Basil (Dried)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/avocado">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-basil">
+<h3><a href="/baseline-food-approach/ingredient-library/basil">Basil (Dried)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Herb leaf (Ocimum basilicum)</p>
-<p>💚 <strong>Benefits:</strong> Aromatic flavour without harshness.</p>
-<p>👃 <strong>Odour note:</strong> Gentle culinary aromatic; typically not linked to strong body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Basil (dried) brings sweet-herbal flavour to tomato-forward meals.</li>
-<li>Good for: pasta sauces, soups, dressings; add earlier so it rehydrates.</li>
-</ul>
-</div>
-<div class="card" id="ing-brazil-nut-butter">
-<h3>Brazil Nut Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/basil">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-brazil-nut-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/brazil-nut-butter">Brazil Nut Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground Brazil nuts (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Rich and distinctive; adds calories and creaminess in small amounts.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Brazil nut butter is rich and distinctive; use smaller amounts for flavour.</li>
-<li>Good for: occasional rotation; blends into porridges and sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-carrot">
-<h3>Carrot</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/brazil-nut-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-carrot">
+<h3><a href="/baseline-food-approach/ingredient-library/carrot">Carrot</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Daucus carota)</p>
-<p>💚 <strong>Benefits:</strong> Adds sweetness/body without sugar; carotenoids.</p>
-<p>👃 <strong>Odour note:</strong> Mild; generally neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds sweetness and body; supports a richer mouthfeel when blended.</li>
-<li>Good for: soups, stews, and sauces.</li>
-</ul>
-</div>
-<div class="card" id="ing-cashew-butter">
-<h3>Cashew Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/carrot">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cashew-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/cashew-butter">Cashew Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground cashews (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Very creamy; blends into sauces and ‘nut milk’ bases easily.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cashew butter is mild and creamy; blends very smoothly.</li>
-<li>Good for: sauces, ‘cream’ bases, and porridge.</li>
-</ul>
-</div>
-<div class="card" id="ing-cassava-flour">
-<h3>Cassava Flour</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cashew-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cashews">
+<h3><a href="/baseline-food-approach/ingredient-library/cashews">Cashews</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Tree nut (Anacardium occidentale)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cashews">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cassava-flour">
+<h3><a href="/baseline-food-approach/ingredient-library/cassava-flour">Cassava Flour</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root flour (cassava)</p>
-<p>💚 <strong>Benefits:</strong> Gluten-free thickener; can create a slightly more “hearty” body.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Gluten‑free flour/starch for thickening and baking-style uses.</li>
-<li>Good for: thickening and binding; adjust liquids as it absorbs.</li>
-</ul>
-</div>
-<div class="card" id="ing-chickpeas">
-<h3>Chickpeas</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cassava-flour">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-chickpeas">
+<h3><a href="/baseline-food-approach/ingredient-library/chickpeas">Chickpeas</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Legume (Cicer arietinum)</p>
-<p>💚 <strong>Benefits:</strong> Protein + fibre; dependable staple for repeatable meals.</p>
-<p>👃 <strong>Odour note:</strong> Can increase gas for some people (soaking/cooking well can help); not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Protein + fibre staple; versatile base.</li>
-<li>Good for: stews, salads, hummus-style sauces; rinse canned for cleaner flavour.</li>
-</ul>
-</div>
-<div class="card" id="ing-ground-cinnamon">
-<h3>Cinnamon (Ground)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/chickpeas">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-ground-cinnamon">
+<h3><a href="/baseline-food-approach/ingredient-library/ground-cinnamon">Cinnamon (Ground)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Spice bark (Cinnamomum spp.)</p>
-<p>💚 <strong>Benefits:</strong> Warm flavour; use lightly if you prefer a very clean profile.</p>
-<p>👃 <strong>Odour note:</strong> Mild spice aroma; typically not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cinnamon (ground) adds warmth and perceived sweetness.</li>
-<li>Good for: oats, stewed fruit, and desserts.</li>
-</ul>
-</div>
-<div class="card" id="ing-cornflour">
-<h3>Cornflour (Cornstarch)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/ground-cinnamon">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-cornflour">
+<h3><a href="/baseline-food-approach/ingredient-library/cornflour">Cornflour (Cornstarch)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Starch thickener (maize)</p>
-<p>💚 <strong>Benefits:</strong> Quick thickening with a clean finish when simmered briefly.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Thickener (cornstarch) that stabilises sauces.</li>
-<li>Good for: quick thickening; mix with cold water before adding to hot liquids.</li>
-</ul>
-</div>
-<div class="card" id="ing-herbes-de-provence">
-<h3>Herbes de Provence</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/cornflour">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-dried-herbs">
+<h3><a href="/baseline-food-approach/ingredient-library/dried-herbs">Dried Mixed Herbs</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Generic dried mixed herb blend</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/dried-herbs">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-herbes-de-provence">
+<h3><a href="/baseline-food-approach/ingredient-library/herbes-de-provence">Herbes de Provence</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Dried herb blend (typically thyme, rosemary, oregano, etc.)</p>
-<p>💚 <strong>Benefits:</strong> Adds flavour without onion/garlic; supports a “clean” savoury profile.</p>
-<p>👃 <strong>Odour note:</strong> Herbal, light; typically not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Classic herb blend that adds complexity quickly.</li>
-<li>Good for: soups, stews, and roasted vegetables.</li>
-</ul>
-</div>
-<div class="card" id="ing-lemon">
-<h3>Lemon Juice</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/herbes-de-provence">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-lemon">
+<h3><a href="/baseline-food-approach/ingredient-library/lemon">Lemon Juice</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Citrus juice (Citrus limon)</p>
-<p>💚 <strong>Benefits:</strong> Bright flavour; vitamin C (small per serving).</p>
-<p>👃 <strong>Odour note:</strong> Usually associated with freshness.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Lemon juice brightens flavour and balances richness.</li>
-<li>Good for: dressings, sauces, and ‘lift’ in stews; add to taste at the end.</li>
-</ul>
-</div>
-<div class="card" id="ing-flaxseed">
-<h3>Linseed/Flaxseed (Whole or Ground)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/lemon">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-flaxseed">
+<h3><a href="/baseline-food-approach/ingredient-library/flaxseed">Linseed/Flaxseed (Whole or Ground)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Seed (Linum usitatissimum)</p>
-<p class="meta-line">🗺️ <strong>Regions:</strong> Canada, Northern Europe, India</p>
-<p>💚 <strong>Benefits:</strong> Omega-3 (ALA), fibre, lignans.</p>
-<p>👃 <strong>Odour note:</strong> Usually neutral; fibre can support digestive clearance for some people.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Linseed/flaxseed is the same seed; whole or ground changes texture and digestibility.</li>
-<li>Good for: omega‑3 (ALA) + fibre; thickens porridges/smoothies.</li>
-<li>Storage: ground goes rancid faster—keep airtight and cool.</li>
-</ul>
-</div>
-<div class="card" id="ing-macadamia-butter">
-<h3>Macadamia Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/flaxseed">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-macadamia-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/macadamia-butter">Macadamia Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground macadamias (smooth butter)</p>
-<p>💚 <strong>Benefits:</strong> Very rich, buttery flavour; makes bowls and sauces feel luxurious.</p>
-<p>👃 <strong>Odour note:</strong> Nutty, usually mild in finished dishes.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Macadamia butter is very rich and buttery in flavour.</li>
-<li>Good for: creamy bowls and sauces when you want extra richness.</li>
-</ul>
-</div>
-<div class="card" id="ing-nutritional-yeast">
-<h3>Nutritional Yeast</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/macadamia-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-nutritional-yeast">
+<h3><a href="/baseline-food-approach/ingredient-library/nutritional-yeast">Nutritional Yeast</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Inactivated yeast flakes</p>
-<p>💚 <strong>Benefits:</strong> B-vitamins (often B12-fortified), savoury satisfaction.</p>
-<p>👃 <strong>Odour note:</strong> Strong aroma in the packet, but gentle in recipes compared with garlic/onion.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds a savoury ‘cheesy’ umami note without dairy.</li>
-<li>Good for: sauces, tofu scrambles, soups; provides B‑vitamins (check fortification).</li>
-</ul>
-</div>
-<div class="card" id="ing-oat-groats">
-<h3>Oats (Groats, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/nutritional-yeast">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-oat-groats">
+<h3><a href="/baseline-food-approach/ingredient-library/oat-groats">Oats (Groats, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole oat kernel (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Intact grain texture; steady, slow-release carbohydrate base with fibre.</p>
-<p>👃 <strong>Odour note:</strong> Mild cereal aroma; pressure cooking keeps it contained.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (groats, gluten‑free) are least processed and take longer to cook/soak.</li>
-<li>Good for: hearty texture and slower-digesting bowl bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-jumbo-oats">
-<h3>Oats (Jumbo, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/oat-groats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-jumbo-oats">
+<h3><a href="/baseline-food-approach/ingredient-library/jumbo-oats">Oats (Jumbo, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole grain (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Slow-release carbs + beta-glucan fibre; comforting base for repeat meals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; choose certified gluten-free if needed.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (jumbo, gluten‑free) hold texture and bite.</li>
-<li>Good for: thick porridges; soak longer if you want softer.</li>
-</ul>
-</div>
-<div class="card" id="ing-porridge-oats">
-<h3>Oats (Porridge, Gluten-Free)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/jumbo-oats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-porridge-oats">
+<h3><a href="/baseline-food-approach/ingredient-library/porridge-oats">Oats (Porridge, Gluten-Free)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Whole grain (Avena sativa)</p>
-<p>💚 <strong>Benefits:</strong> Faster-cooking oats; soft texture and gentle digestion for repeat meals.</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; choose certified gluten-free if needed.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Oats (porridge, gluten‑free) cook quickly into a creamy texture.</li>
-<li>Good for: everyday porridge; easy thickness control with water.</li>
-</ul>
-</div>
-<div class="card" id="ing-parsley">
-<h3>Parsley (Dried)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/porridge-oats">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-parsley">
+<h3><a href="/baseline-food-approach/ingredient-library/parsley">Parsley (Dried)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Herb leaf (Petroselinum crispum)</p>
-<p>💚 <strong>Benefits:</strong> Antioxidants, vitamin K (small amounts dried).</p>
-<p>👃 <strong>Odour note:</strong> Often perceived as freshening.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Parsley (dried) adds herbal lift and colour to savoury dishes.</li>
-<li>Good for: finishing soups, stews, and salad dressings.</li>
-</ul>
-</div>
-<div class="card" id="ing-peanut-butter">
-<h3>Peanut Butter</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/parsley">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-peanut-butter">
+<h3><a href="/baseline-food-approach/ingredient-library/peanut-butter">Peanut Butter</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground peanuts (ideally 100% peanuts)</p>
-<p>💚 <strong>Benefits:</strong> Optional richness; helps thicken sauces.</p>
-<p>👃 <strong>Odour note:</strong> Nutty aroma; typically mild in small amounts.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Peanut butter adds thickness, fat, and savoury sweetness.</li>
-<li>Good for: sauces and porridges; choose no added sugar if preferred.</li>
-</ul>
-</div>
-<div class="card" id="ing-pear">
-<h3>Pear</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/peanut-butter">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-pear">
+<h3><a href="/baseline-food-approach/ingredient-library/pear">Pear</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fruit (Pyrus communis)</p>
-<p>💚 <strong>Benefits:</strong> Hydrating fruit with gentle sweetness; softens beautifully when simmered.</p>
-<p>👃 <strong>Odour note:</strong> Mild/neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Soft sweetness and moisture; pairs well with oats and cinnamon.</li>
-<li>Good for: breakfast bowls and snacks.</li>
-</ul>
-</div>
-<div class="card" id="ing-polenta">
-<h3>Polenta (Cornmeal)</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/pear">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-polenta">
+<h3><a href="/baseline-food-approach/ingredient-library/polenta">Polenta (Cornmeal)</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground maize (corn) meal</p>
-<p>💚 <strong>Benefits:</strong> Simple carbohydrate base; naturally gluten-free (check cross-contamination).</p>
-<p>👃 <strong>Odour note:</strong> Generally neutral; mild aroma.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Cornmeal used as a base starch; thickens into a porridge-like texture.</li>
-<li>Good for: creamy bowls and savoury bases; whisk to avoid lumps.</li>
-</ul>
-</div>
-<div class="card" id="ing-rosemary">
-<h3>Rosemary (Dried)</h3>
-<p class="meta-line">🌿 <strong>Type:</strong> Dried herb</p>
-<p>💚 <strong>Benefits:</strong> Aromatic accent that supports savoury depth without heaviness.</p>
-<p>👃 <strong>Odour note:</strong> Herbal and piney; use lightly for a clean finish.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Rosemary (dried) is aromatic and robust—use sparingly.</li>
-<li>Good for: roasted veg, tomato dishes, and savoury marinades.</li>
-</ul>
-</div>
-<div class="card" id="ing-sage">
-<h3>Sage</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Dried herb (Salvia officinalis)</p>
-<p>💚 <strong>Benefits:</strong> Warm savoury depth; use lightly.</p>
-<p>👃 <strong>Odour note:</strong> Aromatic, but not sulphur-heavy.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sage is earthy and strong—use sparingly.</li>
-<li>Good for: hearty stews and savoury bowls.</li>
-</ul>
-</div>
-<div class="card" id="ing-sea-salt">
-<h3>Sea Salt</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Mineral salt</p>
-<p>💚 <strong>Benefits:</strong> Sodium for fluid balance (small amounts).</p>
-<p>👃 <strong>Odour note:</strong> Not a direct odour cause, but excess can increase sweating for some people.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Seasoning; use to taste.</li>
-<li>Good for: bringing flavours into focus—add gradually and adjust.</li>
-</ul>
-</div>
-<div class="card" id="ing-tahini">
-<h3>Tahini (100%, Raw Whole or Roasted)</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Sesame seed paste</p>
-<p>💚 <strong>Benefits:</strong> Minerals and healthy fats; adds richness without cooking oil.</p>
-<p>👃 <strong>Odour note:</strong> Nutty aroma; usually mild once mixed into meals.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Sesame paste that adds fat, body, and a nutty bitterness.</li>
-<li>Good for: sauces/dressings; balances acid (lemon) and salt.</li>
-</ul>
-</div>
-<div class="card" id="ing-tomatoes">
-<h3>Tomatoes</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Fruit (Solanum lycopersicum)</p>
-<p>💚 <strong>Benefits:</strong> Sauce base with gentle acidity; lycopene.</p>
-<p>👃 <strong>Odour note:</strong> Bright aroma; usually not linked to lingering body odour.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Foundation for many savoury recipes; acidity + umami.</li>
-<li>Good for: sauces and stews; choose tinned for consistency.</li>
-</ul>
-</div>
-<div class="card" id="ing-vanilla-bean-powder">
-<h3>Vanilla Bean Powder</h3>
-<p class="meta-line">🌱 <strong>Type:</strong> Ground vanilla bean</p>
-<p>💚 <strong>Benefits:</strong> Adds warmth and sweetness perception without sugar.</p>
-<p>👃 <strong>Odour note:</strong> Aromatic but gentle in food.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Adds vanilla aroma without liquid sweeteners.</li>
-<li>Good for: porridge, smoothies, and desserts.</li>
-</ul>
-</div>
-<div class="card" id="ing-potato">
-<h3>Potato</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/polenta">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-potato">
+<h3><a href="/baseline-food-approach/ingredient-library/potato">Potato</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Root vegetable / tuber (Solanum tuberosum)</p>
-<p>💚 <strong>Benefits:</strong> Smooth starchy body, useful for thicker blends and firmer chilled textures.</p>
-<p>👃 <strong>Odour note:</strong> Mild and neutral once cooked.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Potato gives blended sauces and cheese-style bases body without a heavy aroma.</li>
-<li>Good for: mash-style meals, thick sauces, and set vegan cheese bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-tapioca-starch">
-<h3>Tapioca Starch</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/potato">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-red-pepper">
+<h3><a href="/baseline-food-approach/ingredient-library/red-pepper">Red Pepper</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Sweet pepper fruit (Capsicum annuum)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/red-pepper">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-rosemary">
+<h3><a href="/baseline-food-approach/ingredient-library/rosemary">Rosemary (Dried)</a></h3>
+<p class="meta-line">🌿 <strong>Type:</strong> Dried herb</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/rosemary">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sage">
+<h3><a href="/baseline-food-approach/ingredient-library/sage">Sage</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Dried herb (Salvia officinalis)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sage">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sattu">
+<h3><a href="/baseline-food-approach/ingredient-library/sattu">Sattu (Roasted Gram Flour)</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Roasted pulse flour (typically gram/chickpea)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sattu">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sea-salt">
+<h3><a href="/baseline-food-approach/ingredient-library/sea-salt">Sea Salt</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Mineral salt</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sea-salt">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-sweet-potato">
+<h3><a href="/baseline-food-approach/ingredient-library/sweet-potato">Sweet Potato</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Root vegetable (Ipomoea batatas)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/sweet-potato">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tahini">
+<h3><a href="/baseline-food-approach/ingredient-library/tahini">Tahini (100%, Raw Whole or Roasted)</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Sesame seed paste</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tahini">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tapioca-starch">
+<h3><a href="/baseline-food-approach/ingredient-library/tapioca-starch">Tapioca Starch</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Starch thickener (cassava root)</p>
-<p>💚 <strong>Benefits:</strong> Gives a glossy, stretchy finish when heated properly.</p>
-<p>👃 <strong>Odour note:</strong> Neutral.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Tapioca starch is especially useful when you want stretch rather than a floury thickness.</li>
-<li>Good for: vegan cheese, glossy sauces, and elastic starch-thickened blends.</li>
-</ul>
-</div>
-<div class="card" id="ing-turmeric">
-<h3>Turmeric</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tapioca-starch">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-tomatoes">
+<h3><a href="/baseline-food-approach/ingredient-library/tomatoes">Tomatoes</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Fruit (Solanum lycopersicum)</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/tomatoes">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-turmeric">
+<h3><a href="/baseline-food-approach/ingredient-library/turmeric">Turmeric</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Ground spice root (Curcuma longa)</p>
-<p>💚 <strong>Benefits:</strong> Strong colour in tiny amounts; useful for warm yellow tone.</p>
-<p>👃 <strong>Odour note:</strong> Earthy spice aroma; best kept light if you want a clean result.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Turmeric is mainly useful here for colour, not as a dominant flavour.</li>
-<li>Good for: tiny colour adjustments in savoury blends, soups, and sauce bases.</li>
-</ul>
-</div>
-<div class="card" id="ing-water">
-<h3>Water</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/turmeric">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-vanilla-bean-powder">
+<h3><a href="/baseline-food-approach/ingredient-library/vanilla-bean-powder">Vanilla Bean Powder</a></h3>
+<p class="meta-line">🌱 <strong>Type:</strong> Ground vanilla bean</p>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/vanilla-bean-powder">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-water">
+<h3><a href="/baseline-food-approach/ingredient-library/water">Water</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Solvent/hydration base</p>
-<p>💚 <strong>Benefits:</strong> Supports cooking and texture control.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Main cooking liquid; also used for quick nut ‘milk’ bases.</li>
-<li>Good for: controlling thickness; add gradually for preferred texture.</li>
-</ul>
-</div>
-<div class="card" id="ing-mushrooms">
-<h3>White Mushrooms</h3>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/water">View ingredient record</a></p>
+</article>
+<article class="card ingredient-index-card" id="ing-mushrooms">
+<h3><a href="/baseline-food-approach/ingredient-library/white-mushroom">White Mushrooms</a></h3>
 <p class="meta-line">🌱 <strong>Type:</strong> Fungus (Agaricus bisporus)</p>
-<p>💚 <strong>Benefits:</strong> Umami depth without strong spices.</p>
-<p>👃 <strong>Odour note:</strong> Earthy aroma while cooking; typically not persistent.</p>
-<p><strong>Notes:</strong></p>
-<ul class="notes-list">
-<li>Umami booster; adds depth to savoury dishes.</li>
-<li>Good for: mince-style fillings, stews, and sauces.</li>
-</ul>
-</div>
+<p><a class="action" href="/baseline-food-approach/ingredient-library/white-mushroom">View ingredient record</a></p>
+</article>
 </div>
 </div>
 </div>
