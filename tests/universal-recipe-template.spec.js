@@ -92,19 +92,27 @@ async function expectAdjustmentsContract(card) {
   await expect(meta.locator('.recipe-meta-item').filter({ hasText: /^Batch:/ })).toHaveCount(1);
   await expect(meta.locator('.recipe-meta-item').filter({ hasText: /^Yield:/ })).toHaveCount(0);
 
-  const adjustmentsRow = card.locator('.recipe-adjustments-row');
-  await expect(adjustmentsRow).toBeVisible();
-  const adjustments = adjustmentsRow.locator('.recipe-adjustments-toggle');
+  const viewbar = card.locator('.recipe-viewbar');
+  const tabs = viewbar.locator('.recipe-subtabs');
+  const adjustments = viewbar.locator(':scope > .recipe-adjustments-toggle');
+  await expect(viewbar).toBeVisible();
+  await expect(tabs).toBeVisible();
   await expect(adjustments).toBeVisible();
   await expect(adjustments).toHaveText('Adjustments');
   await expect(adjustments).toHaveAttribute('aria-expanded', 'false');
 
   const geometry = await card.evaluate(el => {
-    const meta = el.querySelector('.recipe-meta-row').getBoundingClientRect();
-    const adjustments = el.querySelector('.recipe-adjustments-row').getBoundingClientRect();
-    return { metaBottom: meta.bottom, adjustmentsTop: adjustments.top };
+    const tabs = el.querySelector('.recipe-viewbar > .recipe-subtabs').getBoundingClientRect();
+    const adjustments = el.querySelector('.recipe-viewbar > .recipe-adjustments-toggle').getBoundingClientRect();
+    return {
+      tabsTop: tabs.top,
+      tabsRight: tabs.right,
+      adjustmentsTop: adjustments.top,
+      adjustmentsLeft: adjustments.left
+    };
   });
-  expect(geometry.adjustmentsTop).toBeGreaterThanOrEqual(geometry.metaBottom - 1);
+  expect(Math.abs(geometry.adjustmentsTop - geometry.tabsTop)).toBeLessThan(8);
+  expect(geometry.adjustmentsLeft).toBeGreaterThanOrEqual(geometry.tabsRight - 1);
 
   const adjustmentSurface = await adjustments.evaluate(el => ({
     backgroundColor: getComputedStyle(el).backgroundColor,
@@ -112,6 +120,7 @@ async function expectAdjustmentsContract(card) {
   }));
   expect(adjustmentSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
   expect(adjustmentSurface.backgroundImage).toBe('none');
+  await expect(card.locator('.recipe-adjustments-row')).toBeHidden();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expect(card.locator('.recipe-legacy-print-summary')).toBeHidden();
 
@@ -151,19 +160,24 @@ test('recipe title favourite and subtab rhythm stay visually consistent', async 
   expect(titleGeometry.starLeft - titleGeometry.titleRight).toBeGreaterThanOrEqual(0);
   expect(titleGeometry.starLeft - titleGeometry.titleRight).toBeLessThan(14);
 
-  const measureLeadIn = () => card.evaluate((el) => {
-    const meta = el.querySelector('.recipe-meta-row').getBoundingClientRect();
-    const tabs = el.querySelector('.recipe-subtabs').getBoundingClientRect();
-    return tabs.top - meta.bottom;
+  const favouriteSurface = await favourite.evaluate((el) => {
+    const style = getComputedStyle(el);
+    return { backgroundColor:style.backgroundColor, backgroundImage:style.backgroundImage };
   });
+  expect(favouriteSurface.backgroundColor).toBe('rgba(0, 0, 0, 0)');
+  expect(favouriteSurface.backgroundImage).toBe('none');
 
-  const recipeGap = await measureLeadIn();
+  const viewbarGeometry = await card.evaluate((el) => {
+    const tabs = el.querySelector('.recipe-viewbar > .recipe-subtabs').getBoundingClientRect();
+    const adjustments = el.querySelector('.recipe-viewbar > .recipe-adjustments-toggle').getBoundingClientRect();
+    return { tabsTop:tabs.top, tabsRight:tabs.right, adjustmentsTop:adjustments.top, adjustmentsLeft:adjustments.left };
+  });
+  expect(Math.abs(viewbarGeometry.adjustmentsTop - viewbarGeometry.tabsTop)).toBeLessThan(8);
+  expect(viewbarGeometry.adjustmentsLeft).toBeGreaterThanOrEqual(viewbarGeometry.tabsRight - 1);
+
   await card.locator('[data-recipe-subtab="details"]').click();
-  const detailsGap = await measureLeadIn();
-
-  expect(recipeGap).toBeGreaterThan(20);
-  expect(recipeGap).toBeLessThan(50);
-  expect(Math.abs(recipeGap - detailsGap)).toBeLessThan(2);
+  await expect(card.locator('.recipe-viewbar')).toBeVisible();
+  await expect(card.locator('.recipe-viewbar > .recipe-adjustments-toggle')).toBeHidden();
 });
 
 test('direct Food and Skincare recipe routes never paint the System section first', async ({ page }) => {
@@ -725,14 +739,17 @@ test('Skincare Details is useful while Food keeps its existing placeholder behav
   await expect(food.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
 });
 
-test('Skincare Adjustments starts collapsed and only appears on Recipe and Show All', async ({ page }) => {
+test('Skincare Adjustments starts collapsed at the right of Recipe and Show All subtabs', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm');
   const card = page.locator('#r3');
+  const viewbar = card.locator('.recipe-viewbar');
   const row = card.locator('.recipe-adjustments-row');
-  const toggle = card.locator('.recipe-adjustments-toggle');
+  const toggle = viewbar.locator(':scope > .recipe-adjustments-toggle');
   const panel = card.locator('.recipe-adjustments-panel');
 
-  await expect(row).toBeVisible();
+  await expect(viewbar).toBeVisible();
+  await expect(row).toBeHidden();
+  await expect(toggle).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await expect(panel).toBeHidden();
 
@@ -741,19 +758,20 @@ test('Skincare Adjustments starts collapsed and only appears on Recipe and Show 
   await expect(panel).toBeVisible();
 
   await card.locator('[data-recipe-subtab="details"]').click();
-  await expect(row).toBeHidden();
+  await expect(viewbar).toBeVisible();
+  await expect(toggle).toBeHidden();
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await expect(panel).toBeHidden();
 
   await card.locator('[data-recipe-subtab="show-all"]').click();
-  await expect(row).toBeVisible();
+  await expect(toggle).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await expect(panel).toBeHidden();
 
   await toggle.click();
   await expect(panel).toBeVisible();
   await card.locator('[data-recipe-subtab="guidance"]').click();
-  await expect(row).toBeHidden();
+  await expect(toggle).toBeHidden();
   await expect(toggle).toHaveAttribute('aria-expanded','false');
   await expect(panel).toBeHidden();
 
