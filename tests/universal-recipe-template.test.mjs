@@ -9,6 +9,7 @@ const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const foodHtml = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
 const liveStability = fs.readFileSync('sitewide/js/baseline-live-stability-core-v3.js', 'utf8');
+const htaccess = fs.readFileSync('.htaccess', 'utf8');
 
 function skincareRecipeBlocks(){
   const matches=[...skincareHtml.matchAll(/<div class="recipe card recipe-page recipe-universal-template"[^>]*\bid="(r\d+)"[^>]*>/g)];
@@ -248,4 +249,21 @@ test('Skincare semantic emphasis is present before JavaScript mutates anything',
   assert.match(skincareCss,/recipe-universal-template ol > li > strong:first-child/);
   assert.match(skincareCss,/recipe-universal-template \.ing-subhead > strong/);
   assert.match(skincareCss,/data-recipe-view-group="guidance"/);
+});
+
+
+test('Food and Skincare share one shell-first universal recipe architecture', () => {
+  assert.match(
+    htaccess,
+    /RewriteRule \^baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/baseline-food-approach\.html \[L,QSA\]/
+  );
+  assert.match(
+    htaccess,
+    /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html \[L,QSA\]/
+  );
+  assert.match(shared, /async function hydrateFolderBackedRecipeRoute\(\)/);
+  assert.match(shared, /card\.classList\.add\('recipe-universal-template'\)/);
+  assert.match(shared, /await hydrateFolderBackedRecipeRoute\(\)/);
+  assert.doesNotMatch(shared, /ensureStandaloneSystemTabs|baseline-standalone-primary-tabs/);
+  assert.doesNotMatch(css, /BASELINE-STANDALONE-SYSTEM-TABS-20261004/);
 });
