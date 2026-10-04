@@ -21,6 +21,7 @@
           rating: clampRating(player && (player.playerRating != null ? player.playerRating : player.rating)),
           playerRating: clampRating(player && (player.playerRating != null ? player.playerRating : player.rating)),
           loginUsername: normalizeKnownLoginName(player && (player.loginUsername || player.login || player.username || '')),
+          loginUserId: String(player && (player.loginUserId || player.linkedUserId || player.userId || player.uid || '') || '').trim(),
           loginEmail: String(player && (player.loginEmail || player.email || '') || '').trim(),
           badmintonSessionsAdmin: !!(player && (player.badmintonSessionsAdmin || player.isBadmintonAdmin || player.badmintonAdmin)),
           matchCount: Number.isFinite(Number(player && player.matchCount))
