@@ -1525,23 +1525,23 @@ body[data-app="home"]{
   --bl-home-account-gradient:linear-gradient(90deg,#2f3035 0%,#50515a 30%,#757680 50%,#50515a 70%,#2f3035 100%);
 }
 body[data-app="food"]{
-  --bl-surface-card-solid:#f5b84a;
-  --bl-surface-recipe-card-solid:#ffc04d;
-  --bl-surface-panel-solid:#e98225;
-  --bl-surface-control-solid:#ee942d;
-  --bl-surface-input-solid:#ffb13b;
-  --bl-surface-active-solid:#c92727;
+  --bl-surface-card-solid:#e99a5f;
+  --bl-surface-recipe-card-solid:#e99a5f;
+  --bl-surface-panel-solid:#e99a5f;
+  --bl-surface-control-solid:#df7f43;
+  --bl-surface-input-solid:#f0aa73;
+  --bl-surface-active-solid:#b11226;
   --bl-surface-ink:#1b0b09;
   --bl-slider-track-solid:#b11226;
   --bl-slider-thumb-solid:#ffb000;
   --bl-slider-border-solid:#7a1a21;
 }
 body[data-app="skin"]{
-  --bl-surface-card-solid:#d99a82;
-  --bl-surface-recipe-card-solid:#d89178;
-  --bl-surface-panel-solid:#c87962;
+  --bl-surface-card-solid:#e3aa94;
+  --bl-surface-recipe-card-solid:#e3aa94;
+  --bl-surface-panel-solid:#d99880;
   --bl-surface-control-solid:#cf8167;
-  --bl-surface-input-solid:#e0aa94;
+  --bl-surface-input-solid:#e8c1b2;
   --bl-surface-active-solid:#b8644d;
   --bl-surface-ink:#2b2b28;
   --bl-slider-track-solid:#b8644d;
@@ -2687,3 +2687,66 @@ body[data-app="games"]{
   .bl-info-popover::before{display:none;}
 }
 @media (prefers-reduced-motion:reduce){.bl-info-button{transition:none;}}
+
+
+/* BASELINE-FOOD-SKIN-VISUAL-AUTHORITY-20261004 */
+/* Food + Skincare primary cards/tabs have one static visual authority.
+   Page-specific CSS may own spacing/layout, but must not redefine these colours. */
+body[data-app="food"] .card,
+body[data-app="food"] #recipes .card,
+body[data-app="food"] #recipes .recipe-page{
+  background-image:none !important;
+  background-color:var(--bl-surface-card-solid) !important;
+  border-color:rgba(90,12,21,.24) !important;
+  color:var(--ink) !important;
+  opacity:1 !important;
+  filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+body[data-app="skin"] .card,
+body[data-app="skin"] #recipes .card,
+body[data-app="skin"] #recipes .recipe-page{
+  background-image:none !important;
+  background-color:var(--bl-surface-card-solid) !important;
+  border-color:rgba(122,74,58,.18) !important;
+  color:var(--ink) !important;
+  opacity:1 !important;
+  filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  backdrop-filter:none !important;
+}
+
+body[data-app="food"] .tabs .tab,
+body[data-app="skin"] .tabs .tab{
+  background-image:none !important;
+  background-color:var(--bl-surface-control-solid) !important;
+  color:var(--ink) !important;
+  border-color:var(--showall-border,var(--border)) !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
+body[data-app="food"] .tabs .tab:hover{
+  background-color:#ed934d !important;
+}
+body[data-app="skin"] .tabs .tab:hover{
+  background-color:#d98f76 !important;
+}
+body[data-app="food"] .tabs .tab[aria-selected="true"],
+body[data-app="food"] .tabs .tab.active{
+  background-image:none !important;
+  background-color:var(--bl-surface-active-solid) !important;
+  color:#fff7e8 !important;
+  border-color:#8f0e1e !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
+body[data-app="skin"] .tabs .tab[aria-selected="true"],
+body[data-app="skin"] .tabs .tab.active{
+  background-image:none !important;
+  background-color:var(--bl-surface-active-solid) !important;
+  color:#fff6f0 !important;
+  border-color:#8f4b39 !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
