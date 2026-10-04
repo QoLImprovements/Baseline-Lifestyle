@@ -497,12 +497,13 @@ export class MeridianGroveGame {
   commandTemplate(actor, actorIndex) {
     if (!actor) return '<div class="jrpg-command-wait"><strong>ATB running</strong><span>Commands appear when a party gauge is full.</span></div>';
     if (this.battleMenu.screen === 'commands') {
-      const availableCommands = BATTLE_COMMANDS.filter((label) => {
-        if (label === 'Ability') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'ability');
-        if (label === 'Magic') return actor.abilities.some((id) => ABILITIES[id]?.kind === 'magic');
-        return true;
-      });
-      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${availableCommands.map((label) => `<button type="button" data-battle-command="${label.toLowerCase()}">${label}</button>`).join('')}</div>`;
+      const hasAbility = actor.abilities.some((id) => ABILITIES[id]?.kind === 'ability');
+      const hasMagic = actor.abilities.some((id) => ABILITIES[id]?.kind === 'magic');
+      return `<div class="jrpg-command-title"><strong>${escapeHtml(actor.name)}</strong><span>Choose a command</span></div><div class="jrpg-command-grid">${BATTLE_COMMANDS.map((label) => {
+        const unavailable = (label === 'Ability' && !hasAbility) || (label === 'Magic' && !hasMagic);
+        const reason = label === 'Ability' ? 'No ability learned' : label === 'Magic' ? 'No magic learned' : '';
+        return `<button type="button" data-battle-command="${label.toLowerCase()}" ${unavailable ? `disabled aria-disabled="true" title="${reason}"` : ''}>${label}</button>`;
+      }).join('')}</div>`;
     }
     if (this.battleMenu.screen === 'abilities' || this.battleMenu.screen === 'magic') {
       const kind = this.battleMenu.screen === 'abilities' ? 'ability' : 'magic';
