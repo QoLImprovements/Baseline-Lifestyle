@@ -148,13 +148,6 @@ html[data-app="games"] body[data-app="games"] :is(
   .darts-focused-shell,.darts-game-card,.darts-tier-panel,.darts-category-card,
   .badminton-focused-panel .badminton-game-card,.badminton-tier-panel,
   .badminton-situation,.badminton-feedback,.badminton-progress-box,
-  .realm-window,.realm-drawer,.realm-overlay-screen,.realm-hud-card,.realm-xp-shell,
-  .realm-loading-card,.jrpg-map-card,.jrpg-side-hud>section,.jrpg-party-mini,
-  .jrpg-enemy-card,.jrpg-battle-party-card,.jrpg-battle-console,.jrpg-modal,
-  .jrpg-story-panel,.jrpg-manage-card,.jrpg-resource-ribbon span,.jrpg-stat-grid span,
-  .jrpg-equipment-grid label,.jrpg-ability-chips span,.jrpg-inventory-summary span,
-  .jrpg-inventory-columns section,.jrpg-inventory-discipline,.jrpg-settings-note,
-  .basecamp-service>header,.basecamp-item-grid article,.basecamp-trade-list article
 ){
   background:var(--g01-card)!important;
   background-image:none!important;
@@ -167,8 +160,7 @@ html[data-app="games"] body[data-app="games"] :is(
 }
 html[data-app="games"] body[data-app="games"] :is(
   .card,.game-card,.game-row,.summary-box,.games-list-group,.game-summary-item,
-  .darts-focused-shell,.badminton-focused-panel,.jrpg-side-hud>section,
-  .jrpg-modal,.basecamp-service
+  .darts-focused-shell,.badminton-focused-panel
 ) :is(h1,h2,h3,h4,h5,h6,p,li,strong,label,span){
   color:inherit!important;
   -webkit-text-fill-color:currentColor!important;
@@ -189,12 +181,8 @@ html[data-app="games"] body[data-app="games"] :is(
   .darts-game-selector,.darts-tier-button,.darts-choice,.darts-routine-list button,
   .darts-category-card,.darts-selector-info,
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
-  .badminton-selector-info,
-  .realm-mini-action,.realm-close-btn,.realm-tab-btn,.realm-fab__icon,.realm-audio-controls button
-),
-html[data-app="games"] body[data-app="games"] #ninjaPanel .jrpg-game button,
-html[data-app="games"] body[data-app="games"] #ninjaPanel .basecamp-service button,
-html[data-app="games"] body[data-app="games"] #ninjaPanel #realmBasecampScreen .realm-location-button{
+  .badminton-selector-info
+){
   background:var(--g01-mirror)!important;
   background-image:var(--g01-mirror)!important;
   background-color:var(--g01-mid)!important;
@@ -209,12 +197,8 @@ html[data-app="games"] body[data-app="games"] :is(
   .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert,
   .darts-game-selector,.darts-tier-button,.darts-choice,.darts-category-card,.darts-selector-info,
   .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
-  .badminton-selector-info,
-  .realm-mini-action,.realm-close-btn,.realm-tab-btn
-):is(:hover,:active,[aria-pressed="true"],[aria-selected="true"],.is-active,.is-selected),
-html[data-app="games"] body[data-app="games"] #ninjaPanel .jrpg-game button:is(:hover,:active,.is-active),
-html[data-app="games"] body[data-app="games"] #ninjaPanel .basecamp-service button:is(:hover,:active,.is-selected),
-html[data-app="games"] body[data-app="games"] #ninjaPanel #realmBasecampScreen .realm-location-button:is(:hover,:active){
+  .badminton-selector-info
+):is(:hover,:active,[aria-pressed="true"],[aria-selected="true"],.is-active,.is-selected){
   background:var(--g01-mirror-active)!important;
   background-image:var(--g01-mirror-active)!important;
   border-color:var(--g01-focus)!important;
@@ -239,7 +223,7 @@ html[data-app="games"] body[data-app="games"] :is(button,a,input,select,textarea
 /* Inputs and compact status surfaces remain dark and readable. */
 html[data-app="games"] body[data-app="games"] :is(
   input:not([type="range"]),select,textarea,.text-input,.game-input,.status,.badge,
-  .pill,.chip,.game-save-status,.realm-save-status,.games-save-tooltip,[role="tooltip"]
+  .pill,.chip,.game-save-status,.games-save-tooltip,[role="tooltip"]
 ):not(.bl-protected-access-overlay *){
   background:var(--g01-card)!important;
   background-image:none!important;
@@ -342,7 +326,7 @@ html[data-app="games"] body[data-app="games"] #gamesList .game-card-art{
 /* Modal chrome follows G01; game worlds and semantic gameplay feedback keep
    their functional artwork and status colours. */
 html[data-app="games"] body[data-app="games"] :is(
-  .modal-overlay,.game-modal-overlay,.popover-overlay,.dialog-overlay,.realm-loading-screen
+  .modal-overlay,.game-modal-overlay,.popover-overlay,.dialog-overlay
 ){
   background:rgba(4,7,22,.88)!important;
   background-image:none!important;
@@ -724,8 +708,7 @@ html[data-app="games"] body[data-app="games"] :is(.darts-feedback,.badminton-fee
 html[data-app="games"],
 html[data-app="games"] body[data-app="games"],
 html[data-app="games"] body[data-app="games"] :is(
-  .bl-scroll,.darts-game-selectors,.badminton-game-selectors,
-  #ninjaPanel .realm-drawer-pane:not([hidden])
+  .bl-scroll,.darts-game-selectors,.badminton-game-selectors
 ){
   scrollbar-color:var(--g01-active) var(--g01-deep)!important;
 }
@@ -739,14 +722,6 @@ html[data-app="games"] body[data-app="games"] ::-webkit-scrollbar-thumb{
 html[data-app="games"] body[data-app="games"] ::-webkit-scrollbar-thumb:hover{
   background:var(--g01-focus)!important;
 }
-html[data-app="games"] body[data-app="games"] #ninjaPanel .realm-drawer-pane:not([hidden])::-webkit-scrollbar-track{
-  background:var(--g01-deep)!important;
-}
-html[data-app="games"] body[data-app="games"] #ninjaPanel .realm-drawer-pane:not([hidden])::-webkit-scrollbar-thumb{
-  background:var(--g01-active)!important;
-  border-color:var(--g01-deep)!important;
-}
-
 @media (max-width:520px){
   html[data-app="games"] body[data-app="games"] :is(
     .card,.game-card,.game-row,.summary-box
