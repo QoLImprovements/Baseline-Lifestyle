@@ -47,8 +47,13 @@ jobs:
       - name: Run Fitness and voice unit tests
         run: npm run test:fitness && npm run test:voice
 
-      - name: Install Chromium for voice UI checks
+      - name: Install Chromium for browser checks
+        if: always()
         run: npx playwright install --with-deps chromium
+
+      - name: Run Badminton Session score authorization browser test
+        if: always()
+        run: npx playwright test tests/badminton-session-score-auth.spec.js --reporter=line
 
       - name: Run Fitness voice browser test
         run: npm run test:voice-ui
