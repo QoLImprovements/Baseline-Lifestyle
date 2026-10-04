@@ -53,6 +53,17 @@
     return ['hardship', stableKind, 'restricted', restrictedKey, 'opponent', opponentKey].join('::');
   }
 
+  function hardshipSnapshot(records){
+    const source = records && typeof records === 'object' ? records : {};
+    const ordered = {};
+    Object.keys(source).sort().forEach(function(key){
+      const value = source[key];
+      if(value && typeof value === 'object') ordered[key] = value;
+    });
+    return JSON.stringify(ordered);
+  }
+
+
 
 
   global.BASELINE_BADMINTON_SESSION_CORE = Object.freeze({
@@ -63,6 +74,7 @@
     stablePlayerId:stablePlayerId,
     stablePlayerIds:stablePlayerIds,
     getStableSideKey:getStableSideKey,
-    getHardshipContextKey:getHardshipContextKey
+    getHardshipContextKey:getHardshipContextKey,
+    hardshipSnapshot:hardshipSnapshot
   });
 })(typeof window !== 'undefined' ? window : globalThis);
