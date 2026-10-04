@@ -4567,24 +4567,36 @@ html[data-initial-recipe-view="show-all"] body[data-app] #recipes .recipe-univer
   box-shadow:0 8px 18px -16px rgba(35,23,19,.42)!important;
 }
 
-/* BASELINE-UNIVERSAL-RECIPE-RHYTHM-20261004
-   Keep the metadata-to-subtab rhythm stable regardless of whether Adjustments
-   is available in the current recipe subview. The favourite control is inline
-   with the title and inherits the title's own type size. */
+/* BASELINE-UNIVERSAL-RECIPE-VIEWBAR-20261004
+   Recipe subtabs and Adjustments share one horizontal control row. This removes
+   the separate Adjustments lane that caused inconsistent vertical spacing. */
 body[data-app] .recipe-universal-template .recipe-meta-row{
-  margin-bottom:6px !important;
+  margin-bottom:10px !important;
 }
-body[data-app] .recipe-universal-template .recipe-adjustments-row{
-  min-height:24px !important;
-  margin:0 0 8px !important;
+body[data-app] .recipe-universal-template .recipe-adjustments-row-retired{
+  display:none !important;
 }
-body[data-app] .recipe-universal-template .recipe-adjustments-row.recipe-view-hidden{
+body[data-app] .recipe-universal-template .recipe-viewbar{
   display:flex !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
+  align-items:center !important;
+  gap:12px !important;
+  width:100% !important;
+  margin:0 0 16px !important;
+  padding:0 0 10px !important;
+  border-bottom:1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 78%, transparent) !important;
 }
-body[data-app] .recipe-universal-template .recipe-subtabs{
-  margin-top:0 !important;
+body[data-app] .recipe-universal-template .recipe-viewbar > .recipe-subtabs{
+  flex:1 1 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border-bottom:0 !important;
+}
+html body[data-app] .recipe-universal-template .recipe-viewbar > .recipe-adjustments-toggle{
+  flex:0 0 auto !important;
+  align-self:center !important;
+  margin:0 0 0 auto !important;
 }
 body[data-app] .recipe-universal-template > .recipe-title-row{
   justify-content:flex-start !important;
@@ -4611,8 +4623,22 @@ html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn{
   line-height:1 !important;
   color:var(--accent-2, var(--ink)) !important;
   background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
   border:0 !important;
   box-shadow:none !important;
+}
+html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn:hover,
+html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn:focus-visible,
+html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn:active,
+html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn.is-fav,
+html body[data-app] .recipe-universal-template > .recipe-title-row > .fav-btn[aria-pressed="true"]{
+  background:transparent !important;
+  background-color:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  filter:none !important;
 }
 html body[data-app="skin"] .recipe-universal-template > .recipe-title-row > .fav-btn{
   font-size:28px !important;
@@ -4621,9 +4647,16 @@ html body[data-app="food"] .recipe-universal-template > .recipe-title-row > .fav
   font-size:22px !important;
 }
 @media (max-width:720px){
-  body[data-app] .recipe-universal-template .recipe-adjustments-row{
-    min-height:22px !important;
-    margin-bottom:8px !important;
+  body[data-app] .recipe-universal-template .recipe-viewbar{
+    flex-wrap:wrap !important;
+    align-items:flex-end !important;
+  }
+  body[data-app] .recipe-universal-template .recipe-viewbar > .recipe-subtabs{
+    flex:1 1 100% !important;
+    width:100% !important;
+  }
+  html body[data-app] .recipe-universal-template .recipe-viewbar > .recipe-adjustments-toggle{
+    margin-left:auto !important;
   }
 }
 
