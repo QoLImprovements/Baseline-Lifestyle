@@ -7725,8 +7725,12 @@ function setupRecipeFavourites(){
                 else if(/^#r\d+/i.test(hashPart)) token = hashPart.slice(1);
               }
               if(token && typeof window.BASELINE_openRecipe === 'function'){
-                e.preventDefault();
-                window.BASELINE_openRecipe(token, { silentHistory:false });
+                const liveCard = document.getElementById(recipeIdForToken(token));
+                const recipesSection = document.getElementById('recipes');
+                if(liveCard && recipesSection && recipesSection.contains(liveCard)){
+                  e.preventDefault();
+                  window.BASELINE_openRecipe(token, { silentHistory:false });
+                }
               }
             }
           }catch(_e){}
