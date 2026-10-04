@@ -39,6 +39,7 @@ test('Calorie Escape controls change live run state',()=>{
 test('Calorie Escape has one canonical presentation authority',()=>{
  assert.match(scene,/css\/calorie-escape\.css/);
  assert.doesNotMatch(scene,/css\/a\.css/);
+ assert.match(scene,/removeAttribute\('data-calorie-escape-live'\)/);
  assert.doesNotMatch(shell,/embeddedStyle/);
  assert.match(css,/Canonical Calorie Escape presentation/);
  assert.match(css,/\.ce-touch-controls button\{[^}]*pointer-events:auto/);
