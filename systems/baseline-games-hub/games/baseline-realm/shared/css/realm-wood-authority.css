@@ -29,6 +29,22 @@
   -webkit-text-fill-color:currentColor!important;
 }
 
+/* Realm is an interactive world, not a hover-lift Games Hub card.
+   Keeping the panel on whole CSS pixels prevents transformed descendants/text
+   from becoming soft while the pointer is over the game. */
+#ninjaPanel,
+#ninjaPanel:hover,
+#ninjaPanel:focus-within{
+  transform:none!important;
+  filter:none!important;
+  backface-visibility:visible!important;
+}
+#ninjaPanel #realmSceneFrame{
+  transform:none!important;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
 #ninjaPanel .realm-window{
   background:#0a1712!important;
   background-image:none!important;
