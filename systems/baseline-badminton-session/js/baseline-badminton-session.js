@@ -165,6 +165,35 @@
   const getDominantReduceOptionsForSide = hardshipEngine.getDominantReduceOptionsForSide;
   const applyDominantRuleToCourt = hardshipEngine.applyDominantRuleToCourt;
 
+  const ruleAdminModule = window.BASELINE_BADMINTON_RULE_ADMIN;
+  if(!ruleAdminModule) throw new Error('Badminton Session rule admin failed to load.');
+  const ruleAdminEngine = ruleAdminModule.create({
+    getState:function(){ return state; },
+    getRefs:function(){ return refs; },
+    currentUserIsManager:function(){ return currentUserIsManager(); },
+    escapeHtml:function(value){ return escapeHtml(value); },
+    getSideRuleKey:function(side){ return getSideRuleKey(side); },
+    getTeamIds:function(side){ return getTeamIds(side); },
+    getSideRuleLabelFromKey:function(key){ return getSideRuleLabelFromKey(key); },
+    getTargetAreaTextFromZones:function(zones, mode){ return getTargetAreaTextFromZones(zones, mode); },
+    getShotRestrictionText:function(stage, restrictions){ return getShotRestrictionText(stage, restrictions); },
+    getZoneChecklistMarkup:function(name, selected){ return getZoneChecklistMarkup(name, selected); },
+    getShotSelectMarkup:function(name, value){ return getShotSelectMarkup(name, value); },
+    getPlayer:function(id){ return getPlayer(id); },
+    sanitizeZones:function(zones, mode){ return sanitizeZones(zones, mode); },
+    getCheckedZones:function(name){ return getCheckedZones(name); },
+    buildSpecificMatchupKey:function(strongIds, weakIds){ return buildSpecificMatchupKey(strongIds, weakIds); },
+    saveSessionData:function(options){ return saveSessionData(options); },
+    renderAll:function(){ return renderAll(); }
+  });
+  const ensureRuleAdminShape = ruleAdminEngine.ensureRuleAdminShape;
+  const getRuleAdminState = ruleAdminEngine.getRuleAdminState;
+  const getGlobalRule = ruleAdminEngine.getGlobalRule;
+  const getMatchupOverride = ruleAdminEngine.getMatchupOverride;
+  const renderRuleAdmin = ruleAdminEngine.renderRuleAdmin;
+  const buildMatchupRulePayload = ruleAdminEngine.buildMatchupRulePayload;
+  const bindRuleAdminActions = ruleAdminEngine.bindRuleAdminActions;
+
   const stateHydrationModule = window.BASELINE_BADMINTON_STATE_HYDRATION;
   if(!stateHydrationModule) throw new Error('Badminton Session state hydration model failed to load.');
   const stateHydrator = stateHydrationModule.create({
@@ -511,13 +540,6 @@
     migrateKnownModeratorPlayer();
     ensureRatingStores();
     return queueServerSave(options);
-  }
-
-  function ensureRuleAdminShape(ruleAdmin){
-    return Object.assign({ globalRules:{}, matchupOverrides:{} }, ruleAdmin || {}, {
-      globalRules: ruleAdmin && typeof ruleAdmin.globalRules === 'object' && ruleAdmin.globalRules ? ruleAdmin.globalRules : {},
-      matchupOverrides: ruleAdmin && typeof ruleAdmin.matchupOverrides === 'object' && ruleAdmin.matchupOverrides ? ruleAdmin.matchupOverrides : {}
-    });
   }
 
   function hydrateLoadedState(parsed){
@@ -1198,30 +1220,6 @@
       const player = getPlayer(id);
       return player ? player.name : id;
     }).join(' / ');
-  }
-
-  function getRuleAdminState(){
-    state.ruleAdmin = ensureRuleAdminShape(state.ruleAdmin);
-    return state.ruleAdmin;
-  }
-
-  function getGlobalRule(side){
-    const admin = getRuleAdminState();
-    const rules = admin.globalRules || {};
-    const sideKey = getSideRuleKey(side);
-    if(sideKey && rules[sideKey]) return rules[sideKey];
-    const ids = getTeamIds(side);
-    for(let index = 0; index < ids.length; index += 1){
-      const playerRule = rules[ids[index]];
-      if(playerRule) return playerRule;
-    }
-    return null;
-  }
-
-  function getMatchupOverride(signature){
-    const admin = getRuleAdminState();
-    const overrides = admin.matchupOverrides || {};
-    return overrides[String(signature || '')] || null;
   }
 
   function getCourtGeometry(){
@@ -3101,91 +3099,6 @@
       '<option value="0"' + (normalized === '0' ? ' selected' : '') + '>No shot restriction</option>' +
       '<option value="1"' + (normalized === '1' ? ' selected' : '') + '>No Smashes or Downward Shots</option>' +
     '</select>';
-  }
-
-  function renderRuleAdmin(){
-    if(!refs.ruleAdminWrap) return;
-    if(!currentUserIsManager()){
-      refs.ruleAdminWrap.innerHTML = '<div class="empty-state">Developer-only altered rule controls.</div>';
-      return;
-    }
-    const playerOptions = state.players.slice().sort((a, b) => a.name.localeCompare(b.name)).map(player => '<option value="' + escapeHtml(player.id) + '">' + escapeHtml(player.name) + '</option>').join('');
-    const globalItems = Object.entries(state.ruleAdmin.globalRules || {}).map(([key, rule]) => '<div class="rule-admin-item"><div class="rule-admin-item-head"><div><strong>' + escapeHtml(rule.label || getSideRuleLabelFromKey(key)) + '</strong><div class="note">Global rule</div></div><button class="action tight danger" type="button" data-remove-global-rule="' + escapeHtml(key) + '">Remove</button></div><div class="note">Target area: ' + escapeHtml(getTargetAreaTextFromZones(rule.targetZones || [], rule.mode || 'doubles')) + '</div>' + (rule.shotRestrictionStage ? '<div class="note">Restricted Shots: ' + escapeHtml(getShotRestrictionText(rule.shotRestrictionStage)) + '</div>' : '') + '</div>').join('');
-    const matchupItems = Object.entries(state.ruleAdmin.matchupOverrides || {}).map(([key, rule]) => '<div class="rule-admin-item"><div class="rule-admin-item-head"><div><strong>' + escapeHtml(rule.label || key) + '</strong><div class="note">Specific matchup rule</div></div><button class="action tight danger" type="button" data-remove-matchup-rule="' + escapeHtml(key) + '">Remove</button></div><div class="note">Target area: ' + escapeHtml(getTargetAreaTextFromZones(rule.targetZones || [], rule.mode || 'doubles')) + '</div>' + (rule.shotRestrictionStage ? '<div class="note">Restricted Shots: ' + escapeHtml(getShotRestrictionText(rule.shotRestrictionStage)) + '</div>' : '') + '</div>').join('');
-    refs.ruleAdminWrap.innerHTML = '<div class="rule-admin-grid">' +
-      '<div class="rule-admin-card"><h3>Global Player / Pair Rule</h3><div class="select-note">Choose a player or exact pair, then choose the target boxes and shot limits to use for that player or pair when altered rules are applied.</div><label>Player 1<select id="globalRulePlayer1"><option value="">Select player</option>' + playerOptions + '</select></label><label>Player 2 (optional for a pair)<select id="globalRulePlayer2"><option value="">Single player only</option>' + playerOptions + '</select></label><label>Target boxes</label>' + getZoneChecklistMarkup('globalZones', []) + '<label>Restricted shots' + getShotSelectMarkup('globalRuleShotStage', '0') + '</label><button class="action" type="button" id="saveGlobalRuleBtn">Save Global Rule</button><div class="rule-admin-list">' + (globalItems || '<div class="empty-state">No global rules saved.</div>') + '</div></div>' +
-      '<div class="rule-admin-card"><h3>Specific Matchup Rule</h3><div class="select-note">Set an exact side-vs-side rule, whether or not rating is the reason for it.</div><div class="grid-two"><label>Side 1 · Player 1<select id="matchStrong1"><option value="">Select player</option>' + playerOptions + '</select></label><label>Side 1 · Player 2 (optional)<select id="matchStrong2"><option value="">None</option>' + playerOptions + '</select></label><label>Side 2 · Player 1<select id="matchWeak1"><option value="">Select player</option>' + playerOptions + '</select></label><label>Side 2 · Player 2 (optional)<select id="matchWeak2"><option value="">None</option>' + playerOptions + '</select></label></div><label>Target boxes</label>' + getZoneChecklistMarkup('matchZones', []) + '<label>Restricted shots' + getShotSelectMarkup('matchRuleShotStage', '0') + '</label><button class="action" type="button" id="saveMatchupRuleBtn">Save Matchup Rule</button><div class="rule-admin-list">' + (matchupItems || '<div class="empty-state">No exact matchup rules saved.</div>') + '</div></div>' +
-    '</div>';
-  }
-
-  function buildMatchupRulePayload(){
-    const strong1 = refs.ruleAdminWrap.querySelector('#matchStrong1').value;
-    const strong2 = refs.ruleAdminWrap.querySelector('#matchStrong2').value;
-    const weak1 = refs.ruleAdminWrap.querySelector('#matchWeak1').value;
-    const weak2 = refs.ruleAdminWrap.querySelector('#matchWeak2').value;
-    const strongIds = [strong1, strong2].filter(Boolean);
-    const weakIds = [weak1, weak2].filter(Boolean);
-    if(!strongIds.length || !weakIds.length) return null;
-    if(new Set(strongIds.concat(weakIds)).size !== strongIds.length + weakIds.length) return null;
-    const mode = strongIds.length === 1 && weakIds.length === 1 ? 'singles' : 'doubles';
-    const targetZones = sanitizeZones(getCheckedZones('matchZones'), mode);
-    return {
-      key: buildSpecificMatchupKey(strongIds, weakIds),
-      label: strongIds.map(id => (getPlayer(id) || {}).name || id).join(' / ') + ' vs ' + weakIds.map(id => (getPlayer(id) || {}).name || id).join(' / '),
-      mode,
-      targetZones,
-      shotRestrictionStage: Number(refs.ruleAdminWrap.querySelector('#matchRuleShotStage').value || 0)
-    };
-  }
-
-  function bindRuleAdminActions(){
-    if(!refs.ruleAdminWrap || !currentUserIsManager()) return;
-    const saveGlobalBtn = refs.ruleAdminWrap.querySelector('#saveGlobalRuleBtn');
-    if(saveGlobalBtn){
-      saveGlobalBtn.addEventListener('click', function(){
-        const p1 = refs.ruleAdminWrap.querySelector('#globalRulePlayer1').value;
-        const p2 = refs.ruleAdminWrap.querySelector('#globalRulePlayer2').value;
-        if(!p1){ window.alert('Select at least one player.'); return; }
-        if(p2 && p1 === p2){ window.alert('Choose a different second player or leave it blank.'); return; }
-        const ids = [p1, p2].filter(Boolean).sort();
-        const mode = ids.length === 1 ? 'singles' : 'doubles';
-        const targetZones = sanitizeZones(getCheckedZones('globalZones'), mode);
-        if(!targetZones.length){ window.alert('Choose at least one target box.'); return; }
-        state.ruleAdmin.globalRules[ids.join('::')] = {
-          label: ids.map(id => (getPlayer(id) || {}).name || id).join(' / '),
-          mode,
-          targetZones,
-          shotRestrictionStage: Number(refs.ruleAdminWrap.querySelector('#globalRuleShotStage').value || 0)
-        };
-        saveSessionData();
-        renderAll();
-      });
-    }
-    const saveMatchBtn = refs.ruleAdminWrap.querySelector('#saveMatchupRuleBtn');
-    if(saveMatchBtn){
-      saveMatchBtn.addEventListener('click', function(){
-        const payload = buildMatchupRulePayload();
-        if(!payload){ window.alert('Choose two valid sides without reusing the same player.'); return; }
-        if(!payload.targetZones.length){ window.alert('Choose at least one target box.'); return; }
-        state.ruleAdmin.matchupOverrides[payload.key] = payload;
-        saveSessionData();
-        renderAll();
-      });
-    }
-    refs.ruleAdminWrap.querySelectorAll('[data-remove-global-rule]').forEach(button => {
-      button.addEventListener('click', function(){
-        delete state.ruleAdmin.globalRules[button.getAttribute('data-remove-global-rule')];
-        saveSessionData();
-        renderAll();
-      });
-    });
-    refs.ruleAdminWrap.querySelectorAll('[data-remove-matchup-rule]').forEach(button => {
-      button.addEventListener('click', function(){
-        delete state.ruleAdmin.matchupOverrides[button.getAttribute('data-remove-matchup-rule')];
-        saveSessionData();
-        renderAll();
-      });
-    });
   }
 
   function renderStandings(){
