@@ -467,8 +467,13 @@
     const sections = system === 'skin'
       ? ['Method', 'Storage & Use', 'Notes']
       : system === 'food'
-        ? ['Method', 'Serving ideas', 'Body & Sensory Notes']
+        ? ['Method', 'Serving & Use', 'Body & Sensory Notes']
         : ['Method', 'Notes'];
+    const details = system === 'skin'
+      ? ['Purpose', 'Formula Profile', 'How the Formulation Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs']
+      : system === 'food'
+        ? ['Purpose', 'Recipe Profile', 'How the Recipe Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs']
+        : ['Purpose', 'Profile', 'How It Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs'];
 
     return {
       authority: 'sitewide',
@@ -482,7 +487,17 @@
         'Scale By Ingredient',
         'Recipe-specific controls'
       ],
+      presentation: {
+        titleFont: 'var(--font-soft)',
+        titleSize: '28px',
+        titleLineHeight: 1.25,
+        detailsLayout: 'single-column',
+        viewOrder: ['Recipe', 'Details', 'Guidance', 'Show All']
+      },
       sections,
+      details,
+      detailCount: 6,
+      guidanceSectionCount: 2,
       id: 'r-next',
       category: system === 'skin' ? 'Recipe' : 'Stovetop',
       title: 'Recipe title',
