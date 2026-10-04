@@ -1,5 +1,7 @@
 export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }) {
   const active = () => !!document.getElementById('ninjaPanel')?.classList.contains('is-active');
+  const externalSceneActive = () => Boolean(document.documentElement.getAttribute('data-baseline-realm-external-scene'));
+  const standardActive = () => active() && !externalSceneActive();
   const jrpgActive = () => runtime.getView() === 'exploration' && !!document.getElementById('realmSceneFrame')?.classList.contains('is-exploration-jrpg');
   const payload = (event) => event.detail?.payload || {};
   const navigate = (view) => {
@@ -36,19 +38,24 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   inputManager.bindPointer('ninja-prestige', '#ninjaPrestigeBtn');
   inputManager.bindPointer('realm-fullscreen', '#realmFullscreenBtn, #realmFullscreenToolbarBtn');
 
-  inputManager.bindKeyboard('realm-primary', ['d', 'enter', ' '], { when: active });
-  inputManager.bindKeyboard('realm-basecamp', 'b', { when: active });
-  inputManager.bindKeyboard('realm-training', 'n', { when: active });
-  inputManager.bindKeyboard('realm-exploration', 'e', { when: active });
-  inputManager.bindKeyboard('realm-menu', ['m', 'escape'], { when: active });
-  inputManager.bindKeyboard('realm-shuriken', 's', { when: active });
-  inputManager.bindKeyboard('realm-fullscreen', 'f', { when: active });
-  inputManager.bindKeyboard('realm-audio-mute', 'v', { when: active });
+  inputManager.bindKeyboard('realm-primary', ['d', 'enter', ' '], { when: standardActive });
+  inputManager.bindKeyboard('realm-basecamp', 'b', { when: standardActive });
+  inputManager.bindKeyboard('realm-training', 'n', { when: standardActive });
+  inputManager.bindKeyboard('realm-exploration', 'e', { when: standardActive });
+  inputManager.bindKeyboard('realm-menu', ['m', 'escape'], { when: standardActive });
+  inputManager.bindKeyboard('realm-shuriken', 's', { when: standardActive });
+  inputManager.bindKeyboard('realm-fullscreen', 'f', { when: standardActive });
+  inputManager.bindKeyboard('realm-audio-mute', 'v', { when: standardActive });
   inputManager.bindKeyboard('realm-direction', ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'], {
-    when: active,
+    when: standardActive,
     payload: (event) => ({ axisState: event.key.replace('Arrow', '').toLowerCase() })
   });
-  inputManager.bindKeyboard('realm-upgrade-hotkey', ['1', '2', '3', '4', '5'], { when: active, payload: (event) => ({ key: event.key }) });
+  inputManager.bindKeyboard('realm-upgrade-hotkey', ['1', '2', '3', '4', '5'], { when: standardActive, payload: (event) => ({ key: event.key }) });
+
+  const standardOnly = (handler) => (event) => {
+    if (!standardActive()) return;
+    handler(event);
+  };
 
   const subscriptions = [
     eventBus.on('realm:input:ninja-buy-mode', (event) => runtime.cycleBuyMode(payload(event).id)),
@@ -67,9 +74,9 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
     eventBus.on('realm:input:ninja-strike', () => runtime.strike()),
     eventBus.on('realm:input:ninja-shuriken', () => runtime.shuriken()),
     eventBus.on('realm:input:ninja-prestige', () => runtime.prestige()),
-    eventBus.on('realm:input:realm-fullscreen', () => runtime.toggleFullscreen()),
-    eventBus.on('realm:input:realm-direction', (event) => moveFocus(payload(event).axisState)),
-    eventBus.on('realm:input:realm-primary', () => {
+    eventBus.on('realm:input:realm-fullscreen', standardOnly(() => runtime.toggleFullscreen())),
+    eventBus.on('realm:input:realm-direction', standardOnly((event) => moveFocus(payload(event).axisState))),
+    eventBus.on('realm:input:realm-primary', standardOnly(() => {
       if (document.activeElement?.matches?.('#realmSceneFrame button, #realmSceneFrame [href], #realmSceneFrame input')) {
         document.activeElement.click();
         return;
@@ -77,19 +84,19 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
       if (jrpgActive()) return;
       if (runtime.getView() === 'exploration') runtime.handleExploration('resolve');
       else runtime.strike();
-    }),
-    eventBus.on('realm:input:realm-basecamp', () => navigate(runtime.getView() === 'basecamp' ? 'training' : 'basecamp')),
-    eventBus.on('realm:input:realm-training', () => navigate('training')),
-    eventBus.on('realm:input:realm-exploration', () => {
+    })),
+    eventBus.on('realm:input:realm-basecamp', standardOnly(() => navigate(sceneRouter.getCurrentSceneId() === 'basecamp' ? 'ninja-training' : 'basecamp'))),
+    eventBus.on('realm:input:realm-training', standardOnly(() => navigate('training'))),
+    eventBus.on('realm:input:realm-exploration', standardOnly(() => {
       if (jrpgActive()) return;
       if (runtime.getView() === 'basecamp') navigate('exploration');
       else runtime.handleExploration('advance');
-    }),
-    eventBus.on('realm:input:realm-menu', () => {
+    })),
+    eventBus.on('realm:input:realm-menu', standardOnly(() => {
       if (!jrpgActive()) runtime.handleDrawer('toggle');
-    }),
-    eventBus.on('realm:input:realm-shuriken', () => runtime.getView() === 'training' && runtime.shuriken()),
-    eventBus.on('realm:input:realm-upgrade-hotkey', (event) => runtime.buyUpgradeByHotkey(payload(event).key))
+    })),
+    eventBus.on('realm:input:realm-shuriken', standardOnly(() => runtime.getView() === 'training' && runtime.shuriken())),
+    eventBus.on('realm:input:realm-upgrade-hotkey', standardOnly((event) => runtime.buyUpgradeByHotkey(payload(event).key)))
   ];
 
   return () => subscriptions.forEach((unsubscribe) => unsubscribe());
