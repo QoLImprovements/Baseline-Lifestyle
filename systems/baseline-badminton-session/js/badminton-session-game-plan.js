@@ -54,6 +54,8 @@
     const buildCurrentCourtSet = options.buildCurrentCourtSet;
     const commitHardshipChoice = options.commitHardshipChoice;
     const getShotRestrictionText = options.getShotRestrictionText;
+    const getPlayer = options.getPlayer;
+    const abortServerLoad = options.abortServerLoad;
 
     function state(){
       const current = getState();
@@ -267,7 +269,7 @@
       return;
     }
     protectLocalCurrentState(5000);
-    try{ if(serverLoadAbortController && typeof serverLoadAbortController.abort === 'function') serverLoadAbortController.abort(); serverLoadAbortController = null; }catch(_e){}
+    try{ if(typeof abortServerLoad === 'function') abortServerLoad(); }catch(_e){}
     const usedSet = new Set((state().plan.usedCourtSignatures || []).slice());
     state().plan.current = [];
     state().plan.currentSavedSignatures = [];
