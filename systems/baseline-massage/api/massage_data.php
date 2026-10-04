@@ -33,7 +33,7 @@ function bl_massage_payload(): array {
 
 function bl_massage_key(string $key): string {
   $key = trim($key);
-  if($key === '' || strlen($key) > 160 || preg_match('/^[A-Za-z0-9_.:\- ]+$/', $key) !== 1){
+  if($key === '' || strlen($key) > 160 || preg_match('/[\\x00-\\x1F\\x7F]/', $key) === 1){
     throw new InvalidArgumentException('invalid_massage_key');
   }
   return $key;
