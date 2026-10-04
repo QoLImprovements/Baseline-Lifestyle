@@ -1826,24 +1826,33 @@ function parseViewStateHash(hash){
   // ---------------------------
   // Recipes: open-one mode
   // ---------------------------
-  async function hydrateFolderBackedRecipeRoute(){
+  function foodRecipeRecordForToken(token){
     try{
-      const pageFile = routePageFileFromPath(location.pathname || '');
-      if(pageFile !== 'baseline-food-approach.html') return null;
+      const value = String(token || '').trim().toLowerCase().replace(/^#/, '').replace(/^recipe=/i, '');
+      if(!value || !Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)) return null;
+      return window.BASELINE_FOOD_RECIPE_INDEX.find(recipe=>{
+        if(!recipe) return false;
+        return String(recipe.id || '').toLowerCase() === value
+          || String(recipe.slug || '').toLowerCase() === value;
+      }) || null;
+    }catch(_e){ return null; }
+  }
 
-      const path = decodeURIComponent(String(location.pathname || '')).replace(/\/+$/,'');
-      const match = path.match(/^\/baseline-food-approach\/recipes\/([^\/?#]+)$/i);
-      if(!match || !match[1]) return null;
+  async function hydrateFolderBackedRecipeSource(token){
+    try{
+      if(routePageFileFromPath(location.pathname || '') !== 'baseline-food-approach.html') return null;
+      const record = foodRecipeRecordForToken(token);
+      if(!record || !record.slug) return null;
 
-      const slug = String(match[1] || '').trim().toLowerCase();
-      if(!slug) return null;
-
+      const slug = String(record.slug || '').trim().toLowerCase();
       const recipesSection = q('#recipes');
       const host = recipesSection ? q('.recipes', recipesSection) : null;
       if(!recipesSection || !host) return null;
 
-      const existing = q('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]', host);
-      if(existing) return existing;
+      const existingById = record.id ? document.getElementById(String(record.id)) : null;
+      if(existingById && recipesSection.contains(existingById)) return existingById;
+      const existingBySlug = q('.recipe-page[data-recipe-slug="' + CSS.escape(slug) + '"]', host);
+      if(existingBySlug) return existingBySlug;
 
       const sourceUrl = '/systems/baseline-food-approach/recipes/' + encodeURIComponent(slug) + '.html';
       const response = await fetch(sourceUrl, {
@@ -1870,6 +1879,15 @@ function parseViewStateHash(hash){
       console.error('[Baseline recipe] Food recipe hydration failed:', error);
       return null;
     }
+  }
+
+  async function hydrateFolderBackedRecipeRoute(){
+    try{
+      const path = decodeURIComponent(String(location.pathname || '')).replace(/\/+$/,'');
+      const match = path.match(/^\/baseline-food-approach\/recipes\/([^\/?#]+)$/i);
+      if(!match || !match[1]) return null;
+      return await hydrateFolderBackedRecipeSource(match[1]);
+    }catch(_e){ return null; }
   }
 
   function setupRecipeActionBars(){
@@ -2031,8 +2049,17 @@ function parseViewStateHash(hash){
         if(!id) id = recipeTokenFromHref(href);
         id = recipeIdForToken(id);
         if(!id) return;
-        const liveCard = document.getElementById(id);
-        if(!liveCard || !recipesSection.contains(liveCard)) return; // folder-backed recipe: native navigation
+        let liveCard = document.getElementById(id);
+        if(!liveCard || !recipesSection.contains(liveCard)){
+          const token = (a.dataset && a.dataset.recipeId) ? a.dataset.recipeId : recipeTokenFromHref(href);
+          if(foodRecipeRecordForToken(token)){
+            e.preventDefault();
+            hydrateFolderBackedRecipeSource(token).then(card=>{
+              if(card) openRecipe(card.id);
+            });
+          }
+          return;
+        }
         e.preventDefault();
         openRecipe(id);
       });
