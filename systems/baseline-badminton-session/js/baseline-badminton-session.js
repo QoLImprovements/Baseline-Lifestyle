@@ -786,13 +786,6 @@
     return state.players.filter(player => selected.has(player.id));
   }
 
-  function autoSelectAllPlayersForPlan(){
-    if(!state.players.length) return [];
-    state.plan.attendingPlayerIds = state.players.map(player => player.id);
-    normalizeAttendingPlayerIds();
-    return getAttendingPlayers();
-  }
-
   function hasValidCourtShape(court){
     return !!(court && court.side1 && court.side2 && Array.isArray(court.side1.players) && Array.isArray(court.side2.players) && court.side1.players.length && court.side2.players.length);
   }
@@ -3051,13 +3044,12 @@
     if(!currentUserIsManager()) return;
     normalizeAttendingPlayerIds();
     syncPlanSettingsFromInputs();
-    let attendingPlayers = getAttendingPlayers();
-    if(attendingPlayers.length < 2 && state.players.length >= 2){
-      attendingPlayers = autoSelectAllPlayersForPlan();
-    }
+    const attendingPlayers = getAttendingPlayers();
     state.plan.attendance = attendingPlayers.length;
     if(attendingPlayers.length < 2){
-      setPlanAlert('Add at least two players first. The player controls are now available in this page, then Generate Game Plan will auto-select all players if none are manually ticked.');
+      setPlanAlert(attendingPlayers.length === 0
+        ? 'No attendees are selected. Mark the players who are here before generating the game plan.'
+        : 'At least two attendees are needed to generate a game plan.');
       state.plan.current = [];
       state.plan.currentSavedSignatures = [];
       state.plan.currentSavedCourtKeys = [];
