@@ -30,7 +30,7 @@ body[data-app="food"] .phase4b-recipe-shell{
     padding:9px 14px;
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.22);
-    background:linear-gradient(180deg, rgba(255,210,106,0.42), rgba(240,138,36,0.16));
+    background:var(--food-surface-control);
     color:var(--accent-2);
     font-size:16px;
     font-weight:850;
