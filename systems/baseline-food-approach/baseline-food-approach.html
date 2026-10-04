@@ -17,7 +17,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta name="theme-color" content="#b11226"/>
 <style>html[data-app="food"],body[data-app="food"]{margin:0;min-height:100%;color:#1b0b09;background:linear-gradient(90deg,#b11226 0%,#f08a24 18%,#ffb000 34%,#ffd26a 50%,#ffb000 66%,#f08a24 82%,#b11226 100%);}</style>
 
-<script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/baseline-food-approach\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
+<script id="baseline-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,''),t=/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)?'recipes':/^\/baseline-food-approach\/ingredient-library(?:\/|$)/i.test(p)?'ingredients':/^\/baseline-food-approach\/diet-log(?:\/|$)/i.test(p)?'diet-log':'system';d.setAttribute('data-initial-section',t);if(t==='recipes'&&/^\/baseline-food-approach\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard')}}catch(_e){}}()</script><meta name="description" content="A practical food system with recipes, ingredient guidance, and diet tracking tools.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-food-approach/system">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Baseline Food Approach">
@@ -38,13 +38,19 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Shared system components -->
 <!-- Recipes UI (cards + multiplier + thickness controls) -->
 <!-- Shared CSS loaded via <link> tags above. -->
-<style id="baseline-recipe-route-first-paint-style">
-html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
-html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="system"]{background:var(--food-tab-bg)!important;border-color:var(--food-tab-border)!important;color:var(--ink)!important;filter:none!important}
-html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="recipes"]{background:var(--food-tab-active)!important;border-color:var(--food-deep)!important;color:#fff7e8!important;filter:none!important}
+<style id="baseline-route-first-paint-style">
+html[data-initial-section] body[data-app="food"] main.wrap>.section{display:none!important}
+html[data-initial-section="system"] body[data-app="food"] #system.section,
+html[data-initial-section="recipes"] body[data-app="food"] #recipes.section,
+html[data-initial-section="ingredients"] body[data-app="food"] #ingredients.section,
+html[data-initial-section="diet-log"] body[data-app="food"] #diet-log.section{display:block!important}
+html[data-initial-section] body[data-app="food"] .tabs .tab{background:var(--food-tab-bg)!important;border-color:var(--food-tab-border)!important;color:var(--ink)!important;filter:none!important}
+html[data-initial-section="system"] body[data-app="food"] .tabs .tab[data-target="system"],
+html[data-initial-section="recipes"] body[data-app="food"] .tabs .tab[data-target="recipes"],
+html[data-initial-section="ingredients"] body[data-app="food"] .tabs .tab[data-target="ingredients"],
+html[data-initial-section="diet-log"] body[data-app="food"] .tabs .tab[data-target="diet-log"]{background:var(--food-tab-active)!important;border-color:var(--food-deep)!important;color:#fff7e8!important;filter:none!important}
 html[data-initial-recipe-route="1"] body[data-app="food"] #recipes #recipes-landing{display:none!important}
-html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:grid!important;grid-template-columns:1fr!important}
+html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:block!important}
 </style>
 
 
@@ -82,7 +88,7 @@ html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{disp
 <button aria-selected="false" class="tab" data-target="recipes">Recipes</button>
 <button aria-selected="false" class="tab" data-target="ingredients">Ingredient Library</button>
 <button aria-selected="false" class="tab" data-target="diet-log">Diet Log</button>
-</nav><script id="baseline-food-route-first-paint">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-food-approach\/recipes(?:\/|$)/i.test(p)?"recipes":/^\/baseline-food-approach\/ingredient-library(?:\/|$)/i.test(p)?"ingredients":/^\/baseline-food-approach\/diet-log(?:\/|$)/i.test(p)?"diet-log":"system");if(!t)return;var n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){var a=b.getAttribute("data-target")===t;b.classList.toggle("active",a);b.setAttribute("aria-selected",a?"true":"false")});var st=document.createElement("style");st.id="baseline-food-route-first-paint-style";st.textContent="main.wrap>.section{display:none!important}main.wrap>#"+t+".section{display:block!important}";document.head.appendChild(st);window.addEventListener("load",function(){document.querySelectorAll("main.wrap>.section").forEach(function(x){x.classList.toggle("active",x.id===t)});st.remove()},{once:true})}catch(_e){}}()</script>
+</nav>
 </header>
 <main class="wrap">
 <!-- SYSTEM -->
