@@ -183,8 +183,9 @@ Options -Indexes
   RewriteRule ^baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
 </IfModule>
 
-# BASELINE-PHASE-4B-FOOD-RECIPE-FILES-20260607
-# Food recipe detail URLs now serve accountable per-recipe files.
+# BASELINE-FOOD-RECIPE-SOURCE-CANONICAL-20261004
+# Direct requests for physical Food recipe source files canonicalise to the
+# public clean recipe URL. Public clean URLs themselves use the Food system shell.
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteCond %{THE_REQUEST} \s/+baseline-food-approach/recipes/([^?\s]+)\.html[?\s] [NC]
