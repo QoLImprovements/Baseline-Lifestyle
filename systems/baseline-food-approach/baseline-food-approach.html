@@ -603,51 +603,5 @@ Recommended structure:
 <script defer="" src="/systems/baseline-food-approach/js/baseline-diet-food-library.js?v=COMPLETE_OFFICIAL_FOOD_LIBRARY_20260617"></script>
 <script defer="" src="/systems/baseline-food-approach/js/baseline-diet-log.js?v=FOOD_SERVER_AUTHORITY_20261004_1"></script>
 <script src="/sitewide/js/baseline-tabs.js?v=EDIT_VERSION_20260607_NO_VISIBLE_TAB_HASHES"></script>
-<script id="baseline-recipe-authoring-template" type="application/json">
-{
-  "id": "r-next",
-  "category": "Stovetop",
-  "title": "Recipe title",
-  "infoLinkText": "Recipe Ingredient Information",
-  "controlLayout": [
-    "Title",
-    "Batch multiplier - text field - arrows - [Reset Button]",
-    "Measurement Type",
-    "Scale By Ingredient",
-    "Any recipe-specific controls after that block"
-  ],
-  "meta": [
-    "Equipment: list the equipment here.",
-    "Allergens: list the allergens here."
-  ],
-  "navigation_rule": {
-    "instruction": "Use the sitewide recipe shell for clean Food recipe routes. Canonical Food recipe files supply recipe content; the Food system shell owns navigation, focus, recipe views and browser history.",
-    "why": "Food and Skincare use one coherent sitewide recipe experience while keeping recipe content accountable to its canonical source file."
-  },
-  "ingredientSections": [
-    {
-      "title": "Base",
-      "items": [
-        {
-          "ingredientId": "ing-water",
-          "label": "water",
-          "quantity": { "value": 250, "unit": "ml" },
-          "caption": "Primary role; secondary effect.",
-          "methodStep": 1
-        }
-      ]
-    }
-  ],
-  "method": [
-    { "title": "Step title", "text": "Write the method instruction here." }
-  ],
-  "servingIdeas": [
-    "Optional serving idea."
-  ],
-  "bodySensoryNotes": [
-    "Optional body or sensory note."
-  ]
-}
-</script>
 </body>
 </html>
