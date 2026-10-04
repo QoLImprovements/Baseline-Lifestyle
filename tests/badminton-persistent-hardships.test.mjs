@@ -210,3 +210,21 @@ test("server canonicalises legacy hardship identities to Player IDs before stora
   assert.match(php, /\$state\['hardshipRecords'\] = bl_badminton_canonical_hardship_records\(\$state\)/);
   assert.match(php, /\$state\['plan'\]\['activeHardships'\] = \$state\['hardshipRecords'\]/);
 });
+
+
+test("legacy matchupMemory hardship is promoted into the authoritative exact-context ledger", () => {
+  const promote = hardshipSection("promoteLegacyMatchupMemoryForCourt", "getActiveHardshipRuleEntryForCourt");
+  assert.match(promote, /memory\.targetPreset/);
+  assert.match(promote, /memory\.hardshipCounts/);
+  assert.match(promote, /getDominantHardshipKeyForSide\(court, sideNumber\)/);
+  assert.match(promote, /Object\.prototype\.hasOwnProperty\.call\(ledger, key\)/);
+  assert.match(promote, /setDominantHardshipRuleForSide\(court, sideNumber/);
+
+  const evaluate = section("evaluateCourtRestrictionsBase", "syncDominantRuleToMemory");
+  assert.match(evaluate, /promoteLegacyMatchupMemoryForCourt\(court, memory\)/);
+  assert.ok(
+    evaluate.indexOf("promoteLegacyMatchupMemoryForCourt(court, memory)") <
+      evaluate.indexOf("getActiveHardshipRuleEntryForCourt(court)"),
+    "legacy memory must be promoted before the active hardship lookup"
+  );
+});
