@@ -21,10 +21,6 @@ const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
 );
-const core = fs.readFileSync(
-  path.join(root, "systems/baseline-badminton-session/js/badminton-session-core.js"),
-  "utf8",
-);
 
 function section(startName, endName) {
   const start = js.indexOf("function " + startName);
@@ -43,20 +39,18 @@ test("hardships are owned by persistent top-level state, not today's plan", () =
   assert.match(ledger, /return state\.hardshipRecords/);
 });
 
-test("legacy plan hardship data migrates into persistent hardshipRecords", () => {
-  const hydrate = section("hydrateLoadedState", "loadSessionData");
+test("legacy server document hardship data migrates into persistent hardshipRecords", () => {
+  const hydrate = section("hydrateLoadedState", "hydrateSessionFromServer");
   assert.match(hydrate, /hardshipRecords: parsed\.hardshipRecords/);
   assert.match(hydrate, /parsed\.plan\.activeHardships/);
   assert.match(hydrate, /state\.plan\.activeHardships = state\.hardshipRecords/);
 });
 
-test("browser/server reconciliation delegates per-record newest-timestamp ownership to the core", () => {
-  const merge = section("mergeNewestLocalHardshipsIntoServerState", "serverPayload");
-  assert.match(merge, /merged\.hardshipRecords/);
-  assert.match(merge, /localState\.hardshipRecords/);
-  assert.match(merge, /sessionCore\.mergeNewestHardshipRecords\(serverLedger, localLedger\)/);
-  assert.match(merge, /merged\.plan\.activeHardships = reconciliation\.ledger/);
-  assert.match(core, /localUpdatedAt > serverUpdatedAt/);
+test("Badminton persistent hardships are loaded only from authoritative server state", () => {
+  const hydrate = section("hydrateSessionFromServer", "normalizeLoginName");
+  assert.match(hydrate, /state=hydrateLoadedState\(data\.state/);
+  assert.doesNotMatch(hydrate, /localStorage|sessionStorage|localSnapshot|mergeNewestLocalHardshipsIntoServerState/);
+  assert.doesNotMatch(js, /persistSessionLocalOnly|CONFLICT_BACKUP_KEY/);
 });
 
 test("server storage does not strip persistent hardshipRecords", () => {
