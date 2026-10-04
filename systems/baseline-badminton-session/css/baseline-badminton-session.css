@@ -74,7 +74,7 @@ hr.rule{border:none;border-top:1px solid rgba(79,25,125,0.16);margin:16px 0}
 .plan-output{display:grid;gap:16px}
 .games-card{display:grid;gap:16px}
 .games-card .courts-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;align-items:stretch}
-.court-card{display:grid;gap:12px;grid-template-rows:auto auto auto auto 1fr;align-content:start;min-height:100%;border:1px solid var(--border);border-radius:22px;padding:16px;background:var(--card-bg);box-shadow:var(--shadow-soft);transition:opacity .16s ease,filter .16s ease,border-color .16s ease}
+.court-card{display:grid;gap:12px;grid-auto-rows:auto;align-content:start;min-height:100%;border:1px solid var(--border);border-radius:22px;padding:16px;background:var(--card-bg);box-shadow:var(--shadow-soft);transition:opacity .16s ease,filter .16s ease,border-color .16s ease}
 .court-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
 .court-title{font-size:20px;font-weight:900;color:var(--accent-2);font-family:var(--font-soft)}
 .court-kind{font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
@@ -197,10 +197,18 @@ hr.rule{border:none;border-top:1px solid rgba(79,25,125,0.16);margin:16px 0}
   .session-lead{font-size:20px}
 }
 
-.court-visual-row{display:grid;grid-template-columns:1fr;gap:0;align-items:center;justify-items:center;align-self:stretch;width:100%;min-width:0}
+.court-visual-row{display:grid;grid-template-columns:1fr;gap:0;align-items:start;justify-items:center;width:100%;min-width:0}
 .court-frame{width:100%;max-width:360px;margin:0 auto;min-height:0;aspect-ratio:100/220;display:flex;align-items:center;justify-content:center}
 .court-diagram{width:100%}
 .court-diagram svg{width:100%;height:auto}
+
+.court-hardship-help{position:absolute;top:8px;right:8px;z-index:6}
+.court-hardship-help>summary{list-style:none;display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:999px;border:1px solid rgba(106,31,179,.52);background:rgba(238,218,251,.96);color:#5f2394;font-size:18px;font-weight:950;line-height:1;cursor:pointer;box-shadow:0 5px 14px -10px rgba(74,23,116,.65);user-select:none}
+.court-hardship-help>summary::-webkit-details-marker{display:none}
+.court-hardship-help>summary:focus-visible{outline:2px solid #5f2394;outline-offset:2px}
+.court-hardship-help__caption{position:absolute;top:36px;right:0;width:min(285px,calc(100vw - 64px));display:grid;gap:5px;padding:10px 11px;border-radius:12px;border:1px solid rgba(106,31,179,.34);background:rgba(239,220,251,.98);color:var(--ink);font-size:12px;line-height:1.4;text-align:left;box-shadow:0 14px 30px -18px rgba(74,23,116,.58)}
+.court-hardship-help__caption strong{color:var(--accent-2);font-size:13px}
+.court-hardship-help:not([open]) .court-hardship-help__caption{display:none}
 @media (max-width:1180px){.court-frame{max-width:420px}}
 @media (max-width:720px){.court-frame{max-width:360px}}
 
