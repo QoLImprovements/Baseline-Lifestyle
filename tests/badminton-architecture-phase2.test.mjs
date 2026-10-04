@@ -40,6 +40,10 @@ const ruleAdminSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-rule-admin.js"),
   "utf8",
 );
+const reportingSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-reporting.js"),
+  "utf8",
+);
 
 test("Badminton Session controller remains syntactically valid JavaScript", () => {
   assert.doesNotThrow(() => new Function(source));
@@ -111,14 +115,14 @@ test("history exposes session summary metrics and stable match identities", () =
   assert.match(source, /side2PlayerIds:/);
   assert.match(source, /side1PairId:/);
   assert.match(source, /side2PairId:/);
-  assert.match(source, /Pairs used/);
-  assert.match(source, /Hardship changes/);
-  assert.match(source, /Closest score/);
+  assert.match(reportingSource, /Pairs used/);
+  assert.match(reportingSource, /Hardship changes/);
+  assert.match(reportingSource, /Closest score/);
 });
 
 test("optional and circumstantial sit-outs remain separate in finished-set reporting", () => {
-  assert.match(source, /Circumstantial sit-outs/);
-  assert.match(source, /Optional sit-outs/);
+  assert.match(reportingSource, /Circumstantial sit-outs/);
+  assert.match(reportingSource, /Optional sit-outs/);
 });
 
 test("hardship save flow delegates directly to one dominant mutation authority", () => {
@@ -178,8 +182,8 @@ test("Badminton hardship ledger is a separate syntactically valid module", () =>
 
 test("Badminton controller stays below the post-split size ceiling", () => {
   const lines = source.split("\n").length;
-  assert.ok(lines < 3350, `controller grew back to ${lines} lines`);
-  assert.ok(source.length < 166000, `controller grew back to ${source.length} characters`);
+  assert.ok(lines < 3275, `controller grew back to ${lines} lines`);
+  assert.ok(source.length < 158000, `controller grew back to ${source.length} characters`);
 });
 
 
@@ -217,4 +221,17 @@ test("Badminton rule-admin logic is a separate syntactically valid module", () =
   assert.match(ruleAdminSource, /function renderRuleAdmin\(/);
   assert.match(ruleAdminSource, /function bindRuleAdminActions\(/);
   assert.match(ruleAdminSource, /function ensureRuleAdminShape\(/);
+});
+
+
+test("Badminton reporting views are a separate syntactically valid module", () => {
+  assert.doesNotThrow(() => new Function(reportingSource));
+  assert.match(source, /window\.BASELINE_BADMINTON_REPORTING/);
+  assert.match(source, /reportingModule\.create/);
+  assert.doesNotMatch(source, /function renderStandings\(/);
+  assert.doesNotMatch(source, /function renderMatchHistory\(/);
+  assert.doesNotMatch(source, /function renderFinishedGames\(/);
+  assert.match(reportingSource, /function renderStandings\(/);
+  assert.match(reportingSource, /function renderMatchHistory\(/);
+  assert.match(reportingSource, /function renderFinishedGames\(/);
 });
