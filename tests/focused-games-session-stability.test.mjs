@@ -3,18 +3,19 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const dartsPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused.js', import.meta.url);
+const dartsTimingPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js', import.meta.url);
 const badmintonPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js', import.meta.url);
 const badmintonTimingPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js', import.meta.url);
 const darts = fs.readFileSync(dartsPath,'utf8');
+const dartsTiming = fs.readFileSync(dartsTimingPath,'utf8');
 const badminton = fs.readFileSync(badmintonPath,'utf8');
 const badmintonTiming = fs.readFileSync(badmintonTimingPath,'utf8');
 
 test('Darts delayed callbacks are scoped to the active selected game session', () => {
-  assert.match(darts,/sessionToken:0/);
-  assert.match(darts,/ui\.sessionToken \+= 1/);
-  assert.match(darts,/const sessionToken = ui\.sessionToken/);
-  assert.match(darts,/const gameId = ui\.selected/);
-  assert.match(darts,/sessionToken !== ui\.sessionToken \|\| gameId !== ui\.selected/);
+  assert.match(darts,/createDartsTimerManager/);
+  assert.match(dartsTiming,/let sessionToken=0/);
+  assert.match(dartsTiming,/sessionToken\+=1/);
+  assert.match(dartsTiming,/timer\.token!==sessionToken\|\|timer\.gameId!==getGameId\(\)/);
 });
 
 test('Badminton remembers the selected sub-game across reloads', () => {
