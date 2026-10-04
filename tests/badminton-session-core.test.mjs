@@ -67,7 +67,7 @@ test("Badminton runtime is server-authoritative and has no browser persistence A
 });
 
 test("failed Badminton saves block further writes until authoritative reload", () => {
-  const start = runtimeSource.indexOf("function queueServerSave");
+  const start = runtimeSource.indexOf("function postServerState");
   const end = runtimeSource.indexOf("function saveSessionData", start);
   const save = runtimeSource.slice(start, end);
   assert.match(save, /serverSaveBlocked=true/);
