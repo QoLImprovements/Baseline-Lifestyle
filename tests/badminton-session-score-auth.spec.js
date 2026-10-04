@@ -185,3 +185,131 @@ test('Players & Pairs retains the real account ID behind the canonical PeterBW l
   await expect(selected).toHaveAttribute('data-login-user-id','7');
   await expect(selected).toHaveAttribute('data-login-email','Bateswilkinson@gmail.com');
 });
+
+
+test('visible scores survive an older in-flight server verification and still submit', async ({ page }) => {
+  let state = initialState();
+  let revision = 1;
+  let submittedMatch = null;
+  let firstPost = true;
+  let startFirstPost;
+  let releaseFirstPost;
+  const firstPostStarted = new Promise(resolve => { startFirstPost = resolve; });
+  const firstPostRelease = new Promise(resolve => { releaseFirstPost = resolve; });
+  const badmintonAuth = {
+    logged_in:true,
+    is_developer:true,
+    is_badminton_admin:true,
+    user:{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com' }
+  };
+
+  await page.route('**/sitewide/api/me.php**', route => json(route, { ok:true, authed:false, providers:{password:true,google:false} }));
+  await page.route('**/sitewide/api/auth_providers.php**', route => json(route, { ok:true, providers:{password:true,google:false} }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_logins.php**', route => json(route, {
+    ok:true,
+    users:[{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com', provider:'password' }]
+  }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_session.php**', async route => {
+    if(route.request().method() === 'POST'){
+      const body = route.request().postDataJSON();
+      const posted = body && body.state ? body.state : state;
+      if(firstPost){
+        firstPost = false;
+        startFirstPost();
+        await firstPostRelease;
+      }
+      state = posted;
+      const latest = Array.isArray(state.matches) && state.matches[0] ? state.matches[0] : null;
+      if(latest) submittedMatch = latest;
+      revision += 1;
+      return json(route, { ok:true, state, revision, updated_at:Date.now(), auth:badmintonAuth });
+    }
+    return json(route, { ok:true, state, revision, updated_at:Date.now(), auth:badmintonAuth });
+  });
+
+  const dialogs = [];
+  page.on('dialog', async dialog => {
+    dialogs.push(dialog.message());
+    await dialog.dismiss();
+  });
+
+  await page.goto(PATH, { waitUntil:'domcontentloaded' });
+  await page.locator('#generatePlanBtn').click();
+  await firstPostStarted;
+
+  const side1 = page.locator('[data-current-court-index="0"] [data-score-side="1"]');
+  const side2 = page.locator('[data-current-court-index="0"] [data-score-side="2"]');
+  await expect(side1).toBeEnabled();
+  await side1.fill('21');
+  await side2.fill('4');
+
+  const movement = page.locator('[data-current-court-index="0"] [data-hardship-option="true"][value="movement"]');
+  await expect(movement).toBeVisible();
+  await movement.check();
+
+  releaseFirstPost();
+  await page.waitForTimeout(300);
+
+  await expect(side1).toHaveValue('21');
+  await expect(side2).toHaveValue('4');
+  await page.locator('[data-current-court-index="0"] [data-save-court="0"]').click();
+
+  await expect.poll(() => submittedMatch ? submittedMatch.score1 : null).toBe(21);
+  expect(submittedMatch.score2).toBe(4);
+  expect(dialogs).not.toContain('Enter both scores before saving a result.');
+});
+
+test('legacy matchup hardship is remembered and promoted when the same matchup returns', async ({ page }) => {
+  let state = initialState();
+  let revision = 1;
+  state.players[1].rating = 20;
+  state.players[1].playerRating = 20;
+  state.matchupMemory['id:player-a::id:player-peter::singles'] = {
+    hardships:['movement'],
+    hardshipCounts:{ movement:1, shots:0 },
+    singlesMaxLossCount:0,
+    expandStrongerCourt:false,
+    expandStrongerCourtCount:0,
+    shotReliefCount:0,
+    singlesPreset:'m1l1m2l2',
+    targetPreset:'m1l1m2l2',
+    shotStage:0,
+    adjustedSideIds:['id:player-peter'],
+    adjustedSideNumber:1,
+    mode:'singles',
+    memoryScope:'exact-competitive-context'
+  };
+  const badmintonAuth = {
+    logged_in:true,
+    is_developer:true,
+    is_badminton_admin:true,
+    user:{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com' }
+  };
+
+  await page.route('**/sitewide/api/me.php**', route => json(route, { ok:true, authed:false, providers:{password:true,google:false} }));
+  await page.route('**/sitewide/api/auth_providers.php**', route => json(route, { ok:true, providers:{password:true,google:false} }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_logins.php**', route => json(route, {
+    ok:true,
+    users:[{ id:7, name:'Peter Bates-Wilkinson', email:'Bateswilkinson@gmail.com', provider:'password' }]
+  }));
+  await page.route('**/systems/baseline-badminton-session/api/badminton_session.php**', async route => {
+    if(route.request().method() === 'POST'){
+      const body = route.request().postDataJSON();
+      if(body && body.state) state = body.state;
+      revision += 1;
+    }
+    return json(route, { ok:true, state, revision, updated_at:Date.now(), auth:badmintonAuth });
+  });
+
+  await page.goto(PATH, { waitUntil:'domcontentloaded' });
+  await page.locator('#generatePlanBtn').click();
+
+  const court = page.locator('[data-current-court-index="0"]');
+  await expect(court).toBeVisible();
+  await expect(court.locator('.boundary-mask')).toHaveCount(1);
+  await expect(court.locator('.court-hardship-help')).toContainText('Saved hardship for');
+
+  const debug = await page.evaluate(() => window.__baselineBadmintonHardshipDebug && window.__baselineBadmintonHardshipDebug());
+  expect(debug).toBeTruthy();
+  expect(Object.keys(debug.activeHardships || {}).length).toBeGreaterThan(0);
+});
