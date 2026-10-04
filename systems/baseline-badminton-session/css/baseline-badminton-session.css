@@ -1154,3 +1154,9 @@ body[data-app="badminton"] .no-game-dialog [data-no-game-action]{
 body[data-app="badminton"] .hardship-control .hardship-note{
   min-height:0;
 }
+
+
+.badminton-persistence-status{margin-top:10px;padding:9px 11px;border:1px solid rgba(95,35,148,.28);border-radius:10px;background:rgba(247,235,255,.88);color:#4f2a69;font-size:.9rem;line-height:1.35}
+.badminton-persistence-status.is-warning{border-color:rgba(179,113,0,.42);background:rgba(255,247,224,.92);color:#6f4b00}
+.badminton-persistence-status.is-error{border-color:rgba(160,34,49,.42);background:rgba(255,235,239,.94);color:#7d1c2a}
+.badminton-persistence-status[hidden]{display:none!important}
