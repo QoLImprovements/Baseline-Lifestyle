@@ -66,12 +66,25 @@
     function refs(){ return getRefs() || {}; }
 
 
+  function activateGamePlanSubtab(target){
+    const normalized = String(target || 'plan');
+    document.querySelectorAll('.gameplan-subtab').forEach(function(tab){
+      tab.setAttribute('aria-selected', String(tab.getAttribute('data-gameplan-tab') === normalized));
+    });
+    document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){
+      panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === normalized);
+    });
+  }
+
   function wireGamePlanSubtabs(){
     document.querySelectorAll('.gameplan-subtab').forEach(function(button){
       button.addEventListener('click', function(){
-        const target = button.getAttribute('data-gameplan-tab');
-        document.querySelectorAll('.gameplan-subtab').forEach(function(tab){ tab.setAttribute('aria-selected', String(tab === button)); });
-        document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){ panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === target); });
+        activateGamePlanSubtab(button.getAttribute('data-gameplan-tab'));
+      });
+    });
+    document.querySelectorAll('.tab[data-target="gameplan"]').forEach(function(button){
+      button.addEventListener('click', function(){
+        activateGamePlanSubtab('plan');
       });
     });
   }
@@ -240,10 +253,7 @@
 
   function syncGamePlanSubtabVisibility(){
     const active = document.querySelector('.gameplan-subtab[aria-selected="true"]');
-    const target = active ? active.getAttribute('data-gameplan-tab') : 'plan';
-    document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){
-      panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === target);
-    });
+    activateGamePlanSubtab(active ? active.getAttribute('data-gameplan-tab') : 'plan');
   }
 
 
