@@ -46,9 +46,10 @@ function createHarness() {
   return { getState: () => state, inventoryService, workshopService, stateService };
 }
 
-test('external Realm scenes do not impersonate Basecamp or restore guessed surfaces', () => {
+test('external Realm scenes do not impersonate Basecamp and standard scenes restore the persistent shell', () => {
   assert.doesNotMatch(lazyScenesSource,/getRuntime\(\)\?\.setView\?\.\('basecamp'\)/);
-  assert.doesNotMatch(lazyScenesSource,/setHidden\('#ninjaScene, \.realm-command-banner, \.realm-action-dock',false\)/);
+  assert.match(lazyScenesSource,/function restorePersistentSceneView\(\)/);
+  assert.match(lazyScenesSource,/setHidden\('#ninjaScene, \.realm-command-banner, \.realm-action-dock',false\)/);
   assert.match(lazyScenesSource,/destination scene's runtime\.setView\(\) is the sole visibility authority/);
 });
 
