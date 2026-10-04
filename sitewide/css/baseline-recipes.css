@@ -19,13 +19,10 @@
 --------------------------- */
 
 .recipes{
-  display:grid;
-  gap:14px;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 560px));
-  justify-content: start;
+  display:block;
 }
 
-.recipe.card{
+.recipe-page{
   break-inside: avoid;
   page-break-inside: avoid;
   -webkit-column-break-inside: avoid;
@@ -36,13 +33,11 @@
 }
 
 /* In single-recipe mode, the active card should use full width */
-#recipes.recipe-open-mode .recipe.card.active{
+#recipes.recipe-open-mode .recipe-page.active{
   max-width: none;
   justify-self: stretch;
 }
 
-/* Recipe titles act as open controls in overview mode */
-.recipe.card h3{ cursor: pointer; }
 
 /* Title row (title + favourite star) */
 .recipe-title-row{
@@ -274,57 +269,27 @@
 --------------------------- */
 
 /* ---------------------------
-   Recipe “open one at a time” mode (optional)
-   - Uses: #recipes.recipe-open-mode
+   Universal recipe visibility
+   - The Recipes tab is an overview.
+   - Recipe records are hidden until one is focused.
 --------------------------- */
 
-/* Default: show cards grid */
-.recipe-page{ display:block; }
+.recipe-page{ display:none; }
 #recipes-landing{ display:block; }
-
-/* Ensure the overview and the grid have consistent separation */
-#recipes #recipes-landing{ margin-bottom: var(--space-4, 18px); }
-
-/* When open-mode is enabled, hide the landing and show one recipe at a time */
-#recipes.recipe-open-mode .recipe-page{ display:none; }
-#recipes.recipe-open-mode #recipes-landing{ display:none !important; }
-
-/* In open-mode, ensure the active recipe uses the full available width.
-   Without this, the default 2-column .recipes grid can leave an empty right column.
-*/
-#recipes.recipe-open-mode .recipes{
-  display:grid;
-  grid-template-columns: 1fr;
-}
-
-/* In open-mode, allow the active recipe card to use full width */
-#recipes.recipe-open-mode .recipe-page.active{
-  max-width: none;
-  justify-self: stretch;
-}
-
-
-/* Focused mode: no side list, single column, and a top “Back to Recipe Overview” action */
-.recipe-top-bar{
-  display:none;
-  align-items:center;
-  gap:10px;
-  margin: 0 0 var(--space-3, 14px) 0;
-}
-
-#recipes.recipe-open-mode.recipe-focus .recipe-top-bar{ display:flex; }
-
-#recipes.recipe-focus .recipe-layout{ display:block; }
-
-/* Layout wrapper */
 .recipe-layout{ display:block; }
-#recipes.recipe-open-mode .recipe-layout{
-  display:block;
-}
+#recipes .recipes{ display:block; }
 
-/* When using the focused view, keep it single-column even in open mode */
-#recipes.recipe-open-mode.recipe-focus .recipe-layout{
+#recipes.recipe-open-mode #recipes-landing,
+#recipes.recipe-detail-open #recipes-landing{ display:none !important; }
+
+#recipes.recipe-open-mode .recipe-page,
+#recipes.recipe-detail-open .recipe-page{ display:none; }
+
+#recipes.recipe-open-mode .recipe-page.active,
+#recipes.recipe-detail-open .recipe-page.is-open{
   display:block;
+  width:100%;
+  max-width:none;
 }
 
 
@@ -474,14 +439,14 @@
   #recipes{ padding:0 !important; }
 
   /* Print as a clean recipe sheet (no card chrome, gradients, borders) */
-  #recipes .recipe.card,
-  #recipes .recipe.card::before,
-  #recipes .recipe.card::after,
-  #recipes .recipe.card *{
+  #recipes .recipe-page,
+  #recipes .recipe-page::before,
+  #recipes .recipe-page::after,
+  #recipes .recipe-page *{
     box-shadow:none !important;
   }
 
-  #recipes .recipe.card{
+  #recipes .recipe-page{
     border:none !important;
     background:transparent !important;
     border-radius:0 !important;
@@ -491,19 +456,19 @@
     page-break-inside:avoid;
   }
 
-  #recipes .recipe.card::before,
-  #recipes .recipe.card::after{
+  #recipes .recipe-page::before,
+  #recipes .recipe-page::after{
     content:none !important;
     display:none !important;
   }
 
-  #recipes .recipe.card h3{
+  #recipes .recipe-page h3{
     font-size:24px;
     line-height:1.12;
     margin:0 0 6px 0;
   }
 
-  #recipes .recipe.card h4{
+  #recipes .recipe-page h4{
     margin:14px 0 6px 0;
     font-size:16px;
     text-transform:uppercase;
@@ -540,62 +505,7 @@
   }
 
   a{ color:inherit !important; text-decoration:none !important; }
-}
-
-/* --------------------------------------------------------------------------
-   Recipe overview control bar
-   - Each control on its own line (Batch / Measurement / Thickness)
-   - Actions column on the right (Apply above Reset)
-   - Applies only in Recipe Overview (not in recipe-open-mode)
-   -------------------------------------------------------------------------- */
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls{
-  display:grid;
-  grid-template-columns: auto 1fr auto;
-  column-gap: 12px;
-  row-gap: 10px;
-  align-items:center;
-}
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .label{
-  white-space:nowrap;
-}
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls input,
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls select{
-  width:100%;
-  min-width:0;
-  max-width:100%;
-}
-
-/* Row mapping (works whether Thickness exists or not) */
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .batch-label{ grid-column:1; grid-row:1; }
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .batch-input{ grid-column:2; grid-row:1; }
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .meas-label{ grid-column:1; grid-row:2; }
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .measure-select{ grid-column:2; grid-row:2; }
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .thickness-label{ grid-column:1; grid-row:3; }
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .thickness-select{ grid-column:2; grid-row:3; }
-
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls button.apply{
-  grid-column:3;
-  grid-row:1;
-  justify-self:end;
-}
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls button.reset{
-  grid-column:3;
-  grid-row:2;
-  justify-self:end;
-}
-
-/* If a recipe has Thickness, keep actions aligned to the top (not vertically centered across 3 rows) */
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls button.apply,
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls button.reset{
-  align-self:start;
-}
-
-/* --------------------------------------------------------------------------
+}/* --------------------------------------------------------------------------
    Cleanup / hard overrides (sitewide)
    - Remove deprecated top back bar (caused duplicate back controls on mobile)
    - Ensure action buttons never rely on floats
@@ -709,18 +619,7 @@
   width:148px;
   min-width:0;
   max-width:100%;
-}
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .bl-number.batch-input{
-  grid-column:2;
-  grid-row:1;
-  width:100%;
-}
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .bl-number.batch-input input{
-  width:100%;
-}
-
-
-/* --------------------------------------------------------------------------
+}/* --------------------------------------------------------------------------
    Mobile recipe control layout
    - Keep Measurement Type on one line
    - Place each label above its field in focused recipe view
@@ -781,9 +680,7 @@
 
 /* Desktop: Apply button removed, keep Reset visible */
 @media (min-width: 901px){
-  .recipe-controls .apply{ display:none !important; }
-  #recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls button.reset{ grid-row:1 !important; }
-}
+  .recipe-controls .apply{ display:none !important; }}
 
 
 /* Batch input: keep number field and arrows compact and adjacent */
@@ -794,16 +691,7 @@
   max-width: 138px !important;
   min-width: 138px !important;
   justify-self: start !important;
-}
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls{
-  grid-template-columns: auto 180px auto !important;
-}
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .batch-input,
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .measure-select,
-#recipes:not(.recipe-open-mode) .recipes .multiplier.recipe-controls .thickness-select{
-  justify-self: start;
-}
-.multiplier .bl-number{
+}.multiplier .bl-number{
   width: 138px;
   max-width: 138px;
 }
@@ -2630,26 +2518,11 @@
    print excludes all editable/slider/explainer UI.
    ========================================================================== */
 
-/* Remove the unnecessary outer Recipes card chrome; let overview/recipe cards use the space. */
-body[data-app] #recipes > .grid > .card{
-  background:transparent !important;
-  background-image:none !important;
-  background-color:transparent !important;
-  border:0 !important;
-  box-shadow:none !important;
-  padding:0 !important;
-  margin:0 !important;
-  overflow:visible !important;
-}
-body[data-app] #recipes > .grid > .card::before,
-body[data-app] #recipes > .grid > .card::after{ content:none !important; display:none !important; }
-body[data-app] #recipes > .grid > .card > h2{ display:none !important; }
 body[data-app] #recipes .recipe-main{ width:100% !important; min-width:0 !important; }
-body[data-app] #recipes #recipes-landing.card{ width:100% !important; margin:0 !important; }
+body[data-app] #recipes #recipes-landing{ width:100% !important; margin:0 !important; }
 body[data-app] #recipes.recipe-open-mode #recipes-landing,
 body[data-app] #recipes.recipe-detail-open #recipes-landing{ display:none !important; }
-body[data-app] #recipes.recipe-open-mode .recipes,
-body[data-app] #recipes.recipe-detail-open .recipes{ width:100% !important; display:grid !important; grid-template-columns:1fr !important; }
+body[data-app] #recipes.recipe-open-mode .recipes,\nbody[data-app] #recipes.recipe-detail-open .recipes{ width:100% !important; display:block !important; }
 body[data-app] #recipes.recipe-open-mode .recipe-page.active,
 body[data-app] #recipes.recipe-detail-open .recipe-page.is-open{ width:100% !important; max-width:none !important; justify-self:stretch !important; }
 
@@ -4439,23 +4312,11 @@ html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!impor
 html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
 
-/* Section 2: Food exact-route selectors, group 1. */
-html[data-initial-recipe-slug="raw-40-c-almond-flax-pizza-base"] #recipes .recipe-page[data-recipe-slug="raw-40-c-almond-flax-pizza-base"]{display:block!important;visibility:visible!important;max-width:none!important}
-html[data-initial-recipe-slug="creamy-stovetop-polenta"] #recipes .recipe-page[data-recipe-slug="creamy-stovetop-polenta"]{display:block!important;visibility:visible!important;max-width:none!important}
-html[data-initial-recipe-slug="pure-stovetop-chickpea-baked-beans"] #recipes .recipe-page[data-recipe-slug="pure-stovetop-chickpea-baked-beans"]{display:block!important;visibility:visible!important;max-width:none!important}
-html[data-initial-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"] #recipes .recipe-page[data-recipe-slug="hearty-oat-porridge-with-apple-pear-and-vanilla"]{display:block!important;visibility:visible!important;max-width:none!important}
-html[data-initial-recipe-slug="creamy-mushroom-sauce"] #recipes .recipe-page[data-recipe-slug="creamy-mushroom-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
 
-html[data-initial-recipe-slug="mushroom-and-rosemary-oat-groats-risotto"] #recipes .recipe-page[data-recipe-slug="mushroom-and-rosemary-oat-groats-risotto"]{display:block!important;visibility:visible!important;max-width:none!important}
-html[data-initial-recipe-slug="sweet-potato-and-bell-pepper-sauce"] #recipes .recipe-page[data-recipe-slug="sweet-potato-and-bell-pepper-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
 
-html[data-initial-recipe-slug="aubergine-and-carrot-sauce"] #recipes .recipe-page[data-recipe-slug="aubergine-and-carrot-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
 
-html[data-initial-recipe-slug="tomato-and-red-pepper-sauce"] #recipes .recipe-page[data-recipe-slug="tomato-and-red-pepper-sauce"]{display:block!important;visibility:visible!important;max-width:none!important}
 
-html[data-initial-recipe-slug="potato-and-carrot-vegan-cheese"] #recipes .recipe-page[data-recipe-slug="potato-and-carrot-vegan-cheese"]{display:block!important;visibility:visible!important;max-width:none!important}
 
-html[data-initial-recipe-slug="sattu-balanced-nut-butter-spread-base"] #recipes .recipe-page[data-recipe-slug="sattu-balanced-nut-butter-spread-base"]{display:block!important;visibility:visible!important;max-width:none!important}
 
 html[data-initial-recipe-slug="nurturing-glow-butter"] #recipes .recipe-page[data-recipe-slug="nurturing-glow-butter"]{display:block!important;visibility:visible!important;max-width:none!important}
 html[data-initial-recipe-slug="anhydrous-oil-cleanser"] #recipes .recipe-page[data-recipe-slug="anhydrous-oil-cleanser"]{display:block!important;visibility:visible!important;max-width:none!important}
