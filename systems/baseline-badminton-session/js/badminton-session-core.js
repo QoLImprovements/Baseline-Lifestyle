@@ -29,6 +29,17 @@
       .sort();
   }
 
+  function stablePlayerId(player){
+    if(!player || typeof player !== 'object') return '';
+    const id = String(player.id || player.playerId || '').trim();
+    return id ? ('id:' + id) : '';
+  }
+
+  function stablePlayerIds(players){
+    return normaliseIds((Array.isArray(players) ? players : []).map(stablePlayerId).filter(Boolean));
+  }
+
+
   function getStableSideKey(ids){
     const cleaned = normaliseIds(ids);
     return cleaned.length ? ('side::' + cleaned.join('::')) : '';
@@ -49,6 +60,8 @@
     SINGLES_ZONES:SINGLES_ZONES,
     PRESET_ZONE_MAP:PRESET_ZONE_MAP,
     normaliseIds:normaliseIds,
+    stablePlayerId:stablePlayerId,
+    stablePlayerIds:stablePlayerIds,
     getStableSideKey:getStableSideKey,
     getHardshipContextKey:getHardshipContextKey
   });
