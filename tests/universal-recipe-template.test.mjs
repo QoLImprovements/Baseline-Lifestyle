@@ -261,9 +261,10 @@ test('Food and Skincare share one shell-first universal recipe architecture', ()
     htaccess,
     /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html \[L,QSA\]/
   );
-  assert.match(shared, /async function hydrateFolderBackedRecipeRoute\(\)/);
+  assert.match(shared, /async function hydrateFolderBackedRecipeCollection\(\)/);
   assert.match(shared, /card\.classList\.add\('recipe-universal-template'\)/);
-  assert.match(shared, /await hydrateFolderBackedRecipeRoute\(\)/);
+  assert.match(shared, /await hydrateFolderBackedRecipeCollection\(\)/);
+  assert.match(shared, /Promise\.all\([\s\S]*BASELINE_FOOD_RECIPE_INDEX/);
   assert.doesNotMatch(shared, /ensureStandaloneSystemTabs|baseline-standalone-primary-tabs/);
   assert.doesNotMatch(css, /BASELINE-STANDALONE-SYSTEM-TABS-20261004/);
 });
