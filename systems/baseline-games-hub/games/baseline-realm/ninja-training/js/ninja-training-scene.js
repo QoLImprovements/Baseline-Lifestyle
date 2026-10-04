@@ -246,14 +246,14 @@ function mountNinjaPresentation() {
       actionTimer = window.setTimeout(() => {
         runner.classList.remove('is-dash-cut');
         scene.classList.remove('is-dash-hit-frame');
-      }, reducedMotion.matches ? 180 : 790);
+      }, reducedMotion.matches ? 180 : 980);
       return;
     }
 
     if (action === 'throw') {
       runner.classList.add('is-throwing');
       if (audio) synth.shuriken();
-      actionTimer = window.setTimeout(() => runner.classList.remove('is-throwing'), reducedMotion.matches ? 160 : 620);
+      actionTimer = window.setTimeout(() => runner.classList.remove('is-throwing'), reducedMotion.matches ? 160 : 820);
       return;
     }
 
