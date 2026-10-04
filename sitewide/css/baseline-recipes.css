@@ -314,16 +314,12 @@
 
 #recipes.recipe-open-mode.recipe-focus .recipe-top-bar{ display:flex; }
 
-#recipes.recipe-focus .side-recipe-nav{ display:none !important; }
 #recipes.recipe-focus .recipe-layout{ display:block; }
 
 /* Layout wrapper */
 .recipe-layout{ display:block; }
 #recipes.recipe-open-mode .recipe-layout{
-  display:grid;
-  grid-template-columns: 260px 1fr;
-  gap: 16px;
-  align-items:start;
+  display:block;
 }
 
 /* When using the focused view, keep it single-column even in open mode */
@@ -331,41 +327,6 @@
   display:block;
 }
 
-/* Side navigation panel */
-.side-recipe-nav{
-  display:none;
-  position:sticky;
-  top: calc(var(--homebar-h) + 18px);
-  align-self:start;
-  padding: 14px;
-  background: rgba(255,255,255,0.18);
-  border: 1px solid rgba(122,74,58,0.14);
-  border-radius: 18px;
-  box-shadow: 0 16px 34px -26px rgba(35,23,19,0.28);
-}
-#recipes.recipe-open-mode .side-recipe-nav{ display:block; }
-
-.side-recipe-nav h4{ margin: 12px 0 10px 0; }
-.side-recipe-nav ul{ margin: 0; padding-left: 18px; }
-.side-recipe-nav li{ margin: 8px 0; }
-.side-recipe-nav a{ font-weight: 750; }
-
-.side-recipe-nav .back-link{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:10px 12px;
-  border-radius:999px;
-  border:1px solid rgba(122,74,58,0.16);
-  background: rgba(255,255,255,0.24);
-  color: var(--accent-2);
-  text-decoration:none;
-}
-
-@media (max-width: 900px){
-  #recipes.recipe-open-mode .recipe-layout{ grid-template-columns: 1fr; }
-  .side-recipe-nav{ position:relative; top:auto; }
-}
 
 /* --------------------------------------------------------------------------
    Overrides requested (sitewide consistency)
@@ -4478,7 +4439,6 @@ html[data-initial-recipe-route="1"] #recipes .recipes{display:grid!important;vis
 html[data-initial-recipe-route="1"] #recipes #recipes-landing{display:none!important}
 html[data-initial-recipe-route="1"] #recipes .recipe-page{display:none!important;visibility:hidden!important}
 html[data-initial-recipe-route="1"] #recipes .recipes{grid-template-columns:1fr!important}
-html[data-initial-recipe-route="1"] #recipes .side-recipe-nav{display:none!important}
 
 /* Section 2: Food exact-route selectors, group 1. */
 html[data-initial-recipe-slug="raw-40-c-almond-flax-pizza-base"] #recipes .recipe-page[data-recipe-slug="raw-40-c-almond-flax-pizza-base"]{display:block!important;visibility:visible!important;max-width:none!important}
