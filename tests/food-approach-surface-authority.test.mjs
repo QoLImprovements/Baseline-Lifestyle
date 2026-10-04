@@ -19,10 +19,12 @@ const recipeDir = path.join(root, 'systems/baseline-food-approach/recipes');
 const ingredientDir = path.join(root, 'systems/baseline-food-approach/ingredients');
 
 test('Food content containers share one warmer theme surface', () => {
-  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
-  assert.match(theme, /--food-surface-panel:\s*var\(--food-surface-card\)/);
-  assert.match(theme, /--food-surface-subtle:\s*var\(--food-surface-card\)/);
-  assert.match(foodCss, /\.card\s*\{[\s\S]*?background:var\(--food-surface-card\)/);
+  const sitewideCss = read('sitewide/css/baseline-sitewide.css');
+  assert.match(theme, /--food-surface-card:\s*#e99a5f/);
+  assert.match(theme, /--food-surface-panel:\s*#e99a5f/);
+  assert.match(theme, /--food-surface-subtle:\s*#e99a5f/);
+  assert.match(sitewideCss, /body\[data-app="food"\] \.card,[\s\S]*background-color:var\(--bl-surface-card-solid\) !important/);
+  assert.match(sitewideCss, /--bl-surface-card-solid:#e99a5f;[\s\S]*--bl-surface-recipe-card-solid:#e99a5f;/);
   assert.match(dietCss, /\.diet-log-panel\s*\{[\s\S]*?background:var\(--food-surface-panel\)/);
   assert.doesNotMatch(recipeCss, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
 });
