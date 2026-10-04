@@ -134,7 +134,7 @@
     getSideByNumber:function(court, sideNumber){ return getSideByNumber(court, sideNumber); },
     getOppositeSideNumber:function(sideNumber){ return getOppositeSideNumber(sideNumber); },
     getRestrictionZoneMode:function(court, sideNumber){ return getRestrictionZoneMode(court, sideNumber); },
-    getRestrictionSideNumberFromMemory:function(court, memory){ return getRestrictionSideNumberFromMemory(court, memory); },
+    getRestrictionSideNumberFromMemory:function(court,memory){return getRestrictionSideNumberFromMemory(court,memory);},
     getPresetOrder:function(mode){ return getPresetOrder(mode); },
     normaliseShotRestrictions:function(restrictions, stage){ return normaliseShotRestrictions(restrictions, stage); },
     tightenPreset:function(preset, steps, mode){ return tightenPreset(preset, steps, mode); },
@@ -155,7 +155,7 @@
   const getDominantHardshipLedger = hardshipEngine.getDominantHardshipLedger;
   const getDominantHardshipKeyForSide = hardshipEngine.getDominantHardshipKeyForSide;
   const getDominantHardshipRuleForSide = hardshipEngine.getDominantHardshipRuleForSide;
-  const promoteLegacyMatchupMemoryForCourt = hardshipEngine.promoteLegacyMatchupMemoryForCourt;
+  const promoteLegacyMatchupMemoryForCourt=hardshipEngine.promoteLegacyMatchupMemoryForCourt;
   const getDominantHardshipEntryForCourt = hardshipEngine.getDominantHardshipEntryForCourt;
   const setDominantHardshipRuleForSide = hardshipEngine.setDominantHardshipRuleForSide;
   const increaseDominantHardshipForSide = hardshipEngine.increaseDominantHardshipForSide;
@@ -1540,7 +1540,7 @@
     const weakerSide = strongerSide ? (strongerSide === 1 ? 2 : 1) : null;
     const signature = buildMatchupKey(court);
     const memory = ensureRestrictionMemory(signature);
-    promoteLegacyMatchupMemoryForCourt(court, memory);
+    promoteLegacyMatchupMemoryForCourt(court,memory);
     const activeHardshipEntry = getActiveHardshipRuleEntryForCourt(court);
     const dominantEntry = activeHardshipEntry || getDominantRestrictionEntryForCourt(court, signature, memory);
     const effectiveMemory = dominantEntry ? syncDominantRestrictionMemoryForCourt(court, signature, dominantEntry) : memory;
