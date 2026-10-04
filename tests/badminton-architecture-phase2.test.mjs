@@ -337,17 +337,17 @@ test("entering the top-level Game Plan tab returns to the primary Game Plan subt
   assert.match(gamePlanSource, /activateGamePlanSubtab\('plan'\)/);
 });
 
-test("Badminton repaired modules carry a fresh cache revision", () => {
+test("Badminton repaired modules carry fresh cache revisions", () => {
   for (const file of [
     "badminton-session-roster.js",
     "badminton-session-game-plan.js",
     "badminton-session-results.js",
     "badminton-session-court-renderer.js",
     "badminton-session-court-cards.js",
-    "baseline-badminton-session.js",
   ]) {
     assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
   }
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_SCORE_PERMISSION_FIX_20261004_3/);
 });
 
 
