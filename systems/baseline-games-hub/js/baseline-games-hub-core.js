@@ -4118,7 +4118,13 @@ function toggleGameFullscreen(gameId){
     renderAuthState();
     safeRenderAll();
     startNinjaLoop();
-    loadAllProfiles().then(function(){ startNinjaLoop(); }).catch(function(){ safeRenderAll(); });
+    const initialRenderReady = loadAllProfiles()
+      .then(function(){ startNinjaLoop(); return true; })
+      .catch(function(){ safeRenderAll(); return false; });
+    // Core-ready means controls can bind immediately. Visual-ready waits for
+    // this hydration promise so the user does not see seed data followed by a
+    // second full-page profile render.
+    window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY = initialRenderReady;
     window.BASELINE_GAMES_HUB_CORE_READY = true;
     document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
     try{

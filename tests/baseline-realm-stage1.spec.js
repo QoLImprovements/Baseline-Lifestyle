@@ -62,6 +62,8 @@ async function openRealm(page, { mobile = false } = {}) {
     window.dispatchEvent(new Event('resize'));
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
 }
 
 async function screenshot(page, testInfo, name) {
@@ -146,7 +148,6 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   expect(sprite.text).toContain('icon-dash-cut');
   expect(sprite.text).toContain('icon-shuriken');
 
-  await page.locator('#realmBasecampBtn').click();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   const backgroundSize = await page.locator('#realmBasecampScreen').evaluate(node => getComputedStyle(node).backgroundSize);
   expect(backgroundSize).toContain('100% 100%');
@@ -155,7 +156,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await expect(page.locator('#realmExplorationScreen .jrpg-game[data-zone="meridian-grove"]')).toBeVisible();
   const enterGrove = page.getByRole('button', { name: 'Enter the grove', exact: true });
   if (await enterGrove.isVisible()) await enterGrove.click();
-  await page.locator('#realmExplorationScreen').getByRole('button', { name: 'Basecamp', exact: true }).click();
+  await page.locator('#realmExplorationScreen [data-jrpg-action="return-basecamp"]').click();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.locator('#realmCampNinjaBtn').click();
 

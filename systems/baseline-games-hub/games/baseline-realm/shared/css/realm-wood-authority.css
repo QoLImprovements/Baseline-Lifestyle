@@ -29,6 +29,22 @@
   -webkit-text-fill-color:currentColor!important;
 }
 
+/* Realm is an interactive world, not a hover-lift Games Hub card.
+   Keeping the panel on whole CSS pixels prevents transformed descendants/text
+   from becoming soft while the pointer is over the game. */
+#ninjaPanel,
+#ninjaPanel:hover,
+#ninjaPanel:focus-within{
+  transform:none!important;
+  filter:none!important;
+  backface-visibility:visible!important;
+}
+#ninjaPanel #realmSceneFrame{
+  transform:none!important;
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:antialiased;
+}
+
 #ninjaPanel .realm-window{
   background:#0a1712!important;
   background-image:none!important;
@@ -214,6 +230,19 @@
   box-shadow:none!important;
 }
 #ninjaPanel .jrpg-command-grid button{min-height:42px!important;pointer-events:auto!important;opacity:1!important}
+#ninjaPanel .jrpg-game :is(.jrpg-party-mini span,.jrpg-party-mini small,.jrpg-battle-party-card span,.jrpg-battle-party-card small,.jrpg-enemy-card small,.jrpg-battle-log ol,.jrpg-command-title span,.jrpg-skill-list span,.jrpg-target-list span,.jrpg-route-card ol,.jrpg-section-head span){
+  font-size:max(10px,0.68rem)!important;
+  line-height:1.3!important;
+  text-shadow:none!important;
+}
+#ninjaPanel .jrpg-meter>b{
+  font-size:max(9px,0.62rem)!important;
+  text-shadow:none!important;
+}
+#ninjaPanel .jrpg-game :is(button,strong,h1,h2,h3,h4,h5,h6,p,span,small,label){
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
 #ninjaPanel .jrpg-top-actions [data-jrpg-action="abandon"]{border-color:#d39a89!important;color:#ffe7df!important;-webkit-text-fill-color:#ffe7df!important}
 
 /* Calorie Escape and Tactical Operations are full Realm destinations. Their

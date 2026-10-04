@@ -128,9 +128,11 @@ async function activateRealm(host){
   }
 
   try{
-    await host.sceneRouter.navigate('ninja-training');
+    // Basecamp is the canonical Realm entry point. Individual Realm
+    // destinations are entered only after an explicit player choice.
+    await host.sceneRouter.navigate('basecamp',{initial:true,source:'games-hub'});
   }catch(error){
-    console.error('[Baseline Games Hub] Ninja Training scene navigation failed.',error);
+    console.error('[Baseline Games Hub] Basecamp scene navigation failed.',error);
   }
 
   ensureActorElements();
@@ -385,8 +387,8 @@ function wantsDarts(){
 }
 
 function openDartsFromRoute(){
-  if(!wantsDarts())return;
-  openDarts().catch(error=>console.error(error));
+  if(!wantsDarts())return Promise.resolve(null);
+  return openDarts().catch(error=>{console.error(error);return null;});
 }
 
 
@@ -397,8 +399,8 @@ function wantsBadminton(){
   return params.get('game')==='badminton-focused'||hash==='badminton-focused';
 }
 function openBadmintonFromRoute(){
-  if(!wantsBadminton())return;
-  openBadminton().catch(error=>console.error(error));
+  if(!wantsBadminton())return Promise.resolve(null);
+  return openBadminton().catch(error=>{console.error(error);return null;});
 }
 
 function wantsRealm(){
@@ -410,21 +412,36 @@ function wantsRealm(){
 }
 
 function openRealmFromRoute(){
-  if(!wantsRealm())return;
+  if(!wantsRealm())return Promise.resolve(null);
   const button=document.querySelector('[data-select-game="ninja"]');
   const panel=document.getElementById('ninjaPanel');
   if(button&&!(panel&&panel.classList.contains('is-active')))button.click();
-  else loadRealm().catch(error=>console.error(error));
+  return loadRealm().catch(error=>{console.error(error);return null;});
 }
 
+function signalVisualReady(){
+  try{window.dispatchEvent(new CustomEvent('baseline:games-hub:visual-ready',{detail:{build:BUILD}}));}
+  catch(_error){document.documentElement.removeAttribute('data-games-hub-boot');}
+}
 function init(){
   addRealmCss();
-  waitCore().then(()=>{
+  waitCore().then(async()=>{
     watchDarts();
-    openDartsFromRoute();
-    openBadmintonFromRoute();
-    openRealmFromRoute();
-  }).catch(error=>console.error(error));
+    try{
+      await Promise.resolve(window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY);
+    }catch(error){
+      console.warn('[Baseline Games Hub] Initial profile hydration was incomplete.',error);
+    }
+    await Promise.allSettled([
+      openDartsFromRoute(),
+      openBadmintonFromRoute(),
+      openRealmFromRoute()
+    ]);
+    requestAnimationFrame(()=>signalVisualReady());
+  }).catch(error=>{
+    console.error(error);
+    signalVisualReady();
+  });
 }
 
 window.addEventListener('hashchange',()=>{openDartsFromRoute();openBadmintonFromRoute();openRealmFromRoute();});

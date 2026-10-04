@@ -9,6 +9,9 @@ const storageUi=fs.readFileSync('systems/baseline-games-hub/js/games-server-stor
 const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js','utf8');
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
 const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css','utf8');
+const realmWood=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
+const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
+const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
 const rootHtaccess=fs.readFileSync('.htaccess','utf8');
 const hubHtaccess=fs.readFileSync('systems/baseline-games-hub/.htaccess','utf8');
 
@@ -17,6 +20,19 @@ test('HTML loads storage authority, core, then normal modules',()=>{
   const coreIndex=html.indexOf('baseline-games-hub-core.js');
   const moduleIndex=html.indexOf('baseline-games-hub.js');
   assert.ok(guardIndex>=0&&coreIndex>guardIndex&&moduleIndex>coreIndex);
+});
+
+test('Games Hub first paint waits for one stable optional-loader render',()=>{
+  assert.match(html,/data-games-hub-boot/);
+  assert.match(html,/baseline:games-hub:visual-ready/);
+  assert.match(html,/visibility:hidden!important/);
+  assert.match(html,/window\.setTimeout\(reveal,4000\)/);
+  assert.match(optional,/signalVisualReady/);
+  assert.match(core,/BASELINE_GAMES_HUB_INITIAL_RENDER_READY = initialRenderReady/);
+  assert.match(optional,/await Promise\.resolve\(window\.BASELINE_GAMES_HUB_INITIAL_RENDER_READY\)/);
+  assert.match(optional,/await Promise\.allSettled\(\[/);
+  assert.match(optional,/return loadRealm\(\)\.catch/);
+  assert.match(optional,/requestAnimationFrame\(\(\)=>signalVisualReady\(\)\)/);
 });
 
 test('module entry loads non-blocking storage messaging before optional loaders',()=>{
@@ -35,7 +51,8 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
   assert.match(optional,/data-open-darts-focused/);
   assert.doesNotMatch(optional,/requestIdleCallback|showTab\(|showGame\(|function canProgress/);
   assert.match(optional,/renderGamesList=function\(\)\{\}/);
-  assert.match(optional,/sceneRouter\.navigate\('ninja-training'\)/);
+  assert.match(optional,/sceneRouter\.navigate\('basecamp'/);
+  assert.doesNotMatch(optional,/sceneRouter\.navigate\('ninja-training'\)/);
   assert.match(optional,/host\.applyOfflineProgress\(\);host\.render\(\)/);
   assert.match(optional,/host\.startLoop\(\)/);
   assert.match(optional,/baselineRealmSaving=canSave\(\)\?'account':'temporary'/);
@@ -59,6 +76,29 @@ test('core remains the sole owner of normal Hub controls',()=>{
   assert.match(core,/BASELINE_GAMES_HUB_CORE_READY = true/);
   assert.match(core,/function wireTabs\(\)/);
   assert.match(core,/event\.target\.closest\('\[data-select-game\]'\)/);
+});
+
+test('Basecamp exposes every registered Realm destination through positioned landmarks',()=>{
+  for(const landmark of ['ninja-training','workshop','cooking','merchant','exploration','calorie-escape','storage','tactical-operations','party-preparation','campfire-rest']){
+    assert.match(html,new RegExp('data-basecamp-landmark="'+landmark+'"'));
+    assert.match(basecampCss,new RegExp('data-basecamp-landmark="'+landmark+'"'));
+  }
+  assert.match(html,/data-realm-view="calorie-escape"/);
+  assert.match(html,/data-realm-view="tactical-operations"/);
+  assert.match(html,/data-realm-open-tab="workshop" data-workshop-category="cooking"/);
+  assert.ok((html.match(/class="realm-location-caption"/g)||[]).length>=10);
+});
+
+test('Realm root is not transformed by inherited Games Hub card hover effects',()=>{
+  assert.match(realmWood,/#ninjaPanel,\s*#ninjaPanel:hover,\s*#ninjaPanel:focus-within\{[\s\S]*?transform:none!important/);
+  assert.match(realmWood,/#ninjaPanel #realmSceneFrame\{[\s\S]*?text-rendering:optimizeLegibility/);
+});
+
+test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
+  assert.doesNotMatch(hubTheme,/#ninjaPanel/);
+  assert.doesNotMatch(hubTheme,/\.jrpg-/);
+  assert.doesNotMatch(hubTheme,/\.basecamp-service/);
+  assert.doesNotMatch(hubTheme,/\.realm-mini-action|\.realm-close-btn|\.realm-tab-btn/);
 });
 
 test('final Realm authority guarantees characters and controls',()=>{

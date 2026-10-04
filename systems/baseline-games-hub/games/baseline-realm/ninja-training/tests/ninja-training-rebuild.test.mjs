@@ -45,6 +45,38 @@ test('the dense forest uses three independently paced repeatable layers', async 
   assert.match(css, /-2048px/);
 });
 
+test('current Ninja authority keeps parallax live and player actions explicit', async () => {
+  const scene = await read('js/ninja-training-scene.js');
+  const authority = await read('css/ninja-training-final-authority.css');
+  assert.doesNotMatch(scene, /scheduleIdleAttack/);
+  assert.match(scene, /target\.id === 'ninjaManualStrikeBtn'/);
+  assert.match(scene, /target\.id === 'ninjaShurikenBtn'/);
+  assert.ok((authority.match(/background-repeat:repeat-x!important/g) || []).length >= 3);
+  assert.ok((authority.match(/background-size:auto 100%!important/g) || []).length >= 3);
+  assert.doesNotMatch(authority, /ninja-forest-layer[\s\S]{0,180}animation:none!important/);
+});
+
+test('Ninja presentation cannot react to hotkeys or combat mutations while another Realm scene owns the stage', async () => {
+  const scene = await read('js/ninja-training-scene.js');
+  assert.match(scene,/let active = false/);
+  assert.match(scene,/function presentationIsVisible\(\)/);
+  assert.match(scene,/function onAction\(event\) \{\s*if \(!presentationIsVisible\(\)\) return;/);
+  assert.match(scene,/function onKeydown\(event\) \{\s*if \(!presentationIsVisible\(\)\) return;/);
+  assert.match(scene,/const stateObserver = new MutationObserver\(\(\) => \{[\s\S]*?if \(presentationIsVisible\(\)\) \{/);
+  assert.match(scene,/runtime\?\.setView\('training'\);\s*presentation\.resume\(\);/);
+});
+
+test('visible runtime sprites switch to dash, throw and enemy-variant artwork', async () => {
+  const authority = await read('css/ninja-training-final-authority.css');
+  assert.match(authority, /is-dash-cut \.ninja-runtime-sprite--runner/);
+  assert.match(authority, /alder-veil-dash\.svg/);
+  assert.match(authority, /is-throwing \.ninja-runtime-sprite--runner/);
+  assert.match(authority, /alder-veil-throw\.svg/);
+  assert.match(authority, /ninja-scene__enemy\[data-enemy-kind="raider"\] \.ninja-runtime-sprite--enemy/);
+  assert.match(authority, /ninja-scene__enemy\[data-enemy-kind="boss"\] \.ninja-runtime-sprite--enemy/);
+  assert.doesNotMatch(authority, /\.ninja-runtime-sprite--enemy\[data-enemy-kind=/);
+});
+
 test('combat presentation includes run, idle, dash, throw, hit and defeat states', async () => {
   const css = await read('css/ninja-training-rebuild.css');
   for (const state of ['is-idle-attacking', 'is-dash-cut', 'is-throwing', 'is-hit', 'is-heavy-hit', 'is-defeated']) {
