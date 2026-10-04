@@ -6,7 +6,6 @@
       "use strict";
       try{ if(window.__BASELINE_DIET_LOG__) return; window.__BASELINE_DIET_LOG__ = true; }catch(_e){}
     
-      const STORAGE_KEY = "__baseline_food_diet_log_v1__";
       const CATEGORY_ORDER = [
         "Fruit",
         "Vegetables",
@@ -184,9 +183,9 @@
     
       function safeRead(){
         try{
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if(!raw) return { logs:{}, notes:{}, recipes:[], health:Object.assign({}, HEALTH_DEFAULTS) };
-          const parsed = JSON.parse(raw);
+          const parsed = window.BaselineFoodData && typeof window.BaselineFoodData.read === "function"
+            ? window.BaselineFoodData.read()
+            : null;
           return {
             logs: parsed && parsed.logs && typeof parsed.logs === "object" ? parsed.logs : {},
             notes: parsed && parsed.notes && typeof parsed.notes === "object" ? parsed.notes : {},
@@ -199,7 +198,11 @@
       }
     
       function safeWrite(store){
-        try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(store || {})); }catch(_e){}
+        try{
+          if(window.BaselineFoodData && typeof window.BaselineFoodData.write === "function"){
+            window.BaselineFoodData.write(store || {});
+          }
+        }catch(_e){}
       }
     
       function getStore(){
@@ -1124,6 +1127,14 @@
       }
     })();
   }
-  var ready=window.BASELINE_DIET_FOOD_LIBRARY_READY;
-  if(ready&&typeof ready.then==="function") ready.then(start,function(e){if(console)console.error(e);start();}); else start();
+  var libraryReady=window.BASELINE_DIET_FOOD_LIBRARY_READY;
+  var dataReady=window.BASELINE_FOOD_DATA_READY;
+  var waits=[];
+  if(libraryReady&&typeof libraryReady.then==="function") waits.push(libraryReady);
+  if(dataReady&&typeof dataReady.then==="function") waits.push(dataReady);
+  if(waits.length){
+    Promise.allSettled(waits).then(start);
+  }else{
+    start();
+  }
 })();
