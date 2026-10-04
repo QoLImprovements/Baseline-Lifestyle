@@ -1,7 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/baseline-games-hub/games-hub';
-const REALM_BUILD = 'REALM_RUNTIME_ISOLATED_20260629_4';
 
 function ninjaProfile() {
   return {
@@ -68,7 +67,7 @@ async function mockProfiles(page) {
 async function openRealm(page, { mobile = false } = {}) {
   const profiles = await mockProfiles(page);
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction((build) => document.documentElement.getAttribute('data-baseline-realm-integration') === build, REALM_BUILD);
+  await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.getStateService?.()) && Boolean(document.documentElement.getAttribute('data-baseline-realm-integration')));
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await page.locator('[data-select-game="ninja"]:visible').first().click();
   await page.evaluate(({ mobile }) => {
@@ -78,6 +77,8 @@ async function openRealm(page, { mobile = false } = {}) {
     dispatchEvent(new Event('resize'));
   }, { mobile });
   await expect(page.locator('#realmSceneFrame')).toBeVisible();
+  await expect.poll(() => page.evaluate(() => globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('basecamp');
+  await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await page.evaluate(() => globalThis.BaselineRealmHost.whenAssetsReady());
   return profiles;
 }
