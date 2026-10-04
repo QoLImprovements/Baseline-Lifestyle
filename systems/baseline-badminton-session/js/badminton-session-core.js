@@ -2,8 +2,8 @@
   'use strict';
 
   // Shared, side-effect-free Badminton Session foundations.
-  // Keep identity and persistence reconciliation here so controller/rendering
-  // changes cannot silently redefine what a Player ID / Pair ID matchup means.
+  // Keep stable Player ID / Pair ID identity here so controller/rendering
+  // changes cannot silently redefine what a matchup means.
   const DOUBLES_ZONES = Object.freeze(['C1','L1','L2','C2','S1','M1','M2','S2','FS1','F1','FS2']);
   const SINGLES_ZONES = Object.freeze(['L1','L2','M1','M2','S1','S2','F1']);
   const PRESET_ZONE_MAP = Object.freeze({
@@ -42,31 +42,7 @@
     return ['hardship', stableKind, 'restricted', restrictedKey, 'opponent', opponentKey].join('::');
   }
 
-  function clone(value){
-    return value && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : value;
-  }
 
-  function mergeNewestHardshipRecords(serverLedger, localLedger){
-    const server = serverLedger && typeof serverLedger === 'object' ? serverLedger : {};
-    const local = localLedger && typeof localLedger === 'object' ? localLedger : {};
-    const merged = Object.assign({}, server);
-    let recovered = false;
-
-    Object.keys(local).forEach(function(key){
-      if(String(key).indexOf('hardship::') !== 0) return;
-      const localRule = local[key];
-      if(!localRule || typeof localRule !== 'object') return;
-      const serverRule = merged[key];
-      const localUpdatedAt = Number(localRule.updatedAt || 0);
-      const serverUpdatedAt = Number(serverRule && serverRule.updatedAt || 0);
-      if(!serverRule || localUpdatedAt > serverUpdatedAt){
-        merged[key] = clone(localRule);
-        recovered = true;
-      }
-    });
-
-    return { ledger:merged, recovered:recovered };
-  }
 
   global.BASELINE_BADMINTON_SESSION_CORE = Object.freeze({
     DOUBLES_ZONES:DOUBLES_ZONES,
@@ -74,7 +50,6 @@
     PRESET_ZONE_MAP:PRESET_ZONE_MAP,
     normaliseIds:normaliseIds,
     getStableSideKey:getStableSideKey,
-    getHardshipContextKey:getHardshipContextKey,
-    mergeNewestHardshipRecords:mergeNewestHardshipRecords
+    getHardshipContextKey:getHardshipContextKey
   });
 })(typeof window !== 'undefined' ? window : globalThis);

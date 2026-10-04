@@ -67,18 +67,13 @@ test('Skincare clients never retry a stale document with a freshly fetched revis
   assert.doesNotMatch(bridge,/409[\s\S]{0,300}nativeFetch\(/);
 });
 
-test('shared Badminton keeps server state authoritative while reconciling only newer hardship memory',()=>{
+test('shared Badminton uses server state as the only persistent authority',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const hydrate=badminton.match(/function hydrateSessionFromServer\(\)[\s\S]*?\n  \}/)?.[0]||'';
   assert.match(hydrate,/hasAuthoritativeRevision=Object\.prototype\.hasOwnProperty\.call\(data,'revision'\)/);
-  assert.match(hydrate,/const serverState = data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\);/);
-  assert.match(hydrate,/let nextState = serverState;/);
-  assert.match(hydrate,/mergeNewestLocalHardshipsIntoServerState\(serverState, localSnapshot\)/);
-  assert.match(hydrate,/state=hydrateLoadedState\(nextState\);/);
-  assert.match(hydrate,/if\(recoveredHardships\)[\s\S]{0,220}queueServerSave\(\)/);
-  assert.doesNotMatch(hydrate,/state=hydrateLoadedState\(localSnapshot\)/);
-  assert.doesNotMatch(hydrate,/if\(currentUserIsManager\(\)\) queueServerSave\(\)/);
-  assert.doesNotMatch(hydrate,/else if\(localHasContent && currentUserIsManager\(\)\)/);
+  assert.match(hydrate,/state=hydrateLoadedState\(data\.state && typeof data\.state === 'object' \? data\.state : createInitialState\(\)\);/);
+  assert.doesNotMatch(badminton,/localStorage|sessionStorage/);
+  assert.doesNotMatch(badminton,/persistSessionLocalOnly|CONFLICT_BACKUP_KEY|mergeNewestLocalHardshipsIntoServerState|localSnapshot/);
 });
 
 test('shared Badminton exposes load/save failures and blocks unsafe follow-up writes',()=>{
@@ -98,7 +93,8 @@ test('full-document shared saves refuse stale conflict retries',()=>{
   const stability=read('sitewide/js/baseline-live-stability-core-v3.js');
   const games=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
   assert.match(badminton,/serverSaveConflict=true/);
-  assert.match(badminton,/CONFLICT_BACKUP_KEY/);
+  assert.match(badminton,/serverSaveBlocked=true/);
+  assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage/);
   assert.doesNotMatch(stability,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
   assert.match(games,/state\.status='conflict';state\.canSave=false/);
 });

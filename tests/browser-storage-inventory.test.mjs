@@ -128,19 +128,21 @@ test("post-cutover browser storage never promotes retired account copies", () =>
   assert.equal(rules.some((rule)=>rule.decision==="preserve-local-and-block-retirement"),false);
 });
 
-test("shared Badminton browser state uses the agreed nested resource path", () => {
+test("shared Badminton has no browser-storage persistence group", () => {
   const rules = mapping.rules || [];
-  const sharedRules = rules.filter((rule) =>
-    ["badminton-shared-v3-legacy", "badminton-shared-v4-cache", "badminton-shared-conflict-backup"].includes(rule.id),
+  assert.equal(
+    rules.some((rule) => String(rule.id || "").startsWith("badminton-shared-")),
+    false,
   );
-  assert.equal(sharedRules.length, 3);
-  for (const rule of sharedRules) {
-    assert.equal(rule.target, "Shared/Badminton/badminton.json");
-  }
   assert.equal(
     rules.some((rule) => String(rule.target || "").includes("Shared/badminton-session.json")),
     false,
   );
+  const badminton = fs.readFileSync(
+    path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
+    "utf8",
+  );
+  assert.doesNotMatch(badminton, /localStorage|sessionStorage/);
 });
 
 test("game browser data maps to canonical physical save files", () => {

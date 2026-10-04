@@ -50,6 +50,5 @@ test('guest and recovery exceptions remain deliberately local',()=>{
   assert.match(tactical,/if\(!signedIn\)[\s\S]{0,180}localStorage\.setItem\(LOCAL_SAVE_KEY/);
   assert.match(tactical,/if\(signedIn\)\{[\s\S]{0,260}inventoryService\?\.read/);
   assert.doesNotMatch(tactical,/removeItem\(LOCAL_SAVE_KEY\)/);
-  assert.match(badminton,/preserveConflictingLocalState/);
-  assert.match(badminton,/__baseline_badminton_session_v4_conflict_backup__/);
+  assert.doesNotMatch(badminton,/localStorage|sessionStorage|preserveConflictingLocalState|CONFLICT_BACKUP_KEY/);
 });

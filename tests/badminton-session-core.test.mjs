@@ -58,87 +58,39 @@ test("hardship context survives court-side and pair ordering changes for the sam
   assert.equal(doublesA, doublesB);
 });
 
-test("newer local hardship wins independently of whole-session freshness", () => {
-  const core = loadCore();
-  const key = core.getHardshipContextKey("singles", ["p1"], ["p2"]);
-  const serverLedger = {
-    [key]: {
-      targetPreset: "full-court",
-      shotStage: 0,
-      updatedAt: 100,
-    },
-  };
-  const localLedger = {
-    [key]: {
-      targetPreset: "m1m2",
-      shotStage: 1,
-      shotRestrictions: ["no-smashes", "no-downward-shots"],
-      updatedAt: 200,
-    },
-  };
-
-  const merged = core.mergeNewestHardshipRecords(serverLedger, localLedger);
-  assert.equal(merged.recovered, true);
-  assert.equal(merged.ledger[key].targetPreset, "m1m2");
-  assert.equal(merged.ledger[key].shotStage, 1);
+test("Badminton runtime is server-authoritative and has no browser persistence API", () => {
+  assert.doesNotMatch(runtimeSource, /localStorage|sessionStorage/);
+  assert.doesNotMatch(runtimeSource, /persistSessionLocalOnly|CONFLICT_BACKUP_KEY|mergeNewestLocalHardshipsIntoServerState/);
+  assert.match(runtimeSource, /function hydrateSessionFromServer\(\)/);
+  assert.match(runtimeSource, /state=hydrateLoadedState\(data\.state/);
+  assert.match(runtimeSource, /expectedRevision/);
 });
 
-test("newer hardship tombstone wins so refresh cannot resurrect a cleared rule", () => {
-  const core = loadCore();
-  const key = core.getHardshipContextKey("singles", ["p1"], ["p2"]);
-  const serverLedger = {
-    [key]: { targetPreset: "m1m2", shotStage: 1, updatedAt: 100 },
-  };
-  const localLedger = {
-    [key]: {
-      targetPreset: "full-court",
-      shotStage: 0,
-      shotRestrictions: [],
-      cleared: true,
-      updatedAt: 200,
-    },
-  };
-
-  const merged = core.mergeNewestHardshipRecords(serverLedger, localLedger);
-  assert.equal(merged.ledger[key].cleared, true);
-  assert.equal(merged.ledger[key].shotStage, 0);
-  assert.equal(merged.ledger[key].targetPreset, "full-court");
-});
-
-test("reload reconciliation always compares hardship records before whole-session freshness", () => {
-  const start = runtimeSource.indexOf("function hydrateSessionFromServer");
-  const end = runtimeSource.indexOf("function normalizeLoginName", start);
-  const hydration = runtimeSource.slice(start, end);
-  const mergeAt = hydration.indexOf(
-    "mergeNewestLocalHardshipsIntoServerState(serverState, localSnapshot)",
-  );
-  const freshnessAt = hydration.indexOf(
-    "localStateIsNewerThanServer(localSnapshot,serverState)",
-  );
-
-  assert.ok(mergeAt >= 0, "hardship reconciliation must run during hydration");
-  assert.ok(
-    freshnessAt < 0 || mergeAt < freshnessAt,
-    "hardship reconciliation must not depend on whole-session freshness",
-  );
-});
-
-test("transient POST failure retries instead of permanently setting serverSaveBlocked", () => {
-  const start = runtimeSource.indexOf("function queueServerSave");
+test("failed Badminton saves block further writes until authoritative reload", () => {
+  const start = runtimeSource.indexOf("function postServerState");
   const end = runtimeSource.indexOf("function saveSessionData", start);
   const save = runtimeSource.slice(start, end);
-
-  assert.match(save, /scheduleServerSaveRetry\(\)/);
-  assert.doesNotMatch(
-    save,
-    /catch\(function\(_error\)\)\{[\s\S]*?serverSaveBlocked\s*=\s*true/,
-  );
-  assert.match(save, /getStateUpdatedAt\(state\) > requestLocalUpdatedAt/);
+  assert.match(save, /serverSaveBlocked=true/);
+  assert.match(save, /Saving has stopped; reload the authoritative Badminton state/);
+  assert.doesNotMatch(save, /scheduleServerSaveRetry|localStorage|sessionStorage/);
 });
 
-test("controller delegates stable identity and record reconciliation to extracted core", () => {
+test("controller delegates stable Player and Pair identity to extracted core", () => {
   assert.match(runtimeSource, /window\.BASELINE_BADMINTON_SESSION_CORE/);
   assert.match(runtimeSource, /sessionCore\.getStableSideKey\(ids\)/);
   assert.match(runtimeSource, /sessionCore\.getHardshipContextKey\(/);
-  assert.match(runtimeSource, /sessionCore\.mergeNewestHardshipRecords\(/);
+  assert.doesNotMatch(runtimeSource, /sessionCore\.mergeNewestHardshipRecords/);
+});
+
+
+test("Save Results waits for server confirmation before advancing the court", () => {
+  const start = runtimeSource.indexOf("async function saveCourtResult");
+  const end = runtimeSource.indexOf("window.__baselineSaveCourtResult", start);
+  const saveCourt = runtimeSource.slice(start, end);
+  assert.ok(start >= 0);
+  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true \}\)/);
+  assert.match(saveCourt, /if\(!serverSaved\)/);
+  assert.match(saveCourt, /Reloading the authoritative Badminton state/);
+  assert.match(saveCourt, /saved on the server/);
+  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true \}\);\s*refreshCurrentCourtCard/);
 });

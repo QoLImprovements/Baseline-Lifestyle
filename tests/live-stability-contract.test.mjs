@@ -21,14 +21,15 @@ test('live stability runtime covers the reported refresh and persistence faults'
   assert.doesNotMatch(loader, /installRoutineInterfaceRepairs/);
 });
 
-test('Badminton has one revision-aware writer and never retries stale shared state',()=>{
+test('Badminton has one revision-aware server writer and no browser fallback persistence',()=>{
   const core=read('sitewide/js/baseline-live-stability-core-v3.js');
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   assert.match(badminton,/__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__/);
   assert.match(badminton,/expectedRevision:Number\.isInteger\(serverRevision\)/);
   assert.match(badminton,/data\.error==='revision_conflict'/);
   assert.match(badminton,/serverSaveConflict=true/);
-  assert.match(badminton,/CONFLICT_BACKUP_KEY/);
+  assert.match(badminton,/serverSaveBlocked=true/);
+  assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage|persistSessionLocalOnly/);
   assert.doesNotMatch(core,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
 });
 
