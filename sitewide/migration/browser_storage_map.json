@@ -22,41 +22,6 @@
   },
   "rules": [
     {
-      "id": "diet-log-local-content",
-      "inventoryPatterns": [
-        "__baseline_food_diet_log_v1__"
-      ],
-      "knownKeys": [
-        "__baseline_food_diet_log_v1__"
-      ],
-      "classification": "guest-local-compatibility-state",
-      "decision": "keep-local-when-signed-out-never-promote",
-      "target": "Users/{paddedUserId}/food.json",
-      "cutoverRule": "The browser Diet Log key remains available only outside authenticated account authority. On a signed-in load the browser copy is retired and Users/{paddedUserId}/food.json is authoritative, including an empty document. Never offer, merge or promote the browser copy into an authenticated account."
-    },
-    {
-      "id": "diet-log-legacy-owner",
-      "inventoryPatterns": [],
-      "knownKeys": [
-        "__baseline_food_diet_log_v1_owner__"
-      ],
-      "classification": "retired-migration-metadata",
-      "decision": "delete-on-authenticated-load",
-      "target": null,
-      "cutoverRule": "Retired metadata from the former Diet Log browser-import flow. It contains no Diet Log content and is deleted when authenticated account authority is established; it must never bind or enable an import candidate."
-    },
-    {
-      "id": "diet-log-conflict-backup",
-      "inventoryPatterns": [],
-      "knownKeys": [
-        "__baseline_food_diet_log_v1_conflict_backup__"
-      ],
-      "classification": "migration-only-legacy-state",
-      "decision": "preserve-local-until-reviewed",
-      "target": "Users/{paddedUserId}/food.json",
-      "cutoverRule": "Created on a stale or divergent Food save. Never auto-retry with a newly fetched revision and never delete the backup until the authoritative account document has been reviewed."
-    },
-    {
       "id": "outer-embed-snapshot",
       "inventoryPatterns": [
         "__baseline_outer_embed_snapshot_v2__"
