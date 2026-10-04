@@ -668,18 +668,9 @@
     return !!(player && player.doublesDaySoloOptOut);
   }
 
-  function sideHasDoublesDaySinglesOptOut(side){
-    return !!(side && Array.isArray(side.players) && side.players.some(playerOptsOutOfDoublesDaySingles));
-  }
 
-  function getSoloPlayerFromTwoVsOneCourt(court){
-    if(!court || court.kind !== '2v1') return null;
-    const side1Players = court.side1 && Array.isArray(court.side1.players) ? court.side1.players : [];
-    const side2Players = court.side2 && Array.isArray(court.side2.players) ? court.side2.players : [];
-    if(side1Players.length === 1) return side1Players[0];
-    if(side2Players.length === 1) return side2Players[0];
-    return null;
-  }
+
+
 
 
 
@@ -1304,13 +1295,7 @@
     return 0;
   }
 
-  function getLossSeverityLabel(score){
-    const sev = getLossSeverity(score);
-    if(sev === 3) return 'Major';
-    if(sev === 2) return 'Medium';
-    if(sev === 1) return 'Minor';
-    return '';
-  }
+
 
   function getDefaultRestrictionMemory(){
     return {
@@ -1597,26 +1582,7 @@
     return copyRestrictionMemoryState(getDefaultRestrictionMemory(), source || {});
   }
 
-  function getMovementRestrictionStatusForSide(court, sideNumber){
-    const mode = getRestrictionZoneMode(court, sideNumber);
-    const useCurrent = Number(court && court.restrictedSide) === Number(sideNumber);
-    let targetPreset = useCurrent ? ((court && court.targetPreset) || '') : 'full-court';
-    let appliedZones = useCurrent ? ((court && court.appliedZones) || []) : [];
-    if(!useCurrent){
-      const side = getSideByNumber(court, sideNumber);
-      const activeRule = getHardshipRuleForSide(court, sideNumber);
-      if(activeRule && hardshipRuleIsActive(activeRule.rule)){
-        targetPreset = String(activeRule.rule.targetPreset || 'full-court');
-        if(!getPresetOrder(mode).includes(targetPreset)) targetPreset = 'full-court';
-        appliedZones = sanitizeZones(PRESET_ZONE_MAP[targetPreset] || [], mode);
-      }
-    }
-    return getMovementRestrictionStatus(Object.assign({}, court || {}, {
-      restrictionMode: mode,
-      appliedZones: appliedZones,
-      targetPreset: targetPreset
-    }));
-  }
+
 
 
 
@@ -3451,24 +3417,9 @@
     });
   }
 
-  function formatCourtKindLabel(kind){
-    if(kind === '2v1') return '2 vs 1';
-    return kind ? (kind.charAt(0).toUpperCase() + kind.slice(1)) : 'Game';
-  }
 
-  function getPairHandlingBatchSummary(courts){
-    const counts = { doubles:0, twoVsOne:0, singles:0 };
-    (courts || []).forEach(court => {
-      if(court.kind === 'doubles') counts.doubles += 1;
-      else if(court.kind === '2v1') counts.twoVsOne += 1;
-      else if(court.kind === 'singles') counts.singles += 1;
-    });
-    const parts = [];
-    if(counts.doubles) parts.push(String(counts.doubles) + ' doubles');
-    if(counts.twoVsOne) parts.push(String(counts.twoVsOne) + ' 2 vs 1');
-    if(counts.singles) parts.push(String(counts.singles) + ' singles');
-    return parts.length ? parts.join(' · ') : 'No courts';
-  }
+
+
 
 
 
