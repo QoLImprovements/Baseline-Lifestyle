@@ -274,7 +274,7 @@ function mountNinjaPresentation() {
   }
 
   function onKeydown(event) {
-    if (!document.getElementById('ninjaPanel')?.classList.contains('is-active')) return;
+    if (!presentationIsVisible()) return;
     if (event.repeat || event.ctrlKey || event.metaKey || event.altKey) return;
     const key = event.key.toLowerCase();
     if (key === 'd') playRunnerAction('dash');
@@ -286,11 +286,13 @@ function mountNinjaPresentation() {
     const nextStage = parseStage(runState?.textContent);
     const hpParts = String(hpValue?.textContent || '').split('/');
     const nextHp = Number(String(hpParts[0] || '').replace(/[^0-9.]/g, ''));
-    if (nextStage && lastStage && nextStage > lastStage) {
-      showDefeat();
-      window.setTimeout(playEnemyEntry, reducedMotion.matches ? 90 : 520);
+    if (presentationIsVisible()) {
+      if (nextStage && lastStage && nextStage > lastStage) {
+        showDefeat();
+        window.setTimeout(playEnemyEntry, reducedMotion.matches ? 90 : 520);
+      }
+      if (Number.isFinite(nextHp) && Number.isFinite(lastHp) && nextHp < lastHp && nextStage === lastStage) showHit();
     }
-    if (Number.isFinite(nextHp) && Number.isFinite(lastHp) && nextHp < lastHp && nextStage === lastStage) showHit();
     if (nextStage) lastStage = nextStage;
     if (Number.isFinite(nextHp)) lastHp = nextHp;
   });
