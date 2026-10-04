@@ -244,3 +244,15 @@ test("submitted match carries a recoverable authoritative hardship snapshot", ()
   assert.match(php, /\$match\['hardshipRuleAfter'\]/);
   assert.match(php, /\$state = bl_badminton_apply_added_match_hardship_snapshots\(\$storedState, \$state\)/);
 });
+
+
+test("server can recover a missing hardship ledger from saved match history", () => {
+  assert.match(php, /function bl_badminton_hardship_records_from_match_history/);
+  assert.match(php, /hardshipRegistered/);
+  assert.match(php, /\['movement','shots','reducedMovement','reducedShots'\]/);
+  assert.match(php, /bl_badminton_match_hardship_context_key/);
+  assert.match(php, /bl_badminton_hardship_preset_order/);
+  const storageFn = php.match(/function bl_badminton_storage_state\(array \$state\): array \{[\s\S]*?\n\}/)?.[0] || "";
+  assert.match(storageFn, /bl_badminton_hardship_records_from_match_history\(\$state\)/);
+  assert.match(storageFn, /if\(!array_key_exists\(\$key, \$state\['hardshipRecords'\]\)\)/);
+});
