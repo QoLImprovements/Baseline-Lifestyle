@@ -147,3 +147,12 @@ test("saved hardship rules retain shot restriction detail without changing hards
   assert.match(ledger, /state\.hardshipRecords/);
   assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
 });
+
+
+test("server canonicalises legacy hardship identities to Player IDs before storage and GET", () => {
+  assert.match(php, /function bl_badminton_hardship_identity_map/);
+  assert.match(php, /function bl_badminton_canonical_hardship_records/);
+  assert.match(php, /'id:' \. \$id/);
+  assert.match(php, /\$state\['hardshipRecords'\] = bl_badminton_canonical_hardship_records\(\$state\)/);
+  assert.match(php, /\$state\['plan'\]\['activeHardships'\] = \$state\['hardshipRecords'\]/);
+});
