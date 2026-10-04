@@ -53,10 +53,11 @@ test("Badminton persistent hardships are loaded only from authoritative server s
   assert.doesNotMatch(js, /persistSessionLocalOnly|CONFLICT_BACKUP_KEY/);
 });
 
-test("server storage does not strip persistent hardshipRecords", () => {
+test("server storage preserves and canonicalises persistent hardshipRecords", () => {
   const storageFn = php.match(/function bl_badminton_storage_state\(array \$state\): array \{[\s\S]*?\n\}/)?.[0] || "";
   assert.match(storageFn, /unset\(\$state\['approvedAdminUsernames'\]/);
-  assert.doesNotMatch(storageFn, /hardshipRecords/);
+  assert.match(storageFn, /\$state\['hardshipRecords'\] = bl_badminton_canonical_hardship_records\(\$state\)/);
+  assert.match(storageFn, /\$state\['plan'\]\['activeHardships'\] = \$state\['hardshipRecords'\]/);
 });
 
 test("No Game slider has one inline label and requested instruction", () => {
@@ -146,4 +147,13 @@ test("saved hardship rules retain shot restriction detail without changing hards
   const ledger = section("getActiveHardshipLedger", "normaliseHardshipRule");
   assert.match(ledger, /state\.hardshipRecords/);
   assert.match(ledger, /state\.plan\.activeHardships = state\.hardshipRecords/);
+});
+
+
+test("server canonicalises legacy hardship identities to Player IDs before storage and GET", () => {
+  assert.match(php, /function bl_badminton_hardship_identity_map/);
+  assert.match(php, /function bl_badminton_canonical_hardship_records/);
+  assert.match(php, /'id:' \. \$id/);
+  assert.match(php, /\$state\['hardshipRecords'\] = bl_badminton_canonical_hardship_records\(\$state\)/);
+  assert.match(php, /\$state\['plan'\]\['activeHardships'\] = \$state\['hardshipRecords'\]/);
 });

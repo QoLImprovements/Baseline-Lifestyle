@@ -19,7 +19,9 @@
   const SITE_MODERATOR_ALIASES = ['bateswilkinson@gmail.com','peterbw','peter bates-wilkinson','peter bates wilkinson','peter bates-wilkinson'];
   window.__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__ = true;
   const sessionCore = window.BASELINE_BADMINTON_SESSION_CORE;
+  const serverClient = window.BASELINE_BADMINTON_SERVER;
   if(!sessionCore) throw new Error('Badminton Session core failed to load.');
+  if(!serverClient) throw new Error('Badminton Session server module failed to load.');
   const DOUBLES_ZONES = sessionCore.DOUBLES_ZONES;
   const SINGLES_ZONES = sessionCore.SINGLES_ZONES;
   const PRESET_ZONE_MAP = sessionCore.PRESET_ZONE_MAP;
@@ -231,35 +233,22 @@
     return { state:candidate,expectedRevision:Number.isInteger(serverRevision)&&serverRevision>=0?serverRevision:0 };
   }
 
-  function postServerState(){
+  function postServerState(options){
+    options = options && typeof options === 'object' ? options : {};
     if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch){
       return Promise.resolve(false);
     }
     if(serverSaveInFlight && serverSavePromise){
       return serverSavePromise.then(function(saved){
-        return saved ? postServerState() : false;
+        return saved ? postServerState(options) : false;
       });
     }
 
     serverSaveInFlight = true;
     serverSaveAbortController = window.AbortController ? new AbortController() : null;
     const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
-    const requestOptions = {
-      method:'POST',
-      credentials:'same-origin',
-      keepalive:true,
-      headers:{ 'Content-Type':'application/json' },
-      body:JSON.stringify(serverPayload(state))
-    };
-    if(serverSaveAbortController) requestOptions.signal = serverSaveAbortController.signal;
 
-    serverSavePromise = fetch(API_STATE_URL, requestOptions)
-      .then(function(response){
-        return response.json().catch(function(){ return { ok:false, error:'bad_json' }; }).then(function(data){
-          data.__status = response.status;
-          return data;
-        });
-      })
+    serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(state), serverSaveAbortController && serverSaveAbortController.signal)
       .then(function(data){
         updateServerAuth(data && data.auth);
         if(data && data.error==='revision_conflict'){
@@ -275,9 +264,32 @@
         }
         const revision=Number(data.revision);
         if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
-        serverSaveBlocked=false;
-        clearPersistenceStatus();
-        return true;
+        if(!options.verify) return true;
+        return serverClient.load(API_STATE_URL).then(function(verified){
+          if(!verified || !verified.ok || !verified.state){
+            serverSaveBlocked=true;
+            announceServerSaveConflict('Badminton save could not be verified from the authoritative server. Reload before making further changes.', 'error');
+            return false;
+          }
+          const expected = sessionCore.hardshipSnapshot(state.hardshipRecords);
+          const actual = sessionCore.hardshipSnapshot(verified.state.hardshipRecords);
+          if(expected !== actual){
+            serverSaveBlocked=true;
+            announceServerSaveConflict('Badminton hardship data did not survive the server round-trip. Saving has stopped to prevent data loss.', 'error');
+            return false;
+          }
+          const verifiedRevision=Number(verified.revision);
+          if(Number.isInteger(verifiedRevision)&&verifiedRevision>=0) serverRevision=verifiedRevision;
+          state=hydrateLoadedState(verified.state);
+          return true;
+        });
+      })
+      .then(function(saved){
+        if(saved){
+          serverSaveBlocked=false;
+          clearPersistenceStatus();
+        }
+        return saved;
       })
       .catch(function(_error){
         if(pageIsLeaving) return false;
@@ -294,7 +306,7 @@
     return serverSavePromise.then(function(saved){
       const latestStateUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
       if(saved && !pageIsLeaving && !serverSaveConflict && !serverSaveBlocked && latestStateUpdatedAt > requestLocalUpdatedAt){
-        return postServerState();
+        return postServerState(options);
       }
       return saved;
     });
@@ -309,11 +321,11 @@
       window.clearTimeout(serverSaveTimer);
       serverSaveTimer = null;
     }
-    if(options.immediate) return postServerState();
+    if(options.immediate) return postServerState(options);
     return new Promise(function(resolve){
       serverSaveTimer = window.setTimeout(function(){
         serverSaveTimer = null;
-        postServerState().then(resolve);
+        postServerState(options).then(resolve);
       }, 180);
     });
   }
@@ -402,10 +414,7 @@
       if(serverLoadAbortController && typeof serverLoadAbortController.abort === 'function') serverLoadAbortController.abort();
     }catch(_e){}
     serverLoadAbortController = window.AbortController ? new AbortController() : null;
-    const requestOptions = { method:'GET', credentials:'same-origin' };
-    if(serverLoadAbortController) requestOptions.signal = serverLoadAbortController.signal;
-    fetch(API_STATE_URL, requestOptions)
-      .then(function(response){ return response.json().catch(function(){ return null; }); })
+    serverClient.load(API_STATE_URL, serverLoadAbortController && serverLoadAbortController.signal)
       .then(function(data){
         if(pageIsLeaving || serverHydrationSuppressed()) return;
         if(!data || !data.ok){
@@ -1281,15 +1290,7 @@
   }
 
   function getPlayerStableRuleKey(player){
-    if(!player || typeof player !== 'object') return '';
-    const name = normaliseRuleIdentity(player.name || player.playerName || '');
-    if(name) return 'name:' + name;
-    const email = normaliseRuleIdentity(player.loginEmail || player.email || player.linkedEmail || '');
-    if(email) return 'email:' + email;
-    const login = normaliseRuleIdentity(player.loginUsername || player.loginName || player.username || player.login || '');
-    if(login) return 'login:' + login;
-    const id = String(player.id || player.playerId || '').trim();
-    return id ? ('id:' + id) : '';
+    return sessionCore.stablePlayerId(player);
   }
 
   function getTeamIds(side){
@@ -3087,7 +3088,7 @@
       state.plan.currentSitOutPlayerIds = [];
       state.plan.currentCircumstantialSitOutPlayerIds = [];
       state.plan.currentOptionalSitOutPlayerIds = [];
-      saveSessionData({ immediate:true });
+      saveSessionData({ immediate:true, verify:true });
       renderAll();
       return;
     }
@@ -4160,7 +4161,7 @@
       rollFinishedGamesForward();
       clearGeneratedCourtDrafts();
       protectLocalCurrentState(5000);
-      const serverSaved = await saveSessionData({ immediate:true });
+      const serverSaved = await saveSessionData({ immediate:true, verify:true });
       if(!serverSaved){
         setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
         suppressServerHydrationUntil = 0;
@@ -4175,7 +4176,7 @@
 
     state.plan.currentSetReadyForNext = false;
     protectLocalCurrentState(5000);
-    const serverSaved = await saveSessionData({ immediate:true });
+    const serverSaved = await saveSessionData({ immediate:true, verify:true });
     if(!serverSaved){
       setPlanAlert('This result was not confirmed by the server. Reloading the authoritative Badminton state.');
       suppressServerHydrationUntil = 0;

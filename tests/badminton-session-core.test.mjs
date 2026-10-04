@@ -88,11 +88,11 @@ test("Save Results waits for server confirmation before advancing the court", ()
   const end = runtimeSource.indexOf("window.__baselineSaveCourtResult", start);
   const saveCourt = runtimeSource.slice(start, end);
   assert.ok(start >= 0);
-  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true \}\)/);
+  assert.match(saveCourt, /await saveSessionData\(\{ immediate:true, verify:true \}\)/);
   assert.match(saveCourt, /if\(!serverSaved\)/);
   assert.match(saveCourt, /Reloading the authoritative Badminton state/);
   assert.match(saveCourt, /saved on the server/);
-  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true \}\);\s*refreshCurrentCourtCard/);
+  assert.doesNotMatch(saveCourt, /saveSessionData\(\{ immediate:true, verify:true \}\);\s*refreshCurrentCourtCard/);
 });
 
 
@@ -113,4 +113,44 @@ test("Badminton HTML does not render escaped newline artifacts around Game Plan 
   );
   assert.doesNotMatch(html, /<\/div>\\n\s*<div id="persistenceStatus"/);
   assert.doesNotMatch(html, /<\/script>\\n<script src="\/systems\/baseline-badminton-session\/js\/baseline-badminton-session\.js/);
+});
+
+
+test("hardship identity uses Player IDs only, never names, email or login", () => {
+  const core = loadCore();
+  assert.equal(core.stablePlayerId({ id:"p-123", name:"Different Name", email:"x@example.com" }), "id:p-123");
+  assert.equal(core.stablePlayerId({ name:"Name Only" }), "");
+  assert.deepEqual(
+    Array.from(core.stablePlayerIds([{id:"b"},{id:"a"}])),
+    ["id:a","id:b"],
+  );
+  assert.match(runtimeSource, /return sessionCore\.stablePlayerId\(player\)/);
+});
+
+test("confirmed score saves verify hardships by fresh server GET before success", () => {
+  const start = runtimeSource.indexOf("function postServerState");
+  const end = runtimeSource.indexOf("function queueServerSave", start);
+  const writer = runtimeSource.slice(start, end);
+  assert.match(writer, /serverClient\.save\(/);
+  assert.match(writer, /if\(!options\.verify\) return true/);
+  assert.match(writer, /serverClient\.load\(API_STATE_URL\)/);
+  assert.match(writer, /sessionCore\.hardshipSnapshot\(state\.hardshipRecords\)/);
+  assert.match(writer, /sessionCore\.hardshipSnapshot\(verified\.state\.hardshipRecords\)/);
+  assert.match(writer, /hardship data did not survive the server round-trip/);
+  const saveCourtStart = runtimeSource.indexOf("async function saveCourtResult");
+  const saveCourtEnd = runtimeSource.indexOf("window.__baselineSaveCourtResult", saveCourtStart);
+  const saveCourt = runtimeSource.slice(saveCourtStart, saveCourtEnd);
+  assert.match(saveCourt, /saveSessionData\(\{ immediate:true, verify:true \}\)/);
+});
+
+
+test("Badminton server transport is split out and loaded before the controller", () => {
+  const html = fs.readFileSync(
+    path.join(root, "systems/baseline-badminton-session/baseline-badminton-session.html"),
+    "utf8",
+  );
+  const serverAt = html.indexOf("/systems/baseline-badminton-session/js/badminton-session-server.js");
+  const appAt = html.indexOf("/systems/baseline-badminton-session/js/baseline-badminton-session.js");
+  assert.ok(serverAt >= 0 && appAt > serverAt);
+  assert.match(runtimeSource, /window\.BASELINE_BADMINTON_SERVER/);
 });

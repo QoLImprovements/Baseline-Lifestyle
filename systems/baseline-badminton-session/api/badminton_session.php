@@ -128,8 +128,64 @@ function bl_badminton_legacy_pair_key(string $a, string $b): string {
   return implode(' / ', $names);
 }
 
+function bl_badminton_hardship_identity_map(array $state): array {
+  $map = [];
+  $players = $state['players'] ?? [];
+  if(!is_array($players)) return $map;
+  foreach($players as $player){
+    if(!is_array($player)) continue;
+    $id = trim((string)($player['id'] ?? $player['playerId'] ?? ''));
+    if($id === '') continue;
+    $stable = 'id:' . $id;
+    foreach([
+      'name' => ($player['name'] ?? $player['playerName'] ?? ''),
+      'email' => ($player['loginEmail'] ?? $player['email'] ?? $player['linkedEmail'] ?? ''),
+      'login' => ($player['loginUsername'] ?? $player['loginName'] ?? $player['username'] ?? $player['login'] ?? ''),
+    ] as $kind => $value){
+      $value = bl_badminton_normalize((string)$value);
+      if($value !== '') $map[$kind . ':' . $value] = $stable;
+    }
+    $map[$stable] = $stable;
+  }
+  return $map;
+}
+
+function bl_badminton_canonical_hardship_side(string $side, array $identityMap): string {
+  $tokens = array_values(array_filter(explode('::', $side), static fn($x) => trim((string)$x) !== ''));
+  $canonical = [];
+  foreach($tokens as $token){
+    $token = trim((string)$token);
+    $canonical[] = $identityMap[$token] ?? $token;
+  }
+  sort($canonical, SORT_STRING);
+  return implode('::', array_values(array_unique($canonical)));
+}
+
+function bl_badminton_canonical_hardship_records(array $state): array {
+  $records = $state['hardshipRecords'] ?? ($state['plan']['activeHardships'] ?? []);
+  if(!is_array($records)) return [];
+  $identityMap = bl_badminton_hardship_identity_map($state);
+  $canonical = [];
+  foreach($records as $key => $rule){
+    $key = (string)$key;
+    if(!is_array($rule)) continue;
+    if(preg_match('/^hardship::([^:]+)::restricted::side::(.+?)::opponent::side::(.+)$/', $key, $m) === 1){
+      $restricted = bl_badminton_canonical_hardship_side((string)$m[2], $identityMap);
+      $opponent = bl_badminton_canonical_hardship_side((string)$m[3], $identityMap);
+      if($restricted !== '' && $opponent !== ''){
+        $key = 'hardship::' . $m[1] . '::restricted::side::' . $restricted . '::opponent::side::' . $opponent;
+      }
+    }
+    $canonical[$key] = $rule;
+  }
+  return $canonical;
+}
+
 function bl_badminton_storage_state(array $state): array {
   unset($state['approvedAdminUsernames'], $state['adminUsernames'], $state['approvedBadmintonAdmins'], $state['badmintonAdminRequired']);
+  $state['hardshipRecords'] = bl_badminton_canonical_hardship_records($state);
+  if(!isset($state['plan']) || !is_array($state['plan'])) $state['plan'] = [];
+  $state['plan']['activeHardships'] = $state['hardshipRecords'];
   return $state;
 }
 
