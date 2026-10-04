@@ -50,7 +50,7 @@ test("court cards no longer render Why this matchup", () => {
 test("active hardship explanation is a compact question-mark control on the artwork", () => {
   assert.match(js, /function renderHardshipHelp\(court\)/);
   assert.match(js, /aria-label="Why this hardship\?"/);
-  assert.match(js, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderHardshipHelp\(court\)/);
+  assert.match(js, /renderCourtDiagram\(court\) \+ renderBoundaryMask\(court\) \+ renderCourtShotRestrictionOverlay\(court\) \+ renderHardshipHelp\(court\)/);
   assert.match(css, /\.court-hardship-help\{position:absolute;top:8px;right:8px/);
   assert.match(css, /\.court-hardship-help>summary/);
 });
