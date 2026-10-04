@@ -51,7 +51,8 @@ test('current Ninja authority keeps parallax live and player actions explicit', 
   assert.doesNotMatch(scene, /scheduleIdleAttack/);
   assert.match(scene, /target\.id === 'ninjaManualStrikeBtn'/);
   assert.match(scene, /target\.id === 'ninjaShurikenBtn'/);
-  assert.match(authority, /background-repeat:repeat-x!important/);
+  assert.ok((authority.match(/background-repeat:repeat-x!important/g) || []).length >= 3);
+  assert.ok((authority.match(/background-size:auto 100%!important/g) || []).length >= 3);
   assert.doesNotMatch(authority, /ninja-forest-layer[\s\S]{0,180}animation:none!important/);
 });
 
