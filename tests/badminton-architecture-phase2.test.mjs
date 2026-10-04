@@ -256,7 +256,7 @@ test("Badminton reporting views are a separate syntactically valid module", () =
 
 test("Badminton court-card presentation is a separate syntactically valid module", () => {
   assert.doesNotThrow(() => new Function(courtCardsSource));
-  assert.match(courtCardsSource, /<summary>Edit Variables<\/summary>/);
+  assert.match(courtCardsSource, /<summary>Edit Variables<\/summary>/); // court adjustments control; separate from score submission
   assert.match(source, /window\.BASELINE_BADMINTON_COURT_CARDS/);
   assert.match(source, /courtCardsModule\.create/);
   assert.doesNotMatch(source, /function renderCourtCard\(/);
@@ -337,15 +337,24 @@ test("entering the top-level Game Plan tab returns to the primary Game Plan subt
   assert.match(gamePlanSource, /activateGamePlanSubtab\('plan'\)/);
 });
 
-test("Badminton repaired modules carry a fresh cache revision", () => {
+test("Badminton repaired modules carry fresh cache revisions", () => {
   for (const file of [
     "badminton-session-roster.js",
     "badminton-session-game-plan.js",
     "badminton-session-results.js",
     "badminton-session-court-renderer.js",
     "badminton-session-court-cards.js",
-    "baseline-badminton-session.js",
   ]) {
     assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
   }
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_SCORE_PERMISSION_FIX_20261004_3/);
+});
+
+
+test("score permission resolves generated court snapshots back to canonical Player ID records", () => {
+  const start = source.indexOf("function currentUserCanScoreCourt");
+  const end = source.indexOf("function refreshCurrentCourtCard", start);
+  const permission = source.slice(start, end);
+  assert.match(permission, /courtPlayer && courtPlayer\.id \? getPlayer\(courtPlayer\.id\) : null/);
+  assert.match(permission, /currentUserMatchesPlayer\(canonicalPlayer \|\| courtPlayer\)/);
 });
