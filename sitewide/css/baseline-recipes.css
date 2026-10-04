@@ -438,7 +438,6 @@
   .homebar, .system-menu, .bl-homebar, .bl-system-menu, .bl-system-wrap, .hero, .tabs, .footer,
   .section:not(#recipes),
   #recipes-landing,
-  #side-nav,
   #recipeTopBar,
   .back-fab, .top-fab{
     display:none !important;
