@@ -342,6 +342,50 @@ function bl_badminton_added_matches(array $oldState, array $newState): array {
   return array_slice($newMatches, 0, $addedCount);
 }
 
+
+function bl_badminton_match_hardship_side_ids(array $match, string $field): array {
+  $raw = $match[$field] ?? [];
+  if(!is_array($raw)) return [];
+  $out = [];
+  foreach($raw as $id){
+    $id = trim((string)$id);
+    if($id === '') continue;
+    $out[] = str_starts_with($id, 'id:') ? $id : ('id:' . $id);
+  }
+  $out = array_values(array_unique($out));
+  sort($out, SORT_STRING);
+  return $out;
+}
+
+function bl_badminton_match_accepts_hardship_key(array $match, string $key): bool {
+  if(preg_match('/^hardship::([^:]+)::restricted::side::(.+?)::opponent::side::(.+)$/', $key, $m) !== 1) return false;
+  $kind = strtolower(trim((string)($match['kind'] ?? '')));
+  if($kind === '' || strtolower((string)$m[1]) !== $kind) return false;
+  $side1 = implode('::', bl_badminton_match_hardship_side_ids($match, 'side1PlayerIds'));
+  $side2 = implode('::', bl_badminton_match_hardship_side_ids($match, 'side2PlayerIds'));
+  if($side1 === '' || $side2 === '') return false;
+  $restricted = (string)$m[2];
+  $opponent = (string)$m[3];
+  return ($restricted === $side1 && $opponent === $side2) || ($restricted === $side2 && $opponent === $side1);
+}
+
+function bl_badminton_apply_added_match_hardship_snapshots(array $oldState, array $newState): array {
+  $added = bl_badminton_added_matches($oldState, $newState);
+  if(!$added) return $newState;
+  if(!isset($newState['hardshipRecords']) || !is_array($newState['hardshipRecords'])) $newState['hardshipRecords'] = [];
+  foreach(array_reverse($added) as $match){
+    if(!is_array($match)) continue;
+    $key = trim((string)($match['hardshipContextKey'] ?? ''));
+    $rule = $match['hardshipRuleAfter'] ?? null;
+    if($key === '' || !is_array($rule) || !bl_badminton_match_accepts_hardship_key($match, $key)) continue;
+    $newState['hardshipRecords'][$key] = $rule;
+  }
+  $newState['hardshipRecords'] = bl_badminton_canonical_hardship_records($newState);
+  if(!isset($newState['plan']) || !is_array($newState['plan'])) $newState['plan'] = [];
+  $newState['plan']['activeHardships'] = $newState['hardshipRecords'];
+  return $newState;
+}
+
 function bl_badminton_match_submission_allowed(array $oldState, array $newState, array $user): bool {
   $added = bl_badminton_added_matches($oldState, $newState);
   if(!$added) return true;
@@ -646,6 +690,8 @@ try{
       'auth'=>$authPayload,
     ], 400);
   }
+
+  $state = bl_badminton_apply_added_match_hardship_snapshots($storedState, $state);
 
   if($mode === 'saved-data'){
     $expected = bl_resource_required_revision_from_input($input);
