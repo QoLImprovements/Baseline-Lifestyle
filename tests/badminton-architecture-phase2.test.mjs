@@ -341,7 +341,9 @@ test("Badminton repaired modules carry fresh cache revisions", () => {
   assert.match(htmlSource, /badminton-session-state-hydration\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_SCORE_ENTRY_RACE_FIX_20261004_7/);
-  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_6/);
+  assert.match(htmlSource, /badminton-session-hardships\.js\?v=BADMINTON_HARDSHIP_MEMORY_REPAIR_20261004_8/);
+  assert.match(htmlSource, /badminton-session-game-plan\.js\?v=BADMINTON_LIVE_SCORE_STATE_REPAIR_20261004_8/);
+  assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_LIVE_STATE_VERIFY_REPAIR_20261004_8/);
 });
 
 
