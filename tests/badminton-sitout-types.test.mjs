@@ -17,6 +17,10 @@ const matchmakerSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-matchmaker.js"),
   "utf8",
 );
+const gamePlanSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-game-plan.js"),
+  "utf8",
+);
 
 test("badminton state distinguishes circumstantial and optional sit-outs", () => {
   assert.match(source, /currentCircumstantialSitOutPlayerIds:\s*\[\]/);
@@ -40,6 +44,6 @@ test("only circumstantial sit-outs affect automatic rotation fairness", () => {
 });
 
 test("finished batches retain both sit-out causes separately", () => {
-  assert.match(source, /circumstantialSitOutPlayerIds:/);
-  assert.match(source, /optionalSitOutPlayerIds:/);
+  assert.match(gamePlanSource, /circumstantialSitOutPlayerIds:/);
+  assert.match(gamePlanSource, /optionalSitOutPlayerIds:/);
 });
