@@ -142,3 +142,15 @@ test("confirmed score saves verify hardships by fresh server GET before success"
   const saveCourt = runtimeSource.slice(saveCourtStart, saveCourtEnd);
   assert.match(saveCourt, /saveSessionData\(\{ immediate:true, verify:true \}\)/);
 });
+
+
+test("Badminton server transport is split out and loaded before the controller", () => {
+  const html = fs.readFileSync(
+    path.join(root, "systems/baseline-badminton-session/baseline-badminton-session.html"),
+    "utf8",
+  );
+  const serverAt = html.indexOf("/systems/baseline-badminton-session/js/badminton-session-server.js");
+  const appAt = html.indexOf("/systems/baseline-badminton-session/js/baseline-badminton-session.js");
+  assert.ok(serverAt >= 0 && appAt > serverAt);
+  assert.match(runtimeSource, /window\.BASELINE_BADMINTON_SERVER/);
+});
