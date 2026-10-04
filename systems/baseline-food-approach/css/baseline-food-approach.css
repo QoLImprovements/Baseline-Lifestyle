@@ -685,8 +685,7 @@ body[data-app] #recipes .recipe-edit-options .scale-block:not(.is-open) .scale-t
 }
 
 /* --- Food visual authority -------------------------------------------------
-   Final Food-only cascade authority. Universal recipe CSS deliberately owns
-   geometry/behaviour; Food owns the rendered card and tab colours. */
+   Universal recipe CSS owns recipe-control geometry. Food owns card colour. */
 html body[data-app="food"] .card,
 html body[data-app="food"] #recipes .recipe.card,
 html body[data-app="food"] #recipes .recipe-page.card,
@@ -695,34 +694,3 @@ html body[data-app="food"] .recipe-page.standalone-recipe-card{
   background-color:transparent !important;
   border-color:var(--food-surface-border) !important;
 }
-
-html body[data-app="food"] .tab,
-html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab,
-html[data-initial-recipe-view] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab{
-  background:var(--food-tab-bg) !important;
-  border-color:var(--food-tab-border) !important;
-  color:var(--ink) !important;
-  -webkit-text-fill-color:currentColor !important;
-  box-shadow:0 10px 22px -20px rgba(90,12,21,.42) !important;
-}
-
-html body[data-app="food"] .tab:hover,
-html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab:hover{
-  background:var(--food-tab-hover) !important;
-  border-color:var(--food-deep) !important;
-}
-
-html body[data-app="food"] .tab[aria-selected="true"],
-html body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[aria-selected="true"],
-html[data-initial-recipe-view="standard"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="standard"],
-html[data-initial-recipe-view="details"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="details"],
-html[data-initial-recipe-view="guidance"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="guidance"],
-html[data-initial-recipe-view="show-all"] body[data-app="food"] #recipes .recipe-universal-template .recipe-subtab[data-recipe-subtab="show-all"]{
-  background:var(--food-tab-active) !important;
-  border-color:var(--food-deep) !important;
-  color:#fff7e8 !important;
-  -webkit-text-fill-color:currentColor !important;
-  font-weight:900 !important;
-  box-shadow:0 12px 24px -18px rgba(90,12,21,.72) !important;
-}
-
