@@ -340,7 +340,7 @@ test("entering the top-level Game Plan tab returns to the primary Game Plan subt
 test("Badminton repaired modules carry fresh cache revisions", () => {
   assert.match(htmlSource, /badminton-session-state-hydration\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
   assert.match(htmlSource, /badminton-session-roster\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_5/);
-  assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_RENDER_RUNTIME_REPAIR_20261004_4/);
+  assert.match(htmlSource, /badminton-session-results\.js\?v=BADMINTON_SCORE_ENTRY_RACE_FIX_20261004_7/);
   assert.match(htmlSource, /baseline-badminton-session\.js\?v=BADMINTON_AUTHORITATIVE_SCORE_IDENTITY_20261004_6/);
 });
 
@@ -415,4 +415,16 @@ test("court cards receive the Results hardship renderer after the module split",
   const wiring = source.slice(start, end);
   assert.match(wiring, /renderHardshipControl:function\(court, phase, index\)\{ return renderHardshipControl\(court, phase, index\); \}/);
   assert.match(courtCardsSource, /const renderHardshipControl = options\.renderHardshipControl;/);
+});
+
+
+test("delayed score autofill blanking never erases player-entered court scores", () => {
+  const start = resultsSource.indexOf("function hardBlankCurrentScoreInputs");
+  const end = resultsSource.indexOf("function confirmNoGameForCourt", start);
+  const blanking = resultsSource.slice(start, end);
+  assert.match(blanking, /const score1AlreadyEntered = court\.score1 != null;/);
+  assert.match(blanking, /const score2AlreadyEntered = court\.score2 != null;/);
+  assert.match(blanking, /if\(score1AlreadyEntered \|\| score2AlreadyEntered\) return;/);
+  assert.doesNotMatch(blanking, /court\.score1 = null;/);
+  assert.doesNotMatch(blanking, /court\.score2 = null;/);
 });
