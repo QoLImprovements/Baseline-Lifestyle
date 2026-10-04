@@ -1568,9 +1568,32 @@
     return cleaned.join(' + ');
   }
 
-  function getShotRestrictionText(stage){
-    if(stage <= 0) return '';
-    return 'No Smashes or Downward Shots';
+  function normaliseShotRestrictions(restrictions, stage){
+    const allowed = ['no-smashes', 'no-downward-shots'];
+    const cleaned = Array.isArray(restrictions)
+      ? restrictions.map(function(value){ return String(value || '').trim(); }).filter(function(value, index, list){
+          return allowed.includes(value) && list.indexOf(value) === index;
+        })
+      : [];
+    if(cleaned.length) return cleaned;
+    return Number(stage || 0) > 0 ? allowed.slice() : [];
+  }
+
+  function getShotRestrictionText(stage, restrictions){
+    const active = normaliseShotRestrictions(restrictions, stage);
+    if(!active.length) return '';
+    if(active.length === 1) return active[0] === 'no-smashes' ? 'No Smashes' : 'No Downward Shots';
+    return 'No Smashes or No Downward Shots';
+  }
+
+  function getShotRestrictionHtml(stage, restrictions){
+    const active = normaliseShotRestrictions(restrictions, stage);
+    if(!active.length) return '';
+    const labels = active.map(function(value){
+      const label = value === 'no-smashes' ? 'No Smashes' : 'No Downward Shots';
+      return '<strong>' + escapeHtml(label) + '</strong>';
+    });
+    return labels.length === 1 ? labels[0] : labels.join(' or ');
   }
 
   function getLossSeverity(score){
@@ -1893,6 +1916,7 @@
       mode,
       targetPreset: targetPreset || '',
       shotStage,
+      shotRestrictions: normaliseShotRestrictions(rule.shotRestrictions, shotStage),
       updatedAt: Number(rule.updatedAt || 0) || Date.now()
     };
   }
@@ -2371,12 +2395,14 @@
     const order = getPresetOrder(mode);
     let targetPreset = String(raw.targetPreset || '').trim();
     if(!order.includes(targetPreset)) targetPreset = 'full-court';
-    const shotStage = Math.min(1, Math.max(0, Math.round(Number(raw.shotStage || 0))));
+    const shotRestrictions = normaliseShotRestrictions(raw.shotRestrictions, raw.shotStage);
+    const shotStage = shotRestrictions.length ? 1 : 0;
     const movementStep = Math.max(0, order.indexOf(targetPreset));
     if(movementStep <= 0 && shotStage <= 0) return null;
     const rule = {
       targetPreset: movementStep > 0 ? targetPreset : 'full-court',
       shotStage,
+      shotRestrictions,
       mode,
       adjustedSideIds: getTeamIds(side),
       adjustedSideNumber: Number(sideNumber),
@@ -2405,7 +2431,7 @@
     return entries[0];
   }
 
-  function setDominantHardshipRuleForSide(court, sideNumber, targetPreset, shotStage){
+  function setDominantHardshipRuleForSide(court, sideNumber, targetPreset, shotStage, shotRestrictions){
     const side = getSideByNumber(court, sideNumber);
     const key = getDominantHardshipKeyForSide(court, sideNumber, side);
     if(!key) return null;
@@ -2413,7 +2439,8 @@
     const order = getPresetOrder(mode);
     let preset = String(targetPreset || 'full-court').trim();
     if(!order.includes(preset)) preset = 'full-court';
-    const shots = Math.min(1, Math.max(0, Math.round(Number(shotStage || 0))));
+    const activeShotRestrictions = normaliseShotRestrictions(shotRestrictions, shotStage);
+    const shots = activeShotRestrictions.length ? 1 : 0;
     const movementStep = Math.max(0, order.indexOf(preset));
     const ledger = getDominantHardshipLedger();
     if(movementStep <= 0 && shots <= 0){
@@ -2426,6 +2453,7 @@
       mode,
       targetPreset: movementStep > 0 ? preset : 'full-court',
       shotStage: shots,
+      shotRestrictions: activeShotRestrictions,
       memoryScope:'exact-competitive-context',
       updatedAt: Date.now()
     };
@@ -2442,7 +2470,15 @@
     let nextShots = currentShots;
     if(hardshipType === 'movement') nextPreset = tightenPreset(currentPreset, 1, mode);
     if(hardshipType === 'shots') nextShots = 1;
-    return setDominantHardshipRuleForSide(court, sideNumber, nextPreset, nextShots);
+    return setDominantHardshipRuleForSide(
+      court,
+      sideNumber,
+      nextPreset,
+      nextShots,
+      hardshipType === 'shots'
+        ? ['no-smashes', 'no-downward-shots']
+        : (current && current.rule ? current.rule.shotRestrictions : [])
+    );
   }
 
   function reduceDominantHardshipForSide(court, sideNumber, hardshipType){
@@ -2454,7 +2490,13 @@
     let nextShots = currentShots;
     if(hardshipType === 'movement') nextPreset = loosenPreset(currentPreset, 1, mode);
     if(hardshipType === 'shots') nextShots = 0;
-    return setDominantHardshipRuleForSide(court, sideNumber, nextPreset, nextShots);
+    return setDominantHardshipRuleForSide(
+      court,
+      sideNumber,
+      nextPreset,
+      nextShots,
+      hardshipType === 'shots' ? [] : (current && current.rule ? current.rule.shotRestrictions : [])
+    );
   }
 
   function getDominantMovementStepForSide(court, sideNumber){
@@ -2490,7 +2532,8 @@
     if(!court || !entry || !entry.rule) return court;
     const mode = entry.rule.mode || getRestrictionZoneMode(court, entry.sideNumber);
     const preset = entry.rule.targetPreset && entry.rule.targetPreset !== 'full-court' ? entry.rule.targetPreset : 'full-court';
-    const shotStage = Math.min(1, Math.max(0, Math.round(Number(entry.rule.shotStage || 0))));
+    const shotRestrictions = normaliseShotRestrictions(entry.rule.shotRestrictions, entry.rule.shotStage);
+    const shotStage = shotRestrictions.length ? 1 : 0;
     const appliedZones = preset !== 'full-court' ? sanitizeZones(PRESET_ZONE_MAP[preset] || [], mode) : [];
     court.restrictedSide = Number(entry.sideNumber);
     court.restrictionTargetSide = getOppositeSideNumber(entry.sideNumber);
@@ -2500,6 +2543,7 @@
     court.appliedZones = appliedZones;
     court.targetAreaText = getTargetAreaTextFromPreset(preset, mode) || getTargetAreaTextFromZones(appliedZones, mode);
     court.shotRestrictionStage = shotStage;
+    court.shotRestrictions = shotRestrictions;
     court.boundaryActive = appliedZones.length > 0;
     court.alteredRulesActive = court.boundaryActive || shotStage > 0;
     court.discoveryGame = false;
@@ -2549,9 +2593,44 @@
     if(court.mode === 'singles' && ['m1l1-or-m2l2','m1f1-or-m2f1','m1s1-or-m2s2','m1-or-m2'].includes(preset)){
       parts.push('The clear side on the diagram is the side being served to. Switch to the other side when the served-to side switches.');
     }
-    const shotText = getShotRestrictionText(court.shotRestrictionStage);
-    if(shotText) parts.push('Shots: ' + escapeHtml(shotText) + '.');
+    const shotHtml = getShotRestrictionHtml(court.shotRestrictionStage, court.shotRestrictions);
+    if(shotHtml) parts.push('Shots: ' + shotHtml + '.');
     return '<div class="status-box">' + parts.join('<br/>') + '</div>';
+  }
+
+  function getActiveShotRestrictionsForCourt(court){
+    const entry = getDominantHardshipEntryForCourt(court);
+    if(!entry || !entry.rule || !entry.sideNumber) return { sideNumber:0, restrictions:[] };
+    return {
+      sideNumber:Number(entry.sideNumber),
+      restrictions:normaliseShotRestrictions(entry.rule.shotRestrictions, entry.rule.shotStage)
+    };
+  }
+
+  function renderCourtShotRestrictionIcon(type){
+    const noSmashes = type === 'no-smashes';
+    const label = noSmashes ? 'No Smashes' : 'No Downward Shots';
+    const symbol = noSmashes
+      ? '<path d="M18 7 L12.5 17 H18 L14.5 27 L26 14.5 H20.5 L24 7 Z" fill="#5f2394"></path>'
+      : '<path d="M11 10 L25 24 M19 24 H25 V18" fill="none" stroke="#5f2394" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>';
+    return '<details class="court-shot-restriction court-shot-restriction--' + escapeHtml(type) + '">' +
+      '<summary aria-label="' + escapeHtml(label) + '" title="' + escapeHtml(label) + '">' +
+        '<svg viewBox="0 0 36 36" aria-hidden="true" focusable="false">' +
+          '<circle cx="18" cy="18" r="15" fill="rgba(238,218,251,.96)" stroke="#c8273d" stroke-width="3"></circle>' +
+          symbol +
+          '<line x1="7.5" y1="28.5" x2="28.5" y2="7.5" stroke="#c8273d" stroke-width="3.4" stroke-linecap="round"></line>' +
+        '</svg>' +
+      '</summary>' +
+      '<span class="court-shot-restriction__caption">' + escapeHtml(label) + '</span>' +
+    '</details>';
+  }
+
+  function renderCourtShotRestrictionOverlay(court){
+    const active = getActiveShotRestrictionsForCourt(court);
+    if(!active.sideNumber || !active.restrictions.length) return '';
+    return '<div class="court-shot-restrictions is-side-' + escapeHtml(String(active.sideNumber)) + '" data-restricted-side="' + escapeHtml(String(active.sideNumber)) + '">' +
+      active.restrictions.map(renderCourtShotRestrictionIcon).join('') +
+    '</div>';
   }
 
   function getZoneRectsForSide(side, mode){
@@ -3571,7 +3650,7 @@
     if(rule.targetPreset && rule.targetPreset !== 'full-court'){
       parts.push('Target area: ' + (court.targetAreaText || getTargetAreaTextFromPreset(rule.targetPreset, rule.mode) || 'reduced court area') + '.');
     }
-    const shotText = getShotRestrictionText(rule.shotStage);
+    const shotText = getShotRestrictionText(rule.shotStage, rule.shotRestrictions);
     if(shotText) parts.push('Shot restriction: ' + shotText + '.');
     parts.push('This remains saved until a later result changes it.');
     return parts.join(' ');
@@ -3599,7 +3678,7 @@
       body += '<div class="status-box"><strong>No Game</strong><br/>This court has been confirmed as inactive. It will not require score submission.</div>';
     }else{
       body += renderRuleGuidance(court) +
-        '<div class="court-visual-row"><div class="court-frame">' + renderCourtDiagram(court) + renderBoundaryMask(court) + renderHardshipHelp(court) + '</div></div>' +
+        '<div class="court-visual-row"><div class="court-frame">' + renderCourtDiagram(court) + renderBoundaryMask(court) + renderCourtShotRestrictionOverlay(court) + renderHardshipHelp(court) + '</div></div>' +
         '<div class="court-meta">' +
           '<div class="score-grid">' +
             '<label class="score-side">' + renderScoreHeading(court, court.side1) + '<input data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-score-side="1" name="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" id="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" type="text" maxlength="2" pattern="[0-9]*" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" data-generation-token="' + escapeHtml(String(state.plan.currentGenerationToken || '')) + '" value="' + escapeHtml(score1) + '"' + disabled + '/></label>' +
@@ -3822,7 +3901,7 @@
         score2: court.score2,
         winnerLabel: court.savedWinnerLabel || '',
         targetAreaText: court.targetAreaText || 'Full court',
-        shotRestrictionText: getShotRestrictionText(court.shotRestrictionStage),
+        shotRestrictionText: getShotRestrictionText(court.shotRestrictionStage, court.shotRestrictions),
         hardshipRegistered: court.savedHardship || '',
         ratingSummary: court.savedRatingSummary || ''
       }))
