@@ -145,8 +145,6 @@
   let serverRevision = 0;
   let serverSaveConflict = false;
   let serverSaveBlocked = false;
-  let serverSaveRetryTimer = null;
-  let serverSaveRetryCount = 0;
   let suppressServerHydrationUntil = 0;
 
   function protectLocalCurrentState(ms){
@@ -170,10 +168,6 @@
     if(serverSaveTimer){
       window.clearTimeout(serverSaveTimer);
       serverSaveTimer = null;
-    }
-    if(serverSaveRetryTimer){
-      window.clearTimeout(serverSaveRetryTimer);
-      serverSaveRetryTimer = null;
     }
     try{
       // A server-authoritative save already in flight is intentionally NOT
@@ -267,17 +261,6 @@
     return { state:candidate,expectedRevision:Number.isInteger(serverRevision)&&serverRevision>=0?serverRevision:0 };
   }
 
-  function scheduleServerSaveRetry(){
-    if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !window.fetch) return;
-    if(serverSaveRetryTimer) window.clearTimeout(serverSaveRetryTimer);
-    const delay = Math.min(30000, Math.max(1000, Math.pow(2, Math.min(serverSaveRetryCount, 5)) * 1000));
-    serverSaveRetryCount += 1;
-    serverSaveRetryTimer = window.setTimeout(function(){
-      serverSaveRetryTimer = null;
-      queueServerSave({ immediate:true });
-    }, delay);
-  }
-
   function queueServerSave(options){
     options = options && typeof options === 'object' ? options : {};
     if(pageIsLeaving || serverSaveConflict || serverSaveBlocked || !API_STATE_URL || !window.fetch) return;
@@ -288,10 +271,7 @@
     const delay = options.immediate ? 0 : 180;
     const send = function(){
       serverSaveTimer = null;
-      if(serverSaveInFlight){
-        if(options.immediate) serverSaveRetryCount = 0;
-        return queueServerSave(options);
-      }
+      if(serverSaveInFlight) return;
       serverSaveInFlight = true;
       serverSaveAbortController = window.AbortController ? new AbortController() : null;
       const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
@@ -316,21 +296,19 @@
           announceServerSaveConflict('Badminton changed on the server before this save completed. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
           return;
         }
-        if(!data || !data.ok) throw new Error('badminton_save_failed');
+        if(!data || !data.ok){
+          serverSaveBlocked=true;
+          announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
+          return;
+        }
         const revision=Number(data.revision);
         if(Number.isInteger(revision)&&revision>=0) serverRevision=revision;
         serverSaveBlocked=false;
-        serverSaveRetryCount=0;
-        if(serverSaveRetryTimer){
-          window.clearTimeout(serverSaveRetryTimer);
-          serverSaveRetryTimer=null;
-        }
         clearPersistenceStatus();
       }).catch(function(_error){
         if(pageIsLeaving) return;
-        serverSaveBlocked=false;
-        announceServerSaveConflict('Badminton could not reach shared server saving. The change is not confirmed as saved; saving will retry automatically.', 'warning');
-        scheduleServerSaveRetry();
+        serverSaveBlocked=true;
+        announceServerSaveConflict('Badminton was not saved to the shared server. Saving has stopped; reload the authoritative Badminton state before making further changes.', 'error');
       }).finally(function(){
         serverSaveInFlight = false;
         serverSaveAbortController = null;
@@ -342,14 +320,6 @@
     if(delay <= 0) send();
     else serverSaveTimer = window.setTimeout(send, delay);
   }
-
-  try{
-    window.addEventListener('online', function(){
-      if(pageIsLeaving || serverSaveConflict || serverSaveBlocked) return;
-      serverSaveRetryCount = 0;
-      queueServerSave({ immediate:true });
-    });
-  }catch(_e){}
 
   function saveSessionData(options){
     markLocalChange();
