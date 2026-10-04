@@ -86,7 +86,7 @@ test("main current-set generation actually uses the scored candidate path", () =
 });
 
 test("matchup scoring remains internal and is not exposed as a viewer-facing explanation", () => {
-  assert.match(source, /court\.matchupReason = reasons\.join\(' '\)/);
+  assert.match(matchmakerSource, /court\.matchupReason = reasons\.join\(' '\)/);
   const start = source.indexOf("function renderCourtCard");
   const end = source.indexOf("function sanitizeScoreInput", start);
   const card = source.slice(start, end);
