@@ -96,7 +96,7 @@ function escapeHtml(value) {
   }[character]));
 }
 
-const { createLazyScene } = createRealmLazySceneAuthority({
+const { createLazyScene, prepareExternalSceneView } = createRealmLazySceneAuthority({
   eventBus,
   getRuntime:()=>runtime,
   externalSceneIds:EXTERNAL_SCENE_IDS,
