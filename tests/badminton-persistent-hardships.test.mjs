@@ -221,9 +221,9 @@ test("legacy matchupMemory hardship is promoted into the authoritative exact-con
   assert.match(promote, /setDominantHardshipRuleForSide\(court, sideNumber/);
 
   const evaluate = section("evaluateCourtRestrictionsBase", "syncDominantRuleToMemory");
-  assert.match(evaluate, /promoteLegacyMatchupMemoryForCourt\(court, memory\)/);
+  assert.match(evaluate, /promoteLegacyMatchupMemoryForCourt\(court,\s*memory\)/);
   assert.ok(
-    evaluate.indexOf("promoteLegacyMatchupMemoryForCourt(court, memory)") <
+    evaluate.search(/promoteLegacyMatchupMemoryForCourt\(court,\s*memory\)/) <
       evaluate.indexOf("getActiveHardshipRuleEntryForCourt(court)"),
     "legacy memory must be promoted before the active hardship lookup"
   );
