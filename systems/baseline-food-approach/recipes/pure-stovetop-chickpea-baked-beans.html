@@ -1,16 +1,31 @@
 <!-- Canonical Food recipe content source.
-     Sitewide recipe shell/runtime owns navigation, surfaces and behaviour. -->
-<div class="recipe card recipe-page" data-category="Stovetop" data-recipe-slug="pure-stovetop-chickpea-baked-beans" id="r3">
+     Sitewide recipe shell/runtime owns navigation, typography, surfaces and behaviour. -->
+<div class="recipe card recipe-page recipe-universal-template" data-category="Stovetop" data-recipe-slug="pure-stovetop-chickpea-baked-beans" id="r3" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
 <a class="back-btn" href="/baseline-food-approach/recipes">Back To Recipe Overview</a>
 <button class="print-btn" onclick="printCard('r3')">Print This Recipe</button>
 </div>
-<h3>Pure Stovetop Chickpea Baked Beans</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="/baseline-food-approach/ingredient-library">Recipe Ingredient Information</a>
-<h4>Meta</h4>
-<p class="note">Allergens: Nuts (nut butter).</p>
-<h4>Ingredients</h4>
-<ul>
+<div class="recipe-title-row"><h3>Pure Stovetop Chickpea Baked Beans</h3></div>
+<div class="recipe-meta-row" data-static-recipe-shell="1"><div class="recipe-meta-summary"><span class="recipe-meta-item"><span class="recipe-meta-key">Batch:</span> <span class="recipe-meta-value recipe-batch-meta-value">1×</span></span></div></div>
+<div class="recipe-adjustments-row print-hide" data-static-recipe-shell="1"><button type="button" class="recipe-adjustments-toggle print-hide" data-static-recipe-shell="1" aria-expanded="false">Adjustments</button></div>
+<div class="recipe-edit-options recipe-adjustments-panel print-hide" data-static-recipe-shell="1" hidden>
+<div class="multiplier recipe-controls recipe-edit-controls" data-static-recipe-controls="1" data-layout-contract="title-batch-measurement-scale">
+<div class="recipe-control-row recipe-control-row--batch"><span class="label batch-label">Batch Multiplier</span><div class="bl-number multiplier-input batch-input"><input type="number" min="0" step="0.1" data-stepper-step="0.5" data-stepper-min="0.5" value="1" inputmode="decimal" class="multiplier-input batch-input" aria-label="Batch multiplier"/><div class="bl-number-stepper" aria-hidden="false"><button type="button" class="bl-step bl-step-up" aria-label="Increase value by 0.5"><span aria-hidden="true">&#9650;</span></button><button type="button" class="bl-step bl-step-down" aria-label="Decrease value by 0.5"><span aria-hidden="true">&#9660;</span></button></div></div><button type="button" class="apply recipe-apply batch-apply" data-mobile-batch-apply="1">Apply</button></div>
+<div class="recipe-control-row recipe-control-row--measurement"><span class="label meas-label">Measurement Type</span><select class="measure-select" aria-label="Measurement Type"><option value="standard">Standard Variance</option><option value="weight">Weight</option><option value="volume">Volume</option><option value="cups">Measuring Cups &amp; Spoons</option></select><button type="button" class="reset">Reset</button></div>
+<div class="scale-block"><button type="button" class="scale-toggle" aria-expanded="false">Scale By Ingredient</button><div class="multiplier scale-tools" hidden><span class="label">Use:</span><select class="scale-ingredient-select" aria-label="Ingredient"><option value="" selected disabled>Choose ingredient…</option></select><select class="scale-unit-select" aria-label="Unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="count">count</option></select><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter Quantity" class="scale-amount-input" aria-label="Ingredient quantity"/><button type="button" class="scale-apply">Scale Recipe</button></div><div class="scale-msg note"></div></div>
+</div><div class="print-summary">Batch quantity: 1 • Measurement: Standard Variance</div></div>
+<div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
+<div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
+<div class="recipe-detail-block"><h4>Purpose</h4><p>A tomato-based chickpea dish designed as a whole-food alternative to sweetened or additive-heavy baked beans.</p></div>
+<div class="recipe-detail-block"><h4>Recipe Profile</h4><p>Stovetop recipe • vegan • gluten-free • legume-based • fibre- and protein-containing. Allergens: Nuts (nut butter).</p></div>
+<div class="recipe-detail-block"><h4>How the Recipe Works</h4><p>Chickpeas provide the main body; tomato, carrot and mushroom build the sauce; herbs add restrained savoury flavour; nut butter rounds the texture and lemon lifts the finish.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>The recipe avoids added sugar and strong aromatics while keeping a familiar soft bean-and-sauce format using whole ingredients.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Sauce thickness can be adjusted with water and cooking time. Chickpea tenderness depends on soaking and cooking; the basic structure stays fixed.</p></div>
+<div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>Larger chickpea portions can increase digestive fermentation for some people. Thorough cooking improves texture, and reducing too far can make the sauce heavy.</p></div>
+</div>
+<h4 class="recipe-ingredients-heading" data-recipe-view-group="standard">Ingredients <a class="info-link recipe-info-view-link print-hide recipe-view-hidden" data-scroll-to-ingredients="" data-recipe-view-group="details" href="/baseline-food-approach/ingredient-library" aria-label="View recipe ingredient information">(View)</a></h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Chickpeas</strong></li>
 <li data-method-step="1" data-tip="Legume base; protein + fibre.">250 g <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-chickpeas" href="/baseline-food-approach/ingredient-library/chickpeas">Chickpeas Dried</a></li>
 <li class="ing-subhead"><strong>Sauce</strong></li>
@@ -26,16 +41,16 @@
 <li data-method-step="5" data-tip="Adds richness and body; add gradually and taste as you go.">⅛–¼ cup <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-brazil-nut-butter" href="/baseline-food-approach/ingredient-library/brazil-nut-butter">Brazil Nut Butter</a> (or nut butter of your choosing)</li>
 <li data-method-step="6" data-tip="Brightness at the end; balances tomato and nut butter.">½–1 tsp <a class="ing-link" data-from-recipe="r3" data-ingredient="ing-lemon" href="/baseline-food-approach/ingredient-library/lemon">lemon juice</a></li>
 </ul>
-<h4>Method</h4>
-<ol><li><strong>Soak chickpeas:</strong> Rinse the chickpeas. Soak them in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked chickpeas to the Pressure Cooker with fresh water to cover well. Cook on High Pressure for 15 minutes. Natural release, then drain.</li><li><strong>Sauce:</strong> Water-sauté the carrot and white mushrooms for 6–8 minutes. Add the tomatoes, 200 ml water, Herbes de Provence, sage, and sea salt. Simmer 25–30 minutes.</li><li><strong>Combine:</strong> Add the cooked chickpeas and simmer 10–15 minutes.</li><li><strong>Nut butter:</strong> Stir in the Brazil Nut Butter and simmer 10–15 minutes.</li><li><strong>Finish:</strong> Add the lemon juice. Rest covered 5 minutes, then serve.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
+<h4 data-recipe-view-group="standard">Method</h4>
+<ol data-recipe-view-group="standard"><li><strong>Soak chickpeas:</strong> Rinse the chickpeas. Soak them in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked chickpeas to the Pressure Cooker with fresh water to cover well. Cook on High Pressure for 15 minutes. Natural release, then drain.</li><li><strong>Sauce:</strong> Water-sauté the carrot and white mushrooms for 6–8 minutes. Add the tomatoes, 200 ml water, Herbes de Provence, sage, and sea salt. Simmer 25–30 minutes.</li><li><strong>Combine:</strong> Add the cooked chickpeas and simmer 10–15 minutes.</li><li><strong>Nut butter:</strong> Stir in the Brazil Nut Butter and simmer 10–15 minutes.</li><li><strong>Finish:</strong> Add the lemon juice. Rest covered 5 minutes, then serve.</li></ol>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Serving &amp; Use</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Over baked/mashed sweet potato</li>
 <li>With steamed greens</li>
 <li>With roasted potatoes or sweet potato wedges</li>
 </ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Body &amp; Sensory Notes</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Odour profile: Mild seasoning; legumes are generally neutral but can increase fermentation-related odour for some.</li>
 <li>Dose notes: Larger portions of chickpeas may increase gas; consider smaller servings and thorough cooking.</li>
 <li>Energy: Fibre + protein support steadier energy and satiety.</li>

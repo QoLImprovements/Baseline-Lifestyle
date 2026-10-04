@@ -1,19 +1,31 @@
 <!-- Canonical Food recipe content source.
-     Sitewide recipe shell/runtime owns navigation, surfaces and behaviour. -->
-<div class="recipe card recipe-page" data-category="Pressure Cooker" data-recipe-slug="mushroom-and-rosemary-oat-groats-risotto" id="r6">
+     Sitewide recipe shell/runtime owns navigation, typography, surfaces and behaviour. -->
+<div class="recipe card recipe-page recipe-universal-template" data-category="Pressure Cooker" data-recipe-slug="mushroom-and-rosemary-oat-groats-risotto" id="r6" data-static-recipe-shell="1" data-recipe-view="standard">
 <div class="recipe-actions">
 <a class="back-btn" href="/baseline-food-approach/recipes">Back To Recipe Overview</a>
 <button class="print-btn" onclick="printCard('r6')">Print This Recipe</button>
 </div>
-<h3>Mushroom and Rosemary Oat Groats Risotto</h3>
-<a class="info-link" data-scroll-to-ingredients="" href="/baseline-food-approach/ingredient-library">Recipe Ingredient Information</a>
-<div class="meta">
-<h4>Meta</h4>
-<p><strong>Equipment:</strong> Pressure Cooker + saucepan</p>
-<p><strong>Allergens:</strong> Oats; nuts (nut butter)</p>
+<div class="recipe-title-row"><h3>Mushroom and Rosemary Oat Groats Risotto</h3></div>
+<div class="recipe-meta-row" data-static-recipe-shell="1"><div class="recipe-meta-summary"><span class="recipe-meta-item"><span class="recipe-meta-key">Batch:</span> <span class="recipe-meta-value recipe-batch-meta-value">1×</span></span></div></div>
+<div class="recipe-adjustments-row print-hide" data-static-recipe-shell="1"><button type="button" class="recipe-adjustments-toggle print-hide" data-static-recipe-shell="1" aria-expanded="false">Adjustments</button></div>
+<div class="recipe-edit-options recipe-adjustments-panel print-hide" data-static-recipe-shell="1" hidden>
+<div class="multiplier recipe-controls recipe-edit-controls" data-static-recipe-controls="1" data-layout-contract="title-batch-measurement-scale">
+<div class="recipe-control-row recipe-control-row--batch"><span class="label batch-label">Batch Multiplier</span><div class="bl-number multiplier-input batch-input"><input type="number" min="0" step="0.1" data-stepper-step="0.5" data-stepper-min="0.5" value="1" inputmode="decimal" class="multiplier-input batch-input" aria-label="Batch multiplier"/><div class="bl-number-stepper" aria-hidden="false"><button type="button" class="bl-step bl-step-up" aria-label="Increase value by 0.5"><span aria-hidden="true">&#9650;</span></button><button type="button" class="bl-step bl-step-down" aria-label="Decrease value by 0.5"><span aria-hidden="true">&#9660;</span></button></div></div><button type="button" class="apply recipe-apply batch-apply" data-mobile-batch-apply="1">Apply</button></div>
+<div class="recipe-control-row recipe-control-row--measurement"><span class="label meas-label">Measurement Type</span><select class="measure-select" aria-label="Measurement Type"><option value="standard">Standard Variance</option><option value="weight">Weight</option><option value="volume">Volume</option><option value="cups">Measuring Cups &amp; Spoons</option></select><button type="button" class="reset">Reset</button></div>
+<div class="scale-block"><button type="button" class="scale-toggle" aria-expanded="false">Scale By Ingredient</button><div class="multiplier scale-tools" hidden><span class="label">Use:</span><select class="scale-ingredient-select" aria-label="Ingredient"><option value="" selected disabled>Choose ingredient…</option></select><select class="scale-unit-select" aria-label="Unit"><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="l">l</option><option value="tsp">tsp</option><option value="tbsp">tbsp</option><option value="cup">cup</option><option value="count">count</option></select><input type="number" min="0" step="0.1" inputmode="decimal" placeholder="Enter Quantity" class="scale-amount-input" aria-label="Ingredient quantity"/><button type="button" class="scale-apply">Scale Recipe</button></div><div class="scale-msg note"></div></div>
+</div><div class="print-summary">Batch quantity: 1 • Measurement: Standard Variance</div></div>
+<div class="recipe-subtabs print-hide" data-static-recipe-shell="1" role="tablist" aria-label="Recipe views"><button type="button" class="recipe-subtab" data-recipe-subtab="standard" role="tab" aria-selected="true" aria-label="Recipe">Recipe</button><button type="button" class="recipe-subtab" data-recipe-subtab="details" role="tab" aria-selected="false">Details</button><button type="button" class="recipe-subtab" data-recipe-subtab="guidance" role="tab" aria-selected="false">Guidance</button><button type="button" class="recipe-subtab" data-recipe-subtab="show-all" role="tab" aria-selected="false">Show All</button></div>
+<div class="recipe-option-strip recipe-standard-controls print-hide" data-static-recipe-shell="1" data-recipe-view-group="standard"></div>
+<div class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details">
+<div class="recipe-detail-block"><h4>Purpose</h4><p>A pressure-cooked oat-groat bowl that uses intact oats as a chewy, creamy risotto-style base.</p></div>
+<div class="recipe-detail-block"><h4>Recipe Profile</h4><p>Pressure-cooker recipe • vegan • whole-grain • gluten-free only with certified oats • creamy with gentle chew.</p></div>
+<div class="recipe-detail-block"><h4>How the Recipe Works</h4><p>Oat groats provide the grain structure; mushrooms add savoury depth; rosemary and sage season the liquid; nut butter and nutritional yeast create the creamy finish; lemon brightens it.</p></div>
+<div class="recipe-detail-block"><h4>Design Rationale</h4><p>The recipe keeps the grain intact for more texture and uses a modest fat phase to create risotto-like creaminess without dairy.</p></div>
+<div class="recipe-detail-block"><h4>Variables &amp; Fixed Elements</h4><p>Water after cooking controls looseness, while pressure time influences chew. Final lemon, nutritional yeast and seasoning can be adjusted modestly.</p></div>
+<div class="recipe-detail-block"><h4>Limitations &amp; Trade-offs</h4><p>Oat groats stay chewier than rice and need sufficient cooking. The mixture thickens as it stands, so reheating may require extra hot water.</p></div>
 </div>
-<h4>Ingredients</h4>
-<ul>
+<h4 class="recipe-ingredients-heading" data-recipe-view-group="standard">Ingredients <a class="info-link recipe-info-view-link print-hide recipe-view-hidden" data-scroll-to-ingredients="" data-recipe-view-group="details" href="/baseline-food-approach/ingredient-library" aria-label="View recipe ingredient information">(View)</a></h4>
+<ul data-recipe-view-group="standard">
 <li class="ing-subhead"><strong>Pressure Cooker cook</strong></li>
 <li data-method-step="1" data-tip="Wholegrain base; steady starch and fibre.">1½ cups <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-oat-groats" href="/baseline-food-approach/ingredient-library/oat-groats">Oats</a></li>
 <li data-method-step="2" data-tip="Measured cooking liquid for the pressure-cooker stage.">2½ cups <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-water" href="/baseline-food-approach/ingredient-library/water">water</a></li>
@@ -28,16 +40,16 @@
 <li data-method-step="5" data-tip="Savoury depth; adds B-vitamins and a cheesy note.">2 tbsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-nutritional-yeast" href="/baseline-food-approach/ingredient-library/nutritional-yeast">nutritional yeast</a></li>
 <li data-method-step="5" data-tip="Final seasoning; lifts the grain and mushroom flavour.">½ tsp <a class="ing-link" data-from-recipe="r6" data-ingredient="ing-sea-salt" href="/baseline-food-approach/ingredient-library/sea-salt">sea salt</a></li>
 </ul>
-<h4>Method</h4>
-<ol><li><strong>Soak:</strong> Rinse the oat groats. Soak the oat groats in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked oat groats and 2½ cups water to the Pressure Cooker. Cook on High Pressure for 10 minutes. Natural release 10 minutes, then quick release. Drain well.</li><li><strong>Mushrooms:</strong> Add the mushrooms, 2 tbsp water, dried rosemary, and dried sage to a saucepan over medium heat. Cook 2–3 minutes, stirring.</li><li><strong>Combine:</strong> Add the cooked oat groats to the saucepan. Stir and simmer 3–6 minutes until creamy.</li><li><strong>Finish:</strong> Remove from heat. Stir in the Brazil Nut Butter until fully combined, then stir in the lemon juice, nutritional yeast, and sea salt.</li></ol>
-<h4>Serving ideas</h4>
-<ul>
+<h4 data-recipe-view-group="standard">Method</h4>
+<ol data-recipe-view-group="standard"><li><strong>Soak:</strong> Rinse the oat groats. Soak the oat groats in plenty of water for 8 hours. Drain and rinse well.</li><li><strong>Pressure Cooker cook:</strong> Add the soaked oat groats and 2½ cups water to the Pressure Cooker. Cook on High Pressure for 10 minutes. Natural release 10 minutes, then quick release. Drain well.</li><li><strong>Mushrooms:</strong> Add the mushrooms, 2 tbsp water, dried rosemary, and dried sage to a saucepan over medium heat. Cook 2–3 minutes, stirring.</li><li><strong>Combine:</strong> Add the cooked oat groats to the saucepan. Stir and simmer 3–6 minutes until creamy.</li><li><strong>Finish:</strong> Remove from heat. Stir in the Brazil Nut Butter until fully combined, then stir in the lemon juice, nutritional yeast, and sea salt.</li></ol>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Serving &amp; Use</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li>Serve as-is for a warm, creamy bowl, or pair with steamed greens and an extra squeeze of lemon.</li>
 <li>Top with extra nutritional yeast or sliced mushrooms for a richer finish.</li>
 <li>If you want it looser, add hot water gradually until it settles into a soft risotto texture.</li>
 </ul>
-<h4>Body &amp; Sensory Notes</h4>
-<ul>
+<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">Body &amp; Sensory Notes</h4>
+<ul class="recipe-view-hidden" data-recipe-view-group="guidance">
 <li><strong>Odour impact:</strong> Earthy during cooking; rosemary and lemon keep the aroma clean and bright.</li>
 <li><strong>Texture:</strong> Creamy with a gentle chew from the intact groats.</li>
 <li><strong>Energy:</strong> Fibre + fat tends to feel steadier than refined starches when portioned appropriately.</li>

@@ -467,8 +467,13 @@
     const sections = system === 'skin'
       ? ['Method', 'Storage & Use', 'Notes']
       : system === 'food'
-        ? ['Method', 'Serving ideas', 'Body & Sensory Notes']
+        ? ['Method', 'Serving & Use', 'Body & Sensory Notes']
         : ['Method', 'Notes'];
+    const details = system === 'skin'
+      ? ['Purpose', 'Formula Profile', 'How the Formulation Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs']
+      : system === 'food'
+        ? ['Purpose', 'Recipe Profile', 'How the Recipe Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs']
+        : ['Purpose', 'Profile', 'How It Works', 'Design Rationale', 'Variables & Fixed Elements', 'Limitations & Trade-offs'];
 
     return {
       authority: 'sitewide',
@@ -482,7 +487,17 @@
         'Scale By Ingredient',
         'Recipe-specific controls'
       ],
+      presentation: {
+        titleFont: 'var(--font-soft)',
+        titleSize: '28px',
+        titleLineHeight: 1.25,
+        detailsLayout: 'single-column',
+        viewOrder: ['Recipe', 'Details', 'Guidance', 'Show All']
+      },
       sections,
+      details,
+      detailCount: 6,
+      guidanceSectionCount: 2,
       id: 'r-next',
       category: system === 'skin' ? 'Recipe' : 'Stovetop',
       title: 'Recipe title',
@@ -4051,6 +4066,39 @@ function buildControls(recipeEl){
           oatToggleEl = q('.oat-toggle', controls);
           oatBtnJumbo = oatToggleEl ? q('.oat-option[data-oat-type="jumbo"], .oat-option:first-child', oatToggleEl) : null;
           oatBtnPorridge = oatToggleEl ? q('.oat-option[data-oat-type="porridge"], .oat-option:last-child', oatToggleEl) : null;
+          if(!oatToggleEl){
+            oatLabelEl = document.createElement('span');
+            oatLabelEl.className = 'label oat-label';
+            oatLabelEl.textContent = 'Type of oats';
+            oatToggleEl = document.createElement('div');
+            oatToggleEl.className = 'oat-toggle';
+            oatToggleEl.setAttribute('role','group');
+            oatToggleEl.setAttribute('aria-label','Type of oats');
+            oatBtnJumbo = document.createElement('button');
+            oatBtnJumbo.type='button';
+            oatBtnJumbo.className='oat-option is-active';
+            oatBtnJumbo.dataset.oatType='jumbo';
+            oatBtnJumbo.textContent='Jumbo Oats';
+            oatBtnPorridge = document.createElement('button');
+            oatBtnPorridge.type='button';
+            oatBtnPorridge.className='oat-option';
+            oatBtnPorridge.dataset.oatType='porridge';
+            oatBtnPorridge.textContent='Porridge Oats';
+            oatToggleEl.appendChild(oatBtnJumbo);
+            oatToggleEl.appendChild(oatBtnPorridge);
+            controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
+          }
+        }
+
+        if(hasThickness && !thickSelect){
+          thickLabelEl = document.createElement('span');
+          thickLabelEl.className = 'label thickness-label';
+          thickLabelEl.textContent = 'Thickness';
+          thickSelect = document.createElement('select');
+          thickSelect.className = 'thickness-select';
+          thickSelect.setAttribute('aria-label','Thickness');
+          thickSelect.innerHTML = '<option value="thin">Thin</option><option value="moderate" selected>Moderate</option><option value="thick">Thick</option>';
+          controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
         }
 
         if(!multInput || !measSelect || !resetBtn || !printSummary) return;
