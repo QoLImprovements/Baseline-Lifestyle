@@ -216,6 +216,39 @@
   const renderFinishedBatch = reportingRenderer.renderFinishedBatch;
   const renderFinishedGames = reportingRenderer.renderFinishedGames;
 
+  const courtCardsModule = window.BASELINE_BADMINTON_COURT_CARDS;
+  if(!courtCardsModule) throw new Error('Badminton Session court-card renderer failed to load.');
+  const courtCardRenderer = courtCardsModule.create({
+    getState:function(){ return state; },
+    getRefs:function(){ return refs; },
+    normalizeAttendingPlayerIds:function(){ return normalizeAttendingPlayerIds(); },
+    currentUserIsManager:function(){ return currentUserIsManager(); },
+    escapeHtml:function(value){ return escapeHtml(value); },
+    syncCurrentSitOutUnion:function(){ return syncCurrentSitOutUnion(); },
+    getSitOutNames:function(ids){ return getSitOutNames(ids); },
+    getCourtVariableBasePlayers:function(court){ return getCourtVariableBasePlayers(court); },
+    getCourtVariableSitOutIds:function(court){ return getCourtVariableSitOutIds(court); },
+    getCourtSitOutLimit:function(court){ return getCourtSitOutLimit(court); },
+    courtMarkedNoGame:function(court){ return courtMarkedNoGame(court); },
+    normalisePendingHardship:function(court){ return normalisePendingHardship(court); },
+    courtSaved:function(court, index){ return courtSaved(court, index); },
+    currentUserCanScoreCourt:function(court){ return currentUserCanScoreCourt(court); },
+    renderCourtSummary:function(court){ return renderCourtSummary(court); },
+    renderRuleGuidance:function(court){ return renderRuleGuidance(court); },
+    renderCourtDiagram:function(court){ return renderCourtDiagram(court); },
+    renderBoundaryMask:function(court){ return renderBoundaryMask(court); },
+    renderCourtShotRestrictionOverlay:function(court){ return renderCourtShotRestrictionOverlay(court); },
+    renderHardshipHelp:function(court){ return renderHardshipHelp(court); },
+    renderScoreHeading:function(court, side){ return renderScoreHeading(court, side); },
+    createCourtScoreInputName:function(court, index, side){ return createCourtScoreInputName(court, index, side); },
+    renderHardshipControl:function(court, phase, index){ return renderHardshipControl(court, phase, index); },
+    getCourtSaveKey:function(court, index){ return getCourtSaveKey(court, index); }
+  });
+  const renderAttendanceSelector = courtCardRenderer.renderAttendanceSelector;
+  const renderCurrentSitOutInfo = courtCardRenderer.renderCurrentSitOutInfo;
+  const renderCourtVariableEditor = courtCardRenderer.renderCourtVariableEditor;
+  const renderCourtCard = courtCardRenderer.renderCourtCard;
+
   const stateHydrationModule = window.BASELINE_BADMINTON_STATE_HYDRATION;
   if(!stateHydrationModule) throw new Error('Badminton Session state hydration model failed to load.');
   const stateHydrator = stateHydrationModule.create({
@@ -1048,24 +1081,6 @@
     });
   }
 
-  function renderAttendanceSelector(){
-    if(!refs.attendanceSelectorWrap) return;
-    normalizeAttendingPlayerIds();
-    if(!state.players.length){
-      refs.attendanceSelectorWrap.innerHTML = '<div class="empty-state">Add players first, then mark who has attended today.</div>';
-    }else{
-      const selected = new Set(state.plan.attendingPlayerIds);
-      const disabled = currentUserIsManager() ? '' : ' disabled';
-      refs.attendanceSelectorWrap.innerHTML = state.players.slice().sort((a, b) => a.name.localeCompare(b.name)).map(player =>
-        '<label class="attendance-pill"><input type="checkbox" data-attendance-player="' + escapeHtml(player.id) + '"' + (selected.has(player.id) ? ' checked' : '') + disabled + '/><span>' + escapeHtml(player.name) + '</span></label>'
-      ).join('') + (currentUserIsManager() ? '' : '<div class="readonly-note">Attendance editing is limited to the moderator and approved admins.</div>');
-    }
-    if(refs.attendanceCountLabel){
-      const count = state.plan.attendingPlayerIds.length;
-      refs.attendanceCountLabel.textContent = count + ' player' + (count === 1 ? '' : 's') + ' attended today';
-    }
-  }
-
   function getSitOutNames(ids){
     return (ids || []).map(function(id){
       const player = getPlayer(id);
@@ -1077,17 +1092,6 @@
     const circumstantial = Array.isArray(state.plan.currentCircumstantialSitOutPlayerIds) ? state.plan.currentCircumstantialSitOutPlayerIds : [];
     const optional = Array.isArray(state.plan.currentOptionalSitOutPlayerIds) ? state.plan.currentOptionalSitOutPlayerIds : [];
     state.plan.currentSitOutPlayerIds = Array.from(new Set(circumstantial.concat(optional)));
-  }
-
-  function renderCurrentSitOutInfo(){
-    if(!refs.currentSitOutWrap) return;
-    syncCurrentSitOutUnion();
-    const circumstantialNames = getSitOutNames(state.plan.currentCircumstantialSitOutPlayerIds);
-    const optionalNames = getSitOutNames(state.plan.currentOptionalSitOutPlayerIds);
-    const rows = [];
-    if(circumstantialNames.length) rows.push('<strong>Circumstantial sit-out</strong><br/>' + escapeHtml(circumstantialNames.join(' · ')));
-    if(optionalNames.length) rows.push('<strong>Optional sit-out</strong><br/>' + escapeHtml(optionalNames.join(' · ')));
-    refs.currentSitOutWrap.innerHTML = rows.length ? ('<div class="status-box">' + rows.join('<br/><br/>') + '</div>') : '';
   }
 
   function getSitOutCount(playerId){
@@ -2108,29 +2112,6 @@
     return 0;
   }
 
-  function renderCourtVariableEditor(court, index){
-    const basePlayers = getCourtVariableBasePlayers(court);
-    if(!basePlayers.length) return '';
-    const selected = new Set(getCourtVariableSitOutIds(court));
-    const limit = getCourtSitOutLimit(court);
-    const disabled = limit <= 0 ? ' disabled' : '';
-    const checkboxes = basePlayers.map(function(player){
-      return '<label class="court-sitout-pill"><input type="checkbox" data-court-sitout-player="' + escapeHtml(String(index)) + '" value="' + escapeHtml(player.id) + '"' + (selected.has(player.id) ? ' checked' : '') + disabled + '/><span>' + escapeHtml(player.name) + '</span></label>';
-    }).join('');
-    const sitOutNote = limit > 0
-      ? ('Choose up to ' + String(limit) + ' player' + (limit === 1 ? '' : 's') + ' to sit out from this court only.')
-      : 'Singles cannot sit a player out. Use No Game if this court should not happen.';
-    return '<details class="court-variable-editor"><summary>Edit variables</summary>' +
-      '<div class="court-variable-body">' +
-        '<div class="court-variable-section"><strong>Sitting out</strong><div class="note">' + escapeHtml(sitOutNote) + '</div><div class="court-sitout-grid">' + checkboxes + '</div></div>' +
-        '<div class="court-variable-section court-no-game-section">' +
-          '<label class="court-no-game-range-label"><input class="court-no-game-range" type="range" min="0" max="100" step="1" value="0" data-court-no-game-slider="' + escapeHtml(String(index)) + '" aria-label="Move the slider right to register No Game"/><span>No Game</span></label>' +
-          '<div class="note">Move the slider right to register \'No Game\'</div>' +
-        '</div>' +
-      '</div>' +
-    '</details>';
-  }
-
   function makeBestCourtFromVariablePlayers(players, existingKind){
     const group = (players || []).filter(Boolean);
     if(group.length >= 4 && existingKind === 'doubles') return makeCourt('doubles', group.slice(0, 4));
@@ -2265,33 +2246,6 @@
     refreshCurrentCourtCard(index);
     renderCurrentSitOutInfo();
     setPlanAlert('Court ' + String(Number(index) + 1) + ' marked as No Game. Waiting for the remaining current court results.');
-  }
-
-  function renderCourtCard(court, phase, index){
-    const noGame = courtMarkedNoGame(court);
-    const score1 = court.score1 == null ? '' : String(court.score1);
-    const score2 = court.score2 == null ? '' : String(court.score2);
-    if(!noGame) normalisePendingHardship(court);
-    const saved = phase === 'current' && (courtSaved(court, index) || noGame);
-    const canScore = !saved && currentUserCanScoreCourt(court);
-    const disabled = canScore ? '' : ' disabled';
-    const lockNote = canScore || saved ? '' : '<div class="hardship-note">Score entry is limited to players on this court, the moderator, or an approved admin.</div>';
-    const cardClass = 'court-card' + (saved ? ' is-saved' : '') + (noGame ? ' is-no-game' : '');
-    let body = renderCourtSummary(court);
-    if(canScore) body += renderCourtVariableEditor(court, index);
-    if(noGame){
-      body += '<div class="status-box"><strong>No Game</strong><br/>This court has been confirmed as inactive. It will not require score submission.</div>';
-    }else{
-      body += renderRuleGuidance(court) +
-        '<div class="court-visual-row"><div class="court-frame">' + renderCourtDiagram(court) + renderBoundaryMask(court) + renderCourtShotRestrictionOverlay(court) + renderHardshipHelp(court) + '</div></div>' +
-        '<div class="court-meta">' +
-          '<div class="score-grid">' +
-            '<label class="score-side">' + renderScoreHeading(court, court.side1) + '<input data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-score-side="1" name="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" id="' + escapeHtml(createCourtScoreInputName(court, index, 1)) + '" type="text" maxlength="2" pattern="[0-9]*" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" data-generation-token="' + escapeHtml(String(state.plan.currentGenerationToken || '')) + '" value="' + escapeHtml(score1) + '"' + disabled + '/></label>' +
-            '<label class="score-side">' + renderScoreHeading(court, court.side2) + '<input data-phase="' + escapeHtml(phase) + '" data-index="' + escapeHtml(String(index)) + '" data-score-side="2" name="' + escapeHtml(createCourtScoreInputName(court, index, 2)) + '" id="' + escapeHtml(createCourtScoreInputName(court, index, 2)) + '" type="text" maxlength="2" pattern="[0-9]*" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" data-generation-token="' + escapeHtml(String(state.plan.currentGenerationToken || '')) + '" value="' + escapeHtml(score2) + '"' + disabled + '/></label>' +
-          '</div>' + lockNote + (canScore ? renderHardshipControl(court, phase, index) : (saved ? '<div class="status-box"><strong>Submitted</strong><br/>This court result is locked.</div>' : '')) +
-        '</div>';
-    }
-    return '<div class="' + cardClass + '" data-current-court-index="' + escapeHtml(String(index)) + '" data-court-save-key="' + escapeHtml(getCourtSaveKey(court, index)) + '" data-court-saved="' + (saved ? 'true' : 'false') + '" aria-disabled="' + (saved ? 'true' : 'false') + '">' + body + '</div>';
   }
 
   function sanitizeScoreInput(input){
