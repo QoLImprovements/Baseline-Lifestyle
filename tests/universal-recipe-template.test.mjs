@@ -268,3 +268,14 @@ test('Food and Skincare share one shell-first universal recipe architecture', ()
   assert.doesNotMatch(shared, /ensureStandaloneSystemTabs|baseline-standalone-primary-tabs/);
   assert.doesNotMatch(css, /BASELINE-STANDALONE-SYSTEM-TABS-20261004/);
 });
+
+
+test('recipe authoring authority is sitewide, not duplicated per system', () => {
+  assert.match(shared, /window\.BASELINE_getRecipeAuthoringTemplate = function\(app\)/);
+  assert.match(shared, /authority: 'sitewide'/);
+  assert.match(shared, /One sitewide recipe shell owns Food and Skincare recipe navigation and view state/);
+  assert.doesNotMatch(foodHtml, /id="baseline-recipe-authoring-template"/);
+  assert.doesNotMatch(skincareHtml, /id="baseline-recipe-authoring-template"/);
+  assert.match(foodHtml, /SITEWIDE RECIPE TEMPLATE — FOOD CONTENT NOTES/);
+  assert.match(skincareHtml, /SITEWIDE RECIPE TEMPLATE — SKINCARE CONTENT NOTES/);
+});
