@@ -17,6 +17,10 @@ const css = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/css/baseline-badminton-session.css"),
   "utf8",
 );
+const renderer = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/js/badminton-session-court-renderer.js"),
+  "utf8",
+);
 const php = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/api/badminton_session.php"),
   "utf8",
@@ -28,6 +32,14 @@ function section(startName, endName) {
   const end = endName ? js.indexOf("function " + endName, start + 1) : js.length;
   assert.notEqual(end, -1, endName + " must follow " + startName);
   return js.slice(start, end);
+}
+
+function rendererSection(startName, endName) {
+  const start = renderer.indexOf("function " + startName);
+  assert.notEqual(start, -1, startName + " must exist in court renderer");
+  const end = endName ? renderer.indexOf("function " + endName, start + 1) : renderer.length;
+  assert.notEqual(end, -1, endName + " must follow " + startName + " in court renderer");
+  return renderer.slice(start, end);
 }
 
 test("hardships are owned by persistent top-level state, not today's plan", () => {
@@ -69,7 +81,7 @@ test("No Game slider has one inline label and requested instruction", () => {
 });
 
 test("hardship help stays concise and neutral", () => {
-  const help = section("getHardshipHelpText", "renderHardshipHelp");
+  const help = rendererSection("getHardshipHelpText", "renderHardshipHelp");
   assert.match(help, /Saved hardship for /);
   assert.match(help, /Target area:/);
   assert.match(help, /Shot restriction:/);
@@ -80,7 +92,7 @@ test("hardship help stays concise and neutral", () => {
 
 
 test("shot restriction markers read the persistent hardship rule rather than a second store", () => {
-  const active = section("getActiveShotRestrictionsForCourt", "renderCourtShotRestrictionIcon");
+  const active = rendererSection("getActiveShotRestrictionsForCourt", "renderCourtShotRestrictionIcon");
   assert.match(active, /getDominantHardshipEntryForCourt\(court\)/);
   assert.match(active, /entry\.rule\.shotRestrictions/);
   assert.match(active, /entry\.rule\.shotStage/);
@@ -94,7 +106,7 @@ test("legacy shotStage hardships map to both explicit shot restrictions", () => 
 });
 
 test("court restriction overlay is one side-level stack in the restricted half", () => {
-  const overlay = section("renderCourtShotRestrictionOverlay", "getZoneRectsForSide");
+  const overlay = rendererSection("renderCourtShotRestrictionOverlay", "getHardshipHelpText");
   assert.match(overlay, /data-restricted-side=/);
   assert.match(overlay, /is-side-/);
   assert.match(overlay, /active\.restrictions\.map\(renderCourtShotRestrictionIcon\)/);
@@ -105,7 +117,7 @@ test("court restriction overlay is one side-level stack in the restricted half",
 });
 
 test("No Smashes and No Downward Shots markers are independently conditional", () => {
-  const icon = section("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
+  const icon = rendererSection("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
   assert.match(icon, /type === 'no-smashes'/);
   assert.match(icon, /No Smashes/);
   assert.match(icon, /No Downward Shots/);
@@ -114,12 +126,12 @@ test("No Smashes and No Downward Shots markers are independently conditional", (
   assert.match(icon, /<line x1="7\.5" y1="28\.5" x2="28\.5" y2="7\.5"[^>]+stroke="#c8273d"/);
   assert.match(icon, /M18 7 L12\.5 17/);
   assert.match(icon, /M11 10 L25 24/);
-  const overlay = section("renderCourtShotRestrictionOverlay", "getZoneRectsForSide");
+  const overlay = rendererSection("renderCourtShotRestrictionOverlay", "getHardshipHelpText");
   assert.match(overlay, /if\(!active\.sideNumber \|\| !active\.restrictions\.length\) return ''/);
 });
 
 test("shot restriction marker captions are compact click/tap details on the court artwork", () => {
-  const icon = section("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
+  const icon = rendererSection("renderCourtShotRestrictionIcon", "renderCourtShotRestrictionOverlay");
   assert.match(icon, /<details class="court-shot-restriction/);
   assert.match(icon, /<summary aria-label="/);
   assert.match(icon, /court-shot-restriction__caption/);
@@ -130,7 +142,7 @@ test("shot restriction marker captions are compact click/tap details on the cour
 });
 
 test("visible shot guidance semantically bolds both restriction names", () => {
-  const guidance = section("renderRuleGuidance", "getActiveShotRestrictionsForCourt");
+  const guidance = rendererSection("renderRuleGuidance", "renderCourtDiagram");
   assert.match(guidance, /getShotRestrictionHtml\(court\.shotRestrictionStage, court\.shotRestrictions\)/);
   const html = section("getShotRestrictionHtml", "getLossSeverity");
   assert.match(html, /'<strong>' \+ escapeHtml\(label\) \+ '<\/strong>'/);
