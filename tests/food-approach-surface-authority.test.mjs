@@ -155,3 +155,19 @@ test('Food parent keeps only overview first-paint state and normal CSS has no ov
   assert.match(foodHtml, /id="baseline-food-section-first-paint"/);
   assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint"/);
 });
+
+
+test('standalone Food recipes inherit primary tabs from the shared sitewide router', () => {
+  assert.match(shared, /function ensureStandaloneSystemTabs\(\)/);
+  assert.match(shared, /BASELINE_CLEAN_PAGE_ROUTES/);
+  assert.match(shared, /baseline-standalone-primary-tabs/);
+  assert.match(shared, /legacyLinks\.replaceWith\(nav\)/);
+  assert.match(recipeCss, /BASELINE-STANDALONE-SYSTEM-TABS-20261004/);
+  assert.match(recipeCss, /\.food-recipe-top \.top-links\{\s*display:none;/);
+
+  for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
+    const html = read(path.join('systems/baseline-food-approach/recipes', name));
+    assert.doesNotMatch(html, /baseline-standalone-primary-tabs|food-primary-tabs/);
+    assert.match(html, /baseline-shared\.js/);
+  }
+});
