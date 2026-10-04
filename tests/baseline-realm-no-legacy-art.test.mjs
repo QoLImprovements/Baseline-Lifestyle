@@ -77,11 +77,11 @@ test('completed modules are exposed as complete rather than previews', async () 
   assert.deepEqual(calorieEscape.ZONES.map((zone) => zone.status), ['playable', 'playable', 'playable', 'playable']);
   assert.equal(calorieEscape.LEVELS.length, 12);
 
-  const calorieSource = fs.readFileSync(path.join(realm, 'calorie-escape/js/module-e.js'), 'utf8');
+  const calorieSource = fs.readFileSync(path.join(realm, 'calorie-escape/js/calorie-escape-game.js'), 'utf8');
   const tacticalSource = fs.readFileSync(path.join(realm, 'tactical-operations/js/tactical-operations-scene.js'), 'utf8');
   const explorationReadme = fs.readFileSync(path.join(realm, 'exploration/README.md'), 'utf8');
 
-  assert.doesNotMatch(calorieSource, /future zone preview|playable vertical slice/i);
+  assert.doesNotMatch(calorieSource, /future zone preview|playable vertical slice|module-e\.js/i);
   assert.doesNotMatch(tacticalSource, /TACTICAL_OPERATIONS_VERTICAL_SLICE/i);
   assert.doesNotMatch(explorationReadme, /vertical slice/i);
 });
