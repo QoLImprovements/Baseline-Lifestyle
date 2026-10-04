@@ -630,8 +630,7 @@
   }catch(_e){}
 
   function markLocalChange(){
-    const previous = Number(state && state.localUpdatedAt || 0) || 0;
-    state.localUpdatedAt = Math.max(Date.now(), previous + 1);
+    state.localUpdatedAt=Math.max(Date.now(),(Number(state && state.localUpdatedAt || 0)||0)+1);
   }
 
 
@@ -681,7 +680,7 @@
     serverSaveInFlight = true;
     serverSaveAbortController = window.AbortController ? new AbortController() : null;
     const requestLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
-    const requestState = JSON.parse(JSON.stringify(state));
+    const requestState=JSON.parse(JSON.stringify(state));
 
     serverSavePromise = serverClient.save(API_STATE_URL, serverPayload(requestState), serverSaveAbortController && serverSaveAbortController.signal)
       .then(function(data){
@@ -716,12 +715,7 @@
           const verifiedRevision=Number(verified.revision);
           if(Number.isInteger(verifiedRevision)&&verifiedRevision>=0) serverRevision=verifiedRevision;
 
-          // A verification response confirms the snapshot that was sent. It must
-          // not replace newer live court edits made while that request was in flight.
-          const liveLocalUpdatedAt = Number(state && state.localUpdatedAt || 0) || 0;
-          if(liveLocalUpdatedAt <= requestLocalUpdatedAt){
-            state=hydrateLoadedState(verified.state);
-          }
+          if((Number(state && state.localUpdatedAt || 0)||0)<=requestLocalUpdatedAt) state=hydrateLoadedState(verified.state);
           return true;
         });
       })
