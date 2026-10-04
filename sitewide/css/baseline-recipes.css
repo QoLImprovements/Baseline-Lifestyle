@@ -2608,8 +2608,7 @@
 #recipes .recipe-page .glide-controller{
   border-color:color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 72%, transparent) !important;
 }
-#recipes .recipe-page .variant-heading,
-#recipes .recipe-page .recipe-native-variant-switcher{
+#recipes .recipe-page .variant-heading{
   display:none !important;
 }
 #recipes .recipe-page:not(.recipe-options-open) .glide-controller{
@@ -4087,41 +4086,66 @@ body[data-app] .recipe-universal-template .recipe-formula-controls .oat-toggle{
   max-width:100% !important;
 }
 
-/* The native variant buttons remain the event authority. Details gets a
-   synchronized selector so changing variance updates the same underlying
-   variant state rather than creating a second state authority. */
-body[data-app] .recipe-universal-template .recipe-native-variant-switcher,
+/* Native variant buttons remain the event authority. Both Recipe and Details
+   use visible tag-style choices, with one shared selected-state treatment. */
 body[data-app] .recipe-universal-template .variant-heading{
   display:none !important;
 }
 body[data-app] .recipe-universal-template .recipe-details-variant-field{
   display:flex !important;
-  align-items:center !important;
+  flex-direction:column !important;
+  align-items:flex-start !important;
+  gap:8px !important;
   width:100% !important;
   margin:0 0 2px !important;
   padding:0 0 12px !important;
   border-bottom:1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.18)) 72%, transparent) !important;
 }
 body[data-app] .recipe-universal-template .recipe-details-variant-label{
-  display:flex !important;
-  align-items:center !important;
-  gap:9px !important;
-  flex-wrap:wrap !important;
+  display:block !important;
   width:100% !important;
   font-weight:800 !important;
   color:var(--ink) !important;
 }
-html body[data-app] .recipe-universal-template select.recipe-details-variant-select{
-  min-width:min(280px,100%) !important;
-  max-width:100% !important;
-  margin:0 !important;
+body[data-app] .recipe-universal-template .recipe-details-variant-switcher,
+body[data-app] .recipe-universal-template .variant-switcher{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  align-items:center !important;
+  gap:7px !important;
+}
+html body[data-app] .recipe-universal-template .recipe-variant-tag,
+html body[data-app] .recipe-universal-template .variant-switcher .variant-tab{
+  appearance:none !important;
+  -webkit-appearance:none !important;
+  border:1px solid color-mix(in srgb, var(--border, rgba(0,0,0,.24)) 88%, transparent) !important;
+  border-radius:999px !important;
+  padding:7px 12px !important;
+  background:transparent !important;
   color:var(--ink) !important;
-  -webkit-text-fill-color:currentColor !important;
-  background:var(--showall-bg, var(--card-bg, rgba(255,255,255,.22))) !important;
-  border:1px solid var(--showall-border, var(--border, rgba(0,0,0,.18))) !important;
-  border-radius:10px !important;
-  padding:8px 10px !important;
   font:inherit !important;
+  font-weight:650 !important;
+  line-height:1.2 !important;
+  cursor:pointer !important;
+  box-shadow:none !important;
+}
+html body[data-app] .recipe-universal-template .recipe-variant-tag:hover,
+html body[data-app] .recipe-universal-template .variant-switcher .variant-tab:hover{
+  background:color-mix(in srgb, var(--card-bg, #fff) 56%, transparent) !important;
+}
+html body[data-app] .recipe-universal-template .recipe-variant-tag[aria-selected="true"],
+html body[data-app] .recipe-universal-template .variant-switcher .variant-tab[aria-selected="true"]{
+  background:var(--accent, var(--ink)) !important;
+  border-color:var(--accent, var(--ink)) !important;
+  color:var(--page-bg, #fff) !important;
+  -webkit-text-fill-color:currentColor !important;
+  font-weight:850 !important;
+  box-shadow:0 1px 5px color-mix(in srgb, var(--ink, #000) 22%, transparent) !important;
+}
+html body[data-app] .recipe-universal-template .recipe-variant-tag:focus-visible,
+html body[data-app] .recipe-universal-template .variant-switcher .variant-tab:focus-visible{
+  outline:2px solid var(--accent, var(--ink)) !important;
+  outline-offset:2px !important;
 }
 body[data-app] .recipe-universal-template .recipe-selected-variance-detail{
   width:100% !important;

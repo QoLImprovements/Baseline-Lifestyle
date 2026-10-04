@@ -2096,7 +2096,18 @@ Method steps MUST follow this format:
       });
     });
 
-    var active = recipe.querySelector('.variant-tab[aria-selected="true"]');
+    var routedVariant = '';
+    try{
+      var recipePath = String(location.pathname || '').replace(/\/+$/,'').toLowerCase();
+      if(/\/baseline-natural-skincare\/recipes\/anhydrous-oil-cleanser$/.test(recipePath)){
+        routedVariant = String(new URLSearchParams(location.search || '').get('variant') || '').trim();
+      }
+    }catch(_e){}
+
+    var routedButton = routedVariant
+      ? recipe.querySelector('.variant-tab[data-variant="' + CSS.escape(routedVariant) + '"]')
+      : null;
+    var active = routedButton || recipe.querySelector('.variant-tab[aria-selected="true"]');
     activateCleanserVariant(active ? active.getAttribute('data-variant') : 'balanced');
   }
 

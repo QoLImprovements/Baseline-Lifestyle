@@ -1682,7 +1682,7 @@ body[data-app] #recipes .scale-apply,
 body[data-app] #recipes .multiplier button,
 body[data-app] #recipes .ingredient-recipe-link a,
 body[data-app] #recipes .action,
-body[data-app] #recipes button,
+body[data-app] #recipes button:not(.variant-tab):not(.recipe-variant-tag),
 body[data-app] #recipes .bl-number-stepper .bl-step{
   background-image:none!important;
   background-color:var(--bl-surface-control-solid)!important;
