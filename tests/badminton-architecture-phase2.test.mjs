@@ -12,6 +12,10 @@ const source = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/baseline-badminton-session.js"),
   "utf8",
 );
+const htmlSource = fs.readFileSync(
+  path.join(root, "systems/baseline-badminton-session/baseline-badminton-session.html"),
+  "utf8",
+);
 const ratingsSource = fs.readFileSync(
   path.join(root, "systems/baseline-badminton-session/js/badminton-session-ratings.js"),
   "utf8",
@@ -311,4 +315,35 @@ test("Badminton moderator display name and login identity remain distinct", () =
   assert.match(source, /const SITE_MODERATOR_CANONICAL_LOGIN = 'PeterBW';/);
   assert.match(rosterSource, /player\.name = 'Peter Bates-Wilkinson';/);
   assert.match(rosterSource, /player\.loginUsername = moderatorCanonicalLogin;/);
+});
+
+
+test("Badminton Save Results uses the browser window rather than the module-only global alias", () => {
+  assert.match(resultsSource, /onclick="return window\.BASELINE_saveCourtResultButton \? window\.BASELINE_saveCourtResultButton\(event,this\) : false;"/);
+  assert.doesNotMatch(resultsSource, /onclick="return global\.BASELINE_saveCourtResultButton/);
+});
+
+test("Badminton login options expose PeterBW as the username and collapse moderator aliases", () => {
+  assert.match(rosterSource, /addCanonicalLoginOption\(moderatorCanonicalLogin, moderatorCanonicalLogin/);
+  assert.match(rosterSource, /const canonical = normalizeKnownLoginName\(raw\)/);
+  assert.match(rosterSource, /isModeratorLogin \? moderatorCanonicalLogin/);
+  assert.doesNotMatch(rosterSource, /addLoginOption\(map, moderatorCanonicalLogin, 'Peter Bates-Wilkinson'/);
+});
+
+test("entering the top-level Game Plan tab returns to the primary Game Plan subtab", () => {
+  assert.match(gamePlanSource, /function activateGamePlanSubtab\(target\)/);
+  assert.match(gamePlanSource, /\.tab\[data-target="gameplan"\]/);
+  assert.match(gamePlanSource, /activateGamePlanSubtab\('plan'\)/);
+});
+
+test("Badminton repaired modules carry a fresh cache revision", () => {
+  for (const file of [
+    "badminton-session-roster.js",
+    "badminton-session-game-plan.js",
+    "badminton-session-results.js",
+    "badminton-session-court-renderer.js",
+    "baseline-badminton-session.js",
+  ]) {
+    assert.match(htmlSource, new RegExp(file.replace(/\./g, "\\.") + "\\?v=BADMINTON_REGRESSION_REPAIR_20261004_2"));
+  }
 });
