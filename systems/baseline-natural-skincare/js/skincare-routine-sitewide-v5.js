@@ -80,6 +80,9 @@
   function announceRevision() {
     try { document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {}
   }
+  function setSaveStatus(text,kind='') {
+    const target=$('#routineSaveStatus');if (!target) return;target.textContent=text;if (kind) target.dataset.kind=kind;else delete target.dataset.kind;
+  }
   async function groupRequest(options={}) {
     try {
       const response=await fetch(GROUP_API,{ method:options.method || 'GET',credentials:'same-origin',headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),body:options.body?JSON.stringify(options.body):undefined });
@@ -100,6 +103,7 @@
     if (!current.ok || !current.data?.ok) {
       state.saveInFlight=false;
       state.saveBlocked=true;
+      setSaveStatus('Could not verify the account copy. Group saving has stopped.','warning');
       return;
     }
     const serverGroups=normaliseGroups(current.data.groups);
@@ -108,6 +112,7 @@
     if (state.serverSignature && currentSignature!==state.serverSignature) {
       state.saveInFlight=false;
       state.saveBlocked=true;
+      setSaveStatus('Saving stopped because the account groups changed elsewhere. Refresh before making further changes.','warning');
       return;
     }
 
@@ -115,10 +120,12 @@
     const response=await groupRequest({ method:'POST',body:{ groups:payloadGroups,assignments:payloadAssignments,expectedRevision:state.revision } });
     if (!response.ok || !response.data?.ok) {
       state.saveBlocked=true;
+      setSaveStatus(response.status===409 || response.data?.error==='revision_conflict' ? 'Saving stopped because the account copy changed elsewhere. Refresh before making further changes.' : 'Could not save routine groups to your account.','warning');
     } else {
       state.revision=Number(response.data.revision || state.revision || 0);
       state.serverSignature=payloadSignature;
       announceRevision();
+      setSaveStatus('Saved to account.','saved');
     }
     state.saveInFlight=false;
     if (state.saveQueued && !state.saveBlocked) { state.saveQueued=false;saveGroupsNow(); }
