@@ -105,6 +105,7 @@ function bl_skincare_saved_upgrade_resource(PDO $db, int $userId, string $path, 
      assignment map into the account file. Recover only during this one-time
      schema upgrade, and only from the user's own legacy server record. */
   $legacy = bl_skincare_saved_sqlite_snapshot($db, $userId);
+  if((int)($resource['revision'] ?? 0) === 0 && empty($legacy['hasData'])) return $resource;
   $legacyData = is_array($legacy['data'] ?? null) ? $legacy['data'] : [];
   if((int)($resource['revision'] ?? 0) === 0 && !empty($legacy['hasData'])){
     $data = array_replace(bl_skincare_saved_default(), $legacyData);
