@@ -45,7 +45,7 @@
     const title=cleanText(source.title,80);
     if (!id || !title) return null;
     return {
-      id,title,collapsed:true,
+      id,title,collapsed:source.collapsed!==false,
       frequency:MODEL.normaliseFrequency(source.frequency),
       timeOfDay:MODEL.TIMES.some((entry) => entry.value===source.timeOfDay)?source.timeOfDay:'anytime'
     };
