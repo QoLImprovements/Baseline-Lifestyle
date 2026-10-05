@@ -11,24 +11,26 @@ const publicPages = [
   'systems/baseline-massage/baseline-massage.html'
 ];
 
-test('public system header controls exist in initial HTML', () => {
+test('public system header controls exist in initial HTML and Voice is Fitness-only', () => {
   for (const path of publicPages) {
     const html = readFileSync(path, 'utf8');
-    for (const id of ['blProtectedKey','bl-beats-toggle','bl-voice-toggle','bl-auth-toggle']) {
+    for (const id of ['blProtectedKey','bl-beats-toggle','bl-auth-toggle']) {
       assert.equal((html.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1);
     }
+    const voiceCount=(html.match(/id="bl-voice-toggle"/g)||[]).length;
+    assert.equal(voiceCount, path.includes('/baseline-fitness/') ? 1 : 0);
     assert.match(html, /class="bl-homebar-right" aria-label="Site controls"/);
   }
 });
 
-test('Home authors stable banner controls and preloads Voice visibility before shared JavaScript runs', () => {
+test('Home has no Voice control or Voice panel assets', () => {
   const html = readFileSync('index.html', 'utf8');
-  for (const id of ['blProtectedKey','bl-voice-toggle','bl-auth-toggle']) {
+  for (const id of ['blProtectedKey','bl-auth-toggle']) {
     assert.equal((html.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1);
   }
   assert.equal((html.match(/id="bl-beats-toggle"/g) || []).length, 0);
-  assert.match(html, /\/sitewide\/css\/baseline-voice\.css\?v=BASELINE_VOICE_CANONICAL_20260720_1/);
-  assert.match(html, /data-baseline-voice-style="true"/);
+  assert.equal((html.match(/id="bl-voice-toggle"/g) || []).length, 0);
+  assert.doesNotMatch(html, /baseline-voice\.css|data-baseline-voice-style/);
   assert.match(html, /data-initial-home-view/);
   const css = readFileSync('sitewide/css/baseline-home.css', 'utf8');
   assert.match(css, /\.bl-top-header > \.bl-homebar-right\s*\{[^}]*position:absolute;[^}]*top:14px;[^}]*right:14px;/s);
