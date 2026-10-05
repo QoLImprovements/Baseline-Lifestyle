@@ -127,8 +127,10 @@
     patch();
   }
   function stageLegacyAssignmentsIfNeeded() {
-    if (state.recoveryStarted || !state.authed || Object.keys(state.assignments).length || !state.groups.length) {
-      if (Object.keys(state.assignments).length) clearLegacyRoutineStorage();
+    if (state.recoveryPending || state.recoveryStarted || !state.authed || !state.groups.length) return;
+    if (Object.keys(state.assignments).length) {
+      state.recoveryStarted=true;
+      clearLegacyRoutineStorage();
       return;
     }
     state.recoveryStarted=true;
