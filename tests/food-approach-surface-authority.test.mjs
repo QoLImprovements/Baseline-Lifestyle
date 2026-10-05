@@ -121,10 +121,10 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
 });
 
 
-test('Food first-paint tabs match the live solid tab authority', () => {
+test('Food first-paint routing contains no historical tab visual authority', () => {
   const firstPaint = foodHtml.match(/<style id="baseline-recipe-route-first-paint-style">([\s\S]*?)<\/style>/)?.[1] || '';
-  assert.match(firstPaint, /--bl-surface-control-solid/);
-  assert.match(firstPaint, /--bl-surface-active-solid/);
-  assert.match(firstPaint, /color:var\(--ink\)!important/);
-  assert.doesNotMatch(firstPaint, /#fff7e8|--food-tab-bg|--food-tab-active/);
+  assert.match(firstPaint, /main\.wrap>\.section\{display:none!important\}/);
+  assert.match(firstPaint, /#diet-log\.section\{display:block!important\}/);
+  assert.doesNotMatch(firstPaint, /\.tabs \.tab|color:|background:|--food-tab-|--bl-surface-/);
+  assert.match(foodHtml, /id="baseline-food-tab-first-state"/);
 });
