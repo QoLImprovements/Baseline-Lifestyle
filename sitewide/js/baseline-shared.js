@@ -6073,6 +6073,7 @@ function buildControls(recipeEl){
     }
 
     function currentAuthButtonLabel(){
+      if(document.body && document.body.dataset && document.body.dataset.app === 'games') return 'Account';
       try{
         if(authState && authState.authed) return 'Account';
         const cachedSession = lsRead(LOCAL_SESS_KEY, null);
@@ -6757,7 +6758,7 @@ function setupAuthFlyout(){
 
     function renderAuthUI(){
       const authed = !!authState.authed;
-      const bannerLabel = authed ? 'Account' : 'Login';
+      const bannerLabel = (document.body && document.body.dataset && document.body.dataset.app === 'games') ? 'Account' : (authed ? 'Account' : 'Login');
       try{
         const iconNode = toggle.querySelector('.bl-btn-icon');
         const labelNode = toggle.querySelector('.bl-btn-label');
