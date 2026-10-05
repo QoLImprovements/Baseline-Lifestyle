@@ -1101,6 +1101,12 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function getAuth(){
     try{
+      const storage=serverStorageAuthority();
+      if(storage && typeof storage.isReady==='function' && storage.isReady() && typeof storage.isAuthenticated==='function'){
+        return { authed:!!storage.isAuthenticated(), name:'', email:'' };
+      }
+    }catch(_e){}
+    try{
       if(window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function'){
         const auth = window.BASELINE_auth.get() || {};
         return { authed:!!auth.authed, name:String(auth.name || ''), email:String(auth.email || '') };
@@ -1458,7 +1464,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
 
   function authStateKey(value){
     const source=value||{};
-    return [source.authed?'1':'0',String(source.name||''),String(source.email||'')].join('|');
+    return source.authed?'1':'0';
   }
 
   let lastAuthStateKey='';
@@ -1479,21 +1485,14 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     try{
       const button=document.getElementById('bl-auth-toggle');
       if(!button) return;
-      const label=authState.authed?'Account':'Login';
+      const label='Account';
       const labelNode=button.querySelector('.bl-btn-label');
       if(labelNode) labelNode.textContent=label;
       button.setAttribute('aria-label',label);
     }catch(_e){}
   }
 
-  async function resolveInitialAuth(){
-    try{
-      if(window.BASELINE_auth && typeof window.BASELINE_auth.refresh==='function'){
-        await window.BASELINE_auth.refresh();
-      }
-    }catch(error){
-      try{ console.warn('[Baseline Games Hub] Initial auth refresh was unavailable.',error); }catch(_e){}
-    }
+  function resolveInitialAuth(){
     authState=getAuth();
     lastAuthStateKey=authStateKey(authState);
     syncAuthHeaderLabel();
@@ -4122,7 +4121,7 @@ function toggleGameFullscreen(gameId){
   async function initialiseStableHub(coreDependencies){
     let stable=true;
     try{
-      await resolveInitialAuth();
+      resolveInitialAuth();
       await hydrateProfiles();
       restoreFromHashState({ useStored:true });
       ensureGamesHubBackEntry();
@@ -4143,7 +4142,6 @@ function toggleGameFullscreen(gameId){
       }catch(_e){}
     }
     markCoreReady(coreDependencies);
-    document.documentElement.removeAttribute('data-games-document-pending');
     return stable;
   }
 
