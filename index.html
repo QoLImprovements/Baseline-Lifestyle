@@ -133,22 +133,10 @@ These Markdown rules are a human reference point, not live runtime config.
   // browser refresh returns to the same screen rather than resetting to the index.
 
   const offline = !/^https?:$/.test(location.protocol);
-  const OUTER_SNAPSHOT_PREFIX = '__baseline_outer_embed_snapshot_v2__::';
-
-  function outerSnapshotKey(){
-    try{ return OUTER_SNAPSHOT_PREFIX + String(location.pathname || '').toLowerCase(); }
-    catch(_e){ return OUTER_SNAPSHOT_PREFIX + 'page'; }
-  }
-
   (function consumeForcedHomeFlag(){
     try{
       const url = new URL(window.location.href);
       if(!url.searchParams.has('bl_home')) return;
-      const key = outerSnapshotKey();
-      try{ sessionStorage.removeItem(key); }catch(__e){}
-      try{ localStorage.removeItem(key); }catch(__e){}
-      try{ sessionStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(__e){}
-      try{ localStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(__e){}
       url.searchParams.delete('bl_home');
       url.hash = '';
       history.replaceState(null, '', url.pathname + (url.search || ''));
@@ -162,57 +150,6 @@ These Markdown rules are a human reference point, not live runtime config.
 
   let currentView = null; // 'food' | 'skin' | 'fitness' | 'badminton' | 'games'
   let lastOuterHash = '';
-
-  function getNavigationType(){
-    try{
-      const entry = performance && performance.getEntriesByType ? performance.getEntriesByType('navigation')[0] : null;
-      if(entry && entry.type) return String(entry.type).toLowerCase();
-    }catch(_e){}
-    try{
-      if(performance && performance.navigation){
-        if(performance.navigation.type === 1) return 'reload';
-        if(performance.navigation.type === 2) return 'back_forward';
-      }
-    }catch(_e){}
-    return 'navigate';
-  }
-
-  function writeOuterSnapshot(view, innerHash){
-    const payload = JSON.stringify({
-      view: (view === 'skin') ? 'skin' : (view === 'fitness' ? 'fitness' : (view === 'badminton' ? 'badminton' : (view === 'games' ? 'games' : 'food'))), 
-      state: String(innerHash || '').replace(/^#/, ''),
-      ts: Date.now()
-    });
-    const key = outerSnapshotKey();
-    try{ sessionStorage.setItem(key, payload); }catch(_e){}
-    try{ localStorage.removeItem(key); }catch(_e){}
-  }
-
-  function readOuterSnapshot(){
-    const raw = (function(){
-      let value = '';
-      const key = outerSnapshotKey();
-      try{ value = sessionStorage.getItem(key) || ''; }catch(_e){}
-      try{ localStorage.removeItem(key); }catch(_e){}
-      return value || '';
-    })();
-    if(!raw) return null;
-    try{
-      const parsed = JSON.parse(raw);
-      const view = (parsed && parsed.view || '').toLowerCase();
-      if(view !== 'food' && view !== 'massage' && view !== 'skin' && view !== 'fitness' && view !== 'badminton' && view !== 'games') return null;
-      return { view, state: String((parsed && parsed.state) || '') };
-    }catch(_e){}
-    return null;
-  }
-
-  function clearOuterSnapshot(){
-    const key = outerSnapshotKey();
-    try{ sessionStorage.removeItem(key); }catch(_e){}
-    try{ localStorage.removeItem(key); }catch(_e){}
-    try{ sessionStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(_e){}
-    try{ localStorage.removeItem('__baseline_outer_embed_snapshot_v2__'); }catch(_e){}
-  }
 
   function buildInnerHashFromState(state){
     if(!state || typeof state !== 'object') return '';
@@ -269,7 +206,6 @@ These Markdown rules are a human reference point, not live runtime config.
 
     const next = '#' + params.toString();
     if(next === lastOuterHash){
-      try{ writeOuterSnapshot(v, innerHash); }catch(_e){}
       return;
     }
     lastOuterHash = next;
@@ -281,12 +217,10 @@ These Markdown rules are a human reference point, not live runtime config.
       // Fallback for restricted history APIs
       location.hash = next;
     }
-    try{ writeOuterSnapshot(v, innerHash); }catch(_e){}
   }
 
   function clearOuterHash(){
     lastOuterHash = '';
-    clearOuterSnapshot();
     try{ history.replaceState(null, '', location.pathname + location.search); }
     catch(_e){ location.hash = ''; }
   }
@@ -421,7 +355,6 @@ These Markdown rules are a human reference point, not live runtime config.
 
   function goHome(){
     try{ clearOuterHash(); }catch(_e){}
-    try{ clearOuterSnapshot(); }catch(_e){}
     try{
       const url = new URL('/home/1', window.location.href);
       url.hash = '';
@@ -508,26 +441,10 @@ These Markdown rules are a human reference point, not live runtime config.
     }
   });
 
-  // Restore embedded view only for the current tab session.
-  // Fresh opens of index.html must stay on the homepage; only reload/back-forward
-  // should re-open the last embedded page when the parent hash was lost.
+  // Restore only from the URL. No browser-owned snapshot is retained.
   (function restoreFromHash(){
     const fromHash = parseOuterHash();
-    if(fromHash){
-      open(fromHash.view, fromHash.state, { fromHistory:true });
-      return;
-    }
-
-    const navType = getNavigationType();
-    const allowSnapshotRestore = navType === 'reload' || navType === 'back_forward';
-    if(!allowSnapshotRestore){
-      clearOuterSnapshot();
-      return;
-    }
-
-    const snapshot = readOuterSnapshot();
-    if(!snapshot) return;
-    open(snapshot.view, snapshot.state, { fromHistory:true });
+    if(fromHash) open(fromHash.view, fromHash.state, { fromHistory:true });
   })();
 })();
 </script>
@@ -538,7 +455,6 @@ These Markdown rules are a human reference point, not live runtime config.
   const badmintonView = document.getElementById('badmintonView');
   const toBadminton = document.getElementById('toBadmintonView');
   const toSystems = document.getElementById('toSystemsView');
-  const HOME_VIEW_KEY = 'baselineIndexActiveView';
 
   function syncTopHeaderHeight(){
     if(!header) return;
@@ -562,12 +478,6 @@ These Markdown rules are a human reference point, not live runtime config.
     return routeViewFromPath();
   }
 
-  function persistView(which){
-    try{
-      sessionStorage.setItem(HOME_VIEW_KEY, which === 'badminton' ? 'badminton' : 'systems');
-    }catch(_e){}
-  }
-
   function showView(which, options){
     const showBadminton = which === 'badminton';
     if(systemsView){
@@ -579,9 +489,6 @@ These Markdown rules are a human reference point, not live runtime config.
       badmintonView.setAttribute('aria-hidden', String(!showBadminton));
     }
     const activeView = showBadminton ? 'badminton' : 'systems';
-    if(!options || options.persist !== false){
-      persistView(activeView);
-    }
     if(!options || options.history !== false){
       const nextUrl = cleanHomeUrl(activeView);
       try{
@@ -594,7 +501,7 @@ These Markdown rules are a human reference point, not live runtime config.
   }
 
   syncTopHeaderHeight();
-  showView(readInitialView(), { persist:false, history:false });
+  showView(readInitialView(), { history:false });
   try{
     const initialView = readInitialView();
     if(/^https?:$/i.test(location.protocol) && (!/\/home\/[12]\/?$/i.test(location.pathname || '') || location.hash)){
@@ -605,7 +512,7 @@ These Markdown rules are a human reference point, not live runtime config.
   window.addEventListener('load', syncTopHeaderHeight);
   window.addEventListener('popstate', function(event){
     const view = event && event.state && event.state.baselineHomeView ? event.state.baselineHomeView : routeViewFromPath();
-    showView(view, { persist:false, history:false });
+    showView(view, { history:false });
   });
 
   if(toBadminton){
