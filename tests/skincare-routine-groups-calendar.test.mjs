@@ -14,16 +14,18 @@ const catalogue=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/
 const schema=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/schema.php'),'utf8');
 const endpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_groups.php'),'utf8');
 
-test('Skincare identifies the exact My Routine panel before body paint',() => {
+test('Skincare identifies the exact My Routine panel before body paint and hydrates data from the server only',() => {
   assert.match(html,/id="baseline-skincare-first-paint"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/id="baseline-skincare-initial-panel"/);
   assert.match(html,/data-routine-panel="summary"/);
   assert.match(html,/data-routine-panel="plan"/);
   assert.match(html,/data-routine-panel="public"/);
-  assert.match(routine,/function loadLocalState\(\)/);
   assert.match(routine,/function loadRemoteState\(\)/);
-  assert.ok(routine.indexOf('loadLocalState();')<routine.indexOf('await loadRemoteState()'));
+  assert.doesNotMatch(routine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
+  assert.doesNotMatch(sitewide,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.match(routine,/expectedRevision:state\.revision/);
+  assert.match(sitewide,/expectedRevision:state\.revision/);
 });
 
 test('My Routine static workspace shell is authored exactly once in HTML',() => {
@@ -104,7 +106,8 @@ test('users can create remove assign and configure routine groups',() => {
   assert.match(sitewide,/function removeGroup\(/);
   assert.match(sitewide,/function assignItem\(/);
   assert.match(sitewide,/data-routine-group-select/);
-  assert.match(endpoint,/skincare_routine_groups/);
+  assert.match(endpoint,/bl_skincare_saved_mutate/);
+  assert.match(endpoint,/expectedRevision/);
   assert.match(schema,/CREATE TABLE IF NOT EXISTS skincare_routine_groups/);
 });
 
