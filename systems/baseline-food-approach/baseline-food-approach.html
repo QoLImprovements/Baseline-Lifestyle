@@ -40,6 +40,10 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Shared CSS loaded via <link> tags above. -->
 <style id="baseline-recipe-route-first-paint-style">
 html[data-initial-section] body[data-app="food"] main.wrap>.section{display:none!important}
+html[data-initial-section="system"] body[data-app="food"] #system.section,
+html[data-initial-section="recipes"] body[data-app="food"] #recipes.section,
+html[data-initial-section="ingredients"] body[data-app="food"] #ingredients.section,
+html[data-initial-section="diet-log"] body[data-app="food"] #diet-log.section{display:block!important}
 html[data-initial-recipe-route="1"] body[data-app="food"] #recipes #recipes-landing{display:none!important}
 html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:block!important}
 </style>
