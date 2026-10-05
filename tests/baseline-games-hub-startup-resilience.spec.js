@@ -143,15 +143,28 @@ test('direct Realm route opens the same Basecamp-first functional runtime',async
 });
 
 
-test('first visible Games Hub paint already contains the complete static interface',async({page})=>{
-  await page.route('**/*.js*',route=>route.abort());
-  const response=await page.goto(PATH,{waitUntil:'load'});
+test('Games Hub stays unpainted until resolved auth and primary profile state are rendered',async({page})=>{
+  await stubProfiles(page);
+  await page.route('**/api/me.php',async route=>{
+    await new Promise(resolve=>setTimeout(resolve,250));
+    await route.fulfill({
+      status:200,
+      contentType:'application/json',
+      body:JSON.stringify({ok:true,authed:true,name:'Test User',email:'test@example.invalid'})
+    });
+  });
+
+  const response=await page.goto(PATH,{waitUntil:'domcontentloaded'});
   expect(response).not.toBeNull();
   expect(response.status()).toBeLessThan(400);
+
   await expect(page.locator('html')).not.toHaveAttribute('data-games-document-pending','1');
   await expect(page.getByRole('heading',{name:'Baseline Games Hub'})).toBeVisible();
   await expect(page.getByRole('button',{name:'Games Hub',exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Games',exact:true})).toBeVisible();
   await expect(page.locator('#hub')).toBeVisible();
-  await expect(page.locator('#hub .card')).toHaveCount(2);
+  await expect(page.locator('#authStateNote')).toContainText('Account save is active.');
+  await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
+  await expect(page.locator('#bankSummary')).not.toBeEmpty();
+  await expect(page.locator('#gamesSummaryWrap')).not.toBeEmpty();
 });

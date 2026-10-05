@@ -1438,32 +1438,65 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
   }
 
-  function seedProfilesForImmediateRender(){
-    authState = getAuth();
-    GAME_APPS.forEach(function(app){
-      try{
-        profiles[app] = normaliseProfile(app, guestProfiles[app] || readGuestProfile(app) || (app === 'trackcoin' ? readTrackCoinStorage() : null) || defaultProfileForApp(app));
-        guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
-        if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
-      }catch(_e){
-        profiles[app] = defaultProfileForApp(app);
-      }
-    });
-    restoreSavedCoreRounds();
-  }
   function safeRenderAll(){
     try{ renderAll(); }catch(error){ try{ console.error('baseline-games-hub render failure', error); }catch(_e){} }
   }
 
-  async function loadAllProfiles(){
+  async function hydrateProfiles(){
     authState = getAuth();
     await Promise.allSettled(GAME_APPS.map(loadProfile));
     wordState = null;
     restoreSavedCoreRounds();
     resolveNinjaBonuses();
-    renderAuthState();
     applyOfflineNinjaProgress();
+  }
+  async function loadAllProfiles(){
+    await hydrateProfiles();
+    renderAuthState();
     safeRenderAll();
+  }
+
+  function authStateKey(value){
+    const source=value||{};
+    return [source.authed?'1':'0',String(source.name||''),String(source.email||'')].join('|');
+  }
+
+  let lastAuthStateKey='';
+  let authChangeUnsubscribe=null;
+  function bindAuthStateChanges(){
+    if(authChangeUnsubscribe || !window.BASELINE_auth || typeof window.BASELINE_auth.onChange!=='function') return;
+    authChangeUnsubscribe=window.BASELINE_auth.onChange(function(next){
+      const nextKey=authStateKey(next);
+      if(nextKey===lastAuthStateKey) return;
+      lastAuthStateKey=nextKey;
+      loadAllProfiles().catch(function(error){
+        try{ console.error('[Baseline Games Hub] Auth-state profile reload failed.',error); }catch(_e){}
+      });
+    });
+  }
+
+  function syncAuthHeaderLabel(){
+    try{
+      const button=document.getElementById('bl-auth-toggle');
+      if(!button) return;
+      const label=authState.authed?'Account':'Login';
+      const labelNode=button.querySelector('.bl-btn-label');
+      if(labelNode) labelNode.textContent=label;
+      button.setAttribute('aria-label',label);
+    }catch(_e){}
+  }
+
+  async function resolveInitialAuth(){
+    try{
+      if(window.BASELINE_auth && typeof window.BASELINE_auth.refresh==='function'){
+        await window.BASELINE_auth.refresh();
+      }
+    }catch(error){
+      try{ console.warn('[Baseline Games Hub] Initial auth refresh was unavailable.',error); }catch(_e){}
+    }
+    authState=getAuth();
+    lastAuthStateKey=authStateKey(authState);
+    syncAuthHeaderLabel();
   }
   function scheduleSave(app){
     const profile = profiles[app];
@@ -4077,9 +4110,43 @@ function toggleGameFullscreen(gameId){
     if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
     if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard'); });
     if(refs.gamesSummaryWrap) refs.gamesSummaryWrap.addEventListener('toggle', function(event){ const details = event.target.closest('details[data-summary]'); if(!details) return; const id = details.getAttribute('data-summary'); if(details.open) openSummaryIds.add(id); else openSummaryIds.delete(id); }, true);
-    if(window.BASELINE_auth && typeof window.BASELINE_auth.onChange === 'function'){ window.BASELINE_auth.onChange(loadAllProfiles); }
-    document.addEventListener('baseline:auth', loadAllProfiles);
   }
+  function markCoreReady(coreDependencies){
+    window.BASELINE_GAMES_HUB_CORE_READY = true;
+    document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
+    try{
+      window.dispatchEvent(new CustomEvent('baseline:games-hub:core-ready', { detail:{ dependencies:coreDependencies } }));
+    }catch(_coreReadyEventError){}
+  }
+
+  async function initialiseStableHub(coreDependencies){
+    let stable=true;
+    try{
+      await resolveInitialAuth();
+      await hydrateProfiles();
+      restoreFromHashState({ useStored:true });
+      ensureGamesHubBackEntry();
+      renderAuthState();
+      safeRenderAll();
+      startNinjaLoop();
+      bindAuthStateChanges();
+    }catch(error){
+      stable=false;
+      try{ console.error('[Baseline Games Hub] Stable startup failed.',error); }catch(_e){}
+      // loadProfile already falls back to server-backed memory/default profiles.
+      // Render once from whatever authoritative state is available rather than
+      // exposing a sequence of temporary states.
+      try{
+        authState=getAuth();
+        renderAuthState();
+        safeRenderAll();
+      }catch(_e){}
+    }
+    markCoreReady(coreDependencies);
+    document.documentElement.removeAttribute('data-games-document-pending');
+    return stable;
+  }
+
   function init(){
     cacheRefs();
     const coreDependencies = {
@@ -4096,8 +4163,6 @@ function toggleGameFullscreen(gameId){
     ensureGamePlayContract();
     setupGamePlayContractObserver();
     ensureGameFullscreenButtons();
-    seedProfilesForImmediateRender();
-    resolveNinjaBonuses();
     wireTabs();
     bindEvents();
     if(typeof window !== 'undefined'){
@@ -4113,23 +4178,8 @@ function toggleGameFullscreen(gameId){
       document.addEventListener('visibilitychange', syncRuleShiftVisibility);
       try{ document.documentElement.setAttribute('data-baseline-games-resize-mobile-input-sync','1'); }catch(_e){}
     }
-    restoreFromHashState({ useStored:true });
-    ensureGamesHubBackEntry();
-    renderAuthState();
-    safeRenderAll();
-    startNinjaLoop();
-    const initialRenderReady = loadAllProfiles()
-      .then(function(){ startNinjaLoop(); return true; })
-      .catch(function(){ safeRenderAll(); return false; });
-    // Keep the hydration promise available to route-specific loaders. The Hub
-    // itself is already painted from its complete static document and must not
-    // wait on profile hydration before becoming visible.
-    window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY = initialRenderReady;
-    window.BASELINE_GAMES_HUB_CORE_READY = true;
-    document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
-    try{
-      window.dispatchEvent(new CustomEvent('baseline:games-hub:core-ready', { detail:{ dependencies:coreDependencies } }));
-    }catch(_coreReadyEventError){}
+    const initialRenderReady=initialiseStableHub(coreDependencies);
+    window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY=initialRenderReady;
   }
   init();
 })();

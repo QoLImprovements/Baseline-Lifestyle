@@ -77,27 +77,21 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
 });
 
 
-test('Games Hub has no delayed reveal gate or hidden boot paint',()=>{
+test('Games Hub uses one stable startup authority before first visible paint',()=>{
   const hubCss=fs.readFileSync(new URL('../systems/baseline-games-hub/css/baseline-games-hub.css',import.meta.url),'utf8');
   const loader=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-v14.js',import.meta.url),'utf8');
-  assert.doesNotMatch(hubHtml, /data-games-hub-boot|visibility:hidden!important/);
-  assert.doesNotMatch(hubHtml, /baseline:games-hub:visual-ready/);
+
+  assert.match(hubHtml, /<html[^>]*data-games-document-pending="1"/);
+  assert.match(hubHtml, /html\[data-games-document-pending="1"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
+  assert.doesNotMatch(hubHtml, /baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
   assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
   assert.match(hubHtml, /id="baseline-games-route-first-paint"/);
   assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
   assert.doesNotMatch(hubCss, /\.section\{display:none;animation:fade/);
-});
 
-
-test('Games Hub first paint is released synchronously only after the static document is complete',()=>{
-  assert.match(hubHtml, /<html[^>]*data-games-document-pending="1"/);
-  assert.match(hubHtml, /html\[data-games-document-pending="1"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
-  const release='<script id="baseline-games-first-paint-release">document.documentElement.removeAttribute("data-games-document-pending");<\/script>';
-  const releaseIndex=hubHtml.indexOf(release);
-  const mainCloseIndex=hubHtml.indexOf('</main>');
-  const firstExternalIndex=hubHtml.indexOf('<script src="/sitewide/js/baseline-protected-access.js');
-  assert.ok(releaseIndex>mainCloseIndex,'first paint must wait until all static Games Hub markup is parsed');
-  assert.ok(firstExternalIndex>releaseIndex,'first paint release must not depend on external JavaScript');
-  const releaseSource=hubHtml.slice(releaseIndex,firstExternalIndex);
-  assert.doesNotMatch(releaseSource,/setTimeout|requestAnimationFrame|addEventListener|Promise|fetch/);
+  assert.doesNotMatch(core, /seedProfilesForImmediateRender/);
+  assert.doesNotMatch(core, /document\.addEventListener\('baseline:auth',\s*loadAllProfiles\)/);
+  assert.match(core, /await resolveInitialAuth\(\);[\s\S]*await hydrateProfiles\(\);[\s\S]*renderAuthState\(\);[\s\S]*safeRenderAll\(\);[\s\S]*removeAttribute\('data-games-document-pending'\)/);
+  assert.match(core, /window\.BASELINE_auth\.onChange\(function\(next\)/);
+  assert.match(core, /if\(nextKey===lastAuthStateKey\) return;/);
 });
