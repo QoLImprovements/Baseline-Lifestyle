@@ -164,8 +164,16 @@
     const routine=readRoutineState();
     if (!routine.loaded || routine.loadFailed) return false;
     const auth=global.BASELINE_auth?.get?.() || {};
-    state.authed=Boolean(auth.authed);
-    state.owner=state.authed?String(auth.name || '').trim() || 'user':'guest';
+    const nextAuthed=Boolean(auth.authed);
+    const nextOwner=nextAuthed?String(auth.name || '').trim() || 'user':'guest';
+    if (normaliseOwner(nextOwner)!==normaliseOwner(state.owner)) {
+      state.recoveryStarted=false;
+      state.recoveryPending=false;
+      state.saveBlocked=false;
+      state.serverSignature='';
+    }
+    state.authed=nextAuthed;
+    state.owner=nextOwner;
     const groups=normaliseGroups(routine.groups);
     const assignments=normaliseAssignments(routine.assignments,groups);
     state.groups=groups;
