@@ -119,3 +119,12 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
     assert.match(html, /class="recipe card recipe-page"/);
   }
 });
+
+
+test('Food first-paint tabs match the live solid tab authority', () => {
+  const firstPaint = foodHtml.match(/<style id="baseline-recipe-route-first-paint-style">([\s\S]*?)<\/style>/)?.[1] || '';
+  assert.match(firstPaint, /--bl-surface-control-solid/);
+  assert.match(firstPaint, /--bl-surface-active-solid/);
+  assert.match(firstPaint, /color:var\(--ink\)!important/);
+  assert.doesNotMatch(firstPaint, /#fff7e8|--food-tab-bg|--food-tab-active/);
+});

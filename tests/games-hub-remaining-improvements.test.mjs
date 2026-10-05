@@ -9,6 +9,7 @@ import {
   enemyDecision
 } from '../systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-engine.mjs';
 
+const hubHtml=fs.readFileSync(new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url),'utf8');
 const core=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url),'utf8');
 const realmEntry=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js',import.meta.url),'utf8');
 const lazyScenes=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js',import.meta.url),'utf8');
@@ -73,4 +74,12 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
   for(const name of ['world-renderer.js','obstacle-renderer.js','game-shell.js','ui-methods.js','controls.js','runtime-loop.js']){
     assert.match(calorieGame,new RegExp(name.replace('.', '\\.')));
   }
+});
+
+
+test('Games Hub boot gate exists before body paint and does not hide content late',()=>{
+  assert.match(hubHtml, /<html[^>]*data-games-hub-boot="pending"/);
+  assert.match(hubHtml, /html\[data-games-hub-boot="pending"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
+  assert.doesNotMatch(hubHtml, /data-games-hub-boot="pending"\] \.bl-scroll\{visibility:hidden!important\}/);
+  assert.match(hubHtml, /baseline:games-hub:visual-ready/);
 });
