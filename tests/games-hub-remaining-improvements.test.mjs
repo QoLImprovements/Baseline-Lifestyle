@@ -87,3 +87,17 @@ test('Games Hub has no delayed reveal gate or hidden boot paint',()=>{
   assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
   assert.doesNotMatch(hubCss, /\.section\{display:none;animation:fade/);
 });
+
+
+test('Games Hub first paint is released synchronously only after the static document is complete',()=>{
+  assert.match(hubHtml, /<html[^>]*data-games-document-pending="1"/);
+  assert.match(hubHtml, /html\[data-games-document-pending="1"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
+  const release='<script id="baseline-games-first-paint-release">document.documentElement.removeAttribute("data-games-document-pending");<\/script>';
+  const releaseIndex=hubHtml.indexOf(release);
+  const mainCloseIndex=hubHtml.indexOf('</main>');
+  const firstExternalIndex=hubHtml.indexOf('<script src="/sitewide/js/baseline-protected-access.js');
+  assert.ok(releaseIndex>mainCloseIndex,'first paint must wait until all static Games Hub markup is parsed');
+  assert.ok(firstExternalIndex>releaseIndex,'first paint release must not depend on external JavaScript');
+  const releaseSource=hubHtml.slice(releaseIndex,firstExternalIndex);
+  assert.doesNotMatch(releaseSource,/setTimeout|requestAnimationFrame|addEventListener|Promise|fetch/);
+});

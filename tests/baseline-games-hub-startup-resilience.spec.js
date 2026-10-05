@@ -141,3 +141,17 @@ test('direct Realm route opens the same Basecamp-first functional runtime',async
   await expect(page.locator('[data-basecamp-landmark="calorie-escape"]')).toBeVisible();
   await expect(page.locator('[data-basecamp-landmark="tactical-operations"]')).toBeVisible();
 });
+
+
+test('first visible Games Hub paint already contains the complete static interface',async({page})=>{
+  await page.route('**/*.js*',route=>route.abort());
+  const response=await page.goto(PATH,{waitUntil:'load'});
+  expect(response).not.toBeNull();
+  expect(response.status()).toBeLessThan(400);
+  await expect(page.locator('html')).not.toHaveAttribute('data-games-document-pending','1');
+  await expect(page.getByRole('heading',{name:'Baseline Games Hub'})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Games Hub',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:'Games',exact:true})).toBeVisible();
+  await expect(page.locator('#hub')).toBeVisible();
+  await expect(page.locator('#hub .card')).toHaveCount(2);
+});
