@@ -22,7 +22,6 @@
   const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
   const BASELINE_BEATS_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"/></svg>';
   const BASELINE_AUTH_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"/><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"/></svg>';
-  const BASELINE_VOICE_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 15.5a4 4 0 0 0 4-4V6a4 4 0 1 0-8 0v5.5a4 4 0 0 0 4 4z"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M8.5 21h7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
 
 
   function setupSitewideInfoPopovers(){
@@ -6083,7 +6082,6 @@ function buildControls(recipeEl){
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
-    const VOICE_ICON_SVG = BASELINE_VOICE_ICON_SVG;
     const AUTH_ICON_SVG = BASELINE_AUTH_ICON_SVG;
 
     function ensureButton(right, id, iconHtml, label){
@@ -6122,7 +6120,6 @@ function buildControls(recipeEl){
         container.appendChild(right);
       }
       if(!isHomePage()) ensureButton(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
-      ensureButton(right, 'bl-voice-toggle', VOICE_ICON_SVG, 'Voice');
       ensureButton(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
       return right;
     }
@@ -7816,7 +7813,7 @@ function setupRecipeFavourites(){
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
     safeInit('homebar right controls', setupHomebarRightControls);
-    safeInit('sitewide voice assets', setupSitewideVoiceAssets);
+    if(routePageFile === 'baseline-fitness.html') safeInit('fitness voice assets', setupSitewideVoiceAssets);
     safeInit('homebar height', syncHomebarHeight);
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);
