@@ -76,7 +76,7 @@
     return date;
   }
 
-  const SETTINGS_PREFIX='__bl_sitewide_routine_settings_v1__::';
+  const runtimeSettings=new Map();
   const DAY_NAMES=Object.freeze(['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']);
 
   function routineOwner() {
@@ -86,24 +86,20 @@
     } catch (_error) {}
     return 'guest';
   }
-  function settingsKey(owner=routineOwner()) {
-    return `${SETTINGS_PREFIX}${String(owner || 'guest').trim().toLocaleLowerCase('en-GB') || 'guest'}`;
-  }
   function readSettings(owner=routineOwner()) {
-    try {
-      const raw=global.localStorage?.getItem(settingsKey(owner));
-      const value=raw?JSON.parse(raw):{};
-      const startDay=DAY_NAMES.includes(value?.startDay)?value.startDay:'Monday';
-      return Object.assign({},value && typeof value==='object'?value:{},{ startDay });
-    } catch (_error) { return { startDay:'Monday' }; }
+    const key=String(owner || 'guest').trim().toLocaleLowerCase('en-GB') || 'guest';
+    const value=runtimeSettings.get(key) || {};
+    const startDay=DAY_NAMES.includes(value?.startDay)?value.startDay:'Monday';
+    return Object.assign({},value,{ startDay });
   }
   function writeSettings(patch,owner=routineOwner()) {
-    const current=readSettings(owner);
+    const key=String(owner || 'guest').trim().toLocaleLowerCase('en-GB') || 'guest';
+    const current=readSettings(key);
     const next=Object.assign({},current,patch && typeof patch==='object'?patch:{});
     if (!DAY_NAMES.includes(next.startDay)) next.startDay='Monday';
-    try { global.localStorage?.setItem(settingsKey(owner),JSON.stringify(next)); } catch (_error) {}
-    try { document.dispatchEvent(new CustomEvent('baseline:routine-settings-changed',{ detail:{ owner,settings:next } })); } catch (_error) {}
-    return next;
+    runtimeSettings.set(key,next);
+    try { document.dispatchEvent(new CustomEvent('baseline:routine-settings-changed',{ detail:{ owner:key,settings:{...next} } })); } catch (_error) {}
+    return { ...next };
   }
   function startDayIndex(owner=routineOwner()) {
     return Math.max(0,DAY_NAMES.indexOf(readSettings(owner).startDay));
