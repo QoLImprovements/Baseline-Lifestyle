@@ -27,7 +27,7 @@
   const state = {
     owner:'guest',authed:false,groups:[],assignments:{},pendingRemoveGroupId:'',
     calendarView:'month',calendarAnchor:new Date(),expandedSteps:new Set(),openGroupSettings:new Set(),
-    saveTimer:0,loaded:false,observer:null,patching:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,serverSignature:'',recoveryStarted:false,recoveryPending:false
+    saveTimer:0,loaded:false,observer:null,patching:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,serverSignature:''
   };
 
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
@@ -68,83 +68,6 @@
     });
     return output;
   }
-  function legacyGroupStorageKeys(owner=state.owner) {
-    const suffix=normaliseOwner(owner);
-    return [
-      `__bl_skincare_routine_groups_v3__::${suffix}`,
-      `__bl_skincare_routine_groups_v2__::${suffix}`,
-      `__bl_skincare_routine_groups_v1__::${suffix}`
-    ];
-  }
-  function readLegacyGroupAssignments(owner=state.owner,serverGroups=state.groups) {
-    const routineIds=new Set(readRoutineState().items.map((item) => String(item.id)));
-    const serverById=new Map(serverGroups.map((group) => [String(group.id),String(group.id)]));
-    const serverByTitle=new Map(serverGroups.map((group) => [String(group.title || '').trim().toLocaleLowerCase('en-GB'),String(group.id)]));
-    for (const key of legacyGroupStorageKeys(owner)) {
-      try {
-        const raw=global.localStorage?.getItem(key);
-        if (!raw) continue;
-        const value=JSON.parse(raw);
-        const legacyGroups=Array.isArray(value?.groups)?value.groups:[];
-        const legacyTitleById=new Map(legacyGroups.map((group) => [String(group?.id || ''),String(group?.title || '').trim().toLocaleLowerCase('en-GB')]));
-        const recovered={};
-        Object.entries(value?.assignments && typeof value.assignments==='object'?value.assignments:{}).forEach(([itemId,legacyGroupId]) => {
-          const item=String(itemId || '');
-          if (!routineIds.has(item)) return;
-          const legacyId=String(legacyGroupId || '');
-          let target=serverById.get(legacyId) || '';
-          if (!target) target=serverByTitle.get(legacyTitleById.get(legacyId) || '') || '';
-          if (target) recovered[item]=target;
-        });
-        if (Object.keys(recovered).length) return recovered;
-      } catch (_error) {}
-    }
-    return {};
-  }
-  function clearLegacyRoutineStorage(owner=state.owner) {
-    const suffix=normaliseOwner(owner);
-    const keys=[
-      ...legacyGroupStorageKeys(owner),
-      `__bl_skincare_routine_v1__::${suffix}`
-    ];
-    keys.forEach((key) => { try { global.localStorage?.removeItem(key); } catch (_error) {} });
-  }
-  async function persistRecoveredAssignments(recovered,expectedRevision) {
-    const response=await groupRequest({ method:'POST',body:{ groups:state.groups,assignments:recovered,expectedRevision } });
-    if (!response.ok || !response.data?.ok) {
-      state.saveBlocked=true;
-      setSaveStatus('Found earlier group assignments, but could not restore them to your account.','warning');
-      return;
-    }
-    state.assignments=normaliseAssignments(response.data.assignments,state.groups);
-    state.revision=Number(response.data.revision || expectedRevision);
-    state.serverSignature=groupSignature();
-    state.recoveryPending=false;
-    global.BASELINE_SKINCARE_ROUTINE?.applyGroupState?.(state.groups,state.assignments,state.revision);
-    announceRevision();
-    clearLegacyRoutineStorage();
-    setSaveStatus('Recovered routine group assignments and saved them to your account.','saved');
-    patch();
-  }
-  function stageLegacyAssignmentsIfNeeded() {
-    if (state.recoveryPending || state.recoveryStarted || !state.authed || !state.groups.length) return;
-    if (Object.keys(state.assignments).length) {
-      state.recoveryStarted=true;
-      clearLegacyRoutineStorage();
-      return;
-    }
-    state.recoveryStarted=true;
-    const recovered=readLegacyGroupAssignments(state.owner,state.groups);
-    if (!Object.keys(recovered).length) {
-      clearLegacyRoutineStorage();
-      return;
-    }
-    const expectedRevision=state.revision;
-    state.assignments=normaliseAssignments(recovered,state.groups);
-    state.recoveryPending=true;
-    global.BASELINE_SKINCARE_ROUTINE?.applyGroupState?.(state.groups,state.assignments,state.revision);
-    persistRecoveredAssignments(state.assignments,expectedRevision);
-  }
   function readRoutineState() {
     try {
       const value=global.BASELINE_SKINCARE_ROUTINE?.getState?.() || {};
@@ -167,8 +90,6 @@
     const nextAuthed=Boolean(auth.authed);
     const nextOwner=nextAuthed?String(auth.name || '').trim() || 'user':'guest';
     if (normaliseOwner(nextOwner)!==normaliseOwner(state.owner)) {
-      state.recoveryStarted=false;
-      state.recoveryPending=false;
       state.saveBlocked=false;
       state.serverSignature='';
     }
@@ -179,9 +100,8 @@
     state.groups=groups;
     state.assignments=assignments;
     state.revision=routine.revision;
-    if (!state.recoveryPending) state.serverSignature=groupSignature(groups,assignments);
+    state.serverSignature=groupSignature(groups,assignments);
     state.loaded=true;
-    stageLegacyAssignmentsIfNeeded();
     return true;
   }
   function groupSignature(groups=state.groups,assignments=state.assignments) {
