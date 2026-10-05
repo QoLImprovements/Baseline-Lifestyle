@@ -117,12 +117,15 @@ test('Skincare uses account-backed routine state with revision-protected saves',
   assert.doesNotMatch(skinRoutine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
   assert.match(skinRoutine,/expectedRevision:state\.revision/);
   assert.match(skinRoutine,/revision_conflict/);
-  assert.match(skinRoutine,/if \(changed && locationTargetsRoutine\(\)\) renderAll\(\)/);
+  assert.match(skinRoutine,/if \(result\?\.render && locationTargetsRoutine\(\)\) renderAll\(\)/);
   assert.match(skinRoutine,/addEventListener\('popstate',restoreRoute\)/);
   assert.doesNotMatch(skinGroups,/sessionStorage|localStorage\?\.setItem|writeGroupLocal/);
   assert.match(skinGroups,/readLegacyGroupAssignments/);
   assert.match(skinGroups,/localStorage\?\.removeItem/);
   assert.match(skinGroups,/BASELINE_SKINCARE_ROUTINE_GROUPS=Object\.freeze/);
+  assert.match(skinGroups,/function syncFromCanonical\(\)/);
+  assert.match(skinGroups,/UI\.observe\(root,renderCanonical\)/);
+  assert.doesNotMatch(skinGroups,/function loadForAuth\(|attachAuth\(\)/);
   assert.doesNotMatch(coherence,/localStorage/);
   assert.match(coherence,/BASELINE_SKINCARE_ROUTINE_GROUPS\?\.getState/);
   assert.match(skinGroups,/expectedRevision:state\.revision/);
