@@ -46,6 +46,7 @@ function loadAuth({ isFile=false, cachedSession=null, responses=[] }={}){
 test('obsolete cached account state is ignored until the server confirms authentication', () => {
   const { auth, values } = loadAuth({ cachedSession:{ name:'Cached Person', email:'cached@example.test' } });
   assert.deepEqual(plain(auth.get()), {
+    ready:false,
     authed:false,
     name:'',
     email:'',
@@ -53,6 +54,7 @@ test('obsolete cached account state is ignored until the server confirms authent
   });
   assert.equal(values.has('__bl_local_session_v1__'), false);
   assert.equal(Object.isFrozen(auth.state), true);
+  assert.equal(auth.state.ready, false);
   assert.equal(auth.state.authed, false);
   assert.throws(()=>{ auth.state.authed = true; }, TypeError);
 });
@@ -87,6 +89,7 @@ test('refresh clears stale cached state when the server is signed out', async ()
     responses:[{ ok:true, status:200, data:{ ok:true, authed:false, providers:{ password:true, google:false } } }],
   });
   const snapshot = await auth.refresh();
+  assert.equal(snapshot.ready, true);
   assert.equal(snapshot.authed, false);
   assert.equal(auth.state.name, '');
   assert.equal(values.has('__bl_local_session_v1__'), false);
