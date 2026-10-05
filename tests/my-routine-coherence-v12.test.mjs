@@ -119,7 +119,9 @@ test('Skincare uses account-backed routine state with revision-protected saves',
   assert.match(skinRoutine,/revision_conflict/);
   assert.match(skinRoutine,/if \(changed && locationTargetsRoutine\(\)\) renderAll\(\)/);
   assert.match(skinRoutine,/addEventListener\('popstate',restoreRoute\)/);
-  assert.doesNotMatch(skinGroups,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.doesNotMatch(skinGroups,/sessionStorage|localStorage\?\.setItem|writeGroupLocal/);
+  assert.match(skinGroups,/readLegacyGroupAssignments/);
+  assert.match(skinGroups,/localStorage\?\.removeItem/);
   assert.match(skinGroups,/BASELINE_SKINCARE_ROUTINE_GROUPS=Object\.freeze/);
   assert.doesNotMatch(coherence,/localStorage/);
   assert.match(coherence,/BASELINE_SKINCARE_ROUTINE_GROUPS\?\.getState/);

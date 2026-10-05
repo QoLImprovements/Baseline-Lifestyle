@@ -24,7 +24,10 @@ test('Skincare identifies the exact My Routine panel before body paint and hydra
   assert.match(html,/data-routine-panel="public"/);
   assert.match(routine,/function loadRemoteState\(\)/);
   assert.doesNotMatch(routine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
-  assert.doesNotMatch(sitewide,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.doesNotMatch(sitewide,/sessionStorage|localStorage\?\.setItem|writeGroupLocal/);
+  assert.match(sitewide,/readLegacyGroupAssignments/);
+  assert.match(sitewide,/localStorage\?\.getItem/);
+  assert.match(sitewide,/localStorage\?\.removeItem/);
   assert.doesNotMatch(loader,/localStorage|sessionStorage/);
   const firstPaint=html.match(/<script id="baseline-skincare-first-paint">([\s\S]*?)<\/script>/)?.[1] || '';
   assert.doesNotMatch(firstPaint,/localStorage|sessionStorage/);
@@ -128,5 +131,16 @@ test('Skincare Saved Data upgrades recover legacy server-side group assignments 
   assert.match(savedData,/\$data\['assignments'\] = \$recovered/);
   assert.match(savedData,/bl_resource_file_replace\(\$path, \$data, \(int\)\(\$resource\['revision'\]/);
   assert.doesNotMatch(routine,/localStorage|sessionStorage/);
-  assert.doesNotMatch(sitewide,/localStorage|sessionStorage/);
+  assert.doesNotMatch(sitewide,/sessionStorage|localStorage\?\.setItem/);
+});
+
+
+test('legacy Skincare browser group data is migration-only and is deleted after server recovery',() => {
+  assert.match(sitewide,/function recoverLegacyAssignmentsIfNeeded/);
+  assert.match(sitewide,/expectedRevision/);
+  assert.match(sitewide,/Found earlier group assignments/);
+  assert.match(sitewide,/Recovered routine group assignments/);
+  assert.match(sitewide,/clearLegacyRoutineStorage/);
+  assert.match(sitewide,/localStorage\?\.removeItem/);
+  assert.doesNotMatch(sitewide,/localStorage\?\.setItem/);
 });
