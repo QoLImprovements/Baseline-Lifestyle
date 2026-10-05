@@ -12,8 +12,8 @@
    /baseline-natural-skincare/my-routine/plan
    /baseline-natural-skincare/my-routine/public
 
-   Summary filters, Log Dates and other transient interface state remain in
-   session storage. They are not public routing parameters.
+   Routine data is account-backed only. View identity is carried by the clean
+   route rather than browser storage.
 
    This module is present on every Skincare page, but it owns navigation only
    while the current location actually targets My Routine. It must never pull
