@@ -92,6 +92,7 @@
   }
 
   function emit(scope='all') { try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-updated',{ detail:{ scope } })); } catch (_error) {} }
+  function announceRevision() { try { document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {} }
   async function request(url,options={}) {
     try {
       const response=await fetch(url,{ method:options.method || 'GET',credentials:'same-origin',headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),body:options.body?JSON.stringify(options.body):undefined });
@@ -116,6 +117,7 @@
       }
     } else {
       state.revision=Number(response.data.revision || state.revision || 0);
+      announceRevision();
       setStatus('Saved to account.','saved');
     }
     state.saveInFlight=false;
@@ -138,6 +140,7 @@
       state.visibility=response.data.visibility==='public'?'public':'private';
       state.revision=Number(response.data.revision || 0);
       state.saveBlocked=false;
+      announceRevision();
     }
     const after=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
     return after!==before;
@@ -294,6 +297,7 @@
       if (event.target.id==='routineActionSearch' && event.key==='ArrowDown') { setActionPickerOpen(true);$('#routineActionMenu .routine-action-option')?.focus(); }
       if (event.key==='Escape' && !$('#routineActionMenu')?.hidden) { setActionPickerOpen(false);$('#routineActionSearch')?.focus(); }
     });
+    document.addEventListener('baseline:skincare-resource-revision',(event)=>{ const revision=Number(event.detail?.revision);if (Number.isFinite(revision) && revision>=0) state.revision=revision; });
     document.addEventListener('click',(event)=>{
       if (!event.target.closest('.routine-action-combobox')) setActionPickerOpen(false);
       if (event.target.closest('.tab[data-target="routine"]')) global.requestAnimationFrame(enterRoutineFromOuterTab);
