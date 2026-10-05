@@ -77,9 +77,13 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
 });
 
 
-test('Games Hub boot gate exists before body paint and does not hide content late',()=>{
-  assert.match(hubHtml, /<html[^>]*data-games-hub-boot="pending"/);
-  assert.match(hubHtml, /html\[data-games-hub-boot="pending"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
-  assert.doesNotMatch(hubHtml, /data-games-hub-boot="pending"\] \.bl-scroll\{visibility:hidden!important\}/);
-  assert.match(hubHtml, /baseline:games-hub:visual-ready/);
+test('Games Hub has no delayed reveal gate or hidden boot paint',()=>{
+  const hubCss=fs.readFileSync(new URL('../systems/baseline-games-hub/css/baseline-games-hub.css',import.meta.url),'utf8');
+  const loader=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-v14.js',import.meta.url),'utf8');
+  assert.doesNotMatch(hubHtml, /data-games-hub-boot|visibility:hidden!important/);
+  assert.doesNotMatch(hubHtml, /baseline:games-hub:visual-ready/);
+  assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
+  assert.match(hubHtml, /id="baseline-games-route-first-paint"/);
+  assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
+  assert.doesNotMatch(hubCss, /\.section\{display:none;animation:fade/);
 });
