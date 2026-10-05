@@ -83,11 +83,11 @@
   }
   function fitnessGroups() {
     try {
-      const value=global.BASELINE_RoutineSystem?.readSettings?.(owner()) || {};
-      const groups=(Array.isArray(value.fitnessRoutineGroups)?value.fitnessRoutineGroups:[]).filter((group) => group?.id && group?.title);
+      const value=global.BASELINE_FITNESS_ROUTINE_GROUPS?.getState?.() || {};
+      const groups=(Array.isArray(value.groups)?value.groups:[]).filter((group) => group?.id && group?.title);
       const valid=new Set(groups.map((group) => String(group.id)));
       const assignments={};
-      Object.entries(value.fitnessRoutineAssignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
+      Object.entries(value.assignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
       return { groups,assignments };
     } catch (_error) { return { groups:[],assignments:{} }; }
   }
@@ -631,7 +631,7 @@
     },true);
     [
       'baseline:routine-rendered','baseline:skincare-routine-updated','baseline:fitness-routine-updated',
-      'baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:routine-settings-changed',
+      'baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:fitness-routine-groups-updated',
       'baseline:fitness-routine-view-changed'
     ].forEach((name) => document.addEventListener(name,schedule));
   }
