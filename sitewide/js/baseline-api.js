@@ -113,28 +113,6 @@
     revisions,
   };
 
-  /* Natural Skincare still has legacy clients that call fetch/localStorage
-     directly. Load the compatibility bridge while the parser is here so it is
-     installed before those clients register their DOM-ready migrations. */
-  const document = scope.document;
-  const app = document?.documentElement?.dataset?.app || document?.body?.dataset?.app || '';
-  if(document && !isFile && app === 'skin' && document.readyState === 'loading'){
-    if(!scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__){
-      scope.__BASELINE_SKINCARE_SAVED_DATA_BRIDGE_LOADER__ = true;
-      document.write('<script src="/systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js?v=SKINCARE_SAVED_DATA_BRIDGE_20260915_1"><\/script>');
-    }
-  }
-
-  /* Fitness Routine still contains raw fetch clients. Install the narrow
-     revision bridge before those clients initialise so routine_state and
-     routine_groups share one authoritative fitness-routine revision. */
-  if(document && !isFile && app === 'fitness' && document.readyState === 'loading'){
-    if(!scope.__BASELINE_FITNESS_ROUTINE_SAVED_DATA_BRIDGE_LOADER__){
-      scope.__BASELINE_FITNESS_ROUTINE_SAVED_DATA_BRIDGE_LOADER__ = true;
-      document.write('<script src="/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js?v=FITNESS_ROUTINE_SAVED_DATA_BRIDGE_20260913_1"><\/script>');
-    }
-  }
-
   function removeObsoleteUpdateFooter(){
     if(!document) return;
     const currentApp = document.documentElement?.dataset?.app || document.body?.dataset?.app || '';
