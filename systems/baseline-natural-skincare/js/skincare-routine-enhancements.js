@@ -17,17 +17,10 @@
 
   const document=global.document;
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
-  const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
   let recipeObserver=null;
   let started=false;
 
-  function sessionView() {
-    try {
-      const value=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
-      return VIEWS.includes(value)?value:'';
-    } catch (_error) { return ''; }
-  }
   function requestedRoutineView() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
     const clean=path.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);
@@ -39,14 +32,13 @@
       if (VIEWS.includes(legacy)) return legacy;
     } catch (_error) {}
 
-    /* A bare /my-routine URL is a migration path, not a forced Log route.
-       Preserve the user's already-selected subview once, then canonicalise it. */
-    if (/^\/baseline-natural-skincare\/my-routine$/i.test(path)) return sessionView() || 'log';
-    if (String(global.location?.hash || '').toLowerCase()==='#tab=routine') return sessionView() || 'log';
+    /* Bare/legacy My Routine entry points resolve deterministically to Log.
+       No browser-stored view state participates in first paint. */
+    if (/^\/baseline-natural-skincare\/my-routine$/i.test(path)) return 'log';
+    if (String(global.location?.hash || '').toLowerCase()==='#tab=routine') return 'log';
     return '';
   }
   function selectOuterRoutine(view) {
-    try { global.sessionStorage?.setItem(VIEW_KEY,view); } catch (_error) {}
     document.documentElement.setAttribute('data-initial-skincare-tab','routine');
     document.documentElement.setAttribute('data-initial-routine-view',view);
     try { global.BASELINE_selectTab?.('routine',{ silentHistory:true }); } catch (_error) {}
