@@ -10,6 +10,7 @@ const theme = read('sitewide/css/baseline-themes.css');
 const foodCss = read('systems/baseline-food-approach/css/baseline-food-approach.css');
 const dietCss = read('systems/baseline-food-approach/css/baseline-diet-log.css');
 const recipeCss = read('sitewide/css/baseline-recipes.css');
+const sitewideCss = read('sitewide/css/baseline-sitewide.css');
 const shared = read('sitewide/js/baseline-shared.js');
 const foodHtml = read('systems/baseline-food-approach/baseline-food-approach.html');
 const dietJs = read('systems/baseline-food-approach/js/baseline-diet-log.js');
@@ -127,4 +128,13 @@ test('Food first-paint routing contains no historical tab visual authority', () 
   assert.match(firstPaint, /#diet-log\.section\{display:block!important\}/);
   assert.doesNotMatch(firstPaint, /\.tabs \.tab|color:|background:|--food-tab-|--bl-surface-/);
   assert.match(foodHtml, /id="baseline-food-tab-first-state"/);
+});
+
+
+test('Food card colour has one authority and cannot split into competing yellow surfaces', () => {
+  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
+  assert.match(sitewideCss, /--bl-surface-card-solid:\s*var\(--food-surface-card\)/);
+  assert.match(sitewideCss, /--bl-surface-recipe-card-solid:\s*var\(--food-surface-card\)/);
+  assert.match(sitewideCss, /--bl-surface-panel-solid:\s*var\(--food-surface-panel\)/);
+  assert.doesNotMatch(sitewideCss, /#f5b84a|#ffc04d/i);
 });
