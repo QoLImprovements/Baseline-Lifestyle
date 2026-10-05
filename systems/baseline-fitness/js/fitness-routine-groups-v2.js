@@ -508,6 +508,10 @@
 
     document.addEventListener('baseline:fitness-plans-updated',schedule);
     document.addEventListener('baseline:fitness-routine-groups-updated',schedule);
+    document.addEventListener('baseline:fitness-routine-resource-revision',(event)=>{
+      const revision=Number(event.detail?.revision);
+      if(Number.isFinite(revision) && revision>=0) state.revision=revision;
+    });
     document.addEventListener('baseline:fitness-routine-updated',schedule);
     document.addEventListener('baseline:fitness-routine-view-changed',schedule);
   }
