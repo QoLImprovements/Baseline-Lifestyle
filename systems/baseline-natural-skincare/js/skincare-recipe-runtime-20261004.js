@@ -1,4 +1,82 @@
 (function(){
+  var SLIDER_API='/systems/baseline-natural-skincare/api/skincare_data.php';
+  var sliderAccountState={ revision:0,loaded:false,sliders:{},loadPromise:null,saveBlocked:false };
+
+  function sliderAuth(){
+    try{ return window.BASELINE_auth && typeof window.BASELINE_auth.get==='function' ? window.BASELINE_auth.get() : null; }
+    catch(_e){ return null; }
+  }
+  function sliderRevisionEvent(){
+    try{ document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:sliderAccountState.revision } })); }catch(_e){}
+  }
+  async function loadSliderAccountState(force){
+    var auth=sliderAuth();
+    if(!(auth && auth.ready && auth.authed)){
+      sliderAccountState.loaded=Boolean(auth && auth.ready);
+      sliderAccountState.sliders={};
+      return sliderAccountState;
+    }
+    if(sliderAccountState.loaded && !force) return sliderAccountState;
+    if(sliderAccountState.loadPromise && !force) return sliderAccountState.loadPromise;
+    sliderAccountState.loadPromise=(async function(){
+      try{
+        var response=await fetch(SLIDER_API,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
+        var data=await response.json().catch(function(){return null;});
+        if(response.ok && data && data.ok){
+          sliderAccountState.revision=Number(data.revision || 0);
+          sliderAccountState.sliders=data.sliders && typeof data.sliders==='object' ? data.sliders : {};
+          sliderAccountState.loaded=true;
+          sliderAccountState.saveBlocked=false;
+          sliderRevisionEvent();
+        }
+      }catch(_e){}
+      return sliderAccountState;
+    })();
+    try{return await sliderAccountState.loadPromise;}
+    finally{sliderAccountState.loadPromise=null;}
+  }
+  async function saveSliderAccountState(saveId,values){
+    var auth=sliderAuth();
+    if(!(auth && auth.authed)) return { ok:false,error:'auth_required' };
+    await loadSliderAccountState(false);
+    if(sliderAccountState.saveBlocked) return { ok:false,error:'save_blocked' };
+    var next=Object.assign({},sliderAccountState.sliders);
+    next[String(saveId)]=Object.assign({},values);
+    try{
+      var response=await fetch(SLIDER_API,{
+        method:'POST',credentials:'same-origin',
+        headers:{ Accept:'application/json','Content-Type':'application/json' },
+        body:JSON.stringify({ action:'replace_sliders',sliders:next,expectedRevision:sliderAccountState.revision })
+      });
+      var data=await response.json().catch(function(){return null;});
+      if(response.ok && data && data.ok){
+        sliderAccountState.revision=Number(data.revision || sliderAccountState.revision || 0);
+        sliderAccountState.sliders=data.sliders && typeof data.sliders==='object' ? data.sliders : next;
+        sliderAccountState.loaded=true;
+        sliderRevisionEvent();
+        return { ok:true };
+      }
+      if(response.status===409 && data && data.error==='revision_conflict'){
+        await loadSliderAccountState(true);
+      }
+      sliderAccountState.saveBlocked=true;
+      return { ok:false,error:(data && data.error) || 'save_failed' };
+    }catch(_e){
+      sliderAccountState.saveBlocked=true;
+      return { ok:false,error:'network_error' };
+    }
+  }
+  document.addEventListener('baseline:skincare-resource-revision',function(event){
+    var revision=Number(event.detail && event.detail.revision);
+    if(Number.isFinite(revision) && revision>=0) sliderAccountState.revision=revision;
+  });
+  try{
+    window.BASELINE_auth && window.BASELINE_auth.onChange && window.BASELINE_auth.onChange(function(){
+      sliderAccountState.loaded=false;sliderAccountState.sliders={};sliderAccountState.revision=0;sliderAccountState.saveBlocked=false;
+      loadSliderAccountState(false);
+    });
+  }catch(_e){}
+
   function fmt(n){
     var rounded = Math.round(n * 10) / 10;
     return (Math.abs(rounded - Math.round(rounded)) < 0.001) ? String(Math.round(rounded)) : rounded.toFixed(1);
@@ -366,29 +444,19 @@
     paintTrack(slider);
   }
 
-  function sliderSaveStorageKey(key){
-    var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-    var user = auth && auth.authed ? String(auth.name || 'user').trim().toLowerCase() : 'guest';
-    return '__baseline_slider_state__::' + user + '::' + key;
-  }
-
   function applySavedControllerState(controller, syncFn){
     if(!controller) return;
-    var saveKey = controller.getAttribute('data-slider-save-id');
+    var saveKey=controller.getAttribute('data-slider-save-id');
     if(!saveKey) return;
-    var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-    if(!(auth && auth.authed)) return;
-    try{
-      var raw = localStorage.getItem(sliderSaveStorageKey(saveKey));
-      if(!raw) return;
-      var parsed = JSON.parse(raw);
-      var sliders = Array.prototype.slice.call(controller.querySelectorAll('.glide-slider'));
-      sliders.forEach(function(slider){
-        var next = parsed && parsed[slider.id];
-        if(typeof next !== 'undefined') slider.value = String(next);
+    loadSliderAccountState(false).then(function(server){
+      var parsed=server && server.sliders ? server.sliders[saveKey] : null;
+      if(!parsed || typeof parsed!=='object') return;
+      Array.prototype.slice.call(controller.querySelectorAll('.glide-slider')).forEach(function(slider){
+        var next=parsed[slider.id];
+        if(typeof next!=='undefined') slider.value=String(next);
       });
-      if(typeof syncFn === 'function') syncFn();
-    }catch(_e){}
+      if(typeof syncFn==='function') syncFn();
+    });
   }
 
   function clearSliderStatus(controller){
@@ -568,7 +636,6 @@
 
       var row = explainer.querySelector(':scope > .slider-save-row');
       var saveBtn = row && row.querySelector('.slider-save-btn:not(.slider-default-btn)');
-      var defaultBtn = row && row.querySelector('.slider-default-btn');
       var status = row && row.querySelector('.slider-save-status');
       if(!row){
         row = document.createElement('div');
@@ -576,19 +643,16 @@
         saveBtn = document.createElement('button');
         saveBtn.type = 'button';
         saveBtn.className = 'slider-save-btn';
-        saveBtn.textContent = 'Save as my setting';
-        defaultBtn = document.createElement('button');
-        defaultBtn.type = 'button';
-        defaultBtn.className = 'slider-save-btn slider-default-btn';
-        defaultBtn.textContent = 'Reset to recipe default';
+        saveBtn.textContent = 'Save to my account';
         status = document.createElement('span');
         status.className = 'slider-save-status';
         row.appendChild(saveBtn);
-        row.appendChild(defaultBtn);
         row.appendChild(status);
         explainer.appendChild(row);
       }
-      if(!saveBtn || !defaultBtn || !status) return;
+      row.querySelectorAll('.slider-default-btn').forEach(function(button){ button.remove(); });
+      if(!saveBtn || !status) return;
+      saveBtn.textContent='Save to my account';
 
       var syncFn = function(){
         if(typeof controller.__baselineSliderSync === 'function') controller.__baselineSliderSync();
@@ -604,28 +668,17 @@
         slider.addEventListener('change', function(){ clearSliderStatus(controller); });
       });
 
-      saveBtn.addEventListener('click', function(){
-        var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-        if(!(auth && auth.authed)) {
-          setSliderStatus(controller, 'Log in to save slider position', 'notice');
+      saveBtn.addEventListener('click', async function(){
+        var auth=sliderAuth();
+        if(!(auth && auth.authed)){
+          setSliderStatus(controller,'Log in to save slider position','notice');
           return;
         }
-        try{
-          var payload = {};
-          Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){ payload[slider.id] = slider.value; });
-          localStorage.setItem(sliderSaveStorageKey(saveId), JSON.stringify(payload));
-          setSliderStatus(controller, 'Saved', 'saved');
-        }catch(_e){
-          setSliderStatus(controller, 'Could not save', 'error');
-        }
-      });
-
-      defaultBtn.addEventListener('click', function(){
-        Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
-          slider.value = String(slider.getAttribute('data-default-value') || slider.getAttribute('data-default') || slider.defaultValue || slider.value);
-        });
-        syncFn();
-        setSliderStatus(controller, 'Defaults restored');
+        var payload={};
+        Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'),function(slider){ payload[slider.id]=slider.value; });
+        var result=await saveSliderAccountState(saveId,payload);
+        if(result.ok) setSliderStatus(controller,'Saved to account','saved');
+        else setSliderStatus(controller,'Could not save to account','error');
       });
 
       controller.dataset.sliderSaveReady = '1';
