@@ -25,6 +25,9 @@ test('Skincare identifies the exact My Routine panel before body paint and hydra
   assert.match(routine,/function loadRemoteState\(\)/);
   assert.doesNotMatch(routine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
   assert.doesNotMatch(sitewide,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.doesNotMatch(loader,/localStorage|sessionStorage/);
+  const firstPaint=html.match(/<script id="baseline-skincare-first-paint">([\s\S]*?)<\/script>/)?.[1] || '';
+  assert.doesNotMatch(firstPaint,/localStorage|sessionStorage/);
   assert.match(routine,/expectedRevision:state\.revision/);
   assert.match(sitewide,/expectedRevision:state\.revision/);
 });
