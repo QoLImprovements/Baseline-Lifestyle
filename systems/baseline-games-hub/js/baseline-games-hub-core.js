@@ -4121,9 +4121,9 @@ function toggleGameFullscreen(gameId){
     const initialRenderReady = loadAllProfiles()
       .then(function(){ startNinjaLoop(); return true; })
       .catch(function(){ safeRenderAll(); return false; });
-    // Core-ready means controls can bind immediately. Visual-ready waits for
-    // this hydration promise so the user does not see seed data followed by a
-    // second full-page profile render.
+    // Keep the hydration promise available to route-specific loaders. The Hub
+    // itself is already painted from its complete static document and must not
+    // wait on profile hydration before becoming visible.
     window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY = initialRenderReady;
     window.BASELINE_GAMES_HUB_CORE_READY = true;
     document.documentElement.setAttribute('data-baseline-games-hub-core', 'ready');
