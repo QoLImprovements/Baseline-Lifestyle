@@ -1045,6 +1045,7 @@
   // History + scroll policy
   // ---------------------------
   const BASELINE_HISTORY_KEY = '__baseline_nav_v1__';
+
   // ---------------------------
   // Scroll root (supports fixed banner + internal scroll container)
   // ---------------------------
@@ -6906,6 +6907,502 @@ function setupAuthFlyout(){
 
     async function loadFavIds(appKey){
       if(!authState.authed) return [];
+      if(IS_FILE_PROTOCOL) return [];
+      const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
+      if(r?.data?.ok) rememberResourceRevision('favourites',r.data);
+      const ids = (r && r.data && r.data.ok && Array.isArray(r.data.ids)) ? r.data.ids : [];
+      return ids.map(String);
+    }
+
+    function fillSelect(sel, ids, appKey){
+      if(!sel) return;
+      const esc = (x)=>String(x||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+      const opts = ['<option value="">Choose…</option>'];
+      ids.forEach(id=>{
+        const label = recipeTitle(appKey,id);
+        opts.push('<option value="' + esc(id) + '">' + esc(label) + '</option>');
+      });
+      sel.innerHTML = opts.join('');
+    }
+
+    async function refreshFavDropdowns(){
+      if(!favFoodSel && !favSkinSel) return;
+      if(!authState.authed){
+        if(favFoodSel){ favFoodSel.innerHTML = '<option value="">—</option>'; favFoodSel.disabled = true; }
+        if(favSkinSel){ favSkinSel.innerHTML = '<option value="">—</option>'; favSkinSel.disabled = true; }
+        return;
+      }
+      if(favFoodSel) favFoodSel.disabled = false;
+      if(favSkinSel) favSkinSel.disabled = false;
+      try{
+        const [foodIds, skinIds] = await Promise.all([loadFavIds('food'), loadFavIds('skincare')]);
+        fillSelect(favFoodSel, foodIds, 'food');
+        fillSelect(favSkinSel, skinIds, 'skincare');
+      }catch(_e){
+        if(favFoodSel) favFoodSel.innerHTML = '<option value="">Could not load favourites</option>';
+        if(favSkinSel) favSkinSel.innerHTML = '<option value="">Could not load favourites</option>';
+      }
+    }
+
+    function openFav(appKey, recipeId){
+      if(!recipeId) return;
+      const cur = (document.body && document.body.dataset && document.body.dataset.app) ? String(document.body.dataset.app) : '';
+      const curKey = (cur === 'food') ? 'food' : (cur === 'skin' ? 'skincare' : '');
+      if(curKey === appKey){
+        // Avoid pushing intermediate history entries (tab + overview) — we only want the final recipe state.
+        try{
+          if(typeof window.BASELINE_selectTab === 'function') window.BASELINE_selectTab('recipes', { silentHistory:true });
+          if(typeof window.BASELINE_showAllRecipes === 'function') window.BASELINE_showAllRecipes({ silentHistory:true });
+          if(typeof window.BASELINE_openRecipe === 'function') window.BASELINE_openRecipe(recipeId, { silentHistory:false });
+        }catch(_e){}
+        close();
+        return;
+      }
+      const href = (appKey === 'skincare')
+        ? ('/baseline-natural-skincare.html/' + encodeURIComponent(recipeSlugForElement(document.getElementById(recipeId)) || recipeId))
+        : ('/baseline-food-approach.html/' + encodeURIComponent(recipeSlugForElement(document.getElementById(recipeId)) || recipeId));
+      window.location.href = href;
+    }
+
+    if(favFoodSel && !favFoodSel.__bl_bound){
+      favFoodSel.__bl_bound = true;
+      favFoodSel.addEventListener('change', ()=>{
+        const rid = String(favFoodSel.value||'');
+        openFav('food', rid);
+        favFoodSel.value = '';
+      });
+    }
+
+    if(favSkinSel && !favSkinSel.__bl_bound){
+      favSkinSel.__bl_bound = true;
+      favSkinSel.addEventListener('change', ()=>{
+        const rid = String(favSkinSel.value||'');
+        openFav('skincare', rid);
+        favSkinSel.value = '';
+      });
+    }
+
+    onAuthChange(refreshFavDropdowns);
+    document.addEventListener('baseline:favs-changed', refreshFavDropdowns);
+    refreshFavDropdowns();
+
+
+    // Expose a helper for other features (e.g., favourites) to prompt login.
+    try{ window.BASELINE_openAuth = open; }catch(_e){}
+  }
+
+  
+function setupBinauralFlyout(){
+  const toggle = q('#bl-beats-toggle');
+  if(!toggle) return;
+
+  let fly = q('#bl-beats-flyout');
+  if(!fly){
+    fly = document.createElement('div');
+    fly.id = 'bl-beats-flyout';
+    fly.className = 'bl-flyout';
+    fly.hidden = true;
+    fly.innerHTML = `
+      <div class="card bl-player">
+        <h3>Binaural Beats</h3>
+        <p class="muted">These presets are optional and subjective. Keep volume comfortable. If you feel discomfort, stop.</p>
+
+        <div class="row" style="margin-top:10px;">
+          <button type="button" class="bl-mini-btn" id="bl-beats-start">Start</button>
+          <button type="button" class="bl-mini-btn" id="bl-beats-stop">Stop</button>
+        </div>
+
+        <label>Beat frequency (Hz)</label>
+        <div class="row" style="margin-top:6px;">
+          <input id="bl-beat-hz" type="range" min="0.5" max="40" step="0.1" value="8" />
+          <input id="bl-beat-hz-num" type="number" min="0.5" max="40" step="0.1" value="8" style="text-align:center;" />
+        </div>
+
+        <label>Carrier tone (Hz)</label>
+        <div class="row" style="margin-top:6px;">
+          <input id="bl-carrier-hz" type="range" min="60" max="1000" step="1" value="220" />
+          <input id="bl-carrier-hz-num" type="number" min="60" max="1000" step="1" value="220" style="text-align:center;" />
+        </div>
+
+        <label>Beat volume</label>
+        <input id="bl-beat-vol" type="range" min="0" max="1" step="0.01" value="0.6" />
+
+        <label>Presets</label>
+        <div class="row" style="margin-top:6px;">
+          <select id="bl-preset-select" aria-label="Preset"></select>
+        </div>
+
+        <div id="bl-user-presets" style="margin-top:12px;"></div>
+        <div class="status" id="bl-beats-status"></div>
+      </div>
+    `;
+    document.body.appendChild(fly);
+  }
+
+  function positionBeatsFlyout(){
+    positionFlyoutToToggle(fly, toggle);
+  }
+
+  function close(){
+    fly.hidden = true;
+    toggle.setAttribute('aria-expanded','false');
+  }
+
+  const statusEl = q('#bl-beats-status', fly);
+  const setStatus = (m)=>{ if(statusEl) statusEl.textContent = m || ''; };
+
+  // ------------------------------------------------------------------
+  // Audio engine (beds/ambience fully removed)
+  // ------------------------------------------------------------------
+  let ctx = null;
+  let beatGain = null;
+  let oscL = null;
+  let oscR = null;
+  let panL = null;
+  let panR = null;
+
+  const state = {
+    running:false,
+    beatHz: 8,
+    carrierHz: 220,
+    beatVol: 0.6,
+    presetKey: 'fitness:0',
+    presetIsCustom: false,
+  };
+
+  function ensureCtx(){
+    if(ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) throw new Error('no_audio_context');
+    ctx = new AC();
+    beatGain = ctx.createGain();
+    beatGain.gain.value = 0;
+    beatGain.connect(ctx.destination);
+    return ctx;
+  }
+
+  function fadeGain(node, target, tc){
+    if(!node || !ctx) return;
+    tc = (typeof tc === 'number') ? tc : 0.03;
+    try{
+      const now = ctx.currentTime;
+      node.gain.cancelScheduledValues(now);
+      node.gain.setTargetAtTime(target, now, tc);
+    }catch(_e){}
+  }
+
+  function stopNodes(){
+    try{ if(oscL){ oscL.stop(); oscL.disconnect(); } }catch(_e){}
+    try{ if(oscR){ oscR.stop(); oscR.disconnect(); } }catch(_e){}
+    try{ if(panL) panL.disconnect(); }catch(_e){}
+    try{ if(panR) panR.disconnect(); }catch(_e){}
+    oscL = oscR = panL = panR = null;
+  }
+
+  function hardStopNow(){
+    // Hard stop to prevent “stuck on” across navigation / bfcache.
+    try{ fadeGain(beatGain, 0, 0.01); }catch(_e){}
+    stopNodes();
+    state.running = false;
+
+    try{
+      if(ctx){
+        try{ ctx.close(); }catch(_e){}
+      }
+    }catch(_e){}
+    ctx = null;
+    beatGain = null;
+    setStatus('Stopped');
+  }
+
+  function resumeBinauralContextIfNeeded(){
+    try{
+      if(state.running && ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function'){
+        ctx.resume().catch(function(){});
+      }
+    }catch(_e){}
+  }
+
+  // Hard-stop only when the page is actually leaving. Do not stop desktop
+  // binaural playback merely because the browser/tab loses foreground focus.
+  try{
+    window.addEventListener('pagehide', hardStopNow);
+    window.addEventListener('pageshow', (e)=>{ if(e && e.persisted) hardStopNow(); else resumeBinauralContextIfNeeded(); });
+    document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) resumeBinauralContextIfNeeded(); });
+    window.addEventListener('focus', resumeBinauralContextIfNeeded);
+  }catch(_e){}
+
+  function applyOscFreq(){
+    if(!ctx || !oscL || !oscR) return;
+    const left  = Math.max(1, state.carrierHz - (state.beatHz/2));
+    const right = Math.max(1, state.carrierHz + (state.beatHz/2));
+    try{
+      oscL.frequency.setTargetAtTime(left,  ctx.currentTime, 0.015);
+      oscR.frequency.setTargetAtTime(right, ctx.currentTime, 0.015);
+    }catch(_e){}
+  }
+
+  function start(){
+    try{ ensureCtx(); }catch(_e){ setStatus('Audio not available in this browser.'); return; }
+    try{ if(ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') ctx.resume().catch(function(){}); }catch(_resumeError){}
+    if(state.running){ setStatus('Already running.'); return; }
+
+    stopNodes();
+
+    oscL = ctx.createOscillator();
+    oscR = ctx.createOscillator();
+    oscL.type = 'sine';
+    oscR.type = 'sine';
+
+    panL = ctx.createStereoPanner();
+    panR = ctx.createStereoPanner();
+    panL.pan.value = -1;
+    panR.pan.value = 1;
+
+    oscL.connect(panL); panL.connect(beatGain);
+    oscR.connect(panR); panR.connect(beatGain);
+
+    applyOscFreq();
+
+    // Start gain from silence to avoid clicks.
+    fadeGain(beatGain, state.beatVol, 0.02);
+
+    try{ oscL.start(); oscR.start(); }catch(_e){}
+    state.running = true;
+    setStatus('Playing');
+  }
+
+  function stop(){
+    fadeGain(beatGain, 0, 0.03);
+    setTimeout(()=>{ hardStopNow(); }, 120);
+  }
+
+  function markCustom(){
+    state.presetIsCustom = true;
+    const presetSel = q('#bl-preset-select', fly);
+    if(presetSel) presetSel.value = 'custom';
+  }
+
+  function setBeatHz(v){
+    const hz = Math.max(0.5, Math.min(40, Number(v)||8));
+    state.beatHz = hz;
+    applyOscFreq();
+    const r = q('#bl-beat-hz', fly);
+    const n = q('#bl-beat-hz-num', fly);
+    if(r) r.value = String(hz);
+    if(n) n.value = String(hz);
+    markCustom();
+  }
+
+  function setCarrierHz(v){
+    const hz = Math.max(60, Math.min(1000, Number(v)||220));
+    state.carrierHz = hz;
+    applyOscFreq();
+    const r = q('#bl-carrier-hz', fly);
+    const n = q('#bl-carrier-hz-num', fly);
+    if(r) r.value = String(hz);
+    if(n) n.value = String(hz);
+    markCustom();
+  }
+
+  function setBeatVol(v){
+    const x = Math.max(0, Math.min(1, Number(v)||0));
+    state.beatVol = x;
+    if(beatGain && ctx) fadeGain(beatGain, x, 0.02);
+    const r = q('#bl-beat-vol', fly);
+    if(r) r.value = String(x);
+    markCustom();
+  }
+
+  // Wire controls
+  q('#bl-beats-start', fly)?.addEventListener('click', start);
+  q('#bl-beats-stop', fly)?.addEventListener('click', stop);
+
+  q('#bl-beat-hz', fly)?.addEventListener('input', (e)=>setBeatHz(e.target.value));
+  q('#bl-beat-hz-num', fly)?.addEventListener('change', (e)=>setBeatHz(e.target.value));
+  q('#bl-carrier-hz', fly)?.addEventListener('input', (e)=>setCarrierHz(e.target.value));
+  q('#bl-carrier-hz-num', fly)?.addEventListener('change', (e)=>setCarrierHz(e.target.value));
+
+  q('#bl-beat-vol', fly)?.addEventListener('input', (e)=>setBeatVol(e.target.value));
+
+  // Presets (beds/ambience removed)
+  const presets = {
+    fitness: [
+      { name:'Strength Focus', hz:14 },
+      { name:'Cardio Rhythm', hz:11 },
+      { name:'Isometric Steady', hz:9 },
+      { name:'Yoga Flow', hz:7 },
+      { name:'Post‑Workout Downshift', hz:5 },
+    ],
+    food: [
+      { name:'Kitchen Focus', hz:12 },
+      { name:'Flavor Flow', hz:8 },
+      { name:'Food Calm', hz:6 },
+    ],
+    skin: [
+      { name:'Skincare Ritual', hz:8 },
+      { name:'Soothe', hz:6 },
+      { name:'Night Downshift', hz:4 },
+    ],
+    more: [
+      { name:'Deep Work', hz:15 },
+      { name:'Light Focus', hz:10 },
+      { name:'Relax', hz:7.5 },
+      { name:'Sleep', hz:2.5 },
+    ]
+  };
+
+  function esc(s){
+    return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+
+  const presetSel = q('#bl-preset-select', fly);
+
+  function presetLabel(groupKey, p){
+    const groupName = ({fitness:'Fitness', food:'Food', skin:'Skincare', more:'Comprehensive'})[groupKey] || groupKey;
+    return `${groupName}: ${p.name} — ${p.hz} Hz`;
+  }
+
+  function rebuildPresetSelect(){
+    if(!presetSel) return;
+    const order = ['fitness','food','skin','more'];
+    const opts = ['<option value="custom">Custom (current)</option>'];
+    order.forEach(g=>{
+      (presets[g]||[]).forEach((p,i)=>{
+        const val = `${g}:${i}`;
+        opts.push(`<option value="${val}">${esc(presetLabel(g,p))}</option>`);
+      });
+    });
+    presetSel.innerHTML = opts.join('');
+  }
+
+  rebuildPresetSelect();
+
+  function applySelectedPreset(){
+    if(!presetSel) return;
+    const raw = String(presetSel.value||'custom');
+    if(raw === 'custom'){
+      state.presetIsCustom = true;
+      return;
+    }
+    const parts = raw.split(':');
+    const g = parts[0] || 'fitness';
+    const idx = parseInt(parts[1]||'0',10) || 0;
+    const list = presets[g] || presets.fitness;
+    const p = list[idx] || list[0];
+    if(!p) return;
+
+    // Selecting a preset applies immediately and becomes the active preset.
+    state.presetIsCustom = false;
+    state.presetKey = raw;
+    setBeatHz(p.hz);
+    state.presetIsCustom = false;
+    if(presetSel) presetSel.value = raw;
+    setStatus('Preset: ' + p.name);
+  }
+
+  presetSel?.addEventListener('change', applySelectedPreset);
+
+  function syncUiToState(){
+    try{ q('#bl-beat-hz', fly).value = String(state.beatHz); }catch(_e){}
+    try{ q('#bl-beat-hz-num', fly).value = String(state.beatHz); }catch(_e){}
+    try{ q('#bl-carrier-hz', fly).value = String(state.carrierHz); }catch(_e){}
+    try{ q('#bl-carrier-hz-num', fly).value = String(state.carrierHz); }catch(_e){}
+    try{ q('#bl-beat-vol', fly).value = String(state.beatVol); }catch(_e){}
+    if(presetSel) presetSel.value = state.presetIsCustom ? 'custom' : state.presetKey;
+  }
+
+  // ------------------------------------------------------------------
+  // User presets (requires auth). Beds removed; any stored bed fields are ignored.
+  // ------------------------------------------------------------------
+  const userHost = q('#bl-user-presets', fly);
+
+  async function loadUserPresets(){
+    if(!userHost) return;
+    if(!authState.authed){
+      userHost.innerHTML = '<p class="muted">Log in to save & load your own presets.</p>';
+      return;
+    }
+
+    if(IS_FILE_PROTOCOL){
+      userHost.innerHTML = '<p class="muted">Saved presets require the website server.</p>';
+      return;
+    }
+    let list = [];
+    const r = await apiJson(API_BASE + '/binaural.php');
+    if(r?.data?.ok) rememberResourceRevision('binaural',r.data);
+    list = (r && r.data && r.data.ok && Array.isArray(r.data.presets)) ? r.data.presets : [];
+
+    userHost.innerHTML = `
+      <details>
+        <summary><strong>Saved presets</strong> (${list.length})</summary>
+        <div style="margin-top:10px;" id="bl-user-preset-list"></div>
+      </details>
+      <div style="margin-top:10px;">
+        <label>Save current as</label>
+        <div class="row" style="margin-top:6px;">
+          <input id="bl-save-preset-name" type="text" maxlength="40" placeholder="e.g. My Focus" />
+          <button type="button" class="bl-mini-btn" id="bl-save-preset">⭐ Save</button>
+        </div>
+      </div>
+    `;
+
+    const listHost = q('#bl-user-preset-list', userHost);
+    if(listHost){
+      list.forEach(p=>{
+        const wrap = document.createElement('div');
+        wrap.style.display='flex';
+        wrap.style.gap='8px';
+        wrap.style.alignItems='center';
+        wrap.style.margin='8px 0';
+
+        const loadBtn = document.createElement('button');
+        loadBtn.type='button';
+        loadBtn.className='bl-mini-btn';
+        loadBtn.textContent = `${p.name} — ${p.beat_hz} Hz`;
+        loadBtn.title = `Carrier ${p.carrier_hz} Hz`;
+        loadBtn.addEventListener('click', ()=>{
+          setBeatHz(p.beat_hz);
+          setCarrierHz(p.carrier_hz);
+          setBeatVol(p.beat_vol);
+          setStatus('Loaded: ' + p.name);
+          markCustom();
+        });
+
+        const delBtn = document.createElement('button');
+        delBtn.type='button';
+        delBtn.className='bl-mini-btn';
+        delBtn.textContent = '✕';
+        delBtn.title = 'Delete';
+        delBtn.addEventListener('click', async ()=>{
+          const deleted = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',{ action:'delete', name:p.name }) });
+          if(deleted?.data?.ok) rememberResourceRevision('binaural',deleted.data);
+          if(deleted?.status===409 && deleted?.data?.error==='revision_conflict'){
+            await loadUserPresets();
+            setStatus('Presets changed elsewhere. The latest account presets were reloaded; please delete again.');
+            return;
+          }
+          await loadUserPresets();
+          setStatus('Deleted: ' + p.name);
+        });
+
+        wrap.appendChild(loadBtn);
+        wrap.appendChild(delBtn);
+        listHost.appendChild(wrap);
+      });
+    }
+
+    q('#bl-save-preset', userHost)?.addEventListener('click', async ()=>{
+      const nm = (q('#bl-save-preset-name', userHost)?.value || '').trim();
+      if(!nm){ setStatus('Enter a preset name to save.'); return; }
+
+      const payload = {
+        action: 'save',
+        name: nm,
+        beat_hz: state.beatHz,
+        carrier_hz: state.carrierHz,
+        beat_vol: state.beatVol,
+      };
 
       const r = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',payload) });
       if(r && r.data && r.data.ok){
@@ -7185,6 +7682,7 @@ function setupRecipeFavourites(){
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);
     safeInit('scroll persistence', setupScrollPersistence);
+    safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
     safeInit('tabs', setupTabs);
 
