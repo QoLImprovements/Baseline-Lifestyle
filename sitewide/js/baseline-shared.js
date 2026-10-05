@@ -7397,7 +7397,6 @@ function setupRecipeFavourites(){
       if(existing){
         applyNavState(existing);
         try{ setNavState(existing, { replace:true, url: urlForNavState(existing) }); }catch(_e){}
-      }
       }else{
         const activeTabEl = q('.tab[aria-selected="true"]');
         const activeTab = activeTabEl ? (activeTabEl.dataset.target || activeTabEl.dataset.tab) : null;
