@@ -419,10 +419,6 @@ function openRealmFromRoute(){
   return loadRealm().catch(error=>{console.error(error);return null;});
 }
 
-function signalVisualReady(){
-  try{window.dispatchEvent(new CustomEvent('baseline:games-hub:visual-ready',{detail:{build:BUILD}}));}
-  catch(_error){document.documentElement.removeAttribute('data-games-hub-boot');}
-}
 function init(){
   addRealmCss();
   waitCore().then(async()=>{
@@ -437,10 +433,8 @@ function init(){
       openBadmintonFromRoute(),
       openRealmFromRoute()
     ]);
-    requestAnimationFrame(()=>signalVisualReady());
   }).catch(error=>{
     console.error(error);
-    signalVisualReady();
   });
 }
 
