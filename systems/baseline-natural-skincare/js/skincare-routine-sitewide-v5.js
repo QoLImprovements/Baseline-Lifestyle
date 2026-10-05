@@ -27,7 +27,7 @@
   const state = {
     owner:'guest',authed:false,groups:[],assignments:{},pendingRemoveGroupId:'',
     calendarView:'month',calendarAnchor:new Date(),expandedSteps:new Set(),openGroupSettings:new Set(),
-    saveTimer:0,loaded:false,observer:null,patching:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,serverSignature:''
+    saveTimer:0,loaded:false,observer:null,patching:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,serverSignature:'',recoveryStarted:false,recoveryPending:false
   };
 
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
@@ -109,35 +109,80 @@
     ];
     keys.forEach((key) => { try { global.localStorage?.removeItem(key); } catch (_error) {} });
   }
-  async function recoverLegacyAssignmentsIfNeeded(serverResponse) {
-    if (!state.authed || Object.keys(state.assignments).length || !state.groups.length) {
-      clearLegacyRoutineStorage();
-      return false;
-    }
-    const recovered=readLegacyGroupAssignments(state.owner,state.groups);
-    if (!Object.keys(recovered).length) {
-      clearLegacyRoutineStorage();
-      return false;
-    }
-    const expectedRevision=Number(serverResponse?.revision || state.revision || 0);
+  async function persistRecoveredAssignments(recovered,expectedRevision) {
     const response=await groupRequest({ method:'POST',body:{ groups:state.groups,assignments:recovered,expectedRevision } });
     if (!response.ok || !response.data?.ok) {
+      state.saveBlocked=true;
       setSaveStatus('Found earlier group assignments, but could not restore them to your account.','warning');
-      return false;
+      return;
     }
     state.assignments=normaliseAssignments(response.data.assignments,state.groups);
     state.revision=Number(response.data.revision || expectedRevision);
     state.serverSignature=groupSignature();
+    state.recoveryPending=false;
+    global.BASELINE_SKINCARE_ROUTINE?.applyGroupState?.(state.groups,state.assignments,state.revision);
     announceRevision();
     clearLegacyRoutineStorage();
     setSaveStatus('Recovered routine group assignments and saved them to your account.','saved');
-    return Object.keys(state.assignments).length>0;
+    patch();
+  }
+  function stageLegacyAssignmentsIfNeeded() {
+    if (state.recoveryPending || state.recoveryStarted || !state.authed || !state.groups.length) return;
+    if (Object.keys(state.assignments).length) {
+      state.recoveryStarted=true;
+      clearLegacyRoutineStorage();
+      return;
+    }
+    state.recoveryStarted=true;
+    const recovered=readLegacyGroupAssignments(state.owner,state.groups);
+    if (!Object.keys(recovered).length) {
+      clearLegacyRoutineStorage();
+      return;
+    }
+    const expectedRevision=state.revision;
+    state.assignments=normaliseAssignments(recovered,state.groups);
+    state.recoveryPending=true;
+    global.BASELINE_SKINCARE_ROUTINE?.applyGroupState?.(state.groups,state.assignments,state.revision);
+    persistRecoveredAssignments(state.assignments,expectedRevision);
   }
   function readRoutineState() {
     try {
       const value=global.BASELINE_SKINCARE_ROUTINE?.getState?.() || {};
-      return { visibility:value.visibility==='public'?'public':'private',items:MODEL.normaliseRoutine(value.routine),logs:MODEL.normaliseLogs(value.logs) };
-    } catch (_error) { return { visibility:'private',items:[],logs:{} }; }
+      return {
+        visibility:value.visibility==='public'?'public':'private',
+        items:MODEL.normaliseRoutine(value.routine),
+        logs:MODEL.normaliseLogs(value.logs),
+        groups:Array.isArray(value.groups)?value.groups:[],
+        assignments:value.assignments && typeof value.assignments==='object'?value.assignments:{},
+        revision:Number(value.revision || 0),
+        loaded:Boolean(value.loaded),
+        loadFailed:Boolean(value.loadFailed)
+      };
+    } catch (_error) { return { visibility:'private',items:[],logs:{},groups:[],assignments:{},revision:0,loaded:false,loadFailed:false }; }
+  }
+  function syncFromCanonical() {
+    const routine=readRoutineState();
+    if (!routine.loaded || routine.loadFailed) return false;
+    const auth=global.BASELINE_auth?.get?.() || {};
+    const nextAuthed=Boolean(auth.authed);
+    const nextOwner=nextAuthed?String(auth.name || '').trim() || 'user':'guest';
+    if (normaliseOwner(nextOwner)!==normaliseOwner(state.owner)) {
+      state.recoveryStarted=false;
+      state.recoveryPending=false;
+      state.saveBlocked=false;
+      state.serverSignature='';
+    }
+    state.authed=nextAuthed;
+    state.owner=nextOwner;
+    const groups=normaliseGroups(routine.groups);
+    const assignments=normaliseAssignments(routine.assignments,groups);
+    state.groups=groups;
+    state.assignments=assignments;
+    state.revision=routine.revision;
+    if (!state.recoveryPending) state.serverSignature=groupSignature(groups,assignments);
+    state.loaded=true;
+    stageLegacyAssignmentsIfNeeded();
+    return true;
   }
   function groupSignature(groups=state.groups,assignments=state.assignments) {
     return JSON.stringify({ groups:normaliseGroups(groups),assignments:normaliseAssignments(assignments,normaliseGroups(groups)) });
@@ -189,6 +234,7 @@
     } else {
       state.revision=Number(response.data.revision || state.revision || 0);
       state.serverSignature=payloadSignature;
+      global.BASELINE_SKINCARE_ROUTINE?.applyGroupState?.(response.data.groups,response.data.assignments,state.revision);
       announceRevision();
       setSaveStatus('Saved to account.','saved');
     }
@@ -342,7 +388,7 @@
   }
 
   function patch() {
-    if (state.patching) return;state.patching=true;
+    if (!state.loaded || state.patching) return;state.patching=true;
     try { ensureTemplateClasses();ensureCalendarCard();ensureGroupManager();enhanceRoutineItems();organisePlanGroups();renderSummary();renderGroupedLog();renderCalendar();UI.applyTemplate($('#routine')); }
     finally { state.patching=false; }
   }
@@ -398,52 +444,26 @@
       }
       if (event.target.closest('#routineItems [data-field],#routineLogItems [data-log-note]')) global.setTimeout(schedulePatch,0);
     });
-    document.addEventListener('baseline:skincare-routine-updated',schedulePatch);
+    document.addEventListener('baseline:skincare-routine-updated',()=>{ if(state.loaded) schedulePatch(); });
+    document.addEventListener('baseline:skincare-routine-loaded',renderCanonical);
     document.addEventListener('keydown',(event) => { if (event.target?.id==='routineGroupName' && event.key==='Enter') { event.preventDefault();createGroup(); } });
   }
 
-  async function loadForAuth(snapshot) {
-    const authed=Boolean(snapshot?.authed);
-    const owner=authed?String(snapshot.name || snapshot.user?.name || '').trim():'guest';
-    const changed=normaliseOwner(owner)!==normaliseOwner(state.owner);
-    state.authed=authed;
-    state.owner=owner || 'guest';
-    if (!changed && state.loaded) return;
-
-    state.groups=[];
-    state.assignments={};
-    state.revision=0;
-    state.serverSignature='';
-    state.saveBlocked=false;
-    state.loaded=true;
-
-    if (!authed) { patch();return; }
-
-    const response=await groupRequest();
-    if (response.ok && response.data?.ok) {
-      state.groups=normaliseGroups(response.data.groups);
-      state.assignments=normaliseAssignments(response.data.assignments,state.groups);
-      state.revision=Number(response.data.revision || 0);
-      state.serverSignature=groupSignature();
-      announceRevision();
-      await recoverLegacyAssignmentsIfNeeded(response.data);
-    } else {
-      state.saveBlocked=true;
-      setSaveStatus('Could not load routine groups from your account.','warning');
-    }
+  function renderCanonical() {
+    if (!syncFromCanonical()) return;
     patch();
   }
   global.BASELINE_SKINCARE_ROUTINE_GROUPS=Object.freeze({
-    getState:()=>({ groups:normaliseGroups(state.groups),assignments:normaliseAssignments(state.assignments,state.groups),revision:state.revision,loaded:state.loaded,saveBlocked:state.saveBlocked })
+    getState:()=>({ groups:normaliseGroups(state.groups),assignments:normaliseAssignments(state.assignments,state.groups),revision:state.revision,loaded:state.loaded,saveBlocked:state.saveBlocked }),
+    render:renderCanonical
   });
 
-  function attachAuth() {
-    const auth=global.BASELINE_auth;
-    if (!auth || typeof auth.get!=='function') { loadForAuth(null);return; }
-    loadForAuth(auth.get());if (typeof auth.onChange==='function') auth.onChange(loadForAuth);
-  }
   function boot() {
-    const root=$('#routine');if (!root) return;bindEvents();state.observer=UI.observe(root,patch);attachAuth();global.addEventListener('pagehide',() => state.observer?.disconnect(),{ once:true });
+    const root=$('#routine');if (!root) return;
+    bindEvents();
+    state.observer=UI.observe(root,renderCanonical);
+    renderCanonical();
+    global.addEventListener('pagehide',() => state.observer?.disconnect(),{ once:true });
   }
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
 })(typeof window!=='undefined'?window:globalThis);

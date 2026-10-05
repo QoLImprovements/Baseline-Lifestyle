@@ -35,13 +35,27 @@
   const ROUTINE_API='/systems/baseline-natural-skincare/api/routine_state.php';
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
   const VIEWS=['log','summary','plan','public'];
-  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false };
+  const state={ routine:[],logs:{},groups:[],assignments:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,loaded:false,loadFailed:false,loadedAuthKey:'',loadingAuthKey:'',loadPromise:null };
 
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
   const esc=MODEL.escapeHtml;
 
-  function authed() { try { return Boolean(global.BASELINE_auth?.get?.()?.authed); } catch (_error) { return false; } }
+  function authSnapshot() { try { return global.BASELINE_auth?.get?.() || { ready:false,authed:false,name:'',email:'' }; } catch (_error) { return { ready:false,authed:false,name:'',email:'' }; } }
+  function authed() { return Boolean(authSnapshot().authed); }
+  function authReady() { return Boolean(authSnapshot().ready); }
+  function authKey(snapshot=authSnapshot()) {
+    if (!snapshot?.ready) return 'pending';
+    return snapshot.authed ? `user:${String(snapshot.name || '').trim().toLocaleLowerCase('en-GB')}|${String(snapshot.email || '').trim().toLocaleLowerCase('en-GB')}` : 'guest';
+  }
+  function copyGroups(value) { return (Array.isArray(value)?value:[]).filter((group)=>group && group.id && group.title).map((group)=>Object.assign({},group,{ frequency:MODEL.normaliseFrequency(group.frequency) })); }
+  function copyAssignments(value,groups=state.groups) {
+    const valid=new Set(groups.map((group)=>String(group.id)));const output={};
+    Object.entries(value && typeof value==='object'?value:{}).forEach(([itemId,groupId])=>{ if(valid.has(String(groupId))) output[String(itemId)]=String(groupId); });
+    return output;
+  }
+  function canRenderData() { return state.loaded && !state.loadFailed; }
+  function syncGroupedRender() { try { global.BASELINE_SKINCARE_ROUTINE_GROUPS?.render?.(); } catch (_error) {} }
 
   function locationTargetsRoutine() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
@@ -92,6 +106,7 @@
   }
 
   function emit(scope='all') { try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-updated',{ detail:{ scope } })); } catch (_error) {} }
+  function emitLoaded() { try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-loaded',{ detail:{ revision:state.revision } })); } catch (_error) {} }
   function announceRevision() { try { document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {} }
   async function request(url,options={}) {
     try {
@@ -117,6 +132,8 @@
       }
     } else {
       state.revision=Number(response.data.revision || state.revision || 0);
+      state.groups=copyGroups(response.data.groups);
+      state.assignments=copyAssignments(response.data.assignments,state.groups);
       announceRevision();
       setStatus('Saved to account.','saved');
     }
@@ -131,25 +148,42 @@
     state.saveTimer=global.setTimeout(saveRemote,450);
   }
   async function loadRemoteState() {
-    if (!authed()) {
-      const changed=state.routine.length>0 || Object.keys(state.logs).length>0 || state.visibility!=='private' || state.revision!==0;
-      state.routine=[];state.logs={};state.visibility='private';state.revision=0;state.saveBlocked=false;
-      return changed;
-    }
-    const before=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
-    const response=await request(ROUTINE_API);
-    if (response.ok && response.data?.ok) {
-      state.routine=MODEL.normaliseRoutine(response.data.routine);
-      state.logs=MODEL.normaliseLogs(response.data.logs);
-      state.visibility=response.data.visibility==='public'?'public':'private';
-      state.revision=Number(response.data.revision || 0);
-      state.saveBlocked=false;
-      announceRevision();
-    } else {
+    const snapshot=authSnapshot();
+    if (!snapshot.ready) return { resolved:false,render:false };
+    const key=authKey(snapshot);
+    if (state.loaded && !state.loadFailed && state.loadedAuthKey===key) return { resolved:true,render:false };
+    if (state.loadPromise && state.loadingAuthKey===key) return state.loadPromise;
+
+    state.loadingAuthKey=key;
+    state.loadPromise=(async()=>{
+      if (!snapshot.authed) {
+        state.routine=[];state.logs={};state.groups=[];state.assignments={};state.visibility='private';state.revision=0;
+        state.saveBlocked=false;state.loaded=true;state.loadFailed=false;state.loadedAuthKey=key;
+        emitLoaded();
+        return { resolved:true,render:true };
+      }
+
+      const response=await request(ROUTINE_API);
+      if (authKey(authSnapshot())!==key) return { resolved:false,render:false };
+      if (response.ok && response.data?.ok) {
+        state.routine=MODEL.normaliseRoutine(response.data.routine);
+        state.logs=MODEL.normaliseLogs(response.data.logs);
+        state.groups=copyGroups(response.data.groups);
+        state.assignments=copyAssignments(response.data.assignments,state.groups);
+        state.visibility=response.data.visibility==='public'?'public':'private';
+        state.revision=Number(response.data.revision || 0);
+        state.saveBlocked=false;state.loaded=true;state.loadFailed=false;state.loadedAuthKey=key;
+        announceRevision();emitLoaded();
+        return { resolved:true,render:true };
+      }
+
+      state.loaded=true;state.loadFailed=true;state.loadedAuthKey=key;
       setStatus('Could not load your saved routine from the account.','warning');
-    }
-    const after=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
-    return after!==before;
+      return { resolved:true,render:false };
+    })();
+
+    try { return await state.loadPromise; }
+    finally { if(state.loadingAuthKey===key){ state.loadingAuthKey='';state.loadPromise=null; } }
   }
 
 
@@ -157,10 +191,12 @@
     const next=VIEWS.includes(view)?view:'log';state.activeView=next;
     $$('[data-routine-view]').forEach((button)=>{ const selected=button.dataset.routineView===next;button.classList.toggle('active',selected);button.setAttribute('aria-selected',selected?'true':'false'); });
     $$('[data-routine-panel]').forEach((panel)=>{ const selected=panel.dataset.routinePanel===next;panel.hidden=!selected;panel.classList.toggle('active',selected); });
-    if (next==='log') renderLog();
-    if (next==='summary') renderSummary();
-    if (next==='plan') renderPlan();
-    if (next==='public') renderPublicProfiles();
+    if (canRenderData()) {
+      if (next==='log') renderLog();
+      if (next==='summary') renderSummary();
+      if (next==='plan') renderPlan();
+      if (next==='public') renderPublicProfiles();
+    }
     if (remember) writeViewRoute(next);
   }
   function restoreRoute() {
@@ -203,11 +239,11 @@
     const shaving=MODEL.SHAVING_ACTION_IDS.includes(item.actionId)?`<label class="routine-field"><span>Shaving method</span><select data-id="${esc(item.id)}" data-field="shavingMethod">${optionHtml(MODEL.SHAVING_METHOD_OPTIONS,item.shavingMethod)}</select></label>`:'';
     return `<article class="routine-item" data-routine-item="${esc(item.id)}"><div class="routine-item-head"><div><span class="routine-order">${index+1}</span><strong>${esc(item.title)}</strong></div><div class="routine-item-actions"><button type="button" class="routine-mini" data-move="up" data-id="${esc(item.id)}" aria-label="Move ${esc(item.title)} up"${index===0?' disabled':''}>↑</button><button type="button" class="routine-mini" data-move="down" data-id="${esc(item.id)}" aria-label="Move ${esc(item.title)} down"${index===state.routine.length-1?' disabled':''}>↓</button>${state.pendingRemoveId===item.id?`<span class="routine-remove-confirm"><span>Remove?</span><button type="button" data-remove-confirm="${esc(item.id)}">Yes</button><button type="button" data-remove-cancel>Cancel</button></span>`:`<button type="button" class="routine-mini routine-remove" data-remove-request="${esc(item.id)}" aria-label="Remove ${esc(item.title)}">×</button>`}</div></div><div class="routine-item-grid"><label class="routine-field routine-field-wide"><span>Action name</span><input type="text" maxlength="100" value="${esc(item.title)}" data-id="${esc(item.id)}" data-field="title"></label><label class="routine-field"><span>Time of day</span><select data-id="${esc(item.id)}" data-field="timeOfDay">${optionHtml(MODEL.TIME_OPTIONS,item.timeOfDay)}</select></label><label class="routine-field"><span>Frequency</span><select data-id="${esc(item.id)}" data-field="frequencyMode">${optionHtml(MODEL.FREQUENCY_OPTIONS,frequency.mode)}</select></label>${shaving}<label class="routine-field routine-field-wide routine-product-field"><span>Product / Recipe</span><select data-id="${esc(item.id)}" data-field="productSelection">${productOptionsHtml(item)}</select><input type="text" maxlength="160" value="${esc(item.customProductName || '')}" data-id="${esc(item.id)}" data-field="customProductName" placeholder="Product name"${customProductHidden}></label><div class="routine-field routine-field-wide routine-benefit-field"><span>Benefits and practical role</span><p>${esc(benefitText(item))}</p></div><label class="routine-field routine-field-wide"><span>Personal notes</span><textarea rows="3" maxlength="1200" data-id="${esc(item.id)}" data-field="notes" placeholder="Optional notes about technique, sensation, timing or product use">${esc(item.notes || '')}</textarea></label></div><fieldset class="routine-days" data-days-for="${esc(item.id)}"${daysHidden}><legend>Days</legend>${MODEL.DAYS.map((day)=>`<label><input type="checkbox" data-day="${esc(day)}" data-id="${esc(item.id)}"${frequency.days.includes(day)?' checked':''}>${esc(day.slice(0,3))}</label>`).join('')}</fieldset><label class="routine-field routine-weekly" data-weekly-for="${esc(item.id)}"${weeklyHidden}><span>Times each week</span><input type="number" min="1" max="14" value="${frequency.timesPerWeek}" data-id="${esc(item.id)}" data-field="timesPerWeek"></label></article>`;
   }
-  function renderPlan() { const target=$('#routineItems');if (!target) return;target.innerHTML=state.routine.length?state.routine.map(itemEditor).join(''):'<div class="routine-empty">No routine actions added yet.</div>';renderActionPicker();emit('plan'); }
-  function renderSummary() {
-    const target=$('#routineSummary');if (!target) return;
-    if (!state.routine.length) { target.innerHTML='<div class="routine-empty">Build your Routine Plan to see the complete summary here.</div>';emit('summary');return; }
-    target.innerHTML=state.routine.map((item,index)=>{ const product=item.productName || item.customProductName || '';return `<article class="routine-summary-item routine-summary-item-comprehensive"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(item.title)}</strong></div><div class="routine-summary-grid"><section><h3>Routine details</h3><dl><div><dt>Time of day</dt><dd>${esc(timeText(item.timeOfDay))}</dd></div><div><dt>Frequency</dt><dd>${esc(frequencyText(item.frequency))}</dd></div><div><dt>Product / recipe</dt><dd>${esc(product || 'Not selected')}</dd></div>${MODEL.SHAVING_ACTION_IDS.includes(item.actionId)?`<div><dt>Shaving method</dt><dd>${esc(MODEL.SHAVING_METHOD_OPTIONS.find((option)=>option.value===item.shavingMethod)?.label || 'Manual / classic razor')}</dd></div>`:''}</dl></section><section><h3>Benefits and practical role</h3><p>${esc(benefitText(item))}</p>${item.notes?`<p class="routine-summary-notes"><strong>Personal notes:</strong> ${esc(item.notes)}</p>`:''}</section></div></article>`; }).join('');emit('summary');
+  function renderPlan(sync=true) { if(!canRenderData()) return;const target=$('#routineItems');if (!target) return;target.innerHTML=state.routine.length?state.routine.map(itemEditor).join(''):'<div class="routine-empty">No routine actions added yet.</div>';renderActionPicker();emit('plan');if(sync)syncGroupedRender(); }
+  function renderSummary(sync=true) {
+    if(!canRenderData()) return;const target=$('#routineSummary');if (!target) return;
+    if (!state.routine.length) { target.innerHTML='<div class="routine-empty">Build your Routine Plan to see the complete summary here.</div>';emit('summary');if(sync)syncGroupedRender();return; }
+    target.innerHTML=state.routine.map((item,index)=>{ const product=item.productName || item.customProductName || '';return `<article class="routine-summary-item routine-summary-item-comprehensive"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(item.title)}</strong></div><div class="routine-summary-grid"><section><h3>Routine details</h3><dl><div><dt>Time of day</dt><dd>${esc(timeText(item.timeOfDay))}</dd></div><div><dt>Frequency</dt><dd>${esc(frequencyText(item.frequency))}</dd></div><div><dt>Product / recipe</dt><dd>${esc(product || 'Not selected')}</dd></div>${MODEL.SHAVING_ACTION_IDS.includes(item.actionId)?`<div><dt>Shaving method</dt><dd>${esc(MODEL.SHAVING_METHOD_OPTIONS.find((option)=>option.value===item.shavingMethod)?.label || 'Manual / classic razor')}</dd></div>`:''}</dl></section><section><h3>Benefits and practical role</h3><p>${esc(benefitText(item))}</p>${item.notes?`<p class="routine-summary-notes"><strong>Personal notes:</strong> ${esc(item.notes)}</p>`:''}</section></div></article>`; }).join('');emit('summary');if(sync)syncGroupedRender();
   }
 
   function logItem(item,date) {
@@ -221,11 +257,11 @@
     const completed=due.filter((item)=>entries[item.id]?.completed).length;
     progress.textContent=`${completed}/${due.length} completed`;
   }
-  function renderLog() {
-    state.selectedDate=MODEL.configureLogDateInput?.($('#routineLogDate'),state.selectedDate) || state.selectedDate;const target=$('#routineLogItems');if (!target) return;
+  function renderLog(sync=true) {
+    if(!canRenderData()) return;state.selectedDate=MODEL.configureLogDateInput?.($('#routineLogDate'),state.selectedDate) || state.selectedDate;const target=$('#routineLogItems');if (!target) return;
     const due=state.routine.filter((item)=>MODEL.dueStatus(item,state.selectedDate,state.logs).due);
     refreshLogProgress();
-    target.innerHTML=due.length?due.map((item)=>logItem(item,state.selectedDate)).join(''):'<div class="routine-empty">There is no routine to log yet. Create one in <button type="button" class="routine-text-button" data-open-routine-plan>Routine Plan</button>.</div>';emit('log');
+    target.innerHTML=due.length?due.map((item)=>logItem(item,state.selectedDate)).join(''):'<div class="routine-empty">There is no routine to log yet. Create one in <button type="button" class="routine-text-button" data-open-routine-plan>Routine Plan</button>.</div>';emit('log');if(sync)syncGroupedRender();
   }
   function updateCompletionInPlace(control) {
     const itemId=String(control?.dataset.logComplete || '');
@@ -311,7 +347,7 @@
     global.addEventListener('popstate',restoreRoute);
   }
 
-  function renderAll() { renderPlan();renderSummary();renderLog();renderPublicProfiles(); }
+  function renderAll() { if(!canRenderData()) return;renderPlan(false);renderSummary(false);renderLog(false);renderPublicProfiles();syncGroupedRender(); }
   async function init() {
     const routing=locationTargetsRoutine();
     state.activeView=routeViewFromLocation();
@@ -326,10 +362,15 @@
       writeViewRoute(state.activeView);
     }
 
-    const changed=await loadRemoteState();
-    if (changed && locationTargetsRoutine()) renderAll();
+    const result=await loadRemoteState();
+    if (result?.render && locationTargetsRoutine()) renderAll();
   }
-  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate,revision:state.revision }),selectView(view){ selectOuterRoutine();activateView(view,true); },refresh:renderAll });
+  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({
+    getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),groups:copyGroups(state.groups),assignments:copyAssignments(state.assignments,state.groups),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate,revision:state.revision,loaded:state.loaded,loadFailed:state.loadFailed }),
+    applyGroupState(groups,assignments,revision){ state.groups=copyGroups(groups);state.assignments=copyAssignments(assignments,state.groups);const next=Number(revision);if(Number.isFinite(next)&&next>=0)state.revision=next; },
+    selectView(view){ selectOuterRoutine();activateView(view,true); },
+    refresh:renderAll
+  });
   function boot() {
     init();
     try { global.BASELINE_auth?.onChange?.(()=>{ state.pendingRemoveId='';init(); }); } catch (_error) {}

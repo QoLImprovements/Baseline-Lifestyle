@@ -6073,13 +6073,7 @@ function buildControls(recipeEl){
     }
 
     function currentAuthButtonLabel(){
-      if(document.body && document.body.dataset && document.body.dataset.app === 'games') return 'Account';
-      try{
-        if(authState && authState.authed) return 'Account';
-        const cachedSession = lsRead(LOCAL_SESS_KEY, null);
-        if(cachedSession && (cachedSession.authed || cachedSession.name || cachedSession.email)) return 'Account';
-      }catch(_e){}
-      return 'Login';
+      return 'Account';
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
@@ -6758,7 +6752,7 @@ function setupAuthFlyout(){
 
     function renderAuthUI(){
       const authed = !!authState.authed;
-      const bannerLabel = (document.body && document.body.dataset && document.body.dataset.app === 'games') ? 'Account' : (authed ? 'Account' : 'Login');
+      const bannerLabel = 'Account';
       try{
         const iconNode = toggle.querySelector('.bl-btn-icon');
         const labelNode = toggle.querySelector('.bl-btn-label');
@@ -7912,10 +7906,13 @@ function setupRecipeFavourites(){
       }catch(_e){}
     };
 
+    // Start server-session resolution immediately. The Account control has a
+    // stable label, so authentication no longer causes a banner-width repaint.
+    safeInit('auth refresh', ()=>{ try{ refreshAuth(); }catch(_e){} });
+
     const initSecondaryUi = ()=>{
       safeInit('auth flyout', setupAuthFlyout);
       safeInit('binaural flyout', setupBinauralFlyout);
-      safeInit('auth refresh', ()=>{ try{ refreshAuth(); }catch(_e){} });
     };
 
     if(needsImmediateContentUi){

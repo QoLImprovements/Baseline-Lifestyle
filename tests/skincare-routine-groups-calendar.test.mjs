@@ -13,6 +13,7 @@ const css=readFileSync(resolve(root,'systems/baseline-natural-skincare/css/skinc
 const catalogue=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'),'utf8');
 const schema=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/schema.php'),'utf8');
 const endpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_groups.php'),'utf8');
+const routineEndpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_state.php'),'utf8');
 const savedData=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/skincare_saved_data.php'),'utf8');
 
 test('Skincare identifies the exact My Routine panel before body paint and hydrates data from the server only',() => {
@@ -54,7 +55,7 @@ test('Skincare has one canonical calendar renderer and no dynamic bootstrap fall
   assert.match(loader,/canonical My Routine bootstrap v35/);
   assert.doesNotMatch(loader,/skincare-recipe-bootstrap-20260906\.js|loadOrdered\(|loadScript\(|createElement\(['"]script['"]\)/);
   assert.match(sitewide,/function renderCalendar\(\)/);
-  assert.match(sitewide,/UI\.observe\(root,patch\)/);
+  assert.match(sitewide,/UI\.observe\(root,renderCanonical\)/);
   assert.doesNotMatch(sitewide,/skincare-recipe-|sitewide-v5-core|new MutationObserver|setInterval|Loading My Routine/);
   assert.doesNotMatch(routine,/function renderCalendar\(|function calendarButton\(|calendarView|calendarAnchor|data-calendar-view|data-calendar-move|data-calendar-today/);
 });
@@ -136,11 +137,26 @@ test('Skincare Saved Data upgrades recover legacy server-side group assignments 
 
 
 test('legacy Skincare browser group data is migration-only and is deleted after server recovery',() => {
-  assert.match(sitewide,/function recoverLegacyAssignmentsIfNeeded/);
+  assert.match(sitewide,/function stageLegacyAssignmentsIfNeeded/);
+  assert.match(sitewide,/function persistRecoveredAssignments/);
   assert.match(sitewide,/expectedRevision/);
   assert.match(sitewide,/Found earlier group assignments/);
   assert.match(sitewide,/Recovered routine group assignments/);
   assert.match(sitewide,/clearLegacyRoutineStorage/);
   assert.match(sitewide,/localStorage\?\.removeItem/);
   assert.doesNotMatch(sitewide,/localStorage\?\.setItem/);
+});
+
+
+test('Skincare routine and group state hydrate from one canonical server snapshot before grouped rendering',() => {
+  assert.match(routineEndpoint,/'groups'=>\$groups/);
+  assert.match(routineEndpoint,/'assignments'=>bl_skincare_assignments/);
+  assert.match(routine,/groups:copyGroups\(state\.groups\)/);
+  assert.match(routine,/assignments:copyAssignments\(state\.assignments,state\.groups\)/);
+  assert.match(routine,/loaded:state\.loaded/);
+  assert.match(routine,/syncGroupedRender/);
+  assert.match(sitewide,/function syncFromCanonical\(\)/);
+  assert.match(sitewide,/function renderCanonical\(\)/);
+  assert.match(sitewide,/BASELINE_SKINCARE_ROUTINE\?\.applyGroupState/);
+  assert.doesNotMatch(sitewide,/function loadForAuth\(|attachAuth\(\)/);
 });

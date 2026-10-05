@@ -134,12 +134,15 @@ function bl_skincare_assignments($value, array $groups): array {
 function bl_skincare_own_payload(array $resource): array {
   $data = is_array($resource['data'] ?? null) ? $resource['data'] : bl_skincare_saved_default();
   $routine = bl_skincare_routine($data['routine'] ?? []);
+  $groups = bl_skincare_groups($data['groups'] ?? []);
   return [
     'ok'=>true,
     'hasRoutine'=>(bool)$resource['found'] && count($routine) > 0,
     'visibility'=>($data['visibility'] ?? '') === 'public' ? 'public' : 'private',
     'routine'=>$routine,
     'logs'=>bl_skincare_logs($data['logs'] ?? []),
+    'groups'=>$groups,
+    'assignments'=>bl_skincare_assignments($data['assignments'] ?? [], $groups),
     'revision'=>(int)$resource['revision'],
     'updatedAt'=>$resource['updatedAt'],
   ];

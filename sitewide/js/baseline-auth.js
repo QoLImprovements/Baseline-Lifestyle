@@ -6,7 +6,7 @@
   const apiBase = api.base;
   const isFile = !!api.isFile;
   const sessionKey = store.keys.session;
-  const state = { authed:false, name:'', email:'', providers:{ password:true, google:false } };
+  const state = { ready:false, authed:false, name:'', email:'', providers:{ password:true, google:false } };
   const listeners = new Set();
 
   /* Server session state is the only authentication authority. Retire the old
@@ -19,6 +19,7 @@
 
   function snapshot(){
     return {
+      ready:!!state.ready,
       authed:!!state.authed,
       name:String(state.name || ''),
       email:String(state.email || ''),
@@ -28,6 +29,7 @@
 
   const stateView = {};
   Object.defineProperties(stateView, {
+    ready:{ enumerable:true, get:()=>!!state.ready },
     authed:{ enumerable:true, get:()=>!!state.authed },
     name:{ enumerable:true, get:()=>String(state.name || '') },
     email:{ enumerable:true, get:()=>String(state.email || '') },
@@ -52,6 +54,7 @@
 
   async function refresh(){
     if(isFile){
+      state.ready = true;
       state.authed = false;
       state.name = '';
       state.email = '';
@@ -62,12 +65,14 @@
 
     const response = await api.json(apiBase + '/me.php');
     if(response && response.data && response.data.ok && response.data.authed){
+      state.ready = true;
       state.authed = true;
       state.name = String(response.data.name || (response.data.user && response.data.user.name) || '').trim();
       state.email = String(response.data.email || (response.data.user && response.data.user.email) || '').trim();
       state.providers = Object.assign({ password:true, google:false }, response.data.providers || {});
       syncLocalSession({ authed:true, name:state.name, email:state.email });
     }else{
+      state.ready = true;
       state.authed = false;
       state.name = '';
       state.email = '';
@@ -104,6 +109,7 @@
     const response = await api.json(apiBase + '/login.php', { method:'POST', body:{ identifier, password } });
     if(response && response.data && response.data.ok){
       const user = response.data.user || {};
+      state.ready = true;
       state.authed = true;
       state.name = String(user.name || identifier || '').trim();
       state.email = String(user.email || '').trim();
@@ -137,6 +143,7 @@
     const response = await api.json(apiBase + '/register.php', { method:'POST', body:payload });
     if(response && response.data && response.data.ok){
       const user = response.data.user || {};
+      state.ready = true;
       state.authed = true;
       state.name = String(user.name || payload.name || '').trim();
       state.email = String(user.email || payload.email || '').trim();
@@ -176,6 +183,7 @@
     });
     if(response && response.data && response.data.ok){
       const user = response.data.user || {};
+      state.ready = true;
       state.authed = true;
       state.name = String(user.name || '').trim();
       state.email = String(user.email || '').trim();
