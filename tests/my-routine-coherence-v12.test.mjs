@@ -191,7 +191,7 @@ test('Skincare groups own time and frequency directly and start collapsed',()=>{
   assert.match(skinGroups,/data-plan-group-settings/);
   assert.match(skinGroups,/Group time/);
   assert.match(skinGroups,/Group frequency/);
-  assert.match(skinGroups,/id,title,collapsed:true/);
+  assert.match(skinGroups,/id,title,collapsed:source\.collapsed!==false/);
   assert.doesNotMatch(skinGroups,/Set time for this group|Set “How often” for this group|data-group-field=\"applyTime\"|data-group-field=\"applyFrequency\"|data-group-title/);
   assert.match(skinCss,/\.routine-plan-group-settings-grid/);
 });
