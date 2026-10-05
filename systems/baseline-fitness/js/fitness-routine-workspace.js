@@ -61,7 +61,15 @@
     }catch(_error){}
   }
 
-  const initial=requestedRoute();
+  let initial=requestedRoute();
+  try{
+    if(new URL(global.location.href).searchParams.has('new-plan')) initial={ view:'plan',plan:'calisthenics',path:routePath() };
+  }catch(_error){}
+  if(!initial && document.documentElement.getAttribute('data-initial-fitness-tab')==='my-plan'){
+    const view=String(document.documentElement.getAttribute('data-initial-routine-view') || 'log');
+    const plan=String(document.documentElement.getAttribute('data-initial-routine-plan') || 'calisthenics');
+    initial={ view:TOP_VIEWS.includes(view)?view:'log',plan:PLAN_VIEWS.includes(plan)?plan:'calisthenics',path:routePath() };
+  }
   if(initial) selectRoutinePage(initial);
 
   document.addEventListener('click',(event)=>{
