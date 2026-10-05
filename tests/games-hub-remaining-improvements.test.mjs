@@ -77,13 +77,11 @@ test('Calorie Escape exposes descriptive module ownership with no opaque aliases
 });
 
 
-test('Games Hub uses one stable startup authority before first visible paint',()=>{
+test('Games Hub has no artificial first-paint gate and one primary startup authority',()=>{
   const hubCss=fs.readFileSync(new URL('../systems/baseline-games-hub/css/baseline-games-hub.css',import.meta.url),'utf8');
   const loader=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-v14.js',import.meta.url),'utf8');
 
-  assert.match(hubHtml, /<html[^>]*data-games-document-pending="1"/);
-  assert.match(hubHtml, /html\[data-games-document-pending="1"\] body\[data-app="games"\]\{visibility:hidden!important;\}/);
-  assert.doesNotMatch(hubHtml, /baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
+  assert.doesNotMatch(hubHtml, /data-games-document-pending|visibility:hidden!important|baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
   assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
   assert.match(hubHtml, /id="baseline-games-route-first-paint"/);
   assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
@@ -91,7 +89,10 @@ test('Games Hub uses one stable startup authority before first visible paint',()
 
   assert.doesNotMatch(core, /seedProfilesForImmediateRender/);
   assert.doesNotMatch(core, /document\.addEventListener\('baseline:auth',\s*loadAllProfiles\)/);
-  assert.match(core, /await resolveInitialAuth\(\);[\s\S]*await hydrateProfiles\(\);[\s\S]*renderAuthState\(\);[\s\S]*safeRenderAll\(\);[\s\S]*removeAttribute\('data-games-document-pending'\)/);
+  assert.doesNotMatch(core, /await window\.BASELINE_auth\.refresh\(\)/);
+  assert.match(core, /storage\.isAuthenticated\(\)/);
+  assert.match(core, /resolveInitialAuth\(\);[\s\S]*await hydrateProfiles\(\);[\s\S]*renderAuthState\(\);[\s\S]*safeRenderAll\(\)/);
   assert.match(core, /window\.BASELINE_auth\.onChange\(function\(next\)/);
   assert.match(core, /if\(nextKey===lastAuthStateKey\) return;/);
+  assert.equal(fs.existsSync(new URL('../systems/baseline-games-hub/css/games-page-refresh.css',import.meta.url)),false);
 });
