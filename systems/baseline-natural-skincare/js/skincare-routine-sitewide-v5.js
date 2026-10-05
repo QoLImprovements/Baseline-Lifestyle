@@ -366,6 +366,10 @@
     }
     patch();
   }
+  global.BASELINE_SKINCARE_ROUTINE_GROUPS=Object.freeze({
+    getState:()=>({ groups:normaliseGroups(state.groups),assignments:normaliseAssignments(state.assignments,state.groups),revision:state.revision,loaded:state.loaded,saveBlocked:state.saveBlocked })
+  });
+
   function attachAuth() {
     const auth=global.BASELINE_auth;
     if (!auth || typeof auth.get!=='function') { loadForAuth(null);return; }
