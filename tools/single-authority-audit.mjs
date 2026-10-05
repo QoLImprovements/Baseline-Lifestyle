@@ -101,6 +101,10 @@ for(const file of sources.keys()){
 }
 
 const runtimeStorage=storage.filter(x=>!x.migrationOnly);
+const storageCounts=new Map();
+for(const item of runtimeStorage) storageCounts.set(item.file,(storageCounts.get(item.file)||0)+1);
+const storageFiles=[...storageCounts.entries()].map(([file,count])=>({ file,count,referencedBy:references.get(file)||[] })).sort((a,b)=>b.count-a.count||a.file.localeCompare(b.file));
+const unreferencedStorageFiles=storageFiles.filter(item=>item.referencedBy.length===0);
 const orphanAuthority=authorityNamed.filter(x=>x.referencedBy.length===0);
 const loadedAuthority=authorityNamed.filter(x=>x.referencedBy.length>0);
 
@@ -146,6 +150,8 @@ const report={
   scannedFiles:sources.size,
   scannedCharacters:[...sources.values()].reduce((n,s)=>n+s.length,0),
   runtimeStorage,
+  storageFiles,
+  unreferencedStorageFiles,
   storageTotal:storage.length,
   conflictMarkers,
   dynamicStyle,
