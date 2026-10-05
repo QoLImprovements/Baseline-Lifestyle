@@ -20,9 +20,6 @@
   if (!UI || !MODEL) return;
 
   const GROUP_API = '/systems/baseline-natural-skincare/api/routine_groups.php';
-  const ROUTINE_STORAGE_PREFIX = '__bl_skincare_routine_v1__::';
-  const GROUP_STORAGE_PREFIX = '__bl_skincare_routine_groups_v3__::';
-  const LEGACY_GROUP_STORAGE_PREFIXES = ['__bl_skincare_routine_groups_v2__::','__bl_skincare_routine_groups_v1__::'];
   const SAVE_DELAY = 450;
   const MAX_GROUPS = 30;
   const DAYS = MODEL.DAYS || ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
@@ -30,7 +27,7 @@
   const state = {
     owner:'guest',authed:false,groups:[],assignments:{},pendingRemoveGroupId:'',
     calendarView:'month',calendarAnchor:new Date(),expandedSteps:new Set(),openGroupSettings:new Set(),
-    saveTimer:0,loaded:false,observer:null,patching:false
+    saveTimer:0,loaded:false,observer:null,patching:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false,serverSignature:''
   };
 
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
@@ -42,9 +39,6 @@
   function uniqueId(prefix='group') {
     return global.crypto?.randomUUID ? `${prefix}-${global.crypto.randomUUID()}` : `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
   }
-  function routineStorageKey(owner=state.owner) { return `${ROUTINE_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
-  function groupStorageKey(owner=state.owner) { return `${GROUP_STORAGE_PREFIX}${normaliseOwner(owner)}`; }
-
   function normaliseGroup(raw,index=0) {
     const source=raw && typeof raw==='object' ? raw : {};
     const id=cleanText(source.id || `routine-group-${index+1}`,80).replace(/[^a-zA-Z0-9_-]/g,'-');
@@ -74,36 +68,64 @@
     });
     return output;
   }
-  function readRoutineLocal() {
+  function readRoutineState() {
     try {
-      const raw=global.localStorage?.getItem(routineStorageKey());const value=raw?JSON.parse(raw):null;
-      return { visibility:value?.visibility==='public'?'public':'private',items:MODEL.normaliseRoutine(value?.items || value?.routine),logs:MODEL.normaliseLogs(value?.logs) };
+      const value=global.BASELINE_SKINCARE_ROUTINE?.getState?.() || {};
+      return { visibility:value.visibility==='public'?'public':'private',items:MODEL.normaliseRoutine(value.routine),logs:MODEL.normaliseLogs(value.logs) };
     } catch (_error) { return { visibility:'private',items:[],logs:{} }; }
   }
-  function readGroupLocal(owner=state.owner) {
-    try {
-      let raw=global.localStorage?.getItem(groupStorageKey(owner));
-      if (!raw) for (const prefix of LEGACY_GROUP_STORAGE_PREFIXES) { raw=global.localStorage?.getItem(`${prefix}${normaliseOwner(owner)}`);if (raw) break; }
-      const value=raw?JSON.parse(raw):null;const groups=normaliseGroups(value?.groups);
-      return { groups,assignments:normaliseAssignments(value?.assignments,groups) };
-    } catch (_error) { return { groups:[],assignments:{} }; }
+  function groupSignature(groups=state.groups,assignments=state.assignments) {
+    return JSON.stringify({ groups:normaliseGroups(groups),assignments:normaliseAssignments(assignments,normaliseGroups(groups)) });
   }
-  function writeGroupLocal() {
-    try { global.localStorage?.setItem(groupStorageKey(),JSON.stringify({ groups:state.groups,assignments:state.assignments,updatedAt:new Date().toISOString() })); }
-    catch (_error) {}
+  function announceRevision() {
+    try { document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {}
   }
   async function groupRequest(options={}) {
     try {
       const response=await fetch(GROUP_API,{ method:options.method || 'GET',credentials:'same-origin',headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),body:options.body?JSON.stringify(options.body):undefined });
-      const data=await response.json().catch(() => null);return data && typeof data==='object'?data:{ ok:false,error:`http_${response.status}` };
-    } catch (_error) { return { ok:false,error:'network_error' }; }
+      const data=await response.json().catch(() => null);
+      return { ok:response.ok,status:response.status,data:data && typeof data==='object'?data:{ ok:false,error:`http_${response.status}` } };
+    } catch (_error) { return { ok:false,status:0,data:{ ok:false,error:'network_error' } }; }
   }
   async function saveGroupsNow() {
-    clearTimeout(state.saveTimer);state.saveTimer=0;writeGroupLocal();
-    if (state.authed) await groupRequest({ method:'POST',body:{ groups:state.groups,assignments:state.assignments } });
+    clearTimeout(state.saveTimer);state.saveTimer=0;
+    if (!state.authed || state.saveBlocked) return;
+    if (state.saveInFlight) { state.saveQueued=true;return; }
+    state.saveInFlight=true;
+    const payloadGroups=normaliseGroups(JSON.parse(JSON.stringify(state.groups)));
+    const payloadAssignments=normaliseAssignments(Object.assign({},state.assignments),payloadGroups);
+    const payloadSignature=groupSignature(payloadGroups,payloadAssignments);
+
+    const current=await groupRequest();
+    if (!current.ok || !current.data?.ok) {
+      state.saveInFlight=false;
+      state.saveBlocked=true;
+      return;
+    }
+    const serverGroups=normaliseGroups(current.data.groups);
+    const serverAssignments=normaliseAssignments(current.data.assignments,serverGroups);
+    const currentSignature=groupSignature(serverGroups,serverAssignments);
+    if (state.serverSignature && currentSignature!==state.serverSignature) {
+      state.saveInFlight=false;
+      state.saveBlocked=true;
+      return;
+    }
+
+    state.revision=Number(current.data.revision || 0);
+    const response=await groupRequest({ method:'POST',body:{ groups:payloadGroups,assignments:payloadAssignments,expectedRevision:state.revision } });
+    if (!response.ok || !response.data?.ok) {
+      state.saveBlocked=true;
+    } else {
+      state.revision=Number(response.data.revision || state.revision || 0);
+      state.serverSignature=payloadSignature;
+      announceRevision();
+    }
+    state.saveInFlight=false;
+    if (state.saveQueued && !state.saveBlocked) { state.saveQueued=false;saveGroupsNow(); }
   }
   function scheduleGroupSave() {
-    writeGroupLocal();clearTimeout(state.saveTimer);state.saveTimer=global.setTimeout(saveGroupsNow,SAVE_DELAY);
+    if (!state.authed || state.saveBlocked) return;
+    clearTimeout(state.saveTimer);state.saveTimer=global.setTimeout(saveGroupsNow,SAVE_DELAY);
   }
   function groupById(id) { return state.groups.find((group) => group.id===id) || null; }
   function groupForItem(itemId) { return groupById(state.assignments[itemId]); }
@@ -161,7 +183,7 @@
   }
 
   function enhanceRoutineItems() {
-    const routine=readRoutineLocal();const itemMap=new Map(routine.items.map((item) => [item.id,item]));
+    const routine=readRoutineState();const itemMap=new Map(routine.items.map((item) => [item.id,item]));
     Object.keys(state.assignments).forEach((itemId) => { if (!itemMap.has(itemId)) delete state.assignments[itemId]; });
     $$('.routine-item[data-routine-item]').forEach((article) => {
       const itemId=article.dataset.routineItem;const item=itemMap.get(itemId);if (!item) return;
@@ -217,7 +239,7 @@
     return `<article class="routine-summary-item routine-summary-item-comprehensive bl-routine-summary-card"><div class="bl-routine-summary-head-row"><div class="routine-summary-title"><span>${index+1}</span><strong>${esc(item.title)}</strong></div></div><div class="bl-routine-summary-grid"><section class="bl-routine-summary-section"><h4>Routine details</h4>${UI.summaryRows(rows)}</section><section class="bl-routine-summary-section"><h4>Benefits and practical role</h4><p>${esc(MODEL.benefitText(item,'comprehensive'))}</p>${item.notes?`<p class="routine-summary-notes"><strong>Your notes:</strong> ${esc(item.notes)}</p>`:''}</section></div></article>`;
   }
   function renderSummary() {
-    const target=$('#routineSummary');if (!target) return;const items=readRoutineLocal().items;if (!items.length) return;const used=new Set();const sections=[];
+    const target=$('#routineSummary');if (!target) return;const items=readRoutineState().items;if (!items.length) return;const used=new Set();const sections=[];
     state.groups.forEach((group) => { const groupItems=items.filter((item) => state.assignments[item.id]===group.id);if (!groupItems.length) return;groupItems.forEach((item) => used.add(item.id));sections.push(`<section class="routine-summary-group bl-routine-group" data-summary-group="${esc(group.id)}"><div class="routine-summary-group-head"><h3>${esc(group.title)}</h3></div><div class="bl-routine-summary-list">${groupItems.map(summaryCard).join('')}</div></section>`); });
     const ungrouped=items.filter((item) => !used.has(item.id));if (ungrouped.length) sections.push(`<section class="routine-summary-group bl-routine-group" data-summary-group="individual"><div class="routine-summary-group-head"><h3>Individual Routine Steps</h3></div><div class="bl-routine-summary-list">${ungrouped.map(summaryCard).join('')}</div></section>`);
     UI.renderHtml(target,sections.join(''));
@@ -227,7 +249,7 @@
     return `<article class="routine-log-item bl-routine-entry${entry.completed?' complete':''}"><label class="routine-log-check"><input type="checkbox" data-log-complete="${esc(item.id)}" data-log-date="${esc(selectedDate)}"${entry.completed?' checked':''}><span><strong>${esc(item.title)}</strong><small>${esc(details)}</small></span></label><input class="routine-log-note" type="text" maxlength="500" placeholder="Optional note" value="${esc(entry.note || '')}" data-log-note="${esc(item.id)}" data-log-date="${esc(selectedDate)}"></article>`;
   }
   function renderGroupedLog() {
-    const target=$('#routineLogItems');const progress=$('#routineLogProgress');if (!target) return;const routine=readRoutineLocal();const selectedDate=$('#routineLogDate')?.value || UI.isoDate(new Date());if (!routine.items.length) return;
+    const target=$('#routineLogItems');const progress=$('#routineLogProgress');if (!target) return;const routine=readRoutineState();const selectedDate=$('#routineLogDate')?.value || UI.isoDate(new Date());if (!routine.items.length) return;
     const due=routine.items.map((item) => { const effective=effectiveItem(item);return { item,status:MODEL.dueStatus(effective,selectedDate,routine.logs) }; }).filter((entry) => entry.status.due);const entries=routine.logs[selectedDate] || {};const completed=due.filter(({item}) => entries[item.id]?.completed).length;if (progress) progress.textContent=`${completed}/${due.length} completed`;
     if (!due.length) { UI.renderHtml(target,'<div class="routine-empty">No routine actions are scheduled for this date.</div>');return; }
     const sections=[];const used=new Set();state.groups.forEach((group) => { const groupDue=due.filter(({item}) => state.assignments[item.id]===group.id);if (!groupDue.length) return;groupDue.forEach(({item}) => used.add(item.id));sections.push(`<section class="routine-log-group bl-routine-group"><div class="routine-log-group-head"><h3>${esc(group.title)}</h3></div>${groupDue.map(({item,status}) => logItem(item,status,entries[item.id] || { completed:false,note:'',completedAt:'' },selectedDate)).join('')}</section>`); });
@@ -242,7 +264,7 @@
     return `<button type="button" class="${classes.join(' ')}" data-calendar-date="${iso}"${future?' disabled aria-disabled="true"':''} title="${esc(completed.length?completed.join(', '):'No completed routine actions')}"><span class="routine-calendar-number">${date.getDate()}</span>${completed.length?`<span class="routine-calendar-count">${completed.length}</span>`:''}</button>`;
   }
   function renderCalendar() {
-    const grid=$('#routineCalendarGrid');const label=$('#routineCalendarLabel');const weekdays=$('#routineCalendarWeekdays');if (!grid || !label || !weekdays) return;const routine=readRoutineLocal();const selectedDate=$('#routineLogDate')?.value || UI.isoDate(new Date());$$('.routine-calendar-view').forEach((button) => button.setAttribute('aria-selected',button.dataset.skincareCalendarView===state.calendarView?'true':'false'));
+    const grid=$('#routineCalendarGrid');const label=$('#routineCalendarLabel');const weekdays=$('#routineCalendarWeekdays');if (!grid || !label || !weekdays) return;const routine=readRoutineState();const selectedDate=$('#routineLogDate')?.value || UI.isoDate(new Date());$$('.routine-calendar-view').forEach((button) => button.setAttribute('aria-selected',button.dataset.skincareCalendarView===state.calendarView?'true':'false'));
     if (state.calendarView==='week') { const bounds=UI.weekBounds(state.calendarAnchor);label.textContent=`${bounds.start.toLocaleDateString('en-GB',{ day:'numeric',month:'short' })} – ${bounds.end.toLocaleDateString('en-GB',{ day:'numeric',month:'short',year:'numeric' })}`;weekdays.hidden=true;grid.className='routine-calendar-grid bl-routine-week-list';UI.renderHtml(grid,UI.weekDates(state.calendarAnchor).map((date) => { const completed=completedForDate(UI.isoDate(date),routine);return UI.weekRow(date,{ count:completed.length,details:completed,selectedDate,disabled:UI.isFutureDate(UI.isoDate(date)) }); }).join(''),{ preserveFocus:false });return; }
     const anchor=new Date(state.calendarAnchor.getFullYear(),state.calendarAnchor.getMonth(),1);label.textContent=anchor.toLocaleDateString('en-GB',{ month:'long',year:'numeric' });weekdays.hidden=false;const orderedWeekdays=UI.orderedDays?.(DAYS) || DAYS;weekdays.innerHTML=orderedWeekdays.map((day) => `<span>${esc(day.slice(0,3))}</span>`).join('');grid.className='routine-calendar-grid month-view';UI.renderHtml(grid,UI.monthDates(anchor).map((date) => monthDayButton(date,anchor,routine)).join(''),{ preserveFocus:false });
   }
@@ -304,33 +326,38 @@
       }
       if (event.target.closest('#routineItems [data-field],#routineLogItems [data-log-note]')) global.setTimeout(schedulePatch,0);
     });
+    document.addEventListener('baseline:skincare-routine-updated',schedulePatch);
     document.addEventListener('keydown',(event) => { if (event.target?.id==='routineGroupName' && event.key==='Enter') { event.preventDefault();createGroup(); } });
   }
 
   async function loadForAuth(snapshot) {
-    const authed=Boolean(snapshot?.authed);const owner=authed?String(snapshot.name || snapshot.user?.name || '').trim():'guest';const changed=normaliseOwner(owner)!==normaliseOwner(state.owner);state.authed=authed;state.owner=owner || 'guest';if (!changed && state.loaded) return;
+    const authed=Boolean(snapshot?.authed);
+    const owner=authed?String(snapshot.name || snapshot.user?.name || '').trim():'guest';
+    const changed=normaliseOwner(owner)!==normaliseOwner(state.owner);
+    state.authed=authed;
+    state.owner=owner || 'guest';
+    if (!changed && state.loaded) return;
 
-    /* Cached group state is part of the first stable My Routine render. Apply it
-       synchronously instead of exposing the Plan and waiting for an animation
-       frame to attach group/step controls. */
-    const local=readGroupLocal(state.owner);
-    state.groups=local.groups;
-    state.assignments=local.assignments;
+    state.groups=[];
+    state.assignments={};
+    state.revision=0;
+    state.serverSignature='';
+    state.saveBlocked=false;
     state.loaded=true;
-    patch();
-    if (!authed) return;
 
-    const before=JSON.stringify({ groups:state.groups,assignments:state.assignments });
+    if (!authed) { patch();return; }
+
     const response=await groupRequest();
-    if (response.ok && response.hasGroups) {
-      state.groups=normaliseGroups(response.groups);
-      state.assignments=normaliseAssignments(response.assignments,state.groups);
-      writeGroupLocal();
-    } else if (state.groups.length || Object.keys(state.assignments).length) {
-      saveGroupsNow();
+    if (response.ok && response.data?.ok) {
+      state.groups=normaliseGroups(response.data.groups);
+      state.assignments=normaliseAssignments(response.data.assignments,state.groups);
+      state.revision=Number(response.data.revision || 0);
+      state.serverSignature=groupSignature();
+      announceRevision();
+    } else {
+      state.saveBlocked=true;
     }
-    const after=JSON.stringify({ groups:state.groups,assignments:state.assignments });
-    if (after!==before) patch();
+    patch();
   }
   function attachAuth() {
     const auth=global.BASELINE_auth;
