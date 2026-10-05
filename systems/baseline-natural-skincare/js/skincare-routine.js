@@ -131,7 +131,11 @@
     state.saveTimer=global.setTimeout(saveRemote,450);
   }
   async function loadRemoteState() {
-    if (!authed()) return false;
+    if (!authed()) {
+      const changed=state.routine.length>0 || Object.keys(state.logs).length>0 || state.visibility!=='private' || state.revision!==0;
+      state.routine=[];state.logs={};state.visibility='private';state.revision=0;state.saveBlocked=false;
+      return changed;
+    }
     const before=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
     const response=await request(ROUTINE_API);
     if (response.ok && response.data?.ok) {
@@ -141,6 +145,8 @@
       state.revision=Number(response.data.revision || 0);
       state.saveBlocked=false;
       announceRevision();
+    } else {
+      setStatus('Could not load your saved routine from the account.','warning');
     }
     const after=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
     return after!==before;
