@@ -23,6 +23,8 @@ test('primary header controls are visible before external JavaScript runs', asyn
     if(pathname === '/baseline-fitness/system') await expect(page.locator('#bl-voice-toggle')).toBeVisible();
     else await expect(page.locator('#bl-voice-toggle')).toHaveCount(0);
     await expect(page.locator('#bl-auth-toggle')).toBeVisible();
+  await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
+    await expect(page.locator('#bl-auth-toggle .bl-btn-label')).toHaveText('Account');
   }
 
   const response = await page.goto('/home/1', { waitUntil:'load' });
