@@ -45,9 +45,7 @@ function bl_skincare_groups_normalise($value): array {
       'id'=>$id,
       'title'=>$title,
       'collapsed'=>!empty($raw['collapsed']),
-      'applyFrequency'=>!empty($raw['applyFrequency']),
       'frequency'=>bl_skincare_group_frequency($raw['frequency'] ?? []),
-      'applyTime'=>!empty($raw['applyTime']),
       'timeOfDay'=>$time,
     ];
   }

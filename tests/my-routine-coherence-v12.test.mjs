@@ -109,18 +109,21 @@ test('Apache serves every clean My Routine page without exposing implementation 
   assert.doesNotMatch(htaccess,/baseline-fitness\/my-routine\/\?\$ \/baseline-fitness\/my-routine\/log \[R=/);
 });
 
-test('Skincare paints cached state before remote state and only redraws when remote data differs',()=>{
+test('Skincare uses account-backed routine state with revision-protected saves',()=>{
   assert.match(skinRoutine,/ROUTE_BASE='\/baseline-natural-skincare\/my-routine'/);
   assert.match(skinRoutine,/function routeViewFromLocation\(\)/);
-  assert.match(skinRoutine,/function loadLocalState\(\)/);
   assert.match(skinRoutine,/function loadRemoteState\(\)/);
   assert.match(skinRoutine,/url\.pathname=cleanViewPath\(next\)/);
-  const localIndex=skinRoutine.indexOf('loadLocalState();');
-  const activateIndex=skinRoutine.indexOf('activateView(state.activeView,false)');
-  const awaitIndex=skinRoutine.indexOf('await loadRemoteState()');
-  assert.ok(localIndex>=0 && activateIndex>=0 && awaitIndex>=0 && localIndex<activateIndex && activateIndex<awaitIndex,'Skincare must use cached state and activate the requested panel before remote state');
+  assert.doesNotMatch(skinRoutine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
+  assert.match(skinRoutine,/expectedRevision:state\.revision/);
+  assert.match(skinRoutine,/revision_conflict/);
   assert.match(skinRoutine,/if \(changed && locationTargetsRoutine\(\)\) renderAll\(\)/);
   assert.match(skinRoutine,/addEventListener\('popstate',restoreRoute\)/);
+  assert.doesNotMatch(skinGroups,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.match(skinGroups,/BASELINE_SKINCARE_ROUTINE_GROUPS=Object\.freeze/);
+  assert.doesNotMatch(coherence,/localStorage/);
+  assert.match(coherence,/BASELINE_SKINCARE_ROUTINE_GROUPS\?\.getState/);
+  assert.match(skinGroups,/expectedRevision:state\.revision/);
 });
 
 test('Fitness builds its final structure synchronously before routine data paints',()=>{
@@ -191,7 +194,7 @@ test('Skincare groups own time and frequency directly and start collapsed',()=>{
   assert.match(skinGroups,/data-plan-group-settings/);
   assert.match(skinGroups,/Group time/);
   assert.match(skinGroups,/Group frequency/);
-  assert.match(skinGroups,/id,title,collapsed:true/);
+  assert.match(skinGroups,/id,title,collapsed:source\.collapsed!==false/);
   assert.doesNotMatch(skinGroups,/Set time for this group|Set “How often” for this group|data-group-field=\"applyTime\"|data-group-field=\"applyFrequency\"|data-group-title/);
   assert.match(skinCss,/\.routine-plan-group-settings-grid/);
 });

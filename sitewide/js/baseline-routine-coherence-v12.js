@@ -41,10 +41,6 @@
       return auth?.authed ? String(auth.name || auth.user?.name || 'user').trim().toLocaleLowerCase('en-GB') || 'user' : 'guest';
     } catch (_error) { return 'guest'; }
   }
-  function readJson(key,fallback={}) {
-    try { const raw=global.localStorage?.getItem(key);return raw?JSON.parse(raw):fallback; }
-    catch (_error) { return fallback; }
-  }
   function readSession(key,fallback='') {
     try { return String(global.sessionStorage?.getItem(key) || fallback); }
     catch (_error) { return String(fallback || ''); }
@@ -71,19 +67,17 @@
         logs:live.logs && typeof live.logs==='object'?live.logs:{}
       };
     } catch (_error) {}
-    const value=readJson(`__bl_skincare_routine_v1__::${owner()}`,{});
-    return {
-      items:Array.isArray(value?.items)?value.items:Array.isArray(value?.routine)?value.routine:[],
-      logs:value?.logs && typeof value.logs==='object'?value.logs:{}
-    };
+    return { items:[],logs:{} };
   }
   function skinGroups() {
-    const value=readJson(`__bl_skincare_routine_groups_v3__::${owner()}`,{});
-    const groups=(Array.isArray(value?.groups)?value.groups:[]).filter((group) => group?.id && group?.title);
-    const valid=new Set(groups.map((group) => String(group.id)));
-    const assignments={};
-    Object.entries(value?.assignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
-    return { groups,assignments };
+    try {
+      const value=global.BASELINE_SKINCARE_ROUTINE_GROUPS?.getState?.() || {};
+      const groups=(Array.isArray(value.groups)?value.groups:[]).filter((group) => group?.id && group?.title);
+      const valid=new Set(groups.map((group) => String(group.id)));
+      const assignments={};
+      Object.entries(value.assignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
+      return { groups,assignments };
+    } catch (_error) { return { groups:[],assignments:{} }; }
   }
   function skinCatalogueActions() {
     const actions=global.BASELINE_SKINCARE_ROUTINE_MODEL?.ACTIONS;

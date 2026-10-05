@@ -4,7 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/schema.php';
 require_once dirname(__DIR__, 3) . '/sitewide/api/resource_authority.php';
 
-const BL_SKINCARE_SAVED_SCHEMA_VERSION = 1;
+const BL_SKINCARE_SAVED_SCHEMA_VERSION = 2;
 
 function bl_skincare_saved_default(): array {
   return [
@@ -94,11 +94,81 @@ function bl_skincare_saved_sqlite_write(PDO $db, int $userId, array $data): void
   ]);
 }
 
+function bl_skincare_saved_upgrade_resource(PDO $db, int $userId, string $path, array $resource): array {
+  $data = is_array($resource['data'] ?? null) ? $resource['data'] : bl_skincare_saved_default();
+  $version = (int)($data['schemaVersion'] ?? 0);
+  if($version >= BL_SKINCARE_SAVED_SCHEMA_VERSION && (int)($resource['revision'] ?? 0) > 0) return $resource;
+
+  /* Schema v1 was introduced when Skincare moved from the legacy SQLite
+     routine/group tables to the account Saved Data file. Older clients could
+     preserve group definitions in browser storage while failing to carry the
+     assignment map into the account file. Recover only during this one-time
+     schema upgrade, and only from the user's own legacy server record. */
+  $legacy = bl_skincare_saved_sqlite_snapshot($db, $userId);
+  if((int)($resource['revision'] ?? 0) === 0 && empty($legacy['hasData'])) return $resource;
+  $legacyData = is_array($legacy['data'] ?? null) ? $legacy['data'] : [];
+  if((int)($resource['revision'] ?? 0) === 0 && !empty($legacy['hasData'])){
+    $data = array_replace(bl_skincare_saved_default(), $legacyData);
+  }
+  $groups = is_array($data['groups'] ?? null) ? $data['groups'] : [];
+  $assignments = is_array($data['assignments'] ?? null) ? $data['assignments'] : [];
+  $legacyGroups = is_array($legacyData['groups'] ?? null) ? $legacyData['groups'] : [];
+  $legacyAssignments = is_array($legacyData['assignments'] ?? null) ? $legacyData['assignments'] : [];
+
+  if(count($groups) === 0 && count($legacyGroups) > 0){
+    $groups = $legacyGroups;
+    $data['groups'] = $legacyGroups;
+  }
+
+  if(count($assignments) === 0 && count($legacyAssignments) > 0 && count($groups) > 0){
+    $validGroups = [];
+    $currentGroupByTitle = [];
+    foreach($groups as $group){
+      if(!is_array($group)) continue;
+      $id = trim((string)($group['id'] ?? ''));
+      $title = trim((string)($group['title'] ?? ''));
+      if($id !== '') $validGroups[$id] = true;
+      if($id !== '' && $title !== '') $currentGroupByTitle[strtolower($title)] = $id;
+    }
+    $legacyGroupTitleById = [];
+    foreach($legacyGroups as $legacyGroup){
+      if(!is_array($legacyGroup)) continue;
+      $legacyId = trim((string)($legacyGroup['id'] ?? ''));
+      $legacyTitle = trim((string)($legacyGroup['title'] ?? ''));
+      if($legacyId !== '' && $legacyTitle !== '') $legacyGroupTitleById[$legacyId] = strtolower($legacyTitle);
+    }
+    $routineIds = [];
+    foreach((is_array($data['routine'] ?? null) ? $data['routine'] : []) as $item){
+      if(is_array($item) && trim((string)($item['id'] ?? '')) !== '') $routineIds[(string)$item['id']] = true;
+    }
+    $recovered = [];
+    foreach($legacyAssignments as $itemId=>$groupId){
+      $item = trim((string)$itemId);
+      $legacyGroupId = trim((string)$groupId);
+      $targetGroupId = isset($validGroups[$legacyGroupId]) ? $legacyGroupId : '';
+      if($targetGroupId === '' && isset($legacyGroupTitleById[$legacyGroupId])){
+        $targetGroupId = (string)($currentGroupByTitle[$legacyGroupTitleById[$legacyGroupId]] ?? '');
+      }
+      if($item !== '' && isset($routineIds[$item]) && $targetGroupId !== '') $recovered[$item] = $targetGroupId;
+    }
+    if(count($recovered) > 0) $data['assignments'] = $recovered;
+  }
+
+  $data['schemaVersion'] = BL_SKINCARE_SAVED_SCHEMA_VERSION;
+  $written = bl_resource_file_replace($path, $data, (int)($resource['revision'] ?? 0));
+  return [
+    'revision'=>(int)$written['revision'],
+    'updatedAt'=>$written['updatedAt'],
+    'data'=>$data,
+  ];
+}
+
 function bl_skincare_saved_read(PDO $db, int $userId): array {
   $mode = bl_resource_authority();
   $path = bl_saved_user_resource_path($userId, 'skincare');
   if($mode === 'saved-data'){
     $resource = bl_resource_file_read($path, bl_skincare_saved_default());
+    $resource = bl_skincare_saved_upgrade_resource($db, $userId, $path, $resource);
     return [
       'revision'=>(int)$resource['revision'],
       'updatedAt'=>$resource['updatedAt'],

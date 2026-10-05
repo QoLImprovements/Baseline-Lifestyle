@@ -13,17 +13,23 @@ const css=readFileSync(resolve(root,'systems/baseline-natural-skincare/css/skinc
 const catalogue=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'),'utf8');
 const schema=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/schema.php'),'utf8');
 const endpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_groups.php'),'utf8');
+const savedData=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/skincare_saved_data.php'),'utf8');
 
-test('Skincare identifies the exact My Routine panel before body paint',() => {
+test('Skincare identifies the exact My Routine panel before body paint and hydrates data from the server only',() => {
   assert.match(html,/id="baseline-skincare-first-paint"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/id="baseline-skincare-initial-panel"/);
   assert.match(html,/data-routine-panel="summary"/);
   assert.match(html,/data-routine-panel="plan"/);
   assert.match(html,/data-routine-panel="public"/);
-  assert.match(routine,/function loadLocalState\(\)/);
   assert.match(routine,/function loadRemoteState\(\)/);
-  assert.ok(routine.indexOf('loadLocalState();')<routine.indexOf('await loadRemoteState()'));
+  assert.doesNotMatch(routine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
+  assert.doesNotMatch(sitewide,/localStorage|sessionStorage|readGroupLocal|writeGroupLocal/);
+  assert.doesNotMatch(loader,/localStorage|sessionStorage/);
+  const firstPaint=html.match(/<script id="baseline-skincare-first-paint">([\s\S]*?)<\/script>/)?.[1] || '';
+  assert.doesNotMatch(firstPaint,/localStorage|sessionStorage/);
+  assert.match(routine,/expectedRevision:state\.revision/);
+  assert.match(sitewide,/expectedRevision:state\.revision/);
 });
 
 test('My Routine static workspace shell is authored exactly once in HTML',() => {
@@ -104,11 +110,23 @@ test('users can create remove assign and configure routine groups',() => {
   assert.match(sitewide,/function removeGroup\(/);
   assert.match(sitewide,/function assignItem\(/);
   assert.match(sitewide,/data-routine-group-select/);
-  assert.match(endpoint,/skincare_routine_groups/);
+  assert.match(endpoint,/bl_skincare_saved_mutate/);
+  assert.match(endpoint,/expectedRevision/);
   assert.match(schema,/CREATE TABLE IF NOT EXISTS skincare_routine_groups/);
 });
 
 test('Oil-Based Cleansing Shower remains available with UK terminology',() => {
   assert.match(catalogue,/Oil-Based Cleansing Shower/);
   assert.match(catalogue,/without relying on conventional body wash or shampoo/);
+});
+
+
+test('Skincare Saved Data upgrades recover legacy server-side group assignments once',() => {
+  assert.match(savedData,/BL_SKINCARE_SAVED_SCHEMA_VERSION = 2/);
+  assert.match(savedData,/bl_skincare_saved_sqlite_snapshot\(\$db, \$userId\)/);
+  assert.match(savedData,/legacyAssignments/);
+  assert.match(savedData,/\$data\['assignments'\] = \$recovered/);
+  assert.match(savedData,/bl_resource_file_replace\(\$path, \$data, \(int\)\(\$resource\['revision'\]/);
+  assert.doesNotMatch(routine,/localStorage|sessionStorage/);
+  assert.doesNotMatch(sitewide,/localStorage|sessionStorage/);
 });

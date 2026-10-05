@@ -112,9 +112,7 @@ function bl_skincare_groups($value): array {
       'id'=>$id,
       'title'=>$title,
       'collapsed'=>!empty($raw['collapsed']),
-      'applyTime'=>!empty($raw['applyTime']),
       'timeOfDay'=>$time,
-      'applyFrequency'=>!empty($raw['applyFrequency']),
       'frequency'=>bl_skincare_frequency($raw['frequency'] ?? []),
     ];
   }

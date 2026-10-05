@@ -12,8 +12,8 @@
    /baseline-natural-skincare/my-routine/plan
    /baseline-natural-skincare/my-routine/public
 
-   Summary filters, Log Dates and other transient interface state remain in
-   session storage. They are not public routing parameters.
+   Routine data is account-backed only. View identity is carried by the clean
+   route rather than browser storage.
 
    This module is present on every Skincare page, but it owns navigation only
    while the current location actually targets My Routine. It must never pull
@@ -32,30 +32,16 @@
   const MODEL=global.BASELINE_SKINCARE_ROUTINE_MODEL;
   if (!MODEL) return;
 
-  const STORAGE_PREFIX='__bl_skincare_routine_v1__::';
   const ROUTINE_API='/systems/baseline-natural-skincare/api/routine_state.php';
   const ROUTE_BASE='/baseline-natural-skincare/my-routine';
-  const VIEW_KEY='__bl_skincare_routine_view__';
   const VIEWS=['log','summary','plan','public'];
-  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false };
+  const state={ routine:[],logs:{},visibility:'private',activeView:'log',selectedDate:MODEL.todayIso(),pendingRemoveId:'',saveTimer:0,profileLoading:false,revision:0,saveBlocked:false,saveInFlight:false,saveQueued:false };
 
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
   const esc=MODEL.escapeHtml;
 
-  function owner() {
-    try {
-      const snapshot=global.BASELINE_auth?.get?.();
-      return snapshot?.authed?String(snapshot.name || snapshot.user?.name || 'user').trim().toLocaleLowerCase('en-GB') || 'user':'guest';
-    } catch (_error) { return 'guest'; }
-  }
   function authed() { try { return Boolean(global.BASELINE_auth?.get?.()?.authed); } catch (_error) { return false; } }
-  function storageKey() { return `${STORAGE_PREFIX}${owner()}`; }
-  function readLocal() { try { const raw=global.localStorage?.getItem(storageKey());return raw?JSON.parse(raw):null; } catch (_error) { return null; } }
-  function writeLocal() {
-    try { global.localStorage?.setItem(storageKey(),JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility,updatedAt:new Date().toISOString() })); } catch (_error) {}
-  }
-  function persistLocal() { writeLocal(); }
 
   function locationTargetsRoutine() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
@@ -75,10 +61,6 @@
       const url=new URL(global.location.href);
       const legacy=String(url.searchParams.get('routine-view') || '');
       if (VIEWS.includes(legacy)) return legacy;
-    } catch (_error) {}
-    try {
-      const saved=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
-      if (VIEWS.includes(saved)) return saved;
     } catch (_error) {}
     return 'log';
   }
@@ -110,40 +92,61 @@
   }
 
   function emit(scope='all') { try { document.dispatchEvent(new CustomEvent('baseline:skincare-routine-updated',{ detail:{ scope } })); } catch (_error) {} }
+  function announceRevision() { try { document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {} }
   async function request(url,options={}) {
     try {
       const response=await fetch(url,{ method:options.method || 'GET',credentials:'same-origin',headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),body:options.body?JSON.stringify(options.body):undefined });
-      const data=await response.json().catch(()=>null);return { ok:response.ok,data };
-    } catch (_error) { return { ok:false,data:null }; }
+      const data=await response.json().catch(()=>null);return { ok:response.ok,status:response.status,data };
+    } catch (_error) { return { ok:false,status:0,data:null }; }
   }
   function setStatus(text='',kind='') {
     const target=$('#routineSaveStatus');if (!target) return;target.textContent=text;if (kind) target.dataset.kind=kind;else delete target.dataset.kind;
   }
   async function saveRemote() {
-    if (!authed()) return;
-    const response=await request(ROUTINE_API,{ method:'POST',body:{ routine:state.routine,logs:state.logs,visibility:state.visibility } });
-    if (!response.ok || !response.data?.ok) { setStatus('Could not save routine.','warning');return; }
-    state.routine=MODEL.normaliseRoutine(response.data.routine);state.logs=MODEL.normaliseLogs(response.data.logs);state.visibility=response.data.visibility==='public'?'public':'private';writeLocal();setStatus('Saved.','saved');
+    if (!authed() || state.saveBlocked) return;
+    if (state.saveInFlight) { state.saveQueued=true;return; }
+    state.saveInFlight=true;
+    const body={ routine:state.routine,logs:state.logs,visibility:state.visibility,expectedRevision:state.revision };
+    const response=await request(ROUTINE_API,{ method:'POST',body });
+    if (!response.ok || !response.data?.ok) {
+      if (response.status===409 || response.data?.error==='revision_conflict') {
+        state.saveBlocked=true;
+        setStatus('Saving stopped because the account copy changed elsewhere. Refresh before making further changes.','warning');
+      } else {
+        setStatus('Could not save routine to your account.','warning');
+      }
+    } else {
+      state.revision=Number(response.data.revision || state.revision || 0);
+      announceRevision();
+      setStatus('Saved to account.','saved');
+    }
+    state.saveInFlight=false;
+    if (state.saveQueued && !state.saveBlocked) { state.saveQueued=false;saveRemote(); }
   }
   function scheduleSave() {
-    writeLocal();clearTimeout(state.saveTimer);setStatus(authed()?'Saving…':'Saved on this device.');if (authed()) state.saveTimer=global.setTimeout(saveRemote,450);
-  }
-  function loadLocalState() {
-    const local=readLocal();
-    if (!local) return;
-    state.routine=MODEL.normaliseRoutine(local.routine);
-    state.logs=MODEL.normaliseLogs(local.logs);
-    state.visibility=local.visibility==='public'?'public':'private';
+    clearTimeout(state.saveTimer);
+    if (!authed()) { setStatus('Sign in to save this routine.','warning');return; }
+    if (state.saveBlocked) { setStatus('Saving is stopped until this page is refreshed.','warning');return; }
+    setStatus('Saving…');
+    state.saveTimer=global.setTimeout(saveRemote,450);
   }
   async function loadRemoteState() {
-    if (!authed()) return false;
+    if (!authed()) {
+      const changed=state.routine.length>0 || Object.keys(state.logs).length>0 || state.visibility!=='private' || state.revision!==0;
+      state.routine=[];state.logs={};state.visibility='private';state.revision=0;state.saveBlocked=false;
+      return changed;
+    }
     const before=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
     const response=await request(ROUTINE_API);
     if (response.ok && response.data?.ok) {
       state.routine=MODEL.normaliseRoutine(response.data.routine);
       state.logs=MODEL.normaliseLogs(response.data.logs);
       state.visibility=response.data.visibility==='public'?'public':'private';
-      writeLocal();
+      state.revision=Number(response.data.revision || 0);
+      state.saveBlocked=false;
+      announceRevision();
+    } else {
+      setStatus('Could not load your saved routine from the account.','warning');
     }
     const after=JSON.stringify({ routine:state.routine,logs:state.logs,visibility:state.visibility });
     return after!==before;
@@ -158,7 +161,6 @@
     if (next==='summary') renderSummary();
     if (next==='plan') renderPlan();
     if (next==='public') renderPublicProfiles();
-    try { global.sessionStorage?.setItem(VIEW_KEY,next); } catch (_error) {}
     if (remember) writeViewRoute(next);
   }
   function restoreRoute() {
@@ -301,6 +303,7 @@
       if (event.target.id==='routineActionSearch' && event.key==='ArrowDown') { setActionPickerOpen(true);$('#routineActionMenu .routine-action-option')?.focus(); }
       if (event.key==='Escape' && !$('#routineActionMenu')?.hidden) { setActionPickerOpen(false);$('#routineActionSearch')?.focus(); }
     });
+    document.addEventListener('baseline:skincare-resource-revision',(event)=>{ const revision=Number(event.detail?.revision);if (Number.isFinite(revision) && revision>=0) state.revision=revision; });
     document.addEventListener('click',(event)=>{
       if (!event.target.closest('.routine-action-combobox')) setActionPickerOpen(false);
       if (event.target.closest('.tab[data-target="routine"]')) global.requestAnimationFrame(enterRoutineFromOuterTab);
@@ -312,12 +315,10 @@
   async function init() {
     const routing=locationTargetsRoutine();
     state.activeView=routeViewFromLocation();
-    try { global.sessionStorage?.setItem(VIEW_KEY,state.activeView); } catch (_error) {}
 
     const root=$('#routine');
     if(!root || !$('.routine-shell',root)) return;
     bindEvents();
-    loadLocalState();
 
     if (routing) {
       selectOuterRoutine();
@@ -328,7 +329,7 @@
     const changed=await loadRemoteState();
     if (changed && locationTargetsRoutine()) renderAll();
   }
-  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate }),selectView(view){ selectOuterRoutine();activateView(view,true); },refresh:renderAll });
+  global.BASELINE_SKINCARE_ROUTINE=Object.freeze({ getState:()=>({ routine:MODEL.normaliseRoutine(state.routine),logs:MODEL.normaliseLogs(state.logs),visibility:state.visibility,activeView:state.activeView,selectedDate:state.selectedDate,revision:state.revision }),selectView(view){ selectOuterRoutine();activateView(view,true); },refresh:renderAll });
   function boot() {
     init();
     try { global.BASELINE_auth?.onChange?.(()=>{ state.pendingRemoveId='';init(); }); } catch (_error) {}
