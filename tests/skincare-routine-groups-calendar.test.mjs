@@ -13,6 +13,7 @@ const css=readFileSync(resolve(root,'systems/baseline-natural-skincare/css/skinc
 const catalogue=readFileSync(resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-catalogue-v2.js'),'utf8');
 const schema=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/schema.php'),'utf8');
 const endpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_groups.php'),'utf8');
+const savedData=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/skincare_saved_data.php'),'utf8');
 
 test('Skincare identifies the exact My Routine panel before body paint and hydrates data from the server only',() => {
   assert.match(html,/id="baseline-skincare-first-paint"/);
@@ -114,4 +115,15 @@ test('users can create remove assign and configure routine groups',() => {
 test('Oil-Based Cleansing Shower remains available with UK terminology',() => {
   assert.match(catalogue,/Oil-Based Cleansing Shower/);
   assert.match(catalogue,/without relying on conventional body wash or shampoo/);
+});
+
+
+test('Skincare Saved Data upgrades recover legacy server-side group assignments once',() => {
+  assert.match(savedData,/BL_SKINCARE_SAVED_SCHEMA_VERSION = 2/);
+  assert.match(savedData,/bl_skincare_saved_sqlite_snapshot\(\$db, \$userId\)/);
+  assert.match(savedData,/legacyAssignments/);
+  assert.match(savedData,/\$data\['assignments'\] = \$recovered/);
+  assert.match(savedData,/bl_resource_file_replace\(\$path, \$data, \(int\)\(\$resource\['revision'\]/);
+  assert.doesNotMatch(routine,/localStorage|sessionStorage/);
+  assert.doesNotMatch(sitewide,/localStorage|sessionStorage/);
 });
