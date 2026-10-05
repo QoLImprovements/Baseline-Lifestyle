@@ -122,8 +122,20 @@ function bl_skincare_saved_upgrade_resource(PDO $db, int $userId, string $path, 
 
   if(count($assignments) === 0 && count($legacyAssignments) > 0 && count($groups) > 0){
     $validGroups = [];
+    $currentGroupByTitle = [];
     foreach($groups as $group){
-      if(is_array($group) && trim((string)($group['id'] ?? '')) !== '') $validGroups[(string)$group['id']] = true;
+      if(!is_array($group)) continue;
+      $id = trim((string)($group['id'] ?? ''));
+      $title = trim((string)($group['title'] ?? ''));
+      if($id !== '') $validGroups[$id] = true;
+      if($id !== '' && $title !== '') $currentGroupByTitle[strtolower($title)] = $id;
+    }
+    $legacyGroupTitleById = [];
+    foreach($legacyGroups as $legacyGroup){
+      if(!is_array($legacyGroup)) continue;
+      $legacyId = trim((string)($legacyGroup['id'] ?? ''));
+      $legacyTitle = trim((string)($legacyGroup['title'] ?? ''));
+      if($legacyId !== '' && $legacyTitle !== '') $legacyGroupTitleById[$legacyId] = strtolower($legacyTitle);
     }
     $routineIds = [];
     foreach((is_array($data['routine'] ?? null) ? $data['routine'] : []) as $item){
@@ -132,8 +144,12 @@ function bl_skincare_saved_upgrade_resource(PDO $db, int $userId, string $path, 
     $recovered = [];
     foreach($legacyAssignments as $itemId=>$groupId){
       $item = trim((string)$itemId);
-      $group = trim((string)$groupId);
-      if($item !== '' && isset($routineIds[$item]) && isset($validGroups[$group])) $recovered[$item] = $group;
+      $legacyGroupId = trim((string)$groupId);
+      $targetGroupId = isset($validGroups[$legacyGroupId]) ? $legacyGroupId : '';
+      if($targetGroupId === '' && isset($legacyGroupTitleById[$legacyGroupId])){
+        $targetGroupId = (string)($currentGroupByTitle[$legacyGroupTitleById[$legacyGroupId]] ?? '');
+      }
+      if($item !== '' && isset($routineIds[$item]) && $targetGroupId !== '') $recovered[$item] = $targetGroupId;
     }
     if(count($recovered) > 0) $data['assignments'] = $recovered;
   }
