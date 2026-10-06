@@ -16,6 +16,7 @@ const skinLoader=read('systems/baseline-natural-skincare/js/skincare-routine-enh
 const skinGroups=read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
 const skinCss=read('systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css');
 const skinEntryCss=read('systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css');
+const skinBaseCss=read('systems/baseline-natural-skincare/css/baseline-natural-skincare.css');
 const fitnessHtml=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessLoader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const fitnessWorkspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
@@ -52,12 +53,13 @@ test('first-paint route identity is in the head while system CSS owns visibility
   assert.match(fitnessEntryCss,/#my-plan:not\(\[data-routine-workspace-v2="true"\]\)>\.grid\{display:none!important\}/);
   assert.match(fitnessEntryCss,/html\[data-initial-fitness-tab="my-plan"\] #system\{display:none!important\}/);
 
-  assert.match(skinHtml,/id="baseline-skincare-first-paint"/);
-  assert.match(skinHtml,/data-initial-skincare-tab','routine'/);
+  assert.match(skinHtml,/id="baseline-skincare-route-state"/);
+  assert.match(skinHtml,/data-initial-skincare-tab/);
   assert.match(skinHtml,/data-initial-routine-view/);
   assert.match(skinHtml,/id="baseline-skincare-initial-panel"/);
-  assert.doesNotMatch(skinHtml,/id="baseline-skincare-first-paint-style"/);
-  assert.match(skinEntryCss,/html\[data-initial-skincare-tab="routine"\] #system\{display:none!important\}/);
+  assert.doesNotMatch(skinHtml,/createElement\(["']style["']\)|baseline-skincare-first-paint-style/);
+  assert.match(skinBaseCss,/html\[data-initial-section\] body\[data-app="skin"\] main\.wrap > \.section/);
+  assert.match(skinBaseCss,/data-initial-section="routine"/);
   assert.match(skinEntryCss,/data-initial-routine-view="summary"/);
 });
 
