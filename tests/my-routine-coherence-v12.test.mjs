@@ -119,9 +119,7 @@ test('Skincare uses account-backed routine state with revision-protected saves',
   assert.match(skinRoutine,/revision_conflict/);
   assert.match(skinRoutine,/if \(result\?\.render && locationTargetsRoutine\(\)\) renderAll\(\)/);
   assert.match(skinRoutine,/addEventListener\('popstate',restoreRoute\)/);
-  assert.doesNotMatch(skinGroups,/sessionStorage|localStorage\?\.setItem|writeGroupLocal/);
-  assert.match(skinGroups,/readLegacyGroupAssignments/);
-  assert.match(skinGroups,/localStorage\?\.removeItem/);
+  assert.doesNotMatch(skinGroups,/localStorage|sessionStorage|readLegacyGroupAssignments|writeGroupLocal/);
   assert.match(skinGroups,/BASELINE_SKINCARE_ROUTINE_GROUPS=Object\.freeze/);
   assert.match(skinGroups,/function syncFromCanonical\(\)/);
   assert.match(skinGroups,/UI\.observe\(root,renderCanonical\)/);
@@ -133,7 +131,7 @@ test('Skincare uses account-backed routine state with revision-protected saves',
 
 test('Fitness builds its final structure synchronously before routine data paints',()=>{
   assert.match(fitnessLoader,/function requestedRoute\(\)/);
-  assert.match(fitnessLoader,/function seedBaseWorkspaceView\(\)/);
+  assert.doesNotMatch(fitnessLoader,/seedBaseWorkspaceView|localStorage|sessionStorage/);
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
   assert.match(fitnessWorkspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(fitnessWorkspace,/function renderStableState\(\)/);
