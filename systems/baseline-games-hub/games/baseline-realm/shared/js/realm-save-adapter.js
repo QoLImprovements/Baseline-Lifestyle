@@ -167,7 +167,7 @@ export function createDefaultLegacyNinjaProfile() {
 }
 
 export class RealmSaveAdapter {
-  constructor({ storage = globalThis.localStorage, accountApi = null, now = () => Date.now() } = {}) {
+  constructor({ storage = null, accountApi = null, now = () => Date.now() } = {}) {
     this.storage = storage;
     this.accountApi = accountApi;
     this.now = now;
