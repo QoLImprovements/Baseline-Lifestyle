@@ -8,7 +8,7 @@ const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v
 const css=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
 const collapseCss=read('systems/baseline-fitness/css/fitness-routine-groups-collapsible-v1.css');
 const entryCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
-const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const html=read('systems/baseline-fitness/baseline-fitness.html');
 
 test('Routine Groups remains one manager above the four Routine Plan cards and is collapsible',()=>{
   assert.doesNotThrow(()=>new Function(groups));
@@ -76,11 +76,10 @@ test('group-first editor keeps compact rows while its disclosure matches Routine
   assert.doesNotMatch(css,/\.bl-v4-assignment-block/);
 });
 
-test('Fitness entry points load the collapsible group manager and collapsed-entry authority',()=>{
-  assert.match(loader,/BASELINE_FITNESS_ROUTINE_GROUPS_20260818_4/);
-  assert.match(loader,/Routine Groups appears once at the top as a/);
-  assert.match(loader,/collapsible, group-first card/);
-  assert.match(loader,/fitness-routine-plan-collapse-v1\.js\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260821_1/);
+test('Fitness entry page statically loads the collapsible group manager and collapsed-entry authority',()=>{
+  assert.match(html,/fitness-routine-groups-v2\.js\?v=FITNESS_ROUTINE_SERVER_ONLY_20261005_1/);
+  assert.match(html,/data-fitness-routine-groups-v2="true"/);
+  assert.match(html,/fitness-routine-plan-collapse-v1\.js\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260821_1/);
   assert.match(entryCss,/fitness-routine-groups-collapsible-v1\.css\?v=BASELINE_FITNESS_ROUTINE_GROUPS_COLLAPSIBLE_20260818_1/);
   assert.match(entryCss,/fitness-routine-plan-collapse-v1\.css\?v=BASELINE_FITNESS_ROUTINE_PLAN_COLLAPSE_20260818_1/);
 });
