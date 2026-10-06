@@ -6,7 +6,7 @@ const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const collapseCss=read('systems/baseline-fitness/css/fitness-routine-plan-collapse-v1.css');
 const workspaceCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
-const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const html=read('systems/baseline-fitness/baseline-fitness.html');
 
 function runCollapseAuthority(reveal='') {
   const cards={
@@ -16,8 +16,7 @@ function runCollapseAuthority(reveal='') {
     other:{ open:true },
     sports:{ open:true }
   };
-  const values=new Map(reveal ? [['__bl_fitness_reveal_plan_card_once_v1__',reveal]] : []);
-  const attributes=new Map([['data-initial-routine-view','plan']]);
+  const attributes=new Map([['data-initial-routine-view','plan'],...(reveal ? [['data-initial-routine-plan',reveal]] : [])]);
   const document={
     readyState:'complete',
     documentElement:{
@@ -35,15 +34,11 @@ function runCollapseAuthority(reveal='') {
   const fakeWindow={
     document,
     location:{ pathname:'/baseline-fitness/my-routine/plan' },
-    sessionStorage:{
-      getItem(key){ return values.get(String(key)) ?? null; },
-      removeItem(key){ values.delete(String(key)); }
-    },
     addEventListener(){},
     BASELINE_fitnessRoutine:{ getState(){ return { activeView:'plan' }; } }
   };
   new Function('window','globalThis',collapse)(fakeWindow,fakeWindow);
-  return { cards,values };
+  return { cards,attributes };
 }
 
 test('Routine Plan collapse authority owns all five disclosure cards',()=>{
@@ -67,19 +62,17 @@ test('normal entry, refresh, browser restoration and return to Routine Plan rese
   assert.match(collapse,/collapseCards\(true\)/);
 });
 
-test('a saved-plan selection consumes a one-load hand-off and reveals Calisthenics',()=>{
-  assert.match(collapse,/REVEAL_KEY='__bl_fitness_reveal_plan_card_once_v1__'/);
+test('an authored route-state reveal can open Calisthenics without browser storage',()=>{
   assert.match(collapse,/function takeSelectionReveal/);
-  assert.match(collapse,/sessionStorage\?\.removeItem\(REVEAL_KEY\)/);
+  assert.match(collapse,/data-initial-routine-plan/);
   assert.match(collapse,/function revealSelectedCard/);
   assert.match(collapse,/details\[data-fitness-plan-card="\$\{selectionReveal\}"\]/);
   assert.match(collapse,/card\.open=true/);
-  assert.match(collapse,/applyEntryState\(true,Boolean\(selectionReveal\)\)/);
+  assert.doesNotMatch(collapse,/localStorage|sessionStorage/);
   const result=runCollapseAuthority('calisthenics');
   assert.equal(result.cards.calisthenics.open,true);
   assert.equal(result.cards.groups.open,false);
   assert.equal(result.cards.cardio.open,false);
-  assert.equal(result.values.has('__bl_fitness_reveal_plan_card_once_v1__'),false);
 });
 
 test('an ordinary Routine Plan load still begins with every card collapsed',()=>{
@@ -103,10 +96,9 @@ test('first paint hides transient expanded bodies and open chevrons until collap
   assert.match(workspaceCss,/fitness-routine-plan-collapse-v1\.css/);
 });
 
-test('loader places collapse authority after card construction and before selection continuity',()=>{
-  const groups=loader.indexOf('fitness-routine-groups-v2.js');
-  const collapseIndex=loader.indexOf('fitness-routine-plan-collapse-v1.js');
-  const selection=loader.indexOf('fitness-plan-selection-continuity-v1.js');
-  assert.ok(groups>=0 && collapseIndex>groups && selection>collapseIndex);
-  assert.match(loader,/Routine Groups \+ all four category cards begin COLLAPSED/);
+test('static Fitness dependencies place collapse authority after group construction',()=>{
+  const groups=html.indexOf('fitness-routine-groups-v2.js');
+  const collapseIndex=html.indexOf('fitness-routine-plan-collapse-v1.js');
+  assert.ok(groups>=0 && collapseIndex>groups);
+  assert.doesNotMatch(html,/fitness-plan-selection-continuity-v1\.js/);
 });
