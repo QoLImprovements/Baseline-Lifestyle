@@ -167,6 +167,7 @@ function bl_fitness_state_response(array $resource): array {
     'profile'=>is_array($resource['data']['profile'] ?? null) ? $resource['data']['profile'] : null,
     'activeWorkout'=>is_array($resource['data']['activeWorkout'] ?? null) ? $resource['data']['activeWorkout'] : null,
     'progressionHistory'=>bl_fitness_progression_history_validate($resource['data']['progressionHistory'] ?? []),
+    'selectedPlanId'=>max(0, (int)($resource['data']['selectedPlanId'] ?? 0)),
     'revision'=>$resource['revision'],
   ];
 }
@@ -202,7 +203,17 @@ try{
   }
 
   if($action === 'clear_active_workout') unset($resource['data']['activeWorkout']);
-  if(!in_array($action, ['save_profile','save_active_workout','save_progression_history','clear_active_workout'], true)){
+
+  if($action === 'save_selected_plan'){
+    $selectedPlanId = max(0, (int)($input['selectedPlanId'] ?? 0));
+    if($selectedPlanId > 0 && bl_fitness_find_plan_index($resource['data'], $selectedPlanId) === null){
+      throw new InvalidArgumentException('selected_plan_not_found');
+    }
+    if($selectedPlanId > 0) $resource['data']['selectedPlanId'] = $selectedPlanId;
+    else unset($resource['data']['selectedPlanId']);
+  }
+
+  if(!in_array($action, ['save_profile','save_active_workout','save_progression_history','clear_active_workout','save_selected_plan'], true)){
     bl_json(['ok'=>false,'error'=>'invalid_action'], 400);
   }
 
