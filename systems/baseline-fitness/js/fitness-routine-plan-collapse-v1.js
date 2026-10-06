@@ -32,7 +32,6 @@
 
   const document=global.document;
   const READY_ATTR='data-fitness-routine-plan-cards-ready';
-  const REVEAL_KEY='__bl_fitness_reveal_plan_card_once_v1__';
   const PLAN_PANEL='[data-fitness-routine-panel="plan"]';
   const CARD='details[data-v4-group-card="global"],details[data-fitness-plan-card]';
   const CARD_SELECTOR=`${PLAN_PANEL} details[data-v4-group-card="global"],${PLAN_PANEL} details[data-fitness-plan-card]`;
@@ -60,11 +59,8 @@
   }
 
   function takeSelectionReveal() {
-    try {
-      const value=String(global.sessionStorage?.getItem(REVEAL_KEY) || '');
-      global.sessionStorage?.removeItem(REVEAL_KEY);
-      return value==='calisthenics'?value:'';
-    } catch (_error) { return ''; }
+    const value=String(document.documentElement.getAttribute('data-initial-routine-plan') || '');
+    return value==='calisthenics'?value:'';
   }
 
   function revealSelectedCard() {
