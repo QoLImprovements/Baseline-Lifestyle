@@ -23,4 +23,4 @@ jobs:
         with:
           node-version: 24
       - name: Scan every runtime source file
-        run: npm run audit:authority
+        run: npm run audit:authority:strict
