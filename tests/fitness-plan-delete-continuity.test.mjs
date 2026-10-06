@@ -4,12 +4,12 @@ import { readFileSync } from 'node:fs';
 
 const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
 const continuity = read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js');
-const loader = read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const html = read('systems/baseline-fitness/baseline-fitness.html');
 
 test('plan deletion continuity runtime parses and is loaded by My Routine', () => {
   assert.doesNotThrow(() => new Function(continuity));
-  assert.ok(loader.includes('fitness-plan-delete-continuity-v1.js'));
-  assert.ok(loader.includes('data-fitness-plan-delete-continuity-v1'));
+  assert.ok(html.includes('fitness-plan-delete-continuity-v1.js'));
+  assert.ok(html.includes('data-fitness-plan-delete-continuity-v1'));
 });
 
 test('deleting one plan selects another saved plan instead of entering Plan Generator', () => {
