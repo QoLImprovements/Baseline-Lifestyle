@@ -11,10 +11,6 @@
   const BODY_ROUTE_RE = /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?\/?$/i;
   const BODY_VIEWS = Object.freeze(['overall', 'profile', 'services']);
   const ROUTINE_ROUTE_RE = /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/?$/i;
-  const PLAN_KEY = '__bl_fitness_plan_v1__';
-  const PLAN_CACHE_KEY = '__bl_fitness_plan_cache_v1__';
-  const STEP_KEY = '__bl_fitness_workout_progress_v2__';
-  const BODY_KEY = '__bl_fitness_body_profile_v1__';
   const PAGE_SIZE = 12;
   const REQUEST_TIMEOUT_MS = 12000;
   const PROGRESSION_MODES = Object.freeze({ LINEAR: 'linear-fixed', STRAIGHT: 'straight-sets', TIMED: 'timed-hold' });
@@ -27,7 +23,6 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const FILE_PROTOCOL = typeof location !== 'undefined' && location.protocol === 'file:';
-  const STORE = global.BASELINE_store && typeof global.BASELINE_store.read === 'function' ? global.BASELINE_store : null;
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Object.freeze({ TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
@@ -51,6 +46,8 @@
   let timerInterval = null;
   let renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE };
   const workoutListeners = new Set();
+  let bodyProfileMemory = {};
+  let activeWorkoutMemory = null;
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, (char) => ({
@@ -90,32 +87,6 @@
     if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
     const parsed = new Date(text);
     return Number.isNaN(parsed.getTime()) ? '' : isoDate(parsed);
-  }
-
-  function storageKey(prefix, suffix) { return `${prefix}::${String(suffix || '').trim().toLowerCase()}`; }
-  function userPlanKey() { return storageKey(PLAN_KEY, auth.name); }
-  function userCacheKey() { return storageKey(PLAN_CACHE_KEY, auth.name); }
-  function bodyProfileKey() { return storageKey(BODY_KEY, auth.name || 'local'); }
-  function stepStorageKey(planId, sessionIndex) { return storageKey(STEP_KEY, `${planId || 0}::${sessionIndex || 0}::${auth.name || ''}`); }
-
-  function readStorage(key, fallback) {
-    try {
-      if (STORE) return STORE.read(key, fallback);
-      const raw = global.localStorage ? global.localStorage.getItem(key) : null;
-      return raw == null ? fallback : (JSON.parse(raw) ?? fallback);
-    } catch (_error) { return fallback; }
-  }
-  function writeStorage(key, value) {
-    try {
-      if (STORE) return STORE.write(key, value);
-      if (global.localStorage) global.localStorage.setItem(key, JSON.stringify(value));
-    } catch (_error) {}
-  }
-  function removeStorage(key) {
-    try {
-      if (STORE) return STORE.del(key);
-      if (global.localStorage) global.localStorage.removeItem(key);
-    } catch (_error) {}
   }
 
   async function apiJson(path, options = {}) {
@@ -710,10 +681,16 @@
 
   function defaultStepState() { return { completedSteps: 0, started: false, results: {}, pendingFailureStep: null, completionDate: '' }; }
   function readStepState(sessionIndex) {
-    const source = readStorage(stepStorageKey(current.planId, sessionIndex), defaultStepState()) || defaultStepState();
-    return Object.assign(defaultStepState(), source, { results: source.results && typeof source.results === 'object' ? source.results : {} });
+    const serverActive=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.();
+    const candidate=serverActive&&Number(serverActive.planId)===Number(current.planId)&&Number(serverActive.sessionIndex)===Number(sessionIndex)?serverActive:activeWorkoutMemory;
+    const source=candidate&&Number(candidate.planId)===Number(current.planId)&&Number(candidate.sessionIndex)===Number(sessionIndex)?(candidate.state||candidate):defaultStepState();
+    return Object.assign(defaultStepState(),source,{results:source.results&&typeof source.results==='object'?source.results:{}});
   }
-  function writeStepState(sessionIndex, value) { writeStorage(stepStorageKey(current.planId, sessionIndex), Object.assign(defaultStepState(), value)); }
+  function writeStepState(sessionIndex,value) {
+    const state=Object.assign(defaultStepState(),value);
+    activeWorkoutMemory={planId:Number(current.planId)||0,sessionIndex:Number(sessionIndex)||0,state};
+    global.BASELINE_FITNESS_SAVED_DATA?.saveActiveWorkout?.(activeWorkoutMemory);
+  }
   function accessFor(row, sessionIndex) {
     const due = !row.scheduled_date || row.scheduled_date <= today();
     const done = row.status === 'done';
@@ -785,7 +762,7 @@
   }
   function resetCurrentWorkout() {
     const context = workoutContext();
-    if (context.sessionIndex) removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    if (context.sessionIndex) { activeWorkoutMemory=null;global.BASELINE_FITNESS_SAVED_DATA?.clearActiveWorkout?.(); }
     renderCurrentWorkout(); return workoutContext();
   }
   async function finishCurrentWorkout() {
@@ -808,7 +785,7 @@
       current.progress = result.progress || calculateProgress(current.sessions, current.planJson);
     }
     const completedSession = { planId:current.planId, sessionIndex:context.sessionIndex, completionDate };
-    removeStorage(stepStorageKey(current.planId, context.sessionIndex));
+    activeWorkoutMemory=null;global.BASELINE_FITNESS_SAVED_DATA?.clearActiveWorkout?.();
     cachePlan(current);
     await global.BASELINE_fitnessPlans?.refresh?.();
     global.BASELINE_fitnessRoutine?.render?.();
@@ -913,6 +890,8 @@
       if (auth.authed && (activeTopTab === 'my-plan' || activeTopTab === 'achievements') && !current.planJson) ensurePlanLoaded();
       return;
     }
+    bodyProfileMemory=global.BASELINE_FITNESS_SAVED_DATA?.getProfile?.() || {};
+    activeWorkoutMemory=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.() || null;
     fillBodyProfile();
     current = { planId: 0, planJson: null, sessions: [], progress: null };
     hydratedPlanId = null; generatorMode = 'create'; planLoadPromise = null; planLoadSerial += 1;
@@ -920,33 +899,16 @@
     if (activeTopTab === 'my-plan' || activeTopTab === 'achievements') ensurePlanLoaded(true);
   }
   function bindAuthOnce() {
-    let attempts = 0;
-    const attach = () => {
-      const api = global.BASELINE_auth;
-      if (api && typeof api.get === 'function') {
-        applyAuth(api.get());
-        if (typeof api.onChange === 'function') authUnsubscribe = api.onChange((snapshot) => applyAuth(snapshot));
-        return;
-      }
-      attempts += 1;
-      if (attempts < 40) setTimeout(attach, 100);
-    };
-    attach();
+    const api=global.BASELINE_auth;
+    if(api&&typeof api.get==='function'){
+      applyAuth(api.get());
+      if(typeof api.onChange==='function')authUnsubscribe=api.onChange((snapshot)=>applyAuth(snapshot));
+      return;
+    }
+    document.addEventListener('baseline:auth',()=>applyAuth(global.BASELINE_auth?.get?.()),{once:true});
   }
-  function cachePlan(saved) {
-    if (!auth.authed) return;
-    if (saved && saved.planJson) writeStorage(userCacheKey(), { planId: saved.planId || 0, planJson: saved.planJson, sessions: saved.sessions || [], progress: saved.progress || null, cachedAt: Date.now() });
-    else removeStorage(userCacheKey());
-  }
-  function useCachedPlan() {
-    if (!auth.authed) return false;
-    const cached = readStorage(userCacheKey(), null);
-    const plan = normalisePlan(cached?.planJson);
-    if (!plan) return false;
-    const cachedRows = rollForwardPendingSessions(Array.isArray(cached.sessions) ? cached.sessions.slice(0, plan.sessions) : sessionRows(plan), plan);
-    current = { planId: cached.planId || 0, planJson: plan, sessions: cachedRows, progress: calculateProgress(cachedRows, plan) };
-    generatorMode = 'view'; syncPlanShells(); return true;
-  }
+  function cachePlan(_saved) { return false; }
+  function useCachedPlan() { return false; }
   async function loadPlanFromServer(force = false) {
     if (!auth.authed) {
       current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; syncPlanShells();
@@ -956,9 +918,9 @@
     if (!force && current.planJson) return;
     const serial = ++planLoadSerial;
     if ($('#myPlanStatus')) $('#myPlanStatus').textContent = 'Loading your plan…';
-    const response = FILE_PROTOCOL ? readStorage(userPlanKey(), null) : await apiJson(`${API}/get_plan.php`);
+    const response = FILE_PROTOCOL ? { ok:false,error:'server_required' } : await apiJson(`${API}/get_plan.php`);
     if (serial !== planLoadSerial) return;
-    const saved = FILE_PROTOCOL ? response : (response && response.ok && response.hasPlan ? { planId: response.planId, planJson: response.planJson, sessions: response.sessions, progress: response.progress } : null);
+    const saved = response && response.ok && response.hasPlan ? { planId: response.planId, planJson: response.planJson, sessions: response.sessions, progress: response.progress } : null;
     const plan = normalisePlan(saved?.planJson);
     if (!plan) {
       current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; cachePlan(null); resetGenerator(); syncPlanShells();
@@ -988,13 +950,9 @@
     const plan = normalisePlan(planFromUi()); if (!plan) return;
     const updating = Boolean(current.planId);
     if ($('#savePlanStatus')) $('#savePlanStatus').textContent = updating ? 'Saving changes…' : 'Saving…';
-    let response;
-    if (FILE_PROTOCOL) {
-      const rows = sessionRows(plan, updating ? current.sessions : []); const saved = { planId: updating ? current.planId : Date.now(), planJson: plan, sessions: rows, progress: calculateProgress(rows, plan) };
-      writeStorage(userPlanKey(), saved); response = { ok: true };
-    } else {
-      response = await apiJson(`${API}/${updating ? 'plan_update.php' : 'save_plan.php'}`, { method: 'POST', body: updating ? { planId: current.planId, planText: planText(plan), planJson: plan, reschedule: true } : { planText: planText(plan), planJson: plan } });
-    }
+    const response=FILE_PROTOCOL
+      ? {ok:false,error:'server_required'}
+      : await apiJson(`${API}/${updating ? 'plan_update.php' : 'save_plan.php'}`,{method:'POST',body:updating?{planId:current.planId,planText:planText(plan),planJson:plan,reschedule:true}:{planText:planText(plan),planJson:plan}});
     if (!response.ok) { if ($('#savePlanStatus')) $('#savePlanStatus').textContent = 'Save failed. Please try again.'; return; }
     dirty = false; generatorMode = 'view'; current = { planId: 0, planJson: null, sessions: [], progress: null }; hydratedPlanId = null;
     await ensurePlanLoaded(true);
@@ -1010,7 +968,6 @@
   async function deletePlan() {
     const response = FILE_PROTOCOL ? { ok: true } : await apiJson(`${API}/delete_plan.php`, { method: 'POST', body: { planId: current.planId } });
     if (!response.ok) { if ($('#deletePlanStatus')) $('#deletePlanStatus').textContent = 'Could not delete the plan.'; return; }
-    removeStorage(userPlanKey()); removeStorage(userCacheKey());
     current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; resetGenerator(); closeDeletePlanModal(); syncPlanShells(); renderAchievements();
   }
 
@@ -1060,7 +1017,11 @@
   }
   function formatMetric(value, digits = 1, suffix = '') { return Number.isFinite(value) ? `${value.toFixed(digits)}${suffix}` : '—'; }
   function metricCard(label, value, detail = '') { return `<div class="body-summary-card"><div class="body-summary-label">${escapeHtml(label)}</div><div class="body-summary-value">${escapeHtml(value)}</div>${detail ? `<div class="note" style="margin-top:5px">${escapeHtml(detail)}</div>` : ''}</div>`; }
-  function readBodyProfile() { const value = readStorage(bodyProfileKey(), null); return value && typeof value === 'object' ? value : {}; }
+  function readBodyProfile() {
+    const server=global.BASELINE_FITNESS_SAVED_DATA?.getProfile?.();
+    if(server&&typeof server==='object')bodyProfileMemory=server;
+    return bodyProfileMemory&&typeof bodyProfileMemory==='object'?bodyProfileMemory:{};
+  }
   function profileFromForm() { const form = $('#bodyProfileForm'); const output = {}; if (form) new FormData(form).forEach((value, name) => { output[name] = String(value).trim(); }); return output; }
   function renderBodyCalculations(profile) {
     const target = $('#bodyProfileCalculations'); if (!target) return; const calc = bodyCalculations(profile);
@@ -1091,10 +1052,11 @@
   }
 
   function bindUi() {
+    document.addEventListener('baseline:fitness-saved-data-updated',()=>{bodyProfileMemory=global.BASELINE_FITNESS_SAVED_DATA?.getProfile?.()||{};activeWorkoutMemory=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.()||null;fillBodyProfile();renderCurrentWorkout();});
     $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
     $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
-    $('#bodyProfileForm')?.addEventListener('submit', (event) => { event.preventDefault(); const profile = profileFromForm(); writeStorage(bodyProfileKey(), profile); renderBodyCalculations(profile); renderBodySummary(); if ($('#bodyProfileStatus')) $('#bodyProfileStatus').textContent = 'Body profile saved.'; });
+    $('#bodyProfileForm')?.addEventListener('submit',(event)=>{event.preventDefault();const profile=profileFromForm();bodyProfileMemory=profile;global.BASELINE_FITNESS_SAVED_DATA?.saveProfile?.(profile);renderBodyCalculations(profile);renderBodySummary();if($('#bodyProfileStatus'))$('#bodyProfileStatus').textContent='Body profile save queued.';});
     $('#connectGarminBtn')?.addEventListener('click', () => { if ($('#garminConnectionStatus')) $('#garminConnectionStatus').textContent = 'Garmin OAuth credentials are not configured on the server yet.'; });
     $('#addExerciseBtn')?.addEventListener('click', () => { markDirty(); const used = new Set(itemsFromUi().map((item) => item.exercise)); const next = EXERCISES.find((item) => !used.has(item.name)) || EXERCISES[0]; $('#exerciseList')?.append(makeExerciseRow(next.name)); syncGoalControls(); });
     $('#lengthMode')?.addEventListener('change', () => { markDirty(); syncLengthMode(); });
