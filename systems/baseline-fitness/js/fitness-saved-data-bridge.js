@@ -22,6 +22,7 @@
   let profile=null;
   let activeWorkout=null;
   let progressionHistory={outcomes:[],failures:[]};
+  let selectedPlanId=0;
 
   function clone(value){
     try{return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):value;}
@@ -46,7 +47,8 @@
         saveBlocked,
         profile:clone(profile),
         activeWorkout:clone(activeWorkout),
-        progressionHistory:clone(progressionHistory)
+        progressionHistory:clone(progressionHistory),
+        selectedPlanId
       }}));
     }catch(_error){}
     try{document.dispatchEvent(new CustomEvent('baseline:fitness-progression-history-updated'));}catch(_error){}
@@ -101,6 +103,7 @@
       outcomes:Array.isArray(history.outcomes)?clone(history.outcomes):[],
       failures:Array.isArray(history.failures)?clone(history.failures):[]
     };
+    selectedPlanId=Math.max(0,Number(data.selectedPlanId)||0);
     saveBlocked=false;
     lastError='';
     document.documentElement.removeAttribute('data-fitness-server-save-error');
@@ -116,6 +119,7 @@
       profile=null;
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
+      selectedPlanId=0;
       emit('disabled');
       return data;
     }
@@ -149,6 +153,7 @@
   function getProfile(){return clone(profile);}
   function getActiveWorkout(){return clone(activeWorkout);}
   function getProgressionHistory(){return clone(progressionHistory);}
+  function getSelectedPlanId(){return selectedPlanId;}
   function saveProfile(value){
     profile=value&&typeof value==='object'?clone(value):null;
     emit('profile-memory');
@@ -164,6 +169,12 @@
     activeWorkout=null;
     emit('active-workout-memory');
     return queue('active-workout',{action:'clear_active_workout'},0);
+  }
+  async function saveSelectedPlanId(value){
+    const next=Math.max(0,Number(value)||0);
+    selectedPlanId=next;
+    emit('selected-plan-memory');
+    return post({action:'save_selected_plan',selectedPlanId:next});
   }
   async function saveProgressionHistory(value){
     const history=value&&typeof value==='object'?value:{};
@@ -186,6 +197,7 @@
       profile=null;
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
+      selectedPlanId=0;
       saveBlocked=false;
       lastError='';
       renderAuthorityStatus();
@@ -199,6 +211,7 @@
       profile=null;
       activeWorkout=null;
       progressionHistory={outcomes:[],failures:[]};
+      selectedPlanId=0;
       saveBlocked=false;
       lastError='';
     }
@@ -221,9 +234,11 @@
     getProfile,
     getActiveWorkout,
     getProgressionHistory,
+    getSelectedPlanId,
     saveProfile,
     saveActiveWorkout,
     clearActiveWorkout,
+    saveSelectedPlanId,
     saveProgressionHistory,
     get enabled(){return enabled;},
     get savedDataDisabled(){return savedDataDisabled;},
