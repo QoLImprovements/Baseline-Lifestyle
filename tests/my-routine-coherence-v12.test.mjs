@@ -37,10 +37,10 @@ test('one active shared My Routine coherence layer remains',()=>{
   assert.doesNotMatch(skinLoader,/loadOrdered\(|loadScript\(|createElement\(['"]script['"]\)/);
   assert.doesNotMatch(skinLoader,/baseline-routine-coherence-v12\.js|baseline-public-routine-viewonly-v4\.js|baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
 
-  assert.match(fitnessLoader,/baseline-routine-coherence-v12\.js/);
-  assert.match(fitnessLoader,/baseline-public-routine-viewonly-v4\.js/);
-  assert.match(fitnessLoader,/fitness-routine-groups-v2\.js/);
-  assert.doesNotMatch(fitnessLoader,/baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
+  assert.match(fitnessHtml,/baseline-routine-coherence-v12\.js/);
+  assert.match(fitnessHtml,/baseline-public-routine-viewonly-v4\.js/);
+  assert.match(fitnessHtml,/fitness-routine-groups-v2\.js/);
+  assert.doesNotMatch(fitnessLoader,/loadScript\(|createElement\(['"]script['"]\)|localStorage|sessionStorage|baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
 });
 
 test('first-paint route identity is in the head while system CSS owns visibility',()=>{
@@ -135,24 +135,26 @@ test('Fitness builds its final structure synchronously before routine data paint
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
   assert.match(fitnessWorkspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(fitnessWorkspace,/function renderStableState\(\)/);
-  assert.match(fitnessWorkspace,/const before\s*=\s*JSON\.stringify/);
-  assert.match(fitnessWorkspace,/if \(after\s*!==\s*before\) renderStableState\(\)/);
-  assert.doesNotMatch(fitnessWorkspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
+  assert.match(fitnessWorkspace,/async function loadForAuth\(snapshot\)/);
+  assert.match(fitnessWorkspace,/const response = await request\(\)/);
+  assert.match(fitnessWorkspace,/state\.activities = normaliseActivities\(response\.data\?\.activities\)/);
+  assert.match(fitnessWorkspace,/state\.logs = normaliseLogs\(response\.data\?\.logs\)/);
+  assert.doesNotMatch(fitnessWorkspace,/localStorage|sessionStorage|attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
   assert.match(structure,/ROUTE_BASE='\/baseline-fitness\/my-routine'/);
   assert.match(structure,/url\.pathname=cleanPath\(\)/);
 });
 
-test('public My Routine URLs contain page identity only; filter and date stay session-side',()=>{
+test('public My Routine URLs contain page identity only; transient UI state is page-memory only',()=>{
   for (const source of [skinRoutine,fitnessSummary,coherence]) {
-    assert.doesNotMatch(source,/searchParams\.set\(['\"]routine-(?:view|plan|filter|date)/);
+    assert.doesNotMatch(source,/searchParams\.set\(['"]routine-(?:view|plan|filter|date)/);
+    assert.doesNotMatch(source,/localStorage|sessionStorage/);
   }
-  assert.match(fitnessSummary,/sessionStorage\?\.setItem\(FILTER_STORAGE_KEY,next\)/);
-  assert.match(coherence,/writeSession\(SUMMARY_STORAGE_KEY/);
-  assert.match(coherence,/writeSession\(DATE_STORAGE_KEY/);
+  assert.match(fitnessSummary,/let activeFilter='all'/);
+  assert.match(coherence,/let transientSummaryFilter = 'all'/);
+  assert.match(coherence,/let transientLogDate = ''/);
   assert.doesNotMatch(coherence,/function setUrlValues\(/);
   assert.doesNotMatch(coherence,/function urlValue\(/);
 });
-
 test('enhanced My Routine select can paint only one dropdown control',()=>{
   assert.match(coherenceCss,/\.bl-select\[data-bl-enhanced="1"\]>select/);
   assert.match(coherenceCss,/opacity:0!important/);
