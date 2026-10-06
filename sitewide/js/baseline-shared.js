@@ -7682,7 +7682,6 @@ function setupRecipeFavourites(){
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);
     safeInit('scroll persistence', setupScrollPersistence);
-    safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
     safeInit('tabs', setupTabs);
 
