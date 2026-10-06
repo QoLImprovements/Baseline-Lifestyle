@@ -910,3 +910,27 @@ html body[data-app="skin"] #recipes .recipe-comedogenic-rating{
   font-size:.95em;
 }
 }
+
+/* First-paint route authority. The URL-selected section and recipe variant are
+   expressed through HTML route-state attributes; no temporary stylesheet is
+   created and removed after the page is visible. */
+html[data-initial-section] body[data-app="skin"] main.wrap > .section{display:none!important}
+html[data-initial-section="system"] body[data-app="skin"] main.wrap > #system,
+html[data-initial-section="recipes"] body[data-app="skin"] main.wrap > #recipes,
+html[data-initial-section="routine"] body[data-app="skin"] main.wrap > #routine,
+html[data-initial-section="ingredients"] body[data-app="skin"] main.wrap > #ingredients,
+html[data-initial-section="support"] body[data-app="skin"] main.wrap > #support{display:block!important}
+
+html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
+html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
+html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
+html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
+html[data-initial-recipe-route="1"][data-initial-recipe-pending="1"] body[data-app] #recipes .recipe-page{visibility:hidden!important}
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant] body[data-app="skin"] #r2 .variant-panel{display:none!important}
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="reactive"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="reactive"],
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="balanced"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="balanced"],
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="enhanced"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="enhanced"]{display:block!important}
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant] body[data-app="skin"] #r2 .variant-tab[aria-selected="true"]{background:transparent!important;border-color:var(--border,rgba(0,0,0,.18))!important;color:var(--ink)!important;box-shadow:none!important}
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="reactive"] body[data-app="skin"] #r2 .variant-tab[data-variant="reactive"],
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="balanced"] body[data-app="skin"] #r2 .variant-tab[data-variant="balanced"],
+html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="enhanced"] body[data-app="skin"] #r2 .variant-tab[data-variant="enhanced"]{background:var(--accent,var(--ink))!important;border-color:var(--accent,var(--ink))!important;color:var(--page-bg,#fff)!important;font-weight:850!important}
