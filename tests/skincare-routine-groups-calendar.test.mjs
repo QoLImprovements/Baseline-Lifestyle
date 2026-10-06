@@ -16,22 +16,15 @@ const endpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/
 const routineEndpoint=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/routine_state.php'),'utf8');
 const savedData=readFileSync(resolve(root,'systems/baseline-natural-skincare/api/skincare_saved_data.php'),'utf8');
 
-test('Skincare identifies the exact My Routine panel before body paint and hydrates data from the server only',() => {
-  assert.match(html,/id="baseline-skincare-first-paint"/);
+test('Skincare identifies My Routine before body paint and hydrates from the server only',() => {
+  assert.match(html,/id="baseline-skincare-route-state"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/id="baseline-skincare-initial-panel"/);
   assert.match(html,/data-routine-panel="summary"/);
   assert.match(html,/data-routine-panel="plan"/);
   assert.match(html,/data-routine-panel="public"/);
   assert.match(routine,/function loadRemoteState\(\)/);
-  assert.doesNotMatch(routine,/localStorage|sessionStorage|loadLocalState|readLocal|writeLocal/);
-  assert.doesNotMatch(sitewide,/sessionStorage|localStorage\?\.setItem|writeGroupLocal/);
-  assert.match(sitewide,/readLegacyGroupAssignments/);
-  assert.match(sitewide,/localStorage\?\.getItem/);
-  assert.match(sitewide,/localStorage\?\.removeItem/);
-  assert.doesNotMatch(loader,/localStorage|sessionStorage/);
-  const firstPaint=html.match(/<script id="baseline-skincare-first-paint">([\s\S]*?)<\/script>/)?.[1] || '';
-  assert.doesNotMatch(firstPaint,/localStorage|sessionStorage/);
+  for(const source of [html,routine,sitewide,loader]) assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
   assert.match(routine,/expectedRevision:state\.revision/);
   assert.match(sitewide,/expectedRevision:state\.revision/);
 });
@@ -66,16 +59,15 @@ test('My Routine subtabs retain their own canonical labels',() => {
   }
 });
 
-test('Routine Summary remains the comprehensive shared template with session-side filtering',() => {
+test('Routine Summary remains the comprehensive shared template with transient in-memory filtering',() => {
   assert.match(html,/data-routine-view="summary"[^>]*>Routine Summary<\/button>/);
   assert.match(sitewide,/Benefits and practical role/);
   assert.match(sitewide,/Routine details/);
   assert.match(sitewide,/MODEL\.benefitText\(item,'comprehensive'\)/);
   assert.match(sitewide,/bl-routine-summary-grid/);
   assert.match(coherence,/skinSummaryFilter/);
-  assert.match(coherence,/SUMMARY_STORAGE_KEY/);
-  assert.match(coherence,/persistSummaryFilter/);
-  assert.doesNotMatch(coherence,/searchParams\.set\(['"]routine-filter/);
+  assert.match(coherence,/transientSummaryFilter/);
+  assert.doesNotMatch(coherence,/localStorage|sessionStorage|SUMMARY_STORAGE_KEY|persistSummaryFilter|searchParams\.set\(['"]routine-filter/);
 });
 
 test('group creation shell is static and group Settings own schedule directly',() => {
@@ -136,15 +128,10 @@ test('Skincare Saved Data upgrades recover legacy server-side group assignments 
 });
 
 
-test('legacy Skincare browser group data is migration-only and is deleted after server recovery',() => {
-  assert.match(sitewide,/function stageLegacyAssignmentsIfNeeded/);
-  assert.match(sitewide,/function persistRecoveredAssignments/);
+test('Skincare group assignments have no browser migration or fallback authority',() => {
+  assert.doesNotMatch(sitewide,/localStorage|sessionStorage|indexedDB|readLegacyGroupAssignments|stageLegacyAssignmentsIfNeeded|persistRecoveredAssignments|clearLegacyRoutineStorage/);
   assert.match(sitewide,/expectedRevision/);
-  assert.match(sitewide,/Found earlier group assignments/);
-  assert.match(sitewide,/Recovered routine group assignments/);
-  assert.match(sitewide,/clearLegacyRoutineStorage/);
-  assert.match(sitewide,/localStorage\?\.removeItem/);
-  assert.doesNotMatch(sitewide,/localStorage\?\.setItem/);
+  assert.match(savedData,/bl_skincare_saved_sqlite_snapshot\(\$db, \$userId\)/);
 });
 
 
