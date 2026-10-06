@@ -23,19 +23,9 @@
   function addStylesheets(){
     addStylesheet('/sitewide/css/baseline-protected-key-placement.css?v=' + BUILD, 'data-protected-key-placement');
     addStylesheet('/sitewide/css/baseline-ui-fixes.css?v=' + BUILD, 'data-baseline-ui-fixes');
-    addStylesheet('/sitewide/css/baseline-live-stability.css?v=' + BUILD, 'data-baseline-live-stability-style');
     addStylesheet('/sitewide/css/baseline-protected-access.css?v=' + BUILD, 'data-protected-access-style', true);
   }
 
-
-  function loadLiveStability(){
-    if(document.querySelector('script[data-baseline-live-stability-script]')) return;
-    const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-live-stability.js?v=' + BUILD;
-    script.async = false;
-    script.setAttribute('data-baseline-live-stability-script','true');
-    document.head.appendChild(script);
-  }
 
   function ordinarySectionMenu(){
     return [
@@ -283,7 +273,6 @@
 
   function initialise(){
     addStylesheets();
-    loadLiveStability();
     applyApprovedUiFixes();
     observeApprovedUiFixes();
     const ui = buildInterface();
