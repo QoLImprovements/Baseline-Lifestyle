@@ -16,15 +16,11 @@
   global.__BASELINE_FITNESS_MULTIPLE_PLANS_V5__ = true;
 
   const API_ROOT = '/systems/baseline-fitness/api';
-  const SELECTED_PREFIX = '__bl_fitness_selected_plan_v1__::';
-  const CREATE_PREFIX = '__bl_fitness_creating_plan_v1__::';
-  const PLAN_CACHE_PREFIX = '__bl_fitness_plan_cache_v1__::';
-  const VIEW_KEY = '__bl_fitness_routine_view_v2__';
-  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
-  const REVEAL_KEY = '__bl_fitness_reveal_plan_card_once_v1__';
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
   let owner = 'guest';
+  let selectedPlanMemory=0;
+  let creatingPlan=false;
 
   const $ = (selector, root = document) => root.querySelector(selector);
 
@@ -33,31 +29,23 @@
     try { const snapshot=global.BASELINE_auth?.get?.();return snapshot?.authed?normaliseOwner(snapshot.name || snapshot.user?.name):'guest'; }
     catch (_error) { return owner; }
   }
-  function selectedKey() { return `${SELECTED_PREFIX}${normaliseOwner(owner)}`; }
-  function createKey() { return `${CREATE_PREFIX}${normaliseOwner(owner)}`; }
+  function savedDataAuthority(){return global.BASELINE_FITNESS_SAVED_DATA || null;}
   function selectedPlanId() {
-    try { return Math.max(0,Number(global.localStorage?.getItem(selectedKey())) || 0); }
-    catch (_error) { return 0; }
+    const serverId=Math.max(0,Number(savedDataAuthority()?.getSelectedPlanId?.())||0);
+    if(serverId) selectedPlanMemory=serverId;
+    return Math.max(0,Number(selectedPlanMemory)||0);
   }
-  function setSelectedPlanId(value) {
-    const id=Math.max(0,Number(value) || 0);
-    try { if (id) global.localStorage?.setItem(selectedKey(),String(id));else global.localStorage?.removeItem(selectedKey()); }
-    catch (_error) {}
+  async function setSelectedPlanId(value) {
+    const id=Math.max(0,Number(value)||0);
+    selectedPlanMemory=id;
+    if(owner!=='guest' && typeof savedDataAuthority()?.saveSelectedPlanId==='function'){
+      const result=await savedDataAuthority().saveSelectedPlanId(id);
+      return Boolean(result?.ok);
+    }
+    return owner==='guest';
   }
-  function isCreatingPlan() {
-    try { return global.localStorage?.getItem(createKey())==='1'; }
-    catch (_error) { return false; }
-  }
-  function setCreatingPlan(value) {
-    try { if (value) global.localStorage?.setItem(createKey(),'1');else global.localStorage?.removeItem(createKey()); }
-    catch (_error) {}
-  }
-  function clearPlanCaches() {
-    try {
-      const keys=[];for (let index=0;index<global.localStorage.length;index+=1) { const key=global.localStorage.key(index) || '';if (key.startsWith(PLAN_CACHE_PREFIX)) keys.push(key); }
-      keys.forEach((key) => global.localStorage.removeItem(key));
-    } catch (_error) {}
-  }
+  function isCreatingPlan() { return creatingPlan; }
+  function setCreatingPlan(value) { creatingPlan=Boolean(value); }
 
   function expandCatalogue() {
     const base = global.BASELINE_FITNESS_EXERCISE_CATALOGUE;
@@ -236,7 +224,10 @@
     }
     const response=await nativeFetch(input,nextInit);
     if (response.ok) {
-      const data=await response.clone().json().catch(() => null);if (url.pathname.endsWith('/save_plan.php') && Number(data?.planId)>0) setSelectedPlanId(data.planId);setCreatingPlan(false);clearPlanCaches();global.setTimeout(refreshPlans,50);
+      const data=await response.clone().json().catch(() => null);
+      if(url.pathname.endsWith('/save_plan.php') && Number(data?.planId)>0) await setSelectedPlanId(data.planId);
+      setCreatingPlan(false);
+      await refreshPlans();
     }
     return response;
   }
@@ -245,13 +236,23 @@
     global.fetch=async function(input,init={}) {
       const url=urlFor(input);if (!url) return nativeFetch(input,init);
       if (url.pathname.endsWith('/get_plan.php') && !url.searchParams.has('name')) {
-        if (isCreatingPlan()) return responseJson({ ok:true,hasPlan:false,has_plan:false,creatingPlan:true });
-        const selected=selectedPlanId();if (selected) url.searchParams.set('planId',String(selected));let response=await nativeFetch(withUrl(input,url),init);
-        if (selected && response.status===404) { setSelectedPlanId(0);clearPlanCaches();url.searchParams.delete('planId');response=await nativeFetch(withUrl(input,url),init); }
+        if (isCreatingPlan()) return responseJson({ok:true,hasPlan:false,has_plan:false,creatingPlan:true});
+        const selected=selectedPlanId();
+        if(selected)url.searchParams.set('planId',String(selected));
+        let response=await nativeFetch(withUrl(input,url),init);
+        if(selected&&response.status===404){
+          await setSelectedPlanId(0);
+          url.searchParams.delete('planId');
+          response=await nativeFetch(withUrl(input,url),init);
+        }
         return response;
       }
       if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
-      if (url.pathname.endsWith('/delete_plan.php')) { const response=await nativeFetch(input,init);if (response.ok) { setSelectedPlanId(0);setCreatingPlan(false);clearPlanCaches();global.setTimeout(refreshPlans,50); }return response; }
+      if(url.pathname.endsWith('/delete_plan.php')){
+        const response=await nativeFetch(input,init);
+        if(response.ok){await setSelectedPlanId(0);setCreatingPlan(false);await refreshPlans();}
+        return response;
+      }
       return nativeFetch(input,init);
     };
   }
@@ -303,20 +304,24 @@
   }
 
   function createPlan() {
-    setCreatingPlan(true);setSelectedPlanId(0);clearPlanCaches();try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics'); }catch (_error) {}
-    const url=new URL('/baseline-fitness/my-routine',global.location.origin);url.searchParams.set('new-plan',String(Date.now()));global.location.assign(url.toString());
+    setCreatingPlan(true);
+    document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
+    document.documentElement.setAttribute('data-initial-routine-view','plan');
+    document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
+    const url=new URL('/baseline-fitness/my-routine/plan',global.location.origin);
+    url.searchParams.set('new-plan','1');
+    global.location.assign(url.toString());
   }
-  function openPlan(planId) {
-    const id=Math.max(0,Number(planId)||0);if (!id) return;
-    if (typeof global.BASELINE_fitnessPlanSelectionContinuity?.openSelectedPlan==='function') {
-      global.BASELINE_fitnessPlanSelectionContinuity.openSelectedPlan(id);
-      return;
-    }
-    setCreatingPlan(false);setSelectedPlanId(id);clearPlanCaches();
-    try { global.sessionStorage?.setItem(VIEW_KEY,'plan');global.sessionStorage?.setItem(PLAN_VIEW_KEY,'calisthenics');global.sessionStorage?.setItem(REVEAL_KEY,'calisthenics'); }catch (_error) {}
-    document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');document.documentElement.setAttribute('data-initial-routine-view','plan');document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
-    try { global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false); }catch (_error) {}
-    const url=new URL('/baseline-fitness/my-routine/plan',global.location.origin);global.location.assign(url.toString());
+  async function openPlan(planId) {
+    const id=Math.max(0,Number(planId)||0);if(!id)return;
+    setCreatingPlan(false);
+    const saved=await setSelectedPlanId(id);
+    if(owner!=='guest'&&!saved)return;
+    document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
+    document.documentElement.setAttribute('data-initial-routine-view','plan');
+    document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
+    try{global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false);}catch(_error){}
+    global.location.assign(new URL('/baseline-fitness/my-routine/plan',global.location.origin).toString());
   }
 
   function completedDate(session) {
@@ -353,7 +358,11 @@
   async function refreshPlans() {
     owner=authOwner();if (owner==='guest' || !nativeFetch) { plans=[];patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));return []; }
     try { const response=await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });const data=await response.json();plans=response.ok && Array.isArray(data?.plans)?data.plans:[]; }catch (_error) { plans=[]; }
-    if (!isCreatingPlan()) { const selected=selectedPlanId();if (selected && !plans.some((plan) => Number(plan.planId)===selected)) setSelectedPlanId(0);if (!selectedPlanId() && plans[0]) setSelectedPlanId(plans[0].planId); }
+    if(!isCreatingPlan()){
+      const selected=selectedPlanId();
+      if(selected&&!plans.some((plan)=>Number(plan.planId)===selected))await setSelectedPlanId(0);
+      if(!selectedPlanId()&&plans[0])await setSelectedPlanId(plans[0].planId);
+    }
     patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));return getPlans();
   }
 
@@ -365,7 +374,10 @@
   function attachAuth() {
     const auth=global.BASELINE_auth;if (!auth || typeof auth.get!=='function') { owner='guest';refreshPlans();return; }owner=authOwner();refreshPlans();if (typeof auth.onChange==='function') auth.onChange(() => { owner=authOwner();refreshPlans(); });
   }
-  function boot() { patchInterface();bind();attachAuth(); }
+  function boot() {
+    patchInterface();bind();attachAuth();
+    document.addEventListener('baseline:fitness-saved-data-updated',()=>{selectedPlanMemory=Math.max(0,Number(savedDataAuthority()?.getSelectedPlanId?.())||selectedPlanMemory);refreshPlans();});
+  }
 
   global.BASELINE_fitnessPlans=Object.freeze({ refresh:refreshPlans,getPlans,getSelectedPlanId:selectedPlanId,getPlansForDate,getWeeklyGoalsForDate,openPlan,createPlan });
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();
