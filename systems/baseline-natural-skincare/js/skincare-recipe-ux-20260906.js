@@ -9,13 +9,15 @@
   const PROMOTIONS = Object.freeze({
     r8: { slug:'calming-shave-gel' },
     r9: { slug:'tooth-polishing-powder' },
-    r10:{ slug:'microcurrent-glide-gel' }
+    r10:{ slug:'microcurrent-glide-gel' },
+    r12:{ slug:'comfort-barrier-balm' }
   });
   const OLD_SLUGS = Object.freeze({
     'hydrating-conductive-mist':'r10',
     'testing-microcurrent-conductive-gel':'r10',
     'testing-shaving-gel':'r8',
-    'testing-natural-tooth-brightening-powder':'r9'
+    'testing-natural-tooth-brightening-powder':'r9',
+    'testing-lip-balm':'r12'
   });
 
   function recipeHref(slug){ return ROUTE_BASE + slug; }
