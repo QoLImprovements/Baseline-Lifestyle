@@ -6,25 +6,22 @@ import {
 
 const STYLE_ID='baseline-realm-tactical-operations-style';
 const STYLE_URL='/systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css?v=TACTICAL_OPERATIONS_INTERACTION_REPAIR_20260707_2';
-const LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v2';
-const LEGACY_LOCAL_SAVE_KEY='baseline-realm:tactical-operations:v1';
-const RETIRED_OWNER_KEY='baseline-realm:tactical-operations:owner';
+let temporarySave=null;
+const clone=(value)=>{try{return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):null;}catch{return null;}};
 
 function ensureStylesheet(){let link=document.getElementById(STYLE_ID);if(!link){link=document.createElement('link');link.id=STYLE_ID;link.rel='stylesheet';document.head.append(link);}if(link.getAttribute('href')!==STYLE_URL)link.href=STYLE_URL;}
 function authSnapshot(){try{return globalThis.BASELINE_auth?.get?.()||null;}catch{return null;}}
 function accountAuthenticated(){return Boolean(authSnapshot()?.authed);}
-function readLocalSave(){for(const key of[LOCAL_SAVE_KEY,LEGACY_LOCAL_SAVE_KEY]){try{const value=JSON.parse(localStorage.getItem(key)||'null');if(value&&typeof value==='object')return value;}catch{}}return null;}
 function readSave(inventoryService){
   const signedIn=accountAuthenticated();
   if(signedIn){
-    try{localStorage.removeItem(RETIRED_OWNER_KEY);}catch{}
     let tactical=null;
     if(typeof inventoryService?.read==='function'){
       try{const value=inventoryService.read()?.realm?.tacticalOperations;tactical=value&&typeof value==='object'?value:null;}catch{}
     }
     return{saved:tactical,signedIn:true};
   }
-  return{saved:readLocalSave(),signedIn:false};
+  return{saved:clone(temporarySave),signedIn:false};
 }
 function addCount(bucket,id,amount){if(!bucket||!id||!Number.isFinite(Number(amount)))return;bucket[id]=Math.max(0,Number(bucket[id]||0))+Number(amount);}
 function writeSave(state,inventoryService){
@@ -33,7 +30,8 @@ function writeSave(state,inventoryService){
   if(shouldReward)state.rewardedMissions.push(state.missionId);
   const data=serialiseState(state);
   if(!signedIn){
-    try{localStorage.setItem(LOCAL_SAVE_KEY,JSON.stringify(data));localStorage.removeItem(LEGACY_LOCAL_SAVE_KEY);}catch{}
+    temporarySave=clone(data);
+    return{ok:true,data,rewardGranted:false};
   }
   if(signedIn&&typeof inventoryService?.transact!=='function')return{ok:false,error:'account_tactical_storage_unavailable',data,rewardGranted:false};
   try{
