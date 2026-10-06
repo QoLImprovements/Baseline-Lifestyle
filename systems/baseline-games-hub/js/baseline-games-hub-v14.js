@@ -238,8 +238,7 @@ function addBadmintonCss(){
 function badmintonProfile(){
   try{
     if(window.BadmintonFocusedGames&&typeof window.BadmintonFocusedGames.getProfile==='function')return window.BadmintonFocusedGames.getProfile();
-    const raw=window.localStorage&&window.localStorage.getItem('__bl_badminton_focused_v1__');
-    return raw?JSON.parse(raw):null;
+    return window.BaselineGameStorage?.getProfile?.('badmintonfocused') || null;
   }catch(_error){return null;}
 }
 function badmintonMarkup(){
