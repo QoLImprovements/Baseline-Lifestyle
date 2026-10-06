@@ -7,7 +7,6 @@ import {
   EQUIPMENT,
   ITEMS,
   MATERIALS,
-  SAVE_KEY,
   STAGES,
   STORY,
   TILE_LEGEND
@@ -167,10 +166,10 @@ export class MeridianGroveGame {
 
   load() {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      return normaliseState(raw ? JSON.parse(raw) : null);
+      const profile=globalThis.BaselineGameStorage?.getProfile?.('meridiangrove');
+      return normaliseState(profile || null);
     } catch (error) {
-      console.warn('Meridian Grove save could not be loaded.', error);
+      console.warn('Meridian Grove account state could not be loaded.', error);
       return createInitialState();
     }
   }
@@ -178,11 +177,12 @@ export class MeridianGroveGame {
   save(reason = 'autosave') {
     this.state.lastSaveAt = Date.now();
     try {
-      localStorage.setItem(SAVE_KEY, JSON.stringify(this.state));
+      globalThis.BaselineGameStorage?.setTemporaryProfile?.('meridiangrove',this.state);
+      globalThis.BaselineGameStorage?.saveProfile?.('meridiangrove',this.state);
       this.onSave(this.state, reason);
       this.updateSaveStatus(reason);
     } catch (error) {
-      console.warn('Meridian Grove save could not be written.', error);
+      console.warn('Meridian Grove account save could not be queued.', error);
       this.updateSaveStatus('save-error');
     }
   }
@@ -802,7 +802,6 @@ export class MeridianGroveGame {
       this.startEncounter(['hollow-hart'], 'boss');
     }
     if (action === 'new-route') {
-      localStorage.removeItem(SAVE_KEY);
       this.state = createInitialState();
       this.closeModal();
       this.renderAll();
