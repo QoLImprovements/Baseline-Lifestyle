@@ -30,7 +30,6 @@
   const UI=global.BASELINE_RoutineSystem;
   if (!UI) return;
 
-  const FILTER_STORAGE_KEY='__bl_fitness_routine_summary_filter_v12__';
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
   const esc=UI.escapeHtml || ((value)=>String(value==null?'':value));
@@ -38,6 +37,7 @@
   const alpha=(a,b)=>String(a || '').localeCompare(String(b || ''),'en-GB',{ sensitivity:'base' });
   let frame=0;
   let rendering=false;
+  let activeFilter='all';
 
   function owner() {
     try {
@@ -435,12 +435,10 @@
     try { select?.__bl_select__?.buildMenu?.();select?.__bl_select__?.sync?.();select?.__bl_select__?.syncStyle?.(); } catch (_error) {}
   }
   function persistedFilter() {
-    try { return String(global.sessionStorage?.getItem(FILTER_STORAGE_KEY) || 'all'); }
-    catch (_error) { return 'all'; }
+    return String(activeFilter || 'all');
   }
   function persistFilter(value) {
-    const next=String(value || 'all');
-    try { global.sessionStorage?.setItem(FILTER_STORAGE_KEY,next); } catch (_error) {}
+    activeFilter=String(value || 'all');
   }
   function filterOption(value,filterKey,badge,label) {
     return `<option value="${esc(value)}" data-filter-key="${esc(filterKey)}">${badge?`${esc(badge)} · `:''}${esc(label)}</option>`;
