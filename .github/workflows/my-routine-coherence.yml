@@ -42,4 +42,4 @@ jobs:
         with:
           node-version: '22'
       - name: Run My Routine structural and interaction contracts
-        run: npm run test:structure
+        run: node --test tests/my-routine-coherence-v12.test.mjs
