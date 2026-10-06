@@ -10,8 +10,8 @@
    - Fitness-only Routine Log interactions belong to fitness-routine-log-v1.js.
    - Fitness Routine Summary contents/filtering belong only to fitness-routine-summary-v2.js.
    - This file owns only genuinely shared live behaviour/state plus the Skincare Summary filter.
-   - Summary filters and Log Dates are transient session state; system routers alone
-     own public My Routine paths. This layer never writes routing query parameters.
+   - Summary filters and Log Dates are transient in-memory UI state only; system routers
+     alone own public My Routine paths. This layer never writes browser storage or routing query parameters.
 */
 (function (global) {
   'use strict';
