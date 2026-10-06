@@ -5950,31 +5950,6 @@ function buildControls(recipeEl){
   const authCompletePasswordReset = authClient.completePasswordReset;
   const authLogout = authClient.logout;
   const onAuthChange = authClient.onChange;
-  function setupSitewideVoiceAssets(){
-    if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
-    const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
-    let jsUrl = '/sitewide/js/baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1';
-    let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1';
-    try{
-      if(sharedScript && sharedScript.src){
-        jsUrl = new URL('baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1', sharedScript.src).href;
-        cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1', sharedScript.src).href;
-      }
-    }catch(_e){}
-    if(!document.querySelector('link[data-baseline-voice-style]')){
-      const link=document.createElement('link');
-      link.rel='stylesheet';
-      link.href=cssUrl;
-      link.setAttribute('data-baseline-voice-style','true');
-      document.head.appendChild(link);
-    }
-    const script=document.createElement('script');
-    script.src=jsUrl;
-    script.defer=true;
-    script.setAttribute('data-baseline-voice-runtime','true');
-    document.body.appendChild(script);
-  }
-
   function setupHomebarRightControls(){
     function isHomePage(){
       return !!(document.body && document.body.dataset && document.body.dataset.app === 'home');
@@ -7677,7 +7652,6 @@ function setupRecipeFavourites(){
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
     safeInit('homebar right controls', setupHomebarRightControls);
-    if(routePageFile === 'baseline-fitness.html') safeInit('fitness voice assets', setupSitewideVoiceAssets);
     safeInit('homebar height', syncHomebarHeight);
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);
