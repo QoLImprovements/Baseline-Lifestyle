@@ -7927,23 +7927,3 @@ function setupRecipeFavourites(){
     document.addEventListener('DOMContentLoaded', bootBaselineShared, { once:true });
   }
 })();
-
-/* BASELINE-LIVE-STABILITY-LOADER-20260803 */
-(function(){
-  'use strict';
-  const build = 'RECIPE_VIEW_STATE_20261003_2';
-  if(!document.querySelector('link[data-baseline-live-stability-style]')){
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/sitewide/css/baseline-live-stability.css?v=' + build;
-    link.setAttribute('data-baseline-live-stability-style','true');
-    document.head.appendChild(link);
-  }
-  if(!document.querySelector('script[data-baseline-live-stability-script]')){
-    const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-live-stability.js?v=' + build;
-    script.async = false;
-    script.setAttribute('data-baseline-live-stability-script','true');
-    document.head.appendChild(script);
-  }
-})();
