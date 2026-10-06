@@ -122,11 +122,11 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
 });
 
 
-test('Food first-paint routing contains no historical tab visual authority', () => {
-  const firstPaint = foodHtml.match(/<style id="baseline-recipe-route-first-paint-style">([\s\S]*?)<\/style>/)?.[1] || '';
-  assert.match(firstPaint, /main\.wrap>\.section\{display:none!important\}/);
-  assert.match(firstPaint, /#diet-log\.section\{display:block!important\}/);
-  assert.doesNotMatch(firstPaint, /\.tabs \.tab|color:|background:|--food-tab-|--bl-surface-/);
+test('Food first-paint routing is owned by canonical Food CSS, not an inline override', () => {
+  assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint-style"/);
+  assert.match(foodCss, /Initial route authority: URL state is present before body paint/);
+  assert.match(foodCss, /html\[data-initial-section\] body\[data-app="food"\] main\.wrap>\.section\{display:none!important\}/);
+  assert.match(foodCss, /#diet-log\.section\{display:block!important\}/);
   assert.match(foodHtml, /id="baseline-food-tab-first-state"/);
 });
 
