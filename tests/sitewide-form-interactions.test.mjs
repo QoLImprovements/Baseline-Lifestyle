@@ -6,7 +6,7 @@ const interactions=fs.readFileSync(new URL('../sitewide/js/baseline-form-interac
 const interactionCss=fs.readFileSync(new URL('../sitewide/css/baseline-form-interactions.css',import.meta.url),'utf8');
 const routineCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-system.css',import.meta.url),'utf8');
 const coherenceCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css',import.meta.url),'utf8');
-const failsafe=fs.readFileSync(new URL('../sitewide/js/baseline-auth-failsafe.js',import.meta.url),'utf8');
+const shared=fs.readFileSync(new URL('../sitewide/js/baseline-shared.js',import.meta.url),'utf8');
 const skincareCss=fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine-sitewide-v4.css',import.meta.url),'utf8');
 const skincareEntryCss=fs.readFileSync(new URL('../systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css',import.meta.url),'utf8');
 const skincareRoutine=fs.readFileSync(new URL('../systems/baseline-natural-skincare/js/skincare-routine.js',import.meta.url),'utf8');
@@ -21,11 +21,14 @@ test('shared combobox interactions support reopen and keyboard navigation',() =>
   assert.match(interactions,/options\[index\]\.click\(\)/);
 });
 
-test('Enter submits the visible sitewide account form',() => {
+test('Enter submits the visible sitewide account form without an auth failsafe layer',() => {
   assert.match(interactions,/#bl-auth-flyout \.bl-auth-form:not\(\[hidden\]\) input/);
   assert.match(interactions,/submitVisibleAuthForm/);
   assert.match(interactions,/#bl-auth-login/);
-  assert.match(failsafe,/button\.type='submit'/);
+  assert.match(shared,/loginForm\.addEventListener\('submit'/);
+  assert.match(shared,/signupForm\.addEventListener\('submit'/);
+  assert.match(shared,/recoverForm\.addEventListener\('submit'/);
+  assert.match(shared,/resetForm\.addEventListener\('submit'/);
 });
 
 test('Skincare typing no longer triggers input-time full-card replacement',() => {
