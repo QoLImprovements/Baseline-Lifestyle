@@ -1103,6 +1103,7 @@
     startSession: startCurrentWorkout,
     succeedCurrentStep: (inputMode = 'manual') => { const context = workoutContext(); return recordStep('success', context.step?.target || 0, inputMode); },
     failCurrentStep: (achieved, inputMode = 'manual') => recordStep('failed', achieved, inputMode),
+    recordCurrentStep: (status, achieved, inputMode = 'manual') => recordStep(status === 'failed' ? 'failed' : 'success', achieved, inputMode),
     recordTimedCurrentStep: (achieved, inputMode = 'manual') => recordStep('success', achieved, inputMode),
     finishSession: finishCurrentWorkout,
     resetSession: resetCurrentWorkout,
