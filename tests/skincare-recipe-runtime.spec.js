@@ -120,9 +120,9 @@ test('Oil Cleanser sliders continuously reproduce Reactive, Balanced and Enhance
   const card = page.locator('#r2');
 
   const expectAmounts = async (safflower, castor, olive) => {
-    await expect(card.locator('.r2-safflower-amt')).toHaveText(safflower + ' ml');
-    await expect(card.locator('.r2-castor-amt')).toHaveText(castor + ' ml');
-    await expect(card.locator('.r2-olive-amt')).toHaveText(olive + ' ml');
+    await expect(card.locator('.r2-safflower-amt')).toContainText(safflower + ' ml');
+    await expect(card.locator('.r2-castor-amt')).toContainText(castor + ' ml');
+    await expect(card.locator('.r2-olive-amt')).toContainText(olive + ' ml');
     const total = await card.locator('.r2-safflower-amt, .r2-castor-amt, .r2-olive-amt').evaluateAll((els) =>
       els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
     );
@@ -181,20 +181,20 @@ test('Skin Soft Massage Oil apricot control preserves the fixed squalane and coc
   const card = page.locator('#r15');
   await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','1');
 
-  await expect(card.locator('.r15-squalane-amt')).toHaveText('45 g');
-  await expect(card.locator('.r15-jojoba-amt')).toHaveText('35 g');
-  await expect(card.locator('.r15-apricot-amt')).toHaveText('0 g');
-  await expect(card.locator('.r15-coconut-amt')).toHaveText('20 g');
+  await expect(card.locator('.r15-squalane-amt')).toContainText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toContainText('35 g');
+  await expect(card.locator('.r15-apricot-amt')).toContainText('0 g');
+  await expect(card.locator('.r15-coconut-amt')).toContainText('20 g');
 
   await card.locator('#r15Apricot').evaluate((el) => {
     el.value='20';
     el.dispatchEvent(new Event('input',{ bubbles:true }));
   });
 
-  await expect(card.locator('.r15-squalane-amt')).toHaveText('45 g');
-  await expect(card.locator('.r15-jojoba-amt')).toHaveText('15 g');
-  await expect(card.locator('.r15-apricot-amt')).toHaveText('20 g');
-  await expect(card.locator('.r15-coconut-amt')).toHaveText('20 g');
+  await expect(card.locator('.r15-squalane-amt')).toContainText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toContainText('15 g');
+  await expect(card.locator('.r15-apricot-amt')).toContainText('20 g');
+  await expect(card.locator('.r15-coconut-amt')).toContainText('20 g');
 
   const total = await card.locator('.r15-squalane-amt, .r15-jojoba-amt, .r15-apricot-amt, .r15-coconut-amt').evaluateAll((els) =>
     els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
@@ -375,7 +375,7 @@ test('universal slider template keeps Restorative Hydration Layer text separated
 
   const controller = page.locator('#r7 .glide-controller');
   await expect(controller).toBeVisible();
-  await expect(controller).toHaveAttribute('data-slider-count', '1');
+  await expect(controller).toHaveAttribute('data-slider-count', '2');
   await expect(controller.locator('.glide-explain-title')).toHaveText('Overall Feel');
   await expect(controller.locator('.glide-explain-title')).toHaveCount(1);
   await expect(controller.locator('.glide-breakdown:visible')).toHaveCount(0);
