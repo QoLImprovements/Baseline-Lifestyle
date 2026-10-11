@@ -25,9 +25,11 @@ systems/baseline-natural-skincare/
 
 ## Skincare recipes
 
-Skincare recipes are content records. Each skincare recipe should be its own HTML file inside `recipes/`.
+Skincare recipe routes are served through the canonical Natural Skincare document. Each live recipe body must be authored exactly once in `baseline-natural-skincare.html` and identified by its stable recipe ID and `data-recipe-slug`.
 
-The main Natural Skincare page should act as the system/index, not the container for every recipe body.
+Clean URLs such as `/baseline-natural-skincare/recipes/<slug>` resolve to that canonical document and the shared recipe router exposes only the requested recipe.
+
+Do not maintain a second recipe body in `recipes/*.html`. If a legacy standalone file must remain for an old direct implementation-file URL, it may contain only a redirect/fallback link to the canonical clean route.
 
 Recipes should not have their own `rules/` folder.
 
