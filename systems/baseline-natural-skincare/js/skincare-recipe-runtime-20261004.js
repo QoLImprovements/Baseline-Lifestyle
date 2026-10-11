@@ -374,6 +374,10 @@
       }
     }
 
+    if(controller.dataset.skipServerSliderRestore === '1'){
+      delete controller.dataset.skipServerSliderRestore;
+      return;
+    }
     if(!saved || typeof saved !== 'object') return;
     Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
       if(Object.prototype.hasOwnProperty.call(saved, slider.id)) slider.value = String(saved[slider.id]);
@@ -747,6 +751,39 @@
   }
   window.BASELINE_decorateRecipeSliderSaves = decorateSliderSaves;
 
+  function migrateLegacyOilCleanserVariantRoute(){
+    try{
+      var path = String(window.location.pathname || '').replace(/\/+$/,'');
+      if(path !== '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser') return;
+      var params = new URLSearchParams(window.location.search || '');
+      var variant = String(params.get('variant') || '').toLowerCase();
+      if(!variant) return;
+
+      var castor = document.getElementById('r2CleansingPull');
+      var olive = document.getElementById('r2BarrierRichness');
+      if(!castor || !olive) return;
+
+      if(variant === 'reactive'){
+        castor.value = '0';
+        olive.value = '0';
+      }else if(variant === 'enhanced'){
+        castor.value = '10';
+        olive.value = '18';
+      }else{
+        castor.value = '10';
+        olive.value = '0';
+      }
+
+      var controller = castor.closest('.glide-controller');
+      if(controller) controller.dataset.skipServerSliderRestore = '1';
+
+      params.delete('variant');
+      var query = params.toString();
+      var next = path + (query ? ('?' + query) : '') + String(window.location.hash || '');
+      window.history.replaceState(window.history.state, '', next);
+    }catch(_e){}
+  }
+
   function initRecipeSliders(){
     initMultiplierControlFixes();
     bindSlider('r2CleansingPull', syncOilCleanser);
@@ -758,6 +795,7 @@
     bindSlider('r7Glycerin', syncHydrationLayer);
     bindSlider('r7Inulin', syncHydrationLayer);
     bindSlider('r15Apricot', syncSkinSoftMassageOil);
+    migrateLegacyOilCleanserVariantRoute();
     decorateSliderSaves();
     syncOilCleanser();
     syncProtectiveTouchBalm();
