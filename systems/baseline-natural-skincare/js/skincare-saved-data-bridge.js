@@ -209,6 +209,11 @@
     if(!id) return;
     const next=sliderSnapshot();
     delete next[id];
+    if(id==='r2'){
+      delete next['r2:reactive'];
+      delete next['r2:balanced'];
+      delete next['r2:enhanced'];
+    }
     saveSliderDocument(next,'slider-removal');
   }
 
@@ -374,7 +379,16 @@
   function publicReloadSliders(){
     if(!state.authenticated) return publicSliderState();
     const result=bootstrapSliders();
-    if(!result.ok) failBootstrap(result,'sliders_load_failed');
+    if(!result.ok){
+      failBootstrap(result,'sliders_load_failed');
+      return publicSliderState();
+    }
+    state.ready=true;
+    state.status='ready';
+    state.error='';
+    state.canSave=true;
+    emit();
+    requestRender();
     return publicSliderState();
   }
 
@@ -384,6 +398,11 @@
     const id=String(controllerId||'').trim();
     if(!id) throw new Error('invalid_slider_state');
     const next=sliderSnapshot();
+    if(id==='r2'){
+      delete next['r2:reactive'];
+      delete next['r2:balanced'];
+      delete next['r2:enhanced'];
+    }
     next[id]=Object.assign({},values||{});
     saveSliderDocument(next,'slider-mutation');
     return publicSliderState();
