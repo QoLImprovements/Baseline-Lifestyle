@@ -49,6 +49,7 @@ test('Skincare recipe catalogue is canonical before and after runtime enhancemen
   assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
   assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Comfort Barrier Balm — rich butter-and-oil balm that softens dry areas and helps reduce moisture loss\./);
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
+  assert.doesNotMatch(html, /skincare-recipe-navigation-20260906\.js/);
   assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
