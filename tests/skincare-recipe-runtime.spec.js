@@ -152,6 +152,64 @@ test('Oil Cleanser sliders continuously reproduce Reactive, Balanced and Enhance
   await expectAmounts('72','10','18');
 });
 
+test('Restorative Hydration Layer keeps a 100% formula across glycerin and inulin controls', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/restorative-hydration-layer');
+  const card = page.locator('#r7');
+  await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','2');
+
+  await card.locator('#r7Glycerin').evaluate((el) => {
+    el.value='30';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await card.locator('#r7Inulin').evaluate((el) => {
+    el.value='5';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+
+  await expect(card.locator('.r7-water-amt')).toHaveText('65 g');
+  await expect(card.locator('.r7-glycerin-amt')).toHaveText('30 g');
+  await expect(card.locator('.r7-inulin-amt')).toHaveText('5 g');
+
+  const total = await card.locator('.r7-water-amt, .r7-glycerin-amt, .r7-inulin-amt').evaluateAll((els) =>
+    els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+  );
+  expect(total).toBeCloseTo(100, 6);
+});
+
+test('Skin Soft Massage Oil apricot control preserves the fixed squalane and coconut phases', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/skin-soft-massage-oil');
+  const card = page.locator('#r15');
+  await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','1');
+
+  await expect(card.locator('.r15-squalane-amt')).toHaveText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toHaveText('35 g');
+  await expect(card.locator('.r15-apricot-amt')).toHaveText('0 g');
+  await expect(card.locator('.r15-coconut-amt')).toHaveText('20 g');
+
+  await card.locator('#r15Apricot').evaluate((el) => {
+    el.value='20';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+
+  await expect(card.locator('.r15-squalane-amt')).toHaveText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toHaveText('15 g');
+  await expect(card.locator('.r15-apricot-amt')).toHaveText('20 g');
+  await expect(card.locator('.r15-coconut-amt')).toHaveText('20 g');
+
+  const total = await card.locator('.r15-squalane-amt, .r15-jojoba-amt, .r15-apricot-amt, .r15-coconut-amt').evaluateAll((els) =>
+    els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+  );
+  expect(total).toBeCloseTo(100, 6);
+});
+
+test('legacy Oil Cleanser variant URLs migrate to slider landmarks and remove obsolete variant state', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?variant=enhanced');
+  const card = page.locator('#r2');
+  await expect(card.locator('#r2CleansingPull')).toHaveValue('10');
+  await expect(card.locator('#r2BarrierRichness')).toHaveValue('18');
+  await expect.poll(() => new URL(page.url()).searchParams.get('variant')).toBeNull();
+});
+
 test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
   const requested = [];
   page.on('request', request => requested.push(new URL(request.url()).pathname));
