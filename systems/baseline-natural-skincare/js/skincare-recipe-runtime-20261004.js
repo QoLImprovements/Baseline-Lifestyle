@@ -303,7 +303,6 @@
 
   var sliderServerState = {
     loaded:false,
-    loading:null,
     revision:0,
     sliders:{}
   };
@@ -316,31 +315,32 @@
     }
   }
 
-  function sliderApi(){
-    return (window.BASELINE_api && typeof window.BASELINE_api.json === 'function') ? window.BASELINE_api : null;
+  function sliderClient(){
+    var client = window.BaselineSkincareSavedData;
+    return client && typeof client.getSliderState === 'function' ? client : null;
+  }
+
+  function absorbSliderServerState(snapshot){
+    if(!snapshot || typeof snapshot !== 'object') return false;
+    sliderServerState.revision = Number(snapshot.revision || 0);
+    sliderServerState.sliders = (snapshot.sliders && typeof snapshot.sliders === 'object') ? snapshot.sliders : {};
+    sliderServerState.loaded = !!(snapshot.authenticated && snapshot.ready);
+    return sliderServerState.loaded;
   }
 
   async function loadSliderServerState(force){
     var auth = sliderAuth();
     if(!(auth && auth.ready && auth.authed)) return false;
-    if(sliderServerState.loaded && !force) return true;
-    if(sliderServerState.loading && !force) return sliderServerState.loading;
-
-    var api = sliderApi();
-    if(!api) return false;
-
-    sliderServerState.loading = api.json('/systems/baseline-natural-skincare/api/skincare_data.php', { method:'GET' })
-      .then(function(result){
-        if(!(result && result.ok && result.data && result.data.ok)) return false;
-        sliderServerState.revision = Number(result.data.revision || 0);
-        sliderServerState.sliders = (result.data.sliders && typeof result.data.sliders === 'object') ? result.data.sliders : {};
-        sliderServerState.loaded = true;
-        return true;
-      })
-      .catch(function(){ return false; })
-      .then(function(ok){ sliderServerState.loading = null; return ok; });
-
-    return sliderServerState.loading;
+    var client = sliderClient();
+    if(!client) return false;
+    try{
+      var snapshot = force && typeof client.reloadSliderState === 'function'
+        ? client.reloadSliderState()
+        : client.getSliderState();
+      return absorbSliderServerState(snapshot);
+    }catch(_e){
+      return false;
+    }
   }
 
   function controllerValues(controller){
@@ -388,73 +388,43 @@
   async function writeControllerServerState(controller, syncFn){
     var auth = sliderAuth();
     if(!(auth && auth.ready && auth.authed)) throw new Error('login_required');
-    var api = sliderApi();
-    if(!api) throw new Error('server_unavailable');
+    var client = sliderClient();
+    if(!client || typeof client.saveSlider !== 'function') throw new Error('server_unavailable');
     var saveId = controller.getAttribute('data-slider-save-id');
     if(!saveId) throw new Error('missing_slider_id');
 
-    async function attempt(forceReload){
-      var ok = await loadSliderServerState(forceReload);
-      if(!ok) throw new Error('slider_load_failed');
-      var next = Object.assign({}, sliderServerState.sliders || {});
-      next[saveId] = controllerValues(controller);
-      if(saveId === 'r2'){
-        delete next['r2:reactive'];
-        delete next['r2:balanced'];
-        delete next['r2:enhanced'];
+    var values = controllerValues(controller);
+    var snapshot = client.saveSlider(saveId, values);
+    if(saveId === 'r2'){
+      for(var legacyId of ['r2:reactive','r2:balanced','r2:enhanced']){
+        try{ if(typeof client.removeSlider === 'function') snapshot = client.removeSlider(legacyId); }catch(_e){}
       }
-      var result = await api.json('/systems/baseline-natural-skincare/api/skincare_data.php', {
-        method:'POST',
-        body:{ action:'replace_sliders', sliders:next, expectedRevision:sliderServerState.revision }
-      });
-      if(result && result.ok && result.data && result.data.ok){
-        sliderServerState.revision = Number(result.data.revision || sliderServerState.revision);
-        sliderServerState.sliders = (result.data.sliders && typeof result.data.sliders === 'object') ? result.data.sliders : next;
-        sliderServerState.loaded = true;
-        return true;
-      }
-      if(result && result.status === 409 && !forceReload) return attempt(true);
-      throw new Error((result && result.data && result.data.error) || 'slider_save_failed');
     }
-
-    var saved = await attempt(false);
-    if(saved && typeof syncFn === 'function') syncFn();
-    return saved;
+    absorbSliderServerState(snapshot);
+    if(typeof syncFn === 'function') syncFn();
+    return true;
   }
 
   async function removeControllerServerState(controller, syncFn){
     var auth = sliderAuth();
     if(!(auth && auth.ready && auth.authed)) return false;
-    var api = sliderApi();
-    if(!api) return false;
+    var client = sliderClient();
+    if(!client || typeof client.removeSlider !== 'function') return false;
     var saveId = controller.getAttribute('data-slider-save-id');
     if(!saveId) return false;
-
-    async function attempt(forceReload){
-      var ok = await loadSliderServerState(forceReload);
-      if(!ok) return false;
-      var next = Object.assign({}, sliderServerState.sliders || {});
-      delete next[saveId];
+    try{
+      var snapshot = client.removeSlider(saveId);
       if(saveId === 'r2'){
-        delete next['r2:reactive'];
-        delete next['r2:balanced'];
-        delete next['r2:enhanced'];
+        for(var legacyId of ['r2:reactive','r2:balanced','r2:enhanced']){
+          try{ snapshot = client.removeSlider(legacyId); }catch(_e){}
+        }
       }
-      var result = await api.json('/systems/baseline-natural-skincare/api/skincare_data.php', {
-        method:'POST',
-        body:{ action:'replace_sliders', sliders:next, expectedRevision:sliderServerState.revision }
-      });
-      if(result && result.ok && result.data && result.data.ok){
-        sliderServerState.revision = Number(result.data.revision || sliderServerState.revision);
-        sliderServerState.sliders = (result.data.sliders && typeof result.data.sliders === 'object') ? result.data.sliders : next;
-        sliderServerState.loaded = true;
-        if(typeof syncFn === 'function') syncFn();
-        return true;
-      }
-      if(result && result.status === 409 && !forceReload) return attempt(true);
+      absorbSliderServerState(snapshot);
+      if(typeof syncFn === 'function') syncFn();
+      return true;
+    }catch(_e){
       return false;
     }
-    return attempt(false);
   }
 
   function clearSliderStatus(controller){
@@ -806,6 +776,16 @@
     Array.prototype.forEach.call(document.querySelectorAll('.recipe-page'), function(recipe){
       if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
     });
+
+    try{
+      document.addEventListener('baseline:skincare-saved-data', function(event){
+        var detail = event && event.detail ? event.detail : null;
+        if(detail && detail.status === 'ready'){
+          sliderServerState.loaded = false;
+          applyAllServerSliderStates();
+        }
+      });
+    }catch(_e){}
 
     try{
       if(window.BASELINE_auth && typeof window.BASELINE_auth.onChange === 'function'){
