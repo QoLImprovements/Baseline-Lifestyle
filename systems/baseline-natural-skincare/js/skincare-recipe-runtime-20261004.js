@@ -627,14 +627,18 @@
   function controllerSyncFn(controller){
     var recipe = controller ? controller.closest('.recipe-page') : null;
     if(!recipe) return function(){};
-    if(typeof controller.__baselineSliderSync === 'function') return controller.__baselineSliderSync;
-    if(recipe.id === 'r2') return syncOilCleanser;
-    if(recipe.id === 'r3') return syncProtectiveTouchBalm;
-    if(recipe.id === 'r5') return syncShaveCushion;
-    if(recipe.id === 'r6') return syncMassageSlider;
-    if(recipe.id === 'r7') return syncHydrationLayer;
-    if(recipe.id === 'r15') return syncSkinSoftMassageOil;
-    return function(){};
+
+    return function(){
+      if(typeof controller.__baselineSliderSync === 'function'){
+        return controller.__baselineSliderSync();
+      }
+      if(recipe.id === 'r2') return syncOilCleanser();
+      if(recipe.id === 'r3') return syncProtectiveTouchBalm();
+      if(recipe.id === 'r5') return syncShaveCushion();
+      if(recipe.id === 'r6') return syncMassageSlider();
+      if(recipe.id === 'r7') return syncHydrationLayer();
+      if(recipe.id === 'r15') return syncSkinSoftMassageOil();
+    };
   }
 
   function applyAllServerSliderStates(){
