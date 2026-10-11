@@ -156,6 +156,13 @@
     applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-castor-amt'), castor, 'ml');
     applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-olive-amt'), olive, 'ml');
 
+    var oliveRow = recipe.querySelector('.r2-olive-row');
+    if(oliveRow){
+      var oliveIncluded = olive > 0;
+      oliveRow.hidden = !oliveIncluded;
+      oliveRow.setAttribute('aria-hidden', oliveIncluded ? 'false' : 'true');
+    }
+
     var explainEl = document.getElementById('r2OverallExplain');
     if(explainEl) explainEl.textContent = explainOilCleanser(castor, olive);
 
