@@ -1,0 +1,32 @@
+name: Skincare coherence PR checks
+
+on:
+  push:
+    branches:
+      - skincare-recipe-coherence-categories
+
+permissions:
+  contents: read
+
+jobs:
+  skincare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Run affected Skincare structural contracts
+        run: |
+          node --test --test-name-pattern="Skincare catalogue authors permanent|Skincare recipe catalogue is authored|Comfort Barrier Balm is a permanent|new and altered Skincare recipes|Oil Cleanser has no Vitamin E|promoted Skincare recipes are canonical" tests/skincare-testing-recipes.test.mjs
+          node --test --test-name-pattern="clean recipe URLs declare exact recipe routes before first paint|Skincare universal recipe chrome is authored once" tests/universal-recipe-template.test.mjs
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run affected Skincare browser regressions
+        run: |
+          npx playwright test tests/skincare-recipe-runtime.spec.js tests/skincare-testing-recipes-browser.spec.js \
+            --grep "Oil Cleanser|Comfort Barrier Balm|Skincare recipe catalogue|Skincare recipe categories|every embedded Skincare recipe|all embedded Skincare recipe routes|promoted recipe migrates its former Testing URL: testing-lip-balm" \
+            --reporter=line
