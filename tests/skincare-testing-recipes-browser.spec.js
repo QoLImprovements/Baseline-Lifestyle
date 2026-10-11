@@ -154,35 +154,29 @@ test('Skincare recipe catalogue uses alphabetical category headings and alphabet
 });
 
 
-test('Skincare recipe catalogue keeps its Recipes heading and descriptors across reload Back and Forward', async ({ page }) => {
+test('Skincare recipe categories and descriptors remain stable across reload Back and Forward', async ({ page }) => {
   const expectCatalogue = async () => {
     await expect(page.locator('#recipes')).toHaveClass(/active/);
     await expect(page.locator('#recipes-landing')).toBeVisible();
 
-    const recipesHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Recipes$/ });
-    const testingHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Testing$/ });
-    await expect(recipesHeading).toHaveCount(1);
-    await expect(testingHeading).toHaveCount(1);
+    const snapshot = await page.locator('#recipes-landing').evaluate((root) =>
+      Array.from(root.querySelectorAll(':scope > h4')).map((heading) => ({
+        category:(heading.textContent || '').trim(),
+        links:Array.from(heading.nextElementSibling?.querySelectorAll('a.recipe-open') || []).map((link) => (link.textContent || '').trim())
+      }))
+    );
 
-    const mainLinks = recipesHeading.locator('+ ul a');
-    const testingLinks = testingHeading.locator('+ ul a');
-    await expect(mainLinks).toHaveCount(11);
-    await expect(testingLinks).toHaveCount(1);
-
-    const mainText = await mainLinks.allTextContents();
-    const testingText = await testingLinks.allTextContents();
-    for (const text of [...mainText, ...testingText]) {
-      expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
+    expect(snapshot.map((section) => section.category)).toEqual([
+      'Balms','Face Masks','Humectants','Massage Oils','Microcurrent Gels','Moisturisers','Oil Cleansers','Oral Care','Shaving Gels'
+    ]);
+    for (const section of snapshot) {
+      const names = section.links.map((text) => text.split(' — ')[0].trim());
+      expect(names).toEqual([...names].sort((x,y) => x.localeCompare(y)));
+      for (const text of section.links) expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
     }
-    expect(mainText.some(text => text.startsWith('Clarity Face Mask — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Sebum-Compatible Cleansing Oil — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Skin Soft Massage Oil — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Calming Shave Gel — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Microcurrent Glide Gel — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Tooth Polishing Powder — '))).toBe(true);
-    expect(testingText.some(text => text.startsWith('Comfort Barrier Balm — '))).toBe(true);
-
-    return { mainText, testingText };
+    expect(snapshot.flatMap((section) => section.links).some((text) => text.startsWith('Comfort Barrier Balm — '))).toBe(true);
+    expect(snapshot.flatMap((section) => section.links)).toHaveLength(12);
+    return snapshot;
   };
 
   await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
@@ -207,7 +201,6 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
   await page.goBack();
   expect(await expectCatalogue()).toEqual(initial);
 });
-
 test('promoted recipes open through the normal recipe overview router', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes-landing')).toBeVisible();
