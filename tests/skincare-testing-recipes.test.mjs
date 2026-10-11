@@ -119,6 +119,56 @@ test('recipe interaction module loads directly without post-load repair layers',
   assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
   assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
+test('every Skincare Guidance tab has separate expanded Usage and Storage sections', () => {
+  const recipes = [...html.matchAll(/data-recipe-slug="([^"]+)" id="(r\d+)"/g)].map((match) => ({
+    slug:match[1],
+    id:match[2],
+    start:match.index
+  }));
+
+  assert.equal(recipes.length, 12);
+
+  recipes.forEach((recipe, index) => {
+    const end = index + 1 < recipes.length
+      ? recipes[index + 1].start
+      : html.indexOf('<!-- INGREDIENT LIBRARY -->', recipe.start);
+    const block = html.slice(recipe.start, end);
+    const headings = [...block.matchAll(/<h4 class="recipe-view-hidden" data-recipe-view-group="guidance">([^<]+)<\/h4>/g)]
+      .map((match) => match[1].trim());
+
+    assert.deepEqual(headings, ['Usage','Storage','Notes'], recipe.slug);
+    assert.doesNotMatch(block, /Storage &amp; Use|>Storage & Use</, recipe.slug);
+
+    const usageStart = block.indexOf('data-recipe-view-group="guidance">Usage</h4>');
+    const storageStart = block.indexOf('data-recipe-view-group="guidance">Storage</h4>');
+    const notesStart = block.indexOf('data-recipe-view-group="guidance">Notes</h4>');
+    const usage = block.slice(usageStart, storageStart);
+    const storage = block.slice(storageStart, notesStart);
+
+    assert.ok((usage.match(/<li>/g) || []).length >= 2, recipe.slug + ' expanded Usage');
+    assert.ok((storage.match(/<li>/g) || []).length >= 2, recipe.slug + ' expanded Storage');
+  });
+
+  const hydration = html.slice(
+    html.indexOf('data-recipe-slug="restorative-hydration-layer"'),
+    html.indexOf('data-recipe-slug="clarity-face-mask"')
+  );
+  assert.match(hydration, /water-based, unpreserved formula/i);
+  assert.match(hydration, /Do not rely on refrigeration alone/i);
+
+  const shave = html.slice(
+    html.indexOf('data-recipe-slug="calming-shave-gel"'),
+    html.indexOf('data-recipe-slug="tooth-polishing-powder"')
+  );
+  assert.match(shave, /water-based, unpreserved gel/i);
+
+  const microcurrent = html.slice(
+    html.indexOf('data-recipe-slug="microcurrent-glide-gel"'),
+    html.indexOf('data-recipe-slug="comfort-barrier-balm"')
+  );
+  assert.match(microcurrent, /water-based, unpreserved gel/i);
+});
+
 test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
   assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 12);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
