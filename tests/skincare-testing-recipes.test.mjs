@@ -41,7 +41,7 @@ test('Skincare catalogue authors permanent and newly added recipe records direct
   assert.match(html, /data-recipe-id="r14" href="\/baseline-natural-skincare\/recipes\/sebum-compatible-cleansing-oil">Sebum-Compatible Cleansing Oil —/);
   assert.match(html, /data-recipe-id="r15" href="\/baseline-natural-skincare\/recipes\/skin-soft-massage-oil">Skin Soft Massage Oil —/);
   assert.doesNotMatch(html, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|data-recipe-id="r11"/);
-  assert.match(html, /data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm">Comfort Barrier Balm —/);
+  assert.match(html, /data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/comfort-barrier-balm">Comfort Barrier Balm —/);
 });
 
 test('Skincare recipe catalogue is authored as alphabetical categories with alphabetical recipes', () => {
