@@ -3200,7 +3200,7 @@ function parseViewStateHash(hash){
           if(Math.max(gMin, gMax) < 1000){
             const gText = renderRange(gMin, gMax, 'g');
             // For tiny gram amounts, add a practical kitchen cue.
-        if(Math.max(gMin, gMax) < 1){
+        if(Math.max(gMin, gMax) > 0 && Math.max(gMin, gMax) < 1){
           return { text: `${gText} g (a pinch)` };
         }
 
@@ -3222,10 +3222,10 @@ function parseViewStateHash(hash){
         const label = unitLabel(unit, Number.isFinite(scaledMax)?scaledMax:scaledMin);
 
         // Practical cues for tiny quantities (avoid misleading "0" and keep instructions usable).
-        if(unit === 'g' && Math.max(scaledMin, scaledMax) < 1){
+        if(unit === 'g' && Math.max(scaledMin, scaledMax) > 0 && Math.max(scaledMin, scaledMax) < 1){
           return { text: `${qtyText} ${label} (a pinch)` };
         }
-        if(unit === 'ml' && Math.max(scaledMin, scaledMax) < 1){
+        if(unit === 'ml' && Math.max(scaledMin, scaledMax) > 0 && Math.max(scaledMin, scaledMax) < 1){
           const drops = renderDropsFromMl(scaledMin, scaledMax, profile);
           const dropHint = drops ? ` (≈ ${drops.text} ${unitLabel('drop', drops.value)})` : ' (a drop)';
           return { text: `${qtyText} ${label}${dropHint}` };
@@ -3255,7 +3255,7 @@ function parseViewStateHash(hash){
         }
 
         // For tiny gram amounts, add a practical kitchen cue.
-        if(Math.max(gMin, gMax) < 1){
+        if(Math.max(gMin, gMax) > 0 && Math.max(gMin, gMax) < 1){
           return { text: `${gText} g (a pinch)` };
         }
 
@@ -3292,7 +3292,7 @@ function parseViewStateHash(hash){
         }
 
         // For very small liquid amounts, keep ml precision and add a practical cue.
-        if(Math.max(mlMin, mlMax) < 1){
+        if(Math.max(mlMin, mlMax) > 0 && Math.max(mlMin, mlMax) < 1){
           const drops = renderDropsFromMl(mlMin, mlMax, profile);
           const dropHint = drops ? ` (≈ ${drops.text} ${unitLabel('drop', drops.value)})` : ' (a drop)';
           return { text: `${mlText} ml${dropHint}` };
@@ -3322,7 +3322,7 @@ function parseViewStateHash(hash){
           // Kitchen bracket (only when we have a usable volume estimate).
           if(mlMin !== null){
             // Very small amounts: show drops (no ml in this mode).
-            if(Math.max(mlMin, mlMax) < 1){
+            if(Math.max(mlMin, mlMax) > 0 && Math.max(mlMin, mlMax) < 1){
               const drops = renderDropsFromMl(mlMin, mlMax, profile);
               if(drops){
                 const baseOut = metricText || (unit === 'g' || unit === 'kg' ? `${renderRange(scaledMin, scaledMax, 'g')} g` : `${renderRange(mlMin, mlMax, 'ml')} ml`);
@@ -3392,7 +3392,7 @@ function parseViewStateHash(hash){
         }
 
         // Very small amounts: show drops (no ml in this mode)
-        if(Math.max(mlMin, mlMax) < 1){
+        if(Math.max(mlMin, mlMax) > 0 && Math.max(mlMin, mlMax) < 1){
           const drops = renderDropsFromMl(mlMin, mlMax, profile);
           if(drops){
             return { text: `≈ ${drops.text} ${unitLabel('drop', drops.value)}` };
