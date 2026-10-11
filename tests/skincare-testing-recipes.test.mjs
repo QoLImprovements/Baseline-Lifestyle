@@ -8,6 +8,7 @@ const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const recipeRuntime = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js', 'utf8');
+const savedDataBridge = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
@@ -105,12 +106,22 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
 });
 
 test('Skincare slider settings use the protected server resource without browser persistence', () => {
-  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|sliderSaveStorageKey/);
-  assert.match(recipeRuntime, /\/systems\/baseline-natural-skincare\/api\/skincare_data\.php/);
-  assert.match(recipeRuntime, /action:'replace_sliders'/);
-  assert.match(recipeRuntime, /expectedRevision:sliderServerState\.revision/);
+  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|sliderSaveStorageKey|BASELINE_api/);
+  assert.match(recipeRuntime, /BaselineSkincareSavedData/);
+  assert.match(recipeRuntime, /client\.saveSlider\(saveId, values\)/);
+  assert.match(recipeRuntime, /client\.removeSlider\(saveId\)/);
   assert.match(recipeRuntime, /Log in to save slider position/);
   assert.match(recipeRuntime, /BASELINE_auth\.onChange/);
+
+  assert.match(savedDataBridge, /action:'replace_sliders'/);
+  assert.match(savedDataBridge, /expectedRevision:state\.revision/);
+  const saveStart=savedDataBridge.indexOf('function saveSliderDocument');
+  const saveEnd=savedDataBridge.indexOf('function saveSliderEntry',saveStart);
+  const saveBlock=savedDataBridge.slice(saveStart,saveEnd);
+  assert.doesNotMatch(saveBlock,/backup\(/);
+  assert.doesNotMatch(saveBlock,/blockSaving\([^\n]*submitted/);
+  assert.match(savedDataBridge, /saveSlider:publicSaveSlider/);
+  assert.match(savedDataBridge, /removeSlider:publicRemoveSlider/);
 });
 
 test('Anhydrous Oil Cleanser uses two continuous controls instead of duplicate variant tabs', () => {
@@ -269,6 +280,7 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
     'sitewide/js/baseline-shared.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js',
+    'systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js',
   ];
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
