@@ -13,7 +13,8 @@ const ordinary = [
 const promoted = [
   { id:'r8', slug:'calming-shave-gel', title:'Calming Shave Gel', oldSlug:'testing-shaving-gel' },
   { id:'r9', slug:'tooth-polishing-powder', title:'Tooth Polishing Powder', oldSlug:'testing-natural-tooth-brightening-powder' },
-  { id:'r10', slug:'microcurrent-glide-gel', title:'Microcurrent Glide Gel', oldSlug:'testing-microcurrent-conductive-gel' }
+  { id:'r10', slug:'microcurrent-glide-gel', title:'Microcurrent Glide Gel', oldSlug:'testing-microcurrent-conductive-gel' },
+  { id:'r12', slug:'comfort-barrier-balm', title:'Comfort Barrier Balm', oldSlug:'testing-lip-balm' }
 ];
 const testing = [];
 
@@ -54,11 +55,7 @@ for (const recipe of [...ordinary, ...promoted, ...testing]) {
 }
 
 test('every embedded Skincare recipe preserves Details through refresh while fresh routes start on Recipe', async ({ page }) => {
-  const recipes = [
-    ...ordinary,
-    ...promoted,
-    { id:'r12', slug:'testing-lip-balm', title:'Comfort Barrier Balm' }
-  ];
+  const recipes = [...ordinary, ...promoted];
 
   for (const recipe of recipes) {
     await page.goto(`/baseline-natural-skincare/recipes/${recipe.slug}`);
@@ -113,55 +110,73 @@ for (const recipe of promoted) {
   });
 }
 
-test('Testing catalogue keeps only Comfort Barrier Balm', async ({ page }) => {
+test('Skincare recipe catalogue uses alphabetical category headings and alphabetical recipes within each category', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
-  await expect(page.locator('#recipes')).toHaveClass(/active/);
   await expect(page.locator('#recipes-landing')).toBeVisible();
-  await expect(page.locator('#routine')).toBeHidden();
 
-  const testingHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Testing$/ });
-  await expect(testingHeading).toHaveCount(1);
-  const testingLinks = testingHeading.locator('+ ul a.recipe-open');
-  await expect(testingLinks).toHaveCount(1);
-  await expect(testingLinks.first()).toHaveAttribute('data-recipe-id','r12');
+  const catalogue = await page.locator('#recipes-landing').evaluate((root) => {
+    const sections = [];
+    root.querySelectorAll(':scope > h4').forEach((heading) => {
+      const list = heading.nextElementSibling;
+      sections.push({
+        category:(heading.textContent || '').trim(),
+        recipes:list ? Array.from(list.querySelectorAll('a.recipe-open')).map((a) => (a.textContent || '').split(' — ')[0].trim()) : []
+      });
+    });
+    return sections;
+  });
 
-  const mainHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Recipes$/ });
-  await expect(mainHeading).toHaveCount(1);
-  const mainLinks = mainHeading.locator('+ ul a.recipe-open');
-  await expect(mainLinks).toHaveCount(11);
-  const ids = await mainLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
-  expect(ids).toEqual(['r1','r10','r13','r14','r15','r2','r3','r6','r7','r8','r9']);
+  expect(catalogue.map((section) => section.category)).toEqual([
+    'Balms',
+    'Face Masks',
+    'Humectants',
+    'Massage Oils',
+    'Microcurrent Gels',
+    'Moisturisers',
+    'Oil Cleansers',
+    'Oral Care',
+    'Shaving Gels'
+  ]);
+
+  for (const section of catalogue) {
+    expect(section.recipes).toEqual([...section.recipes].sort((a,b) => a.localeCompare(b)));
+  }
+
+  expect(catalogue.find((section) => section.category === 'Balms')?.recipes).toEqual([
+    'Comfort Barrier Balm',
+    'Protective Touch Balm'
+  ]);
+  expect(catalogue.find((section) => section.category === 'Oil Cleansers')?.recipes).toEqual([
+    'Anhydrous Oil Cleanser',
+    'Sebum-Compatible Cleansing Oil'
+  ]);
+  await expect(page.locator('#recipes-landing h4', { hasText:'Testing' })).toHaveCount(0);
 });
 
-test('Skincare recipe catalogue keeps its Recipes heading and descriptors across reload Back and Forward', async ({ page }) => {
+
+test('Skincare recipe categories and descriptors remain stable across reload Back and Forward', async ({ page }) => {
   const expectCatalogue = async () => {
     await expect(page.locator('#recipes')).toHaveClass(/active/);
     await expect(page.locator('#recipes-landing')).toBeVisible();
 
-    const recipesHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Recipes$/ });
-    const testingHeading = page.locator('#recipes-landing h4').filter({ hasText:/^Testing$/ });
-    await expect(recipesHeading).toHaveCount(1);
-    await expect(testingHeading).toHaveCount(1);
+    const snapshot = await page.locator('#recipes-landing').evaluate((root) =>
+      Array.from(root.querySelectorAll(':scope > h4')).map((heading) => ({
+        category:(heading.textContent || '').trim(),
+        links:Array.from(heading.nextElementSibling?.querySelectorAll('a.recipe-open') || []).map((link) => (link.textContent || '').trim())
+      }))
+    );
 
-    const mainLinks = recipesHeading.locator('+ ul a');
-    const testingLinks = testingHeading.locator('+ ul a');
-    await expect(mainLinks).toHaveCount(11);
-    await expect(testingLinks).toHaveCount(1);
-
-    const mainText = await mainLinks.allTextContents();
-    const testingText = await testingLinks.allTextContents();
-    for (const text of [...mainText, ...testingText]) {
-      expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
+    expect(snapshot.map((section) => section.category)).toEqual([
+      'Balms','Face Masks','Humectants','Massage Oils','Microcurrent Gels','Moisturisers','Oil Cleansers','Oral Care','Shaving Gels'
+    ]);
+    for (const section of snapshot) {
+      const names = section.links.map((text) => text.split(' — ')[0].trim());
+      expect(names).toEqual([...names].sort((x,y) => x.localeCompare(y)));
+      for (const text of section.links) expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
     }
-    expect(mainText.some(text => text.startsWith('Clarity Face Mask — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Sebum-Compatible Cleansing Oil — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Skin Soft Massage Oil — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Calming Shave Gel — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Microcurrent Glide Gel — '))).toBe(true);
-    expect(mainText.some(text => text.startsWith('Tooth Polishing Powder — '))).toBe(true);
-    expect(testingText.some(text => text.startsWith('Comfort Barrier Balm — '))).toBe(true);
-
-    return { mainText, testingText };
+    expect(snapshot.flatMap((section) => section.links).some((text) => text.startsWith('Comfort Barrier Balm — '))).toBe(true);
+    expect(snapshot.flatMap((section) => section.links)).toHaveLength(12);
+    return snapshot;
   };
 
   await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
@@ -186,7 +201,6 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
   await page.goBack();
   expect(await expectCatalogue()).toEqual(initial);
 });
-
 test('promoted recipes open through the normal recipe overview router', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
   await expect(page.locator('#recipes-landing')).toBeVisible();

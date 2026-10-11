@@ -15,14 +15,15 @@ const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
 const standaloneMassage = fs.readFileSync('systems/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend.html', 'utf8');
-const lipBalmStart = html.indexOf('<!-- Testing Recipe 12 -->');
+const lipBalmStart = html.indexOf('<!-- Recipe 12 -->');
 const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
 const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
 
 const promoted = [
   ['r8', 'calming-shave-gel', 'Calming Shave Gel'],
   ['r9', 'tooth-polishing-powder', 'Tooth Polishing Powder'],
-  ['r10', 'microcurrent-glide-gel', 'Microcurrent Glide Gel']
+  ['r10', 'microcurrent-glide-gel', 'Microcurrent Glide Gel'],
+  ['r12', 'comfort-barrier-balm', 'Comfort Barrier Balm']
 ];
 
 const redirectCases = [
@@ -40,35 +41,76 @@ test('Skincare catalogue authors permanent and newly added recipe records direct
   assert.match(html, /data-recipe-id="r14" href="\/baseline-natural-skincare\/recipes\/sebum-compatible-cleansing-oil">Sebum-Compatible Cleansing Oil —/);
   assert.match(html, /data-recipe-id="r15" href="\/baseline-natural-skincare\/recipes\/skin-soft-massage-oil">Skin Soft Massage Oil —/);
   assert.doesNotMatch(html, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|data-recipe-id="r11"/);
-  assert.match(html, /data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm">Comfort Barrier Balm —/);
+  assert.match(html, /data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/comfort-barrier-balm">Comfort Barrier Balm —/);
 });
 
-test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
-  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Recipes<\/h4>[\s\S]*?Calming Shave Gel — slippery elm, glycerin, guar gum and jojoba shaving gel\./);
-  assert.match(html, /Microcurrent Glide Gel — water-based conductive gel with sustained glide for microcurrent treatment\./);
-  assert.match(html, /Tooth Polishing Powder — kaolin, sage and peppermint powder for occasional surface-stain removal\./);
-  assert.match(html, /id="recipes-landing"[\s\S]*?<h4>Testing<\/h4>[\s\S]*?Comfort Barrier Balm — rich butter-and-oil balm that softens dry areas and helps reduce moisture loss\./);
+test('Skincare recipe catalogue is authored as alphabetical categories with alphabetical recipes', () => {
+  const landingStart = html.indexOf('<div class="recipe-landing" id="recipes-landing">');
+  const landingEnd = html.indexOf('<div class="recipes">', landingStart);
+  const landing = html.slice(landingStart, landingEnd);
+
+  const categories = [...landing.matchAll(/<h4>([^<]+)<\/h4>\s*<ul>([\s\S]*?)<\/ul>/g)].map((match) => ({
+    name: match[1].trim(),
+    recipes: [...match[2].matchAll(/<a class="recipe-open"[^>]*>([^<]+)<\/a>/g)]
+      .map((item) => item[1].split(' — ')[0].trim())
+  }));
+
+  assert.deepEqual(categories.map((category) => category.name), [
+    'Balms',
+    'Face Masks',
+    'Humectants',
+    'Massage Oils',
+    'Microcurrent Gels',
+    'Moisturisers',
+    'Oil Cleansers',
+    'Oral Care',
+    'Shaving Gels'
+  ]);
+  for (const category of categories) {
+    assert.deepEqual(category.recipes, [...category.recipes].sort((a,b) => a.localeCompare(b)), category.name);
+  }
+  assert.deepEqual(categories.find((category) => category.name === 'Balms')?.recipes, ['Comfort Barrier Balm','Protective Touch Balm']);
+  assert.deepEqual(categories.find((category) => category.name === 'Oil Cleansers')?.recipes, ['Anhydrous Oil Cleanser','Sebum-Compatible Cleansing Oil']);
+  assert.doesNotMatch(landing, /<h4>Recipes<\/h4>|<h4>Testing<\/h4>/);
+
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-navigation-20260906\.js/);
   assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
-  assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
-  assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
+});
+test('Comfort Barrier Balm is a permanent recipe with a canonical route and legacy redirect', () => {
+  assert.match(html, /data-recipe-slug="comfort-barrier-balm" id="r12"/);
+  assert.doesNotMatch(lipBalm, /data-category="Testing"|\bTesting\b/);
+  assert.match(html, /<h3>Comfort Barrier Balm<\/h3>/);
+  assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/comfort-barrier-balm"/);
+  assert.match(recipeUx, /r12:\{ slug:'comfort-barrier-balm' \}/);
+  assert.match(recipeUx, /'testing-lip-balm':'r12'/);
+  assert.match(htaccess, /testing-lip-balm\/\?\$ \/baseline-natural-skincare\/recipes\/comfort-barrier-balm \[R=301,L\]/);
+  assert.match(testServer, /'\/baseline-natural-skincare\/recipes\/testing-lip-balm', '\/baseline-natural-skincare\/recipes\/comfort-barrier-balm'/);
+  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
+});
+test('new and altered Skincare recipes do not add one-off Recipe-tab intro notes', () => {
+  for (const slug of ['anhydrous-oil-cleanser','restorative-hydration-layer','clarity-face-mask','sebum-compatible-cleansing-oil','skin-soft-massage-oil']) {
+    const start = html.indexOf(`data-recipe-slug="${slug}"`);
+    const ingredients = html.indexOf('<h4 class="recipe-ingredients-heading"', start);
+    const block = html.slice(start, ingredients > start ? ingredients : start + 18000);
+    assert.doesNotMatch(block, /<p class="note">/);
+  }
 });
 
-test('Comfort Barrier Balm is embedded in the canonical Skincare shell', () => {
-  assert.match(html, /data-category="Testing" data-recipe-slug="testing-lip-balm" id="r12"/);
-  assert.match(html, /<h3>Comfort Barrier Balm<\/h3>/);
-  assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm"/);
-  assert.doesNotMatch(html, /baseline-lip-balm-route-prefetch/);
-  assert.doesNotMatch(recipeUx, /testing-lip-balm\.html/);
-  assert.doesNotMatch(recipeUx, /loadExternalRecipeForCurrentPath|installExternalRecipePlaceholder|document\.importNode\(sourceCard,true\)/);
-  assert.doesNotMatch(htaccess, /baseline-natural-skincare\/recipes\/testing-lip-balm.*testing-lip-balm\.html/);
-  assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
-  assert.doesNotMatch(testServer, /match\[1\] === 'testing-lip-balm'/);
-  assert.match(testServer, /if \(match\) return '\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html';/);
+test('Oil Cleanser has no Vitamin E and authors Olive Oil as a zero-default conditional ingredient', () => {
+  const start = html.indexOf('data-recipe-slug="anhydrous-oil-cleanser"');
+  const end = html.indexOf('<!-- Recipe 3 -->', start);
+  const cleanser = html.slice(start, end);
+  assert.doesNotMatch(cleanser, /Vitamin E|ing-vitamin-e|Optional antioxidant/);
+  assert.match(cleanser, /class="r2-olive-row" hidden aria-hidden="true"/);
+  assert.match(cleanser, /class="amt r2-olive-amt"[^>]*>0 ml<\/span>/);
+  assert.doesNotMatch(cleanser, /0 ml \(≈ 0 drops\)/);
+  assert.match(recipeRuntime, /oliveRow\.hidden = !oliveIncluded/);
+  assert.match(recipeRuntime, /oliveIncluded = olive > 0/);
 });
+
 test('recipe interaction module loads directly without post-load repair layers', () => {
   assert.doesNotMatch(html, /skincare-recipe-bootstrap-20260906\.js/);
   assert.match(html, /skincare-recipe-ux-20260906\.js/);
@@ -318,12 +360,14 @@ test('promoted Skincare recipes are canonical in initial HTML', () => {
   assert.match(html, /data-recipe-slug="microcurrent-glide-gel" id="r10"/);
   assert.doesNotMatch(html, /id="r8"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r8"/);
   assert.doesNotMatch(html, /id="r10"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r10"/);
+  assert.doesNotMatch(html, /id="r12"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r12"/);
   assert.doesNotMatch(recipeUx, /function promoteCards\(/);
-  assert.match(recipeUx, /const REPLACED_IDS = Object\.freeze\(\{ r4:'r10', r5:'r8' \}\)/);
   assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
   assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
   assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
   assert.match(recipeUx, /'testing-natural-tooth-brightening-powder':'r9'/);
+  assert.match(recipeUx, /'testing-lip-balm':'r12'/);
+  assert.match(recipeUx, /r12:\{ slug:'comfort-barrier-balm' \}/);
 });
 
 test('permanent promoted recipe documents use final titles and formulations', () => {

@@ -156,6 +156,13 @@
     applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-castor-amt'), castor, 'ml');
     applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-olive-amt'), olive, 'ml');
 
+    var oliveRow = recipe.querySelector('.r2-olive-row');
+    if(oliveRow){
+      var oliveIncluded = olive > 0;
+      oliveRow.hidden = !oliveIncluded;
+      oliveRow.setAttribute('aria-hidden', oliveIncluded ? 'false' : 'true');
+    }
+
     var explainEl = document.getElementById('r2OverallExplain');
     if(explainEl) explainEl.textContent = explainOilCleanser(castor, olive);
 
@@ -620,14 +627,18 @@
   function controllerSyncFn(controller){
     var recipe = controller ? controller.closest('.recipe-page') : null;
     if(!recipe) return function(){};
-    if(typeof controller.__baselineSliderSync === 'function') return controller.__baselineSliderSync;
-    if(recipe.id === 'r2') return syncOilCleanser;
-    if(recipe.id === 'r3') return syncProtectiveTouchBalm;
-    if(recipe.id === 'r5') return syncShaveCushion;
-    if(recipe.id === 'r6') return syncMassageSlider;
-    if(recipe.id === 'r7') return syncHydrationLayer;
-    if(recipe.id === 'r15') return syncSkinSoftMassageOil;
-    return function(){};
+
+    return function(){
+      if(typeof controller.__baselineSliderSync === 'function'){
+        return controller.__baselineSliderSync();
+      }
+      if(recipe.id === 'r2') return syncOilCleanser();
+      if(recipe.id === 'r3') return syncProtectiveTouchBalm();
+      if(recipe.id === 'r5') return syncShaveCushion();
+      if(recipe.id === 'r6') return syncMassageSlider();
+      if(recipe.id === 'r7') return syncHydrationLayer();
+      if(recipe.id === 'r15') return syncSkinSoftMassageOil();
+    };
   }
 
   function applyAllServerSliderStates(){

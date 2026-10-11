@@ -35,6 +35,7 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
     assert.match(html, /data-initial-section="recipes"[^}]*#recipes\.section\{display:block!important\}/s);
   }
   assert.match(css, /html\[data-initial-recipe-route="1"\] #recipes \.recipe-page\{display:none!important;visibility:hidden!important\}/);
+  assert.match(css, /html\[data-initial-recipe-slug="comfort-barrier-balm"\] #recipes #r12,/);
   assert.match(css, /html\[data-initial-recipe-slug="testing-lip-balm"\] #recipes #r12\{display:block!important;visibility:visible!important/);
   assert.match(css, /data-initial-recipe-slug="clarity-face-mask"/);
   assert.match(css, /data-initial-recipe-slug="sebum-compatible-cleansing-oil"/);
