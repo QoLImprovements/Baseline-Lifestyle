@@ -384,7 +384,10 @@ test('universal slider template keeps Restorative Hydration Layer text separated
 
   const layout = await controller.evaluate((el) => {
     const controllerRect = el.getBoundingClientRect();
-    const main = el.querySelector(':scope > .glide-control-main')?.getBoundingClientRect();
+    const mains = Array.from(el.querySelectorAll(':scope > .glide-control-main')).map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { x:rect.x, y:rect.y, width:rect.width, bottom:rect.bottom };
+    });
     const feel = el.querySelector(':scope > .glide-control-explainer')?.getBoundingClientRect();
     const label = el.querySelector('.glide-label')?.getBoundingClientRect();
     const readout = el.querySelector('.glide-readout')?.getBoundingClientRect();
@@ -394,7 +397,7 @@ test('universal slider template keeps Restorative Hydration Layer text separated
     });
     return {
       controller: { width:controllerRect.width },
-      main: main ? { x:main.x, y:main.y, width:main.width, bottom:main.bottom } : null,
+      mains,
       feel: feel ? { x:feel.x, y:feel.y, width:feel.width } : null,
       label: label ? { top:label.top, bottom:label.bottom } : null,
       readout: readout ? { top:readout.top, bottom:readout.bottom } : null,
@@ -402,11 +405,15 @@ test('universal slider template keeps Restorative Hydration Layer text separated
     };
   });
 
-  expect(layout.main).not.toBeNull();
+  expect(layout.mains).toHaveLength(2);
   expect(layout.feel).not.toBeNull();
-  expect(layout.main.width).toBeGreaterThan(layout.controller.width * 0.9);
-  expect(Math.abs(layout.main.width - layout.feel.width)).toBeLessThan(3);
-  expect(layout.feel.y).toBeGreaterThanOrEqual(layout.main.bottom - 1);
+  for (const main of layout.mains) {
+    expect(main.width).toBeGreaterThan(layout.controller.width * 0.4);
+    expect(main.width).toBeLessThan(layout.controller.width * 0.55);
+  }
+  expect(Math.abs(layout.mains[0].y - layout.mains[1].y)).toBeLessThan(3);
+  expect(layout.feel.width).toBeGreaterThan(layout.controller.width * 0.9);
+  expect(layout.feel.y).toBeGreaterThanOrEqual(Math.max(...layout.mains.map((main) => main.bottom)) - 1);
   expect(layout.readout.top).toBeGreaterThanOrEqual(layout.label.bottom - 1);
   for (const scale of layout.scaleSpans) {
     expect(scale.whiteSpace).toBe('nowrap');
