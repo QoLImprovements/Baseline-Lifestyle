@@ -6,7 +6,6 @@ import vm from 'node:vm';
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
-const navigation = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
@@ -31,14 +30,15 @@ const redirectCases = [
   ['hydrating-conductive-mist.html', '/baseline-natural-skincare/recipes/microcurrent-glide-gel']
 ];
 
-test('promoted skincare recipes are in the main catalogue under permanent names', () => {
+test('Skincare catalogue authors permanent and newly added recipe records directly', () => {
   for (const [id, slug, title] of promoted) {
-    assert.match(navigation, new RegExp(`\\['${id}','${slug}','${title}'`));
+    assert.match(html, new RegExp(`data-recipe-id="${id}" href="/baseline-natural-skincare/recipes/${slug}"[^>]*>${title} —`));
   }
-  assert.match(navigation, /Microcurrent Glide Gel','water-based conductive gel with sustained glide for microcurrent treatment\.'/);
-  assert.match(navigation, /Tooth Polishing Powder','kaolin, sage and peppermint powder for occasional surface-stain removal\.'/);
-  assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
-  assert.match(navigation, /\['r12','testing-lip-balm','Comfort Barrier Balm'/);
+  assert.match(html, /data-recipe-id="r13" href="\/baseline-natural-skincare\/recipes\/clarity-face-mask">Clarity Face Mask —/);
+  assert.match(html, /data-recipe-id="r14" href="\/baseline-natural-skincare\/recipes\/sebum-compatible-cleansing-oil">Sebum-Compatible Cleansing Oil —/);
+  assert.match(html, /data-recipe-id="r15" href="\/baseline-natural-skincare\/recipes\/skin-soft-massage-oil">Skin Soft Massage Oil —/);
+  assert.doesNotMatch(html, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|data-recipe-id="r11"/);
+  assert.match(html, /data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/testing-lip-balm">Comfort Barrier Balm —/);
 });
 
 test('Skincare recipe catalogue is canonical before and after runtime enhancement', () => {
@@ -75,7 +75,7 @@ test('recipe interaction module loads directly without post-load repair layers',
   assert.doesNotMatch(recipeUx, /createElement|MutationObserver|setTimeout|requestAnimationFrame/);
 });
 test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
-  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 9);
+  assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 12);
   assert.match(recipeUx, /details\.hidden=!showDetails/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
   assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
@@ -96,11 +96,52 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
   assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);
-  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 7);
-  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 7);
-  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 7);
-  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 6);
+  assert.equal((html.match(/\brecipe-slider-template\b/g) || []).length, 6);
+  assert.equal((html.match(/class="slider-save-row"/g) || []).length, 6);
+  assert.equal((html.match(/class="glide-explain-title">Overall Feel<\/div>/g) || []).length, 6);
+  assert.equal((html.match(/class="glide-breakdown" hidden aria-hidden="true"/g) || []).length, 5);
   assert.doesNotMatch(html, /class="glide-control-stack"/);
+});
+
+test('Anhydrous Oil Cleanser uses two continuous controls instead of duplicate variant tabs', () => {
+  const start = html.indexOf('data-recipe-slug="anhydrous-oil-cleanser"');
+  const end = html.indexOf('<!-- Recipe 3 -->', start);
+  const cleanser = html.slice(start, end);
+  assert.doesNotMatch(cleanser, /variant-switcher|variant-tab|variant-panel|data-recipe-variant-detail/);
+  assert.match(cleanser, /id="r2CleansingPull"[^>]*min="0"[^>]*max="18"[^>]*value="10"/);
+  assert.match(cleanser, /id="r2BarrierRichness"[^>]*min="0"[^>]*max="30"[^>]*value="0"/);
+  assert.match(cleanser, /Reactive is the 0% castor \/ 0% olive point/);
+  assert.match(cleanser, /Balanced is the 10% castor \/ 0% olive reference point/);
+  assert.match(cleanser, /Enhanced Barrier is the 10% castor \/ 18% olive reference point/);
+});
+
+test('Restorative Hydration Layer keeps its name and gains glycerin plus inulin controls', () => {
+  const start = html.indexOf('data-recipe-slug="restorative-hydration-layer"');
+  const end = html.indexOf('data-recipe-slug="clarity-face-mask"', start);
+  const hydration = html.slice(start, end);
+  assert.match(hydration, /<h3>Restorative Hydration Layer<\/h3>/);
+  assert.match(hydration, /id="r7Glycerin"[^>]*max="30"[^>]*min="10"[^>]*value="20"/);
+  assert.match(hydration, /id="r7Inulin"[^>]*max="5"[^>]*min="0"[^>]*value="0"/);
+  assert.match(hydration, /Filtered Water/);
+  assert.match(hydration, /Chicory-Root Inulin/);
+});
+
+test('new skincare formulas are authored as normal canonical recipes', () => {
+  assert.match(html, /data-recipe-slug="clarity-face-mask" id="r13"/);
+  assert.match(html, /30 g[\s\S]*Colloidal Oatmeal/);
+  assert.match(html, /12 g[\s\S]*Marshmallow Root Powder/);
+  assert.match(html, /12 g[\s\S]*White Kaolin Clay/);
+  assert.match(html, /6 g[\s\S]*Chicory-Root Inulin/);
+
+  assert.match(html, /data-recipe-slug="sebum-compatible-cleansing-oil" id="r14"/);
+  assert.match(html, /75 ml[\s\S]*Jojoba Oil/);
+  assert.match(html, /25 ml[\s\S]*Safflower Oil/);
+
+  assert.match(html, /data-recipe-slug="skin-soft-massage-oil" id="r15"/);
+  assert.match(html, /45 g[\s\S]*Olive Squalane/);
+  assert.match(html, /35 g[\s\S]*Jojoba Oil/);
+  assert.match(html, /20 g[\s\S]*Extra Virgin Coconut Oil/);
+  assert.match(html, /id="r15Apricot"[^>]*max="20"[^>]*min="0"[^>]*value="0"/);
 });
 
 test('Anhydrous Massage Oil Blend is one olive-led recipe with no Avocado variant', () => {
@@ -200,7 +241,6 @@ test('Comfort Barrier Balm ingredients use canonical clean ingredient URLs with 
 
 test('Skincare recipe sidebar is absent by structure, styling and navigation ownership', () => {
   assert.doesNotMatch(html, /id="side-nav"|class="[^"]*side-recipe-nav/);
-  assert.doesNotMatch(navigation, /side-nav|side-recipe-nav/);
   assert.doesNotMatch(skincareCss, /side-recipe-nav/);
   assert.match(shared, /const allowSideNav = routePageFileFromPath\(location\.pathname \|\| ''\) !== 'baseline-natural-skincare\.html'/);
 });
@@ -218,7 +258,6 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
     'sitewide/js/baseline-ingredient-profiles.js',
     'sitewide/js/baseline-shared.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js',
-    'systems/baseline-natural-skincare/js/skincare-recipe-navigation-20260906.js'
   ];
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
@@ -291,7 +330,6 @@ test('retired and Testing URLs redirect to permanent promoted URLs', () => {
 
 test('removed powdered hair wash is absent from Skincare recipe surfaces', () => {
   assert.doesNotMatch(html, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|data-recipe-id="r11"|id="r11"/);
-  assert.doesNotMatch(navigation, /testing-soap-free-powdered-hair-wash|Soap-Free Powdered Hair Wash|\['r11'/);
   assert.doesNotMatch(recipeCss, /testing-soap-free-powdered-hair-wash/);
 });
 
