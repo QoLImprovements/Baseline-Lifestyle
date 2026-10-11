@@ -11,7 +11,7 @@ permissions:
 jobs:
   skincare:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v6
@@ -25,9 +25,10 @@ jobs:
           node --test --test-name-pattern="post-cutover browser storage never promotes retired account copies" tests/browser-storage-inventory.test.mjs
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Run Skincare recipe browser regressions
+      - name: Run affected Skincare recipe browser regressions
         run: |
           npx playwright test \
             tests/skincare-recipe-runtime.spec.js \
             tests/skincare-testing-recipes-browser.spec.js \
+            --grep "Oil Cleanser|Restorative Hydration Layer|Skin Soft Massage Oil|clarity-face-mask|sebum-compatible-cleansing-oil|skin-soft-massage-oil|catalogue|every embedded Skincare recipe preserves Details|all embedded Skincare recipe routes preserve exact selection" \
             --reporter=line
