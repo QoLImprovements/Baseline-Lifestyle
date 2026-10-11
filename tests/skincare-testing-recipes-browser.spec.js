@@ -54,6 +54,31 @@ for (const recipe of [...ordinary, ...promoted, ...testing]) {
   });
 }
 
+test('every Skincare Guidance subtab exposes separate Usage and Storage sections', async ({ page }) => {
+  for (const recipe of [...ordinary, ...promoted]) {
+    await page.goto(`/baseline-natural-skincare/recipes/${recipe.slug}`);
+    const card = page.locator(`#${recipe.id}`);
+
+    await card.locator('[data-recipe-subtab="guidance"]').click();
+    await expect(card.locator('[data-recipe-subtab="guidance"]')).toHaveAttribute('aria-selected','true');
+
+    const visibleHeadings = card.locator('h4[data-recipe-view-group="guidance"]:visible');
+    await expect(visibleHeadings).toHaveText(['Usage','Storage','Notes']);
+    await expect(card.locator('[data-recipe-view-group="standard"]:visible')).toHaveCount(0);
+    await expect(card.locator('.recipe-details-intro:visible')).toHaveCount(0);
+
+    const usageHeading = card.locator('h4[data-recipe-view-group="guidance"]', { hasText:/^Usage$/ });
+    const storageHeading = card.locator('h4[data-recipe-view-group="guidance"]', { hasText:/^Storage$/ });
+    await expect(usageHeading).toBeVisible();
+    await expect(storageHeading).toBeVisible();
+
+    const usageItems = usageHeading.locator('+ ul > li, + ol > li');
+    const storageItems = storageHeading.locator('+ ul > li, + ol > li');
+    expect(await usageItems.count(), recipe.slug + ' Usage items').toBeGreaterThanOrEqual(2);
+    expect(await storageItems.count(), recipe.slug + ' Storage items').toBeGreaterThanOrEqual(2);
+  }
+});
+
 test('every embedded Skincare recipe preserves Details through refresh while fresh routes start on Recipe', async ({ page }) => {
   const recipes = [...ordinary, ...promoted];
 
