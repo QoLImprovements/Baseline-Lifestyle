@@ -395,11 +395,6 @@
 
     var values = controllerValues(controller);
     var snapshot = client.saveSlider(saveId, values);
-    if(saveId === 'r2'){
-      for(var legacyId of ['r2:reactive','r2:balanced','r2:enhanced']){
-        try{ if(typeof client.removeSlider === 'function') snapshot = client.removeSlider(legacyId); }catch(_e){}
-      }
-    }
     absorbSliderServerState(snapshot);
     if(typeof syncFn === 'function') syncFn();
     return true;
@@ -414,11 +409,6 @@
     if(!saveId) return false;
     try{
       var snapshot = client.removeSlider(saveId);
-      if(saveId === 'r2'){
-        for(var legacyId of ['r2:reactive','r2:balanced','r2:enhanced']){
-          try{ snapshot = client.removeSlider(legacyId); }catch(_e){}
-        }
-      }
       absorbSliderServerState(snapshot);
       if(typeof syncFn === 'function') syncFn();
       return true;
