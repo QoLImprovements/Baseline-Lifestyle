@@ -130,8 +130,8 @@ test('Anhydrous Oil Cleanser uses two continuous controls instead of duplicate v
   const end = html.indexOf('<!-- Recipe 3 -->', start);
   const cleanser = html.slice(start, end);
   assert.doesNotMatch(cleanser, /variant-switcher|variant-tab|variant-panel|data-recipe-variant-detail/);
-  assert.match(cleanser, /id="r2CleansingPull"[^>]*min="0"[^>]*max="18"[^>]*value="10"/);
-  assert.match(cleanser, /id="r2BarrierRichness"[^>]*min="0"[^>]*max="30"[^>]*value="0"/);
+  assert.match(cleanser, /id="r2CleansingPull"[^>]*max="18"[^>]*min="0"[^>]*value="10"/);
+  assert.match(cleanser, /id="r2BarrierRichness"[^>]*max="30"[^>]*min="0"[^>]*value="0"/);
   assert.match(cleanser, /Reactive is the 0% castor \/ 0% olive point/);
   assert.match(cleanser, /Balanced is the 10% castor \/ 0% olive reference point/);
   assert.match(cleanser, /Enhanced Barrier is the 10% castor \/ 18% olive reference point/);
