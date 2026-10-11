@@ -717,6 +717,9 @@
       if(path !== '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser') return;
       var params = new URLSearchParams(window.location.search || '');
       var variant = String(params.get('variant') || '').toLowerCase();
+      if(!variant){
+        variant = String(document.documentElement.getAttribute('data-initial-recipe-variant') || '').toLowerCase();
+      }
       if(!variant) return;
 
       var castor = document.getElementById('r2CleansingPull');
