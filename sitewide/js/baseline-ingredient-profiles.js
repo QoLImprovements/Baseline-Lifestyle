@@ -373,6 +373,16 @@
       g_per_ml: 0.92,
       notes: "Semi-solid; density varies with temperature."
     }),
+    "ing-extra-virgin-coconut-oil": withDerived({
+      label: "Extra virgin coconut oil",
+      g_per_ml: 0.92,
+      notes: "Unrefined semi-solid coconut oil; density and physical state vary with temperature."
+    }),
+    "ing-olive-squalane": withDerived({
+      label: "Olive squalane",
+      g_per_ml: 0.81,
+      notes: "Lightweight olive-derived squalane; practical density can vary slightly by supplier and temperature."
+    }),
 
     /* Carrier oils */
     "ing-safflower": withDerived({
