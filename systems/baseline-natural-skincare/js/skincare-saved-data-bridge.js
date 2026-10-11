@@ -181,7 +181,7 @@
     const result=syncRequest('POST',DATA_API,submitted);
     if(!result.ok){
       const error=result.data?.error||'slider_save_failed';
-      blockSaving(result.status===409?'conflict':'unavailable',error,kind||'slider-mutation',submitted);
+      blockSaving(result.status===409?'conflict':'unavailable',error);
       throw new Error(error);
     }
     remember(result);
@@ -361,6 +361,45 @@
     requestRender();
   }
 
+  function publicSliderState(){
+    return {
+      authenticated:!!state.authenticated,
+      ready:!!state.ready,
+      canSave:!!state.canSave,
+      revision:Number(state.revision || 0),
+      sliders:sliderSnapshot()
+    };
+  }
+
+  function publicReloadSliders(){
+    if(!state.authenticated) return publicSliderState();
+    const result=bootstrapSliders();
+    if(!result.ok) failBootstrap(result,'sliders_load_failed');
+    return publicSliderState();
+  }
+
+  function publicSaveSlider(controllerId,values){
+    if(!state.authenticated) throw new Error('login_required');
+    if(!state.canSave) throw new Error(state.error||'skincare_save_blocked');
+    const id=String(controllerId||'').trim();
+    if(!id) throw new Error('invalid_slider_state');
+    const next=sliderSnapshot();
+    next[id]=Object.assign({},values||{});
+    saveSliderDocument(next,'slider-mutation');
+    return publicSliderState();
+  }
+
+  function publicRemoveSlider(controllerId){
+    if(!state.authenticated) throw new Error('login_required');
+    if(!state.canSave) throw new Error(state.error||'skincare_save_blocked');
+    const id=String(controllerId||'').trim();
+    if(!id) return publicSliderState();
+    const next=sliderSnapshot();
+    delete next[id];
+    saveSliderDocument(next,'slider-removal');
+    return publicSliderState();
+  }
+
   installStorage();
   installFetch();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootstrap,{once:true});else bootstrap();
@@ -370,6 +409,10 @@
     getStatus:()=>state.status,
     canSave:()=>state.canSave,
     source:()=>state.source,
-    reloadAccountData:bootstrap
+    reloadAccountData:bootstrap,
+    getSliderState:publicSliderState,
+    reloadSliderState:publicReloadSliders,
+    saveSlider:publicSaveSlider,
+    removeSlider:publicRemoveSlider
   });
 })(window);
