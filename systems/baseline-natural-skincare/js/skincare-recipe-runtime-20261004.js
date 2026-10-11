@@ -791,6 +791,10 @@
             applyAllServerSliderStates();
           }else if(auth && auth.ready){
             Array.prototype.forEach.call(document.querySelectorAll('.recipe-page .glide-controller[data-slider-save-id]'), function(controller){
+              if(controller.dataset.skipServerSliderRestore === '1'){
+                delete controller.dataset.skipServerSliderRestore;
+                return;
+              }
               resetControllerToDefaults(controller, controllerSyncFn(controller));
             });
           }
