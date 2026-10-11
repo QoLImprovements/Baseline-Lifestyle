@@ -3,6 +3,9 @@ const { test, expect } = require('@playwright/test');
 const ordinary = [
   { id:'r6', slug:'anhydrous-massage-oil-blend', title:'Anhydrous Massage Oil Blend' },
   { id:'r7', slug:'restorative-hydration-layer', title:'Restorative Hydration Layer' },
+  { id:'r13', slug:'clarity-face-mask', title:'Clarity Face Mask' },
+  { id:'r14', slug:'sebum-compatible-cleansing-oil', title:'Sebum-Compatible Cleansing Oil' },
+  { id:'r15', slug:'skin-soft-massage-oil', title:'Skin Soft Massage Oil' },
   { id:'r2', slug:'anhydrous-oil-cleanser', title:'Anhydrous Oil Cleanser' },
   { id:'r1', slug:'nurturing-glow-butter', title:'Nurturing Glow Butter' },
   { id:'r3', slug:'protective-touch-balm', title:'Protective Touch Balm' }
@@ -125,9 +128,9 @@ test('Testing catalogue keeps only Comfort Barrier Balm', async ({ page }) => {
   const mainHeading = page.locator('#recipes-landing h4').filter({ hasText: /^Recipes$/ });
   await expect(mainHeading).toHaveCount(1);
   const mainLinks = mainHeading.locator('+ ul a.recipe-open');
-  await expect(mainLinks).toHaveCount(8);
+  await expect(mainLinks).toHaveCount(11);
   const ids = await mainLinks.evaluateAll((links) => links.map((link) => link.dataset.recipeId).sort());
-  expect(ids).toEqual(['r1','r10','r2','r3','r6','r7','r8','r9']);
+  expect(ids).toEqual(['r1','r10','r13','r14','r15','r2','r3','r6','r7','r8','r9']);
 });
 
 test('Skincare recipe catalogue keeps its Recipes heading and descriptors across reload Back and Forward', async ({ page }) => {
@@ -142,7 +145,7 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
 
     const mainLinks = recipesHeading.locator('+ ul a');
     const testingLinks = testingHeading.locator('+ ul a');
-    await expect(mainLinks).toHaveCount(8);
+    await expect(mainLinks).toHaveCount(11);
     await expect(testingLinks).toHaveCount(1);
 
     const mainText = await mainLinks.allTextContents();
@@ -150,6 +153,9 @@ test('Skincare recipe catalogue keeps its Recipes heading and descriptors across
     for (const text of [...mainText, ...testingText]) {
       expect(text, 'recipe catalogue links keep their descriptor').toContain(' — ');
     }
+    expect(mainText.some(text => text.startsWith('Clarity Face Mask — '))).toBe(true);
+    expect(mainText.some(text => text.startsWith('Sebum-Compatible Cleansing Oil — '))).toBe(true);
+    expect(mainText.some(text => text.startsWith('Skin Soft Massage Oil — '))).toBe(true);
     expect(mainText.some(text => text.startsWith('Calming Shave Gel — '))).toBe(true);
     expect(mainText.some(text => text.startsWith('Microcurrent Glide Gel — '))).toBe(true);
     expect(mainText.some(text => text.startsWith('Tooth Polishing Powder — '))).toBe(true);

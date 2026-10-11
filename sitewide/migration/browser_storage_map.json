@@ -210,17 +210,14 @@
     },
     {
       "id": "skincare-slider-settings",
-      "inventoryPatterns": [
-        "[expression] sliderSaveStorageKey(saveId",
-        "[expression] sliderSaveStorageKey(saveKey"
-      ],
+      "inventoryPatterns": [],
       "knownKeys": [
         "__baseline_slider_state__::{normalised-user}::{recipe-or-variant}"
       ],
-      "classification": "guest-or-virtual-compatibility-state",
-      "decision": "retire-authenticated-physical-copy-never-promote",
+      "classification": "retired-legacy-browser-state",
+      "decision": "delete-on-authenticated-load-never-promote",
       "target": "Users/{paddedUserId}/skincare.json#sliders",
-      "cutoverRule": "For a signed-in user, account slider state is authoritative, including an empty slider set. Physical account-named browser slider copies are retired and compatibility reads are virtualised from server state. Signed-out local behaviour remains local. Never merge or promote browser sliders into the account."
+      "cutoverRule": "Skincare recipe slider settings are server-only in Users/{paddedUserId}/skincare.json#sliders. The recipe runtime must not read or write browser slider state and signed-out users have no persistent slider save. Any historical __baseline_slider_state__ browser copies are deletion-only legacy data and must never be merged, promoted or used as a save fallback."
     },
     {
       "id": "skincare-conflict-backups",

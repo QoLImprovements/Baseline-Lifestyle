@@ -94,7 +94,7 @@ test("post-cutover browser storage never promotes retired account copies", () =>
     ["fitness-routine-import-candidate","delete-on-authenticated-load"],
     ["skincare-routine-local-cache","retire-authenticated-physical-copy-never-promote"],
     ["skincare-routine-groups-local-cache","retire-authenticated-physical-copy-never-promote"],
-    ["skincare-slider-settings","retire-authenticated-physical-copy-never-promote"],
+    ["skincare-slider-settings","delete-on-authenticated-load-never-promote"],
     ["games-guest-profiles","keep-local-for-guests-never-promote"],
     ["games-legacy-import-owner","delete-on-authenticated-load"],
     ["trackcoin-game","keep-local-for-guests-never-promote"],
@@ -114,7 +114,8 @@ test("post-cutover browser storage never promotes retired account copies", () =>
 
   assert.match(rules.find((rule)=>rule.id==="fitness-body-profile")?.cutoverRule || "", /retired before account load/i);
   assert.match(rules.find((rule)=>rule.id==="fitness-routine-local-cache")?.cutoverRule || "", /may never be imported or promoted/i);
-  assert.match(rules.find((rule)=>rule.id==="skincare-slider-settings")?.cutoverRule || "", /Never merge or promote/i);
+  assert.match(rules.find((rule)=>rule.id==="skincare-slider-settings")?.cutoverRule || "", /server-only/i);
+  assert.match(rules.find((rule)=>rule.id==="skincare-slider-settings")?.cutoverRule || "", /no persistent slider save/i);
   assert.match(rules.find((rule)=>rule.id==="games-guest-profiles")?.cutoverRule || "", /guest\/local progress only/i);
   assert.match(rules.find((rule)=>rule.id==="realm-tactical-v2")?.cutoverRule || "", /signed-out guest\/local progress only/i);
 

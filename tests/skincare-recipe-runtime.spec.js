@@ -74,81 +74,140 @@ test('Skincare Details tab retains authored detail content after the presentatio
   await expect(card.getByText('100 g balm. One batch;', { exact:false })).toBeVisible();
 });
 
-test('Oil Cleanser head CSS owns the requested variant before runtime enhancement', async ({ page }) => {
+test('Oil Cleanser is authored as one two-slider formula before external JavaScript runs', async ({ page }) => {
   await page.route('**/*', route => {
     const pathname = new URL(route.request().url()).pathname;
     if (/\.js$/i.test(pathname)) return route.abort();
     return route.continue();
   });
 
-  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?variant=reactive', { waitUntil:'load' });
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser', { waitUntil:'load' });
 
-  const style = page.locator('#baseline-recipe-route-first-paint-style');
-  await expect(style).toContainText('data-initial-recipe-variant="reactive"');
-  await expect(style).toContainText('.variant-tab[data-variant="reactive"]');
-  await expect(page.locator('#r2 .variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
-  await expect(page.locator('#r2 .variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected','false');
-});
-
-test('Oil Cleanser route applies Details and Reactive before external JavaScript runs', async ({ page }) => {
-  await page.route('**/*', route => {
-    const pathname = new URL(route.request().url()).pathname;
-    if (/\.js$/i.test(pathname)) return route.abort();
-    return route.continue();
-  });
-
-  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?view=details&variant=reactive', { waitUntil:'load' });
-
-  const html = page.locator('html');
   const card = page.locator('#r2');
-  await expect(html).toHaveAttribute('data-initial-recipe-view', 'details');
-  await expect(html).toHaveAttribute('data-initial-recipe-variant', 'reactive');
-  await expect(html).not.toHaveAttribute('data-initial-recipe-pending', '1');
   await expect(card).toBeVisible();
-  await expect(card).toHaveAttribute('data-recipe-view', 'details');
-  await expect(card.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(card.locator('[data-recipe-subtab="standard"]')).toHaveAttribute('aria-selected', 'false');
-  await expect(card.locator('.variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(card.locator('.variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected', 'false');
-  await expect(card.locator('.variant-panel[data-variant-panel="reactive"]')).not.toHaveAttribute('hidden', '');
-  await expect(card.locator('.variant-panel[data-variant-panel="balanced"]')).toHaveAttribute('hidden', '');
-  await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes .recipe-page:visible')).toHaveCount(1);
+  await expect(card.locator('.variant-switcher, .variant-panel, .variant-tab')).toHaveCount(0);
+  await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','2');
+  await expect(card.locator('.glide-control-main')).toHaveCount(2);
+  await expect(card.locator('#r2CleansingPull')).toBeVisible();
+  await expect(card.locator('#r2BarrierRichness')).toBeVisible();
+  await expect(card.locator('#r2PullLandmarks option[value="0"]')).toHaveAttribute('label','Reactive');
+  await expect(card.locator('#r2PullLandmarks option[value="10"]')).toHaveAttribute('label','Balanced');
+  await expect(card.locator('#r2BarrierLandmarks option[value="18"]')).toHaveAttribute('label','Enhanced Barrier');
 });
 
-test('Oil Cleanser route-state matrix survives reload for every view and variant', async ({ page }) => {
-  const variants = ['reactive', 'balanced', 'enhanced'];
-  const views = ['standard', 'details', 'guidance', 'show-all'];
+test('Oil Cleanser Details has one coherent formula description without duplicate variant controls', async ({ page }) => {
+  await page.route('**/*', route => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (/\.js$/i.test(pathname)) return route.abort();
+    return route.continue();
+  });
 
-  for (const variant of variants) {
-    for (const view of views) {
-      const params = new URLSearchParams();
-      if (view !== 'standard') params.set('view', view);
-      params.set('variant', variant);
-      const url = '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?' + params.toString();
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?view=details', { waitUntil:'load' });
 
-      await page.goto(url, { waitUntil:'domcontentloaded' });
-      const card = page.locator('#r2');
-      await expect(card, url).toBeVisible();
-      await expect(page.locator('#recipes .recipe-page:visible'), url).toHaveCount(1);
-      await expect(card.locator('.variant-tab[data-variant="' + variant + '"]'), url)
-        .toHaveAttribute('aria-selected', 'true');
-      await expect(card.locator('[data-recipe-subtab="' + view + '"]'), url)
-        .toHaveAttribute('aria-selected', 'true');
+  const card = page.locator('#r2');
+  await expect(card).toBeVisible();
+  await expect(card).toHaveAttribute('data-recipe-view','details');
+  await expect(card.locator('.recipe-details-intro')).toBeVisible();
+  await expect(card.locator('.recipe-detail-block')).toHaveCount(6);
+  await expect(card.locator('.variant-switcher, .recipe-details-variant-field, .recipe-variant-tag')).toHaveCount(0);
+  await expect(card.getByText('Reactive is the 0% castor / 0% olive point', { exact:false })).toBeVisible();
+  await expect(card.getByText('Enhanced Barrier is the 10% castor / 18% olive reference point', { exact:false })).toBeVisible();
+});
 
-      await page.reload({ waitUntil:'domcontentloaded' });
-      await expect(card, url + ' after reload').toBeVisible();
-      await expect(card.locator('.variant-tab[data-variant="' + variant + '"]'), url + ' after reload')
-        .toHaveAttribute('aria-selected', 'true');
-      await expect(card.locator('[data-recipe-subtab="' + view + '"]'), url + ' after reload')
-        .toHaveAttribute('aria-selected', 'true');
+test('Oil Cleanser sliders continuously reproduce Reactive, Balanced and Enhanced Barrier reference formulas', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
+  const card = page.locator('#r2');
 
-      const current = new URL(page.url());
-      expect(current.pathname, url).toBe('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
-      expect(current.searchParams.get('variant'), url).toBe(variant);
-      expect(current.searchParams.get('view'), url).toBe(view === 'standard' ? null : view);
-    }
-  }
+  const expectAmounts = async (safflower, castor, olive) => {
+    await expect(card.locator('.r2-safflower-amt')).toContainText(safflower + ' ml');
+    await expect(card.locator('.r2-castor-amt')).toContainText(castor + ' ml');
+    await expect(card.locator('.r2-olive-amt')).toContainText(olive + ' ml');
+    const total = await card.locator('.r2-safflower-amt, .r2-castor-amt, .r2-olive-amt').evaluateAll((els) =>
+      els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+    );
+    expect(total).toBeCloseTo(100, 6);
+  };
+
+  await expectAmounts('90','10','0');
+
+  await card.locator('#r2CleansingPull').evaluate((el) => {
+    el.value='0';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await card.locator('#r2BarrierRichness').evaluate((el) => {
+    el.value='0';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await expectAmounts('100','0','0');
+
+  await card.locator('#r2CleansingPull').evaluate((el) => {
+    el.value='10';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await card.locator('#r2BarrierRichness').evaluate((el) => {
+    el.value='18';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await expectAmounts('72','10','18');
+});
+
+test('Restorative Hydration Layer keeps a 100% formula across glycerin and inulin controls', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/restorative-hydration-layer');
+  const card = page.locator('#r7');
+  await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','2');
+
+  await card.locator('#r7Glycerin').evaluate((el) => {
+    el.value='30';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+  await card.locator('#r7Inulin').evaluate((el) => {
+    el.value='5';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+
+  await expect(card.locator('.r7-water-amt')).toHaveText('65 g');
+  await expect(card.locator('.r7-glycerin-amt')).toHaveText('30 g');
+  await expect(card.locator('.r7-inulin-amt')).toHaveText('5 g');
+
+  const total = await card.locator('.r7-water-amt, .r7-glycerin-amt, .r7-inulin-amt').evaluateAll((els) =>
+    els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+  );
+  expect(total).toBeCloseTo(100, 6);
+});
+
+test('Skin Soft Massage Oil apricot control preserves the fixed squalane and coconut phases', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/skin-soft-massage-oil');
+  const card = page.locator('#r15');
+  await expect(card.locator('.glide-controller')).toHaveAttribute('data-slider-count','1');
+
+  await expect(card.locator('.r15-squalane-amt')).toContainText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toContainText('35 g');
+  await expect(card.locator('.r15-apricot-amt')).toContainText('0 g');
+  await expect(card.locator('.r15-coconut-amt')).toContainText('20 g');
+
+  await card.locator('#r15Apricot').evaluate((el) => {
+    el.value='20';
+    el.dispatchEvent(new Event('input',{ bubbles:true }));
+  });
+
+  await expect(card.locator('.r15-squalane-amt')).toContainText('45 g');
+  await expect(card.locator('.r15-jojoba-amt')).toContainText('15 g');
+  await expect(card.locator('.r15-apricot-amt')).toContainText('20 g');
+  await expect(card.locator('.r15-coconut-amt')).toContainText('20 g');
+
+  const total = await card.locator('.r15-squalane-amt, .r15-jojoba-amt, .r15-apricot-amt, .r15-coconut-amt').evaluateAll((els) =>
+    els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
+  );
+  expect(total).toBeCloseTo(100, 6);
+});
+
+test('legacy Oil Cleanser variant URLs migrate to slider landmarks and remove obsolete variant state', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser?variant=enhanced');
+  const card = page.locator('#r2');
+  await expect(card.locator('#r2CleansingPull')).toHaveValue('10');
+  await expect(card.locator('#r2BarrierRichness')).toHaveValue('18');
+  await expect.poll(() => new URL(page.url()).searchParams.get('variant')).toBeNull();
 });
 
 test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
@@ -316,7 +375,7 @@ test('universal slider template keeps Restorative Hydration Layer text separated
 
   const controller = page.locator('#r7 .glide-controller');
   await expect(controller).toBeVisible();
-  await expect(controller).toHaveAttribute('data-slider-count', '1');
+  await expect(controller).toHaveAttribute('data-slider-count', '2');
   await expect(controller.locator('.glide-explain-title')).toHaveText('Overall Feel');
   await expect(controller.locator('.glide-explain-title')).toHaveCount(1);
   await expect(controller.locator('.glide-breakdown:visible')).toHaveCount(0);
@@ -325,7 +384,10 @@ test('universal slider template keeps Restorative Hydration Layer text separated
 
   const layout = await controller.evaluate((el) => {
     const controllerRect = el.getBoundingClientRect();
-    const main = el.querySelector(':scope > .glide-control-main')?.getBoundingClientRect();
+    const mains = Array.from(el.querySelectorAll(':scope > .glide-control-main')).map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { x:rect.x, y:rect.y, width:rect.width, bottom:rect.bottom };
+    });
     const feel = el.querySelector(':scope > .glide-control-explainer')?.getBoundingClientRect();
     const label = el.querySelector('.glide-label')?.getBoundingClientRect();
     const readout = el.querySelector('.glide-readout')?.getBoundingClientRect();
@@ -335,7 +397,7 @@ test('universal slider template keeps Restorative Hydration Layer text separated
     });
     return {
       controller: { width:controllerRect.width },
-      main: main ? { x:main.x, y:main.y, width:main.width, bottom:main.bottom } : null,
+      mains,
       feel: feel ? { x:feel.x, y:feel.y, width:feel.width } : null,
       label: label ? { top:label.top, bottom:label.bottom } : null,
       readout: readout ? { top:readout.top, bottom:readout.bottom } : null,
@@ -343,11 +405,15 @@ test('universal slider template keeps Restorative Hydration Layer text separated
     };
   });
 
-  expect(layout.main).not.toBeNull();
+  expect(layout.mains).toHaveLength(2);
   expect(layout.feel).not.toBeNull();
-  expect(layout.main.width).toBeGreaterThan(layout.controller.width * 0.9);
-  expect(Math.abs(layout.main.width - layout.feel.width)).toBeLessThan(3);
-  expect(layout.feel.y).toBeGreaterThanOrEqual(layout.main.bottom - 1);
+  for (const main of layout.mains) {
+    expect(main.width).toBeGreaterThan(layout.controller.width * 0.4);
+    expect(main.width).toBeLessThan(layout.controller.width * 0.55);
+  }
+  expect(Math.abs(layout.mains[0].y - layout.mains[1].y)).toBeLessThan(3);
+  expect(layout.feel.width).toBeGreaterThan(layout.controller.width * 0.9);
+  expect(layout.feel.y).toBeGreaterThanOrEqual(Math.max(...layout.mains.map((main) => main.bottom)) - 1);
   expect(layout.readout.top).toBeGreaterThanOrEqual(layout.label.bottom - 1);
   for (const scale of layout.scaleSpans) {
     expect(scale.whiteSpace).toBe('nowrap');

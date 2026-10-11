@@ -1307,6 +1307,8 @@
     'ing-cucumber':'cucumber-seed-oil',
     'ing-argan':'argan',
     'ing-jojoba':'jojoba-oil',
+    'ing-olive-squalane':'olive-squalane',
+    'ing-extra-virgin-coconut-oil':'extra-virgin-coconut-oil',
     'ing-lavender':'lavender',
     'ing-safflower':'safflower',
     'ing-vitamin-e':'vitamin-e',

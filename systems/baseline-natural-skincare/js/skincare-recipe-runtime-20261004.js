@@ -45,30 +45,25 @@
     return 'Maximum cushion. Thickest, most structured gel in this range; best when you want the strongest blade buffering.';
   }
 
-  function explainBalancedCleanser(castor){
+  function explainOilCleanser(castor, olive){
+    if(olive >= 24){
+      return 'Richest barrier setting. Olive is prominent, giving the slowest, most cushioned and most occlusive finish in the available range.';
+    }
+    if(olive >= 10){
+      if(castor >= 14) return 'Enhanced Barrier with strong cleansing pull: richer olive cushion combined with a noticeably grippier castor-led massage.';
+      if(castor <= 4) return 'Enhanced Barrier with light cleansing pull: olive adds cushion while castor stays restrained.';
+      return 'Enhanced Barrier territory: olive adds a richer protective after-feel while castor maintains controlled cleansing pull.';
+    }
+    if(castor <= 1){
+      return 'Reactive reference area. Safflower carries almost the entire formula for the lightest, simplest cleansing feel.';
+    }
     if(castor <= 6){
-      return 'Very light cleansing pull. Mostly safflower slip with only a small castor anchor.';
+      return 'Light cleansing pull. Safflower remains strongly dominant with only a small increase in castor grip.';
     }
-    if(castor <= 10){
-      return 'Middle-ground cleanse. Safflower stays dominant while castor adds more cling and sebum-lifting pull.';
+    if(castor <= 12){
+      return 'Balanced reference area. Castor adds controlled cleansing pull while the finish stays comparatively light when olive is low.';
     }
-    if(castor <= 14){
-      return 'Noticeably richer pull. More cling through massage, but still not as occlusive as the enhanced variant.';
-    }
-    return 'Strongest balanced-phase pull. Castor is prominent here, giving the cleanser a slower, grippier stroke.';
-  }
-
-  function explainEnhancedCleanser(olive){
-    if(olive <= 14){
-      return 'Lightest enhanced finish. Olive is present, but safflower still keeps the after-feel fairly restrained.';
-    }
-    if(olive <= 20){
-      return 'Cushioned and slower-moving. Olive raises the occlusive after-feel while castor stays fixed for cleansing pull.';
-    }
-    if(olive <= 26){
-      return 'Rich barrier-leaning finish. More olive means more lingering cushion after rinse-off.';
-    }
-    return 'Most occlusive setting in this range. Best when you want the cleanser to leave the fullest protective film.';
+    return 'Strong cleansing pull. Higher castor gives more cling, traction and a slower-moving massage while safflower remains the main phase.';
   }
 
   function explainBalmBalance(castor){
@@ -97,38 +92,6 @@
     return 'Firmest set in this range. Best when you want stronger structure and more heat resistance.';
   }
 
-  function activateCleanserVariant(name){
-    var recipe = document.getElementById('r2');
-    if(!recipe) return;
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
-      var active = btn.getAttribute('data-variant') === name;
-      btn.setAttribute('aria-selected', active ? 'true' : 'false');
-      btn.tabIndex = active ? 0 : -1;
-    });
-
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-panel'), function(panel){
-      var active = panel.getAttribute('data-variant-panel') === name;
-      panel.hidden = !active;
-    });
-
-    // Keep derived Skincare surfaces synchronized after the selected variant changes.
-    // URL/history ownership remains in the shared recipe router.
-    if(typeof recipe.__baselineSyncVariantDetailState === 'function'){
-      recipe.__baselineSyncVariantDetailState();
-    }
-    if(typeof window.refreshRecipeComedogenic === 'function'){
-      window.refreshRecipeComedogenic(recipe);
-    }
-    if(typeof recipe.__baselineUpdatePrintSummary === 'function'){
-      recipe.__baselineUpdatePrintSummary();
-    }
-    if(typeof recipe.__baselineRefreshMethodAmounts === 'function'){
-      recipe.__baselineRefreshMethodAmounts();
-    }
-
-  }
-
-
   function normalizeMultiplierControls(root){
     root = root || document;
     Array.prototype.forEach.call(root.querySelectorAll('.multiplier input'), function(input){
@@ -144,22 +107,6 @@
     if(document.body && document.body.dataset.multiplierFixBound === '1') return;
     if(document.body) document.body.dataset.multiplierFixBound = '1';
     normalizeMultiplierControls(document);
-  }
-
-  function initCleanserVariantTabs(){
-    var recipe = document.getElementById('r2');
-    if(!recipe) return;
-
-    Array.prototype.forEach.call(recipe.querySelectorAll('.variant-tab'), function(btn){
-      if(btn.dataset.bound === '1') return;
-      btn.dataset.bound = '1';
-      btn.addEventListener('click', function(){
-        activateCleanserVariant(btn.getAttribute('data-variant'));
-      });
-    });
-
-    var active = recipe.querySelector('.variant-tab[aria-selected="true"]');
-    activateCleanserVariant(active ? active.getAttribute('data-variant') : 'balanced');
   }
 
   function paintTrack(slider){
@@ -189,48 +136,36 @@
   function syncOilCleanser(){
     var recipe = document.getElementById('r2');
     if(!recipe) return;
+    var castorSlider = document.getElementById('r2CleansingPull');
+    var oliveSlider = document.getElementById('r2BarrierRichness');
+    if(!castorSlider || !oliveSlider) return;
 
-    var reactiveAmt = recipe.querySelectorAll('.r2-reactive-safflower-amt');
-    applyScaledDisplay(recipe, reactiveAmt, 100, 'ml');
+    var castor = Number(castorSlider.value || 0);
+    var olive = Number(oliveSlider.value || 0);
+    if(!Number.isFinite(castor)) castor = 10;
+    if(!Number.isFinite(olive)) olive = 0;
+    castor = Math.max(0, Math.min(18, castor));
+    olive = Math.max(0, Math.min(30, olive));
+    var safflower = 100 - castor - olive;
 
-    var balancedSlider = document.getElementById('r2BalancedCastor');
-    if(balancedSlider){
-      var castor = Number(balancedSlider.value || 0);
-      var safflower = 100 - castor;
-      Array.prototype.forEach.call(recipe.querySelectorAll('.r2-balanced-castor-percent'), function(el){ el.textContent = fmt(castor); });
-      Array.prototype.forEach.call(recipe.querySelectorAll('.r2-balanced-safflower'), function(el){ el.textContent = fmt(safflower); });
-      applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-balanced-castor-amt'), castor, 'ml');
-      applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-balanced-safflower-amt'), safflower, 'ml');
-      var explainEl = document.getElementById('r2BalancedExplain');
-      if(explainEl) explainEl.textContent = explainBalancedCleanser(castor);
-      var breakdownEl = document.getElementById('r2BalancedBreakdown');
-      if(breakdownEl){
-        breakdownEl.innerHTML = '<strong>Blend:</strong> <span class="r2-balanced-safflower">' + fmt(safflower) + '%</span> safflower • <span class="r2-balanced-castor-percent">' + fmt(castor) + '%</span> castor';
-      }
-      paintTrack(balancedSlider);
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r2-castor-percent'), function(el){ el.textContent = fmt(castor); });
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r2-olive-percent'), function(el){ el.textContent = fmt(olive); });
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r2-safflower-percent'), function(el){ el.textContent = fmt(safflower); });
+
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-safflower-amt'), safflower, 'ml');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-castor-amt'), castor, 'ml');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-olive-amt'), olive, 'ml');
+
+    var explainEl = document.getElementById('r2OverallExplain');
+    if(explainEl) explainEl.textContent = explainOilCleanser(castor, olive);
+
+    var breakdownEl = document.getElementById('r2Breakdown');
+    if(breakdownEl){
+      breakdownEl.innerHTML = '<strong>Current blend:</strong> <span class="r2-safflower-percent">' + fmt(safflower) + '%</span> safflower • <span class="r2-castor-percent">' + fmt(castor) + '%</span> castor • <span class="r2-olive-percent">' + fmt(olive) + '%</span> olive';
     }
 
-    var enhancedSlider = document.getElementById('r2EnhancedOlive');
-    if(enhancedSlider){
-      var olive = Number(enhancedSlider.value || 0);
-      var castorFixed = 10;
-      var safflowerEnhanced = 100 - castorFixed - olive;
-      Array.prototype.forEach.call(recipe.querySelectorAll('.r2-enhanced-olive-percent'), function(el){ el.textContent = fmt(olive); });
-      Array.prototype.forEach.call(recipe.querySelectorAll('.r2-enhanced-safflower'), function(el){ el.textContent = fmt(safflowerEnhanced); });
-      applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-enhanced-safflower-amt'), safflowerEnhanced, 'ml');
-      applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-enhanced-castor-amt'), castorFixed, 'ml');
-      applyScaledDisplay(recipe, recipe.querySelectorAll('.r2-enhanced-olive-amt'), olive, 'ml');
-      var explainEnhancedEl = document.getElementById('r2EnhancedExplain');
-      if(explainEnhancedEl) explainEnhancedEl.textContent = explainEnhancedCleanser(olive);
-      var enhancedBreakdown = document.getElementById('r2EnhancedBreakdown');
-      if(enhancedBreakdown){
-        enhancedBreakdown.innerHTML = '<strong>Blend:</strong> <span class="r2-enhanced-safflower">' + fmt(safflowerEnhanced) + '%</span> safflower • 10% castor • <span class="r2-enhanced-olive-percent">' + fmt(olive) + '%</span> olive';
-      }
-      paintTrack(enhancedSlider);
-    }
-
-    var reactiveSlider = document.getElementById('r2Reactive');
-    if(reactiveSlider) paintTrack(reactiveSlider);
+    paintTrack(castorSlider);
+    paintTrack(oliveSlider);
     if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
   }
 
@@ -366,29 +301,120 @@
     paintTrack(slider);
   }
 
-  function sliderSaveStorageKey(key){
-    var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-    var user = auth && auth.authed ? String(auth.name || 'user').trim().toLowerCase() : 'guest';
-    return '__baseline_slider_state__::' + user + '::' + key;
+  var sliderServerState = {
+    loaded:false,
+    revision:0,
+    sliders:{}
+  };
+
+  function sliderAuth(){
+    try{
+      return (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
+    }catch(_e){
+      return null;
+    }
   }
 
-  function applySavedControllerState(controller, syncFn){
-    if(!controller) return;
-    var saveKey = controller.getAttribute('data-slider-save-id');
-    if(!saveKey) return;
-    var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-    if(!(auth && auth.authed)) return;
+  function sliderClient(){
+    var client = window.BaselineSkincareSavedData;
+    return client && typeof client.getSliderState === 'function' ? client : null;
+  }
+
+  function absorbSliderServerState(snapshot){
+    if(!snapshot || typeof snapshot !== 'object') return false;
+    sliderServerState.revision = Number(snapshot.revision || 0);
+    sliderServerState.sliders = (snapshot.sliders && typeof snapshot.sliders === 'object') ? snapshot.sliders : {};
+    sliderServerState.loaded = !!(snapshot.authenticated && snapshot.ready);
+    return sliderServerState.loaded;
+  }
+
+  async function loadSliderServerState(force){
+    var auth = sliderAuth();
+    if(!(auth && auth.ready && auth.authed)) return false;
+    var client = sliderClient();
+    if(!client) return false;
     try{
-      var raw = localStorage.getItem(sliderSaveStorageKey(saveKey));
-      if(!raw) return;
-      var parsed = JSON.parse(raw);
-      var sliders = Array.prototype.slice.call(controller.querySelectorAll('.glide-slider'));
-      sliders.forEach(function(slider){
-        var next = parsed && parsed[slider.id];
-        if(typeof next !== 'undefined') slider.value = String(next);
-      });
+      var snapshot = force && typeof client.reloadSliderState === 'function'
+        ? client.reloadSliderState()
+        : client.getSliderState();
+      return absorbSliderServerState(snapshot);
+    }catch(_e){
+      return false;
+    }
+  }
+
+  function controllerValues(controller){
+    var values = {};
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
+      values[slider.id] = String(slider.value);
+    });
+    return values;
+  }
+
+  function resetControllerToDefaults(controller, syncFn){
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
+      slider.value = String(slider.getAttribute('data-default-value') || slider.getAttribute('data-default') || slider.defaultValue || slider.value);
+    });
+    if(typeof syncFn === 'function') syncFn();
+  }
+
+  async function applyServerControllerState(controller, syncFn){
+    if(!controller) return;
+    var auth = sliderAuth();
+    if(!(auth && auth.ready && auth.authed)) return;
+    var ok = await loadSliderServerState(false);
+    if(!ok) return;
+    var saveId = controller.getAttribute('data-slider-save-id');
+    var saved = saveId && sliderServerState.sliders ? sliderServerState.sliders[saveId] : null;
+
+    if(!saved && saveId === 'r7' && sliderServerState.sliders && sliderServerState.sliders.r7 && sliderServerState.sliders.r7.r7Hydration !== undefined){
+      var oldWater = Number(sliderServerState.sliders.r7.r7Hydration);
+      if(Number.isFinite(oldWater)){
+        saved = { r7Glycerin:String(100 - oldWater), r7Inulin:'0' };
+      }
+    }
+
+    if(controller.dataset.skipServerSliderRestore === '1'){
+      delete controller.dataset.skipServerSliderRestore;
+      return;
+    }
+    if(!saved || typeof saved !== 'object') return;
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
+      if(Object.prototype.hasOwnProperty.call(saved, slider.id)) slider.value = String(saved[slider.id]);
+    });
+    if(typeof syncFn === 'function') syncFn();
+  }
+
+  async function writeControllerServerState(controller, syncFn){
+    var auth = sliderAuth();
+    if(!(auth && auth.ready && auth.authed)) throw new Error('login_required');
+    var client = sliderClient();
+    if(!client || typeof client.saveSlider !== 'function') throw new Error('server_unavailable');
+    var saveId = controller.getAttribute('data-slider-save-id');
+    if(!saveId) throw new Error('missing_slider_id');
+
+    var values = controllerValues(controller);
+    var snapshot = client.saveSlider(saveId, values);
+    absorbSliderServerState(snapshot);
+    if(typeof syncFn === 'function') syncFn();
+    return true;
+  }
+
+  async function removeControllerServerState(controller, syncFn){
+    var auth = sliderAuth();
+    if(!(auth && auth.ready && auth.authed)) return false;
+    var client = sliderClient();
+    if(!client || typeof client.removeSlider !== 'function') return false;
+    var saveId = controller.getAttribute('data-slider-save-id');
+    if(!saveId) return false;
+    try{
+      var snapshot = client.removeSlider(saveId);
+      absorbSliderServerState(snapshot);
       if(typeof syncFn === 'function') syncFn();
-    }catch(_e){}
+      return true;
+    }catch(_e){
+      return false;
+    }
   }
 
   function clearSliderStatus(controller){
@@ -450,6 +476,11 @@
     'ing-red-raspberry-seed-oil': 2.0,
     'ing-candelilla-wax': 1.0,
     'ing-white-kaolin': 0.0,
+    'ing-colloidal-oatmeal': 0.0,
+    'ing-marshmallow-root-powder': 0.0,
+    'ing-inulin-powder': 0.0,
+    'ing-olive-squalane': 0.5,
+    'ing-extra-virgin-coconut-oil': 4.0,
     'ing-sage-leaf-powder': 0.0,
     'ing-peppermint-leaf-powder': 0.0
   };
@@ -510,49 +541,99 @@
 
   function syncHydrationLayer(){
     var recipe = document.getElementById('r7');
-    var slider = document.getElementById('r7Hydration');
-    if(!recipe || !slider) return;
+    var glycerinSlider = document.getElementById('r7Glycerin');
+    var inulinSlider = document.getElementById('r7Inulin');
+    if(!recipe || !glycerinSlider || !inulinSlider) return;
 
-    var water = Number(slider.value || 80);
-    if(!Number.isFinite(water)) water = 80;
-    if(water < 70) water = 70;
-    if(water > 90) water = 90;
-    var glycerin = 100 - water;
+    var glycerin = Number(glycerinSlider.value || 20);
+    var inulin = Number(inulinSlider.value || 0);
+    if(!Number.isFinite(glycerin)) glycerin = 20;
+    if(!Number.isFinite(inulin)) inulin = 0;
+    glycerin = Math.max(10, Math.min(30, glycerin));
+    inulin = Math.max(0, Math.min(5, inulin));
+    var water = 100 - glycerin - inulin;
 
     Array.prototype.forEach.call(recipe.querySelectorAll('.r7-water-readout'), function(el){ el.textContent = fmt(water); });
     Array.prototype.forEach.call(recipe.querySelectorAll('.r7-glycerin-readout'), function(el){ el.textContent = fmt(glycerin); });
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r7-inulin-readout'), function(el){ el.textContent = fmt(inulin); });
 
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r7-water-amt'), function(span){
-      span.dataset.baseMin = String(water);
-      span.dataset.baseMax = String(water);
-      span.dataset.baseUnit = 'ml';
-      span.dataset.baseDisplay = fmt(water) + ' ml';
-    });
-    Array.prototype.forEach.call(recipe.querySelectorAll('.r7-glycerin-amt'), function(span){
-      span.dataset.baseMin = String(glycerin);
-      span.dataset.baseMax = String(glycerin);
-      span.dataset.baseUnit = 'ml';
-      span.dataset.baseDisplay = fmt(glycerin) + ' ml';
-    });
-
-    if(recipe && typeof recipe.__baselineApplyScaling === 'function'){
-      recipe.__baselineApplyScaling();
-    }
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r7-water-amt'), water, 'g');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r7-glycerin-amt'), glycerin, 'g');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r7-inulin-amt'), inulin, 'g');
 
     var explain = document.getElementById('r7Explain');
     if(explain){
-      if(glycerin <= 15) explain.textContent = 'Lower humectant setting. Lighter feel with less surface hold and faster dry-down before sealing.';
-      else if(glycerin >= 25) explain.textContent = 'Higher humectant setting. Stronger surface hold with a denser post-wash hydration layer before sealing.';
-      else explain.textContent = 'Balanced hydration setting. Light water phase with enough glycerin to reduce depleted post-wash feel before sealing.';
+      if(glycerin >= 25 && inulin >= 3) explain.textContent = 'Highest-hold setting: stronger glycerin surface persistence combined with a more noticeable inulin-conditioned feel.';
+      else if(glycerin >= 25) explain.textContent = 'Higher glycerin setting. Stronger humectant hold and a denser surface feel before sealing.';
+      else if(inulin >= 3) explain.textContent = 'Moderate glycerin with higher inulin. The layer remains fluid while adding more dissolved conditioning support.';
+      else if(glycerin <= 15 && inulin <= 1) explain.textContent = 'Lightest setting. Lower glycerin and little or no inulin give the quickest, least tacky finish.';
+      else if(inulin === 0) explain.textContent = 'Original water-and-glycerin formula range with no inulin added.';
+      else explain.textContent = 'Balanced hydration layer with moderate glycerin and optional inulin support.';
     }
 
     var breakdown = document.getElementById('r7Breakdown');
     if(breakdown){
-      breakdown.innerHTML = '<strong>Selected variant:</strong> <span class="r7-water-readout">' + fmt(water) + '%</span> rose water or water • <span class="r7-glycerin-readout">' + fmt(glycerin) + '%</span> vegetable glycerin';
+      breakdown.innerHTML = '<strong>Current blend:</strong> <span class="r7-water-readout">' + fmt(water) + '%</span> filtered water • <span class="r7-glycerin-readout">' + fmt(glycerin) + '%</span> vegetable glycerin • <span class="r7-inulin-readout">' + fmt(inulin) + '%</span> inulin';
     }
 
+    paintTrack(glycerinSlider);
+    paintTrack(inulinSlider);
     if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
+  }
+
+  function syncSkinSoftMassageOil(){
+    var recipe = document.getElementById('r15');
+    var slider = document.getElementById('r15Apricot');
+    if(!recipe || !slider) return;
+
+    var apricot = Number(slider.value || 0);
+    if(!Number.isFinite(apricot)) apricot = 0;
+    apricot = Math.max(0, Math.min(20, apricot));
+    var jojoba = 35 - apricot;
+
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r15-apricot-readout'), function(el){ el.textContent = fmt(apricot); });
+    Array.prototype.forEach.call(recipe.querySelectorAll('.r15-jojoba-readout'), function(el){ el.textContent = fmt(jojoba); });
+
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r15-squalane-amt'), 45, 'g');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r15-jojoba-amt'), jojoba, 'g');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r15-apricot-amt'), apricot, 'g');
+    applyScaledDisplay(recipe, recipe.querySelectorAll('.r15-coconut-amt'), 20, 'g');
+
+    var explain = document.getElementById('r15Explain');
+    if(explain){
+      if(apricot <= 2.5) explain.textContent = 'Original-style blend: squalane-led softness with the jojoba phase almost fully intact and coconut adding body.';
+      else if(apricot <= 7.5) explain.textContent = 'Slightly softer carrier-oil feel while jojoba still clearly leads the adjustable phase.';
+      else if(apricot <= 12.5) explain.textContent = 'Balanced jojoba-and-apricot character with a richer emollient glide than the original blend.';
+      else if(apricot <= 17.5) explain.textContent = 'Apricot-forward adjustable phase: softer, richer spread with less of the jojoba-led wax-ester character.';
+      else explain.textContent = 'Maximum apricot setting. Richest apricot-led glide while squalane and coconut remain fixed.';
+    }
+
+    var breakdown = document.getElementById('r15Breakdown');
+    if(breakdown){
+      breakdown.innerHTML = '<strong>Current blend:</strong> 45% olive squalane • <span class="r15-jojoba-readout">' + fmt(jojoba) + '%</span> jojoba • <span class="r15-apricot-readout">' + fmt(apricot) + '%</span> apricot kernel oil • 20% extra virgin coconut oil';
+    }
+
     paintTrack(slider);
+    if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
+  }
+
+  function controllerSyncFn(controller){
+    var recipe = controller ? controller.closest('.recipe-page') : null;
+    if(!recipe) return function(){};
+    if(typeof controller.__baselineSliderSync === 'function') return controller.__baselineSliderSync;
+    if(recipe.id === 'r2') return syncOilCleanser;
+    if(recipe.id === 'r3') return syncProtectiveTouchBalm;
+    if(recipe.id === 'r5') return syncShaveCushion;
+    if(recipe.id === 'r6') return syncMassageSlider;
+    if(recipe.id === 'r7') return syncHydrationLayer;
+    if(recipe.id === 'r15') return syncSkinSoftMassageOil;
+    return function(){};
+  }
+
+  function applyAllServerSliderStates(){
+    Array.prototype.forEach.call(document.querySelectorAll('.recipe-page .glide-controller[data-slider-save-id]'), function(controller){
+      applyServerControllerState(controller, controllerSyncFn(controller));
+    });
   }
 
   function decorateSliderSaves(){
@@ -590,70 +671,136 @@
       }
       if(!saveBtn || !defaultBtn || !status) return;
 
-      var syncFn = function(){
-        if(typeof controller.__baselineSliderSync === 'function') controller.__baselineSliderSync();
-        else if(recipe.id === 'r2') syncOilCleanser();
-        else if(recipe.id === 'r3') syncProtectiveTouchBalm();
-        else if(recipe.id === 'r5') syncShaveCushion();
-        else if(recipe.id === 'r6') syncMassageSlider();
-        else if(recipe.id === 'r7') syncHydrationLayer();
-      };
+      var syncFn = controllerSyncFn(controller);
 
       Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
         slider.addEventListener('input', function(){ clearSliderStatus(controller); });
         slider.addEventListener('change', function(){ clearSliderStatus(controller); });
       });
 
-      saveBtn.addEventListener('click', function(){
-        var auth = (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-        if(!(auth && auth.authed)) {
+      saveBtn.addEventListener('click', async function(){
+        var auth = sliderAuth();
+        if(!(auth && auth.ready && auth.authed)) {
           setSliderStatus(controller, 'Log in to save slider position', 'notice');
           return;
         }
+        setSliderStatus(controller, 'Saving…', 'notice');
         try{
-          var payload = {};
-          Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){ payload[slider.id] = slider.value; });
-          localStorage.setItem(sliderSaveStorageKey(saveId), JSON.stringify(payload));
+          await writeControllerServerState(controller, syncFn);
           setSliderStatus(controller, 'Saved', 'saved');
         }catch(_e){
           setSliderStatus(controller, 'Could not save', 'error');
         }
       });
 
-      defaultBtn.addEventListener('click', function(){
-        Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
-          slider.value = String(slider.getAttribute('data-default-value') || slider.getAttribute('data-default') || slider.defaultValue || slider.value);
-        });
-        syncFn();
-        setSliderStatus(controller, 'Defaults restored');
+      defaultBtn.addEventListener('click', async function(){
+        resetControllerToDefaults(controller, syncFn);
+        var auth = sliderAuth();
+        if(auth && auth.ready && auth.authed){
+          var removed = await removeControllerServerState(controller, syncFn);
+          setSliderStatus(controller, removed ? 'Defaults restored' : 'Defaults restored for this view', removed ? 'saved' : 'notice');
+        }else{
+          setSliderStatus(controller, 'Defaults restored');
+        }
       });
 
       controller.dataset.sliderSaveReady = '1';
-      applySavedControllerState(controller, syncFn);
     });
+
+    applyAllServerSliderStates();
   }
   window.BASELINE_decorateRecipeSliderSaves = decorateSliderSaves;
 
+  function migrateLegacyOilCleanserVariantRoute(){
+    try{
+      var path = String(window.location.pathname || '').replace(/\/+$/,'');
+      if(path !== '/baseline-natural-skincare/recipes/anhydrous-oil-cleanser') return;
+      var params = new URLSearchParams(window.location.search || '');
+      var variant = String(params.get('variant') || '').toLowerCase();
+      if(!variant){
+        variant = String(document.documentElement.getAttribute('data-initial-recipe-variant') || '').toLowerCase();
+      }
+      if(!variant) return;
+
+      var castor = document.getElementById('r2CleansingPull');
+      var olive = document.getElementById('r2BarrierRichness');
+      if(!castor || !olive) return;
+
+      if(variant === 'reactive'){
+        castor.value = '0';
+        olive.value = '0';
+      }else if(variant === 'enhanced'){
+        castor.value = '10';
+        olive.value = '18';
+      }else{
+        castor.value = '10';
+        olive.value = '0';
+      }
+
+      var controller = castor.closest('.glide-controller');
+      if(controller) controller.dataset.skipServerSliderRestore = '1';
+
+      params.delete('variant');
+      var query = params.toString();
+      var next = path + (query ? ('?' + query) : '') + String(window.location.hash || '');
+      window.history.replaceState(window.history.state, '', next);
+    }catch(_e){}
+  }
+
   function initRecipeSliders(){
     initMultiplierControlFixes();
-    initCleanserVariantTabs();
-    bindSlider('r2BalancedCastor', syncOilCleanser);
-    bindSlider('r2EnhancedOlive', syncOilCleanser);
+    bindSlider('r2CleansingPull', syncOilCleanser);
+    bindSlider('r2BarrierRichness', syncOilCleanser);
     bindSlider('r3BalanceCastor', syncProtectiveTouchBalm);
     bindSlider('r3FirmnessWax', syncProtectiveTouchBalm);
     bindSlider('r5Cushion', syncShaveCushion);
     bindSlider('r6Glide', syncMassageSlider);
-    bindSlider('r7Hydration', syncHydrationLayer);
+    bindSlider('r7Glycerin', syncHydrationLayer);
+    bindSlider('r7Inulin', syncHydrationLayer);
+    bindSlider('r15Apricot', syncSkinSoftMassageOil);
+    migrateLegacyOilCleanserVariantRoute();
     decorateSliderSaves();
     syncOilCleanser();
     syncProtectiveTouchBalm();
     syncShaveCushion();
     syncMassageSlider();
     syncHydrationLayer();
+    syncSkinSoftMassageOil();
     Array.prototype.forEach.call(document.querySelectorAll('.recipe-page'), function(recipe){
       if(window.refreshRecipeComedogenic) window.refreshRecipeComedogenic(recipe);
     });
-  }
 
+    try{
+      document.addEventListener('baseline:skincare-saved-data', function(event){
+        var detail = event && event.detail ? event.detail : null;
+        if(detail && detail.status === 'ready'){
+          sliderServerState.loaded = false;
+          applyAllServerSliderStates();
+        }
+      });
+    }catch(_e){}
+
+    try{
+      if(window.BASELINE_auth && typeof window.BASELINE_auth.onChange === 'function'){
+        window.BASELINE_auth.onChange(function(auth){
+          sliderServerState.loaded = false;
+          sliderServerState.loading = null;
+          sliderServerState.revision = 0;
+          sliderServerState.sliders = {};
+          if(auth && auth.ready && auth.authed){
+            applyAllServerSliderStates();
+          }else if(auth && auth.ready){
+            Array.prototype.forEach.call(document.querySelectorAll('.recipe-page .glide-controller[data-slider-save-id]'), function(controller){
+              if(controller.dataset.skipServerSliderRestore === '1'){
+                delete controller.dataset.skipServerSliderRestore;
+                return;
+              }
+              resetControllerToDefaults(controller, controllerSyncFn(controller));
+            });
+          }
+        });
+      }
+    }catch(_e){}
+  }
   initRecipeSliders();
 })();
