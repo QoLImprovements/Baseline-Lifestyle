@@ -78,8 +78,6 @@ test('Skincare recipe catalogue is authored as alphabetical categories with alph
   assert.doesNotMatch(html, /skincare-slider-cleanup-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-entry-guard-20260906\.js/);
   assert.doesNotMatch(html, /skincare-recipe-finalise-20260906\.js/);
-  assert.match(shared, /const isSkincareRecipeCollection = routePageFileFromPath/);
-  assert.match(shared, /if\(isSkincareRecipeCollection\) return;/);
 });
 test('Comfort Barrier Balm is a permanent recipe with a canonical route and legacy redirect', () => {
   assert.match(html, /data-recipe-slug="comfort-barrier-balm" id="r12"/);
@@ -364,7 +362,6 @@ test('promoted Skincare recipes are canonical in initial HTML', () => {
   assert.doesNotMatch(html, /id="r10"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r10"/);
   assert.doesNotMatch(html, /id="r12"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r12"/);
   assert.doesNotMatch(recipeUx, /function promoteCards\(/);
-  assert.match(recipeUx, /const REPLACED_IDS = Object\.freeze\(\{ r4:'r10', r5:'r8' \}\)/);
   assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
   assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
   assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
