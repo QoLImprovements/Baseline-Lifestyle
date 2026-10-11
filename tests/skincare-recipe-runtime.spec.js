@@ -122,11 +122,19 @@ test('Oil Cleanser sliders continuously reproduce Reactive, Balanced and Enhance
   const expectAmounts = async (safflower, castor, olive) => {
     await expect(card.locator('.r2-safflower-amt')).toContainText(safflower + ' ml');
     await expect(card.locator('.r2-castor-amt')).toContainText(castor + ' ml');
-    await expect(card.locator('.r2-olive-amt')).toContainText(olive + ' ml');
-    const total = await card.locator('.r2-safflower-amt, .r2-castor-amt, .r2-olive-amt').evaluateAll((els) =>
-      els.reduce((sum, el) => sum + Number.parseFloat(el.textContent || '0'), 0)
-    );
-    expect(total).toBeCloseTo(100, 6);
+
+    const oliveRow = card.locator('.r2-olive-row');
+    if (Number(olive) === 0) {
+      await expect(oliveRow).toBeHidden();
+      await expect(card.locator('.r2-olive-amt')).toHaveText('0 ml');
+      await expect(card.locator('.r2-olive-amt')).not.toContainText('drop');
+    } else {
+      await expect(oliveRow).toBeVisible();
+      await expect(card.locator('.r2-olive-amt')).toContainText(olive + ' ml');
+    }
+
+    const amounts = [Number(safflower), Number(castor), Number(olive)];
+    expect(amounts.reduce((sum, value) => sum + value, 0)).toBeCloseTo(100, 6);
   };
 
   await expectAmounts('90','10','0');
@@ -150,6 +158,8 @@ test('Oil Cleanser sliders continuously reproduce Reactive, Balanced and Enhance
     el.dispatchEvent(new Event('input',{ bubbles:true }));
   });
   await expectAmounts('72','10','18');
+  await expect(card.locator('a[data-ingredient="ing-vitamin-e"]')).toHaveCount(0);
+  await expect(card.locator('ol[data-recipe-view-group="standard"]')).not.toContainText('Vitamin E');
 });
 
 test('Restorative Hydration Layer keeps a 100% formula across glycerin and inulin controls', async ({ page }) => {
@@ -210,7 +220,7 @@ test('legacy Oil Cleanser variant URLs migrate to slider landmarks and remove ob
   await expect.poll(() => new URL(page.url()).searchParams.get('variant')).toBeNull();
 });
 
-test('Lip Balm direct route is complete before external JavaScript runs', async ({ page }) => {
+test('Comfort Barrier Balm direct route is complete before external JavaScript runs', async ({ page }) => {
   const requested = [];
   page.on('request', request => requested.push(new URL(request.url()).pathname));
 
@@ -220,9 +230,9 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
     return route.continue();
   });
 
-  await page.goto('/baseline-natural-skincare/recipes/testing-lip-balm', { waitUntil:'load' });
+  await page.goto('/baseline-natural-skincare/recipes/comfort-barrier-balm', { waitUntil:'load' });
 
-  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes/testing-lip-balm');
+  expect(new URL(page.url()).pathname).toBe('/baseline-natural-skincare/recipes/comfort-barrier-balm');
   await expect(page.locator('#recipes')).toBeVisible();
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
@@ -256,18 +266,18 @@ test('Lip Balm direct route is complete before external JavaScript runs', async 
   await expect(page.locator('#r12 .glide-breakdown')).toBeHidden();
 
   await expect(page.locator('#r12')).not.toHaveAttribute('data-external-recipe-placeholder', '1');
-  expect(requested).not.toContain('/systems/baseline-natural-skincare/recipes/testing-lip-balm.html');
+  expect(requested).not.toContain('/systems/baseline-natural-skincare/recipes/comfort-barrier-balm.html');
 });
 
-test('Embedded Testing Comfort Barrier Balm preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
+test('Comfort Barrier Balm preserves 100 g slider balance and returns from ingredients', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes');
 
-  const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/testing-lip-balm"]');
+  const link = page.locator('#recipes-landing a[href="/baseline-natural-skincare/recipes/comfort-barrier-balm"]');
   await expect(link).toContainText('Comfort Barrier Balm');
   await expect(link).toHaveAttribute('data-recipe-id', 'r12');
 
   await link.click();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/comfort-barrier-balm$/);
   await expect(page.locator('.bl-homebar')).toBeVisible();
   await expect(page.locator('#recipes')).toHaveClass(/recipe-focus/);
   await expect(page.locator('#r12')).toBeVisible();
@@ -360,7 +370,7 @@ test('Embedded Testing Comfort Barrier Balm preserves 100 g slider balance and r
   await expect(page.locator('#ing-kokum-butter')).toBeVisible();
 
   await page.goBack();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/comfort-barrier-balm$/);
   await expect(page.locator('.bl-homebar')).toBeVisible();
   await expect(page.locator('#r12 h3')).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#r12')).toHaveClass(/recipe-universal-template/);
