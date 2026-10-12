@@ -219,12 +219,14 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
         window.BASELINE_voice &&
         window.BASELINE_fitnessVoice &&
         window.BASELINE_fitnessPlans &&
-        window.BASELINE_auth?.get?.()?.authed,
+        window.BASELINE_auth,
     ),
   );
+  await page.evaluate(() => window.BASELINE_auth.refresh());
+  await expect.poll(() => page.evaluate(() => window.BASELINE_auth.get().authed)).toBe(true);
   await page.evaluate(() => window.BASELINE_fitnessPlans.refresh());
   await expect(page.locator("#calisthenicsPlanSelect")).toBeEnabled();
-  await expect(page.locator("#calisthenicsPlanSelect")).toHaveValue(String(91));
+  await expect(page.locator("#calisthenicsPlanSelect")).toHaveValue("91");
 
   const myRoutineTab = page.locator('.tab[data-target="my-plan"]');
   await expect(myRoutineTab).toBeVisible();
