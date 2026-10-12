@@ -8,7 +8,6 @@ const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/basel
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const foodHtml = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
-const liveStability = fs.readFileSync('sitewide/js/baseline-live-stability-core-v3.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 
 function skincareRecipeBlocks(){
@@ -44,17 +43,13 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
   assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
 });
 
-test('standalone recipe recovery preserves the selected recipe subview', () => {
-  assert.match(liveStability, /const params = new URLSearchParams\(location\.search \|\| ''\)/);
-  assert.match(liveStability, /params\.get\('view'\)/);
-  assert.match(liveStability, /params\.get\('variant'\)/);
-  assert.match(liveStability, /view:view/);
-  assert.match(liveStability, /variant:variant/);
-  assert.match(liveStability, /pending\.view/);
-  assert.match(liveStability, /pending\.variant/);
-  assert.match(liveStability, /__baselineSetRecipeVariant/);
-  assert.match(liveStability, /__baselineSetRecipeView/);
-  assert.match(liveStability, /syncRoute:true/);
+test('shared recipe router preserves the selected recipe subview without a stability layer', () => {
+  assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)/);
+  assert.match(shared, /params\.get\('view'\)/);
+  assert.match(shared, /params\.get\('variant'\)/);
+  assert.match(shared, /__baselineSetRecipeVariant/);
+  assert.match(shared, /__baselineSetRecipeView/);
+  assert.doesNotMatch(shared, /baseline-live-stability-core-v3/);
 });
 
 test('shared method-tag engine maps every ingredient source to one first-use method step', () => {
