@@ -57,24 +57,23 @@ test('games remain physically isolated and hub settings never become a save file
   assert.match(games, /non_persistent_app/);
 });
 
-test('Fitness account state is revisioned and bridged before the application', () => {
+test('Fitness account state is revisioned and server-owned before the application', () => {
   const endpoint = read('systems/baseline-fitness/api/fitness_state.php');
-  const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  const client = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const html = read('systems/baseline-fitness/baseline-fitness.html');
   assert.match(endpoint, /active_workout_plan_not_found/);
   assert.match(endpoint, /active_workout_not_current_session/);
   assert.match(endpoint, /active_workout_step_mismatch/);
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
   assert.doesNotMatch(endpoint, /import_local|profile_conflict|active_workout_conflict|progression_history_conflict/);
-  assert.doesNotMatch(bridge, /import_local|Import browser copy|Keep account copy/);
-  assert.match(bridge, /function retireAuthenticatedLocal\(\)/);
-  assert.match(bridge, /body:revisionedBody\(body\)/);
-  assert.match(bridge, /action:'save_profile'/);
-  assert.match(bridge, /action:'save_active_workout'/);
-  assert.match(bridge, /action:'save_progression_history'/);
-  const bridgeIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.match(client, /body:revisionedBody\(body\)/);
+  assert.match(client, /action:'save_profile'/);
+  assert.match(client, /action:'save_active_workout'/);
+  assert.match(client, /action:'save_progression_history'/);
+  assert.doesNotMatch(client, /localStorage|sessionStorage|indexedDB|import_local|Import browser copy|Keep account copy/);
+  const clientIndex = html.indexOf('/systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const appIndex = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
-  assert.ok(bridgeIndex > -1 && appIndex > bridgeIndex);
+  assert.ok(clientIndex > -1 && appIndex > clientIndex);
 });
 
 test('Fitness browser Saved Data conflicts stop stale retries and block unsafe writes', () => {
@@ -84,18 +83,16 @@ test('Fitness browser Saved Data conflicts stop stale retries and block unsafe w
   assert.match(bridge, /saveBlocked=true/);
   assert.match(bridge, /Fitness saving has stopped/);
   assert.match(bridge, /Reload account Fitness data/);
-  assert.match(bridge, /saveBlocked && \(key===bodyKey\(\) \|\| key\.startsWith\(STEP_PREFIX\)\)/);
+  assert.match(bridge, /if\(!enabled\|\|syncing\|\|saveBlocked\)return null/);
+  assert.match(bridge, /if\(!enabled\|\|saveBlocked\)return false/);
 });
 
-test('Fitness authenticated browser copies are retired instead of imported', () => {
+test('Fitness account state has no browser persistence or import path', () => {
   const endpoint = read('systems/baseline-fitness/api/fitness_state.php');
-  const bridge = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
-  assert.match(bridge, /function retireAuthenticatedLocal\(\)/);
-  assert.match(bridge, /removeKeys=\[bodyKey\(\),outcomeKey\(\),failureKey\(\)\]/);
-  assert.match(bridge, /__bl_fitness_saved_data_import_backup_v1__/);
-  assert.match(bridge, /retireAuthenticatedLocal\(\);[\s\S]{0,100}await reload\(\)/);
-  assert.doesNotMatch(bridge, /quarantineLegacyLocal|prepareImportCandidates|renderMigrationReview|importLegacy|keepAccount|hasImportCandidate/);
-  assert.doesNotMatch(bridge, /Import browser copy|Keep account copy/);
+  const client = read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.doesNotMatch(client, /localStorage|sessionStorage|indexedDB/);
+  assert.doesNotMatch(client, /quarantineLegacyLocal|prepareImportCandidates|renderMigrationReview|importLegacy|keepAccount|hasImportCandidate|retireAuthenticatedLocal/);
+  assert.doesNotMatch(client, /Import browser copy|Keep account copy/);
   assert.doesNotMatch(endpoint, /import_local/);
 });
 
@@ -150,35 +147,35 @@ test('Voice Saved Data stays authoritative for authenticated settings', () => {
   assert.match(voice, /id=\"bl-voice-reload\"/);
   assert.match(voice, /if\(lastSaveSucceeded\) closeSettings\(\)/);
   assert.match(voice, /settings=normaliseSettings\(DEFAULTS\)/);
-  assert.match(voice, /settings=readLocalSettings\(\)/);
+  assert.doesNotMatch(voice, /readLocalSettings|writeLocalSettings|localStorage|sessionStorage|indexedDB/);
 });
 
-test('Food Saved Data remains authoritative and authenticated browser data is retired', () => {
+test('Food Saved Data remains authoritative through the canonical data service', () => {
   const endpoint = read('systems/baseline-food-approach/api/food_data.php');
-  const bridge = read('systems/baseline-food-approach/js/food-saved-data-bridge.js');
-  const bootstrapStart = bridge.indexOf('function bootstrap');
-  const flushStart = bridge.indexOf('function flushPending');
-  assert.ok(bootstrapStart > -1 && flushStart > bootstrapStart);
-  const bootstrap = bridge.slice(bootstrapStart, flushStart);
+  const service = read('systems/baseline-food-approach/js/food-data-service.js');
+  const html = read('systems/baseline-food-approach/baseline-food-approach.html');
 
   assert.match(endpoint, /bl_resource_required_revision_from_input/);
   assert.doesNotMatch(endpoint, /import_missing/);
-  assert.doesNotMatch(bridge, /Import browser Diet Log|importBrowserData|renderMigrationChoice|hasImportCandidate/);
-  assert.doesNotMatch(bootstrap, /syncRequest\(['"]POST['"]/);
-  assert.match(bootstrap, /retireAuthenticatedLegacySource\(\)/);
-  assert.match(bootstrap, /state\.memory=serialise\(serverDocument\)/);
-  assert.match(bridge, /if\(!state\.canSave\)\{blockWrite\(\);return;\}/);
-  assert.match(bridge, /data-food-reload-account/);
-  assert.match(bridge, /sessionAuthenticated\(\)/);
+  assert.match(service, /expectedRevision:state\.revision/);
+  assert.match(service, /response\.status===409&&data\.error==='revision_conflict'/);
+  assert.match(service, /state\.canSave=false/);
+  assert.doesNotMatch(service, /localStorage|sessionStorage|indexedDB|importBrowserData|renderMigrationChoice|hasImportCandidate/);
+  assert.match(html, /\/systems\/baseline-food-approach\/js\/food-data-service\.js/);
+  assert.doesNotMatch(html, /food-saved-data-bridge\.js/);
+  assert.equal(exists('systems/baseline-food-approach/js/food-saved-data-bridge.js'), false);
 });
 
-test('Food signed-out local data is preserved while authenticated legacy data is retired', () => {
-  const bridge = read('systems/baseline-food-approach/js/food-saved-data-bridge.js');
-  assert.match(bridge, /LEGACY_OWNER_KEY='__baseline_food_diet_log_v1_owner__'/);
-  assert.match(bridge, /function clearLegacySource\(\)\{nativeDelete\(STORAGE_KEY\);nativeDelete\(LEGACY_OWNER_KEY\);\}/);
-  assert.match(bridge, /function retireAuthenticatedLegacySource\(\)\{if\(sessionAuthenticated\(\)\)clearLegacySource\(\);\}/);
-  assert.match(bridge, /if\(result\.status===401\)\{setState\('signed-out','',false,false\);return;\}/);
-  assert.doesNotMatch(bridge, /claimLegacyOwner|candidateOwner|importCandidate/);
+test('Food signed-out state stays memory-only and cannot become persistent browser authority', () => {
+  const service = read('systems/baseline-food-approach/js/food-data-service.js');
+  const dietLog = read('systems/baseline-food-approach/js/baseline-diet-log.js');
+  assert.match(service, /response\.status===401/);
+  assert.match(service, /state\.document=defaultDocument\(\)/);
+  assert.match(service, /state\.canSave=false/);
+  assert.match(dietLog, /BaselineFoodData\.read/);
+  assert.match(dietLog, /BaselineFoodData\.write/);
+  assert.doesNotMatch(service, /localStorage|sessionStorage|indexedDB/);
+  assert.doesNotMatch(dietLog, /localStorage|sessionStorage|indexedDB/);
 });
 
 test('account projections and index synchronization exclude authentication secrets', () => {
