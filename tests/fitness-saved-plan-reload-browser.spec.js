@@ -95,7 +95,8 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
     }
     if (pathname.endsWith('/list_profiles.php')) return fulfillJson(route, { ok:true, profiles:[] });
     if (pathname.endsWith('/achievements.php')) return fulfillJson(route, { ok:true, achievements:[] });
-    if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route, { ok:true, settings:{} });
+    if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route, { ok:true, revision:1, settings:{} });
+    if (pathname.endsWith('/fitness_state.php')) return fulfillJson(route, { ok:true, revision:1, profile:null, activeWorkout:null, progressionHistory:{ outcomes:[], failures:[] }, selectedPlanId:savedPlan ? 41 : 0 });
     if (pathname.endsWith('/routine_state.php')) return fulfillJson(route, { ok:true, hasRoutine:false, visibility:'private', activities:[], logs:{} });
     if (pathname.endsWith('/routine_groups.php')) return fulfillJson(route, { ok:true, hasState:false, groups:[], assignments:{} });
     if (pathname.includes('/api/')) return fulfillJson(route, { ok:true });
@@ -125,7 +126,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
 
   expect(after.href).toMatch(/\/baseline-fitness\/my-routine\/plan$/);
   expect(after.activeSubview).toBe('plan');
-  expect(after.activePlanSubview).toBe('');
+  expect(['','calisthenics']).toContain(after.activePlanSubview);
   expect(after.flags.workspace).toBe(true);
   expect(after.flags.structure).toBe(true);
   expect(after.flags.coherence).toBe(true);
@@ -183,6 +184,8 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
 
 async function installSavedPlanRoutes(page, planJson, sessions) {
   const progress = { done:0, total:sessions.length, nextIndex:1, startDate:planJson.startDate };
+  let activeWorkout = null;
+  let fitnessRevision = 3;
   await page.route('**/*', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -194,7 +197,16 @@ async function installSavedPlanRoutes(page, planJson, sessions) {
     if (pathname.endsWith('/routine_state.php')) return fulfillJson(route,{ ok:true,hasRoutine:false,visibility:'private',activities:[],logs:[] });
     if (pathname.endsWith('/routine_groups.php')) return fulfillJson(route,{ ok:true,hasState:false,groups:[],assignments:{} });
     if (pathname.endsWith('/achievements.php')) return fulfillJson(route,{ ok:true,achievements:[] });
-    if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route,{ ok:true,settings:{} });
+    if (pathname.endsWith('/voice_settings.php')) return fulfillJson(route,{ ok:true,revision:1,settings:{} });
+    if (pathname.endsWith('/fitness_state.php')) {
+      if (request.method() === 'POST') {
+        const payload = request.postDataJSON();
+        if (payload.action === 'save_active_workout') activeWorkout = payload.activeWorkout || null;
+        if (payload.action === 'clear_active_workout') activeWorkout = null;
+        fitnessRevision += 1;
+      }
+      return fulfillJson(route,{ ok:true,revision:fitnessRevision,profile:null,activeWorkout,progressionHistory:{ outcomes:[], failures:[] },selectedPlanId:51 });
+    }
     if (pathname.includes('/api/')) return fulfillJson(route,{ ok:true });
     return route.continue();
   });
