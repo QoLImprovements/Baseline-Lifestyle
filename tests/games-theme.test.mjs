@@ -17,7 +17,8 @@ const files = {
   alignment:'sitewide/css/baseline-gradient-alignment.css',
   shared:'sitewide/js/baseline-shared.js',
   protectedCss:'sitewide/css/baseline-protected-access.css',
-  protectedJs:'sitewide/js/baseline-protected-access.js'
+  protectedJs:'sitewide/js/baseline-protected-access.js',
+  hubCss:'systems/baseline-games-hub/css/baseline-games-hub.css'
 };
 
 const g01 = Object.freeze({
@@ -63,13 +64,15 @@ test('sitewide Games fallbacks, homepage card and first paint use G01',async()=>
   assert.match(sitewide,/--bl-flyout-bg-image:linear-gradient\(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%\)!important/);
 });
 
-test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are covered',async()=>{
-  const theme = await read(files.theme);
+test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are covered by their canonical owners',async()=>{
+  const [theme,hubCss] = await Promise.all([read(files.theme),read(files.hubCss)]);
   [
     '.bl-pages-btn','.bl-pages-menu','.bl-pages-link','#bl-auth-flyout .card',
     '#bl-beats-flyout .card','.bl-flyout .bl-select-menu [role="option"]',
-    '.tab','.action','#realmBasecampScreen .realm-location-button'
+    '.tab','.action'
   ].forEach(selector => assert.ok(theme.includes(selector),selector));
+  assert.ok(hubCss.includes('#ninjaPanel .realm-location-button'));
+  assert.ok(hubCss.includes('#ninjaPanel .realm-combat-btn'));
 });
 
 test('remaining Hub summaries, Darts panels and core game surfaces use G01',async()=>{
