@@ -58,7 +58,7 @@ test('shared method-tag engine maps every ingredient source to one first-use met
   assert.match(shared, /dataset\.methodIngredientKey=entry\.key/);
   assert.match(shared, /function bestNaturalMatch\(entry\)/);
   assert.match(shared, /function bestExplicitMatch\(entry\)/);
-  assert.match(shared, /const preferExplicit=!!explicit && \(entry\.genericTerm \|\| \(identityCounts\.get\(entry\.identity\) \|\| 0\)>1\)/);
+  assert.match(shared, /const explicit=bestExplicitMatch\(entry\);[\s\S]*let target=explicit \|\| null/);
   assert.match(shared, /data-method-amounts='first-use'|dataset\.methodAmounts='first-use'/);
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
