@@ -133,15 +133,6 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
       configurable: true,
       value: { getUserMedia: async () => makeStream() },
     });
-    localStorage.setItem(
-      "__baseline_voice_settings_v1__",
-      JSON.stringify({
-        enabled: true,
-        spokenResponses: true,
-        language: "en-GB",
-        maximumRestSeconds: 150,
-      }),
-    );
   });
 
   await page.route("**/sitewide/api/me.php", (route) =>
@@ -174,7 +165,12 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ ok: true, found: false, settings: null }),
+      body: JSON.stringify({ ok: true, revision: 3, found: true, settings: {
+        enabled: true,
+        spokenResponses: true,
+        language: "en-GB",
+        maximumRestSeconds: 150
+      } }),
     }),
   );
   await page.route("**/sitewide/api/realtime_transcription.php", (route) =>
@@ -186,6 +182,7 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
   );
 
   await page.goto("/baseline-fitness/my-plan", { waitUntil: "domcontentloaded" });
+  await expect.poll(() => page.evaluate(() => ({ local:localStorage.length, session:sessionStorage.length }))).toEqual({ local:0, session:0 });
   await page.waitForFunction(() =>
     Boolean(
       window.BASELINE_fitnessWorkout &&
