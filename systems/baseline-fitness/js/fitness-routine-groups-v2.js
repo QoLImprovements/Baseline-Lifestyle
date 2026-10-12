@@ -113,6 +113,9 @@
   function save(data) {
     state.groups=cleanGroups(data?.groups);
     state.assignments=cleanAssignments(data?.assignments,state.groups);
+    /* Group numbering belongs to this owner and should reflect a user mutation
+       immediately; the animation-frame pass remains for heavier layout work. */
+    decoratePlanItemNumbers(groupData(),entityList());
     announce();
     clearTimeout(state.saveTimer);
     if(state.authed && !state.saveBlocked) state.saveTimer=global.setTimeout(saveNow,350);
