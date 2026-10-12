@@ -19,14 +19,13 @@ test('Massage has one authoritative three-page navigation structure', () => {
   assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner)"/g), 3);
 });
 
-test('Types of Massage is contained within Massage Library', () => {
+test('Types Of Massage is contained within Massage Library', () => {
   const libraryStart = html.indexOf('<section class="section" id="library">');
   const plannerStart = html.indexOf('<section class="section" id="planner">');
   assert.ok(libraryStart >= 0 && plannerStart > libraryStart);
   const library = html.slice(libraryStart, plannerStart);
-  assert.match(library, /aria-label="Types of Massage"/);
-  assert.match(library, /data-type-tab="swedishType"/);
-  assert.match(library, /data-type-tab="sportsType"/);
+  assert.match(library, /aria-label="Massage Library categories"/);
+  assert.match(library, /data-library-category="Types Of Massage"/);
   assert.match(library, /id="massageLibraryTabs"/);
   assert.match(library, /id="massageLibraryGrid"/);
 });
