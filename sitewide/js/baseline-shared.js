@@ -3889,19 +3889,21 @@ function parseViewStateHash(hash){
 
       const placements=new Map();
       entries.forEach(entry=>{
-        const natural=bestNaturalMatch(entry);
+        /* Authored data-method-step is the recipe's explicit first-use contract.
+           Never let natural-language heuristics move that ingredient elsewhere;
+           heuristics are only a fallback for unassigned ingredient rows. */
         const explicit=bestExplicitMatch(entry);
-        const preferExplicit=!!explicit && (entry.genericTerm || (identityCounts.get(entry.identity) || 0)>1);
+        let target=explicit || null;
 
-        let target=preferExplicit ? explicit : null;
-        if(!target) target=natural && actionScore(natural)>=2 ? natural : null;
-        if(!target) target=explicit;
-        if(!target) target=natural;
-        if(!target) target=bestSectionMatch(entry);
-        if(!target) target=bestCategoryMatch(entry);
         if(!target){
-          target=steps.find(info=>actionScore(info)>=3) || steps[0];
+          const natural=bestNaturalMatch(entry);
+          if(natural && actionScore(natural)>=2) target=natural;
+          if(!target) target=natural;
+          if(!target) target=bestSectionMatch(entry);
+          if(!target) target=bestCategoryMatch(entry);
+          if(!target) target=steps.find(info=>actionScore(info)>=3) || steps[0];
         }
+
         if(!target) return;
         const list=placements.get(target.index) || [];
         list.push(entry);
