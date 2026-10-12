@@ -154,6 +154,36 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
       body: JSON.stringify(planPayload),
     }),
   );
+  await page.route("**/systems/baseline-fitness/api/list_plans.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        plans: [{
+          planId: planPayload.planId,
+          name: "Calisthenics Plan 1",
+          planJson: planPayload.planJson,
+          sessions: planPayload.sessions,
+          progress: planPayload.progress,
+        }],
+      }),
+    }),
+  );
+  await page.route("**/systems/baseline-fitness/api/fitness_state.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        revision: 4,
+        profile: null,
+        activeWorkout: null,
+        progressionHistory: { outcomes: [], failures: [] },
+        selectedPlanId: planPayload.planId,
+      }),
+    }),
+  );
   await page.route("**/systems/baseline-fitness/api/routine_state.php", (route) =>
     route.fulfill({
       status: 200,
