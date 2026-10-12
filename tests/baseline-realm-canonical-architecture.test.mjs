@@ -14,7 +14,6 @@ const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
 const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
 const lazyScenes=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js');
 const inputs=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-manager.js');
-const runtimeCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css');
 const finalCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css');
 
 test('Realm remains optional and Darts is a first-class module',()=>{
