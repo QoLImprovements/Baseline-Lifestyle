@@ -18,7 +18,7 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js'),
     read('systems/baseline-fitness/js/fitness-routine-groups-v2.js'),
-    read('systems/baseline-food-approach/js/food-saved-data-bridge.js'),
+    read('systems/baseline-food-approach/js/food-data-service.js'),
     read('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js')
   ];
   for(const source of sources){
@@ -96,7 +96,7 @@ test('full-document shared saves refuse stale conflict retries',()=>{
   assert.match(badminton,/serverSaveConflict=true/);
   assert.match(badminton,/serverSaveBlocked=true/);
   assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage/);
-  assert.match(games,/state\.status='conflict';state\.canSave=false/);
+  assert.match(games,/state\.status='conflict';\s*state\.canSave=false/);
 });
 
 
@@ -129,6 +129,6 @@ test('Fitness exercise progression history uses revisioned Saved Data authority'
   assert.match(bridge,/action:'save_progression_history'/);
   assert.match(bridge,/body:revisionedBody\(body\)/);
   assert.match(policy,/await storeSessionOutcomes\(before\)/);
-  assert.match(policy,/savedData\?\.savedDataDisabled/);
+  assert.match(policy,/if\(!savedData\?\.enabled \|\| typeof savedData\.saveProgressionHistory!=='function'\) return false;/);
   assert.match(rollback,/fitness\.json#progressionHistory/);
 });
