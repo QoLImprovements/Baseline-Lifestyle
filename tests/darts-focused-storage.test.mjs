@@ -17,13 +17,14 @@ function memoryStorage(initial={}){
   };
 }
 
-test('Darts storage migrates the legacy v2 key into the v1 primary key',()=>{
+test('Darts storage reads the legacy v2 key without silently creating a browser copy',()=>{
   const legacy={version:3,app:'dartsfocused',selectedGame:'target-lock',level:4,xp:8,custom:{},stats:{}};
   const storage=memoryStorage({[DARTS_LEGACY_STORAGE_KEY]:JSON.stringify(legacy)});
   const profile=loadDartsProfile({storage});
 
   assert.equal(profile.selectedGame,'target-lock');
-  assert.ok(storage.dump()[DARTS_STORAGE_KEY]);
+  assert.equal(storage.dump()[DARTS_STORAGE_KEY],undefined);
+  assert.ok(storage.dump()[DARTS_LEGACY_STORAGE_KEY]);
 });
 
 test('Darts persistence continues to mirror both existing storage keys',()=>{
