@@ -56,7 +56,17 @@
   }
   function groupData() {
     let value={};
-    try { value=UI.readSettings?.(owner()) || {}; } catch (_error) {}
+    try {
+      const canonical=global.BASELINE_FITNESS_ROUTINE_GROUPS?.getState?.();
+      if(canonical?.loaded){
+        value={
+          fitnessRoutineGroups:Array.isArray(canonical.groups)?canonical.groups:[],
+          fitnessRoutineAssignments:canonical.assignments && typeof canonical.assignments==='object'?canonical.assignments:{}
+        };
+      }else{
+        value=UI.readSettings?.(owner()) || {};
+      }
+    } catch (_error) {}
     const seen=new Set();
     const groups=(Array.isArray(value.fitnessRoutineGroups)?value.fitnessRoutineGroups:[])
       .map((group)=>({ id:String(group?.id || '').trim(),title:String(group?.title || '').trim() }))
@@ -583,7 +593,7 @@
     document.addEventListener('click',(event)=>{
       if (event.target?.closest?.('[data-fitness-routine-view="summary"]')) global.requestAnimationFrame(schedule);
     },true);
-    ['baseline:fitness-plans-updated','baseline:routine-settings-changed','baseline:fitness-routine-updated','baseline:fitness-workout-updated'].forEach((name)=>document.addEventListener(name,schedule));
+    ['baseline:fitness-plans-updated','baseline:fitness-routine-groups-updated','baseline:routine-settings-changed','baseline:fitness-routine-updated','baseline:fitness-workout-updated'].forEach((name)=>document.addEventListener(name,schedule));
   }
   function boot() { bind();schedule(); }
 
