@@ -31,7 +31,7 @@ test('all four category panels stay mounted while disclosure interaction remains
 
 test('the canonical Fitness Routine Plan route has no category suffix',()=>{
   assert.match(structure,/if \(view==='plan'\) return `\$\{ROUTE_BASE\}\/plan`/);
-  assert.match(loader,/if \(route\.view==='plan'\) return `\$\{ROUTE_BASE\}\/plan`/);
+  assert.match(loader,/if\(route\?\.view==='plan'\) return `\$\{ROUTE_BASE\}\/plan`/);
   assert.match(deletion,/global\.location\.assign\('\/baseline-fitness\/my-routine\/plan'\)/);
   assert.doesNotMatch(loader,/\/my-routine\/plan\/(?:calisthenics|cardio|other|sports)/);
 });
