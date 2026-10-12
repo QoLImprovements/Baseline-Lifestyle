@@ -20,7 +20,11 @@
   let plans = [];
   let owner = 'guest';
   let selectedPlanMemory=0;
-  let creatingPlan=false;
+  function routeRequestsNewPlan() {
+    try { return new URL(global.location.href).searchParams.get('new-plan')==='1'; }
+    catch (_error) { return false; }
+  }
+  let creatingPlan=routeRequestsNewPlan();
 
   const $ = (selector, root = document) => root.querySelector(selector);
 
