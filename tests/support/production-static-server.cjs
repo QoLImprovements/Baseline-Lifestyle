@@ -64,6 +64,10 @@ const DEFAULT_REDIRECTS = new Map([
   ['/baseline-natural-skincare/ingredient-library/olive-oil', '/baseline-natural-skincare/ingredient-library/olive'],
   ['/baseline-natural-skincare/ingredient-library/rose-water', '/baseline-natural-skincare/ingredient-library/rosewater'],
   ['/baseline-natural-skincare/ingredient-library/safflower-oil', '/baseline-natural-skincare/ingredient-library/safflower'],
+  ['/baseline-natural-skincare/recipes/testing-shaving-gel', '/baseline-natural-skincare/recipes/calming-shave-gel'],
+  ['/baseline-natural-skincare/recipes/testing-natural-tooth-brightening-powder', '/baseline-natural-skincare/recipes/tooth-polishing-powder'],
+  ['/baseline-natural-skincare/recipes/testing-microcurrent-conductive-gel', '/baseline-natural-skincare/recipes/microcurrent-glide-gel'],
+  ['/baseline-natural-skincare/recipes/hydrating-conductive-mist', '/baseline-natural-skincare/recipes/microcurrent-glide-gel'],
   ['/baseline-natural-skincare/recipes/testing-lip-balm', '/baseline-natural-skincare/recipes/comfort-barrier-balm'],
   ['/baseline-natural-skincare', '/baseline-natural-skincare/system'],
   ['/baseline-badminton-session', '/baseline-badminton-session/system'],
@@ -91,7 +95,7 @@ function mapPath(pathname) {
   match = pathname.match(/^\/baseline-natural-skincare\/ingredient-library\/([^/]+)\/?$/);
   if (match) return '/systems/baseline-natural-skincare/baseline-natural-skincare.html';
   match = pathname.match(/^\/baseline-food-approach\/recipes\/([^/]+)\/?$/);
-  if (match) return `/systems/baseline-food-approach/recipes/${match[1]}.html`;
+  if (match) return '/systems/baseline-food-approach/baseline-food-approach.html';
   match = pathname.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)\/?$/);
   if (match) return '/systems/baseline-natural-skincare/baseline-natural-skincare.html';
   match = pathname.match(/^\/baseline-food-approach\/diet-log\/([^/]+)\/?$/);
