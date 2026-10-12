@@ -8,12 +8,12 @@ function todayIso() {
   return new Date().toISOString().slice(0,10);
 }
 
-async function mockGuestApis(page) {
+async function mockAccountApis(page) {
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
     if (pathname.endsWith('/auth_providers.php')) return fulfillJson(route, { ok:true, providers:{ password:true, google:false } });
-    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok:true, authed:false, providers:{ password:true, google:false } });
+    if (pathname.endsWith('/me.php')) return fulfillJson(route, { ok:true, authed:true, name:'Routine Test', email:'routine@example.test', user:{ name:'Routine Test', email:'routine@example.test' }, providers:{ password:true, google:false } });
 
     if (pathname.endsWith('/routine_state.php') && url.searchParams.get('list') === 'public') {
       return fulfillJson(route, { ok:true, profiles:['Public Peter'] });
@@ -60,8 +60,53 @@ async function mockGuestApis(page) {
         }
       });
     }
-    if (pathname.endsWith('/routine_state.php') || pathname.endsWith('/routine_groups.php')) {
-      return fulfillJson(route, { ok:false, error:'not_logged_in' }, 401);
+    if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/routine_state.php')) {
+      return fulfillJson(route, {
+        ok:true,
+        revision:7,
+        visibility:'private',
+        routine:[{
+          id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
+          frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
+        },{
+          id:'browser-oil-cleanse', actionId:'anhydrous-oil-cleanse', title:'Anhydrous Oil Cleanse', timeOfDay:'evening',
+          frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
+        }],
+        logs:{},
+        groups:[
+          { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false },
+          { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false }
+        ],
+        assignments:{ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' }
+      });
+    }
+    if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/routine_groups.php')) {
+      return fulfillJson(route, {
+        ok:true, revision:7, hasState:true,
+        groups:[
+          { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false },
+          { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false }
+        ],
+        assignments:{ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' }
+      });
+    }
+    if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/routine_state.php')) {
+      return fulfillJson(route, {
+        ok:true,
+        revision:11,
+        visibility:'private',
+        activities:[{
+          id:'browser-hatha-yoga', activityId:'hatha-yoga', name:'Hatha Yoga', section:'other', timeOfDay:'anytime',
+          frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:30, intensity:'Moderate' }, notes:'Mobility and controlled breathing'
+        },{
+          id:'browser-easy-run', activityId:'outdoor-running', name:'Easy Run', section:'cardio', timeOfDay:'morning',
+          frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:20 }, notes:'Easy aerobic work'
+        }],
+        logs:{}
+      });
+    }
+    if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/routine_groups.php')) {
+      return fulfillJson(route, { ok:true, revision:11, hasState:false, groups:[], assignments:{} });
     }
     if (pathname.includes('/api/')) return fulfillJson(route, { ok:false, error:'not_logged_in' }, 401);
     return route.continue();
@@ -78,29 +123,9 @@ async function expectFullWidthWeekRows(page, selector) {
 }
 
 test('Skincare uses stable saved groups, one control set and the shared public viewer', async ({ page }) => {
-  await mockGuestApis(page);
-  await page.addInitScript(() => {
-    localStorage.setItem('__bl_skincare_routine_v1__::guest', JSON.stringify({
-      visibility:'private',
-      routine:[{
-        id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
-        frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
-      },{
-        id:'browser-oil-cleanse', actionId:'anhydrous-oil-cleanse', title:'Anhydrous Oil Cleanse', timeOfDay:'evening',
-        frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
-      }],
-      logs:{}
-    }));
-    localStorage.setItem('__bl_skincare_routine_groups_v3__::guest', JSON.stringify({
-      groups:[
-        { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false },
-        { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false }
-      ],
-      assignments:{ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' }
-    }));
-  });
-
+  await mockAccountApis(page);
   await page.goto('/systems/baseline-natural-skincare/baseline-natural-skincare.html#tab=routine', { waitUntil:'domcontentloaded' });
+  await expect.poll(() => page.evaluate(() => ({ local:localStorage.length, session:sessionStorage.length }))).toEqual({ local:0, session:0 });
   await expect(page.locator('#routine')).toHaveClass(/active/);
   await expect(page.locator('html')).not.toHaveAttribute('data-skincare-routine-booting','true');
 
@@ -155,21 +180,9 @@ test('Skincare uses stable saved groups, one control set and the shared public v
 });
 
 test('Fitness uses one four-view structure, grouping, compact Log and faithful public views', async ({ page }) => {
-  await mockGuestApis(page);
-  await page.addInitScript(() => {
-    localStorage.setItem('__bl_fitness_routine_v2__::guest', JSON.stringify({
-      activities:[{
-        id:'browser-hatha-yoga', activityId:'hatha-yoga', name:'Hatha Yoga', section:'other', timeOfDay:'anytime',
-        frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:30, intensity:'Moderate' }, notes:'Mobility and controlled breathing'
-      },{
-        id:'browser-easy-run', activityId:'outdoor-running', name:'Easy Run', section:'cardio', timeOfDay:'morning',
-        frequency:{ mode:'weekly', days:[], timesPerWeek:1 }, targetMetrics:{ durationMinutes:20 }, notes:'Easy aerobic work'
-      }],
-      logs:{}
-    }));
-  });
-
+  await mockAccountApis(page);
   await page.goto('/baseline-fitness/my-routine', { waitUntil:'domcontentloaded' });
+  await expect.poll(() => page.evaluate(() => ({ local:localStorage.length, session:sessionStorage.length }))).toEqual({ local:0, session:0 });
   await expect(page.locator('html')).not.toHaveAttribute('data-fitness-routine-booting','true');
   await expect(page).toHaveURL(/\/baseline-fitness\/my-routine/);
 
