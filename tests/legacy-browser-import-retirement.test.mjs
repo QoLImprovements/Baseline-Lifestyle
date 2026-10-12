@@ -20,10 +20,11 @@ test('current system save paths remain server-authoritative and revision protect
   const fitnessRoutine=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
   const skincare=read('systems/baseline-natural-skincare/js/skincare-routine.js');
   const games=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
-  const badminton=read('systems/baseline-badminton-session/js/badminton-session-server.js');
+  const badmintonTransport=read('systems/baseline-badminton-session/js/badminton-session-server.js');
+  const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const massage=read('systems/baseline-massage/js/baseline-massage-persistence.js');
 
-  for(const source of [food,fitness,fitnessRoutine,skincare,games,badminton,massage]){
+  for(const source of [food,fitness,fitnessRoutine,skincare,games,badmintonTransport,badminton,massage]){
     assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
   }
   assert.match(food,/expectedRevision/);
@@ -31,7 +32,9 @@ test('current system save paths remain server-authoritative and revision protect
   assert.match(fitnessRoutine,/expectedRevision|revision/);
   assert.match(skincare,/expectedRevision/);
   assert.match(games,/expectedRevision/);
-  assert.match(badminton,/expectedRevision|serverRevision/);
+  assert.match(badminton,/expectedRevision/);
+  assert.match(badminton,/serverRevision/);
+  assert.match(badminton,/revision_conflict/);
   assert.match(massage,/expectedRevision|revision/);
 });
 
