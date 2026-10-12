@@ -18,8 +18,9 @@ test('Charity banner has complete static controls in canonical order', () => {
   assert.ok(right < binaural && binaural < account, 'Binaural and Account must exist inside right controls');
 });
 
-test('Charity loads header stability CSS directly and cache-busts shared runtime', () => {
-  assert.match(html, /baseline-live-stability\.css\?v=BASELINE_CHARITY_HEADER_20260803_2/);
+test('Charity uses canonical header styling and cache-busts shared runtime', () => {
+  assert.doesNotMatch(html, /baseline-live-stability\.css/);
+  assert.match(html, /baseline-header-canonical\.css/);
   assert.match(html, /baseline-protected-access\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
   assert.match(html, /baseline-shared\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
 });
