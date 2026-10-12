@@ -45,7 +45,7 @@ test('Food recipe sources are content fragments only', () => {
   for (const name of files) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
     assert.match(html, /^<!-- Canonical Food recipe content source\./);
-    assert.match(html, /class="recipe card recipe-page"/);
+    assert.match(html, /class="recipe card recipe-page recipe-universal-template"/);
     assert.doesNotMatch(html, /<!DOCTYPE|<html\b|<head\b|<body\b|<script\b|<link\b/i);
     assert.doesNotMatch(html, /standalone-recipe-card|food-recipe-shell|food-recipe-top/);
     assert.doesNotMatch(html, /ingredient-library#ing-|href="#ing-/);
@@ -117,7 +117,7 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
 
   for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
-    assert.match(html, /class="recipe card recipe-page"/);
+    assert.match(html, /class="recipe card recipe-page recipe-universal-template"/);
   }
 });
 
