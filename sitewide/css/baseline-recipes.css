@@ -511,8 +511,6 @@
    - Ensure action buttons never rely on floats
    -------------------------------------------------------------------------- */
 
-.recipe-top-bar{ display:none !important; }
-#recipes.recipe-open-mode.recipe-focus .recipe-top-bar{ display:none !important; }
 
 .print-btn, .back-btn{ float:none !important; }
 
