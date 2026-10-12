@@ -83,7 +83,7 @@ test('Games Hub has no artificial first-paint gate and one primary startup autho
 
   assert.doesNotMatch(hubHtml, /data-games-document-pending|visibility:hidden!important|baseline-games-first-paint-release|baseline:games-hub:visual-ready|data-games-hub-boot/);
   assert.doesNotMatch(loader, /baseline:games-hub:visual-ready|signalVisualReady|data-games-hub-boot/);
-  assert.match(hubHtml, /id="baseline-games-route-first-paint"/);
+  assert.match(hubHtml, /id="baseline-games-route-state"/);
   assert.match(hubCss, /\.section\{display:none\}\.section\.active\{display:block\}/);
   assert.doesNotMatch(hubCss, /\.section\{display:none;animation:fade/);
 
