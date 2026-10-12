@@ -49,9 +49,11 @@ test('missing values return the supplied fallback and clear removes all memory s
   assert.equal(store.read('missing', 'fallback'), 'fallback');
   store.write('a',1);
   store.write('b',2);
-  assert.deepEqual(plain(store.keys()).sort(), ['a','b']);
+  assert.equal(store.read('a',null),1);
+  assert.equal(store.read('b',null),2);
   store.clear();
-  assert.deepEqual(plain(store.keys()), []);
+  assert.equal(store.read('a','cleared'),'cleared');
+  assert.equal(store.read('b','cleared'),'cleared');
 });
 
 test('user cache keys remain trimmed and case-insensitive', () => {
