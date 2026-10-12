@@ -135,7 +135,7 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
     });
   });
 
-  await page.route("**/sitewide/api/me.php", (route) =>
+  await page.route("**/api/me.php", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
