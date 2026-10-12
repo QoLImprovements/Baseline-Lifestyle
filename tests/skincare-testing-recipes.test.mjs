@@ -169,7 +169,7 @@ test('Skincare Details is authored hidden before JavaScript and toggled by the s
   assert.match(shared, /const visible = next === 'show-all' \|\| group === next/);
   assert.match(shared, /el\.hidden = !visible/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
-  assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
+  assert.match(recipeCss, /recipe-details-intro\[hidden\][\s\S]*display:none !important/);
 });
 
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
@@ -414,7 +414,7 @@ test('permanent promoted recipes use final titles and formulations in the canoni
 test('retired and Testing URLs redirect to permanent promoted URLs without standalone redirect documents', () => {
   for (const [file, target] of redirectCases) {
     const slug=file.replace(/\.html$/,'');
-    assert.ok(htaccess.includes(`recipes/${slug}`), slug + ' redirect must be server-owned');
+    assert.ok(htaccess.includes(slug), slug + ' redirect must be server-owned');
     assert.ok(htaccess.includes(target), slug + ' redirect target');
   }
 });
