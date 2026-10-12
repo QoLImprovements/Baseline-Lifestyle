@@ -9,6 +9,7 @@ const storageUi=fs.readFileSync('systems/baseline-games-hub/js/games-server-stor
 const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js','utf8');
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
 const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css','utf8');
+const realmRebuild=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css','utf8');
 const realmWood=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
 const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
 const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
@@ -22,17 +23,15 @@ test('HTML loads storage authority, core, then normal modules',()=>{
   assert.ok(guardIndex>=0&&coreIndex>guardIndex&&moduleIndex>coreIndex);
 });
 
-test('Games Hub first paint waits for one stable optional-loader render',()=>{
-  assert.match(html,/data-games-hub-boot/);
-  assert.match(html,/baseline:games-hub:visual-ready/);
-  assert.match(html,/visibility:hidden!important/);
-  assert.match(html,/window\.setTimeout\(reveal,4000\)/);
-  assert.match(optional,/signalVisualReady/);
-  assert.match(core,/BASELINE_GAMES_HUB_INITIAL_RENDER_READY = initialRenderReady/);
+test('Games Hub first paint is route-owned before optional modules settle',()=>{
+  assert.match(html,/id="baseline-games-route-state"/);
+  assert.match(html,/setAttribute\("data-initial-section",t\)/);
+  assert.doesNotMatch(html,/data-games-hub-boot|baseline:games-hub:visual-ready|visibility:hidden!important/);
+  assert.match(core,/BASELINE_GAMES_HUB_INITIAL_RENDER_READY=initialRenderReady/);
+  assert.match(optional,/function waitCore\(\)/);
   assert.match(optional,/await Promise\.resolve\(window\.BASELINE_GAMES_HUB_INITIAL_RENDER_READY\)/);
   assert.match(optional,/await Promise\.allSettled\(\[/);
   assert.match(optional,/return loadRealm\(\)\.catch/);
-  assert.match(optional,/requestAnimationFrame\(\(\)=>signalVisualReady\(\)\)/);
 });
 
 test('module entry loads non-blocking storage messaging before optional loaders',()=>{
@@ -59,7 +58,7 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
 });
 
 test('storage authority owns persistence only and never game controls',()=>{
-  assert.match(guard,/GAMES_HUB_STORAGE_20260913_1/);
+  assert.match(guard,/GAMES_HUB_SERVER_AUTHORITY_20261006_1/);
   assert.match(guard,/canBrowse:\(\)=>true/);
   assert.match(guard,/canPlay:\(\)=>true/);
   assert.match(guard,/canSave:\(\)=>state\.canSave/);
@@ -69,7 +68,8 @@ test('storage authority owns persistence only and never game controls',()=>{
 
 test('account-state settlement reboots storage in place without reloading the page',()=>{
   assert.doesNotMatch(guard,/location\.reload\s*\(/);
-  assert.match(guard,/bootstrap\(\);\s*emitStorageState\(\);/);
+  assert.match(guard,/document\.addEventListener\('baseline:auth',\(\)=>bootstrap\(\)\);/);
+  assert.match(guard,/function setState\([\s\S]*?emitStorageState\(\);/);
 });
 
 test('core remains the sole owner of normal Hub controls',()=>{
@@ -110,7 +110,7 @@ test('final Realm authority guarantees characters and controls',()=>{
   assert.match(realmAuthority,/alder-veil-run\.svg/);
   assert.match(realmAuthority,/mossblade-pursuer\.svg/);
   assert.match(realmAuthority,/pointer-events:auto!important/);
-  assert.match(realmAuthority,/animation-play-state:paused!important/);
+  assert.match(realmRebuild,/animation-play-state:paused!important/);
 });
 
 test('JavaScript and CSS use the central revalidation policy',()=>{
