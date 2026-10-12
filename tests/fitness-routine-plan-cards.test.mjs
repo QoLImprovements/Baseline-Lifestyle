@@ -7,7 +7,6 @@ const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.j
 const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const css=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
-const selection=read('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js');
 const deletion=read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js');
 
 test('Routine Plan is one page with four collapsible category cards and no nested subtabs',()=>{
@@ -33,9 +32,8 @@ test('all four category panels stay mounted while disclosure interaction remains
 test('the canonical Fitness Routine Plan route has no category suffix',()=>{
   assert.match(structure,/if \(view==='plan'\) return `\$\{ROUTE_BASE\}\/plan`/);
   assert.match(loader,/if \(route\.view==='plan'\) return `\$\{ROUTE_BASE\}\/plan`/);
-  assert.match(selection,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan'/);
   assert.match(deletion,/global\.location\.assign\('\/baseline-fitness\/my-routine\/plan'\)/);
-  assert.doesNotMatch(selection,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan\/calisthenics'/);
+  assert.doesNotMatch(loader,/\/my-routine\/plan\/(?:calisthenics|cardio|other|sports)/);
 });
 
 test('Fitness card styling uses native details and the existing Fitness/My Routine palette',()=>{
