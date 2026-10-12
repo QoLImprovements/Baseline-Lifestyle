@@ -31,12 +31,12 @@ test('Badminton timing authority preserves remaining delay across hidden time',(
   assert.match(timerAuthority,/resume\(autoTimer\)/);
 });
 
-test('Badminton hidden time is excluded from contact-response timing',()=>{
+test('Badminton hidden time is excluded from contact-response timing paths',()=>{
   assert.match(runtime,/onHiddenDuration:hiddenFor=>\{[\s\S]*activeState\.contactAt\+=hiddenFor/);
 
-  const wait=runtimeSection('answerWait','tempoContact');
+  const waitStart=runtimeSection('startWaitContact','renderFourCorner');
   const tempo=runtimeSection('tempoContact','newRound');
-  assert.match(wait,/performance\.now\(\)-s\.contactAt/);
+  assert.match(waitStart,/later\(\(\)=>\{if\(!s\.feedback\)\{record\(false,\{late:true\}\)/);
   assert.match(tempo,/performance\.now\(\)-s\.contactAt/);
 });
 
