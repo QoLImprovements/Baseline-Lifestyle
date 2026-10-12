@@ -22,10 +22,6 @@ function accountCopy(state){
     html:'<strong>Temporary play is active.</strong><span class="inline-note">All games remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
     description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
   };
-  if(state.status==='migration-failed')return{
-    html:'<strong>Temporary play is active; saving is paused.</strong><span class="inline-note">Your existing browser save was left untouched because it could not be copied safely.</span>',
-    description:'Games remain playable. Temporary progress is not saved and does not overwrite account data.'
-  };
   return{
     html:'<strong>Temporary play is active; saving is unavailable.</strong><span class="inline-note">All games remain playable while the save service is unavailable.</span>',
     description:'Temporary progress is kept only for this page session and does not overwrite account data.'
