@@ -27,8 +27,8 @@ test('Badminton has one revision-aware server writer and no browser fallback per
 
 test('clean recipe detail routes use the complete parent applications only',()=>{
   const htaccess=read('.htaccess');
-  assert.match(htaccess,/baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-food-approach\/baseline-food-approach\.html/);
-  assert.match(htaccess,/baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
+  assert.ok(htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]'));
+  assert.ok(htaccess.includes('RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]'));
   assert.doesNotMatch(htaccess,/baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-natural-skincare\/recipes\/\$1\.html/);
 });
 
