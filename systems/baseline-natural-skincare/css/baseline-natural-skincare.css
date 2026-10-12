@@ -925,7 +925,6 @@ html[data-initial-section="recipes"] body[data-app] #system.section{display:none
 html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
 html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
-html[data-initial-recipe-route="1"][data-initial-recipe-pending="1"] body[data-app] #recipes .recipe-page{visibility:hidden!important}
 html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant] body[data-app="skin"] #r2 .variant-panel{display:none!important}
 html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="reactive"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="reactive"],
 html[data-initial-recipe-slug="anhydrous-oil-cleanser"][data-initial-recipe-variant="balanced"] body[data-app="skin"] #r2 .variant-panel[data-variant-panel="balanced"],
