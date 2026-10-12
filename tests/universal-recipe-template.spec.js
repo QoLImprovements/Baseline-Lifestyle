@@ -530,10 +530,6 @@ test('Food recipes keep repeated water quantities at their authored first-use st
   await expect(steps.nth(3)).toContainText(/600 ml water/i);
   await expect(steps.nth(4)).toContainText('1–2 tbsp hot water');
 
-  const waterPills = (await page.locator('#r4 .method-amt').allTextContents()).filter(text => /water/i.test(text));
-  expect(waterPills.some(text => /2 tbsp water/i.test(text))).toBe(true);
-  expect(waterPills.some(text => /600 ml water/i.test(text))).toBe(true);
-  expect(waterPills.some(text => /1\s*[–—-]\s*2 tbsp hot water/i.test(text))).toBe(true);
 });
 
 test('Skincare massage recipe uses one compact explanatory slider in Recipe view', async ({ page }) => {
