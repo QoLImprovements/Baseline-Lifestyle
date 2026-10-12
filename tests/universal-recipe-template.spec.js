@@ -568,12 +568,14 @@ test('Skincare massage recipe uses one compact explanatory slider in Recipe view
   await expect(card.getByRole('heading', { name:/Comedogenic Considerations/i })).toHaveCount(0);
 
   await card.locator('[data-recipe-subtab="guidance"]').click();
-  await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
+  await expect(card.getByRole('heading', { name: /^Usage$/i }).first()).toBeVisible();
+  await expect(card.getByRole('heading', { name: /^Storage$/i }).first()).toBeVisible();
   await expect(card.getByRole('heading', { name: /^Method$/i }).first()).toBeHidden();
 
   await card.locator('[data-recipe-subtab="show-all"]').click();
   await expect(card.getByRole('heading', { name: /^Method$/i }).first()).toBeVisible();
-  await expect(card.getByRole('heading', { name: /Storage & Use/i }).first()).toBeVisible();
+  await expect(card.getByRole('heading', { name: /^Usage$/i }).first()).toBeVisible();
+  await expect(card.getByRole('heading', { name: /^Storage$/i }).first()).toBeVisible();
   await expect(card.locator('.recipe-details-intro')).toBeVisible();
 });
 
