@@ -29,8 +29,6 @@ async function diagnosticState(page, phase) {
     return {
       href:location.href,
       readyState:document.readyState,
-      sessionView:sessionStorage.getItem('__bl_fitness_routine_view_v2__'),
-      planView:sessionStorage.getItem('__bl_fitness_plan_view_v4__'),
       initialTab:document.documentElement.getAttribute('data-initial-fitness-tab'),
       section:Boolean(section), sectionState:styles(section), shell:Boolean(shell), shellState:styles(shell),
       calisthenics:Boolean(calisthenics), calisthenicsState:styles(calisthenics),
@@ -125,8 +123,7 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   await page.waitForTimeout(1800);
   const after = await diagnosticState(page, 'AFTER_RELOAD');
 
-  expect(after.sessionView).toBe('plan');
-  expect(after.planView).toBe('calisthenics');
+  expect(after.href).toMatch(/\/baseline-fitness\/my-routine\/plan$/);
   expect(after.activeSubview).toBe('plan');
   expect(after.activePlanSubview).toBe('');
   expect(after.flags.workspace).toBe(true);
@@ -177,14 +174,11 @@ test('Fitness saves, summarises, reloads and creates another plan without unstab
   await expect(page).toHaveURL(/\/baseline-fitness\/my-routine\/plan$/);
   await openFitnessPlanCard(page,'calisthenics');
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
-  const createMarker = await page.evaluate(() => {
-    for (let index=0; index<localStorage.length; index+=1) {
-      const key = localStorage.key(index) || '';
-      if (key.startsWith('__bl_fitness_creating_plan_v1__::')) return localStorage.getItem(key);
-    }
-    return null;
-  });
-  expect(createMarker).toBe('1');
+  const browserPersistence = await page.evaluate(() => ({
+    local:localStorage.length,
+    session:sessionStorage.length
+  }));
+  expect(browserPersistence).toEqual({ local:0, session:0 });
 });
 
 async function installSavedPlanRoutes(page, planJson, sessions) {
