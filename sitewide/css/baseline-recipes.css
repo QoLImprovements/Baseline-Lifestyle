@@ -4552,6 +4552,10 @@ html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button
   line-height:1 !important;
   text-decoration:none !important;
 }
+/* Visibility state outranks the viewbar presentation reset above. */
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle.recipe-view-hidden{
+  display:none !important;
+}
 html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle[aria-expanded="true"]::after{
   transform:rotate(180deg) !important;
 }
