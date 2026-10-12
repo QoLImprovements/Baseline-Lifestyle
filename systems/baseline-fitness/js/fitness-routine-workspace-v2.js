@@ -8,9 +8,6 @@
   global.__BASELINE_FITNESS_ROUTINE_WORKSPACE__ = true;
 
   const API = '/systems/baseline-fitness/api/routine_state.php';
-  const STORAGE_PREFIX = '__bl_fitness_routine_v2__::';
-  const LEGACY_STORAGE_PREFIX = '__bl_fitness_routine_v1__::';
-  const PLAN_VIEW_KEY = '__bl_fitness_plan_view_v4__';
   const SAVE_DELAY = 500;
   const DAYS = Object.freeze(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
   const TIMES = Object.freeze([
@@ -38,7 +35,12 @@
     calendarAnchor:firstOfMonth(new Date()),
     activities:[],
     logs:{},
+    revision:0,
     saveTimer:0,
+    saveInFlight:false,
+    saveQueued:false,
+    saveBlocked:false,
+    loadToken:0,
     loaded:false,
     openPicker:'',
     pickerQuery:{ cardio:'', other:'', sports:'' },
@@ -275,32 +277,6 @@
     return { due:true, detail:'Optional / as needed' };
   }
 
-  function storageKey(owner = state.owner, legacy = false) {
-    return `${legacy ? LEGACY_STORAGE_PREFIX : STORAGE_PREFIX}${normaliseOwner(owner)}`;
-  }
-
-  function readLocal(owner = state.owner) {
-    try {
-      const raw = global.localStorage?.getItem(storageKey(owner)) || global.localStorage?.getItem(storageKey(owner, true));
-      const value = raw ? JSON.parse(raw) : null;
-      return value && typeof value === 'object'
-        ? { activities:normaliseActivities(value.activities), logs:normaliseLogs(value.logs) }
-        : null;
-    } catch (_error) {
-      return null;
-    }
-  }
-
-  function writeLocal() {
-    try {
-      global.localStorage?.setItem(storageKey(), JSON.stringify({
-        activities:state.activities,
-        logs:state.logs,
-        updatedAt:new Date().toISOString()
-      }));
-    } catch (_error) {}
-  }
-
   async function request(options = {}) {
     try {
       const response = await fetch(API, {
@@ -311,24 +287,42 @@
       });
       let data = null;
       try { data = await response.json(); } catch (_error) {}
-      return data && typeof data === 'object' ? data : { ok:false, error:`http_${response.status}` };
+      return { ok:Boolean(response.ok && data?.ok),status:response.status,data:data && typeof data === 'object' ? data : null };
     } catch (_error) {
-      return { ok:false, error:'network_error' };
+      return { ok:false,status:0,data:null };
     }
   }
 
+  function announceRevision() {
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-resource-revision',{ detail:{ revision:state.revision } })); } catch (_error) {}
+  }
+  function markSaveBlocked(error='save_failed') {
+    state.saveBlocked=true;
+    document.documentElement.setAttribute('data-fitness-routine-save-blocked',String(error));
+    try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-save-error',{ detail:{ error:String(error) } })); } catch (_error) {}
+  }
   async function saveNow() {
     clearTimeout(state.saveTimer);
     state.saveTimer = 0;
-    writeLocal();
-    if (!state.authed) return;
-    await request({ method:'POST', body:{ activities:state.activities, logs:state.logs } });
+    if (!state.authed || state.saveBlocked) return;
+    if (state.saveInFlight) { state.saveQueued=true;return; }
+    state.saveInFlight=true;
+    const response=await request({ method:'POST', body:{ activities:state.activities, logs:state.logs, expectedRevision:state.revision } });
+    if(response.ok){
+      state.revision=Number(response.data?.revision || state.revision || 0);
+      state.saveBlocked=false;
+      document.documentElement.removeAttribute('data-fitness-routine-save-blocked');
+      announceRevision();
+    }else{
+      markSaveBlocked(response.data?.error || (response.status ? `http_${response.status}` : 'network_error'));
+    }
+    state.saveInFlight=false;
+    if(state.saveQueued && !state.saveBlocked){ state.saveQueued=false;saveNow(); }
   }
 
   function scheduleSave() {
-    writeLocal();
     clearTimeout(state.saveTimer);
-    state.saveTimer = global.setTimeout(saveNow, SAVE_DELAY);
+    if(state.authed && !state.saveBlocked) state.saveTimer = global.setTimeout(saveNow, SAVE_DELAY);
   }
 
   function selectOptions(values, selected) {
@@ -392,7 +386,7 @@
     ['cardio','other','sports'].forEach(buildActivityPanel);
 
     const initialTop=String(document.documentElement.dataset.initialRoutineView || '');
-    const initialPlan=String(document.documentElement.dataset.initialRoutinePlan || global.sessionStorage?.getItem(PLAN_VIEW_KEY) || 'calisthenics');
+    const initialPlan=String(document.documentElement.dataset.initialRoutinePlan || 'calisthenics');
     const initialView=initialTop==='plan' && VIEWS.includes(initialPlan)
       ? initialPlan
       : (initialTop==='summary' || initialTop==='public' ? 'summary' : 'log');
@@ -1087,7 +1081,9 @@
   }
 
   async function loadForAuth(snapshot) {
-    const authed = Boolean(snapshot?.authed);
+    if(!snapshot?.ready) return;
+    const token=++state.loadToken;
+    const authed = Boolean(snapshot.authed);
     const owner = authed ? String(snapshot.name || snapshot.user?.name || '').trim() : 'guest';
     const nextOwner = owner || 'guest';
     const changed = normaliseOwner(nextOwner) !== normaliseOwner(state.owner);
@@ -1095,24 +1091,33 @@
     state.owner = nextOwner;
     if (!changed && state.loaded) return;
 
-    const local = readLocal(state.owner);
-    state.activities = local?.activities || [];
-    state.logs = normaliseLogs(local?.logs || {});
-    state.loaded = true;
-    renderStableState();
-    if (!authed) return;
+    state.activities=[];
+    state.logs={};
+    state.revision=0;
+    state.saveBlocked=false;
+    state.loaded=false;
+    document.documentElement.removeAttribute('data-fitness-routine-save-blocked');
 
-    const before = JSON.stringify({ activities:state.activities,logs:state.logs });
-    const response = await request();
-    if (response.ok && response.hasRoutine) {
-      state.activities = normaliseActivities(response.activities);
-      state.logs = normaliseLogs(response.logs);
-      writeLocal();
-    } else if (state.activities.length || Object.keys(state.logs).length) {
-      saveNow();
+    if(!authed){
+      state.loaded=true;
+      renderStableState();
+      return;
     }
-    const after = JSON.stringify({ activities:state.activities,logs:state.logs });
-    if (after !== before) renderStableState();
+
+    const response = await request();
+    if(token!==state.loadToken) return;
+    if(response.ok){
+      state.activities = normaliseActivities(response.data?.activities);
+      state.logs = normaliseLogs(response.data?.logs);
+      state.revision=Number(response.data?.revision || 0);
+      state.loaded=true;
+      announceRevision();
+      renderStableState();
+      return;
+    }
+
+    state.loaded=true;
+    markSaveBlocked(response.data?.error || (response.status ? `http_${response.status}` : 'network_error'));
   }
 
   function attachAuth() {
@@ -1129,6 +1134,10 @@
     makeWorkspace();
     bindEvents();
     document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
+    document.addEventListener('baseline:fitness-routine-groups-updated',(event)=>{
+      const revision=Number(event.detail?.revision);
+      if(Number.isFinite(revision) && revision>=0) state.revision=revision;
+    });
     try {
       global.BASELINE_fitnessRoutine = Object.freeze({
         getState:() => ({
@@ -1136,7 +1145,10 @@
           logs:normaliseLogs(state.logs),
           selectedDate:state.selectedDate,
           activeView:state.activeView,
-          calendarView:state.calendarView
+          calendarView:state.calendarView,
+          revision:state.revision,
+          loaded:state.loaded,
+          saveBlocked:state.saveBlocked
         }),
         selectView:(view) => activateView(view, true),
         render:renderAll

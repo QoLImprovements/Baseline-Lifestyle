@@ -24,7 +24,9 @@
     "test:saved-data": "node --test tests/saved-data-contract.test.mjs tests/resource-authority-contract.test.mjs tests/voice-recognition-policy.test.mjs tests/persistent-browser-revision-contract.test.mjs",
     "test:migration-exporter": "php tests/sqlite-exporter-contract.php && php tests/sqlite-source-inventory-contract.php && php tests/badminton-export-schema-contract.php && php tests/voice-export-schema-contract.php && php tests/external-sqlite-authority-contract.php && php tests/hostinger-cutover-preflight-contract.php && php tests/resource-cutover-rollback-contract.php && php tests/saved-data-cutover-package-contract.php",
     "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/session-contract.php && php tests/authentication-contract.php && php tests/mail-contract.php && php tests/account-recovery-contract.php && php tests/database-contract.php && php tests/saved-data-contract.php && php tests/resource-authority-contract.php && npm run test:migration-exporter",
-    "test:badminton-session": "node --test tests/badminton-sitout-types.test.mjs tests/badminton-pair-id-model.test.mjs tests/badminton-architecture-phase2.test.mjs tests/badminton-rollover-regression.test.mjs tests/badminton-hardship-ui-persistence.test.mjs tests/badminton-persistent-hardships.test.mjs tests/badminton-attendance-generation.test.mjs tests/badminton-session-core.test.mjs"
+    "test:badminton-session": "node --test tests/badminton-sitout-types.test.mjs tests/badminton-pair-id-model.test.mjs tests/badminton-architecture-phase2.test.mjs tests/badminton-rollover-regression.test.mjs tests/badminton-hardship-ui-persistence.test.mjs tests/badminton-persistent-hardships.test.mjs tests/badminton-attendance-generation.test.mjs tests/badminton-session-core.test.mjs",
+    "audit:authority": "node tools/single-authority-audit.mjs",
+    "audit:authority:strict": "node tools/single-authority-audit.mjs --strict"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"

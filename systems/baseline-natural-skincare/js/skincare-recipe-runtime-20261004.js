@@ -308,121 +308,137 @@
     paintTrack(slider);
   }
 
-  var sliderServerState = {
-    loaded:false,
-    revision:0,
-    sliders:{}
-  };
+  var SLIDER_API='/systems/baseline-natural-skincare/api/skincare_data.php';
+  var sliderServerState={loaded:false,revision:0,sliders:{},loadPromise:null,saveBlocked:false};
 
   function sliderAuth(){
-    try{
-      return (window.BASELINE_auth && typeof window.BASELINE_auth.get === 'function') ? window.BASELINE_auth.get() : null;
-    }catch(_e){
-      return null;
-    }
+    try{return window.BASELINE_auth&&typeof window.BASELINE_auth.get==='function'?window.BASELINE_auth.get():null;}
+    catch(_e){return null;}
   }
 
-  function sliderClient(){
-    var client = window.BaselineSkincareSavedData;
-    return client && typeof client.getSliderState === 'function' ? client : null;
-  }
-
-  function absorbSliderServerState(snapshot){
-    if(!snapshot || typeof snapshot !== 'object') return false;
-    sliderServerState.revision = Number(snapshot.revision || 0);
-    sliderServerState.sliders = (snapshot.sliders && typeof snapshot.sliders === 'object') ? snapshot.sliders : {};
-    sliderServerState.loaded = !!(snapshot.authenticated && snapshot.ready);
-    return sliderServerState.loaded;
+  function sliderRevisionEvent(){
+    try{document.dispatchEvent(new CustomEvent('baseline:skincare-resource-revision',{detail:{revision:sliderServerState.revision}}));}catch(_e){}
   }
 
   async function loadSliderServerState(force){
-    var auth = sliderAuth();
-    if(!(auth && auth.ready && auth.authed)) return false;
-    var client = sliderClient();
-    if(!client) return false;
-    try{
-      var snapshot = force && typeof client.reloadSliderState === 'function'
-        ? client.reloadSliderState()
-        : client.getSliderState();
-      return absorbSliderServerState(snapshot);
-    }catch(_e){
+    var auth=sliderAuth();
+    if(!(auth&&auth.ready&&auth.authed)){
+      sliderServerState.loaded=Boolean(auth&&auth.ready);
+      sliderServerState.sliders={};
       return false;
     }
+    if(sliderServerState.loaded&&!force)return true;
+    if(sliderServerState.loadPromise&&!force)return sliderServerState.loadPromise;
+    sliderServerState.loadPromise=(async function(){
+      try{
+        var response=await fetch(SLIDER_API,{credentials:'same-origin',headers:{Accept:'application/json'}});
+        var data=await response.json().catch(function(){return null;});
+        if(response.ok&&data&&data.ok){
+          sliderServerState.revision=Number(data.revision||0);
+          sliderServerState.sliders=data.sliders&&typeof data.sliders==='object'?data.sliders:{};
+          sliderServerState.loaded=true;
+          sliderServerState.saveBlocked=false;
+          sliderRevisionEvent();
+          return true;
+        }
+      }catch(_e){}
+      return false;
+    })();
+    try{return await sliderServerState.loadPromise;}
+    finally{sliderServerState.loadPromise=null;}
   }
 
   function controllerValues(controller){
-    var values = {};
-    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
-      values[slider.id] = String(slider.value);
-    });
+    var values={};
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'),function(slider){values[slider.id]=String(slider.value);});
     return values;
   }
 
-  function resetControllerToDefaults(controller, syncFn){
-    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
-      slider.value = String(slider.getAttribute('data-default-value') || slider.getAttribute('data-default') || slider.defaultValue || slider.value);
+  function resetControllerToDefaults(controller,syncFn){
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'),function(slider){
+      slider.value=String(slider.getAttribute('data-default-value')||slider.getAttribute('data-default')||slider.defaultValue||slider.value);
     });
-    if(typeof syncFn === 'function') syncFn();
+    if(typeof syncFn==='function')syncFn();
   }
 
-  async function applyServerControllerState(controller, syncFn){
-    if(!controller) return;
-    var auth = sliderAuth();
-    if(!(auth && auth.ready && auth.authed)) return;
-    var ok = await loadSliderServerState(false);
-    if(!ok) return;
-    var saveId = controller.getAttribute('data-slider-save-id');
-    var saved = saveId && sliderServerState.sliders ? sliderServerState.sliders[saveId] : null;
-
-    if(!saved && saveId === 'r7' && sliderServerState.sliders && sliderServerState.sliders.r7 && sliderServerState.sliders.r7.r7Hydration !== undefined){
-      var oldWater = Number(sliderServerState.sliders.r7.r7Hydration);
-      if(Number.isFinite(oldWater)){
-        saved = { r7Glycerin:String(100 - oldWater), r7Inulin:'0' };
+  async function replaceSliderServerState(next){
+    if(sliderServerState.saveBlocked)return false;
+    try{
+      var response=await fetch(SLIDER_API,{
+        method:'POST',credentials:'same-origin',
+        headers:{Accept:'application/json','Content-Type':'application/json'},
+        body:JSON.stringify({action:'replace_sliders',sliders:next,expectedRevision:sliderServerState.revision})
+      });
+      var data=await response.json().catch(function(){return null;});
+      if(response.ok&&data&&data.ok){
+        sliderServerState.revision=Number(data.revision||sliderServerState.revision||0);
+        sliderServerState.sliders=data.sliders&&typeof data.sliders==='object'?data.sliders:next;
+        sliderServerState.loaded=true;
+        sliderServerState.saveBlocked=false;
+        sliderRevisionEvent();
+        return true;
       }
-    }
-
-    if(controller.dataset.skipServerSliderRestore === '1'){
-      delete controller.dataset.skipServerSliderRestore;
-      return;
-    }
-    if(!saved || typeof saved !== 'object') return;
-    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'), function(slider){
-      if(Object.prototype.hasOwnProperty.call(saved, slider.id)) slider.value = String(saved[slider.id]);
-    });
-    if(typeof syncFn === 'function') syncFn();
+      if(response.status===409&&data&&data.error==='revision_conflict')await loadSliderServerState(true);
+      sliderServerState.saveBlocked=true;
+    }catch(_e){sliderServerState.saveBlocked=true;}
+    return false;
   }
 
-  async function writeControllerServerState(controller, syncFn){
-    var auth = sliderAuth();
-    if(!(auth && auth.ready && auth.authed)) throw new Error('login_required');
-    var client = sliderClient();
-    if(!client || typeof client.saveSlider !== 'function') throw new Error('server_unavailable');
-    var saveId = controller.getAttribute('data-slider-save-id');
-    if(!saveId) throw new Error('missing_slider_id');
+  async function applyServerControllerState(controller,syncFn){
+    if(!controller)return;
+    var auth=sliderAuth();
+    if(!(auth&&auth.ready&&auth.authed))return;
+    if(!(await loadSliderServerState(false)))return;
+    var saveId=controller.getAttribute('data-slider-save-id');
+    var saved=saveId&&sliderServerState.sliders?sliderServerState.sliders[saveId]:null;
+    if(!saved&&saveId==='r7'&&sliderServerState.sliders.r7&&sliderServerState.sliders.r7.r7Hydration!==undefined){
+      var oldWater=Number(sliderServerState.sliders.r7.r7Hydration);
+      if(Number.isFinite(oldWater))saved={r7Glycerin:String(100-oldWater),r7Inulin:'0'};
+    }
+    if(controller.dataset.skipServerSliderRestore==='1'){delete controller.dataset.skipServerSliderRestore;return;}
+    if(!saved||typeof saved!=='object')return;
+    Array.prototype.forEach.call(controller.querySelectorAll('.glide-slider'),function(slider){
+      if(Object.prototype.hasOwnProperty.call(saved,slider.id))slider.value=String(saved[slider.id]);
+    });
+    if(typeof syncFn==='function')syncFn();
+  }
 
-    var values = controllerValues(controller);
-    var snapshot = client.saveSlider(saveId, values);
-    absorbSliderServerState(snapshot);
-    if(typeof syncFn === 'function') syncFn();
+  async function writeControllerServerState(controller,syncFn){
+    var auth=sliderAuth();
+    if(!(auth&&auth.ready&&auth.authed))throw new Error('login_required');
+    if(!(await loadSliderServerState(false)))throw new Error('server_unavailable');
+    var saveId=controller.getAttribute('data-slider-save-id');
+    if(!saveId)throw new Error('missing_slider_id');
+    var next=Object.assign({},sliderServerState.sliders);
+    next[saveId]=controllerValues(controller);
+    if(!(await replaceSliderServerState(next)))throw new Error('save_failed');
+    if(typeof syncFn==='function')syncFn();
     return true;
   }
 
-  async function removeControllerServerState(controller, syncFn){
-    var auth = sliderAuth();
-    if(!(auth && auth.ready && auth.authed)) return false;
-    var client = sliderClient();
-    if(!client || typeof client.removeSlider !== 'function') return false;
-    var saveId = controller.getAttribute('data-slider-save-id');
-    if(!saveId) return false;
-    try{
-      var snapshot = client.removeSlider(saveId);
-      absorbSliderServerState(snapshot);
-      if(typeof syncFn === 'function') syncFn();
-      return true;
-    }catch(_e){
-      return false;
-    }
+  async function removeControllerServerState(controller,syncFn){
+    var auth=sliderAuth();
+    if(!(auth&&auth.ready&&auth.authed))return false;
+    if(!(await loadSliderServerState(false)))return false;
+    var saveId=controller.getAttribute('data-slider-save-id');
+    if(!saveId)return false;
+    var next=Object.assign({},sliderServerState.sliders);
+    delete next[saveId];
+    var ok=await replaceSliderServerState(next);
+    if(ok&&typeof syncFn==='function')syncFn();
+    return ok;
   }
+
+  document.addEventListener('baseline:skincare-resource-revision',function(event){
+    var revision=Number(event.detail&&event.detail.revision);
+    if(Number.isFinite(revision)&&revision>=0)sliderServerState.revision=revision;
+  });
+  try{
+    window.BASELINE_auth&&window.BASELINE_auth.onChange&&window.BASELINE_auth.onChange(function(){
+      sliderServerState.loaded=false;sliderServerState.sliders={};sliderServerState.revision=0;sliderServerState.saveBlocked=false;
+      loadSliderServerState(false);
+    });
+  }catch(_e){}
 
   function clearSliderStatus(controller){
     if(!controller) return;

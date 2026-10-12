@@ -78,12 +78,14 @@ test('progression, equipment, status, drops, and save/resume systems are present
   assert.match(engine, /equipItem/);
   assert.match(engine, /addStatus/);
   assert.match(engine, /rollDrops/);
-  assert.match(ui, /localStorage\.setItem\(SAVE_KEY/);
+  assert.match(ui, /BaselineGameStorage\?\.getProfile\?\.\('meridiangrove'\)/);
+  assert.match(ui, /BaselineGameStorage\?\.saveProfile\?\.\('meridiangrove',this\.state\)/);
+  assert.doesNotMatch(ui, /localStorage|sessionStorage|indexedDB/);
   assert.match(ui, /save\('battle-victory'\)/);
   assert.match(scene, /getInventoryService/);
   assert.match(ui, /inventoryService\.transact/);
   assert.match(integrity, /repairSavedParty/);
-  assert.match(integrity, /raw\.battle\.victory/);
+  assert.match(integrity, /state\.battle\.victory = Boolean\(state\.battle\.victory\)/);
   assert.match(integrity, /outcome === 'defeat'/);
   ['iron_ore', 'hide', 'silk_thread', 'healing_herb', 'ember_root', 'map_fragment', 'relic_dust'].forEach((sharedId) => assert.match(data, new RegExp(`sharedId: '${sharedId}'`)));
   ['blacksmithing', 'armour', 'tailoring', 'alchemy', 'cooking', 'quests', 'trading'].forEach((discipline) => assert.match(data, new RegExp(`'${discipline}'`)));

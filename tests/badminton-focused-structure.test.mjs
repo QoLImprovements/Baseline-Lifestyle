@@ -57,7 +57,7 @@ test('Badminton scenario banks preserve valid answer structures',()=>{
 });
 
 test('Badminton runtime consumes extracted scenario banks',()=>{
-  assert.match(runtime,/import \{ choicePools, purposes \} from '\.\/badminton-focused-scenarios\.js'/);
+  assert.match(runtime,/import \{ choicePools, purposes, pickBadmintonScenario \} from '\.\/badminton-focused-scenarios\.js'/);
   assert.doesNotMatch(runtime,/const choicePools=/);
   assert.doesNotMatch(runtime,/const purposes=/);
 });

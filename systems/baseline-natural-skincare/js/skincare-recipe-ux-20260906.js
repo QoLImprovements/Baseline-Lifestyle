@@ -5,22 +5,6 @@
   global.__BASELINE_SKINCARE_RECIPE_UX_20260906__ = true;
 
   const document = global.document;
-  const ROUTE_BASE = '/baseline-natural-skincare/recipes/';
-  const PROMOTIONS = Object.freeze({
-    r8: { slug:'calming-shave-gel' },
-    r9: { slug:'tooth-polishing-powder' },
-    r10:{ slug:'microcurrent-glide-gel' },
-    r12:{ slug:'comfort-barrier-balm' }
-  });
-  const OLD_SLUGS = Object.freeze({
-    'hydrating-conductive-mist':'r10',
-    'testing-microcurrent-conductive-gel':'r10',
-    'testing-shaving-gel':'r8',
-    'testing-natural-tooth-brightening-powder':'r9',
-    'testing-lip-balm':'r12'
-  });
-
-  function recipeHref(slug){ return ROUTE_BASE + slug; }
   function resolveId(raw){
     const value=String(raw || '').replace(/^#/,'').trim();
     if (/^r\d+$/i.test(value)) return value.toLowerCase();
@@ -33,7 +17,7 @@
     recipe.classList.remove('recipe-options-open');
     recipe.classList.remove('recipe-adjustments-open');
     const panel=recipe.querySelector(':scope > .recipe-adjustments-panel');
-    const button=recipe.querySelector(':scope > .recipe-adjustments-row .recipe-adjustments-toggle');
+    const button=recipe.querySelector(':scope > .recipe-viewbar > .recipe-adjustments-toggle, :scope > .recipe-adjustments-row .recipe-adjustments-toggle');
     if(panel) panel.hidden=true;
     if(button) button.setAttribute('aria-expanded','false');
   }
@@ -120,17 +104,6 @@
     try{ global.BASELINE_decorateRecipeSliderSaves?.(); }catch(_error){}
   }
 
-  function canonicaliseOldRecipePath(){
-    const path=String(global.location?.pathname || '').replace(/\/+$/,'');
-    const match=path.match(/^\/baseline-natural-skincare\/recipes\/([^/]+)$/i);
-    if(!match) return;
-    const old=String(match[1] || '').toLowerCase();
-    const id=OLD_SLUGS[old];
-    const meta=id && PROMOTIONS[id];
-    if(!meta) return;
-    try{ global.history.replaceState(global.history.state,'',recipeHref(meta.slug)+String(global.location.search || '')); }catch(_error){}
-  }
-
   function bindRecipeOpenAdjustmentReset(){
     if(global.__BASELINE_SKINCARE_RECIPE_ADJUSTMENT_RESET_20261003__) return;
     global.__BASELINE_SKINCARE_RECIPE_ADJUSTMENT_RESET_20261003__=true;
@@ -142,7 +115,6 @@
   }
 
   function startRecipeUx(){
-    canonicaliseOldRecipePath();
     bindLipBalmFormula(recipeById('r12'));
     bindRecipeOpenAdjustmentReset();
   }

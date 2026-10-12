@@ -6,6 +6,7 @@ const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const mirror=read('systems/baseline-fitness/js/fitness-public-routine-summary-mirror-v1.js');
 const owner=read('systems/baseline-fitness/js/fitness-routine-summary-v2.js');
 const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const html=read('systems/baseline-fitness/baseline-fitness.html');
 
 test('Public Fitness Routine Summary uses the canonical owner Summary renderer as its card factory',()=>{
   assert.match(mirror,/BASELINE_fitnessRoutineSummary/);
@@ -29,11 +30,10 @@ test('Public Fitness Routine Summary preserves the comprehensive owner card hier
   ]) assert.ok(mirror.includes(token),`missing canonical mirror token ${token}`);
 });
 
-test('Fitness My Routine loads the Public Summary mirror after Public View Only',()=>{
-  const publicIndex=loader.indexOf('baseline-public-routine-viewonly-v4.js');
-  const mirrorIndex=loader.indexOf('fitness-public-routine-summary-mirror-v1.js');
+test('Fitness My Routine parser-loads the Public Summary mirror after Public View Only',()=>{
+  const publicIndex=html.indexOf('baseline-public-routine-viewonly-v4.js');
+  const mirrorIndex=html.indexOf('fitness-public-routine-summary-mirror-v1.js');
   assert.ok(publicIndex>=0);
   assert.ok(mirrorIndex>publicIndex);
-  assert.match(loader,/PUBLIC SUMMARY MIRROR CONTRACT/);
-  assert.match(loader,/Do not restore the\s+condensed Public-only summary implementation/);
+  assert.doesNotMatch(loader,/loadScript|createElement\(['"]script['"]\)/);
 });

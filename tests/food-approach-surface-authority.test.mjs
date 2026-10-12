@@ -10,6 +10,7 @@ const theme = read('sitewide/css/baseline-themes.css');
 const foodCss = read('systems/baseline-food-approach/css/baseline-food-approach.css');
 const dietCss = read('systems/baseline-food-approach/css/baseline-diet-log.css');
 const recipeCss = read('sitewide/css/baseline-recipes.css');
+const sitewideCss = read('sitewide/css/baseline-sitewide.css');
 const shared = read('sitewide/js/baseline-shared.js');
 const foodHtml = read('systems/baseline-food-approach/baseline-food-approach.html');
 const dietJs = read('systems/baseline-food-approach/js/baseline-diet-log.js');
@@ -44,7 +45,7 @@ test('Food recipe sources are content fragments only', () => {
   for (const name of files) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
     assert.match(html, /^<!-- Canonical Food recipe content source\./);
-    assert.match(html, /class="recipe card recipe-page"/);
+    assert.match(html, /class="recipe card recipe-page recipe-universal-template"/);
     assert.doesNotMatch(html, /<!DOCTYPE|<html\b|<head\b|<body\b|<script\b|<link\b/i);
     assert.doesNotMatch(html, /standalone-recipe-card|food-recipe-shell|food-recipe-top/);
     assert.doesNotMatch(html, /ingredient-library#ing-|href="#ing-/);
@@ -116,15 +117,24 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
 
   for (const name of fs.readdirSync(recipeDir).filter((entry) => entry.endsWith('.html'))) {
     const html = read(path.join('systems/baseline-food-approach/recipes', name));
-    assert.match(html, /class="recipe card recipe-page"/);
+    assert.match(html, /class="recipe card recipe-page recipe-universal-template"/);
   }
 });
 
 
-test('Food first-paint routing contains no historical tab visual authority', () => {
-  const firstPaint = foodHtml.match(/<style id="baseline-recipe-route-first-paint-style">([\s\S]*?)<\/style>/)?.[1] || '';
-  assert.match(firstPaint, /main\.wrap>\.section\{display:none!important\}/);
-  assert.match(firstPaint, /#diet-log\.section\{display:block!important\}/);
-  assert.doesNotMatch(firstPaint, /\.tabs \.tab|color:|background:|--food-tab-|--bl-surface-/);
+test('Food first-paint routing is owned by canonical Food CSS, not an inline override', () => {
+  assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint-style"/);
+  assert.match(foodCss, /Initial route authority: URL state is present before body paint/);
+  assert.match(foodCss, /html\[data-initial-section\] body\[data-app="food"\] main\.wrap>\.section\{display:none!important\}/);
+  assert.match(foodCss, /#diet-log\.section\{display:block!important\}/);
   assert.match(foodHtml, /id="baseline-food-tab-first-state"/);
+});
+
+
+test('Food card colour has one authority and cannot split into competing yellow surfaces', () => {
+  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
+  assert.match(sitewideCss, /--bl-surface-card-solid:\s*var\(--food-surface-card\)/);
+  assert.match(sitewideCss, /--bl-surface-recipe-card-solid:\s*var\(--food-surface-card\)/);
+  assert.match(sitewideCss, /--bl-surface-panel-solid:\s*var\(--food-surface-panel\)/);
+  assert.doesNotMatch(sitewideCss, /#f5b84a|#ffc04d/i);
 });

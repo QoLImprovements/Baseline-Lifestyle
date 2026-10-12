@@ -234,9 +234,9 @@
   async function loadPublic() {
     const input=field();const name=String(input?.value || '').trim();if (!name) { input?.focus();return; }const host=target();host?.setAttribute('aria-busy','true');const response=await request(`${PUBLIC_API}?name=${encodeURIComponent(name)}`);host?.removeAttribute('aria-busy');
     if (!response?.ok || !response.publicRoutine) { routine=null;if (host) host.innerHTML=`<p>${esc(response?.error==='routine_private'?'That routine is private.':'The public routine could not be loaded.')}</p>`;return; }
-    routine=response.publicRoutine;selectedDate=todayIso();calendarAnchor=localDate(selectedDate);summaryFilter='all';try { const view=global.sessionStorage?.getItem(VIEW_KEY);const planView=global.sessionStorage?.getItem(PLAN_VIEW_KEY);const cal=global.sessionStorage?.getItem(CAL_KEY);activeView=['log','summary','plan'].includes(view)?view:'log';activePlanView=['calisthenics','cardio','other','sports'].includes(planView)?planView:'calisthenics';calendarView=['week','month'].includes(cal)?cal:'month'; } catch (_error) {}render();
+    routine=response.publicRoutine;selectedDate=todayIso();calendarAnchor=localDate(selectedDate);summaryFilter='all';activeView='log';activePlanView='calisthenics';calendarView='month';render();
   }
-  function remember() { try { global.sessionStorage?.setItem(VIEW_KEY,activeView);global.sessionStorage?.setItem(PLAN_VIEW_KEY,activePlanView);global.sessionStorage?.setItem(CAL_KEY,calendarView); } catch (_error) {} }
+  function remember() { return { activeView,activePlanView,calendarView }; }
   function moveCalendar(direction) { const anchor=localDate(calendarAnchor);if (calendarView==='week') anchor.setDate(anchor.getDate()+(direction==='next'?7:-7));else anchor.setMonth(anchor.getMonth()+(direction==='next'?1:-1),1);calendarAnchor=anchor;render(); }
 
   function activateMarker(marker) { activeView='summary';summaryFilter=String(marker.dataset.publicSummaryTarget || 'all');remember();render(); }

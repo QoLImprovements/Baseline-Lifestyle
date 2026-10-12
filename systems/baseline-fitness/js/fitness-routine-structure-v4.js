@@ -39,8 +39,6 @@
   const UI=global.BASELINE_RoutineSystem;
   if (!UI || (document.documentElement.dataset.app || document.body?.dataset.app)!=='fitness') return;
 
-  const VIEW_KEY='__bl_fitness_routine_view_v2__';
-  const PLAN_VIEW_KEY='__bl_fitness_plan_view_v4__';
   const ROUTE_BASE='/baseline-fitness/my-routine';
   const TOP_VIEWS=Object.freeze(['log','summary','plan','public']);
   const PLAN_VIEWS=Object.freeze(['calisthenics','cardio','other','sports']);
@@ -61,46 +59,25 @@
   function directPanels(shell) {
     return Array.from(shell?.children || []).filter((child)=>child.classList?.contains('fitness-routine-panel'));
   }
-  function rememberedPlanView() {
-    try {
-      const value=String(global.sessionStorage?.getItem(PLAN_VIEW_KEY) || '');
-      return PLAN_VIEWS.includes(value)?value:'calisthenics';
-    } catch (_error) { return 'calisthenics'; }
-  }
   function routeFromPath() {
     const path=String(global.location?.pathname || '').replace(/\/+$/,'');
     let match=path.match(/^\/baseline-fitness\/my-routine\/(log|summary|public)$/i);
-    if (match) return { view:String(match[1]).toLowerCase(),plan:rememberedPlanView(),clean:true };
+    if (match) return { view:String(match[1]).toLowerCase(),plan:'calisthenics',clean:true };
     match=path.match(/^\/baseline-fitness\/my-routine\/plan(?:\/(calisthenics|cardio|other|sports))?$/i);
-    if (match) return { view:'plan',plan:PLAN_VIEWS.includes(String(match[1] || '').toLowerCase())?String(match[1]).toLowerCase():rememberedPlanView(),clean:!match[1] };
-    if (/^\/baseline-fitness\/my-routine$/i.test(path)) {
-      let view='';
-      try {
-        const url=new URL(global.location.href);
-        if (url.searchParams.has('new-plan')) view='plan';
-        else view=String(global.sessionStorage?.getItem(VIEW_KEY) || '');
-      } catch (_error) {}
-      if (!TOP_VIEWS.includes(view)) view='log';
-      return { view,plan:rememberedPlanView(),clean:false };
+    if (match) {
+      const requested=String(match[1] || '').toLowerCase();
+      return { view:'plan',plan:PLAN_VIEWS.includes(requested)?requested:'calisthenics',clean:!match[1] };
     }
-    if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:rememberedPlanView(),clean:false };
+    if (/^\/baseline-fitness\/my-routine$/i.test(path)) {
+      let view='log';
+      try { if (new URL(global.location.href).searchParams.has('new-plan')) view='plan'; } catch (_error) {}
+      return { view,plan:'calisthenics',clean:false };
+    }
+    if (/^\/baseline-fitness\/(?:my-plan|workout-routine)$/i.test(path)) return { view:'plan',plan:'calisthenics',clean:false };
     return null;
   }
   function currentRoute() {
-    const pathRoute=routeFromPath();
-    if (pathRoute) return pathRoute;
-    let view='';let plan='';
-    try {
-      const url=new URL(global.location.href);
-      view=String(url.searchParams.get('routine-view') || '');
-      plan=String(url.searchParams.get('routine-plan') || '');
-    } catch (_error) {}
-    if (!TOP_VIEWS.includes(view)) {
-      try { view=String(global.sessionStorage?.getItem(VIEW_KEY) || ''); } catch (_error) { view=''; }
-    }
-    if (!TOP_VIEWS.includes(view)) view='log';
-    if (!PLAN_VIEWS.includes(plan)) plan=rememberedPlanView();
-    return { view,plan,clean:false };
+    return routeFromPath() || { view:'log',plan:'calisthenics',clean:false };
   }
   function cleanPath(view=activeView) {
     if (view==='plan') return `${ROUTE_BASE}/plan`;
@@ -279,10 +256,7 @@
     if (!planPanel) return;
     const child=planPanel.querySelector(`[data-fitness-routine-panel="${next}"]`);
     if (child) { child.hidden=false;child.classList.add('active'); }
-    if (remember) {
-      try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,next); } catch (_error) {}
-      writeRoute({ allowEnter:true });
-    }
+    if (remember) writeRoute({ allowEnter:true });
   }
   function activateTopView(view,remember=true) {
     const next=TOP_VIEWS.includes(view)?view:'log';
@@ -299,20 +273,13 @@
     if (next==='summary') global.BASELINE_fitnessRoutineSummary?.render?.();
     if (next==='public') { loadPublicProfiles();loadVisibility(); }
     if (next==='log') global.BASELINE_fitnessRoutine?.render?.();
-    if (remember) {
-      try { global.sessionStorage?.setItem(VIEW_KEY,next); } catch (_error) {}
-      writeRoute({ allowEnter:true });
-    }
+    if (remember) writeRoute({ allowEnter:true });
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-view-changed',{ detail:{ view:next,planView:activePlanView } })); } catch (_error) {}
   }
   function restoreRoute() {
     const route=currentRoute();
     activeView=route.view;
     activePlanView=route.plan;
-    try {
-      global.sessionStorage?.setItem(VIEW_KEY,activeView);
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY,activePlanView);
-    } catch (_error) {}
     activateTopView(activeView,false);
     if (activeView==='plan') activatePlanView(activePlanView,false);
     writeRoute();
@@ -373,7 +340,6 @@
   function rememberPlanCard(view) {
     if (!PLAN_VIEWS.includes(view)) return;
     activePlanView=view;
-    try { global.sessionStorage?.setItem(PLAN_VIEW_KEY,view); } catch (_error) {}
   }
   function bindEvents() {
     const root=$('#my-plan');
@@ -418,10 +384,6 @@
     if (!rebuildStructure()) return;
     bindEvents();
     wrapRoutineApi();
-    try {
-      global.sessionStorage?.setItem(VIEW_KEY,activeView);
-      global.sessionStorage?.setItem(PLAN_VIEW_KEY,activePlanView);
-    } catch (_error) {}
     activateTopView(activeView,false);
     if (activeView==='plan') activatePlanView(activePlanView,false);
     writeRoute();

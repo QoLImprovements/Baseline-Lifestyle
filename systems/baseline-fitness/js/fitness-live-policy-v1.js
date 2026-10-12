@@ -21,14 +21,12 @@
   if ((document.documentElement.dataset.app || document.body?.dataset.app) !== 'fitness') return;
 
   const RANGE_ID='frequencyRangeMax';
-  const EARLY_PREFIX='__bl_fitness_start_early_v3__::';
-  const FAILURE_PREFIX='__bl_fitness_exercise_failed_sessions_v3__::';
-  const OUTCOME_PREFIX='__bl_fitness_exercise_outcomes_v4__::';
-  const STEP_PREFIX='__bl_fitness_workout_progress_v2__';
   const $=(selector,root=document) => root?.querySelector?.(selector) || null;
   const $$=(selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   let rangeDirty=false;
   let pendingEarlyAction='manual';
+  let progressionMemory={outcomes:[],failures:[]};
+  const earlyPermissions=new Set();
 
   function canonicalExercise(value) { return String(value || '').replace(/\s+\(L\/R\)$/i,'').replace(/\s+(Left|Right)$/i,'').trim(); }
   function owner() {
@@ -117,24 +115,20 @@
     return plansContaining(exercise).reduce((total,plan) => total+(Array.isArray(plan?.sessions)?plan.sessions.filter((session) => session?.status==='done').length:0),0);
   }
 
-  function failureKey() { return `${FAILURE_PREFIX}${owner()}`; }
-  function outcomeKey() { return `${OUTCOME_PREFIX}${owner()}`; }
-  function readFailures() {
-    try { const value=JSON.parse(global.localStorage?.getItem(failureKey()) || '[]');return Array.isArray(value)?value:[]; }
-    catch (_error) { return []; }
+  function currentProgressionHistory() {
+    const server=global.BASELINE_FITNESS_SAVED_DATA?.getProgressionHistory?.();
+    if(server&&typeof server==='object'){
+      progressionMemory={
+        outcomes:Array.isArray(server.outcomes)?server.outcomes.slice(-1000):[],
+        failures:Array.isArray(server.failures)?server.failures.slice(-500):[]
+      };
+    }
+    return progressionMemory;
   }
-  function writeFailures(value) {
-    try { global.localStorage?.setItem(failureKey(),JSON.stringify((Array.isArray(value)?value:[]).slice(-500))); }
-    catch (_error) {}
-  }
-  function readOutcomes() {
-    try { const value=JSON.parse(global.localStorage?.getItem(outcomeKey()) || '[]');return Array.isArray(value)?value:[]; }
-    catch (_error) { return []; }
-  }
-  function writeOutcomes(value) {
-    try { global.localStorage?.setItem(outcomeKey(),JSON.stringify((Array.isArray(value)?value:[]).slice(-1000))); }
-    catch (_error) {}
-  }
+  function readFailures() { return currentProgressionHistory().failures.slice(); }
+  function writeFailures(value) { progressionMemory.failures=(Array.isArray(value)?value:[]).slice(-500); }
+  function readOutcomes() { return currentProgressionHistory().outcomes.slice(); }
+  function writeOutcomes(value) { progressionMemory.outcomes=(Array.isArray(value)?value:[]).slice(-1000); }
   function authenticated() {
     try { return Boolean(global.BASELINE_auth?.get?.()?.authed); }
     catch (_error) { return false; }
@@ -142,21 +136,15 @@
   async function persistProgressionHistory(outcomes,failures) {
     const nextOutcomes=(Array.isArray(outcomes)?outcomes:[]).slice(-1000);
     const nextFailures=(Array.isArray(failures)?failures:[]).slice(-500);
-    const savedData=global.BASELINE_FITNESS_SAVED_DATA;
-    if (authenticated()) {
-      if (savedData?.savedDataDisabled) {
-        writeOutcomes(nextOutcomes);
-        writeFailures(nextFailures);
-        return true;
-      }
-      if (!savedData?.enabled || typeof savedData.saveProgressionHistory!=='function') return false;
-      const result=await savedData.saveProgressionHistory({ outcomes:nextOutcomes,failures:nextFailures });
-      return Boolean(result?.ok);
-    }
     writeOutcomes(nextOutcomes);
     writeFailures(nextFailures);
-    return true;
+    if(!authenticated()) return true;
+    const savedData=global.BASELINE_FITNESS_SAVED_DATA;
+    if(!savedData?.enabled || typeof savedData.saveProgressionHistory!=='function') return false;
+    const result=await savedData.saveProgressionHistory({outcomes:nextOutcomes,failures:nextFailures});
+    return Boolean(result?.ok);
   }
+
   function sessionStillDone(record) {
     const plan=plans().find((candidate) => Number(candidate.planId)===Number(record.planId));
     const session=(plan?.sessions || []).find((candidate) => Number(candidate.sessionIndex ?? candidate.session_index)===Number(record.sessionIndex));
@@ -216,8 +204,8 @@
     return persistProgressionHistory(nextOutcomes,nextFailures);
   }
 
-  function permissionKey(context) { return `${EARLY_PREFIX}${Number(context?.planId||0)}::${Number(context?.sessionIndex||0)}`; }
-  function hasEarlyPermission(context) { try { return global.sessionStorage?.getItem(permissionKey(context))==='yes'; }catch (_error) { return false; } }
+  function permissionKey(context) { return `${Number(context?.planId||0)}::${Number(context?.sessionIndex||0)}`; }
+  function hasEarlyPermission(context) { return earlyPermissions.has(permissionKey(context)); }
   function applyAccess(context) {
     if (!context || !context.available || context.planComplete) return context;const next=Object.assign({},context,{ access:Object.assign({},context.access || {}) });if (next.access.next===false || next.access.done) return next;
     if (flexibleWeekly(planJson())) { next.access.due=true;next.access.can=true;next.canStart=true;next.flexibleWeekly=true;next.startEarlyRequired=false; }
@@ -226,21 +214,16 @@
   }
   function applyPolicy(context) { return applyAccess(applySharedProgression(context)); }
 
-  function stepStateKey(context) {
-    const suffix=`${Number(context?.planId || 0)}::${Number(context?.sessionIndex || 0)}::${owner()}`.trim().toLocaleLowerCase('en-GB');return `${STEP_PREFIX}::${suffix}`;
-  }
   function directTimedRecord(achieved,inputMode='manual') {
-    const workout=global.BASELINE_fitnessWorkout;const context=applyPolicy(workout?.getCurrentContext?.());const actual=Math.max(0,Math.round(Number(achieved) || 0));
-    if (!workout || !context?.canStart || !context?.started || !context?.step || !(context.step.isTimed || context.step.unit==='seconds') || actual<=0) return context;
-    const target=Math.max(1,Math.round(Number(context.step.target || 1)));const status=actual>=target?'success':'failed';const key=stepStateKey(context);let state={ completedSteps:0,started:true,results:{},pendingFailureStep:null };
-    try { const raw=global.localStorage?.getItem(key);if (raw) state=Object.assign(state,JSON.parse(raw) || {}); }catch (_error) {}
-    state.results=state.results && typeof state.results==='object'?state.results:{};const step=context.step;
-    state.results[context.stepIndex]={ status,achieved:actual,inputMode:inputMode==='voice'?'voice':'manual',exercise:step.exercise || step.name,exerciseKey:step.exerciseKey || step.name,stepName:step.name,isTimed:true,unit:'seconds' };
-    state.completedSteps=Math.max(Number(state.completedSteps || 0),Number(context.stepIndex || 0)+1);state.started=true;state.pendingFailureStep=null;
-    try { global.localStorage?.setItem(key,JSON.stringify(state)); }catch (_error) {}
-    const modal=$('#timerModal');if (modal) modal.hidden=true;
-    workout.startSession?.();
-    return applyPolicy(workout.getCurrentContext?.());
+    const workout=global.BASELINE_fitnessWorkout;
+    const context=applyPolicy(workout?.getCurrentContext?.());
+    const actual=Math.max(0,Math.round(Number(achieved)||0));
+    if(!workout||!context?.canStart||!context?.started||!context?.step||!(context.step.isTimed||context.step.unit==='seconds')||actual<=0)return context;
+    const target=Math.max(1,Math.round(Number(context.step.target||1)));
+    const status=actual>=target?'success':'failed';
+    const modal=$('#timerModal');if(modal)modal.hidden=true;
+    const next=workout.recordCurrentStep?.(status,actual,inputMode==='voice'?'voice':'manual');
+    return applyPolicy(next||workout.getCurrentContext?.());
   }
 
   function installRuntimeWrapper() {
@@ -277,7 +260,7 @@
   }
   function openEarly(context,action) { ensureEarlyPrompt();pendingEarlyAction=action==='voice'?'voice':'manual';const message=$('#fitnessStartEarlyMessage');if (message) message.textContent=context?.scheduledDate?`This workout is scheduled for ${context.scheduledDate}. Start it now?`:'This workout is scheduled for later. Start it now?';const overlay=$('#fitnessStartEarlyPrompt');if (overlay) overlay.hidden=false;overlay?.querySelector('[data-start-early="yes"]')?.focus(); }
   function closeEarly() { const overlay=$('#fitnessStartEarlyPrompt');if (overlay) overlay.hidden=true; }
-  function approveEarly() { const context=global.BASELINE_fitnessWorkout?.getCurrentContext?.();if (!context?.available) { closeEarly();return; }try { global.sessionStorage?.setItem(permissionKey(context),'yes'); }catch (_error) {}closeEarly();global.BASELINE_fitnessWorkout?.startSession?.();global.requestAnimationFrame(() => { patchWorkoutAccess();if (pendingEarlyAction==='voice') $('#startVoiceWorkoutBtn')?.click(); }); }
+  function approveEarly() { const context=global.BASELINE_fitnessWorkout?.getCurrentContext?.();if (!context?.available) { closeEarly();return; }earlyPermissions.add(permissionKey(context));closeEarly();global.BASELINE_fitnessWorkout?.startSession?.();global.requestAnimationFrame(() => { patchWorkoutAccess();if (pendingEarlyAction==='voice') $('#startVoiceWorkoutBtn')?.click(); }); }
 
   function patchWorkoutAccess() {
     installRuntimeWrapper();const context=applyPolicy(global.BASELINE_fitnessWorkout?.getCurrentContext?.());if (!context?.available || context.planComplete) return;const weekly=Boolean(context.flexibleWeekly || flexibleWeekly(planJson()));const start=$('#startWorkoutBtn');const voice=$('#startVoiceWorkoutBtn');if (start) { start.disabled=!context.canStart;start.setAttribute('aria-disabled',context.canStart?'false':'true'); }if (voice) { voice.disabled=!context.canStart;voice.setAttribute('aria-disabled',context.canStart?'false':'true'); }

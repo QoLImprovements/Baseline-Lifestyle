@@ -10,8 +10,8 @@
    - Fitness-only Routine Log interactions belong to fitness-routine-log-v1.js.
    - Fitness Routine Summary contents/filtering belong only to fitness-routine-summary-v2.js.
    - This file owns only genuinely shared live behaviour/state plus the Skincare Summary filter.
-   - Summary filters and Log Dates are transient session state; system routers alone
-     own public My Routine paths. This layer never writes routing query parameters.
+   - Summary filters and Log Dates are transient in-memory UI state only; system routers
+     alone own public My Routine paths. This layer never writes browser storage or routing query parameters.
 */
 (function (global) {
   'use strict';
@@ -23,8 +23,6 @@
   if (!['skin','fitness'].includes(app)) return;
 
   const rootSelector = app === 'skin' ? '#routine' : '#my-plan';
-  const SUMMARY_STORAGE_KEY = `__bl_${app}_routine_summary_filter_v12__`;
-  const DATE_STORAGE_KEY = `__bl_${app}_routine_log_date_v12__`;
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc = (value) => String(value == null ? '' : value).replace(/[&<>"']/g,(character) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[character]));
@@ -34,22 +32,14 @@
   let patching = false;
   let groupBusy = false;
   let restoringState = false;
+  let transientSummaryFilter = 'all';
+  let transientLogDate = '';
 
   function owner() {
     try {
       const auth = global.BASELINE_auth?.get?.();
       return auth?.authed ? String(auth.name || auth.user?.name || 'user').trim().toLocaleLowerCase('en-GB') || 'user' : 'guest';
     } catch (_error) { return 'guest'; }
-  }
-  function readSession(key,fallback='') {
-    try { return String(global.sessionStorage?.getItem(key) || fallback); }
-    catch (_error) { return String(fallback || ''); }
-  }
-  function writeSession(key,value) {
-    try {
-      if (value) global.sessionStorage?.setItem(key,String(value));
-      else global.sessionStorage?.removeItem(key);
-    } catch (_error) {}
   }
   function todayIso() {
     try { return global.BASELINE_RoutineSystem?.todayIso?.() || new Date().toLocaleDateString('sv-SE'); }
@@ -93,11 +83,11 @@
   }
   function fitnessGroups() {
     try {
-      const value=global.BASELINE_RoutineSystem?.readSettings?.(owner()) || {};
-      const groups=(Array.isArray(value.fitnessRoutineGroups)?value.fitnessRoutineGroups:[]).filter((group) => group?.id && group?.title);
+      const value=global.BASELINE_FITNESS_ROUTINE_GROUPS?.getState?.() || {};
+      const groups=(Array.isArray(value.groups)?value.groups:[]).filter((group) => group?.id && group?.title);
       const valid=new Set(groups.map((group) => String(group.id)));
       const assignments={};
-      Object.entries(value.fitnessRoutineAssignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
+      Object.entries(value.assignments || {}).forEach(([key,id]) => { if (valid.has(String(id))) assignments[String(key)]=String(id); });
       return { groups,assignments };
     } catch (_error) { return { groups:[],assignments:{} }; }
   }
@@ -249,10 +239,10 @@
   }
 
   function preferredSummaryFilter() {
-    return readSession(SUMMARY_STORAGE_KEY,'all') || 'all';
+    return transientSummaryFilter || 'all';
   }
   function persistSummaryFilter(value) {
-    writeSession(SUMMARY_STORAGE_KEY,String(value || 'all'));
+    transientSummaryFilter=String(value || 'all');
   }
 
   function removeDuplicateSkinSummarySelectors(summary,keep) {
@@ -559,7 +549,7 @@
 
   function restoreLogDate(root) {
     if (restoringState) return;
-    const wanted=readSession(DATE_STORAGE_KEY,'');
+    const wanted=transientLogDate;
     if (!/^\d{4}-\d{2}-\d{2}$/.test(wanted) || wanted>todayIso()) return;
     const input=$(app==='skin'?'#routineLogDate':'#fitnessRoutineLogDate',root);
     if (!input || input.dataset.routeDateRestored==='true' || input.value===wanted) return;
@@ -636,12 +626,12 @@
       if (event.target?.id==='skinRoutineSummaryFilter') { persistSummaryFilter(event.target.value);applySkinSummary(root);return; }
       if (event.target?.id==='routineLogDate' || event.target?.id==='fitnessRoutineLogDate') {
         const value=String(event.target.value || '');
-        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) writeSession(DATE_STORAGE_KEY,value);
+        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) transientLogDate=value;
       }
     },true);
     [
       'baseline:routine-rendered','baseline:skincare-routine-updated','baseline:fitness-routine-updated',
-      'baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:routine-settings-changed',
+      'baseline:fitness-plans-updated','baseline:fitness-workout-updated','baseline:fitness-routine-groups-updated',
       'baseline:fitness-routine-view-changed'
     ].forEach((name) => document.addEventListener(name,schedule));
   }

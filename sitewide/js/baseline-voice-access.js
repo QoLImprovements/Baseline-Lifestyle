@@ -689,19 +689,12 @@
   const base=global.BASELINE_voice;
   if(!base) return;
 
-  function readRememberedApproval(){
-    try{ return global.sessionStorage?.getItem(APPROVED_KEY)==='1'; }
-    catch(_error){ return false; }
-  }
   function rememberApproval(value){
-    try{
-      if(value) global.sessionStorage?.setItem(APPROVED_KEY,'1');
-      else global.sessionStorage?.removeItem(APPROVED_KEY);
-    }catch(_error){}
+    approvalRemembered=Boolean(value);
   }
 
   let permissionState='unknown';
-  let approvalRemembered=readRememberedApproval();
+  let approvalRemembered=false;
   let pending=null;
 
   async function primePermissionState(){

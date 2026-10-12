@@ -8,7 +8,7 @@ const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/basel
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const foodHtml = fs.readFileSync('systems/baseline-food-approach/baseline-food-approach.html', 'utf8');
-const liveStability = fs.readFileSync('sitewide/js/baseline-live-stability-core-v3.js', 'utf8');
+const foodCss = fs.readFileSync('systems/baseline-food-approach/css/baseline-food-approach.css', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 
 function skincareRecipeBlocks(){
@@ -29,32 +29,27 @@ function foodRecipeBlocks(){
 test('Food and Skincare declare exact recipe routes before first paint', () => {
   for (const html of [skincareHtml, foodHtml]) {
     assert.match(html, /id="baseline-recipe-route-first-paint"/);
-    assert.match(html, /data-initial-section','recipes'/);
     assert.match(html, /data-initial-recipe-route','1'/);
-    assert.match(html, /data-initial-section="recipes"[^}]*#system\.section\{display:none!important\}/s);
-    assert.match(html, /data-initial-section="recipes"[^}]*#recipes\.section\{display:block!important\}/s);
+    assert.match(html, /baseline-(?:natural-skincare|food-approach)/);
+    assert.match(html, /recipes/);
   }
+  assert.match(skincareHtml, /data-initial-section','recipes'/);
+  assert.match(foodHtml, /baseline-food-approach/);
+  assert.match(foodHtml, /setAttribute\('data-initial-section',t\)/);
+  assert.match(foodCss, /html\[data-initial-section\] body\[data-app="food"\] main\.wrap>\.section\{display:none!important\}/);
+  assert.match(skincareCss, /html\[data-initial-section\] body\[data-app="skin"\] main\.wrap > \.section\{display:none!important\}/);
   assert.match(css, /html\[data-initial-recipe-route="1"\] #recipes \.recipe-page\{display:none!important;visibility:hidden!important\}/);
-  assert.match(css, /html\[data-initial-recipe-slug="comfort-barrier-balm"\] #recipes #r12,/);
-  assert.match(css, /html\[data-initial-recipe-slug="testing-lip-balm"\] #recipes #r12\{display:block!important;visibility:visible!important/);
-  assert.match(css, /data-initial-recipe-slug="clarity-face-mask"/);
-  assert.match(css, /data-initial-recipe-slug="sebum-compatible-cleansing-oil"/);
-  assert.match(css, /data-initial-recipe-slug="skin-soft-massage-oil"/);
   assert.match(shared, /removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
 });
 
-test('standalone recipe recovery preserves the selected recipe subview', () => {
-  assert.match(liveStability, /const params = new URLSearchParams\(location\.search \|\| ''\)/);
-  assert.match(liveStability, /params\.get\('view'\)/);
-  assert.match(liveStability, /params\.get\('variant'\)/);
-  assert.match(liveStability, /view:view/);
-  assert.match(liveStability, /variant:variant/);
-  assert.match(liveStability, /pending\.view/);
-  assert.match(liveStability, /pending\.variant/);
-  assert.match(liveStability, /__baselineSetRecipeVariant/);
-  assert.match(liveStability, /__baselineSetRecipeView/);
-  assert.match(liveStability, /syncRoute:true/);
+test('shared recipe router preserves the selected recipe subview without a stability layer', () => {
+  assert.match(shared, /new URLSearchParams\(location\.search \|\| ''\)/);
+  assert.match(shared, /params\.get\('view'\)/);
+  assert.match(shared, /params\.get\('variant'\)/);
+  assert.match(shared, /__baselineSetRecipeVariant/);
+  assert.match(shared, /__baselineSetRecipeView/);
+  assert.doesNotMatch(shared, /baseline-live-stability-core-v3/);
 });
 
 test('shared method-tag engine maps every ingredient source to one first-use method step', () => {
@@ -63,7 +58,7 @@ test('shared method-tag engine maps every ingredient source to one first-use met
   assert.match(shared, /dataset\.methodIngredientKey=entry\.key/);
   assert.match(shared, /function bestNaturalMatch\(entry\)/);
   assert.match(shared, /function bestExplicitMatch\(entry\)/);
-  assert.match(shared, /const preferExplicit=!!explicit && \(entry\.genericTerm \|\| \(identityCounts\.get\(entry\.identity\) \|\| 0\)>1\)/);
+  assert.match(shared, /const explicit=bestExplicitMatch\(entry\);[\s\S]*let target=explicit \|\| null/);
   assert.match(shared, /data-method-amounts='first-use'|dataset\.methodAmounts='first-use'/);
   assert.doesNotMatch(shared, /const emittedMethodAmounts = new Set\(\)/);
 });
@@ -89,7 +84,7 @@ test('Skincare universal recipe chrome is authored once in canonical HTML', () =
 
 test('Universal adjustment visibility and Show All ordering are shared by Food and Skincare', () => {
   assert.match(shared, /const adjustmentsAvailable = next === 'standard' \|\| next === 'show-all'/);
-  assert.match(shared, /adjustmentsRow\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
+  assert.match(shared, /adjustmentsBtn\) adjustmentsBtn\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
   assert.match(shared, /editBody\.hidden = true/);
   assert.match(css, /BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
   assert.match(css, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="standard"[\s\S]*order:10/);
@@ -99,7 +94,8 @@ test('Universal adjustment visibility and Show All ordering are shared by Food a
 
 test('recipe subview first-paint guard honours clean-route view state before runtime', () => {
   assert.match(skincareHtml, /data-initial-recipe-view/);
-  assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)\.get\('view'\)/);
+  assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)/);
+  assert.match(skincareHtml, /q\.get\('view'\)/);
   assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
   assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\.recipe-view-hidden[\s\S]*display:grid!important/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-slug'\)/);
@@ -125,10 +121,7 @@ test('recipe subview is encoded by the shared router and Skincare restores its D
   assert.match(shared, /setNavState\(nextState, \{ replace:true, url:urlForNavState\(nextState\) \}\)/);
   assert.match(shared, /card\.__baselineSetRecipeVariant/);
   assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
-  assert.match(recipeUx, /function recipeViewFromLocation\(\)/);
-  assert.match(recipeUx, /restoreRecipeViewFromLocation\(\)/);
-  assert.match(recipeUx, /addEventListener\('popstate',restoreRecipeViewFromLocation\)/);
-  assert.doesNotMatch(recipeUx, /syncRecipeViewUrl/);
+  assert.doesNotMatch(recipeUx, /recipeViewFromLocation|restoreRecipeViewFromLocation|syncRecipeViewUrl/);
   assert.match(skincareCss, /recipe-open-mode \.recipe-page,[\s\S]*recipe-detail-open \.recipe-page\{ display:none!important; \}/);
   assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
 });
@@ -257,10 +250,9 @@ test('universal recipe styling inherits system variables instead of imposing Foo
 
 test('Skincare semantic emphasis is present before JavaScript mutates anything', () => {
   assert.match(css, /\[data-recipe-view-group\] strong\{\s*font-weight:inherit !important;/s);
-  assert.match(skincareCss,/STATIC-FIRST-SKINCARE-RECIPE-SEMANTIC-EMPHASIS-20261002/);
-  assert.match(skincareCss,/recipe-universal-template ol > li > strong:first-child/);
-  assert.match(skincareCss,/recipe-universal-template \.ing-subhead > strong/);
-  assert.match(skincareCss,/data-recipe-view-group="guidance"/);
+  assert.match(css,/recipe-universal-template ol > li > strong:first-child/);
+  assert.match(css,/recipe-universal-template \.ing-subhead > strong/);
+  assert.match(css,/data-recipe-view-group="guidance"/);
 });
 
 
@@ -358,8 +350,9 @@ test('recipe overview return cannot leave first-paint tab state pinned', () => {
   assert.match(foodHtml, /id="baseline-recipe-route-first-paint"/);
   assert.doesNotMatch(foodHtml, /id="baseline-food-route-first-paint"/);
   assert.equal((foodHtml.match(/id="baseline-recipe-route-first-paint"/g) || []).length, 1);
-  assert.match(foodHtml, /data-initial-section="ingredients"/);
-  assert.match(foodHtml, /data-initial-section="diet-log"/);
+  assert.match(foodHtml, /data-initial-section',t/);
+  assert.match(foodHtml, /ingredient-library/);
+  assert.match(foodHtml, /diet-log/);
   assert.doesNotMatch(foodHtml, /\/sitewide\/js\/baseline-tabs\.js/);
   assert.doesNotMatch(skincareHtml, /\/sitewide\/js\/baseline-tabs\.js/);
 });

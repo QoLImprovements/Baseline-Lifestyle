@@ -135,11 +135,15 @@ test("fitness page loads one sitewide engine adapter and presents the voice popu
   assert.match(app, /✕ Failed/);
 });
 
-test("sitewide shared runtime loads the reusable voice engine and exposes settings", () => {
+test("sitewide voice runtime is parser-loaded and owns its settings control", () => {
+  const html = read("systems/baseline-fitness/baseline-fitness.html");
   const shared = read("sitewide/js/baseline-shared.js");
+  const voice = read("sitewide/js/baseline-voice.js");
   const database = read("sitewide/api/database.php");
-  assert.match(shared, /bl-voice-toggle/);
-  assert.match(shared, /baseline-voice\.js/);
+  assert.match(html, /\/sitewide\/js\/baseline-voice\.js/);
+  assert.match(html, /data-baseline-voice-runtime="true"/);
+  assert.match(voice, /bl-voice-toggle/);
+  assert.doesNotMatch(shared, /baseline-voice\.js|bl-voice-toggle/);
   assert.match(database, /CREATE TABLE IF NOT EXISTS voice_settings/);
   assert.equal(
     fs.existsSync(path.join(root, "sitewide/api/voice_settings.php")),

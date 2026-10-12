@@ -296,3 +296,22 @@ body.voice-workout-active #voiceWorkoutModal{
   caret-color:transparent!important;
 }
 
+/* Canonical voice-workout interface styling. Previously injected at runtime. */
+#voiceWorkoutModal .voice-workout-modal{min-width:0!important;overflow-x:hidden!important}
+#voiceWorkoutModal .voice-workout-head{align-items:center!important;gap:12px!important}
+#voiceWorkoutModal .voice-workout-exercise,
+#voiceWorkoutModal .voice-workout-prompt,
+#voiceWorkoutModal .voice-workout-actions,
+#voiceWorkoutModal .voice-mic-host{min-width:0;max-width:100%}
+#voiceWorkoutSettingsBtn{margin-left:auto!important;min-height:42px;padding:9px 14px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-2,var(--border));border-radius:999px;background:var(--filter-bg,rgba(255,255,255,.06));color:inherit;font:inherit;font-weight:800;cursor:pointer}
+#voiceWorkoutSettingsBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+#voiceWorkoutModal .voice-mic-result{display:none;min-width:8ch;text-align:center;font-size:clamp(1.15rem,3vw,1.5rem);font-weight:900}
+#voiceWorkoutModal .voice-mic-visual[data-result] .voice-mic-icon,
+#voiceWorkoutModal .voice-mic-visual[data-result] .voice-level-bars{display:none!important}
+#voiceWorkoutModal .voice-mic-visual[data-result] .voice-mic-result{display:block}
+#voiceWorkoutModal .voice-mic-visual[data-result="success"] .voice-mic-result{color:var(--success,#70d995)}
+#voiceWorkoutModal .voice-mic-visual[data-result="fail"] .voice-mic-result{color:var(--danger,#ff8b98)}
+@media(max-width:620px){
+  #voiceWorkoutSettingsBtn span{display:none}
+  #voiceWorkoutSettingsBtn{width:42px;min-width:42px;padding:0;justify-content:center}
+}

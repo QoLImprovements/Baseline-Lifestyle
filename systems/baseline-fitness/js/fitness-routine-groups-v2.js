@@ -47,40 +47,98 @@
   const $ = (selector,root=document) => root?.querySelector?.(selector) || null;
   const $$ = (selector,root=document) => Array.from(root?.querySelectorAll?.(selector) || []);
   const esc = UI.escapeHtml || ((value) => String(value == null ? '' : value));
+  const GROUP_API='/systems/baseline-fitness/api/routine_groups.php';
   let frame = 0;
   let logObserver = null;
   let arrangingLog = false;
   let selectedGroupId = '';
+  const state={ groups:[],assignments:{},revision:0,loaded:false,authed:false,owner:'guest',saveTimer:0,saveInFlight:false,saveQueued:false,saveBlocked:false,loadToken:0 };
 
-  function owner() {
-    try {
-      const snapshot = global.BASELINE_auth?.get?.();
-      if (snapshot?.authed) return String(snapshot.name || snapshot.user?.name || 'user').trim().toLocaleLowerCase('en-GB') || 'user';
-    } catch (_error) {}
-    return 'guest';
+  function normaliseOwner(value) {
+    return String(value || '').trim().toLocaleLowerCase('en-GB') || 'guest';
   }
-
-  function readSettings() {
-    try { return UI.readSettings?.(owner()) || {}; }
-    catch (_error) { return {}; }
+  function cleanGroups(value) {
+    const seen=new Set();
+    return (Array.isArray(value)?value:[]).slice(0,50)
+      .map((group)=>({ id:String(group?.id || '').trim(),title:String(group?.title || '').trim() }))
+      .filter((group)=>group.id && group.title && !seen.has(group.id) && seen.add(group.id));
   }
-
-  function groupData() {
-    const value = readSettings();
-    const seen = new Set();
-    const groups = (Array.isArray(value.fitnessRoutineGroups) ? value.fitnessRoutineGroups : [])
-      .map((group) => ({ id:String(group?.id || '').trim(),title:String(group?.title || '').trim() }))
-      .filter((group) => group.id && group.title && !seen.has(group.id) && seen.add(group.id));
-    const valid = new Set(groups.map((group) => group.id));
-    const assignments = {};
-    Object.entries(value.fitnessRoutineAssignments && typeof value.fitnessRoutineAssignments === 'object' ? value.fitnessRoutineAssignments : {}).forEach(([key,groupId]) => {
-      if (valid.has(String(groupId))) assignments[String(key)] = String(groupId);
+  function cleanAssignments(value,groups=state.groups) {
+    const valid=new Set(groups.map((group)=>group.id));const assignments={};
+    Object.entries(value && typeof value==='object'?value:{}).slice(0,400).forEach(([key,groupId])=>{
+      if(valid.has(String(groupId))) assignments[String(key)]=String(groupId);
     });
-    return { groups,assignments };
+    return assignments;
   }
-
+  function groupData() {
+    return {
+      groups:state.groups.map((group)=>({ ...group })),
+      assignments:{ ...state.assignments }
+    };
+  }
+  async function request(options={}) {
+    try{
+      const response=await fetch(GROUP_API,{
+        method:options.method || 'GET',
+        credentials:'same-origin',
+        headers:Object.assign({ Accept:'application/json' },options.body?{ 'Content-Type':'application/json' }:{}),
+        body:options.body?JSON.stringify(options.body):undefined
+      });
+      const data=await response.json().catch(()=>null);
+      return { ok:response.ok,status:response.status,data };
+    }catch(_error){ return { ok:false,status:0,data:null }; }
+  }
+  function announce() {
+    try{ document.dispatchEvent(new CustomEvent('baseline:fitness-routine-groups-updated',{ detail:{ revision:state.revision } })); }catch(_error){}
+  }
+  async function saveNow() {
+    clearTimeout(state.saveTimer);state.saveTimer=0;
+    if(!state.authed || state.saveBlocked) return;
+    if(state.saveInFlight){ state.saveQueued=true;return; }
+    state.saveInFlight=true;
+    const body={ groups:cleanGroups(state.groups),assignments:cleanAssignments(state.assignments,state.groups),expectedRevision:state.revision };
+    const response=await request({ method:'POST',body });
+    if(!response.ok || !response.data?.ok){
+      if(response.status===409 || response.data?.error==='revision_conflict') state.saveBlocked=true;
+    }else{
+      state.groups=cleanGroups(response.data.groups);
+      state.assignments=cleanAssignments(response.data.assignments,state.groups);
+      state.revision=Number(response.data.revision || state.revision || 0);
+      state.saveBlocked=false;
+      announce();
+    }
+    state.saveInFlight=false;
+    if(state.saveQueued && !state.saveBlocked){ state.saveQueued=false;saveNow(); }
+  }
   function save(data) {
-    UI.writeSettings?.({ fitnessRoutineGroups:data.groups,fitnessRoutineAssignments:data.assignments },owner());
+    state.groups=cleanGroups(data?.groups);
+    state.assignments=cleanAssignments(data?.assignments,state.groups);
+    /* Group numbering belongs to this owner and should reflect a user mutation
+       immediately; the animation-frame pass remains for heavier layout work. */
+    decoratePlanItemNumbers(groupData(),entityList());
+    announce();
+    clearTimeout(state.saveTimer);
+    if(state.authed && !state.saveBlocked) state.saveTimer=global.setTimeout(saveNow,350);
+  }
+  async function loadForAuth(snapshot) {
+    const token=++state.loadToken;
+    const authed=Boolean(snapshot?.ready && snapshot?.authed);
+    const owner=authed?normaliseOwner(snapshot.name || snapshot.user?.name):'guest';
+    state.authed=authed;state.owner=owner;state.loaded=false;state.saveBlocked=false;
+    state.groups=[];state.assignments={};state.revision=0;selectedGroupId='';
+    if(!snapshot?.ready) return;
+    if(!authed){ state.loaded=true;schedule();announce();return; }
+    const response=await request();
+    if(token!==state.loadToken) return;
+    if(response.ok && response.data?.ok){
+      state.groups=cleanGroups(response.data.groups);
+      state.assignments=cleanAssignments(response.data.assignments,state.groups);
+      state.revision=Number(response.data.revision || 0);
+      state.loaded=true;
+      schedule();announce();
+    }else{
+      state.loaded=true;state.saveBlocked=true;schedule();
+    }
   }
 
   function entityList() {
@@ -398,7 +456,7 @@
   }
 
   function schedule() {
-    if (frame) return;
+    if (!state.loaded || frame) return;
     frame = global.requestAnimationFrame(() => {
       frame=0;
       ensureGroupManager();
@@ -452,7 +510,11 @@
     });
 
     document.addEventListener('baseline:fitness-plans-updated',schedule);
-    document.addEventListener('baseline:routine-settings-changed',schedule);
+    document.addEventListener('baseline:fitness-routine-groups-updated',schedule);
+    document.addEventListener('baseline:fitness-routine-resource-revision',(event)=>{
+      const revision=Number(event.detail?.revision);
+      if(Number.isFinite(revision) && revision>=0) state.revision=revision;
+    });
     document.addEventListener('baseline:fitness-routine-updated',schedule);
     document.addEventListener('baseline:fitness-routine-view-changed',schedule);
   }
@@ -460,11 +522,23 @@
   function boot() {
     bind();
     watchLog();
-    schedule();
+    const auth=global.BASELINE_auth;
+    if(auth?.get){
+      loadForAuth(auth.get());
+      auth.onChange?.(loadForAuth);
+    }else{
+      state.loaded=true;
+      schedule();
+    }
   }
+
+  global.BASELINE_FITNESS_ROUTINE_GROUPS=Object.freeze({
+    getState:()=>({ groups:cleanGroups(state.groups),assignments:cleanAssignments(state.assignments,state.groups),revision:state.revision,loaded:state.loaded,saveBlocked:state.saveBlocked })
+  });
 
   global.addEventListener('pagehide',() => {
     if (frame) global.cancelAnimationFrame(frame);
+    if(state.saveTimer) global.clearTimeout(state.saveTimer);
     logObserver?.disconnect();
   },{ once:true });
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });

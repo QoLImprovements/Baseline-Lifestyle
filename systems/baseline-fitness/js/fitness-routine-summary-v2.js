@@ -30,7 +30,6 @@
   const UI=global.BASELINE_RoutineSystem;
   if (!UI) return;
 
-  const FILTER_STORAGE_KEY='__bl_fitness_routine_summary_filter_v12__';
   const $=(selector,root=document)=>root?.querySelector?.(selector)||null;
   const $$=(selector,root=document)=>Array.from(root?.querySelectorAll?.(selector)||[]);
   const esc=UI.escapeHtml || ((value)=>String(value==null?'':value));
@@ -38,6 +37,7 @@
   const alpha=(a,b)=>String(a || '').localeCompare(String(b || ''),'en-GB',{ sensitivity:'base' });
   let frame=0;
   let rendering=false;
+  let activeFilter='all';
 
   function owner() {
     try {
@@ -56,7 +56,17 @@
   }
   function groupData() {
     let value={};
-    try { value=UI.readSettings?.(owner()) || {}; } catch (_error) {}
+    try {
+      const canonical=global.BASELINE_FITNESS_ROUTINE_GROUPS?.getState?.();
+      if(canonical?.loaded){
+        value={
+          fitnessRoutineGroups:Array.isArray(canonical.groups)?canonical.groups:[],
+          fitnessRoutineAssignments:canonical.assignments && typeof canonical.assignments==='object'?canonical.assignments:{}
+        };
+      }else{
+        value=UI.readSettings?.(owner()) || {};
+      }
+    } catch (_error) {}
     const seen=new Set();
     const groups=(Array.isArray(value.fitnessRoutineGroups)?value.fitnessRoutineGroups:[])
       .map((group)=>({ id:String(group?.id || '').trim(),title:String(group?.title || '').trim() }))
@@ -435,12 +445,10 @@
     try { select?.__bl_select__?.buildMenu?.();select?.__bl_select__?.sync?.();select?.__bl_select__?.syncStyle?.(); } catch (_error) {}
   }
   function persistedFilter() {
-    try { return String(global.sessionStorage?.getItem(FILTER_STORAGE_KEY) || 'all'); }
-    catch (_error) { return 'all'; }
+    return String(activeFilter || 'all');
   }
   function persistFilter(value) {
-    const next=String(value || 'all');
-    try { global.sessionStorage?.setItem(FILTER_STORAGE_KEY,next); } catch (_error) {}
+    activeFilter=String(value || 'all');
   }
   function filterOption(value,filterKey,badge,label) {
     return `<option value="${esc(value)}" data-filter-key="${esc(filterKey)}">${badge?`${esc(badge)} · `:''}${esc(label)}</option>`;
@@ -585,7 +593,7 @@
     document.addEventListener('click',(event)=>{
       if (event.target?.closest?.('[data-fitness-routine-view="summary"]')) global.requestAnimationFrame(schedule);
     },true);
-    ['baseline:fitness-plans-updated','baseline:routine-settings-changed','baseline:fitness-routine-updated','baseline:fitness-workout-updated'].forEach((name)=>document.addEventListener(name,schedule));
+    ['baseline:fitness-plans-updated','baseline:fitness-routine-groups-updated','baseline:routine-settings-changed','baseline:fitness-routine-updated','baseline:fitness-workout-updated'].forEach((name)=>document.addEventListener(name,schedule));
   }
   function boot() { bind();schedule(); }
 

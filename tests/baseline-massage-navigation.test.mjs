@@ -4,7 +4,6 @@ import test from 'node:test';
 
 const html = fs.readFileSync('systems/baseline-massage/baseline-massage.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
-const fallback = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 
 function occurrences(source, pattern) {
@@ -20,14 +19,13 @@ test('Massage has one authoritative three-page navigation structure', () => {
   assert.equal(occurrences(html, /<section class="section(?: active)?" id="(?:system|library|planner)"/g), 3);
 });
 
-test('Types of Massage is contained within Massage Library', () => {
+test('Types Of Massage is contained within Massage Library', () => {
   const libraryStart = html.indexOf('<section class="section" id="library">');
   const plannerStart = html.indexOf('<section class="section" id="planner">');
   assert.ok(libraryStart >= 0 && plannerStart > libraryStart);
   const library = html.slice(libraryStart, plannerStart);
-  assert.match(library, /aria-label="Types of Massage"/);
-  assert.match(library, /data-type-tab="swedishType"/);
-  assert.match(library, /data-type-tab="sportsType"/);
+  assert.match(library, /aria-label="Massage Library categories"/);
+  assert.match(library, /data-library-category="Types Of Massage"/);
   assert.match(library, /id="massageLibraryTabs"/);
   assert.match(library, /id="massageLibraryGrid"/);
 });
@@ -52,13 +50,12 @@ test('custom pressure and pace fields remain conditional with provider-led defau
   assert.match(html, /id="providerPaceCustomRow" hidden/);
 });
 
-test('clean Massage routes agree across server, primary router, and fallback router', () => {
+test('clean Massage routes agree across server and the canonical shared router', () => {
   assert.match(htaccess, /RewriteRule \^baseline-massage\/\(system\|library\|planner\)\/\?\$ systems\/baseline-massage\/baseline-massage\.html \[L,QSA\]/);
   assert.match(htaccess, /RewriteRule \^baseline-massage\/types\/\?\$ \/baseline-massage\/library \[R=302,L\]/);
-  for (const source of [shared, fallback]) {
-    assert.match(source, /baseline-massage[^\n]+system[^\n]+library[^\n]+planner/);
-    assert.doesNotMatch(source, /baseline-massage[^\n]+types:'types'/);
-  }
+  assert.match(shared, /baseline-massage[^\n]+system[^\n]+library[^\n]+planner/);
+  assert.doesNotMatch(shared, /baseline-massage[^\n]+types:'types'/);
+  assert.doesNotMatch(html, /baseline-tabs\.js/);
   assert.doesNotMatch(html, /history\.(?:pushState|replaceState)/);
   assert.doesNotMatch(html, /^(?:<<<<<<<|=======|>>>>>>>)/m);
 });

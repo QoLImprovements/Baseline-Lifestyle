@@ -1,107 +1,53 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync,readFileSync } from 'node:fs';
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
+const url=path=>new URL(`../${path}`,import.meta.url);
+const read=path=>readFileSync(url(path),'utf8');
 
-test('live stability runtime covers the reported refresh and persistence faults', () => {
-  const loader = read('sitewide/js/baseline-live-stability.js');
-  const core = read('sitewide/js/baseline-live-stability-core-v3.js');
-  const js = `${loader}\n${core}`;
-  assert.match(js, /__baseline_pending_recipe_route_v1__/);
-  assert.match(js, /__baseline_fitness_body_view_v1__/);
-  assert.match(js, /data-baseline-games-stable/);
-  assert.match(js, /Voice recognition unavailable\./);
-  assert.match(js, /prompt\.textContent = 'Voice recognition unavailable\.';/);
-  assert.match(js, /expectedRevision/);
-  assert.match(js, /Badminton could not save to the server/);
-  assert.match(js, /location\.assign\('\/home\/1'\)/);
-  assert.match(loader, /baseline-unified-favorites-v1\.js/);
-  assert.match(loader, /baseline-detect-word-feedback-v1\.js/);
-  assert.doesNotMatch(loader, /installRoutineInterfaceRepairs/);
+test('retired live-stability override layer stays physically absent',()=>{
+  for(const path of [
+    'sitewide/js/baseline-live-stability.js',
+    'sitewide/js/baseline-live-stability-core-v3.js',
+    'sitewide/css/baseline-live-stability.css',
+    'sitewide/js/baseline-tabs.js',
+    'sitewide/js/baseline-auth-failsafe.js'
+  ]) assert.equal(existsSync(url(path)),false,`${path} must stay deleted`);
 });
 
 test('Badminton has one revision-aware server writer and no browser fallback persistence',()=>{
-  const core=read('sitewide/js/baseline-live-stability-core-v3.js');
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
-  assert.match(badminton,/__BASELINE_BADMINTON_CANONICAL_SAVED_DATA__/);
-  assert.match(badminton,/expectedRevision:Number\.isInteger\(serverRevision\)/);
-  assert.match(badminton,/data\.error==='revision_conflict'/);
-  assert.match(badminton,/serverSaveConflict=true/);
-  assert.match(badminton,/serverSaveBlocked=true/);
-  assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage|persistSessionLocalOnly/);
-  assert.doesNotMatch(core,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
+  const server=read('systems/baseline-badminton-session/js/badminton-session-server.js');
+  const source=badminton+'\n'+server;
+  assert.match(source,/expectedRevision|serverRevision/);
+  assert.match(source,/revision_conflict/);
+  assert.match(source,/badminton_session\.php/);
+  assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
 });
 
-test('shared and protected runtimes load stability without reordering first-paint CSS', () => {
-  const shared = read('sitewide/js/baseline-shared.js');
-  const protectedAccess = read('sitewide/js/baseline-protected-access.js');
-  assert.match(shared, /BASELINE-LIVE-STABILITY-LOADER-20260803/);
-  assert.match(shared, /baseline-live-stability\.js/);
-  assert.match(protectedAccess, /baseline-live-stability\.css/);
-  assert.match(protectedAccess, /loadLiveStability/);
-  assert.doesNotMatch(protectedAccess, /appendChild\(existing\)/);
-  assert.match(protectedAccess, /if\(document\.body\) initialise\(\)/);
+test('clean recipe detail routes use the complete parent applications only',()=>{
+  const htaccess=read('.htaccess');
+  assert.ok(htaccess.includes('RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]'));
+  assert.ok(htaccess.includes('RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]'));
+  assert.doesNotMatch(htaccess,/baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/?\$ systems\/baseline-natural-skincare\/recipes\/\$1\.html/);
 });
 
-test('clean recipe detail routes serve the complete parent applications', () => {
-  const htaccess = read('.htaccess');
-  assert.match(htaccess, /baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/baseline-food-approach\.html/);
-  assert.match(htaccess, /baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
-  assert.doesNotMatch(htaccess, /baseline-food-approach\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-food-approach\/recipes\/\$1\.html/);
+test('Fitness route generation remains canonical without a fallback tab controller',()=>{
+  const fitness=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const routine=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  const shared=read('sitewide/js/baseline-shared.js');
+  assert.match(fitness,/const ROUTE_BASE = '\/baseline-fitness'/);
+  assert.match(routine,/function requestedRoute\(\)/);
+  assert.match(shared,/'my-body':'my-body'/);
+  assert.match(shared,/library:'library'/);
+  assert.equal(existsSync(url('sitewide/js/baseline-tabs.js')),false);
 });
 
-test('Fitness route generation is canonical and legacy malformed nested URLs recover', () => {
-  const fitness = read('systems/baseline-fitness/js/baseline-fitness-app.js');
-  const routineStructure = read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
-  const shared = read('sitewide/js/baseline-shared.js');
-  const fallbackTabs = read('sitewide/js/baseline-tabs.js');
-  const htaccess = read('.htaccess');
-  const testServer = read('tests/support/production-static-server.cjs');
-
-  assert.match(fitness, /const ROUTE_BASE = '\/baseline-fitness'/);
-  assert.match(fitness, /const ROUTINE_ROUTE_RE = /);
-  assert.match(fitness, /return `\$\{ROUTE_BASE\}\/\$\{canonical\}`/);
-  assert.doesNotMatch(fitness, /const base = location\.pathname\.replace\(ROUTE_RE/);
-
-  assert.match(shared, /'my-body':'my-body'/);
-  assert.match(shared, /library:'library'/);
-  assert.match(shared, /baseline-fitness\\\/my-routine/);
-  assert.match(shared, /baseline-natural-skincare\\\/my-routine/);
-  assert.match(shared, /preserveNestedRoutinePath/);
-  assert.match(shared, /const nextUrl = preserveNestedRoutinePath/);
-  assert.match(shared, /const initialHashView = initialHash \? parseViewStateHash\(initialHash\) : null/);
-  assert.match(shared, /const initialCleanRouteView = cleanRouteStateFromPath\(\)/);
-  assert.match(shared, /initialHashView \|\| initialCleanRouteView/);
-
-  assert.match(routineStructure, /function ownsNestedRoutinePath/);
-  assert.match(routineStructure, /if \(!ownsNestedRoutinePath\(url\.pathname\).*allowEnter/s);
-  assert.match(routineStructure, /const route=routeFromPath\(\);\s*if \(!route\) return;/);
-
-  assert.match(fallbackTabs, /"my-body":"my-body"/);
-  assert.match(fallbackTabs, /library:"library"/);
-
-  assert.match(htaccess, /Recover malformed top-level Fitness URLs produced by the former nested route builder/);
-  assert.match(htaccess, /baseline-fitness\/my-routine.*\(system\|my-plan\|my-body\|library\|exercise-library\|achievements\).*\/baseline-fitness\/\$1/s);
-  assert.match(testServer, /malformedFitness/);
-  assert.match(testServer, /system\|workout-routine\|library\|exercise-library\|achievements\|my-routine\|my-plan\|my-body/);
-});
-
-test('protected key and Charity banner controls have stable first-paint geometry', () => {
-  const css = read('sitewide/css/baseline-protected-key-placement.css');
-  assert.match(css, /BASELINE-LIVE-KEY-FIRST-PAINT-20260803/);
-  assert.match(css, /> \.bl-protected-key\{order:2/);
-  assert.match(css, /data-app="charity-shop"/);
-  assert.match(css, /#bl-beats-toggle/);
-  assert.match(css, /#bl-auth-toggle/);
-});
-
-test('new session-only navigation keys have explicit non-resource decisions', () => {
-  const mapping = JSON.parse(read('sitewide/migration/browser_storage_map.json'));
-  const rules = mapping.rules || [];
-  for (const id of ['pending-recipe-route', 'fitness-body-view']) {
-    const rule = rules.find(candidate => candidate.id === id);
-    assert.equal(rule?.decision, 'expire-with-session');
-    assert.equal(rule?.target, null);
-  }
+test('protected key and Charity banner geometry are owned by canonical CSS, not a stability patch',()=>{
+  const css=read('sitewide/css/baseline-protected-key-placement.css');
+  const charity=read('systems/charity-shop/charity-shop.php');
+  assert.match(css,/> \.bl-protected-key\{order:2/);
+  assert.match(css,/data-app="charity-shop"/);
+  assert.match(charity,/baseline-protected-key-placement\.css/);
+  assert.doesNotMatch(charity,/baseline-live-stability/);
 });

@@ -5355,3 +5355,9 @@ body[data-app="games"] [role="tooltip"] *{color:inherit!important;-webkit-text-f
 .games-browser-import>p{margin:0}
 .games-browser-import-actions{display:flex;flex-wrap:wrap;gap:8px}
 .games-browser-import-actions .action{min-height:42px}
+
+/* Initial route authority: URL state is applied before first paint and handed
+   to the live router without creating/removing temporary stylesheets. */
+html[data-initial-section] body[data-app="games"] main.wrap > .section{display:none!important}
+html[data-initial-section="hub"] body[data-app="games"] main.wrap > #hub,
+html[data-initial-section="games"] body[data-app="games"] main.wrap > #games{display:block!important}

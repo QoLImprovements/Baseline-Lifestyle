@@ -168,11 +168,12 @@ test('embedded Skincare recipe first paint is exact before external JavaScript r
   }
 });
 
-test('embedded Skincare Lip Balm keeps the exact route across direct load refresh Back and Forward', async ({ page }) => {
+test('embedded Skincare Lip Balm canonicalizes its legacy alias across direct load refresh Back and Forward', async ({ page }) => {
   const lipBalmPath = '/baseline-natural-skincare/recipes/testing-lip-balm';
+  const canonicalLipBalmPath = '/baseline-natural-skincare/recipes/comfort-barrier-balm';
 
   await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
-  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  expect(new URL(page.url()).pathname).toBe(canonicalLipBalmPath);
   await expect(page.locator('html')).not.toHaveAttribute('data-initial-recipe-slug','testing-lip-balm');
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
@@ -181,17 +182,16 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
   await expect(page.locator('#recipes .side-recipe-nav:visible')).toHaveCount(0);
 
   await page.reload({ waitUntil:'domcontentloaded' });
-  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  expect(new URL(page.url()).pathname).toBe(canonicalLipBalmPath);
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 
   await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
-  const external = page.locator('#recipes-landing a[href="' + lipBalmPath + '"]').first();
-  await expect(external).toBeVisible();
-  await external.click();
-  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/testing-lip-balm$/);
+  await page.evaluate((href) => { window.location.assign(href); }, lipBalmPath);
+  await page.waitForLoadState('domcontentloaded');
+  await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/comfort-barrier-balm$/);
   await expect(page.locator('#r12')).toBeVisible();
 
   await page.goBack({ waitUntil:'domcontentloaded' });
@@ -199,7 +199,7 @@ test('embedded Skincare Lip Balm keeps the exact route across direct load refres
   await expect(page.locator('#recipes-landing')).toBeVisible();
 
   await page.goForward({ waitUntil:'domcontentloaded' });
-  expect(new URL(page.url()).pathname).toBe(lipBalmPath);
+  expect(new URL(page.url()).pathname).toBe(canonicalLipBalmPath);
   await expect(page.locator('#r12')).toBeVisible();
   await expect(page.locator('#r12 h3').first()).toHaveText('Comfort Barrier Balm');
   await expect(page.locator('#system')).toBeHidden();
@@ -494,7 +494,7 @@ test('shared login, favourites, Binaural presets and logout complete one account
   await accountToggle.click();
   await expect(page.locator('#bl-auth-logout')).toBeVisible();
   await page.locator('#bl-auth-logout').click();
-  await expect(accountToggle.locator('.bl-btn-label')).toHaveText('Login');
+  await expect(accountToggle.locator('.bl-btn-label')).toHaveText('Account');
 });
 
 test('Charity Shop digital-code gate opens only after an approved API response', async ({ page }) => {
@@ -534,8 +534,16 @@ test('Fitness saves a generated plan and reloads it through the account API', as
     }
     if (pathname.endsWith('/get_plan.php')) {
       return fulfillJson(route, savedPlan
-        ? { ok: true, hasPlan: true, planId: 41, planJson: savedPlan, sessions: [], progress: null }
+        ? { ok: true, hasPlan: true, planId: 41, planJson: savedPlan, sessions: [], progress: { done:0, total:Number(savedPlan.sessions || 2), nextIndex:1 } }
         : { ok: true, hasPlan: false });
+    }
+    if (pathname.endsWith('/list_plans.php')) {
+      return fulfillJson(route, savedPlan
+        ? { ok:true, plans:[{ planId:41, name:'Calisthenics Plan 1', planJson:savedPlan, sessions:[], progress:{ done:0, total:Number(savedPlan.sessions || 2), nextIndex:1 } }] }
+        : { ok:true, plans:[] });
+    }
+    if (pathname.endsWith('/fitness_state.php')) {
+      return fulfillJson(route, { ok:true, revision:2, profile:null, activeWorkout:null, progressionHistory:{ outcomes:[], failures:[] }, selectedPlanId:savedPlan ? 41 : 0 });
     }
     if (pathname.endsWith('/save_plan.php')) {
       const payload = request.postDataJSON();
@@ -572,14 +580,18 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   await page.locator('#savePlanBtn').click();
   await expect.poll(() => savedPlan && savedPlan.sessions).toBe(2);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
-  await expect(page.locator('#myPlanOut')).toContainText('Saved plan');
+  await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('details[data-fitness-plan-card="calisthenics"]')).toBeVisible();
-  await page.locator('details[data-fitness-plan-card="calisthenics"] > summary').click();
+  const reloadedCalisthenicsCard=page.locator('details[data-fitness-plan-card="calisthenics"]');
+  await expect(reloadedCalisthenicsCard).toBeVisible();
+  if (!(await reloadedCalisthenicsCard.evaluate((element) => element.open))) {
+    await reloadedCalisthenicsCard.locator(':scope > summary').click();
+  }
+  await expect(reloadedCalisthenicsCard).toHaveAttribute('open','');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
-  await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
+  await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 });
 
 test('Games Hub restores account progress and keeps a game playable', async ({ page }) => {

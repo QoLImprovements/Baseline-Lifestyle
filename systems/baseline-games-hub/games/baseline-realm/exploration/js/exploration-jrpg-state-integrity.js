@@ -1,4 +1,4 @@
-import { INITIAL_PARTY_IDS, PARTY_BLUEPRINTS, SAVE_KEY } from '../data/meridian-grove.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { INITIAL_PARTY_IDS, PARTY_BLUEPRINTS } from '../data/meridian-grove.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { chooseRandomEncounter, movePlayer } from './jrpg-engine.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { MeridianGroveGame } from './exploration-jrpg.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 
@@ -34,12 +34,10 @@ export class MeridianGroveStateSafeGame extends MeridianGroveGame {
   load() {
     const state = super.load();
     try {
-      const rawText = localStorage.getItem(SAVE_KEY);
-      const raw = rawText ? JSON.parse(rawText) : null;
-      repairSavedParty(state, raw);
-      if (state.battle && raw?.battle) {
-        state.battle.escaped = Boolean(raw.battle.escaped);
-        state.battle.victory = Boolean(raw.battle.victory);
+      repairSavedParty(state,state);
+      if (state.battle) {
+        state.battle.escaped = Boolean(state.battle.escaped);
+        state.battle.victory = Boolean(state.battle.victory);
       }
     } catch (error) {
       console.warn('Meridian Grove state-integrity repair was skipped.', error);

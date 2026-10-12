@@ -1160,3 +1160,12 @@ body[data-app="badminton"] .hardship-control .hardship-note{
 .badminton-persistence-status.is-warning{border-color:rgba(179,113,0,.42);background:rgba(255,247,224,.92);color:#6f4b00}
 .badminton-persistence-status.is-error{border-color:rgba(160,34,49,.42);background:rgba(255,235,239,.94);color:#7d1c2a}
 .badminton-persistence-status[hidden]{display:none!important}
+
+/* Initial route authority: the URL chooses the first visible section before the
+   live router starts. No temporary stylesheet or delayed repaint is used. */
+html[data-initial-section] body[data-app="badminton"] main.wrap > .section{display:none!important}
+html[data-initial-section="system"] body[data-app="badminton"] main.wrap > #system,
+html[data-initial-section="gameplan"] body[data-app="badminton"] main.wrap > #gameplan,
+html[data-initial-section="standings"] body[data-app="badminton"] main.wrap > #standings,
+html[data-initial-section="roster"] body[data-app="badminton"] main.wrap > #roster,
+html[data-initial-section="history"] body[data-app="badminton"] main.wrap > #history{display:block!important}

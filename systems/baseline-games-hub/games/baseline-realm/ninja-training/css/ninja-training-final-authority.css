@@ -1,5 +1,3 @@
-@import url('./ninja-training-runtime-authority.css?v=GAMES_HUB_RUNTIME_REPAIR_20260707_1');
-
 #ninjaPanel .ninja-scene__runner,
 #ninjaPanel .ninja-scene__enemy{
   z-index:20!important;

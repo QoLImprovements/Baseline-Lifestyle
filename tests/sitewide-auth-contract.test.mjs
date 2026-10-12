@@ -50,21 +50,23 @@ test('the shared controller delegates transport to the focused API client', () =
   const shared = read('sitewide/js/baseline-shared.js');
   const api = read('sitewide/js/baseline-api.js');
   assert.match(shared, /const sitewideApi = window\.BASELINE_api/);
-  assert.doesNotMatch(shared, /async function apiJson\b|await fetch\(/);
+  assert.doesNotMatch(shared, /async function apiJson\b/);
+  assert.doesNotMatch(shared, /fetch\([^\n]*(?:login|logout|register|forgot_password|password_reset|auth_providers|\/api\/)/);
+  assert.match(shared, /const apiJson = sitewideApi\.json/);
   assert.match(api, /credentials:\s*'same-origin'/);
   assert.match(api, /error:'network_error'/);
   assert.match(api, /error: looksLikeHtml \? 'api_returned_html' : 'api_non_json_response'/);
   assert.doesNotMatch(api, /authState|createElement|(?:scope|window|global)\\.localStorage\\.(?:getItem|setItem|removeItem)/);
 });
 
-test('the shared controller delegates local cache persistence to the focused store client', () => {
+test('the focused store client is explicitly non-persistent and cannot become an account save authority', () => {
   const shared = read('sitewide/js/baseline-shared.js');
   const store = read('sitewide/js/baseline-store.js');
-  assert.match(shared, /const sitewideStore = window\.BASELINE_store/);
   assert.doesNotMatch(shared, /function ls(?:Read|Write|Del)\b|function localUserKey\b/);
-  assert.match(store, /scope\.localStorage\.getItem/);
-  assert.match(store, /scope\.localStorage\.setItem/);
-  assert.match(store, /scope\.localStorage\.removeItem/);
+  assert.doesNotMatch(shared, /BASELINE_store/);
+  assert.match(store, /const values\s*=\s*new Map\(\)/);
+  assert.match(store, /persistent:false/);
+  assert.doesNotMatch(store, /localStorage|sessionStorage|indexedDB|Storage\.prototype/);
   assert.doesNotMatch(store, /authState|createElement|fetch\(/);
 });
 
@@ -80,29 +82,26 @@ test('the shared controller delegates account state and operations to the focuse
   assert.doesNotMatch(auth, /createElement|innerHTML|classList/);
 });
 
-test('Fitness loads API compatibility after shared auth and before its application', () => {
+test('Fitness parser-loads focused API, store and auth clients before shared runtime and application', () => {
   const html = read('systems/baseline-fitness/baseline-fitness.html');
+  const api = html.indexOf('/sitewide/js/baseline-api.js');
+  const store = html.indexOf('/sitewide/js/baseline-store.js');
+  const auth = html.indexOf('/sitewide/js/baseline-auth.js');
   const shared = html.indexOf('/sitewide/js/baseline-shared.js');
-  const authority = html.indexOf('/sitewide/js/baseline-auth-failsafe.js');
   const app = html.indexOf('/systems/baseline-fitness/js/baseline-fitness-app.js');
-  assert.ok(shared > -1 && authority > shared && app > authority);
+  assert.ok(api > -1 && store > api && auth > store && shared > auth && app > shared);
+  assert.doesNotMatch(html, /baseline-auth-failsafe\.js/);
 });
 
-test('compatibility repairs API routing, loads shared form interactions and keeps one auth UI', () => {
-  const source = read('sitewide/js/baseline-auth-failsafe.js');
+test('shared form interactions handle auth submission without a shadow auth failsafe', () => {
   const interactions = read('sitewide/js/baseline-form-interactions.js');
-  assert.match(source, /SITEWIDE_AUTH_AND_FORM_INTERACTIONS_20260805_1/);
-  assert.match(source, /window\.fetch=async/);
-  assert.match(source, /\/sitewide\/api\//);
-  assert.match(source, /baseline-fitness/);
-  assert.match(source, /response\.status>=500/);
-  assert.match(source, /baseline-form-interactions\.js/);
-  assert.match(source, /button\.type='submit'/);
+  const shared = read('sitewide/js/baseline-shared.js');
+  assert.equal(fs.existsSync(path.join(root, 'sitewide/js/baseline-auth-failsafe.js')), false);
   assert.match(interactions, /#bl-auth-flyout \.bl-auth-form:not\(\[hidden\]\) input/);
   assert.match(interactions, /event\.key === 'Enter'/);
-  assert.doesNotMatch(source, /BASELINE_auth\.login/);
-  assert.doesNotMatch(source, /createElement\('div'\)/);
-  assert.doesNotMatch(source, /bl-auth-failsafe-form/);
+  assert.match(interactions, /submitVisibleAuthForm/);
+  assert.match(shared, /const authClient = window\.BASELINE_auth/);
+  assert.doesNotMatch(shared, /bl-auth-failsafe-form|baseline-auth-failsafe/);
 });
 
 test('Fitness auth compatibility state redirects to the single sitewide source of truth', () => {

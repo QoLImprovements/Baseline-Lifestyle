@@ -424,8 +424,7 @@ export function createNinjaTrainingRuntime(dependencies) {
       if(globalThis.DartsFocusedGames && typeof globalThis.DartsFocusedGames.getProfile === 'function'){
         return globalThis.DartsFocusedGames.getProfile();
       }
-      const raw = globalThis.localStorage && (globalThis.localStorage.getItem('__bl_darts_focused_v1__') || globalThis.localStorage.getItem('__bl_darts_focused_v2__'));
-      return raw ? JSON.parse(raw) : null;
+      return globalThis.BaselineGameStorage?.getProfile?.('dartsfocused') || null;
     }catch(_error){ return null; }
   }
 
@@ -434,8 +433,7 @@ export function createNinjaTrainingRuntime(dependencies) {
       if(globalThis.BadmintonFocusedGames && typeof globalThis.BadmintonFocusedGames.getProfile === 'function'){
         return globalThis.BadmintonFocusedGames.getProfile();
       }
-      const raw = globalThis.localStorage && globalThis.localStorage.getItem('__bl_badminton_focused_v1__');
-      return raw ? JSON.parse(raw) : null;
+      return globalThis.BaselineGameStorage?.getProfile?.('badmintonfocused') || null;
     }catch(_error){ return null; }
   }
 

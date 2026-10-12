@@ -16,9 +16,10 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),
     read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
-    read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js'),
-    read('systems/baseline-food-approach/js/food-saved-data-bridge.js'),
-    read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js')
+    read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js'),
+    read('systems/baseline-fitness/js/fitness-routine-groups-v2.js'),
+    read('systems/baseline-food-approach/js/food-data-service.js'),
+    read('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js')
   ];
   for(const source of sources){
     assert.match(source,/expectedRevision|withExpected|revisioned(?:Resource)?Body/);
@@ -59,12 +60,13 @@ test('delete-if-empty preserves monotonic Saved Data revisions',()=>{
   assert.match(fitness,/bl_fitness_resource_is_empty\(\$data\)[\s\S]*?bl_resource_authority\(\) === 'saved-data'[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)/);
 });
 
-test('Skincare clients never retry a stale document with a freshly fetched revision',()=>{
-  const bridge=read('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js');
-  assert.match(bridge,/response\.status===409/);
-  assert.match(bridge,/state\.canSave=false/);
-  assert.match(bridge,/backup\(kind\+'-mutation',submitted\)/);
-  assert.doesNotMatch(bridge,/409[\s\S]{0,300}nativeFetch\(/);
+test('Skincare slider saves block after a revision conflict instead of retrying the stale mutation',()=>{
+  const runtime=read('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js');
+  assert.match(runtime,/response\.status===409&&data&&data\.error==='revision_conflict'/);
+  assert.match(runtime,/await loadSliderServerState\(true\)/);
+  assert.match(runtime,/sliderServerState\.saveBlocked=true/);
+  const replace=runtime.match(/async function replaceSliderServerState\(next\)[\s\S]*?\n  \}/)?.[0]||'';
+  assert.equal((replace.match(/method:'POST'/g)||[]).length,1);
 });
 
 test('shared Badminton uses server state as the only persistent authority',()=>{
@@ -90,21 +92,25 @@ test('shared Badminton exposes load/save failures and blocks unsafe follow-up wr
 
 test('full-document shared saves refuse stale conflict retries',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
-  const stability=read('sitewide/js/baseline-live-stability-core-v3.js');
   const games=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
   assert.match(badminton,/serverSaveConflict=true/);
   assert.match(badminton,/serverSaveBlocked=true/);
   assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage/);
-  assert.doesNotMatch(stability,/saved = await request\('POST', \{ state:local, expectedRevision:revision \}\)/);
-  assert.match(games,/state\.status='conflict';state\.canSave=false/);
+  assert.match(games,/state\.status='conflict';\s*state\.canSave=false/);
 });
 
 
-test('Fitness Routine Saved Data bridge loads before browser-owned workspace writers',()=>{
-  const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
-  const bridgeIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
-  const workspaceIndex=loader.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
-  assert.ok(bridgeIndex>=0 && workspaceIndex>bridgeIndex,'Fitness Routine Saved Data bridge must load before the workspace');
+test('Fitness Routine parser-loads revisioned server writers without a Saved Data bridge',()=>{
+  const html=read('systems/baseline-fitness/baseline-fitness.html');
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  const workspaceIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const groupsIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  const bootIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace.js');
+  assert.ok(workspaceIndex>=0 && groupsIndex>workspaceIndex && bootIndex>groupsIndex);
+  assert.match(workspace,/expectedRevision:state\.revision/);
+  assert.match(groups,/expectedRevision|withExpected/);
+  assert.doesNotMatch(html,/fitness-routine-saved-data-bridge\.js/);
 });
 
 
@@ -115,7 +121,7 @@ test('Fitness exercise progression history uses revisioned Saved Data authority'
   const policy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
   const rollback=read('sitewide/migration/build_sqlite_rollback_copy.php');
   assert.match(resource,/progressionHistory/);
-  assert.match(resource,/\['profile','activeWorkout','progressionHistory'\]/);
+  assert.match(resource,/\['profile','activeWorkout','progressionHistory','selectedPlanId'\]/);
   assert.match(endpoint,/save_progression_history/);
   assert.doesNotMatch(endpoint,/progression_history_conflict|import_local/);
   assert.match(endpoint,/bl_resource_required_revision_from_input/);
@@ -123,6 +129,6 @@ test('Fitness exercise progression history uses revisioned Saved Data authority'
   assert.match(bridge,/action:'save_progression_history'/);
   assert.match(bridge,/body:revisionedBody\(body\)/);
   assert.match(policy,/await storeSessionOutcomes\(before\)/);
-  assert.match(policy,/savedData\?\.savedDataDisabled/);
+  assert.match(policy,/if\(!savedData\?\.enabled \|\| typeof savedData\.saveProgressionHistory!=='function'\) return false;/);
   assert.match(rollback,/fitness\.json#progressionHistory/);
 });

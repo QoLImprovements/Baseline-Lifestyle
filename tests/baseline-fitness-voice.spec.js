@@ -133,18 +133,9 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
       configurable: true,
       value: { getUserMedia: async () => makeStream() },
     });
-    localStorage.setItem(
-      "__baseline_voice_settings_v1__",
-      JSON.stringify({
-        enabled: true,
-        spokenResponses: true,
-        language: "en-GB",
-        maximumRestSeconds: 150,
-      }),
-    );
   });
 
-  await page.route("**/sitewide/api/me.php", (route) =>
+  await page.route("**/api/me.php", (route) =>
     route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -163,6 +154,66 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
       body: JSON.stringify(planPayload),
     }),
   );
+  await page.route("**/systems/baseline-fitness/api/list_plans.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        plans: [{
+          planId: planPayload.planId,
+          name: "Voice Plan",
+          planJson: planPayload.planJson,
+          sessions: planPayload.sessions,
+          progress: planPayload.progress,
+        }],
+      }),
+    }),
+  );
+  await page.route("**/systems/baseline-fitness/api/fitness_state.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        revision: 4,
+        profile: {},
+        activeWorkout: null,
+        progressionHistory: { outcomes: [], failures: [] },
+        selectedPlanId: planPayload.planId,
+      }),
+    }),
+  );
+  await page.route("**/systems/baseline-fitness/api/list_plans.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        plans: [{
+          planId: planPayload.planId,
+          name: "Calisthenics Plan 1",
+          planJson: planPayload.planJson,
+          sessions: planPayload.sessions,
+          progress: planPayload.progress,
+        }],
+      }),
+    }),
+  );
+  await page.route("**/systems/baseline-fitness/api/fitness_state.php", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        revision: 4,
+        profile: null,
+        activeWorkout: null,
+        progressionHistory: { outcomes: [], failures: [] },
+        selectedPlanId: planPayload.planId,
+      }),
+    }),
+  );
   await page.route("**/systems/baseline-fitness/api/routine_state.php", (route) =>
     route.fulfill({
       status: 200,
@@ -174,7 +225,12 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
     route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify({ ok: true, found: false, settings: null }),
+      body: JSON.stringify({ ok: true, revision: 3, found: true, settings: {
+        enabled: true,
+        spokenResponses: true,
+        language: "en-GB",
+        maximumRestSeconds: 150
+      } }),
     }),
   );
   await page.route("**/sitewide/api/realtime_transcription.php", (route) =>
@@ -186,13 +242,21 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
   );
 
   await page.goto("/baseline-fitness/my-plan", { waitUntil: "domcontentloaded" });
+  await expect.poll(() => page.evaluate(() => ({ local:localStorage.length, session:sessionStorage.length }))).toEqual({ local:0, session:0 });
   await page.waitForFunction(() =>
     Boolean(
       window.BASELINE_fitnessWorkout &&
         window.BASELINE_voice &&
-        window.BASELINE_fitnessVoice,
+        window.BASELINE_fitnessVoice &&
+        window.BASELINE_fitnessPlans &&
+        window.BASELINE_auth,
     ),
   );
+  await page.evaluate(() => window.BASELINE_auth.refresh());
+  await expect.poll(() => page.evaluate(() => window.BASELINE_auth.get().authed)).toBe(true);
+  await page.evaluate(() => window.BASELINE_fitnessPlans.refresh());
+  await expect(page.locator("#calisthenicsPlanSelect")).toBeEnabled();
+  await expect(page.locator("#calisthenicsPlanSelect")).toHaveValue("91");
 
   const myRoutineTab = page.locator('.tab[data-target="my-plan"]');
   await expect(myRoutineTab).toBeVisible();

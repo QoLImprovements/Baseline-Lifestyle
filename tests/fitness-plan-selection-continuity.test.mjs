@@ -1,76 +1,42 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
-const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
-const guard=read('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js');
+const url=path=>new URL(`../${path}`,import.meta.url);
+const read=path=>readFileSync(url(path),'utf8');
+
+const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
-const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const page=read('systems/baseline-fitness/baseline-fitness.html');
+const fitnessState=read('systems/baseline-fitness/api/fitness_state.php');
 
-test('Calisthenics plan selection stays on Routine Plan and requests a one-load card reveal',()=>{
-  assert.doesNotThrow(()=>new Function(guard));
-  assert.match(guard,/selection change INSIDE the/);
-  assert.match(guard,/single My Routine > Routine Plan page/);
-  assert.match(guard,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan'/);
-  assert.doesNotMatch(guard,/CLEAN_ROUTE='\/baseline-fitness\/my-routine\/plan\/calisthenics'/);
-  assert.match(guard,/sessionStorage\?\.setItem\(VIEW_KEY,'plan'\)/);
-  assert.match(guard,/sessionStorage\?\.setItem\(PLAN_VIEW_KEY,'calisthenics'\)/);
-  assert.match(guard,/sessionStorage\?\.setItem\(REVEAL_KEY,'calisthenics'\)/);
-  assert.match(guard,/activateTopView\?\.\('plan',false\)/);
-  assert.doesNotMatch(guard,/BASELINE_fitnessRoutinePlanCollapse\?\.collapseAll/);
-  assert.doesNotMatch(guard,/activatePlanView\?\.\('calisthenics',false\)/);
-  assert.match(guard,/global\.addEventListener\('change'/);
-  assert.match(guard,/event\.stopImmediatePropagation\(\)/);
-  assert.match(guard,/#calisthenicsPlanSelect/);
-  assert.doesNotMatch(guard,/\/my-routine\/log|activateTopView\?\.\('log'/);
-  assert.match(collapse,/sole exception/);
-  assert.match(collapse,/sessionStorage\?\.removeItem\(REVEAL_KEY\)/);
+test('Calisthenics plan selection has one controller and one clean Routine Plan route',()=>{
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js')),false);
+  assert.doesNotMatch(page,/fitness-plan-selection-continuity-v1\.js/);
+  assert.match(plans,/async function openPlan\(planId\)/);
+  assert.match(plans,/saveSelectedPlanId/);
+  assert.match(plans,/\/baseline-fitness\/my-routine\/plan/);
+  assert.match(plans,/activateTopView\?\.\('plan',false\)/);
+  assert.doesNotMatch(plans,/localStorage|sessionStorage|fitnessPlanSelectionContinuity/);
+});
+
+test('selected plan identity is account-backed before navigation',()=>{
+  assert.match(fitnessState,/'save_selected_plan'/);
+  assert.match(fitnessState,/'selectedPlanId'/);
+  assert.match(plans,/const saved=await setSelectedPlanId\(id\)/);
+  assert.match(plans,/if\(owner!=='guest'&&!saved\)return/);
+  assert.match(plans,/global\.location\.assign\(new URL\('\/baseline-fitness\/my-routine\/plan'/);
+});
+
+test('plan-card disclosure is page-route state only',()=>{
+  assert.doesNotMatch(collapse,/localStorage|sessionStorage/);
+  assert.match(collapse,/data-initial-routine-plan/);
   assert.match(collapse,/details\[data-fitness-plan-card="\$\{selectionReveal\}"\]/);
   assert.match(collapse,/card\.open=true/);
 });
 
-
-test('selection hand-off is persisted before navigation to the canonical page',()=>{
-  const values=new Map();
-  const localStorage={
-    get length(){ return values.size; },
-    key(index){ return Array.from(values.keys())[index] || null; },
-    setItem(key,value){ values.set(String(key),String(value)); },
-    removeItem(key){ values.delete(String(key)); }
-  };
-  const sessionValues=new Map();
-  const sessionStorage={
-    setItem(key,value){ sessionValues.set(String(key),String(value)); },
-    getItem(key){ return sessionValues.get(String(key)) ?? null; },
-    removeItem(key){ sessionValues.delete(String(key)); }
-  };
-  const listeners={};
-  let assigned='';
-  const fakeWindow={
-    document:{ documentElement:{ setAttribute(){} } },
-    localStorage,
-    sessionStorage,
-    location:{ origin:'https://baselinelifestyle.org',assign(value){ assigned=value; } },
-    addEventListener(type,handler){ listeners[type]=handler; }
-  };
-  new Function('window','globalThis',guard)(fakeWindow,fakeWindow);
-  listeners.change({
-    target:{ closest(){ return { value:'42' }; } },
-    preventDefault(){},
-    stopImmediatePropagation(){}
-  });
-  assert.equal(sessionValues.get('__bl_fitness_reveal_plan_card_once_v1__'),'calisthenics');
-  assert.equal(assigned,'https://baselinelifestyle.org/baseline-fitness/my-routine/plan');
-});
-
-test('Fitness loader installs disclosure reset before selection continuity',()=>{
-  const disclosure=loader.indexOf('fitness-routine-plan-collapse-v1.js');
-  const deletion=loader.indexOf('fitness-plan-delete-continuity-v1.js');
-  const selection=loader.indexOf('fitness-plan-selection-continuity-v1.js');
-  const policy=loader.indexOf('fitness-live-policy-v1.js');
-  assert.ok(disclosure>=0 && deletion>disclosure && selection>deletion && policy>selection);
-  assert.match(loader,/ROUTINE_PLAN_COLLAPSE_20260821_1/);
-  assert.match(loader,/PLAN_SELECTION_CONTINUITY_20260821_1/);
-  assert.match(page,/fitness-routine-workspace\.css\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
+test('Create Another Plan uses an explicit clean-route create request, not browser persistence',()=>{
+  assert.match(plans,/url\.searchParams\.set\('new-plan','1'\)/);
+  assert.match(plans,/setCreatingPlan\(true\)/);
+  assert.doesNotMatch(plans,/Date\.now\(\).*new-plan/);
 });

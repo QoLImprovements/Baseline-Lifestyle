@@ -1044,15 +1044,7 @@
               ));
   }
   function R() {
-    (!(function () {
-      if (o("#voiceTemplateStyle")) return;
-      const t = document.createElement("style");
-      ((t.id = "voiceTemplateStyle"),
-        (t.textContent =
-          '\n      #voiceWorkoutModal .voice-workout-modal{min-width:0!important;overflow-x:hidden!important}\n      #voiceWorkoutModal .voice-workout-head{align-items:center!important;gap:12px!important}\n      #voiceWorkoutModal .voice-workout-exercise,\n      #voiceWorkoutModal .voice-workout-prompt,\n      #voiceWorkoutModal .voice-workout-actions,\n      #voiceWorkoutModal .voice-mic-host{min-width:0;max-width:100%}\n      #voiceWorkoutSettingsBtn{margin-left:auto!important;min-height:42px;padding:9px 14px;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border-2,var(--border));border-radius:999px;background:var(--filter-bg,rgba(255,255,255,.06));color:inherit;font:inherit;font-weight:800;cursor:pointer}\n      #voiceWorkoutSettingsBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}\n      #voiceWorkoutModal .voice-mic-result{display:none;min-width:8ch;text-align:center;font-size:clamp(1.15rem,3vw,1.5rem);font-weight:900}\n      #voiceWorkoutModal .voice-mic-visual[data-result] .voice-mic-icon,\n      #voiceWorkoutModal .voice-mic-visual[data-result] .voice-level-bars{display:none!important}\n      #voiceWorkoutModal .voice-mic-visual[data-result] .voice-mic-result{display:block}\n      #voiceWorkoutModal .voice-mic-visual[data-result="success"] .voice-mic-result{color:var(--success,#70d995)}\n      #voiceWorkoutModal .voice-mic-visual[data-result="fail"] .voice-mic-result{color:var(--danger,#ff8b98)}\n      /* Voice settings overlay geometry is owned by baseline-ui-fixes.css. */\n      @media(max-width:620px){#voiceWorkoutSettingsBtn span{display:none}#voiceWorkoutSettingsBtn{width:42px;min-width:42px;padding:0;justify-content:center}}\n    '),
-        document.head.appendChild(t));
-    })(),
-      f(),
+    (f(),
       document.addEventListener("click", B, !0),
       document.addEventListener("baseline:fitness-workout-updated", (t) => {
         a.active &&

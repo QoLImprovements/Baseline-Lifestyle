@@ -5,12 +5,10 @@ import { spawnSync } from 'node:child_process';
 
 const read=path => readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const modules=[
-  'sitewide/js/baseline-live-stability.js',
   'sitewide/js/baseline-unified-favorites-v1.js',
-  'sitewide/js/baseline-detect-word-feedback-v1.js'
+  'systems/baseline-games-hub/js/baseline-games-hub-core.js'
 ];
 const favorites=read('sitewide/js/baseline-unified-favorites-v1.js');
-const detectWord=read('sitewide/js/baseline-detect-word-feedback-v1.js');
 const gamesCore=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 
 test('remaining isolated final interface modules are valid JavaScript',() => {
@@ -30,14 +28,9 @@ test('Account exposes one Favorites dropdown with Food and Natural Skincare cate
   assert.doesNotMatch(favorites,/document\.documentElement[\s\S]*MutationObserver/);
 });
 
-test('Detect The Word tiles and key share explicit semantic feedback colours',() => {
-  assert.match(detectWord,/letter-cell\.correct,.word-feedback-dot--correct/);
-  assert.match(detectWord,/letter-cell\.present,.word-feedback-dot--present/);
-  assert.match(detectWord,/letter-cell\.absent,.word-feedback-dot--absent/);
-  assert.match(detectWord,/Correct place/);
-  assert.match(detectWord,/In word, different place/);
-  assert.match(detectWord,/Not in word/);
+test('Detect The Word semantic result states are owned by Games Hub core',() => {
   assert.match(gamesCore,/result\[idx\]\.state = 'correct'/);
   assert.match(gamesCore,/result\[idx\]\.state = 'present'/);
   assert.match(gamesCore,/secretPool\[poolIndex\] = null/);
+  assert.doesNotMatch(gamesCore,/baseline-detect-word-feedback-v1/);
 });

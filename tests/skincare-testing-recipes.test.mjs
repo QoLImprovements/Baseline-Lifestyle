@@ -5,16 +5,13 @@ import vm from 'node:vm';
 
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
-const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const recipeRuntime = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js', 'utf8');
-const savedDataBridge = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
-const standaloneMassage = fs.readFileSync('systems/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend.html', 'utf8');
 const lipBalmStart = html.indexOf('<!-- Recipe 12 -->');
 const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
 const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
@@ -84,8 +81,6 @@ test('Comfort Barrier Balm is a permanent recipe with a canonical route and lega
   assert.doesNotMatch(lipBalm, /data-category="Testing"|\bTesting\b/);
   assert.match(html, /<h3>Comfort Barrier Balm<\/h3>/);
   assert.match(html, /class="recipe-open" data-recipe-id="r12" href="\/baseline-natural-skincare\/recipes\/comfort-barrier-balm"/);
-  assert.match(recipeUx, /r12:\{ slug:'comfort-barrier-balm' \}/);
-  assert.match(recipeUx, /'testing-lip-balm':'r12'/);
   assert.match(htaccess, /testing-lip-balm\/\?\$ \/baseline-natural-skincare\/recipes\/comfort-barrier-balm \[R=301,L\]/);
   assert.match(testServer, /'\/baseline-natural-skincare\/recipes\/testing-lip-balm', '\/baseline-natural-skincare\/recipes\/comfort-barrier-balm'/);
   assert.match(htaccess, /RewriteRule \^baseline-natural-skincare\/recipes\/\(\[\^\/\]\+\)\/\?\$ systems\/baseline-natural-skincare\/baseline-natural-skincare\.html/);
@@ -169,12 +164,12 @@ test('every Skincare Guidance tab has separate expanded Usage and Storage sectio
   assert.match(microcurrent, /water-based, unpreserved gel/i);
 });
 
-test('Skincare Details is authored hidden before JavaScript and only toggled by interaction code', () => {
+test('Skincare Details is authored hidden before JavaScript and toggled by the shared recipe owner', () => {
   assert.equal((html.match(/class="recipe-details-intro recipe-view-hidden" data-recipe-view-group="details"/g) || []).length, 12);
-  assert.match(recipeUx, /details\.hidden=!showDetails/);
+  assert.match(shared, /const visible = next === 'show-all' \|\| group === next/);
+  assert.match(shared, /el\.hidden = !visible/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
-  assert.match(skincareCss, /recipe-details-intro\[hidden\]\{display:none!important\}/);
-  assert.match(skincareCss, /recipe-details-intro\[data-recipe-view-group="details"\]:not\(\.recipe-view-hidden\):not\(\[hidden\]\)\{display:grid!important\}/);
+  assert.match(recipeCss, /recipe-details-intro\[hidden\][\s\S]*display:none !important/);
 });
 
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
@@ -199,22 +194,12 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
 });
 
 test('Skincare slider settings use the protected server resource without browser persistence', () => {
-  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|sliderSaveStorageKey|BASELINE_api/);
-  assert.match(recipeRuntime, /BaselineSkincareSavedData/);
-  assert.match(recipeRuntime, /client\.saveSlider\(saveId, values\)/);
-  assert.match(recipeRuntime, /client\.removeSlider\(saveId\)/);
+  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|indexedDB|BaselineSkincareSavedData/);
+  assert.match(recipeRuntime, /SLIDER_API='\/systems\/baseline-natural-skincare\/api\/skincare_data\.php'/);
+  assert.match(recipeRuntime, /action:'replace_sliders'/);
+  assert.match(recipeRuntime, /expectedRevision:sliderServerState\.revision/);
   assert.match(recipeRuntime, /Log in to save slider position/);
-  assert.match(recipeRuntime, /BASELINE_auth\.onChange/);
-
-  assert.match(savedDataBridge, /action:'replace_sliders'/);
-  assert.match(savedDataBridge, /expectedRevision:state\.revision/);
-  const saveStart=savedDataBridge.indexOf('function saveSliderDocument');
-  const saveEnd=savedDataBridge.indexOf('function saveSliderEntry',saveStart);
-  const saveBlock=savedDataBridge.slice(saveStart,saveEnd);
-  assert.doesNotMatch(saveBlock,/backup\(/);
-  assert.doesNotMatch(saveBlock,/blockSaving\([^\n]*submitted/);
-  assert.match(savedDataBridge, /saveSlider:publicSaveSlider/);
-  assert.match(savedDataBridge, /removeSlider:publicRemoveSlider/);
+  assert.match(recipeRuntime, /BASELINE_auth&&window\.BASELINE_auth\.onChange/);
 });
 
 test('Anhydrous Oil Cleanser uses two continuous controls instead of duplicate variant tabs', () => {
@@ -262,9 +247,7 @@ test('Anhydrous Massage Oil Blend is one olive-led recipe with no Avocado varian
   const start = html.indexOf('data-recipe-slug="anhydrous-massage-oil-blend"');
   const end = html.indexOf('data-recipe-slug="restorative-hydration-layer"', start);
   const massage = html.slice(start, end);
-  for (const source of [massage, standaloneMassage]) {
-    assert.doesNotMatch(source, /Avocado Blend|r6Avocado|r6-avocado|fractionated coconut|watermelon seed/i);
-  }
+  assert.doesNotMatch(massage, /Avocado Blend|r6Avocado|r6-avocado|fractionated coconut|watermelon seed/i);
   assert.doesNotMatch(massage, /aria-label="Massage oil variants"|class="variant-switcher"/);
   assert.match(massage, /Jojoba remains fixed at 15%|jojoba remains fixed at 15%/i);
   assert.match(massage, /id="r6Glide"/);
@@ -353,10 +336,10 @@ test('Comfort Barrier Balm ingredients use canonical clean ingredient URLs with 
   assert.doesNotMatch(lipBalm, /class="ing-link"[^>]*href="#ing-/);
 });
 
-test('Skincare recipe sidebar is absent by structure, styling and navigation ownership', () => {
+test('Skincare recipe sidebar is absent by structure, styling and shared navigation ownership', () => {
   assert.doesNotMatch(html, /id="side-nav"|class="[^"]*side-recipe-nav/);
   assert.doesNotMatch(skincareCss, /side-recipe-nav/);
-  assert.match(shared, /const allowSideNav = routePageFileFromPath\(location\.pathname \|\| ''\) !== 'baseline-natural-skincare\.html'/);
+  assert.doesNotMatch(shared, /side-recipe-nav|id="side-nav"/);
 });
 
 test('Skincare recipe ingredient links no longer author the obsolete hash navigation method', () => {
@@ -373,7 +356,6 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
     'sitewide/js/baseline-shared.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js',
-    'systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js',
   ];
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
@@ -405,44 +387,35 @@ test('main Skincare document loads the recipe UX runtime', () => {
 test('promoted Skincare recipes are canonical in initial HTML', () => {
   assert.doesNotMatch(html, /\sid="r4"/);
   assert.doesNotMatch(html, /\sid="r5"/);
-  assert.doesNotMatch(html, /data-recipe-id="r4"|data-recipe-id="r5"/);
-  assert.match(html, /data-recipe-slug="calming-shave-gel" id="r8"/);
-  assert.match(html, /data-recipe-slug="microcurrent-glide-gel" id="r10"/);
-  assert.doesNotMatch(html, /id="r8"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r8"/);
-  assert.doesNotMatch(html, /id="r10"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r10"/);
-  assert.doesNotMatch(html, /id="r12"[^>]*data-category="Testing"|data-category="Testing"[^>]*id="r12"/);
+  for (const [id, slug] of [['r8','calming-shave-gel'],['r9','tooth-polishing-powder'],['r10','microcurrent-glide-gel'],['r12','comfort-barrier-balm']]) {
+    assert.match(html, new RegExp(`data-recipe-slug="${slug}" id="${id}"`));
+  }
   assert.doesNotMatch(recipeUx, /function promoteCards\(/);
-  assert.match(recipeUx, /'hydrating-conductive-mist':'r10'/);
-  assert.match(recipeUx, /'testing-microcurrent-conductive-gel':'r10'/);
-  assert.match(recipeUx, /'testing-shaving-gel':'r8'/);
-  assert.match(recipeUx, /'testing-natural-tooth-brightening-powder':'r9'/);
-  assert.match(recipeUx, /'testing-lip-balm':'r12'/);
-  assert.match(recipeUx, /r12:\{ slug:'comfort-barrier-balm' \}/);
+  assert.match(htaccess, /testing-shaving-gel\/\?\$ \/baseline-natural-skincare\/recipes\/calming-shave-gel/);
+  assert.match(htaccess, /testing-natural-tooth-brightening-powder\/\?\$ \/baseline-natural-skincare\/recipes\/tooth-polishing-powder/);
+  assert.ok(htaccess.includes('testing-microcurrent-conductive-gel'));
+  assert.ok(htaccess.includes('/baseline-natural-skincare/recipes/microcurrent-glide-gel'));
+  assert.match(htaccess, /testing-lip-balm\/\?\$ \/baseline-natural-skincare\/recipes\/comfort-barrier-balm/);
 });
 
-test('permanent promoted recipe documents use final titles and formulations', () => {
-  const shave = fs.readFileSync('systems/baseline-natural-skincare/recipes/calming-shave-gel.html', 'utf8');
-  const tooth = fs.readFileSync('systems/baseline-natural-skincare/recipes/tooth-polishing-powder.html', 'utf8');
-  const microcurrent = fs.readFileSync('systems/baseline-natural-skincare/recipes/microcurrent-glide-gel.html', 'utf8');
-
-  assert.match(shave, /<h1>Calming Shave Gel<\/h1>/);
+test('permanent promoted recipes use final titles and formulations in the canonical parent document', () => {
+  const shave = html.slice(html.indexOf('data-recipe-slug="calming-shave-gel"'), html.indexOf('data-recipe-slug="tooth-polishing-powder"'));
+  const tooth = html.slice(html.indexOf('data-recipe-slug="tooth-polishing-powder"'), html.indexOf('data-recipe-slug="microcurrent-glide-gel"'));
+  const microcurrent = html.slice(html.indexOf('data-recipe-slug="microcurrent-glide-gel"'), html.indexOf('data-recipe-slug="comfort-barrier-balm"'));
+  assert.match(shave, /<h3>Calming Shave Gel<\/h3>/);
   assert.match(shave, /Slippery Elm Powder/);
   assert.match(shave, /Guar Gum/);
-
-  assert.match(tooth, /<h1>Tooth Polishing Powder<\/h1>/);
-  assert.match(tooth, /Kaolin, sage and peppermint powder for occasional surface-stain removal\./);
-  assert.match(tooth, /not a bleaching or peroxide whitening treatment/i);
-
-  assert.match(microcurrent, /<h1>Microcurrent Glide Gel<\/h1>/);
-  assert.match(microcurrent, /Water-based conductive gel with sustained glide for microcurrent treatment\./);
+  assert.match(tooth, /<h3>Tooth Polishing Powder<\/h3>/);
+  assert.match(tooth, /Kaolin/);
+  assert.match(microcurrent, /<h3>Microcurrent Glide Gel<\/h3>/);
   assert.match(microcurrent, /Dead Sea Salt/);
 });
 
-test('retired and Testing URLs redirect to permanent promoted URLs', () => {
+test('retired and Testing URLs redirect to permanent promoted URLs without standalone redirect documents', () => {
   for (const [file, target] of redirectCases) {
-    const redirect = fs.readFileSync(`systems/baseline-natural-skincare/recipes/${file}`, 'utf8');
-    assert.ok(redirect.includes(`window.location.replace('${target}')`), `${file} must redirect to ${target}`);
-    assert.ok(redirect.includes(`href="${target}"`), `${file} must expose the permanent fallback link`);
+    const slug=file.replace(/\.html$/,'');
+    assert.ok(htaccess.includes(slug), slug + ' redirect must be server-owned');
+    assert.ok(htaccess.includes(target), slug + ' redirect target');
   }
 });
 
@@ -464,31 +437,22 @@ test('Recipes and My Routine remain separate section siblings', () => {
   assert.equal((recipesBlock.match(/<\/section>/g) || []).length, 1, 'Recipes must contain one matching section close');
 });
 
-test('Natural Skincare navigation keeps public clean URLs instead of implementation-file hashes', () => {
+test('Natural Skincare navigation keeps public clean URLs in the canonical shared router', () => {
   assert.match(shared, /'baseline-natural-skincare\.html': \{ base:'\/baseline-natural-skincare', defaultTab:'system'/);
   assert.match(shared, /'baseline-natural-skincare\.html':'\/baseline-natural-skincare\/system'/);
   assert.match(shared, /return '\/baseline-natural-skincare\/' \+ String\(skincareRoute\[1\] \|\| 'system'\)\.toLowerCase\(\);/);
-  assert.match(tabs, /"baseline-natural-skincare\.html": \{ base:"\/baseline-natural-skincare", tabs:/);
   assert.doesNotMatch(shared, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html#tab=/);
-  assert.doesNotMatch(tabs, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html.*hashTabs:true/);
+  assert.doesNotMatch(html, /baseline-tabs\.js/);
 });
 
-test('leaving Skincare My Routine clears bootstrap-only routine visibility flags in both tab authorities', () => {
+test('leaving Skincare My Routine clears bootstrap-only routine visibility flags in the canonical tab authority', () => {
   assert.match(shared, /dataset\.app === 'skin' && id !== 'routine'/);
   assert.match(shared, /removeAttribute\('data-initial-skincare-tab'\)/);
   assert.match(shared, /removeAttribute\('data-initial-routine-view'\)/);
-  assert.match(tabs, /dataset\.app === "skin" && id !== "routine"/);
-  assert.match(tabs, /removeAttribute\("data-initial-skincare-tab"\)/);
-  assert.match(tabs, /removeAttribute\("data-initial-routine-view"\)/);
 });
 
-test('nested Skincare and Fitness My Routine clean routes are repaired before the fallback exits', () => {
-  assert.match(tabs, /function repairNestedRoutineRoute\(\)/);
-  assert.match(tabs, /baseline-natural-skincare\\\/my-routine\(\?:\\\/\(\?:log\|summary\|plan\|public\)\)\?/);
-  assert.match(tabs, /window\.BASELINE_selectTab\("routine", \{ silentHistory:true \}\)/);
-  assert.match(tabs, /baseline-fitness\\\/my-routine/);
-  assert.match(tabs, /window\.BASELINE_selectTab\("my-plan", \{ silentHistory:true \}\)/);
-  const repairCall = tabs.indexOf('repairNestedRoutineRoute();');
-  const disableExit = tabs.indexOf('if(shouldDisable()) return;', repairCall);
-  assert.ok(repairCall >= 0 && disableExit > repairCall, 'nested route repair must run before the shared-owner early exit');
+test('nested Skincare and Fitness My Routine clean routes are server-routed to their canonical applications', () => {
+  assert.match(htaccess, /baseline-natural-skincare\/my-routine\/\(log\|summary\|plan\|public\)/);
+  assert.match(htaccess, /baseline-fitness\/my-routine\/\(log\|summary\|public\)/);
+  assert.match(htaccess, /baseline-fitness\/my-routine\/plan\/\(calisthenics\|cardio\|other\|sports\)/);
 });

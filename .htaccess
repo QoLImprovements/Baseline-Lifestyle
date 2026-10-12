@@ -183,6 +183,18 @@ Options -Indexes
   RewriteRule ^baseline-games-hub\.html$ /baseline-games-hub/games-hub [R=302,L]
 </IfModule>
 
+# BASELINE-SKINCARE-LEGACY-RECIPE-CANONICAL-20261006
+# Retired recipe slugs redirect before the clean parent-shell rewrite, so the
+# browser never paints an obsolete recipe identity and JavaScript never has to
+# correct the URL after load.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^baseline-natural-skincare/recipes/(?:hydrating-conductive-mist|testing-microcurrent-conductive-gel)/?$ /baseline-natural-skincare/recipes/microcurrent-glide-gel [R=301,L,NE]
+  RewriteRule ^baseline-natural-skincare/recipes/testing-shaving-gel/?$ /baseline-natural-skincare/recipes/calming-shave-gel [R=301,L,NE]
+  RewriteRule ^baseline-natural-skincare/recipes/testing-natural-tooth-brightening-powder/?$ /baseline-natural-skincare/recipes/tooth-polishing-powder [R=301,L,NE]
+  RewriteRule ^baseline-natural-skincare/recipes/testing-lip-balm/?$ /baseline-natural-skincare/recipes/comfort-barrier-balm [R=301,L,NE]
+</IfModule>
+
 # BASELINE-FOOD-RECIPE-SOURCE-CANONICAL-20261004
 # Direct requests for physical Food recipe source files canonicalise to the
 # public clean recipe URL. Public clean URLs themselves use the Food system shell.

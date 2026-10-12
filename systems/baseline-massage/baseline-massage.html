@@ -12,6 +12,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <title>Baseline Massage</title>
 <meta name="theme-color" content="#6f4e36"/>
 <style>html[data-app="massage"],body[data-app="massage"]{margin:0;min-height:100%;color:#24140b;background:linear-gradient(90deg,#6f4e36 0%,#805d42 18%,#916d4f 36%,#a58363 50%,#916d4f 64%,#805d42 82%,#6f4e36 100%);}</style>
+<script id="baseline-massage-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-massage\/library\/?$/i.test(p)?"library":/^\/baseline-massage\/planner\/?$/i.test(p)?"planner":"system");document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
 <meta name="description" content="Explore massage types and build a practical, personalised massage plan.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-massage/system">
 <meta property="og:type" content="website">
@@ -27,7 +28,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
 </head>
-<body data-app="massage" data-page="baseline-massage" style="background-color:#6f4e36">
+<body data-app="massage" data-page="baseline-massage">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
   <div class="bl-homebar-inner">
     <div class="bl-pages-dd">
@@ -57,7 +58,7 @@ These Markdown rules are a human reference point, not live runtime config.
     <button class="tab" aria-selected="true" data-target="system" type="button">System</button>
     <button class="tab" aria-selected="false" data-target="library" type="button">Massage Library</button>
     <button class="tab" aria-selected="false" data-target="planner" type="button">Plan My Massage</button>
-  </nav><script id="baseline-massage-route-first-paint">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-massage\/library\/?$/i.test(p)?"library":/^\/baseline-massage\/planner\/?$/i.test(p)?"planner":"system");if(!t)return;var n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){var a=b.getAttribute("data-target")===t;b.classList.toggle("active",a);b.setAttribute("aria-selected",a?"true":"false")});var st=document.createElement("style");st.id="baseline-massage-route-first-paint-style";st.textContent="main.wrap>.section{display:none!important}main.wrap>#"+t+".section{display:block!important}";document.head.appendChild(st);window.addEventListener("load",function(){document.querySelectorAll("main.wrap>.section").forEach(function(x){x.classList.toggle("active",x.id===t)});st.remove()},{once:true})}catch(_e){}}()</script>
+  </nav><script id="baseline-massage-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"system",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
 </header>
 
 <main class="wrap">

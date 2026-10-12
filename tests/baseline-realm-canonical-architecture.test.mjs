@@ -14,7 +14,6 @@ const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
 const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
 const lazyScenes=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js');
 const inputs=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-manager.js');
-const runtimeCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-runtime-authority.css');
 const finalCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css');
 
 test('Realm remains optional and Darts is a first-class module',()=>{
@@ -27,7 +26,7 @@ test('Realm remains optional and Darts is a first-class module',()=>{
 });
 
 test('storage authority does not create a temporary game runtime',()=>{
-  assert.match(guard,/GAMES_HUB_STORAGE_20260913_1/);
+  assert.match(guard,/GAMES_HUB_SERVER_AUTHORITY_20261006_1/);
   assert.match(guard,/canPlay:\(\)=>true/);
   assert.match(guard,/canSave:\(\)=>state\.canSave/);
   assert.doesNotMatch(guard,/__gamesHubGuard|BASELINE_GAMES_HUB_CORE_READY|fallbackBound|stopImmediatePropagation/);
@@ -51,9 +50,9 @@ test('Realm controls retain their own native input owner',()=>{
 });
 
 test('final visual authority exposes actors and keeps controls interactive',()=>{
-  assert.match(runtimeCss,/alder-veil-run\.svg/);
-  assert.match(runtimeCss,/mossblade-pursuer\.svg/);
-  assert.match(runtimeCss,/pointer-events:auto!important/);
+  assert.match(finalCss,/alder-veil-run\.svg/);
+  assert.match(finalCss,/mossblade-pursuer\.svg/);
+  assert.match(finalCss,/pointer-events:auto!important/);
   assert.match(finalCss,/z-index:20!important/);
   assert.match(finalCss,/animation:none!important/);
 });

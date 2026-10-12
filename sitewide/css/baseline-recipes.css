@@ -511,8 +511,6 @@
    - Ensure action buttons never rely on floats
    -------------------------------------------------------------------------- */
 
-.recipe-top-bar{ display:none !important; }
-#recipes.recipe-open-mode.recipe-focus .recipe-top-bar{ display:none !important; }
 
 .print-btn, .back-btn{ float:none !important; }
 
@@ -4055,12 +4053,8 @@ body[data-app="food"] .food-recipe-shell > .food-recipe-top > h1{
 }
 
 
-/* BASELINE-RECIPE-DETAILS-PLACEHOLDER-20260824
-   Details stays available as a future-editing subtab, but intentionally renders no
-   recipe content. Adjustments is a text action, not a coloured button surface. */
-body[data-app] .recipe-universal-template [data-recipe-view-group="details"]{
-  display:none !important;
-}
+/* Recipe Details content is authored and its visibility is owned by the shared
+   recipe view controller through .recipe-view-hidden. */
 html body[data-app] #recipes .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle,
 html body[data-app] .recipe-universal-template .recipe-meta-row > .recipe-adjustments-toggle{
   background:transparent !important;
@@ -4145,13 +4139,8 @@ body[data-app] .recipe-universal-template .glide-controller{
 }
 
 
-/* BASELINE-UNIVERSAL-RECIPE-VISIBILITY-AUTHORITY-20260824
-   Final shared visibility authority. Older recipe-specific display rules must not
-   resurrect content deliberately removed by the universal template. */
-html body[data-app] #recipes .recipe-page.recipe-universal-template [data-recipe-view-group="details"],
-html body[data-app] .recipe-page.recipe-universal-template [data-recipe-view-group="details"]{
-  display:none !important;
-}
+/* Shared recipe visibility authority: view-specific content is controlled by
+   .recipe-view-hidden rather than suppressing the Details group permanently. */
 html body[data-app] #recipes .recipe-page.recipe-universal-template .recipe-legacy-print-summary,
 html body[data-app] .recipe-page.recipe-universal-template .recipe-legacy-print-summary{
   display:none !important;
@@ -4562,6 +4551,10 @@ html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button
   margin-left:.35em !important;
   line-height:1 !important;
   text-decoration:none !important;
+}
+/* Visibility state outranks the viewbar presentation reset above. */
+html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle.recipe-view-hidden{
+  display:none !important;
 }
 html body[data-app] #recipes .recipe-universal-template .recipe-viewbar > button.recipe-adjustments-toggle[aria-expanded="true"]::after{
   transform:rotate(180deg) !important;

@@ -11,9 +11,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
-  const TRACKCOIN_STORAGE_KEY = '__bl_trackcoin_v1__';
-  const GUEST_PROFILES_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
-  const AUTO_NEXT_STORAGE_KEY = '__bl_games_auto_next_v1__';
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900 });
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
@@ -148,22 +145,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const profiles = Object.create(null);
 
   function readGuestProfile(app){
-    try{
-      const raw = localStorage.getItem(GUEST_PROFILES_STORAGE_KEY);
-      const all = raw ? JSON.parse(raw) : {};
-      return all && typeof all === 'object' ? all[app] : null;
-    }catch(_e){
-      return null;
-    }
+    const value=guestProfiles[app];
+    return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):null;
   }
 
-  function writeGuestProfile(app, profile){
-    try{
-      const raw = localStorage.getItem(GUEST_PROFILES_STORAGE_KEY);
-      const all = raw ? JSON.parse(raw) : {};
-      all[app] = JSON.parse(JSON.stringify(profile));
-      localStorage.setItem(GUEST_PROFILES_STORAGE_KEY, JSON.stringify(all));
-    }catch(_e){}
+  function writeGuestProfile(app,profile){
+    if(!app||!profile||typeof profile!=='object') return;
+    guestProfiles[app]=JSON.parse(JSON.stringify(profile));
   }
   const saveTimers = Object.create(null);
   let authState = { authed:false, name:'', email:'' };
@@ -660,18 +648,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function scrollGameCardIntoView(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:false }); }
   function focusGameCard(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:true }); }
   function readAutoNextSettings(){
-    const defaults = { pairs:false, detectword:false, make24:false, trackcoin:false };
-    if(typeof window === 'undefined') return defaults;
-    try{
-      const raw = window.localStorage && window.localStorage.getItem(AUTO_NEXT_STORAGE_KEY);
-      const parsed = raw ? JSON.parse(raw) : null;
-      AUTO_NEXT_GAMES.forEach(function(gameId){ defaults[gameId] = !!(parsed && parsed[gameId]); });
-    }catch(_error){}
-    return defaults;
+    return { pairs:false, detectword:false, make24:false, trackcoin:false, ruleshift:false };
   }
   function writeAutoNextSettings(){
-    if(typeof window === 'undefined') return;
-    try{ if(window.localStorage) window.localStorage.setItem(AUTO_NEXT_STORAGE_KEY, JSON.stringify(autoNextSettings)); }catch(_error){}
+    return autoNextSettings;
   }
   function autoNextEnabled(gameId){ return AUTO_NEXT_GAMES.includes(gameId) && !!autoNextSettings[gameId]; }
   function clearAutoNextTimer(gameId){
@@ -859,79 +839,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
     return params.toString();
   }
-  function buildViewStateSnapshot(){
-    return {
-      tab: currentTab === 'games' ? 'games' : 'hub',
-      game: selectedGame || '',
-      panel: selectedGame ? (currentPanelIdForGame(selectedGame) || '') : ''
-    };
-  }
-  function persistViewState(){
-    if(typeof window === 'undefined') return;
-    const payload = JSON.stringify(buildViewStateSnapshot());
-    try{ if(window.sessionStorage) window.sessionStorage.setItem('baselineGamesHubView', payload); }catch(_error){}
-    try{ if(window.localStorage) window.localStorage.setItem('baselineGamesHubView', payload); }catch(_error){}
-  }
-  function readPersistedViewState(){
-    if(typeof window === 'undefined') return null;
-    try{
-      const raw = (window.sessionStorage && window.sessionStorage.getItem('baselineGamesHubView')) || (window.localStorage && window.localStorage.getItem('baselineGamesHubView'));
-      if(!raw) return null;
-      const parsed = JSON.parse(raw);
-      if(!parsed || typeof parsed !== 'object') return null;
-      const tab = parsed.tab === 'games' ? 'games' : 'hub';
-      const game = tab === 'games' ? normaliseGameId(parsed.game || '') : '';
-      return { tab, game, panel: game ? normalisePanelId(game, parsed.panel || '') : '' };
-    }catch(_error){
-      return null;
-    }
-  }
-  function clearPersistedViewState(){
-    if(typeof window === 'undefined') return;
-    try{ if(window.sessionStorage) window.sessionStorage.removeItem('baselineGamesHubView'); }catch(_error){}
-    try{ if(window.localStorage) window.localStorage.removeItem('baselineGamesHubView'); }catch(_error){}
-  }
-
-  function isGamesHubReloadNavigation(){
-    if(typeof window === 'undefined') return false;
-    try{
-      const entries = window.performance && typeof window.performance.getEntriesByType === 'function'
-        ? window.performance.getEntriesByType('navigation')
-        : [];
-      const nav = entries && entries[0];
-      if(nav && String(nav.type || '').toLowerCase() === 'reload') return true;
-    }catch(_error){}
-    try{
-      return !!(window.performance && window.performance.navigation && window.performance.navigation.type === 1);
-    }catch(_error){}
-    return false;
-  }
-
-  function hashHasExplicitGame(){
-    if(typeof window === 'undefined') return false;
-    try{
-      const raw = String(window.location.hash || '').replace(/^#/, '');
-      if(!raw) return false;
-      if(GAME_IDS.includes(raw)) return true;
-      const params = new URLSearchParams(raw);
-      return params.has('game') && !!normaliseGameId(params.get('game') || '');
-    }catch(_error){
-      return false;
-    }
-  }
-
-  function applyStoredGameForReload(stored){
-    if(!stored || stored.tab !== 'games' || !stored.game) return false;
-    currentTab = 'games';
-    selectedGame = normaliseGameId(stored.game || '');
-    if(!selectedGame) return false;
-    const config = getGamePanelConfig(selectedGame);
-    if(config){ config.set(stored.panel || normalisePanelId(selectedGame, '')); }
-    return true;
-  }
   function syncHashState(mode){
     if(suspendHashSync || typeof window === 'undefined') return;
-    persistViewState();
     const nextUrl = gamesHubCleanRouteForState();
     const currentUrl = window.location.pathname + window.location.search;
     if(currentUrl === nextUrl && !(window.location.hash || '')) return;
@@ -944,10 +853,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       window.location.hash = '#' + buildHashState();
     }
   }
-  function applyHashState(options){
+  function applyHashState(){
     if(typeof window === 'undefined') return;
-    const useStored = !options || options.useStored !== false;
-    const stored = useStored ? readPersistedViewState() : null;
     const cleanState = gamesHubStateFromCleanPath();
     const legacyState = cleanState || legacyGamesHubStateFromHash();
     if(legacyState){
@@ -955,69 +862,20 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       selectedGame = currentTab === 'games' ? normaliseGameId(legacyState.game || '') : '';
       if(selectedGame){
         const config = getGamePanelConfig(selectedGame);
-        if(config){ config.set(legacyState.panel || (stored && stored.game === selectedGame ? stored.panel : '') || normalisePanelId(selectedGame, '')); }
+        if(config) config.set(legacyState.panel || normalisePanelId(selectedGame, ''));
       }
-      if(currentTab !== 'games') clearPersistedViewState();
       return;
     }
     currentTab = 'hub';
     selectedGame = '';
-    clearPersistedViewState();
-    return;
-
-    const raw = String(window.location.hash || '').replace(/^#/, '');
-    if(!raw){
-      // Fresh openings from the index must always start on the Games Hub landing
-      // view. On an actual browser refresh, however, preserve the active game
-      // that was saved immediately before unload.
-      if(isReload && applyStoredGameForReload(stored)) return;
-      currentTab = 'hub';
-      selectedGame = '';
-      clearPersistedViewState();
-      return;
-    }
-    if(GAME_IDS.includes(raw)){
-      currentTab = 'games';
-      selectedGame = raw;
-    }else{
-      const params = new URLSearchParams(raw);
-      const requestedTab = String(params.get('tab') || '').toLowerCase();
-      const explicitGame = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
-      currentTab = (requestedTab === 'games' || explicitGame) ? 'games' : 'hub';
-      selectedGame = currentTab === 'games' ? explicitGame : '';
-
-      // Important: #tab=games normally means the Games Overview list, not the
-      // last stored game. The exception is a true browser reload: if the user
-      // was already inside a game, Refresh should refresh that game instead of
-      // behaving like Back to the Games list.
-      if(!selectedGame){
-        if(isReload && currentTab === 'games' && applyStoredGameForReload(stored)) return;
-        if(currentTab !== 'games') clearPersistedViewState();
-        return;
-      }
-
-      const config = getGamePanelConfig(selectedGame);
-      const panelFromHash = normalisePanelId(selectedGame, params.get('panel') || '');
-      if(config){
-        const fallbackPanel = stored && stored.game === selectedGame ? stored.panel : '';
-        config.set(panelFromHash || fallbackPanel || normalisePanelId(selectedGame, ''));
-      }
-    }
   }
-  function restoreFromHashState(options){
-    const restoreOptions = options && Object.prototype.hasOwnProperty.call(options, 'useStored') ? options : { useStored:false };
-    const shouldRepairReloadUrl = false;
+  function restoreFromHashState(){
     suspendHashSync = true;
-    applyHashState(restoreOptions);
+    applyHashState();
     activateTab(currentTab);
     selectGame(selectedGame);
     suspendHashSync = false;
-    if(shouldRepairReloadUrl && currentTab === 'games' && selectedGame && !hashHasExplicitGame()){
-      syncHashState('replace');
-    }
-    if(window.location.hash){
-      syncHashState('replace');
-    }
+    if(window.location.hash) syncHashState('replace');
     safeRenderAll();
   }
   function gamesHubBaseUrl(){
@@ -1045,7 +903,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     try{
       window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
       window.history.pushState({ baselineGames:true, baselineGamesGameEntry:true, game:selectedGame, panel:currentPanelIdForGame(selectedGame) || '' }, '', gamesHubUrlForHash(gameHash));
-      persistViewState();
     }catch(_error){
       syncHashState('push');
     }
@@ -1328,16 +1185,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
 
   function readTrackCoinStorage(){
-    try{
-      const raw = localStorage.getItem(TRACKCOIN_STORAGE_KEY);
-      if(!raw) return defaultTrackCoinProfile();
-      return normaliseTrackCoinProfile(JSON.parse(raw));
-    }catch(_e){
-      return defaultTrackCoinProfile();
-    }
+    return normaliseTrackCoinProfile(readGuestProfile('trackcoin') || defaultTrackCoinProfile());
   }
   function writeTrackCoinStorage(profile){
-    try{ localStorage.setItem(TRACKCOIN_STORAGE_KEY, JSON.stringify(profile)); }catch(_e){}
+    writeGuestProfile('trackcoin',normaliseTrackCoinProfile(profile));
   }
   function highestUnlockedTrackCoinTier(profile){
     return TRACKCOIN_TIERS.reduce((acc, tier)=> profile.level >= tier.unlockLevel ? tier.id : acc, 'tier1');
@@ -1418,30 +1269,12 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
 
   async function loadProfile(app){
-    const trackcoinFallback = app === 'trackcoin' ? readTrackCoinStorage() : null;
-    const guestFallback = guestProfiles[app] || readGuestProfile(app) || trackcoinFallback || defaultProfileForApp(app);
-    if(!authState.authed || location.protocol === 'file:'){
-      profiles[app] = normaliseProfile(app, guestFallback);
-      guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
-      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
-      return;
-    }
-    if(serverStorageAuthority()){
-      profiles[app]=normaliseProfile(app,guestFallback);
-      guestProfiles[app]=JSON.parse(JSON.stringify(profiles[app]));
-      return;
-    }
-    try{
-      const data = await apiJson(API_PATH + '?app=' + encodeURIComponent(app));
-      window.BASELINE_api?.revisions?.remember?.(`games:${app}`,data);
-      profiles[app] = normaliseProfile(app, data.profile || {});
-      guestProfiles[app] = JSON.parse(JSON.stringify(profiles[app]));
-      writeGuestProfile(app, profiles[app]);
-      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
-    }catch(_e){
-      profiles[app] = normaliseProfile(app, guestFallback);
-      if(app === 'trackcoin') writeTrackCoinStorage(profiles[app]);
-    }
+    const authority=serverStorageAuthority();
+    const serverProfile=authority?.getProfile?.(app);
+    const temporary=readGuestProfile(app);
+    const fallback=app==='trackcoin'?readTrackCoinStorage():(temporary || defaultProfileForApp(app));
+    profiles[app]=normaliseProfile(app,serverProfile || fallback || defaultProfileForApp(app));
+    writeGuestProfile(app,profiles[app]);
   }
 
   function safeRenderAll(){
@@ -1498,44 +1331,37 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     syncAuthHeaderLabel();
   }
   function scheduleSave(app){
-    const profile = profiles[app];
+    const profile=profiles[app];
     if(!profile) return;
-    if(app === 'trackcoin') writeTrackCoinStorage(profile);
-    guestProfiles[app] = JSON.parse(JSON.stringify(profile));
-    writeGuestProfile(app, profile);
-    if(serverStorageAuthority()) return;
-    if(!authState.authed || location.protocol === 'file:'){
+    writeGuestProfile(app,profile);
+    if(app==='trackcoin') writeTrackCoinStorage(profile);
+    const authority=serverStorageAuthority();
+    if(authority?.saveProfile){
+      authority.saveProfile(app,profile);
       return;
     }
+    if(!authState.authed || location.protocol==='file:') return;
     window.clearTimeout(saveTimers[app]);
-    saveTimers[app] = window.setTimeout(async function(){
+    saveTimers[app]=window.setTimeout(async function(){
       try{
-        const payload=window.BASELINE_api?.revisions?.withExpected?.(`games:${app}`,{ app,profile }) || { app,profile,expectedRevision:0 };
-        const data = await apiJson(API_PATH, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(payload) });
+        const payload=window.BASELINE_api?.revisions?.withExpected?.(`games:${app}`,{app,profile}) || {app,profile,expectedRevision:0};
+        const data=await apiJson(API_PATH,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
         window.BASELINE_api?.revisions?.remember?.(`games:${app}`,data);
-        if(data && data.profile){
-          guestProfiles[app] = JSON.parse(JSON.stringify(data.profile));
-          writeGuestProfile(app, data.profile);
-          if(app === 'trackcoin') writeTrackCoinStorage(data.profile);
-        }
-      }catch(_e){
-        writeGuestProfile(app, guestProfiles[app] || profile);
-      }
-    }, 180);
+        if(data?.profile) writeGuestProfile(app,data.profile);
+      }catch(_e){}
+    },180);
   }
 
   function dartsFocusedProfile(){
     try{
       if(window.DartsFocusedGames && typeof window.DartsFocusedGames.getProfile === 'function') return window.DartsFocusedGames.getProfile();
-      const raw = window.localStorage && (window.localStorage.getItem('__bl_darts_focused_v1__') || window.localStorage.getItem('__bl_darts_focused_v2__'));
-      return raw ? JSON.parse(raw) : null;
+      return serverStorageAuthority()?.getProfile?.('dartsfocused') || null;
     }catch(_error){ return null; }
   }
   function badmintonFocusedProfile(){
     try{
       if(window.BadmintonFocusedGames && typeof window.BadmintonFocusedGames.getProfile === 'function') return window.BadmintonFocusedGames.getProfile();
-      const raw = window.localStorage && window.localStorage.getItem('__bl_badminton_focused_v1__');
-      return raw ? JSON.parse(raw) : null;
+      return serverStorageAuthority()?.getProfile?.('badmintonfocused') || null;
     }catch(_error){ return null; }
   }
   function totalBank(){
@@ -1548,7 +1374,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(authState.authed){
       refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
     }else{
-      refs.authStateNote.innerHTML = '<strong>Guest save is active.</strong><span class="inline-note">All Games Hub profiles use local guest saves until you sign in, then the same sitewide profile system saves them to your account.</span>';
+      refs.authStateNote.innerHTML = '<strong>Temporary play is active.</strong><span class="inline-note">You can play while signed out, but progress is not saved. Sign in to save game progress to your account.</span>';
     }
   }
 
@@ -4166,8 +3992,6 @@ function toggleGameFullscreen(gameId){
     if(typeof window !== 'undefined'){
       window.addEventListener('hashchange', function(){ restoreFromHashState({ useStored:false }); });
       window.addEventListener('popstate', function(){ restoreFromHashState({ useStored:false }); });
-      window.addEventListener('beforeunload', persistViewState);
-      window.addEventListener('pagehide', persistViewState);
       document.addEventListener('fullscreenchange', function(){ syncDesktopKeypadState(); syncGameButtonLabels(); renderAutoNextControls(); });
       document.addEventListener('keydown', function(event){ if(event && event.key === 'Escape') closeGamesHubModal(); });
       window.addEventListener('resize', function(){ ensureGameFullscreenButtons(); syncGameButtonLabels(); renderAutoNextControls(); if(wordState) renderWordBoard(); if(make24State) renderMake24Board(); }, { passive:true });

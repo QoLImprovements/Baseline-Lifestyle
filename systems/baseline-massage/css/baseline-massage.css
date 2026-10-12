@@ -1258,3 +1258,10 @@ body[data-app="massage"] #clearMassagePlanner:focus-visible{
   -webkit-text-fill-color:#6f1510!important;
   border-color:rgba(111,21,16,.60)!important;
 }
+
+/* Initial route authority: select the correct section before first paint,
+   without a temporary stylesheet or post-load visual correction. */
+html[data-initial-section] body[data-app="massage"] main.wrap > .section{display:none!important}
+html[data-initial-section="system"] body[data-app="massage"] main.wrap > #system,
+html[data-initial-section="library"] body[data-app="massage"] main.wrap > #library,
+html[data-initial-section="planner"] body[data-app="massage"] main.wrap > #planner{display:block!important}

@@ -20,26 +20,30 @@ const workspaceCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitn
 const publicViewer=fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js',import.meta.url),'utf8');
 const updateSession=fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php',import.meta.url),'utf8');
 
-test('Fitness resolves the exact My Routine route before first paint without artificial loading',() => {
+test('Fitness resolves the exact My Routine route before first paint with parser-authored dependencies',() => {
   assert.match(html,/id="baseline-fitness-first-paint"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/my-routine\\\/plan/);
+  assert.match(loader,/synchronous My Routine route owner/);
   assert.match(loader,/function requestedRoute\(\)/);
-  assert.match(loader,/function seedBaseWorkspaceView\(\)/);
-  assert.match(loader,/function loadOrdered\(entries\)/);
-  assert.doesNotMatch(loader,/restoreRequestedView|loadOrderedParallel|Loading My Routine|BootShield|routine-booting|baseline-routine-stability-v11|fitness-theme-guard-v1|fitness-timed-hold-targets-v2/);
+  assert.match(loader,/function selectRoutinePage\(/);
+  assert.doesNotMatch(loader,/loadScript|loadOrdered|createElement\(['"]script['"]\)|Loading My Routine|BootShield|localStorage|sessionStorage/);
 });
 
-test('Fitness creates the final structure in the same boot task and does not poll auth before settling',() => {
+test('Fitness creates final structure synchronously, then paints account data only after resolved auth',() => {
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
   assert.match(workspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(workspace,/function renderStableState\(\)/);
-  assert.match(workspace,/const before = JSON\.stringify|const before=JSON\.stringify/);
-  assert.match(workspace,/if \(after !== before\) renderStableState\(\)|if \(after!==before\) renderStableState\(\)/);
-  assert.doesNotMatch(workspace,/attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
+  assert.match(workspace,/async function loadForAuth\(snapshot\)/);
+  assert.match(workspace,/if\(!snapshot\?\.ready\) return/);
+  assert.match(workspace,/const response = await request\(\)/);
+  assert.match(workspace,/state\.activities = normaliseActivities\(response\.data\?\.activities\)/);
+  assert.match(workspace,/state\.logs = normaliseLogs\(response\.data\?\.logs\)/);
+  assert.doesNotMatch(workspace,/localStorage|sessionStorage|attempts\s*<\s*80|setTimeout\(connect,\s*100\)/);
   const boot=workspace.match(/function boot\(\) \{[\s\S]*?\n  \}/)?.[0] || '';
   assert.ok(boot,'Fitness boot function should exist');
-  assert.doesNotMatch(boot,/renderAll\(\)|renderStableState\(\)/);
+  assert.match(boot,/makeWorkspace\(\)/);
+  assert.match(boot,/attachAuth\(\)/);
 });
 
 test('activity catalogue and base activity data owner remain intact',() => {
@@ -82,10 +86,10 @@ test('Remove Entry buttons are preserved across patches instead of being destroy
   assert.doesNotMatch(routineLog,/querySelectorAll\('\[data-fitness-log-remove-request\][^\n]*forEach\(\(node\)=>node\.remove\(\)\)/);
 });
 
-test('canonical loader force-loads Routine Log v3 even when the legacy direct marker exists',() => {
-  assert.match(loader,/ROUTINE LOG COMPATIBILITY CONTRACT/);
-  assert.match(loader,/SAVED_DATA_REVISION_CLIENT_20260823_1/);
-  assert.match(loader,/marker:'data-fitness-routine-log-v3'/);
+test('Routine Log is parser-authored exactly once instead of force-loaded by a compatibility loader',() => {
+  assert.equal((html.match(/fitness-routine-log-v1\.js/g)||[]).length,1);
+  assert.match(html,/data-fitness-routine-log-v1="true"/);
+  assert.doesNotMatch(loader,/ROUTINE LOG COMPATIBILITY CONTRACT|loadScript|createElement\(['"]script['"]\)/);
 });
 
 test('Fitness activity picker does not expose the brighter border as an isolated white rule',() => {

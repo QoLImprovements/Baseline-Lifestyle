@@ -41,22 +41,36 @@ export function normaliseBadmintonProfile(data,games){
   return profile;
 }
 
-export function loadBadmintonProfile(games,{storage=localStorage,key=BADMINTON_STORAGE_KEY}={}){
-  try{
-    const raw=storage.getItem(key);
-    return normaliseBadmintonProfile(raw?JSON.parse(raw):null,games);
-  }catch(_error){
-    return defaultBadmintonProfile(games);
-  }
+function serverAuthority(){
+  const authority=globalThis.BaselineGameStorage;
+  return authority&&typeof authority.getProfile==='function'?authority:null;
 }
 
-export function persistBadmintonProfile(profile,{storage=localStorage,key=BADMINTON_STORAGE_KEY}={}){
-  try{
-    storage.setItem(key,JSON.stringify(profile));
-    return true;
-  }catch(_error){
-    return false;
+export function loadBadmintonProfile(games,{storage=null,key=BADMINTON_STORAGE_KEY}={}){
+  if(storage){
+    try{
+      const raw=storage.getItem(key);
+      return normaliseBadmintonProfile(raw?JSON.parse(raw):null,games);
+    }catch(_error){
+      return defaultBadmintonProfile(games);
+    }
   }
+  return normaliseBadmintonProfile(serverAuthority()?.getProfile?.('badmintonfocused') || null,games);
+}
+
+export function persistBadmintonProfile(profile,{storage=null,key=BADMINTON_STORAGE_KEY}={}){
+  if(storage){
+    try{
+      storage.setItem(key,JSON.stringify(profile));
+      return true;
+    }catch(_error){
+      return false;
+    }
+  }
+  const authority=serverAuthority();
+  authority?.setTemporaryProfile?.('badmintonfocused',profile);
+  authority?.saveProfile?.('badmintonfocused',profile);
+  return Boolean(authority?.canSave?.());
 }
 
 export function xpNeed(level){

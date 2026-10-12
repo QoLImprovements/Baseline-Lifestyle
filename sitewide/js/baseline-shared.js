@@ -169,27 +169,12 @@
     });
   }
 
-  function outerEmbedSnapshotKey(win){
-    try{
-      const loc = (win && win.location) ? win.location : window.location;
-      return '__baseline_outer_embed_snapshot_v2__::' + String((loc && loc.pathname) || '').toLowerCase();
-    }catch(_e){
-      return '__baseline_outer_embed_snapshot_v2__::page';
-    }
-  }
-
   function clearOuterEmbedSnapshot(win){
-    const key = outerEmbedSnapshotKey(win);
-    const legacyKey = '__baseline_outer_embed_snapshot_v2__';
     if(!win) return;
-    try{ win.sessionStorage.removeItem(key); }catch(_e){}
-    try{ win.localStorage.removeItem(key); }catch(_e){}
-    try{ win.sessionStorage.removeItem(legacyKey); }catch(_e){}
-    try{ win.localStorage.removeItem(legacyKey); }catch(_e){}
     try{
-      const loc = win.location;
+      const loc=win.location;
       if(loc && /^#view=/.test(String(loc.hash || ''))){
-        win.history.replaceState(null, '', String(loc.pathname || '') + String(loc.search || ''));
+        win.history.replaceState(null,'',String(loc.pathname || '') + String(loc.search || ''));
       }
     }catch(_e){}
   }
@@ -212,28 +197,11 @@
     }
   }
 
-  function clearPageScopedNavigationCaches(){
-    try{
-      const pathKey = String(location.pathname || '').toLowerCase();
-      const keys = [
-        '__baseline_nav_snapshot_v2__::' + pathKey,
-        '__baseline_tab_snapshot_v2__::' + pathKey,
-        '__baseline_outer_embed_snapshot_v2__::' + pathKey,
-        '__baseline_outer_embed_snapshot_v2__'
-      ];
-      keys.forEach(function(key){
-        try{ sessionStorage.removeItem(key); }catch(_e){}
-        try{ localStorage.removeItem(key); }catch(_e){}
-      });
-    }catch(_e){}
-  }
-
   function emitSiteNavigationStart(targetHref){
     // Non-blocking page-leaving notification. Cross-page navigation is handled
     // by the browser's native anchor/navigation machinery; this event exists
     // only so page modules can abort fetches/timers during a real unload.
     try{ clearPendingNavScroll(); }catch(_e){}
-    try{ clearPageScopedNavigationCaches(); }catch(_e){}
     try{
       window.dispatchEvent(new CustomEvent('baseline:page-leaving', { detail:{ href:String(targetHref || '') } }));
     }catch(_e){
@@ -1077,52 +1045,6 @@
   // History + scroll policy
   // ---------------------------
   const BASELINE_HISTORY_KEY = '__baseline_nav_v1__';
-  const BASELINE_NAV_SNAPSHOT_PREFIX = '__baseline_nav_snapshot_v2__::';
-
-  function navSnapshotKey(){
-    try{
-      return BASELINE_NAV_SNAPSHOT_PREFIX + String(location.pathname || '').toLowerCase();
-    }catch(_e){
-      return BASELINE_NAV_SNAPSHOT_PREFIX + 'page';
-    }
-  }
-
-  function writeNavSnapshot(state, url){
-    const payload = JSON.stringify({
-      state: (state && typeof state === 'object') ? state : null,
-      url: String(url || urlWithHash() || ''),
-      ts: Date.now()
-    });
-    const key = navSnapshotKey();
-    try{ sessionStorage.setItem(key, payload); }catch(_e){}
-    try{ localStorage.setItem(key, payload); }catch(_e){}
-  }
-
-  function readNavSnapshot(){
-    const key = navSnapshotKey();
-    const raw = (function(){
-      let value = '';
-      try{ value = sessionStorage.getItem(key) || ''; }catch(_e){}
-      if(value) return value;
-      try{ value = localStorage.getItem(key) || ''; }catch(_e){}
-      return value || '';
-    })();
-    if(!raw) return null;
-    try{
-      const parsed = JSON.parse(raw);
-      if(parsed && parsed.state && typeof parsed.state === 'object') return parsed;
-    }catch(_e){}
-    return null;
-  }
-
-  function syncNavSnapshotFromHistory(){
-    try{
-      const st = getNavState();
-      if(st && typeof st === 'object'){
-        writeNavSnapshot(st, urlWithHash());
-      }
-    }catch(_e){}
-  }
 
   // ---------------------------
   // Scroll root (supports fixed banner + internal scroll container)
@@ -1617,11 +1539,6 @@ function parseViewStateHash(hash){
       }catch(_e){}
     }
 
-    // Persist the latest restorable in-page view outside the History API as a
-    // refresh fail-safe. Some browser / file:// environments can drop either
-    // the hash or the history.state wrapper on reload, so we keep a page-scoped
-    // snapshot as a second restore path.
-    try{ writeNavSnapshot(next || null, url); }catch(_e){}
 
     // Broadcast router writes so same-origin shells (for example the offline
     // index embed) can mirror the child view immediately after pushState /
@@ -1648,7 +1565,6 @@ function parseViewStateHash(hash){
         const next = (cur && typeof cur === 'object') ? { ...cur, scrollY: getScrollTop() } : { scrollY: getScrollTop() };
         const wrap = { [BASELINE_HISTORY_KEY]: next };
         history.replaceState(wrap, '', urlWithHash());
-        try{ writeNavSnapshot(next, urlWithHash()); }catch(_e){}
       }catch(_e){}
     });
   }
@@ -3973,19 +3889,21 @@ function parseViewStateHash(hash){
 
       const placements=new Map();
       entries.forEach(entry=>{
-        const natural=bestNaturalMatch(entry);
+        /* Authored data-method-step is the recipe's explicit first-use contract.
+           Never let natural-language heuristics move that ingredient elsewhere;
+           heuristics are only a fallback for unassigned ingredient rows. */
         const explicit=bestExplicitMatch(entry);
-        const preferExplicit=!!explicit && (entry.genericTerm || (identityCounts.get(entry.identity) || 0)>1);
+        let target=explicit || null;
 
-        let target=preferExplicit ? explicit : null;
-        if(!target) target=natural && actionScore(natural)>=2 ? natural : null;
-        if(!target) target=explicit;
-        if(!target) target=natural;
-        if(!target) target=bestSectionMatch(entry);
-        if(!target) target=bestCategoryMatch(entry);
         if(!target){
-          target=steps.find(info=>actionScore(info)>=3) || steps[0];
+          const natural=bestNaturalMatch(entry);
+          if(natural && actionScore(natural)>=2) target=natural;
+          if(!target) target=natural;
+          if(!target) target=bestSectionMatch(entry);
+          if(!target) target=bestCategoryMatch(entry);
+          if(!target) target=steps.find(info=>actionScore(info)>=3) || steps[0];
         }
+
         if(!target) return;
         const list=placements.get(target.index) || [];
         list.push(entry);
@@ -5158,15 +5076,18 @@ function buildControls(recipeEl){
         }
       }
 
-      if(!preauthored){
-        const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
-        if(formulaRows.length){
-          const formulaControls = document.createElement('div');
+      const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
+      if(formulaRows.length){
+        let formulaControls = q(':scope > .recipe-formula-controls', strip);
+        if(!formulaControls){
+          formulaControls = document.createElement('div');
           formulaControls.className = 'recipe-formula-controls';
-          formulaRows.forEach(row=> formulaControls.appendChild(row));
           strip.appendChild(formulaControls);
         }
+        formulaRows.forEach(row=> formulaControls.appendChild(row));
+      }
 
+      if(!preauthored){
         adjustmentsBtn = document.createElement('button');
         adjustmentsBtn.type = 'button';
         adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
@@ -6024,14 +5945,6 @@ function buildControls(recipeEl){
   }
 
 
-  // Lightweight local cache used by non-auth interface features.
-  const sitewideStore = window.BASELINE_store;
-  const LOCAL_SESS_KEY = sitewideStore.keys.session;
-  const lsRead = sitewideStore.read;
-  const lsWrite = sitewideStore.write;
-  const lsDel = sitewideStore.del;
-  const localUserKey = sitewideStore.userKey;
-
   const authClient = window.BASELINE_auth;
   const authState = authClient.state;
   const authSnapshot = authClient.get;
@@ -6044,31 +5957,6 @@ function buildControls(recipeEl){
   const authCompletePasswordReset = authClient.completePasswordReset;
   const authLogout = authClient.logout;
   const onAuthChange = authClient.onChange;
-  function setupSitewideVoiceAssets(){
-    if(window.BASELINE_voice || document.querySelector('script[data-baseline-voice-runtime]')) return;
-    const sharedScript = Array.from(document.scripts || []).find(script=>/baseline-shared\.js(?:[?#]|$)/i.test(String(script.src||'')));
-    let jsUrl = '/sitewide/js/baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1';
-    let cssUrl = '/sitewide/css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1';
-    try{
-      if(sharedScript && sharedScript.src){
-        jsUrl = new URL('baseline-voice.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1', sharedScript.src).href;
-        cssUrl = new URL('../css/baseline-voice.css?v=BASELINE_VOICE_CANONICAL_20260720_1', sharedScript.src).href;
-      }
-    }catch(_e){}
-    if(!document.querySelector('link[data-baseline-voice-style]')){
-      const link=document.createElement('link');
-      link.rel='stylesheet';
-      link.href=cssUrl;
-      link.setAttribute('data-baseline-voice-style','true');
-      document.head.appendChild(link);
-    }
-    const script=document.createElement('script');
-    script.src=jsUrl;
-    script.defer=true;
-    script.setAttribute('data-baseline-voice-runtime','true');
-    document.body.appendChild(script);
-  }
-
   function setupHomebarRightControls(){
     function isHomePage(){
       return !!(document.body && document.body.dataset && document.body.dataset.app === 'home');
@@ -6981,24 +6869,27 @@ function setupAuthFlyout(){
     const favFoodSel = q('#bl-favs-food-select', fly);
     const favSkinSel = q('#bl-favs-skin-select', fly);
 
-    function readJson(key, fallback){
+    function recipeTitle(appKey,id){
+      const recipeId=String(id || '');
       try{
-        const raw = localStorage.getItem(key);
-        if(!raw) return fallback;
-        const v = JSON.parse(raw);
-        return (v === null || typeof v === 'undefined') ? fallback : v;
-      }catch(_e){
-        return fallback;
-      }
+        const live=document.getElementById(recipeId);
+        const heading=live?.querySelector?.(':scope > .recipe-title-row h2, :scope > .recipe-title-row h3, :scope > h2, :scope > h3, h2, h3');
+        const title=String(heading?.textContent || '').trim();
+        if(title) return title;
+      }catch(_e){}
+      try{
+        if(appKey==='food' && Array.isArray(window.BASELINE_FOOD_RECIPE_INDEX)){
+          const entry=window.BASELINE_FOOD_RECIPE_INDEX.find(item=>String(item?.id || '')===recipeId);
+          const title=String(entry?.title || entry?.name || '').trim();
+          if(title) return title;
+        }
+      }catch(_e){}
+      return 'Recipe ' + recipeId;
     }
 
     async function loadFavIds(appKey){
       if(!authState.authed) return [];
-      if(IS_FILE_PROTOCOL){
-        const key = localUserKey('favs_' + appKey, authState.name);
-        const ids = lsRead(key, []);
-        return Array.isArray(ids) ? ids.map(String) : [];
-      }
+      if(IS_FILE_PROTOCOL) return [];
       const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
       if(r?.data?.ok) rememberResourceRevision('favourites',r.data);
       const ids = (r && r.data && r.data.ok && Array.isArray(r.data.ids)) ? r.data.ids : [];
@@ -7007,11 +6898,10 @@ function setupAuthFlyout(){
 
     function fillSelect(sel, ids, appKey){
       if(!sel) return;
-      const idx = readJson('bl_recipe_index_' + appKey, {});
       const esc = (x)=>String(x||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
       const opts = ['<option value="">Choose…</option>'];
       ids.forEach(id=>{
-        const label = (idx && idx[id]) ? String(idx[id]) : ('Recipe ' + id);
+        const label = recipeTitle(appKey,id);
         opts.push('<option value="' + esc(id) + '">' + esc(label) + '</option>');
       });
       sel.innerHTML = opts.join('');
@@ -7416,15 +7306,14 @@ function setupBinauralFlyout(){
       return;
     }
 
-    let list = [];
     if(IS_FILE_PROTOCOL){
-      const key = localUserKey('binaural', authState.name);
-      list = lsRead(key, []);
-    }else{
-      const r = await apiJson(API_BASE + '/binaural.php');
-      if(r?.data?.ok) rememberResourceRevision('binaural',r.data);
-      list = (r && r.data && r.data.ok && Array.isArray(r.data.presets)) ? r.data.presets : [];
+      userHost.innerHTML = '<p class="muted">Saved presets require the website server.</p>';
+      return;
     }
+    let list = [];
+    const r = await apiJson(API_BASE + '/binaural.php');
+    if(r?.data?.ok) rememberResourceRevision('binaural',r.data);
+    list = (r && r.data && r.data.ok && Array.isArray(r.data.presets)) ? r.data.presets : [];
 
     userHost.innerHTML = `
       <details>
@@ -7468,15 +7357,6 @@ function setupBinauralFlyout(){
         delBtn.textContent = '✕';
         delBtn.title = 'Delete';
         delBtn.addEventListener('click', async ()=>{
-          if(IS_FILE_PROTOCOL){
-            const key = localUserKey('binaural', authState.name);
-            const cur = lsRead(key, []);
-            const next = (Array.isArray(cur) ? cur : []).filter(x=>x && x.name !== p.name);
-            lsWrite(key, next);
-            await loadUserPresets();
-            setStatus('Deleted: ' + p.name);
-            return;
-          }
           const deleted = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',{ action:'delete', name:p.name }) });
           if(deleted?.data?.ok) rememberResourceRevision('binaural',deleted.data);
           if(deleted?.status===409 && deleted?.data?.error==='revision_conflict'){
@@ -7505,17 +7385,6 @@ function setupBinauralFlyout(){
         carrier_hz: state.carrierHz,
         beat_vol: state.beatVol,
       };
-
-      if(IS_FILE_PROTOCOL){
-        const key = localUserKey('binaural', authState.name);
-        const cur = lsRead(key, []);
-        const next = (Array.isArray(cur) ? cur : []).filter(x=>x && x.name !== nm);
-        next.unshift(payload);
-        lsWrite(key, next);
-        await loadUserPresets();
-        setStatus('Saved: ' + nm);
-        return;
-      }
 
       const r = await apiJson(API_BASE + '/binaural.php', { method:'POST', body:revisionedResourceBody('binaural',payload) });
       if(r && r.data && r.data.ok){
@@ -7647,13 +7516,6 @@ function setupRecipeFavourites(){
         updateButtons();
         return;
       }
-      if(IS_FILE_PROTOCOL){
-        const key = localUserKey('favs_' + appKey, authState.name);
-        const ids = lsRead(key, []);
-        favSet = new Set((ids||[]).map(String));
-        updateButtons();
-        return;
-      }
       const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
       if(r?.data?.ok) rememberResourceRevision('favourites',r.data);
       const ids = (r && r.data && r.data.ok && Array.isArray(r.data.ids)) ? r.data.ids : [];
@@ -7677,19 +7539,6 @@ function setupRecipeFavourites(){
         await refreshFavs();
       }
     }
-    // Cache recipe titles locally for the Account favourites dropdowns.
-    try{
-      const titleIndex = {};
-      cards.forEach(card=>{
-        const h3 = q('h3', card);
-        const t = h3 ? String(h3.textContent||'').trim() : '';
-        if(card.id && t) titleIndex[String(card.id)] = t;
-      });
-      if(Object.keys(titleIndex).length){
-        localStorage.setItem('bl_recipe_index_' + appKey, JSON.stringify(titleIndex));
-      }
-    }catch(_e){}
-
     // Inject per-recipe favourite buttons (placed next to the recipe title; keeps Print aligned).
     cards.forEach(card=>{
       const id = card.id;
@@ -7810,12 +7659,10 @@ function setupRecipeFavourites(){
     // Critical-path UI first so the banner and tabs paint without waiting on recipe-wide enhancement work.
     safeInit('sitewide information popovers', setupSitewideInfoPopovers);
     safeInit('homebar right controls', setupHomebarRightControls);
-    if(routePageFile === 'baseline-fitness.html') safeInit('fitness voice assets', setupSitewideVoiceAssets);
     safeInit('homebar height', syncHomebarHeight);
     safeInit('topnav navigation', setupTopnavNavigation);
     safeInit('delegated site navigation', setupDelegatedSiteNavigation);
     safeInit('scroll persistence', setupScrollPersistence);
-    safeInit('nav snapshot sync', syncNavSnapshotFromHistory);
     safeInit('system menu', setupSystemMenu);
     safeInit('tabs', setupTabs);
 
@@ -7946,8 +7793,6 @@ function setupRecipeFavourites(){
     }
 
     const initialView = initialRecipeView || initialIngredientView || initialHashView || initialCleanRouteView;
-    const snapshot = (!initialHash) ? readNavSnapshot() : null;
-    const snapshotState = (snapshot && snapshot.state && typeof snapshot.state === 'object') ? snapshot.state : null;
 
     // Restore view from URL state hashes (prevents broken deep links and preserves
     // ingredient-filter params such as #tab=ingredients&filter=r2).
@@ -8030,12 +7875,6 @@ function setupRecipeFavourites(){
       if(existing){
         applyNavState(existing);
         try{ setNavState(existing, { replace:true, url: urlForNavState(existing) }); }catch(_e){}
-      }else if(snapshotState){
-        // Refresh fail-safe: if the browser dropped the current hash/history
-        // wrapper, restore from the last page-scoped router snapshot instead of
-        // falling back to the default first tab.
-        applyNavState(snapshotState);
-        try{ setNavState(snapshotState, { replace:true, url: urlForNavState(snapshotState) }); }catch(_e){}
       }else{
         const activeTabEl = q('.tab[aria-selected="true"]');
         const activeTab = activeTabEl ? (activeTabEl.dataset.target || activeTabEl.dataset.tab) : null;
@@ -8067,25 +7906,5 @@ function setupRecipeFavourites(){
     bootBaselineShared();
   }else{
     document.addEventListener('DOMContentLoaded', bootBaselineShared, { once:true });
-  }
-})();
-
-/* BASELINE-LIVE-STABILITY-LOADER-20260803 */
-(function(){
-  'use strict';
-  const build = 'RECIPE_VIEW_STATE_20261003_2';
-  if(!document.querySelector('link[data-baseline-live-stability-style]')){
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/sitewide/css/baseline-live-stability.css?v=' + build;
-    link.setAttribute('data-baseline-live-stability-style','true');
-    document.head.appendChild(link);
-  }
-  if(!document.querySelector('script[data-baseline-live-stability-script]')){
-    const script = document.createElement('script');
-    script.src = '/sitewide/js/baseline-live-stability.js?v=' + build;
-    script.async = false;
-    script.setAttribute('data-baseline-live-stability-script','true');
-    document.head.appendChild(script);
   }
 })();

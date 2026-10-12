@@ -8,69 +8,60 @@ import { fileURLToPath } from 'node:url';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = process.env.BASELINE_REPO_ROOT ? path.resolve(process.env.BASELINE_REPO_ROOT) : path.resolve(here, '..');
 const source = fs.readFileSync(path.join(root, 'sitewide/js/baseline-store.js'), 'utf8');
+const plain = value => JSON.parse(JSON.stringify(value));
 
-function loadStore({ protocol='https:', storage }={}){
-  const values = new Map();
-  const localStorage = storage || {
-    getItem:(key)=>values.has(key) ? values.get(key) : null,
-    setItem:(key, value)=>values.set(key, value),
-    removeItem:(key)=>values.delete(key),
-  };
+function loadStore({ protocol='https:' }={}){
   const window = {
     location:{ protocol },
     BASELINE_api:{ isFile:protocol === 'file:' },
-    localStorage,
   };
-  vm.runInNewContext(source, { window }, { filename:'baseline-store.js' });
-  return { store:window.BASELINE_store, values };
+  vm.runInNewContext(source, { window, Map, Object, String, JSON }, { filename:'baseline-store.js' });
+  return window.BASELINE_store;
 }
 
-test('the local cache exposes the established stable keys', () => {
-  const { store } = loadStore();
-  assert.deepEqual(JSON.parse(JSON.stringify(store.keys)), {
+test('the compatibility store exposes the established stable keys without browser persistence', () => {
+  const store = loadStore();
+  assert.deepEqual(plain(store.keys), {
     users:'__bl_local_users_v1__',
     session:'__bl_local_session_v1__',
     fitnessPlan:'__bl_fitness_plan_v1__',
     voiceSettings:'__baseline_voice_settings_v1__',
   });
+  assert.equal(store.persistent, false);
+  assert.doesNotMatch(source, /localStorage|sessionStorage|indexedDB|Storage\.prototype/);
 });
 
-test('values retain JSON serialization and deletion behavior', () => {
-  const { store, values } = loadStore();
-  store.write('contract', { enabled:true, count:2 });
-  assert.equal(values.get('contract'), '{"enabled":true,"count":2}');
-  assert.deepEqual(JSON.parse(JSON.stringify(store.read('contract', null))), { enabled:true, count:2 });
+test('values are memory-only, cloned on write/read, and deletable', () => {
+  const store = loadStore();
+  const original={ enabled:true, nested:{ count:2 } };
+  store.write('contract', original);
+  original.nested.count=99;
+  assert.deepEqual(plain(store.read('contract', null)), { enabled:true, nested:{ count:2 } });
+  const returned=store.read('contract', null);
+  returned.nested.count=88;
+  assert.deepEqual(plain(store.read('contract', null)), { enabled:true, nested:{ count:2 } });
   store.del('contract');
-  assert.equal(values.has('contract'), false);
+  assert.equal(store.read('contract', 'fallback'), 'fallback');
 });
 
-test('missing, malformed and inaccessible storage return the supplied fallback', () => {
-  const normal = loadStore().store;
-  assert.equal(normal.read('missing', 'fallback'), 'fallback');
-
-  const malformed = loadStore({ storage:{
-    getItem:()=>'{broken',
-    setItem:()=>{},
-    removeItem:()=>{},
-  } }).store;
-  assert.equal(malformed.read('broken', 'fallback'), 'fallback');
-
-  const denied = loadStore({ storage:{
-    getItem:()=>{ throw new Error('denied'); },
-    setItem:()=>{ throw new Error('denied'); },
-    removeItem:()=>{ throw new Error('denied'); },
-  } }).store;
-  assert.equal(denied.read('denied', 'fallback'), 'fallback');
-  assert.doesNotThrow(()=>denied.write('denied', true));
-  assert.doesNotThrow(()=>denied.del('denied'));
+test('missing values return the supplied fallback and clear removes all memory state', () => {
+  const store = loadStore();
+  assert.equal(store.read('missing', 'fallback'), 'fallback');
+  store.write('a',1);
+  store.write('b',2);
+  assert.equal(store.read('a',null),1);
+  assert.equal(store.read('b',null),2);
+  store.clear();
+  assert.equal(store.read('a','cleared'),'cleared');
+  assert.equal(store.read('b','cleared'),'cleared');
 });
 
 test('user cache keys remain trimmed and case-insensitive', () => {
-  const { store } = loadStore();
+  const store = loadStore();
   assert.equal(store.userKey('favs_food', '  Person Name  '), 'favs_food::person name');
 });
 
 test('file-preview state follows the API boundary', () => {
-  assert.equal(loadStore({ protocol:'file:' }).store.isFile, true);
-  assert.equal(loadStore().store.isFile, false);
+  assert.equal(loadStore({ protocol:'file:' }).isFile, true);
+  assert.equal(loadStore().isFile, false);
 });

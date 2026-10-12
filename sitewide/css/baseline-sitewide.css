@@ -1525,16 +1525,18 @@ body[data-app="home"]{
   --bl-home-account-gradient:linear-gradient(90deg,#2f3035 0%,#50515a 30%,#757680 50%,#50515a 70%,#2f3035 100%);
 }
 body[data-app="food"]{
-  --bl-surface-card-solid:#f5b84a;
-  --bl-surface-recipe-card-solid:#ffc04d;
-  --bl-surface-panel-solid:#e98225;
-  --bl-surface-control-solid:#ee942d;
-  --bl-surface-input-solid:#ffb13b;
-  --bl-surface-active-solid:#c92727;
-  --bl-surface-ink:#1b0b09;
-  --bl-slider-track-solid:#b11226;
-  --bl-slider-thumb-solid:#ffb000;
-  --bl-slider-border-solid:#7a1a21;
+  /* Food colour authority lives in baseline-themes.css. These structural
+     aliases must point at that authority rather than inventing a second palette. */
+  --bl-surface-card-solid:var(--food-surface-card);
+  --bl-surface-recipe-card-solid:var(--food-surface-card);
+  --bl-surface-panel-solid:var(--food-surface-panel);
+  --bl-surface-control-solid:var(--food-gold);
+  --bl-surface-input-solid:var(--food-yellow);
+  --bl-surface-active-solid:var(--food-red);
+  --bl-surface-ink:var(--ink);
+  --bl-slider-track-solid:var(--food-deep);
+  --bl-slider-thumb-solid:var(--food-gold);
+  --bl-slider-border-solid:var(--accent-2);
 }
 body[data-app="skin"]{
   --bl-surface-card-solid:#d99a82;

@@ -3,7 +3,6 @@
   'use strict';
 
   const BUILD='BASELINE_VOICE_FITNESS_SETTINGS_20260803_1';
-  const SETTINGS_KEY='__baseline_voice_settings_v1__';
   const API_ENDPOINT='/sitewide/api/voice_settings.php';
   const DEFAULTS=Object.freeze({
     enabled:false,
@@ -160,7 +159,7 @@
   const synthesis=global.speechSynthesis||null;
   const systems=new Map();
   const settingsListeners=new Set();
-  let settings=readLocalSettings();
+  let settings=normaliseSettings(DEFAULTS);
   let activeRecognition=null;
   let speechQueue=Promise.resolve();
   let flyout=null;
@@ -174,17 +173,6 @@
   function revisionClient(){ return global.BASELINE_api?.revisions || null; }
   function rememberRevision(data){ revisionClient()?.remember?.(VOICE_RESOURCE,data); }
   function revisionedBody(body){ return revisionClient()?.withExpected?.(VOICE_RESOURCE,body) || Object.assign({ expectedRevision:0 },body); }
-
-  function readLocalSettings(){
-    try{
-      const raw=global.localStorage&&global.localStorage.getItem(SETTINGS_KEY);
-      return normaliseSettings(raw?JSON.parse(raw):DEFAULTS);
-    }catch(_error){ return normaliseSettings(DEFAULTS); }
-  }
-
-  function writeLocalSettings(value){
-    try{ global.localStorage&&global.localStorage.setItem(SETTINGS_KEY,JSON.stringify(value)); }catch(_error){}
-  }
 
   function emitSettings(){
     const snapshot=getSettings();
@@ -200,10 +188,10 @@
     const authenticated=Boolean(accountName&&location.protocol!=='file:');
     if(!authenticated){
       settings=candidate;
-      writeLocalSettings(settings);
       syncSettingsUi();
       emitSettings();
       lastSaveSucceeded=true;
+      setStatus('Voice setting applied for this page. Sign in to save it to your account.','notice');
       return getSettings();
     }
     if(options.server===false){
@@ -782,7 +770,7 @@
         ++serverLoadToken;
         accountSaveBlocked=false;
         lastSaveSucceeded=true;
-        settings=readLocalSettings();
+        settings=normaliseSettings(DEFAULTS);
         syncSettingsUi();
         emitSettings();
         return;
