@@ -86,6 +86,10 @@
   function syncFromCanonical() {
     const routine=readRoutineState();
     if (!routine.loaded || routine.loadFailed) return false;
+    /* A local group edit is already the live owner while its revisioned save is
+       pending. Mutation-driven refreshes must not replace it with the previous
+       canonical snapshot before that save has resolved. */
+    if (state.loaded && (state.saveTimer || state.saveInFlight || state.saveQueued)) return true;
     const auth=global.BASELINE_auth?.get?.() || {};
     const nextAuthed=Boolean(auth.authed);
     const nextOwner=nextAuthed?String(auth.name || '').trim() || 'user':'guest';
