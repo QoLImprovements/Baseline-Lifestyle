@@ -68,7 +68,7 @@ test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are 
   [
     '.bl-pages-btn','.bl-pages-menu','.bl-pages-link','#bl-auth-flyout .card',
     '#bl-beats-flyout .card','.bl-flyout .bl-select-menu [role="option"]',
-    '.tab','#ninjaPanel .jrpg-game button','#realmBasecampScreen .realm-location-button'
+    '.tab','.action','#realmBasecampScreen .realm-location-button'
   ].forEach(selector => assert.ok(theme.includes(selector),selector));
 });
 
