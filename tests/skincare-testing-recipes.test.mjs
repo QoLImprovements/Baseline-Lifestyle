@@ -5,16 +5,13 @@ import vm from 'node:vm';
 
 const html = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
-const tabs = fs.readFileSync('sitewide/js/baseline-tabs.js', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const recipeRuntime = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js', 'utf8');
-const savedDataBridge = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeCss = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
 const profiles = fs.readFileSync('sitewide/js/baseline-ingredient-profiles.js', 'utf8');
 const htaccess = fs.readFileSync('.htaccess', 'utf8');
 const testServer = fs.readFileSync('tests/support/production-static-server.cjs', 'utf8');
-const standaloneMassage = fs.readFileSync('systems/baseline-natural-skincare/recipes/anhydrous-massage-oil-blend.html', 'utf8');
 const lipBalmStart = html.indexOf('<!-- Recipe 12 -->');
 const lipBalmEnd = html.indexOf('<!-- INGREDIENT LIBRARY -->');
 const lipBalm = html.slice(lipBalmStart, lipBalmEnd);
@@ -199,22 +196,12 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
 });
 
 test('Skincare slider settings use the protected server resource without browser persistence', () => {
-  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|sliderSaveStorageKey|BASELINE_api/);
-  assert.match(recipeRuntime, /BaselineSkincareSavedData/);
-  assert.match(recipeRuntime, /client\.saveSlider\(saveId, values\)/);
-  assert.match(recipeRuntime, /client\.removeSlider\(saveId\)/);
+  assert.doesNotMatch(recipeRuntime, /localStorage|sessionStorage|indexedDB|BaselineSkincareSavedData/);
+  assert.match(recipeRuntime, /SLIDER_API='\/systems\/baseline-natural-skincare\/api\/skincare_data\.php'/);
+  assert.match(recipeRuntime, /action:'replace_sliders'/);
+  assert.match(recipeRuntime, /expectedRevision:sliderServerState\.revision/);
   assert.match(recipeRuntime, /Log in to save slider position/);
-  assert.match(recipeRuntime, /BASELINE_auth\.onChange/);
-
-  assert.match(savedDataBridge, /action:'replace_sliders'/);
-  assert.match(savedDataBridge, /expectedRevision:state\.revision/);
-  const saveStart=savedDataBridge.indexOf('function saveSliderDocument');
-  const saveEnd=savedDataBridge.indexOf('function saveSliderEntry',saveStart);
-  const saveBlock=savedDataBridge.slice(saveStart,saveEnd);
-  assert.doesNotMatch(saveBlock,/backup\(/);
-  assert.doesNotMatch(saveBlock,/blockSaving\([^\n]*submitted/);
-  assert.match(savedDataBridge, /saveSlider:publicSaveSlider/);
-  assert.match(savedDataBridge, /removeSlider:publicRemoveSlider/);
+  assert.match(recipeRuntime, /BASELINE_auth&&window\.BASELINE_auth\.onChange/);
 });
 
 test('Anhydrous Oil Cleanser uses two continuous controls instead of duplicate variant tabs', () => {
@@ -262,9 +249,7 @@ test('Anhydrous Massage Oil Blend is one olive-led recipe with no Avocado varian
   const start = html.indexOf('data-recipe-slug="anhydrous-massage-oil-blend"');
   const end = html.indexOf('data-recipe-slug="restorative-hydration-layer"', start);
   const massage = html.slice(start, end);
-  for (const source of [massage, standaloneMassage]) {
-    assert.doesNotMatch(source, /Avocado Blend|r6Avocado|r6-avocado|fractionated coconut|watermelon seed/i);
-  }
+  assert.doesNotMatch(massage, /Avocado Blend|r6Avocado|r6-avocado|fractionated coconut|watermelon seed/i);
   assert.doesNotMatch(massage, /aria-label="Massage oil variants"|class="variant-switcher"/);
   assert.match(massage, /Jojoba remains fixed at 15%|jojoba remains fixed at 15%/i);
   assert.match(massage, /id="r6Glide"/);
@@ -373,7 +358,6 @@ test('changed Skincare runtime scripts remain valid JavaScript', () => {
     'sitewide/js/baseline-shared.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js',
     'systems/baseline-natural-skincare/js/skincare-recipe-runtime-20261004.js',
-    'systems/baseline-natural-skincare/js/skincare-saved-data-bridge.js',
   ];
   for (const file of files) {
     const source = fs.readFileSync(file, 'utf8');
@@ -464,31 +448,22 @@ test('Recipes and My Routine remain separate section siblings', () => {
   assert.equal((recipesBlock.match(/<\/section>/g) || []).length, 1, 'Recipes must contain one matching section close');
 });
 
-test('Natural Skincare navigation keeps public clean URLs instead of implementation-file hashes', () => {
+test('Natural Skincare navigation keeps public clean URLs in the canonical shared router', () => {
   assert.match(shared, /'baseline-natural-skincare\.html': \{ base:'\/baseline-natural-skincare', defaultTab:'system'/);
   assert.match(shared, /'baseline-natural-skincare\.html':'\/baseline-natural-skincare\/system'/);
   assert.match(shared, /return '\/baseline-natural-skincare\/' \+ String\(skincareRoute\[1\] \|\| 'system'\)\.toLowerCase\(\);/);
-  assert.match(tabs, /"baseline-natural-skincare\.html": \{ base:"\/baseline-natural-skincare", tabs:/);
   assert.doesNotMatch(shared, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html#tab=/);
-  assert.doesNotMatch(tabs, /\/systems\/baseline-natural-skincare\/baseline-natural-skincare\.html.*hashTabs:true/);
+  assert.doesNotMatch(html, /baseline-tabs\.js/);
 });
 
-test('leaving Skincare My Routine clears bootstrap-only routine visibility flags in both tab authorities', () => {
+test('leaving Skincare My Routine clears bootstrap-only routine visibility flags in the canonical tab authority', () => {
   assert.match(shared, /dataset\.app === 'skin' && id !== 'routine'/);
   assert.match(shared, /removeAttribute\('data-initial-skincare-tab'\)/);
   assert.match(shared, /removeAttribute\('data-initial-routine-view'\)/);
-  assert.match(tabs, /dataset\.app === "skin" && id !== "routine"/);
-  assert.match(tabs, /removeAttribute\("data-initial-skincare-tab"\)/);
-  assert.match(tabs, /removeAttribute\("data-initial-routine-view"\)/);
 });
 
-test('nested Skincare and Fitness My Routine clean routes are repaired before the fallback exits', () => {
-  assert.match(tabs, /function repairNestedRoutineRoute\(\)/);
-  assert.match(tabs, /baseline-natural-skincare\\\/my-routine\(\?:\\\/\(\?:log\|summary\|plan\|public\)\)\?/);
-  assert.match(tabs, /window\.BASELINE_selectTab\("routine", \{ silentHistory:true \}\)/);
-  assert.match(tabs, /baseline-fitness\\\/my-routine/);
-  assert.match(tabs, /window\.BASELINE_selectTab\("my-plan", \{ silentHistory:true \}\)/);
-  const repairCall = tabs.indexOf('repairNestedRoutineRoute();');
-  const disableExit = tabs.indexOf('if(shouldDisable()) return;', repairCall);
-  assert.ok(repairCall >= 0 && disableExit > repairCall, 'nested route repair must run before the shared-owner early exit');
+test('nested Skincare and Fitness My Routine clean routes are owned by the shared router', () => {
+  assert.match(shared, /baseline-natural-skincare\/my-routine/);
+  assert.match(shared, /baseline-fitness\/my-routine/);
+  assert.doesNotMatch(shared, /baseline-tabs\.js/);
 });
