@@ -67,7 +67,8 @@ test('Routine Summary remains the comprehensive shared template with transient i
   assert.match(sitewide,/bl-routine-summary-grid/);
   assert.match(coherence,/skinSummaryFilter/);
   assert.match(coherence,/transientSummaryFilter/);
-  assert.doesNotMatch(coherence,/localStorage|sessionStorage|SUMMARY_STORAGE_KEY|persistSummaryFilter|searchParams\.set\(['"]routine-filter/);
+  assert.doesNotMatch(coherence,/localStorage|sessionStorage|SUMMARY_STORAGE_KEY|searchParams\.set\(['"]routine-filter/);
+  assert.match(coherence,/function persistSummaryFilter\(value\) \{[\s\S]*transientSummaryFilter=String\(value \|\| 'all'\);[\s\S]*\}/);
 });
 
 test('group creation shell is static and group Settings own schedule directly',() => {
