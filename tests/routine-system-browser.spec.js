@@ -9,6 +9,15 @@ function todayIso() {
 }
 
 async function mockAccountApis(page) {
+  let skincareRevision=7;
+  let skincareGroups=[
+    { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false, timeOfDay:'anytime' },
+    { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false, timeOfDay:'anytime' }
+  ];
+  let skincareAssignments={ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' };
+  let fitnessRevision=11;
+  let fitnessGroups=[];
+  let fitnessAssignments={};
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
     const pathname = url.pathname;
@@ -61,9 +70,10 @@ async function mockAccountApis(page) {
       });
     }
     if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/routine_state.php')) {
+      if (route.request().method() === 'POST') skincareRevision += 1;
       return fulfillJson(route, {
         ok:true,
-        revision:7,
+        revision:skincareRevision,
         visibility:'private',
         routine:[{
           id:'browser-facial-steam', actionId:'facial-steam', title:'Facial Steam', timeOfDay:'anytime',
@@ -73,22 +83,18 @@ async function mockAccountApis(page) {
           frequency:{ mode:'daily', days:[], timesPerWeek:1 }, benefitMode:'comprehensive', notes:''
         }],
         logs:{},
-        groups:[
-          { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false },
-          { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false }
-        ],
-        assignments:{ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' }
+        groups:skincareGroups,
+        assignments:skincareAssignments
       });
     }
     if (pathname.includes('/baseline-natural-skincare/') && pathname.endsWith('/routine_groups.php')) {
-      return fulfillJson(route, {
-        ok:true, revision:7, hasState:true,
-        groups:[
-          { id:'browser-group', title:'Preparation', collapsed:false, applyFrequency:false, applyTime:false },
-          { id:'browser-cleanse-group', title:'Cleanse and Protect', collapsed:false, applyFrequency:false, applyTime:false }
-        ],
-        assignments:{ 'browser-facial-steam':'browser-group', 'browser-oil-cleanse':'browser-cleanse-group' }
-      });
+      if (route.request().method() === 'POST') {
+        const payload=route.request().postDataJSON();
+        skincareGroups=Array.isArray(payload.groups)?payload.groups:skincareGroups;
+        skincareAssignments=payload.assignments && typeof payload.assignments==='object'?payload.assignments:skincareAssignments;
+        skincareRevision += 1;
+      }
+      return fulfillJson(route, { ok:true, revision:skincareRevision, hasState:true, groups:skincareGroups, assignments:skincareAssignments });
     }
     if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/routine_state.php')) {
       return fulfillJson(route, {
@@ -106,7 +112,13 @@ async function mockAccountApis(page) {
       });
     }
     if (pathname.includes('/baseline-fitness/') && pathname.endsWith('/routine_groups.php')) {
-      return fulfillJson(route, { ok:true, revision:11, hasState:false, groups:[], assignments:{} });
+      if (route.request().method() === 'POST') {
+        const payload=route.request().postDataJSON();
+        fitnessGroups=Array.isArray(payload.groups)?payload.groups:fitnessGroups;
+        fitnessAssignments=payload.assignments && typeof payload.assignments==='object'?payload.assignments:fitnessAssignments;
+        fitnessRevision += 1;
+      }
+      return fulfillJson(route, { ok:true, revision:fitnessRevision, hasState:fitnessGroups.length>0, groups:fitnessGroups, assignments:fitnessAssignments });
     }
     if (pathname.includes('/api/')) return fulfillJson(route, { ok:false, error:'not_logged_in' }, 401);
     return route.continue();
