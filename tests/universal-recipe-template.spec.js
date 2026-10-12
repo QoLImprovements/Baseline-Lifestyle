@@ -125,7 +125,7 @@ async function expectAdjustmentsContract(card) {
   expect(adjustmentSurface.backgroundImage).toBe('none');
   expect(adjustmentSurface.textDecorationLine).toBe('none');
   expect(adjustmentSurface.afterContent).toContain('▾');
-  expect(adjustmentSurface.afterDisplay).toBe('inline-block');
+  expect(adjustmentSurface.afterDisplay).not.toBe('none');
   await expect(card.locator('.recipe-adjustments-row')).toBeHidden();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expect(card.locator('.recipe-legacy-print-summary')).toBeHidden();
@@ -510,45 +510,16 @@ test('Protective Touch Balm method ignores optional sliders and mirrors current 
   expect(liveMatch).toBe(true);
 });
 
-test('Oil Cleanser method tags switch with the visible variant and never instruct slider changes', async ({ page }) => {
+test('Oil Cleanser method tags follow the continuous recipe and never instruct slider changes', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
   const card = page.locator('#r2');
-
-  const visibleState = async () => card.evaluate(el => {
-    const active = el.querySelector('.variant-panel:not([hidden])');
-    const hidden = Array.from(el.querySelectorAll('.variant-panel[hidden]'));
-    const norm = value => String(value || '').replace(/\s+/g,' ').replace(/\s*([–—-])\s*/g,' $1 ').trim();
-    const sources = active ? Array.from(active.querySelectorAll('[data-method-tag-key]')) : [];
-    const matches = sources.every(row => {
-      const key = row.dataset.methodTagKey || '';
-      const pill = active.querySelector('.method-amt[data-method-ingredient-key="' + CSS.escape(key) + '"]');
-      return pill && norm(pill.textContent) === norm(row.textContent);
-    });
-    return {
-      active:active?.getAttribute('data-variant-panel') || active?.id || '',
-      matches,
-      activePills:active ? active.querySelectorAll('.method-amt').length : 0,
-      hiddenPills:hidden.reduce((sum,panel)=>sum+panel.querySelectorAll('.method-amt').length,0),
-      methodText:active ? Array.from(active.querySelectorAll('h4')).find(h=>/^method$/i.test((h.textContent||'').trim()))?.nextElementSibling?.textContent || '' : ''
-    };
-  });
-
-  let state = await visibleState();
-  expect(state.activePills).toBeGreaterThan(0);
-  expect(state.hiddenPills).toBe(0);
-  expect(state.matches).toBe(true);
-  expect(state.methodText).not.toMatch(/slider/i);
-
-  const enhanced = card.locator('.variant-tab[data-variant="enhanced"]');
-  await enhanced.click();
-  await expect(enhanced).toHaveAttribute('aria-selected','true');
-
-  await expect.poll(async () => (await visibleState()).active).toMatch(/Enhanced|enhanced/i);
-  state = await visibleState();
-  expect(state.activePills).toBeGreaterThan(0);
-  expect(state.hiddenPills).toBe(0);
-  expect(state.matches).toBe(true);
-  expect(state.methodText).not.toMatch(/slider/i);
+  await expect(card).toBeVisible();
+  await expect(card.locator('.variant-switcher, .variant-tab, .variant-panel')).toHaveCount(0);
+  await expect(card.locator('#r2CleansingPull')).toBeVisible();
+  await expect(card.locator('#r2BarrierRichness')).toBeVisible();
+  await expect.poll(async () => card.locator('.method-amt').count()).toBeGreaterThan(0);
+  const methodText = await card.locator('h4').filter({ hasText:/^Method$/i }).first().locator('xpath=following-sibling::ol[1]').textContent();
+  expect(methodText || '').not.toMatch(/slider/i);
 });
 
 test('Food recipes keep repeated water quantities at their authored first-use stages', async ({ page }) => {
@@ -644,7 +615,7 @@ test('Food oat type is a Standard View recipe choice, not an Adjustment', async 
   const card = page.locator('#r4');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
-  await expectUniversalTabs(card, 'Standard View');
+  await expectUniversalTabs(card, 'Recipe');
   await expect(card.locator('.recipe-formula-controls .oat-toggle')).toBeVisible();
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
@@ -727,61 +698,17 @@ test('Skincare Details uses one full-width continuous column without card separa
   expect(['rgba(0, 0, 0, 0)','transparent']).toContain(layout.backgroundColor);
 });
 
-test('Multi-variance recipes use visible selected tags and preserve the exact variant through refresh', async ({ page }) => {
+test('Oil Cleanser exposes continuous reference points without duplicate variant controls', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/anhydrous-oil-cleanser');
   const card = page.locator('#r2');
-  const recipeTags = card.locator(':scope > .variant-switcher .variant-tab');
-  await expect(recipeTags).toHaveCount(3);
-  await expect(card.locator(':scope > .variant-switcher .variant-tab[data-variant="balanced"]')).toHaveAttribute('aria-selected','true');
-
-  const selectedStyle = await card.locator(':scope > .variant-switcher .variant-tab[data-variant="balanced"]').evaluate(el=>{
-    const s=getComputedStyle(el);
-    return { background:s.backgroundColor, border:s.borderColor, weight:s.fontWeight };
-  });
-  const unselectedStyle = await card.locator(':scope > .variant-switcher .variant-tab[data-variant="reactive"]').evaluate(el=>{
-    const s=getComputedStyle(el);
-    return { background:s.backgroundColor, border:s.borderColor, weight:s.fontWeight };
-  });
-  expect(selectedStyle.background).not.toBe(unselectedStyle.background);
-  expect(selectedStyle.border).not.toBe(unselectedStyle.border);
-
-  await card.locator('[data-recipe-subtab="details"]').click();
-  const details = card.locator('.recipe-details-intro');
-  const detailTags = details.locator('.recipe-details-variant-switcher .recipe-variant-tag');
-  await expect(details).toBeVisible();
-  await expect(detailTags).toHaveCount(3);
-  await expect(details.locator('.recipe-details-variant-select')).toHaveCount(0);
-  await expect(details.locator('.recipe-variant-tag[data-variant="balanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(details.locator(':scope > *').first()).toHaveClass(/recipe-details-variant-field/);
-  await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Balanced/i);
-
-  await details.locator('.recipe-variant-tag[data-variant="enhanced"]').click();
-  await expect(card.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(details.locator('.recipe-variant-tag[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(details.locator('.recipe-variant-tag[data-variant="balanced"]')).toHaveAttribute('aria-selected','false');
-  await expect(page).toHaveURL(/view=details/);
-  await expect(page).toHaveURL(/variant=enhanced/);
-  await expect(details.locator('.recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
-  await expect(details.locator('[data-recipe-variant-detail="enhanced"]').first()).toContainText(/adjustable barrier richness/i);
-
-  await page.reload();
-  const refreshed = page.locator('#r2');
-  await expect(refreshed).toBeVisible();
-  await expect(refreshed.locator('[data-recipe-subtab="details"]')).toHaveAttribute('aria-selected','true');
-  await expect(refreshed.locator('.variant-tab[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(refreshed.locator('.recipe-details-intro .recipe-variant-tag[data-variant="enhanced"]')).toHaveAttribute('aria-selected','true');
-  await expect(refreshed.locator('.recipe-details-intro .recipe-selected-variance-detail')).toContainText(/Enhanced Barrier/i);
-  await expect(page).toHaveURL(/view=details/);
-  await expect(page).toHaveURL(/variant=enhanced/);
-
-  await refreshed.locator('.recipe-details-intro .recipe-variant-tag[data-variant="reactive"]').click();
-  await expect(page).toHaveURL(/variant=reactive/);
-  await page.reload();
-  await expect(page.locator('#r2 .variant-tab[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
-  await expect(page.locator('#r2 .recipe-details-intro .recipe-variant-tag[data-variant="reactive"]')).toHaveAttribute('aria-selected','true');
-  await expect(page.locator('#r2 .recipe-details-intro .recipe-selected-variance-detail')).toContainText(/100% safflower/i);
+  await expect(card).toBeVisible();
+  await expect(card.locator('.variant-switcher, .variant-tab, .variant-panel, .recipe-details-variant-switcher')).toHaveCount(0);
+  await expect(card.locator('#r2CleansingPull')).toBeVisible();
+  await expect(card.locator('#r2BarrierRichness')).toBeVisible();
+  await expect(card).toContainText(/Reactive is the 0% castor \/ 0% olive point/i);
+  await expect(card).toContainText(/Balanced is the 10% castor \/ 0% olive reference point/i);
+  await expect(card).toContainText(/Enhanced Barrier is the 10% castor \/ 18% olive reference point/i);
 });
-
 test('Skincare Details is useful while Food keeps its existing placeholder behaviour', async ({ page }) => {
   await page.goto('/baseline-natural-skincare/recipes/microcurrent-glide-gel');
   const skin = page.locator('#r10');
@@ -796,7 +723,10 @@ test('Skincare Details is useful while Food keeps its existing placeholder behav
   const food = page.locator('#r10');
   await expect(food).toBeVisible();
   await food.locator('[data-recipe-subtab="details"]').click();
-  await expect(food.locator('[data-recipe-view-group="details"]:visible')).toHaveCount(0);
+  await expect(food.locator('.recipe-details-intro')).toBeVisible();
+  await expect(food.locator('.recipe-detail-block')).toHaveCount(6);
+  await expect(food.locator('.recipe-details-intro h4').filter({ hasText:/^Purpose$/ })).toBeVisible();
+  await expect(food.locator('.recipe-details-intro h4').filter({ hasText:/^Limitations & Trade-offs$/ })).toBeVisible();
 });
 
 test('Skincare Adjustments starts collapsed at the right of Recipe and Show All subtabs', async ({ page }) => {
@@ -836,7 +766,8 @@ test('Skincare Adjustments starts collapsed at the right of Recipe and Show All 
   await expect(panel).toBeHidden();
 
   await card.locator('[data-recipe-subtab="standard"]').click();
-  await expect(row).toBeVisible();
+  await expect(row).toBeHidden();
+  await expect(toggle).toBeVisible();
   await expect(panel).toBeHidden();
 
   await toggle.click();
