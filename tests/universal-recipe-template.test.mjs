@@ -29,9 +29,12 @@ function foodRecipeBlocks(){
 test('Food and Skincare declare exact recipe routes before first paint', () => {
   for (const html of [skincareHtml, foodHtml]) {
     assert.match(html, /id="baseline-recipe-route-first-paint"/);
-    assert.match(html, /data-initial-section','recipes'/);
     assert.match(html, /data-initial-recipe-route','1'/);
+    assert.match(html, /baseline-(?:natural-skincare|food-approach)\\/recipes/);
   }
+  assert.match(skincareHtml, /data-initial-section','recipes'/);
+  assert.match(foodHtml, /t=\/\^\\\/baseline-food-approach\\\/recipes/);
+  assert.match(foodHtml, /setAttribute\('data-initial-section',t\)/);
   assert.match(foodCss, /html\[data-initial-section\] body\[data-app="food"\] main\.wrap>\.section\{display:none!important\}/);
   assert.match(skincareCss, /html\[data-initial-section\] body\[data-app="skin"\] main\.wrap > \.section\{display:none!important\}/);
   assert.match(css, /html\[data-initial-recipe-route="1"\] #recipes \.recipe-page\{display:none!important;visibility:hidden!important\}/);
