@@ -103,8 +103,9 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   const paths = read('sitewide/api/saved_data.php');
   const state = read('systems/baseline-fitness/api/routine_state.php');
   const groups = read('systems/baseline-fitness/api/routine_groups.php');
-  const bridge = read('systems/baseline-fitness/js/fitness-routine-saved-data-bridge.js');
-  const api = read('sitewide/js/baseline-api.js');
+  const workspace = read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const groupClient = read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  const html = read('systems/baseline-fitness/baseline-fitness.html');
   assert.match(paths, /'fitness-routine'\s*=>\s*'fitness-routine\.json'/);
   assert.match(state, /bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
   assert.match(groups, /bl_saved_user_resource_path\(\$userId, 'fitness-routine'\)/);
@@ -117,16 +118,14 @@ test('Fitness Routine state and groups share one revisioned Saved Data resource'
   assert.match(state, /bl_fitness_account_by_name/);
   assert.match(state, /array_merge\(bl_fitness_routine_default\(\), \$current\)/);
   assert.match(groups, /array_merge\(bl_fitness_group_default\(\), \$current\)/);
-  assert.match(bridge, /fitness-routine/);
-  assert.match(bridge, /withExpected/);
-  assert.match(bridge, /save_blocked/);
-  assert.match(bridge, /Saving has stopped/);
-  assert.match(bridge, /ACTIVE_LOCAL_PREFIXES/);
-  assert.match(bridge, /retireAuthenticatedLocal/);
-  assert.match(bridge, /authoritativeRoutineResponse/);
-  assert.match(bridge, /hasRoutine:true/);
-  assert.doesNotMatch(bridge, /Import legacy routine|importLegacyRoutine|legacyImportAvailable|showLegacyImport/);
-  assert.match(api, /fitness-routine-saved-data-bridge\.js/);
+  assert.match(workspace, /routine_state\.php/);
+  assert.match(workspace, /expectedRevision:state\.revision/);
+  assert.match(workspace, /saveBlocked/);
+  assert.match(groupClient, /routine_groups\.php/);
+  assert.match(groupClient, /expectedRevision|revision/);
+  assert.doesNotMatch(workspace, /localStorage|sessionStorage|indexedDB/);
+  assert.doesNotMatch(groupClient, /localStorage|sessionStorage|indexedDB/);
+  assert.doesNotMatch(html, /fitness-routine-saved-data-bridge\.js/);
 });
 
 test('Voice Saved Data stays authoritative for authenticated settings', () => {
@@ -215,7 +214,8 @@ test('cutover and rollback tools remain explicit and evidence stays outside Save
   assert.match(rollback, /savedDataResourcesPreservedOutsideSQLite/);
   assert.match(rollback, /fitness-routine\.json/);
   assert.match(rollback, /food\.json/);
-  assert.match(rollback, /skincare\.json/);\n  assert.match(rollback, /massage\\.json/);
+  assert.match(rollback, /skincare\.json/);
+  assert.match(rollback, /massage\.json/);
   assert.match(rollback, /Account Index\/accounts\.json/);
   assert.match(rollback, /Games\/baseline-realm\.json#/);
   assert.match(rollback, /'badminton-focused\.json'=>'badmintonfocused'/);
