@@ -17,7 +17,7 @@
     recipe.classList.remove('recipe-options-open');
     recipe.classList.remove('recipe-adjustments-open');
     const panel=recipe.querySelector(':scope > .recipe-adjustments-panel');
-    const button=recipe.querySelector(':scope > .recipe-adjustments-row .recipe-adjustments-toggle');
+    const button=recipe.querySelector(':scope > .recipe-viewbar > .recipe-adjustments-toggle, :scope > .recipe-adjustments-row .recipe-adjustments-toggle');
     if(panel) panel.hidden=true;
     if(button) button.setAttribute('aria-expanded','false');
   }
