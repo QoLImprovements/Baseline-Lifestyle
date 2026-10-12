@@ -64,7 +64,7 @@ test('the focused store client is explicitly non-persistent and cannot become an
   const store = read('sitewide/js/baseline-store.js');
   assert.doesNotMatch(shared, /function ls(?:Read|Write|Del)\b|function localUserKey\b/);
   assert.doesNotMatch(shared, /BASELINE_store/);
-  assert.match(store, /const values=new Map\(\)/);
+  assert.match(store, /const values\s*=\s*new Map\(\)/);
   assert.match(store, /persistent:false/);
   assert.doesNotMatch(store, /localStorage|sessionStorage|indexedDB|Storage\.prototype/);
   assert.doesNotMatch(store, /authState|createElement|fetch\(/);
