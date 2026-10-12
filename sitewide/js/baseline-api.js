@@ -113,6 +113,7 @@
     revisions,
   };
 
+  const document = scope.document;
   function removeObsoleteUpdateFooter(){
     if(!document) return;
     const currentApp = document.documentElement?.dataset?.app || document.body?.dataset?.app || '';
