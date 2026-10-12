@@ -26,7 +26,7 @@ test('Realm remains optional and Darts is a first-class module',()=>{
 });
 
 test('storage authority does not create a temporary game runtime',()=>{
-  assert.match(guard,/GAMES_HUB_STORAGE_20260913_1/);
+  assert.match(guard,/GAMES_HUB_SERVER_AUTHORITY_20261006_1/);
   assert.match(guard,/canPlay:\(\)=>true/);
   assert.match(guard,/canSave:\(\)=>state\.canSave/);
   assert.doesNotMatch(guard,/__gamesHubGuard|BASELINE_GAMES_HUB_CORE_READY|fallbackBound|stopImmediatePropagation/);
