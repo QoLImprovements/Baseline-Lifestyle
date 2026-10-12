@@ -188,7 +188,9 @@ test('embedded Skincare Lip Balm canonicalizes its legacy alias across direct lo
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 
-  await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
+  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
+  await page.evaluate((href) => { window.location.assign(href); }, lipBalmPath);
+  await page.waitForLoadState('domcontentloaded');
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/comfort-barrier-balm$/);
   await expect(page.locator('#r12')).toBeVisible();
 
@@ -582,10 +584,14 @@ test('Fitness saves a generated plan and reloads it through the account API', as
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('details[data-fitness-plan-card="calisthenics"]')).toBeVisible();
-  await page.locator('details[data-fitness-plan-card="calisthenics"] > summary').click();
+  const reloadedCalisthenicsCard=page.locator('details[data-fitness-plan-card="calisthenics"]');
+  await expect(reloadedCalisthenicsCard).toBeVisible();
+  if (!(await reloadedCalisthenicsCard.evaluate((element) => element.open))) {
+    await reloadedCalisthenicsCard.locator(':scope > summary').click();
+  }
+  await expect(reloadedCalisthenicsCard).toHaveAttribute('open','');
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
-  await expect(page.locator('#myPlanOut')).toContainText('Progress: 0/2');
+  await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 });
 
 test('Games Hub restores account progress and keeps a game playable', async ({ page }) => {
