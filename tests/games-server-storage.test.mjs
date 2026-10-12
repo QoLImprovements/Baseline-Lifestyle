@@ -81,7 +81,8 @@ test('signed-out play is temporary page memory and never a browser save',()=>{
   assert.equal(context.BaselineGameStorage.getProfile('pairs'),null);
   assert.equal(context.BaselineGameStorage.setTemporaryProfile('pairs',{level:2}),true);
   assert.equal(context.BaselineGameStorage.getProfile('pairs').level,2);
-  assert.equal(context.BaselineGameStorage.saveProfile('pairs',{level:3}) instanceof Promise,true);
+  const saveResult=context.BaselineGameStorage.saveProfile('pairs',{level:3});
+  assert.equal(typeof saveResult?.then,'function');
 });
 
 test('authenticated bootstrap exposes only server profiles as the live starting state',()=>{
