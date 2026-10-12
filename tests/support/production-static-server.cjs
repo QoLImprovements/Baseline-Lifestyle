@@ -64,6 +64,7 @@ const DEFAULT_REDIRECTS = new Map([
   ['/baseline-natural-skincare/ingredient-library/olive-oil', '/baseline-natural-skincare/ingredient-library/olive'],
   ['/baseline-natural-skincare/ingredient-library/rose-water', '/baseline-natural-skincare/ingredient-library/rosewater'],
   ['/baseline-natural-skincare/ingredient-library/safflower-oil', '/baseline-natural-skincare/ingredient-library/safflower'],
+  ['/baseline-natural-skincare/recipes/testing-lip-balm', '/baseline-natural-skincare/recipes/comfort-barrier-balm'],
   ['/baseline-natural-skincare', '/baseline-natural-skincare/system'],
   ['/baseline-badminton-session', '/baseline-badminton-session/system'],
   ['/baseline-fitness', '/baseline-fitness/system'],

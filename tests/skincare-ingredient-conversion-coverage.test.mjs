@@ -41,5 +41,5 @@ test('previously missing safflower and Dead Sea salt conversions stay covered',(
 });
 
 test('ingredient profile fix is cache-busted on skincare',()=>{
-  assert.match(main,/baseline-ingredient-profiles\.js\?v=SKINCARE_INGREDIENT_CONVERSIONS_20260828_1/);
+  assert.match(main,/baseline-ingredient-profiles\.js\?v=SKINCARE_NEW_RECIPES_20261011_1/);
 });

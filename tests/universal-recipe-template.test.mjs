@@ -35,7 +35,11 @@ test('Food and Skincare declare exact recipe routes before first paint', () => {
     assert.match(html, /data-initial-section="recipes"[^}]*#recipes\.section\{display:block!important\}/s);
   }
   assert.match(css, /html\[data-initial-recipe-route="1"\] #recipes \.recipe-page\{display:none!important;visibility:hidden!important\}/);
+  assert.match(css, /html\[data-initial-recipe-slug="comfort-barrier-balm"\] #recipes #r12,/);
   assert.match(css, /html\[data-initial-recipe-slug="testing-lip-balm"\] #recipes #r12\{display:block!important;visibility:visible!important/);
+  assert.match(css, /data-initial-recipe-slug="clarity-face-mask"/);
+  assert.match(css, /data-initial-recipe-slug="sebum-compatible-cleansing-oil"/);
+  assert.match(css, /data-initial-recipe-slug="skin-soft-massage-oil"/);
   assert.match(shared, /removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-route'\)/);
 });
@@ -66,7 +70,7 @@ test('shared method-tag engine maps every ingredient source to one first-use met
 
 test('Skincare universal recipe chrome is authored once in canonical HTML', () => {
   const blocks=skincareRecipeBlocks();
-  assert.equal(blocks.length,9);
+  assert.equal(blocks.length,12);
   for (const {id,html} of blocks) {
     assert.equal((html.match(/data-static-recipe-controls="1"/g)||[]).length,1,id+' static controls');
     assert.equal((html.match(/class="recipe-meta-row/g)||[]).length,1,id+' metadata row');
@@ -129,19 +133,17 @@ test('recipe subview is encoded by the shared router and Skincare restores its D
   assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
 });
 
-test('recipe variant is part of clean route state and survives refresh/history restoration', () => {
-  assert.match(shared, /params\.get\('variant'\)/);
-  assert.match(shared, /recipeVariant:recipeVariant/);
-  assert.match(shared, /params\.set\('variant', recipeVariant\)/);
-  assert.match(shared, /__baselineGetRecipeVariant/);
-  assert.match(shared, /__baselineSetRecipeVariant/);
-  assert.match(shared, /recipeVariant:\(typeof recipeEl\.__baselineGetRecipeVariant/);
-  assert.match(shared, /initialView\.recipeVariant/);
-  assert.match(shared, /state\.recipeVariant/);
-  assert.match(shared, /if\(routeVariant\) setVariant\(routeVariant, \{ syncRoute:false \}\)/);
-  assert.match(skincareHtml, /new URLSearchParams\(location\.search \|\| ''\)\.get\('variant'\)/);
-  assert.match(skincareHtml, /\/baseline-natural-skincare\\\/recipes\\\/anhydrous-oil-cleanser\$/);
-  assert.match(skincareHtml, /routedButton \|\| recipe\.querySelector\('\.variant-tab\[aria-selected="true"\]'\)/);
+test('Anhydrous Oil Cleanser no longer authors duplicate variant state', () => {
+  const start = skincareHtml.indexOf('data-recipe-slug="anhydrous-oil-cleanser"');
+  const end = skincareHtml.indexOf('<!-- Recipe 3 -->', start);
+  const cleanser = skincareHtml.slice(start, end);
+  assert.doesNotMatch(cleanser, /variant-switcher|variant-tab|variant-panel|data-recipe-variant-detail/);
+  assert.match(cleanser, /id="r2CleansingPull"/);
+  assert.match(cleanser, /id="r2BarrierRichness"/);
+  assert.match(cleanser, /Reactive is the 0% castor \/ 0% olive point/);
+  assert.match(cleanser, /Balanced is the 10% castor \/ 0% olive reference point/);
+  assert.match(cleanser, /Enhanced Barrier is the 10% castor \/ 18% olive reference point/);
+  assert.doesNotMatch(skincareHtml, /#r2 \.variant-panel|#r2 \.variant-tab/);
 });
 
 test('shared recipe engine retains one fallback renderer for recipes without authored chrome', () => {
@@ -223,10 +225,10 @@ test('Adjustments owns scaling utilities and static Skincare shells hydrate rath
 });
 
 test('Skincare slider recipes already contain the final layout and save controls', () => {
-  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,7);
-  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,7);
-  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,7);
-  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,6);
+  assert.equal((skincareHtml.match(/\brecipe-slider-template\b/g)||[]).length,6);
+  assert.equal((skincareHtml.match(/class="slider-save-row"/g)||[]).length,6);
+  assert.equal((skincareHtml.match(/class="glide-explain-title">Overall Feel<\/div>/g)||[]).length,6);
+  assert.equal((skincareHtml.match(/class="glide-breakdown" hidden aria-hidden="true"/g)||[]).length,5);
   assert.doesNotMatch(skincareHtml,/class="glide-control-stack"/);
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);

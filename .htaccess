@@ -286,6 +286,7 @@ Options -Indexes
   # Clean detail routes keep their system shell; canonical recipe sources feed
   # the shared recipe runtime instead of becoming separate page experiences.
   RewriteRule ^baseline-food-approach/recipes/([^/]+)/?$ systems/baseline-food-approach/baseline-food-approach.html [L,QSA]
+  RewriteRule ^baseline-natural-skincare/recipes/testing-lip-balm/?$ /baseline-natural-skincare/recipes/comfort-barrier-balm [R=301,L]
   RewriteRule ^baseline-natural-skincare/recipes/([^/]+)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
 
   # Baseline Charity Shop uses the same virtual clean-route structure as every other system.
