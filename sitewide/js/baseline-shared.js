@@ -5074,15 +5074,18 @@ function buildControls(recipeEl){
         }
       }
 
-      if(!preauthored){
-        const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
-        if(formulaRows.length){
-          const formulaControls = document.createElement('div');
+      const formulaRows = qsa(':scope > .recipe-control-row--oat, :scope > .recipe-control-row--thickness', controls);
+      if(formulaRows.length){
+        let formulaControls = q(':scope > .recipe-formula-controls', strip);
+        if(!formulaControls){
+          formulaControls = document.createElement('div');
           formulaControls.className = 'recipe-formula-controls';
-          formulaRows.forEach(row=> formulaControls.appendChild(row));
           strip.appendChild(formulaControls);
         }
+        formulaRows.forEach(row=> formulaControls.appendChild(row));
+      }
 
+      if(!preauthored){
         adjustmentsBtn = document.createElement('button');
         adjustmentsBtn.type = 'button';
         adjustmentsBtn.className = 'recipe-adjustments-toggle print-hide';
