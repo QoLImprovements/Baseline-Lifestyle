@@ -22,7 +22,8 @@ test('Skincare first-paint lock releases on tab interaction before full page loa
 
   await page.goto('/baseline-natural-skincare/system', { waitUntil:'domcontentloaded' });
   await expect(page.locator('#baseline-skincare-route-first-paint-style')).toHaveCount(0);
-  await expect(page.locator('html')).toHaveAttribute('data-initial-section','system');
+  await expect(page.locator('#system')).toBeVisible();
+  await expect(page.locator('.tab[data-target="system"]')).toHaveAttribute('aria-selected','true');
 
   await page.locator('.tab[data-target="recipes"]').click();
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes$/);
