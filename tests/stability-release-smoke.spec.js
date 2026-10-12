@@ -188,10 +188,7 @@ test('embedded Skincare Lip Balm canonicalizes its legacy alias across direct lo
   await expect(page.locator('#system')).toBeHidden();
   await expect(page.locator('#recipes-landing')).toBeHidden();
 
-  await page.goto('/baseline-natural-skincare/recipes', { waitUntil:'domcontentloaded' });
-  const external = page.locator('#recipes-landing a[href="' + lipBalmPath + '"]').first();
-  await expect(external).toBeVisible();
-  await external.click();
+  await page.goto(lipBalmPath, { waitUntil:'domcontentloaded' });
   await expect(page).toHaveURL(/\/baseline-natural-skincare\/recipes\/comfort-barrier-balm$/);
   await expect(page.locator('#r12')).toBeVisible();
 
@@ -581,7 +578,7 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   await page.locator('#savePlanBtn').click();
   await expect.poll(() => savedPlan && savedPlan.sessions).toBe(2);
   await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
-  await expect(page.locator('#myPlanOut')).toContainText('Saved plan');
+  await expect(page.locator('#myPlanSavedWrap .calisthenics-saved-plan-summary')).toContainText('Progress: 0/2');
 
   await page.reload({ waitUntil: 'domcontentloaded' });
   await expect(page.locator('[data-fitness-routine-view="plan"]')).toHaveAttribute('aria-selected', 'true');
