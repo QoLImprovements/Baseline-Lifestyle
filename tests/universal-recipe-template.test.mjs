@@ -82,6 +82,14 @@ test('Skincare universal recipe chrome is authored once in canonical HTML', () =
 });
 
 
+test('recipe subtabs take selected ink from the active system theme', () => {
+  assert.match(css, /recipe-subtab\[aria-selected="true"\][\s\S]*--bl-surface-active-ink/);
+  assert.doesNotMatch(css, /recipe-tab-active-ink|color:var\(--recipe-tab-active-ink/);
+  assert.match(sitewideCss, /body\[data-app="food"\][\s\S]*--bl-surface-active-ink:var\(--food-action-ink\)/);
+  assert.match(sitewideCss, /body\[data-app="skin"\][\s\S]*--bl-surface-active-ink:#2b2b28/);
+  assert.doesNotMatch(themesCss, /--recipe-tab-active-ink/);
+});
+
 test('Universal adjustment visibility and Show All ordering are shared by Food and Skincare', () => {
   assert.match(shared, /const adjustmentsAvailable = next === 'standard' \|\| next === 'show-all'/);
   assert.match(shared, /adjustmentsBtn\) adjustmentsBtn\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
