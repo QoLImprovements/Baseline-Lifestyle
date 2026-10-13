@@ -4670,8 +4670,6 @@ html body[data-app] #recipes .recipe-universal-template .recipe-standard-control
    via --bl-slider-* tokens. */
 body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider{
   display:block !important;
-  width:min(620px,100%) !important;
-  flex:1 1 100% !important;
 }
 body[data-app] #recipes .recipe-universal-template .recipe-control-row--thickness-slider > .label{
   display:none !important;
@@ -4679,4 +4677,55 @@ body[data-app] #recipes .recipe-universal-template .recipe-control-row--thicknes
 body[data-app] #recipes .recipe-universal-template .recipe-control-row--thickness-slider .thickness-slider-controller{
   width:100% !important;
   margin:0 !important;
+}
+
+
+/* BASELINE-OAT-TOGGLE-SELECTED-STATE-20261013
+   Segmented recipe choices use the same solid selected-state language as tabs. */
+body[data-app] #recipes .recipe-universal-template .oat-toggle{
+  display:inline-flex !important;
+  flex-wrap:wrap !important;
+  gap:8px !important;
+}
+body[data-app] #recipes .recipe-universal-template .oat-option{
+  appearance:none !important;
+  border:1px solid var(--recipe-tab-border, var(--border)) !important;
+  border-radius:999px !important;
+  padding:8px 14px !important;
+  background:var(--bl-surface-control-solid, var(--recipe-tab-bg, var(--showall-bg))) !important;
+  background-image:none !important;
+  color:var(--bl-surface-ink, var(--ink)) !important;
+  -webkit-text-fill-color:currentColor !important;
+  font:inherit !important;
+  font-weight:800 !important;
+  cursor:pointer !important;
+}
+body[data-app] #recipes .recipe-universal-template .oat-option:hover{
+  background:var(--accent-3, var(--recipe-tab-hover, var(--bl-surface-control-solid))) !important;
+}
+body[data-app] #recipes .recipe-universal-template .oat-option.is-active,
+body[data-app] #recipes .recipe-universal-template .oat-option[aria-pressed="true"]{
+  background:var(--bl-surface-active-solid, var(--recipe-tab-active, var(--accent))) !important;
+  background-image:none !important;
+  color:var(--recipe-tab-active-ink, #fff) !important;
+  -webkit-text-fill-color:currentColor !important;
+  font-weight:900 !important;
+}
+
+/* Recipe slider geometry follows the Skincare recipe contract:
+   one slider uses half the desktop row; two sliders can sit side by side and fill it. */
+body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider{
+  width:calc(50% - 7px) !important;
+  flex:0 1 calc(50% - 7px) !important;
+  min-width:320px !important;
+}
+body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider .thickness-slider-controller{
+  width:100% !important;
+}
+@media (max-width:720px){
+  body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider{
+    width:100% !important;
+    flex-basis:100% !important;
+    min-width:0 !important;
+  }
 }
