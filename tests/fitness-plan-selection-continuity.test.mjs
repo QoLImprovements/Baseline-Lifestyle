@@ -6,7 +6,6 @@ const url=path=>new URL(`../${path}`,import.meta.url);
 const read=path=>readFileSync(url(path),'utf8');
 
 const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
-const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const page=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessState=read('systems/baseline-fitness/api/fitness_state.php');
 const getPlan=read('systems/baseline-fitness/api/get_plan.php');
@@ -29,11 +28,12 @@ test('selected plan identity is account-backed before navigation',()=>{
   assert.match(plans,/global\.location\.assign\(new URL\('\/baseline-fitness\/my-routine\/plan'/);
 });
 
-test('plan-card disclosure is page-route state only',()=>{
-  assert.doesNotMatch(collapse,/localStorage|sessionStorage/);
-  assert.match(collapse,/data-initial-routine-plan/);
-  assert.match(collapse,/details\[data-fitness-plan-card="\$\{selectionReveal\}"\]/);
-  assert.match(collapse,/card\.open=true/);
+test('plan-card disclosure is owned by the canonical Routine structure',()=>{
+  const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js')),false);
+  assert.doesNotMatch(page,/fitness-routine-plan-collapse-v1\.js/);
+  assert.match(structure,/details\[data-fitness-plan-card="\$\{next\}"\]/);
+  assert.match(structure,/if \(card\) card\.open=true/);
 });
 
 test('Create Another Plan uses an explicit clean-route create request, not browser persistence',()=>{
@@ -160,4 +160,18 @@ test('Fitness Routine CSS has one Fitness-owned entry point',()=>{
 
 test('dead Fitness compatibility assets stay deleted',()=>{
   assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-exercise-picker-safety-v1.js')),false);
+});
+
+
+test('switching saved Fitness plans is in-place, not a page navigation',()=>{
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  assert.match(app,/reloadSelectedPlan: \(\) => ensurePlanLoaded\(true\)/);
+  assert.match(plans,/await global\.BASELINE_fitnessWorkout\?\.reloadSelectedPlan\?\.\(\)/);
+  assert.doesNotMatch(plans,/openPlan[\s\S]{0,700}location\.assign/);
+});
+
+test('Routine Groups are born collapsed rather than corrected after paint',()=>{
+  const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  assert.match(groups,/card\.open = false/);
+  assert.doesNotMatch(groups,/card\.open = true/);
 });
