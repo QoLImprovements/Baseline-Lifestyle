@@ -1519,6 +1519,7 @@ body[data-app="food"]{
   --bl-surface-control-solid:var(--food-gold);
   --bl-surface-input-solid:var(--food-yellow);
   --bl-surface-active-solid:var(--food-red);
+  --bl-surface-active-ink:var(--food-action-ink);
   --bl-surface-ink:var(--ink);
   --bl-slider-track-solid:var(--food-deep);
   --bl-slider-thumb-solid:var(--food-gold);
@@ -1531,6 +1532,7 @@ body[data-app="skin"]{
   --bl-surface-control-solid:#cf8167;
   --bl-surface-input-solid:#e0aa94;
   --bl-surface-active-solid:#b8644d;
+  --bl-surface-active-ink:#2b2b28;
   --bl-surface-ink:#2b2b28;
   --bl-slider-track-solid:#b8644d;
   --bl-slider-thumb-solid:#e1ad9b;
