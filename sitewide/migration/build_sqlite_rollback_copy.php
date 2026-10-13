@@ -171,7 +171,8 @@ function bl_rollback_apply_skincare(PDO $db, int $uid, string $directory, array 
   }
   if($resource === null) return;
 
-  if((int)($resource['schemaVersion'] ?? 1) !== 1){
+  $schemaVersion = (int)($resource['schemaVersion'] ?? 1);
+  if(!in_array($schemaVersion, [1, 2], true)){
     throw new BaselineRollbackCopyException('unsupported_skincare_schema_version');
   }
   foreach(['routine','logs','groups','assignments'] as $section){
@@ -180,6 +181,13 @@ function bl_rollback_apply_skincare(PDO $db, int $uid, string $directory, array 
     }
   }
 
+  if($schemaVersion >= 2 && array_key_exists('sliders', $resource) && !is_array($resource['sliders'])){
+    throw new BaselineRollbackCopyException('invalid_skincare_section:sliders');
+  }
+
+  /* Schema v2 adds sliders, which deliberately have no SQLite representation.
+     The complete skincare.json resource is listed in savedDataResourcesPreservedOutsideSQLite,
+     while the SQLite-compatible routine/log/group/assignment sections are reconstructed here. */
   $visibility = (($resource['visibility'] ?? '') === 'public') ? 'public' : 'private';
   $routine = is_array($resource['routine'] ?? null) ? $resource['routine'] : [];
   $logs = is_array($resource['logs'] ?? null) ? $resource['logs'] : [];
