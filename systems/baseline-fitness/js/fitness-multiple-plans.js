@@ -208,7 +208,7 @@
   expandCatalogue();
 
   function planName(plan,index=0) { const name=String(plan?.planJson?.name || plan?.name || '').trim();return name || `Calisthenics Plan ${index+1}`; }
-  function selectedPlan() { const id=selectedPlanId();return plans.find((plan) => Number(plan.planId)===id) || plans[0] || null; }
+  function selectedPlan() { const id=selectedPlanId();return id>0 ? (plans.find((plan) => Number(plan.planId)===id) || null) : null; }
   function responseJson(payload,status=200) { return new Response(JSON.stringify(payload),{ status,headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } }); }
   function urlFor(input) { try { return new URL(input instanceof Request?input.url:String(input),global.location.href); }catch (_error) { return null; } }
   function withUrl(input,url) { return input instanceof Request?new Request(url.toString(),input):url.toString(); }
@@ -378,12 +378,12 @@
 
   async function refreshPlans() {
     owner=authOwner();if (owner==='guest' || !nativeFetch) { plans=[];patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));return []; }
-    try { const response=await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });const data=await response.json();plans=response.ok && Array.isArray(data?.plans)?data.plans:[]; }catch (_error) { plans=[]; }
-    if(!isCreatingPlan()){
-      const selected=selectedPlanId();
-      if(selected&&!plans.some((plan)=>Number(plan.planId)===selected))await setSelectedPlanId(0);
-      if(!selectedPlanId()&&plans[0])await setSelectedPlanId(plans[0].planId);
-    }
+    try {
+      const response=await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
+      const data=await response.json();
+      plans=response.ok && Array.isArray(data?.plans)?data.plans:[];
+      if(response.ok) selectedPlanMemory=Math.max(0,Number(data?.selectedPlanId)||0);
+    }catch (_error) { plans=[]; }
     patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));return getPlans();
   }
 
