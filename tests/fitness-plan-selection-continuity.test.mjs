@@ -82,3 +82,10 @@ test('Fitness plans are physically isolated and dropdown order is alphabetical',
   assert.match(recovery,/'\/Fitness\/Plans'/);
   assert.match(health,/Fitness\/Plans\/\[0-9\]\{6\}/);
 });
+
+
+test('Fitness runtime loads plans only from per-plan files after migration',()=>{
+  const resource=read('systems/baseline-fitness/api/fitness_resource.php');
+  assert.match(resource,/\$resource\['data'\]\['plans'\] = bl_fitness_plan_files_read\(\$uid\);/);
+  assert.doesNotMatch(resource,/if\(\(\$resource\['data'\]\['plans'\] \?\? \[\]\) === \[\]\)/);
+});
