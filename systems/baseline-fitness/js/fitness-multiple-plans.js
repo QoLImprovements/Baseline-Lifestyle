@@ -337,8 +337,13 @@
     document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
     document.documentElement.setAttribute('data-initial-routine-view','plan');
     document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
-    try{global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false);}catch(_error){}
-    global.location.assign(new URL('/baseline-fitness/my-routine/plan',global.location.origin).toString());
+    try{
+      global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',true);
+      global.BASELINE_fitnessRoutineStructure?.activatePlanView?.('calisthenics',false);
+    }catch(_error){}
+    await global.BASELINE_fitnessWorkout?.reloadSelectedPlan?.();
+    await refreshPlans();
+    patchInterface();
   }
 
   function completedDate(session) {
