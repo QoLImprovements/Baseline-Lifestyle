@@ -390,8 +390,6 @@ html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{disp
    Colour-only Food authority. Shared Baseline geometry and behaviour are untouched. */
 body[data-app="food"] .action,
 body[data-app="food"] .btnlike,
-body[data-app="food"] .print-btn,
-body[data-app="food"] .multiplier button,
 body[data-app="food"] #ingredients .filter-bar .clear{
   background:var(--food-action-bg) !important;
   background-image:var(--food-action-bg) !important;

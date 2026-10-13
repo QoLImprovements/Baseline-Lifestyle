@@ -4640,3 +4640,63 @@ html body[data-app] #recipes .recipe-universal-template[data-recipe-view="show-a
   }
 }
 
+
+
+/* ==========================================================================
+   BASELINE-RECIPE-CONTROL-COHERENCE-20261013
+   Shared recipe controls use the recipe-control tokens supplied by each system.
+   Geometry remains sitewide; labels must never be clipped by enhanced selects.
+   ========================================================================== */
+html body[data-app] #recipes .recipe-universal-template .back-btn,
+html body[data-app] #recipes .recipe-universal-template .print-btn,
+html body[data-app] #recipes .recipe-universal-template .recipe-options-toggle,
+html body[data-app] #recipes .recipe-universal-template .recipe-adjustments-toggle,
+html body[data-app] #recipes .recipe-universal-template .recipe-edit-options button:not(.bl-step),
+html body[data-app] #recipes .recipe-universal-template .recipe-info-view-link,
+html body[data-app] #recipes .recipe-universal-template .recipe-variant-field select,
+html body[data-app] #recipes .recipe-universal-template .recipe-control-row select,
+html body[data-app] #recipes .recipe-universal-template .scale-tools select,
+html body[data-app] #recipes .recipe-universal-template .bl-select-btn,
+html body[data-app] #recipes .recipe-universal-template .bl-select-menu,
+html body[data-app] #recipes .recipe-universal-template .bl-select-menu [role="option"]{
+  background:var(--recipe-control-bg, var(--showall-bg, var(--accent-soft))) !important;
+  background-image:none !important;
+  color:var(--recipe-control-ink, var(--accent-2, var(--ink))) !important;
+  -webkit-text-fill-color:currentColor !important;
+  border-color:var(--recipe-control-border, var(--showall-border, var(--border))) !important;
+}
+
+html body[data-app] #recipes .recipe-universal-template .recipe-subtab{
+  background:var(--recipe-tab-bg, var(--recipe-control-bg, var(--showall-bg))) !important;
+  border-color:var(--recipe-tab-border, var(--recipe-control-border, var(--showall-border))) !important;
+  color:var(--recipe-control-ink, var(--accent-2, var(--ink))) !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-subtab:hover{
+  background:var(--recipe-tab-hover, var(--recipe-control-hover, var(--recipe-tab-bg))) !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-subtab[aria-selected="true"]{
+  background:var(--recipe-tab-active, var(--accent)) !important;
+  color:var(--recipe-tab-active-ink, #fff) !important;
+  -webkit-text-fill-color:currentColor !important;
+}
+
+/* Enhanced recipe dropdowns size to their content instead of squeezing the label. */
+html body[data-app] #recipes .recipe-universal-template .bl-select{
+  min-width:max-content;
+  max-width:100%;
+}
+html body[data-app] #recipes .recipe-universal-template .bl-select-btn{
+  box-sizing:border-box !important;
+  min-width:max-content !important;
+  width:100% !important;
+  max-width:100% !important;
+  padding-left:14px !important;
+  padding-right:34px !important;
+  white-space:nowrap !important;
+  overflow:visible !important;
+  text-overflow:clip !important;
+}
+html body[data-app] #recipes .recipe-universal-template .recipe-standard-controls .bl-select{
+  width:auto !important;
+  min-width:max-content !important;
+}
