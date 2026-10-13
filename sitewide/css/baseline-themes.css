@@ -160,11 +160,7 @@ body[data-app="food"]{
 
   /* Food colour authority: passionate red / flame orange / gold.
      Structure and behaviour remain owned by the shared Baseline system. */
-  --food-surface-card: linear-gradient(135deg,
-    var(--food-yellow) 0%,
-    var(--food-gold) 48%,
-    var(--food-orange) 100%
-  );
+  --food-surface-card: #f59b32;
   --food-surface-panel: linear-gradient(135deg,
     #ffe39a 0%,
     var(--food-yellow) 58%,
