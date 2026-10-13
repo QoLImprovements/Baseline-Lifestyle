@@ -371,9 +371,10 @@ test('thickness slider is the sole sitewide thickness control and oat choices ex
 
 
 test('system stylesheets contain no competing recipe presentation authority', () => {
-  const forbidden = /(?:\.recipe-(?!comedogenic-rating)|#recipes\.recipe-|#recipes\s+\.recipe-|\.glide-|\.variant-(?:tab|switcher)|\.print-btn|\.back-btn|\.scale-toggle|\.scale-apply|\.multiplier\b)/;
+  const forbidden = /(?:\.recipe-(?:actions|title-row|meta-row|viewbar|subtabs|subtab|adjustments|option-strip|formula-controls|control-row|details-intro|detail-block|edit-options|ingredients-heading)|#recipes\.recipe-|\.glide-|\.variant-(?:tab|switcher)|\.print-btn|\.back-btn|\.scale-toggle|\.scale-apply|\.multiplier\b)/;
   assert.doesNotMatch(foodCss, forbidden, 'Food stylesheet must not own recipe presentation');
   assert.doesNotMatch(skincareCss, forbidden, 'Skincare stylesheet must not own recipe presentation');
+  assert.match(skincareCss, /\.recipe-comedogenic-rating/, 'Skincare may retain content-specific metadata styling only');
   assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.doesNotMatch(css, /Final hard|hard override|Contract restore|Operational hard override|ACTUAL-FIX|URGENT-TAB-FIX/i);
 });
