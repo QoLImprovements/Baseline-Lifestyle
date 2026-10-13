@@ -1,88 +1,183 @@
-# Phase 4 — Hostinger / Production Cutover Readiness
+# Phase 4 — Saved Data Production Verification and Recovery Readiness
 
-Status: ACTIVE — repository verification complete; Hostinger runtime evidence still required where marked.
+Status: ACTIVE — production is already operating with Saved Data authority. Phase 4 verifies and hardens that existing production state; it does not perform a resource-authority cutover.
 
-## Boundary
+## Production state and boundary
 
-Phase 4 verifies production readiness only. It MUST NOT change production resource authority.
+The production environment was already configured with:
 
-Required transition remains:
+`BASELINE_RESOURCE_AUTHORITY="saved-data"`
 
-`sqlite -> mirror -> verify mirror -> saved-data`
+before the current Phase 4 inspection. The historical `sqlite -> mirror -> verify mirror -> saved-data` transition has therefore already occurred.
 
-A direct production switch to `saved-data` is prohibited.
+Phase 4 MUST NOT:
+- switch production back to SQLite merely to repeat an obsolete plan;
+- repeat the cutover;
+- perform a destructive migration;
+- overwrite live private data with an analysis/archive copy.
 
-## Production cutover checklist
+Phase 5 is final post-cutover production acceptance and requires explicit approval before it begins.
 
-| # | Prerequisite | Status | Evidence / required action |
-|---|---|---|---|
-| 1 | Confirm current production authority mode | MANUAL HOSTINGER ACTION REQUIRED | Run the Hostinger preflight against the deployed environment and confirm `BASELINE_RESOURCE_AUTHORITY` is explicitly configured and currently resolves to `sqlite`. Do not infer this from `.env.example` or development configuration. |
-| 2 | Verify Hostinger PHP support | MANUAL HOSTINGER ACTION REQUIRED | Run `php sitewide/migration/hostinger_cutover_preflight.php --document-root=/absolute/path/to/public_html --evidence=/absolute/private/path/phase-4-preflight.json`. The preflight checks PHP 8+, `pdo_sqlite`, `json`, and required filesystem/runtime functions including `random_bytes`, `flock`, `rename`, `chmod`, `mkdir`, JSON encode/decode; it also reports `fsync` availability. |
-| 3 | Verify private data locations are outside document root | MANUAL HOSTINGER ACTION REQUIRED | The deployed values of `BASELINE_DB_PATH`, `BASELINE_SAVED_DATA_PATH`, and `BASELINE_RUNTIME_PATH` must resolve outside `public_html`. The preflight rejects paths under the document root and symlinked ancestors. |
-| 4 | Verify required Saved Data and Runtime directories exist | MANUAL HOSTINGER ACTION REQUIRED | Confirm the deployed Saved Data and Runtime roots exist before mirror preparation. The preflight requires both directories to exist. |
-| 5 | Verify permissions and ownership | MANUAL HOSTINGER ACTION REQUIRED | Run the preflight under the same PHP/CLI user used by production deployment. It requires private permissions, readable/writable application access, safe parent permissions for SQLite, and no symlinked private path chain. Do not use unnecessarily broad permissions. |
-| 6 | Authentication SQLite remains separate and credentials are excluded from Saved Data | VERIFIED | Repository contracts preserve authentication SQLite separately. The Saved Data exporter explicitly excludes `pass_hash` and `google_sub`, and tests reject credential leakage into Saved Data/evidence. Production placement of the SQLite file is still covered by items 3–5. |
-| 7 | Verify Saved Data persistence across requests/restarts/deployments | MANUAL HOSTINGER ACTION REQUIRED | Confirm the configured Saved Data path is not a release/deployment directory and survives an application redeploy. Perform a harmless sentinel/readback test in the private Saved Data area before cutover, then redeploy/restart and verify the sentinel remains. Remove the sentinel afterwards. |
-| 8 | Verify backup coverage for authentication SQLite and Saved Data | MANUAL HOSTINGER ACTION REQUIRED | Confirm Hostinger backup coverage includes both the external SQLite database path and the external Saved Data tree. Record backup location, retention, and whether restore can target both resources. |
-| 9 | Verify restore procedure for authentication data, Saved Data and application | MANUAL HOSTINGER ACTION REQUIRED | Document and test a restore drill using non-production copies: restore application files, authentication SQLite, and Saved Data to a private test location; validate SQLite integrity and Saved Data tree health before considering the procedure proven. |
-| 10 | Verify rollback tooling | VERIFIED | `sitewide/migration/build_sqlite_rollback_copy.php`, `verify_saved_data_cutover.php`, and the cutover package/round-trip contracts provide a defined SQLite rollback-copy path. Tests cover round-trip reconstruction, authentication snapshot drift detection, and blocked cutover when verification fails. |
-| 11 | Verify production resource-authority configuration | MANUAL HOSTINGER ACTION REQUIRED | Production must explicitly configure `BASELINE_DB_PATH`, `BASELINE_SAVED_DATA_PATH`, `BASELINE_RUNTIME_PATH`, and `BASELINE_RESOURCE_AUTHORITY` via process environment or the protected `.baseline-private.env`. If the private file is used it must be outside `public_html`, non-symlinked, 16 KiB or smaller, and mode 600 or stricter. |
-| 12 | Final production cutover checklist exists and authority remains unchanged | VERIFIED | This document is the Phase 4 checklist. Repository preflight code reports `productionAuthorityChanged=false` and refuses advanced authority state during pre-mirror preparation. Phase 4 does not authorize a production authority mutation. |
+## Verified evidence
 
-## Repository verification completed
+### Backup scope
 
-The current `main` implementation contains and tests:
+Hostinger backup inspection on 13 October 2026 established that the domain backup includes the private sibling production data as well as `public_html`. The backed-up domain tree includes:
+- `.baseline-private.env`
+- `Migration Evidence/`
+- `Runtime/`
+- `Saved Data/`
+- `private-auth/`
+- `public_html/`
 
-- `sitewide/api/resource_authority.php`
-  - accepted modes are exactly `sqlite`, `mirror`, and `saved-data`;
-  - default remains `sqlite`;
-  - file-backed roots are required before non-SQLite modes can operate;
-  - revision-protected resource mutations are supported.
-- `sitewide/api/private_environment.php`
-  - process environment is authoritative;
-  - protected private-file fallback is allowlisted;
-  - unsafe permissions, symlinks, oversized files, and parse failures are rejected.
-- `sitewide/api/saved_data.php`
-  - Saved Data and Runtime roots must be absolute;
-  - document-root placement is rejected;
-  - atomic/private write machinery and locking are provided.
-- `sitewide/migration/hostinger_cutover_preflight.php`
-  - checks explicit configuration, PHP/runtime support, private paths, permissions, filesystem compatibility, SQLite health, and current `sqlite` authority;
-  - writes evidence only to a private location;
-  - does not mutate production authority or write Saved Data.
-- migration/cutover verification and rollback contracts
-  - verify export integrity;
-  - exclude authentication credentials from Saved Data;
-  - detect Saved Data tampering/drift;
-  - generate/test SQLite rollback copies;
-  - fail closed when authority, paths, or snapshots are unsafe.
+The backed-up `Saved Data/` tree is populated, including `Account Index/`, `Shared/`, and `Users/`.
 
-## Hostinger execution command
+### Reduced backup audit
 
-Run from the deployed application checkout, using absolute paths:
+A reduced copy of the current Hostinger backup was inspected separately. Results:
+- archive integrity passed;
+- 120 JSON files checked and valid;
+- 17 current Saved Data JSON files checked and valid;
+- `private-auth/baseline.sqlite` present;
+- SQLite `quick_check` and `integrity_check` passed;
+- SQLite foreign-key check returned zero violations;
+- required authentication-related tables were present;
+- no clear password hashes, reset secrets, API keys, private keys, or similar authentication secrets were found in current Saved Data.
+
+The current authentication SQLite differs from the September rollback copy. September rollback/recovery material is therefore historical and must not be treated as the current recovery point.
+
+## Current Phase 4 checklist
+
+| Item | Status | Evidence / remaining action |
+|---|---|---|
+| Backup scope established | VERIFIED | Hostinger backup includes private sibling production data and public_html. |
+| Private backup method established | VERIFIED | Hostinger domain backup covers current private production structure. |
+| Restore procedure documented | VERIFIED | See the recovery procedure below. |
+| Fresh current Saved Data live-health verification | REQUIRED | Run the repository read-only live-health verifier against current production and save evidence privately. |
+| Current authentication SQLite health | SUBSTANTIALLY VERIFIED | Backup copy passed integrity, FK and table checks. Live verifier must confirm deployed path/configuration health. |
+| Authentication secrets excluded from Saved Data | SUBSTANTIALLY VERIFIED | Current backup scan found no clear authentication-secret material in Saved Data. |
+| Fresh current rollback/recovery package | REQUIRED | Build from current authentication SQLite + current Saved Data only after live health passes. |
+| Fresh recovery package verified | REQUIRED | Verify integrity and current-state correspondence before deleting historical evidence. |
+| Obsolete Migration Evidence cleaned | BLOCKED | Do not clean until the fresh recovery package is verified. |
+| Deployment persistence formally recorded | VERIFIED FROM OBSERVATION | Newer public_html deployment timestamps coexisted with intact private Saved Data, auth DB and Runtime. No destructive deployment test is required. |
+| Hostinger persistence/restart position | VERIFIED / N/A | Private sibling directories are persistent account filesystem storage, not ephemeral application storage. Do not perform an artificial risky restart solely for this check. |
+| Exposed Charity Shop PIN/secret rotated | REQUIRED MANUAL SECRET ACTION | Rotate only the exposed secret after production verification is stable; do not place the replacement value in GitHub, evidence, screenshots or chat. |
+| Phase 4 GitHub documentation corrected | VERIFIED BY THIS CHANGE | This document records the actual post-cutover production state. |
+| Phase 4 documentation merged to main | PENDING | Merge this correction after review. |
+
+## Current live-health verification
+
+Use the existing read-only verifier:
 
 ```bash
-php sitewide/migration/hostinger_cutover_preflight.php \
+php sitewide/migration/verify_saved_data_live_health.php \
   --document-root=/absolute/path/to/public_html \
-  --evidence=/absolute/private/path/phase-4-preflight.json
+  --evidence="/absolute/private/path/Migration Evidence/phase-4-live-health-current.json"
 ```
 
-Expected Phase 4 production result before Phase 5:
+The required result is:
+- `ok: true`;
+- `healthySavedDataMode: true`;
+- authority mode `saved-data` with an explicit source;
+- authentication database healthy;
+- Saved Data and Runtime paths safe and outside `public_html`;
+- private environment policy valid;
+- Saved Data and Runtime on the same filesystem;
+- Saved Data tree healthy;
+- `productionAuthorityChanged: false`.
 
-- `ok: true`
-- `readyForMirrorPreparation: true`
-- `authority.mode: "sqlite"`
-- every preflight gate: `true`
-- `productionAuthorityChanged: false`
+The verifier is read-only with respect to production authority.
 
-Do **not** change `BASELINE_RESOURCE_AUTHORITY` during this Phase 4 verification.
+## Recovery procedure
 
-## Phase 4 completion rule
+### Application restore
+1. Restore/deploy `public_html` from the intended GitHub revision.
+2. Do not copy private production state into `public_html`.
 
-Phase 4 is complete when:
+### Private configuration restore
+1. Restore `.baseline-private.env` to the private domain sibling location.
+2. Preserve private permissions.
+3. Verify all configured paths are absolute and point outside `public_html`.
+4. Verify `BASELINE_RESOURCE_AUTHORITY=saved-data`.
 
-1. this checklist exists;
-2. every prerequisite is classified as either `VERIFIED` or `MANUAL HOSTINGER ACTION REQUIRED`;
-3. no production authority change has occurred.
+### Authentication restore
+1. Restore the selected current `private-auth/baseline.sqlite`.
+2. Preserve private directory/file permissions.
+3. Run SQLite `PRAGMA quick_check`, `PRAGMA integrity_check`, and `PRAGMA foreign_key_check`.
+4. Do not replace current authentication state with a September migration snapshot unless performing an explicitly selected historical disaster recovery.
 
-The actual manual Hostinger actions are prerequisites for Phase 5 cutover approval. Phase 5 must not begin authority mutation until the Hostinger preflight evidence and backup/recovery position have been reviewed.
+### Saved Data restore
+1. Restore the complete selected `Saved Data/` tree.
+2. Preserve directory/file structure and private permissions.
+3. Validate every resource as JSON and validate the Saved Data resource envelopes.
+4. Verify the account index and representative user/shared resources.
+
+### Runtime restore
+1. Ensure `Runtime/`, `Runtime/Locks/`, and `Runtime/Temporary Files/` exist with private writable permissions.
+2. Do not restore stale lock files as active runtime state.
+3. Runtime is transient and is not the authoritative application-data store.
+
+### Post-restore acceptance
+1. Run `verify_saved_data_live_health.php`.
+2. Confirm effective authority remains `saved-data`.
+3. Confirm authentication works.
+4. Confirm account index resolution.
+5. Confirm representative Saved Data resources read correctly.
+6. Do not resume normal operation if the health verifier reports a structural or authority failure.
+
+## Fresh current recovery package
+
+After current live-health verification passes, build a private current rollback SQLite copy using:
+
+```bash
+php sitewide/migration/build_sqlite_rollback_copy.php \
+  --source-database="/absolute/private/path/private-auth/baseline.sqlite" \
+  --saved-data="/absolute/private/path/Saved Data" \
+  --output-database="/absolute/private/path/Migration Evidence/current-recovery/rollback.sqlite" \
+  --evidence="/absolute/private/path/Migration Evidence/current-recovery/rollback-evidence.json"
+```
+
+The output and evidence must remain outside `public_html`. The builder validates SQLite integrity and foreign keys and checks that the source database did not change during construction.
+
+Before treating the package as the recovery point, verify that it corresponds to current Saved Data, authentication data remains structurally valid, reconstructed resources match the expected current state, and no silent database/authentication drift is present.
+
+## Migration Evidence cleanup rule
+
+Cleanup is permitted only after the fresh current recovery package has been created and verified.
+
+Keep:
+- one current live-health verification;
+- one current verified recovery package;
+- canonical cutover evidence;
+- optionally one compact historical Saved Data health record;
+- the Phase 4 backup audit.
+
+Superseded historical rollback packages, pre-cutover SQLite snapshots, expected/current migration trees, temporary exports, pre-mirror evidence and superseded account-index evidence may then be removed.
+
+Never delete as part of Migration Evidence cleanup:
+- current `Saved Data/`;
+- current `private-auth/baseline.sqlite`;
+- current `.baseline-private.env`.
+
+Do not manually clean Hostinger-managed `.builds` or `.trash` unless Hostinger provides a supported cleanup mechanism.
+
+## Phase 4 completion gate
+
+Phase 4 is complete only when every item is VERIFIED or explicitly classified as a genuinely unavoidable manual Hostinger/private-secret action:
+- backup scope and method;
+- restore procedure;
+- fresh current live-health verification;
+- current authentication SQLite health;
+- Saved Data authentication-secret exclusion;
+- fresh current recovery package creation and verification;
+- safe obsolete-evidence cleanup;
+- deployment persistence;
+- Hostinger persistence/restart position;
+- exposed Charity Shop secret rotation;
+- corrected Phase 4 documentation merged to `main`.
+
+No production authority change is required.
+
+## Phase 5 boundary
+
+Phase 5 is **Final Post-Cutover Production Acceptance**. It is not another SQLite-to-Saved-Data migration. Do not begin Phase 5 without explicit approval.
