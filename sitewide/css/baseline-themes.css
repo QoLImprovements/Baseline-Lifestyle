@@ -215,7 +215,6 @@ body[data-app="food"]{
   --recipe-tab-hover: var(--food-orange);
   --recipe-tab-active: var(--food-red);
   --recipe-tab-border: rgba(90,12,21,0.30);
-  --recipe-tab-active-ink: #fff8ee;
 
   --card-bg: var(--food-surface-card);
   --filter-bg: var(--food-surface-panel);
