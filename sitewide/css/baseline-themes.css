@@ -204,12 +204,16 @@ body[data-app="food"]{
   );
   --food-tab-border: rgba(90,12,21,0.52);
 
-  /* Universal recipe controls consume these system-owned aliases. */
-  --recipe-tab-bg: var(--food-tab-bg);
-  --recipe-tab-hover: var(--food-tab-hover);
-  --recipe-tab-active: var(--food-tab-active);
-  --recipe-tab-border: var(--food-tab-border);
-  --recipe-tab-active-ink: #fff7e8;
+  /* Universal recipe controls: shared recipe language, Food-specific warm palette. */
+  --recipe-control-bg: #ffd19a;
+  --recipe-control-hover: #ffc27a;
+  --recipe-control-border: rgba(90,12,21,0.28);
+  --recipe-control-ink: #5a0c15;
+  --recipe-tab-bg: var(--recipe-control-bg);
+  --recipe-tab-hover: var(--recipe-control-hover);
+  --recipe-tab-active: #c92d32;
+  --recipe-tab-border: var(--recipe-control-border);
+  --recipe-tab-active-ink: #fff8ee;
 
   --card-bg: var(--food-surface-card);
   --filter-bg: var(--food-surface-panel);
