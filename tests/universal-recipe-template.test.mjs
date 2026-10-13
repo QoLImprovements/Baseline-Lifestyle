@@ -283,6 +283,8 @@ test('recipe authoring authority is sitewide, not duplicated per system', () => 
 
 
 test('universal recipe overview never revives historical recipe cards', () => {
+  assert.match(css, /#recipes-landing\{\s*background:transparent;/);
+  assert.doesNotMatch(css, /#recipes \.recipe-page,\s*#recipes-landing\{\s*background:var/);
   assert.match(css, /\.recipe-page\{\s*display:none;/);
   assert.doesNotMatch(css, /\.recipe\.card\s*\{/);
   assert.doesNotMatch(css, /#recipes:not\(\.recipe-open-mode\)/);
