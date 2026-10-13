@@ -332,7 +332,6 @@
   function makeWorkspace() {
     const section = $('#my-plan');
     if (!section || section.dataset.routineWorkspaceV2 === 'true') return;
-    section.dataset.routineWorkspaceV2 = 'true';
     const topTab = $('.tab[data-target="my-plan"]');
     if (topTab) topTab.textContent = 'My Routine';
 
@@ -401,6 +400,7 @@
       </div>`
 
     section.replaceChildren(shell);
+    section.dataset.routineWorkspaceV2 = 'true';
     const calisthenics = $('[data-fitness-routine-panel="calisthenics"]', shell);
     original.forEach((node) => calisthenics.append(node));
     const savedTitle = $('#myPlanSavedWrap h2');
