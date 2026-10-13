@@ -1119,6 +1119,7 @@
     recordTimedCurrentStep: (achieved, inputMode = 'manual') => recordStep('success', achieved, inputMode),
     finishSession: finishCurrentWorkout,
     resetSession: resetCurrentWorkout,
+    reloadSelectedPlan: () => ensurePlanLoaded(true),
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
   global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });
