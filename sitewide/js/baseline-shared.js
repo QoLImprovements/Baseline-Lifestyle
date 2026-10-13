@@ -1886,6 +1886,7 @@ function parseViewStateHash(hash){
       if(loosePrint && loosePrint.parentElement === card) printButtons.push(loosePrint);
 
       backButtons.forEach(btn=>{
+        btn.textContent = 'Back To Recipes';
         if(btn.parentElement !== actions){
           actions.insertBefore(btn, actions.firstChild || null);
         }

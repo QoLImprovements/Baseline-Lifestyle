@@ -284,6 +284,8 @@ test('recipe authoring authority is sitewide, not duplicated per system', () => 
 
 test('universal recipe overview never revives historical recipe cards', () => {
   assert.match(css, /#recipes-landing\{\s*background:transparent;/);
+  assert.match(css, /#recipes\.recipe-open-mode > \.grid > \.card,[\s\S]*display:contents;/);
+  assert.match(css, /data-initial-recipe-route="1"[\s\S]*#recipes > \.grid > \.card[\s\S]*display:contents;/);
   assert.doesNotMatch(css, /#recipes \.recipe-page,\s*#recipes-landing\{\s*background:var/);
   assert.match(css, /\.recipe-page\{\s*display:none;/);
   assert.doesNotMatch(css, /\.recipe\.card\s*\{/);
@@ -294,6 +296,19 @@ test('universal recipe overview never revives historical recipe cards', () => {
   assert.doesNotMatch(foodHtml, /class="card recipe-landing"/);
 });
 
+
+test('ingredient recipe filter is one shared solid-surface control system', () => {
+  assert.match(css, /#ingredients \.filter-bar\{[\s\S]*background:transparent;/);
+  assert.match(css, /#ingredients \.filter-bar select,[\s\S]*--bl-surface-input-solid/);
+  assert.match(css, /#ingredients \.filter-bar \.clear,[\s\S]*--bl-surface-control-solid/);
+  assert.doesNotMatch(foodCss, /\.filter-bar\s*\{/);
+  assert.doesNotMatch(skincareCss, /\.filter-bar\s*\{/);
+  assert.doesNotMatch(foodCss, /#ingredients \.filter-bar/);
+});
+
+test('shared recipe chrome names the focused-route return action Back To Recipes', () => {
+  assert.match(shared, /btn\.textContent = 'Back To Recipes'/);
+});
 
 test('structural recipe card class remains required by the universal enhancer', () => {
   assert.match(shared, /const recipeSelectorBase = recipeScope[\s\S]*'#recipes \.recipe\.card\.recipe-page'/);
