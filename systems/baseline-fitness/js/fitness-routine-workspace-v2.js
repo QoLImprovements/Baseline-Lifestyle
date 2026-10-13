@@ -341,11 +341,13 @@
     shell.className = 'fitness-routine-shell';
     shell.innerHTML = `
       <nav class="fitness-routine-subtabs" role="tablist" aria-label="My Routine views">
-        ${[['log','Routine Log'],['calisthenics','Calisthenics'],['cardio','Cardio'],['other','Other Fitness Activity'],['sports','Sports']]
-          .map(([key, label], index) => `<button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="${index === 0 ? 'true' : 'false'}" data-fitness-routine-view="${key}">${label}</button>`).join('')}
+        <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="log">Routine Log</button>
+        <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="summary">Routine Summary</button>
+        <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="plan">Routine Plan</button>
+        <button type="button" class="tab fitness-routine-subtab" role="tab" aria-selected="false" data-fitness-routine-view="public">Public Routines</button>
       </nav>
-      <div class="fitness-routine-panel active" data-fitness-routine-panel="log">
-        <div class="card fitness-routine-card">
+      <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="log" hidden>
+        <div class="card fitness-routine-card bl-routine-card">
           <div class="section-head-actions fitness-routine-log-head">
             <div><h2>Routine Log</h2><p class="note">Record calisthenics and other planned fitness activity for the selected date.</p></div>
             <label class="field-stack fitness-log-date"><span>Activity performed date</span><input id="fitnessRoutineLogDate" type="date" aria-label="Activity performed date"></label>
@@ -353,7 +355,7 @@
           <div id="fitnessRoutineLogProgress" class="status"></div>
           <div id="fitnessRoutineLogItems"></div>
         </div>
-        <div class="card fitness-routine-card fitness-calendar-card">
+        <div class="card fitness-routine-card bl-routine-card fitness-calendar-card">
           <div class="section-head-actions fitness-calendar-head">
             <div><h2>Fitness Calendar</h2><p class="note">Completed fitness activity is highlighted. Select a day to open it in Routine Log.</p></div>
             <div class="fitness-calendar-controls">
@@ -373,10 +375,30 @@
           <div class="fitness-calendar-grid" id="fitnessCalendarGrid"></div>
         </div>
       </div>
-      <div class="fitness-routine-panel" data-fitness-routine-panel="calisthenics" hidden></div>
-      <div class="fitness-routine-panel" data-fitness-routine-panel="cardio" hidden></div>
-      <div class="fitness-routine-panel" data-fitness-routine-panel="other" hidden></div>
-      <div class="fitness-routine-panel" data-fitness-routine-panel="sports" hidden></div>`;
+      <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="summary" hidden>
+        <div class="card fitness-routine-card bl-routine-card">
+          <div class="section-head-actions"><div><h2>Routine Summary</h2></div></div>
+          <div class="divider"></div>
+          <label class="bl-routine-summary-filter" data-summary-filter-owner="fitness"><span>Show</span><select id="fitnessSummaryGroupFilter" aria-label="Filter Routine Summary"></select></label>
+          <div id="fitnessExerciseSummary" class="fitness-routine-summary-list bl-routine-summary-list" aria-live="polite"></div>
+        </div>
+      </div>
+      <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="plan" hidden>
+        <div class="fitness-routine-plan-panels" aria-label="Routine Plan categories">
+          ${['calisthenics','cardio','other','sports'].map((view)=>`<details class="fitness-routine-plan-card" data-fitness-plan-card="${view}"><summary><span>${view==='calisthenics'?'Calisthenics':view==='cardio'?'Cardio':view==='other'?'Other Fitness Activity':'Sports'}</span></summary><div class="fitness-routine-plan-card-body"><div class="fitness-routine-panel fitness-routine-plan-panel active" data-fitness-routine-panel="${view}"></div></div></details>`).join('')}
+        </div>
+      </div>
+      <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="public" hidden>
+        <div class="card fitness-routine-card bl-routine-card">
+          <div class="section-head-actions">
+            <div><h2>Public Routines</h2><p class="note">Choose a public profile to view their My Routine in View Only format.</p></div>
+            <label class="field-stack bl-routine-visibility-control"><span>My Routine Visibility</span><select id="fitnessRoutineVisibility"><option value="private">Private</option><option value="public">Public</option></select></label>
+          </div>
+          <div class="divider"></div>
+          <div class="bl-public-profile-row"><label class="field-stack"><span>Public profile</span><select id="fitnessPublicRoutineName"><option value="">Choose a public profile…</option></select></label><button class="action" type="button" id="fitnessViewPublicRoutine">View Routine</button></div>
+          <div id="fitnessPublicRoutineResult" aria-live="polite"></div>
+        </div>
+      </div>`
 
     section.replaceChildren(shell);
     const calisthenics = $('[data-fitness-routine-panel="calisthenics"]', shell);
@@ -386,10 +408,7 @@
     ['cardio','other','sports'].forEach(buildActivityPanel);
 
     const initialTop=String(document.documentElement.dataset.initialRoutineView || '');
-    const initialPlan=String(document.documentElement.dataset.initialRoutinePlan || 'calisthenics');
-    const initialView=initialTop==='plan' && VIEWS.includes(initialPlan)
-      ? initialPlan
-      : (initialTop==='summary' || initialTop==='public' ? 'summary' : 'log');
+    const initialView=['log','summary','plan','public'].includes(initialTop) ? initialTop : 'log';
     activateView(initialView,false);
   }
 
