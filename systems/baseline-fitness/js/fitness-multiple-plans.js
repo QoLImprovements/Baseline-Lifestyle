@@ -261,11 +261,6 @@
     global.fetch=async function(input,init={}) {
       const url=urlFor(input);if (!url) return nativeFetch(input,init);
       if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
-      if(url.pathname.endsWith('/delete_plan.php')){
-        const response=await nativeFetch(input,init);
-        if(response.ok){await setSelectedPlanId(0);setCreatingPlan(false);await refreshPlans();}
-        return response;
-      }
       return nativeFetch(input,init);
     };
   }
