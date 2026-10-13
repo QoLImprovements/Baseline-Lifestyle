@@ -21,6 +21,24 @@ function bl_rollback_resource(string $path): ?array {
   return $decoded['data'];
 }
 
+function bl_rollback_fitness_plans(string $directory, array $fitnessResource): array {
+  $legacy = is_array($fitnessResource['plans'] ?? null) ? array_values(array_filter($fitnessResource['plans'], 'is_array')) : [];
+  if($legacy !== []) return $legacy;
+
+  $planDirectory = $directory . '/Fitness/Plans';
+  if(!is_dir($planDirectory)) return [];
+  $plans = [];
+  foreach(scandir($planDirectory) ?: [] as $entry){
+    if(preg_match('/^([0-9]{6})\.json$/', (string)$entry, $match) !== 1) continue;
+    $plan = bl_rollback_resource($planDirectory . '/' . $entry);
+    if(!is_array($plan)) continue;
+    $plan['sourcePlanId'] = (int)$match[1];
+    $plans[] = $plan;
+  }
+  usort($plans, static fn(array $left,array $right): int => ((int)($left['sourcePlanId'] ?? 0)) <=> ((int)($right['sourcePlanId'] ?? 0)));
+  return $plans;
+}
+
 function bl_rollback_timestamp($value, int $fallback): int {
   if(is_numeric($value)) return max(0, (int)$value);
   if(is_string($value) && trim($value) !== ''){
@@ -119,7 +137,7 @@ function bl_rollback_apply_fitness(PDO $db, int $uid, string $directory, array &
   if(!empty($resource['profile']) || !empty($resource['activeWorkout']) || !empty($resource['progressionHistory'])) $optionalUsers[] = sprintf('%06d', $uid);
   $planStmt = $db->prepare('INSERT INTO plans(user_id,created_at,plan_text,plan_json) VALUES(:u,:t,:text,:json)');
   $sessionStmt = $db->prepare('INSERT INTO plan_sessions(plan_id,user_id,session_index,scheduled_date,status,completed_at,updated_at) VALUES(:p,:u,:i,:d,:s,:c,:t)');
-  foreach((is_array($resource['plans'] ?? null) ? $resource['plans'] : []) as $plan){
+  foreach(bl_rollback_fitness_plans($directory, $resource) as $plan){
     if(!is_array($plan)) continue;
     $planJson = is_array($plan['plan'] ?? null) ? $plan['plan'] : [];
     $planStmt->execute([

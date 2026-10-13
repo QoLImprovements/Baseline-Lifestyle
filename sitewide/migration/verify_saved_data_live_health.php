@@ -20,6 +20,7 @@ function bl_saved_data_live_explicit_settings(array $settings): array {
 function bl_saved_data_live_allowed_directory(string $relative): bool {
   if(in_array($relative, ['Account Index','Users','Shared','Shared/Badminton'], true)) return true;
   if(preg_match('#^Users/[0-9]{6}$#', $relative) === 1) return true;
+  if(preg_match('#^Users/[0-9]{6}/Fitness(?:/Plans)?$#', $relative) === 1) return true;
   return preg_match('#^Users/[0-9]{6}/Games$#', $relative) === 1;
 }
 
@@ -27,6 +28,9 @@ function bl_saved_data_live_allowed_file(string $relative): bool {
   if($relative === 'Account Index/accounts.json') return true;
   if($relative === 'Shared/Badminton/badminton.json') return true;
   if(preg_match('#^Users/[0-9]{6}/(account|favourites|binaural|fitness|fitness-routine|voice|food|skincare)\.json$#', $relative) === 1){
+    return true;
+  }
+  if(preg_match('#^Users/[0-9]{6}/Fitness/Plans/[0-9]{6}\.json$#', $relative) === 1){
     return true;
   }
   return preg_match(

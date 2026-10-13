@@ -10,6 +10,82 @@ function bl_fitness_resource_path(int $uid): string {
   return bl_saved_user_resource_path($uid, 'fitness');
 }
 
+function bl_fitness_plans_directory(int $uid): string {
+  return bl_saved_join(
+    bl_saved_root(),
+    'Users',
+    bl_saved_user_folder($uid),
+    'Fitness',
+    'Plans'
+  );
+}
+
+function bl_fitness_plan_path(int $uid, int $planId): string {
+  if($planId <= 0) throw new InvalidArgumentException('invalid_plan_id');
+  return bl_saved_join(bl_fitness_plans_directory($uid), sprintf('%06d.json', $planId));
+}
+
+function bl_fitness_plan_files_read(int $uid): array {
+  $directory = bl_fitness_plans_directory($uid);
+  if(!is_dir($directory)) return [];
+  $records = [];
+  $entries = scandir($directory);
+  if($entries === false) throw new RuntimeException('fitness_plan_directory_read_failed');
+  foreach($entries as $entry){
+    if(preg_match('/^([0-9]{6})\.json$/', (string)$entry, $match) !== 1) continue;
+    $planId = (int)$match[1];
+    if($planId <= 0) continue;
+    $resource = bl_resource_file_read(bl_fitness_plan_path($uid, $planId), []);
+    $record = is_array($resource['data'] ?? null) ? $resource['data'] : [];
+    if($record === []) continue;
+    $record['sourcePlanId'] = $planId;
+    $records[] = $record;
+  }
+  return $records;
+}
+
+function bl_fitness_plan_files_sync(int $uid, array $plans): void {
+  $directory = bl_fitness_plans_directory($uid);
+  bl_saved_ensure_directory($directory);
+
+  $desired = [];
+  foreach($plans as $record){
+    if(!is_array($record)) continue;
+    $planId = bl_fitness_plan_id($record);
+    if($planId <= 0) continue;
+    $record['sourcePlanId'] = $planId;
+    $desired[$planId] = $record;
+  }
+
+  $entries = scandir($directory);
+  if($entries === false) throw new RuntimeException('fitness_plan_directory_read_failed');
+  $existing = [];
+  foreach($entries as $entry){
+    if(preg_match('/^([0-9]{6})\.json$/', (string)$entry, $match) === 1){
+      $existing[(int)$match[1]] = true;
+    }
+  }
+
+  foreach($desired as $planId=>$record){
+    $path = bl_fitness_plan_path($uid, (int)$planId);
+    bl_saved_with_resource_lock($path, static function() use ($path, $record): void {
+      $current = bl_saved_read($path);
+      $currentRevision = (int)($current['revision'] ?? 0);
+      $currentData = is_array($current['data'] ?? null) ? $current['data'] : null;
+      if($currentData === $record) return;
+      bl_saved_write_unlocked($path, $record, $currentRevision);
+    });
+    unset($existing[(int)$planId]);
+  }
+
+  foreach(array_keys($existing) as $planId){
+    $path = bl_fitness_plan_path($uid, (int)$planId);
+    bl_saved_with_resource_lock($path, static function() use ($path): void {
+      if(is_file($path) && !@unlink($path)) throw new RuntimeException('fitness_plan_delete_failed');
+    });
+  }
+}
+
 function bl_fitness_resource_default(): array {
   return [
     'plans'=>[],
@@ -32,6 +108,9 @@ function bl_fitness_resource_normalise(array $data): array {
 function bl_fitness_resource_read(int $uid): array {
   $resource = bl_resource_file_read(bl_fitness_resource_path($uid), bl_fitness_resource_default());
   $resource['data'] = bl_fitness_resource_normalise($resource['data']);
+  if(($resource['data']['plans'] ?? []) === []){
+    $resource['data']['plans'] = bl_fitness_plan_files_read($uid);
+  }
   return $resource;
 }
 
@@ -46,15 +125,21 @@ function bl_fitness_resource_is_empty(array $data): bool {
 
 function bl_fitness_resource_write(int $uid, array $data, ?int $expectedRevision=null): ?array {
   $data = bl_fitness_resource_normalise($data);
+  $plans = $data['plans'];
+  unset($data['plans']);
   $path = bl_fitness_resource_path($uid);
-  if(bl_fitness_resource_is_empty($data)){
-    if(bl_resource_authority() === 'saved-data'){
-      return bl_resource_file_replace($path, $data, $expectedRevision);
+  bl_saved_ensure_directory(dirname($path));
+
+  return bl_saved_with_resource_lock($path, static function() use ($uid, $plans, $data, $path, $expectedRevision): array {
+    $current = bl_saved_read($path);
+    $revision = (int)($current['revision'] ?? 0);
+    if($expectedRevision !== null && $revision !== $expectedRevision){
+      throw new BaselineSavedDataConflictException('revision_conflict');
     }
-    bl_resource_file_delete($path, $expectedRevision);
-    return null;
-  }
-  return bl_resource_file_replace($path, $data, $expectedRevision);
+
+    bl_fitness_plan_files_sync($uid, $plans);
+    return bl_saved_write_unlocked($path, $data, $revision);
+  });
 }
 
 function bl_fitness_plan_id(array $plan): int {

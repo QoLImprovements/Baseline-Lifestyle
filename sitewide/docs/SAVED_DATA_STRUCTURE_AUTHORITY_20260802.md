@@ -63,6 +63,9 @@ Saved Data/
 │       ├── favourites.json
 │       ├── binaural.json
 │       ├── fitness.json
+│       ├── Fitness/
+│       │   └── Plans/
+│       │       └── one JSON file per saved Fitness plan
 │       ├── voice.json              only when persistent choices exist
 │       └── Games/
 │           ├── baseline-realm.json
@@ -100,11 +103,20 @@ One cross-site favourites resource per user. Add/remove operations update the fi
 
 One small resource per user for the Binaural panel, including supported slider values, sound choices and user-created presets. Do not create one physical file per preset.
 
-### `fitness.json`
+### `fitness.json` and `Fitness/Plans/`
 
-Initially one Fitness resource per user, covering supported body/profile information, plans, scheduled sessions, completed workouts, results, achievements, progress, personal records and persistent current-workout recovery state.
+`fitness.json` remains the user-level Fitness state resource for supported profile/body information, achievements, selected-plan identity, progression history and persistent current-workout recovery state.
 
-Do not split Fitness merely for neatness. A future split requires evidence, a migration and preservation of all history.
+Saved Calisthenics plans are physically isolated under:
+
+```text
+Saved Data/Users/000001/Fitness/Plans/000003.json
+Saved Data/Users/000001/Fitness/Plans/000004.json
+```
+
+Each plan file owns that plan's definition and session history. The internal plan ID determines the stable filename; renaming a plan does not rename or relocate its file.
+
+This split was adopted during Phase 5 production acceptance after live testing exposed cross-plan coupling in plan selection/name handling. The migration preserves plan IDs, plan definitions, completed/planned session history and selected-plan state. Recovery tooling must rebuild SQLite from both `fitness.json` and the per-plan files.
 
 ### `voice.json`
 
