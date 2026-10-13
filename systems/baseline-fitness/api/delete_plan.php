@@ -19,8 +19,28 @@ try{
     if(is_array($resource['data']['activeWorkout'] ?? null) && (int)($resource['data']['activeWorkout']['planId'] ?? 0) === $planId){
       unset($resource['data']['activeWorkout']);
     }
+
+    $selectedPlanId = max(0, (int)($resource['data']['selectedPlanId'] ?? 0));
+    if($selectedPlanId === $planId){
+      $remaining = array_values(array_filter($resource['data']['plans'] ?? [], 'is_array'));
+      usort($remaining, static function(array $left, array $right): int {
+        $leftName = trim((string)(bl_fitness_plan_json($left)['name'] ?? ''));
+        $rightName = trim((string)(bl_fitness_plan_json($right)['name'] ?? ''));
+        $byName = strnatcasecmp($leftName, $rightName);
+        return $byName !== 0 ? $byName : (bl_fitness_plan_id($left) <=> bl_fitness_plan_id($right));
+      });
+      $nextSelected = $remaining === [] ? 0 : bl_fitness_plan_id($remaining[0]);
+      if($nextSelected > 0) $resource['data']['selectedPlanId'] = $nextSelected;
+      else unset($resource['data']['selectedPlanId']);
+    }
+
     $written = bl_fitness_resource_write($uid, $resource['data'], $resource['revision']);
-    bl_json(['ok'=>true,'planId'=>$planId,'revision'=>(int)($written['revision'] ?? 0)]);
+    bl_json([
+      'ok'=>true,
+      'planId'=>$planId,
+      'selectedPlanId'=>max(0, (int)($resource['data']['selectedPlanId'] ?? 0)),
+      'revision'=>(int)($written['revision'] ?? 0),
+    ]);
   }
 
   $db = bl_fitness_db();
