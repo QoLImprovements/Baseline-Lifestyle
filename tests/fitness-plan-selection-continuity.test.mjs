@@ -20,12 +20,12 @@ test('Calisthenics plan selection has one controller and one clean Routine Plan 
   assert.doesNotMatch(plans,/localStorage|sessionStorage|fitnessPlanSelectionContinuity/);
 });
 
-test('selected plan identity is account-backed before navigation',()=>{
+test('selected plan identity is account-backed before in-place loading',()=>{
   assert.match(fitnessState,/'save_selected_plan'/);
   assert.match(fitnessState,/'selectedPlanId'/);
   assert.match(plans,/const saved=await setSelectedPlanId\(id\)/);
   assert.match(plans,/if\(owner!=='guest'&&!saved\)return/);
-  assert.match(plans,/global\.location\.assign\(new URL\('\/baseline-fitness\/my-routine\/plan'/);
+  assert.match(plans,/await global\.BASELINE_fitnessWorkout\?\.reloadSelectedPlan\?\.\(\)/);
 });
 
 test('plan-card disclosure is owned by the canonical Routine structure',()=>{
