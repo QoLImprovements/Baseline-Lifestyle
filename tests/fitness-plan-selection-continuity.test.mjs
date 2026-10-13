@@ -109,3 +109,55 @@ test('Fitness first paint stays neutral until authoritative plan state resolves'
   assert.match(plans,/Loading plans…/);
   assert.match(plans,/select\.disabled=!plansResolved \|\| !data\.length/);
 });
+
+
+test('Fitness My Routine has one route and visibility owner',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
+  assert.doesNotMatch(page,/fitness-routine-workspace\.js/);
+  assert.match(structure,/canonical My Routine structure adapter/);
+  assert.doesNotMatch(workspace,/\$\$\('\.fitness-routine-panel'\).*panel\.hidden/);
+  assert.match(workspace,/BASELINE_fitnessRoutineStructure\.activateTopView/);
+});
+
+test('Fitness plan deletion has one canonical path',()=>{
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const deleteApi=read('systems/baseline-fitness/api/delete_plan.php');
+
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js')),false);
+  assert.doesNotMatch(page,/fitness-plan-delete-continuity-v1\.js/);
+  assert.doesNotMatch(plans,/pathname\.endsWith\('\/delete_plan\.php'\)/);
+  assert.match(app,/await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\)/);
+  assert.match(deleteApi,/'selectedPlanId'=>max\(0,/);
+});
+
+test('Fitness workspace builds the canonical shell directly and reveals it atomically',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.match(workspace,/data-fitness-routine-view="summary"/);
+  assert.match(workspace,/data-fitness-routine-view="plan"/);
+  assert.match(workspace,/data-fitness-routine-view="public"/);
+  assert.match(workspace,/section\.replaceChildren\(shell\);\s*section\.dataset\.routineWorkspaceV2 = 'true';/s);
+});
+
+test('Fitness Routine CSS has one Fitness-owned entry point',()=>{
+  const routineCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
+  const obsolete=[
+    'fitness-routine-workspace-v2.css',
+    'fitness-routine-sitewide-v3.css',
+    'fitness-routine-plan-collapse-v1.css',
+    'fitness-routine-groups-collapsible-v1.css',
+    'fitness-routine-summary-v2.css'
+  ];
+  for(const name of obsolete){
+    assert.equal(existsSync(url('systems/baseline-fitness/css/'+name)),false);
+    assert.equal(routineCss.includes(name),false);
+  }
+  assert.match(page,/baseline-routine-coherence-v12\.css/);
+  assert.doesNotMatch(routineCss,/@import url\('\/systems\/baseline-fitness\/css\//);
+});
+
+test('dead Fitness compatibility assets stay deleted',()=>{
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-exercise-picker-safety-v1.js')),false);
+});
