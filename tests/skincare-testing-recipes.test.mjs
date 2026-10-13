@@ -183,6 +183,7 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
   assert.match(recipeCss, /glide-value-bubble[\s\S]*display:none/);
   assert.match(recipeCss, /glide-scale[\s\S]*grid-template-columns:max-content max-content/);
+  assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap/);
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
   assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);
