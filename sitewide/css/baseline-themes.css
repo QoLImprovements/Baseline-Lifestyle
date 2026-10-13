@@ -158,37 +158,55 @@ body[data-app="food"]{
     var(--bg) 100%
   );
 
-  /* One live Food content surface.
-     System, Recipes, Ingredient Library and Diet Log share this exact surface.
-     Controls have their own control fill; content containers do not fork colour. */
-  --food-surface-card: var(--food-orange);
-  --food-surface-panel: var(--food-surface-card);
-  --food-surface-subtle: var(--food-surface-card);
-  --food-surface-control: linear-gradient(180deg,
+  /* Food colour authority: passionate red / flame orange / gold.
+     Structure and behaviour remain owned by the shared Baseline system. */
+  --food-surface-card: linear-gradient(135deg,
+    var(--food-yellow) 0%,
+    var(--food-gold) 48%,
+    var(--food-orange) 100%
+  );
+  --food-surface-panel: linear-gradient(135deg,
+    #ffe39a 0%,
+    var(--food-yellow) 58%,
+    var(--food-gold) 100%
+  );
+  --food-surface-subtle: linear-gradient(135deg,
     var(--food-yellow),
     var(--food-gold)
   );
-  --food-surface-selected: linear-gradient(135deg,
-    var(--food-red),
-    var(--food-orange)
-  );
-  --food-surface-border: rgba(90,12,21,0.30);
-
-  /* Food navigation controls deliberately avoid pale/translucent fills. */
-  --food-tab-bg: linear-gradient(180deg,
-    var(--food-orange),
+  --food-surface-control: linear-gradient(180deg,
+    #ffe39a,
     var(--food-gold)
   );
-  --food-tab-hover: linear-gradient(180deg,
+  --food-surface-selected: linear-gradient(135deg,
+    var(--food-deep),
+    var(--food-red) 58%,
+    var(--food-orange)
+  );
+  --food-action-bg: linear-gradient(135deg,
+    var(--food-deep),
+    var(--food-red) 62%,
+    var(--food-orange)
+  );
+  --food-action-ink: #fff8ee;
+  --food-control-ink: #2a0905;
+  --food-surface-border: rgba(90,12,21,0.38);
+
+  /* Vivid warm idle state; passionate red active state. */
+  --food-tab-bg: linear-gradient(180deg,
     var(--food-gold),
     var(--food-orange)
+  );
+  --food-tab-hover: linear-gradient(180deg,
+    var(--food-orange),
+    var(--food-red)
   );
   --food-tab-active: linear-gradient(135deg,
     var(--food-deep),
     var(--food-red) 56%,
     var(--food-orange)
   );
-  --food-tab-border: rgba(90,12,21,0.42);
+  --food-tab-border: rgba(90,12,21,0.52);
 
   /* Universal recipe controls consume these system-owned aliases. */
   --recipe-tab-bg: var(--food-tab-bg);
