@@ -256,6 +256,8 @@
     if (!planPanel) return;
     const child=planPanel.querySelector(`[data-fitness-routine-panel="${next}"]`);
     if (child) { child.hidden=false;child.classList.add('active'); }
+    const card=planPanel.querySelector(`details[data-fitness-plan-card="${next}"]`);
+    if (card) card.open=true;
     if (remember) writeRoute({ allowEnter:true });
   }
   function activateTopView(view,remember=true) {
