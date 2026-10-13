@@ -65,3 +65,20 @@ test('selected plan is resolved by the Saved Data server, not a client fetch int
   assert.doesNotMatch(plans,/pathname\.endsWith\('\/get_plan\.php'\)/);
   assert.doesNotMatch(plans,/url\.searchParams\.set\('planId'/);
 });
+
+
+test('Fitness plans are physically isolated and dropdown order is alphabetical',()=>{
+  const resource=read('systems/baseline-fitness/api/fitness_resource.php');
+  const listPlans=read('systems/baseline-fitness/api/list_plans.php');
+  const recovery=read('sitewide/migration/build_sqlite_rollback_copy.php');
+  const health=read('sitewide/migration/verify_saved_data_live_health.php');
+
+  assert.match(resource,/function bl_fitness_plans_directory\(int \$uid\)/);
+  assert.match(resource,/'Fitness',\s*'Plans'/);
+  assert.match(resource,/sprintf\('%06d\.json', \$planId\)/);
+  assert.match(resource,/bl_fitness_plan_files_sync\(\$uid, \$plans\)/);
+  assert.match(listPlans,/strnatcasecmp\(\(string\)\(\$left\['name'\]/);
+  assert.match(recovery,/function bl_rollback_fitness_plans/);
+  assert.match(recovery,/'\/Fitness\/Plans'/);
+  assert.match(health,/Fitness\/Plans\/\[0-9\]\{6\}/);
+});
