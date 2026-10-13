@@ -27,9 +27,13 @@ function walk(directory, output = []) {
 }
 
 test('runtime systems have one canonical owner and no root shadow folders', () => {
-  const forbiddenRootFolders = ['api','games','css','js','rules','docs','scripts', ...ownedSystemNames];
+  const forbiddenRootFolders = ['api','games','css','js','rules','scripts', ...ownedSystemNames];
   for (const shadow of forbiddenRootFolders) {
     assert.equal(fs.existsSync(path.join(root, shadow)), false, `obsolete root folder remains: ${shadow}`);
+  }
+  assert.equal(fs.existsSync(path.join(root, 'docs')), true, 'root docs folder is the canonical documentation home');
+  for (const file of walk(path.join(root, 'docs'))) {
+    assert.match(file, /\.md$/i, `docs must remain documentation-only: ${path.relative(root,file)}`);
   }
   assert.equal(fs.existsSync(path.join(root, 'systems/baseline-games-hub/games')), true);
   assert.deepEqual(

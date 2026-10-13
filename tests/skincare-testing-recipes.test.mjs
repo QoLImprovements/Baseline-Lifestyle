@@ -169,7 +169,7 @@ test('Skincare Details is authored hidden before JavaScript and toggled by the s
   assert.match(shared, /const visible = next === 'show-all' \|\| group === next/);
   assert.match(shared, /el\.hidden = !visible/);
   assert.doesNotMatch(recipeUx, /detailsMarkup|createElement/);
-  assert.match(recipeCss, /recipe-details-intro\[hidden\][\s\S]*display:none !important/);
+  assert.match(recipeCss, /recipe-details-intro\[hidden\][\s\S]*display:none!important/);
 });
 
 test('sitewide recipe slider template owns equal widths, Overall Feel and duplicate-caption suppression', () => {
@@ -179,10 +179,11 @@ test('sitewide recipe slider template owns equal widths, Overall Feel and duplic
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);
   assert.match(shared, /glide-breakdown.*aria-hidden/s);
   assert.doesNotMatch(shared, /instruction\.textContent = 'Adjust slider to preference\.'/);
-  assert.match(recipeCss, /BASELINE-UNIVERSAL-RECIPE-SLIDER-WIDTH-CAPTION-20260920/);
-  assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
-  assert.match(recipeCss, /glide-value-bubble[\s\S]*display:none !important/);
-  assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap !important/);
+  assert.match(recipeCss, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
+  assert.match(recipeCss, /\[data-slider-count="2"\][\s\S]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/);
+  assert.match(recipeCss, /glide-value-bubble[\s\S]*display:none/);
+  assert.match(recipeCss, /glide-scale[\s\S]*grid-template-columns:max-content max-content/);
+  assert.match(recipeCss, /glide-scale > span[\s\S]*white-space:nowrap/);
   assert.match(recipeCss, /glide-control-explainer[\s\S]*grid-column:1 \/ -1/);
   assert.doesNotMatch(recipeUx, /function updateBubble\(/);
   assert.doesNotMatch(recipeUx, /createElement\('output'\)|createElement/);

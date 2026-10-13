@@ -269,21 +269,7 @@ body .card:focus-visible{
   .bl-select-menu{ max-height:min(42vh, 300px); }
 }
 
-/* Recipe Scale By Ingredient: keep closed button and open options visually identical. */
-body[data-app] #recipes .scale-block .bl-select,
-body[data-app] #recipes .scale-block .bl-select select,
-body[data-app] #recipes .scale-block .bl-select-btn,
-body[data-app] #recipes .scale-block .scale-ingredient-select,
-body[data-app] #recipes .scale-block .scale-unit-select,
-body[data-app] #recipes .scale-block .bl-select-menu [role="option"]{
-  font-size:16px;
-  font-weight:850;
-  line-height:1.25;
-}
-body[data-app] #recipes .scale-block .bl-select-btn{
-  display:flex;
-  align-items:center;
-}
+/* Recipe-specific select presentation lives in baseline-recipes.css. */
 
 /* --------------------------------------------------------------------------
    Themed number steppers (replaces unthemed native spinners)
@@ -1651,69 +1637,7 @@ body:not([data-app="home"]) .diet-mini-stat{
   backdrop-filter:none!important;
 }
 
-/* Recipe area: warmer/deeper solid cards and solid controls, no internal gradients. */
-body[data-app] #recipes .card,
-body[data-app] #recipes .recipe.card,
-body[data-app] #recipes-landing.card,
-body[data-app] #recipes .recipe-page,
-body[data-app] #recipes .side-recipe-nav,
-body[data-app] #recipes .scale-tools,
-body[data-app] .recipe.card{
-  background-image:none!important;
-  background-color:var(--bl-surface-recipe-card-solid,var(--bl-surface-card-solid))!important;
-  opacity:1!important;
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-body[data-app] #recipes .multiplier,
-body[data-app] #recipes .filter-bar,
-body[data-app] #recipes .glide-controller,
-body[data-app] #recipes .scale-block,
-body[data-app] #recipes .variant-switcher,
-body[data-app] #recipes .recipe-controls{
-  background-image:none!important;
-  background-color:var(--bl-surface-panel-solid)!important;
-  border-color:var(--border,var(--showall-border,rgba(0,0,0,.18)))!important;
-  opacity:1!important;
-  box-shadow:none!important;
-}
-body[data-app] #recipes .back-btn,
-body[data-app] #recipes .print-btn,
-body[data-app] #recipes .scale-toggle,
-body[data-app] #recipes .scale-apply,
-body[data-app] #recipes .multiplier button,
-body[data-app] #recipes .ingredient-recipe-link a,
-body[data-app] #recipes .action,
-body[data-app] #recipes button:not(.variant-tab):not(.recipe-variant-tag),
-body[data-app] #recipes .bl-number-stepper .bl-step{
-  background-image:none!important;
-  background-color:var(--bl-surface-control-solid)!important;
-  color:var(--ink,var(--bl-surface-ink,#111))!important;
-  -webkit-text-fill-color:currentColor!important;
-  border-color:var(--showall-border,var(--border,rgba(0,0,0,.18)))!important;
-  opacity:1!important;
-  box-shadow:none!important;
-}
-body[data-app] #recipes input:not([type="range"]),
-body[data-app] #recipes select,
-body[data-app] #recipes textarea,
-body[data-app] #recipes .scale-tools input,
-body[data-app] #recipes .scale-tools select,
-body[data-app] #recipes .multiplier input,
-body[data-app] #recipes .multiplier select{
-  background-image:none!important;
-  background-color:var(--bl-surface-input-solid)!important;
-  color:var(--ink,var(--bl-surface-ink,#111))!important;
-  -webkit-text-fill-color:currentColor!important;
-  border-color:var(--border-2,var(--border,rgba(0,0,0,.18)))!important;
-  opacity:1!important;
-  box-shadow:none!important;
-}
-body[data-app] #recipes .scale-tools{
-  background-image:none!important;
-  background-color:var(--bl-surface-panel-solid)!important;
-  color:var(--ink,var(--bl-surface-ink,#111))!important;
-}
+/* Recipe presentation is owned exclusively by sitewide/css/baseline-recipes.css. */
 
 /* Account + Binaural flyouts: solid panels and solid fields/buttons from current page palette. */
 body[data-app] #bl-auth-flyout .card,

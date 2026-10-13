@@ -4058,14 +4058,6 @@ function buildControls(recipeEl){
         resetBtn = q('.reset', controls);
         printSummary = q('.print-summary', recipeEl);
 
-        /* Legacy thickness dropdowns are no longer part of the recipe contract.
-           If stale authored markup survives in an old recipe, remove it rather
-           than enhancing or preserving a second implementation. */
-        qsa('.thickness-select', controls).forEach(function(oldControl){
-          const row = oldControl.closest('.recipe-control-row--thickness');
-          if(row) row.remove();
-          else oldControl.remove();
-        });
 
         if(isOatPorridge){
           oatToggleEl = q('.oat-toggle', controls);

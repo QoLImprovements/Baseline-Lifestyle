@@ -175,7 +175,7 @@
   .ing-link{ border-bottom:1px dotted rgba(122,74,58,0.35); padding-bottom:1px; }
 
   /* Buttons (ported language) */
-  .action,.print-btn,.multiplier button,.back-fab,.top-fab{
+  .action,.back-fab,.top-fab{
     border-radius:999px;
     border:1px solid rgba(200,100,50,0.18);
     background:var(--food-surface-control);
@@ -183,12 +183,12 @@
     box-shadow:0 14px 26px -24px rgba(200,100,50,0.18);
     transition:transform var(--dur-2) var(--ease-cushion), box-shadow var(--dur-2) var(--ease-soft), filter var(--dur-2) var(--ease-soft);
   }
-  .action:hover,.print-btn:hover,.multiplier button:hover,.back-fab:hover,.top-fab:hover:hover{
+  .action:hover,.back-fab:hover,.top-fab:hover{
     transform:translateY(-1px);
     box-shadow:0 18px 36px -30px rgba(200,100,50,0.26);
     filter:saturate(1.02);
   }
-  .action:focus-visible,.print-btn:focus-visible,.multiplier button:focus-visible,.back-fab:focus-visible,.top-fab:focus-visible:focus-visible{
+  .action:focus-visible,.back-fab:focus-visible,.top-fab:focus-visible{
     outline:none;
     box-shadow:0 0 0 4px var(--ring), 0 18px 36px -30px rgba(200,100,50,0.26);
   }
@@ -218,52 +218,8 @@
   [data-tip]:focus-within::after,
   li.tip-show[data-tip]::after{ opacity:1; transform: translateY(4px); pointer-events:auto; }
 
-  /* Print button */
-  .print-btn{
-    float:right; margin:-6px -6px 8px 8px;
-    font-size:16px; font-weight:800;
-    border-radius:999px;
-    border:1px solid rgba(200,100,50,0.28);
-    background:linear-gradient(135deg, rgba(255,207,84,0.28), rgba(194,31,43,0.20));
-    padding:7px 11px; cursor:pointer;
-    box-shadow:0 14px 26px -22px rgba(200,100,50,.36);
-  }
+  /* Recipe structure and controls intentionally live only in sitewide/css/baseline-recipes.css. */
 
-  /* Recipe multiplier (ported) */
-  .multiplier{
-    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-    padding:12px 12px; margin:12px 0 14px 0;
-    border:1px solid rgba(200,100,50,0.18);
-    border-radius:16px;
-    background:var(--food-surface-panel);
-    box-shadow:0 14px 26px -26px rgba(200,100,50,0.16);
-  }
-  .multiplier label{ font-size:16px; font-weight:800; color:var(--muted); }
-  .multiplier select{
-    padding:9px 10px;
-    border-radius:14px;
-    border:1px solid rgba(122,74,58,0.14);
-    font-weight:850;
-    outline:none;
-    background:var(--food-surface-control);
-    color:var(--ink);
-  }
-  .multiplier select:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
-  .multiplier input{
-    width:110px; padding:9px 10px;
-    border-radius:14px;
-    border:1px solid rgba(122,74,58,0.14);
-    font-weight:800; outline:none;
-    background:var(--food-surface-control);
-  }
-  .multiplier input:focus{ box-shadow:0 0 0 4px var(--ring); border-color:rgba(200,100,50,0.28); }
-  .multiplier button{ padding:9px 11px; border-radius:999px; font-weight:850; cursor:pointer; font-size:16px; }
-  .multiplier button.secondary{ background:var(--food-surface-subtle); border-color:rgba(122,78,58,0.18); }
-  .multiplier .mini-note{ font-size:16px; color:var(--muted); }
-
-  /* Recipes are folder-backed. The parent page owns only the overview. */
-  .recipe-layout{ display:block; }
-  #recipes .recipe-main{ min-width:0; }
 
   /* Ingredient library cards (reuse card styling) */
   .lib .card{ margin-top: var(--space-4); }
@@ -299,7 +255,7 @@
   @media (prefers-reduced-motion: reduce){
     *{ scroll-behavior:auto !important; }
     .section{ animation:none !important; }
-    .card,.tab,.action,.print-btn,.multiplier button,.back-fab,.top-fab{ transition:none !important; }
+    .card,.tab,.action,.back-fab,.top-fab{ transition:none !important; }
   }
 
   /* Ingredient filter */
@@ -352,29 +308,6 @@
   }
   .ingredient-recipe-link a:hover{ color:var(--link-hover); }
 
-  /* Recipe view controls */
-  .back-btn,
-  .scale-toggle,
-  .scale-apply{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    min-height:42px;
-    padding:9px 14px;
-    border-radius:999px;
-    border:1px solid rgba(200,100,50,0.22);
-    background:var(--food-surface-control);
-    color:var(--accent-2);
-    font-size:16px;
-    font-weight:850;
-    text-decoration:none;
-    cursor:pointer;
-    box-shadow:0 10px 22px -20px rgba(200,100,50,0.22);
-  }
-  .back-btn:hover,
-  .scale-toggle:hover,
-  .scale-apply:hover{ color:var(--accent-2); filter:brightness(1.02); }
 
 /* Initial route authority: URL state is present before body paint. */
 html[data-initial-section] body[data-app="food"] main.wrap>.section{display:none!important}
@@ -382,8 +315,6 @@ html[data-initial-section="system"] body[data-app="food"] #system.section,
 html[data-initial-section="recipes"] body[data-app="food"] #recipes.section,
 html[data-initial-section="ingredients"] body[data-app="food"] #ingredients.section,
 html[data-initial-section="diet-log"] body[data-app="food"] #diet-log.section{display:block!important}
-html[data-initial-recipe-route="1"] body[data-app="food"] #recipes #recipes-landing{display:none!important}
-html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:block!important}
 
 
 /* FOOD_PASSION_PALETTE_20261013_1
