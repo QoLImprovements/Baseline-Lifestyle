@@ -380,7 +380,7 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
 .recipe-universal-template .recipe-subtab[aria-selected="true"]{
   background:var(--bl-surface-active-solid,var(--recipe-tab-active,var(--accent)));
   background-image:none;
-  color:var(--recipe-tab-active-ink,#fff);
+  color:var(--bl-surface-active-ink,var(--bl-surface-ink,var(--ink)));
   -webkit-text-fill-color:currentColor;
   font-weight:900;
 }
