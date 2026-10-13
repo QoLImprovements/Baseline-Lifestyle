@@ -9,6 +9,7 @@ const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const page=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessState=read('systems/baseline-fitness/api/fitness_state.php');
+const getPlan=read('systems/baseline-fitness/api/get_plan.php');
 
 test('Calisthenics plan selection has one controller and one clean Routine Plan route',()=>{
   assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js')),false);
@@ -55,4 +56,12 @@ test('selected-plan persistence refreshes and retries after a Saved Data revisio
   assert.match(bridge,/if\(result\?\.error==='revision_conflict'\)/);
   assert.match(bridge,/const refreshed=await reload\(\)/);
   assert.match(bridge,/result=await post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+});
+
+
+test('selected plan is resolved by the Saved Data server, not a client fetch interceptor',()=>{
+  assert.match(getPlan,/\$selectedPlanId = max\(0, \(int\)\(\$resource\['data'\]\['selectedPlanId'\] \?\? 0\)\)/);
+  assert.match(getPlan,/\$effectivePlanId = \$requestedPlanId > 0 \? \$requestedPlanId : \$selectedPlanId/);
+  assert.doesNotMatch(plans,/pathname\.endsWith\('\/get_plan\.php'\)/);
+  assert.doesNotMatch(plans,/url\.searchParams\.set\('planId'/);
 });

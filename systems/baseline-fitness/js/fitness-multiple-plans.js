@@ -259,18 +259,6 @@
   if (nativeFetch) {
     global.fetch=async function(input,init={}) {
       const url=urlFor(input);if (!url) return nativeFetch(input,init);
-      if (url.pathname.endsWith('/get_plan.php') && !url.searchParams.has('name')) {
-        if (isCreatingPlan()) return responseJson({ok:true,hasPlan:false,has_plan:false,creatingPlan:true});
-        const selected=selectedPlanId();
-        if(selected)url.searchParams.set('planId',String(selected));
-        let response=await nativeFetch(withUrl(input,url),init);
-        if(selected&&response.status===404){
-          await setSelectedPlanId(0);
-          url.searchParams.delete('planId');
-          response=await nativeFetch(withUrl(input,url),init);
-        }
-        return response;
-      }
       if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
       if(url.pathname.endsWith('/delete_plan.php')){
         const response=await nativeFetch(input,init);
