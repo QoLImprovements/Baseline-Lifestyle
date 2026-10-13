@@ -40,3 +40,11 @@ test('Create Another Plan uses an explicit clean-route create request, not brows
   assert.match(plans,/setCreatingPlan\(true\)/);
   assert.doesNotMatch(plans,/Date\.now\(\).*new-plan/);
 });
+
+
+test('plan-name writes are bound to the selected plan identity',()=>{
+  assert.match(plans,/function planNameForWrite\(raw,planId=0\)/);
+  assert.match(plans,/boundId===String\(id\) && original===stored/);
+  assert.match(plans,/targetPlanId=url\.pathname\.endsWith\('\/plan_update\.php'\)/);
+  assert.match(plans,/input\.dataset\.originalName=stored/);
+});

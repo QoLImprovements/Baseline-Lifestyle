@@ -212,19 +212,39 @@
   function responseJson(payload,status=200) { return new Response(JSON.stringify(payload),{ status,headers:{ 'Content-Type':'application/json','Cache-Control':'no-store' } }); }
   function urlFor(input) { try { return new URL(input instanceof Request?input.url:String(input),global.location.href); }catch (_error) { return null; } }
   function withUrl(input,url) { return input instanceof Request?new Request(url.toString(),input):url.toString(); }
-  function enhancePlanJson(raw) {
+  function planNameForWrite(raw,planId=0) {
+    const id=Math.max(0,Number(planId)||0);
+    const input=$('#calisthenicsPlanName');
+    const target=id?plans.find((plan)=>Number(plan?.planId)===id):null;
+    const stored=String(target?.planJson?.name || target?.name || raw?.name || '').trim();
+    const boundId=String(input?.dataset?.planId || '');
+    const original=String(input?.dataset?.originalName || '').trim();
+    const inputIsTrusted=id>0
+      ? boundId===String(id) && original===stored
+      : boundId==='new';
+    const edited=inputIsTrusted?String(input?.value || '').trim():'';
+    return (edited || stored || 'Calisthenics Plan').slice(0,100);
+  }
+  function enhancePlanJson(raw,planId=0) {
     let plan=raw && typeof raw==='object'?Object.assign({},raw):{};
     const progression=global.BASELINE_FITNESS_EXERCISE_PROGRESSION?.augmentPlanJson;
     const livePolicy=global.BASELINE_FITNESS_LIVE_POLICY?.augmentPlanJson;
     if (typeof progression==='function') plan=progression(plan) || plan;
     if (typeof livePolicy==='function') plan=livePolicy(plan) || plan;
-    plan.name=String($('#calisthenicsPlanName')?.value || plan.name || 'Calisthenics Plan').trim().slice(0,100) || 'Calisthenics Plan';
+    plan.name=planNameForWrite(plan,planId);
     return plan;
   }
   async function enhancedWrite(input,init,url) {
     const nextInit=Object.assign({},init || {});
     if (typeof nextInit.body==='string') {
-      try { const body=JSON.parse(nextInit.body);if (body && typeof body==='object') { body.planJson=enhancePlanJson(body.planJson);nextInit.body=JSON.stringify(body); } }catch (_error) {}
+      try {
+        const body=JSON.parse(nextInit.body);
+        if (body && typeof body==='object') {
+          const targetPlanId=url.pathname.endsWith('/plan_update.php')?Math.max(0,Number(body.planId)||0):0;
+          body.planJson=enhancePlanJson(body.planJson,targetPlanId);
+          nextInit.body=JSON.stringify(body);
+        }
+      }catch (_error) {}
     }
     const response=await nativeFetch(input,nextInit);
     if (response.ok) {
@@ -264,7 +284,16 @@
   function ensurePlanName() {
     const list=$('#exerciseList');if (!list) return;let input=$('#calisthenicsPlanName');
     if (!input) { const label=document.createElement('label');label.className='field-stack calisthenics-plan-name-field';label.innerHTML='<span>Plan name</span><input id="calisthenicsPlanName" class="field-input-fixed" type="text" maxlength="100" placeholder="For example: Lower Body, Upper Body or Badminton Preparation">';list.insertAdjacentElement('beforebegin',label);input=label.querySelector('input'); }
-    if (document.activeElement!==input) { const plan=selectedPlan();const id=String(plan?.planId || 'new');if (input.dataset.planId!==id) { input.value=isCreatingPlan()?'':planName(plan,Math.max(0,plans.indexOf(plan)));input.dataset.planId=id; } }
+    if (document.activeElement!==input) {
+      const plan=selectedPlan();
+      const id=String(plan?.planId || 'new');
+      const stored=isCreatingPlan()?'':planName(plan,Math.max(0,plans.indexOf(plan)));
+      if (input.dataset.planId!==id || input.dataset.originalName!==stored) {
+        input.value=stored;
+        input.dataset.planId=id;
+        input.dataset.originalName=stored;
+      }
+    }
   }
 
   function ensureManager() {
