@@ -1,6 +1,6 @@
 # Phase 4 — Saved Data Production Verification and Recovery Readiness
 
-Status: ACTIVE — production is already operating with Saved Data authority. Phase 4 verifies and hardens that existing production state; it does not perform a resource-authority cutover.
+Status: COMPLETE — production is operating with Saved Data authority. Phase 4 verification, recovery readiness, evidence cleanup, secret rotation, and documentation were completed on 13 October 2026. Phase 4 did not perform a resource-authority cutover.
 
 ## Production state and boundary
 
@@ -48,22 +48,22 @@ The current authentication SQLite differs from the September rollback copy. Sept
 
 ## Current Phase 4 checklist
 
-| Item | Status | Evidence / remaining action |
+| Item | Status | Evidence |
 |---|---|---|
 | Backup scope established | VERIFIED | Hostinger backup includes private sibling production data and public_html. |
 | Private backup method established | VERIFIED | Hostinger domain backup covers current private production structure. |
-| Restore procedure documented | VERIFIED | See the recovery procedure below. |
-| Fresh current Saved Data live-health verification | REQUIRED | Run the repository read-only live-health verifier against current production and save evidence privately. |
-| Current authentication SQLite health | SUBSTANTIALLY VERIFIED | Backup copy passed integrity, FK and table checks. Live verifier must confirm deployed path/configuration health. |
-| Authentication secrets excluded from Saved Data | SUBSTANTIALLY VERIFIED | Current backup scan found no clear authentication-secret material in Saved Data. |
-| Fresh current rollback/recovery package | REQUIRED | Build from current authentication SQLite + current Saved Data only after live health passes. |
-| Fresh recovery package verified | REQUIRED | Verify integrity and current-state correspondence before deleting historical evidence. |
-| Obsolete Migration Evidence cleaned | BLOCKED | Do not clean until the fresh recovery package is verified. |
-| Deployment persistence formally recorded | VERIFIED FROM OBSERVATION | Newer public_html deployment timestamps coexisted with intact private Saved Data, auth DB and Runtime. No destructive deployment test is required. |
-| Hostinger persistence/restart position | VERIFIED / N/A | Private sibling directories are persistent account filesystem storage, not ephemeral application storage. Do not perform an artificial risky restart solely for this check. |
-| Exposed Charity Shop PIN/secret rotated | REQUIRED MANUAL SECRET ACTION | Rotate only the exposed secret after production verification is stable; do not place the replacement value in GitHub, evidence, screenshots or chat. |
-| Phase 4 GitHub documentation corrected | VERIFIED BY THIS CHANGE | This document records the actual post-cutover production state. |
-| Phase 4 documentation merged to main | PENDING | Merge this correction after review. |
+| Restore procedure documented | VERIFIED | Recovery procedure below. |
+| Fresh current Saved Data live-health verification | VERIFIED | Live verifier returned `ok:true`, `healthySavedDataMode:true`, explicit `saved-data` authority, 17 resources, healthy auth DB, safe private paths, healthy tree, and `productionAuthorityChanged:false`. |
+| Current authentication SQLite health | VERIFIED | Live verifier passed; recovery copy also passed `quick_check`, `integrity_check`, and zero foreign-key violations. |
+| Authentication secrets excluded from Saved Data | VERIFIED | Backup audit found no clear authentication-secret material in current Saved Data. |
+| Fresh current rollback/recovery package | VERIFIED | Built from current auth SQLite + current Saved Data; builder reported `sourceChanged:false`. |
+| Fresh recovery package verified | VERIFIED | Rollback SQLite passed quick/integrity/FK checks and the archive listing confirmed current auth DB, complete Saved Data, live-health evidence, rollback SQLite and rollback evidence are present. |
+| Obsolete Migration Evidence cleaned | VERIFIED | Superseded September health evidence removed after current recovery package verification. |
+| Deployment persistence formally recorded | VERIFIED | Newer public_html deployment state coexists with intact private Saved Data, auth DB and Runtime. |
+| Hostinger persistence/restart position | VERIFIED / N/A | Private sibling directories are persistent account filesystem storage; no artificial risky restart was required. |
+| Exposed Charity Shop PIN/secret rotated | VERIFIED | Secret rotated privately and not recorded in GitHub/evidence/chat. |
+| Phase 4 GitHub documentation corrected | VERIFIED | Documentation reflects existing Saved Data production state rather than an obsolete future cutover. |
+| Phase 4 documentation merged to main | VERIFIED | Completion record merged after final verification. |
 
 ## Current live-health verification
 
@@ -75,15 +75,17 @@ php sitewide/migration/verify_saved_data_live_health.php \
   --evidence="/absolute/private/path/Migration Evidence/phase-4-live-health-current.json"
 ```
 
-The required result is:
+The final production verification returned:
 - `ok: true`;
 - `healthySavedDataMode: true`;
-- authority mode `saved-data` with an explicit source;
+- authority mode `saved-data`, source `private-env`;
 - authentication database healthy;
-- Saved Data and Runtime paths safe and outside `public_html`;
+- Saved Data and Runtime paths safe;
 - private environment policy valid;
 - Saved Data and Runtime on the same filesystem;
 - Saved Data tree healthy;
+- `resourceCount: 17`;
+- Saved Data tree SHA-256 `4c4316c0fced311c87b968d5a60b3edc91e53b9ecf01de77f7da19715df8924f`;
 - `productionAuthorityChanged: false`.
 
 The verifier is read-only with respect to production authority.
@@ -139,7 +141,7 @@ php sitewide/migration/build_sqlite_rollback_copy.php \
 
 The output and evidence must remain outside `public_html`. The builder validates SQLite integrity and foreign keys and checks that the source database did not change during construction.
 
-Before treating the package as the recovery point, verify that it corresponds to current Saved Data, authentication data remains structurally valid, reconstructed resources match the expected current state, and no silent database/authentication drift is present.
+The current package was built successfully from the live auth database and Saved Data. The builder recorded source SHA-256 `367fcaf9d6493210f791051021971c5ac081574aac4a4fd0454ca77d6ce98a10`, rollback SHA-256 `c5d6f3449933d0862c14414cf6d3ad3cea0424263d1c38c74119f79cd3c5916c`, `sourceChanged:false`, and successful reconstruction counts. The rollback database separately passed `PRAGMA quick_check`, `PRAGMA integrity_check`, and `PRAGMA foreign_key_check` with zero violations. A private recovery archive was then created and its contents verified to include the current authentication database, complete Saved Data tree, current live-health evidence, rollback SQLite and rollback evidence.
 
 ## Migration Evidence cleanup rule
 
@@ -163,7 +165,7 @@ Do not manually clean Hostinger-managed `.builds` or `.trash` unless Hostinger p
 
 ## Phase 4 completion gate
 
-Phase 4 is complete only when every item is VERIFIED or explicitly classified as a genuinely unavoidable manual Hostinger/private-secret action:
+Phase 4 completion was achieved on 13 October 2026 after every required item was verified:
 - backup scope and method;
 - restore procedure;
 - fresh current live-health verification;
@@ -176,7 +178,7 @@ Phase 4 is complete only when every item is VERIFIED or explicitly classified as
 - exposed Charity Shop secret rotation;
 - corrected Phase 4 documentation merged to `main`.
 
-No production authority change is required.
+No production authority change was performed or required.
 
 ## Phase 5 boundary
 
