@@ -108,9 +108,7 @@ function bl_fitness_resource_normalise(array $data): array {
 function bl_fitness_resource_read(int $uid): array {
   $resource = bl_resource_file_read(bl_fitness_resource_path($uid), bl_fitness_resource_default());
   $resource['data'] = bl_fitness_resource_normalise($resource['data']);
-  if(($resource['data']['plans'] ?? []) === []){
-    $resource['data']['plans'] = bl_fitness_plan_files_read($uid);
-  }
+  $resource['data']['plans'] = bl_fitness_plan_files_read($uid);
   return $resource;
 }
 
