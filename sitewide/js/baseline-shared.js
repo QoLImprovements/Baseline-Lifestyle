@@ -3961,8 +3961,78 @@ function buildControls(recipeEl){
       let oatBtnJumbo = null;
       let oatBtnPorridge = null;
       let thickSelect = null;
+      let thickSlider = null;
+      let thickSliderReadout = null;
       let thickLabelEl = null;
       const hasThickness = !!q('.thickness-swap', recipeEl);
+      const thicknessControlMode = (recipeEl && recipeEl.dataset && recipeEl.dataset.thicknessControl === 'slider') ? 'slider' : 'select';
+
+      function thicknessValue(){
+        if(thicknessControlMode === 'slider' && thickSlider){
+          const n = Number(thickSlider.value);
+          return n <= 0 ? 'thin' : n >= 2 ? 'thick' : 'moderate';
+        }
+        return thickSelect ? (thickSelect.value || 'moderate') : 'moderate';
+      }
+
+      function syncThicknessSliderReadout(){
+        if(!thickSliderReadout) return;
+        const value = thicknessValue();
+        thickSliderReadout.textContent = value === 'thin' ? 'Thin' : value === 'thick' ? 'Thick' : 'Moderate';
+      }
+
+      function buildThicknessSlider(){
+        const controller = document.createElement('div');
+        controller.className = 'glide-controller recipe-slider-template thickness-slider-controller';
+        controller.setAttribute('data-slider-count','1');
+
+        const main = document.createElement('div');
+        main.className = 'glide-control-main';
+
+        const head = document.createElement('div');
+        head.className = 'glide-slider-head';
+
+        const label = document.createElement('div');
+        label.className = 'glide-label';
+        label.textContent = 'Thickness';
+
+        thickSliderReadout = document.createElement('div');
+        thickSliderReadout.className = 'glide-readout';
+        thickSliderReadout.textContent = 'Moderate';
+
+        head.appendChild(label);
+        head.appendChild(thickSliderReadout);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'glide-slider-wrap';
+
+        thickSlider = document.createElement('input');
+        thickSlider.type = 'range';
+        thickSlider.className = 'glide-slider thickness-slider';
+        thickSlider.min = '0';
+        thickSlider.max = '2';
+        thickSlider.step = '1';
+        thickSlider.value = '1';
+        thickSlider.dataset.defaultValue = '1';
+        thickSlider.setAttribute('aria-label','Thickness: Thin, Moderate, or Thick');
+
+        wrap.appendChild(thickSlider);
+
+        const scale = document.createElement('div');
+        scale.className = 'glide-scale';
+        const left = document.createElement('span');
+        left.textContent = 'Thin';
+        const right = document.createElement('span');
+        right.textContent = 'Thick';
+        scale.appendChild(left);
+        scale.appendChild(right);
+
+        main.appendChild(head);
+        main.appendChild(wrap);
+        main.appendChild(scale);
+        controller.appendChild(main);
+        return controller;
+      }
 
       function makeControlRow(rowClass, labelValue, controlEl, trailingEl, labelClass){
         const row = document.createElement('div');
@@ -4022,15 +4092,19 @@ function buildControls(recipeEl){
           }
         }
 
-        if(hasThickness && !thickSelect){
-          thickLabelEl = document.createElement('span');
-          thickLabelEl.className = 'label thickness-label';
-          thickLabelEl.textContent = 'Thickness';
-          thickSelect = document.createElement('select');
-          thickSelect.className = 'thickness-select';
-          thickSelect.setAttribute('aria-label','Thickness');
-          thickSelect.innerHTML = '<option value="thin">Thin</option><option value="moderate" selected>Moderate</option><option value="thick">Thick</option>';
-          controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
+        if(hasThickness && !thickSelect && !thickSlider){
+          if(thicknessControlMode === 'slider'){
+            controls.appendChild(makeControlRow('recipe-control-row--thickness recipe-control-row--thickness-slider', '', buildThicknessSlider()));
+          }else{
+            thickLabelEl = document.createElement('span');
+            thickLabelEl.className = 'label thickness-label';
+            thickLabelEl.textContent = 'Thickness';
+            thickSelect = document.createElement('select');
+            thickSelect.className = 'thickness-select';
+            thickSelect.setAttribute('aria-label','Thickness');
+            thickSelect.innerHTML = '<option value="thin">Thin</option><option value="moderate" selected>Moderate</option><option value="thick">Thick</option>';
+            controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
+          }
         }
 
         if(!multInput || !measSelect || !resetBtn || !printSummary) return;
@@ -4110,17 +4184,21 @@ function buildControls(recipeEl){
         if(isOatPorridge) controls.classList.add('has-oat-toggle');
         if(hasThickness) controls.classList.add('has-thickness');
         if(hasThickness){
-          thickLabelEl = document.createElement('span');
-          thickLabelEl.className = 'label thickness-label';
-          thickLabelEl.textContent = 'Thickness';
-          thickSelect = document.createElement('select');
-          thickSelect.className = 'thickness-select';
-          thickSelect.setAttribute('aria-label', 'Thickness');
-          thickSelect.innerHTML = `
-            <option value="thin">Thin</option>
-            <option value="moderate" selected>Moderate</option>
-            <option value="thick">Thick</option>
-          `;
+          if(thicknessControlMode === 'slider'){
+            thickSlider = null;
+          }else{
+            thickLabelEl = document.createElement('span');
+            thickLabelEl.className = 'label thickness-label';
+            thickLabelEl.textContent = 'Thickness';
+            thickSelect = document.createElement('select');
+            thickSelect.className = 'thickness-select';
+            thickSelect.setAttribute('aria-label', 'Thickness');
+            thickSelect.innerHTML = `
+              <option value="thin">Thin</option>
+              <option value="moderate" selected>Moderate</option>
+              <option value="thick">Thick</option>
+            `;
+          }
         }
 
         applyBtn = document.createElement('button');
@@ -4144,7 +4222,9 @@ function buildControls(recipeEl){
         if(oatToggleEl){
           controls.appendChild(makeControlRow('recipe-control-row--oat', oatLabelEl, oatToggleEl));
         }
-        if(thickSelect){
+        if(thicknessControlMode === 'slider' && hasThickness){
+          controls.appendChild(makeControlRow('recipe-control-row--thickness recipe-control-row--thickness-slider', '', buildThicknessSlider()));
+        }else if(thickSelect){
           controls.appendChild(makeControlRow('recipe-control-row--thickness', thickLabelEl, thickSelect));
         }
 
@@ -4248,8 +4328,8 @@ function buildControls(recipeEl){
           if(vLabel) parts.push(`Variant: ${vLabel}`);
         }
         parts.push(`Batch quantity: ${batch}`, `Measurement: ${measLabel}`);
-        if(thickSelect){
-          const t = (thickSelect.value || 'moderate');
+        if(hasThickness){
+          const t = thicknessValue();
           const tLabel = t.charAt(0).toUpperCase() + t.slice(1);
           parts.push(`Thickness: ${tLabel}`);
         }
@@ -4312,7 +4392,7 @@ function buildControls(recipeEl){
           if(display && display.text) span.textContent = display.text;
         });
 
-        const thickness = thickSelect ? thickSelect.value : 'moderate';
+        const thickness = thicknessValue();
         qsa('.thickness-swap', recipeEl).forEach(span=>{
           const ds = span.dataset || {};
           const raw = thickness === 'thin' ? (ds.thicknessThin || ds.thin) : thickness === 'thick' ? (ds.thicknessThick || ds.thick) : (ds.thicknessModerate || ds.moderate);
@@ -4356,6 +4436,10 @@ function buildControls(recipeEl){
         multInput.value = '1';
         measSelect.value = 'standard';
         if(thickSelect) thickSelect.value = 'moderate';
+        if(thickSlider){
+          thickSlider.value = '1';
+          syncThicknessSliderReadout();
+        }
         if(isOatPorridge){
           setOatType('jumbo', {skipApply:true});
         }else{
@@ -4406,6 +4490,12 @@ function buildControls(recipeEl){
         multInput.addEventListener('blur', scheduleApply);
         measSelect.addEventListener('change', scheduleApply);
         if(thickSelect) thickSelect.addEventListener('change', scheduleApply);
+      }
+      if(thickSlider){
+        const syncThickness = ()=>{ syncThicknessSliderReadout(); try{ apply(); }catch(_e){} };
+        thickSlider.addEventListener('input', syncThickness);
+        thickSlider.addEventListener('change', syncThickness);
+        syncThicknessSliderReadout();
       }
       resetBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); reset(); });
     }
