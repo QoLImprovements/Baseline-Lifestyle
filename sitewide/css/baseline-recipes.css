@@ -641,10 +641,8 @@
 
   #recipes.recipe-open-mode .recipe-controls .batch-input,
   #recipes.recipe-open-mode .recipe-controls .measure-select,
-  #recipes.recipe-open-mode .recipe-controls .thickness-select,
   #recipes.recipe-detail-open .recipe-controls .batch-input,
-  #recipes.recipe-detail-open .recipe-controls .measure-select,
-  #recipes.recipe-detail-open .recipe-controls .thickness-select{
+  #recipes.recipe-detail-open .recipe-controls .measure-select{
     width:100%;
     min-width:0;
   }
@@ -824,12 +822,8 @@
 .recipe-controls .reset{ grid-column:3; grid-row:2; justify-self:start; }
 .recipe-controls.has-oat-toggle:not(.has-thickness) .oat-label{ grid-column:1; grid-row:3; }
 .recipe-controls.has-oat-toggle:not(.has-thickness) .oat-toggle{ grid-column:2 / span 2; grid-row:3; }
-.recipe-controls.has-thickness:not(.has-oat-toggle) .thickness-label{ grid-column:1; grid-row:3; }
-.recipe-controls.has-thickness:not(.has-oat-toggle) .thickness-select{ grid-column:2; grid-row:3; }
 .recipe-controls.has-oat-toggle.has-thickness .oat-label{ grid-column:1; grid-row:3; }
 .recipe-controls.has-oat-toggle.has-thickness .oat-toggle{ grid-column:2 / span 2; grid-row:3; }
-.recipe-controls.has-oat-toggle.has-thickness .thickness-label{ grid-column:1; grid-row:4; }
-.recipe-controls.has-oat-toggle.has-thickness .thickness-select{ grid-column:2; grid-row:4; }
 
 /* Keep the batch field compact and tidy. */
 .recipe-controls .bl-number.batch-input,
@@ -896,13 +890,11 @@
   .recipe-controls .batch-label,
   .recipe-controls .meas-label,
   .recipe-controls .oat-label,
-  .recipe-controls .thickness-label,
   .recipe-controls .bl-number.batch-input,
   .recipe-controls .batch-input.bl-number,
   .recipe-controls .batch-input,
   .recipe-controls .measure-select,
   .recipe-controls .oat-toggle,
-  .recipe-controls .thickness-select,
   .recipe-controls .apply,
   .recipe-controls .reset{
     grid-column:1 !important;
@@ -919,8 +911,6 @@
   .recipe-controls .measure-select{ grid-row:auto !important; }
   .recipe-controls .oat-label,
   .recipe-controls .oat-toggle,
-  .recipe-controls .thickness-label,
-  .recipe-controls .thickness-select,
   .recipe-controls .apply,
   .recipe-controls .reset{ grid-row:auto !important; }
   .scale-block.is-open .scale-tools{
@@ -951,9 +941,6 @@
 .recipe-controls .meas-label{ grid-column:1; grid-row:2; white-space:nowrap; }
 .recipe-controls .bl-select.measure-select,
 .recipe-controls .measure-select{ grid-column:2; grid-row:2; justify-self:start; width:100%; max-width:340px; min-width:0; }
-.recipe-controls .thickness-label{ grid-column:1; grid-row:3; white-space:nowrap; }
-.recipe-controls .bl-select.thickness-select,
-.recipe-controls .thickness-select{ grid-column:2; grid-row:3; justify-self:start; width:100%; max-width:340px; min-width:0; }
 .recipe-controls .reset{
   grid-column:3;
   grid-row:1 / span 2;
@@ -1028,9 +1015,6 @@
   .recipe-controls .meas-label,
   .recipe-controls .bl-select.measure-select,
   .recipe-controls .measure-select,
-  .recipe-controls .thickness-label,
-  .recipe-controls .bl-select.thickness-select,
-  .recipe-controls .thickness-select,
   .recipe-controls .reset{
     grid-column:1 !important;
     justify-self:stretch !important;
@@ -1043,9 +1027,6 @@
   .recipe-controls .meas-label{ grid-row:auto !important; }
   .recipe-controls .bl-select.measure-select,
   .recipe-controls .measure-select{ grid-row:auto !important; }
-  .recipe-controls .thickness-label{ grid-row:auto !important; }
-  .recipe-controls .bl-select.thickness-select,
-  .recipe-controls .thickness-select{ grid-row:auto !important; }
   .recipe-controls .reset{ grid-row:auto !important; }
   .scale-block.is-open .scale-tools{ grid-template-columns:1fr !important; }
   .scale-apply{ width:100%; }
@@ -1108,14 +1089,11 @@
   width:auto !important;
   max-width:100%;
 }
-#recipes .recipe-page .multiplier.recipe-controls .oat-label,
-#recipes .recipe-page .multiplier.recipe-controls .thickness-label{
+#recipes .recipe-page .multiplier.recipe-controls .oat-label{
   grid-column:1;
   grid-row:3;
 }
-#recipes .recipe-page .multiplier.recipe-controls .oat-toggle,
-#recipes .recipe-page .multiplier.recipe-controls .bl-select.thickness-select,
-#recipes .recipe-page .multiplier.recipe-controls .thickness-select{
+#recipes .recipe-page .multiplier.recipe-controls .oat-toggle{
   grid-column:2;
   grid-row:3;
   justify-self:start;
@@ -1180,9 +1158,6 @@
   #recipes .recipe-page .multiplier.recipe-controls .measure-select,
   #recipes .recipe-page .multiplier.recipe-controls .oat-label,
   #recipes .recipe-page .multiplier.recipe-controls .oat-toggle,
-  #recipes .recipe-page .multiplier.recipe-controls .thickness-label,
-  #recipes .recipe-page .multiplier.recipe-controls .bl-select.thickness-select,
-  #recipes .recipe-page .multiplier.recipe-controls .thickness-select,
   #recipes .recipe-page .multiplier.recipe-controls .apply,
   #recipes .recipe-page .multiplier.recipe-controls .reset,
   #recipes .recipe-page .multiplier.recipe-controls .scale-block{
@@ -1423,11 +1398,6 @@
   max-width:320px !important;
   justify-self:start !important;
 }
-.recipe-control-row .thickness-select{
-  width:min(220px, 100%) !important;
-  max-width:220px !important;
-  justify-self:start !important;
-}
 .recipe-control-row .reset,
 .recipe-control-row .apply{
   justify-self:start;
@@ -1452,7 +1422,6 @@
   .recipe-control-row .bl-number.batch-input,
   .recipe-control-row .batch-input.bl-number,
   .recipe-control-row .measure-select,
-  .recipe-control-row .thickness-select,
   .recipe-control-row .oat-toggle,
   .recipe-control-row .reset,
   .recipe-control-row .apply{
@@ -1515,7 +1484,6 @@
   gap:10px;
 }
 .recipe-control-row .measure-select,
-.recipe-control-row .thickness-select,
 .recipe-control-row .oat-toggle{
   min-width:0;
   max-width:100%;
@@ -1636,11 +1604,6 @@
 #recipes.recipe-open-mode .recipe-page.active .recipe-controls .oat-toggle,
 #recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .oat-toggle{ grid-column:2; grid-row:3; justify-self:start; }
 
-#recipes.recipe-open-mode .recipe-page.active .recipe-controls .thickness-label,
-#recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .thickness-label{ grid-column:1; grid-row:3; }
-#recipes.recipe-open-mode .recipe-page.active .recipe-controls .thickness-select,
-#recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .thickness-select{ grid-column:2; grid-row:3; justify-self:start; min-width:0; max-width:100%; }
-
 #recipes.recipe-open-mode .recipe-page.active .recipe-controls .scale-block,
 #recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .scale-block{
   grid-column:1 / -1;
@@ -1671,9 +1634,7 @@
 }
 
 #recipes.recipe-open-mode .recipe-page.active .recipe-controls .measure-select,
-#recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .measure-select,
-#recipes.recipe-open-mode .recipe-page.active .recipe-controls .thickness-select,
-#recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .thickness-select{
+#recipes.recipe-detail-open .recipe-page.is-open .recipe-controls .measure-select{
   width:auto;
 }
 
@@ -1754,9 +1715,7 @@
 #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--thickness > .label{
   grid-column:1;
 }
-#recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--oat > .oat-toggle,
-#recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--thickness > .bl-select.thickness-select,
-#recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--thickness > .thickness-select{
+#recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--oat > .oat-toggle{
   grid-column:2;
   justify-self:start;
   width:auto !important;
@@ -1806,8 +1765,6 @@
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .bl-select.measure-select,
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .measure-select,
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .oat-toggle,
-  #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .bl-select.thickness-select,
-  #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .thickness-select,
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .apply,
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row > .reset,
   #recipes .recipe-page .multiplier.recipe-controls .recipe-control-row--scale > .scale-block{
@@ -1929,8 +1886,7 @@
   grid-template-columns:max-content minmax(240px, 420px) !important;
 }
 #recipes .recipe-page > .multiplier.recipe-controls > .recipe-control-row--oat > .oat-toggle,
-#recipes .recipe-page > .multiplier.recipe-controls > .recipe-control-row--thickness > .bl-select,
-#recipes .recipe-page > .multiplier.recipe-controls > .recipe-control-row--thickness > .thickness-select{
+#recipes .recipe-page > .multiplier.recipe-controls > .recipe-control-row--thickness > .bl-select{
   width:100% !important;
   max-width:420px !important;
   justify-self:start !important;
@@ -4709,9 +4665,9 @@ html body[data-app] #recipes .recipe-universal-template .recipe-standard-control
 
 
 /* BASELINE-THICKNESS-SLIDER-CONTRACT-20261013
-   Reusable sitewide discrete thickness slider for recipes that opt in with
-   data-thickness-control="slider". Visual slider theming remains owned by
-   baseline-sitewide.css via --bl-slider-* tokens. */
+   Reusable sitewide thickness control for any recipe containing .thickness-swap.
+   Thickness is slider-only; visual theming remains owned by baseline-sitewide.css
+   via --bl-slider-* tokens. */
 body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider{
   display:block !important;
   width:min(620px,100%) !important;
