@@ -86,7 +86,7 @@ test('Universal adjustment visibility and Show All ordering are shared by Food a
   assert.match(shared, /const adjustmentsAvailable = next === 'standard' \|\| next === 'show-all'/);
   assert.match(shared, /adjustmentsBtn\) adjustmentsBtn\.classList\.toggle\('recipe-view-hidden', !adjustmentsAvailable\)/);
   assert.match(shared, /editBody\.hidden = true/);
-  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
+  assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.match(css, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="standard"[\s\S]*order:10/);
   assert.match(css, /data-recipe-view="show-all"[\s\S]*recipe-details-intro[\s\S]*order:20/);
   assert.match(css, /data-recipe-view="show-all"[\s\S]*data-recipe-view-group="guidance"[\s\S]*order:30/);
@@ -96,7 +96,7 @@ test('recipe subview first-paint guard honours clean-route view state before run
   assert.match(skincareHtml, /data-initial-recipe-view/);
   assert.match(skincareHtml, /new URLSearchParams\(location\.search\|\|''\)/);
   assert.match(skincareHtml, /q\.get\('view'\)/);
-  assert.match(css, /BASELINE-RECIPE-SUBVIEW-FIRST-PAINT-20261003/);
+  assert.match(css, /Clean-route subview is honoured before runtime attaches/);
   assert.match(css, /data-initial-recipe-view="details"[\s\S]*recipe-details-intro\.recipe-view-hidden[\s\S]*display:grid!important/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-slug'\)/);
   assert.match(shared, /removeAttribute\('data-initial-recipe-view'\)/);
@@ -122,8 +122,8 @@ test('recipe subview is encoded by the shared router and Skincare restores its D
   assert.match(shared, /card\.__baselineSetRecipeVariant/);
   assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
   assert.doesNotMatch(recipeUx, /recipeViewFromLocation|restoreRecipeViewFromLocation|syncRecipeViewUrl/);
-  assert.match(skincareCss, /recipe-open-mode \.recipe-page,[\s\S]*recipe-detail-open \.recipe-page\{ display:none!important; \}/);
-  assert.match(skincareCss, /recipe-open-mode \.recipe-page\.active,[\s\S]*recipe-detail-open \.recipe-page\.active\{ display:block!important; \}/);
+  assert.match(css, /#recipes\.recipe-open-mode \.recipe-page,[\s\S]*#recipes\.recipe-detail-open \.recipe-page\{display:none\}/);
+  assert.match(css, /#recipes\.recipe-open-mode \.recipe-page\.active,[\s\S]*#recipes\.recipe-detail-open \.recipe-page\.is-open[\s\S]*display:block/);
 });
 
 test('Anhydrous Oil Cleanser no longer authors duplicate variant state', () => {
@@ -179,8 +179,8 @@ test('Food and Skincare use the same authored Details structure with domain-spec
     assert.equal((html.match(/class="recipe-meta-item"/g)||[]).length,1,name+' one Batch metadata item');
   }
 
-  assert.match(css,/BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
-  assert.match(css,/recipe-details-intro\[hidden\][\s\S]*display:none !important/);
+  assert.match(css,/BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
+  assert.match(css,/recipe-details-intro\[hidden\][\s\S]*display:none!important/);
   assert.match(css,/recipe-details-intro\{[\s\S]*grid-template-columns:minmax\(0,1fr\)/);
   assert.match(css,/recipe-detail-block\{[\s\S]*border:0;[\s\S]*background:transparent/);
   assert.match(shared,/recipe-details-variant-field/);
@@ -226,30 +226,29 @@ test('Skincare slider recipes already contain the final layout and save controls
   assert.match(shared, /function normalizeRecipeSliderTemplate\(recipeEl\)/);
   assert.match(shared, /controller\.dataset\.sliderCount = String\(controls\.length > 1 \? 2 : 1\)/);
   assert.doesNotMatch(shared, /instruction\.textContent = 'Adjust slider to preference\.'/);
-  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-SLIDER-CONTRACT-20260920/);
+  assert.match(css, /Universal recipe slider/);
 });
 
-test('Adjustments and universal spacing remain owned by shared theme CSS', () => {
-  assert.match(css, /recipe-adjustments-row[\s\S]*background:transparent !important;/);
-  assert.match(css, /recipe-adjustments-toggle[\s\S]*background-color:transparent !important;/);
-  assert.match(css, /recipe-adjustments-toggle[\s\S]*background-image:none !important;/);
-  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-SPACING-20260824/);
+test('Adjustments and universal spacing remain owned by the single shared recipe stylesheet', () => {
+  assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.match(css, /recipe-title-row/);
   assert.match(css, /recipe-meta-row/);
-  assert.match(css, /recipe-adjustments-row/);
+  assert.match(css, /recipe-viewbar/);
+  assert.match(css, /recipe-adjustments-toggle/);
   assert.match(css, /recipe-subtabs/);
   assert.match(css, /recipe-option-strip/);
+  assert.match(css, /recipe-adjustments-panel/);
 });
 
 test('universal recipe styling inherits system variables instead of imposing Food or Skincare colours', () => {
-  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-TEMPLATE-20260824/);
+  assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.match(css, /var\(--showall-bg/);
   assert.match(css, /var\(--accent-2/);
   assert.match(css, /var\(--border/);
 });
 
 test('Skincare semantic emphasis is present before JavaScript mutates anything', () => {
-  assert.match(css, /\[data-recipe-view-group\] strong\{\s*font-weight:inherit !important;/s);
+  assert.match(css, /\[data-recipe-view-group\] strong\{font-weight:inherit\}/);
   assert.match(css,/recipe-universal-template ol > li > strong:first-child/);
   assert.match(css,/recipe-universal-template \.ing-subhead > strong/);
   assert.match(css,/data-recipe-view-group="guidance"/);
@@ -305,18 +304,18 @@ test('recipe favourite star is one sitewide title-aligned rule', () => {
   assert.match(shared, /getComputedStyle\(h3\)/);
   assert.match(shared, /--recipe-title-font-size/);
   assert.match(shared, /--recipe-title-line-height/);
-  assert.match(css, /font-size:var\(--recipe-title-font-size, 1em\) !important/);
-  assert.match(css, /line-height:var\(--recipe-title-line-height, 1\) !important/);
-  assert.match(css, /justify-content:space-between !important/);
-  assert.match(css, /align-items:baseline !important/);
+  assert.match(css, /font-size:var\(--recipe-title-font-size,1em\)/);
+  assert.match(css, /line-height:var\(--recipe-title-line-height,1\)/);
+  assert.match(css, /justify-content:space-between/);
+  assert.match(css, /align-items:baseline/);
   assert.doesNotMatch(css, /data-app="skin"[^{}]*fav-btn[^{}]*font-size/);
   assert.doesNotMatch(css, /data-app="food"[^{}]*fav-btn[^{}]*font-size/);
 });
 
 
 test('recipe title typography is one sitewide Skincare-reference contract', () => {
-  assert.match(css, /BASELINE-UNIVERSAL-RECIPE-PRESENTATION-20261004/);
-  assert.match(css, /recipe-title-row > h3\{[\s\S]*font-family:var\(--font-soft\) !important;[\s\S]*font-size:28px !important;[\s\S]*line-height:1\.25 !important;/);
+  assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
+  assert.match(css, /recipe-title-row > h3\{[\s\S]*font-family:var\(--font-soft\);[\s\S]*font-size:28px;[\s\S]*line-height:1\.25;/);
   assert.doesNotMatch(skincareCss, /SKINCARE-RECIPE-PRESENTATION-CONTRACT-20261004/);
 });
 
@@ -336,10 +335,11 @@ test('all Food recipes use the authored universal shell before runtime enhanceme
   }
 });
 
-test('preauthored Food shells still receive recipe-specific variables from shared runtime', () => {
+test('preauthored Food shells receive recipe-specific controls from shared runtime only', () => {
   assert.match(shared,/if\(isOatPorridge\)[\s\S]*if\(!oatToggleEl\)[\s\S]*recipe-control-row--oat/);
-  assert.match(shared,/if\(hasThickness && !thickSelect\)[\s\S]*recipe-control-row--thickness/);
-  assert.match(shared,/thickSelect\.className = 'thickness-select'/);
+  assert.match(shared,/if\(hasThickness && !thickSlider\)[\s\S]*recipe-control-row--thickness-slider/);
+  assert.match(shared,/className = 'glide-slider thickness-slider'/);
+  assert.doesNotMatch(shared,/thickSelect|thickness-select/);
 });
 
 
@@ -364,7 +364,17 @@ test('thickness slider is the sole sitewide thickness control and oat choices ex
   assert.match(shared, /className = 'glide-slider thickness-slider'/);
   assert.match(shared, /oatBtnJumbo\.setAttribute\('aria-pressed'/);
   assert.match(shared, /oatBtnPorridge\.setAttribute\('aria-pressed'/);
-  assert.match(css, /BASELINE-OAT-TOGGLE-SELECTED-STATE-20261013/);
+  assert.match(css, /Oat choice uses the same selected-state language as recipe subtabs/);
   assert.match(css, /\.oat-option\.is-active/);
   assert.match(css, /recipe-control-row--thickness-slider[\s\S]*calc\(50% - 7px\)/);
+});
+
+
+test('system stylesheets contain no competing recipe presentation authority', () => {
+  const forbidden = /(?:\.recipe-(?:actions|title-row|meta-row|viewbar|subtabs|subtab|adjustments|option-strip|formula-controls|control-row|details-intro|detail-block|edit-options|ingredients-heading)|#recipes\.recipe-|\.glide-|\.variant-(?:tab|switcher)|\.print-btn|\.back-btn|\.scale-toggle|\.scale-apply|\.multiplier\b)/;
+  assert.doesNotMatch(foodCss, forbidden, 'Food stylesheet must not own recipe presentation');
+  assert.doesNotMatch(skincareCss, forbidden, 'Skincare stylesheet must not own recipe presentation');
+  assert.match(skincareCss, /\.recipe-comedogenic-rating/, 'Skincare may retain content-specific metadata styling only');
+  assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
+  assert.doesNotMatch(css, /Final hard|hard override|Contract restore|Operational hard override|ACTUAL-FIX|URGENT-TAB-FIX/i);
 });
