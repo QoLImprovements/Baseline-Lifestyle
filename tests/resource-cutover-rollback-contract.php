@@ -132,13 +132,13 @@ try{
     'revision'=>2,
     'updatedAt'=>'2026-08-02T18:03:30Z',
     'data'=>[
-      'schemaVersion'=>1,
+      'schemaVersion'=>2,
       'visibility'=>'public',
       'routine'=>[['id'=>'current-routine','steps'=>['cleanse','moisturise']]],
       'logs'=>[['id'=>'current-log','date'=>'2026-08-02']],
       'groups'=>[['id'=>'current-group','name'=>'Evening']],
       'assignments'=>['monday'=>'current-group'],
-      'sliders'=>['hydration'=>75],
+      'sliders'=>['recipe:test'=>['hydration'=>'75']],
     ],
   ]);
 
