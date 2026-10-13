@@ -57,6 +57,90 @@
 }
 
 /* --------------------------------------------------------------------------
+   Ingredient Library recipe filter
+   -------------------------------------------------------------------------- */
+#ingredients .filter-bar{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  margin:10px 0 14px;
+  padding:12px 0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  background-image:none;
+  box-shadow:none;
+}
+#ingredients .filter-bar label{
+  font-size:16px;
+  font-weight:850;
+  color:var(--bl-surface-ink,var(--ink));
+}
+#ingredients .filter-bar select,
+#ingredients .filter-bar .bl-select,
+#ingredients .filter-bar .bl-select-btn{
+  min-width:min(260px,100%);
+  max-width:100%;
+}
+#ingredients .filter-bar select,
+#ingredients .filter-bar .bl-select-btn{
+  min-height:40px;
+  padding:9px 12px;
+  border:1px solid var(--recipe-control-border,var(--border-2,var(--border)));
+  border-radius:14px;
+  background:var(--bl-surface-input-solid,var(--showall-bg));
+  background-image:none;
+  color:var(--bl-surface-ink,var(--ink));
+  -webkit-text-fill-color:currentColor;
+  font:inherit;
+  font-weight:850;
+  box-shadow:none;
+}
+#ingredients .filter-bar select:focus,
+#ingredients .filter-bar .bl-select-btn:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 4px var(--ring);
+}
+#ingredients .filter-bar .hint{
+  font-size:16px;
+  color:var(--muted,var(--ink));
+}
+#ingredients .filter-bar .clear,
+#ingredients .ingredient-recipe-link a{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:40px;
+  padding:8px 12px;
+  border:1px solid var(--recipe-control-border,var(--showall-border,var(--border)));
+  border-radius:999px;
+  background:var(--bl-surface-control-solid,var(--showall-bg));
+  background-image:none;
+  color:var(--bl-surface-ink,var(--ink));
+  -webkit-text-fill-color:currentColor;
+  font:inherit;
+  font-size:16px;
+  font-weight:850;
+  text-decoration:none;
+  box-shadow:none;
+}
+#ingredients .filter-bar .clear{
+  margin-left:auto;
+  cursor:pointer;
+}
+#ingredients .filter-bar .sort-wrap{
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+#ingredients .filter-bar .sort-wrap label{margin-left:6px}
+#ingredients .filter-bar .sort-wrap[data-show="true"]{display:flex}
+#ingredients .ingredient-recipe-link a:hover,
+#ingredients .filter-bar .clear:hover{filter:brightness(1.035)}
+
+/* --------------------------------------------------------------------------
    Recipe collection + focused route
    -------------------------------------------------------------------------- */
 .recipes{
@@ -89,6 +173,27 @@
 #recipes.recipe-detail-open .recipes{
   display:grid;
   grid-template-columns:1fr;
+}
+
+/* A focused recipe is the page surface; the overview's outer Recipes card is retired. */
+#recipes.recipe-open-mode > .grid > .card,
+#recipes.recipe-detail-open > .grid > .card,
+html[data-initial-recipe-route="1"] #recipes > .grid > .card{
+  display:contents;
+}
+#recipes.recipe-open-mode > .grid > .card > h2,
+#recipes.recipe-detail-open > .grid > .card > h2,
+html[data-initial-recipe-route="1"] #recipes > .grid > .card > h2{
+  display:none!important;
+}
+#recipes.recipe-open-mode .recipe-layout,
+#recipes.recipe-detail-open .recipe-layout,
+html[data-initial-recipe-route="1"] #recipes .recipe-layout,
+#recipes.recipe-open-mode .recipe-main,
+#recipes.recipe-detail-open .recipe-main,
+html[data-initial-recipe-route="1"] #recipes .recipe-main{
+  width:100%;
+  min-width:0;
 }
 
 /* --------------------------------------------------------------------------
