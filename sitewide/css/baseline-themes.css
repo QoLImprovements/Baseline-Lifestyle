@@ -204,26 +204,16 @@ body[data-app="food"]{
   );
   --food-tab-border: rgba(90,12,21,0.52);
 
-  /* Universal recipe controls: shared recipe language, Food-specific warm palette. */
-  --recipe-control-bg: #ffd19a;
-  --recipe-control-hover: #ffc27a;
-  --recipe-control-border: rgba(90,12,21,0.28);
-  --recipe-control-ink: #5a0c15;
-  --recipe-tab-bg: linear-gradient(180deg,
-    #ffe0b8 0%,
-    #ffc47d 58%,
-    #f3a04a 100%
-  );
-  --recipe-tab-hover: linear-gradient(180deg,
-    #ffd29a 0%,
-    #f7b45d 56%,
-    #e97f2f 100%
-  );
-  --recipe-tab-active: linear-gradient(180deg,
-    #d94a42 0%,
-    #c92d32 58%,
-    #a91e2b 100%
-  );
+  /* Recipe controls consume the sitewide solid-surface contract.
+     These are sampled directly from the Food page gradient palette. */
+  --recipe-control-bg: var(--food-gold);
+  --recipe-control-hover: var(--food-orange);
+  --recipe-control-border: rgba(90,12,21,0.30);
+  --recipe-control-ink: var(--ink);
+  --recipe-input-bg: var(--food-yellow);
+  --recipe-tab-bg: var(--food-gold);
+  --recipe-tab-hover: var(--food-orange);
+  --recipe-tab-active: var(--food-red);
   --recipe-tab-border: rgba(90,12,21,0.30);
   --recipe-tab-active-ink: #fff8ee;
 
