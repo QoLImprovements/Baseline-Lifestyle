@@ -614,7 +614,15 @@ test('Food oat type is a Standard View recipe choice, not an Adjustment', async 
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
   await expectUniversalTabs(card, 'Recipe');
-  await expect(card.locator('.recipe-formula-controls .oat-toggle')).toBeVisible();
+  const oatToggle = card.locator('.recipe-formula-controls .oat-toggle');
+  await expect(oatToggle).toBeVisible();
+  const oatButtons = oatToggle.locator('.oat-option');
+  await expect(oatButtons).toHaveCount(2);
+  await expect(oatButtons.filter({ hasText:'Jumbo Oats' })).toHaveAttribute('aria-pressed', /true|false/);
+  await oatButtons.filter({ hasText:'Porridge Oats' }).click();
+  await expect(oatButtons.filter({ hasText:'Porridge Oats' })).toHaveAttribute('aria-pressed','true');
+  await expect(oatButtons.filter({ hasText:'Porridge Oats' })).toHaveClass(/is-active/);
+  await expect(oatButtons.filter({ hasText:'Jumbo Oats' })).toHaveAttribute('aria-pressed','false');
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
   await expectAdjustmentsContract(card);
 
@@ -627,8 +635,19 @@ test('Food thickness is a Standard View recipe choice while scaling remains unde
   const card = page.locator('#r5');
   await expect(card).toBeVisible();
   await expect(card).toHaveClass(/recipe-universal-template/);
-  await expect(card.locator('.recipe-formula-controls .recipe-control-row--thickness')).toBeVisible();
-  await expect(card.locator('.recipe-formula-controls .bl-select.thickness-select')).toBeVisible();
+  const thicknessRow = card.locator('.recipe-formula-controls .recipe-control-row--thickness-slider');
+  await expect(thicknessRow).toBeVisible();
+  await expect(thicknessRow.locator('.glide-slider.thickness-slider')).toBeVisible();
+  await expect(thicknessRow.locator('.glide-readout')).toContainText(/Thin|Moderate|Thick/);
+  await expect(thicknessRow.locator('.glide-scale')).toContainText('Thin');
+  await expect(thicknessRow.locator('.glide-scale')).toContainText('Thick');
+  const sliderWidth = await thicknessRow.evaluate((el) => {
+    const parent = el.parentElement.getBoundingClientRect();
+    const row = el.getBoundingClientRect();
+    return { parent: parent.width, row: row.width };
+  });
+  expect(sliderWidth.row).toBeGreaterThan(sliderWidth.parent * 0.42);
+  expect(sliderWidth.row).toBeLessThan(sliderWidth.parent * 0.58);
   await expect(card.locator('.recipe-adjustments-panel')).toBeHidden();
 
   await card.locator('.recipe-adjustments-toggle').click();
