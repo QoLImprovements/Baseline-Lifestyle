@@ -12,7 +12,7 @@
   }
 
   function recordUrl(slug){
-    return '/baseline-food-approach/ingredients/'+encodeURIComponent(slug)+'.html';
+    return '/baseline-food-approach/ingredient-library/'+encodeURIComponent(slug);
   }
 
   async function hydrateCard(card){
