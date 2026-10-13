@@ -59,9 +59,14 @@ try{
   $uid=bl_require_user_id();
   if($mode === 'saved-data'){
     $resource = bl_fitness_resource_read($uid);
-    $index = $requestedPlanId > 0
-      ? bl_fitness_find_plan_index($resource['data'], $requestedPlanId)
+    $selectedPlanId = max(0, (int)($resource['data']['selectedPlanId'] ?? 0));
+    $effectivePlanId = $requestedPlanId > 0 ? $requestedPlanId : $selectedPlanId;
+    $index = $effectivePlanId > 0
+      ? bl_fitness_find_plan_index($resource['data'], $effectivePlanId)
       : bl_fitness_latest_plan_index($resource['data']);
+    if($index === null && $requestedPlanId === 0 && $selectedPlanId > 0){
+      $index = bl_fitness_latest_plan_index($resource['data']);
+    }
     if($index === null) bl_json(['ok'=>true,'hasPlan'=>false,'has_plan'=>false,'revision'=>$resource['revision']]);
     $record = $resource['data']['plans'][$index];
     $planJson = bl_fitness_plan_json($record);
