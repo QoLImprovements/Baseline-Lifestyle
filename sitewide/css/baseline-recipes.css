@@ -17,11 +17,20 @@
 /* --------------------------------------------------------------------------
    Canonical recipe surface
    -------------------------------------------------------------------------- */
-#recipes .recipe-page,
-#recipes-landing{
+#recipes .recipe-page{
   background:var(--bl-surface-recipe-card-solid,var(--bl-surface-card-solid,var(--card-bg)));
   background-image:none;
   color:var(--bl-surface-ink,var(--ink));
+  opacity:1;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+/* The recipe overview is content inside the system card, not a second card.
+   Keep it transparent so the parent system surface remains visually coherent. */
+#recipes-landing{
+  background:transparent;
+  background-image:none;
+  color:inherit;
   opacity:1;
   -webkit-backdrop-filter:none;
   backdrop-filter:none;
