@@ -348,8 +348,8 @@
       <div class="fitness-routine-panel bl-routine-panel" data-fitness-routine-panel="log" hidden>
         <div class="card fitness-routine-card bl-routine-card">
           <div class="section-head-actions fitness-routine-log-head">
-            <div><h2>Routine Log</h2><p class="note">Record calisthenics and other planned fitness activity for the selected date.</p></div>
-            <label class="field-stack fitness-log-date"><span>Activity performed date</span><input id="fitnessRoutineLogDate" type="date" aria-label="Activity performed date"></label>
+            <div><h2>Routine Log</h2></div>
+            <label class="field-stack fitness-log-date bl-routine-log-date"><span>Log Date</span><input id="fitnessRoutineLogDate" type="date" aria-label="Log Date"></label>
           </div>
           <div id="fitnessRoutineLogProgress" class="status"></div>
           <div id="fitnessRoutineLogItems"></div>
@@ -419,7 +419,6 @@
     const menuId = `fitnessActivityMenu-${section}`;
     panel.innerHTML = `<div class="card fitness-routine-card">
       <h2>${escapeHtml(label)}</h2>
-      <p class="note">Search the grouped catalogue, add an activity, then set its schedule and the details relevant to that activity.</p>
       <div class="fitness-activity-add">
         <div class="fitness-activity-combobox">
           <input type="search" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${menuId}" placeholder="Type or choose an activity…" data-activity-search="${section}">
