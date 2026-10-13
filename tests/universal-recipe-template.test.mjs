@@ -356,3 +356,15 @@ test('recipe overview return cannot leave first-paint tab state pinned', () => {
   assert.doesNotMatch(foodHtml, /\/sitewide\/js\/baseline-tabs\.js/);
   assert.doesNotMatch(skincareHtml, /\/sitewide\/js\/baseline-tabs\.js/);
 });
+
+
+test('thickness slider is the sole sitewide thickness control and oat choices expose selected state', () => {
+  assert.doesNotMatch(shared, /thickSelect|className\s*=\s*['"]thickness-select|<option value="thin">Thin<\/option>/);
+  assert.doesNotMatch(css, /\.thickness-select|\.thickness-label/);
+  assert.match(shared, /className = 'glide-slider thickness-slider'/);
+  assert.match(shared, /oatBtnJumbo\.setAttribute\('aria-pressed'/);
+  assert.match(shared, /oatBtnPorridge\.setAttribute\('aria-pressed'/);
+  assert.match(css, /BASELINE-OAT-TOGGLE-SELECTED-STATE-20261013/);
+  assert.match(css, /\.oat-option\.is-active/);
+  assert.match(css, /recipe-control-row--thickness-slider[\s\S]*calc\(50% - 7px\)/);
+});
