@@ -34,7 +34,11 @@ try{
       return $byName !== 0 ? $byName : ((int)($left['planId'] ?? 0) <=> (int)($right['planId'] ?? 0));
     });
     $plans = array_slice($plans, 0, BL_FITNESS_MAX_LISTED_PLANS);
-    bl_json(['ok'=>true,'plans'=>$plans,'revision'=>$resource['revision']]);
+    $selectedPlanId = max(0, (int)($resource['data']['selectedPlanId'] ?? 0));
+    if($selectedPlanId > 0 && !array_filter($plans, static fn(array $plan): bool => (int)($plan['planId'] ?? 0) === $selectedPlanId)){
+      $selectedPlanId = 0;
+    }
+    bl_json(['ok'=>true,'plans'=>$plans,'selectedPlanId'=>$selectedPlanId,'revision'=>$resource['revision']]);
   }
 
   $db = bl_fitness_db();
