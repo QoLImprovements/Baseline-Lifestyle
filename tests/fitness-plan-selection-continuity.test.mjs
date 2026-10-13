@@ -48,3 +48,11 @@ test('plan-name writes are bound to the selected plan identity',()=>{
   assert.match(plans,/targetPlanId=url\.pathname\.endsWith\('\/plan_update\.php'\)/);
   assert.match(plans,/input\.dataset\.originalName=stored/);
 });
+
+
+test('selected-plan persistence refreshes and retries after a Saved Data revision conflict',()=>{
+  const bridge=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
+  assert.match(bridge,/if\(result\?\.error==='revision_conflict'\)/);
+  assert.match(bridge,/const refreshed=await reload\(\)/);
+  assert.match(bridge,/result=await post\(\{action:'save_selected_plan',selectedPlanId:next\}\)/);
+});
