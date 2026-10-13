@@ -27,11 +27,13 @@ try{
   if($mode === 'saved-data'){
     $resource = bl_fitness_resource_read($uid);
     $records = array_values(array_filter($resource['data']['plans'] ?? [], 'is_array'));
-    usort($records, static function(array $left, array $right): int {
-      return [bl_fitness_plan_created_timestamp($right), bl_fitness_plan_id($right)] <=> [bl_fitness_plan_created_timestamp($left), bl_fitness_plan_id($left)];
-    });
     $plans = [];
-    foreach(array_slice($records, 0, BL_FITNESS_MAX_LISTED_PLANS) as $index=>$record) $plans[] = bl_fitness_plan_summary($record, $index);
+    foreach($records as $index=>$record) $plans[] = bl_fitness_plan_summary($record, $index);
+    usort($plans, static function(array $left, array $right): int {
+      $byName = strnatcasecmp((string)($left['name'] ?? ''), (string)($right['name'] ?? ''));
+      return $byName !== 0 ? $byName : ((int)($left['planId'] ?? 0) <=> (int)($right['planId'] ?? 0));
+    });
+    $plans = array_slice($plans, 0, BL_FITNESS_MAX_LISTED_PLANS);
     bl_json(['ok'=>true,'plans'=>$plans,'revision'=>$resource['revision']]);
   }
 
@@ -65,6 +67,10 @@ try{
       'progress'=>bl_fitness_progress($sessions, $planJson),
     ];
   }
+  usort($plans, static function(array $left, array $right): int {
+    $byName = strnatcasecmp((string)($left['name'] ?? ''), (string)($right['name'] ?? ''));
+    return $byName !== 0 ? $byName : ((int)($left['planId'] ?? 0) <=> (int)($right['planId'] ?? 0));
+  });
   if($mode === 'mirror') bl_fitness_mirror_sqlite($db, $uid);
   bl_json(['ok'=>true,'plans'=>$plans]);
 }catch(Throwable $error){
