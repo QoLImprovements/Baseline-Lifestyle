@@ -378,3 +378,12 @@ test('system stylesheets contain no competing recipe presentation authority', ()
   assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.doesNotMatch(css, /Final hard|hard override|Contract restore|Operational hard override|ACTUAL-FIX|URGENT-TAB-FIX/i);
 });
+
+
+test('sitewide primitives do not contain recipe-specific presentation overrides', () => {
+  const sitewideCss = fs.readFileSync('sitewide/css/baseline-sitewide.css', 'utf8');
+  assert.doesNotMatch(sitewideCss, /Recipe area: warmer\/deeper|Recipe Scale By Ingredient/);
+  assert.doesNotMatch(sitewideCss, /body\[data-app\]\s+#recipes\s+button:not\(/);
+  assert.doesNotMatch(sitewideCss, /body\[data-app\]\s+#recipes\s+\.(?:recipe-page|glide-controller|recipe-controls|scale-block)\s*[,\{]/);
+  assert.match(css, /Canonical recipe surface/);
+});
