@@ -18,6 +18,7 @@
   const API_ROOT = '/systems/baseline-fitness/api';
   const nativeFetch = typeof global.fetch === 'function' ? global.fetch.bind(global) : null;
   let plans = [];
+  let plansResolved = false;
   let owner = 'guest';
   let selectedPlanMemory=0;
   function routeRequestsNewPlan() {
@@ -287,9 +288,9 @@
   function ensureManager() {
     const panel=$('[data-fitness-routine-panel="calisthenics"]') || $('#my-plan');if (!panel) return;let manager=$('#calisthenicsPlanManager',panel);
     if (!manager) { manager=document.createElement('section');manager.id='calisthenicsPlanManager';manager.className='card fitness-calisthenics-plan-manager';manager.innerHTML='<div class="section-head-actions"><div><h2>Calisthenics Plans</h2></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';panel.prepend(manager); }
-    const select=manager.querySelector('#calisthenicsPlanSelect');const data=plans.map((plan,index) => ({ value:String(Number(plan.planId)),label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions` }));const signature=JSON.stringify(data);
-    if (select.dataset.signature!==signature) { select.dataset.signature=signature;select.innerHTML=`<option value="">${data.length?'Choose a plan…':'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`; }
-    select.disabled=!data.length;select.value=data.some((entry) => entry.value===String(selectedPlanId()))?String(selectedPlanId()):'';
+    const select=manager.querySelector('#calisthenicsPlanSelect');const data=plans.map((plan,index) => ({ value:String(Number(plan.planId)),label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions` }));const signature=JSON.stringify({resolved:plansResolved,data});
+    if (select.dataset.signature!==signature) { select.dataset.signature=signature;select.innerHTML=plansResolved?`<option value="">${data.length?'Choose a plan…':'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`:'<option value="">Loading plans…</option>'; }
+    select.disabled=!plansResolved || !data.length;select.value=plansResolved&&data.some((entry) => entry.value===String(selectedPlanId()))?String(selectedPlanId()):'';
   }
 
   function prettyDate(value) {
@@ -377,13 +378,14 @@
   function getPlans() { return JSON.parse(JSON.stringify(plans)); }
 
   async function refreshPlans() {
-    owner=authOwner();if (owner==='guest' || !nativeFetch) { plans=[];patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));return []; }
+    owner=authOwner();if (owner==='guest' || !nativeFetch) { plans=[];plansResolved=true;patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:[] } }));return []; }
     try {
       const response=await nativeFetch(`${API_ROOT}/list_plans.php`,{ credentials:'same-origin',headers:{ Accept:'application/json' } });
       const data=await response.json();
       plans=response.ok && Array.isArray(data?.plans)?data.plans:[];
+      plansResolved=Boolean(response.ok);
       if(response.ok) selectedPlanMemory=Math.max(0,Number(data?.selectedPlanId)||0);
-    }catch (_error) { plans=[]; }
+    }catch (_error) { plans=[];plansResolved=false; }
     patchInterface();document.dispatchEvent(new CustomEvent('baseline:fitness-plans-updated',{ detail:{ plans:getPlans() } }));return getPlans();
   }
 
@@ -393,7 +395,7 @@
     document.addEventListener('baseline:fitness-workout-updated',decorateSavedPlan);
   }
   function attachAuth() {
-    const auth=global.BASELINE_auth;if (!auth || typeof auth.get!=='function') { owner='guest';refreshPlans();return; }owner=authOwner();refreshPlans();if (typeof auth.onChange==='function') auth.onChange(() => { owner=authOwner();refreshPlans(); });
+    const auth=global.BASELINE_auth;if (!auth || typeof auth.get!=='function') { owner='guest';refreshPlans();return; }owner=authOwner();refreshPlans();if (typeof auth.onChange==='function') auth.onChange(() => { plansResolved=false;owner=authOwner();patchInterface();refreshPlans(); });
   }
   function boot() {
     patchInterface();bind();attachAuth();

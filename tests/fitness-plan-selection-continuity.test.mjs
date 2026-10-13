@@ -98,3 +98,14 @@ test('Fitness startup never writes or renders an invented default plan',()=>{
   assert.doesNotMatch(plans,/selectedPlan\(\).*\|\| plans\[0\]/);
   assert.match(plans,/selectedPlanMemory=Math\.max\(0,Number\(data\?\.selectedPlanId\)\|\|0\)/);
 });
+
+
+test('Fitness first paint stays neutral until authoritative plan state resolves',()=>{
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  assert.match(app,/let planStateResolved/);
+  assert.match(app,/const showSaved = planStateResolved && hasPlan && generatorMode === 'view'/);
+  assert.match(app,/const showGenerator = planStateResolved && !showSaved/);
+  assert.match(plans,/let plansResolved = false/);
+  assert.match(plans,/Loading plans…/);
+  assert.match(plans,/select\.disabled=!plansResolved \|\| !data\.length/);
+});
