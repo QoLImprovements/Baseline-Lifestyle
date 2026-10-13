@@ -746,17 +746,15 @@
   }
 
   function activateView(view, remember = false) {
-    const next = VIEWS.includes(view) ? view : 'log';
+    const requested = VIEWS.includes(view) ? view : 'log';
+    const next = ['calisthenics','cardio','other','sports'].includes(requested) ? 'plan' : requested;
     state.activeView = next;
-    $$('.fitness-routine-subtab').forEach((button) => {
-      const selected = button.dataset.fitnessRoutineView === next;
-      button.setAttribute('aria-selected', selected ? 'true' : 'false');
-    });
-    $$('.fitness-routine-panel').forEach((panel) => {
-      const selected = panel.dataset.fitnessRoutinePanel === next;
-      panel.hidden = !selected;
-      panel.classList.toggle('active', selected);
-    });
+    if (global.BASELINE_fitnessRoutineStructure?.activateTopView) {
+      global.BASELINE_fitnessRoutineStructure.activateTopView(next, remember);
+      if (next === 'plan' && global.BASELINE_fitnessRoutineStructure?.activatePlanView) {
+        global.BASELINE_fitnessRoutineStructure.activatePlanView(requested === 'plan' ? 'calisthenics' : requested, remember);
+      }
+    }
     if (next === 'log') {
       renderLog();
       renderCalendar();
