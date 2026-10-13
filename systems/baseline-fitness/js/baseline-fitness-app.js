@@ -36,6 +36,7 @@
   let activeTopTab = 'system';
   let activePlanSubtab = 'current';
   let generatorMode = 'create';
+  let planStateResolved = (() => { try { return new URL(location.href).searchParams.has('new-plan'); } catch (_error) { return false; } })();
   let dirty = false;
   let hydrating = false;
   let hydratedPlanId = null;
@@ -653,8 +654,9 @@
   }
   function syncPlanShells() {
     const hasPlan = Boolean(current.planJson);
-    const showSaved = hasPlan && generatorMode === 'view';
-    if ($('#myPlanGeneratorWrap')) $('#myPlanGeneratorWrap').hidden = showSaved;
+    const showSaved = planStateResolved && hasPlan && generatorMode === 'view';
+    const showGenerator = planStateResolved && !showSaved;
+    if ($('#myPlanGeneratorWrap')) $('#myPlanGeneratorWrap').hidden = !showGenerator;
     if ($('#myPlanSavedWrap')) $('#myPlanSavedWrap').hidden = !showSaved;
     if ($('#savePlanBtn')) $('#savePlanBtn').textContent = hasPlan && generatorMode === 'edit' ? 'Save plan changes' : 'Save plan';
     if ($('#cancelEditPlanBtn')) $('#cancelEditPlanBtn').hidden = !(hasPlan && generatorMode === 'edit');
@@ -894,7 +896,7 @@
     activeWorkoutMemory=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.() || null;
     fillBodyProfile();
     current = { planId: 0, planJson: null, sessions: [], progress: null };
-    hydratedPlanId = null; generatorMode = 'create'; planLoadPromise = null; planLoadSerial += 1;
+    hydratedPlanId = null; generatorMode = 'create'; planStateResolved = false; planLoadPromise = null; planLoadSerial += 1;
     syncPlanShells();
     if (activeTopTab === 'my-plan' || activeTopTab === 'achievements') ensurePlanLoaded(true);
   }
@@ -911,7 +913,7 @@
   function useCachedPlan() { return false; }
   async function loadPlanFromServer(force = false) {
     if (!auth.authed) {
-      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; syncPlanShells();
+      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; planStateResolved = true; syncPlanShells();
       if ($('#myPlanOut')) $('#myPlanOut').textContent = 'Log in and save a plan to see your schedule here.';
       return;
     }
@@ -923,12 +925,13 @@
     const saved = response && response.ok && response.hasPlan ? { planId: response.planId, planJson: response.planJson, sessions: response.sessions, progress: response.progress } : null;
     const plan = normalisePlan(saved?.planJson);
     if (!plan) {
-      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; cachePlan(null); resetGenerator(); syncPlanShells();
+      current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; planStateResolved = true; hydratedPlanId = null; cachePlan(null); resetGenerator(); syncPlanShells();
       if ($('#myPlanStatus')) $('#myPlanStatus').textContent = response?.error === 'timeout' ? 'Plan loading timed out. Try again.' : '';
       return;
     }
     const rows = rollForwardPendingSessions(Array.isArray(saved.sessions) && saved.sessions.length ? saved.sessions.slice(0, plan.sessions) : sessionRows(plan), plan);
     current = { planId: saved.planId || 0, planJson: plan, sessions: rows, progress: calculateProgress(rows, plan) };
+    planStateResolved = true;
     cachePlan(current); generatorMode = 'view'; renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE }; syncPlanShells(); renderAchievements();
     if (!dirty && hydratedPlanId !== current.planId) { hydrateGenerator(plan); hydratedPlanId = current.planId; }
   }
