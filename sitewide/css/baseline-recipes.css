@@ -4706,3 +4706,21 @@ html body[data-app] #recipes .recipe-universal-template .recipe-standard-control
   width:auto !important;
   min-width:max-content !important;
 }
+
+
+/* BASELINE-THICKNESS-SLIDER-CONTRACT-20261013
+   Reusable sitewide discrete thickness slider for recipes that opt in with
+   data-thickness-control="slider". Visual slider theming remains owned by
+   baseline-sitewide.css via --bl-slider-* tokens. */
+body[data-app] #recipes .recipe-universal-template .recipe-formula-controls .recipe-control-row--thickness-slider{
+  display:block !important;
+  width:min(620px,100%) !important;
+  flex:1 1 100% !important;
+}
+body[data-app] #recipes .recipe-universal-template .recipe-control-row--thickness-slider > .label{
+  display:none !important;
+}
+body[data-app] #recipes .recipe-universal-template .recipe-control-row--thickness-slider .thickness-slider-controller{
+  width:100% !important;
+  margin:0 !important;
+}
