@@ -20,9 +20,9 @@ const recipeDir = path.join(root, 'systems/baseline-food-approach/recipes');
 const ingredientDir = path.join(root, 'systems/baseline-food-approach/ingredients');
 
 test('Food content containers share one warmer theme surface', () => {
-  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
-  assert.match(theme, /--food-surface-panel:\s*var\(--food-surface-card\)/);
-  assert.match(theme, /--food-surface-subtle:\s*var\(--food-surface-card\)/);
+  assert.match(theme, /--food-surface-card:\s*#f59b32/);
+  assert.match(theme, /--food-surface-panel:\s*linear-gradient/);
+  assert.match(theme, /--food-surface-subtle:\s*linear-gradient/);
   assert.match(foodCss, /\.card\s*\{[\s\S]*?background:var\(--food-surface-card\)/);
   assert.match(dietCss, /\.diet-log-panel\s*\{[\s\S]*?background:var\(--food-surface-panel\)/);
   assert.doesNotMatch(recipeCss, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
@@ -122,17 +122,20 @@ test('universal recipe enhancer still owns Food and Skincare controls', () => {
 });
 
 
-test('Food first-paint routing is owned by canonical Food CSS, not an inline override', () => {
+test('Food section first-paint stays local while recipe first-paint is sitewide', () => {
   assert.doesNotMatch(foodHtml, /id="baseline-recipe-route-first-paint-style"/);
   assert.match(foodCss, /Initial route authority: URL state is present before body paint/);
   assert.match(foodCss, /html\[data-initial-section\] body\[data-app="food"\] main\.wrap>\.section\{display:none!important\}/);
   assert.match(foodCss, /#diet-log\.section\{display:block!important\}/);
+  assert.doesNotMatch(foodCss, /data-initial-recipe-route|recipe-open-mode|recipe-detail-open/);
+  assert.match(recipeCss, /First-paint route guard/);
+  assert.match(recipeCss, /html\[data-initial-recipe-route="1"\] #recipes \.recipe-page/);
   assert.match(foodHtml, /id="baseline-food-tab-first-state"/);
 });
 
 
 test('Food card colour has one authority and cannot split into competing yellow surfaces', () => {
-  assert.match(theme, /--food-surface-card:\s*var\(--food-orange\)/);
+  assert.match(theme, /--food-surface-card:\s*#f59b32/);
   assert.match(sitewideCss, /--bl-surface-card-solid:\s*var\(--food-surface-card\)/);
   assert.match(sitewideCss, /--bl-surface-recipe-card-solid:\s*var\(--food-surface-card\)/);
   assert.match(sitewideCss, /--bl-surface-panel-solid:\s*var\(--food-surface-panel\)/);
