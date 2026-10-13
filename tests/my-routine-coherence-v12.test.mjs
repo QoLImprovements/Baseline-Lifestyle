@@ -18,7 +18,6 @@ const skinCss=read('systems/baseline-natural-skincare/css/skincare-routine-sitew
 const skinEntryCss=read('systems/baseline-natural-skincare/css/skincare-routine-workspace-v2.css');
 const skinBaseCss=read('systems/baseline-natural-skincare/css/baseline-natural-skincare.css');
 const fitnessHtml=read('systems/baseline-fitness/baseline-fitness.html');
-const fitnessLoader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const fitnessWorkspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
 const fitnessRoutineLog=read('systems/baseline-fitness/js/fitness-routine-log-v1.js');
 const fitnessGroups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
@@ -28,7 +27,7 @@ const livePolicy=read('systems/baseline-fitness/js/fitness-live-policy-v1.js');
 const multiplePlans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
 const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
 const fitnessEntryCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
-const workspaceCss=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
+const workspaceCss=fitnessEntryCss;
 const generatorCss=read('systems/baseline-fitness/css/fitness-multiple-plans.css');
 
 test('one active shared My Routine coherence layer remains',()=>{
@@ -41,7 +40,8 @@ test('one active shared My Routine coherence layer remains',()=>{
   assert.match(fitnessHtml,/baseline-routine-coherence-v12\.js/);
   assert.match(fitnessHtml,/baseline-public-routine-viewonly-v4\.js/);
   assert.match(fitnessHtml,/fitness-routine-groups-v2\.js/);
-  assert.doesNotMatch(fitnessLoader,/loadScript\(|createElement\(['"]script['"]\)|localStorage|sessionStorage|baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
+  assert.doesNotMatch(fitnessWorkspace,/loadScript\(|createElement\(['"]script['"]\)|localStorage|sessionStorage|baseline-routine-stability-v11|baseline-routine-experience-v10|baseline-routine-experience-v9|baseline-routine-authority-v7|fitness-theme-guard-v1/);
 });
 
 test('first-paint route identity is in the head while system CSS owns visibility',()=>{
@@ -96,7 +96,7 @@ test('retired repair layers and duplicate controllers remain physically absent',
 });
 
 test('My Routine never uses a loading screen or runtime style authority',()=>{
-  for (const source of [skinLoader,skinRoutine,fitnessLoader,skinGroups,fitnessWorkspace,fitnessRoutineLog,fitnessGroups,fitnessSummary,generator,livePolicy,coherence]) {
+  for (const source of [skinLoader,skinRoutine,skinGroups,fitnessWorkspace,fitnessRoutineLog,fitnessGroups,fitnessSummary,generator,livePolicy,coherence]) {
     assert.doesNotMatch(source,/Loading My Routine|BootShield|routine-booting|waitForBaseRoutine|createElement\(['\"]style['\"]\)|injectStyles/);
   }
 });
@@ -132,9 +132,13 @@ test('Skincare uses account-backed routine state with revision-protected saves',
 });
 
 test('Fitness builds its final structure synchronously before routine data paints',()=>{
-  assert.match(fitnessLoader,/function requestedRoute\(\)/);
-  assert.doesNotMatch(fitnessLoader,/seedBaseWorkspaceView|localStorage|sessionStorage/);
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
+  assert.match(structure,/function routeFromPath\(\)/);
   assert.match(structure,/global\.BASELINE_fitnessRoutineStructure=Object\.freeze/);
+  assert.match(fitnessWorkspace,/data-fitness-routine-view="summary"/);
+  assert.match(fitnessWorkspace,/data-fitness-routine-view="plan"/);
+  assert.match(fitnessWorkspace,/data-fitness-routine-view="public"/);
+  assert.match(fitnessWorkspace,/section\.replaceChildren\(shell\);\s*section\.dataset\.routineWorkspaceV2 = 'true';/s);
   assert.match(fitnessWorkspace,/global\.BASELINE_fitnessRoutineStructure\?\.boot\?\.\(\)/);
   assert.match(fitnessWorkspace,/function renderStableState\(\)/);
   assert.match(fitnessWorkspace,/async function loadForAuth\(snapshot\)/);
@@ -255,7 +259,7 @@ test('changed JavaScript parses',()=>{
   [
     'sitewide/js/baseline-routine-coherence-v12.js','sitewide/js/baseline-public-routine-viewonly-v4.js',
     'systems/baseline-natural-skincare/js/skincare-routine.js','systems/baseline-natural-skincare/js/skincare-routine-enhancements.js','systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js',
-    'systems/baseline-fitness/js/fitness-routine-workspace.js','systems/baseline-fitness/js/fitness-routine-workspace-v2.js','systems/baseline-fitness/js/fitness-routine-log-v1.js','systems/baseline-fitness/js/fitness-routine-groups-v2.js',
+    'systems/baseline-fitness/js/fitness-routine-workspace-v2.js','systems/baseline-fitness/js/fitness-routine-log-v1.js','systems/baseline-fitness/js/fitness-routine-groups-v2.js',
     'systems/baseline-fitness/js/fitness-generator-progression-v1.js','systems/baseline-fitness/js/fitness-live-policy-v1.js','systems/baseline-fitness/js/fitness-multiple-plans.js','systems/baseline-fitness/js/fitness-routine-structure-v4.js','systems/baseline-fitness/js/fitness-routine-summary-v2.js'
   ].forEach(path=>{
     const checked=spawnSync(process.execPath,['--check',url(path).pathname],{ encoding:'utf8' });
