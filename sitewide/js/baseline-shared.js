@@ -4236,8 +4236,14 @@ function buildControls(recipeEl){
         opts = opts || {};
         const t = (nextType === 'porridge') ? 'porridge' : 'jumbo';
         oatType = t;
-        if(oatBtnJumbo) oatBtnJumbo.classList.toggle('is-active', t === 'jumbo');
-        if(oatBtnPorridge) oatBtnPorridge.classList.toggle('is-active', t === 'porridge');
+        if(oatBtnJumbo){
+          oatBtnJumbo.classList.toggle('is-active', t === 'jumbo');
+          oatBtnJumbo.setAttribute('aria-pressed', t === 'jumbo' ? 'true' : 'false');
+        }
+        if(oatBtnPorridge){
+          oatBtnPorridge.classList.toggle('is-active', t === 'porridge');
+          oatBtnPorridge.setAttribute('aria-pressed', t === 'porridge' ? 'true' : 'false');
+        }
 
         const oatLink = q('a.oat-type-link', recipeEl);
         if(oatLink){
