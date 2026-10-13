@@ -719,6 +719,9 @@
   font-size:16px;
   color:var(--muted,var(--ink));
 }
+.recipe-universal-template .glide-scale > span{
+  white-space:nowrap;
+}
 .recipe-universal-template .glide-scale > span:last-child{text-align:right}
 .recipe-universal-template .glide-value-bubble,
 .recipe-universal-template .glide-breakdown,
@@ -861,6 +864,7 @@ html[data-initial-recipe-slug$="-shave-gel"] #recipes #r8{
 /* Clean-route subview is honoured before runtime attaches. */
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="standard"],
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="guidance"],
+html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-adjustments-row,
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .variant-heading,
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .variant-switcher{display:none!important}
 html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro.recipe-view-hidden{
@@ -869,6 +873,7 @@ html[data-initial-recipe-view="details"] body[data-app] #recipes .recipe-univers
 }
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="standard"],
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .recipe-details-intro,
+html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .recipe-adjustments-row,
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .variant-heading,
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template > .variant-switcher{display:none!important}
 html[data-initial-recipe-view="guidance"] body[data-app] #recipes .recipe-universal-template [data-recipe-view-group="guidance"]{display:revert!important}
