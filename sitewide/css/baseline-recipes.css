@@ -15,6 +15,39 @@
 *{box-sizing:border-box}
 
 /* --------------------------------------------------------------------------
+   Canonical recipe surface
+   -------------------------------------------------------------------------- */
+#recipes .recipe-page,
+#recipes-landing{
+  background:var(--bl-surface-recipe-card-solid,var(--bl-surface-card-solid,var(--card-bg)));
+  background-image:none;
+  color:var(--bl-surface-ink,var(--ink));
+  opacity:1;
+  -webkit-backdrop-filter:none;
+  backdrop-filter:none;
+}
+#recipes .recipe-universal-template .recipe-adjustments-panel,
+#recipes .recipe-universal-template .recipe-controls,
+#recipes .recipe-universal-template .scale-block,
+#recipes .recipe-universal-template .scale-tools{
+  background:transparent;
+  background-image:none;
+  box-shadow:none;
+}
+#recipes .recipe-universal-template input:not([type="range"]),
+#recipes .recipe-universal-template select,
+#recipes .recipe-universal-template textarea,
+#recipes .recipe-universal-template .bl-number input{
+  background:var(--bl-surface-input-solid,var(--showall-bg));
+  background-image:none;
+  color:var(--bl-surface-ink,var(--ink));
+  -webkit-text-fill-color:currentColor;
+  border-color:var(--border-2,var(--border,rgba(0,0,0,.18)));
+  opacity:1;
+  box-shadow:none;
+}
+
+/* --------------------------------------------------------------------------
    Recipe collection + focused route
    -------------------------------------------------------------------------- */
 .recipes{
