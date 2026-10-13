@@ -89,3 +89,12 @@ test('Fitness runtime loads plans only from per-plan files after migration',()=>
   assert.match(resource,/\$resource\['data'\]\['plans'\] = bl_fitness_plan_files_read\(\$uid\);/);
   assert.doesNotMatch(resource,/if\(\(\$resource\['data'\]\['plans'\] \?\? \[\]\) === \[\]\)/);
 });
+
+
+test('Fitness startup never writes or renders an invented default plan',()=>{
+  const listPlans=read('systems/baseline-fitness/api/list_plans.php');
+  assert.match(listPlans,/'selectedPlanId'=>\$selectedPlanId/);
+  assert.doesNotMatch(plans,/if\(!selectedPlanId\(\)&&plans\[0\]\)await setSelectedPlanId/);
+  assert.doesNotMatch(plans,/selectedPlan\(\).*\|\| plans\[0\]/);
+  assert.match(plans,/selectedPlanMemory=Math\.max\(0,Number\(data\?\.selectedPlanId\)\|\|0\)/);
+});
