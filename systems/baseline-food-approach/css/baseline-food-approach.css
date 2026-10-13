@@ -384,3 +384,36 @@ html[data-initial-section="ingredients"] body[data-app="food"] #ingredients.sect
 html[data-initial-section="diet-log"] body[data-app="food"] #diet-log.section{display:block!important}
 html[data-initial-recipe-route="1"] body[data-app="food"] #recipes #recipes-landing{display:none!important}
 html[data-initial-recipe-route="1"] body[data-app="food"] #recipes .recipes{display:block!important}
+
+
+/* FOOD_PASSION_PALETTE_20261013_1
+   Colour-only Food authority. Shared Baseline geometry and behaviour are untouched. */
+body[data-app="food"] .action,
+body[data-app="food"] .btnlike,
+body[data-app="food"] .print-btn,
+body[data-app="food"] .multiplier button,
+body[data-app="food"] #ingredients .filter-bar .clear{
+  background:var(--food-action-bg) !important;
+  background-image:var(--food-action-bg) !important;
+  color:var(--food-action-ink) !important;
+  -webkit-text-fill-color:currentColor !important;
+  border-color:var(--food-tab-border) !important;
+}
+body[data-app="food"] #ingredients .filter-bar select,
+body[data-app="food"] #ingredients .filter-bar .bl-select-btn,
+body[data-app="food"] #ingredients .bl-select-menu,
+body[data-app="food"] #ingredients .bl-select-menu [role="option"]{
+  background:var(--food-surface-control) !important;
+  background-image:var(--food-surface-control) !important;
+  color:var(--food-control-ink) !important;
+  -webkit-text-fill-color:currentColor !important;
+  border-color:var(--food-surface-border) !important;
+}
+body[data-app="food"] .tab{
+  color:var(--food-control-ink) !important;
+}
+body[data-app="food"] .tab.active,
+body[data-app="food"] .tab[aria-selected="true"]{
+  color:var(--food-action-ink) !important;
+  -webkit-text-fill-color:currentColor !important;
+}
