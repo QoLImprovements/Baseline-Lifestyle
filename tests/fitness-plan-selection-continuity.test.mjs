@@ -16,7 +16,7 @@ test('Calisthenics plan selection has one controller and one clean Routine Plan 
   assert.match(plans,/async function openPlan\(planId\)/);
   assert.match(plans,/saveSelectedPlanId/);
   assert.match(plans,/\/baseline-fitness\/my-routine\/plan/);
-  assert.match(plans,/activateTopView\?\.\('plan',false\)/);
+  assert.match(plans,/activateTopView\?\.\('plan',true\)/);
   assert.doesNotMatch(plans,/localStorage|sessionStorage|fitnessPlanSelectionContinuity/);
 });
 
