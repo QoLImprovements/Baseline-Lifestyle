@@ -5,7 +5,6 @@ import { readFileSync } from 'node:fs';
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const mirror=read('systems/baseline-fitness/js/fitness-public-routine-summary-mirror-v1.js');
 const owner=read('systems/baseline-fitness/js/fitness-routine-summary-v2.js');
-const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
 const html=read('systems/baseline-fitness/baseline-fitness.html');
 
 test('Public Fitness Routine Summary uses the canonical owner Summary renderer as its card factory',()=>{
@@ -35,5 +34,5 @@ test('Fitness My Routine parser-loads the Public Summary mirror after Public Vie
   const mirrorIndex=html.indexOf('fitness-public-routine-summary-mirror-v1.js');
   assert.ok(publicIndex>=0);
   assert.ok(mirrorIndex>publicIndex);
-  assert.doesNotMatch(loader,/loadScript|createElement\(['"]script['"]\)/);
+  assert.doesNotMatch(html,/fitness-routine-workspace\.js/);
 });
