@@ -34,10 +34,12 @@ test('clean recipe detail routes use the complete parent applications only',()=>
 
 test('Fitness route generation remains canonical without a fallback tab controller',()=>{
   const fitness=read('systems/baseline-fitness/js/baseline-fitness-app.js');
-  const routine=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+  const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
   const shared=read('sitewide/js/baseline-shared.js');
   assert.match(fitness,/const ROUTE_BASE = '\/baseline-fitness'/);
-  assert.match(routine,/function requestedRoute\(\)/);
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
+  assert.match(structure,/function routeFromPath\(\)/);
+  assert.match(structure,/ROUTE_BASE='\/baseline-fitness\/my-routine'/);
   assert.match(shared,/'my-body':'my-body'/);
   assert.match(shared,/library:'library'/);
   assert.equal(existsSync(url('sitewide/js/baseline-tabs.js')),false);
