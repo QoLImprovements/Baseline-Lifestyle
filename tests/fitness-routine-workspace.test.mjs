@@ -7,7 +7,6 @@ const require=createRequire(import.meta.url);
 require('../systems/baseline-fitness/js/fitness-activity-catalogue.js');
 const catalogue=require('../systems/baseline-fitness/js/fitness-activity-catalogue-v2.js');
 const html=fs.readFileSync(new URL('../systems/baseline-fitness/baseline-fitness.html',import.meta.url),'utf8');
-const loader=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js',import.meta.url),'utf8');
 const workspace=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace-v2.js',import.meta.url),'utf8');
 const structure=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-structure-v4.js',import.meta.url),'utf8');
 const summary=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-routine-summary-v2.js',import.meta.url),'utf8');
@@ -15,19 +14,18 @@ const routineLog=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness
 const policy=fs.readFileSync(new URL('../systems/baseline-fitness/js/fitness-live-policy-v1.js',import.meta.url),'utf8');
 const shared=fs.readFileSync(new URL('../sitewide/js/baseline-routine-coherence-v12.js',import.meta.url),'utf8');
 const sharedCss=fs.readFileSync(new URL('../sitewide/css/baseline-routine-coherence-v12.css',import.meta.url),'utf8');
-const fitnessCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-sitewide-v3.css',import.meta.url),'utf8');
-const workspaceCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace-v2.css',import.meta.url),'utf8');
+const workspaceCss=fs.readFileSync(new URL('../systems/baseline-fitness/css/fitness-routine-workspace.css',import.meta.url),'utf8');
 const publicViewer=fs.readFileSync(new URL('../sitewide/js/baseline-public-routine-viewonly-v4.js',import.meta.url),'utf8');
 const updateSession=fs.readFileSync(new URL('../systems/baseline-fitness/api/update_session.php',import.meta.url),'utf8');
 
-test('Fitness resolves the exact My Routine route before first paint with parser-authored dependencies',() => {
+test('Fitness resolves the exact My Routine route before first paint with one canonical route owner',() => {
   assert.match(html,/id="baseline-fitness-first-paint"/);
   assert.match(html,/data-initial-routine-view/);
   assert.match(html,/my-routine\\\/plan/);
-  assert.match(loader,/synchronous My Routine route owner/);
-  assert.match(loader,/function requestedRoute\(\)/);
-  assert.match(loader,/function selectRoutinePage\(/);
-  assert.doesNotMatch(loader,/loadScript|loadOrdered|createElement\(['"]script['"]\)|Loading My Routine|BootShield|localStorage|sessionStorage/);
+  assert.equal(fs.existsSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js',import.meta.url)),false);
+  assert.match(structure,/function routeFromPath\(\)/);
+  assert.match(structure,/ROUTE_BASE='\/baseline-fitness\/my-routine'/);
+  assert.doesNotMatch(workspace,/loadScript|loadOrdered|createElement\(['"]script['"]\)|Loading My Routine|BootShield|localStorage|sessionStorage/);
 });
 
 test('Fitness creates final structure synchronously, then paints account data only after resolved auth',() => {
@@ -89,7 +87,7 @@ test('Remove Entry buttons are preserved across patches instead of being destroy
 test('Routine Log is parser-authored exactly once instead of force-loaded by a compatibility loader',() => {
   assert.equal((html.match(/fitness-routine-log-v1\.js/g)||[]).length,1);
   assert.match(html,/data-fitness-routine-log-v1="true"/);
-  assert.doesNotMatch(loader,/ROUTINE LOG COMPATIBILITY CONTRACT|loadScript|createElement\(['"]script['"]\)/);
+  assert.equal(fs.existsSync(new URL('../systems/baseline-fitness/js/fitness-routine-workspace.js',import.meta.url)),false);
 });
 
 test('Fitness activity picker does not expose the brighter border as an isolated white rule',() => {
@@ -121,8 +119,8 @@ test('Number Of Days range stays valid and compact',() => {
 test('live policy owns behaviour not a runtime visual layer',() => {
   assert.doesNotMatch(policy,/createElement\(['\"]style['\"]\)|function injectStyles|baselineFitnessLivePolicyStyle|setInterval/);
   assert.doesNotMatch(policy,/global\.fetch\s*=/);
-  assert.match(fitnessCss,/fitness-start-early-overlay/);
-  assert.match(fitnessCss,/ex-picker-menu/);
+  assert.match(workspaceCss,/fitness-start-early-overlay/);
+  assert.match(workspaceCss,/ex-picker-menu/);
 });
 
 test('Public Fitness routine remains owner-facing View Only structure',() => {
