@@ -971,7 +971,16 @@
   async function deletePlan() {
     const response = FILE_PROTOCOL ? { ok: true } : await apiJson(`${API}/delete_plan.php`, { method: 'POST', body: { planId: current.planId } });
     if (!response.ok) { if ($('#deletePlanStatus')) $('#deletePlanStatus').textContent = 'Could not delete the plan.'; return; }
-    current = { planId: 0, planJson: null, sessions: [], progress: null }; generatorMode = 'create'; hydratedPlanId = null; resetGenerator(); closeDeletePlanModal(); syncPlanShells(); renderAchievements();
+
+    closeDeletePlanModal();
+    await global.BASELINE_fitnessPlans?.refresh?.();
+    current = { planId: 0, planJson: null, sessions: [], progress: null };
+    hydratedPlanId = null;
+    generatorMode = 'create';
+    planStateResolved = false;
+    syncPlanShells();
+    await ensurePlanLoaded(true);
+    renderAchievements();
   }
 
   async function loadProfiles() {
@@ -1110,6 +1119,7 @@
     recordTimedCurrentStep: (achieved, inputMode = 'manual') => recordStep('success', achieved, inputMode),
     finishSession: finishCurrentWorkout,
     resetSession: resetCurrentWorkout,
+    reloadSelectedPlan: () => ensurePlanLoaded(true),
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
   global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });

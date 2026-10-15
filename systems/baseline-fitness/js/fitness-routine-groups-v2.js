@@ -238,7 +238,7 @@
       card = document.createElement('details');
       card.className = 'bl-v4-group-card bl-v4-group-card-global bl-v4-group-card-compact';
       card.dataset.v4GroupCard = 'global';
-      card.open = true;
+      card.open = false;
       card.innerHTML = `<summary class="bl-v4-group-card-summary">Routine Groups</summary>
         <div class="bl-v4-group-card-body">
           <div class="bl-v4-group-create">

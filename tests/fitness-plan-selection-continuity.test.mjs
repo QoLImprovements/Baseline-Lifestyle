@@ -6,7 +6,6 @@ const url=path=>new URL(`../${path}`,import.meta.url);
 const read=path=>readFileSync(url(path),'utf8');
 
 const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
-const collapse=read('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js');
 const page=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessState=read('systems/baseline-fitness/api/fitness_state.php');
 const getPlan=read('systems/baseline-fitness/api/get_plan.php');
@@ -17,23 +16,24 @@ test('Calisthenics plan selection has one controller and one clean Routine Plan 
   assert.match(plans,/async function openPlan\(planId\)/);
   assert.match(plans,/saveSelectedPlanId/);
   assert.match(plans,/\/baseline-fitness\/my-routine\/plan/);
-  assert.match(plans,/activateTopView\?\.\('plan',false\)/);
+  assert.match(plans,/activateTopView\?\.\('plan',true\)/);
   assert.doesNotMatch(plans,/localStorage|sessionStorage|fitnessPlanSelectionContinuity/);
 });
 
-test('selected plan identity is account-backed before navigation',()=>{
+test('selected plan identity is account-backed before in-place loading',()=>{
   assert.match(fitnessState,/'save_selected_plan'/);
   assert.match(fitnessState,/'selectedPlanId'/);
   assert.match(plans,/const saved=await setSelectedPlanId\(id\)/);
   assert.match(plans,/if\(owner!=='guest'&&!saved\)return/);
-  assert.match(plans,/global\.location\.assign\(new URL\('\/baseline-fitness\/my-routine\/plan'/);
+  assert.match(plans,/await global\.BASELINE_fitnessWorkout\?\.reloadSelectedPlan\?\.\(\)/);
 });
 
-test('plan-card disclosure is page-route state only',()=>{
-  assert.doesNotMatch(collapse,/localStorage|sessionStorage/);
-  assert.match(collapse,/data-initial-routine-plan/);
-  assert.match(collapse,/details\[data-fitness-plan-card="\$\{selectionReveal\}"\]/);
-  assert.match(collapse,/card\.open=true/);
+test('plan-card disclosure is owned by the canonical Routine structure',()=>{
+  const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-plan-collapse-v1.js')),false);
+  assert.doesNotMatch(page,/fitness-routine-plan-collapse-v1\.js/);
+  assert.match(structure,/details\[data-fitness-plan-card="\$\{next\}"\]/);
+  assert.match(structure,/if \(card\) card\.open=true/);
 });
 
 test('Create Another Plan uses an explicit clean-route create request, not browser persistence',()=>{
@@ -108,4 +108,70 @@ test('Fitness first paint stays neutral until authoritative plan state resolves'
   assert.match(plans,/let plansResolved = false/);
   assert.match(plans,/Loading plans…/);
   assert.match(plans,/select\.disabled=!plansResolved \|\| !data\.length/);
+});
+
+
+test('Fitness My Routine has one route and visibility owner',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  const structure=read('systems/baseline-fitness/js/fitness-routine-structure-v4.js');
+
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-routine-workspace.js')),false);
+  assert.doesNotMatch(page,/fitness-routine-workspace\.js/);
+  assert.match(structure,/canonical My Routine structure adapter/);
+  assert.doesNotMatch(workspace,/\$\$\('\.fitness-routine-panel'\).*panel\.hidden/);
+  assert.match(workspace,/BASELINE_fitnessRoutineStructure\.activateTopView/);
+});
+
+test('Fitness plan deletion has one canonical path',()=>{
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const deleteApi=read('systems/baseline-fitness/api/delete_plan.php');
+
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js')),false);
+  assert.doesNotMatch(page,/fitness-plan-delete-continuity-v1\.js/);
+  assert.doesNotMatch(plans,/pathname\.endsWith\('\/delete_plan\.php'\)/);
+  assert.match(app,/await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\)/);
+  assert.match(deleteApi,/'selectedPlanId'=>max\(0,/);
+});
+
+test('Fitness workspace builds the canonical shell directly and reveals it atomically',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.match(workspace,/data-fitness-routine-view="summary"/);
+  assert.match(workspace,/data-fitness-routine-view="plan"/);
+  assert.match(workspace,/data-fitness-routine-view="public"/);
+  assert.match(workspace,/section\.replaceChildren\(shell\);\s*section\.dataset\.routineWorkspaceV2 = 'true';/s);
+});
+
+test('Fitness Routine CSS has one Fitness-owned entry point',()=>{
+  const routineCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
+  const obsolete=[
+    'fitness-routine-workspace-v2.css',
+    'fitness-routine-sitewide-v3.css',
+    'fitness-routine-plan-collapse-v1.css',
+    'fitness-routine-groups-collapsible-v1.css',
+    'fitness-routine-summary-v2.css'
+  ];
+  for(const name of obsolete){
+    assert.equal(existsSync(url('systems/baseline-fitness/css/'+name)),false);
+    assert.equal(routineCss.includes(name),false);
+  }
+  assert.match(page,/baseline-routine-coherence-v12\.css/);
+  assert.doesNotMatch(routineCss,/@import url\('\/systems\/baseline-fitness\/css\//);
+});
+
+test('dead Fitness compatibility assets stay deleted',()=>{
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-exercise-picker-safety-v1.js')),false);
+});
+
+
+test('switching saved Fitness plans is in-place, not a page navigation',()=>{
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  assert.match(app,/reloadSelectedPlan: \(\) => ensurePlanLoaded\(true\)/);
+  assert.match(plans,/await global\.BASELINE_fitnessWorkout\?\.reloadSelectedPlan\?\.\(\)/);
+  assert.doesNotMatch(plans,/openPlan[\s\S]{0,700}location\.assign/);
+});
+
+test('Routine Groups are born collapsed rather than corrected after paint',()=>{
+  const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  assert.match(groups,/card\.open = false/);
+  assert.doesNotMatch(groups,/card\.open = true/);
 });

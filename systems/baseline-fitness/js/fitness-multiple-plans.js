@@ -261,11 +261,6 @@
     global.fetch=async function(input,init={}) {
       const url=urlFor(input);if (!url) return nativeFetch(input,init);
       if (url.pathname.endsWith('/save_plan.php') || url.pathname.endsWith('/plan_update.php')) return enhancedWrite(input,init,url);
-      if(url.pathname.endsWith('/delete_plan.php')){
-        const response=await nativeFetch(input,init);
-        if(response.ok){await setSelectedPlanId(0);setCreatingPlan(false);await refreshPlans();}
-        return response;
-      }
       return nativeFetch(input,init);
     };
   }
@@ -342,8 +337,13 @@
     document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
     document.documentElement.setAttribute('data-initial-routine-view','plan');
     document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
-    try{global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',false);}catch(_error){}
-    global.location.assign(new URL('/baseline-fitness/my-routine/plan',global.location.origin).toString());
+    try{
+      global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',true);
+      global.BASELINE_fitnessRoutineStructure?.activatePlanView?.('calisthenics',false);
+    }catch(_error){}
+    await global.BASELINE_fitnessWorkout?.reloadSelectedPlan?.();
+    await refreshPlans();
+    patchInterface();
   }
 
   function completedDate(session) {

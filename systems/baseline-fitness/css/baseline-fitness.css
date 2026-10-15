@@ -595,35 +595,6 @@ body[data-app="fitness"] .exercise-info-button{
 body[data-app="fitness"] .plan-generator-intro p{margin:0;}
 
 
-.compact-action{appearance:none;border:1px solid rgba(255,255,255,0.16);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.96);border-radius:14px;padding:10px 12px;font:inherit;font-weight:850;cursor:pointer;line-height:1;display:inline-flex;align-items:center;gap:8px;min-height:42px}
-.compact-action:hover{filter:brightness(1.06)}
-.compact-action[disabled]{opacity:.55;cursor:not-allowed;filter:none}
-.compact-action--primary{background:linear-gradient(135deg, rgba(143,15,31,0.96), rgba(177,18,38,0.88));box-shadow:0 18px 40px -28px rgba(143,15,31,0.72)}
-.compact-action--success{background:rgba(28,122,66,.24);border-color:rgba(90,220,140,.30)}
-.compact-action--danger{background:rgba(143,15,31,.18);border-color:rgba(225,77,77,.35)}
-.compact-action--ghost{background:rgba(255,255,255,0.05)}
-.saved-plan-actions{justify-content:flex-end}
-.plan-options-panel{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.plan-options-meta{margin-top:10px;display:grid;gap:12px}
-.option-select-inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.future-empty,.completed-empty{padding:20px 0;color:var(--muted)}
-.current-workout{display:grid;gap:10px;margin-top:16px}
-.current-step{padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05)}
-.current-step-text{margin-top:8px;font-size:1rem;font-weight:850}
-.current-step-head{align-items:flex-start}
-.step-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.step-status{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);font-size:.92rem;font-weight:800;background:rgba(255,255,255,0.06)}
-.step-status.success{border-color:rgba(90,220,140,.3);background:rgba(28,122,66,.18)}
-.step-status.failed{border-color:rgba(225,77,77,.35);background:rgba(143,15,31,.14)}
-.step-subnote{margin-top:6px;color:rgba(255,255,255,.72)}
-.failure-entry{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.failure-entry input{width:160px;max-width:100%}
-.session-step-list{display:grid;gap:10px;margin-top:14px}
-.timer-overlay,.modal-overlay{position:fixed;inset:0;background:rgba(5,2,6,.76);display:grid;place-items:center;padding:20px;z-index:9999}
-.timer-modal,.confirm-modal{width:min(100%,460px)}
-.timer-digits{font-size:clamp(2.5rem,8vw,4.6rem);font-weight:950;letter-spacing:.04em;text-align:center;margin-top:12px}
-.timer-modal .note{margin-top:6px}
-@media (max-width:700px){.saved-plan-actions{width:100%;justify-content:flex-start}.step-actions{width:100%;justify-content:flex-start}}
 
 
 /* Hidden UI state must override layout classes such as .grid and .card. */
@@ -668,35 +639,6 @@ body[data-app="fitness"] textarea{
   color:var(--ink)!important;
 }
 
-.compact-action{appearance:none;border:1px solid rgba(255,255,255,0.16);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.96);border-radius:14px;padding:10px 12px;font:inherit;font-weight:850;cursor:pointer;line-height:1;display:inline-flex;align-items:center;gap:8px;min-height:42px}
-.compact-action:hover{filter:brightness(1.06)}
-.compact-action[disabled]{opacity:.55;cursor:not-allowed;filter:none}
-.compact-action--primary{background:linear-gradient(135deg, rgba(143,15,31,0.96), rgba(177,18,38,0.88));box-shadow:0 18px 40px -28px rgba(143,15,31,0.72)}
-.compact-action--success{background:rgba(28,122,66,.24);border-color:rgba(90,220,140,.30)}
-.compact-action--danger{background:rgba(143,15,31,.18);border-color:rgba(225,77,77,.35)}
-.compact-action--ghost{background:rgba(255,255,255,0.05)}
-.saved-plan-actions{justify-content:flex-end}
-.plan-options-panel{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
-.plan-options-meta{margin-top:10px;display:grid;gap:12px}
-.option-select-inline{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.future-empty,.completed-empty{padding:20px 0;color:var(--muted)}
-.current-workout{display:grid;gap:10px;margin-top:16px}
-.current-step{padding:10px 12px;border-radius:16px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.05)}
-.current-step-text{margin-top:8px;font-size:1rem;font-weight:850}
-.current-step-head{align-items:flex-start}
-.step-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-.step-status{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);font-size:.92rem;font-weight:800;background:rgba(255,255,255,0.06)}
-.step-status.success{border-color:rgba(90,220,140,.3);background:rgba(28,122,66,.18)}
-.step-status.failed{border-color:rgba(225,77,77,.35);background:rgba(143,15,31,.14)}
-.step-subnote{margin-top:6px;color:rgba(255,255,255,.72)}
-.failure-entry{margin-top:10px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.failure-entry input{width:160px;max-width:100%}
-.session-step-list{display:grid;gap:10px;margin-top:14px}
-.timer-overlay,.modal-overlay{position:fixed;inset:0;background:rgba(5,2,6,.76);display:grid;place-items:center;padding:20px;z-index:9999}
-.timer-modal,.confirm-modal{width:min(100%,460px)}
-.timer-digits{font-size:clamp(2.5rem,8vw,4.6rem);font-weight:950;letter-spacing:.04em;text-align:center;margin-top:12px}
-.timer-modal .note{margin-top:6px}
-@media (max-width:700px){.saved-plan-actions{width:100%;justify-content:flex-start}.step-actions{width:100%;justify-content:flex-start}}
 
 /* --- My Plan controls --- */
 .my-plan-saved-head,.saved-plan-actions,.options-frequency,.day-picker,.my-plan-subtabs{display:flex;align-items:center;gap:10px;flex-wrap:wrap}

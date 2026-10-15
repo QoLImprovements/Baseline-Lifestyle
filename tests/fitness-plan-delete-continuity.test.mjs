@@ -1,35 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync,readFileSync } from 'node:fs';
 
-const read = path => readFileSync(new URL(`../${path}`, import.meta.url), 'utf8');
-const continuity = read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js');
-const html = read('systems/baseline-fitness/baseline-fitness.html');
+const url=path=>new URL(`../${path}`,import.meta.url);
+const read=path=>readFileSync(url(path),'utf8');
 
-test('plan deletion continuity runtime parses and is loaded by My Routine', () => {
-  assert.doesNotThrow(() => new Function(continuity));
-  assert.ok(html.includes('fitness-plan-delete-continuity-v1.js'));
-  assert.ok(html.includes('data-fitness-plan-delete-continuity-v1'));
+const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+const api=read('systems/baseline-fitness/api/delete_plan.php');
+const html=read('systems/baseline-fitness/baseline-fitness.html');
+const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
+
+test('retired delete-continuity interceptor remains physically absent',()=>{
+  assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js')),false);
+  assert.doesNotMatch(html,/fitness-plan-delete-continuity-v1\.js/);
+  assert.doesNotMatch(plans,/pathname\.endsWith\('\/delete_plan\.php'\)/);
 });
 
-test('deleting one plan selects another saved plan instead of entering Plan Generator', () => {
-  assert.ok(continuity.includes('function chooseSurvivor'));
-  assert.ok(continuity.includes("controller.openPlan(survivorId)"));
-  assert.ok(continuity.includes('if (survivors.length)'));
-  assert.ok(continuity.includes('for (let index=deletedIndex+1'));
-  assert.ok(continuity.includes('for (let index=deletedIndex-1'));
+test('delete endpoint atomically chooses the next selected plan',()=>{
+  assert.match(api,/\$selectedPlanId === \$planId/);
+  assert.match(api,/strnatcasecmp\(\$leftName, \$rightName\)/);
+  assert.match(api,/\$resource\['data'\]\['selectedPlanId'\] = \$nextSelected/);
+  assert.match(api,/'selectedPlanId'=>max\(0,/);
 });
 
-test('Plan Generator is only the fallback when no saved plans survive deletion', () => {
-  assert.ok(continuity.includes("if (typeof controller.createPlan==='function')"));
-  const survivorBranch=continuity.indexOf('if (survivors.length)');
-  const generatorFallback=continuity.indexOf("if (typeof controller.createPlan==='function')");
-  assert.ok(survivorBranch>=0 && generatorFallback>survivorBranch);
-});
-
-test('legacy single-plan delete handler is intercepted before it can reset the generator', () => {
-  assert.ok(continuity.includes("event.target?.closest?.('#confirmDeletePlanBtn')"));
-  assert.ok(continuity.includes('event.stopImmediatePropagation()'));
-  assert.ok(continuity.includes("document.addEventListener('click'"));
-  assert.ok(continuity.includes('},true);'));
+test('canonical Fitness app owns the post-delete transition',()=>{
+  assert.match(app,/async function deletePlan\(\)/);
+  assert.match(app,/await global\.BASELINE_fitnessPlans\?\.refresh\?\.\(\)/);
+  assert.match(app,/planStateResolved = false/);
+  assert.match(app,/await ensurePlanLoaded\(true\)/);
 });

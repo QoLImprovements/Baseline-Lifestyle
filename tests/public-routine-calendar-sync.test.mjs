@@ -5,8 +5,7 @@ import { readFileSync } from 'node:fs';
 const read=path=>readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const publicViewer=read('sitewide/js/baseline-public-routine-viewonly-v4.js');
 const publicApi=read('systems/baseline-fitness/api/public_routine_v2.php');
-const fitnessCss=read('systems/baseline-fitness/css/fitness-routine-workspace-v2.css');
-const loader=read('systems/baseline-fitness/js/fitness-routine-workspace.js');
+const fitnessCss=read('systems/baseline-fitness/css/fitness-routine-workspace.css');
 const html=read('systems/baseline-fitness/baseline-fitness.html');
 
 test('Public calendar marker has exactly one shared caption source',()=>{
@@ -60,6 +59,6 @@ test('Public Fitness saved-data plans preserve every completed session date for 
 
 test('Fitness entry points cache-bust the synchronized Public Routine viewer',()=>{
   assert.match(html,/baseline-public-routine-viewonly-v4\.js\?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1/);
-  assert.match(html,/fitness-routine-workspace\.js\?v=FITNESS_ROUTINE_STATIC_BOOT_20261005_1/);
-  assert.doesNotMatch(loader,/loadScript|createElement\(['"]script['"]\)/);
+  assert.doesNotMatch(html,/fitness-routine-workspace\.js/);
+  assert.match(html,/fitness-routine-workspace-v2\.js/);
 });
