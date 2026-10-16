@@ -34,12 +34,15 @@
 
   function compactEntry(entry){
     if(!entry) return '';
-    const isMain=entry.unit.category==='facial';
     const suffix=entry.intensity||'';
     if(entry.unit.laterality && entry.side && entry.side!=='bilateral'){
       return (entry.side==='left'?'L':'R')+entry.unit.code+suffix;
     }
-    return (isMain?'AU':'FACS ')+entry.unit.code+suffix;
+    if(entry.unit.code==='0') return 'Neutral';
+    if(entry.unit.kind==='Action Unit') return 'AU'+entry.unit.code+suffix;
+    if(entry.unit.kind==='Action Descriptor') return 'AD'+entry.unit.code+suffix;
+    if(entry.unit.kind==='Associated M-code') return entry.unit.code+suffix;
+    return 'FACS '+entry.unit.code+suffix;
   }
 
   function activeEntries(){
@@ -190,7 +193,7 @@
       button.setAttribute('aria-pressed',enabled && button.dataset.intensity===entry.intensity?'true':'false');
     });
     if(status){
-      if(!entry) status.textContent='Select an intensity-scored AU';
+      if(!entry) status.textContent='Select an intensity-scored code';
       else status.textContent=entry.unit.intensity ? 'A trace → E maximum' : 'Not intensity-scored here';
     }
   }
