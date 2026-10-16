@@ -60,6 +60,8 @@ body[data-app="psychology"] .hero .subtitle{
 
 .section{display:none}
 .section.active{display:block}
+html[data-initial-section="paralinguistics"] #system.section.active{display:none}
+html[data-initial-section="paralinguistics"] #paralinguistics.section{display:block}
 
 .tabs,
 .psych-subtabs{
