@@ -1,4 +1,4 @@
-import { BasecampController } from './basecamp-controller.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { BasecampController } from './basecamp-controller.js?v=REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 
 export function createBasecampScene({ runtime, inventoryService, stateService, eventBus }) {
   const controller = new BasecampController({ runtime, inventoryService, stateService, eventBus });
