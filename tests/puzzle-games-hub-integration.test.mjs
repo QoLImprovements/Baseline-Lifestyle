@@ -39,3 +39,16 @@ test('production puzzle modules do not create a competing browser persistence la
     assert.doesNotMatch(read(path), /\b(?:localStorage|sessionStorage|indexedDB)\b/);
   }
 });
+
+test('current Weight of Coherence puzzle uses the same server save authority', () => {
+  const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
+  const api = read('systems/baseline-games-hub/api/games_data.php');
+  const saved = read('sitewide/api/saved_data.php');
+  assert.match(source, /APP = 'weightcoherence'/);
+  assert.match(source, /BaselineGameStorage/);
+  assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
+  assert.ok(guard.includes("'weightcoherence'"));
+  assert.ok(api.includes("'weightcoherence'"));
+  assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
+});
