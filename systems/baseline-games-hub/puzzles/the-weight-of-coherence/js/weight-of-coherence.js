@@ -303,6 +303,8 @@
       btn.className='weight-coherence-piece';
       btn.dataset.pieceId=String(id);
       btn.setAttribute('aria-label','Jigsaw piece ' + (id+1));
+      btn.disabled=true;
+      btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
       const placeholder=document.createElement('span');
       placeholder.className='weight-coherence-piece-placeholder';
@@ -321,6 +323,8 @@
         const item=pending[index];
         if(!item.button.isConnected) continue;
         item.button.replaceChildren(createPieceCanvas(item.id));
+        item.button.disabled=false;
+        item.button.removeAttribute('aria-busy');
       }
       if(index<pending.length) window.requestAnimationFrame(paintBatch);
     };
