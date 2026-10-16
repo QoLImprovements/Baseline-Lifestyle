@@ -6091,6 +6091,20 @@ function buildControls(recipeEl){
       return right;
     }
 
+    function closePagesMenu(btn, menu){
+      if(!btn || !menu) return;
+      menu.hidden = true;
+      btn.setAttribute('aria-expanded','false');
+    }
+
+    function openPagesMenu(btn, menu){
+      if(!btn || !menu) return;
+      closeMobileActionsMenu();
+      menu.hidden = false;
+      btn.setAttribute('aria-expanded','true');
+      try{ positionFlyoutToToggle(menu, btn); }catch(_e){}
+    }
+
     function closeMobileActionsMenu(){
       const menu = q('#bl-mobile-actions-menu');
       const toggle = q('#bl-mobile-actions-toggle');
@@ -6208,20 +6222,6 @@ function buildControls(recipeEl){
 
       rebuild();
       return wrap;
-    }
-
-    function closePagesMenu(btn, menu){
-      if(!btn || !menu) return;
-      menu.hidden = true;
-      btn.setAttribute('aria-expanded','false');
-    }
-
-    function openPagesMenu(btn, menu){
-      if(!btn || !menu) return;
-      closeMobileActionsMenu();
-      menu.hidden = false;
-      btn.setAttribute('aria-expanded','true');
-      try{ positionFlyoutToToggle(menu, btn); }catch(_e){}
     }
 
     function bindPagesDropdown(dd){
