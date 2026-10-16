@@ -7,6 +7,8 @@
     Object.freeze({ id:'make-the-number', runtimeId:'make24', route:'make-the-number', profileApp:'make24', core:true, group:'core', name:'Make The Number', legacyIds:Object.freeze(['make24']) }),
     Object.freeze({ id:'track-the-coin', runtimeId:'trackcoin', route:'track-the-coin', profileApp:'trackcoin', core:true, group:'core', name:'Track the Coin' }),
     Object.freeze({ id:'rule-shift', runtimeId:'ruleshift', route:'rule-shift', profileApp:'ruleshift', core:true, group:'core', name:'Rule Shift' }),
+    Object.freeze({ id:'block-grid', runtimeId:'block-grid', route:'block-grid', profileApp:'blockgrid', core:false, group:'puzzle', name:'Block Grid' }),
+    Object.freeze({ id:'colour-sort', runtimeId:'colour-sort', route:'colour-sort', profileApp:'coloursort', core:false, group:'puzzle', name:'Colour Sort' }),
     Object.freeze({ id:'baseline-realm', runtimeId:'ninja', route:'baseline-realm', profileApp:'ninja', core:true, group:'realm', name:'Baseline Realm', legacyIds:Object.freeze(['ninja']) }),
     Object.freeze({ id:'darts-focused', runtimeId:'darts-focused', route:'darts-focused', profileApp:null, core:false, group:'focused', name:'Darts Focused' }),
     Object.freeze({ id:'badminton-focused', runtimeId:'badminton-focused', route:'badminton-focused', profileApp:null, core:false, group:'focused', name:'Badminton Focused' })
