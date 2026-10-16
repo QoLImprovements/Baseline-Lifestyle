@@ -611,6 +611,7 @@
     if(!state || state.completed || state.placed.has(id)) return;
     const removed=removePieceFromSortBins(id);
     if(!removed) return;
+    state.order=[id].concat(state.order.filter(function(value){ return value!==id; }));
     state.page=0;
     selectedPieceId=null;
     renderTray();
