@@ -58,19 +58,20 @@
   /* Header with natural green */
   .badge{background:rgba(239,210,197,0.86); color:var(--accent-2);padding:7px 11px;border-radius:999px;font-size:16px;font-weight:760;border:1px solid var(--border-2);box-shadow:var(--shadow-soft);}
 
-  /* Tabs */
-  .tab{appearance:none;border:none;cursor:pointer;background:rgba(239,210,197,0.66);padding:10px 14px;border-radius:999px;font-size:16px;font-weight:760;color:var(--muted);border:1px solid rgba(122,74,58,0.12);box-shadow:0 10px 22px -20px rgba(35,23,19,0.25);transition:transform .08s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;}
-  .tab:hover{transform:translateY(-1px);background:rgba(239,210,197,0.80);border-color:rgba(188,95,70,0.28);box-shadow:0 16px 30px -24px rgba(188,95,70,0.35)}
-
-  /* Active tab: keep text non-white */
+  /* Primary tab colours are sitewide-owned. This file keeps geometry only. */
+  .tab{
+    appearance:none;
+    cursor:pointer;
+    padding:10px 14px;
+    border:1px solid transparent;
+    border-radius:999px;
+    font-size:16px;
+    font-weight:760;
+    transition:transform .08s ease, background .12s ease, border-color .12s ease, box-shadow .12s ease;
+  }
+  .tab:hover{transform:translateY(-1px);}
 
   /* Header is part of normal document flow (non-sticky) */
-  .tab[aria-selected="true"]{
-    color: var(--ink);
-    background: linear-gradient(135deg, var(--accent), var(--skin-peach));
-    border-color: rgba(35,23,19,0.18);
-    box-shadow: 0 22px 46px -34px rgba(188,95,70,0.88);
-  }
 
   /* Keep headings visible beneath the sticky header */
 [id]{
@@ -82,50 +83,22 @@
   .section.active{display:block}
   @keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)}}
 
-  /* Cards */
-/* Micro-reassurance: cards gently deepen on hover/focus */
+  /* Card surfaces are sitewide-owned; this file keeps page geometry/motion only. */
 .card{
+  position:relative;
+  overflow:hidden;
+  padding:20px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
   transition:
     transform var(--dur-2) var(--ease-cushion),
-    box-shadow var(--dur-2) var(--ease-soft),
-    filter var(--dur-2) var(--ease-soft);
+    box-shadow var(--dur-2) var(--ease-soft);
 }
 .card:hover,
 .card:focus-within{
-  transform: translateY(-2px);
-  box-shadow: var(--shadow), var(--glow-soft);
-  filter: saturate(1.02);
-}
-
-  .card{background:linear-gradient(180deg, rgba(247,233,220,0.94), rgba(255,210,184,0.86));border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;box-shadow: var(--shadow);}
-
-/* Warm "hug" cards */
-.card{position:relative; overflow:hidden; padding:20px;}
-.card{
-  box-shadow: var(--shadow);
-  /* Containment: a soft inner edge so content feels held */
-  background-clip: padding-box;
-}
-.card::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  pointer-events:none;
-  box-shadow: inset 0 1px 0 rgba(255,235,220,0.42), inset 0 -14px 40px -28px rgba(188,95,70,0.25);
-  opacity:0.9;
-}
-
-.card::before{
-  content:"";
-  position:absolute; inset:0;
-  border-radius:inherit;
-  padding:1px;
-  background:linear-gradient(135deg, rgba(188,95,70,0.42), rgba(215,168,108,0.30), rgba(244,198,183,0.30));
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events:none;
+  transform:translateY(-2px);
+  box-shadow:var(--shadow), var(--glow-soft);
 }
   .grid{display:grid; gap:14px; grid-template-columns:1fr;}
   @media (min-width:900px){.grid-2{grid-template-columns:1fr 1fr}}
