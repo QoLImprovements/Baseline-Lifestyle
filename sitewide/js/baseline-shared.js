@@ -7556,9 +7556,9 @@ function setupRecipeFavourites(){
         const id = card.id;
         const btn = q('.fav-btn', card);
         const isFav = favSet.has(id);
-        if(favAuthed){
-          const caption = q(':scope > .recipe-favourite-caption', card);
-          if(caption) caption.hidden = true;
+        if(favAuthed && btn){
+          btn.classList.remove('tip-show');
+          btn.removeAttribute('data-tip');
         }
         if(btn){
           btn.disabled = false;
@@ -7615,19 +7615,15 @@ function setupRecipeFavourites(){
 
     function showFavouriteCaption(recipeId){
       const card = document.getElementById(String(recipeId || ''));
-      if(!card) return;
-      let caption = q(':scope > .recipe-favourite-caption', card);
-      if(!caption){
-        caption = document.createElement('p');
-        caption.className = 'recipe-favourite-caption';
-        caption.setAttribute('role','status');
-        caption.setAttribute('aria-live','polite');
-        const row = q(':scope > .recipe-title-row', card);
-        if(row) row.insertAdjacentElement('afterend', caption);
-        else card.insertAdjacentElement('afterbegin', caption);
-      }
-      caption.textContent = 'log in required to favorite this recipe.';
-      caption.hidden = false;
+      const btn = card ? q('.recipe-title-row > .fav-btn', card) : null;
+      if(!btn) return;
+      qsa('.recipe-title-row > .fav-btn.tip-show', recipes).forEach(other=>{
+        if(other === btn) return;
+        other.classList.remove('tip-show');
+        other.removeAttribute('data-tip');
+      });
+      btn.setAttribute('data-tip','log in required to favorite this recipe.');
+      btn.classList.add('tip-show');
     }
 
     async function toggleFav(recipeId){
@@ -7683,6 +7679,10 @@ function setupRecipeFavourites(){
         btn.setAttribute('aria-pressed','false');
         btn.textContent = '☆';
         btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFav(id); });
+        btn.addEventListener('blur', ()=>{
+          btn.classList.remove('tip-show');
+          btn.removeAttribute('data-tip');
+        });
         row.appendChild(btn);
       }
 
