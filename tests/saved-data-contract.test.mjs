@@ -53,6 +53,8 @@ test('saved resources preserve the agreed physical file structure', () => {
     'make-24.json',
     'track-coin.json',
     'rule-shift.json',
+    'block-grid.json',
+    'colour-sort.json',
     'darts-focused.json',
     'meridian-grove.json',
   ]){
