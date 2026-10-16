@@ -21,6 +21,7 @@
   const q  = (sel, root=document) => root.querySelector(sel);
   const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
   const BASELINE_BEATS_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"/></svg>';
+  const BASELINE_CONTACT_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M3.5 5.5h17v13h-17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m4.5 7 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const BASELINE_AUTH_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"/><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"/></svg>';
 
 
@@ -258,6 +259,7 @@
     'baseline-food-approach.html': { base:'/baseline-food-approach', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', 'diet-log':'diet-log' } },
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
+    'baseline-psychology.html': { base:'/baseline-psychology', defaultTab:'system', tabs:{ system:'system', paralinguistics:'paralinguistics' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
     'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
@@ -266,6 +268,7 @@
     'baseline-food-approach.html':'/baseline-food-approach/system',
     'baseline-massage.html':'/baseline-massage/system',
     'baseline-natural-skincare.html':'/baseline-natural-skincare/system',
+    'baseline-psychology.html':'/baseline-psychology/system',
     'baseline-badminton-session.html':'/baseline-badminton-session/system',
     'baseline-fitness.html':'/baseline-fitness/system',
     'baseline-games-hub.html':'/baseline-games-hub/games-hub'
@@ -276,6 +279,7 @@
     if(/\/baseline-food-approach(?:\/|$)/.test(path)) return 'baseline-food-approach.html';
     if(/\/baseline-massage(?:\/|$)/.test(path)) return 'baseline-massage.html';
     if(/\/baseline-natural-skincare(?:\/|$)/.test(path)) return 'baseline-natural-skincare.html';
+    if(/\/baseline-psychology(?:\/|$)/.test(path)) return 'baseline-psychology.html';
     if(/\/baseline-badminton-session(?:\/|$)/.test(path)) return 'baseline-badminton-session.html';
     if(/\/baseline-fitness(?:\/|$)/.test(path)) return 'baseline-fitness.html';
     if(/\/baseline-games-hub(?:\/|$)/.test(path)) return 'baseline-games-hub.html';
@@ -2121,7 +2125,7 @@ function parseViewStateHash(hash){
     sortedCards.forEach(card => recipesContainer.appendChild(card));
 
     // 2) Update overview + nav lists.
-    // Natural Skincare has promoted and folder-backed recipes with authored
+    // Personal Care has promoted and folder-backed recipes with authored
     // descriptors. Its canonical recipe-navigation module owns that landing
     // content; the generic category rebuilder must never strip those labels.
     const recipePageFile = routePageFileFromPath(location.pathname || '');
@@ -2232,7 +2236,7 @@ function parseViewStateHash(hash){
       if(el) el.scrollIntoView({behavior:'auto', block:'start'});
     };
 
-    // Build recipe list from embedded recipe cards. Natural Skincare can also
+    // Build recipe list from embedded recipe cards. Personal Care can also
     // register folder-backed recipes without duplicating their recipe body here.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
     const routePageFile = routePageFileFromPath(location.pathname || '');
@@ -5947,7 +5951,7 @@ function buildControls(recipeEl){
         ['index.html', 'Home'],
         ['baseline-food-approach.html', 'Baseline Food Approach'],
         ['baseline-massage.html', 'Baseline Massage'],
-        ['baseline-natural-skincare.html', 'Baseline Natural Skincare'],
+        ['baseline-natural-skincare.html', 'Baseline Personal Care'],
         ['baseline-fitness.html', 'Baseline Fitness'],
         ['baseline-badminton-session.html', 'Baseline Badminton Session'],
         ['baseline-games-hub.html', 'Baseline Games Hub']
@@ -6034,33 +6038,42 @@ function buildControls(recipeEl){
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
+    const CONTACT_ICON_SVG = BASELINE_CONTACT_ICON_SVG;
     const AUTH_ICON_SVG = BASELINE_AUTH_ICON_SVG;
 
-    function ensureButton(right, id, iconHtml, label){
+    function ensureControl(right, id, iconHtml, label, options){
       if(!right || !id) return null;
-      let btn = q('#' + id, right) || q('#' + id);
-      if(!btn){
-        btn = document.createElement('button');
-        btn.id = id;
-        btn.type = 'button';
-        btn.className = 'bl-mini-btn';
-        btn.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
-        btn.setAttribute('aria-label', label);
-        btn.setAttribute('aria-expanded', 'false');
-        right.appendChild(btn);
-      }else if(btn.parentNode !== right){
-        right.appendChild(btn);
+      options = options || {};
+      const href = String(options.href || '').trim();
+      const ariaLabel = String(options.ariaLabel || label).trim() || label;
+      const tagName = href ? 'a' : 'button';
+      let control = q('#' + id, right) || q('#' + id);
+
+      if(control && control.tagName.toLowerCase() !== tagName){
+        const replacement = document.createElement(tagName);
+        control.replaceWith(replacement);
+        control = replacement;
       }
-      // Keep existing/static controls synchronised when labels or icon source change.
-      try{
-        const iconNode = btn.querySelector('.bl-btn-icon');
-        const labelNode = btn.querySelector('.bl-btn-label');
-        if(iconNode) iconNode.innerHTML = iconHtml;
-        if(labelNode) labelNode.textContent = label;
-        if(!iconNode || !labelNode) btn.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
-        btn.setAttribute('aria-label', label);
-      }catch(_e){}
-      return btn;
+      if(!control){
+        control = document.createElement(tagName);
+      }
+
+      control.id = id;
+      control.className = 'bl-mini-btn';
+      if(href){
+        control.setAttribute('href', href);
+        control.removeAttribute('type');
+        control.removeAttribute('aria-expanded');
+      }else{
+        control.type = 'button';
+        control.setAttribute('aria-expanded', 'false');
+        control.removeAttribute('href');
+      }
+      control.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
+      control.setAttribute('aria-label', ariaLabel);
+
+      if(control.parentNode !== right) right.appendChild(control);
+      return control;
     }
 
     function ensureRightControls(container){
@@ -6071,8 +6084,10 @@ function buildControls(recipeEl){
         right.className = 'bl-homebar-right';
         container.appendChild(right);
       }
-      if(!isHomePage()) ensureButton(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
-      ensureButton(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
+      if(!isHomePage()) ensureControl(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
+      const contact = ensureControl(right, 'bl-contact-link', CONTACT_ICON_SVG, 'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' });
+      const auth = ensureControl(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
+      if(contact && auth && contact.nextSibling !== auth) right.insertBefore(contact, auth);
       return right;
     }
 
@@ -6174,7 +6189,7 @@ function buildControls(recipeEl){
         ['/home/1','Home'],
         ['/baseline-food-approach/system','Baseline Food Approach'],
         ['/baseline-massage/system','Baseline Massage'],
-        ['/baseline-natural-skincare/system','Baseline Natural Skincare'],
+        ['/baseline-natural-skincare/system','Baseline Personal Care'],
         ['/baseline-fitness/system','Baseline Fitness'],
         ['/baseline-badminton-session/system','Baseline Badminton Session'],
         ['/baseline-games-hub/games-hub','Baseline Games Hub']
@@ -6377,8 +6392,8 @@ function setupAuthFlyout(){
               </div>
 
               <div class="bl-auth-fieldgroup">
-                <label for="bl-favs-skin-select">Baseline Skincare Favorites</label>
-                <select id="bl-favs-skin-select" aria-label="Baseline Skincare Favorites"></select>
+                <label for="bl-favs-skin-select">Baseline Personal Care Favorites</label>
+                <select id="bl-favs-skin-select" aria-label="Baseline Personal Care Favorites"></select>
               </div>
 
               <div class="bl-auth-fieldgroup bl-auth-fitness-link-wrap">

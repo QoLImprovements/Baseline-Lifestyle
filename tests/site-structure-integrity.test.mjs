@@ -11,7 +11,8 @@ const systemNames = [
   'baseline-food-approach',
   'baseline-games-hub',
   'baseline-massage',
-  'baseline-natural-skincare'
+  'baseline-natural-skincare',
+  'baseline-psychology'
 ];
 const ownedSystemNames = [...systemNames,'charity-shop'];
 const ignoredWalkDirectories = new Set(['.git','node_modules','playwright-report','test-results']);
@@ -122,7 +123,8 @@ test('large page styling is owned by canonical system stylesheets', () => {
     ['baseline-food-approach', '/systems/baseline-food-approach/css/baseline-food-approach.css'],
     ['baseline-games-hub', '/systems/baseline-games-hub/css/baseline-games-hub.css'],
     ['baseline-massage', '/systems/baseline-massage/css/baseline-massage.css'],
-    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css']
+    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css'],
+    ['baseline-psychology', '/systems/baseline-psychology/css/baseline-psychology.css']
   ];
   for (const [system, href] of expectations) {
     const html = fs.readFileSync(path.join(root, 'systems', system, `${system}.html`), 'utf8');
@@ -198,4 +200,100 @@ test('database schemas are versioned instead of rebuilt on every API request', (
   assert.ok(fitnessSchema.includes("bl_apply_schema_migration($db, 'fitness', 1"));
   assert.ok(gamesSchema.includes("bl_apply_schema_migration($db, 'games_hub', 1"));
   assert.ok(badmintonApi.includes("bl_apply_schema_migration($db, 'badminton_session', 1"));
+});
+
+
+test('home index uses one six-strip system layout with the agreed order and copy', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+  const themes = fs.readFileSync(path.join(root, 'sitewide/css/baseline-themes.css'), 'utf8');
+
+  const expected = [
+    ['Baseline Food Approach', 'Vegan &amp; gluten-free food system focused on health and wellbeing.'],
+    ['Baseline Massage', 'Grounded bodywork for muscular tension, recovery, comfort, and regulation.'],
+    ['Baseline Personal Care', 'Natural products and recipes for the body and appearance.'],
+    ['Baseline Fitness', 'Structured physical training covering calisthenics, cardio, flexibility and sport.'],
+    ['Baseline Badminton Session', 'Organised play with generated matchups and alterations prioritising balanced competition.'],
+    ['Baseline Games Hub', 'Dedicated space for restoration, cognitive challenge and linked progression.']
+  ];
+
+  let previous = -1;
+  for (const [title, descriptor] of expected) {
+    const position = html.indexOf(`aria-label="${title}"`);
+    assert.ok(position > previous, `${title} is missing or out of order`);
+    assert.ok(html.includes(descriptor), `${title} descriptor is not the agreed copy`);
+    previous = position;
+  }
+
+  assert.equal((html.match(/class="system-lane /g) || []).length, 6);
+  for (const obsolete of ['home-panels','home-panel--play','view-arrow','toBadmintonView','toSystemsView','blEmbed','blEmbedFrame','baselineHomeView']) {
+    assert.equal(html.includes(obsolete), false, `obsolete index view-switching markup remains: ${obsolete}`);
+    assert.equal(css.includes(obsolete), false, `obsolete index view-switching CSS remains: ${obsolete}`);
+  }
+
+  assert.ok(css.includes('--home-surface:linear-gradient(90deg'));
+  assert.ok(css.includes('border-bottom:2px solid #000'));
+  assert.ok(css.includes('border:2px solid #000'));
+  assert.ok(css.includes('gap:11px'));
+  assert.ok(css.includes('min-height:78px'));
+  assert.ok(themes.includes('--scroll-track: #303036;'));
+  assert.ok(themes.includes('--scroll-thumb: #62626c;'));
+  assert.ok(themes.includes('--scroll-thumb-hover: #777782;'));
+  assert.equal(css.includes('#bl-auth-flyout'), false, 'index stylesheet must not override the shared Account flyout');
+  assert.equal(css.includes('#bl-beats-flyout'), false, 'index stylesheet must not retain dead Binaural flyout rules');
+});
+
+test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
+  const retiredSystemName = ['Baseline','Natural','Skincare'].join(' ');
+  const retiredFavorites = ['Baseline','Skincare','Favorites'].join(' ');
+  const publicRuntimeExtensions = new Set(['.html','.css','.js','.mjs','.cjs','.php']);
+  const publicRuntimeFiles = [
+    path.join(root, 'index.html'),
+    ...walk(path.join(root, 'sitewide')),
+    ...walk(path.join(root, 'systems'))
+  ].filter((file) => publicRuntimeExtensions.has(path.extname(file).toLowerCase()));
+
+  for (const file of publicRuntimeFiles) {
+    const source = fs.readFileSync(file, 'utf8');
+    const relativePath = path.relative(root, file);
+    assert.equal(source.includes(retiredSystemName), false, `retired visible name remains in ${relativePath}`);
+    assert.equal(source.includes(retiredFavorites), false, `retired favourites label remains in ${relativePath}`);
+  }
+
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const personalCare = fs.readFileSync(path.join(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  assert.ok(home.includes('Baseline Personal Care'));
+  assert.ok(personalCare.includes('<title>Baseline Personal Care</title>'));
+  assert.ok(personalCare.includes('aria-level="1">Baseline Personal Care</div>'));
+  assert.ok(shared.includes("['/baseline-natural-skincare/system','Baseline Personal Care']"));
+  assert.ok(home.includes('href="/baseline-natural-skincare/system"'), 'existing Personal Care route compatibility must be retained');
+});
+
+
+test('sitewide Contact control is singular, themed and ordered before Account', () => {
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
+
+  assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
+  assert.ok(shared.includes("href:'/contact/'"));
+  assert.ok(shared.includes("'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' }"));
+  assert.ok(shared.includes("control.setAttribute('aria-label', ariaLabel)"));
+  const controlsStart = shared.indexOf('function ensureRightControls(container)');
+  const controlsEnd = shared.indexOf('function closePagesMenu', controlsStart);
+  const controls = shared.slice(controlsStart, controlsEnd);
+  assert.ok(controlsStart >= 0 && controlsEnd > controlsStart);
+  assert.equal((controls.match(/'bl-contact-link'/g) || []).length, 1, 'Contact must have one shared control owner');
+  assert.ok(controls.indexOf("'bl-beats-toggle'") < controls.indexOf("'bl-contact-link'"));
+  assert.ok(controls.indexOf("'bl-contact-link'") < controls.indexOf("'bl-auth-toggle'"));
+  assert.ok(sitewideCss.includes('#bl-contact-link'));
+  assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
+  assert.ok(sitewideCss.includes("#bl-beats-toggle,\n#bl-contact-link,\n#bl-auth-toggle{"));
+  assert.ok(sitewideCss.includes("body[data-app] #bl-beats-toggle,\nbody[data-app] #bl-contact-link,\nbody[data-app] #bl-auth-toggle,"));
+  assert.equal(sitewideCss.includes('body[data-app="home"] #bl-beats-toggle'), false, 'Home Binaural absence must be owned by shared JS, not hidden by CSS');
+  assert.equal(home.includes('id="bl-contact-link"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
+  assert.match(contact, /<h1 id="contactTitle">Contact Us<\/h1>/);
+  assert.ok(contact.includes('/sitewide/js/baseline-shared.js'));
 });

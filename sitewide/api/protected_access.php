@@ -20,6 +20,13 @@ function bl_protected_sections(): array {
       'session_key' => 'charity_shop_access_until',
       'redirect' => '/baseline-charity-shop/guidance',
     ],
+    'baseline_psychology' => [
+      // Organisational access code, not a secret credential:
+      // 06 = AU6 (Cheek Raiser), 12 = AU12 (Lip Corner Puller).
+      'code' => '0612',
+      'session_key' => 'psychology_access_until',
+      'redirect' => '/baseline-psychology/system',
+    ],
   ];
 }
 

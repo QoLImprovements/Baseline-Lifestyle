@@ -67,20 +67,20 @@ body[data-app="home"]{
   );
   --homebar-border: #8f8f99;
   --banner-pill-bg: linear-gradient(90deg,
-    #3e3e45 0%,
-    #56565f 20%,
-    #7a7a86 50%,
-    #56565f 80%,
-    #3e3e45 100%
+    #303036 0%,
+    #414149 20%,
+    #62626c 50%,
+    #414149 80%,
+    #303036 100%
   );
-  --banner-pill-solid: #7a7a86;
+  --banner-pill-solid: #62626c;
   --banner-pill-ink: #f4efe7;
   --banner-pill-border: #b8b8c0;
   --auth-flyout-bg: var(--banner-pill-bg);
 
-  --scroll-track: #4c4c54;
-  --scroll-thumb: #c2b8aa;
-  --scroll-thumb-hover: #d6ccbf;
+  --scroll-track: #303036;
+  --scroll-thumb: #62626c;
+  --scroll-thumb-hover: #777782;
 
   --food-deep: #b11226;
   --food-red:#e6392f;
@@ -305,6 +305,66 @@ body[data-app="skin"]{
   --banner-pill-ink: #2b2b28;
   --banner-pill-border: #a15a43;
   --auth-flyout-bg: var(--banner-pill-bg);
+}
+
+/* -----------------------------
+   PSYCHOLOGY SYSTEM
+-------------------------------- */
+html[data-app="psychology"],
+body[data-app="psychology"]{
+  --psych-red-deep:#8b1722;
+  --psych-red:#bf3038;
+  --psych-warm:#df7a2c;
+  --psych-lime:#d7f04d;
+  --psych-page-gradient:linear-gradient(90deg,
+    var(--psych-red-deep) 0%,
+    var(--psych-red) 18%,
+    var(--psych-warm) 34%,
+    var(--psych-lime) 50%,
+    var(--psych-warm) 66%,
+    var(--psych-red) 82%,
+    var(--psych-red-deep) 100%
+  );
+  --bg:var(--psych-red-deep);
+  --bg-2:var(--psych-red);
+  --bg-3:var(--psych-warm);
+  --bg-4:var(--psych-lime);
+  --card:rgba(215,240,77,.12);
+  --ink:#202617;
+  --muted:#4d552f;
+  --accent:#8b1722;
+  --accent-2:#5d1018;
+  --accent-3:#df7a2c;
+  --accent-4:#d7f04d;
+  --accent-soft:rgba(215,240,77,.36);
+  --border:rgba(51,63,25,.28);
+  --border-2:rgba(51,63,25,.38);
+  --ring:rgba(139,23,34,.28);
+  --shadow:0 18px 46px rgba(64,31,21,.18);
+  --shadow-soft:0 12px 30px -22px rgba(64,31,21,.28);
+  --glow:0 26px 64px -46px rgba(139,23,34,.34);
+  --glow-soft:0 0 0 3px rgba(215,240,77,.16);
+  --tip-bg:rgba(32,38,23,.96);
+  --tip-ink:#f6ffd3;
+  --tip-border:rgba(215,240,77,.34);
+  --link:#6d111c;
+  --link-hover:#4b0c13;
+  --scroll-track:rgba(139,23,34,.30);
+  --scroll-thumb:rgba(215,240,77,.72);
+  --scroll-thumb-hover:rgba(230,249,113,.88);
+  --header-gradient:var(--psych-page-gradient);
+  --page-bg:var(--psych-page-gradient);
+  --card-bg:linear-gradient(180deg,#dce99b,#c7db70);
+  --filter-bg:linear-gradient(180deg,#e5efb5,#cbdc7a);
+  --showall-bg:linear-gradient(180deg,#d8e98e,#bfd35b);
+  --showall-border:rgba(51,63,25,.34);
+  --homebar-bg:var(--psych-page-gradient);
+  --homebar-border:#8b1722;
+  --banner-pill-bg:var(--psych-page-gradient);
+  --banner-pill-solid:var(--psych-lime);
+  --banner-pill-ink:#202617;
+  --banner-pill-border:#8b1722;
+  --auth-flyout-bg:var(--banner-pill-bg);
 }
 
 /* -----------------------------
