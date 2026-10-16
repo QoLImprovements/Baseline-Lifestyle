@@ -1163,9 +1163,6 @@ body[data-app="fitness"] #profileStatus{
 }
 
 
-/* Index page: never show Beats in the homepage banner */
-body[data-app="home"] #bl-beats-toggle{ display:none !important; }
-
 
 /* --------------------------------------------------------------------------
    Skincare libraries: force the single themed page scroller
@@ -1449,6 +1446,7 @@ html.bl-pages-dd-ready .bl-topnav{
 }
 
 #bl-beats-toggle,
+#bl-contact-link,
 #bl-auth-toggle{
   display:inline-flex !important;
   align-items:center !important;
@@ -1459,11 +1457,6 @@ html.bl-pages-dd-ready .bl-topnav{
   white-space:nowrap !important;
 }
 
-body[data-app="home"] #bl-beats-toggle{
-  display:none !important;
-  visibility:hidden !important;
-  pointer-events:none !important;
-}
 
 .bl-pages-menu{
   position:absolute !important;
@@ -1967,6 +1960,7 @@ html[data-app="skin"]{
 body[data-app] .bl-pages-btn,
 body[data-app] .bl-system-toggle,
 body[data-app] #bl-beats-toggle,
+body[data-app] #bl-contact-link,
 body[data-app] #bl-auth-toggle,
 body[data-app] .bl-pages-menu,
 body[data-app] .bl-system-menu,
