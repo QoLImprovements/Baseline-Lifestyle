@@ -67,13 +67,13 @@ body[data-app="home"]{
   );
   --homebar-border: #8f8f99;
   --banner-pill-bg: linear-gradient(90deg,
-    #3e3e45 0%,
-    #56565f 20%,
-    #7a7a86 50%,
-    #56565f 80%,
-    #3e3e45 100%
+    #303036 0%,
+    #414149 20%,
+    #62626c 50%,
+    #414149 80%,
+    #303036 100%
   );
-  --banner-pill-solid: #7a7a86;
+  --banner-pill-solid: #62626c;
   --banner-pill-ink: #f4efe7;
   --banner-pill-border: #b8b8c0;
   --auth-flyout-bg: var(--banner-pill-bg);
