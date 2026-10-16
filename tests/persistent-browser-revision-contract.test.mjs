@@ -14,7 +14,6 @@ test('account-scoped browser writers submit and remember revisions',()=>{
     read('sitewide/js/baseline-voice.js'),
     read('systems/baseline-fitness/js/baseline-fitness-app.js'),
     read('systems/baseline-fitness/js/fitness-saved-data-bridge.js'),
-    read('systems/baseline-fitness/js/fitness-plan-delete-continuity-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-log-v1.js'),
     read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js'),
     read('systems/baseline-fitness/js/fitness-routine-groups-v2.js'),
@@ -57,7 +56,8 @@ test('delete-if-empty preserves monotonic Saved Data revisions',()=>{
   assert.match(favourites,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_delete_if_empty\([\s\S]*?\$expected\s*\)/);
   assert.match(binaural,/bl_resource_file_replace\(\$path, \['presets'=>\$next\], \$expected\)/);
-  assert.match(fitness,/bl_fitness_resource_is_empty\(\$data\)[\s\S]*?bl_resource_authority\(\) === 'saved-data'[\s\S]*?bl_resource_file_replace\(\$path, \$data, \$expectedRevision\)/);
+  assert.match(fitness,/\$plans = \$data\['plans'\];[\s\S]*?unset\(\$data\['plans'\]\)[\s\S]*?bl_fitness_plan_files_sync\(\$uid, \$plans\)[\s\S]*?bl_saved_write_unlocked\(\$path, \$data, \$revision\)/);
+  assert.match(fitness,/\$currentRevision = \(int\)\(\$current\['revision'\] \?\? 0\)[\s\S]*?bl_saved_write_unlocked\(\$path, \$record, \$currentRevision\)/);
 });
 
 test('Skincare slider saves block after a revision conflict instead of retrying the stale mutation',()=>{
@@ -104,10 +104,11 @@ test('Fitness Routine parser-loads revisioned server writers without a Saved Dat
   const html=read('systems/baseline-fitness/baseline-fitness.html');
   const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
   const groups=read('systems/baseline-fitness/js/fitness-routine-groups-v2.js');
+  const structureIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-structure-v4.js');
   const workspaceIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
   const groupsIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-groups-v2.js');
-  const bootIndex=html.indexOf('/systems/baseline-fitness/js/fitness-routine-workspace.js');
-  assert.ok(workspaceIndex>=0 && groupsIndex>workspaceIndex && bootIndex>groupsIndex);
+  assert.ok(structureIndex>=0 && workspaceIndex>structureIndex && groupsIndex>workspaceIndex);
+  assert.doesNotMatch(html,/fitness-routine-workspace\.js/);
   assert.match(workspace,/expectedRevision:state\.revision/);
   assert.match(groups,/expectedRevision|withExpected/);
   assert.doesNotMatch(html,/fitness-routine-saved-data-bridge\.js/);
