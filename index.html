@@ -29,20 +29,15 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 
-<script>/* BASELINE-HOME-INDEX-CANONICAL-FALLBACK-20260929 */
+<script>/* BASELINE-HOME-INDEX-SINGLE-PAGE-20261016 */
 (function(){
   try{
     var path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
-    var hash = String(location.hash || '').toLowerCase();
-    var showBadminton = /\/home\/2$/.test(path) || hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1;
-    var target = showBadminton ? '/home/2' : '/home/1';
-    document.documentElement.setAttribute('data-initial-home-view', showBadminton ? 'badminton' : 'systems');
-
     if(!/^https?:$/i.test(location.protocol)) return;
-    var isLegacyHome = /\/index\.html$/.test(path) || path === '' || path === '/';
-    if(!isLegacyHome) return;
-    if(location.pathname !== target || location.hash){
-      history.replaceState({ baselineHomeView: showBadminton ? 'badminton' : 'systems' }, '', target);
+    var isHomeRoute = /\/home\/[12]$/.test(path) || /\/index\.html$/.test(path) || path === '' || path === '/';
+    if(!isHomeRoute) return;
+    if(location.pathname !== '/home/1' || location.hash){
+      history.replaceState({ baselineHomeView:'systems' }, '', '/home/1');
     }
   }catch(_e){}
 })();
@@ -58,67 +53,61 @@ These Markdown rules are a human reference point, not live runtime config.
 </div>
 
 <div class="bl-scroll" id="homeScroll"><div class="wrap">
-  <div class="home-panels">
-    <section aria-label="BaselineLifestyle sections" class="home-panel home-panel--systems is-active" id="systemsView">
-      <div class="home-panel__inner">
-        <section class="grid" id="grid"><a aria-label="Open Baseline Food Approach" class="card card--food" href="/baseline-food-approach/system">
-<div class="card-shell">
-<h2>Baseline Food Approach</h2>
-<p>Vegan &amp; gluten-free food system focused on health and cosmetic comfort.</p>
-</div>
-</a><a aria-label="Open Baseline Massage" class="card card--massage" href="/baseline-massage/system">
-<div class="card-shell">
-<h2>Baseline Massage</h2>
-<p>Grounded bodywork for pressure, recovery, comfort, and physical regulation.</p>
-</div>
-</a><a aria-label="Open Baseline Natural Skincare" class="card card--skin" href="/baseline-natural-skincare/system">
-<div class="card-shell">
-<h2>Baseline Natural Skincare</h2>
-<p>Barrier-first natural care, recipes, and ingredient information.</p>
-</div>
-</a></section>
-      </div>
-      <button aria-controls="badmintonView" aria-label="View play pages" class="view-arrow" id="toBadmintonView" type="button">
-        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 5v14m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"/>
-        </svg>
-      </button>
+  <main class="home-systems" aria-label="Baseline Lifestyle systems">
+    <section class="system-lane system-lane--food" aria-label="Baseline Food Approach">
+      <a aria-label="Open Baseline Food Approach" class="card card--food" href="/baseline-food-approach/system">
+        <div class="card-shell">
+          <h2>Baseline Food Approach</h2>
+          <p>Vegan &amp; gluten-free food system focused on health and cosmetic comfort.</p>
+        </div>
+      </a>
     </section>
 
-    <section aria-label="Baseline play links" class="home-panel home-panel--play" id="badmintonView" aria-hidden="true">
-      <button aria-controls="systemsView" aria-label="Return to main home page" class="view-arrow view-arrow--up" id="toSystemsView" type="button">
-        <svg aria-hidden="true" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 19V5m0 0l-6 6m6-6l6 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"/>
-        </svg>
-      </button>
-      <div class="play-lanes" aria-label="Baseline play page links">
-        <div class="play-lane play-lane--badminton">
-          <a aria-label="Open Baseline Badminton Session" class="card card--badminton" href="/baseline-badminton-session/system">
-            <div class="card-shell">
-              <h2>Baseline Badminton<br/>Session</h2>
-              <p>Live session for players, pairs, levelled playing field, and score tracking.</p>
-            </div>
-          </a>
+    <section class="system-lane system-lane--massage" aria-label="Baseline Massage">
+      <a aria-label="Open Baseline Massage" class="card card--massage" href="/baseline-massage/system">
+        <div class="card-shell">
+          <h2>Baseline Massage</h2>
+          <p>Grounded bodywork for pressure, recovery, comfort, and physical regulation.</p>
         </div>
-        <div class="play-lane play-lane--fitness">
-          <a aria-label="Open Baseline Fitness" class="card card--fitness" href="/baseline-fitness/system">
-            <div class="card-shell">
-              <h2>Baseline Fitness</h2>
-              <p>Training baseline, plan generator, visible progression.</p>
-            </div>
-          </a>
-        </div>
-        <div class="play-lane play-lane--games">
-          <a aria-label="Open Baseline Games Hub" class="card card--games" href="/baseline-games-hub/games-hub">
-            <div class="card-shell">
-              <h2>Baseline Games Hub</h2>
-              <p>Focused play space, account-bound progress, linked game progression.</p>
-            </div>
-          </a>
-        </div>
-      </div>
+      </a>
     </section>
-  </div>
+
+    <section class="system-lane system-lane--skin" aria-label="Baseline Natural Skincare">
+      <a aria-label="Open Baseline Natural Skincare" class="card card--skin" href="/baseline-natural-skincare/system">
+        <div class="card-shell">
+          <h2>Baseline Natural Skincare</h2>
+          <p>Barrier-first natural care, recipes, and ingredient information.</p>
+        </div>
+      </a>
+    </section>
+
+    <section class="system-lane system-lane--badminton" aria-label="Baseline Badminton Session">
+      <a aria-label="Open Baseline Badminton Session" class="card card--badminton" href="/baseline-badminton-session/system">
+        <div class="card-shell">
+          <h2>Baseline Badminton<br/>Session</h2>
+          <p>Live session for players, pairs, levelled playing field, and score tracking.</p>
+        </div>
+      </a>
+    </section>
+
+    <section class="system-lane system-lane--fitness" aria-label="Baseline Fitness">
+      <a aria-label="Open Baseline Fitness" class="card card--fitness" href="/baseline-fitness/system">
+        <div class="card-shell">
+          <h2>Baseline Fitness</h2>
+          <p>Training baseline, plan generator, and structured sessions.</p>
+        </div>
+      </a>
+    </section>
+
+    <section class="system-lane system-lane--games" aria-label="Baseline Games Hub">
+      <a aria-label="Open Baseline Games Hub" class="card card--games" href="/baseline-games-hub/games-hub">
+        <div class="card-shell">
+          <h2>Baseline Games Hub</h2>
+          <p>Focused play space with account-bound games and skill practice.</p>
+        </div>
+      </a>
+    </section>
+  </main>
 </div></div>
 <!-- Offline-safe embedded viewer (used when opened via file/content URIs on mobile) -->
 <div aria-hidden="true" id="blEmbed">
@@ -451,10 +440,6 @@ These Markdown rules are a human reference point, not live runtime config.
 <script>
 (function(){
   const header = document.querySelector('.bl-top-header');
-  const systemsView = document.getElementById('systemsView');
-  const badmintonView = document.getElementById('badmintonView');
-  const toBadminton = document.getElementById('toBadmintonView');
-  const toSystems = document.getElementById('toSystemsView');
 
   function syncTopHeaderHeight(){
     if(!header) return;
@@ -462,65 +447,9 @@ These Markdown rules are a human reference point, not live runtime config.
     if(h > 0) document.documentElement.style.setProperty('--top-header-h', h + 'px');
   }
 
-  function routeViewFromPath(){
-    const path = String(location.pathname || '').toLowerCase().replace(/\/+$/,'');
-    const hash = String(location.hash || '').toLowerCase();
-    if(/\/home\/2$/.test(path)) return 'badminton';
-    if(hash.indexOf('home=2') !== -1 || hash.indexOf('page=2') !== -1 || hash.indexOf('view=badminton') !== -1) return 'badminton';
-    return 'systems';
-  }
-
-  function cleanHomeUrl(which){
-    return which === 'badminton' ? '/home/2' : '/home/1';
-  }
-
-  function readInitialView(){
-    return routeViewFromPath();
-  }
-
-  function showView(which, options){
-    const showBadminton = which === 'badminton';
-    if(systemsView){
-      systemsView.classList.toggle('is-active', !showBadminton);
-      systemsView.setAttribute('aria-hidden', String(showBadminton));
-    }
-    if(badmintonView){
-      badmintonView.classList.toggle('is-active', showBadminton);
-      badmintonView.setAttribute('aria-hidden', String(!showBadminton));
-    }
-    const activeView = showBadminton ? 'badminton' : 'systems';
-    if(!options || options.history !== false){
-      const nextUrl = cleanHomeUrl(activeView);
-      try{
-        if(location.pathname !== nextUrl){
-          if(options && options.replace) history.replaceState({ baselineHomeView:activeView }, '', nextUrl);
-          else history.pushState({ baselineHomeView:activeView }, '', nextUrl);
-        }
-      }catch(_e){}
-    }
-  }
-
   syncTopHeaderHeight();
-  showView(readInitialView(), { history:false });
-  try{
-    const initialView = readInitialView();
-    if(/^https?:$/i.test(location.protocol) && (!/\/home\/[12]\/?$/i.test(location.pathname || '') || location.hash)){
-      history.replaceState({ baselineHomeView:initialView }, '', cleanHomeUrl(initialView));
-    }
-  }catch(_e){}
   window.addEventListener('resize', syncTopHeaderHeight);
   window.addEventListener('load', syncTopHeaderHeight);
-  window.addEventListener('popstate', function(event){
-    const view = event && event.state && event.state.baselineHomeView ? event.state.baselineHomeView : routeViewFromPath();
-    showView(view, { history:false });
-  });
-
-  if(toBadminton){
-    toBadminton.addEventListener('click', function(){ showView('badminton', { history:true }); });
-  }
-  if(toSystems){
-    toSystems.addEventListener('click', function(){ showView('systems', { history:true }); });
-  }
 })();
 </script>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
