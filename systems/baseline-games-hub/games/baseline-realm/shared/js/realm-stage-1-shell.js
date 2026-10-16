@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD='REALM_WOOD_AUTHORITY_20260802_1';
+  const BUILD='REALM_BASECAMP_HUD_SETTINGS_20261016_1';
   const HUB_BUILD='GAMES_HUB_REALM_ISOLATED_20260629_4';
   const ICONS='/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v='+BUILD;
   const BASECAMP_CSS='/systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css?v='+BUILD;
@@ -148,7 +148,9 @@
     ensureGate();
     ensureBasecampLandmarks();
     replaceIcon('realmBasecampBtn','.realm-fab__icon','camp');
+    replaceIcon('realmInventoryBtn','.realm-fab__icon','inventory');
     replaceIcon('realmMenuBtn','.realm-fab__icon','management');
+    replaceIcon('realmSettingsBtn','.realm-fab__icon','settings');
     replaceIcon('realmFullscreenBtn','.realm-fab__icon','fullscreen');
     replaceIcon('ninjaManualStrikeBtn','.realm-combat-btn__icon','dash-cut');
     replaceIcon('ninjaShurikenBtn','.realm-combat-btn__icon','shuriken');
