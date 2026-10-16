@@ -2,14 +2,14 @@
   'use strict';
 
   const DATA=window.BASELINE_FACS;
-  const RENDERER=window.BASELINE_FACS_RENDERER;
   if(!DATA) return;
 
   const state={
     active:new Map(),
     focused:null,
     query:'',
-    category:'all'
+    family:'face',
+    part:'all'
   };
 
   const $=id=>document.getElementById(id);
@@ -20,67 +20,91 @@
     if(unit.code==='0') return 'Neutral';
     if(unit.kind==='Action Unit') return 'AU'+unit.code;
     if(unit.kind==='Action Descriptor') return 'AD'+unit.code;
-    if(unit.kind==='Associated M-code') return unit.code;
-    return 'FACS '+unit.code;
+    return unit.code;
   }
 
   function defaultEntry(unit){
     return {
       unit,
       intensity:unit.intensity?'C':null,
-      side:unit.laterality?'bilateral':null
+      side:unit.laterality?(unit.code==='46'?'left':'bilateral'):null
     };
   }
 
   function compactEntry(entry){
     if(!entry) return '';
     const suffix=entry.intensity||'';
+    const prefix=entry.unit.kind==='Action Unit'?'AU':entry.unit.kind==='Action Descriptor'?'AD':'';
     if(entry.unit.laterality && entry.side && entry.side!=='bilateral'){
-      return (entry.side==='left'?'L':'R')+entry.unit.code+suffix;
+      return (entry.side==='left'?'L':'R')+prefix+entry.unit.code+suffix;
     }
     if(entry.unit.code==='0') return 'Neutral';
-    if(entry.unit.kind==='Action Unit') return 'AU'+entry.unit.code+suffix;
-    if(entry.unit.kind==='Action Descriptor') return 'AD'+entry.unit.code+suffix;
-    if(entry.unit.kind==='Associated M-code') return entry.unit.code+suffix;
-    return 'FACS '+entry.unit.code+suffix;
+    return prefix+entry.unit.code+suffix;
   }
 
   function activeEntries(){
     return Array.from(state.active.values());
   }
 
-  function renderCategoryOptions(){
-    const select=$('facsCategory');
-    if(!select) return;
-    select.innerHTML='';
-    const all=document.createElement('option');
-    all.value='all';
-    all.textContent='All FACS codes';
-    select.appendChild(all);
-    DATA.categories.forEach(category=>{
-      const option=document.createElement('option');
-      option.value=category.id;
-      option.textContent=category.label;
-      select.appendChild(option);
-    });
-    select.value=state.category;
+  function button(label,value,current,className,onClick){
+    const el=document.createElement('button');
+    el.type='button';
+    el.className=className+(value===current?' is-selected':'');
+    el.textContent=label;
+    el.setAttribute('aria-pressed',value===current?'true':'false');
+    el.addEventListener('click',onClick);
+    return el;
+  }
+
+  function renderBrowseFilters(){
+    const familyHost=$('facsFamilyButtons');
+    if(familyHost){
+      familyHost.innerHTML='';
+      DATA.families.forEach(item=>{
+        familyHost.appendChild(button(item.label,item.id,state.family,'facs-filter-btn',()=>{
+          state.family=item.id;
+          state.part='all';
+          renderBrowseFilters();
+          renderLibrary();
+        }));
+      });
+    }
+
+    const partRow=$('facsFacePartRow');
+    const partHost=$('facsRegionButtons');
+    const showParts=state.family==='face' && !state.query.trim();
+    if(partRow) partRow.hidden=!showParts;
+    if(partHost){
+      partHost.innerHTML='';
+      DATA.faceParts.forEach(item=>{
+        partHost.appendChild(button(item.label,item.id,state.part,'facs-filter-btn facs-region-btn',()=>{
+          state.part=item.id;
+          renderBrowseFilters();
+          renderLibrary();
+        }));
+      });
+    }
   }
 
   function matches(unit){
-    if(state.category!=='all' && unit.category!==state.category) return false;
     const q=state.query.trim().toLowerCase();
-    if(!q) return true;
     const hay=[
       unit.code,
       displayCode(unit),
       unit.name,
       unit.kind,
+      unit.section,
       unit.region,
+      unit.parts.join(' '),
       unit.muscles,
       unit.movement,
       unit.editionNote
     ].join(' ').toLowerCase();
-    return hay.includes(q);
+
+    if(q) return hay.includes(q);
+    if(state.family!=='all' && unit.family!==state.family) return false;
+    if(state.family==='face' && state.part!=='all' && !unit.parts.includes(state.part)) return false;
+    return true;
   }
 
   function renderLibrary(){
@@ -88,32 +112,41 @@
     if(!grid) return;
     grid.innerHTML='';
     const filtered=DATA.units.filter(matches);
+
     filtered.forEach(unit=>{
       const active=state.active.has(unit.code);
       const focused=state.focused===unit.code;
-      const button=document.createElement('button');
-      button.type='button';
-      button.className='facs-unit'+(active?' is-active':'')+(focused?' is-focused':'');
-      button.setAttribute('aria-pressed',active?'true':'false');
-      button.setAttribute('data-code',unit.code);
+      const item=document.createElement('button');
+      item.type='button';
+      item.className='facs-unit'+(active?' is-active':'')+(focused?' is-focused':'');
+      item.setAttribute('aria-pressed',active?'true':'false');
+      item.setAttribute('data-code',unit.code);
 
       const badges=[];
+      if(unit.section) badges.push('<span class="facs-unit-badge">'+escapeHtml(unit.section)+'</span>');
       if(unit.kind) badges.push('<span class="facs-unit-badge">'+escapeHtml(unit.kind)+'</span>');
       if(unit.intensity) badges.push('<span class="facs-unit-badge">A–E</span>');
       if(unit.laterality) badges.push('<span class="facs-unit-badge">L/R</span>');
-      if(unit.render) badges.push('<span class="facs-unit-badge">Visual</span>');
+      if(unit.visualFidelity==='reference') badges.push('<span class="facs-unit-badge">Reference only</span>');
+      else if(unit.visualFidelity==='approximate') badges.push('<span class="facs-unit-badge">3D approx.</span>');
+      if(unit.visualFidelity==='reference') badges.push('<span class="facs-unit-badge">Reference only</span>');
+      else if(unit.visualFidelity==='approximate') badges.push('<span class="facs-unit-badge">3D approx.</span>');
 
-      button.innerHTML=
+      item.innerHTML=
         '<span class="facs-unit-code">'+escapeHtml(displayCode(unit))+'</span>'+
         '<span class="facs-unit-name">'+escapeHtml(unit.name)+'</span>'+
         '<span class="facs-unit-region">'+escapeHtml(unit.region)+'</span>'+
         (badges.length?'<span class="facs-unit-badges">'+badges.join('')+'</span>':'');
 
-      button.addEventListener('click',()=>toggleUnit(unit.code));
-      grid.appendChild(button);
+      item.addEventListener('click',()=>toggleUnit(unit.code));
+      grid.appendChild(item);
     });
+
     const count=$('facsResultCount');
-    if(count) count.textContent=filtered.length+' of '+DATA.units.length;
+    if(count){
+      const mode=state.query.trim()?'search':'current filter';
+      count.textContent=filtered.length+' results · '+mode;
+    }
   }
 
   function renderActiveStrip(){
@@ -124,7 +157,7 @@
     if(!entries.length){
       const empty=document.createElement('span');
       empty.className='facs-empty-state';
-      empty.textContent='No active codes — neutral face.';
+      empty.textContent='Neutral face — no active FACS codes.';
       strip.appendChild(empty);
       return;
     }
@@ -147,39 +180,46 @@
     const title=$('facsFocusTitle');
     const movement=$('facsFocusMovement');
     const type=$('facsFocusType');
+    const section=$('facsFocusSection');
     const region=$('facsFocusRegion');
     const muscle=$('facsFocusMuscle');
-    const renderer=$('facsFocusRenderer');
+    const visual=$('facsFocusRenderer');
     const noteRow=$('facsFocusNoteRow');
     const note=$('facsFocusNote');
     const remove=$('facsRemoveFocused');
 
     if(!entry){
-      if(focusCode)focusCode.textContent='No code selected';
-      if(title)title.textContent='Choose a FACS code';
-      if(movement)movement.textContent='Select a code from the library to add it to the face and edit its settings.';
-      if(type)type.textContent='—';
-      if(region)region.textContent='—';
-      if(muscle)muscle.textContent='—';
-      if(renderer)renderer.textContent='—';
-      if(noteRow)noteRow.hidden=true;
-      if(note)note.textContent='—';
-      if(remove)remove.disabled=true;
+      if(focusCode) focusCode.textContent='No code selected';
+      if(title) title.textContent='Choose an Action Unit or descriptor';
+      if(movement) movement.textContent='Choose a face area below, then select a FACS code.';
+      if(type) type.textContent='—';
+      if(section) section.textContent='—';
+      if(region) region.textContent='—';
+      if(muscle) muscle.textContent='—';
+      if(visual) visual.textContent='—';
+      if(noteRow) noteRow.hidden=true;
+      if(note) note.textContent='—';
+      if(remove) remove.disabled=true;
       renderIntensity(null);
       renderSide(null);
       return;
     }
 
-    if(focusCode)focusCode.textContent=compactEntry(entry);
-    if(title)title.textContent=entry.unit.name;
-    if(movement)movement.textContent=entry.unit.movement;
-    if(type)type.textContent=entry.unit.kind||'FACS code';
-    if(region)region.textContent=entry.unit.region;
-    if(muscle)muscle.textContent=entry.unit.muscles;
-    if(renderer)renderer.textContent=entry.unit.render?'Illustrated in movement model':'Reference only';
-    if(noteRow)noteRow.hidden=!entry.unit.editionNote;
-    if(note)note.textContent=entry.unit.editionNote||'—';
-    if(remove)remove.disabled=false;
+    if(focusCode) focusCode.textContent=compactEntry(entry);
+    if(title) title.textContent=entry.unit.name;
+    if(movement) movement.textContent=entry.unit.movement;
+    if(type) type.textContent=entry.unit.kind||'FACS code';
+    if(section) section.textContent=entry.unit.section||entry.unit.family;
+    if(region) region.textContent=entry.unit.region;
+    if(muscle) muscle.textContent=entry.unit.muscles;
+    if(visual){
+      if(entry.unit.visualFidelity==='direct') visual.textContent='Closest corresponding 3D morph / pose';
+      else if(entry.unit.visualFidelity==='approximate') visual.textContent='Composite 3D approximation';
+      else visual.textContent='Reference only — no faithful current morph';
+    }
+    if(noteRow) noteRow.hidden=!entry.unit.editionNote;
+    if(note) note.textContent=entry.unit.editionNote||'—';
+    if(remove) remove.disabled=false;
     renderIntensity(entry);
     renderSide(entry);
   }
@@ -188,13 +228,13 @@
     const buttons=Array.from(document.querySelectorAll('#facsIntensityButtons [data-intensity]'));
     const status=$('facsIntensityStatus');
     const enabled=!!(entry && entry.unit.intensity);
-    buttons.forEach(button=>{
-      button.disabled=!enabled;
-      button.setAttribute('aria-pressed',enabled && button.dataset.intensity===entry.intensity?'true':'false');
+    buttons.forEach(item=>{
+      item.disabled=!enabled;
+      item.setAttribute('aria-pressed',enabled && item.dataset.intensity===entry.intensity?'true':'false');
     });
     if(status){
       if(!entry) status.textContent='Select an intensity-scored code';
-      else status.textContent=entry.unit.intensity ? 'A trace → E maximum' : 'Not intensity-scored here';
+      else status.textContent=entry.unit.intensity?'A trace → E maximum':'No A–E intensity';
     }
   }
 
@@ -202,13 +242,13 @@
     const buttons=Array.from(document.querySelectorAll('#facsSideButtons [data-side]'));
     const status=$('facsSideStatus');
     const enabled=!!(entry && entry.unit.laterality);
-    buttons.forEach(button=>{
-      button.disabled=!enabled;
-      button.setAttribute('aria-pressed',enabled && button.dataset.side===entry.side?'true':'false');
+    buttons.forEach(item=>{
+      item.disabled=!enabled;
+      item.setAttribute('aria-pressed',enabled && item.dataset.side===entry.side?'true':'false');
     });
     if(status){
       if(!entry) status.textContent='Select a lateral movement';
-      else status.textContent=entry.unit.laterality ? 'Bilateral or unilateral' : 'No side setting';
+      else status.textContent=entry.unit.laterality?'Left / both / right':'No side modifier';
     }
   }
 
@@ -217,23 +257,23 @@
     const combination=entries.length?entries.map(compactEntry).join(' + '):'Neutral';
     const combinationEl=$('facsCombination');
     const readout=$('facsCodeReadout');
-    if(combinationEl)combinationEl.textContent=combination;
-    if(readout)readout.textContent=combination;
+    if(combinationEl) combinationEl.textContent=combination;
+    if(readout) readout.textContent=combination;
     const desc=$('facsFaceDesc');
     if(desc){
       desc.textContent=entries.length
-        ? 'Diagrammatic face showing '+entries.map(entry=>compactEntry(entry)+' '+entry.unit.name).join(', ')+'.'
-        : 'Neutral diagrammatic face with no active FACS codes.';
+        ? 'Realistic 3D face visualising '+entries.map(entry=>compactEntry(entry)+' '+entry.unit.name).join(', ')+'.'
+        : 'Neutral realistic 3D face with no active FACS codes.';
     }
   }
 
   function renderFace(){
-    if(RENDERER && typeof RENDERER.render==='function'){
-      RENDERER.render(activeEntries());
-    }
+    const renderer=window.BASELINE_FACS_RENDERER;
+    if(renderer && typeof renderer.render==='function') renderer.render(activeEntries());
   }
 
   function renderAll(){
+    renderBrowseFilters();
     renderLibrary();
     renderActiveStrip();
     renderFocus();
@@ -290,20 +330,11 @@
   }
 
   function bind(){
-    renderCategoryOptions();
-
     const search=$('facsSearch');
     if(search){
       search.addEventListener('input',()=>{
         state.query=search.value||'';
-        renderLibrary();
-      });
-    }
-
-    const category=$('facsCategory');
-    if(category){
-      category.addEventListener('change',()=>{
-        state.category=category.value||'all';
+        renderBrowseFilters();
         renderLibrary();
       });
     }
@@ -314,12 +345,12 @@
     const remove=$('facsRemoveFocused');
     if(remove) remove.addEventListener('click',removeFocused);
 
-    document.querySelectorAll('#facsIntensityButtons [data-intensity]').forEach(button=>{
-      button.addEventListener('click',()=>setIntensity(button.dataset.intensity));
+    document.querySelectorAll('#facsIntensityButtons [data-intensity]').forEach(item=>{
+      item.addEventListener('click',()=>setIntensity(item.dataset.intensity));
     });
 
-    document.querySelectorAll('#facsSideButtons [data-side]').forEach(button=>{
-      button.addEventListener('click',()=>setSide(button.dataset.side));
+    document.querySelectorAll('#facsSideButtons [data-side]').forEach(item=>{
+      item.addEventListener('click',()=>setSide(item.dataset.side));
     });
 
     renderAll();

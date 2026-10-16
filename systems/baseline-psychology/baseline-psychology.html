@@ -14,16 +14,16 @@
 <meta property="og:title" content="Baseline Psychology"/>
 <meta property="og:description" content="A structured psychology reference for behaviour, communication, expression, and awareness."/>
 <meta property="og:url" content="https://baselinelifestyle.org/baseline-psychology/system"/>
-<link href="/sitewide/css/baseline-themes.css?v=FACS_ENGINE_20261016_1" rel="stylesheet"/>
-<link href="/sitewide/css/baseline-sitewide.css?v=FACS_ENGINE_20261016_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque" rel="stylesheet"/>
+<link href="/sitewide/css/baseline-sitewide.css?v=EDIT_VERSION_20260607_INDEX_AUTH_NAV_FIX&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_WIDTH_AUTHORITY_20260607" rel="stylesheet"/>
 <link href="/systems/baseline-psychology/css/baseline-psychology.css?v=FACS_ENGINE_20261016_1" rel="stylesheet"/>
-<link href="/systems/baseline-psychology/css/facs.css?v=FACS_ENGINE_20261016_1" rel="stylesheet"/>
+<link href="/systems/baseline-psychology/css/facs.css?v=FACS_REALISTIC_20261016_2" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-protected-access.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-access-style="true"/>
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_1" rel="stylesheet" data-baseline-ui-fixes="true"/>
-</head>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"}}</script>\n</head>
 <body data-app="psychology" data-page="baseline-psychology">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
   <div class="bl-homebar-inner">
@@ -103,153 +103,111 @@
 
           <div class="facs-builder-bar">
             <label class="facs-search-field">
-              <span>Find a code</span>
-              <input id="facsSearch" type="search" placeholder="AU number, name, region or muscle" autocomplete="off"/>
+              <span>Find a FACS code</span>
+              <input id="facsSearch" type="search" placeholder="AU / AD number, name, face area or muscle" autocomplete="off"/>
             </label>
-            <label class="facs-category-field">
-              <span>Category</span>
-              <select id="facsCategory" aria-label="Filter FACS codes by category"></select>
-            </label>
-            <button class="facs-clear-btn" id="facsClearAll" type="button">Clear all</button>
+            <button class="facs-clear-btn" id="facsClearAll" type="button">Clear expression</button>
           </div>
 
           <div class="facs-active-strip" id="facsActiveStrip" aria-live="polite">
             <span class="facs-empty-state">No active codes — neutral face.</span>
           </div>
 
-          <div class="facs-layout">
+          <div class="facs-workspace">
             <div class="facs-stage">
               <div class="facs-stage-header">
-                <strong>Interactive movement model</strong>
-                <span>Multi-select supported</span>
+                <strong>Realistic facial movement model</strong>
+                <span id="facsModelStatus">Loading 3D face…</span>
               </div>
-              <svg id="facsFace" class="facs-face" viewBox="0 0 420 540" role="img" aria-labelledby="facsFaceTitle facsFaceDesc">
-                <title id="facsFaceTitle">Interactive FACS face</title>
-                <desc id="facsFaceDesc">A diagrammatic face that changes as FACS codes are selected.</desc>
-                <defs>
-                  <clipPath id="facsFaceClip">
-                    <ellipse cx="210" cy="254" rx="142" ry="188"></ellipse>
-                  </clipPath>
-                </defs>
-
-                <g id="facsMotionMarks" class="facs-motion-marks" aria-hidden="true"></g>
-                <g id="facsHeadPose">
-                  <path id="facsShoulders" d="M92 530 Q118 463 171 447 L249 447 Q302 463 328 530" class="facs-shoulders"></path>
-                  <path id="facsNeckLeft" d="M169 410 Q168 438 157 457" class="facs-line facs-neck"></path>
-                  <path id="facsNeckRight" d="M251 410 Q252 438 263 457" class="facs-line facs-neck"></path>
-
-                  <ellipse id="facsFaceShape" cx="210" cy="254" rx="142" ry="188" class="facs-skin"></ellipse>
-                  <ellipse cx="70" cy="258" rx="18" ry="36" class="facs-skin facs-ear"></ellipse>
-                  <ellipse cx="350" cy="258" rx="18" ry="36" class="facs-skin facs-ear"></ellipse>
-
-                  <g id="facsCheeks">
-                    <path id="facsLeftCheek" d="M115 278 Q137 300 161 302" class="facs-soft-line"></path>
-                    <path id="facsRightCheek" d="M305 278 Q283 300 259 302" class="facs-soft-line"></path>
-                  </g>
-
-                  <path id="facsLeftBrow" d="M118 169 Q147 151 190 162" class="facs-feature-line"></path>
-                  <path id="facsRightBrow" d="M302 169 Q273 151 230 162" class="facs-feature-line"></path>
-
-                  <g id="facsLeftEyeGroup">
-                    <ellipse id="facsLeftEyeWhite" cx="155" cy="211" rx="36" ry="16" class="facs-eye-white"></ellipse>
-                    <ellipse id="facsLeftIris" cx="155" cy="211" rx="10" ry="10" class="facs-iris"></ellipse>
-                    <circle id="facsLeftPupil" cx="155" cy="211" r="4.5" class="facs-pupil"></circle>
-                    <path id="facsLeftUpperLid" d="M119 211 Q155 187 191 211" class="facs-feature-line"></path>
-                    <path id="facsLeftLowerLid" d="M120 213 Q155 229 190 213" class="facs-soft-line"></path>
-                  </g>
-                  <g id="facsRightEyeGroup">
-                    <ellipse id="facsRightEyeWhite" cx="265" cy="211" rx="36" ry="16" class="facs-eye-white"></ellipse>
-                    <ellipse id="facsRightIris" cx="265" cy="211" rx="10" ry="10" class="facs-iris"></ellipse>
-                    <circle id="facsRightPupil" cx="265" cy="211" r="4.5" class="facs-pupil"></circle>
-                    <path id="facsRightUpperLid" d="M229 211 Q265 187 301 211" class="facs-feature-line"></path>
-                    <path id="facsRightLowerLid" d="M230 213 Q265 229 300 213" class="facs-soft-line"></path>
-                  </g>
-
-                  <path id="facsNoseBridge" d="M210 207 Q203 246 195 272 Q210 281 225 272" class="facs-soft-line"></path>
-                  <ellipse id="facsLeftNostril" cx="195" cy="278" rx="7" ry="4" class="facs-nostril"></ellipse>
-                  <ellipse id="facsRightNostril" cx="225" cy="278" rx="7" ry="4" class="facs-nostril"></ellipse>
-                  <path id="facsNoseWrinkle1" d="M183 242 Q194 236 203 241" class="facs-wrinkle"></path>
-                  <path id="facsNoseWrinkle2" d="M237 242 Q226 236 217 241" class="facs-wrinkle"></path>
-
-                  <path id="facsLeftNasolabial" d="M174 279 Q158 307 165 329" class="facs-wrinkle"></path>
-                  <path id="facsRightNasolabial" d="M246 279 Q262 307 255 329" class="facs-wrinkle"></path>
-
-                  <g id="facsMouthGroup">
-                    <path id="facsMouthFill" d="M165 339 Q210 330 255 339 Q210 348 165 339 Z" class="facs-mouth-fill"></path>
-                    <path id="facsUpperLip" d="M165 339 Q188 328 210 335 Q232 328 255 339" class="facs-lip-line"></path>
-                    <path id="facsLowerLip" d="M165 339 Q210 354 255 339" class="facs-lip-line"></path>
-                    <path id="facsTeeth" d="M173 342 Q210 348 247 342" class="facs-teeth" hidden></path>
-                    <ellipse id="facsTongue" cx="210" cy="354" rx="29" ry="11" class="facs-tongue" hidden></ellipse>
-                  </g>
-
-                  <path id="facsLeftDimple" d="M151 340 Q159 345 164 337" class="facs-wrinkle"></path>
-                  <path id="facsRightDimple" d="M269 340 Q261 345 256 337" class="facs-wrinkle"></path>
-                  <path id="facsChinLine" d="M181 386 Q210 398 239 386" class="facs-soft-line"></path>
-                  <path id="facsJawTensionLeft" d="M105 318 Q113 364 142 394" class="facs-wrinkle"></path>
-                  <path id="facsJawTensionRight" d="M315 318 Q307 364 278 394" class="facs-wrinkle"></path>
-
-                  <g id="facsVisibilityMasks" clip-path="url(#facsFaceClip)" aria-hidden="true">
-                    <rect id="facsMaskForehead" x="60" y="60" width="300" height="132" class="facs-visibility-mask"></rect>
-                    <rect id="facsMaskEyes" x="60" y="178" width="300" height="90" class="facs-visibility-mask"></rect>
-                    <rect id="facsMaskLower" x="60" y="270" width="300" height="190" class="facs-visibility-mask"></rect>
-                    <rect id="facsMaskFace" x="60" y="60" width="300" height="400" class="facs-visibility-mask"></rect>
-                  </g>
-                  <text id="facsUnscorable" x="210" y="258" text-anchor="middle" class="facs-unscorable">UNSCORABLE</text>
-                </g>
-              </svg>
-              <p class="facs-stage-note">Diagrammatic teaching model. It visualises selected movements; it is not an official FACS training plate or emotion detector.</p>
+              <div class="facs-view-controls" aria-label="Face viewing angle">
+                <label class="facs-view-slider">
+                  <span>Rotate view</span>
+                  <input id="facsViewAngle" type="range" min="-180" max="180" step="1" value="0" aria-label="Rotate face view from minus 180 to 180 degrees"/>
+                </label>
+                <output id="facsViewAngleValue" for="facsViewAngle">0°</output>
+                <button id="facsViewFront" class="facs-view-reset" type="button">Front</button>
+                <span class="facs-view-hint">Drag the face or use the slider.</span>
+              </div>
+              <div id="facsFace" class="facs-face-viewport" role="img" aria-labelledby="facsFaceTitle facsFaceDesc">
+                <span id="facsFaceTitle" class="facs-visually-hidden">Interactive FACS face</span>
+                <span id="facsFaceDesc" class="facs-visually-hidden">A realistic three-dimensional human face that changes as FACS codes are selected.</span>
+                <div id="facsFaceLoading" class="facs-face-loading">Loading realistic facial model…</div>
+                <div id="facsFaceError" class="facs-face-error" hidden>Realistic facial model unavailable.</div>
+                <div id="facsMaskForehead" class="facs-visibility-mask facs-mask-forehead" hidden aria-hidden="true"></div>
+                <div id="facsMaskEyes" class="facs-visibility-mask facs-mask-eyes" hidden aria-hidden="true"></div>
+                <div id="facsMaskLower" class="facs-visibility-mask facs-mask-lower" hidden aria-hidden="true"></div>
+                <div id="facsMaskFace" class="facs-visibility-mask facs-mask-face" hidden aria-hidden="true"></div>
+                <div id="facsUnscorable" class="facs-unscorable" hidden aria-hidden="true">UNSCORABLE</div>
+              </div>
+              <p class="facs-stage-note">FACS remains the coding authority. The 3D morph targets are used only to visualise the selected movements and are not a replacement for the licensed FACS manual or certification.</p>
+              <p class="facs-model-credit">3D morph model: Face Cap, distributed in the three.js examples.</p>
             </div>
 
-            <div class="facs-controls">
-              <div class="facs-control-block facs-focus-card">
-                <div class="facs-focus-heading">
-                  <div>
-                    <div class="facs-kicker" id="facsFocusCode">No code selected</div>
-                    <h4 id="facsFocusTitle">Choose an Action Unit</h4>
-                  </div>
-                  <button id="facsRemoveFocused" class="facs-remove-btn" type="button" disabled>Remove</button>
+            <div class="facs-selection-panel">
+              <div class="facs-focus-heading">
+                <div>
+                  <div class="facs-kicker" id="facsFocusCode">No code selected</div>
+                  <h4 id="facsFocusTitle">Choose an Action Unit or descriptor</h4>
                 </div>
-                <p id="facsFocusMovement">Select a code from the library to add it to the face and edit its settings.</p>
+                <button id="facsRemoveFocused" class="facs-remove-btn" type="button" disabled>Remove</button>
+              </div>
+              <p id="facsFocusMovement">Choose a face area below, then select a FACS code.</p>
+
+              <div class="facs-control-pair">
+                <div class="facs-control-block">
+                  <div class="facs-control-title-row">
+                    <h4>Intensity</h4>
+                    <span id="facsIntensityStatus">Select an intensity-scored code</span>
+                  </div>
+                  <div class="facs-intensity" id="facsIntensityButtons" aria-label="FACS intensity levels">
+                    <button type="button" data-intensity="A"><strong>A</strong><span>Trace</span></button>
+                    <button type="button" data-intensity="B"><strong>B</strong><span>Slight</span></button>
+                    <button type="button" data-intensity="C"><strong>C</strong><span>Marked</span></button>
+                    <button type="button" data-intensity="D"><strong>D</strong><span>Severe</span></button>
+                    <button type="button" data-intensity="E"><strong>E</strong><span>Maximum</span></button>
+                  </div>
+                </div>
+
+                <div class="facs-control-block">
+                  <div class="facs-control-title-row">
+                    <h4>Laterality</h4>
+                    <span id="facsSideStatus">Select a lateral movement</span>
+                  </div>
+                  <div class="facs-side-buttons" id="facsSideButtons">
+                    <button type="button" data-side="bilateral">Both</button>
+                    <button type="button" data-side="left">Left</button>
+                    <button type="button" data-side="right">Right</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="facs-combination-row">
+                <span>Current combination</span>
+                <strong class="facs-combination" id="facsCombination">Neutral</strong>
+              </div>
+
+              <details class="facs-technical-details">
+                <summary>Technical details</summary>
                 <dl class="facs-meta">
                   <div><dt>Code type</dt><dd id="facsFocusType">—</dd></div>
-                  <div><dt>Region</dt><dd id="facsFocusRegion">—</dd></div>
+                  <div><dt>FACS grouping</dt><dd id="facsFocusSection">—</dd></div>
+                  <div><dt>Face area</dt><dd id="facsFocusRegion">—</dd></div>
                   <div><dt>Muscle / basis</dt><dd id="facsFocusMuscle">—</dd></div>
-                  <div><dt>Renderer</dt><dd id="facsFocusRenderer">—</dd></div>
-                  <div id="facsFocusNoteRow" hidden><dt>Version note</dt><dd id="facsFocusNote">—</dd></div>
+                  <div><dt>Visualisation</dt><dd id="facsFocusRenderer">—</dd></div>
+                  <div id="facsFocusNoteRow" hidden><dt>2002 note</dt><dd id="facsFocusNote">—</dd></div>
                 </dl>
-              </div>
+              </details>
+            </div>
+          </div>
 
-              <div class="facs-control-block">
-                <div class="facs-control-title-row">
-                  <h4>Intensity</h4>
-                  <span id="facsIntensityStatus">Select an intensity-scored code</span>
-                </div>
-                <div class="facs-intensity" id="facsIntensityButtons" aria-label="FACS intensity levels">
-                  <button type="button" data-intensity="A"><strong>A</strong><span>Trace</span></button>
-                  <button type="button" data-intensity="B"><strong>B</strong><span>Slight</span></button>
-                  <button type="button" data-intensity="C"><strong>C</strong><span>Marked</span></button>
-                  <button type="button" data-intensity="D"><strong>D</strong><span>Severe</span></button>
-                  <button type="button" data-intensity="E"><strong>E</strong><span>Maximum</span></button>
-                </div>
-              </div>
-
-              <div class="facs-control-block">
-                <div class="facs-control-title-row">
-                  <h4>Laterality</h4>
-                  <span id="facsSideStatus">Select a lateral movement</span>
-                </div>
-                <div class="facs-side-buttons" id="facsSideButtons">
-                  <button type="button" data-side="bilateral">Bilateral</button>
-                  <button type="button" data-side="left">Left</button>
-                  <button type="button" data-side="right">Right</button>
-                </div>
-              </div>
-
-              <div class="facs-control-block">
-                <h4>Current combination</h4>
-                <p class="facs-combination" id="facsCombination">Neutral</p>
-                <p class="facs-small-note">The readout follows the public AU intensity and L/R modifier convention where those controls apply. The full official scoring rules remain in the licensed FACS manual.</p>
-              </div>
+          <div class="facs-browse-nav" aria-label="Browse FACS codes">
+            <div class="facs-filter-row">
+              <span class="facs-filter-label">Code family</span>
+              <div id="facsFamilyButtons" class="facs-family-buttons" role="group" aria-label="FACS code family"></div>
+            </div>
+            <div class="facs-filter-row" id="facsFacePartRow">
+              <span class="facs-filter-label">Face area</span>
+              <div id="facsRegionButtons" class="facs-region-buttons" role="group" aria-label="Facial area"></div>
             </div>
           </div>
 
@@ -257,7 +215,7 @@
             <div class="facs-library-heading">
               <div>
                 <h4>FACS Code Library</h4>
-                <p>Select multiple entries to combine them. Select an active entry again to focus it for intensity or side editing.</p>
+                <p>Start with a face area, then choose the official FACS code. Search works across the full reference regardless of the current filter.</p>
               </div>
               <div id="facsResultCount" class="facs-result-count"></div>
             </div>
@@ -274,10 +232,10 @@
 <script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script>
 <script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_READY_20261005_1"></script>
-<script src="/sitewide/js/baseline-shared.js?v=FACS_ENGINE_20261016_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1"></script>
-<script src="/systems/baseline-psychology/js/facs-data.js?v=FACS_ENGINE_20261016_1"></script>
-<script src="/systems/baseline-psychology/js/facs-renderer.js?v=FACS_ENGINE_20261016_1"></script>
-<script src="/systems/baseline-psychology/js/facs-engine.js?v=FACS_ENGINE_20261016_1"></script>
+<script src="/sitewide/js/baseline-shared.js?v=ACCOUNT_HEADER_STABILITY_20261005_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1"></script>
+<script src="/systems/baseline-psychology/js/facs-data.js?v=FACS_REALISTIC_20261016_2"></script>
+<script src="/systems/baseline-psychology/js/facs-renderer.js?v=FACS_REALISTIC_20261016_2"></script>
+<script src="/systems/baseline-psychology/js/facs-engine.js?v=FACS_REALISTIC_20261016_2"></script>
 <script src="/systems/baseline-psychology/js/baseline-psychology.js?v=FACS_ENGINE_20261016_1"></script>
 </body>
 </html>
