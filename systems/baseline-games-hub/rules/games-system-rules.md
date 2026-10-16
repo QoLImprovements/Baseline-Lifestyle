@@ -18,12 +18,16 @@ systems/baseline-games-hub/games/detect-the-word/
 systems/baseline-games-hub/games/make-the-number/
 systems/baseline-games-hub/games/track-the-coin/
 systems/baseline-games-hub/games/rule-shift/
+systems/baseline-games-hub/games/block-grid/
+systems/baseline-games-hub/games/colour-sort/
 systems/baseline-games-hub/games/baseline-realm/
 systems/baseline-games-hub/games/darts-focused/
 systems/baseline-games-hub/games/badminton-focused/
 ```
 
 Individual game mechanics stay separate from hub-level rules.
+
+Block Grid and Colour Sort are module-first puzzle games. Their mechanics live in their own game folders, while `js/puzzle-game-support.mjs` provides only the shared Hub shell/navigation bridge. The shared helper must not become a second mechanics authority.
 
 Canonical game identity and routing are defined in:
 
