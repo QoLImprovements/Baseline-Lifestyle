@@ -554,7 +554,11 @@
     const rect=source.getBoundingClientRect();
     ghost.style.width=Math.max(44,rect.width)+'px';
     ghost.style.height=Math.max(44,rect.height)+'px';
-    document.body.appendChild(ghost);
+    const fullscreenHost=document.fullscreenElement;
+    const ghostHost=fullscreenHost && (fullscreenHost===refs.workspace || fullscreenHost.contains(refs.workspace))
+      ? fullscreenHost
+      : document.body;
+    ghostHost.appendChild(ghost);
     moveDragGhost(ghost,event.clientX,event.clientY);
     return ghost;
   }
@@ -724,8 +728,22 @@
     }
   });
 
-  refs.prev.addEventListener('click',function(){ if(state){ state.page=Math.max(0,state.page-1); renderTray(); saveState(); } });
-  refs.next.addEventListener('click',function(){ if(state){ state.page+=1; renderTray(); saveState(); } });
+  function previousTray(){
+    if(!state || refs.prev.disabled) return;
+    state.page=Math.max(0,state.page-1);
+    renderTray();
+    saveState();
+  }
+
+  function nextTray(){
+    if(!state || refs.next.disabled) return;
+    state.page+=1;
+    renderTray();
+    saveState();
+  }
+
+  refs.prev.addEventListener('click',previousTray);
+  refs.next.addEventListener('click',nextTray);
 
   refs.tray.addEventListener('pointerdown',function(event){
     const button=event.target.closest('[data-piece-id]');
@@ -764,6 +782,16 @@
     if(key==='s'){
       event.preventDefault();
       shuffleTray();
+      return;
+    }
+    if(key==='arrowleft'){
+      event.preventDefault();
+      previousTray();
+      return;
+    }
+    if(key==='arrowright'){
+      event.preventDefault();
+      nextTray();
     }
   });
   document.addEventListener('fullscreenchange',syncFullscreenButton);
