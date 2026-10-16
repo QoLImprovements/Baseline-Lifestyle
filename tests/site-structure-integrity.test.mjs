@@ -239,6 +239,8 @@ test('home index uses one six-strip system layout with the agreed order and copy
   assert.ok(themes.includes('--scroll-track: #303036;'));
   assert.ok(themes.includes('--scroll-thumb: #62626c;'));
   assert.ok(themes.includes('--scroll-thumb-hover: #777782;'));
+  assert.equal(css.includes('#bl-auth-flyout'), false, 'index stylesheet must not override the shared Account flyout');
+  assert.equal(css.includes('#bl-beats-flyout'), false, 'index stylesheet must not retain dead Binaural flyout rules');
 });
 
 test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
@@ -281,6 +283,9 @@ test('sitewide Contact control is singular, themed and ordered before Account', 
   assert.ok(shared.indexOf("'bl-contact-link'") < shared.indexOf("'bl-auth-toggle'", shared.indexOf("'bl-contact-link'")));
   assert.ok(sitewideCss.includes('#bl-contact-link'));
   assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
+  assert.ok(sitewideCss.includes("#bl-beats-toggle,\n#bl-contact-link,\n#bl-auth-toggle{"));
+  assert.ok(sitewideCss.includes("body[data-app] #bl-beats-toggle,\nbody[data-app] #bl-contact-link,\nbody[data-app] #bl-auth-toggle,"));
+  assert.equal(sitewideCss.includes('body[data-app="home"] #bl-beats-toggle'), false, 'Home Binaural absence must be owned by shared JS, not hidden by CSS');
   assert.equal(home.includes('id="bl-contact-link"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
   assert.match(contact, /<h1 id="contactTitle">Contact Us<\/h1>/);
   assert.ok(contact.includes('/sitewide/js/baseline-shared.js'));
