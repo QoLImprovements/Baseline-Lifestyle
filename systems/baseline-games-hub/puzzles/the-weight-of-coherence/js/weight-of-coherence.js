@@ -2,9 +2,9 @@
   'use strict';
 
   const ROOT_ID = 'weightCoherencePuzzle';
-  const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.webp?v=WEIGHT_OF_COHERENCE_20261016_1';
-  const BOARD_WIDTH = 640;
-  const BOARD_HEIGHT = 800;
+  const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2';
+  const BOARD_WIDTH = 1122;
+  const BOARD_HEIGHT = 1402;
   const STORAGE_KEY = 'baseline_games_jigsaw_weight_of_coherence_v1';
   const DIFFICULTIES = Object.freeze({
     50: Object.freeze({ pieces:50, cols:5, rows:10, trayPageSize:20 }),
@@ -27,6 +27,7 @@
     difficultyLabel:document.getElementById('weightCoherenceDifficultyLabel'),
     preview:document.getElementById('weightCoherencePreviewBtn'),
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
+    fullscreen:document.getElementById('weightCoherenceFullscreenBtn'),
     reset:document.getElementById('weightCoherenceResetBtn'),
     tray:document.getElementById('weightCoherenceTray'),
     trayMeta:document.getElementById('weightCoherenceTrayMeta'),
@@ -168,10 +169,9 @@
     ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
 
     if(imageReady && state && state.preview){
-      ctx.save();
-      ctx.globalAlpha=0.20;
+      // Guide mode is an undimmed, full-quality reference view of the original artwork.
       ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
-      ctx.restore();
+      return;
     }
 
     if(state){
@@ -345,7 +345,7 @@
       refs.workspace.hidden=false;
       syncDifficultyButtons();
       refs.preview.setAttribute('aria-pressed',String(state.preview));
-      refs.preview.textContent=state.preview?'Hide Guide':'Show Guide';
+      refs.preview.textContent=state.preview?'Hide Guide [G]':'Show Guide [G]';
       setStatus(state.completed?'Puzzle complete.':'Saved puzzle resumed.',state.completed?'success':'');
       renderCompletion();
       rebuildPlacedCanvas();
@@ -381,7 +381,7 @@
     selectedPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
-    refs.preview.textContent='Show Guide';
+    refs.preview.textContent='Show Guide [G]';
     refs.completion.hidden=true;
     placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
     setStatus('Puzzle started. Drag a piece onto the board, or select a piece and then click its position.','');
@@ -437,6 +437,10 @@
 
   function attemptPlacement(id,clientX,clientY){
     if(!state || !Number.isInteger(id)) return false;
+    if(state.preview){
+      setStatus('Hide the guide [G] before placing a piece.','warning');
+      return false;
+    }
     const point=boardPointFromClient(clientX,clientY);
     if(!point){ setStatus('Move the piece onto the puzzle board.','warning'); return false; }
     const config=difficultyConfig(state.difficulty);
@@ -515,16 +519,23 @@
 
   refs.start.addEventListener('click',beginPuzzle);
 
-  refs.preview.addEventListener('click',function(){
+  function syncGuideButton(){
+    if(!refs.preview) return;
+    const guideOn=!!(state && state.preview);
+    refs.preview.setAttribute('aria-pressed',String(guideOn));
+    refs.preview.textContent=guideOn?'Hide Guide [G]':'Show Guide [G]';
+  }
+
+  function toggleGuide(){
     if(!state) return;
     state.preview=!state.preview;
-    refs.preview.setAttribute('aria-pressed',String(state.preview));
-    refs.preview.textContent=state.preview?'Hide Guide':'Show Guide';
+    syncGuideButton();
     drawBoard();
+    setStatus(state.preview?'Full-quality guide shown. Press G again to return to the puzzle.':'Guide hidden. Continue placing pieces.','');
     saveState();
-  });
+  }
 
-  refs.shuffle.addEventListener('click',function(){
+  function shuffleTray(){
     if(!state || state.completed) return;
     const remaining=unplacedIds();
     const shuffled=shuffledIds(remaining.length).map(function(index){ return remaining[index]; });
@@ -535,7 +546,43 @@
     renderTray();
     saveState();
     setStatus('Remaining pieces shuffled.','');
-  });
+  }
+
+  function syncFullscreenButton(){
+    if(!refs.fullscreen) return;
+    const active=document.fullscreenElement===refs.workspace;
+    refs.fullscreen.setAttribute('aria-pressed',String(active));
+    refs.fullscreen.textContent=active?'Exit Full Screen':'Full Screen';
+  }
+
+  function toggleFullscreen(){
+    if(!refs.workspace) return;
+    if(document.fullscreenElement===refs.workspace){
+      if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
+      return;
+    }
+    if(refs.workspace.requestFullscreen){
+      refs.workspace.requestFullscreen().then(syncFullscreenButton).catch(function(){
+        setStatus('Full screen is not available in this browser context.','warning');
+      });
+      return;
+    }
+    setStatus('Full screen is not available in this browser context.','warning');
+  }
+
+  function puzzleHotkeysActive(){
+    const section=root.closest('.section');
+    return !!state && !refs.workspace.hidden && (!section || section.classList.contains('active'));
+  }
+
+  function editableTarget(target){
+    if(!target || !target.closest) return false;
+    return !!target.closest('input, textarea, select, [contenteditable="true"]');
+  }
+
+  refs.preview.addEventListener('click',toggleGuide);
+  refs.shuffle.addEventListener('click',shuffleTray);
+  if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
 
   refs.reset.addEventListener('click',function(){
     if(!state){ beginPuzzle(); return; }
@@ -572,6 +619,20 @@
     attemptPlacement(selectedPieceId,event.clientX,event.clientY);
   });
 
+  document.addEventListener('keydown',function(event){
+    if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || editableTarget(event.target) || !puzzleHotkeysActive()) return;
+    const key=String(event.key||'').toLowerCase();
+    if(key==='g'){
+      event.preventDefault();
+      toggleGuide();
+      return;
+    }
+    if(key==='s'){
+      event.preventDefault();
+      shuffleTray();
+    }
+  });
+  document.addEventListener('fullscreenchange',syncFullscreenButton);
   window.addEventListener('beforeunload',saveState);
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
 

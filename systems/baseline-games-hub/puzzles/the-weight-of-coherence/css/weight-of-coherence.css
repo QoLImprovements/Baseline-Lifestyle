@@ -2,7 +2,7 @@
 #puzzles .puzzle-library-card{overflow:hidden}
 #weightCoherencePuzzle{display:grid;gap:18px}
 .weight-coherence-intro{display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:20px;align-items:center;padding:16px;border:1px solid rgba(176,190,255,.22);border-radius:18px;background:linear-gradient(145deg,rgba(11,17,48,.86),rgba(31,41,91,.58))}
-.weight-coherence-art{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:14px;border:1px solid rgba(224,230,255,.22);box-shadow:0 16px 34px rgba(0,0,0,.28)}
+.weight-coherence-art{display:block;width:100%;aspect-ratio:1122/1402;object-fit:cover;border-radius:14px;border:1px solid rgba(224,230,255,.22);box-shadow:0 16px 34px rgba(0,0,0,.28)}
 .weight-coherence-copy{display:grid;gap:8px;align-content:center}
 .weight-coherence-copy h3{margin:0;font-size:clamp(1.35rem,2.4vw,2rem)}
 .weight-coherence-copy p{margin:0;color:rgba(242,245,255,.78);line-height:1.55}
@@ -58,4 +58,45 @@
   .weight-coherence-tray-head{align-items:stretch}
   .weight-coherence-tray-nav{width:100%}
   .weight-coherence-tray-nav .action{flex:1}
+}
+
+
+/* Full-quality artwork + dedicated puzzle full-screen workspace */
+.weight-coherence-workspace:fullscreen{
+  box-sizing:border-box;
+  width:100vw;
+  height:100vh;
+  margin:0;
+  padding:16px;
+  overflow:hidden;
+  color:#F2F5FF;
+  background:#080D22;
+  background-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);
+  grid-template-columns:minmax(0,1fr) minmax(300px,420px);
+  grid-template-rows:auto minmax(0,1fr);
+  grid-template-areas:"toolbar toolbar" "board tray";
+  gap:14px;
+}
+.weight-coherence-workspace:fullscreen .weight-coherence-toolbar{grid-area:toolbar}
+.weight-coherence-workspace:fullscreen .weight-coherence-board-shell{grid-area:board;min-width:0;min-height:0;align-content:start;overflow:auto}
+.weight-coherence-workspace:fullscreen .weight-coherence-tray-shell{grid-area:tray;min-width:0;min-height:0;overflow:auto;align-content:start}
+.weight-coherence-workspace:fullscreen .weight-coherence-board-wrap{
+  width:min(100%,calc((100vh - 132px) * 1122 / 1402));
+  max-height:calc(100vh - 132px);
+}
+.weight-coherence-workspace:fullscreen .weight-coherence-tray{
+  grid-template-columns:repeat(auto-fill,minmax(82px,1fr));
+}
+
+@media(max-width:900px){
+  .weight-coherence-workspace:fullscreen{
+    overflow:auto;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:auto auto auto;
+    grid-template-areas:"toolbar" "board" "tray";
+  }
+  .weight-coherence-workspace:fullscreen .weight-coherence-board-wrap{
+    width:min(100%,calc((100vh - 170px) * 1122 / 1402));
+    max-height:none;
+  }
 }
