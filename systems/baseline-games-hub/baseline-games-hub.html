@@ -45,7 +45,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
-<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_20261016_1" rel="stylesheet"/>
+<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_FULL_20261016_2" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
      deliberately loads last so shell alignment rules cannot repaint Realm. -->
@@ -121,7 +121,7 @@ These Markdown rules are a human reference point, not live runtime config.
         </div>
         <article id="weightCoherencePuzzle" aria-labelledby="weightCoherenceTitle">
           <div class="weight-coherence-intro">
-            <img class="weight-coherence-art" src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.webp?v=WEIGHT_OF_COHERENCE_20261016_1" alt="The Weight of Coherence — a symbolic figure holding an unfinished structure amid green, red and blue light."/>
+            <img class="weight-coherence-art" src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2" alt="The Weight of Coherence — a symbolic figure holding an unfinished structure amid green, red and blue light."/>
             <div class="weight-coherence-copy">
               <h3 id="weightCoherenceTitle">The Weight of Coherence</h3>
               <p>A symbolic jigsaw built from the artwork created for Baseline. Choose how deep you want the session to go, from a compact 50-piece solve to a 1,000-piece long-form puzzle.</p>
@@ -152,15 +152,16 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="stat-pill">Time <span id="weightCoherenceTimer">00:00</span></div>
               </div>
               <div class="weight-coherence-actions">
-                <button class="action ghost" id="weightCoherencePreviewBtn" type="button" aria-pressed="false">Show Guide</button>
-                <button class="action ghost" id="weightCoherenceShuffleBtn" type="button">Shuffle Tray</button>
+                <button class="action ghost" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G">Show Guide [G]</button>
+                <button class="action ghost" id="weightCoherenceShuffleBtn" type="button" aria-keyshortcuts="S">Shuffle Tray [S]</button>
+                <button class="action ghost" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false">Full Screen</button>
                 <button class="action ghost" id="weightCoherenceResetBtn" type="button">Restart</button>
               </div>
             </div>
 
             <div class="weight-coherence-board-shell">
               <div class="weight-coherence-board-wrap">
-                <canvas id="weightCoherenceBoard" width="640" height="800" aria-label="The Weight of Coherence jigsaw board"></canvas>
+                <canvas id="weightCoherenceBoard" width="1122" height="1402" aria-label="The Weight of Coherence jigsaw board"></canvas>
                 <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
               </div>
               <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
@@ -597,7 +598,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261003_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PUZZLES_WEIGHT_COHERENCE_20261016_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_20261016_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_FULL_20261016_2"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
