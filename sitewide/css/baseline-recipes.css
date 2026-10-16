@@ -290,6 +290,17 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
   outline:2px solid var(--accent,var(--ink));
   outline-offset:3px;
 }
+#recipes .recipe-universal-template > .recipe-favourite-caption{
+  width:100%;
+  margin:-4px 0 10px;
+  padding:0;
+  color:var(--muted,var(--ink));
+  font-size:16px;
+  line-height:1.35;
+}
+#recipes .recipe-universal-template > .recipe-favourite-caption[hidden]{
+  display:none!important;
+}
 
 /* --------------------------------------------------------------------------
    Meta + viewbar
