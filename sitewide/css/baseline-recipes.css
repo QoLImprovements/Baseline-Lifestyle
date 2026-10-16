@@ -290,16 +290,19 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
   outline:2px solid var(--accent,var(--ink));
   outline-offset:3px;
 }
-#recipes .recipe-universal-template > .recipe-favourite-caption{
-  width:100%;
-  margin:-4px 0 10px;
-  padding:0;
-  color:var(--muted,var(--ink));
-  font-size:16px;
-  line-height:1.35;
+#recipes .recipe-universal-template > .recipe-title-row > .fav-btn[data-tip]{
+  position:relative;
 }
-#recipes .recipe-universal-template > .recipe-favourite-caption[hidden]{
-  display:none!important;
+#recipes .recipe-universal-template > .recipe-title-row > .fav-btn[data-tip]::after{
+  left:auto;
+  right:0;
+  top:100%;
+  text-align:left;
+}
+#recipes .recipe-universal-template > .recipe-title-row > .fav-btn.tip-show[data-tip]::after{
+  opacity:1;
+  transform:translateY(4px);
+  pointer-events:auto;
 }
 
 /* --------------------------------------------------------------------------
