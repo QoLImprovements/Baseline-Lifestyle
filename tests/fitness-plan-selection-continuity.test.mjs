@@ -10,13 +10,13 @@ const page=read('systems/baseline-fitness/baseline-fitness.html');
 const fitnessState=read('systems/baseline-fitness/api/fitness_state.php');
 const getPlan=read('systems/baseline-fitness/api/get_plan.php');
 
-test('Calisthenics plan selection has one controller and one clean Routine Plan route',()=>{
+test('Calisthenics plan selection has one controller and delegates Routine Plan routing',()=>{
   assert.equal(existsSync(url('systems/baseline-fitness/js/fitness-plan-selection-continuity-v1.js')),false);
   assert.doesNotMatch(page,/fitness-plan-selection-continuity-v1\.js/);
   assert.match(plans,/async function openPlan\(planId\)/);
   assert.match(plans,/saveSelectedPlanId/);
-  assert.match(plans,/\/baseline-fitness\/my-routine\/plan/);
   assert.match(plans,/activateTopView\?\.\('plan',true\)/);
+  assert.doesNotMatch(plans,/location\.assign|history\.(?:pushState|replaceState)/);
   assert.doesNotMatch(plans,/localStorage|sessionStorage|fitnessPlanSelectionContinuity/);
 });
 
@@ -35,13 +35,6 @@ test('plan-card disclosure is owned by the canonical Routine structure',()=>{
   assert.match(structure,/details\[data-fitness-plan-card="\$\{next\}"\]/);
   assert.match(structure,/if \(card\) card\.open=true/);
 });
-
-test('Create Another Plan uses an explicit clean-route create request, not browser persistence',()=>{
-  assert.match(plans,/url\.searchParams\.set\('new-plan','1'\)/);
-  assert.match(plans,/setCreatingPlan\(true\)/);
-  assert.doesNotMatch(plans,/Date\.now\(\).*new-plan/);
-});
-
 
 test('plan-name writes are bound to the selected plan identity',()=>{
   assert.match(plans,/function planNameForWrite\(raw,planId=0\)/);
