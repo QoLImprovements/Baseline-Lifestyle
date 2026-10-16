@@ -165,7 +165,7 @@ export function createPuzzleHubShell(config) {
     const games = document.getElementById('games');
     games?.classList.add('has-active-game');
     document.getElementById('gamesOverviewCard')?.setAttribute('aria-hidden', 'true');
-    try { history.replaceState({ puzzleGame:config.id }, '', `#tab=games&game=${config.id}`); } catch (_) {}
+    try { history.pushState({ puzzleGame:config.id }, '', `/baseline-games-hub/games-hub/${config.id}`); } catch (_) {}
     document.documentElement.setAttribute('data-puzzle-game-open', config.id);
     config.onOpen?.();
     panel.querySelector('h2, h3, [tabindex="-1"]')?.focus?.({ preventScroll:true });
@@ -186,7 +186,7 @@ export function createPuzzleHubShell(config) {
     if (restoreOverview) {
       document.getElementById('games')?.classList.remove('has-active-game');
       document.getElementById('gamesOverviewCard')?.removeAttribute('aria-hidden');
-      try { history.replaceState({}, '', '#tab=games'); } catch (_) {}
+      try { history.replaceState({ baselineGames:true }, '', '/baseline-games-hub/games-hub/games-list'); } catch (_) {}
       document.querySelector(`[data-open-puzzle-game="${config.id}"]`)?.focus?.({ preventScroll:true });
     }
   }
@@ -228,14 +228,24 @@ export function createPuzzleHubShell(config) {
     observer.observe(list, { childList:true });
   }
 
-  function initialRouteOpen() {
+  function routeMatches() {
     const path = String(location.pathname || '').toLowerCase().replace(/\/+$/, '');
-    if (path.endsWith('/baseline-games-hub/games-hub/' + config.id)) {
+    if (path.endsWith('/baseline-games-hub/games-hub/' + config.id)) return true;
+    const hash = String(location.hash || '');
+    return new URLSearchParams(hash.replace(/^#/, '')).get('game') === config.id;
+  }
+
+  function initialRouteOpen() {
+    if (routeMatches()) open();
+  }
+
+  function syncFromBrowserHistory() {
+    if (routeMatches()) {
       open();
       return;
     }
-    const hash = String(location.hash || '');
-    if (new URLSearchParams(hash.replace(/^#/, '')).get('game') === config.id) open();
+    const panel = document.getElementById(config.panelId);
+    if (panel?.classList.contains('is-active')) close({ restoreOverview:true });
   }
 
   function init() {
@@ -244,6 +254,7 @@ export function createPuzzleHubShell(config) {
     ensureOverviewEntry();
     installObserver();
     document.addEventListener('click', handleClick, true);
+    window.addEventListener('popstate', syncFromBrowserHistory);
     requestAnimationFrame(initialRouteOpen);
   }
 
