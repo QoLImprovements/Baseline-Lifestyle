@@ -3,10 +3,10 @@
    Build: EDIT_VERSION_20260607_INDEX_AUTH_FLYOUT_ANCHOR_FIX
 
    One owner for:
-   - first index panel: Food / Massage / Skincare / Psychology
+   - first index panel: Food / Massage / Skincare
    - second index panel: Badminton / Fitness / Games
-   - desktop: one visible panel at a time; four system columns and three play columns
-   - mobile: all seven cards scroll vertically as full-width bands
+   - desktop: one visible panel at a time, equal three-column layout
+   - mobile: all six cards scroll vertically as full-width bands
    ============================================================================ */
 
 :root{
@@ -35,11 +35,6 @@
   --skin-milk:#e1ad9b;
   --skin-cream:#e8c1b2;
 
-  --psych-red-deep:#8b1722;
-  --psych-red:#bf3038;
-  --psych-warm:#df7a2c;
-  --psych-lime:#d7f04d;
-
   --bad-red:#6a1fb3;
   --bad-purple:#c29cff;
   --bad-orange:#f08b2f;
@@ -61,36 +56,28 @@
 
   --index-page1-bg:linear-gradient(90deg,
     var(--food-deep) 0%,
-    var(--food-orange) 6.25%,
-    var(--food-yellow) 12.5%,
-    var(--food-orange) 18.75%,
-    var(--food-deep) 25%,
+    var(--food-orange) 8.333%,
+    var(--food-yellow) 16.666%,
+    var(--food-orange) 25%,
+    var(--food-deep) 33.333%,
 
-    var(--massage-deep) 25%,
-    var(--massage-mid) 29.5%,
-    var(--massage-soft) 34%,
-    var(--massage-tan) 37.5%,
-    var(--massage-soft) 41%,
-    var(--massage-mid) 45.5%,
-    var(--massage-deep) 50%,
+    var(--massage-deep) 33.333%,
+    var(--massage-mid) 39.333%,
+    var(--massage-soft) 45.333%,
+    var(--massage-tan) 50%,
+    var(--massage-soft) 54.666%,
+    var(--massage-mid) 60.666%,
+    var(--massage-deep) 66.666%,
 
-    var(--skin-deep) 50%,
-    var(--skin-peach) 54%,
-    var(--skin-wash) 58%,
-    var(--skin-milk) 61%,
-    var(--skin-cream) 62.5%,
-    var(--skin-milk) 64%,
-    var(--skin-wash) 67%,
-    var(--skin-peach) 71%,
-    var(--skin-deep) 75%,
-
-    var(--psych-red-deep) 75%,
-    var(--psych-red) 79.5%,
-    var(--psych-warm) 83.5%,
-    var(--psych-lime) 87.5%,
-    var(--psych-warm) 91.5%,
-    var(--psych-red) 95.5%,
-    var(--psych-red-deep) 100%
+    var(--skin-deep) 66.666%,
+    var(--skin-peach) 72%,
+    var(--skin-wash) 77.333%,
+    var(--skin-milk) 81.333%,
+    var(--skin-cream) 83.333%,
+    var(--skin-milk) 85.333%,
+    var(--skin-wash) 89.333%,
+    var(--skin-peach) 94.666%,
+    var(--skin-deep) 100%
   );
 
   --index-page2-bg:linear-gradient(90deg,
@@ -151,16 +138,6 @@
     var(--skin-wash) 68%,
     var(--skin-peach) 84%,
     var(--skin-deep) 100%
-  );
-
-  --psychology-card-bg:linear-gradient(90deg,
-    var(--psych-red-deep) 0%,
-    var(--psych-red) 18%,
-    var(--psych-warm) 34%,
-    var(--psych-lime) 50%,
-    var(--psych-warm) 66%,
-    var(--psych-red) 82%,
-    var(--psych-red-deep) 100%
   );
 
   --badminton-card-bg:linear-gradient(90deg,
@@ -340,12 +317,11 @@ html[data-initial-home-view="badminton"] #badmintonView{
   margin:0;
   padding:0;
   display:grid;
+  grid-template-columns:repeat(3, minmax(0, 1fr));
   align-items:center;
   justify-items:center;
   gap:0;
 }
-.grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-.play-lanes{grid-template-columns:repeat(3,minmax(0,1fr))}
 
 .play-lane{
   width:100%;
@@ -428,8 +404,6 @@ html[data-initial-home-view="badminton"] #badmintonView{
 .card--massage p{ color:rgba(255,255,255,.92); }
 
 .card--skin{ background:var(--skin-card-bg); color:#2b2b28; }
-
-.card--psychology{ background:var(--psychology-card-bg); color:#202617; }
 
 .card--badminton{ background:var(--badminton-card-bg); color:#34164a; }
 .card--badminton h2{
@@ -684,19 +658,6 @@ html[data-initial-home-view="badminton"] #badmintonView{
     color:#2b2b28;
   }
 
-  .grid > .card.card--psychology,
-  .grid > .card.card--psychology .card-shell{
-    background:linear-gradient(180deg,
-      var(--psych-red-deep) 0%,
-      var(--psych-red) 18%,
-      var(--psych-warm) 34%,
-      var(--psych-lime) 50%,
-      var(--psych-warm) 66%,
-      var(--psych-red) 82%,
-      var(--psych-red-deep) 100%);
-    color:#202617;
-  }
-
   .play-lane--badminton,
   .play-lane--badminton > .card .card-shell{
     background:linear-gradient(180deg,
@@ -744,7 +705,6 @@ html[data-initial-home-view="badminton"] #badmintonView{
   .grid > .card.card--food,
   .grid > .card.card--massage,
   .grid > .card.card--skin,
-  .grid > .card.card--psychology,
   .play-lane--badminton,
   .play-lane--fitness,
   .play-lane--games{
