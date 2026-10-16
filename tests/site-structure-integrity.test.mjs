@@ -199,3 +199,21 @@ test('database schemas are versioned instead of rebuilt on every API request', (
   assert.ok(gamesSchema.includes("bl_apply_schema_migration($db, 'games_hub', 1"));
   assert.ok(badmintonApi.includes("bl_apply_schema_migration($db, 'badminton_session', 1"));
 });
+
+
+test('sitewide Contact control is singular, themed and ordered before Account', () => {
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
+
+  assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
+  assert.ok(shared.includes("'bl-contact-link'"));
+  assert.ok(shared.includes("{ href:'/contact/' }"));
+  assert.ok(shared.indexOf("'bl-contact-link'") < shared.indexOf("'bl-auth-toggle'", shared.indexOf("'bl-contact-link'")));
+  assert.ok(sitewideCss.includes('#bl-contact-link'));
+  assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
+  assert.equal(home.includes('id="bl-contact-link"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
+  assert.match(contact, /<h1 id="contactTitle">Contact Us<\/h1>/);
+  assert.ok(contact.includes('/sitewide/js/baseline-shared.js'));
+});
