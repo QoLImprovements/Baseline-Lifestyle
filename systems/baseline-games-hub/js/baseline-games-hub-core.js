@@ -796,6 +796,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function gamesHubBaseRoute(){ return '/baseline-games-hub/games-hub'; }
   function gamesHubCleanRouteForState(){
     const base = gamesHubBaseRoute();
+    if(currentTab === 'puzzles') return base + '/puzzles';
     if(currentTab !== 'games') return base;
     if(!selectedGame) return base + '/games-list';
     return base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
@@ -811,6 +812,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       }
       const rest = path.slice(idx + marker.length).replace(/^\/+/, '');
       if(!rest) return { tab:'hub', game:'', panel:'' };
+      if(rest === 'puzzles') return { tab:'puzzles', game:'', panel:'' };
       if(rest === 'games-list') return { tab:'games', game:'', panel:'' };
       const game = normaliseGameId(rest.split('/')[0]);
       return game ? { tab:'games', game:game, panel:normalisePanelId(game, '') } : { tab:'games', game:'', panel:'' };
@@ -825,13 +827,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const requestedTab = String(params.get('tab') || '').toLowerCase();
       const game = params.has('game') ? normaliseGameId(params.get('game') || '') : '';
       const panel = game ? normalisePanelId(game, params.get('panel') || '') : '';
-      return { tab:(requestedTab === 'games' || game) ? 'games' : 'hub', game:game, panel:panel };
+      return { tab:requestedTab === 'puzzles' ? 'puzzles' : ((requestedTab === 'games' || game) ? 'games' : 'hub'), game:game, panel:panel };
     }catch(_error){ return null; }
   }
 
   function buildHashState(){
     const params = new URLSearchParams();
-    params.set('tab', currentTab === 'games' ? 'games' : 'hub');
+    params.set('tab', currentTab === 'puzzles' ? 'puzzles' : (currentTab === 'games' ? 'games' : 'hub'));
     if(currentTab === 'games' && selectedGame){
       params.set('game', selectedGame);
       const panelId = currentPanelIdForGame(selectedGame);
@@ -858,7 +860,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const cleanState = gamesHubStateFromCleanPath();
     const legacyState = cleanState || legacyGamesHubStateFromHash();
     if(legacyState){
-      currentTab = legacyState.tab === 'games' ? 'games' : 'hub';
+      currentTab = legacyState.tab === 'puzzles' ? 'puzzles' : (legacyState.tab === 'games' ? 'games' : 'hub');
       selectedGame = currentTab === 'games' ? normaliseGameId(legacyState.game || '') : '';
       if(selectedGame){
         const config = getGamePanelConfig(selectedGame);
@@ -3537,7 +3539,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
 
   function activateTab(target, options){
     const opts = options || {};
-    currentTab = target === 'games' ? 'games' : 'hub';
+    currentTab = target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'hub');
     qsa('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.getAttribute('data-target') === currentTab)));
     qsa('.section').forEach(section => section.classList.toggle('active', section.id === currentTab));
     if(opts.sync !== false) syncHashState(opts.historyMode);
@@ -3555,6 +3557,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
           selectedGame = '';
           activateTab('games', { historyMode:'push' });
           selectGame('', { historyMode:'replace' });
+          return;
+        }
+        if(target === 'puzzles'){
+          selectedGame = '';
+          activateTab('puzzles', { historyMode:'push' });
           return;
         }
         activateTab(target, { historyMode:'push' });
