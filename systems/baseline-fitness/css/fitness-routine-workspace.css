@@ -436,31 +436,6 @@ html[data-app="fitness"] #fitnessRoutineLogItems :is(.fitness-calisthenics-log-c
 }
 
 
-/* Baseline Fitness — first-paint guard for Routine Plan disclosure state.
-
-   The JS authority collapses all five Routine Plan cards on entry/refresh.
-   Until that authority has run, an older renderer may temporarily leave an
-   `open` attribute on a category or Routine Groups card. Hide those bodies and
-   force the closed chevron geometry during first paint so refresh never flashes
-   an expanded card before the canonical collapsed state is applied. */
-
-html[data-initial-fitness-tab="my-plan"][data-initial-routine-view="plan"]:not([data-fitness-routine-plan-cards-ready="true"])
-#my-plan [data-fitness-routine-panel="plan"] :is(details[data-fitness-plan-card],details[data-v4-group-card="global"])>:not(summary){
-  display:none!important;
-}
-
-html[data-initial-fitness-tab="my-plan"][data-initial-routine-view="plan"]:not([data-fitness-routine-plan-cards-ready="true"])
-#my-plan [data-fitness-routine-panel="plan"] :is(details[data-fitness-plan-card][open],details[data-v4-group-card="global"][open])>summary{
-  border-radius:19px!important;
-  border-bottom:0!important;
-}
-
-html[data-initial-fitness-tab="my-plan"][data-initial-routine-view="plan"]:not([data-fitness-routine-plan-cards-ready="true"])
-#my-plan [data-fitness-routine-panel="plan"] :is(details[data-fitness-plan-card][open]>summary,details[data-v4-group-card="global"][open]>.bl-v4-group-card-summary)::after{
-  transform:translateY(-68%) rotate(45deg)!important;
-}
-
-
 /* Baseline Fitness — My Routine palette and Fitness-owned layout.
 
    OWNERSHIP CONTRACT
