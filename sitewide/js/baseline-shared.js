@@ -6091,6 +6091,125 @@ function buildControls(recipeEl){
       return right;
     }
 
+    function closeMobileActionsMenu(){
+      const menu = q('#bl-mobile-actions-menu');
+      const toggle = q('#bl-mobile-actions-toggle');
+      if(menu) menu.hidden = true;
+      if(toggle) toggle.setAttribute('aria-expanded','false');
+    }
+
+    function ensureMobileActionsMenu(right){
+      if(!right) return null;
+
+      let wrap = q('.bl-mobile-actions', right);
+      if(!wrap){
+        wrap = document.createElement('div');
+        wrap.className = 'bl-mobile-actions';
+
+        const toggle = document.createElement('button');
+        toggle.type = 'button';
+        toggle.id = 'bl-mobile-actions-toggle';
+        toggle.className = 'bl-mini-btn bl-mobile-actions-toggle';
+        toggle.setAttribute('aria-label','Open site controls');
+        toggle.setAttribute('aria-haspopup','menu');
+        toggle.setAttribute('aria-expanded','false');
+        toggle.setAttribute('aria-controls','bl-mobile-actions-menu');
+        toggle.innerHTML = '<span class="bl-btn-icon" aria-hidden="true"><svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false"><path d="m6.5 9 5.5 5.5L17.5 9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="bl-btn-label">Site controls</span>';
+
+        const menu = document.createElement('div');
+        menu.id = 'bl-mobile-actions-menu';
+        menu.className = 'bl-mobile-actions-menu';
+        menu.setAttribute('role','menu');
+        menu.hidden = true;
+
+        wrap.append(toggle, menu);
+        right.appendChild(wrap);
+      }
+
+      const toggle = q('#bl-mobile-actions-toggle', wrap);
+      const menu = q('#bl-mobile-actions-menu', wrap);
+      if(!toggle || !menu) return wrap;
+
+      function targetIcon(target){
+        const icon = q('.bl-btn-icon', target);
+        if(icon) return icon.innerHTML;
+        const svg = q('svg', target);
+        return svg ? svg.outerHTML : '';
+      }
+
+      function rebuild(){
+        menu.replaceChildren();
+        [
+          ['blProtectedKey','Protected sections'],
+          ['bl-beats-toggle','Binaural'],
+          ['bl-contact-toggle','Contact'],
+          ['bl-auth-toggle','Account']
+        ].forEach(function(entry){
+          const target = document.getElementById(entry[0]);
+          if(!target) return;
+
+          const item = document.createElement('button');
+          item.type = 'button';
+          item.className = 'bl-mobile-actions-item';
+          item.setAttribute('role','menuitem');
+          item.innerHTML =
+            '<span class="bl-mobile-actions-item-icon" aria-hidden="true">' + targetIcon(target) + '</span>' +
+            '<span class="bl-mobile-actions-item-label">' + entry[1] + '</span>';
+          item.addEventListener('click', function(event){
+            event.preventDefault();
+            event.stopPropagation();
+            closeMobileActionsMenu();
+            window.requestAnimationFrame(function(){
+              if(document.contains(target)) target.click();
+            });
+          });
+          menu.appendChild(item);
+        });
+      }
+
+      if(wrap.dataset.blMobileActionsBound !== '1'){
+        wrap.dataset.blMobileActionsBound = '1';
+
+        toggle.addEventListener('click', function(event){
+          event.preventDefault();
+          event.stopPropagation();
+          if(menu.hidden){
+            const pagesMenu = q('.bl-pages-menu');
+            const pagesToggle = q('#bl-pages-toggle');
+            if(pagesMenu && !pagesMenu.hidden) closePagesMenu(pagesToggle, pagesMenu);
+            rebuild();
+            menu.hidden = false;
+            toggle.setAttribute('aria-expanded','true');
+          }else{
+            closeMobileActionsMenu();
+          }
+        });
+
+        menu.addEventListener('click', function(event){
+          event.stopPropagation();
+        });
+
+        document.addEventListener('click', function(event){
+          if(menu.hidden || wrap.contains(event.target)) return;
+          closeMobileActionsMenu();
+        });
+
+        document.addEventListener('keydown', function(event){
+          if(event.key === 'Escape' && !menu.hidden){
+            closeMobileActionsMenu();
+            try{ toggle.focus({ preventScroll:true }); }catch(_e){}
+          }
+        });
+
+        window.addEventListener('resize', function(){
+          if(!isMobileViewport()) closeMobileActionsMenu();
+        }, { passive:true });
+      }
+
+      rebuild();
+      return wrap;
+    }
+
     function closePagesMenu(btn, menu){
       if(!btn || !menu) return;
       menu.hidden = true;
@@ -6099,6 +6218,7 @@ function buildControls(recipeEl){
 
     function openPagesMenu(btn, menu){
       if(!btn || !menu) return;
+      closeMobileActionsMenu();
       menu.hidden = false;
       btn.setAttribute('aria-expanded','true');
       try{ positionFlyoutToToggle(menu, btn); }catch(_e){}
@@ -6261,6 +6381,7 @@ function buildControls(recipeEl){
           if(!homeHeader.style.position) homeHeader.style.position = 'relative';
         }catch(_e){}
         const rightHome = ensureRightControls(homeHeader);
+        ensureMobileActionsMenu(rightHome);
         try{
           rightHome.style.position = 'absolute';
           rightHome.style.top = '14px';
@@ -6295,6 +6416,7 @@ function buildControls(recipeEl){
     }
 
     const right = ensureRightControls(inner);
+    ensureMobileActionsMenu(right);
 
     function sync(){
       try{
