@@ -242,16 +242,20 @@ test('home index uses one six-strip system layout with the agreed order and copy
 });
 
 test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
-  const publicFiles = [
-    'index.html',
-    'sitewide/js/baseline-shared.js',
-    ...systemNames.map((system) => path.join('systems', system, `${system}.html`))
-  ];
+  const retiredSystemName = ['Baseline','Natural','Skincare'].join(' ');
+  const retiredFavorites = ['Baseline','Skincare','Favorites'].join(' ');
+  const publicRuntimeExtensions = new Set(['.html','.css','.js','.mjs','.cjs','.php']);
+  const publicRuntimeFiles = [
+    path.join(root, 'index.html'),
+    ...walk(path.join(root, 'sitewide')),
+    ...walk(path.join(root, 'systems'))
+  ].filter((file) => publicRuntimeExtensions.has(path.extname(file).toLowerCase()));
 
-  for (const relativePath of publicFiles) {
-    const source = fs.readFileSync(path.join(root, relativePath), 'utf8');
-    assert.equal(source.includes('Baseline Natural Skincare'), false, `retired visible name remains in ${relativePath}`);
-    assert.equal(source.includes('Baseline Skincare Favorites'), false, `retired favourites label remains in ${relativePath}`);
+  for (const file of publicRuntimeFiles) {
+    const source = fs.readFileSync(file, 'utf8');
+    const relativePath = path.relative(root, file);
+    assert.equal(source.includes(retiredSystemName), false, `retired visible name remains in ${relativePath}`);
+    assert.equal(source.includes(retiredFavorites), false, `retired favourites label remains in ${relativePath}`);
   }
 
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
