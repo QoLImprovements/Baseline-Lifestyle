@@ -258,21 +258,24 @@ function render() {
 
 function clearBottleDragTargets() {
   document.querySelectorAll('#colourSortGameCard .colour-sort-bottle').forEach(bottle => {
-    bottle.classList.remove('is-drag-origin', 'is-drag-valid', 'is-drag-invalid');
+    bottle.classList.remove('is-drag-origin', 'is-drag-valid', 'is-drag-invalid', 'is-valid-target');
   });
 }
 
 function createBottleDragGhost(source) {
-  const ghost = source.cloneNode(true);
   const rect = source.getBoundingClientRect();
-  ghost.className = 'colour-sort-bottle colour-sort-drag-ghost';
-  ghost.removeAttribute('data-colour-bottle');
-  ghost.removeAttribute('aria-pressed');
-  ghost.setAttribute('aria-hidden', 'true');
-  ghost.disabled = true;
-  ghost.style.width = rect.width + 'px';
-  document.body.appendChild(ghost);
-  return ghost;
+  const layer = document.createElement('div');
+  const ghostBottle = source.cloneNode(true);
+  layer.className = 'colour-sort-panel colour-sort-drag-ghost';
+  layer.setAttribute('aria-hidden', 'true');
+  ghostBottle.className = 'colour-sort-bottle';
+  ghostBottle.removeAttribute('data-colour-bottle');
+  ghostBottle.removeAttribute('aria-pressed');
+  ghostBottle.disabled = true;
+  ghostBottle.style.width = rect.width + 'px';
+  layer.appendChild(ghostBottle);
+  document.body.appendChild(layer);
+  return layer;
 }
 
 function positionBottleDragGhost(ghost, clientX, clientY) {
