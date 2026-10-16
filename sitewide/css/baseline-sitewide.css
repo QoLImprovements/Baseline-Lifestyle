@@ -402,6 +402,7 @@ body{
 }
 body[data-app="food"],
 body[data-app="skin"],
+body[data-app="psychology"],
 body[data-app="fitness"],
 body[data-app="badminton"],
 body[data-app="massage"]{
@@ -1550,6 +1551,19 @@ body[data-app="massage"]{
   --bl-slider-thumb-solid:#d2a078;
   --bl-slider-border-solid:#2f1a0e;
 }
+body[data-app="psychology"]{
+  --bl-surface-card-solid:#d7e88e;
+  --bl-surface-recipe-card-solid:#d7e88e;
+  --bl-surface-panel-solid:#e3edb2;
+  --bl-surface-control-solid:#cedf72;
+  --bl-surface-input-solid:#e7efbd;
+  --bl-surface-active-solid:#b9d24a;
+  --bl-surface-active-ink:#202617;
+  --bl-surface-ink:#202617;
+  --bl-slider-track-solid:#8b1722;
+  --bl-slider-thumb-solid:#d7f04d;
+  --bl-slider-border-solid:#5d1018;
+}
 body[data-app="fitness"]{
   --bl-surface-card-solid:#130b10;
   --bl-surface-recipe-card-solid:#1d1016;
@@ -1716,6 +1730,7 @@ body:not([data-app="home"]) .number-chip,
 body:not([data-app="home"]) .letter-cell,
 body:not([data-app="home"]) .metric-chip,
 body:not([data-app="home"]) .gameplan-subtab,
+body:not([data-app="home"]) .psych-subtab,
 body:not([data-app="home"]) .diet-inline-note,
 body:not([data-app="home"]) .diet-entry-macros span{
   background-image:none!important;
@@ -1727,7 +1742,8 @@ body:not([data-app="home"]) .diet-entry-macros span{
 body:not([data-app="home"]) .tab[aria-selected="true"],
 body:not([data-app="home"]) .game-toggle-btn.is-active,
 body:not([data-app="home"]) .tier-btn.active,
-body:not([data-app="home"]) .gameplan-subtab[aria-selected="true"]{
+body:not([data-app="home"]) .gameplan-subtab[aria-selected="true"],
+body:not([data-app="home"]) .psych-subtab[aria-selected="true"]{
   background-image:none!important;
   background-color:var(--bl-surface-active-solid)!important;
 }
