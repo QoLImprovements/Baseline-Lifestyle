@@ -173,6 +173,9 @@ Options -Indexes
   RewriteCond %{THE_REQUEST} \s/+baseline-natural-skincare\.html[?\s] [NC]
   RewriteRule ^baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
 
+  RewriteCond %{THE_REQUEST} \s/+baseline-psychology\.html[?\s] [NC]
+  RewriteRule ^baseline-psychology\.html$ /baseline-psychology/system [R=302,L]
+
   RewriteCond %{THE_REQUEST} \s/+baseline-badminton-session\.html[?\s] [NC]
   RewriteRule ^baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
 
@@ -238,6 +241,7 @@ Options -Indexes
   RewriteRule ^baseline-food-approach/?$ /baseline-food-approach/system [R=302,L]
   RewriteRule ^baseline-massage/?$ /baseline-massage/system [R=302,L]
   RewriteRule ^baseline-natural-skincare/?$ /baseline-natural-skincare/system [R=302,L]
+  RewriteRule ^baseline-psychology/?$ /baseline-psychology/system [R=302,L]
   RewriteRule ^baseline-badminton-session/?$ /baseline-badminton-session/system [R=302,L]
   RewriteRule ^baseline-fitness/?$ /baseline-fitness/system [R=302,L]
   RewriteRule ^baseline-games-hub/?$ /baseline-games-hub/games-hub [R=302,L]
@@ -252,6 +256,8 @@ Options -Indexes
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-massage\.html$ /baseline-massage/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-natural-skincare\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-psychology\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-psychology\.html$ /baseline-psychology/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-badminton-session\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-fitness\.html[?\s] [NC]
@@ -302,6 +308,7 @@ Options -Indexes
   RewriteRule ^baseline-massage/(system|library|planner)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system|my-routine)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
+  RewriteRule ^baseline-psychology/(system|paralinguistics)/?$ systems/baseline-psychology/baseline-psychology.html [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
   # Recover malformed top-level Fitness URLs produced by the former nested route builder.
   RewriteRule ^baseline-fitness/my-routine(?:/(?:log|summary|public|plan(?:/(?:calisthenics|cardio|other|sports))?))?/(system|my-plan|my-body|library|exercise-library|achievements)/?$ /baseline-fitness/$1 [R=302,L]
