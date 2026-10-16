@@ -48,8 +48,6 @@
   /* Base text size comes from baseline-pattern.css */
   /* Background comes from baseline-themes.css (single sitewide rule). */
 
-  /* Improve contrast inside cards without making them white */
-  .card{ color: var(--ink); }
   p, li{ text-shadow: 0 1px 0 rgba(255,210,106,0.18); }
   h2, h3, h4{ text-shadow: 0 1px 0 rgba(255,210,106,0.22); }
 
