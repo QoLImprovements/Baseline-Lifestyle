@@ -234,7 +234,6 @@ body[data-app="home"] .wrap{
   background:transparent;
 }
 
-.card,
 .system-lane > .card{
   width:100%;
   max-width:none;
@@ -264,15 +263,15 @@ body[data-app="home"] .wrap{
   text-align:center;
 }
 
-.card h2,
-.card p,
-.system-separator{
+.system-lane > .card h2,
+.system-lane > .card p,
+.system-lane > .card .system-separator{
   margin:0;
   color:inherit;
   line-height:1.35;
 }
 
-.card h2{
+.system-lane > .card h2{
   flex:0 0 auto;
   font-size:clamp(21px, 2vw, 27px);
   font-weight:800;
@@ -285,20 +284,20 @@ body[data-app="home"] .wrap{
   font-weight:700;
 }
 
-.card p{
+.system-lane > .card p{
   min-width:0;
   max-width:none;
   font-size:clamp(17px, 1.45vw, 21px);
   font-weight:400;
 }
 
-.card:hover,
-.card:focus-visible{
+.system-lane > .card:hover,
+.system-lane > .card:focus-visible{
   transform:none;
   filter:none;
 }
 
-.card:focus-visible{
+.system-lane > .card:focus-visible{
   outline:none;
   box-shadow:0 0 0 4px rgba(255,255,255,.42), var(--shadow);
 }
@@ -373,7 +372,6 @@ body[data-app="home"] .wrap{
     padding:12px;
   }
 
-  .card,
   .system-lane > .card{
     min-height:74px;
     padding:13px 18px;
@@ -385,7 +383,7 @@ body[data-app="home"] .wrap{
     column-gap:.24em;
   }
 
-  .card h2{
+  .system-lane > .card h2{
     font-size:clamp(20px, 5.6vw, 25px);
   }
 
@@ -393,66 +391,11 @@ body[data-app="home"] .wrap{
     font-size:clamp(18px, 5vw, 23px);
   }
 
-  .card p{
+  .system-lane > .card p{
     font-size:clamp(16px, 4.4vw, 19px);
   }
 }
 
 @media (prefers-reduced-motion:reduce){
   *{ animation:none !important; transition:none !important; }
-}
-
-/* INDEX-AUTH-FLYOUT-COHERENCE-FIX
-   The home page uses a custom title header, while the rest of the site uses the
-   canonical homebar. Keep the Account flyout visually/functionally aligned with
-   the sitewide flyout instead of letting the index layout expand/reformat it. */
-body[data-app="home"] #bl-auth-flyout,
-body[data-app="home"] #bl-beats-flyout{
-  width:min(440px, calc(100vw - 24px)) !important;
-  max-width:min(440px, calc(100vw - 24px)) !important;
-  min-width:0 !important;
-  z-index:13000 !important;
-}
-
-@media (min-width:901px){
-  body[data-app="home"] #bl-auth-flyout,
-  body[data-app="home"] #bl-beats-flyout{
-    /* Do not pin the flyout to the bottom of the tall index header.
-       baseline-shared.js positions it from the actual Account/Binaural button,
-       matching the spacing used on the other HTML pages. */
-    max-height:calc(100svh - 90px) !important;
-    overflow-y:auto !important;
-  }
-}
-
-body[data-app="home"] #bl-auth-flyout .card,
-body[data-app="home"] #bl-beats-flyout .card{
-  width:100% !important;
-  max-width:none !important;
-  min-width:0 !important;
-  height:auto !important;
-  min-height:0 !important;
-  max-height:none !important;
-  margin:0 !important;
-  padding:18px 18px 20px !important;
-  display:block !important;
-  align-items:stretch !important;
-  justify-content:flex-start !important;
-  text-align:left !important;
-  gap:0 !important;
-  overflow:visible !important;
-}
-
-body[data-app="home"] #bl-auth-flyout .card > h3:first-child,
-body[data-app="home"] #bl-beats-flyout .card > h3:first-child{
-  margin:0 0 12px 0 !important;
-  padding:0 !important;
-  font-size:20px !important;
-  line-height:1.15 !important;
-  text-align:left !important;
-}
-
-body[data-app="home"] #bl-auth-flyout .bl-auth-form:not([hidden]){
-  display:grid !important;
-  row-gap:10px !important;
 }
