@@ -226,7 +226,7 @@ test('home index uses one six-strip system layout with the agreed order and copy
   }
 
   assert.equal((html.match(/class="system-lane /g) || []).length, 6);
-  for (const obsolete of ['home-panels','home-panel--play','view-arrow','toBadmintonView','toSystemsView']) {
+  for (const obsolete of ['home-panels','home-panel--play','view-arrow','toBadmintonView','toSystemsView','blEmbed','blEmbedFrame','baselineHomeView']) {
     assert.equal(html.includes(obsolete), false, `obsolete index view-switching markup remains: ${obsolete}`);
     assert.equal(css.includes(obsolete), false, `obsolete index view-switching CSS remains: ${obsolete}`);
   }
@@ -266,4 +266,22 @@ test('Baseline Personal Care is the visible system name while the existing route
   assert.ok(personalCare.includes('aria-level="1">Baseline Personal Care</div>'));
   assert.ok(shared.includes("['/baseline-natural-skincare/system','Baseline Personal Care']"));
   assert.ok(home.includes('href="/baseline-natural-skincare/system"'), 'existing Personal Care route compatibility must be retained');
+});
+
+
+test('sitewide Contact control is singular, themed and ordered before Account', () => {
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
+
+  assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
+  assert.ok(shared.includes("'bl-contact-link'"));
+  assert.ok(shared.includes("{ href:'/contact/' }"));
+  assert.ok(shared.indexOf("'bl-contact-link'") < shared.indexOf("'bl-auth-toggle'", shared.indexOf("'bl-contact-link'")));
+  assert.ok(sitewideCss.includes('#bl-contact-link'));
+  assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
+  assert.equal(home.includes('id="bl-contact-link"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
+  assert.match(contact, /<h1 id="contactTitle">Contact Us<\/h1>/);
+  assert.ok(contact.includes('/sitewide/js/baseline-shared.js'));
 });
