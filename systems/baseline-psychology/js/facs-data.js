@@ -10,15 +10,17 @@
   ]);
 
   const categories = Object.freeze([
-    { id:'facial', label:'Facial actions' },
-    { id:'gross-face', label:'Other facial / gross actions' },
-    { id:'head', label:'Head movement' },
-    { id:'eyes', label:'Eye movement' },
+    { id:'facial', label:'Main Action Units' },
+    { id:'gross-face', label:'Gross behaviour / other facial codes' },
+    { id:'head', label:'Head movement codes' },
+    { id:'eyes', label:'Eye movement codes' },
+    { id:'associated', label:'Associated M-codes' },
     { id:'visibility', label:'Visibility codes' },
-    { id:'gross', label:'Gross behaviour' }
+    { id:'gross', label:'Other gross behaviour codes' }
   ]);
 
   const units = Object.freeze([
+    {code:'0',name:'Neutral Face',category:'facial',region:'Whole face',muscles:'No active facial action specified',movement:'Neutral reference state with no selected facial action.',intensity:false,laterality:false,render:null},
     {code:'1',name:'Inner Brow Raiser',category:'facial',region:'Brow / forehead',muscles:'Frontalis (pars medialis)',movement:'Raises the inner portion of the brow.',intensity:true,laterality:true,render:'browInnerRaise'},
     {code:'2',name:'Outer Brow Raiser',category:'facial',region:'Brow / forehead',muscles:'Frontalis (pars lateralis)',movement:'Raises the outer portion of the brow.',intensity:true,laterality:true,render:'browOuterRaise'},
     {code:'4',name:'Brow Lowerer',category:'facial',region:'Brow / forehead',muscles:'Corrugator supercilii; depressor supercilii; procerus / depressor glabellae',movement:'Lowers and draws the brows inward.',intensity:true,laterality:true,render:'browLower'},
@@ -76,6 +78,13 @@
     {code:'57',name:'Head Forward',category:'head',region:'Head',muscles:'Head-position code',movement:'Moves the head forward.',intensity:false,laterality:false,render:'headForward'},
     {code:'58',name:'Head Back',category:'head',region:'Head',muscles:'Head-position code',movement:'Moves the head back.',intensity:false,laterality:false,render:'headBack'},
 
+    {code:'M55',name:'Head Tilt Left Associated Movement',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated left head tilt occurring with the specified facial-action context.',intensity:false,laterality:false,render:'headTiltLeft'},
+    {code:'M56',name:'Head Tilt Right Associated Movement',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated right head tilt occurring with the specified facial-action context.',intensity:false,laterality:false,render:'headTiltRight'},
+    {code:'M57',name:'Head Thrust Forward Associated Movement',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated forward head thrust occurring with the specified facial-action context.',intensity:false,laterality:false,render:'headForward'},
+    {code:'M59',name:'Head Nod Associated Movement',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated up-and-down head movement.',intensity:false,laterality:false,render:'headNod'},
+    {code:'M60',name:'Head Shake Associated Movement',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated side-to-side head movement.',intensity:false,laterality:false,render:'headShake'},
+    {code:'M83',name:'Head Upward and to the Side',category:'associated',region:'Head',muscles:'Associated movement code',movement:'Associated head movement upward and toward one side.',intensity:false,laterality:false,render:'headUpSide'},
+
     {code:'61',name:'Eyes Turn Left',category:'eyes',region:'Eyes / gaze',muscles:'Eye-position code',movement:'Moves gaze to the left.',intensity:false,laterality:false,render:'eyesLeft'},
     {code:'62',name:'Eyes Turn Right',category:'eyes',region:'Eyes / gaze',muscles:'Eye-position code',movement:'Moves gaze to the right.',intensity:false,laterality:false,render:'eyesRight'},
     {code:'63',name:'Eyes Up',category:'eyes',region:'Eyes / gaze',muscles:'Eye-position code',movement:'Moves gaze upward.',intensity:false,laterality:false,render:'eyesUp'},
@@ -83,6 +92,11 @@
     {code:'65',name:'Walleye',category:'eyes',region:'Eyes / gaze',muscles:'Eye-position code',movement:'Positions the eyes outward from one another.',intensity:false,laterality:false,render:'eyesOut'},
     {code:'66',name:'Cross-eye',category:'eyes',region:'Eyes / gaze',muscles:'Eye-position code',movement:'Positions the eyes inward toward one another.',intensity:false,laterality:false,render:'eyesIn'},
     {code:'69',name:'Eyes Positioned to Look at Other Person',category:'eyes',region:'Eyes / interaction',muscles:'Context / eye-position code',movement:'Records gaze positioned toward the other person in an interaction.',intensity:false,laterality:false,render:null},
+
+    {code:'M61',name:'Eyes Left Associated Movement',category:'associated',region:'Eyes',muscles:'Associated movement code',movement:'Associated eye movement to the left.',intensity:false,laterality:false,render:'eyesLeft'},
+    {code:'M62',name:'Eyes Right Associated Movement',category:'associated',region:'Eyes',muscles:'Associated movement code',movement:'Associated eye movement to the right.',intensity:false,laterality:false,render:'eyesRight'},
+    {code:'M68',name:'Upward Rolling of Eyes',category:'associated',region:'Eyes',muscles:'Associated movement code',movement:'Associated upward rolling eye movement.',intensity:false,laterality:false,render:'eyesUp'},
+    {code:'M69',name:'Head or Eyes Look at Other Person',category:'associated',region:'Head / eyes / interaction',muscles:'Associated movement code',movement:'Associated head or eye movement toward the other person in an interaction.',intensity:false,laterality:false,render:null},
 
     {code:'70',name:'Brows and Forehead Not Visible',category:'visibility',region:'Visibility',muscles:'Visibility code',movement:'Marks the brows and forehead as not visible for coding.',intensity:false,laterality:false,render:'maskForehead'},
     {code:'71',name:'Eyes Not Visible',category:'visibility',region:'Visibility',muscles:'Visibility code',movement:'Marks the eyes as not visible for coding.',intensity:false,laterality:false,render:'maskEyes'},
