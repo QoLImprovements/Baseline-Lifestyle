@@ -3,8 +3,8 @@ declare(strict_types=1);
 require __DIR__ . '/config.php';
 require_once __DIR__ . '/resource_authority.php';
 
-$uid = bl_require_user_id();
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+$bootstrap = $method === 'GET' && (string)($_GET['bootstrap'] ?? '') === '1';
 
 function bl_favourites_sqlite_rows(PDO $db, int $uid): array {
   $stmt = $db->prepare('SELECT app, recipe_id, created_at FROM favourites WHERE user_id=:u ORDER BY created_at DESC');
@@ -30,6 +30,24 @@ function bl_favourites_public_rows(array $items): array {
   return $rows;
 }
 
+function bl_favourites_bootstrap_response(array $payload): void {
+  if(!headers_sent()){
+    http_response_code(200);
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Pragma: no-cache');
+  }
+  $json = json_encode(
+    $payload,
+    JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+  );
+  if($json === false){
+    $json = '{"ready":false,"authed":null,"app":"","ids":[]}';
+  }
+  echo 'window.__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__=' . $json . ';';
+  exit;
+}
+
 function bl_favourites_write_snapshot(int $uid, array $rows): ?array {
   $path = bl_saved_user_resource_path($uid, 'favourites');
   $items = bl_favourites_file_items($rows);
@@ -42,7 +60,21 @@ try{
   if($method === 'GET'){
     $app = trim((string)($_GET['app'] ?? ''));
     if($app !== '' && !in_array($app, ['food','skincare'], true)){
+      if($bootstrap) bl_favourites_bootstrap_response(['ready'=>false,'authed'=>null,'app'=>$app,'ids'=>[]]);
       bl_json(['ok'=>false,'error'=>'bad_app'], 400);
+    }
+    if($bootstrap && $app === ''){
+      bl_favourites_bootstrap_response(['ready'=>false,'authed'=>null,'app'=>'','ids'=>[]]);
+    }
+
+    if($bootstrap){
+      $user = bl_current_user();
+      if(!$user){
+        bl_favourites_bootstrap_response(['ready'=>true,'authed'=>false,'app'=>$app,'ids'=>[]]);
+      }
+      $uid = (int)($user['id'] ?? 0);
+    }else{
+      $uid = bl_require_user_id();
     }
 
     if($mode === 'saved-data'){
@@ -54,7 +86,17 @@ try{
       foreach($rows as $row){
         if(($row['app'] ?? '') === $app) $ids[] = (string)$row['recipe_id'];
       }
-      bl_json(['ok'=>true,'app'=>$app,'ids'=>$ids,'revision'=>$resource['revision']]);
+      $payload = ['ok'=>true,'app'=>$app,'ids'=>$ids,'revision'=>$resource['revision']];
+      if($bootstrap){
+        bl_favourites_bootstrap_response([
+          'ready'=>true,
+          'authed'=>true,
+          'app'=>$app,
+          'ids'=>$ids,
+          'revision'=>$resource['revision'],
+        ]);
+      }
+      bl_json($payload);
     }
 
     $db = bl_db();
@@ -65,10 +107,19 @@ try{
     foreach($rows as $row){
       if(($row['app'] ?? '') === $app) $ids[] = (string)$row['recipe_id'];
     }
+    if($bootstrap){
+      bl_favourites_bootstrap_response([
+        'ready'=>true,
+        'authed'=>true,
+        'app'=>$app,
+        'ids'=>$ids,
+      ]);
+    }
     bl_json(['ok'=>true,'app'=>$app,'ids'=>$ids]);
   }
 
   if($method === 'POST'){
+    $uid = bl_require_user_id();
     $d = bl_input_json();
     $app = trim((string)($d['app'] ?? ''));
     $rid = trim((string)($d['recipeId'] ?? ($d['recipe_id'] ?? '')));
@@ -126,10 +177,13 @@ try{
 
   bl_json(['ok'=>false,'error'=>'method_not_allowed'], 405);
 }catch(BaselineSavedDataConflictException $e){
+  if($bootstrap) bl_favourites_bootstrap_response(['ready'=>false,'authed'=>null,'app'=>(string)($_GET['app'] ?? ''),'ids'=>[]]);
   bl_resource_conflict_response($e);
 }catch(InvalidArgumentException $e){
+  if($bootstrap) bl_favourites_bootstrap_response(['ready'=>false,'authed'=>null,'app'=>(string)($_GET['app'] ?? ''),'ids'=>[]]);
   if($e->getMessage() === 'invalid_expected_revision') bl_json(['ok'=>false,'error'=>'invalid_expected_revision'], 400);
   bl_json(['ok'=>false,'error'=>'favourites_failed'], 500);
 }catch(Throwable $e){
+  if($bootstrap) bl_favourites_bootstrap_response(['ready'=>false,'authed'=>null,'app'=>(string)($_GET['app'] ?? ''),'ids'=>[]]);
   bl_json(['ok'=>false,'error'=>'favourites_failed'], 500);
 }
