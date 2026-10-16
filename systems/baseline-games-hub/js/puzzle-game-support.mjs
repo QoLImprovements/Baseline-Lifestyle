@@ -177,7 +177,7 @@ export function createPuzzleHubShell(config) {
     return panel;
   }
 
-  function close({ restoreOverview = true } = {}) {
+  function close({ restoreOverview = true, historyMode = 'replace' } = {}) {
     const panel = document.getElementById(config.panelId);
     panel?.classList.remove('is-active');
     if (panel) {
@@ -191,7 +191,9 @@ export function createPuzzleHubShell(config) {
     if (restoreOverview) {
       document.getElementById('games')?.classList.remove('has-active-game');
       document.getElementById('gamesOverviewCard')?.removeAttribute('aria-hidden');
-      try { history.replaceState({ baselineGames:true }, '', '/baseline-games-hub/games-hub/games-list'); } catch (_) {}
+      if (historyMode !== 'none') {
+        try { history.replaceState({ baselineGames:true }, '', '/baseline-games-hub/games-hub/games-list'); } catch (_) {}
+      }
       document.querySelector(`[data-open-puzzle-game="${config.id}"]`)?.focus?.({ preventScroll:true });
     }
   }
@@ -250,7 +252,7 @@ export function createPuzzleHubShell(config) {
       return;
     }
     const panel = document.getElementById(config.panelId);
-    if (panel?.classList.contains('is-active')) close({ restoreOverview:true });
+    if (panel?.classList.contains('is-active')) close({ restoreOverview:true, historyMode:'none' });
   }
 
   function init() {
