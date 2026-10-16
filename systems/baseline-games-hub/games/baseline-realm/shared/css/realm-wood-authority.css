@@ -280,7 +280,7 @@
 #ninjaPanel #realmSceneFrame.is-drawer-open .realm-context-action{opacity:.35!important}
 
 #ninjaPanel :is(.realm-mini-action,.realm-close-btn,.realm-tab-btn),
-#ninjaPanel :is(.basecamp-service,.realm-workshop,.jrpg-game) button{
+#ninjaPanel :is(.basecamp-service,.jrpg-game) button{
   border:1px solid rgba(246,213,150,.44)!important;
   background:var(--realm-wood-face)!important;
   background-image:var(--realm-wood-face)!important;
@@ -290,7 +290,7 @@
   opacity:1;
 }
 #ninjaPanel :is(.realm-mini-action,.realm-close-btn,.realm-tab-btn):is(:hover,:focus-visible,.is-active,[aria-selected="true"]),
-#ninjaPanel :is(.basecamp-service,.realm-workshop,.jrpg-game) button:is(:hover,:focus-visible,.is-active,.is-selected){
+#ninjaPanel :is(.basecamp-service,.jrpg-game) button:is(:hover,:focus-visible,.is-active,.is-selected){
   border-color:var(--realm-focus)!important;
   background:linear-gradient(180deg,#9a673d,#5a341f)!important;
   background-image:linear-gradient(180deg,#9a673d,#5a341f)!important;
@@ -299,7 +299,7 @@
 }
 
 /* Focused destination menus. Cross-destination tabs disappear while a
-   Basecamp service or Workshop is open; the existing close control remains. */
+   Basecamp service is open; the existing close control remains. */
 #ninjaPanel .realm-drawer{
   background:
     repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 3px,rgba(0,0,0,.025) 3px 7px),
@@ -332,8 +332,7 @@
 }
 #ninjaPanel .basecamp-service>header,
 #ninjaPanel .basecamp-item-grid article,
-#ninjaPanel .basecamp-trade-list article,
-#ninjaPanel .realm-workshop :is(.workshop-header,.workshop-materials,.workshop-detail,.workshop-crafted){
+#ninjaPanel .basecamp-trade-list article{
   background:rgba(19,11,7,.42)!important;
   background-image:none!important;
   border-color:rgba(245,213,151,.22)!important;
