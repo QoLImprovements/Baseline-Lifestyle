@@ -338,6 +338,25 @@ test('recipe favourite star is one sitewide title-aligned rule', () => {
 });
 
 
+test('recipe favourite first paint is server-authoritative and signed-out stars stay interactive', () => {
+  assert.match(foodHtml, /favourites\.php\?bootstrap=1&amp;app=food/);
+  assert.match(skincareHtml, /favourites\.php\?bootstrap=1&amp;app=skincare/);
+  assert.match(shared, /__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__/);
+  assert.match(shared, /caption\.textContent = 'log in required to favorite this recipe\.'/);
+  assert.match(shared, /btn\.disabled = false/);
+  assert.doesNotMatch(shared, /btn\.style\.visibility = favsReady \? '' : 'hidden'/);
+  assert.doesNotMatch(shared, /btn\.disabled = !favsReady \|\| !authState\.authed/);
+  const toggleStart = shared.indexOf('async function toggleFav(recipeId)');
+  const toggleEnd = shared.indexOf('// Inject per-recipe favourite buttons', toggleStart);
+  assert.ok(toggleStart >= 0 && toggleEnd > toggleStart);
+  const toggleSource = shared.slice(toggleStart, toggleEnd);
+  assert.match(toggleSource, /showFavouriteCaption\(recipeId\)/);
+  assert.doesNotMatch(toggleSource, /BASELINE_openAuth/);
+  assert.match(css, /recipe-favourite-caption/);
+  assert.match(css, /color:var\(--muted,var\(--ink\)\)/);
+});
+
+
 test('recipe title typography is one sitewide Skincare-reference contract', () => {
   assert.match(css, /BASELINE-RECIPE-SINGLE-AUTHORITY-20261013/);
   assert.match(css, /recipe-title-row > h3\{[\s\S]*font-family:var\(--font-soft\);[\s\S]*font-size:28px;[\s\S]*line-height:1\.25;/);
