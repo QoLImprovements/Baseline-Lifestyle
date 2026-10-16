@@ -201,25 +201,6 @@
     return 'Reference only in the current face model because no sufficiently faithful morph target is available.';
   }
 
-  const directVisualCodes = new Set([
-    '1','2','4','5','6','7','9','11','12','14','15','16','17','18','20','22','24',
-    '27','28','29','30','43','44','45','46','51','52','53','54','55','56','57','58',
-    '61','62','63','64','65','66'
-  ]);
-
-  function visualFidelity(unit){
-    if(!unit.render) return 'reference';
-    if(directVisualCodes.has(unit.code)) return 'direct';
-    return 'approximate';
-  }
-
-  function visualNote(unit){
-    const fidelity=visualFidelity(unit);
-    if(fidelity==='direct') return 'Mapped to a close corresponding 3D morph or pose target; FACS remains the coding authority.';
-    if(fidelity==='approximate') return 'Composite 3D approximation using the available morph targets; do not treat the rendered shape as a formal FACS scoring plate.';
-    return 'Reference only in the current face model because no sufficiently faithful morph target is available.';
-  }
-
   const referenceUnits = Object.freeze(units.map(function(unit){
     const copy=Object.assign({},unit,{
       kind:codeKind(unit),
@@ -227,8 +208,6 @@
       section:sectionFor(unit),
       parts:Object.freeze((facePartsByCode[unit.code]||[]).slice()),
       editionNote:editionNote(unit),
-      visualFidelity:visualFidelity(unit),
-      visualNote:visualNote(unit),
       visualFidelity:visualFidelity(unit),
       visualNote:visualNote(unit)
     });
