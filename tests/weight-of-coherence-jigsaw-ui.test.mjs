@@ -66,3 +66,12 @@ test('four manual sorting trays flank the jigsaw and persist parked pieces', () 
   assert.match(js, /movePieceToMainTray\(drag\.id\)/);
   assert.match(js, /removePieceFromSortBins\(id\);[\s\S]*?state\.placed\.add\(id\)/);
 });
+
+
+test('each fullscreen sorting tray owns its own scrollbar', () => {
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-stage\{[^}]*overflow:hidden/);
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-column\{[^}]*min-height:0[^}]*overflow:hidden/);
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-tray\{[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
+  assert.match(css, /scrollbar-gutter:stable/);
+});
