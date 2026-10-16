@@ -175,3 +175,16 @@ test('Routine Groups are born collapsed rather than corrected after paint',()=>{
   assert.match(groups,/card\.open = false/);
   assert.doesNotMatch(groups,/card\.open = true/);
 });
+
+
+test('Fitness single-authority assets use a fresh shared cache key',()=>{
+  for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-groups-v2.js']){
+    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_1'),asset+' should use the current Fitness cache key');
+  }
+});
+
+test('canonical Routine structure alone owns top Routine tab clicks',()=>{
+  const workspace=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
+  assert.doesNotMatch(workspace,/closest\('\[data-fitness-routine-view\],\[data-open-fitness-view\]'\)/);
+  assert.match(workspace,/closest\('\[data-open-fitness-view\]'\)/);
+});
