@@ -401,6 +401,7 @@ test('Food and Skincare primary cards and tabs have one sitewide visual owner', 
   assert.match(sitewideCss, /\.tab\[aria-selected="true"\],[\s\S]*background-color:var\(--bl-surface-active-solid\)!important/);
   assert.doesNotMatch(foodCss, /\.tab(?:\:hover|\[aria-selected="true"\])?\s*\{[^}]*\bbackground(?:-color|-image)?\s*:/);
   assert.doesNotMatch(skincareCss, /\.tab(?:\:hover|\[aria-selected="true"\])?\s*\{[^}]*\bbackground(?:-color|-image)?\s*:/);
+  assert.doesNotMatch(skincareCss, /data-initial-section="recipes"[^\n]*\.tabs \.tab[^\n]*(?:background|filter)/);
   assert.doesNotMatch(foodCss, /\.card\s*\{[^}]*\bbackground\s*:/);
   assert.doesNotMatch(skincareCss, /\.card\s*\{[^}]*\bbackground\s*:/);
   assert.doesNotMatch(foodCss, /\.card::(?:before|after)\s*\{/);
