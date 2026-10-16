@@ -142,7 +142,7 @@
     grid-template-areas:"board" "left" "right";
   }
   .weight-coherence-workspace:fullscreen .weight-coherence-board-wrap{
-    width:min(100%,calc((100vh - 170px) * 1122 / 1402));
+    width:min(100%,800px);
     max-height:none;
   }
 }
