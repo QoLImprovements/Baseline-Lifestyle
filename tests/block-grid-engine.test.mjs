@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  emptyBoard, canPlace, resolvePlacement, createTray, shapeById,
+  emptyBoard, canPlace, resolvePlacement, createTray, shapeById, SHAPES, boundsForShape,
   legalPlacements, validBoard, runLevel
 } from '../systems/baseline-games-hub/games/block-grid/js/block-grid-engine.mjs';
 
@@ -53,4 +53,16 @@ test('board validation and level progression are stable', () => {
   assert.equal(runLevel(0), 1);
   assert.equal(runLevel(10), 2);
   assert.equal(canPlace(emptyBoard(), 'line5-h', 0, 4), false);
+});
+
+
+test('every shape rejects anchors that would overhang the board', () => {
+  const board = emptyBoard();
+  for (const piece of SHAPES) {
+    const bounds = boundsForShape(piece);
+    assert.equal(canPlace(board, piece, board.length - bounds.rows + 1, 0), false, `${piece.id} bottom overhang`);
+    assert.equal(canPlace(board, piece, 0, board.length - bounds.cols + 1), false, `${piece.id} right overhang`);
+    assert.equal(canPlace(board, piece, -1, 0), false, `${piece.id} top overhang`);
+    assert.equal(canPlace(board, piece, 0, -1), false, `${piece.id} left overhang`);
+  }
 });
