@@ -78,9 +78,9 @@ body[data-app="home"]{
   --banner-pill-border: #b8b8c0;
   --auth-flyout-bg: var(--banner-pill-bg);
 
-  --scroll-track: #4c4c54;
-  --scroll-thumb: #c2b8aa;
-  --scroll-thumb-hover: #d6ccbf;
+  --scroll-track: #303036;
+  --scroll-thumb: #62626c;
+  --scroll-thumb-hover: #777782;
 
   --food-deep: #b11226;
   --food-red:#e6392f;
