@@ -29,6 +29,10 @@
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
     fullscreen:document.getElementById('weightCoherenceFullscreenBtn'),
     reset:document.getElementById('weightCoherenceResetBtn'),
+    selectionLabel:document.getElementById('weightCoherenceSelectionLabel'),
+    settingsDialog:document.getElementById('weightCoherenceSettingsDialog'),
+    setupSettings:document.getElementById('weightCoherenceSetupSettingsBtn'),
+    toolbarSettings:document.getElementById('weightCoherenceToolbarSettingsBtn'),
     tray:document.getElementById('weightCoherenceTray'),
     trayMeta:document.getElementById('weightCoherenceTrayMeta'),
     prev:document.getElementById('weightCoherencePrevBtn'),
@@ -52,6 +56,7 @@
   let dragState = null;
   let suppressTrayClickUntil = 0;
   let imageReady = false;
+  let trayRenderToken = 0;
 
   image.addEventListener('load', function(){
     imageReady = true;
@@ -62,6 +67,18 @@
 
   function difficultyConfig(value){
     return DIFFICULTIES[Number(value)] || DIFFICULTIES[100];
+  }
+
+  function mobileLike(){
+    try{
+      return window.innerWidth <= 760 || !!window.matchMedia?.('(pointer: coarse)').matches;
+    }catch(_error){
+      return window.innerWidth <= 760;
+    }
+  }
+
+  function trayPageSize(config){
+    return mobileLike() ? Math.min(config.trayPageSize, 12) : config.trayPageSize;
   }
 
   function formatTime(totalSeconds){
@@ -137,6 +154,24 @@
     target.closePath();
   }
 
+  function drawArtworkRegion(targetCtx,g,padding){
+    if(!imageReady || !image.naturalWidth || !image.naturalHeight) return;
+    const pad=Math.max(0,Number(padding)||0);
+    const left=Math.max(0,g.x-pad);
+    const top=Math.max(0,g.y-pad);
+    const right=Math.min(BOARD_WIDTH,g.x+g.w+pad);
+    const bottom=Math.min(BOARD_HEIGHT,g.y+g.h+pad);
+    const width=Math.max(1,right-left);
+    const height=Math.max(1,bottom-top);
+    const sx=image.naturalWidth/BOARD_WIDTH;
+    const sy=image.naturalHeight/BOARD_HEIGHT;
+    targetCtx.drawImage(
+      image,
+      left*sx,top*sy,width*sx,height*sy,
+      left-g.x,top-g.y,width,height
+    );
+  }
+
   function drawPieceToBoard(targetCtx, id){
     if(!state || !imageReady) return;
     const config = difficultyConfig(state.difficulty);
@@ -145,7 +180,7 @@
     targetCtx.translate(g.x,g.y);
     tracePiecePath(targetCtx,g);
     targetCtx.clip();
-    targetCtx.drawImage(image,-g.x,-g.y,BOARD_WIDTH,BOARD_HEIGHT);
+    drawArtworkRegion(targetCtx,g,g.tab+2);
     targetCtx.restore();
 
     targetCtx.save();
@@ -169,9 +204,10 @@
     ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
 
     if(imageReady && state && state.preview){
-      // Guide mode is an undimmed, full-quality reference view of the original artwork.
+      ctx.save();
+      ctx.globalAlpha=0.20;
       ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
-      return;
+      ctx.restore();
     }
 
     if(state){
@@ -185,7 +221,7 @@
       ctx.restore();
     }
 
-    ctx.drawImage(placedCanvas,0,0);
+    ctx.drawImage(placedCanvas,0,0,BOARD_WIDTH,BOARD_HEIGHT);
   }
 
   function createPieceCanvas(id){
@@ -204,7 +240,7 @@
     c.translate(margin,margin);
     tracePiecePath(c,g);
     c.clip();
-    c.drawImage(image,-g.x,-g.y,BOARD_WIDTH,BOARD_HEIGHT);
+    drawArtworkRegion(c,g,margin);
     c.restore();
 
     c.save();
@@ -247,17 +283,20 @@
       return;
     }
     const config=difficultyConfig(state.difficulty);
+    const pageSize=trayPageSize(config);
     const ids=unplacedIds();
-    const pageCount=Math.max(1,Math.ceil(ids.length/config.trayPageSize));
+    const pageCount=Math.max(1,Math.ceil(ids.length/pageSize));
     state.page=Math.max(0,Math.min(state.page,pageCount-1));
-    const start=state.page*config.trayPageSize;
-    const pageIds=ids.slice(start,start+config.trayPageSize);
+    const start=state.page*pageSize;
+    const pageIds=ids.slice(start,start+pageSize);
     refs.trayMeta.textContent=ids.length
       ? 'Tray ' + (state.page+1) + ' of ' + pageCount + ' · ' + ids.length.toLocaleString('en-GB') + ' pieces remaining'
       : 'All pieces placed';
     refs.prev.disabled=state.page<=0;
     refs.next.disabled=state.page>=pageCount-1;
 
+    const token=++trayRenderToken;
+    const pending=[];
     pageIds.forEach(function(id){
       const btn=document.createElement('button');
       btn.type='button';
@@ -265,9 +304,27 @@
       btn.dataset.pieceId=String(id);
       btn.setAttribute('aria-label','Jigsaw piece ' + (id+1));
       if(selectedPieceId===id) btn.classList.add('is-selected');
-      btn.appendChild(createPieceCanvas(id));
+      const placeholder=document.createElement('span');
+      placeholder.className='weight-coherence-piece-placeholder';
+      placeholder.setAttribute('aria-hidden','true');
+      btn.appendChild(placeholder);
       refs.tray.appendChild(btn);
+      pending.push({id:id,button:btn});
     });
+
+    let index=0;
+    const batchSize=mobileLike()?2:6;
+    const paintBatch=function(){
+      if(token!==trayRenderToken) return;
+      const stop=Math.min(pending.length,index+batchSize);
+      for(;index<stop;index++){
+        const item=pending[index];
+        if(!item.button.isConnected) continue;
+        item.button.replaceChildren(createPieceCanvas(item.id));
+      }
+      if(index<pending.length) window.requestAnimationFrame(paintBatch);
+    };
+    if(pending.length) window.requestAnimationFrame(paintBatch);
   }
 
   function setStatus(message,tone){
@@ -351,7 +408,8 @@
       refs.workspace.hidden=false;
       syncDifficultyButtons();
       refs.preview.setAttribute('aria-pressed',String(state.preview));
-      refs.preview.textContent=state.preview?'Hide Guide [G]':'Show Guide [G]';
+      syncGuideButton();
+      if(refs.reset) refs.reset.disabled=false;
       setStatus(state.completed?'Puzzle complete.':'Saved puzzle resumed.',state.completed?'success':'');
       renderCompletion();
       rebuildPlacedCanvas();
@@ -371,7 +429,8 @@
     refs.workspace.hidden=true;
     refs.completion.hidden=true;
     refs.preview.setAttribute('aria-pressed','false');
-    refs.preview.textContent='Show Guide [G]';
+    syncGuideButton();
+    if(refs.reset) refs.reset.disabled=true;
     syncDifficultyButtons();
     updateStats();
     placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
@@ -386,6 +445,7 @@
       button.classList.toggle('is-active',active);
       button.setAttribute('aria-checked',String(active));
     });
+    if(refs.selectionLabel) refs.selectionLabel.textContent=selectedDifficulty.toLocaleString('en-GB') + ' pieces selected';
   }
 
   function beginPuzzle(){
@@ -404,8 +464,9 @@
     selectedPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
-    refs.preview.textContent='Show Guide [G]';
+    syncGuideButton();
     refs.completion.hidden=true;
+    if(refs.reset) refs.reset.disabled=false;
     placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
     setStatus('Puzzle started. Drag a piece onto the board, or select a piece and then click its position.','');
     drawBoard();
@@ -540,13 +601,20 @@
     });
   });
 
-  refs.start.addEventListener('click',beginPuzzle);
+  refs.start.addEventListener('click',function(){
+    if(state && state.started && !state.completed){
+      const replace=window.confirm('Start a new ' + selectedDifficulty.toLocaleString('en-GB') + '-piece puzzle? Current progress will be cleared.');
+      if(!replace) return;
+    }
+    beginPuzzle();
+  });
 
   function syncGuideButton(){
     if(!refs.preview) return;
     const guideOn=!!(state && state.preview);
     refs.preview.setAttribute('aria-pressed',String(guideOn));
-    refs.preview.textContent=guideOn?'Hide Guide [G]':'Show Guide [G]';
+    refs.preview.setAttribute('aria-label',guideOn?'Hide guide (G)':'Show guide (G)');
+    refs.preview.title=guideOn?'Hide guide · G':'Show guide · G';
   }
 
   function toggleGuide(){
@@ -554,7 +622,7 @@
     state.preview=!state.preview;
     syncGuideButton();
     drawBoard();
-    setStatus(state.preview?'Full-quality guide shown. Press G again to return to the puzzle.':'Guide hidden. Continue placing pieces.','');
+    setStatus(state.preview?'Guide shown at 20% opacity. Press G again to return to the puzzle.':'Guide hidden. Continue placing pieces.','');
     saveState();
   }
 
@@ -575,7 +643,8 @@
     if(!refs.fullscreen) return;
     const active=document.fullscreenElement===refs.workspace;
     refs.fullscreen.setAttribute('aria-pressed',String(active));
-    refs.fullscreen.textContent=active?'Exit Full Screen':'Full Screen';
+    refs.fullscreen.setAttribute('aria-label',active?'Exit full screen':'Enter full screen');
+    refs.fullscreen.title=active?'Exit full screen':'Full screen';
   }
 
   function toggleFullscreen(){
@@ -603,14 +672,52 @@
     return !!target.closest('input, textarea, select, [contenteditable="true"]');
   }
 
+  function syncSettingsExpanded(open){
+    [refs.setupSettings,refs.toolbarSettings].forEach(function(button){
+      if(button) button.setAttribute('aria-expanded',String(!!open));
+    });
+  }
+
+  function openSettings(){
+    if(!refs.settingsDialog) return;
+    try{
+      if(typeof refs.settingsDialog.showModal==='function' && !refs.settingsDialog.open) refs.settingsDialog.showModal();
+      else refs.settingsDialog.setAttribute('open','');
+      syncSettingsExpanded(true);
+    }catch(_error){
+      refs.settingsDialog.setAttribute('open','');
+      syncSettingsExpanded(true);
+    }
+  }
+
+  function closeSettings(){
+    if(!refs.settingsDialog) return;
+    try{
+      if(typeof refs.settingsDialog.close==='function' && refs.settingsDialog.open) refs.settingsDialog.close();
+      else refs.settingsDialog.removeAttribute('open');
+    }catch(_error){
+      refs.settingsDialog.removeAttribute('open');
+    }
+    syncSettingsExpanded(false);
+  }
+
   refs.preview.addEventListener('click',toggleGuide);
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
+  if(refs.setupSettings) refs.setupSettings.addEventListener('click',openSettings);
+  if(refs.toolbarSettings) refs.toolbarSettings.addEventListener('click',openSettings);
+  if(refs.settingsDialog){
+    refs.settingsDialog.addEventListener('close',function(){ syncSettingsExpanded(false); });
+    refs.settingsDialog.addEventListener('cancel',function(){ syncSettingsExpanded(false); });
+  }
 
   refs.reset.addEventListener('click',function(){
     if(!state){ beginPuzzle(); return; }
     const restart=window.confirm('Restart The Weight of Coherence at ' + selectedDifficulty + ' pieces? Current progress will be cleared.');
-    if(restart) beginPuzzle();
+    if(restart){
+      beginPuzzle();
+      closeSettings();
+    }
   });
 
   refs.prev.addEventListener('click',function(){ if(state){ state.page=Math.max(0,state.page-1); renderTray(); saveState(); } });
@@ -667,6 +774,7 @@
 
   refs.board.width=BOARD_WIDTH;
   refs.board.height=BOARD_HEIGHT;
+  if(refs.reset) refs.reset.disabled=true;
   syncDifficultyButtons();
   updateStats();
   drawBoard();
