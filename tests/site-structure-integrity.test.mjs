@@ -278,9 +278,15 @@ test('sitewide Contact control is singular, themed and ordered before Account', 
   const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
 
   assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
-  assert.ok(shared.includes("'bl-contact-link'"));
   assert.ok(shared.includes("{ href:'/contact/' }"));
-  assert.ok(shared.indexOf("'bl-contact-link'") < shared.indexOf("'bl-auth-toggle'", shared.indexOf("'bl-contact-link'")));
+  assert.ok(shared.includes("'Contact Baseline Lifestyle'"));
+  const controlsStart = shared.indexOf('function ensureRightControls(container)');
+  const controlsEnd = shared.indexOf('function closePagesMenu', controlsStart);
+  const controls = shared.slice(controlsStart, controlsEnd);
+  assert.ok(controlsStart >= 0 && controlsEnd > controlsStart);
+  assert.equal((controls.match(/'bl-contact-link'/g) || []).length, 1, 'Contact must have one shared control owner');
+  assert.ok(controls.indexOf("'bl-beats-toggle'") < controls.indexOf("'bl-contact-link'"));
+  assert.ok(controls.indexOf("'bl-contact-link'") < controls.indexOf("'bl-auth-toggle'"));
   assert.ok(sitewideCss.includes('#bl-contact-link'));
   assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
   assert.ok(sitewideCss.includes("#bl-beats-toggle,\n#bl-contact-link,\n#bl-auth-toggle{"));
