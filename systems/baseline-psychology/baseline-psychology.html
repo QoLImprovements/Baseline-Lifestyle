@@ -109,7 +109,7 @@
             <button class="facs-clear-btn" id="facsClearAll" type="button">Clear expression</button>
           </div>
 
-          <div class="facs-active-strip"          <div class="facs-active-strip" id="facsActiveStrip" aria-live="polite">
+          <div class="facs-active-strip" id="facsActiveStrip" aria-live="polite">
             <span class="facs-empty-state">No active codes — neutral face.</span>
           </div>
 
@@ -118,6 +118,15 @@
               <div class="facs-stage-header">
                 <strong>Realistic facial movement model</strong>
                 <span id="facsModelStatus">Loading 3D face…</span>
+              </div>
+              <div class="facs-view-controls" aria-label="Face viewing angle">
+                <label class="facs-view-slider">
+                  <span>Rotate view</span>
+                  <input id="facsViewAngle" type="range" min="-180" max="180" step="1" value="0" aria-label="Rotate face view from minus 180 to 180 degrees"/>
+                </label>
+                <output id="facsViewAngleValue" for="facsViewAngle">0°</output>
+                <button id="facsViewFront" class="facs-view-reset" type="button">Front</button>
+                <span class="facs-view-hint">Drag the face or use the slider.</span>
               </div>
               <div id="facsFace" class="facs-face-viewport" role="img" aria-labelledby="facsFaceTitle facsFaceDesc">
                 <span id="facsFaceTitle" class="facs-visually-hidden">Interactive FACS face</span>
@@ -202,7 +211,7 @@
             </div>
           </div>
 
-          <div class="facs-library-block">          <div class="facs-library-block">
+          <div class="facs-library-block">
             <div class="facs-library-heading">
               <div>
                 <h4>FACS Code Library</h4>
