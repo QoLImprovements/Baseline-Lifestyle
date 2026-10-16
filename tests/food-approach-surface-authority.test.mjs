@@ -23,7 +23,9 @@ test('Food content containers share one warmer theme surface', () => {
   assert.match(theme, /--food-surface-card:\s*#f59b32/);
   assert.match(theme, /--food-surface-panel:\s*linear-gradient/);
   assert.match(theme, /--food-surface-subtle:\s*linear-gradient/);
-  assert.match(foodCss, /\.card\s*\{[\s\S]*?background:var\(--food-surface-card\)/);
+  assert.match(sitewideCss, /body:not\(\[data-app="home"\]\) \.card,[\s\S]*background-color:var\(--bl-surface-card-solid\)!important/);
+  assert.doesNotMatch(foodCss, /\.card\s*\{[^}]*background\s*:/);
+  assert.doesNotMatch(foodCss, /\.card::(?:before|after)\s*\{/);
   assert.match(dietCss, /\.diet-log-panel\s*\{[\s\S]*?background:var\(--food-surface-panel\)/);
   assert.doesNotMatch(recipeCss, /body\[data-app\] #recipes\s*>\s*\.grid\s*>\s*\.card\s*\{[^}]*background\s*:\s*transparent/i);
 });
