@@ -12,7 +12,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <title>Baseline Games Hub</title>
 <meta name="theme-color" content="#080D22"/>
 <style>html[data-app="games"],body[data-app="games"]{margin:0;min-height:100%;color:#F2F5FF;background:#080D22;background-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);}</style>
-<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-games-hub\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub");document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
+<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-games-hub\/games-hub\/puzzles\/?$/i.test(p)?"puzzles":(/^\/baseline-games-hub\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub"));document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
 <meta name="description" content="Browser-based focus, number, word, darts, and adventure training games.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-games-hub/games-hub">
 <meta property="og:type" content="website">
@@ -45,6 +45,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
+<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_20261016_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
      deliberately loads last so shell alignment rules cannot repaint Realm. -->
@@ -79,6 +80,7 @@ These Markdown rules are a human reference point, not live runtime config.
   <nav class="tabs" aria-label="Baseline Games Hub tabs">
     <button class="tab" aria-selected="true" data-target="hub">Games Hub</button>
     <button class="tab" aria-selected="false" data-target="games">Games</button>
+    <button class="tab" aria-selected="false" data-target="puzzles">Puzzles</button>
   </nav><script id="baseline-games-route-state-nav">!function(){try{var t=document.documentElement.getAttribute("data-initial-section")||"hub",n=document.currentScript.previousElementSibling;n.querySelectorAll(".tab[data-target]").forEach(function(b){b.setAttribute("aria-selected",b.getAttribute("data-target")===t?"true":"false")})}catch(_e){}}()</script>
 </header>
 <main class="wrap">
@@ -106,6 +108,79 @@ These Markdown rules are a human reference point, not live runtime config.
     </div>
   </section>
 
+
+
+  <section class="section" id="puzzles">
+    <div class="grid">
+      <section class="card puzzle-library-card">
+        <div class="header-row">
+          <div>
+            <h2>Puzzles</h2>
+            <p class="note">Image puzzles for slower, restorative focus. Choose a difficulty, then build the artwork piece by piece.</p>
+          </div>
+        </div>
+        <article id="weightCoherencePuzzle" aria-labelledby="weightCoherenceTitle">
+          <div class="weight-coherence-intro">
+            <img class="weight-coherence-art" src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.webp?v=WEIGHT_OF_COHERENCE_20261016_1" alt="The Weight of Coherence — a symbolic figure holding an unfinished structure amid green, red and blue light."/>
+            <div class="weight-coherence-copy">
+              <h3 id="weightCoherenceTitle">The Weight of Coherence</h3>
+              <p>A symbolic jigsaw built from the artwork created for Baseline. Choose how deep you want the session to go, from a compact 50-piece solve to a 1,000-piece long-form puzzle.</p>
+            </div>
+          </div>
+
+          <div class="weight-coherence-difficulty-shell">
+            <div class="weight-coherence-difficulty-head">
+              <h3>Choose pieces</h3>
+              <span class="inline-note">100 pieces is the balanced default. 500 and 1,000 use a paged tray so larger puzzles stay responsive.</span>
+            </div>
+            <div class="weight-coherence-difficulty-row" role="radiogroup" aria-label="Jigsaw piece count">
+              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="50" role="radio" aria-checked="false" type="button">50 pieces</button>
+              <button class="action ghost weight-coherence-difficulty is-active" data-jigsaw-difficulty="100" role="radio" aria-checked="true" type="button">100 pieces</button>
+              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="500" role="radio" aria-checked="false" type="button">500 pieces</button>
+              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="1000" role="radio" aria-checked="false" type="button">1,000 pieces</button>
+            </div>
+            <div class="weight-coherence-start-row">
+              <button class="action" id="weightCoherenceStartBtn" type="button">Start Puzzle</button>
+            </div>
+          </div>
+
+          <div class="weight-coherence-workspace" id="weightCoherenceWorkspace" hidden>
+            <div class="weight-coherence-toolbar">
+              <div class="weight-coherence-stats">
+                <div class="stat-pill">Difficulty <span id="weightCoherenceDifficultyLabel">100 pieces</span></div>
+                <div class="stat-pill">Placed <span id="weightCoherencePlaced">0 / 100</span></div>
+                <div class="stat-pill">Time <span id="weightCoherenceTimer">00:00</span></div>
+              </div>
+              <div class="weight-coherence-actions">
+                <button class="action ghost" id="weightCoherencePreviewBtn" type="button" aria-pressed="false">Show Guide</button>
+                <button class="action ghost" id="weightCoherenceShuffleBtn" type="button">Shuffle Tray</button>
+                <button class="action ghost" id="weightCoherenceResetBtn" type="button">Restart</button>
+              </div>
+            </div>
+
+            <div class="weight-coherence-board-shell">
+              <div class="weight-coherence-board-wrap">
+                <canvas id="weightCoherenceBoard" width="640" height="800" aria-label="The Weight of Coherence jigsaw board"></canvas>
+                <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
+              </div>
+              <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
+            </div>
+
+            <div class="weight-coherence-tray-shell">
+              <div class="weight-coherence-tray-head">
+                <span class="inline-note" id="weightCoherenceTrayMeta">Choose a piece count and start the puzzle.</span>
+                <div class="weight-coherence-tray-nav">
+                  <button class="action ghost" id="weightCoherencePrevBtn" type="button" disabled>Previous Tray</button>
+                  <button class="action ghost" id="weightCoherenceNextBtn" type="button" disabled>Next Tray</button>
+                </div>
+              </div>
+              <div class="weight-coherence-tray" id="weightCoherenceTray" aria-label="Unplaced jigsaw pieces"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+    </div>
+  </section>
 
   <!-- GAME-FOLDER-RULES-REFERENCE-20260615
   Individual game reference folders live under:
@@ -521,7 +596,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_READY_20261005_1"></script><script src="/sitewide/js/baseline-shared.js?v=ACCOUNT_HEADER_STABILITY_20261005_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1"></script>
 <script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261003_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
-<script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
+<script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PUZZLES_WEIGHT_COHERENCE_20261016_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_20261016_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
