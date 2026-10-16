@@ -147,9 +147,11 @@ body[data-app="home"]{
   width:100%;
   position:relative;
   z-index:120;
-  display:flex;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  grid-template-areas:"key title controls";
   align-items:center;
-  justify-content:center;
+  column-gap:28px;
   padding:24px var(--pad) 22px;
   background:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%);
   color:#fff;
@@ -157,10 +159,11 @@ body[data-app="home"]{
   border-bottom:2px solid #000;
 }
 
-/* Key and utility-button positioning is owned by the canonical protected-access/header CSS. */
-
+/* The header has three independent zones: key | brand | utility controls. */
 .bl-top-header-title{
-  width:100%;
+  grid-area:title;
+  width:auto;
+  min-width:0;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -177,6 +180,7 @@ body[data-app="home"]{
   line-height:1.05;
   text-transform:uppercase;
   text-align:center;
+  white-space:nowrap;
 }
 
 .bl-scroll{
@@ -319,6 +323,11 @@ body[data-app="home"] .wrap{
   text-shadow:none;
 }
 
+@media (max-width:1350px) and (min-width:901px){
+  .bl-top-header{ column-gap:22px; }
+  .domain{ font-size:44px; }
+}
+
 @media (max-width:900px){
   html[data-app="home"],
   body[data-app="home"]{
@@ -334,11 +343,12 @@ body[data-app="home"] .wrap{
   }
 
   .bl-top-header{
+    column-gap:14px;
     padding:18px 16px 16px;
   }
 
   .domain{
-    font-size:clamp(34px, 10.5vw, 48px);
+    font-size:clamp(34px, 8.5vw, 48px);
     letter-spacing:.045em;
   }
 
@@ -381,6 +391,18 @@ body[data-app="home"] .wrap{
 
   .system-lane > .card p{
     font-size:clamp(16px, 4.4vw, 19px);
+  }
+}
+
+@media (max-width:620px){
+  .bl-top-header{
+    column-gap:8px;
+    padding-left:12px;
+    padding-right:12px;
+  }
+  .domain{
+    font-size:clamp(25px, 6.8vw, 36px);
+    letter-spacing:.035em;
   }
 }
 
