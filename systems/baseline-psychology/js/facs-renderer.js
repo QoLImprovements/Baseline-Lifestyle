@@ -96,6 +96,7 @@
       case 'headTiltRight': s.head.rot+=9;break;
       case 'headForward': s.head.scale+=.04;break;
       case 'headBack': s.head.scale-=.04;break;
+      case 'headUpSide': s.head.y-=10;s.head.rot+=7;break;
       case 'eyesLeft': s.eye.gazeX-=12;break;
       case 'eyesRight': s.eye.gazeX+=12;break;
       case 'eyesUp': s.eye.gazeY-=7;break;
