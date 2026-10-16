@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  const BUILD='REALM_BASECAMP_HUD_SETTINGS_20261016_1';
+  const BUILD='REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
   const HUB_BUILD='GAMES_HUB_REALM_ISOLATED_20260629_4';
   const ICONS='/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v='+BUILD;
   const BASECAMP_CSS='/systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css?v='+BUILD;
@@ -55,13 +55,13 @@
   const BASECAMP_LANDMARKS=[
     {key:'ninja-training',id:'realmCampNinjaBtn',icon:'training',label:'Ninja Training',note:'Training route',view:'training'},
     {key:'exploration',id:'realmCampExplorationBtn',icon:'exploration',label:'Exploration',note:'Maps and encounters',view:'exploration'},
-    {key:'workshop',id:'realmCampWorkshopBtn',icon:'workshop',label:'Workshop',note:'Weapons and equipment',tab:'workshop',category:'blacksmith'},
+    {key:'workshop',id:'realmCampWorkshopBtn',icon:'workshop',label:'Workshop',note:'Forge, tailor, brew and build',tab:'workshop',category:'blacksmith'},
     {key:'calorie-escape',id:'realmCampCalorieEscapeBtn',icon:'calorie',label:'Calorie Escape',note:'Movement route',view:'calorie-escape'},
     {key:'tactical-operations',id:'realmCampTacticalBtn',icon:'tactical',label:'Tactical Operations',note:'Operations table',view:'tactical-operations'},
     {key:'storage',id:'realmCampStorageBtn',icon:'storage',label:'Storage',note:'Shared inventory'},
     {key:'merchant',id:'realmCampMerchantBtn',icon:'merchant',label:'Merchant',note:'Supplies and exchange'},
     {key:'campfire-rest',id:'realmCampRestBtn',icon:'campfire',label:'Campfire & Rest',note:'Recovery point'},
-    {key:'cooking',id:'realmCampCookingBtn',icon:'cooking',label:'Cooking',note:'Food and effects',tab:'workshop',category:'cooking'},
+    {key:'cooking',id:'realmCampCookingBtn',icon:'cooking',label:'Cooking',note:'Meals and route support',tab:'workshop',category:'cooking'},
     {key:'party-preparation',id:'realmCampPartyBtn',icon:'party',label:'Party Preparation',note:'Ready the party'}
   ];
 
