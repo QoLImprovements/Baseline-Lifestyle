@@ -5947,7 +5947,7 @@ function buildControls(recipeEl){
         ['index.html', 'Home'],
         ['baseline-food-approach.html', 'Baseline Food Approach'],
         ['baseline-massage.html', 'Baseline Massage'],
-        ['baseline-natural-skincare.html', 'Baseline Natural Skincare'],
+        ['baseline-natural-skincare.html', 'Baseline Personal Care'],
         ['baseline-fitness.html', 'Baseline Fitness'],
         ['baseline-badminton-session.html', 'Baseline Badminton Session'],
         ['baseline-games-hub.html', 'Baseline Games Hub']
@@ -6174,7 +6174,7 @@ function buildControls(recipeEl){
         ['/home/1','Home'],
         ['/baseline-food-approach/system','Baseline Food Approach'],
         ['/baseline-massage/system','Baseline Massage'],
-        ['/baseline-natural-skincare/system','Baseline Natural Skincare'],
+        ['/baseline-natural-skincare/system','Baseline Personal Care'],
         ['/baseline-fitness/system','Baseline Fitness'],
         ['/baseline-badminton-session/system','Baseline Badminton Session'],
         ['/baseline-games-hub/games-hub','Baseline Games Hub']
@@ -6377,8 +6377,8 @@ function setupAuthFlyout(){
               </div>
 
               <div class="bl-auth-fieldgroup">
-                <label for="bl-favs-skin-select">Baseline Skincare Favorites</label>
-                <select id="bl-favs-skin-select" aria-label="Baseline Skincare Favorites"></select>
+                <label for="bl-favs-skin-select">Baseline Personal Care Favorites</label>
+                <select id="bl-favs-skin-select" aria-label="Baseline Personal Care Favorites"></select>
               </div>
 
               <div class="bl-auth-fieldgroup bl-auth-fitness-link-wrap">

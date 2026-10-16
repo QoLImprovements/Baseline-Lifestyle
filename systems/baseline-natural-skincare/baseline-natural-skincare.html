@@ -14,15 +14,15 @@ These Markdown rules are a human reference point, not live runtime config.
 <meta content="0" http-equiv="Expires"/>
 <!-- Cleaned: removed duplicate viewport, unused JS, trailing whitespace; audited for basic hygiene. -->
 <meta charset="utf-8"/>
-<title>Baseline Natural Skincare</title>
+<title>Baseline Personal Care</title>
 <meta name="theme-color" content="#b8644d"/>
 <style>html[data-app="skin"],body[data-app="skin"]{margin:0;min-height:100%;color:#2b2b28;background:linear-gradient(90deg,#b8644d 0%,#cf8167 10%,#dc9f88 24%,#e1ad9b 38%,#e8c1b2 48%,#e8c1b2 52%,#e1ad9b 62%,#dc9f88 76%,#cf8167 90%,#b8644d 100%);}</style>
 <script id="baseline-skincare-route-state">!function(){var d=document.documentElement,p=String(location.pathname||"").replace(/\/+$/,""),t="system",v="",m;try{t=/^\/baseline-natural-skincare\/recipes(?:\/|$)/i.test(p)?"recipes":/^\/baseline-natural-skincare\/my-routine(?:\/|$)/i.test(p)?"routine":/^\/baseline-natural-skincare\/ingredient-library(?:\/|$)/i.test(p)?"ingredients":/^\/baseline-natural-skincare\/skin-support-system\/?$/i.test(p)?"support":"system";d.setAttribute("data-initial-section",t);d.setAttribute("data-initial-skincare-tab",t);m=p.match(/^\/baseline-natural-skincare\/my-routine\/(log|summary|plan|public)$/i);if(m)v=m[1].toLowerCase();else if(t==="routine")v="log";else{var u=new URL(location.href),q=String(u.searchParams.get("routine-view")||"");if(["log","summary","plan","public"].includes(q))v=q}if(v)d.setAttribute("data-initial-routine-view",v)}catch(_e){}}()</script>
 <script id="baseline-recipe-route-first-paint">!function(){try{var d=document.documentElement,p=String(location.pathname||'').replace(/\/+$/,'');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes(?:\/|$)/i.test(p)){d.setAttribute('data-initial-section','recipes');if(/^\/(?:baseline-natural-skincare|baseline-food-approach)\/recipes\/[^/]+$/i.test(p)){d.setAttribute('data-initial-recipe-route','1');d.setAttribute('data-initial-recipe-pending','1');d.setAttribute('data-initial-recipe-slug',decodeURIComponent(p.split('/').pop()||'').toLowerCase());var q=new URLSearchParams(location.search||''),v=String(q.get('view')||'').toLowerCase(),r=String(q.get('variant')||'').toLowerCase();d.setAttribute('data-initial-recipe-view',['details','guidance','show-all'].includes(v)?v:'standard');if(r)d.setAttribute('data-initial-recipe-variant',r)}}}catch(_e){}}()</script>
-<meta name="description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
+<meta name="description" content="Natural personal care guidance, ingredient profiles, recipes, routines, and dedicated skin support.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Baseline Natural Skincare">
+<meta property="og:title" content="Baseline Personal Care">
 <meta property="og:description" content="Natural skincare guidance, ingredient profiles, recipes, and a personalised skin support system.">
 <meta property="og:url" content="https://baselinelifestyle.org/baseline-natural-skincare/system">
 <link href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque" rel="stylesheet"/>
@@ -52,12 +52,12 @@ These Markdown rules are a human reference point, not live runtime config.
 <div aria-label="BaselineLifestyle" class="bl-homebar" role="navigation">
 <div class="bl-homebar-inner">
 <div class="bl-pages-dd">
-<button aria-expanded="false" aria-haspopup="menu" class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button">Baseline Natural Skincare ▾</button>
+<button aria-expanded="false" aria-haspopup="menu" class="bl-mini-btn bl-pages-btn" id="bl-pages-toggle" type="button">Baseline Personal Care ▾</button>
 <div class="bl-pages-menu" hidden="" role="menu">
 <a class="bl-pages-link" href="/home/1" role="menuitem">Home</a>
 <a class="bl-pages-link" href="/baseline-food-approach/system" role="menuitem">Baseline Food Approach</a>
 <a class="bl-pages-link" href="/baseline-massage/system" role="menuitem">Baseline Massage</a>
-<a aria-current="page" class="bl-pages-link" href="/baseline-natural-skincare/system" role="menuitem">Baseline Natural Skincare</a>
+<a aria-current="page" class="bl-pages-link" href="/baseline-natural-skincare/system" role="menuitem">Baseline Personal Care</a>
 <a class="bl-pages-link" href="/baseline-fitness/system" role="menuitem">Baseline Fitness</a>
 <a class="bl-pages-link" href="/baseline-badminton-session/system" role="menuitem">Baseline Badminton Session</a>
 <a class="bl-pages-link" href="/baseline-games-hub/games-hub" role="menuitem">Baseline Games Hub</a>
@@ -70,7 +70,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <header class="hero" id="top">
 <div class="hero-inner">
 <div>
-<div class="title" role="heading" aria-level="1">Baseline Natural Skincare</div>
+<div class="title" role="heading" aria-level="1">Baseline Personal Care</div>
 <div class="subtitle">A calm, protective, vegan routine — designed to help skin feel safe, nourished, and steady.</div>
 </div>
 <!-- Removed update line from header (per request) -->
@@ -2056,7 +2056,7 @@ Method steps MUST follow this format:
 <script id="baseline-skincare-initial-panel">!function(){var v=document.documentElement.getAttribute('data-initial-routine-view');if(!['log','summary','plan','public'].includes(v))return;var r=document.getElementById('routine');if(!r)return;r.querySelectorAll('[data-routine-view]').forEach(function(b){var s=b.getAttribute('data-routine-view')===v;b.classList.toggle('active',s);b.setAttribute('aria-selected',s?'true':'false');if(s)b.removeAttribute('tabindex');else b.setAttribute('tabindex','-1')});r.querySelectorAll('[data-routine-panel]').forEach(function(p){var s=p.getAttribute('data-routine-panel')===v;p.hidden=!s;p.classList.toggle('active',s)})}()</script>
 </main>
 <footer class="footer">
-<span>Baseline Natural Skincare - Updated 12th April 2026</span>
+<span>Baseline Personal Care - Updated 12th April 2026</span>
 </footer>
 </div>
 <script src="/sitewide/js/baseline-ingredient-profiles.js?v=SKINCARE_NEW_RECIPES_20261011_1"></script>
