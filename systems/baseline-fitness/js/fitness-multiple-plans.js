@@ -21,11 +21,7 @@
   let plansResolved = false;
   let owner = 'guest';
   let selectedPlanMemory=0;
-  function routeRequestsNewPlan() {
-    try { return new URL(global.location.href).searchParams.get('new-plan')==='1'; }
-    catch (_error) { return false; }
-  }
-  let creatingPlan=routeRequestsNewPlan();
+  let creatingPlan=false;
 
   const $ = (selector, root = document) => root.querySelector(selector);
 
@@ -285,7 +281,7 @@
     if (!manager) { manager=document.createElement('section');manager.id='calisthenicsPlanManager';manager.className='card fitness-calisthenics-plan-manager';manager.innerHTML='<div class="section-head-actions"><div><h2>Calisthenics Plans</h2></div><button type="button" class="action secondary" id="createCalisthenicsPlan">Create Another Plan</button></div><label class="field-stack"><span>Open plan</span><select id="calisthenicsPlanSelect"></select></label>';panel.prepend(manager); }
     const select=manager.querySelector('#calisthenicsPlanSelect');const data=plans.map((plan,index) => ({ value:String(Number(plan.planId)),label:`${planName(plan,index)} — ${Number(plan.progress?.done || 0)}/${Number(plan.progress?.total || plan.planJson?.sessions || 0)} sessions` }));const signature=JSON.stringify({resolved:plansResolved,data});
     if (select.dataset.signature!==signature) { select.dataset.signature=signature;select.innerHTML=plansResolved?`<option value="">${data.length?'Choose a plan…':'No saved plans yet'}</option>${data.map((entry) => `<option value="${entry.value}">${entry.label}</option>`).join('')}`:'<option value="">Loading plans…</option>'; }
-    select.disabled=!plansResolved || !data.length;select.value=plansResolved&&data.some((entry) => entry.value===String(selectedPlanId()))?String(selectedPlanId()):'';
+    select.disabled=!plansResolved || !data.length;select.value=!isCreatingPlan()&&plansResolved&&data.some((entry) => entry.value===String(selectedPlanId()))?String(selectedPlanId()):'';
   }
 
   function prettyDate(value) {
@@ -325,9 +321,12 @@
     document.documentElement.setAttribute('data-initial-fitness-tab','my-plan');
     document.documentElement.setAttribute('data-initial-routine-view','plan');
     document.documentElement.setAttribute('data-initial-routine-plan','calisthenics');
-    const url=new URL('/baseline-fitness/my-routine/plan',global.location.origin);
-    url.searchParams.set('new-plan','1');
-    global.location.assign(url.toString());
+    try{
+      global.BASELINE_fitnessRoutineStructure?.activateTopView?.('plan',true);
+      global.BASELINE_fitnessRoutineStructure?.activatePlanView?.('calisthenics',false);
+    }catch(_error){}
+    global.BASELINE_fitnessWorkout?.startNewPlan?.();
+    patchInterface();
   }
   async function openPlan(planId) {
     const id=Math.max(0,Number(planId)||0);if(!id)return;
