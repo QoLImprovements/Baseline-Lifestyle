@@ -2007,6 +2007,17 @@ function parseViewStateHash(hash){
     window.BASELINE_openRecipe = (id, opts={}) => openRecipe(id, opts);
     window.BASELINE_showAllRecipes = (opts={}) => showAll(opts);
 
+    // One shared back-navigation owner. Folder-backed Food recipes author a
+    // real fallback link, while older Skincare markup used inline onclick.
+    // Capture the action before either path can reload or double-handle it.
+    recipesSection.addEventListener('click', (e)=>{
+      const back = e.target && e.target.closest ? e.target.closest('.back-btn') : null;
+      if(!back || !recipesSection.contains(back)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      showAll({ silentHistory:false });
+    }, { capture:true });
+
     // Link clicks inside recipes section
     qsa('a.recipe-open', recipesSection).forEach(a=>{
       a.addEventListener('click', function(e){
