@@ -52,3 +52,27 @@ test('current Weight of Coherence puzzle uses the same server save authority', (
   assert.ok(api.includes("'weightcoherence'"));
   assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
 });
+
+
+test('puzzle games expose visible gameplay motion and contained Block Grid dragging', () => {
+  const block = read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
+  const blockCss = read('systems/baseline-games-hub/games/block-grid/css/block-grid.css');
+  const colour = read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
+  const colourCss = read('systems/baseline-games-hub/games/colour-sort/css/colour-sort.css');
+
+  assert.match(block, /function clampAnchorInsideBoard/);
+  assert.match(block, /function shapeContainedAnchor/);
+  assert.match(block, /function createDragGhost/);
+  assert.match(block, /boardAnchorFromPointer/);
+  assert.match(block, /Keep the entire piece inside the board/);
+  assert.match(blockCss, /blockGridPlace/);
+  assert.match(blockCss, /blockGridLineClear/);
+  assert.match(blockCss, /block-grid-drag-ghost/);
+
+  assert.match(colour, /async function animatePour/);
+  assert.match(colour, /source\.animate/);
+  assert.match(colour, /createPourStream/);
+  assert.match(colourCss, /colour-sort-pour-stream/);
+  assert.match(colourCss, /colourSortBottleEnter/);
+  assert.match(colourCss, /prefers-reduced-motion/);
+});
