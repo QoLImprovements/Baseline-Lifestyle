@@ -5,7 +5,7 @@
     { code:'A', label:'Trace', factor:0.22 },
     { code:'B', label:'Slight', factor:0.40 },
     { code:'C', label:'Marked', factor:0.60 },
-    { code:'D', label:'Strong', factor:0.80 },
+    { code:'D', label:'Severe', factor:0.80 },
     { code:'E', label:'Maximum', factor:1.00 }
   ]);
 
