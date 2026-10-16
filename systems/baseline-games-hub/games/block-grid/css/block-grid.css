@@ -1,13 +1,19 @@
 .block-grid-panel{--block-cell-gap:clamp(4px,.75vw,8px)}
 .block-grid-panel .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 .block-grid-panel .block-grid-active-header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
-.block-grid-panel .block-grid-board{width:min(100%,620px);margin:0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--block-cell-gap);padding:clamp(10px,2vw,18px);border:1px solid var(--games-border);border-radius:24px;background:linear-gradient(180deg,rgba(8,13,34,.96),rgba(21,61,68,.88));box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 22px 46px -34px rgba(8,13,34,.9)}
+.block-grid-panel .block-grid-board{width:min(100%,620px);margin:0 auto;display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:var(--block-cell-gap);padding:clamp(10px,2vw,18px);border:1px solid var(--games-border);border-radius:24px;background:linear-gradient(180deg,rgba(8,13,34,.96),rgba(21,61,68,.88));box-shadow:inset 0 0 0 1px rgba(255,255,255,.035),0 22px 46px -34px rgba(8,13,34,.9);transform-origin:center}
 .block-grid-panel .block-grid-cell{appearance:none;aspect-ratio:1;border:1px solid rgba(244,197,108,.16);border-radius:clamp(5px,.7vw,9px);padding:0;background:rgba(242,245,255,.055);box-shadow:inset 0 1px 0 rgba(255,255,255,.035);transition:transform .1s ease,background .12s ease,border-color .12s ease,box-shadow .12s ease;cursor:pointer}
 .block-grid-panel .block-grid-cell:hover:not(:disabled){border-color:rgba(244,197,108,.42)}
 .block-grid-panel .block-grid-cell.is-filled{background:linear-gradient(145deg,#f4c56c 0%,#d6944e 47%,#cc694b 100%);border-color:rgba(255,226,154,.86);box-shadow:inset 0 2px 3px rgba(255,255,255,.38),inset 0 -3px 5px rgba(99,42,21,.28),0 4px 10px rgba(204,105,75,.18)}
 .block-grid-panel .block-grid-cell.is-preview-valid{background:linear-gradient(145deg,rgba(244,197,108,.78),rgba(70,86,166,.75));border-color:#f4c56c;box-shadow:0 0 0 2px rgba(244,197,108,.18),0 0 18px rgba(244,197,108,.22)}
 .block-grid-panel .block-grid-cell.is-preview-invalid{background:rgba(204,105,75,.33);border-color:#cc694b;box-shadow:inset 0 0 0 2px rgba(204,105,75,.18)}
 .block-grid-panel .block-grid-cell:focus-visible{outline:3px solid rgba(244,197,108,.7);outline-offset:2px}
+.block-grid-panel .block-grid-cell.is-just-placed{animation:blockGridPlace .28s cubic-bezier(.2,.9,.25,1.35)}
+.block-grid-panel .block-grid-cell.is-line-cleared{animation:blockGridLineClear .42s ease-out}
+.block-grid-panel .block-grid-board.is-invalid-drop{animation:blockGridInvalid .22s ease}
+@keyframes blockGridPlace{0%{transform:scale(.48);opacity:.25}68%{transform:scale(1.13)}100%{transform:scale(1);opacity:1}}
+@keyframes blockGridLineClear{0%{transform:scale(1);filter:brightness(1)}38%{transform:scale(1.08);filter:brightness(1.9);background:#f4c56c}100%{transform:scale(.82);filter:brightness(1);opacity:.12}}
+@keyframes blockGridInvalid{0%,100%{transform:translateX(0)}30%{transform:translateX(-6px)}65%{transform:translateX(6px)}}
 .block-grid-panel .block-grid-tray{display:flex;justify-content:center;align-items:stretch;gap:clamp(10px,2vw,22px);flex-wrap:wrap;min-height:116px;padding:16px;border-radius:20px;border:1px solid var(--games-border);background:rgba(8,13,34,.18)}
 .block-grid-panel .block-grid-piece{min-width:110px;min-height:92px;display:grid;place-items:center;padding:12px;border:1px solid var(--games-border);border-radius:18px;background:var(--games-control);color:var(--games-ink);cursor:grab;touch-action:none;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,opacity .12s ease}
 .block-grid-panel .block-grid-piece:hover:not(:disabled){transform:translateY(-2px);border-color:rgba(244,197,108,.5)}
@@ -17,6 +23,12 @@
 .block-grid-panel .block-grid-piece-shape{display:grid;grid-template-columns:repeat(var(--piece-cols),18px);grid-template-rows:repeat(var(--piece-rows),18px);gap:3px}
 .block-grid-panel .block-grid-piece-cell{width:18px;height:18px;border-radius:4px;background:transparent}
 .block-grid-panel .block-grid-piece-cell.is-filled{background:linear-gradient(145deg,#f4c56c,#cc694b);border:1px solid rgba(255,226,154,.72);box-shadow:inset 0 1px 1px rgba(255,255,255,.32)}
+.block-grid-drag-ghost{position:fixed;z-index:100000;pointer-events:none;left:0;top:0;transform:translate(-50%,-50%) scale(1.04);opacity:.94;filter:drop-shadow(0 12px 16px rgba(0,0,0,.42));transition:opacity .08s ease,filter .08s ease;will-change:left,top,transform}
+.block-grid-drag-ghost.is-over-board{transform:none;opacity:.84;filter:drop-shadow(0 7px 10px rgba(0,0,0,.34))}
+.block-grid-drag-ghost .block-grid-piece-shape{display:grid;grid-template-columns:repeat(var(--piece-cols),var(--drag-cell,18px));grid-template-rows:repeat(var(--piece-rows),var(--drag-cell,18px));gap:var(--drag-gap,3px)}
+.block-grid-drag-ghost .block-grid-piece-cell{width:var(--drag-cell,18px);height:var(--drag-cell,18px);border-radius:clamp(4px,.6vw,8px);background:transparent}
+.block-grid-drag-ghost .block-grid-piece-cell.is-filled{background:linear-gradient(145deg,#f4c56c,#cc694b);border:1px solid rgba(255,226,154,.82);box-shadow:inset 0 1px 1px rgba(255,255,255,.34)}
+html.is-dragging-block-grid-piece,html.is-dragging-block-grid-piece body{overscroll-behavior:none}
 .block-grid-panel .block-grid-level-meter{height:9px;overflow:hidden;border-radius:999px;background:rgba(8,13,34,.32);border:1px solid rgba(244,197,108,.14)}
 .block-grid-panel .block-grid-level-meter>span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4656a6,#f4c56c);transition:width .2s ease}
 .block-grid-panel .block-grid-mode-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
@@ -36,4 +48,10 @@
   .block-grid-panel .block-grid-piece-shape{grid-template-columns:repeat(var(--piece-cols),14px);grid-template-rows:repeat(var(--piece-rows),14px);gap:2px}
   .block-grid-panel .block-grid-piece-cell{width:14px;height:14px}
   .block-grid-panel .block-grid-mode-list,.block-grid-panel .block-grid-progress-stats{grid-template-columns:1fr}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .block-grid-panel .block-grid-cell,.block-grid-panel .block-grid-piece,.block-grid-panel .block-grid-level-meter>span{transition:none}
+  .block-grid-panel .block-grid-cell.is-just-placed,.block-grid-panel .block-grid-cell.is-line-cleared,.block-grid-panel .block-grid-board.is-invalid-drop{animation:none}
+  .block-grid-drag-ghost{transition:none}
 }

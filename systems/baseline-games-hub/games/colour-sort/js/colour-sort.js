@@ -21,7 +21,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
 
-const BUILD = 'COLOUR_SORT_20261016_1';
+const BUILD = 'COLOUR_SORT_MOTION_20261017_1';
 const APP = 'coloursort';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -41,8 +41,8 @@ let undoStack = [];
 let hint = null;
 let statusMessage = '';
 let storageAuth = null;
-let animationTimer = 0;
-let lastMove = null;
+let isAnimating = false;
+let levelEntranceMotion = false;
 
 function number(value, minimum = 0) {
   return Math.max(minimum, Math.floor(Number(value) || 0));
@@ -117,6 +117,7 @@ function startLevel(levelId, { persistChange = true } = {}) {
   undoStack = [];
   hint = null;
   statusMessage = 'Select a bottle, then select a valid destination.';
+  levelEntranceMotion = true;
   if (persistChange) persist();
   render();
 }
@@ -145,9 +146,7 @@ function bottleHtml(bottle, index) {
   const selected = selectedBottle === index;
   const hintedFrom = hint?.from === index;
   const hintedTo = hint?.to === index;
-  const receiving = lastMove?.to === index;
-  const pouring = lastMove?.from === index;
-  return `<button class="colour-sort-bottle${complete ? ' is-complete' : ''}${selected ? ' is-selected' : ''}${hintedFrom ? ' is-hint-from' : ''}${hintedTo ? ' is-hint-to' : ''}${receiving ? ' is-receiving' : ''}${pouring ? ' is-pouring' : ''}" data-colour-bottle="${index}" type="button" aria-pressed="${selected}" aria-label="${escapeHtml(bottleLabel(bottle, index))}">
+  return `<button class="colour-sort-bottle${complete ? ' is-complete' : ''}${selected ? ' is-selected' : ''}${hintedFrom ? ' is-hint-from' : ''}${hintedTo ? ' is-hint-to' : ''}${levelEntranceMotion ? ' is-entering' : ''}" style="--bottle-index:${index}" data-colour-bottle="${index}" type="button" aria-pressed="${selected}" aria-label="${escapeHtml(bottleLabel(bottle, index))}" ${isAnimating ? 'disabled' : ''}>
     <span class="colour-sort-glass" aria-hidden="true"><span class="colour-sort-stack">${bottle.map(segmentHtml).join('')}</span></span>
     <span class="colour-sort-bottle-number">${index + 1}</span>
   </button>`;
@@ -186,13 +185,14 @@ function renderGame() {
       <button class="action secondary" data-colour-action="fullscreen" type="button">${document.fullscreenElement === root ? 'Exit Full Screen' : 'Full Screen'}</button>
     </div>
     <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
-    <div class="colour-sort-board" role="group" aria-label="Colour Sort bottles">${active.bottles.map(bottleHtml).join('')}</div>
+    <div class="colour-sort-board${isAnimating ? ' is-animating-pour' : ''}" role="group" aria-label="Colour Sort bottles">${active.bottles.map(bottleHtml).join('')}</div>
     <div class="game-window-actions">
-      <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved ? 'disabled' : ''}>Undo</button>
-      <button class="action ghost" data-colour-action="hint" type="button" ${solved ? 'disabled' : ''}>Hint</button>
-      <button class="action ghost" data-colour-action="restart" type="button">Restart</button>
+      <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
+      <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
+      <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
       ${solved && active.level < LEVELS.length ? `<button class="action primary" data-colour-action="next" type="button">Next Level</button>` : ''}
     </div>`;
+  levelEntranceMotion = false;
 }
 
 function levelButton(level) {
@@ -243,9 +243,106 @@ function render() {
   shell.refreshOverview();
 }
 
-function clearAnimationSoon() {
-  window.clearTimeout(animationTimer);
-  animationTimer = window.setTimeout(() => { lastMove = null; renderGame(); }, 360);
+function reducedMotionPreferred() {
+  return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+}
+
+function createPourStream(board, sourceRect, targetRect, colour, moveX, moveY) {
+  const boardRect = board.getBoundingClientRect();
+  const startX = (sourceRect.left + sourceRect.width / 2 - boardRect.left) + (moveX * 0.7);
+  const startY = (sourceRect.top + 24 - boardRect.top) + (moveY * 0.7) - 26;
+  const endX = targetRect.left + targetRect.width / 2 - boardRect.left;
+  const endY = targetRect.top + 28 - boardRect.top;
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const stream = document.createElement('span');
+  stream.className = 'colour-sort-pour-stream';
+  stream.dataset.colour = String(colour);
+  stream.setAttribute('aria-hidden', 'true');
+  stream.style.left = startX + 'px';
+  stream.style.top = startY + 'px';
+  stream.style.width = Math.max(18, Math.hypot(dx, dy)) + 'px';
+  stream.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+  board.appendChild(stream);
+  return stream;
+}
+
+async function animatePour(from, to, result) {
+  if (reducedMotionPreferred()) return;
+  const board = document.querySelector('#colourSortGameCard .colour-sort-board');
+  const source = board?.querySelector(`[data-colour-bottle="${from}"]`);
+  const target = board?.querySelector(`[data-colour-bottle="${to}"]`);
+  if (!board || !source || !target || typeof source.animate !== 'function') return;
+
+  const sourceRect = source.getBoundingClientRect();
+  const targetRect = target.getBoundingClientRect();
+  const moveX = targetRect.left - sourceRect.left;
+  const moveY = targetRect.top - sourceRect.top;
+  const direction = moveX >= 0 ? 1 : -1;
+  const travelX = moveX * 0.7;
+  const travelY = (moveY * 0.7) - 26;
+  const stream = createPourStream(board, sourceRect, targetRect, result.colour, moveX, moveY);
+
+  board.classList.add('is-animating-pour');
+  source.classList.remove('is-selected');
+  source.classList.add('is-motion-source');
+  target.classList.add('is-motion-target');
+
+  const sourceAnimation = source.animate([
+    { transform:'translateY(-12px) rotate(0deg)', offset:0 },
+    { transform:`translate(${travelX}px,${travelY}px) rotate(0deg)`, offset:.34 },
+    { transform:`translate(${travelX}px,${travelY}px) rotate(${direction * 54}deg)`, offset:.52 },
+    { transform:`translate(${travelX}px,${travelY}px) rotate(${direction * 54}deg)`, offset:.76 },
+    { transform:`translate(${travelX}px,${travelY}px) rotate(0deg)`, offset:.86 },
+    { transform:'translate(0,0) rotate(0deg)', offset:1 }
+  ], { duration:620, easing:'cubic-bezier(.2,.7,.2,1)' });
+
+  const targetAnimation = target.animate([
+    { transform:'translateY(0) scale(1)' },
+    { transform:'translateY(-2px) scale(1.03)', offset:.55 },
+    { transform:'translateY(0) scale(1)' }
+  ], { duration:620, easing:'ease-out' });
+
+  const streamAnimation = stream.animate([
+    { opacity:0, transform:stream.style.transform + ' scaleX(.05)', transformOrigin:'0 50%' },
+    { opacity:.95, transform:stream.style.transform + ' scaleX(1)', transformOrigin:'0 50%', offset:.32 },
+    { opacity:.95, transform:stream.style.transform + ' scaleX(1)', transformOrigin:'0 50%', offset:.72 },
+    { opacity:0, transform:stream.style.transform + ' scaleX(.2)', transformOrigin:'0 50%' }
+  ], { duration:620, easing:'ease-in-out' });
+
+  try {
+    await Promise.all([sourceAnimation.finished, targetAnimation.finished, streamAnimation.finished]);
+  } catch (_) {
+    // The game can be closed while an animation is running; the state change still completes safely.
+  } finally {
+    stream.remove();
+    source.classList.remove('is-motion-source');
+    target.classList.remove('is-motion-target');
+    board.classList.remove('is-animating-pour');
+  }
+}
+
+async function performPour(from, to) {
+  const active = puzzle();
+  if (!active || isAnimating || !canPour(active.bottles, from, to)) return false;
+  const result = applyPour(active.bottles, from, to);
+  if (!result) return false;
+
+  undoStack.push({ bottles:active.bottles.map(bottle => bottle.slice()), moves:active.moves });
+  isAnimating = true;
+  hint = null;
+  selectedBottle = -1;
+  await animatePour(from, to, result);
+
+  active.bottles = result.bottles;
+  active.moves += 1;
+  active.settled = false;
+  statusMessage = `${result.amount} ${colourMeta(result.colour).name} unit${result.amount === 1 ? '' : 's'} poured.`;
+  isAnimating = false;
+  settleSolvedPuzzle();
+  persist();
+  render();
+  return true;
 }
 
 function settleSolvedPuzzle() {
@@ -268,7 +365,7 @@ function settleSolvedPuzzle() {
 
 function selectBottle(index) {
   const active = puzzle();
-  if (!active || isSolved(active.bottles) || !active.bottles[index]) return;
+  if (!active || isAnimating || isSolved(active.bottles) || !active.bottles[index]) return;
   hint = null;
   if (selectedBottle < 0) {
     if (!active.bottles[index].length) {
@@ -296,24 +393,13 @@ function selectBottle(index) {
     renderGame();
     return;
   }
-  undoStack.push({ bottles:active.bottles.map(bottle => bottle.slice()), moves:active.moves });
-  const result = applyPour(active.bottles, selectedBottle, index);
-  if (!result) return;
-  active.bottles = result.bottles;
-  active.moves += 1;
-  active.settled = false;
-  lastMove = { from:result.from, to:result.to };
-  selectedBottle = -1;
-  statusMessage = `${result.amount} ${colourMeta(result.colour).name} unit${result.amount === 1 ? '' : 's'} poured.`;
-  settleSolvedPuzzle();
-  persist();
-  render();
-  clearAnimationSoon();
+  const from = selectedBottle;
+  void performPour(from, index);
 }
 
 function undo() {
   const active = puzzle();
-  if (!active || !undoStack.length || isSolved(active.bottles)) return;
+  if (!active || isAnimating || !undoStack.length || isSolved(active.bottles)) return;
   const previous = undoStack.pop();
   active.bottles = previous.bottles;
   active.moves = previous.moves;
@@ -327,7 +413,7 @@ function undo() {
 
 function showHint() {
   const active = puzzle();
-  if (!active || isSolved(active.bottles)) return;
+  if (!active || isAnimating || isSolved(active.bottles)) return;
   statusMessage = 'Finding a legal route…';
   renderGame();
   requestAnimationFrame(() => {
@@ -347,6 +433,10 @@ function toggleFullscreen() {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('colourSortPanel')?.classList.contains('is-active')) return;
+  if (isAnimating) {
+    event.preventDefault();
+    return;
+  }
   const bottle = target.closest('[data-colour-bottle]');
   if (bottle) { selectBottle(Number(bottle.dataset.colourBottle)); return; }
   const level = target.closest('[data-colour-level]')?.getAttribute('data-colour-level');
@@ -399,7 +489,7 @@ const shell = createPuzzleHubShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_20261016_1',
+  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_MOTION_20261017_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
