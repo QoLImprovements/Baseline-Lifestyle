@@ -154,6 +154,7 @@ body[data-app="home"]{
   background:var(--home-header);
   color:#fff;
   text-align:center;
+  border-bottom:2px solid #000;
 }
 
 /* NO-DELAYED-DISPLAY: keep visible Home controls in their final position before JavaScript binds them. */
