@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  emptyBoard, canPlace, resolvePlacement, createTray, shapeById,
+  emptyBoard, canPlace, resolvePlacement, createTray, shapeById, SHAPES, boundsForShape,
   legalPlacements, validBoard, runLevel
 } from '../systems/baseline-games-hub/games/block-grid/js/block-grid-engine.mjs';
 
