@@ -194,5 +194,5 @@
     return Object.freeze(copy);
   }));
 
-  window.BASELINE_FACS = Object.freeze  window.BASELINE_FACS = Object.freeze({ intensities, families, faceParts, units:referenceUnits });
+  window.BASELINE_FACS = Object.freeze({ intensities, families, faceParts, units:referenceUnits });
 })();
