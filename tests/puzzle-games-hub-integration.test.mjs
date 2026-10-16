@@ -83,6 +83,13 @@ test('puzzle games expose visible gameplay motion and contained Block Grid dragg
   assert.match(colourCss, /colour-sort-drag-ghost/);
   assert.match(colourCss, /is-drag-valid/);
   assert.match(colourCss, /is-drag-invalid/);
+  assert.match(colour, /function queueBottleGhostPosition/);
+  assert.match(colour, /grabOffsetX/);
+  assert.match(colour, /requestAnimationFrame/);
+  assert.match(colour, /async function animateDraggedBottleHome/);
+  assert.match(colour, /visual\.animate/);
+  assert.match(colour, /dragVisual/);
+  assert.doesNotMatch(colourCss, /will-change:left,top/);
   assert.match(colour, /colour-sort-complete-banner/);
   assert.match(colour, /Level Progress/);
 
