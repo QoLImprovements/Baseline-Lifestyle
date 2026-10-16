@@ -1,21 +1,22 @@
 /* ============================================================================
-   Baseline Home — single-page systems index
-   Build: INDEX_SINGLE_PAGE_SYSTEMS_PREVIEW_20261016
+   Baseline Home — single-page full-width system strips
+   Build: INDEX_SINGLE_PAGE_SYSTEM_STRIPS_PREVIEW_20261016
 
    One owner for:
    - all six Baseline systems on one index page
-   - desktop: two rows of three centred system environments
-   - mobile: six vertically stacked system environments
-   - mirrored gradients remain the category boundary and attentional focus
+   - dark grey Baseline header
+   - light solid grey index background
+   - six full-width coloured system strips
+   - title and description presented together on each strip
    ============================================================================ */
 
 :root{
-  --bg:#e9e7e2;
+  --home-header:#2b2a27;
+  --home-surface:#c9c8c4;
   --text:#2b2b28;
-  --muted:#6a6760;
-  --stroke:rgba(0,0,0,.08);
-  --shadow:0 8px 22px rgba(0,0,0,.14);
-  --r:22px;
+  --stroke:rgba(0,0,0,.10);
+  --shadow:0 8px 18px rgba(0,0,0,.13);
+  --r:18px;
   --pad:24px;
 
   --food-deep:#b11226;
@@ -44,14 +45,6 @@
   --games-mid:#1E2759;
   --games-soft:#4656A6;
   --games-ink:#F2F5FF;
-
-  --index-card-w:320px;
-  --index-card-h:250px;
-  --index-card-pad-y:28px;
-  --index-card-pad-x:22px;
-  --index-card-title:24px;
-  --index-card-copy:18px;
-  --index-card-line:1.46;
 
   --food-card-bg:linear-gradient(90deg,
     var(--food-deep) 0%,
@@ -136,7 +129,7 @@ body[data-app="home"]{
   color:var(--text);
   font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
   font-size:20px;
-  background:#2b2a27;
+  background:var(--home-surface);
 }
 
 .bl-top-header{
@@ -148,7 +141,7 @@ body[data-app="home"]{
   align-items:center;
   justify-content:center;
   padding:24px var(--pad) 22px;
-  background:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%);
+  background:var(--home-header);
   color:#fff;
   text-align:center;
 }
@@ -184,7 +177,7 @@ body[data-app="home"]{
   flex:1 1 auto;
   min-height:0;
   overflow:auto;
-  background:transparent;
+  background:var(--home-surface);
 }
 
 body[data-app="home"] .wrap{
@@ -198,79 +191,78 @@ body[data-app="home"] .wrap{
 .home-systems{
   width:100%;
   min-height:calc(100svh - var(--top-header-h, 104px));
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  grid-template-rows:repeat(2,minmax(280px,1fr));
-  gap:0;
-  background:#2b2a27;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  padding:24px;
+  background:var(--home-surface);
 }
 
 .system-lane{
+  width:100%;
   min-width:0;
-  min-height:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-  overflow:hidden;
-  background-size:100% 100%;
-  background-repeat:no-repeat;
+  margin:0;
+  padding:0;
+  background:transparent;
 }
-
-.system-lane--food{ background:var(--food-card-bg); }
-.system-lane--massage{ background:var(--massage-card-bg); }
-.system-lane--skin{ background:var(--skin-card-bg); }
-.system-lane--badminton{ background:var(--badminton-card-bg); }
-.system-lane--fitness{ background:var(--fitness-card-bg); }
-.system-lane--games{ background:var(--games-card-bg); }
 
 .card,
 .system-lane > .card{
-  width:min(var(--index-card-w), calc(100% - 24px));
-  max-width:var(--index-card-w);
+  width:100%;
+  max-width:none;
   min-width:0;
-  height:var(--index-card-h);
-  min-height:var(--index-card-h);
-  max-height:var(--index-card-h);
+  min-height:92px;
+  height:auto;
   margin:0;
-  padding:var(--index-card-pad-y) var(--index-card-pad-x);
+  padding:20px 30px;
   border-radius:var(--r);
   border:1px solid var(--stroke);
   box-shadow:var(--shadow);
   overflow:hidden;
   text-decoration:none;
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  text-align:center;
-  gap:12px;
   color:#000;
 }
 
-.card-shell{ display:contents; }
+.card-shell{
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:.45em;
+  text-align:center;
+}
+
+.card h2,
+.card p,
+.system-separator{
+  margin:0;
+  color:inherit;
+  line-height:1.35;
+}
 
 .card h2{
-  margin:0;
-  max-width:100%;
-  width:100%;
-  color:inherit;
-  font-size:var(--index-card-title);
-  line-height:1.16;
+  flex:0 0 auto;
+  font-size:clamp(21px, 2vw, 27px);
+  font-weight:800;
   letter-spacing:-.01em;
-  text-align:center;
+}
+
+.system-separator{
+  flex:0 0 auto;
+  font-size:clamp(20px, 1.8vw, 25px);
+  font-weight:700;
 }
 
 .card p{
-  margin:0;
-  max-width:31ch;
-  color:inherit;
-  font-size:var(--index-card-copy);
-  line-height:var(--index-card-line);
-  text-align:center;
+  min-width:0;
+  max-width:none;
+  font-size:clamp(17px, 1.45vw, 21px);
+  font-weight:500;
 }
-
-.card p br{ display:block; }
 
 .card:hover,
 .card:focus-visible{
@@ -280,7 +272,7 @@ body[data-app="home"] .wrap{
 
 .card:focus-visible{
   outline:none;
-  box-shadow:0 0 0 4px rgba(255,255,255,.36), var(--shadow);
+  box-shadow:0 0 0 4px rgba(255,255,255,.42), var(--shadow);
 }
 
 .card--food{ background:var(--food-card-bg); color:#1b0b09; }
@@ -289,26 +281,25 @@ body[data-app="home"] .wrap{
   background:var(--massage-card-bg);
   color:#fff;
 }
-.card--massage h2{ color:#fff; }
-.card--massage p{ color:rgba(255,255,255,.92); }
+.card--massage h2,
+.card--massage p,
+.card--massage .system-separator{ color:#fff; }
 
 .card--skin{ background:var(--skin-card-bg); color:#2b2b28; }
 
 .card--badminton{ background:var(--badminton-card-bg); color:#34164a; }
-.card--badminton h2{
-  white-space:normal;
-  font-size:var(--index-card-title);
-}
+.card--badminton h2 br{ display:none; }
 
 .card--fitness{
   background:var(--fitness-card-bg);
   color:#fff;
 }
-.card--fitness h2{ color:#fff; }
-.card--fitness p{ color:rgba(255,255,255,.94); }
+.card--fitness h2,
+.card--fitness p,
+.card--fitness .system-separator{ color:#fff; }
 
 .card--games{ background:var(--games-card-bg); color:var(--games-ink); }
-.card--games :is(h2,p){
+.card--games :is(h2,p,.system-separator){
   color:var(--games-ink);
   text-shadow:0 1px 2px rgba(2,5,17,.82);
 }
@@ -318,7 +309,7 @@ body[data-app="home"] .wrap{
   position:fixed;
   inset:0;
   z-index:20000;
-  background:var(--bg, #e9e7e2);
+  background:var(--home-surface);
   display:none;
 }
 #blEmbed.is-open{ display:block; }
@@ -329,25 +320,7 @@ body[data-app="home"] .wrap{
   background:transparent;
 }
 
-@media (max-width:1100px) and (min-width:901px){
-  :root{
-    --index-card-h:230px;
-    --index-card-title:22px;
-    --index-card-copy:16px;
-  }
-  .system-lane{ padding:16px; }
-}
-
-/* Mobile: one continuous page with every system in its own centred environment.
-   The gradients stay mirrored horizontally so the darker sides retain their
-   boundary/focus function rather than becoming decorative vertical bands. */
 @media (max-width:900px){
-  :root{
-    --mobile-band-pad-x:18px;
-    --mobile-band-pad-y:clamp(44px, 11vw, 76px);
-    --mobile-card-width:min(340px, calc(100vw - 36px));
-  }
-
   html[data-app="home"],
   body[data-app="home"]{
     height:auto;
@@ -362,7 +335,7 @@ body[data-app="home"] .wrap{
   }
 
   .bl-top-header{
-    padding:18px var(--mobile-band-pad-x) 16px;
+    padding:18px 18px 16px;
   }
 
   .domain{
@@ -383,39 +356,33 @@ body[data-app="home"] .wrap{
   }
 
   .home-systems{
-    display:block;
-    width:100%;
     min-height:0;
+    gap:12px;
+    padding:16px;
   }
 
-  .system-lane{
-    width:100%;
-    min-height:clamp(340px, 58svh, 520px);
-    padding:var(--mobile-band-pad-y) var(--mobile-band-pad-x);
-  }
-
+  .card,
   .system-lane > .card{
-    width:var(--mobile-card-width);
-    max-width:var(--mobile-card-width);
-    min-width:0;
-    min-height:260px;
-    height:auto;
-    max-height:none;
-    margin:0 auto;
-    padding:clamp(28px, 7vw, 38px) 22px;
+    min-height:86px;
+    padding:18px 20px;
+  }
+
+  .card-shell{
+    flex-wrap:wrap;
+    row-gap:4px;
+    column-gap:.38em;
   }
 
   .card h2{
-    font-size:clamp(22px, 6.2vw, 28px);
+    font-size:clamp(20px, 5.6vw, 25px);
   }
 
-  .card--badminton h2{
-    font-size:clamp(22px, 6.2vw, 28px);
+  .system-separator{
+    font-size:clamp(18px, 5vw, 23px);
   }
 
   .card p{
-    max-width:28ch;
-    font-size:clamp(17px, 4.8vw, 20px);
+    font-size:clamp(16px, 4.4vw, 19px);
   }
 }
 
