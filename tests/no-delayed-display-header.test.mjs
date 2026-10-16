@@ -27,7 +27,7 @@ test('public system header controls exist in initial HTML and Voice is Fitness-o
   }
 });
 
-test('Home has no Voice control or Voice panel assets', () => {
+test('Home exposes the final single-page header and no retired view-switch state', () => {
   const html = readFileSync('index.html', 'utf8');
   for (const id of ['blProtectedKey','bl-auth-toggle']) {
     assert.equal((html.match(new RegExp('id="' + id + '"', 'g')) || []).length, 1);
@@ -37,10 +37,12 @@ test('Home has no Voice control or Voice panel assets', () => {
   assert.match(html, /id="bl-auth-toggle"[^>]*aria-label="Account"/);
   assert.match(html, /<span class="bl-btn-label">Account<\/span>/);
   assert.doesNotMatch(html, /baseline-voice\.css|data-baseline-voice-style/);
-  assert.match(html, /data-initial-home-view/);
+  assert.match(html, /class="home-systems"/);
+  assert.equal((html.match(/class="system-lane /g) || []).length, 6);
+  assert.doesNotMatch(html, /data-initial-home-view|id="badmintonView"|id="systemsView"|view-arrow/);
   const css = readFileSync('sitewide/css/baseline-home.css', 'utf8');
-  assert.match(css, /\.bl-top-header > \.bl-homebar-right\s*\{[^}]*position:absolute;[^}]*top:14px;[^}]*right:14px;/s);
-  assert.match(css, /html\[data-initial-home-view="badminton"\] #badmintonView\s*\{[^}]*opacity:1;[^}]*visibility:visible;/s);
+  assert.match(css, /\.bl-top-header > \.bl-homebar-right\s*\{[^}]*position:absolute;[^}]*top:11px;[^}]*right:12px;/s);
+  assert.doesNotMatch(css, /data-initial-home-view|#badmintonView|#systemsView|view-arrow/);
 });
 
 
