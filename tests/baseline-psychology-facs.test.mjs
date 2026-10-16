@@ -43,7 +43,7 @@ test('Facial Expressions no longer uses the legacy cartoon SVG face',()=>{
   assert.doesNotMatch(rendererSource,/setPath\(|facsLeftEyeWhite|facsFaceShape/);
   assert.match(rendererSource,/facecap\.glb/);
   assert.match(rendererSource,/morphTargetDictionary/);
-  assert.match(rendererSource,/three@/);
+  assert.match(html,/type="importmap"/);\n  assert.match(html,/three@0\.184\.0/);
   assert.match(css,/\.facs-face-viewport/);
 });
 
