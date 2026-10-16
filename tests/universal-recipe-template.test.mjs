@@ -342,7 +342,8 @@ test('recipe favourite first paint is server-authoritative and signed-out stars 
   assert.match(foodHtml, /favourites\.php\?bootstrap=1&amp;app=food/);
   assert.match(skincareHtml, /favourites\.php\?bootstrap=1&amp;app=skincare/);
   assert.match(shared, /__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__/);
-  assert.match(shared, /caption\.textContent = 'log in required to favorite this recipe\.'/);
+  assert.match(shared, /btn\.setAttribute\('data-tip','log in required to favorite this recipe\.'\)/);
+  assert.match(shared, /btn\.classList\.add\('tip-show'\)/);
   assert.match(shared, /btn\.disabled = false/);
   assert.doesNotMatch(shared, /btn\.style\.visibility = favsReady \? '' : 'hidden'/);
   assert.doesNotMatch(shared, /btn\.disabled = !favsReady \|\| !authState\.authed/);
@@ -352,8 +353,11 @@ test('recipe favourite first paint is server-authoritative and signed-out stars 
   const toggleSource = shared.slice(toggleStart, toggleEnd);
   assert.match(toggleSource, /showFavouriteCaption\(recipeId\)/);
   assert.doesNotMatch(toggleSource, /BASELINE_openAuth/);
-  assert.match(css, /recipe-favourite-caption/);
-  assert.match(css, /color:var\(--muted,var\(--ink\)\)/);
+  assert.match(css, /fav-btn\[data-tip\][\s\S]*position:relative/);
+  assert.match(css, /fav-btn\[data-tip\]::after\{[\s\S]*position:absolute|fav-btn\[data-tip\]::after\{/);
+  assert.match(css, /fav-btn\.tip-show\[data-tip\]::after\{[\s\S]*opacity:1/);
+  assert.doesNotMatch(shared, /recipe-favourite-caption/);
+  assert.doesNotMatch(css, /recipe-favourite-caption/);
 });
 
 
