@@ -127,6 +127,8 @@
       if(unit.kind) badges.push('<span class="facs-unit-badge">'+escapeHtml(unit.kind)+'</span>');
       if(unit.intensity) badges.push('<span class="facs-unit-badge">A–E</span>');
       if(unit.laterality) badges.push('<span class="facs-unit-badge">L/R</span>');
+      if(unit.visualFidelity==='reference') badges.push('<span class="facs-unit-badge">Reference only</span>');
+      else if(unit.visualFidelity==='approximate') badges.push('<span class="facs-unit-badge">3D approx.</span>');
 
       item.innerHTML=
         '<span class="facs-unit-code">'+escapeHtml(displayCode(unit))+'</span>'+
@@ -208,7 +210,11 @@
     if(section) section.textContent=entry.unit.section||entry.unit.family;
     if(region) region.textContent=entry.unit.region;
     if(muscle) muscle.textContent=entry.unit.muscles;
-    if(visual) visual.textContent=entry.unit.render?'Realistic 3D morph / movement approximation':'Reference only';
+    if(visual){
+      if(entry.unit.visualFidelity==='direct') visual.textContent='Closest corresponding 3D morph / pose';
+      else if(entry.unit.visualFidelity==='approximate') visual.textContent='Composite 3D approximation';
+      else visual.textContent='Reference only — no faithful current morph';
+    }
     if(noteRow) noteRow.hidden=!entry.unit.editionNote;
     if(note) note.textContent=entry.unit.editionNote||'—';
     if(remove) remove.disabled=false;
