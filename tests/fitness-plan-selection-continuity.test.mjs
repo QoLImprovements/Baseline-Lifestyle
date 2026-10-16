@@ -179,8 +179,19 @@ test('Routine Groups are born collapsed rather than corrected after paint',()=>{
 
 test('Fitness single-authority assets use a fresh shared cache key',()=>{
   for(const asset of ['baseline-fitness.css','fitness-routine-workspace.css','fitness-multiple-plans.js','baseline-fitness-app.js','fitness-routine-structure-v4.js','fitness-routine-workspace-v2.js','fitness-routine-groups-v2.js']){
-    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_1'),asset+' should use the current Fitness cache key');
+    assert.ok(page.includes(asset+'?v=FITNESS_SINGLE_AUTHORITY_20261016_2'),asset+' should use the current Fitness cache key');
   }
+});
+
+test('creating another Calisthenics plan is in-place and app-owned',()=>{
+  const plans=read('systems/baseline-fitness/js/fitness-multiple-plans.js');
+  const app=read('systems/baseline-fitness/js/baseline-fitness-app.js');
+  const page=read('systems/baseline-fitness/baseline-fitness.html');
+  assert.match(plans,/BASELINE_fitnessWorkout\?\.startNewPlan\?\.\(\)/);
+  assert.doesNotMatch(plans,/location\.assign|new-plan/);
+  assert.match(app,/function startNewPlan\(\)[\s\S]*generatorMode = 'create'[\s\S]*planStateResolved = true[\s\S]*resetGenerator\(\)[\s\S]*syncPlanShells\(\)/);
+  assert.match(app,/startNewPlan,/);
+  assert.doesNotMatch(page,/new-plan/);
 });
 
 test('canonical Routine structure alone owns top Routine tab clicks',()=>{
