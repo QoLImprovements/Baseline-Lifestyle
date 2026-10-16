@@ -258,6 +258,7 @@
     'baseline-food-approach.html': { base:'/baseline-food-approach', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', 'diet-log':'diet-log' } },
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
+    'baseline-psychology.html': { base:'/baseline-psychology', defaultTab:'system', tabs:{ system:'system', paralinguistics:'paralinguistics' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
     'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
@@ -266,6 +267,7 @@
     'baseline-food-approach.html':'/baseline-food-approach/system',
     'baseline-massage.html':'/baseline-massage/system',
     'baseline-natural-skincare.html':'/baseline-natural-skincare/system',
+    'baseline-psychology.html':'/baseline-psychology/system',
     'baseline-badminton-session.html':'/baseline-badminton-session/system',
     'baseline-fitness.html':'/baseline-fitness/system',
     'baseline-games-hub.html':'/baseline-games-hub/games-hub'
@@ -276,6 +278,7 @@
     if(/\/baseline-food-approach(?:\/|$)/.test(path)) return 'baseline-food-approach.html';
     if(/\/baseline-massage(?:\/|$)/.test(path)) return 'baseline-massage.html';
     if(/\/baseline-natural-skincare(?:\/|$)/.test(path)) return 'baseline-natural-skincare.html';
+    if(/\/baseline-psychology(?:\/|$)/.test(path)) return 'baseline-psychology.html';
     if(/\/baseline-badminton-session(?:\/|$)/.test(path)) return 'baseline-badminton-session.html';
     if(/\/baseline-fitness(?:\/|$)/.test(path)) return 'baseline-fitness.html';
     if(/\/baseline-games-hub(?:\/|$)/.test(path)) return 'baseline-games-hub.html';
