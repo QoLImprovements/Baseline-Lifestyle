@@ -91,8 +91,9 @@ The following fixes are part of the final Fitness acceptance history:
 | #297 | Delete competing Fitness Routine controllers/CSS and establish the single-authority Routine shell |
 | #298 | Remove the orphaned disclosure readiness CSS guard |
 | #299 | Finish plan-switch single-authority cleanup, refresh stale Fitness asset cache keys and add browser regression coverage |
+| #303 | Remove the remaining Fitness reload-route ownership, make “Create Another Plan” in-place, align stale validation contracts and restore the full repository validation suite |
 
-PR #299 is the code-level resolution for the final reproduced plan-switch interaction bug. Production/browser acceptance of the deployed result remains a separate gate.
+PR #299 is the code-level resolution for the reproduced saved-plan switch interaction bug. PR #303 completes the remaining repository-side ownership cleanup by removing the separate page-reload path used by “Create Another Plan” and bringing stale CI contracts back into line with the current architecture. Production/browser acceptance of the deployed result remains a separate gate.
 
 ---
 
@@ -106,6 +107,7 @@ These checks are repository/CI checks and do not substitute for production verif
 - [x] Browser regression coverage verifies switching between two saved plans leaves Calisthenics/Cardio disclosures interactive.
 - [x] Recovery builder code reads `Fitness/Plans/NNNNNN.json` when rebuilding SQLite-compatible recovery data.
 - [x] Live-health allowlist accepts the canonical `Users/NNNNNN/Fitness/Plans/NNNNNN.json` layout.
+- [x] PR #303 pre-merge Website Checks and Single Authority Audit are fully green.
 - [ ] Latest `main` Website Checks are fully green after all post-cutover cleanup PRs.
 
 ---
