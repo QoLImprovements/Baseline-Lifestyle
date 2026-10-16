@@ -6045,6 +6045,7 @@ function buildControls(recipeEl){
       if(!right || !id) return null;
       options = options || {};
       const href = String(options.href || '').trim();
+      const ariaLabel = String(options.ariaLabel || label).trim() || label;
       const tagName = href ? 'a' : 'button';
       let control = q('#' + id, right) || q('#' + id);
 
@@ -6069,7 +6070,7 @@ function buildControls(recipeEl){
         control.removeAttribute('href');
       }
       control.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
-      control.setAttribute('aria-label', label);
+      control.setAttribute('aria-label', ariaLabel);
 
       if(control.parentNode !== right) right.appendChild(control);
       return control;
@@ -6084,7 +6085,7 @@ function buildControls(recipeEl){
         container.appendChild(right);
       }
       if(!isHomePage()) ensureControl(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
-      const contact = ensureControl(right, 'bl-contact-link', CONTACT_ICON_SVG, 'Contact Baseline Lifestyle', { href:'/contact/' });
+      const contact = ensureControl(right, 'bl-contact-link', CONTACT_ICON_SVG, 'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' });
       const auth = ensureControl(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
       if(contact && auth && contact.nextSibling !== auth) right.insertBefore(contact, auth);
       return right;
