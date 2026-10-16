@@ -41,7 +41,7 @@ let statusMessage = '';
 let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
-let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false };
+let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false, perfectClear:false };
 
 function number(value, minimum = 0) {
   return Math.max(minimum, Math.floor(Number(value) || 0));
@@ -193,7 +193,7 @@ function nearCompleteCells(active) {
 
 function boardFeedbackHtml() {
   if (!boardMotion.scoreDelta && !boardMotion.lines) return '';
-  const clearLabel = boardMotion.lines >= 3 ? 'MEGA CLEAR' : boardMotion.lines === 2 ? 'DOUBLE CLEAR' : boardMotion.lines === 1 ? 'LINE CLEAR' : '';
+  const clearLabel = boardMotion.perfectClear ? 'PERFECT CLEAR' : boardMotion.lines >= 3 ? 'MEGA CLEAR' : boardMotion.lines === 2 ? 'DOUBLE CLEAR' : boardMotion.lines === 1 ? 'LINE CLEAR' : '';
   return `<div class="block-grid-feedback" aria-hidden="true">
     <strong>+${boardMotion.scoreDelta}</strong>
     ${clearLabel ? `<span>${clearLabel}</span>` : ''}
@@ -312,7 +312,7 @@ function render() {
 }
 
 function resetBoardMotion() {
-  boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false };
+  boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false, perfectClear:false };
 }
 
 function shapeContainedAnchor(board, piece, row, col) {
@@ -427,18 +427,22 @@ function placeSelected(row, col) {
   boardMotion.placed = new Set(result.placed.map(([placedRow, placedCol]) => `${placedRow}:${placedCol}`));
   boardMotion.clearRows = new Set(result.rowsCleared);
   boardMotion.clearCols = new Set(result.colsCleared);
-  boardMotion.scoreDelta = result.scoreDelta;
+  const perfectClear = result.linesCleared > 0 && result.board.every(boardRow => boardRow.every(cell => cell === 0));
+  const perfectBonus = perfectClear ? 100 : 0;
+  const awardedScore = result.scoreDelta + perfectBonus;
+  boardMotion.scoreDelta = awardedScore;
   boardMotion.lines = result.linesCleared;
   boardMotion.combo = result.combo;
+  boardMotion.perfectClear = perfectClear;
   active.board = result.board;
-  active.score += result.scoreDelta;
+  active.score += awardedScore;
   active.combo = result.combo;
   active.lines += result.linesCleared;
   active.pieces += 1;
   active.tray.splice(selectedPiece, 1);
   profile.totalPieces += 1;
   profile.totalLines += result.linesCleared;
-  awardXp(profile, Math.max(1, Math.ceil(result.scoreDelta / 5) + result.linesCleared * 2));
+  awardXp(profile, Math.max(1, Math.ceil(awardedScore / 5) + result.linesCleared * 2));
   profile.bestScore = Math.max(profile.bestScore, active.score);
   if (!active.tray.length) {
     active.tray = createTray(active.board, profile.selectedMode);
@@ -447,9 +451,11 @@ function placeSelected(row, col) {
   active.gameOver = !hasAnyPlacement(active.board, active.tray);
   selectedPiece = -1;
   previewAnchor = null;
-  statusMessage = result.linesCleared
-    ? `${result.linesCleared} line${result.linesCleared === 1 ? '' : 's'} cleared for ${result.scoreDelta} points.`
-    : `${shapeById(pieceId)?.cells.length || 0} cells placed for ${result.scoreDelta} points.`;
+  statusMessage = perfectClear
+    ? `Perfect clear — ${awardedScore} points including a 100-point bonus.`
+    : result.linesCleared
+      ? `${result.linesCleared} line${result.linesCleared === 1 ? '' : 's'} cleared for ${awardedScore} points.`
+      : `${shapeById(pieceId)?.cells.length || 0} cells placed for ${awardedScore} points.`;
   persist();
   render();
   return true;
