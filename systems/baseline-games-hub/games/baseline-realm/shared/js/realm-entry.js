@@ -1,4 +1,4 @@
-import './realm-stage-1-shell.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import './realm-stage-1-shell.js?v=REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 import { REALM_CRITICAL_PRELOAD, REALM_PRELOAD_GROUPS } from '../data/realm-preload-manifest.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmAccessibilityService } from './realm-accessibility-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmAssetLoader } from './realm-asset-loader.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
@@ -9,7 +9,7 @@ import { RealmInputManager } from './realm-input-manager.js?v=REALM_DARTS_TACTIC
 import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmInventoryService } from './realm-inventory-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmPerformanceMonitor } from './realm-performance.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { RealmRuntimeUi } from './realm-runtime-ui.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
+import { RealmRuntimeUi } from './realm-runtime-ui.js?v=REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 import { RealmSceneRouter } from './realm-scene-router.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { RealmStateService } from './realm-state-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
 import { createRealmLazySceneAuthority } from './realm-lazy-scenes.js?v=REALM_AUTHORITY_SPLIT_20261004_1';
@@ -20,13 +20,13 @@ import {
   normaliseLegacyNinjaProfile,
   RealmSaveAdapter
 } from './realm-save-adapter.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 
-const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
+const BUILD = 'REALM_BASECAMP_HUD_SETTINGS_20261016_1';
 const STAGE_ONE_READY_BUILD = 'BASELINE_REALM_SHELL_INTERACTION_REPAIR_20260707_2';
 const OPTIONAL_MODULE_URLS = Object.freeze({
   explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,
