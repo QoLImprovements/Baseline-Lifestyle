@@ -601,33 +601,6 @@
   #ninjaPanel .tactical-grid{transform:scale(.72)!important;margin-bottom:-165px!important}
 }
 @media (max-width:900px){
-  #ninjaPanel .realm-command-banner{
-    grid-template-columns:minmax(0,1fr) auto!important;
-    grid-template-rows:auto auto auto!important;
-  }
-  #ninjaPanel .realm-command-banner__status{grid-column:1!important;grid-row:1!important}
-  #ninjaPanel .realm-shared-status{grid-column:2!important;grid-row:1!important;min-width:104px!important}
-  #ninjaPanel .realm-command-banner .realm-enemy-status{grid-column:1 / -1!important;grid-row:2!important}
-  #ninjaPanel .realm-command-banner .realm-utility{
-    grid-column:1 / -1!important;
-    grid-row:3!important;
-    justify-self:stretch!important;
-    justify-content:stretch!important;
-  }
-  #ninjaPanel .realm-command-banner .realm-fab{flex:1 1 0!important;min-width:0!important;width:auto!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner{
-    grid-template-columns:minmax(0,1fr) auto!important;
-    grid-template-rows:auto auto!important;
-  }
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner__status{grid-column:1!important;grid-row:1!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-shared-status{grid-column:2!important;grid-row:1!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner .realm-utility{
-    grid-column:1 / -1!important;
-    grid-row:2!important;
-  }
-  #ninjaPanel .realm-settings-dialog{width:min(500px,calc(100% - 12px))!important}
-}
-@media (max-width:900px){
   #ninjaPanel{--realm-banner-height:188px}
   #ninjaPanel .realm-command-banner{
     grid-template-columns:minmax(0,1fr) auto!important;
