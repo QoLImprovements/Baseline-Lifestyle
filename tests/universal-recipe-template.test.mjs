@@ -88,6 +88,8 @@ test('recipe subtabs take selected ink from the active system theme', () => {
   assert.match(sitewideCss, /body\[data-app="food"\][\s\S]*--bl-surface-active-ink:var\(--food-action-ink\)/);
   assert.match(sitewideCss, /body\[data-app="skin"\][\s\S]*--bl-surface-active-ink:#2b2b28/);
   assert.doesNotMatch(themesCss, /--recipe-tab-active-ink/);
+  assert.match(css, /oat-option\[aria-pressed="true"\][\s\S]*--bl-surface-active-ink/);
+  assert.match(css, /variant-switcher \.variant-tab\[aria-selected="true"\][\s\S]*--bl-surface-active-ink/);
 });
 
 test('Universal adjustment visibility and Show All ordering are shared by Food and Skincare', () => {
