@@ -34,8 +34,6 @@
 .colour-sort-panel .colour-sort-pour-stream[data-colour="5"]{background:#4d8e52}
 .colour-sort-panel .colour-sort-pour-stream[data-colour="6"]{background:#c34f78}
 .colour-sort-panel .colour-sort-pour-stream[data-colour="7"]{background:#d1a934}
-.colour-sort-panel .colour-sort-bottle.is-complete{animation:colourSortComplete .46s cubic-bezier(.2,.8,.2,1.25)}
-@keyframes colourSortComplete{0%{transform:scale(.96)}55%{transform:translateY(-7px) scale(1.05)}100%{transform:translateY(0) scale(1)}}
 .colour-sort-panel .colour-sort-bottle-number{min-width:30px;padding:3px 8px;border-radius:999px;border:1px solid var(--games-border);background:rgba(8,13,34,.34);font-size:12px;font-weight:850}
 .colour-sort-panel .colour-sort-level-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .colour-sort-panel .colour-sort-level{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:13px 15px;border:1px solid var(--games-border);border-radius:16px;background:var(--games-panel);color:var(--games-ink);text-align:left;cursor:pointer}
@@ -56,5 +54,5 @@
 
 @media(prefers-reduced-motion:reduce){
   .colour-sort-panel .colour-sort-bottle{transition:none}
-  .colour-sort-panel .colour-sort-bottle.is-entering,.colour-sort-panel .colour-sort-bottle.is-complete{animation:none}
+  .colour-sort-panel .colour-sort-bottle.is-entering{animation:none}
 }
