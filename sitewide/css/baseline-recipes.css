@@ -539,7 +539,7 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
 .recipe-universal-template .oat-option.is-active,
 .recipe-universal-template .oat-option[aria-pressed="true"]{
   background:var(--bl-surface-active-solid,var(--recipe-tab-active,var(--accent)));
-  color:var(--recipe-tab-active-ink,#fff);
+  color:var(--bl-surface-active-ink,var(--bl-surface-ink,var(--ink)));
   -webkit-text-fill-color:currentColor;
   font-weight:900;
 }
@@ -756,7 +756,7 @@ html[data-initial-recipe-route="1"] #recipes .recipe-main{
 .recipe-universal-template .variant-switcher .variant-tab[aria-selected="true"]{
   background:var(--bl-surface-active-solid,var(--accent,var(--ink)));
   border-color:var(--bl-surface-active-solid,var(--accent,var(--ink)));
-  color:var(--recipe-tab-active-ink,#fff);
+  color:var(--bl-surface-active-ink,var(--bl-surface-ink,var(--ink)));
   -webkit-text-fill-color:currentColor;
   font-weight:850;
 }

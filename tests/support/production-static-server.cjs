@@ -9,6 +9,7 @@ const HOST = process.env.HOST || '127.0.0.1';
 const CACHE_EPOCH = '20260630_14';
 const CACHE_COOKIE = `baseline_games_runtime_epoch=${CACHE_EPOCH}`;
 const GAME_DATA_PATH = '/systems/baseline-games-hub/api/games_data.php';
+const FAVOURITES_PATH = '/sitewide/api/favourites.php';
 const gameProfiles = new Map();
 
 const CONTENT_TYPES = Object.freeze({
@@ -152,6 +153,25 @@ function sendJson(res, status, payload) {
   res.end(body);
 }
 
+function sendJavaScript(res, status, source) {
+  const body = Buffer.from(String(source || ''), 'utf8');
+  res.writeHead(status, {
+    'Content-Type': 'text/javascript; charset=utf-8',
+    'Content-Length': body.length,
+    'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0'
+  });
+  res.end(body);
+}
+
+function handleFavouritesBootstrap(req, res, requestUrl) {
+  if (req.method !== 'GET' || requestUrl.searchParams.get('bootstrap') !== '1') {
+    return sendJson(res, 401, { ok:false, error:'not_logged_in' });
+  }
+  const app = String(requestUrl.searchParams.get('app') || '');
+  const payload = JSON.stringify({ ready:true, authed:false, app, ids:[] });
+  return sendJavaScript(res, 200, 'window.__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__=' + payload + ';');
+}
+
 function gameProfilesObject() {
   return Object.fromEntries([...gameProfiles.entries()].map(([app, profile]) => [app, profile]));
 }
@@ -206,6 +226,7 @@ const server = http.createServer((req, res) => {
   }
 
   if (pathname === GAME_DATA_PATH) return handleGameData(req, res, requestUrl);
+  if (pathname === FAVOURITES_PATH) return handleFavouritesBootstrap(req, res, requestUrl);
 
   const filePath = localFileFor(pathname);
   if (!filePath) return sendError(res, 403, 'Forbidden');

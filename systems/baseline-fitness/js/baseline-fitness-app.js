@@ -36,7 +36,7 @@
   let activeTopTab = 'system';
   let activePlanSubtab = 'current';
   let generatorMode = 'create';
-  let planStateResolved = (() => { try { return new URL(location.href).searchParams.has('new-plan'); } catch (_error) { return false; } })();
+  let planStateResolved = false;
   let dirty = false;
   let hydrating = false;
   let hydratedPlanId = null;
@@ -944,6 +944,22 @@
     return planLoadPromise;
   }
 
+  function startNewPlan() {
+    planLoadSerial += 1;
+    planLoadPromise = null;
+    current = { planId: 0, planJson: null, sessions: [], progress: null };
+    hydratedPlanId = null;
+    generatorMode = 'create';
+    planStateResolved = true;
+    activePlanSubtab = 'current';
+    renderLimits = { completed: PAGE_SIZE, future: PAGE_SIZE, preview: PAGE_SIZE };
+    resetGenerator();
+    syncPlanShells();
+    if ($('#myPlanStatus')) $('#myPlanStatus').textContent = '';
+    if ($('#savePlanStatus')) $('#savePlanStatus').textContent = '';
+    renderAchievements();
+  }
+
   async function savePlan() {
     if (!auth.authed) {
       try { global.BASELINE_openAuth?.(); } catch (_error) { $('#bl-auth-toggle')?.click(); }
@@ -1120,6 +1136,7 @@
     finishSession: finishCurrentWorkout,
     resetSession: resetCurrentWorkout,
     reloadSelectedPlan: () => ensurePlanLoaded(true),
+    startNewPlan,
     onChange(listener) { workoutListeners.add(listener); return () => workoutListeners.delete(listener); }
   });
   global.BASELINE_FITNESS_DEBUG = Object.freeze({ BUILD, TYPES, FAMILIES, FAMILY_ORDER, EXERCISES, PROGRESSION_MODES, setValues, progressionIncrements, progressedSetValues, planSetValues, holdIncrement, holdValue, normalisePlan, workForSession, work: workForSession, executionSteps, exerciseOptions });

@@ -4,6 +4,8 @@ import fs from 'node:fs';
 
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const css = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
+const sitewideCss = fs.readFileSync('sitewide/css/baseline-sitewide.css', 'utf8');
+const themesCss = fs.readFileSync('sitewide/css/baseline-themes.css', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
@@ -88,6 +90,8 @@ test('recipe subtabs take selected ink from the active system theme', () => {
   assert.match(sitewideCss, /body\[data-app="food"\][\s\S]*--bl-surface-active-ink:var\(--food-action-ink\)/);
   assert.match(sitewideCss, /body\[data-app="skin"\][\s\S]*--bl-surface-active-ink:#2b2b28/);
   assert.doesNotMatch(themesCss, /--recipe-tab-active-ink/);
+  assert.match(css, /oat-option\[aria-pressed="true"\][\s\S]*--bl-surface-active-ink/);
+  assert.match(css, /variant-switcher \.variant-tab\[aria-selected="true"\][\s\S]*--bl-surface-active-ink/);
 });
 
 test('Universal adjustment visibility and Show All ordering are shared by Food and Skincare', () => {
