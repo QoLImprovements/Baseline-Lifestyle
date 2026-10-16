@@ -281,6 +281,8 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
   assert.ok(shared.includes("ariaLabel:'Contact Baseline Lifestyle'"));
   assert.ok(shared.includes("function setupContactFlyout()"));
   assert.ok(shared.includes("fly.id = 'bl-contact-flyout'"));
+  assert.ok(shared.includes("Want to ask a question, share thoughts, or suggest ideas for future additions? I’d like to hear from you."));
+  assert.ok(shared.includes('class="bl-contact-email-icon"'));
   assert.ok(shared.includes("mailto:contact@baselinelifestyle.org"));
   assert.ok(shared.includes(">contact@baselinelifestyle.org</a>"));
   assert.equal(shared.includes("href:'/contact/'"), false, 'Contact must open a panel rather than navigate to a Contact page');
@@ -296,6 +298,9 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
 
   assert.ok(sitewideCss.includes('#bl-contact-toggle'));
   assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-toggle'));
+  assert.ok(sitewideCss.includes('#bl-contact-flyout .bl-contact-copy'));
+  assert.ok(sitewideCss.includes('#bl-contact-flyout .bl-contact-email-row'));
+  assert.ok(sitewideCss.includes('#bl-contact-flyout .bl-contact-email-icon'));
   assert.ok(sitewideCss.includes('#bl-contact-flyout .bl-contact-email'));
   assert.ok(sitewideCss.includes('body[data-app] #bl-contact-flyout .card'));
   assert.equal(sitewideCss.includes('body[data-app="home"] #bl-beats-toggle'), false, 'Home Binaural absence must be owned by shared JS, not hidden by CSS');
