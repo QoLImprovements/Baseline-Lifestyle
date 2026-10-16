@@ -29,3 +29,18 @@ test('jigsaw controls use compact icons and one settings authority', () => {
   assert.match(css, /\.weight-coherence-icon-action\{/);
   assert.doesNotMatch(css, /\.weight-coherence-actions\{display:grid/);
 });
+
+
+test('jigsaw tray navigation exposes left and right arrow hotkeys', () => {
+  assert.match(html, /id="weightCoherencePrevBtn"[\s\S]*?aria-keyshortcuts="ArrowLeft"[\s\S]*?Previous Tray \[←\]/);
+  assert.match(html, /id="weightCoherenceNextBtn"[\s\S]*?aria-keyshortcuts="ArrowRight"[\s\S]*?Next Tray \[→\]/);
+  assert.match(js, /if\(key==='arrowleft'\)[\s\S]*?previousTray\(\)/);
+  assert.match(js, /if\(key==='arrowright'\)[\s\S]*?nextTray\(\)/);
+});
+
+test('fullscreen drag ghost stays inside the fullscreen subtree', () => {
+  assert.match(js, /const fullscreenHost=document\.fullscreenElement/);
+  assert.match(js, /fullscreenHost===refs\.workspace \|\| fullscreenHost\.contains\(refs\.workspace\)/);
+  assert.match(js, /ghostHost\.appendChild\(ghost\)/);
+  assert.doesNotMatch(js, /document\.body\.appendChild\(ghost\)/);
+});
