@@ -2,8 +2,8 @@
   'use strict';
 
   const DATA=window.BASELINE_FACS;
-  const THREE_VERSION='0.180.0';
-  const MODEL_URL='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r180/examples/models/gltf/facecap.glb';
+  const THREE_VERSION='0.184.0';
+  const MODEL_URL='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r184/examples/models/gltf/facecap.glb';
   const BASIS_URL='https://cdn.jsdelivr.net/npm/three@'+THREE_VERSION+'/examples/jsm/libs/basis/';
   const ESM='https://esm.sh/';
 
