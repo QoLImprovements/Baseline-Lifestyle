@@ -5,7 +5,7 @@
   const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2';
   const BOARD_WIDTH = 1122;
   const BOARD_HEIGHT = 1402;
-  const STORAGE_KEY = 'baseline_games_jigsaw_weight_of_coherence_v1';
+  const APP = 'weightcoherence';
   const DIFFICULTIES = Object.freeze({
     50: Object.freeze({ pieces:50, cols:5, rows:10, trayPageSize:20 }),
     100: Object.freeze({ pieces:100, cols:10, rows:10, trayPageSize:24 }),
@@ -314,18 +314,24 @@
     };
   }
 
+  function gameStorage(){
+    const storage=window.BaselineGameStorage;
+    return storage&&typeof storage.getProfile==='function'?storage:null;
+  }
+
   function saveState(){
-    try{
-      const payload=serialiseState();
-      if(payload) localStorage.setItem(STORAGE_KEY,JSON.stringify(payload));
-    }catch(_error){}
+    const payload=serialiseState();
+    const storage=gameStorage();
+    if(!payload||!storage) return false;
+    storage.setTemporaryProfile?.(APP,payload);
+    storage.saveProfile?.(APP,payload,{immediate:document.hidden,keepalive:document.hidden});
+    return true;
   }
 
   function restoreState(){
     try{
-      const raw=localStorage.getItem(STORAGE_KEY);
-      if(!raw) return false;
-      const parsed=JSON.parse(raw);
+      const parsed=gameStorage()?.getProfile?.(APP);
+      if(!parsed||typeof parsed!=='object') return false;
       const config=difficultyConfig(parsed.difficulty);
       const count=config.pieces;
       const placed=new Set((Array.isArray(parsed.placed)?parsed.placed:[]).map(Number).filter(function(id){ return Number.isInteger(id)&&id>=0&&id<count; }));
@@ -355,6 +361,23 @@
       startTimer();
       return true;
     }catch(_error){ return false; }
+  }
+
+  function resetToUnstoredState(){
+    state=null;
+    selectedPieceId=null;
+    dragState=null;
+    selectedDifficulty=100;
+    refs.workspace.hidden=true;
+    refs.completion.hidden=true;
+    refs.preview.setAttribute('aria-pressed','false');
+    refs.preview.textContent='Show Guide [G]';
+    syncDifficultyButtons();
+    updateStats();
+    placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
+    drawBoard();
+    renderTray();
+    setStatus('Choose a piece count and start the puzzle.','');
   }
 
   function syncDifficultyButtons(){
@@ -633,8 +656,14 @@
     }
   });
   document.addEventListener('fullscreenchange',syncFullscreenButton);
-  window.addEventListener('beforeunload',saveState);
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
+  let storageAuthenticated=!!gameStorage()?.isAuthenticated?.();
+  document.addEventListener('baseline:game-storage',function(event){
+    const authenticated=!!event.detail?.authenticated;
+    if(authenticated===storageAuthenticated) return;
+    storageAuthenticated=authenticated;
+    if(!restoreState()) resetToUnstoredState();
+  });
 
   refs.board.width=BOARD_WIDTH;
   refs.board.height=BOARD_HEIGHT;
