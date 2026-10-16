@@ -307,3 +307,30 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
   assert.equal(home.includes('id="bl-contact-toggle"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
   assert.equal(fs.existsSync(path.join(root, 'contact/index.html')), false, 'Contact must not have a standalone page');
 });
+
+
+test('mobile header consolidates utility icons without replacing their panels', () => {
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
+  const homeCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+
+  assert.ok(shared.includes("id = 'bl-mobile-actions-toggle'"));
+  assert.ok(shared.includes("menu.id = 'bl-mobile-actions-menu'"));
+  assert.ok(shared.includes("['blProtectedKey','Protected sections']"));
+  assert.ok(shared.includes("['bl-beats-toggle','Binaural']"));
+  assert.ok(shared.includes("['bl-contact-toggle','Contact']"));
+  assert.ok(shared.includes("['bl-auth-toggle','Account']"));
+  assert.ok(shared.includes("if(document.contains(target)) target.click()"), 'mobile menu must proxy the existing controls rather than replace panel logic');
+  assert.ok(shared.includes("ensureMobileActionsMenu(rightHome)"));
+  assert.ok(shared.includes("ensureMobileActionsMenu(right)"));
+
+  assert.ok(sitewideCss.includes('.bl-mobile-actions-menu'));
+  assert.ok(sitewideCss.includes('#bl-mobile-actions-toggle'));
+  assert.ok(sitewideCss.includes('body[data-app="home"] .bl-top-header > .bl-protected-key'));
+  assert.ok(sitewideCss.includes('@media (max-width:900px)'));
+
+  assert.ok(headerCss.includes('grid-template-areas:"pages right"!important'), 'small system headers must remain one row');
+  assert.ok(headerCss.includes('--homebar-h:58px!important'), 'small system headers must not retain the old two-row height');
+  assert.ok(homeCss.includes('grid-template-areas:"title controls"'), 'Home must collapse to brand plus the consolidated control');
+});
