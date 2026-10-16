@@ -6085,7 +6085,7 @@ function buildControls(recipeEl){
         container.appendChild(right);
       }
       if(!isHomePage()) ensureControl(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
-      const contact = ensureControl(right, 'bl-contact-link', CONTACT_ICON_SVG, 'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' });
+      const contact = ensureControl(right, 'bl-contact-toggle', CONTACT_ICON_SVG, 'Contact', { ariaLabel:'Contact Baseline Lifestyle' });
       const auth = ensureControl(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
       if(contact && auth && contact.nextSibling !== auth) right.insertBefore(contact, auth);
       return right;
@@ -6358,6 +6358,71 @@ function buildControls(recipeEl){
     // Intentionally no delegated interception for .html links. Native browser
     // navigation prevents URL/content mismatch during rapid dropdown switching.
     return;
+  }
+
+
+function setupContactFlyout(){
+    const toggle = q('#bl-contact-toggle');
+    if(!toggle) return;
+
+    let fly = q('#bl-contact-flyout');
+    if(!fly){
+      fly = document.createElement('div');
+      fly.id = 'bl-contact-flyout';
+      fly.className = 'bl-flyout';
+      fly.hidden = true;
+      fly.innerHTML = `
+        <div class="card bl-contact-card">
+          <h3>Contact</h3>
+          <p class="muted">Email</p>
+          <a class="bl-contact-email" href="mailto:contact@baselinelifestyle.org">contact@baselinelifestyle.org</a>
+        </div>
+      `;
+      document.body.appendChild(fly);
+    }
+
+    toggle.setAttribute('aria-controls','bl-contact-flyout');
+    toggle.setAttribute('aria-haspopup','true');
+
+    function positionContactFlyout(){
+      positionFlyoutToToggle(fly, toggle);
+    }
+    function close(){
+      fly.hidden = true;
+      toggle.setAttribute('aria-expanded','false');
+    }
+    function open(){
+      fly.hidden = false;
+      toggle.setAttribute('aria-expanded','true');
+      positionContactFlyout();
+      window.requestAnimationFrame(positionContactFlyout);
+    }
+    function toggleOpen(){
+      if(fly.hidden) open(); else close();
+    }
+
+    toggle.addEventListener('click', (e)=>{
+      e.preventDefault();
+      toggleOpen();
+    }, { passive:false });
+
+    window.addEventListener('resize', ()=>{
+      if(!fly.hidden) positionContactFlyout();
+    }, { passive:true });
+    document.addEventListener('scroll', ()=>{
+      if(!fly.hidden) positionContactFlyout();
+    }, { passive:true, capture:true });
+
+    document.addEventListener('mousedown', (e)=>{
+      if(fly.hidden) return;
+      const t = e.target;
+      if(t === toggle || (toggle.contains && toggle.contains(t))) return;
+      if(fly.contains(t)) return;
+      close();
+    }, { passive:true });
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape' && !fly.hidden) close();
+    });
   }
 
 
@@ -7900,6 +7965,7 @@ function setupRecipeFavourites(){
     safeInit('auth refresh', ()=>{ try{ refreshAuth(); }catch(_e){} });
 
     const initSecondaryUi = ()=>{
+      safeInit('contact flyout', setupContactFlyout);
       safeInit('auth flyout', setupAuthFlyout);
       safeInit('binaural flyout', setupBinauralFlyout);
     };
