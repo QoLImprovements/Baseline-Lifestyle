@@ -41,7 +41,17 @@ test('Home exposes the final single-page header and no retired view-switch state
   assert.equal((html.match(/class="system-lane /g) || []).length, 6);
   assert.doesNotMatch(html, /data-initial-home-view|id="badmintonView"|id="systemsView"|view-arrow/);
   const css = readFileSync('sitewide/css/baseline-home.css', 'utf8');
-  assert.match(css, /\.bl-top-header > \.bl-homebar-right\s*\{[^}]*position:absolute;[^}]*top:11px;[^}]*right:12px;/s);
+  const protectedCss = readFileSync('sitewide/css/baseline-protected-access.css', 'utf8');
+  assert.match(css, /\.bl-top-header\s*\{[^}]*padding:24px var\(--pad\) 22px;[^}]*background:linear-gradient\(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%\)/s);
+  assert.match(css, /\.domain\s*\{[^}]*font-size:clamp\(42px, 5\.6vw, 60px\)/s);
+  assert.doesNotMatch(css, /\.bl-top-header > \.bl-protected-key\s*\{/);
+  assert.doesNotMatch(css, /\.bl-top-header > \.bl-homebar-right\s*\{/);
+  assert.match(protectedCss, /\.bl-protected-key\s*\{[^}]*top:50%;[^}]*transform:translateY\(-50%\)/s);
+  assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-homebar-right\s*\{[^}]*top:50%!important;[^}]*transform:translateY\(-50%\)!important/s);
+  for (const selector of ['massage','fitness','games']) {
+    assert.match(css, new RegExp('\\.card--' + selector + '[\\s\\S]*?-webkit-text-fill-color:#fff'));
+  }
+  assert.match(css, /\.card--games[\s\S]*?text-shadow:none;/);
   assert.doesNotMatch(css, /data-initial-home-view|#badmintonView|#systemsView|view-arrow/);
 });
 
