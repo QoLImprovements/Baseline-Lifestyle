@@ -97,7 +97,11 @@
         addSides(w,entry,'noseSneerLeft','noseSneerRight',f);
         break;
       case 'upperLipRaise':
-        addSides(w,entry,'mouthUpperUpLeft','mouthUpperUpRight',f);
+        if((entry.side||'bilateral')==='bilateral'){
+          addMorph(w,'mouthShrugUpper',f);
+        }else{
+          addSides(w,entry,'mouthUpperUpLeft','mouthUpperUpRight',f);
+        }
         break;
       case 'nasolabialDeepen':
         addSides(w,entry,'mouthUpperUpLeft','mouthUpperUpRight',f*0.38);
@@ -132,8 +136,6 @@
       case 'lipStretch':
         addSides(w,entry,'mouthStretchLeft','mouthStretchRight',f);
         break;
-      case 'neckTighten':
-        break;
       case 'lipFunnel':
         addMorph(w,'mouthFunnel',f);
         break;
@@ -152,7 +154,6 @@
         break;
       case 'mouthStretch':
         addMorph(w,'jawOpen',f);
-        addSides(w,entry,'mouthStretchLeft','mouthStretchRight',f*0.62);
         break;
       case 'lipSuck':
         addMorph(w,'mouthRollLower',f);
@@ -166,29 +167,14 @@
         else if(entry.side==='right') addMorph(w,'jawRight',f);
         else addMorph(w,'jawLeft',f*0.55);
         break;
-      case 'jawClench':
-        addMorph(w,'mouthClose',f*0.72);
-        break;
       case 'lipBite':
         addMorph(w,'mouthRollLower',f*0.72);
         break;
       case 'cheekBlow':
-        addMorph(w,'cheekPuff',f*0.72);
-        addMorph(w,'mouthPucker',f*0.35);
+        addMorph(w,'cheekPuff',f);
         break;
       case 'cheekPuff':
         addMorph(w,'cheekPuff',f);
-        break;
-      case 'cheekSuck':
-        addMorph(w,'mouthRollLower',f*0.30);
-        addMorph(w,'mouthRollUpper',f*0.30);
-        break;
-      case 'tongueBulge':
-        addMorph(w,'tongueOut',f*0.20);
-        break;
-      case 'nostrilDilate':
-        break;
-      case 'nostrilCompress':
         break;
       case 'sniff':
         addMorph(w,'noseSneerLeft',0.18);
@@ -281,13 +267,9 @@
       case 'unscorable':
         visual.masks.unscorable=true;
         break;
-      case 'swallow':
-        break;
       case 'chewing':
         addMorph(w,'jawLeft',0.24);
         addMorph(w,'jawOpen',0.16);
-        break;
-      case 'shoulderShrug':
         break;
       case 'headShake':
         visual.motion.shake=true;
