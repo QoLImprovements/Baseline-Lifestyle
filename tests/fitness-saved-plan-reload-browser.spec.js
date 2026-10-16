@@ -278,3 +278,77 @@ test('specific-weekday future workout offers Start Early Yes or No', async ({ pa
   await expect(prompt).toBeHidden();
   await expect(page.locator('#startWorkoutBtn')).toHaveText('Continue Workout');
 });
+
+
+test('switching between two saved plans leaves Routine Plan disclosures interactive', async ({ page }) => {
+  let selectedPlanId = 61;
+  let revision = 8;
+  const plans = {
+    61: {
+      version:9,name:'K Pushups & Squats',startDate:isoOffset(-7),frequency:'2x',frequencyMin:2,
+      scheduleMode:'weekly-count',flexibleWeekly:true,sessions:2,lengthMode:'sessions',
+      items:[{ exercise:'Knee Push-Ups',baseline:12,sets:3,repIncrease:1 }],days:[]
+    },
+    62: {
+      version:9,name:'Pre-Mid Badminton Calisthenics',startDate:isoOffset(-7),frequency:'2x',frequencyMin:2,
+      scheduleMode:'weekly-count',flexibleWeekly:true,sessions:2,lengthMode:'sessions',
+      items:[{ exercise:'Squats',baseline:20,sets:3,repIncrease:1 }],days:[]
+    }
+  };
+  const sessions = {
+    61:[{ session_index:1,scheduled_date:isoOffset(-2),status:'planned',completed_at:null },{ session_index:2,scheduled_date:isoOffset(1),status:'planned',completed_at:null }],
+    62:[{ session_index:1,scheduled_date:isoOffset(-1),status:'planned',completed_at:null },{ session_index:2,scheduled_date:isoOffset(2),status:'planned',completed_at:null }]
+  };
+
+  await page.route('**/*', async (route) => {
+    const request=route.request();
+    const pathname=new URL(request.url()).pathname;
+    if(pathname.endsWith('/auth_providers.php')) return fulfillJson(route,{ ok:true,providers:{ password:true,google:false } });
+    if(pathname.endsWith('/me.php')) return fulfillJson(route,{ ok:true,authed:true,name:'Switch Test',email:'switch@example.test',user:{ name:'Switch Test',email:'switch@example.test' } });
+    if(pathname.endsWith('/fitness_state.php')){
+      if(request.method()==='POST'){
+        const payload=request.postDataJSON();
+        if(payload.action==='save_selected_plan') selectedPlanId=Number(payload.selectedPlanId)||0;
+        revision+=1;
+      }
+      return fulfillJson(route,{ ok:true,revision,profile:null,activeWorkout:null,progressionHistory:{ outcomes:[],failures:[] },selectedPlanId });
+    }
+    if(pathname.endsWith('/get_plan.php')){
+      const plan=plans[selectedPlanId];
+      return fulfillJson(route,{ ok:true,hasPlan:Boolean(plan),planId:selectedPlanId,planJson:plan||null,sessions:sessions[selectedPlanId]||[],progress:{ done:0,total:2,nextIndex:1 } });
+    }
+    if(pathname.endsWith('/list_plans.php')){
+      return fulfillJson(route,{ ok:true,selectedPlanId,revision,plans:Object.entries(plans).map(([id,planJson])=>({
+        planId:Number(id),name:planJson.name,planJson,sessions:sessions[id],progress:{ done:0,total:2,nextIndex:1 }
+      })) });
+    }
+    if(pathname.endsWith('/routine_state.php')) return fulfillJson(route,{ ok:true,hasRoutine:false,visibility:'private',activities:[],logs:{} });
+    if(pathname.endsWith('/routine_groups.php')) return fulfillJson(route,{ ok:true,hasState:false,groups:[],assignments:{} });
+    if(pathname.endsWith('/achievements.php')) return fulfillJson(route,{ ok:true,achievements:[] });
+    if(pathname.endsWith('/voice_settings.php')) return fulfillJson(route,{ ok:true,revision:1,settings:{} });
+    if(pathname.includes('/api/')) return fulfillJson(route,{ ok:true });
+    return route.continue();
+  });
+
+  await page.goto('/baseline-fitness/my-routine/plan',{ waitUntil:'domcontentloaded' });
+  await page.waitForFunction(() => Boolean(globalThis.BASELINE_fitnessPlans?.getPlans?.().length===2));
+  await openFitnessPlanCard(page,'calisthenics');
+  await expect(page.locator('#calisthenicsPlanSelect')).toHaveValue('61');
+
+  await page.locator('#calisthenicsPlanSelect').selectOption('62');
+  await expect.poll(() => selectedPlanId).toBe(62);
+  await expect(page.locator('#calisthenicsPlanSelect')).toHaveValue('62');
+  await expect(page.locator('#myPlanSavedWrap')).toBeVisible();
+
+  const calisthenics=page.locator('details[data-fitness-plan-card="calisthenics"]');
+  if(await calisthenics.evaluate((element)=>element.open)) await calisthenics.locator(':scope > summary').click();
+  await expect(calisthenics).not.toHaveAttribute('open','');
+  await calisthenics.locator(':scope > summary').click();
+  await expect(calisthenics).toHaveAttribute('open','');
+  await expect(calisthenics.locator(':scope > .fitness-routine-plan-card-body')).toBeVisible();
+
+  const cardio=page.locator('details[data-fitness-plan-card="cardio"]');
+  await cardio.locator(':scope > summary').click();
+  await expect(cardio).toHaveAttribute('open','');
+  await expect(cardio.locator(':scope > .fitness-routine-plan-card-body')).toBeVisible();
+});

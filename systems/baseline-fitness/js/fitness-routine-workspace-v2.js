@@ -876,15 +876,13 @@
         global.BASELINE_fitnessPlans?.openPlan?.(Number(planButton.dataset.openCalisthenicsPlan));
         return;
       }
-      const tab = event.target.closest('[data-fitness-routine-view],[data-open-fitness-view]');
-      if (tab) {
-        const next=String(tab.dataset.fitnessRoutineView || tab.dataset.openFitnessView || '');
+      const openView = event.target.closest('[data-open-fitness-view]');
+      if (openView) {
+        const next=String(openView.dataset.openFitnessView || '');
         if (['calisthenics','cardio','other','sports'].includes(next) && global.BASELINE_fitnessRoutineStructure) {
           event.preventDefault();
           global.BASELINE_fitnessRoutineStructure.activateTopView('plan',true);
           global.BASELINE_fitnessRoutineStructure.activatePlanView(next,true);
-        } else {
-          activateView(next,false);
         }
         return;
       }
