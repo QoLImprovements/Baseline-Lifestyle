@@ -20,7 +20,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
 
-const BUILD = 'BLOCK_GRID_20261016_1';
+const BUILD = 'BLOCK_GRID_MOTION_20261017_1';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -41,6 +41,7 @@ let statusMessage = '';
 let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
+let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false };
 
 function number(value, minimum = 0) {
   return Math.max(minimum, Math.floor(Number(value) || 0));
@@ -168,7 +169,9 @@ function boardHtml() {
   return active.board.map((row, rowIndex) => row.map((filled, colIndex) => {
     const key = `${rowIndex}:${colIndex}`;
     const preview = previews.has(key) ? (previews.get(key) ? ' is-preview-valid' : ' is-preview-invalid') : '';
-    return `<button class="block-grid-cell${filled ? ' is-filled' : ''}${preview}" data-block-cell="${rowIndex}:${colIndex}" type="button" aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}${filled ? ', occupied' : ', empty'}" ${active.gameOver ? 'disabled' : ''}></button>`;
+    const lineMotion = boardMotion.clearRows.has(rowIndex) || boardMotion.clearCols.has(colIndex);
+    const placedMotion = boardMotion.placed.has(key) && !lineMotion;
+    return `<button class="block-grid-cell${filled ? ' is-filled' : ''}${preview}${lineMotion ? ' is-line-cleared' : ''}${placedMotion ? ' is-just-placed' : ''}" data-block-cell="${rowIndex}:${colIndex}" type="button" aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}${filled ? ', occupied' : ', empty'}" ${active.gameOver ? 'disabled' : ''}></button>`;
   }).join('')).join('');
 }
 
@@ -203,11 +206,12 @@ function renderGame() {
     </div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-level-meter" aria-label="Run level progress"><span style="width:${progress.current / progress.target * 100}%"></span></div>
-    <div class="block-grid-board" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
+    <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
     <div class="block-grid-tray" aria-label="Available pieces">${trayHtml()}</div>
     <div class="game-window-actions">
       <button class="action ghost" data-block-action="new" type="button">New Game</button>
     </div>`;
+  resetBoardMotion();
 }
 
 function renderModes() {
@@ -252,6 +256,89 @@ function render() {
   shell.refreshOverview();
 }
 
+function resetBoardMotion() {
+  boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false };
+}
+
+function shapeContainedAnchor(board, piece, row, col) {
+  if (!board || !piece || !Number.isInteger(row) || !Number.isInteger(col)) return null;
+  const bounds = boundsForShape(piece);
+  if (row < 0 || col < 0 || row + bounds.rows > board.length || col + bounds.cols > board.length) return null;
+  return { row, col };
+}
+
+function clampAnchorInsideBoard(board, piece, row, col) {
+  if (!board || !piece) return null;
+  const bounds = boundsForShape(piece);
+  const maxRow = Math.max(0, board.length - bounds.rows);
+  const maxCol = Math.max(0, board.length - bounds.cols);
+  return {
+    row:Math.max(0, Math.min(maxRow, Math.floor(Number(row) || 0))),
+    col:Math.max(0, Math.min(maxCol, Math.floor(Number(col) || 0)))
+  };
+}
+
+function boardAnchorFromPointer(clientX, clientY) {
+  const active = run();
+  const board = document.querySelector('#blockGridGameCard [data-block-board]');
+  const piece = active && selectedPiece >= 0 ? shapeById(active.tray[selectedPiece]) : null;
+  if (!active || !board || !piece) return null;
+  const boardRect = board.getBoundingClientRect();
+  if (clientX < boardRect.left || clientX > boardRect.right || clientY < boardRect.top || clientY > boardRect.bottom) return null;
+
+  const cells = [...board.querySelectorAll('[data-block-cell]')];
+  if (!cells.length) return null;
+  let nearest = null;
+  let nearestDistance = Infinity;
+  for (const cell of cells) {
+    const rect = cell.getBoundingClientRect();
+    const dx = clientX - (rect.left + rect.width / 2);
+    const dy = clientY - (rect.top + rect.height / 2);
+    const distance = (dx * dx) + (dy * dy);
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearest = cell;
+    }
+  }
+  const coords = cellCoordinates(nearest);
+  return coords ? clampAnchorInsideBoard(active.board, piece, coords.row, coords.col) : null;
+}
+
+function createDragGhost(pieceId) {
+  const ghost = document.createElement('div');
+  ghost.className = 'block-grid-drag-ghost';
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.innerHTML = pieceMiniHtml(pieceId);
+  document.body.appendChild(ghost);
+  return ghost;
+}
+
+function positionDragGhost(ghost, clientX, clientY, anchor) {
+  if (!ghost) return;
+  const board = document.querySelector('#blockGridGameCard [data-block-board]');
+  const cell = anchor ? board?.querySelector(`[data-block-cell="${anchor.row}:${anchor.col}"]`) : null;
+  if (cell) {
+    const rect = cell.getBoundingClientRect();
+    const adjacent = board.querySelector(`[data-block-cell="${anchor.row}:${Math.min(7, anchor.col + 1)}"]`);
+    const adjacentRect = adjacent?.getBoundingClientRect();
+    const gap = adjacentRect && anchor.col < 7 ? Math.max(0, adjacentRect.left - rect.right) : 4;
+    ghost.style.setProperty('--drag-cell', rect.width + 'px');
+    ghost.style.setProperty('--drag-gap', gap + 'px');
+    ghost.style.left = rect.left + 'px';
+    ghost.style.top = rect.top + 'px';
+    ghost.classList.add('is-over-board');
+    return;
+  }
+  ghost.classList.remove('is-over-board');
+  ghost.style.left = clientX + 'px';
+  ghost.style.top = clientY + 'px';
+}
+
+function destroyDragGhost() {
+  if (dragState?.ghost?.isConnected) dragState.ghost.remove();
+  document.documentElement.classList.remove('is-dragging-block-grid-piece');
+}
+
 function choosePiece(index) {
   const active = run();
   if (!active || active.gameOver || !active.tray[index]) return;
@@ -265,13 +352,26 @@ function placeSelected(row, col) {
   const active = run();
   if (!active || active.gameOver || selectedPiece < 0) return false;
   const pieceId = active.tray[selectedPiece];
-  const result = resolvePlacement(active.board, pieceId, row, col, active.combo);
-  if (!result) {
-    statusMessage = 'That piece does not fit there.';
-    previewAnchor = { row, col };
+  const piece = shapeById(pieceId);
+  const contained = shapeContainedAnchor(active.board, piece, row, col);
+  if (!contained) {
+    boardMotion.invalid = true;
+    statusMessage = 'Keep the entire piece inside the board.';
+    previewAnchor = null;
     renderGame();
     return false;
   }
+  const result = resolvePlacement(active.board, pieceId, contained.row, contained.col, active.combo);
+  if (!result) {
+    boardMotion.invalid = true;
+    statusMessage = 'That piece overlaps blocks already on the board.';
+    previewAnchor = { row:contained.row, col:contained.col };
+    renderGame();
+    return false;
+  }
+  boardMotion.placed = new Set(result.placed.map(([placedRow, placedCol]) => `${placedRow}:${placedCol}`));
+  boardMotion.clearRows = new Set(result.rowsCleared);
+  boardMotion.clearCols = new Set(result.colsCleared);
   active.board = result.board;
   active.score += result.scoreDelta;
   active.combo = result.combo;
@@ -348,7 +448,7 @@ function handlePointerDown(event) {
   const index = Number(piece.dataset.blockPiece);
   if (!run()?.tray[index]) return;
   selectedPiece = index;
-  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, moved:false };
+  dragState = { pointerId:event.pointerId, index, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
   piece.setPointerCapture?.(event.pointerId);
   piece.classList.add('is-selected');
 }
@@ -372,12 +472,16 @@ function handlePointerMove(event) {
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   if (Math.hypot(event.clientX - dragState.startX, event.clientY - dragState.startY) > 7) dragState.moved = true;
   if (!dragState.moved) return;
-  const under = document.elementFromPoint(event.clientX, event.clientY);
-  const cell = under instanceof Element ? under.closest('[data-block-cell]') : null;
-  const coords = cellCoordinates(cell);
-  if (!coords) { previewAnchor = null; paintPreview(); return; }
-  if (!previewAnchor || previewAnchor.row !== coords.row || previewAnchor.col !== coords.col) {
-    previewAnchor = coords;
+  if (!dragState.ghost) {
+    const pieceId = run()?.tray[dragState.index];
+    if (pieceId) dragState.ghost = createDragGhost(pieceId);
+    document.documentElement.classList.add('is-dragging-block-grid-piece');
+  }
+  event.preventDefault();
+  const anchor = boardAnchorFromPointer(event.clientX, event.clientY);
+  positionDragGhost(dragState.ghost, event.clientX, event.clientY, anchor);
+  if ((!anchor && previewAnchor) || (anchor && (!previewAnchor || previewAnchor.row !== anchor.row || previewAnchor.col !== anchor.col))) {
+    previewAnchor = anchor;
     paintPreview();
   }
 }
@@ -385,14 +489,17 @@ function handlePointerMove(event) {
 function handlePointerUp(event) {
   if (!dragState || dragState.pointerId !== event.pointerId) return;
   const moved = dragState.moved;
-  const under = document.elementFromPoint(event.clientX, event.clientY);
-  const cell = under instanceof Element ? under.closest('[data-block-cell]') : null;
-  const coords = cellCoordinates(cell);
+  const anchor = moved ? boardAnchorFromPointer(event.clientX, event.clientY) : null;
+  destroyDragGhost();
   dragState = null;
   if (moved) {
     suppressClick = true;
-    if (coords) placeSelected(coords.row, coords.col);
-    else renderGame();
+    if (anchor) placeSelected(anchor.row, anchor.col);
+    else {
+      previewAnchor = null;
+      statusMessage = 'Drop the whole piece inside the board.';
+      renderGame();
+    }
   }
 }
 
@@ -432,13 +539,13 @@ const shell = createPuzzleHubShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_20261016_1',
+  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_MOTION_20261017_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
   onOpen:() => { ensureRun(); render(); },
-  onClose:() => { previewAnchor = null; dragState = null; }
+  onClose:() => { destroyDragGhost(); previewAnchor = null; dragState = null; }
 });
 
 function init() {
@@ -449,7 +556,7 @@ function init() {
   document.addEventListener('pointerdown', handlePointerDown);
   document.addEventListener('pointermove', handlePointerMove);
   document.addEventListener('pointerup', handlePointerUp);
-  document.addEventListener('pointercancel', () => { dragState = null; previewAnchor = null; });
+  document.addEventListener('pointercancel', () => { destroyDragGhost(); dragState = null; previewAnchor = null; paintPreview(); });
   document.addEventListener('keydown', handleKeydown);
   document.addEventListener('fullscreenchange', renderGame);
   document.addEventListener('baseline:game-storage', event => {
