@@ -970,12 +970,14 @@ function setRealmView(view){
 
 function setRealmDrawerTab(tab){
   const allowed = realmDrawerTabsForView(realmView);
+  if(!allowed.length) return;
   realmDrawerTab = allowed.includes(tab) ? tab : allowed[0];
   realmDrawerOpen = true;
   renderRealmChrome();
 }
 
 function toggleRealmDrawer(forceState){
+  if(realmView === 'workshop') return;
   realmDrawerOpen = typeof forceState === 'boolean' ? forceState : !realmDrawerOpen;
   if(!realmDrawerOpen) document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
   if(realmDrawerOpen && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
