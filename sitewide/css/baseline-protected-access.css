@@ -45,6 +45,17 @@ body[data-app="charity-shop"]{
 
 body[data-app="home"] .bl-top-header{isolation:isolate}
 
+html body[data-app="home"] .bl-top-header > .bl-protected-key{
+  grid-area:key;
+  position:relative!important;
+  left:auto!important;
+  top:auto!important;
+  transform:none!important;
+  justify-self:start!important;
+  align-self:center!important;
+  margin:0!important;
+}
+
 .bl-protected-key{
   position:absolute;
   left:clamp(14px,2.4vw,30px);
@@ -128,18 +139,22 @@ body[data-app="home"] .bl-top-header{isolation:isolate}
 .bl-protected-access-status{min-height:24px;margin:12px 0 0;color:var(--protected-accent);font-size:14px;font-weight:850;line-height:1.4}
 body.bl-protected-dialog-open{overflow:hidden!important}
 
-/* Index Account button: match the left key's vertical centre line. */
+/* Home utility controls occupy their own right-hand grid zone. */
 html body[data-app="home"] .bl-top-header > .bl-homebar-right{
-  position:absolute!important;
-  top:50%!important;
-  right:clamp(14px,2.4vw,30px)!important;
+  grid-area:controls;
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
   bottom:auto!important;
   margin:0!important;
-  transform:translateY(-50%)!important;
+  transform:none!important;
+  justify-self:end!important;
+  align-self:center!important;
   display:flex!important;
   align-items:center!important;
-  justify-content:center!important;
+  justify-content:flex-end!important;
   gap:10px!important;
+  min-width:max-content!important;
   z-index:7!important;
 }
 html body[data-app="home"] #bl-auth-toggle{
@@ -205,7 +220,7 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card:
 @media(max-width:900px){
   .bl-protected-key{left:12px;width:44px;height:42px}
   html body[data-app="home"] .bl-top-header > .bl-homebar-right{
-    right:12px!important;
+    right:auto!important;
   }
 }
 
