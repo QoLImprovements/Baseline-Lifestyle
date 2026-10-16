@@ -75,3 +75,11 @@ test('each fullscreen sorting tray owns its own scrollbar', () => {
   assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-tray\{[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
   assert.match(css, /scrollbar-gutter:stable/);
 });
+
+
+test('fullscreen preserves the normal jigsaw size while narrowing the main tray', () => {
+  assert.match(css, /\.weight-coherence-workspace:fullscreen\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)/);
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-wrap\{[\s\S]*?width:min\(100%,800px\);[\s\S]*?max-height:none/);
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-tray\{[^}]*minmax\(76px,1fr\)[^}]*gap:8px/);
+  assert.doesNotMatch(css, /weight-coherence-workspace:fullscreen \.weight-coherence-board-wrap\{[^}]*100vh[^}]*1122\s*\/\s*1402/);
+});
