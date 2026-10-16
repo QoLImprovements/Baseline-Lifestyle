@@ -45,7 +45,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
-<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_FULL_20261016_2" rel="stylesheet"/>
+<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_MOBILE_CONTROLS_20261016_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
      deliberately loads last so shell alignment rules cannot repaint Realm. -->
@@ -128,21 +128,45 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
           </div>
 
-          <div class="weight-coherence-difficulty-shell">
-            <div class="weight-coherence-difficulty-head">
-              <h3>Choose pieces</h3>
-              <span class="inline-note">100 pieces is the balanced default. 500 and 1,000 use a paged tray so larger puzzles stay responsive.</span>
+          <div class="weight-coherence-launch-row">
+            <div class="weight-coherence-launch-copy">
+              <strong id="weightCoherenceSelectionLabel">100 pieces selected</strong>
+              <span class="inline-note">Piece count and restart controls are kept in Puzzle Settings.</span>
             </div>
-            <div class="weight-coherence-difficulty-row" role="radiogroup" aria-label="Jigsaw piece count">
-              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="50" role="radio" aria-checked="false" type="button">50 pieces</button>
-              <button class="action ghost weight-coherence-difficulty is-active" data-jigsaw-difficulty="100" role="radio" aria-checked="true" type="button">100 pieces</button>
-              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="500" role="radio" aria-checked="false" type="button">500 pieces</button>
-              <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="1000" role="radio" aria-checked="false" type="button">1,000 pieces</button>
-            </div>
-            <div class="weight-coherence-start-row">
+            <div class="weight-coherence-launch-actions">
+              <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceSetupSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+              </button>
               <button class="action" id="weightCoherenceStartBtn" type="button">Start Puzzle</button>
             </div>
           </div>
+
+          <dialog class="weight-coherence-settings-dialog" id="weightCoherenceSettingsDialog" aria-labelledby="weightCoherenceSettingsTitle">
+            <form method="dialog" class="weight-coherence-settings-card">
+              <div class="weight-coherence-settings-head">
+                <div>
+                  <h3 id="weightCoherenceSettingsTitle">Puzzle Settings</h3>
+                  <span class="inline-note">Choose the piece count used for the next puzzle.</span>
+                </div>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-close" value="close" aria-label="Close puzzle settings" title="Close settings" type="submit">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                </button>
+              </div>
+              <div class="weight-coherence-settings-section">
+                <strong>Pieces</strong>
+                <div class="weight-coherence-difficulty-row" role="radiogroup" aria-label="Jigsaw piece count">
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="50" role="radio" aria-checked="false" type="button">50</button>
+                  <button class="action ghost weight-coherence-difficulty is-active" data-jigsaw-difficulty="100" role="radio" aria-checked="true" type="button">100</button>
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="500" role="radio" aria-checked="false" type="button">500</button>
+                  <button class="action ghost weight-coherence-difficulty" data-jigsaw-difficulty="1000" role="radio" aria-checked="false" type="button">1,000</button>
+                </div>
+                <span class="inline-note">100 pieces is the balanced default. Larger puzzles use smaller paged trays on mobile to keep rendering stable.</span>
+              </div>
+              <div class="weight-coherence-settings-actions">
+                <button class="action ghost" id="weightCoherenceResetBtn" type="button" disabled>Restart Puzzle</button>
+              </div>
+            </form>
+          </dialog>
 
           <div class="weight-coherence-workspace" id="weightCoherenceWorkspace" hidden>
             <div class="weight-coherence-toolbar">
@@ -151,11 +175,21 @@ These Markdown rules are a human reference point, not live runtime config.
                 <div class="stat-pill">Placed <span id="weightCoherencePlaced">0 / 100</span></div>
                 <div class="stat-pill">Time <span id="weightCoherenceTimer">00:00</span></div>
               </div>
-              <div class="weight-coherence-actions">
-                <button class="action ghost" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G">Show Guide [G]</button>
-                <button class="action ghost" id="weightCoherenceShuffleBtn" type="button" aria-keyshortcuts="S">Shuffle Tray [S]</button>
-                <button class="action ghost" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false">Full Screen</button>
-                <button class="action ghost" id="weightCoherenceResetBtn" type="button">Restart</button>
+              <div class="weight-coherence-actions" aria-label="Puzzle controls">
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherencePreviewBtn" type="button" aria-pressed="false" aria-keyshortcuts="G" aria-label="Show guide (G)" title="Show guide · G">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.7 12s3.4-5.5 9.3-5.5S21.3 12 21.3 12 17.9 17.5 12 17.5 2.7 12 2.7 12Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+                  <kbd class="weight-coherence-hotkey">G</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceShuffleBtn" type="button" aria-keyshortcuts="S" aria-label="Shuffle tray (S)" title="Shuffle tray · S">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.2c4.8 0 5.6 10 9.6 10H20"/><path d="M17 14l3 3-3 3M4 17h3.2c1.8 0 2.9-1.4 3.8-3M13 9c1-1.3 2-2 3.8-2H20"/><path d="M17 4l3 3-3 3"/></svg>
+                  <kbd class="weight-coherence-hotkey">S</kbd>
+                </button>
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-label="Enter full screen" title="Full screen">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>
+                </button>
+                <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
+                </button>
               </div>
             </div>
 
@@ -598,7 +632,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261016_2"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PUZZLES_WEIGHT_COHERENCE_20261016_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_SERVER_SAVE_20261016_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_MOBILE_CONTROLS_20261016_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/block-grid/js/block-grid.js?v=PUZZLE_GAMES_20261016_2"></script>
 <script type="module" src="/systems/baseline-games-hub/games/colour-sort/js/colour-sort.js?v=PUZZLE_GAMES_20261016_2"></script>
