@@ -31,4 +31,5 @@ test('canonical Routine stylesheet owns native details presentation',()=>{
   assert.match(css,/\.fitness-routine-plan-card>summary/);
   assert.match(css,/\.fitness-routine-plan-card\[open\]>summary::after/);
   assert.match(css,/\.fitness-routine-plan-card:not\(\[open\]\)>\.fitness-routine-plan-card-body\{display:none!important\}/);
+  assert.doesNotMatch(css,/data-fitness-routine-plan-cards-ready/);
 });
