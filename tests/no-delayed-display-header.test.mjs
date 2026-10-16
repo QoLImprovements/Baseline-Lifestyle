@@ -42,12 +42,12 @@ test('Home exposes the final single-page header and no retired view-switch state
   assert.doesNotMatch(html, /data-initial-home-view|id="badmintonView"|id="systemsView"|view-arrow/);
   const css = readFileSync('sitewide/css/baseline-home.css', 'utf8');
   const protectedCss = readFileSync('sitewide/css/baseline-protected-access.css', 'utf8');
-  assert.match(css, /\.bl-top-header\s*\{[^}]*padding:24px var\(--pad\) 22px;[^}]*background:linear-gradient\(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%\)/s);
-  assert.match(css, /\.domain\s*\{[^}]*font-size:clamp\(42px, 5\.6vw, 60px\)/s);
-  assert.doesNotMatch(css, /\.bl-top-header > \.bl-protected-key\s*\{/);
-  assert.doesNotMatch(css, /\.bl-top-header > \.bl-homebar-right\s*\{/);
-  assert.match(protectedCss, /\.bl-protected-key\s*\{[^}]*top:50%;[^}]*transform:translateY\(-50%\)/s);
-  assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-homebar-right\s*\{[^}]*top:50%!important;[^}]*transform:translateY\(-50%\)!important/s);
+  assert.match(css, /\.bl-top-header\s*\{[^}]*display:grid;[^}]*grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\);[^}]*grid-template-areas:"key title controls";[^}]*padding:24px var\(--pad\) 22px;[^}]*background:linear-gradient\(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%\)/s);
+  assert.match(css, /\.bl-top-header-title\s*\{[^}]*grid-area:title;/s);
+  assert.match(css, /\.domain\s*\{[^}]*font-size:clamp\(42px, 5\.6vw, 60px\);[^}]*white-space:nowrap;/s);
+  assert.match(css, /@media \(max-width:1350px\) and \(min-width:901px\)[\s\S]*?\.domain\{ font-size:44px; \}/);
+  assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-protected-key\s*\{[^}]*grid-area:key;[^}]*position:relative!important;[^}]*left:auto!important;[^}]*top:auto!important;[^}]*transform:none!important;[^}]*justify-self:start!important;/s);
+  assert.match(protectedCss, /html body\[data-app="home"\] \.bl-top-header > \.bl-homebar-right\s*\{[^}]*grid-area:controls;[^}]*position:relative!important;[^}]*top:auto!important;[^}]*right:auto!important;[^}]*transform:none!important;[^}]*justify-self:end!important;/s);
   for (const selector of ['massage','fitness','games']) {
     assert.match(css, new RegExp('\\.card--' + selector + '[\\s\\S]*?-webkit-text-fill-color:#fff'));
   }
