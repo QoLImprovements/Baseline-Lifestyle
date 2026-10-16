@@ -4,6 +4,8 @@ import fs from 'node:fs';
 
 const shared = fs.readFileSync('sitewide/js/baseline-shared.js', 'utf8');
 const css = fs.readFileSync('sitewide/css/baseline-recipes.css', 'utf8');
+const sitewideCss = fs.readFileSync('sitewide/css/baseline-sitewide.css', 'utf8');
+const themesCss = fs.readFileSync('sitewide/css/baseline-themes.css', 'utf8');
 const skincareCss = fs.readFileSync('systems/baseline-natural-skincare/css/baseline-natural-skincare.css', 'utf8');
 const recipeUx = fs.readFileSync('systems/baseline-natural-skincare/js/skincare-recipe-ux-20260906.js', 'utf8');
 const skincareHtml = fs.readFileSync('systems/baseline-natural-skincare/baseline-natural-skincare.html', 'utf8');
