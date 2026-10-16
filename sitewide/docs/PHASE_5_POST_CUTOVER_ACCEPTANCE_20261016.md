@@ -1,7 +1,8 @@
 # Phase 5 — Post-Cutover Production Acceptance
 
 Status date: 2026-10-16  
-Repository: `QoLImprovements/Baseline-Lifestyle`
+Repository: `QoLImprovements/Baseline-Lifestyle`  
+Status: **Production acceptance passed; final CI/merge pending**
 
 ## Purpose
 
@@ -118,47 +119,47 @@ Do these against the **currently deployed latest main**, without changing produc
 
 ### Deployment identity
 
-- [ ] Production Git working tree is clean.
-- [ ] Production HEAD matches the latest accepted `main` commit.
+- [x] Production Git working tree is clean.
+- [x] Production HEAD matches the latest accepted `main` commit.
 
 ### Browser acceptance — Fitness
 
 After one hard refresh:
 
-- [ ] Baseline Fitness → My Routine → Routine Plan loads without wrong-plan flash.
-- [ ] No temporary “No saved plans yet” state appears.
-- [ ] No Plan Generator flash appears while loading a saved plan.
-- [ ] Plan selector is alphabetical:
+- [x] Baseline Fitness → My Routine → Routine Plan loads without wrong-plan flash.
+- [x] No temporary “No saved plans yet” state appears.
+- [x] No Plan Generator flash appears while loading a saved plan.
+- [x] Plan selector is alphabetical:
   - K Pushups & Squats
   - Pre-Mid Badminton Calisthenics
-- [ ] Switch from one saved Calisthenics plan to the other in place.
-- [ ] Correct plan content appears.
-- [ ] No full-page reload occurs.
-- [ ] Routine Groups remains interactive.
-- [ ] Calisthenics disclosure opens/closes immediately after the switch.
-- [ ] Cardio disclosure opens/closes immediately after the switch.
-- [ ] Other Fitness Activity disclosure opens/closes immediately after the switch.
-- [ ] Sports disclosure opens/closes immediately after the switch.
+- [x] Switch from one saved Calisthenics plan to the other in place.
+- [x] Correct plan content appears.
+- [x] No full-page reload occurs.
+- [x] Routine Groups remains interactive.
+- [x] Calisthenics disclosure opens/closes immediately after the switch.
+- [x] Cardio disclosure opens/closes immediately after the switch.
+- [x] Other Fitness Activity disclosure opens/closes immediately after the switch.
+- [x] Sports disclosure opens/closes immediately after the switch.
 
 ### Account / Saved Data acceptance
 
-- [ ] Login succeeds.
-- [ ] Sign-out/sign-in succeeds.
-- [ ] Account reload resolves to the correct account.
-- [ ] `php sitewide/migration/verify_account_index.php` returns `ok: true` and `matches: true`.
-- [ ] Representative Favourite write/readback succeeds.
-- [ ] Representative Binaural write/readback succeeds.
-- [ ] Representative Voice settings write/readback succeeds.
-- [ ] Representative Food write/readback succeeds.
-- [ ] Representative Skincare partial-section write/readback succeeds without replacing unrelated sections.
-- [ ] Representative Fitness write/readback outside plan selection succeeds.
-- [ ] Key systems/pages load without Saved Data, revision or permission errors.
+- [x] Login succeeds.
+- [x] Sign-out/sign-in succeeds.
+- [x] Account reload resolves to the correct account.
+- [x] `php sitewide/migration/verify_account_index.php` returns `ok: true` and `matches: true`.
+- [x] Representative Favourite write/readback succeeds.
+- [x] Representative Binaural write/readback succeeds.
+- [x] Representative Voice settings write/readback succeeds.
+- [x] Representative Food write/readback succeeds.
+- [x] Representative Skincare partial-section write/readback succeeds without replacing unrelated sections.
+- [x] Representative Fitness write/readback outside plan selection succeeds.
+- [x] Key systems/pages load without Saved Data, revision or permission errors.
 
 ### Charity Shop protected access
 
-- [ ] Charity Shop protected access unlocks with the privately rotated PIN.
-- [ ] PIN is entered only by the user in the production UI.
-- [ ] PIN is never pasted into terminal output, repository files, evidence or support chat.
+- [x] Charity Shop protected access unlocks with the privately rotated PIN.
+- [x] PIN is entered only by the user in the production UI.
+- [x] PIN is never pasted into terminal output, repository files, evidence or support chat.
 
 ### Final live health
 
@@ -172,13 +173,13 @@ php sitewide/migration/verify_saved_data_live_health.php \
 
 Required result:
 
-- [ ] `ok: true`
-- [ ] `healthySavedDataMode: true`
-- [ ] authority remains `saved-data`
-- [ ] `productionAuthorityChanged: false`
-- [ ] no unexpected Saved Data files/directories
-- [ ] no symlinks or unsafe permissions
-- [ ] all resource envelopes/revisions are valid
+- [x] `ok: true`
+- [x] `healthySavedDataMode: true`
+- [x] authority remains `saved-data`
+- [x] `productionAuthorityChanged: false`
+- [x] no unexpected Saved Data files/directories
+- [x] no symlinks or unsafe permissions
+- [x] all resource envelopes/revisions are valid
 
 ---
 
@@ -190,11 +191,11 @@ The repository recovery builder now supports the split layout, but **code suppor
 
 Before Phase 5 is closed:
 
-- [ ] build a fresh recovery/rollback copy from the current protected authentication SQLite database plus the current Saved Data tree;
-- [ ] retain it outside the document root;
-- [ ] validate SQLite integrity/foreign keys;
-- [ ] retain current Saved-Data-only resources separately because SQLite is not a complete representation of all current application data;
-- [ ] record evidence identifying the current recovery package and the live Saved Data state it represents.
+- [x] build a fresh recovery/rollback copy from the current protected authentication SQLite database plus the current Saved Data tree;
+- [x] retain it outside the document root;
+- [x] validate SQLite integrity/foreign keys;
+- [x] retain current Saved-Data-only resources separately because SQLite is not a complete representation of all current application data;
+- [x] record evidence identifying the current recovery package and the live Saved Data state it represents.
 
 Do not restore an old recovery archive simply to test it against live production.
 
@@ -204,14 +205,79 @@ Do not restore an old recovery archive simply to test it against live production
 
 Phase 5 may be marked complete only when all of the following are true:
 
-- [ ] latest accepted `main` is deployed cleanly;
-- [ ] Fitness browser acceptance passes on production;
-- [ ] account-index verification passes;
-- [ ] representative Saved Data reads/writes outside Fitness pass;
-- [ ] key systems/pages pass production acceptance;
-- [ ] Charity Shop protected access passes privately;
-- [ ] final Saved Data live-health evidence passes;
-- [ ] a fresh current recovery package has been built and validated;
-- [ ] no unresolved storage, revision, permission, routing or interaction defect remains.
+- [x] latest accepted `main` is deployed cleanly;
+- [x] Fitness browser acceptance passes on production;
+- [x] account-index verification passes;
+- [x] representative Saved Data reads/writes outside Fitness pass;
+- [x] key systems/pages pass production acceptance;
+- [x] Charity Shop protected access passes privately;
+- [x] final Saved Data live-health evidence passes;
+- [x] a fresh current recovery package has been built and validated;
+- [x] no unresolved storage, revision, permission, routing or interaction defect remains.
 
-Until those gates pass, production remains on Saved Data authority and Phase 5 remains **active, not complete**.
+All production gates above passed on 2026-10-16. Production remains on Saved Data authority. Phase 5 becomes formally complete when the final documentation-only closure CI passes and this acceptance record is merged.
+
+
+---
+
+## Final acceptance evidence — 2026-10-16
+
+Production acceptance was completed against application commit `4a9e51b581f5ddfe7627bcfd4214d1f0f4a5ee50`, which remained the current `main` application commit during acceptance.
+
+### Account index
+
+`verify_account_index.php` returned:
+
+- `ok: true`
+- `matches: true`
+- accounts: 1
+- revision: 104
+- issues: none
+- repaired: false
+
+### Final live health after browser write/readback tests
+
+`verify_saved_data_live_health.php` returned:
+
+- `ok: true`
+- `healthySavedDataMode: true`
+- authority: `saved-data`
+- authority source: `private-env`
+- authentication database healthy
+- all path, permission, filesystem and Saved Data tree gates: true
+- resource count: 20
+- tree SHA-256: `745ba33ba293b47e03c9401f2caf35e644939ca998eaeb6b4cc6a42b471eb987`
+- `productionAuthorityChanged: false`
+
+### Final recovery package
+
+The fresh rollback database and Saved Data archive were regenerated after the browser write/readback acceptance tests.
+
+- rollback database SHA-256: `36930057f9957a6504bbf44770f16e1e2742252c966f42de9710eeb2cda3fe24`
+- Saved Data archive SHA-256: `07b09c17b45a9f63f49c0118beb98b5ed39a533ccc57bbdbae288b406978832f`
+- rollback database size: 294,912 bytes
+- builder source database unchanged during the recovery build
+- builder integrity and foreign-key validation passed
+
+The recovery builder identified Saved-Data-only state that is retained by the separate Saved Data archive, including Food, Skincare and optional Fitness sections.
+
+### Browser acceptance
+
+The user confirmed PASS for:
+
+- Fitness saved-plan switching and post-switch disclosures;
+- sign-out/sign-in and account reload;
+- Favourite write/readback;
+- Binaural write/readback;
+- Voice settings write/readback;
+- Food write/readback;
+- Skincare saved setting write/readback;
+- Fitness Body Profile write/readback;
+- key system pages;
+- Charity Shop protected access using the private PIN.
+
+The test changes were restored where they were intentionally reversible. A new final live-health verification and recovery package were then produced from the resulting accepted state.
+
+### Non-blocking future UI note
+
+Baseline Food → Diet Log → Daily Notes currently autosaves on input. A later UI change should add an explicit Save action or confirmation for clearer persistence feedback. This is a usability improvement and was not a Phase 5 storage or persistence failure.
