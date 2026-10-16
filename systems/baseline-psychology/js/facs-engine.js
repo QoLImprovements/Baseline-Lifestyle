@@ -129,6 +129,8 @@
       if(unit.laterality) badges.push('<span class="facs-unit-badge">L/R</span>');
       if(unit.visualFidelity==='reference') badges.push('<span class="facs-unit-badge">Reference only</span>');
       else if(unit.visualFidelity==='approximate') badges.push('<span class="facs-unit-badge">3D approx.</span>');
+      if(unit.visualFidelity==='reference') badges.push('<span class="facs-unit-badge">Reference only</span>');
+      else if(unit.visualFidelity==='approximate') badges.push('<span class="facs-unit-badge">3D approx.</span>');
 
       item.innerHTML=
         '<span class="facs-unit-code">'+escapeHtml(displayCode(unit))+'</span>'+
