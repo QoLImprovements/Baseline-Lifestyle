@@ -377,7 +377,9 @@ function handleBottlePointerUp(event) {
 
 function handleBottlePointerCancel() {
   if (!bottleDragState) return;
+  const moved = bottleDragState.moved;
   cleanupBottleDrag();
+  if (moved) renderGame();
 }
 
 function reducedMotionPreferred() {
@@ -570,12 +572,12 @@ function toggleFullscreen() {
 function handleClick(event) {
   const target = event.target instanceof Element ? event.target : null;
   if (!target || !document.getElementById('colourSortPanel')?.classList.contains('is-active')) return;
-  if (isAnimating) {
+  if (suppressBottleClick) {
+    suppressBottleClick = false;
     event.preventDefault();
     return;
   }
-  if (suppressBottleClick) {
-    suppressBottleClick = false;
+  if (isAnimating) {
     event.preventDefault();
     return;
   }
