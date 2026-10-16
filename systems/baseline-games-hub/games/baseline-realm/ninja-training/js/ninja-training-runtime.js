@@ -133,10 +133,11 @@ export function createNinjaTrainingRuntime(dependencies) {
   function realmDrawerTabsForView(view){
     if(view === 'basecamp') return ['settlement','workshop','stores','expeditions'];
     if(view === 'exploration') return ['route','party','loot','merchant'];
+    if(view === 'workshop') return [];
     return ['upgrades','spirit','skills','bonuses','rebirth','stats'];
   }
 
-  function defaultRealmDrawerTabForView(view){ return realmDrawerTabsForView(view)[0]; }
+  function defaultRealmDrawerTabForView(view){ return realmDrawerTabsForView(view)[0] || 'settlement'; }
 
   function realmExplorationEventTitle(exp){
     if(exp.event === 'boss') return exp.enemyName || 'Route Boss';
@@ -283,10 +284,12 @@ export function createNinjaTrainingRuntime(dependencies) {
     const workshop = profile.workshop || defaultRealmWorkshopState();
     const basecampBar = document.getElementById('realmBasecampBar');
     const explorationBar = document.getElementById('realmExplorationBar');
+    const workshopBar = document.getElementById('realmWorkshopBar');
     const explorationMeta = document.getElementById('realmExplorationMeta');
     const explorationLabel = document.getElementById('realmExplorationStageLabel');
     if(basecampBar) basecampBar.hidden = realmView !== 'basecamp';
     if(explorationBar) explorationBar.hidden = realmView !== 'exploration';
+    if(workshopBar) workshopBar.hidden = realmView !== 'workshop';
     if(explorationMeta) explorationMeta.textContent = 'Map ' + exp.map + ' · Step ' + exp.step + ' / ' + exp.maxSteps;
     if(explorationLabel) explorationLabel.textContent = exp.event === 'boss' ? 'Boss Route' : 'Exploration Route';
 
@@ -951,7 +954,7 @@ export function createNinjaTrainingRuntime(dependencies) {
   }
 
 function setRealmView(view){
-  const nextView = ['training','basecamp','exploration'].includes(view) ? view : 'training';
+  const nextView = ['training','basecamp','exploration','workshop'].includes(view) ? view : 'training';
   if(realmView === 'training' && nextView !== 'training'){
     ninjaShurikenVolleyToken += 1;
     ninjaShurikenVolleyActive = false;
@@ -960,6 +963,7 @@ function setRealmView(view){
   if(realmView !== 'training' && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
   if(realmView === 'training' && !realmDrawerTabsForView('training').includes(realmDrawerTab)) realmDrawerTab = 'upgrades';
   if(realmView !== 'training') realmDrawerOpen = false;
+  if(realmView === 'workshop') realmDrawerOpen = false;
   if(realmView !== 'basecamp') document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
   renderRealmChrome();
 }
@@ -998,6 +1002,7 @@ function renderRealmChrome(){
   const basecamp = document.getElementById('realmBasecampScreen');
   const trainingHud = document.getElementById('realmTrainingHud');
   const exploration = document.getElementById('realmExplorationScreen');
+  const workshop = document.getElementById('realmWorkshopScreen');
   const trainingRow = document.getElementById('realmTrainingTabRow');
   const basecampRow = document.getElementById('realmBasecampTabRow');
   const explorationRow = document.getElementById('realmExplorationTabRow');
@@ -1006,23 +1011,27 @@ function renderRealmChrome(){
     frame.classList.toggle('is-training-view', realmView === 'training');
     frame.classList.toggle('is-basecamp-view', realmView === 'basecamp');
     frame.classList.toggle('is-exploration-view', realmView === 'exploration');
+    frame.classList.toggle('is-workshop-view', realmView === 'workshop');
   }
   const trainingBar = document.getElementById('realmTrainingBar');
   const basecampBar = document.getElementById('realmBasecampBar');
   const explorationBar = document.getElementById('realmExplorationBar');
+  const workshopBar = document.getElementById('realmWorkshopBar');
   const enemyStatus = document.getElementById('realmCommandEnemyStatus');
   if(trainingBar) trainingBar.hidden = realmView !== 'training';
   if(basecampBar) basecampBar.hidden = realmView !== 'basecamp';
   if(explorationBar) explorationBar.hidden = realmView !== 'exploration';
+  if(workshopBar) workshopBar.hidden = realmView !== 'workshop';
   if(enemyStatus) enemyStatus.hidden = realmView !== 'training';
   if(drawer){
     drawer.hidden = !realmDrawerOpen;
     drawer.setAttribute('aria-hidden', String(!realmDrawerOpen));
   }
-  if(menuBtn) menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen));
+  if(menuBtn){ menuBtn.hidden = realmView === 'workshop'; menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen)); }
   if(basecamp) basecamp.hidden = realmView !== 'basecamp';
   if(trainingHud) trainingHud.hidden = realmView !== 'training';
   if(exploration) exploration.hidden = realmView !== 'exploration';
+  if(workshop) workshop.hidden = realmView !== 'workshop';
   if(trainingRow) trainingRow.hidden = realmView !== 'training';
   if(basecampRow) basecampRow.hidden = realmView !== 'basecamp';
   if(explorationRow) explorationRow.hidden = realmView !== 'exploration';
@@ -1032,7 +1041,7 @@ function renderRealmChrome(){
   });
   const title = document.getElementById('realmDrawerTitle');
   const note = document.getElementById('realmDrawerNote');
-  if(title) title.textContent = realmView === 'training' ? 'Ninja Training Management' : realmView === 'basecamp' ? 'Basecamp Management' : 'Exploration Management';
+  if(title) title.textContent = realmView === 'training' ? 'Ninja Training Management' : realmView === 'basecamp' ? 'Basecamp Management' : realmView === 'exploration' ? 'Exploration Management' : 'Management';
   if(note){ note.textContent = ''; note.hidden = true; }
   const paneMap = {
     upgrades:'realmDrawerUpgrades', spirit:'realmDrawerSpirit', skills:'realmDrawerSkills', bonuses:'realmDrawerBonuses', rebirth:'realmDrawerRebirth', stats:'realmDrawerStats',
@@ -1043,7 +1052,7 @@ function renderRealmChrome(){
   qsa('[data-realm-tab]').forEach(function(btn){ btn.classList.toggle('is-active', btn.getAttribute('data-realm-tab') === realmDrawerTab); });
   qsa('[data-realm-view]').forEach(function(btn){ btn.setAttribute('aria-pressed', String(btn.getAttribute('data-realm-view') === realmView)); });
   const label = document.querySelector('#realmMenuBtn .realm-fab__label');
-  if(label) label.textContent = realmView === 'training' ? 'Management [M]' : realmView === 'basecamp' ? 'Camp Management [M]' : 'Exploration [M]';
+  if(label) label.textContent = realmView === 'training' ? 'Training Management [M]' : realmView === 'basecamp' ? 'Camp Management [M]' : realmView === 'exploration' ? 'Exploration Management [M]' : 'Management [M]';
   renderRealmAuxiliary(profiles.ninja || defaultNinjaProfile());
 }
 
