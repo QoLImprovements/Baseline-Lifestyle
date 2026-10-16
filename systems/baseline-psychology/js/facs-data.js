@@ -10,7 +10,7 @@
   ]);
 
   const categories = Object.freeze([
-    { id:'facial', label:'Main Action Units' },
+    { id:'facial', label:'Facial actions' },
     { id:'gross-face', label:'Gross behaviour / other facial codes' },
     { id:'head', label:'Head movement codes' },
     { id:'eyes', label:'Eye movement codes' },
