@@ -65,7 +65,7 @@ try{
   bl_external_test_assert(($public['ok'] ?? true) === false, 'database inside document root was accepted');
   bl_external_test_assert(($public['gates']['outsideDocumentRoot'] ?? true) === false, 'document-root gate did not fail');
 
-  if(DIRECTORY_SEPARATOR === '/'){
+  if(DIRECTORY_SEPARATOR === '/' && function_exists('symlink')){
     $link = $base . '/Saved Data/Database/linked.sqlite';
     if(@symlink($privateDatabase, $link)){
       $rejected = false;
