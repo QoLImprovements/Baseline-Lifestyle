@@ -229,6 +229,11 @@ export function createPuzzleHubShell(config) {
   }
 
   function initialRouteOpen() {
+    const path = String(location.pathname || '').toLowerCase().replace(/\/+$/, '');
+    if (path.endsWith('/baseline-games-hub/games-hub/' + config.id)) {
+      open();
+      return;
+    }
     const hash = String(location.hash || '');
     if (new URLSearchParams(hash.replace(/^#/, '')).get('game') === config.id) open();
   }
