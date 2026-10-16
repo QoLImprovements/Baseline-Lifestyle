@@ -15,6 +15,10 @@ const rendererSource=read('systems/baseline-psychology/js/facs-renderer.js');
 const engineSource=read('systems/baseline-psychology/js/facs-engine.js');
 const shared=read('sitewide/js/baseline-shared.js');
 const htaccess=read('.htaccess');
+const protectedAccess=read('sitewide/api/protected_access.php');
+const psychologyGate=read('systems/baseline-psychology/baseline-psychology.php');
+const envExample=read('.env.example');
+const home=read('index.html');
 
 function loadFacsData(){
   const window={};
@@ -34,10 +38,19 @@ test('Baseline Psychology owns System -> Paralinguistics -> Facial Expressions h
   assert.doesNotMatch(css,/facs-stage-placeholder|facs-control-placeholder/);
 });
 
-test('Psychology clean routes are registered in both shared navigation and server routing',()=>{
+test('Psychology clean routes are registered and protected server-side',()=>{
   assert.match(shared,/'baseline-psychology\.html': \{ base:'\/baseline-psychology'/);
   assert.match(shared,/'baseline-psychology\.html':'\/baseline-psychology\/system'/);
-  assert.match(htaccess,/RewriteRule \^baseline-psychology\/\(system\|paralinguistics\)\/\?\$ systems\/baseline-psychology\/baseline-psychology\.html \[L,QSA\]/);
+  assert.match(htaccess,/RewriteRule \^baseline-psychology\/\(system\|paralinguistics\)\/\?\$ systems\/baseline-psychology\/baseline-psychology\.php \[L,QSA\]/);
+  assert.match(htaccess,/baseline-psychology\/baseline-psychology\\\.html\$ \/home\/1\?protected=locked/);
+  assert.match(protectedAccess,/'baseline_psychology'/);
+  assert.match(protectedAccess,/BL_PSYCHOLOGY_PIN/);
+  assert.match(protectedAccess,/psychology_access_until/);
+  assert.match(psychologyGate,/psychology_access_until/);
+  assert.match(psychologyGate,/\/home\/1\?protected=locked/);
+  assert.match(envExample,/^BL_PSYCHOLOGY_PIN=$/m);
+  assert.match(html,/name="robots" content="noindex,nofollow,noarchive"/);
+  assert.doesNotMatch(home,/Baseline Psychology|card--psychology/);
 });
 
 test('FACS reference keeps code classes distinct and uses the canonical A-E intensity labels',()=>{
