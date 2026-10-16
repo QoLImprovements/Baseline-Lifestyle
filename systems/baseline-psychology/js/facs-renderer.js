@@ -5,7 +5,6 @@
   const THREE_VERSION='0.184.0';
   const MODEL_URL='https://cdn.jsdelivr.net/gh/mrdoob/three.js@r184/examples/models/gltf/facecap.glb';
   const BASIS_URL='https://cdn.jsdelivr.net/npm/three@'+THREE_VERSION+'/examples/jsm/libs/basis/';
-  const ESM='https://esm.sh/';
 
   let THREE=null;
   let scene=null;
@@ -427,11 +426,11 @@
 
     try{
       const modules=await Promise.all([
-        import(ESM+'three@'+THREE_VERSION),
-        import(ESM+'three@'+THREE_VERSION+'/examples/jsm/loaders/GLTFLoader.js'),
-        import(ESM+'three@'+THREE_VERSION+'/examples/jsm/loaders/KTX2Loader.js'),
-        import(ESM+'three@'+THREE_VERSION+'/examples/jsm/libs/meshopt_decoder.module.js'),
-        import(ESM+'three@'+THREE_VERSION+'/examples/jsm/environments/RoomEnvironment.js')
+        import('three'),
+        import('three/addons/loaders/GLTFLoader.js'),
+        import('three/addons/loaders/KTX2Loader.js'),
+        import('three/addons/libs/meshopt_decoder.module.js'),
+        import('three/addons/environments/RoomEnvironment.js')
       ]);
 
       THREE=modules[0];
