@@ -267,7 +267,9 @@ test("voice workout can be started from the Calisthenics Routine Plan disclosure
   await routinePlanTab.click();
   const calisthenicsCard = page.locator('details[data-fitness-plan-card="calisthenics"]');
   await expect(calisthenicsCard).toBeVisible();
-  await calisthenicsCard.locator(':scope > summary').click();
+  if(!(await calisthenicsCard.evaluate((element) => element.open))){
+    await calisthenicsCard.locator(':scope > summary').click();
+  }
   await expect(calisthenicsCard).toHaveAttribute('open', '');
 
   await expect(page.locator("#startVoiceWorkoutBtn")).toBeVisible();
