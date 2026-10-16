@@ -28,6 +28,7 @@ const entrypoints = [
   'systems/baseline-food-approach/baseline-food-approach.html',
   'systems/baseline-massage/baseline-massage.html',
   'systems/baseline-natural-skincare/baseline-natural-skincare.html',
+  'systems/baseline-psychology/baseline-psychology.html',
   'systems/baseline-fitness/baseline-fitness.html',
   'systems/baseline-badminton-session/baseline-badminton-session.html',
   'systems/baseline-games-hub/baseline-games-hub.html'

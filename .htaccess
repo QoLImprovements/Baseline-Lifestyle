@@ -159,6 +159,15 @@ Options -Indexes
 # Fixes ERR_TOO_MANY_REDIRECTS after moving main HTML files into section folders.
 # Cause: internal clean-route rewrites were being caught by the nested static-file recovery redirects.
 
+# BASELINE-PSYCHOLOGY-PROTECTED-SOURCE-20261016
+# The clean Psychology routes are session-guarded through PHP. Do not allow
+# direct browser requests to bypass that guard by loading the source HTML.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} \s/+systems/baseline-psychology/baseline-psychology\.html[?\s] [NC]
+  RewriteRule ^systems/baseline-psychology/baseline-psychology\.html$ /home/1?protected=locked [R=302,L,NE]
+</IfModule>
+
 # BASELINE-PHASE-2-MOVED-MAIN-HTML-20260607
 # Main section HTML files now live inside accountable section folders.
 # Public URLs stay clean; old flat .html requests redirect to the clean section route.
@@ -172,6 +181,9 @@ Options -Indexes
 
   RewriteCond %{THE_REQUEST} \s/+baseline-natural-skincare\.html[?\s] [NC]
   RewriteRule ^baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
+
+  RewriteCond %{THE_REQUEST} \s/+baseline-psychology\.html[?\s] [NC]
+  RewriteRule ^baseline-psychology\.html$ /baseline-psychology/system [R=302,L]
 
   RewriteCond %{THE_REQUEST} \s/+baseline-badminton-session\.html[?\s] [NC]
   RewriteRule ^baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
@@ -238,6 +250,7 @@ Options -Indexes
   RewriteRule ^baseline-food-approach/?$ /baseline-food-approach/system [R=302,L]
   RewriteRule ^baseline-massage/?$ /baseline-massage/system [R=302,L]
   RewriteRule ^baseline-natural-skincare/?$ /baseline-natural-skincare/system [R=302,L]
+  RewriteRule ^baseline-psychology/?$ /baseline-psychology/system [R=302,L]
   RewriteRule ^baseline-badminton-session/?$ /baseline-badminton-session/system [R=302,L]
   RewriteRule ^baseline-fitness/?$ /baseline-fitness/system [R=302,L]
   RewriteRule ^baseline-games-hub/?$ /baseline-games-hub/games-hub [R=302,L]
@@ -252,6 +265,8 @@ Options -Indexes
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-massage\.html$ /baseline-massage/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-natural-skincare\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-natural-skincare\.html$ /baseline-natural-skincare/system [R=302,L]
+  RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-psychology\.html[?\s] [NC]
+  RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-psychology\.html$ /baseline-psychology/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-badminton-session\.html[?\s] [NC]
   RewriteRule ^(?:home|baseline-[^/]+)(?:/[^/]+)*/baseline-badminton-session\.html$ /baseline-badminton-session/system [R=302,L]
   RewriteCond %{THE_REQUEST} \s/+[^\s]*baseline-fitness\.html[?\s] [NC]
@@ -302,6 +317,7 @@ Options -Indexes
   RewriteRule ^baseline-massage/(system|library|planner)/?$ systems/baseline-massage/baseline-massage.html [L,QSA]
 
   RewriteRule ^baseline-natural-skincare/(system|recipes|ingredient-library|skin-support-system|my-routine)/?$ systems/baseline-natural-skincare/baseline-natural-skincare.html [L,QSA]
+  RewriteRule ^baseline-psychology/(system|paralinguistics)/?$ systems/baseline-psychology/baseline-psychology.php [L,QSA]
   RewriteRule ^baseline-badminton-session/(system|game-plan|ratings-standings|players-pairs|session-history)/?$ systems/baseline-badminton-session/baseline-badminton-session.html [L,QSA]
   # Recover malformed top-level Fitness URLs produced by the former nested route builder.
   RewriteRule ^baseline-fitness/my-routine(?:/(?:log|summary|public|plan(?:/(?:calisthenics|cardio|other|sports))?))?/(system|my-plan|my-body|library|exercise-library|achievements)/?$ /baseline-fitness/$1 [R=302,L]
