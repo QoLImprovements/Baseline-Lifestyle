@@ -278,8 +278,9 @@ test('sitewide Contact control is singular, themed and ordered before Account', 
   const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
 
   assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
-  assert.ok(shared.includes("{ href:'/contact/' }"));
-  assert.ok(shared.includes("'Contact Baseline Lifestyle'"));
+  assert.ok(shared.includes("href:'/contact/'"));
+  assert.ok(shared.includes("'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' }"));
+  assert.ok(shared.includes("control.setAttribute('aria-label', ariaLabel)"));
   const controlsStart = shared.indexOf('function ensureRightControls(container)');
   const controlsEnd = shared.indexOf('function closePagesMenu', controlsStart);
   const controls = shared.slice(controlsStart, controlsEnd);
