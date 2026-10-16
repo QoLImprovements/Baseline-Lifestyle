@@ -1128,7 +1128,7 @@ body[data-app="fitness"] #profileStatus{
 #bl-beats-toggle .bl-btn-icon{
   color:#000;
 }
-#bl-contact-link .bl-btn-icon,
+#bl-contact-toggle .bl-btn-icon,
 #bl-auth-toggle .bl-btn-icon{
   color:var(--ink, #1b0b09);
 }
@@ -1138,7 +1138,7 @@ body[data-app="fitness"] #profileStatus{
 
 @media (max-width: 900px){
   #bl-beats-toggle,
-  #bl-contact-link,
+  #bl-contact-toggle,
   #bl-auth-toggle{
     width: 42px;
     min-width: 42px;
@@ -1153,7 +1153,7 @@ body[data-app="fitness"] #profileStatus{
   }
 
   #bl-beats-toggle .bl-btn-label,
-  #bl-contact-link .bl-btn-label,
+  #bl-contact-toggle .bl-btn-label,
   #bl-auth-toggle .bl-btn-label{
     display:none !important;
   }
@@ -1447,7 +1447,7 @@ html.bl-pages-dd-ready .bl-topnav{
 }
 
 #bl-beats-toggle,
-#bl-contact-link,
+#bl-contact-toggle,
 #bl-auth-toggle{
   display:inline-flex !important;
   align-items:center !important;
@@ -1600,7 +1600,7 @@ body[data-app="games"]{
 }
 
 /* Index header utility controls: deliberately grey-gradient, tied to the grey header, with clear white text. */
-body[data-app="home"] #bl-contact-link,
+body[data-app="home"] #bl-contact-toggle,
 body[data-app="home"] #bl-auth-toggle{
   background:var(--bl-home-account-gradient)!important;
   background-image:var(--bl-home-account-gradient)!important;
@@ -1610,8 +1610,8 @@ body[data-app="home"] #bl-auth-toggle{
   border-color:#9a9aa6!important;
   box-shadow:0 14px 28px -22px rgba(0,0,0,.55)!important;
 }
-body[data-app="home"] #bl-contact-link .bl-btn-label,
-body[data-app="home"] #bl-contact-link .bl-btn-icon,
+body[data-app="home"] #bl-contact-toggle .bl-btn-label,
+body[data-app="home"] #bl-contact-toggle .bl-btn-icon,
 body[data-app="home"] #bl-auth-toggle .bl-btn-label,
 body[data-app="home"] #bl-auth-toggle .bl-btn-icon{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;}
 
@@ -1961,7 +1961,7 @@ html[data-app="skin"]{
 body[data-app] .bl-pages-btn,
 body[data-app] .bl-system-toggle,
 body[data-app] #bl-beats-toggle,
-body[data-app] #bl-contact-link,
+body[data-app] #bl-contact-toggle,
 body[data-app] #bl-auth-toggle,
 body[data-app] .bl-pages-menu,
 body[data-app] .bl-system-menu,
@@ -1979,9 +1979,22 @@ body[data-app] .bl-system-menu a{
   mix-blend-mode:normal!important;
 }
 
+/* Contact uses the same shared flyout geometry and page-theme surface as the other header panels. */
+#bl-contact-flyout .bl-contact-email{
+  display:inline-block;
+  color:currentColor!important;
+  -webkit-text-fill-color:currentColor!important;
+  font-weight:900;
+  line-height:1.4;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  overflow-wrap:anywhere;
+}
+
 /* Account + Binaural panel backgrounds: true current page gradient, sitewide. */
 body[data-app] #bl-auth-flyout .card,
-body[data-app] #bl-beats-flyout .card{
+body[data-app] #bl-beats-flyout .card,
+body[data-app] #bl-contact-flyout .card{
   background:var(--bl-active-page-gradient)!important;
   background-image:var(--bl-active-page-gradient)!important;
   background-color:var(--banner-pill-solid, var(--bl-flyout-bg-color, transparent))!important;
