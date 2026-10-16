@@ -11,7 +11,8 @@ const systemNames = [
   'baseline-food-approach',
   'baseline-games-hub',
   'baseline-massage',
-  'baseline-natural-skincare'
+  'baseline-natural-skincare',
+  'baseline-psychology'
 ];
 const ownedSystemNames = [...systemNames,'charity-shop'];
 const ignoredWalkDirectories = new Set(['.git','node_modules','playwright-report','test-results']);
@@ -122,7 +123,8 @@ test('large page styling is owned by canonical system stylesheets', () => {
     ['baseline-food-approach', '/systems/baseline-food-approach/css/baseline-food-approach.css'],
     ['baseline-games-hub', '/systems/baseline-games-hub/css/baseline-games-hub.css'],
     ['baseline-massage', '/systems/baseline-massage/css/baseline-massage.css'],
-    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css']
+    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css'],
+    ['baseline-psychology', '/systems/baseline-psychology/css/baseline-psychology.css']
   ];
   for (const [system, href] of expectations) {
     const html = fs.readFileSync(path.join(root, 'systems', system, `${system}.html`), 'utf8');
