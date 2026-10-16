@@ -20,6 +20,11 @@ function bl_protected_sections(): array {
       'session_key' => 'charity_shop_access_until',
       'redirect' => '/baseline-charity-shop/guidance',
     ],
+    'baseline_psychology' => [
+      'code' => trim(bl_env('BL_PSYCHOLOGY_PIN')),
+      'session_key' => 'psychology_access_until',
+      'redirect' => '/baseline-psychology/system',
+    ],
   ];
 }
 
