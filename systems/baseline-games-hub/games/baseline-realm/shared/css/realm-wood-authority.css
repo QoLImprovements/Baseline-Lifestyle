@@ -59,7 +59,7 @@
   inset:0 0 auto 0!important;
   min-height:112px!important;
   display:grid!important;
-  grid-template-columns:minmax(0,1fr) minmax(260px,36%) auto!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(220px,30%) auto!important;
   align-items:stretch!important;
   gap:14px!important;
   padding:12px 14px!important;
@@ -81,6 +81,64 @@
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.36)!important;
 }
 #ninjaPanel .realm-command-banner__status{padding:9px 12px!important}
+#ninjaPanel .realm-command-banner__status{grid-column:1!important}
+#ninjaPanel .realm-shared-status{
+  grid-column:2!important;
+  align-self:stretch!important;
+  justify-self:center!important;
+  min-width:118px!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:8px 13px!important;
+  border:1px solid rgba(93,58,30,.34)!important;
+  border-radius:8px!important;
+  background:var(--realm-parchment-face)!important;
+  background-image:var(--realm-parchment-face)!important;
+  color:var(--realm-ink)!important;
+  -webkit-text-fill-color:var(--realm-ink)!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.34)!important;
+}
+#ninjaPanel .realm-coin-readout{display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important}
+#ninjaPanel .realm-coin-mark{
+  width:25px!important;
+  height:25px!important;
+  border-radius:50%!important;
+  display:block!important;
+  background:radial-gradient(circle at 35% 30%,#ffe6a0 0 18%,#d7a947 45%,#8b5b22 100%)!important;
+  border:2px solid #6d451d!important;
+  box-shadow:inset 0 0 0 2px rgba(255,240,174,.38)!important;
+}
+#ninjaPanel .realm-coin-copy{display:grid!important;gap:1px!important;line-height:1!important}
+#ninjaPanel .realm-coin-copy small{
+  font-size:9px!important;
+  font-weight:900!important;
+  letter-spacing:.10em!important;
+  text-transform:uppercase!important;
+  color:#735536!important;
+  -webkit-text-fill-color:#735536!important;
+}
+#ninjaPanel .realm-coin-copy strong{font-size:21px!important;color:var(--realm-ink)!important;-webkit-text-fill-color:var(--realm-ink)!important}
+#ninjaPanel .realm-command-banner .realm-enemy-status{grid-column:3!important}
+#ninjaPanel .realm-command-banner .realm-utility{grid-column:4!important;justify-self:end!important}
+#ninjaPanel .realm-command-banner .realm-fab{
+  width:76px!important;
+  min-width:76px!important;
+  min-height:72px!important;
+  padding:7px 5px!important;
+}
+#ninjaPanel .realm-command-banner .realm-fab__icon{width:30px!important;height:30px!important}
+#ninjaPanel .realm-command-banner .realm-fab__label{font-size:10px!important;line-height:1.1!important}
+#ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner{
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+}
+#ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner__status{grid-column:1!important}
+#ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-shared-status{grid-column:2!important}
+#ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner .realm-utility{
+  grid-column:3!important;
+  justify-self:end!important;
+}
+#ninjaPanel .realm-top-strip--camp{grid-template-columns:1fr!important}
+#ninjaPanel .realm-top-strip--camp .realm-route-meta{display:flex!important;align-items:center!important;height:100%!important}
 #ninjaPanel .realm-enemy-status{padding:10px 14px!important}
 #ninjaPanel :is(.realm-top-strip,.realm-route-meta,.realm-top-strip__meta,.realm-enemy-status__name){
   color:var(--realm-ink)!important;
@@ -96,7 +154,7 @@
 #ninjaPanel .realm-meter__text{color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
 
 #ninjaPanel .realm-utility{display:flex!important;align-items:center!important;gap:9px!important}
-#ninjaPanel :is(.realm-fab,.realm-mini-action,.realm-close-btn,.realm-tab-btn,.realm-audio-controls button),
+#ninjaPanel :is(.realm-fab,.realm-mini-action,.realm-close-btn,.realm-tab-btn),
 #ninjaPanel :is(.basecamp-service,.realm-workshop,.jrpg-game) button{
   border:1px solid rgba(246,213,150,.44)!important;
   background:var(--realm-wood-face)!important;
@@ -106,7 +164,7 @@
   box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 4px 10px -7px #000!important;
   opacity:1;
 }
-#ninjaPanel :is(.realm-fab,.realm-mini-action,.realm-close-btn,.realm-tab-btn,.realm-audio-controls button):is(:hover,:focus-visible,.is-active,[aria-selected="true"]),
+#ninjaPanel :is(.realm-fab,.realm-mini-action,.realm-close-btn,.realm-tab-btn):is(:hover,:focus-visible,.is-active,[aria-selected="true"]),
 #ninjaPanel :is(.basecamp-service,.realm-workshop,.jrpg-game) button:is(:hover,:focus-visible,.is-active,.is-selected){
   border-color:var(--realm-focus)!important;
   background:linear-gradient(180deg,#9a673d,#5a341f)!important;
@@ -139,6 +197,18 @@
 #ninjaPanel .realm-drawer :is(p,small,span,label){color:#dcc5a1;-webkit-text-fill-color:#dcc5a1}
 #ninjaPanel .realm-drawer[data-basecamp-service] :is(.realm-tab-row,[role="tablist"] > [data-realm-tab]){display:none!important}
 #ninjaPanel .realm-drawer[data-basecamp-service] .realm-drawer-pane:not([hidden]){padding-top:14px!important}
+#ninjaPanel .realm-drawer :is(.realm-manage-card,.realm-stat-chip,.trackcoin-stat-card,.summary-box,.upgrade-item,.realm-spirit-card){
+  background:rgba(20,12,8,.52)!important;
+  background-image:none!important;
+  border:1px solid rgba(245,213,151,.22)!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)!important;
+}
+#ninjaPanel .realm-drawer :is(.realm-manage-card,.realm-stat-chip,.trackcoin-stat-card,.summary-box,.upgrade-item,.realm-spirit-card) :is(p,small,span,label){
+  color:#dcc5a1!important;
+  -webkit-text-fill-color:#dcc5a1!important;
+}
 #ninjaPanel .basecamp-service>header,
 #ninjaPanel .basecamp-item-grid article,
 #ninjaPanel .basecamp-trade-list article,
@@ -149,11 +219,11 @@
   box-shadow:none!important;
 }
 
-/* Basecamp landmarks are invisible hit areas. A small wooden caption appears
-   only on hover or keyboard focus, leaving the cabin illustration unobscured. */
+/* Basecamp landmarks keep their rounded hit area; the feature name and its
+   supporting caption occupy that area instead of floating above it. */
 #ninjaPanel #realmBasecampScreen .realm-location-button{
-  width:clamp(112px,10vw,162px)!important;
-  min-height:68px!important;
+  width:clamp(126px,10.5vw,172px)!important;
+  min-height:74px!important;
   padding:0!important;
   border:0!important;
   border-radius:12px!important;
@@ -168,48 +238,138 @@
 #ninjaPanel #realmBasecampScreen .realm-location-button:hover,
 #ninjaPanel #realmBasecampScreen .realm-location-button:focus-visible{
   background:rgba(255,229,177,.045)!important;
-  box-shadow:inset 0 0 0 2px rgba(255,218,145,.66)!important;
+  box-shadow:inset 0 0 0 2px rgba(255,218,145,.72)!important;
   filter:none!important;
 }
 #ninjaPanel #realmBasecampScreen .realm-location-caption{
   position:absolute!important;
   left:50%!important;
-  bottom:calc(100% + 7px)!important;
+  top:46%!important;
+  bottom:auto!important;
   z-index:8!important;
-  width:max-content!important;
-  max-width:190px!important;
-  min-width:138px!important;
+  width:calc(100% - 12px)!important;
+  max-width:none!important;
+  min-width:0!important;
   display:grid!important;
-  grid-template-columns:28px minmax(0,1fr)!important;
+  grid-template-columns:1fr!important;
   grid-template-rows:auto auto!important;
-  gap:2px 8px!important;
+  gap:3px!important;
+  justify-items:center!important;
   align-items:center!important;
-  padding:8px 10px!important;
-  border:1px solid rgba(255,221,154,.55)!important;
-  border-radius:9px!important;
-  background:var(--realm-wood-face)!important;
-  background-image:var(--realm-wood-face)!important;
-  box-shadow:0 10px 20px -10px #000,inset 0 1px rgba(255,255,255,.14)!important;
+  padding:7px 8px!important;
+  border:0!important;
+  border-radius:8px!important;
+  background:rgba(48,28,17,.90)!important;
+  background-image:none!important;
+  box-shadow:0 8px 16px -11px #000!important;
   opacity:0!important;
   visibility:hidden!important;
-  transform:translate(-50%,6px)!important;
+  transform:translate(-50%,-46%)!important;
   transition:opacity .15s ease,transform .15s ease,visibility .15s ease!important;
   pointer-events:none!important;
+  text-align:center!important;
 }
 #ninjaPanel #realmBasecampScreen .realm-location-button:is(:hover,:focus-visible) .realm-location-caption{
   opacity:1!important;
   visibility:visible!important;
-  transform:translate(-50%,0)!important;
+  transform:translate(-50%,-58%)!important;
 }
-#ninjaPanel #realmBasecampScreen .realm-location-caption .realm-location-button__icon{
-  grid-column:1!important;grid-row:1 / span 2!important;width:27px!important;height:27px!important;color:var(--realm-focus)!important;
-}
+#ninjaPanel #realmBasecampScreen .realm-location-caption .realm-location-button__icon{display:none!important}
 #ninjaPanel #realmBasecampScreen .realm-location-caption .realm-location-button__copy{
-  grid-column:2!important;grid-row:1!important;display:block!important;color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important;font-size:13px!important;text-shadow:none!important;
+  grid-column:1!important;
+  grid-row:1!important;
+  display:block!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:var(--realm-cream)!important;
+  font-size:14px!important;
+  line-height:1.1!important;
+  font-weight:900!important;
+  text-shadow:none!important;
+  text-align:center!important;
 }
 #ninjaPanel #realmBasecampScreen .realm-location-caption small{
-  grid-column:2!important;grid-row:2!important;display:block!important;margin:0!important;color:#ddc7a4!important;-webkit-text-fill-color:#ddc7a4!important;font-size:9px!important;
+  grid-column:1!important;
+  grid-row:2!important;
+  display:block!important;
+  margin:0!important;
+  color:#ead6b4!important;
+  -webkit-text-fill-color:#ead6b4!important;
+  font-size:11px!important;
+  line-height:1.22!important;
+  font-weight:700!important;
+  text-align:center!important;
 }
+
+/* One centred Settings menu owns persistent Realm configuration. */
+#ninjaPanel .realm-settings-overlay{
+  position:absolute!important;
+  inset:0!important;
+  z-index:90!important;
+  display:grid!important;
+  place-items:center!important;
+  padding:22px!important;
+  background:rgba(6,11,9,.68)!important;
+  backdrop-filter:blur(3px)!important;
+}
+#ninjaPanel .realm-settings-overlay[hidden]{display:none!important}
+#ninjaPanel .realm-settings-dialog{
+  width:min(520px,calc(100% - 24px))!important;
+  max-height:calc(100% - 24px)!important;
+  overflow:auto!important;
+  border:2px solid var(--realm-wood-700)!important;
+  border-radius:18px!important;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 3px,rgba(0,0,0,.025) 3px 7px),
+    linear-gradient(180deg,#402617 0%,#21130c 100%)!important;
+  color:var(--realm-cream)!important;
+  box-shadow:0 28px 70px rgba(0,0,0,.56),inset 0 0 0 2px rgba(240,199,126,.12)!important;
+}
+#ninjaPanel .realm-settings-dialog>header{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:16px 18px!important;
+  border-bottom:1px solid rgba(244,207,140,.20)!important;
+  background:var(--realm-wood-face)!important;
+}
+#ninjaPanel .realm-settings-dialog>header div{display:grid!important;gap:2px!important}
+#ninjaPanel .realm-settings-dialog>header small{
+  font-size:9px!important;
+  font-weight:900!important;
+  letter-spacing:.12em!important;
+  text-transform:uppercase!important;
+  color:#d7b678!important;
+  -webkit-text-fill-color:#d7b678!important;
+}
+#ninjaPanel .realm-settings-dialog h4{margin:0!important;font-size:28px!important;color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
+#ninjaPanel .realm-settings-close,
+#ninjaPanel .realm-setting-row button{
+  border:1px solid rgba(246,213,150,.44)!important;
+  background:var(--realm-wood-face)!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:var(--realm-cream)!important;
+  font-weight:900!important;
+  cursor:pointer!important;
+}
+#ninjaPanel .realm-settings-close{width:42px!important;height:42px!important;border-radius:50%!important;font-size:26px!important}
+#ninjaPanel .realm-settings-list{display:grid!important;gap:10px!important;padding:16px!important}
+#ninjaPanel .realm-setting-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:16px!important;
+  padding:14px!important;
+  border:1px solid rgba(245,213,151,.22)!important;
+  border-radius:13px!important;
+  background:rgba(20,12,8,.48)!important;
+}
+#ninjaPanel .realm-setting-row>div,
+#ninjaPanel .realm-setting-row>span{display:grid!important;gap:3px!important}
+#ninjaPanel .realm-setting-row strong{font-size:16px!important;color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
+#ninjaPanel .realm-setting-row small{font-size:11px!important;color:#dcc5a1!important;-webkit-text-fill-color:#dcc5a1!important}
+#ninjaPanel .realm-setting-row button{min-width:78px!important;min-height:40px!important;border-radius:10px!important}
+#ninjaPanel .realm-setting-row input[type="range"]{width:min(210px,32vw)!important;accent-color:#d5b45d!important}
 
 /* Exploration inherits the cabin interface but retains the forest map as
    gameplay content. All commands stay pointer-visible and keyboard-focusable. */
@@ -343,9 +503,36 @@
 #ninjaPanel #ninjaShurikenBtn:disabled :is(.realm-combat-btn__copy,.realm-combat-btn__icon){position:relative!important;z-index:2!important;color:#ede4d5!important;-webkit-text-fill-color:#ede4d5!important}
 
 @media (max-width:1120px){
-  #ninjaPanel .realm-command-banner{grid-template-columns:minmax(0,1fr) minmax(220px,34%) auto!important;gap:8px!important;padding:8px!important}
+  #ninjaPanel .realm-command-banner{grid-template-columns:minmax(0,1fr) auto minmax(190px,28%) auto!important;gap:8px!important;padding:8px!important}
   #ninjaPanel .tactical-layout{grid-template-columns:1fr!important}
   #ninjaPanel .tactical-grid{transform:scale(.72)!important;margin-bottom:-165px!important}
+}
+@media (max-width:900px){
+  #ninjaPanel .realm-command-banner{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto auto!important;
+  }
+  #ninjaPanel .realm-command-banner__status{grid-column:1!important;grid-row:1!important}
+  #ninjaPanel .realm-shared-status{grid-column:2!important;grid-row:1!important;min-width:104px!important}
+  #ninjaPanel .realm-command-banner .realm-enemy-status{grid-column:1 / -1!important;grid-row:2!important}
+  #ninjaPanel .realm-command-banner .realm-utility{
+    grid-column:1 / -1!important;
+    grid-row:3!important;
+    justify-self:stretch!important;
+    justify-content:stretch!important;
+  }
+  #ninjaPanel .realm-command-banner .realm-fab{flex:1 1 0!important;min-width:0!important;width:auto!important}
+  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner{
+    grid-template-columns:minmax(0,1fr) auto!important;
+    grid-template-rows:auto auto!important;
+  }
+  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner__status{grid-column:1!important;grid-row:1!important}
+  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-shared-status{grid-column:2!important;grid-row:1!important}
+  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-exploration-view) .realm-command-banner .realm-utility{
+    grid-column:1 / -1!important;
+    grid-row:2!important;
+  }
+  #ninjaPanel .realm-settings-dialog{width:min(500px,calc(100% - 12px))!important}
 }
 @media (prefers-reduced-motion:reduce){
   #ninjaPanel :is(.ninja-forest-layer,.ninja-scene__layer,.ninja-scene__enemy.is-entering){animation:none!important;will-change:auto!important}
