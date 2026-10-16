@@ -30,12 +30,12 @@
 
   function compactEntry(entry){
     if(!entry) return '';
-    let text=displayCode(entry.unit);
-    if(entry.intensity) text+=entry.intensity;
+    const isMain=entry.unit.category==='facial';
+    const suffix=entry.intensity||'';
     if(entry.unit.laterality && entry.side && entry.side!=='bilateral'){
-      text+='-'+(entry.side==='left'?'L':'R');
+      return (entry.side==='left'?'L':'R')+entry.unit.code+suffix;
     }
-    return text;
+    return (isMain?'AU':'FACS ')+entry.unit.code+suffix;
   }
 
   function activeEntries(){
@@ -225,6 +225,10 @@
   function toggleUnit(code){
     const unit=unitByCode.get(code);
     if(!unit) return;
+    if(code==='0'){
+      clearAll();
+      return;
+    }
     if(state.active.has(code)){
       if(state.focused===code){
         state.active.delete(code);
