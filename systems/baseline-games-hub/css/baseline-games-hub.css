@@ -1052,9 +1052,7 @@ body[data-app="games"] .tier-btn,
 body[data-app="games"] .stat-pill,
 body[data-app="games"] .mobile-game-key,
 body[data-app="games"] .mobile-game-exit,
-body[data-app="games"] .skill-alert,
-body[data-app="games"] .realm-tab-btn,
-body[data-app="games"] .realm-close-btn{
+body[data-app="games"] .skill-alert{
   background:var(--games-control)!important;
   background-image:none!important;
   color:var(--games-ink)!important;
@@ -1089,8 +1087,7 @@ body[data-app="games"] .meter{
   border-color:var(--games-border)!important;
 }
 body[data-app="games"] .xp-fill,
-body[data-app="games"] .meter-fill,
-body[data-app="games"] .realm-meter__fill{
+body[data-app="games"] .meter-fill{
   background:linear-gradient(90deg,var(--games-page-deep) 0%,var(--games-page-mid) 55%,var(--games-page-light) 100%)!important;
 }
 body[data-app="games"] .board-grid[data-game-play-surface="pairs"].is-pairs-idle{
@@ -1219,8 +1216,6 @@ body[data-app="games"] .solution-box,
 body[data-app="games"] .clue-bar,
 body[data-app="games"] .number-chip,
 body[data-app="games"] .letter-cell,
-body[data-app="games"] .realm-stat-chip,
-body[data-app="games"] .realm-spirit-card,
 body[data-app="games"] .upgrade-item,
 body[data-app="games"] .bonus-item,
 body[data-app="games"] .ninja-bonus-chip{
@@ -1251,9 +1246,6 @@ body[data-app="games"] .game-toggle-btn,
 body[data-app="games"] .mobile-game-key,
 body[data-app="games"] .mobile-game-exit,
 body[data-app="games"] .skill-alert,
-body[data-app="games"] .realm-tab-btn,
-body[data-app="games"] .realm-close-btn,
-body[data-app="games"] .realm-fab__icon,
 body[data-app="games"] button[type="submit"],
 body[data-app="games"] input[type="submit"]{
   background:var(--games-control)!important;
@@ -1309,8 +1301,7 @@ body[data-app="games"] textarea.text-input{
   -webkit-text-fill-color:var(--games-ink)!important;
 }
 body[data-app="games"] .xp-fill,
-body[data-app="games"] .meter-fill,
-body[data-app="games"] .realm-meter__fill{
+body[data-app="games"] .meter-fill{
   background:linear-gradient(90deg,var(--games-page-deep) 0%,var(--games-page-mid) 58%,var(--games-page-soft) 100%)!important;
 }
 body[data-app="games"] .memory-card{
@@ -1360,12 +1351,6 @@ body[data-app="games"] .trackcoin-item-token{
   background:radial-gradient(circle at 35% 28%,#F3F0EA 0%,var(--games-page-soft) 42%,var(--games-page-mid) 100%)!important;
   color:var(--games-ink)!important;
   -webkit-text-fill-color:var(--games-ink)!important;
-}
-body[data-app="games"] .realm-fab,
-body[data-app="games"] .realm-fab__label{
-  color:#F3F0EA!important;
-  -webkit-text-fill-color:#F3F0EA!important;
-  text-shadow:0 1px 3px rgba(8,35,39,.44)!important;
 }
 body[data-app="games"] .desktop-keypad-toggle[hidden]{display:none!important;}
 body[data-app="games"] .desktop-keypad-toggle{display:inline-flex!important;}
@@ -2252,8 +2237,6 @@ body[data-app="games"] .solution-box,
 body[data-app="games"] .clue-bar,
 body[data-app="games"] .number-chip,
 body[data-app="games"] .letter-cell,
-body[data-app="games"] .realm-stat-chip,
-body[data-app="games"] .realm-spirit-card,
 body[data-app="games"] .upgrade-item,
 body[data-app="games"] .bonus-item,
 body[data-app="games"] .ninja-bonus-chip{
@@ -2345,8 +2328,7 @@ body[data-app="games"] .game-toggle-row,
 body[data-app="games"] .trackcoin-tab-row{
   gap:6px!important;
 }
-body[data-app="games"] .game-toggle-btn,
-body[data-app="games"] .realm-tab-btn{
+body[data-app="games"] .game-toggle-btn{
   min-height:34px!important;
   padding:7px 10px!important;
   font-size:14px!important;
@@ -3156,8 +3138,7 @@ body[data-app="games"] .ruleshift-size--large .ruleshift-shape--pill{
 }
 
 /* 20260607 Games template coherence: clean streak bonus shared visual marker */
-body[data-app="games"] .stat-pill--clean,
-body[data-app="games"] .realm-stat-chip.stat-pill--clean{
+body[data-app="games"] .stat-pill--clean{
   border-color:rgba(16,24,39,.54)!important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 12px 24px -22px rgba(6,12,24,.48)!important;
 }
