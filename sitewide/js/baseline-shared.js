@@ -6374,8 +6374,11 @@ function setupContactFlyout(){
       fly.innerHTML = `
         <div class="card bl-contact-card">
           <h3>Contact</h3>
-          <p class="muted">Email</p>
-          <a class="bl-contact-email" href="mailto:contact@baselinelifestyle.org">contact@baselinelifestyle.org</a>
+          <p class="bl-contact-copy">Want to ask a question, share thoughts, or suggest ideas for future additions? I’d like to hear from you.</p>
+          <div class="bl-contact-email-row">
+            <span class="bl-contact-email-icon" aria-hidden="true">${BASELINE_CONTACT_ICON_SVG}</span>
+            <a class="bl-contact-email" href="mailto:contact@baselinelifestyle.org">contact@baselinelifestyle.org</a>
+          </div>
         </div>
       `;
       document.body.appendChild(fly);
