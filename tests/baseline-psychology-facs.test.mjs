@@ -35,6 +35,8 @@ test('Baseline Psychology keeps System -> Paralinguistics -> Facial Expressions 
   assert.match(html,/id="facsUnitGrid"/);
   assert.match(html,/id="facsIntensityButtons"/);
   assert.match(html,/id="facsSideButtons"/);
+  assert.match(html,/id="facsViewAngle"/);
+  assert.match(html,/id="facsViewFront"/);
 });
 
 test('Facial Expressions no longer uses the legacy cartoon SVG face',()=>{
@@ -47,6 +49,9 @@ test('Facial Expressions no longer uses the legacy cartoon SVG face',()=>{
   assert.match(html,/type="importmap"/);
   assert.match(html,/three@0\.184\.0/);
   assert.match(css,/\.facs-face-viewport/);
+  assert.match(css,/\.facs-view-controls/);
+  assert.doesNotMatch(html,/facs-active-strip"\s+<div class="facs-active-strip"/);
+  assert.doesNotMatch(html,/facs-library-block">\s+<div class="facs-library-block"/);
 });
 
 test('Psychology clean routes are registered and protected server-side',()=>{
@@ -101,6 +106,15 @@ test('every visual FACS mapping has exactly one realistic renderer case',()=>{
   assert.deepEqual(rendererKeys,dataKeys);
 });
 
+test('realistic face view is independently rotatable through 360 degrees',()=>{
+  assert.match(rendererSource,/viewRoot=new THREE\.Group\(\)/);
+  assert.match(rendererSource,/function setViewDegrees\(value\)/);
+  assert.match(rendererSource,/delta\*0\.55/);
+  assert.match(rendererSource,/viewRoot\.rotation\.y/);
+  assert.match(rendererSource,/getViewDegrees\(\)/);
+  assert.match(html,/min="-180" max="180"/);
+});
+
 test('FACS scripts parse and static DOM targets exist',()=>{
   assert.doesNotThrow(()=>new Function(rendererSource));
   assert.doesNotThrow(()=>new Function(engineSource));
@@ -109,7 +123,8 @@ test('FACS scripts parse and static DOM targets exist',()=>{
   const required=[
     'facsFace','facsFaceLoading','facsFaceError','facsModelStatus',
     'facsMaskForehead','facsMaskEyes','facsMaskLower','facsMaskFace','facsUnscorable',
-    'facsFocusSection','facsFamilyButtons','facsRegionButtons','facsFacePartRow'
+    'facsFocusSection','facsFamilyButtons','facsRegionButtons','facsFacePartRow',
+    'facsViewAngle','facsViewAngleValue','facsViewFront'
   ];
   for(const id of required) assert.ok(ids.has(id),id+' is missing');
 });
