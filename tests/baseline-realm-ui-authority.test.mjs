@@ -19,6 +19,8 @@ test('Games Hub CSS no longer owns Realm presentation', () => {
   assert.doesNotMatch(hubCss,/\.realm-drawer/);
   assert.doesNotMatch(hubCss,/\.realm-top-strip/);
   assert.doesNotMatch(hubCss,/#ninjaPanel #realmSceneFrame/);
+  assert.doesNotMatch(hubCss,/\.ninja-scene/);
+  assert.doesNotMatch(hubCss,/\.ninja-hit-flash/);
   assert.doesNotMatch(hubCss,/EDIT_VERSION_20260619_REALM_CABIN_SHURIKEN/);
 });
 
