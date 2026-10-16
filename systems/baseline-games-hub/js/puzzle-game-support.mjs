@@ -152,7 +152,7 @@ export function createPuzzleHubShell(config) {
     return panel;
   }
 
-  function open() {
+  function open({ historyMode = 'push' } = {}) {
     const panel = ensurePanel();
     if (!panel) return null;
     showGamesSection();
@@ -165,7 +165,12 @@ export function createPuzzleHubShell(config) {
     const games = document.getElementById('games');
     games?.classList.add('has-active-game');
     document.getElementById('gamesOverviewCard')?.setAttribute('aria-hidden', 'true');
-    try { history.pushState({ puzzleGame:config.id }, '', `/baseline-games-hub/games-hub/${config.id}`); } catch (_) {}
+    if (historyMode !== 'none') {
+      try {
+        const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
+        history[method]({ puzzleGame:config.id }, '', `/baseline-games-hub/games-hub/${config.id}`);
+      } catch (_) {}
+    }
     document.documentElement.setAttribute('data-puzzle-game-open', config.id);
     config.onOpen?.();
     panel.querySelector('h2, h3, [tabindex="-1"]')?.focus?.({ preventScroll:true });
@@ -236,12 +241,12 @@ export function createPuzzleHubShell(config) {
   }
 
   function initialRouteOpen() {
-    if (routeMatches()) open();
+    if (routeMatches()) open({ historyMode:'none' });
   }
 
   function syncFromBrowserHistory() {
     if (routeMatches()) {
-      open();
+      open({ historyMode:'none' });
       return;
     }
     const panel = document.getElementById(config.panelId);
