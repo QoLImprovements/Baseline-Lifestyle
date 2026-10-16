@@ -26,7 +26,7 @@ test('Games Hub registry exposes canonical identities with legacy compatibility 
   const { registry, attributes } = loadRegistry();
   assert.ok(registry);
   assert.equal(registry.version, 1);
-  assert.equal(registry.games.length, 8);
+  assert.equal(registry.games.length, 10);
   assert.equal(attributes.get('data-baseline-games-registry'), '1');
 
   assert.equal(registry.canonicalId('make24'), 'make-the-number');
@@ -39,6 +39,12 @@ test('Games Hub registry exposes canonical identities with legacy compatibility 
 
   assert.equal(registry.canonicalId('darts-focused'), 'darts-focused');
   assert.equal(registry.canonicalId('badminton-focused'), 'badminton-focused');
+  assert.equal(registry.canonicalId('block-grid'), 'block-grid');
+  assert.equal(registry.canonicalId('colour-sort'), 'colour-sort');
+  assert.equal(registry.resolve('block-grid').profileApp, 'blockgrid');
+  assert.equal(registry.resolve('colour-sort').profileApp, 'coloursort');
+  assert.equal(registry.resolve('block-grid').group, 'puzzle');
+  assert.equal(registry.resolve('colour-sort').group, 'puzzle');
 
   const core = registry.coreGames();
   assert.deepEqual(
