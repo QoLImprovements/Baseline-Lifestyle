@@ -323,7 +323,3 @@ html[data-initial-section="routine"] body[data-app="skin"] main.wrap > #routine,
 html[data-initial-section="ingredients"] body[data-app="skin"] main.wrap > #ingredients,
 html[data-initial-section="support"] body[data-app="skin"] main.wrap > #support{display:block!important}
 
-html[data-initial-section="recipes"] body[data-app] #system.section{display:none!important}
-html[data-initial-section="recipes"] body[data-app] #recipes.section{display:block!important}
-html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="system"]{background-image:none!important;background-color:var(--bl-surface-control-solid)!important;filter:none!important}
-html[data-initial-section="recipes"] body[data-app] .tabs .tab[data-target="recipes"]{background-image:none!important;background-color:var(--bl-surface-active-solid)!important;filter:brightness(1.04)!important}
