@@ -395,6 +395,36 @@ test('preauthored Food shells receive recipe-specific controls from shared runti
 });
 
 
+test('Food and Skincare primary cards and tabs have one sitewide visual owner', () => {
+  assert.match(sitewideCss, /body:not\(\[data-app="home"\]\) \.card,[\s\S]*background-color:var\(--bl-surface-card-solid\)!important/);
+  assert.match(sitewideCss, /body:not\(\[data-app="home"\]\) \.tab,[\s\S]*background-color:var\(--bl-surface-control-solid\)!important/);
+  assert.match(sitewideCss, /\.tab\[aria-selected="true"\],[\s\S]*background-color:var\(--bl-surface-active-solid\)!important/);
+  assert.doesNotMatch(foodCss, /\.tab(?:\:hover|\[aria-selected="true"\])?\s*\{[^}]*\bbackground(?:-color|-image)?\s*:/);
+  assert.doesNotMatch(skincareCss, /\.tab(?:\:hover|\[aria-selected="true"\])?\s*\{[^}]*\bbackground(?:-color|-image)?\s*:/);
+  assert.doesNotMatch(skincareCss, /data-initial-section="recipes"[^\n]*\.tabs \.tab[^\n]*(?:background|filter)/);
+  assert.doesNotMatch(foodCss, /\.card\s*\{[^}]*\bbackground\s*:/);
+  assert.doesNotMatch(skincareCss, /\.card\s*\{[^}]*\bbackground\s*:/);
+  assert.doesNotMatch(foodCss, /\.card::(?:before|after)\s*\{/);
+  assert.doesNotMatch(skincareCss, /\.card::(?:before|after)\s*\{/);
+});
+
+test('Food and Skincare single-authority assets use refreshed cache keys', () => {
+  assert.match(foodHtml, /baseline-food-approach\.css\?v=FOOD_SINGLE_VISUAL_AUTHORITY_20261016_1/);
+  assert.match(skincareHtml, /baseline-natural-skincare\.css\?v=SKINCARE_SINGLE_VISUAL_AUTHORITY_20261016_1/);
+  assert.match(foodHtml, /baseline-shared\.js\?v=RECIPE_BACK_IN_SHELL_20261016_1/);
+  assert.match(skincareHtml, /baseline-shared\.js\?v=RECIPE_BACK_IN_SHELL_20261016_1/);
+});
+
+test('recipe back navigation is shared, in-shell and authored consistently', () => {
+  assert.match(shared, /closest\('\.back-btn'\)/);
+  assert.match(shared, /e\.preventDefault\(\)[\s\S]*e\.stopPropagation\(\)[\s\S]*showAll\(\{ silentHistory:false \}\)/);
+  assert.doesNotMatch(skincareHtml, /back-btn"\s+onclick="BASELINE_showAllRecipes\(\)"/);
+  assert.equal((skincareHtml.match(/<button class="back-btn" type="button">Back To Recipes<\/button>/g) || []).length, 12);
+  for (const {name,html} of foodRecipeBlocks()) {
+    assert.match(html, /<a class="back-btn" href="\/baseline-food-approach\/recipes">Back To Recipes<\/a>/, name+' canonical back link');
+  }
+});
+
 test('recipe overview return cannot leave first-paint tab state pinned', () => {
   assert.match(shared, /function selectTab\(id, opts=\{\}\)[\s\S]*removeAttribute\('data-initial-section'\)/);
   assert.match(shared, /if\(id !== 'recipes'\)[\s\S]*removeAttribute\('data-initial-recipe-route'\)/);
