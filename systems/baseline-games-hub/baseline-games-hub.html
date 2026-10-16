@@ -12,7 +12,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <title>Baseline Games Hub</title>
 <meta name="theme-color" content="#080D22"/>
 <style>html[data-app="games"],body[data-app="games"]{margin:0;min-height:100%;color:#F2F5FF;background:#080D22;background-image:linear-gradient(90deg,#080D22 0%,#1E2759 25%,#4656A6 50%,#1E2759 75%,#080D22 100%);}</style>
-<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-games-hub\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub");document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
+<script id="baseline-games-route-state">!function(){try{var p=String(location.pathname||"").replace(/\/+$/,""),t=(/^\/baseline-games-hub\/games-hub\/(?:games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)\/?$/i.test(p)?"games":"hub");document.documentElement.setAttribute("data-initial-section",t)}catch(_e){}}()</script>
 <meta name="description" content="Browser-based focus, number, word, darts, and adventure training games.">
 <link rel="canonical" href="https://baselinelifestyle.org/baseline-games-hub/games-hub">
 <meta property="og:type" content="website">
@@ -519,10 +519,12 @@ These Markdown rules are a human reference point, not live runtime config.
 </div>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_READY_20261005_1"></script><script src="/sitewide/js/baseline-shared.js?v=ACCOUNT_HEADER_STABILITY_20261005_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1"></script>
-<script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261003_1"></script>
+<script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261016_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
+<script type="module" src="/systems/baseline-games-hub/games/block-grid/js/block-grid.js?v=PUZZLE_GAMES_20261016_1"></script>
+<script type="module" src="/systems/baseline-games-hub/games/colour-sort/js/colour-sort.js?v=PUZZLE_GAMES_20261016_1"></script>
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
 <script type="module" src="/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v=REALM_WOOD_AUTHORITY_20260802_1"></script>
