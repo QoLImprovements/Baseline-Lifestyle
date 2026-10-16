@@ -21,6 +21,7 @@
   const q  = (sel, root=document) => root.querySelector(sel);
   const qsa = (sel, root=document) => Array.from(root.querySelectorAll(sel));
   const BASELINE_BEATS_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M4 13a8 8 0 0 1 16 0v5a3 3 0 0 1-3 3h-1a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2v-.2a6 6 0 0 0-12 0v.2h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7a3 3 0 0 1-3-3v-5z"/></svg>';
+  const BASELINE_CONTACT_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M3.5 5.5h17v13h-17z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="m4.5 7 7.5 6 7.5-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const BASELINE_AUTH_ICON_SVG = '<svg class="bl-icon-svg" viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M12 12.2a4.4 4.4 0 1 0 0-8.8 4.4 4.4 0 0 0 0 8.8z"/><path d="M4.8 21a7.2 7.2 0 0 1 14.4 0H4.8z"/></svg>';
 
 
@@ -6037,33 +6038,41 @@ function buildControls(recipeEl){
     }
 
     const BEATS_ICON_SVG = BASELINE_BEATS_ICON_SVG;
+    const CONTACT_ICON_SVG = BASELINE_CONTACT_ICON_SVG;
     const AUTH_ICON_SVG = BASELINE_AUTH_ICON_SVG;
 
-    function ensureButton(right, id, iconHtml, label){
+    function ensureControl(right, id, iconHtml, label, options){
       if(!right || !id) return null;
-      let btn = q('#' + id, right) || q('#' + id);
-      if(!btn){
-        btn = document.createElement('button');
-        btn.id = id;
-        btn.type = 'button';
-        btn.className = 'bl-mini-btn';
-        btn.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
-        btn.setAttribute('aria-label', label);
-        btn.setAttribute('aria-expanded', 'false');
-        right.appendChild(btn);
-      }else if(btn.parentNode !== right){
-        right.appendChild(btn);
+      options = options || {};
+      const href = String(options.href || '').trim();
+      const tagName = href ? 'a' : 'button';
+      let control = q('#' + id, right) || q('#' + id);
+
+      if(control && control.tagName.toLowerCase() !== tagName){
+        const replacement = document.createElement(tagName);
+        control.replaceWith(replacement);
+        control = replacement;
       }
-      // Keep existing/static controls synchronised when labels or icon source change.
-      try{
-        const iconNode = btn.querySelector('.bl-btn-icon');
-        const labelNode = btn.querySelector('.bl-btn-label');
-        if(iconNode) iconNode.innerHTML = iconHtml;
-        if(labelNode) labelNode.textContent = label;
-        if(!iconNode || !labelNode) btn.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
-        btn.setAttribute('aria-label', label);
-      }catch(_e){}
-      return btn;
+      if(!control){
+        control = document.createElement(tagName);
+      }
+
+      control.id = id;
+      control.className = 'bl-mini-btn';
+      if(href){
+        control.setAttribute('href', href);
+        control.removeAttribute('type');
+        control.removeAttribute('aria-expanded');
+      }else{
+        control.type = 'button';
+        control.setAttribute('aria-expanded', 'false');
+        control.removeAttribute('href');
+      }
+      control.innerHTML = '<span class="bl-btn-icon" aria-hidden="true">' + iconHtml + '</span><span class="bl-btn-label">' + label + '</span>';
+      control.setAttribute('aria-label', label);
+
+      if(control.parentNode !== right) right.appendChild(control);
+      return control;
     }
 
     function ensureRightControls(container){
@@ -6074,8 +6083,10 @@ function buildControls(recipeEl){
         right.className = 'bl-homebar-right';
         container.appendChild(right);
       }
-      if(!isHomePage()) ensureButton(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
-      ensureButton(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
+      if(!isHomePage()) ensureControl(right, 'bl-beats-toggle', BEATS_ICON_SVG, 'Binaural');
+      const contact = ensureControl(right, 'bl-contact-link', CONTACT_ICON_SVG, 'Contact Baseline Lifestyle', { href:'/contact/' });
+      const auth = ensureControl(right, 'bl-auth-toggle', AUTH_ICON_SVG, currentAuthButtonLabel());
+      if(contact && auth && contact.nextSibling !== auth) right.insertBefore(contact, auth);
       return right;
     }
 
