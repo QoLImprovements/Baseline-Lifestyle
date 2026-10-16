@@ -20,7 +20,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
 
-const BUILD = 'BLOCK_GRID_MOTION_20261017_1';
+const BUILD = 'BLOCK_GRID_DEPTH_20261017_2';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -41,7 +41,7 @@ let statusMessage = '';
 let dragState = null;
 let suppressClick = false;
 let storageAuth = null;
-let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false };
+let boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false };
 
 function number(value, minimum = 0) {
   return Math.max(minimum, Math.floor(Number(value) || 0));
@@ -107,6 +107,7 @@ function startNewGame() {
   selectedPiece = -1;
   previewAnchor = null;
   statusMessage = 'Choose a piece, then place it on the board.';
+  boardMotion.newTray = true;
   persist();
   render();
 }
@@ -140,7 +141,7 @@ function trayHtml() {
   return active.tray.map((id, index) => {
     const selected = index === selectedPiece;
     const fits = !active.gameOver && hasAnyPlacement(active.board, [id]);
-    return `<button class="block-grid-piece${selected ? ' is-selected' : ''}${fits ? '' : ' is-blocked'}" data-block-piece="${index}" type="button" aria-pressed="${selected}" ${active.gameOver ? 'disabled' : ''}>
+    return `<button class="block-grid-piece${selected ? ' is-selected' : ''}${fits ? '' : ' is-blocked'}${boardMotion.newTray ? ' is-tray-arrival' : ''}" style="--piece-index:${index}" data-block-piece="${index}" type="button" aria-pressed="${selected}" ${active.gameOver ? 'disabled' : ''}>
       ${pieceMiniHtml(id)}
       <span class="sr-only">Piece ${index + 1}${fits ? '' : ', no legal placement'}</span>
     </button>`;
@@ -162,16 +163,56 @@ function previewCells(active) {
   return set;
 }
 
+function boardOccupancy(active) {
+  const filled = active.board.reduce((total, row) => total + row.filter(Boolean).length, 0);
+  const total = active.board.length * active.board.length;
+  return total ? filled / total : 0;
+}
+
+function nearCompleteCells(active) {
+  const cells = new Set();
+  const size = active.board.length;
+  for (let row = 0; row < size; row += 1) {
+    const filled = active.board[row].reduce((count, cell) => count + (cell ? 1 : 0), 0);
+    if (filled === size - 1) {
+      const col = active.board[row].findIndex(cell => !cell);
+      if (col >= 0) cells.add(`${row}:${col}`);
+    }
+  }
+  for (let col = 0; col < size; col += 1) {
+    let filled = 0;
+    let emptyRow = -1;
+    for (let row = 0; row < size; row += 1) {
+      if (active.board[row][col]) filled += 1;
+      else emptyRow = row;
+    }
+    if (filled === size - 1 && emptyRow >= 0) cells.add(`${emptyRow}:${col}`);
+  }
+  return cells;
+}
+
+function boardFeedbackHtml() {
+  if (!boardMotion.scoreDelta && !boardMotion.lines) return '';
+  const clearLabel = boardMotion.lines >= 3 ? 'MEGA CLEAR' : boardMotion.lines === 2 ? 'DOUBLE CLEAR' : boardMotion.lines === 1 ? 'LINE CLEAR' : '';
+  return `<div class="block-grid-feedback" aria-hidden="true">
+    <strong>+${boardMotion.scoreDelta}</strong>
+    ${clearLabel ? `<span>${clearLabel}</span>` : ''}
+    ${boardMotion.combo > 1 ? `<em>Combo ×${boardMotion.combo}</em>` : ''}
+  </div>`;
+}
+
 function boardHtml() {
   const active = run();
   if (!active) return '';
   const previews = previewCells(active);
+  const nearComplete = nearCompleteCells(active);
   return active.board.map((row, rowIndex) => row.map((filled, colIndex) => {
     const key = `${rowIndex}:${colIndex}`;
     const preview = previews.has(key) ? (previews.get(key) ? ' is-preview-valid' : ' is-preview-invalid') : '';
     const lineMotion = boardMotion.clearRows.has(rowIndex) || boardMotion.clearCols.has(colIndex);
     const placedMotion = boardMotion.placed.has(key) && !lineMotion;
-    return `<button class="block-grid-cell${filled ? ' is-filled' : ''}${preview}${lineMotion ? ' is-line-cleared' : ''}${placedMotion ? ' is-just-placed' : ''}" data-block-cell="${rowIndex}:${colIndex}" type="button" aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}${filled ? ', occupied' : ', empty'}" ${active.gameOver ? 'disabled' : ''}></button>`;
+    const opportunity = !filled && nearComplete.has(key);
+    return `<button class="block-grid-cell${filled ? ' is-filled' : ''}${preview}${lineMotion ? ' is-line-cleared' : ''}${placedMotion ? ' is-just-placed' : ''}${opportunity ? ' is-line-opportunity' : ''}" data-block-cell="${rowIndex}:${colIndex}" type="button" aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}${filled ? ', occupied' : ', empty'}" ${active.gameOver ? 'disabled' : ''}></button>`;
   }).join('')).join('');
 }
 
@@ -193,6 +234,9 @@ function renderGame() {
     return;
   }
   const progress = runLevelProgress(active.lines);
+  const occupancy = boardOccupancy(active);
+  const openPercent = Math.max(0, Math.round((1 - occupancy) * 100));
+  const linesToNext = progress.target - progress.current;
   root.innerHTML = `
     <div class="block-grid-active-header">
       <div class="stat-pills">
@@ -201,13 +245,24 @@ function renderGame() {
         <div class="stat-pill">Lines <span>${active.lines}</span></div>
         <div class="stat-pill">Run Level <span>${progress.level}</span></div>
         <div class="stat-pill">Combo <span>${active.combo ? `×${active.combo}` : '—'}</span></div>
+        <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
       <button class="action secondary" data-block-action="fullscreen" type="button">${document.fullscreenElement === root ? 'Exit Full Screen' : 'Full Screen'}</button>
     </div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
+    <div class="block-grid-run-objective">
+      <div><strong>Run Level ${progress.level}</strong><span>${linesToNext} line${linesToNext === 1 ? '' : 's'} to Level ${progress.level + 1}</span></div>
+      <span>${progress.current} / ${progress.target}</span>
+    </div>
     <div class="block-grid-level-meter" aria-label="Run level progress"><span style="width:${progress.current / progress.target * 100}%"></span></div>
-    <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
-    <div class="block-grid-tray" aria-label="Available pieces">${trayHtml()}</div>
+    <div class="block-grid-board-stage">
+      <div class="block-grid-board${boardMotion.invalid ? ' is-invalid-drop' : ''}${occupancy >= .72 ? ' is-danger' : occupancy >= .55 ? ' is-crowded' : ''}" data-block-board role="grid" aria-label="Block Grid board">${boardHtml()}</div>
+      ${boardFeedbackHtml()}
+    </div>
+    <div class="block-grid-tray-wrap">
+      <div class="block-grid-tray-heading"><strong>Available Pieces</strong><span>Drag a shape onto the board</span></div>
+      <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
+    </div>
     <div class="game-window-actions">
       <button class="action ghost" data-block-action="new" type="button">New Game</button>
     </div>`;
@@ -257,7 +312,7 @@ function render() {
 }
 
 function resetBoardMotion() {
-  boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false };
+  boardMotion = { placed:new Set(), clearRows:new Set(), clearCols:new Set(), invalid:false, scoreDelta:0, lines:0, combo:0, newTray:false };
 }
 
 function shapeContainedAnchor(board, piece, row, col) {
@@ -372,6 +427,9 @@ function placeSelected(row, col) {
   boardMotion.placed = new Set(result.placed.map(([placedRow, placedCol]) => `${placedRow}:${placedCol}`));
   boardMotion.clearRows = new Set(result.rowsCleared);
   boardMotion.clearCols = new Set(result.colsCleared);
+  boardMotion.scoreDelta = result.scoreDelta;
+  boardMotion.lines = result.linesCleared;
+  boardMotion.combo = result.combo;
   active.board = result.board;
   active.score += result.scoreDelta;
   active.combo = result.combo;
@@ -382,7 +440,10 @@ function placeSelected(row, col) {
   profile.totalLines += result.linesCleared;
   awardXp(profile, Math.max(1, Math.ceil(result.scoreDelta / 5) + result.linesCleared * 2));
   profile.bestScore = Math.max(profile.bestScore, active.score);
-  if (!active.tray.length) active.tray = createTray(active.board, profile.selectedMode);
+  if (!active.tray.length) {
+    active.tray = createTray(active.board, profile.selectedMode);
+    boardMotion.newTray = true;
+  }
   active.gameOver = !hasAnyPlacement(active.board, active.tray);
   selectedPiece = -1;
   previewAnchor = null;
@@ -539,7 +600,7 @@ const shell = createPuzzleHubShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_MOTION_20261017_1',
+  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_DEPTH_20261017_2',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
