@@ -17,7 +17,11 @@
 
   function displayCode(unit){
     if(!unit) return '';
-    return unit.category==='facial' ? 'AU'+unit.code : 'FACS '+unit.code;
+    if(unit.code==='0') return 'Neutral';
+    if(unit.kind==='Action Unit') return 'AU'+unit.code;
+    if(unit.kind==='Action Descriptor') return 'AD'+unit.code;
+    if(unit.kind==='Associated M-code') return unit.code;
+    return 'FACS '+unit.code;
   }
 
   function defaultEntry(unit){
@@ -67,9 +71,11 @@
       unit.code,
       displayCode(unit),
       unit.name,
+      unit.kind,
       unit.region,
       unit.muscles,
-      unit.movement
+      unit.movement,
+      unit.editionNote
     ].join(' ').toLowerCase();
     return hay.includes(q);
   }
@@ -89,6 +95,7 @@
       button.setAttribute('data-code',unit.code);
 
       const badges=[];
+      if(unit.kind) badges.push('<span class="facs-unit-badge">'+escapeHtml(unit.kind)+'</span>');
       if(unit.intensity) badges.push('<span class="facs-unit-badge">A–E</span>');
       if(unit.laterality) badges.push('<span class="facs-unit-badge">L/R</span>');
       if(unit.render) badges.push('<span class="facs-unit-badge">Visual</span>');
@@ -136,18 +143,24 @@
     const focusCode=$('facsFocusCode');
     const title=$('facsFocusTitle');
     const movement=$('facsFocusMovement');
+    const type=$('facsFocusType');
     const region=$('facsFocusRegion');
     const muscle=$('facsFocusMuscle');
     const renderer=$('facsFocusRenderer');
+    const noteRow=$('facsFocusNoteRow');
+    const note=$('facsFocusNote');
     const remove=$('facsRemoveFocused');
 
     if(!entry){
       if(focusCode)focusCode.textContent='No code selected';
       if(title)title.textContent='Choose a FACS code';
       if(movement)movement.textContent='Select a code from the library to add it to the face and edit its settings.';
+      if(type)type.textContent='—';
       if(region)region.textContent='—';
       if(muscle)muscle.textContent='—';
       if(renderer)renderer.textContent='—';
+      if(noteRow)noteRow.hidden=true;
+      if(note)note.textContent='—';
       if(remove)remove.disabled=true;
       renderIntensity(null);
       renderSide(null);
@@ -157,9 +170,12 @@
     if(focusCode)focusCode.textContent=compactEntry(entry);
     if(title)title.textContent=entry.unit.name;
     if(movement)movement.textContent=entry.unit.movement;
+    if(type)type.textContent=entry.unit.kind||'FACS code';
     if(region)region.textContent=entry.unit.region;
     if(muscle)muscle.textContent=entry.unit.muscles;
     if(renderer)renderer.textContent=entry.unit.render?'Illustrated in movement model':'Reference only';
+    if(noteRow)noteRow.hidden=!entry.unit.editionNote;
+    if(note)note.textContent=entry.unit.editionNote||'—';
     if(remove)remove.disabled=false;
     renderIntensity(entry);
     renderSide(entry);
@@ -230,12 +246,7 @@
       return;
     }
     if(state.active.has(code)){
-      if(state.focused===code){
-        state.active.delete(code);
-        state.focused=activeEntries().length?activeEntries()[activeEntries().length-1].unit.code:null;
-      }else{
-        state.focused=code;
-      }
+      state.focused=code;
     }else{
       state.active.set(code,defaultEntry(unit));
       state.focused=code;
