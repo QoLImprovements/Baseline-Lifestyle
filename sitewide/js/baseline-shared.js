@@ -258,6 +258,7 @@
     'baseline-food-approach.html': { base:'/baseline-food-approach', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', 'diet-log':'diet-log' } },
     'baseline-massage.html': { base:'/baseline-massage', defaultTab:'system', tabs:{ system:'system', library:'library', planner:'planner' } },
     'baseline-natural-skincare.html': { base:'/baseline-natural-skincare', defaultTab:'system', tabs:{ system:'system', recipes:'recipes', ingredients:'ingredient-library', support:'skin-support-system', routine:'my-routine' } },
+    'baseline-psychology.html': { base:'/baseline-psychology', defaultTab:'system', tabs:{ system:'system', paralinguistics:'paralinguistics' } },
     'baseline-badminton-session.html': { base:'/baseline-badminton-session', defaultTab:'system', tabs:{ system:'system', gameplan:'game-plan', standings:'ratings-standings', roster:'players-pairs', history:'session-history' } },
     'baseline-fitness.html': { base:'/baseline-fitness', defaultTab:'system', tabs:{ system:'system', routine:'my-plan', library:'library', achievements:'achievements', 'my-plan':'my-plan', 'my-routine':'my-plan', 'my-body':'my-body' } }
   });
@@ -266,6 +267,7 @@
     'baseline-food-approach.html':'/baseline-food-approach/system',
     'baseline-massage.html':'/baseline-massage/system',
     'baseline-natural-skincare.html':'/baseline-natural-skincare/system',
+    'baseline-psychology.html':'/baseline-psychology/system',
     'baseline-badminton-session.html':'/baseline-badminton-session/system',
     'baseline-fitness.html':'/baseline-fitness/system',
     'baseline-games-hub.html':'/baseline-games-hub/games-hub'
@@ -276,6 +278,7 @@
     if(/\/baseline-food-approach(?:\/|$)/.test(path)) return 'baseline-food-approach.html';
     if(/\/baseline-massage(?:\/|$)/.test(path)) return 'baseline-massage.html';
     if(/\/baseline-natural-skincare(?:\/|$)/.test(path)) return 'baseline-natural-skincare.html';
+    if(/\/baseline-psychology(?:\/|$)/.test(path)) return 'baseline-psychology.html';
     if(/\/baseline-badminton-session(?:\/|$)/.test(path)) return 'baseline-badminton-session.html';
     if(/\/baseline-fitness(?:\/|$)/.test(path)) return 'baseline-fitness.html';
     if(/\/baseline-games-hub(?:\/|$)/.test(path)) return 'baseline-games-hub.html';
@@ -2121,7 +2124,7 @@ function parseViewStateHash(hash){
     sortedCards.forEach(card => recipesContainer.appendChild(card));
 
     // 2) Update overview + nav lists.
-    // Natural Skincare has promoted and folder-backed recipes with authored
+    // Personal Care has promoted and folder-backed recipes with authored
     // descriptors. Its canonical recipe-navigation module owns that landing
     // content; the generic category rebuilder must never strip those labels.
     const recipePageFile = routePageFileFromPath(location.pathname || '');
@@ -2232,7 +2235,7 @@ function parseViewStateHash(hash){
       if(el) el.scrollIntoView({behavior:'auto', block:'start'});
     };
 
-    // Build recipe list from embedded recipe cards. Natural Skincare can also
+    // Build recipe list from embedded recipe cards. Personal Care can also
     // register folder-backed recipes without duplicating their recipe body here.
     const recipeCards = qsa('#recipes .recipe.card.recipe-page[id]');
     const routePageFile = routePageFileFromPath(location.pathname || '');
@@ -5947,7 +5950,7 @@ function buildControls(recipeEl){
         ['index.html', 'Home'],
         ['baseline-food-approach.html', 'Baseline Food Approach'],
         ['baseline-massage.html', 'Baseline Massage'],
-        ['baseline-natural-skincare.html', 'Baseline Natural Skincare'],
+        ['baseline-natural-skincare.html', 'Baseline Personal Care'],
         ['baseline-fitness.html', 'Baseline Fitness'],
         ['baseline-badminton-session.html', 'Baseline Badminton Session'],
         ['baseline-games-hub.html', 'Baseline Games Hub']
@@ -6174,7 +6177,7 @@ function buildControls(recipeEl){
         ['/home/1','Home'],
         ['/baseline-food-approach/system','Baseline Food Approach'],
         ['/baseline-massage/system','Baseline Massage'],
-        ['/baseline-natural-skincare/system','Baseline Natural Skincare'],
+        ['/baseline-natural-skincare/system','Baseline Personal Care'],
         ['/baseline-fitness/system','Baseline Fitness'],
         ['/baseline-badminton-session/system','Baseline Badminton Session'],
         ['/baseline-games-hub/games-hub','Baseline Games Hub']
@@ -6377,8 +6380,8 @@ function setupAuthFlyout(){
               </div>
 
               <div class="bl-auth-fieldgroup">
-                <label for="bl-favs-skin-select">Baseline Skincare Favorites</label>
-                <select id="bl-favs-skin-select" aria-label="Baseline Skincare Favorites"></select>
+                <label for="bl-favs-skin-select">Baseline Personal Care Favorites</label>
+                <select id="bl-favs-skin-select" aria-label="Baseline Personal Care Favorites"></select>
               </div>
 
               <div class="bl-auth-fieldgroup bl-auth-fitness-link-wrap">
