@@ -314,6 +314,7 @@ test('mobile header consolidates utility icons without replacing their panels', 
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
   const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
   const homeCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+  const protectedKeyCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-protected-key-placement.css'), 'utf8');
 
   assert.ok(shared.includes("id = 'bl-mobile-actions-toggle'"));
   assert.ok(shared.includes("menu.id = 'bl-mobile-actions-menu'"));
@@ -333,4 +334,5 @@ test('mobile header consolidates utility icons without replacing their panels', 
   assert.ok(headerCss.includes('grid-template-areas:"pages right"!important'), 'small system headers must remain one row');
   assert.ok(headerCss.includes('--homebar-h:58px!important'), 'small system headers must not retain the old two-row height');
   assert.ok(homeCss.includes('grid-template-areas:"title controls"'), 'Home must collapse to brand plus the consolidated control');
+  assert.ok(protectedKeyCss.includes('@media (min-width:521px)'), 'protected-key first-paint flex geometry must not override the <=520px canonical grid');
 });
