@@ -468,9 +468,8 @@ function handleBottlePointerUp(event) {
     cancelAnimationFrame(state.raf);
     state.raf = 0;
   }
-  state.visualX = event.clientX - state.grabOffsetX;
-  state.visualY = event.clientY - state.grabOffsetY;
-  setBottleGhostPosition(state.ghost, state.visualX, state.visualY);
+  if (!Number.isFinite(state.visualX)) state.visualX = event.clientX - state.grabOffsetX;
+  if (!Number.isFinite(state.visualY)) state.visualY = event.clientY - state.grabOffsetY;
 
   if (valid) {
     releaseDragClasses(state);
