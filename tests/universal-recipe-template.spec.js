@@ -310,6 +310,26 @@ test('Food recipe subtab route state also survives refresh without exposing anot
   expect(new URL(page.url()).searchParams.get('view')).toBeNull();
 });
 
+test('signed-out favourite caption floats without changing recipe layout', async ({ page }) => {
+  await page.goto('/baseline-natural-skincare/recipes/protective-touch-balm', { waitUntil:'domcontentloaded' });
+
+  const card = page.locator('#r3');
+  const favourite = card.locator('.recipe-title-row > .fav-btn');
+  const batch = card.locator('.recipe-meta-row');
+  await expect(favourite).toBeVisible();
+  await expect(batch).toBeVisible();
+
+  const before = await batch.boundingBox();
+  await favourite.click();
+  await expect(favourite).toHaveAttribute('data-tip', 'log in required to favorite this recipe.');
+  await expect(favourite).toHaveClass(/tip-show/);
+  const after = await batch.boundingBox();
+
+  expect(before).not.toBeNull();
+  expect(after).not.toBeNull();
+  expect(Math.abs(after.y - before.y)).toBeLessThan(1);
+});
+
 test('A deliberate recipe open always starts on Recipe even after Details was previously active', async ({ page }) => {
   for (const system of [
     {
