@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg">
   <symbol id="icon-camp" viewBox="0 0 24 24"><path d="M3 20 12 5l9 15M7.5 20 12 12l4.5 8M2 20h20"/></symbol>
   <symbol id="icon-management" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/><circle cx="8" cy="7" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="10" cy="17" r="1.5"/></symbol>
+  <symbol id="icon-inventory" viewBox="0 0 24 24"><path d="M5 7h14l2 4v9H3v-9l2-4Z M8 7V4h8v3M8 13h8M10 16h4"/></symbol>
+  <symbol id="icon-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/><circle cx="12" cy="12" r="8"/></symbol>
   <symbol id="icon-fullscreen" viewBox="0 0 24 24"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></symbol>
   <symbol id="icon-training" viewBox="0 0 24 24"><path d="m5 18 5-5M14 9l5-5M8 20l-4-4 4-4M16 12l4-4-4-4M9 15l6-6"/></symbol>
   <symbol id="icon-workshop" viewBox="0 0 24 24"><path d="m14 6 4-4 4 4-4 4M2 22l8-8M7 9l8 8M4 6l4-4 2 2-4 4M13 19l3 3 4-4-3-3"/></symbol>

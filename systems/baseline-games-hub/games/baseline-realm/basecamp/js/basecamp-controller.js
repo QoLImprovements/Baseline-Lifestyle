@@ -206,7 +206,7 @@ export class BasecampController {
     const pane = document.getElementById('realmDrawerStores');
     if (!pane || !this.inventoryService) return;
     const save = this.inventoryService.read();
-    pane.innerHTML = `<div class="basecamp-service"><header><span>Merchant Post</span><strong>${save.realm.wallet.coins} Coins</strong><small>Purchases and sales commit through one checked Realm transaction.</small></header><div class="basecamp-trade-list">${MERCHANT_OFFERS.map((offer) => {
+    pane.innerHTML = `<div class="basecamp-service"><header><span>Merchant Post</span><strong>Buy and sell supplies</strong><small>Purchases and sales commit through one checked Realm transaction.</small></header><div class="basecamp-trade-list">${MERCHANT_OFFERS.map((offer) => {
       const count = Number(save.realm.inventory[offer.bucket][offer.id] || 0);
       return `<article><div><strong>${offer.name}</strong><small>Owned ${count}</small></div><button data-basecamp-action="buy" data-item-id="${offer.id}" ${save.realm.wallet.coins < offer.buy ? 'disabled' : ''}>Buy ${offer.buy}</button><button data-basecamp-action="sell" data-item-id="${offer.id}" ${count < 1 ? 'disabled' : ''}>Sell ${offer.sell}</button></article>`;
     }).join('')}</div></div>`;

@@ -350,7 +350,7 @@ export function createNinjaTrainingRuntime(dependencies) {
     const merchantPane = document.getElementById('realmDrawerMerchant');
     if(merchantPane){
       merchantPane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Merchant log</strong><span class="inline-note">Merchant visits ' + exp.merchantVisits + ' · Current coins ' + formatInt(profile.coins) + '.</span></article>'
+        + '<article class="realm-manage-card"><strong>Merchant log</strong><span class="inline-note">Merchant visits ' + exp.merchantVisits + '.</span></article>'
         + '<article class="realm-manage-card"><strong>Route trading</strong><span class="inline-note">When a merchant appears, Resolve Encounter trades 90 Coins for 2 route loot. This provides an immediate link between Ninja Training gains and exploration development.</span></article>'
         + '</div>';
     }
@@ -1074,10 +1074,10 @@ function showNinjaOfflineToast(message){
     ensureNinjaEnemy(profile);
     const needed = xpNeededForLevel(profile.level);
     if(refs.ninjaXpFill) refs.ninjaXpFill.style.width = clamp((profile.xp / needed) * 100, 0, 100) + '%';
-    if(refs.ninjaXpMeta) refs.ninjaXpMeta.textContent = 'Level ' + profile.level + ' - Experience ' + formatInt(profile.xp) + ' / ' + formatInt(needed) + ' - Coins ' + formatCompact(profile.coins) + ' - Clean Bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    if(refs.ninjaXpMeta) refs.ninjaXpMeta.textContent = 'Level ' + profile.level + ' - Experience ' + formatInt(profile.xp) + ' / ' + formatInt(needed) + ' - Clean Bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
     if(refs.ninjaLevelValue) refs.ninjaLevelValue.textContent = String(profile.level);
     if(refs.ninjaStageValue) refs.ninjaStageValue.textContent = String(profile.stage);
-    if(refs.ninjaCoinsValue) refs.ninjaCoinsValue.textContent = formatInt(profile.coins);
+    const realmCoinsValue = document.getElementById('realmCoinsValue'); if(realmCoinsValue) realmCoinsValue.textContent = formatInt(profile.coins);
     if(refs.ninjaDpsValue) refs.ninjaDpsValue.textContent = ninjaBaseDps(profile).toFixed(1);
     if(refs.ninjaOfflineRateValue) refs.ninjaOfflineRateValue.textContent = '×' + ninjaOfflineGainFactor(profile).toFixed(2);
     if(refs.ninjaSpiritValue) refs.ninjaSpiritValue.textContent = String(profile.spirit);
