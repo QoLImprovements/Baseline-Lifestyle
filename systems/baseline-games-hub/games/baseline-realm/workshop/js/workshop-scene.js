@@ -1,24 +1,33 @@
-import { createWorkshopController } from './workshop-ui.js';
+import { createWorkshopController } from './workshop-ui.js?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
 
 export function createWorkshopScene({ runtime, workshopService, eventBus }) {
   const controller = createWorkshopController({ runtime, workshopService, eventBus });
+
   return {
     id: 'workshop',
     async enter({ payload = {} } = {}) {
-      runtime?.setView('basecamp');
-      runtime?.openDrawerTab('workshop');
-      const drawer = document.getElementById('realmPanelDrawer');
-      if (drawer) drawer.dataset.basecampService = 'workshop';
-      const title = document.getElementById('realmDrawerTitle');
-      if (title) title.textContent = payload.category === 'cooking' ? 'Cooking' : 'Workshop';
-      controller.enter(payload.category || 'blacksmith');
+      const category = payload.category || 'blacksmith';
+      const cookingRoom = category === 'cooking';
+      runtime?.setView('workshop');
+
+      const title = document.getElementById('realmWorkshopTitle');
+      const subtitle = document.getElementById('realmWorkshopSubtitle');
+      if (title) title.textContent = cookingRoom ? 'Cooking' : 'Workshop';
+      if (subtitle) subtitle.textContent = cookingRoom
+        ? 'Prepare meals and route support'
+        : 'Forge, tailor, brew and build';
+
+      controller.enter(category, { scope: cookingRoom ? 'cooking' : 'workshop' });
     },
+
     async exit() {
-      document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
+      controller.leave();
     },
+
     render() {
       controller.render();
     },
+
     destroy() {
       controller.destroy();
     }
