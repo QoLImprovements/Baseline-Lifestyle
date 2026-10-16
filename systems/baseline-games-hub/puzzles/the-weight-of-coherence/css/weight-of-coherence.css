@@ -51,6 +51,7 @@
 .weight-coherence-piece{display:grid;place-items:center;min-height:96px;padding:6px;border:1px solid rgba(178,190,255,.14);border-radius:12px;background:rgba(25,34,76,.42);cursor:grab;touch-action:none;transition:border-color .14s ease,background .14s ease,transform .14s ease}
 .weight-coherence-piece:hover{border-color:rgba(200,210,255,.42);background:rgba(56,69,137,.40);transform:translateY(-1px)}
 .weight-coherence-piece:active{cursor:grabbing}
+.weight-coherence-piece:disabled{cursor:wait;opacity:.82}
 .weight-coherence-piece.is-selected{border-color:rgba(225,232,255,.88);background:rgba(80,97,183,.46);box-shadow:0 0 0 2px rgba(126,145,255,.25) inset}
 .weight-coherence-piece-canvas{display:block;max-width:84px;max-height:84px;width:auto;height:auto;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))}
 .weight-coherence-piece-placeholder{display:block;width:56px;height:56px;border-radius:12px;background:rgba(176,190,255,.07)}
