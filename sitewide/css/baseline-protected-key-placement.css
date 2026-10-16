@@ -28,11 +28,14 @@
   }
 }
 
-/* BASELINE-LIVE-KEY-FIRST-PAINT-20260803: stable geometry before deferred JavaScript starts. */
-html body[data-app] .bl-homebar-inner{
-  display:flex!important;
-  align-items:center!important;
-  gap:10px!important;
+/* BASELINE-LIVE-KEY-FIRST-PAINT-20260803: stable geometry before deferred JavaScript starts.
+   On <=520px the canonical header stylesheet owns the consolidated one-row grid. */
+@media (min-width:521px){
+  html body[data-app] .bl-homebar-inner{
+    display:flex!important;
+    align-items:center!important;
+    gap:10px!important;
+  }
 }
 html body[data-app] .bl-homebar-inner > .bl-pages-dd{order:1!important;flex:0 1 auto!important;min-width:0!important;margin:0!important;}
 html body[data-app] .bl-homebar-inner > .bl-protected-key{order:2!important;margin:0!important;align-self:center!important;}
