@@ -143,7 +143,7 @@
 
     if(!entry){
       if(focusCode)focusCode.textContent='No code selected';
-      if(title)title.textContent='Choose an Action Unit';
+      if(title)title.textContent='Choose a FACS code';
       if(movement)movement.textContent='Select a code from the library to add it to the face and edit its settings.';
       if(region)region.textContent='—';
       if(muscle)muscle.textContent='—';
