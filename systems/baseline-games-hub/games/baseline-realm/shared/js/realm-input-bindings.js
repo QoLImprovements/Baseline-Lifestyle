@@ -45,7 +45,7 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   inputManager.bindKeyboard('realm-basecamp', 'b', { when: standardActive });
   inputManager.bindKeyboard('realm-training', 'n', { when: standardActive });
   inputManager.bindKeyboard('realm-exploration', 'e', { when: standardActive });
-  inputManager.bindKeyboard('realm-menu', ['m', 'escape'], { when: standardActive });
+  inputManager.bindKeyboard('realm-menu', 'm', { when: standardActive });
   inputManager.bindKeyboard('realm-shuriken', 's', { when: standardActive });
   inputManager.bindKeyboard('realm-fullscreen', 'f', { when: standardActive });
   inputManager.bindKeyboard('realm-audio-mute', 'v', { when: standardActive });
@@ -86,17 +86,17 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
       }
       if (jrpgActive()) return;
       if (runtime.getView() === 'exploration') runtime.handleExploration('resolve');
-      else runtime.strike();
+      else if (runtime.getView() === 'training') runtime.strike();
     })),
     eventBus.on('realm:input:realm-basecamp', standardOnly(() => navigate(sceneRouter.getCurrentSceneId() === 'basecamp' ? 'ninja-training' : 'basecamp'))),
     eventBus.on('realm:input:realm-training', standardOnly(() => navigate('training'))),
     eventBus.on('realm:input:realm-exploration', standardOnly(() => {
-      if (jrpgActive()) return;
+      if (jrpgActive() || runtime.getView() === 'workshop') return;
       if (runtime.getView() === 'basecamp') navigate('exploration');
       else runtime.handleExploration('advance');
     })),
     eventBus.on('realm:input:realm-menu', standardOnly(() => {
-      if (!jrpgActive()) runtime.handleDrawer('toggle');
+      if (!jrpgActive() && runtime.getView() !== 'workshop') runtime.handleDrawer('toggle');
     })),
     eventBus.on('realm:input:realm-shuriken', standardOnly(() => runtime.getView() === 'training' && runtime.shuriken())),
     eventBus.on('realm:input:realm-upgrade-hotkey', standardOnly((event) => runtime.buyUpgradeByHotkey(payload(event).key)))
