@@ -33,6 +33,8 @@
     settingsDialog:document.getElementById('weightCoherenceSettingsDialog'),
     setupSettings:document.getElementById('weightCoherenceSetupSettingsBtn'),
     toolbarSettings:document.getElementById('weightCoherenceToolbarSettingsBtn'),
+    sortTrays:Array.from(root.querySelectorAll('[data-jigsaw-sort-tray]')),
+    sortCounts:Array.from(root.querySelectorAll('[data-sort-count]')),
     tray:document.getElementById('weightCoherenceTray'),
     trayMeta:document.getElementById('weightCoherenceTrayMeta'),
     prev:document.getElementById('weightCoherencePrevBtn'),
@@ -57,6 +59,7 @@
   let suppressTrayClickUntil = 0;
   let imageReady = false;
   let trayRenderToken = 0;
+  let sortRenderToken = 0;
 
   image.addEventListener('load', function(){
     imageReady = true;
@@ -264,14 +267,87 @@
     return ids;
   }
 
+  function sortedPieceSet(){
+    const result=new Set();
+    if(!state || !Array.isArray(state.sortBins)) return result;
+    state.sortBins.forEach(function(bin){
+      if(Array.isArray(bin)) bin.forEach(function(id){ result.add(id); });
+    });
+    return result;
+  }
+
+  function normalizeSortBins(raw,count,placed){
+    const bins=[[],[],[],[]];
+    const seen=new Set(placed || []);
+    if(!Array.isArray(raw)) return bins;
+    raw.slice(0,4).forEach(function(bin,index){
+      if(!Array.isArray(bin)) return;
+      bin.forEach(function(value){
+        const id=Number(value);
+        if(!Number.isInteger(id) || id<0 || id>=count || seen.has(id)) return;
+        seen.add(id);
+        bins[index].push(id);
+      });
+    });
+    return bins;
+  }
+
   function unplacedIds(){
     if(!state) return [];
-    return state.order.filter(function(id){ return !state.placed.has(id); });
+    const parked=sortedPieceSet();
+    return state.order.filter(function(id){ return !state.placed.has(id) && !parked.has(id); });
+  }
+
+  function renderSortTrays(){
+    if(!refs.sortTrays.length) return;
+    const token=++sortRenderToken;
+    const pending=[];
+    refs.sortTrays.forEach(function(tray,index){
+      tray.innerHTML='';
+      const ids=state && Array.isArray(state.sortBins?.[index]) ? state.sortBins[index] : [];
+      const count=refs.sortCounts.find(function(node){ return Number(node.dataset.sortCount)===index; });
+      if(count) count.textContent=String(ids.length);
+      if(!state || !state.started || !imageReady) return;
+      ids.forEach(function(id){
+        if(state.placed.has(id)) return;
+        const btn=document.createElement('button');
+        btn.type='button';
+        btn.className='weight-coherence-piece';
+        btn.dataset.pieceId=String(id);
+        btn.dataset.pieceSource='sort-' + index;
+        btn.setAttribute('aria-label','Jigsaw piece ' + (id+1) + ' in Sort ' + (index+1));
+        btn.disabled=true;
+        btn.setAttribute('aria-busy','true');
+        if(selectedPieceId===id) btn.classList.add('is-selected');
+        const placeholder=document.createElement('span');
+        placeholder.className='weight-coherence-piece-placeholder';
+        placeholder.setAttribute('aria-hidden','true');
+        btn.appendChild(placeholder);
+        tray.appendChild(btn);
+        pending.push({id:id,button:btn});
+      });
+    });
+    let index=0;
+    const batchSize=mobileLike()?2:6;
+    const paintBatch=function(){
+      if(token!==sortRenderToken) return;
+      const stop=Math.min(pending.length,index+batchSize);
+      for(;index<stop;index++){
+        const item=pending[index];
+        if(!item.button.isConnected) continue;
+        item.button.replaceChildren(createPieceCanvas(item.id));
+        item.button.disabled=false;
+        item.button.removeAttribute('aria-busy');
+      }
+      if(index<pending.length) window.requestAnimationFrame(paintBatch);
+    };
+    if(pending.length) window.requestAnimationFrame(paintBatch);
   }
 
   function renderTray(){
     if(!refs.tray) return;
     refs.tray.innerHTML='';
+    renderSortTrays();
     if(!state || !state.started){
       refs.trayMeta.textContent='Choose a piece count and start the puzzle.';
       refs.prev.disabled=true;
@@ -289,9 +365,11 @@
     state.page=Math.max(0,Math.min(state.page,pageCount-1));
     const start=state.page*pageSize;
     const pageIds=ids.slice(start,start+pageSize);
+    const parkedCount=state.sortBins.reduce(function(total,bin){ return total + bin.length; },0);
+    const totalRemaining=Math.max(0,state.difficulty-state.placed.size);
     refs.trayMeta.textContent=ids.length
-      ? 'Tray ' + (state.page+1) + ' of ' + pageCount + ' · ' + ids.length.toLocaleString('en-GB') + ' pieces remaining'
-      : 'All pieces placed';
+      ? 'Main tray ' + (state.page+1) + ' of ' + pageCount + ' · ' + ids.length.toLocaleString('en-GB') + ' unsorted · ' + parkedCount.toLocaleString('en-GB') + ' parked'
+      : (totalRemaining ? 'Main tray empty · ' + parkedCount.toLocaleString('en-GB') + ' parked' : 'All pieces placed');
     refs.prev.disabled=state.page<=0;
     refs.next.disabled=state.page>=pageCount-1;
 
@@ -362,10 +440,11 @@
   function serialiseState(){
     if(!state) return null;
     return {
-      version:1,
+      version:2,
       difficulty:state.difficulty,
       placed:Array.from(state.placed),
       order:state.order.slice(),
+      sortBins:state.sortBins.map(function(bin){ return bin.slice(); }),
       page:state.page,
       preview:state.preview,
       started:state.started,
@@ -397,10 +476,12 @@
       const count=config.pieces;
       const placed=new Set((Array.isArray(parsed.placed)?parsed.placed:[]).map(Number).filter(function(id){ return Number.isInteger(id)&&id>=0&&id<count; }));
       const order=Array.isArray(parsed.order) && parsed.order.length===count ? parsed.order.map(Number) : shuffledIds(count);
+      const sortBins=normalizeSortBins(parsed.sortBins,count,placed);
       state={
         difficulty:count,
         placed:placed,
         order:order,
+        sortBins:sortBins,
         page:Math.max(0,Number(parsed.page)||0),
         preview:!!parsed.preview,
         started:parsed.started!==false,
@@ -458,6 +539,7 @@
       difficulty:config.pieces,
       placed:new Set(),
       order:shuffledIds(config.pieces),
+      sortBins:[[],[],[],[]],
       page:0,
       preview:false,
       started:true,
@@ -472,7 +554,7 @@
     refs.completion.hidden=true;
     if(refs.reset) refs.reset.disabled=false;
     placedCtx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
-    setStatus('Puzzle started. Drag a piece onto the board, or select a piece and then click its position.','');
+    setStatus('Puzzle started. Drag pieces onto the board or park them in the four sorting trays.','');
     drawBoard();
     renderTray();
     updateStats();
@@ -501,8 +583,44 @@
     saveState();
   }
 
+  function removePieceFromSortBins(id){
+    if(!state || !Array.isArray(state.sortBins)) return false;
+    let removed=false;
+    state.sortBins.forEach(function(bin){
+      const index=bin.indexOf(id);
+      if(index>=0){
+        bin.splice(index,1);
+        removed=true;
+      }
+    });
+    return removed;
+  }
+
+  function movePieceToSortBin(id,binIndex){
+    if(!state || state.completed || state.placed.has(id)) return;
+    const index=Math.max(0,Math.min(3,Number(binIndex)||0));
+    removePieceFromSortBins(id);
+    state.sortBins[index].push(id);
+    selectedPieceId=null;
+    renderTray();
+    saveState();
+    setStatus('Piece parked in Sort ' + (index+1) + '.','');
+  }
+
+  function movePieceToMainTray(id){
+    if(!state || state.completed || state.placed.has(id)) return;
+    const removed=removePieceFromSortBins(id);
+    if(!removed) return;
+    state.page=0;
+    selectedPieceId=null;
+    renderTray();
+    saveState();
+    setStatus('Piece returned to the main tray.','');
+  }
+
   function placePiece(id){
     if(!state || state.completed || state.placed.has(id)) return;
+    removePieceFromSortBins(id);
     state.placed.add(id);
     drawPieceToBoard(placedCtx,id);
     selectedPieceId=null;
@@ -577,7 +695,20 @@
     window.removeEventListener('pointercancel',cancelDrag,true);
     if(drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
     if(drag.moved) suppressTrayClickUntil=Date.now()+250;
-    if(event && drag.moved) attemptPlacement(drag.id,event.clientX,event.clientY);
+    if(!event || !drag.moved) return;
+
+    const target=document.elementFromPoint(event.clientX,event.clientY);
+    const sortTarget=target?.closest?.('[data-jigsaw-sort-tray]');
+    if(sortTarget && root.contains(sortTarget)){
+      movePieceToSortBin(drag.id,Number(sortTarget.dataset.jigsawSortTray));
+      return;
+    }
+    const mainTrayTarget=target?.closest?.('#weightCoherenceTray');
+    if(mainTrayTarget && root.contains(mainTrayTarget)){
+      movePieceToMainTray(drag.id);
+      return;
+    }
+    attemptPlacement(drag.id,event.clientX,event.clientY);
   }
 
   function cancelDrag(){
@@ -638,8 +769,10 @@
     if(!state || state.completed) return;
     const remaining=unplacedIds();
     const shuffled=shuffledIds(remaining.length).map(function(index){ return remaining[index]; });
+    const parked=sortedPieceSet();
+    const parkedIds=state.order.filter(function(id){ return parked.has(id); });
     const placedTail=state.order.filter(function(id){ return state.placed.has(id); });
-    state.order=shuffled.concat(placedTail);
+    state.order=shuffled.concat(parkedIds,placedTail);
     state.page=0;
     selectedPieceId=null;
     renderTray();
@@ -651,8 +784,8 @@
     if(!refs.fullscreen) return;
     const active=document.fullscreenElement===refs.workspace;
     refs.fullscreen.setAttribute('aria-pressed',String(active));
-    refs.fullscreen.setAttribute('aria-label',active?'Exit full screen':'Enter full screen');
-    refs.fullscreen.title=active?'Exit full screen':'Full screen';
+    refs.fullscreen.setAttribute('aria-label',active?'Exit full screen (F)':'Enter full screen (F)');
+    refs.fullscreen.title=active?'Exit full screen · F':'Full screen · F';
   }
 
   function toggleFullscreen(){
@@ -745,9 +878,9 @@
   refs.prev.addEventListener('click',previousTray);
   refs.next.addEventListener('click',nextTray);
 
-  refs.tray.addEventListener('pointerdown',function(event){
-    const button=event.target.closest('[data-piece-id]');
-    if(!button || !state || state.completed) return;
+  root.addEventListener('pointerdown',function(event){
+    const button=event.target.closest?.('[data-piece-id]');
+    if(!button || button.disabled || !state || state.completed) return;
     const id=Number(button.dataset.pieceId);
     if(!Number.isInteger(id)) return;
     dragState={ id:id, button:button, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
@@ -756,9 +889,9 @@
     window.addEventListener('pointercancel',cancelDrag,true);
   });
 
-  refs.tray.addEventListener('click',function(event){
-    const button=event.target.closest('[data-piece-id]');
-    if(!button || !state || state.completed) return;
+  root.addEventListener('click',function(event){
+    const button=event.target.closest?.('[data-piece-id]');
+    if(!button || button.disabled || !state || state.completed) return;
     if(Date.now()<suppressTrayClickUntil) return;
     const id=Number(button.dataset.pieceId);
     selectedPieceId=selectedPieceId===id?null:id;
@@ -782,6 +915,11 @@
     if(key==='s'){
       event.preventDefault();
       shuffleTray();
+      return;
+    }
+    if(key==='f'){
+      event.preventDefault();
+      toggleFullscreen();
       return;
     }
     if(key==='arrowleft'){
