@@ -271,29 +271,34 @@ test('Baseline Personal Care is the visible system name while the existing route
 });
 
 
-test('sitewide Contact control is singular, themed and ordered before Account', () => {
+test('sitewide Contact control opens one themed shared flyout before Account', () => {
   const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
   const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-  const contact = fs.readFileSync(path.join(root, 'contact/index.html'), 'utf8');
 
   assert.ok(shared.includes("BASELINE_CONTACT_ICON_SVG"));
-  assert.ok(shared.includes("href:'/contact/'"));
-  assert.ok(shared.includes("'Contact', { href:'/contact/', ariaLabel:'Contact Baseline Lifestyle' }"));
+  assert.ok(shared.includes("'bl-contact-toggle'"));
+  assert.ok(shared.includes("ariaLabel:'Contact Baseline Lifestyle'"));
+  assert.ok(shared.includes("function setupContactFlyout()"));
+  assert.ok(shared.includes("fly.id = 'bl-contact-flyout'"));
+  assert.ok(shared.includes("mailto:contact@baselinelifestyle.org"));
+  assert.ok(shared.includes(">contact@baselinelifestyle.org</a>"));
+  assert.equal(shared.includes("href:'/contact/'"), false, 'Contact must open a panel rather than navigate to a Contact page');
   assert.ok(shared.includes("control.setAttribute('aria-label', ariaLabel)"));
+
   const controlsStart = shared.indexOf('function ensureRightControls(container)');
   const controlsEnd = shared.indexOf('function closePagesMenu', controlsStart);
   const controls = shared.slice(controlsStart, controlsEnd);
   assert.ok(controlsStart >= 0 && controlsEnd > controlsStart);
-  assert.equal((controls.match(/'bl-contact-link'/g) || []).length, 1, 'Contact must have one shared control owner');
-  assert.ok(controls.indexOf("'bl-beats-toggle'") < controls.indexOf("'bl-contact-link'"));
-  assert.ok(controls.indexOf("'bl-contact-link'") < controls.indexOf("'bl-auth-toggle'"));
-  assert.ok(sitewideCss.includes('#bl-contact-link'));
-  assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-link'));
-  assert.ok(sitewideCss.includes("#bl-beats-toggle,\n#bl-contact-link,\n#bl-auth-toggle{"));
-  assert.ok(sitewideCss.includes("body[data-app] #bl-beats-toggle,\nbody[data-app] #bl-contact-link,\nbody[data-app] #bl-auth-toggle,"));
+  assert.equal((controls.match(/'bl-contact-toggle'/g) || []).length, 1, 'Contact must have one shared control owner');
+  assert.ok(controls.indexOf("'bl-beats-toggle'") < controls.indexOf("'bl-contact-toggle'"));
+  assert.ok(controls.indexOf("'bl-contact-toggle'") < controls.indexOf("'bl-auth-toggle'"));
+
+  assert.ok(sitewideCss.includes('#bl-contact-toggle'));
+  assert.ok(sitewideCss.includes('body[data-app="home"] #bl-contact-toggle'));
+  assert.ok(sitewideCss.includes('#bl-contact-flyout .bl-contact-email'));
+  assert.ok(sitewideCss.includes('body[data-app] #bl-contact-flyout .card'));
   assert.equal(sitewideCss.includes('body[data-app="home"] #bl-beats-toggle'), false, 'Home Binaural absence must be owned by shared JS, not hidden by CSS');
-  assert.equal(home.includes('id="bl-contact-link"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
-  assert.match(contact, /<h1 id="contactTitle">Contact Us<\/h1>/);
-  assert.ok(contact.includes('/sitewide/js/baseline-shared.js'));
+  assert.equal(home.includes('id="bl-contact-toggle"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
+  assert.equal(fs.existsSync(path.join(root, 'contact/index.html')), false, 'Contact must not have a standalone page');
 });
