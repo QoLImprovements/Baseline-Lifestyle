@@ -570,7 +570,9 @@ test('Fitness saves a generated plan and reloads it through the account API', as
   await routinePlanTab.click();
   const calisthenicsCard = page.locator('details[data-fitness-plan-card="calisthenics"]');
   await expect(calisthenicsCard).toBeVisible();
-  await calisthenicsCard.locator(':scope > summary').click();
+  if (!(await calisthenicsCard.evaluate((element) => element.open))) {
+    await calisthenicsCard.locator(':scope > summary').click();
+  }
   await expect(calisthenicsCard).toHaveAttribute('open','');
   await expect(page.locator('#myPlanGeneratorWrap')).toBeVisible();
   await page.locator('.ex-row').first().locator('.ex-baseline').fill('12');
