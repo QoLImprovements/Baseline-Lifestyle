@@ -327,7 +327,7 @@ Options -Indexes
 
   # Baseline Games Hub hierarchy.
   RewriteRule ^baseline-games-hub/games-hub/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
-  RewriteRule ^baseline-games-hub/games-hub/(games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
+  RewriteRule ^baseline-games-hub/games-hub/(games-list|pairs|detect-the-word|make-the-number|track-the-coin|rule-shift|block-grid|colour-sort|darts-focused|badminton-focused|baseline-realm)/?$ systems/baseline-games-hub/baseline-games-hub.html [L,QSA]
 </IfModule>
 
 # BASELINE-MY-ROUTINE-CLEAN-ROUTES-20260810
