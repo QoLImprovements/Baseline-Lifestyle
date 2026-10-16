@@ -1980,8 +1980,32 @@ body[data-app] .bl-system-menu a{
 }
 
 /* Contact uses the same shared flyout geometry and page-theme surface as the other header panels. */
+#bl-contact-flyout .bl-contact-copy{
+  margin:0 0 16px;
+  line-height:1.5;
+}
+#bl-contact-flyout .bl-contact-email-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-width:0;
+}
+#bl-contact-flyout .bl-contact-email-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 auto;
+  width:20px;
+  height:20px;
+  color:currentColor;
+}
+#bl-contact-flyout .bl-contact-email-icon .bl-icon-svg{
+  width:20px;
+  height:20px;
+}
 #bl-contact-flyout .bl-contact-email{
   display:inline-block;
+  min-width:0;
   color:currentColor!important;
   -webkit-text-fill-color:currentColor!important;
   font-weight:900;
