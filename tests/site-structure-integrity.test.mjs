@@ -11,7 +11,8 @@ const systemNames = [
   'baseline-food-approach',
   'baseline-games-hub',
   'baseline-massage',
-  'baseline-natural-skincare'
+  'baseline-natural-skincare',
+  'baseline-psychology'
 ];
 const ownedSystemNames = [...systemNames,'charity-shop'];
 const ignoredWalkDirectories = new Set(['.git','node_modules','playwright-report','test-results']);
@@ -122,7 +123,8 @@ test('large page styling is owned by canonical system stylesheets', () => {
     ['baseline-food-approach', '/systems/baseline-food-approach/css/baseline-food-approach.css'],
     ['baseline-games-hub', '/systems/baseline-games-hub/css/baseline-games-hub.css'],
     ['baseline-massage', '/systems/baseline-massage/css/baseline-massage.css'],
-    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css']
+    ['baseline-natural-skincare', '/systems/baseline-natural-skincare/css/baseline-natural-skincare.css'],
+    ['baseline-psychology', '/systems/baseline-psychology/css/baseline-psychology.css']
   ];
   for (const [system, href] of expectations) {
     const html = fs.readFileSync(path.join(root, 'systems', system, `${system}.html`), 'utf8');
@@ -198,4 +200,66 @@ test('database schemas are versioned instead of rebuilt on every API request', (
   assert.ok(fitnessSchema.includes("bl_apply_schema_migration($db, 'fitness', 1"));
   assert.ok(gamesSchema.includes("bl_apply_schema_migration($db, 'games_hub', 1"));
   assert.ok(badmintonApi.includes("bl_apply_schema_migration($db, 'badminton_session', 1"));
+});
+
+
+test('home index uses one six-strip system layout with the agreed order and copy', () => {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+  const themes = fs.readFileSync(path.join(root, 'sitewide/css/baseline-themes.css'), 'utf8');
+
+  const expected = [
+    ['Baseline Food Approach', 'Vegan &amp; gluten-free food system focused on health and wellbeing.'],
+    ['Baseline Massage', 'Grounded bodywork for muscular tension, recovery, comfort, and regulation.'],
+    ['Baseline Personal Care', 'Natural products and recipes for the body and appearance.'],
+    ['Baseline Fitness', 'Structured physical training covering calisthenics, cardio, flexibility and sport.'],
+    ['Baseline Badminton Session', 'Organised play with generated matchups and alterations prioritising balanced competition.'],
+    ['Baseline Games Hub', 'Dedicated space for restoration, cognitive challenge and linked progression.']
+  ];
+
+  let previous = -1;
+  for (const [title, descriptor] of expected) {
+    const position = html.indexOf(`aria-label="${title}"`);
+    assert.ok(position > previous, `${title} is missing or out of order`);
+    assert.ok(html.includes(descriptor), `${title} descriptor is not the agreed copy`);
+    previous = position;
+  }
+
+  assert.equal((html.match(/class="system-lane /g) || []).length, 6);
+  for (const obsolete of ['home-panels','home-panel--play','view-arrow','toBadmintonView','toSystemsView']) {
+    assert.equal(html.includes(obsolete), false, `obsolete index view-switching markup remains: ${obsolete}`);
+    assert.equal(css.includes(obsolete), false, `obsolete index view-switching CSS remains: ${obsolete}`);
+  }
+
+  assert.ok(css.includes('--home-surface:linear-gradient(90deg'));
+  assert.ok(css.includes('border-bottom:2px solid #000'));
+  assert.ok(css.includes('border:2px solid #000'));
+  assert.ok(css.includes('gap:11px'));
+  assert.ok(css.includes('min-height:78px'));
+  assert.ok(themes.includes('--scroll-track: #303036;'));
+  assert.ok(themes.includes('--scroll-thumb: #62626c;'));
+  assert.ok(themes.includes('--scroll-thumb-hover: #777782;'));
+});
+
+test('Baseline Personal Care is the visible system name while the existing route stays compatible', () => {
+  const publicFiles = [
+    'index.html',
+    'sitewide/js/baseline-shared.js',
+    ...systemNames.map((system) => path.join('systems', system, `${system}.html`))
+  ];
+
+  for (const relativePath of publicFiles) {
+    const source = fs.readFileSync(path.join(root, relativePath), 'utf8');
+    assert.equal(source.includes('Baseline Natural Skincare'), false, `retired visible name remains in ${relativePath}`);
+    assert.equal(source.includes('Baseline Skincare Favorites'), false, `retired favourites label remains in ${relativePath}`);
+  }
+
+  const home = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const personalCare = fs.readFileSync(path.join(root, 'systems/baseline-natural-skincare/baseline-natural-skincare.html'), 'utf8');
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  assert.ok(home.includes('Baseline Personal Care'));
+  assert.ok(personalCare.includes('<title>Baseline Personal Care</title>'));
+  assert.ok(personalCare.includes('aria-level="1">Baseline Personal Care</div>'));
+  assert.ok(shared.includes("['/baseline-natural-skincare/system','Baseline Personal Care']"));
+  assert.ok(home.includes('href="/baseline-natural-skincare/system"'), 'existing Personal Care route compatibility must be retained');
 });
