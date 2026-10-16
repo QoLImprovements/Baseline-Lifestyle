@@ -389,10 +389,14 @@ html[data-initial-section="paralinguistics"] #paralinguistics.section{display:bl
 }
 .facs-intensity button strong{font-size:18px}
 .facs-intensity button span{font-size:11px;font-weight:750}
-.facs-intensity button.is-selected,
-.facs-side-buttons button.is-selected{
+.facs-intensity button[aria-pressed="true"],
+.facs-side-buttons button[aria-pressed="true"]{
   background:var(--bl-surface-active-solid,var(--psych-control-active));
   border-color:var(--accent-2);
+}
+.facs-active-chip.is-focused{
+  border-color:var(--accent-2);
+  box-shadow:0 0 0 3px rgba(139,23,34,.18);
 }
 .facs-intensity button:disabled,
 .facs-side-buttons button:disabled{opacity:.42;cursor:not-allowed}
