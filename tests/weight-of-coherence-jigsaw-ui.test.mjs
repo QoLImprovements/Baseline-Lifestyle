@@ -44,3 +44,25 @@ test('fullscreen drag ghost stays inside the fullscreen subtree', () => {
   assert.match(js, /ghostHost\.appendChild\(ghost\)/);
   assert.doesNotMatch(js, /document\.body\.appendChild\(ghost\)/);
 });
+
+
+test('fullscreen exposes F as the enter and exit hotkey', () => {
+  assert.match(html, /id="weightCoherenceFullscreenBtn"[\s\S]*?aria-keyshortcuts="F"/);
+  assert.match(html, /weight-coherence-hotkey">F<\/kbd>/);
+  assert.match(js, /if\(key==='f'\)[\s\S]*?toggleFullscreen\(\)/);
+  assert.match(js, /Exit full screen · F/);
+  assert.match(js, /Full screen · F/);
+});
+
+test('four manual sorting trays flank the jigsaw and persist parked pieces', () => {
+  assert.equal((html.match(/data-jigsaw-sort-tray="/g) || []).length, 4);
+  assert.match(html, /weight-coherence-sort-column--left/);
+  assert.match(html, /weight-coherence-sort-column--right/);
+  assert.match(css, /grid-template-areas:"left board right"/);
+  assert.match(js, /sortBins:\[\[\],\[\],\[\],\[\]\]/);
+  assert.match(js, /sortBins:state\.sortBins\.map/);
+  assert.match(js, /normalizeSortBins\(parsed\.sortBins,count,placed\)/);
+  assert.match(js, /movePieceToSortBin\(drag\.id,Number\(sortTarget\.dataset\.jigsawSortTray\)\)/);
+  assert.match(js, /movePieceToMainTray\(drag\.id\)/);
+  assert.match(js, /removePieceFromSortBins\(id\);[\s\S]*?state\.placed\.add\(id\)/);
+});

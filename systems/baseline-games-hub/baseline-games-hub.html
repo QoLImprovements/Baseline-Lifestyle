@@ -45,7 +45,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-protected-key-placement.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-protected-key-placement="true"/>
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
-<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_MOBILE_CONTROLS_20261016_1" rel="stylesheet"/>
+<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=WEIGHT_OF_COHERENCE_SORT_TRAYS_FULLSCREEN_HOTKEY_20261017_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
      deliberately loads last so shell alignment rules cannot repaint Realm. -->
@@ -184,8 +184,9 @@ These Markdown rules are a human reference point, not live runtime config.
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h3.2c4.8 0 5.6 10 9.6 10H20"/><path d="M17 14l3 3-3 3M4 17h3.2c1.8 0 2.9-1.4 3.8-3M13 9c1-1.3 2-2 3.8-2H20"/><path d="M17 4l3 3-3 3"/></svg>
                   <kbd class="weight-coherence-hotkey">S</kbd>
                 </button>
-                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-label="Enter full screen" title="Full screen">
+                <button class="action ghost weight-coherence-icon-action" id="weightCoherenceFullscreenBtn" type="button" aria-pressed="false" aria-keyshortcuts="F" aria-label="Enter full screen (F)" title="Full screen · F">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M20 16v4h-4M8 20H4v-4"/></svg>
+                  <kbd class="weight-coherence-hotkey">F</kbd>
                 </button>
                 <button class="action ghost weight-coherence-icon-action weight-coherence-settings-trigger" id="weightCoherenceToolbarSettingsBtn" type="button" aria-label="Open puzzle settings" aria-controls="weightCoherenceSettingsDialog" aria-expanded="false" title="Puzzle settings">
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.7 2.8h4.6l.6 2.3c.5.2 1 .5 1.5.9l2.2-.7 2.3 4-1.7 1.6c.1.4.1.8.1 1.2s0 .8-.1 1.2l1.7 1.6-2.3 4-2.2-.7c-.5.4-1 .7-1.5.9l-.6 2.3H9.7l-.6-2.3c-.5-.2-1-.5-1.5-.9l-2.2.7-2.3-4 1.7-1.6a7.4 7.4 0 0 1 0-2.4L3.1 9.3l2.3-4 2.2.7c.5-.4 1-.7 1.5-.9l.6-2.3Z"/><circle cx="12" cy="12" r="3.2"/></svg>
@@ -193,12 +194,36 @@ These Markdown rules are a human reference point, not live runtime config.
               </div>
             </div>
 
-            <div class="weight-coherence-board-shell">
-              <div class="weight-coherence-board-wrap">
-                <canvas id="weightCoherenceBoard" width="1122" height="1402" aria-label="The Weight of Coherence jigsaw board"></canvas>
-                <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
+            <div class="weight-coherence-stage">
+              <aside class="weight-coherence-sort-column weight-coherence-sort-column--left" aria-label="Left sorting trays">
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 1</span><span class="inline-note" data-sort-count="0">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="0" aria-label="Left sorting tray 1"></div>
+                </section>
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 2</span><span class="inline-note" data-sort-count="1">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="1" aria-label="Left sorting tray 2"></div>
+                </section>
+              </aside>
+
+              <div class="weight-coherence-board-shell">
+                <div class="weight-coherence-board-wrap">
+                  <canvas id="weightCoherenceBoard" width="1122" height="1402" aria-label="The Weight of Coherence jigsaw board"></canvas>
+                  <div class="weight-coherence-completion" id="weightCoherenceCompletion" hidden></div>
+                </div>
+                <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
               </div>
-              <div class="weight-coherence-status inline-note" id="weightCoherenceStatus" aria-live="polite"></div>
+
+              <aside class="weight-coherence-sort-column weight-coherence-sort-column--right" aria-label="Right sorting trays">
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 3</span><span class="inline-note" data-sort-count="2">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="2" aria-label="Right sorting tray 1"></div>
+                </section>
+                <section class="weight-coherence-sort-shell">
+                  <div class="weight-coherence-sort-head"><span>Sort 4</span><span class="inline-note" data-sort-count="3">0</span></div>
+                  <div class="weight-coherence-sort-tray" data-jigsaw-sort-tray="3" aria-label="Right sorting tray 2"></div>
+                </section>
+              </aside>
             </div>
 
             <div class="weight-coherence-tray-shell">
@@ -633,7 +658,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-games-hub/js/games-registry.js?v=GAMES_REGISTRY_20261016_2"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PUZZLES_WEIGHT_COHERENCE_20261016_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_TRAY_KEYS_FULLSCREEN_DRAG_20261017_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=WEIGHT_OF_COHERENCE_SORT_TRAYS_FULLSCREEN_HOTKEY_20261017_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/block-grid/js/block-grid.js?v=PUZZLE_GAMES_MOTION_20261017_1"></script>
 <script type="module" src="/systems/baseline-games-hub/games/colour-sort/js/colour-sort.js?v=PUZZLE_GAMES_MOTION_20261017_1"></script>
