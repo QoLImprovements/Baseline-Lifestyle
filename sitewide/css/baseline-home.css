@@ -1,21 +1,28 @@
 /* ============================================================================
-   Baseline Home — dominant homepage contract
-   Build: EDIT_VERSION_20260607_INDEX_AUTH_FLYOUT_ANCHOR_FIX
+   Baseline Home — single-page full-width system strips
+   Build: INDEX_SINGLE_PAGE_SYSTEM_STRIPS_PREVIEW_20261016
 
    One owner for:
-   - first index panel: Food / Massage / Skincare
-   - second index panel: Badminton / Fitness / Games
-   - desktop: one visible panel at a time, equal three-column layout
-   - mobile: all six cards scroll vertically as full-width bands
+   - all six Baseline systems on one index page
+   - dark grey Baseline header
+   - light solid grey index background
+   - six full-width coloured system strips
+   - title and description presented together on each strip
    ============================================================================ */
 
 :root{
-  --bg:#e9e7e2;
+  --home-header:#2b2a27;
+  --home-surface:linear-gradient(90deg,
+    #303036 0%,
+    #414149 20%,
+    #62626c 50%,
+    #414149 80%,
+    #303036 100%
+  );
   --text:#2b2b28;
-  --muted:#6a6760;
-  --stroke:rgba(0,0,0,.08);
-  --shadow:0 8px 22px rgba(0,0,0,.14);
-  --r:22px;
+  --stroke:rgba(0,0,0,.10);
+  --shadow:0 8px 18px rgba(0,0,0,.13);
+  --r:18px;
   --pad:24px;
 
   --food-deep:#b11226;
@@ -43,72 +50,7 @@
   --games-deep:#080D22;
   --games-mid:#1E2759;
   --games-soft:#4656A6;
-  --games-tan:#4656A6;
   --games-ink:#F2F5FF;
-
-  --index-card-w:320px;
-  --index-card-h:260px;
-  --index-card-pad-y:28px;
-  --index-card-pad-x:22px;
-  --index-card-title:24px;
-  --index-card-copy:18px;
-  --index-card-line:1.46;
-
-  --index-page1-bg:linear-gradient(90deg,
-    var(--food-deep) 0%,
-    var(--food-orange) 8.333%,
-    var(--food-yellow) 16.666%,
-    var(--food-orange) 25%,
-    var(--food-deep) 33.333%,
-
-    var(--massage-deep) 33.333%,
-    var(--massage-mid) 39.333%,
-    var(--massage-soft) 45.333%,
-    var(--massage-tan) 50%,
-    var(--massage-soft) 54.666%,
-    var(--massage-mid) 60.666%,
-    var(--massage-deep) 66.666%,
-
-    var(--skin-deep) 66.666%,
-    var(--skin-peach) 72%,
-    var(--skin-wash) 77.333%,
-    var(--skin-milk) 81.333%,
-    var(--skin-cream) 83.333%,
-    var(--skin-milk) 85.333%,
-    var(--skin-wash) 89.333%,
-    var(--skin-peach) 94.666%,
-    var(--skin-deep) 100%
-  );
-
-  --index-page2-bg:linear-gradient(90deg,
-    var(--bad-red) 0%,
-    var(--bad-purple) 6%,
-    var(--bad-orange) 12%,
-    var(--bad-yellow) 16.666%,
-    var(--bad-orange) 21.333%,
-    var(--bad-purple) 27.333%,
-    var(--bad-red) 33.333%,
-
-    #000000 33.333%,
-    #100f12 36%,
-    #221216 40%,
-    #45151d 44%,
-    #701725 48%,
-    #9b1a2d 49.5%,
-    var(--food-deep) 50%,
-    #9b1a2d 50.5%,
-    #701725 52%,
-    #45151d 56%,
-    #221216 60%,
-    #100f12 64%,
-    #000000 66.666%,
-
-    var(--games-deep) 66.666%,
-    var(--games-mid) 75%,
-    var(--games-soft) 83.333%,
-    var(--games-mid) 91.666%,
-    var(--games-deep) 100%
-  );
 
   --food-card-bg:linear-gradient(90deg,
     var(--food-deep) 0%,
@@ -173,8 +115,6 @@
     var(--games-mid) 75%,
     var(--games-deep) 100%
   );
-
-  --page-bg:var(--index-page1-bg);
 }
 
 *{ box-sizing:border-box; }
@@ -182,6 +122,7 @@
 html[data-app="home"],
 body[data-app="home"]{
   width:100%;
+  height:100%;
   min-height:100%;
   margin:0;
   padding:0;
@@ -189,13 +130,14 @@ body[data-app="home"]{
 }
 
 body[data-app="home"]{
+  height:100svh;
   min-height:100svh;
   display:flex;
   flex-direction:column;
   color:var(--text);
   font-family:ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
   font-size:20px;
-  background:var(--index-page1-bg);
+  background:var(--home-surface);
   background-size:100% 100%;
   background-attachment:fixed;
 }
@@ -208,17 +150,32 @@ body[data-app="home"]{
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px var(--pad) 22px;
-  background:linear-gradient(180deg,#1f1e1c 0%,#2b2a27 55%,#353431 100%);
+  padding:18px var(--pad) 16px;
+  background:var(--home-header);
   color:#fff;
   text-align:center;
+  border-bottom:2px solid #000;
 }
 
 /* NO-DELAYED-DISPLAY: keep visible Home controls in their final position before JavaScript binds them. */
 .bl-top-header > .bl-homebar-right{
   position:absolute;
-  top:14px;
-  right:14px;
+  top:11px;
+  right:12px;
+}
+
+body[data-app="home"] .bl-top-header .bl-mini-btn{
+  min-height:38px;
+  padding:8px 10px;
+  font-size:16px;
+  font-weight:800;
+}
+
+body[data-app="home"] .bl-top-header > .bl-protected-key{
+  top:11px;
+  left:12px;
+  width:42px;
+  height:36px;
 }
 
 .bl-top-header-title{
@@ -233,7 +190,7 @@ body[data-app="home"]{
   display:block;
   color:#fff;
   font-family:"IBM Plex Sans Condensed", system-ui, sans-serif;
-  font-size:clamp(42px, 5.6vw, 60px);
+  font-size:clamp(40px, 5vw, 56px);
   font-weight:300;
   letter-spacing:.06em;
   line-height:1.05;
@@ -244,144 +201,96 @@ body[data-app="home"]{
 .bl-scroll{
   flex:1 1 auto;
   min-height:0;
-  overflow:hidden;
-  background:transparent;
+  overflow:auto;
+  background:var(--home-surface);
+  background-size:100% 100%;
+  background-attachment:local;
 }
 
 body[data-app="home"] .wrap{
   width:100% !important;
   max-width:none !important;
-  height:100% !important;
-  min-height:0 !important;
+  min-height:100% !important;
   margin:0 !important;
   padding:0 !important;
 }
 
-.home-panels{
-  position:relative;
+.home-systems{
   width:100%;
-  height:100%;
   min-height:calc(100svh - var(--top-header-h, 104px));
-  overflow:hidden;
-}
-
-.home-panel{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-  transform:none;
-  transition:none;
-}
-
-.home-panel.is-active{
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-}
-
-/* NO-DELAYED-DISPLAY: /home/2 must never paint the Home 1 panel first. */
-html[data-initial-home-view="badminton"] #systemsView{
-  opacity:0;
-  visibility:hidden;
-  pointer-events:none;
-}
-html[data-initial-home-view="badminton"] #badmintonView{
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-}
-
-.home-panel--systems{ background:var(--index-page1-bg); }
-.home-panel--play{ background:var(--index-page2-bg); }
-
-.home-panel__inner{
-  width:100%;
-  height:100%;
-  min-height:0;
-  margin:0;
-  padding:0;
   display:flex;
-  align-items:stretch;
-  justify-content:center;
+  flex-direction:column;
+  gap:11px;
+  padding:18px 22px;
+  background:var(--home-surface);
+  background-size:100% 100%;
 }
 
-.grid,
-.play-lanes{
+.system-lane{
   width:100%;
-  height:100%;
+  min-width:0;
   margin:0;
-  padding:0;
-  display:grid;
-  grid-template-columns:repeat(3, minmax(0, 1fr));
-  align-items:center;
-  justify-items:center;
-  gap:0;
-}
-
-.play-lane{
-  width:100%;
-  height:100%;
-  min-height:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   padding:0;
   background:transparent;
 }
 
 .card,
-.grid > .card,
-.play-lane > .card{
-  width:min(var(--index-card-w), calc(100% - 48px));
-  max-width:var(--index-card-w);
+.system-lane > .card{
+  width:100%;
+  max-width:none;
   min-width:0;
-  height:var(--index-card-h);
-  min-height:var(--index-card-h);
-  max-height:var(--index-card-h);
+  min-height:78px;
+  height:auto;
   margin:0;
-  padding:var(--index-card-pad-y) var(--index-card-pad-x);
+  padding:14px 26px;
   border-radius:var(--r);
-  border:1px solid var(--stroke);
+  border:2px solid #000;
   box-shadow:var(--shadow);
   overflow:hidden;
   text-decoration:none;
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  text-align:center;
-  gap:12px;
   color:#000;
 }
 
-.card-shell{ display:contents; }
+.card-shell{
+  width:100%;
+  min-width:0;
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:.28em;
+  text-align:center;
+}
+
+.card h2,
+.card p,
+.system-separator{
+  margin:0;
+  color:inherit;
+  line-height:1.35;
+}
 
 .card h2{
-  margin:0;
-  max-width:100%;
-  width:100%;
-  color:inherit;
-  font-size:var(--index-card-title);
-  line-height:1.16;
+  flex:0 0 auto;
+  font-size:clamp(21px, 2vw, 27px);
+  font-weight:800;
   letter-spacing:-.01em;
-  text-align:center;
+}
+
+.system-separator{
+  flex:0 0 auto;
+  font-size:clamp(20px, 1.8vw, 25px);
+  font-weight:700;
 }
 
 .card p{
-  margin:0;
-  max-width:30ch;
-  color:inherit;
-  font-size:var(--index-card-copy);
-  line-height:var(--index-card-line);
-  text-align:center;
+  min-width:0;
+  max-width:none;
+  font-size:clamp(17px, 1.45vw, 21px);
+  font-weight:400;
 }
-
-.card p br{ display:block; }
 
 .card:hover,
 .card:focus-visible{
@@ -391,7 +300,7 @@ html[data-initial-home-view="badminton"] #badmintonView{
 
 .card:focus-visible{
   outline:none;
-  box-shadow:0 0 0 4px rgba(255,255,255,.36), var(--shadow);
+  box-shadow:0 0 0 4px rgba(255,255,255,.42), var(--shadow);
 }
 
 .card--food{ background:var(--food-card-bg); color:#1b0b09; }
@@ -400,60 +309,27 @@ html[data-initial-home-view="badminton"] #badmintonView{
   background:var(--massage-card-bg);
   color:#fff;
 }
-.card--massage h2{ color:#fff; }
-.card--massage p{ color:rgba(255,255,255,.92); }
+.card--massage h2,
+.card--massage p,
+.card--massage .system-separator{ color:#fff; }
 
 .card--skin{ background:var(--skin-card-bg); color:#2b2b28; }
 
 .card--badminton{ background:var(--badminton-card-bg); color:#34164a; }
-.card--badminton h2{
-  white-space:normal;
-  font-size:var(--index-card-title);
-}
+.card--badminton h2 br{ display:none; }
 
 .card--fitness{
   background:var(--fitness-card-bg);
   color:#fff;
 }
-.card--fitness h2{ color:#fff; }
-.card--fitness p{ color:rgba(255,255,255,.94); }
+.card--fitness h2,
+.card--fitness p,
+.card--fitness .system-separator{ color:#fff; }
 
 .card--games{ background:var(--games-card-bg); color:var(--games-ink); }
-.card--games .card-shell{
-  background:linear-gradient(rgba(8,13,34,.46),rgba(8,13,34,.46)),var(--games-card-bg);
+.card--games :is(h2,p,.system-separator){
   color:var(--games-ink);
-}
-.card--games :is(h2,p){color:var(--games-ink);text-shadow:0 1px 2px rgba(2,5,17,.82)}
-
-.view-arrow{
-  position:absolute;
-  left:50%;
-  bottom:clamp(18px, 3vw, 28px);
-  transform:translateX(-50%);
-  width:56px;
-  height:56px;
-  border:0;
-  border-radius:999px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  background:rgba(255,255,255,.18);
-  color:#2f3437;
-  box-shadow:0 16px 32px rgba(0,0,0,.16);
-}
-.view-arrow--up{
-  top:clamp(18px, 3vw, 28px);
-  bottom:auto;
-}
-.view-arrow svg{
-  width:24px;
-  height:24px;
-  display:block;
-}
-.view-arrow:hover{
-  transform:translateX(-50%);
-  filter:brightness(1.04);
+  text-shadow:0 1px 2px rgba(2,5,17,.82);
 }
 
 /* Offline-safe embedded viewer */
@@ -461,7 +337,7 @@ html[data-initial-home-view="badminton"] #badmintonView{
   position:fixed;
   inset:0;
   z-index:20000;
-  background:var(--bg, #e9e7e2);
+  background:var(--home-surface);
   display:none;
 }
 #blEmbed.is-open{ display:block; }
@@ -472,15 +348,7 @@ html[data-initial-home-view="badminton"] #badmintonView{
   background:transparent;
 }
 
-/* Mobile index contract:
-   show all six cards in vertical order; do not require the desktop arrow switch. */
 @media (max-width:900px){
-  :root{
-    --mobile-band-pad-x:18px;
-    --mobile-band-pad-y:clamp(44px, 11vw, 76px);
-    --mobile-card-width:min(340px, calc(100vw - 36px));
-  }
-
   html[data-app="home"],
   body[data-app="home"]{
     height:auto;
@@ -492,16 +360,14 @@ html[data-initial-home-view="badminton"] #badmintonView{
   body[data-app="home"]{
     display:block;
     min-height:100svh;
-    background:var(--index-page1-bg);
-    background-attachment:scroll;
   }
 
   .bl-top-header{
-    padding:18px var(--mobile-band-pad-x) 16px;
+    padding:15px 16px 13px;
   }
 
   .domain{
-    font-size:clamp(34px, 10.5vw, 48px);
+    font-size:clamp(32px, 9.6vw, 44px);
     letter-spacing:.045em;
   }
 
@@ -517,227 +383,40 @@ html[data-initial-home-view="badminton"] #badmintonView{
     min-height:0 !important;
   }
 
-  .home-panels{
-    position:static;
-    height:auto;
+  .home-systems{
     min-height:0;
-    overflow:visible;
+    gap:9px;
+    padding:12px;
   }
 
-  .home-panel,
-  .home-panel.is-active,
-  .home-panel--systems,
-  .home-panel--play{
-    display:block;
-    position:static;
-    inset:auto;
-    width:100%;
-    height:auto;
-    min-height:0;
-    overflow:visible;
-    opacity:1;
-    visibility:visible;
-    pointer-events:auto;
+  .card,
+  .system-lane > .card{
+    min-height:74px;
+    padding:13px 18px;
   }
 
-  .home-panel__inner{
-    display:block;
-    height:auto;
-    min-height:0;
-  }
-
-  .grid,
-  .play-lanes{
-    display:block;
-    width:100vw;
-    height:auto;
-    min-height:0;
-    margin-left:calc(50% - 50vw);
-    margin-right:calc(50% - 50vw);
-    padding:0;
-  }
-
-  .grid > .card,
-  .play-lane{
-    width:100%;
-    max-width:none;
-    min-height:clamp(340px, 58svh, 520px);
-    height:auto;
-    margin:0;
-    padding:var(--mobile-band-pad-y) var(--mobile-band-pad-x);
-    border:0;
-    border-radius:0;
-    box-shadow:none;
-    overflow:visible;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .grid > .card{
-    max-height:none;
-  }
-
-  .play-lane > .card{
-    width:100%;
-    max-width:none;
-    min-width:0;
-    min-height:auto;
-    height:auto;
-    max-height:none;
-    margin:0;
-    padding:0;
-    border:0;
-    border-radius:0;
-    box-shadow:none;
-    background:transparent;
-    overflow:visible;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-
-  .grid > .card .card-shell,
-  .play-lane > .card .card-shell{
-    width:var(--mobile-card-width);
-    max-width:var(--mobile-card-width);
-    min-width:0;
-    min-height:260px;
-    height:auto;
-    margin:0 auto;
-    padding:clamp(28px, 7vw, 38px) 22px;
-    border-radius:var(--r);
-    border:1px solid var(--stroke);
-    box-shadow:var(--shadow);
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:clamp(14px, 3.5vw, 22px);
-    text-align:center;
-  }
-
-  .grid > .card.card--food,
-  .grid > .card.card--food .card-shell{
-    background:linear-gradient(180deg,
-      var(--food-deep) 0%,
-      var(--food-orange) 25%,
-      var(--food-yellow) 50%,
-      var(--food-orange) 75%,
-      var(--food-deep) 100%);
-    color:#1b0b09;
-  }
-
-  .grid > .card.card--massage,
-  .grid > .card.card--massage .card-shell{
-    background:linear-gradient(180deg,
-      var(--massage-deep) 0%,
-      var(--massage-mid) 22%,
-      var(--massage-tan) 50%,
-      var(--massage-mid) 78%,
-      var(--massage-deep) 100%);
-    color:#fff;
-  }
-  .grid > .card.card--massage h2,
-  .grid > .card.card--massage p{
-    color:#fff;
-  }
-  .grid > .card.card--massage p{ color:rgba(255,255,255,.92); }
-
-  .grid > .card.card--skin,
-  .grid > .card.card--skin .card-shell{
-    background:linear-gradient(180deg,
-      var(--skin-deep) 0%,
-      var(--skin-peach) 16%,
-      var(--skin-wash) 32%,
-      var(--skin-cream) 50%,
-      var(--skin-wash) 68%,
-      var(--skin-peach) 84%,
-      var(--skin-deep) 100%);
-    color:#2b2b28;
-  }
-
-  .play-lane--badminton,
-  .play-lane--badminton > .card .card-shell{
-    background:linear-gradient(180deg,
-      var(--bad-red) 0%,
-      var(--bad-purple) 20%,
-      var(--bad-orange) 38%,
-      var(--bad-yellow) 50%,
-      var(--bad-orange) 62%,
-      var(--bad-purple) 80%,
-      var(--bad-red) 100%);
-    color:#34164a;
-  }
-
-  .play-lane--fitness,
-  .play-lane--fitness > .card .card-shell{
-    background:linear-gradient(180deg,
-      #000000 0%,
-      #100f12 12%,
-      #45151d 30%,
-      var(--food-deep) 50%,
-      #45151d 70%,
-      #100f12 88%,
-      #000000 100%);
-    color:#fff;
-  }
-  .play-lane--fitness h2,
-  .play-lane--fitness p{
-    color:#fff;
-  }
-
-  .play-lane--games,
-  .play-lane--games > .card .card-shell{
-    background:linear-gradient(180deg,
-      var(--games-deep) 0%,
-      var(--games-mid) 25%,
-      var(--games-soft) 50%,
-      var(--games-mid) 75%,
-      var(--games-deep) 100%);
-    color:var(--games-ink);
-  }
-  .play-lane--games > .card .card-shell{
-    background:linear-gradient(rgba(8,13,34,.46),rgba(8,13,34,.46)),linear-gradient(180deg,var(--games-deep) 0%,var(--games-mid) 25%,var(--games-soft) 50%,var(--games-mid) 75%,var(--games-deep) 100%);
-  }
-
-  .grid > .card.card--food,
-  .grid > .card.card--massage,
-  .grid > .card.card--skin,
-  .play-lane--badminton,
-  .play-lane--fitness,
-  .play-lane--games{
-    background-size:100% 100%;
-    background-attachment:scroll;
+  .card-shell{
+    flex-wrap:wrap;
+    row-gap:3px;
+    column-gap:.24em;
   }
 
   .card h2{
-    max-width:100%;
-    width:100%;
-    font-size:clamp(22px, 6.2vw, 28px);
+    font-size:clamp(20px, 5.6vw, 25px);
   }
 
-  .card--badminton h2{
-    white-space:normal;
-    font-size:clamp(22px, 6.2vw, 28px);
+  .system-separator{
+    font-size:clamp(18px, 5vw, 23px);
   }
 
   .card p{
-    max-width:28ch;
-    font-size:clamp(17px, 4.8vw, 20px);
-  }
-
-  .view-arrow,
-  .view-arrow--up{
-    display:none;
+    font-size:clamp(16px, 4.4vw, 19px);
   }
 }
 
 @media (prefers-reduced-motion:reduce){
   *{ animation:none !important; transition:none !important; }
 }
-
 
 /* INDEX-AUTH-FLYOUT-COHERENCE-FIX
    The home page uses a custom title header, while the rest of the site uses the
@@ -792,13 +471,4 @@ body[data-app="home"] #bl-beats-flyout .card > h3:first-child{
 body[data-app="home"] #bl-auth-flyout .bl-auth-form:not([hidden]){
   display:grid !important;
   row-gap:10px !important;
-}
-
-/* Index page second panel: match the natural, wider paragraph wrapping used by
-   Food/Massage/Skincare instead of forced narrow line breaks. */
-.play-lane > .card p{
-  max-width:34ch;
-}
-.play-lane > .card p br{
-  display:none;
 }
