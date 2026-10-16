@@ -115,5 +115,40 @@
     {code:'98',name:'Fast Up-Down Look',category:'gross',region:'Eyes / behaviour',muscles:'Gross behaviour code',movement:'Records a rapid up-and-down gaze movement.',intensity:false,laterality:false,render:'fastLook'}
   ]);
 
-  window.BASELINE_FACS = Object.freeze({ intensities, categories, units });
+  const actionDescriptors = new Set(['19','29','30','32','33','34','35','36','37']);
+  const explicitActionUnits = new Set(['31','38','39','43','44','45','46']);
+  const editionSensitive = new Set(['41','42']);
+
+  function codeKind(unit){
+    if(unit.code==='0') return 'Neutral reference';
+    if(actionDescriptors.has(unit.code)) return 'Action Descriptor';
+    if(unit.category==='facial' || explicitActionUnits.has(unit.code)) return 'Action Unit';
+    if(editionSensitive.has(unit.code)) return 'Edition-sensitive eye code';
+    if(unit.category==='head') return 'Head movement code';
+    if(unit.category==='eyes') return 'Eye movement code';
+    if(unit.category==='associated') return 'Associated M-code';
+    if(unit.category==='visibility') return 'Visibility code';
+    return 'Gross behaviour code';
+  }
+
+  function editionNote(unit){
+    if(unit.code==='41' || unit.code==='42'){
+      return 'Eye-state numbering is edition-sensitive. Public historical lists use 41/42 for lid droop/slit; FACS 2002 revised this area. Use the licensed 2002 manual for formal scoring.';
+    }
+    if(unit.code==='43'){
+      return 'FACS 2002 treats eye closure through AU43 intensity. Complete closure is represented at the highest intensity.';
+    }
+    return '';
+  }
+
+  const referenceUnits = Object.freeze(units.map(function(unit){
+    const copy=Object.assign({},unit,{
+      kind:codeKind(unit),
+      editionNote:editionNote(unit)
+    });
+    if(copy.code==='43') copy.intensity=true;
+    return Object.freeze(copy);
+  }));
+
+  window.BASELINE_FACS = Object.freeze({ intensities, categories, units:referenceUnits });
 })();
