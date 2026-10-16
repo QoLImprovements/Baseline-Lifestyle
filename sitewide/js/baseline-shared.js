@@ -7507,10 +7507,27 @@ function setupRecipeFavourites(){
     const cards = qsa('.recipe-page[id]', recipes);
     if(!cards.length) return;
 
-    let favSet = new Set();
+    const favBootstrap = (()=>{
+      try{
+        const value = window.__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__;
+        if(!value || String(value.app || '') !== appKey) return null;
+        try{ delete window.__BASELINE_RECIPE_FAVOURITES_BOOTSTRAP__; }catch(_e){}
+        return value;
+      }catch(_e){ return null; }
+    })();
+
+    let favSet = new Set(
+      favBootstrap?.ready && favBootstrap?.authed && Array.isArray(favBootstrap.ids)
+        ? favBootstrap.ids.map(String)
+        : []
+    );
     let favOnly = false;
-    let favsReady = false;
+    let favsReady = !!favBootstrap?.ready;
+    let favAuthed = !!(favBootstrap?.ready && favBootstrap?.authed);
     let favRequest = 0;
+    if(favBootstrap?.ready && favBootstrap?.authed && Number.isFinite(Number(favBootstrap.revision))){
+      rememberResourceRevision('favourites',favBootstrap);
+    }
 
     // Expose for banner shortcuts
     try{
@@ -7539,13 +7556,16 @@ function setupRecipeFavourites(){
         const id = card.id;
         const btn = q('.fav-btn', card);
         const isFav = favSet.has(id);
+        if(favAuthed){
+          const caption = q(':scope > .recipe-favourite-caption', card);
+          if(caption) caption.hidden = true;
+        }
         if(btn){
-          btn.style.visibility = favsReady ? '' : 'hidden';
-          btn.disabled = !favsReady || !authState.authed;
+          btn.disabled = false;
           btn.setAttribute('aria-busy', favsReady ? 'false' : 'true');
           btn.classList.toggle('is-fav', isFav);
           btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
-          btn.setAttribute('aria-label', !favsReady ? 'Loading favourites' : !authState.authed ? 'Sign in through Account to save favourites' : isFav ? 'Remove favorite' : 'Save favorite');
+          btn.setAttribute('aria-label', !favsReady ? 'Loading favourite state' : !favAuthed ? 'Favorite recipe. Log in required to favorite this recipe.' : isFav ? 'Remove favorite' : 'Save favorite');
           try{ btn.removeAttribute('title'); }catch(_e){}
           btn.textContent = isFav ? '★' : '☆';
         }
@@ -7573,30 +7593,54 @@ function setupRecipeFavourites(){
 
     async function refreshFavs(){
       const request = ++favRequest;
-      favsReady = false;
-      favSet = new Set();
-      updateButtons();
       if(!authState.ready) return;
       if(!authState.authed){
         favOnly = false;
+        favAuthed = false;
+        favSet = new Set();
         favsReady = true;
         updateButtons();
         return;
       }
+      favAuthed = true;
       const r = await apiJson(API_BASE + '/favourites.php?app=' + encodeURIComponent(appKey));
       if(request !== favRequest || !authState.authed) return;
       if(!r?.data?.ok || !Array.isArray(r.data.ids)) return;
       rememberResourceRevision('favourites',r.data);
       favSet = new Set(r.data.ids.map(String));
+      favAuthed = true;
       favsReady = true;
       updateButtons();
     }
 
+    function showFavouriteCaption(recipeId){
+      const card = document.getElementById(String(recipeId || ''));
+      if(!card) return;
+      let caption = q(':scope > .recipe-favourite-caption', card);
+      if(!caption){
+        caption = document.createElement('p');
+        caption.className = 'recipe-favourite-caption';
+        caption.setAttribute('role','status');
+        caption.setAttribute('aria-live','polite');
+        const row = q(':scope > .recipe-title-row', card);
+        if(row) row.insertAdjacentElement('afterend', caption);
+        else card.insertAdjacentElement('afterbegin', caption);
+      }
+      caption.textContent = 'log in required to favorite this recipe.';
+      caption.hidden = false;
+    }
+
     async function toggleFav(recipeId){
-      if(!authState.authed || !favsReady) return;
+      if(!favsReady) return;
+      if(!favAuthed){
+        showFavouriteCaption(recipeId);
+        return;
+      }
       const r = await apiJson(API_BASE + '/favourites.php', { method:'POST', body:revisionedResourceBody('favourites',{ app:appKey,recipeId }) });
       if(r && r.data && r.data.ok){
         rememberResourceRevision('favourites',r.data);
+        favAuthed = true;
+        favsReady = true;
         if(r.data.favourited) favSet.add(String(recipeId));
         else favSet.delete(String(recipeId));
         updateButtons();
@@ -7635,8 +7679,7 @@ function setupRecipeFavourites(){
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'fav-btn';
-        btn.style.visibility = 'hidden';
-        btn.disabled = true;
+        btn.disabled = false;
         btn.setAttribute('aria-pressed','false');
         btn.textContent = '☆';
         btn.addEventListener('click', (e)=>{ e.preventDefault(); e.stopPropagation(); toggleFav(id); });
@@ -7646,6 +7689,9 @@ function setupRecipeFavourites(){
       // Safety: remove any legacy fav buttons that were injected into action bars.
       qsa('.recipe-actions-right .fav-btn', card).forEach(x=>{ try{ x.remove(); }catch(_e){} });
     });
+
+    // Apply the server-bootstrap state immediately so the first painted star is authoritative.
+    updateButtons();
 
     // Add a favourites toggle on the recipes landing card.
     const landing = q('#recipes-landing');
