@@ -9,14 +9,26 @@
     { code:'E', label:'Maximum', factor:1.00 }
   ]);
 
-  const categories = Object.freeze([
-    { id:'facial', label:'Facial actions' },
-    { id:'gross-face', label:'Gross behaviour / other facial codes' },
-    { id:'head', label:'Head movement codes' },
-    { id:'eyes', label:'Eye movement codes' },
-    { id:'associated', label:'Associated M-codes' },
-    { id:'visibility', label:'Visibility codes' },
-    { id:'gross', label:'Other gross behaviour codes' }
+  const families = Object.freeze([
+    { id:'face', label:'Face' },
+    { id:'head', label:'Head position' },
+    { id:'gaze', label:'Eyes / gaze' },
+    { id:'associated', label:'M-codes' },
+    { id:'visibility', label:'Visibility' },
+    { id:'behaviour', label:'Other behaviour' },
+    { id:'all', label:'All codes' }
+  ]);
+
+  const faceParts = Object.freeze([
+    { id:'all', label:'All face' },
+    { id:'brows', label:'Brows / forehead' },
+    { id:'eyes', label:'Eyes / eyelids' },
+    { id:'cheeks', label:'Cheeks / nasolabial' },
+    { id:'nose', label:'Nose / nostrils' },
+    { id:'mouth', label:'Mouth / lips' },
+    { id:'chin-jaw', label:'Chin / jaw' },
+    { id:'tongue', label:'Tongue' },
+    { id:'neck', label:'Neck' }
   ]);
 
   const units = Object.freeze([
@@ -115,15 +127,30 @@
     {code:'98',name:'Fast Up-Down Look',category:'gross',region:'Eyes / behaviour',muscles:'Gross behaviour code',movement:'Records a rapid up-and-down gaze movement.',intensity:false,laterality:false,render:'fastLook'}
   ]);
 
-  const actionDescriptors = new Set(['19','29','30','32','33','34','35','36','37']);
-  const explicitActionUnits = new Set(['31','38','39','43','44','45','46']);
-  const editionSensitive = new Set(['41','42']);
+  const actionDescriptors = new Set(['19','29','30','32','33','34','35','36','37','40','50','80','81']);
+  const explicitActionUnits = new Set(['31','38','39','41','42','43','44','45','46']);
+  const upperFaceCodes = new Set(['1','2','4','5','6','7','41','42','43','44','45','46']);
+  const lowerFaceCodes = new Set(['9','10','11','12','13','14','15','16','17','18','20','22','23','24','25','26','27','28']);
+
+  const facePartsByCode = Object.freeze({
+    '1':['brows'],'2':['brows'],'4':['brows'],
+    '5':['eyes'],'6':['cheeks','eyes'],'7':['eyes'],
+    '8':['mouth'],'9':['nose'],'10':['mouth'],'11':['cheeks','nose'],
+    '12':['mouth','cheeks'],'13':['mouth','cheeks'],'14':['mouth','cheeks'],
+    '15':['mouth'],'16':['mouth'],'17':['chin-jaw','mouth'],'18':['mouth'],
+    '19':['tongue','mouth'],'20':['mouth'],'21':['neck'],'22':['mouth'],
+    '23':['mouth'],'24':['mouth'],'25':['mouth'],'26':['chin-jaw','mouth'],
+    '27':['chin-jaw','mouth'],'28':['mouth'],'29':['chin-jaw'],'30':['chin-jaw'],
+    '31':['chin-jaw'],'32':['mouth'],'33':['cheeks'],'34':['cheeks'],
+    '35':['cheeks'],'36':['tongue','cheeks'],'37':['mouth'],'38':['nose'],
+    '39':['nose'],'40':['nose'],'41':['eyes'],'42':['eyes'],'43':['eyes'],
+    '44':['eyes','brows'],'45':['eyes'],'46':['eyes']
+  });
 
   function codeKind(unit){
     if(unit.code==='0') return 'Neutral reference';
     if(actionDescriptors.has(unit.code)) return 'Action Descriptor';
     if(unit.category==='facial' || explicitActionUnits.has(unit.code)) return 'Action Unit';
-    if(editionSensitive.has(unit.code)) return 'Edition-sensitive eye code';
     if(unit.category==='head') return 'Head movement code';
     if(unit.category==='eyes') return 'Eye movement code';
     if(unit.category==='associated') return 'Associated M-code';
@@ -131,12 +158,26 @@
     return 'Gross behaviour code';
   }
 
+  function familyFor(unit){
+    if(unit.code==='0' || unit.category==='facial' || unit.category==='gross-face' || unit.code==='40') return 'face';
+    if(unit.category==='head') return 'head';
+    if(unit.category==='eyes') return 'gaze';
+    if(unit.category==='associated') return 'associated';
+    if(unit.category==='visibility') return 'visibility';
+    return 'behaviour';
+  }
+
+  function sectionFor(unit){
+    if(familyFor(unit)!=='face') return '';
+    if(upperFaceCodes.has(unit.code)) return 'Upper face';
+    if(lowerFaceCodes.has(unit.code)) return 'Lower face';
+    if(unit.code==='0') return 'Neutral reference';
+    return 'Miscellaneous facial action';
+  }
+
   function editionNote(unit){
-    if(unit.code==='41' || unit.code==='42'){
-      return 'Eye-state numbering is edition-sensitive. Public historical lists use 41/42 for lid droop/slit; FACS 2002 revised this area. Use the licensed 2002 manual for formal scoring.';
-    }
-    if(unit.code==='43'){
-      return 'FACS 2002 treats eye closure through AU43 intensity. Complete closure is represented at the highest intensity.';
+    if(unit.code==='41' || unit.code==='42' || unit.code==='43'){
+      return 'FACS 2002 revised the scoring criteria for this eyelid action, including intensity treatment. Use the licensed 2002 manual for formal scoring thresholds.';
     }
     return '';
   }
@@ -144,11 +185,14 @@
   const referenceUnits = Object.freeze(units.map(function(unit){
     const copy=Object.assign({},unit,{
       kind:codeKind(unit),
+      family:familyFor(unit),
+      section:sectionFor(unit),
+      parts:Object.freeze((facePartsByCode[unit.code]||[]).slice()),
       editionNote:editionNote(unit)
     });
-    if(copy.code==='43') copy.intensity=true;
+    if(copy.code==='41' || copy.code==='42' || copy.code==='43') copy.intensity=true;
     return Object.freeze(copy);
   }));
 
-  window.BASELINE_FACS = Object.freeze({ intensities, categories, units:referenceUnits });
+  window.BASELINE_FACS = Object.freeze  window.BASELINE_FACS = Object.freeze({ intensities, families, faceParts, units:referenceUnits });
 })();
