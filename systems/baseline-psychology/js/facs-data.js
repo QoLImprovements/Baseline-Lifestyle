@@ -52,7 +52,7 @@
     {code:'18',name:'Lip Pucker',category:'facial',region:'Lips',muscles:'Incisivii labii superioris and inferioris',movement:'Puckers the lips forward.',intensity:true,laterality:false,render:'lipPucker'},
     {code:'19',name:'Tongue Show',category:'facial',region:'Mouth / tongue',muscles:'Not specified in the public FACS summary',movement:'Tongue becomes visibly exposed.',intensity:false,laterality:false,render:'tongueShow'},
     {code:'20',name:'Lip Stretcher',category:'facial',region:'Mouth',muscles:'Risorius with platysma',movement:'Stretches the lips horizontally.',intensity:true,laterality:true,render:'lipStretch'},
-    {code:'21',name:'Neck Tightener',category:'facial',region:'Neck',muscles:'Platysma',movement:'Tightens visible tissue in the neck.',intensity:true,laterality:false,render:'neckTighten'},
+    {code:'21',name:'Neck Tightener',category:'facial',region:'Neck',muscles:'Platysma',movement:'Tightens visible tissue in the neck.',intensity:true,laterality:false,render:null},
     {code:'22',name:'Lip Funneler',category:'facial',region:'Lips',muscles:'Orbicularis oris',movement:'Funnels the lips outward.',intensity:true,laterality:false,render:'lipFunnel'},
     {code:'23',name:'Lip Tightener',category:'facial',region:'Lips',muscles:'Orbicularis oris',movement:'Tightens the lips.',intensity:true,laterality:true,render:'lipTighten'},
     {code:'24',name:'Lip Pressor',category:'facial',region:'Lips',muscles:'Orbicularis oris',movement:'Presses the lips together.',intensity:true,laterality:true,render:'lipPress'},
@@ -63,15 +63,15 @@
 
     {code:'29',name:'Jaw Thrust',category:'gross-face',region:'Jaw',muscles:'Not specified as a single-muscle action',movement:'Thrusts the jaw forward.',intensity:false,laterality:false,render:'jawThrust'},
     {code:'30',name:'Jaw Sideways',category:'gross-face',region:'Jaw',muscles:'Not specified as a single-muscle action',movement:'Moves the jaw laterally.',intensity:false,laterality:false,render:'jawSideways'},
-    {code:'31',name:'Jaw Clencher',category:'gross-face',region:'Jaw',muscles:'Masseter',movement:'Clenches the jaw.',intensity:false,laterality:false,render:'jawClench'},
+    {code:'31',name:'Jaw Clencher',category:'gross-face',region:'Jaw',muscles:'Masseter',movement:'Clenches the jaw.',intensity:false,laterality:false,render:null},
     {code:'32',name:'Lip Bite',category:'gross-face',region:'Lips / teeth',muscles:'Not specified as a single-muscle action',movement:'Bites the lip.',intensity:false,laterality:true,render:'lipBite'},
     {code:'33',name:'Cheek Blow',category:'gross-face',region:'Cheek',muscles:'Not specified as a single-muscle action',movement:'Blows air using the cheek / mouth configuration.',intensity:false,laterality:true,render:'cheekBlow'},
     {code:'34',name:'Cheek Puff',category:'gross-face',region:'Cheeks',muscles:'Not specified as a single-muscle action',movement:'Puffs the cheek outward.',intensity:false,laterality:true,render:'cheekPuff'},
-    {code:'35',name:'Cheek Suck',category:'gross-face',region:'Cheeks',muscles:'Not specified as a single-muscle action',movement:'Draws the cheek inward.',intensity:false,laterality:true,render:'cheekSuck'},
-    {code:'36',name:'Tongue Bulge',category:'gross-face',region:'Mouth / cheek',muscles:'Not specified as a single-muscle action',movement:'Tongue pressure creates a visible bulge.',intensity:false,laterality:true,render:'tongueBulge'},
+    {code:'35',name:'Cheek Suck',category:'gross-face',region:'Cheeks',muscles:'Not specified as a single-muscle action',movement:'Draws the cheek inward.',intensity:false,laterality:true,render:null},
+    {code:'36',name:'Tongue Bulge',category:'gross-face',region:'Mouth / cheek',muscles:'Not specified as a single-muscle action',movement:'Tongue pressure creates a visible bulge.',intensity:false,laterality:true,render:null},
     {code:'37',name:'Lip Wipe',category:'gross-face',region:'Lips',muscles:'Not specified as a single-muscle action',movement:'Wipes or passes the lips against each other.',intensity:false,laterality:false,render:null},
-    {code:'38',name:'Nostril Dilator',category:'gross-face',region:'Nostrils',muscles:'Nasalis (pars alaris)',movement:'Widens the nostrils.',intensity:true,laterality:true,render:'nostrilDilate'},
-    {code:'39',name:'Nostril Compressor',category:'gross-face',region:'Nostrils',muscles:'Nasalis (pars transversa); depressor septi nasi',movement:'Compresses / narrows the nostrils.',intensity:true,laterality:true,render:'nostrilCompress'},
+    {code:'38',name:'Nostril Dilator',category:'gross-face',region:'Nostrils',muscles:'Nasalis (pars alaris)',movement:'Widens the nostrils.',intensity:true,laterality:true,render:null},
+    {code:'39',name:'Nostril Compressor',category:'gross-face',region:'Nostrils',muscles:'Nasalis (pars transversa); depressor septi nasi',movement:'Compresses / narrows the nostrils.',intensity:true,laterality:true,render:null},
     {code:'40',name:'Sniff',category:'gross',region:'Nose / respiration',muscles:'Gross behaviour code',movement:'Records a sniffing behaviour.',intensity:false,laterality:false,render:'sniff'},
     {code:'41',name:'Lid Droop',category:'gross-face',region:'Eyes',muscles:'Levator palpebrae superioris relaxation',movement:'Allows the upper eyelid to droop.',intensity:true,laterality:true,render:'lidDroop'},
     {code:'42',name:'Slit',category:'gross-face',region:'Eyes',muscles:'Orbicularis oculi',movement:'Narrows the eye opening to a slit.',intensity:true,laterality:true,render:'eyeSlit'},
@@ -116,9 +116,9 @@
     {code:'73',name:'Entire Face Not Visible',category:'visibility',region:'Visibility',muscles:'Visibility code',movement:'Marks the entire face as not visible for coding.',intensity:false,laterality:false,render:'maskFace'},
     {code:'74',name:'Unscorable',category:'visibility',region:'Visibility',muscles:'Visibility / coding-status code',movement:'Marks the facial material as unscorable.',intensity:false,laterality:false,render:'unscorable'},
 
-    {code:'80',name:'Swallow',category:'gross',region:'Throat / behaviour',muscles:'Gross behaviour code',movement:'Records swallowing.',intensity:false,laterality:false,render:'swallow'},
+    {code:'80',name:'Swallow',category:'gross',region:'Throat / behaviour',muscles:'Gross behaviour code',movement:'Records swallowing.',intensity:false,laterality:false,render:null},
     {code:'81',name:'Chewing',category:'gross',region:'Jaw / behaviour',muscles:'Gross behaviour code',movement:'Records chewing.',intensity:false,laterality:false,render:'chewing'},
-    {code:'82',name:'Shoulder Shrug',category:'gross',region:'Shoulders / behaviour',muscles:'Gross behaviour code',movement:'Records a shoulder shrug.',intensity:false,laterality:false,render:'shoulderShrug'},
+    {code:'82',name:'Shoulder Shrug',category:'gross',region:'Shoulders / behaviour',muscles:'Gross behaviour code',movement:'Records a shoulder shrug.',intensity:false,laterality:false,render:null},
     {code:'84',name:'Head Shake Back and Forth',category:'gross',region:'Head / behaviour',muscles:'Gross behaviour code',movement:'Records a side-to-side head shake.',intensity:false,laterality:false,render:'headShake'},
     {code:'85',name:'Head Nod Up and Down',category:'gross',region:'Head / behaviour',muscles:'Gross behaviour code',movement:'Records an up-and-down head nod.',intensity:false,laterality:false,render:'headNod'},
     {code:'91',name:'Flash',category:'gross',region:'Behaviour',muscles:'Gross behaviour code',movement:'Records the FACS gross-behaviour code labelled Flash.',intensity:false,laterality:false,render:null},
@@ -182,13 +182,34 @@
     return '';
   }
 
+  const directVisualCodes = new Set([
+    '1','2','4','5','6','7','9','11','12','14','15','16','17','18','20','22','24',
+    '27','28','29','30','43','44','45','46','51','52','53','54','55','56','57','58',
+    '61','62','63','64','65','66'
+  ]);
+
+  function visualFidelity(unit){
+    if(!unit.render) return 'reference';
+    if(directVisualCodes.has(unit.code)) return 'direct';
+    return 'approximate';
+  }
+
+  function visualNote(unit){
+    const fidelity=visualFidelity(unit);
+    if(fidelity==='direct') return 'Mapped to a close corresponding 3D morph or pose target; FACS remains the coding authority.';
+    if(fidelity==='approximate') return 'Composite 3D approximation using the available morph targets; do not treat the rendered shape as a formal FACS scoring plate.';
+    return 'Reference only in the current face model because no sufficiently faithful morph target is available.';
+  }
+
   const referenceUnits = Object.freeze(units.map(function(unit){
     const copy=Object.assign({},unit,{
       kind:codeKind(unit),
       family:familyFor(unit),
       section:sectionFor(unit),
       parts:Object.freeze((facePartsByCode[unit.code]||[]).slice()),
-      editionNote:editionNote(unit)
+      editionNote:editionNote(unit),
+      visualFidelity:visualFidelity(unit),
+      visualNote:visualNote(unit)
     });
     if(copy.code==='41' || copy.code==='42' || copy.code==='43') copy.intensity=true;
     return Object.freeze(copy);
