@@ -10,6 +10,7 @@
   let scene=null;
   let camera=null;
   let webgl=null;
+  let viewRoot=null;
   let modelRoot=null;
   let headMesh=null;
   let neutralPose=null;
@@ -20,6 +21,13 @@
   let motionState={shake:false,nod:false,tremble:false};
   let lastVisual=null;
   let resizeObserver=null;
+  const viewState={
+    degrees:0,
+    dragging:false,
+    pointerId:null,
+    startX:0,
+    startDegrees:0
+  };
 
   const $=id=>document.getElementById(id);
   const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
@@ -333,6 +341,72 @@
     );
   }
 
+  function normaliseDegrees(value){
+    let degrees=Number(value)||0;
+    while(degrees>180) degrees-=360;
+    while(degrees<-180) degrees+=360;
+    return degrees;
+  }
+
+  function syncViewControls(){
+    const slider=$('facsViewAngle');
+    const output=$('facsViewAngleValue');
+    const rounded=Math.round(viewState.degrees);
+    if(slider && Number(slider.value)!==rounded) slider.value=String(rounded);
+    if(output) output.textContent=rounded+'°';
+  }
+
+  function applyView(){
+    if(viewRoot) viewRoot.rotation.y=THREE ? THREE.MathUtils.degToRad(viewState.degrees) : viewState.degrees*Math.PI/180;
+    syncViewControls();
+  }
+
+  function setViewDegrees(value){
+    viewState.degrees=normaliseDegrees(value);
+    applyView();
+  }
+
+  function bindViewControls(host){
+    const slider=$('facsViewAngle');
+    const front=$('facsViewFront');
+
+    if(slider){
+      slider.addEventListener('input',()=>setViewDegrees(Number(slider.value)));
+    }
+    if(front){
+      front.addEventListener('click',()=>setViewDegrees(0));
+    }
+
+    host.addEventListener('pointerdown',event=>{
+      if(event.button!==0 && event.pointerType==='mouse') return;
+      viewState.dragging=true;
+      viewState.pointerId=event.pointerId;
+      viewState.startX=event.clientX;
+      viewState.startDegrees=viewState.degrees;
+      host.classList.add('is-dragging');
+      if(host.setPointerCapture) host.setPointerCapture(event.pointerId);
+    });
+
+    host.addEventListener('pointermove',event=>{
+      if(!viewState.dragging || event.pointerId!==viewState.pointerId) return;
+      const delta=event.clientX-viewState.startX;
+      setViewDegrees(viewState.startDegrees+delta*0.55);
+    });
+
+    const endDrag=event=>{
+      if(!viewState.dragging) return;
+      if(event && event.pointerId!=null && event.pointerId!==viewState.pointerId) return;
+      viewState.dragging=false;
+      viewState.pointerId=null;
+      host.classList.remove('is-dragging');
+    };
+    host.addEventListener('pointerup',endDrag);
+    host.addEventListener('pointercancel',endDrag);
+    host.addEventListener('lostpointercapture',endDrag);
+
+    syncViewControls();
+  }
+
   function applyVisual(visual){
     lastVisual=visual;
     applyMorphs(visual.weights);
@@ -423,6 +497,7 @@
   async function init(){
     const host=$('facsFace');
     if(!host || failed) return;
+    bindViewControls(host);
 
     try{
       const modules=await Promise.all([
@@ -461,8 +536,10 @@
       const loader=new GLTFLoader().setKTX2Loader(ktx2).setMeshoptDecoder(MeshoptDecoder);
       const gltf=await loader.loadAsync(MODEL_URL);
 
+      viewRoot=new THREE.Group();
+      scene.add(viewRoot);
+      viewRoot.add(gltf.scene);
       modelRoot=gltf.scene.children[0]||gltf.scene;
-      scene.add(gltf.scene);
       headMesh=gltf.scene.getObjectByName('mesh_2')||findMorphMesh(gltf.scene);
       if(!headMesh) throw new Error('Face Cap morph mesh not found.');
 
@@ -478,6 +555,7 @@
       if(status) status.textContent='Realistic 3D model ready';
 
       ready=true;
+      applyView();
       resize();
       render(pendingEntries);
 
@@ -494,6 +572,8 @@
 
   window.BASELINE_FACS_RENDERER=Object.freeze({
     render,
+    setViewDegrees,
+    getViewDegrees(){return viewState.degrees;},
     get ready(){return ready;}
   });
 
