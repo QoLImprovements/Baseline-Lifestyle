@@ -463,6 +463,7 @@ body[data-app="massage"]{
   line-height: 1;
   cursor: pointer;
   white-space: nowrap;
+  text-decoration:none;
 }
 .bl-mini-btn:hover{ filter: brightness(1.03); }
 .bl-mini-btn:active{ transform: translateY(1px); }
@@ -1126,6 +1127,7 @@ body[data-app="fitness"] #profileStatus{
 #bl-beats-toggle .bl-btn-icon{
   color:#000;
 }
+#bl-contact-link .bl-btn-icon,
 #bl-auth-toggle .bl-btn-icon{
   color:var(--ink, #1b0b09);
 }
@@ -1135,6 +1137,7 @@ body[data-app="fitness"] #profileStatus{
 
 @media (max-width: 900px){
   #bl-beats-toggle,
+  #bl-contact-link,
   #bl-auth-toggle{
     width: 42px;
     min-width: 42px;
@@ -1149,6 +1152,7 @@ body[data-app="fitness"] #profileStatus{
   }
 
   #bl-beats-toggle .bl-btn-label,
+  #bl-contact-link .bl-btn-label,
   #bl-auth-toggle .bl-btn-label{
     display:none !important;
   }
@@ -1601,7 +1605,8 @@ body[data-app="games"]{
   --bl-slider-border-solid:#F2F5FF;
 }
 
-/* Index header Account button: deliberately grey-gradient, tied to the grey header, with clear white text. */
+/* Index header utility controls: deliberately grey-gradient, tied to the grey header, with clear white text. */
+body[data-app="home"] #bl-contact-link,
 body[data-app="home"] #bl-auth-toggle{
   background:var(--bl-home-account-gradient)!important;
   background-image:var(--bl-home-account-gradient)!important;
@@ -1611,6 +1616,8 @@ body[data-app="home"] #bl-auth-toggle{
   border-color:#9a9aa6!important;
   box-shadow:0 14px 28px -22px rgba(0,0,0,.55)!important;
 }
+body[data-app="home"] #bl-contact-link .bl-btn-label,
+body[data-app="home"] #bl-contact-link .bl-btn-icon,
 body[data-app="home"] #bl-auth-toggle .bl-btn-label,
 body[data-app="home"] #bl-auth-toggle .bl-btn-icon{color:#ffffff!important;-webkit-text-fill-color:#ffffff!important;}
 
