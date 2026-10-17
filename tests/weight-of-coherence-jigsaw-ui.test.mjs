@@ -6,17 +6,17 @@ const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html
 const css = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
 const js = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
 
-test('Weight of Coherence keeps the dark board and 50% artwork guide', () => {
+test('Weight of Coherence keeps a muted medium board and 50% artwork guide', () => {
   assert.match(js, /the-weight-of-coherence\.png\?v=WEIGHT_OF_COHERENCE_FULL_20261016_2/);
-  assert.match(js, /const BOARD_BASE = '#080D22'/);
+  assert.match(js, /const BOARD_BASE = '#2A3672'/);
   assert.match(js, /const GUIDE_OPACITY = 0\.50/);
   assert.match(js, /ctx\.globalAlpha\s*=\s*GUIDE_OPACITY/);
   assert.doesNotThrow(() => new Function(js));
-  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#080D22/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=WEIGHT_OF_COHERENCE_DARK_BOARD_GUIDE_50_20261017_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=WEIGHT_OF_COHERENCE_DARK_BOARD_GUIDE_50_20261017_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=WEIGHT_OF_COHERENCE_MEDIUM_BOARD_GUIDE_50_20261017_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=WEIGHT_OF_COHERENCE_MEDIUM_BOARD_GUIDE_50_20261017_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
