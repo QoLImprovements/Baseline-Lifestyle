@@ -309,6 +309,33 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
 });
 
 
+
+
+test('desktop header utility icons have consistent breathing room and vertical alignment', () => {
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
+
+  assert.ok(
+    sitewideCss.includes('gap:10px !important;'),
+    'desktop shared header controls must keep a 10px icon-label gap'
+  );
+  assert.ok(
+    sitewideCss.includes('flex:0 0 22px !important;'),
+    'desktop utility icons must use a fixed square for optical alignment'
+  );
+  assert.ok(
+    sitewideCss.includes('#bl-contact-toggle .bl-btn-label'),
+    'Contact must use the same label alignment contract as the other utilities'
+  );
+  assert.ok(
+    headerCss.includes('gap:10px!important;'),
+    'canonical system headers must preserve the same desktop icon-label gap'
+  );
+  assert.ok(
+    headerCss.includes('#bl-contact-toggle .bl-btn-label'),
+    'canonical system headers must align Contact consistently with Account and Binaural'
+  );
+});
 test('mobile header keeps branding visible through one consolidated utility menu', () => {
   const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');

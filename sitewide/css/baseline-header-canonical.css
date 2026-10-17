@@ -555,6 +555,7 @@ html.bl-pages-dd-ready .bl-homebar-inner{
 @media (min-width:901px){
   .bl-homebar-right .bl-mini-btn,
   #bl-beats-toggle,
+  #bl-contact-toggle,
   #bl-auth-toggle{
     width:auto!important;
     min-width:0!important;
@@ -565,10 +566,11 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     display:inline-flex!important;
     align-items:center!important;
     justify-content:center!important;
-    gap:8px!important;
+    gap:10px!important;
     overflow:visible!important;
   }
   #bl-beats-toggle .bl-btn-label,
+  #bl-contact-toggle .bl-btn-label,
   #bl-auth-toggle .bl-btn-label{
     position:static!important;
     width:auto!important;
@@ -577,6 +579,7 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     clip:auto!important;
     clip-path:none!important;
     white-space:nowrap!important;
+    line-height:1!important;
   }
 }
 @media (max-width:900px){

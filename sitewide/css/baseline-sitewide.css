@@ -1545,10 +1545,40 @@ html.bl-pages-dd-ready .bl-topnav{
     display:inline-flex !important;
     align-items:center !important;
     justify-content:center !important;
+    gap:10px !important;
     visibility:visible !important;
     opacity:1 !important;
     pointer-events:auto !important;
     white-space:nowrap !important;
+  }
+
+  #bl-beats-toggle .bl-btn-icon,
+  #bl-contact-toggle .bl-btn-icon,
+  #bl-auth-toggle .bl-btn-icon{
+    width:22px !important;
+    height:22px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    flex:0 0 22px !important;
+    font-size:20px !important;
+    line-height:1 !important;
+  }
+
+  #bl-beats-toggle .bl-btn-icon .bl-icon-svg,
+  #bl-contact-toggle .bl-btn-icon .bl-icon-svg,
+  #bl-auth-toggle .bl-btn-icon .bl-icon-svg{
+    width:20px !important;
+    height:20px !important;
+    display:block !important;
+  }
+
+  #bl-beats-toggle .bl-btn-label,
+  #bl-contact-toggle .bl-btn-label,
+  #bl-auth-toggle .bl-btn-label{
+    display:inline-flex !important;
+    align-items:center !important;
+    line-height:1 !important;
   }
 }
 
