@@ -15,8 +15,8 @@ test('Weight of Coherence keeps a muted medium board and 50% artwork guide', () 
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\\.css\\?v=JIGSAW_LIBRARY_MULTI_ART_20261017_1/);
-  assert.match(html, /weight-of-coherence\\.js\\?v=JIGSAW_LIBRARY_MULTI_ART_20261017_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_LIBRARY_MULTI_ART_20261017_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_LIBRARY_MULTI_ART_20261017_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
