@@ -77,6 +77,15 @@ test('one jigsaw player switches artwork, dimensions, copy and save authority', 
   assert.doesNotMatch(player, /localStorage|sessionStorage|indexedDB/);
 });
 
+test('reopening the active jigsaw cannot erase already placed pieces', () => {
+  assert.match(player, /if\(refs\.board\.width!==BOARD_WIDTH\) refs\.board\.width=BOARD_WIDTH/);
+  assert.match(player, /if\(refs\.board\.height!==BOARD_HEIGHT\) refs\.board\.height=BOARD_HEIGHT/);
+  assert.match(player, /if\(placedCanvas\.width!==BOARD_WIDTH\) placedCanvas\.width=BOARD_WIDTH/);
+  assert.match(player, /if\(placedCanvas\.height!==BOARD_HEIGHT\) placedCanvas\.height=BOARD_HEIGHT/);
+  assert.match(player, /if\(imageReady && state\)\{\s*rebuildPlacedCanvas\(\);\s*drawBoard\(\);/);
+  assert.match(player, /Guide shown at 50% opacity/);
+});
+
 test('The Unheard Signal has a dedicated server save profile', () => {
   const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
   const api = read('systems/baseline-games-hub/api/games_data.php');
