@@ -1,5 +1,3 @@
-const PUZZLE_GROUP_LABEL = 'Puzzle Games';
-
 export function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, character => ({
     '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
@@ -39,32 +37,12 @@ export function saveStoredProfile(app, profile) {
   return true;
 }
 
-function puzzleGroup(list) {
-  return list?.querySelector('[data-puzzle-games-group]') || null;
-}
-
 function testingGroup(list) {
   return [...(list?.querySelectorAll('.games-list-group') || [])]
     .find(node => node.textContent.trim() === 'Testing') || null;
 }
 
-function ensurePuzzleGroup(list) {
-  if (!list) return null;
-  let group = puzzleGroup(list);
-  if (group) return group;
-  group = document.createElement('div');
-  group.className = 'games-list-group';
-  group.dataset.puzzleGamesGroup = 'true';
-  group.setAttribute('role', 'presentation');
-  group.innerHTML = `<span>${PUZZLE_GROUP_LABEL}</span>`;
-  const testing = testingGroup(list);
-  if (testing) list.insertBefore(group, testing);
-  else list.appendChild(group);
-  return group;
-}
-
 function insertPuzzleRow(list, row, order) {
-  const group = ensurePuzzleGroup(list);
   const testing = testingGroup(list);
   const existingRows = [...list.querySelectorAll('[data-puzzle-overview-row]')]
     .filter(node => node !== row)
@@ -75,12 +53,10 @@ function insertPuzzleRow(list, row, order) {
 
   allRows.forEach(node => {
     node.dataset.puzzleOrder = String(node === row ? order : node.dataset.puzzleOrder || 0);
+    node.dataset.coreGameExtension = 'true';
     if (testing) list.insertBefore(node, testing);
     else list.appendChild(node);
   });
-  if (group && testing && group.nextElementSibling === testing && allRows.length) {
-    list.insertBefore(allRows[0], testing);
-  }
 }
 
 function overviewRow(config, progressText) {
