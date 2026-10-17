@@ -65,7 +65,7 @@ test('jigsaws use the Games Hub server save authority with separate puzzle profi
   assert.match(source, /BaselineGameStorage/);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
 
-  for (const app of ['weightcoherence','unheardsignal']) {
+  for (const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']) {
     assert.ok(registry.includes(`app:'${app}'`));
     assert.ok(guard.includes(`'${app}'`));
     assert.ok(api.includes(`'${app}'`));
@@ -73,6 +73,8 @@ test('jigsaws use the Games Hub server save authority with separate puzzle profi
 
   assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
+  assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
+  assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
 });
 
 
