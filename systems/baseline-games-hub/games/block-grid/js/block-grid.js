@@ -250,7 +250,7 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>Place shapes on an 8 × 8 board and clear complete rows or columns.</p><button class="action primary" data-block-action="new" type="button">Start New Game</button></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button></div>`;
     return;
   }
   const progress = runLevelProgress(active.lines);
@@ -485,11 +485,10 @@ function placeSelected(row, col) {
 function changeMode(mode) {
   if (!MODES[mode] || profile.selectedMode === mode) return;
   profile.selectedMode = mode;
-  profile.activeRun = createRun();
-  profile.gamesPlayed += 1;
+  profile.activeRun = null;
   selectedPiece = -1;
   previewAnchor = null;
-  statusMessage = `${MODES[mode].name} mode started.`;
+  statusMessage = '';
   persist();
   render();
   setTab('game');
