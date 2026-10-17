@@ -318,7 +318,10 @@ test('mobile header keeps branding visible through one consolidated utility menu
 
   assert.ok(shared.includes("id = 'bl-mobile-actions-toggle'"));
   assert.ok(shared.includes("menu.id = 'bl-mobile-actions-menu'"));
-  assert.ok(shared.includes("Array.from(right.children || [])"), 'mobile menu must inherit every current header utility');
+  assert.ok(shared.includes("['blProtectedKey','Protected sections']"));
+  assert.ok(shared.includes("['bl-beats-toggle','Binaural']"));
+  assert.ok(shared.includes("['bl-contact-toggle','Contact']"));
+  assert.ok(shared.includes("['bl-auth-toggle','Account']"));
   assert.ok(shared.includes("if(document.contains(target)) target.click()"), 'menu choices must activate the existing panel controls');
   assert.ok(shared.includes("ensureMobileActionsMenu(rightHome)"));
   assert.ok(shared.includes("ensureMobileActionsMenu(right)"));
