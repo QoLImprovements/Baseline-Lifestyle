@@ -2,7 +2,7 @@
 #puzzles .puzzle-library-card{overflow:hidden}
 #weightCoherencePuzzle{display:grid;gap:18px}
 .weight-coherence-intro{display:grid;grid-template-columns:minmax(180px,280px) minmax(0,1fr);gap:20px;align-items:center;padding:16px;border:1px solid rgba(176,190,255,.22);border-radius:18px;background:linear-gradient(145deg,rgba(11,17,48,.86),rgba(31,41,91,.58))}
-.weight-coherence-art{display:block;width:100%;aspect-ratio:1122/1402;object-fit:cover;border-radius:14px;border:1px solid rgba(224,230,255,.22);box-shadow:0 16px 34px rgba(0,0,0,.28)}
+.weight-coherence-art{display:block;width:100%;aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);object-fit:cover;border-radius:14px;border:1px solid rgba(224,230,255,.22);box-shadow:0 16px 34px rgba(0,0,0,.28)}
 .weight-coherence-copy{display:grid;gap:8px;align-content:center}
 .weight-coherence-copy h3{margin:0;font-size:clamp(1.35rem,2.4vw,2rem)}
 .weight-coherence-copy p{margin:0;color:rgba(242,245,255,.78);line-height:1.55}
@@ -45,7 +45,7 @@
 .weight-coherence-sort-tray .weight-coherence-piece{min-height:68px;padding:3px}
 .weight-coherence-sort-tray .weight-coherence-piece-canvas{max-width:58px;max-height:58px}
 .weight-coherence-sort-tray .weight-coherence-piece-placeholder{width:44px;height:44px}
-.weight-coherence-board-wrap{position:relative;width:min(100%,800px);aspect-ratio:4/5;border-radius:14px;overflow:hidden;border:1px solid rgba(206,215,255,.28);background:#2A3672;box-shadow:0 18px 42px rgba(0,0,0,.30)}
+.weight-coherence-board-wrap{position:relative;width:min(100%,800px);aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);border-radius:14px;overflow:hidden;border:1px solid rgba(206,215,255,.28);background:#2A3672;box-shadow:0 18px 42px rgba(0,0,0,.30)}
 #weightCoherenceBoard{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .weight-coherence-completion{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;display:grid;gap:6px;min-width:min(78%,420px);padding:20px 22px;text-align:center;border:1px solid rgba(225,232,255,.36);border-radius:16px;background:rgba(8,13,34,.90);box-shadow:0 18px 50px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
 .weight-coherence-completion[hidden]{display:none}
@@ -132,7 +132,7 @@
   max-width:800px;
   height:auto;
   max-height:none;
-  aspect-ratio:1122/1402;
+  aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);
 }
 .weight-coherence-workspace:fullscreen .weight-coherence-tray{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
 
@@ -159,6 +159,6 @@
     height:auto;
     max-width:800px;
     max-height:none;
-    aspect-ratio:1122/1402;
+    aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);
   }
 }
