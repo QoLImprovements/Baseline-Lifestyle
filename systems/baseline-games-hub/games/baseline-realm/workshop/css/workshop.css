@@ -1,55 +1,363 @@
-#ninjaPanel #realmDrawerWorkshop[data-workshop-owned="true"]{display:block!important;overflow:auto!important;padding:0!important;background:linear-gradient(180deg,#f1e4cf,#dbc3a2)!important;color:#24170f!important}
-#ninjaPanel .realm-workshop{position:relative;display:grid;gap:16px;min-height:100%;padding:18px;color:#24170f}
-#ninjaPanel .realm-workshop h4,#ninjaPanel .realm-workshop h5,#ninjaPanel .realm-workshop h6{margin:0;color:#24170f;font-family:var(--font-soft)}
-#ninjaPanel .realm-workshop p{margin:4px 0 0;color:#5f4938;line-height:1.45}
-#ninjaPanel .workshop-header,#ninjaPanel .workshop-section-heading{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
-#ninjaPanel .workshop-header{padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,#fff8ed,#ead7bc);border:1px solid rgba(72,43,24,.18);box-shadow:0 16px 28px -24px rgba(37,20,10,.42)}
-#ninjaPanel .workshop-header h4{font-size:32px;line-height:1}
-#ninjaPanel .workshop-eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:900;color:#785437}
-#ninjaPanel .workshop-message{padding:12px 14px;border-radius:14px;background:#fff6df;border:1px solid rgba(109,76,39,.22);font-weight:800;color:#4c341f}
-#ninjaPanel .workshop-materials,#ninjaPanel .workshop-crafted{display:grid;gap:10px;padding:14px;border-radius:18px;background:rgba(255,249,239,.72);border:1px solid rgba(72,43,24,.14)}
-#ninjaPanel .workshop-section-heading h5{font-size:20px}
-#ninjaPanel .workshop-section-heading span{font-size:13px;color:#6b5543}
-#ninjaPanel .workshop-material-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px}
-#ninjaPanel .workshop-material{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;border-radius:12px;background:#fffaf2;border:1px solid rgba(72,43,24,.12)}
-#ninjaPanel .workshop-material strong{font-size:12px;color:#513720}
-#ninjaPanel .workshop-material span{min-width:30px;padding:4px 7px;border-radius:999px;background:#68472d;color:#fff5e6;text-align:center;font-weight:900}
-#ninjaPanel .workshop-layout{display:grid;grid-template-columns:minmax(160px,.72fr) minmax(220px,.95fr) minmax(320px,1.55fr);gap:12px;align-items:start}
-#ninjaPanel .workshop-categories,#ninjaPanel .workshop-recipes{display:grid;gap:8px}
-#ninjaPanel .workshop-category,#ninjaPanel .workshop-recipe-row{appearance:none;width:100%;border:1px solid rgba(72,43,24,.14);background:linear-gradient(180deg,#fff9ef,#ead8bf);color:#2f2016;border-radius:14px;padding:10px;text-align:left;cursor:pointer;font:inherit;box-shadow:0 10px 18px -18px rgba(42,24,13,.48)}
-#ninjaPanel .workshop-category{display:grid;grid-template-columns:36px 1fr;gap:9px;align-items:center}
-#ninjaPanel .workshop-category.is-active,#ninjaPanel .workshop-recipe-row.is-selected{outline:2px solid #7c5533;outline-offset:0;background:linear-gradient(180deg,#fff3d8,#d9b987)}
-#ninjaPanel .workshop-category strong,#ninjaPanel .workshop-recipe-row strong{display:block;color:#2e1d12}
-#ninjaPanel .workshop-category small,#ninjaPanel .workshop-recipe-row small{display:block;margin-top:3px;color:#6b5543;line-height:1.3}
-#ninjaPanel .realm-symbol{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;color:#5d3b22}
-#ninjaPanel .workshop-recipe-row{display:flex;justify-content:space-between;gap:8px;align-items:center}
-#ninjaPanel .workshop-recipe-state{flex:0 0 auto;padding:5px 7px;border-radius:999px;font-size:10px;font-weight:900}
-#ninjaPanel .workshop-recipe-state.is-discovered{background:#dce9ca;color:#355122}
-#ninjaPanel .workshop-recipe-state.is-locked{background:#e8ded0;color:#6c5847}
-#ninjaPanel .workshop-detail{display:grid;gap:14px;padding:16px;border-radius:18px;background:linear-gradient(180deg,#fffaf2,#ead8bf);border:1px solid rgba(72,43,24,.18);box-shadow:0 16px 28px -24px rgba(37,20,10,.42)}
-#ninjaPanel .workshop-detail>header{display:flex;justify-content:space-between;gap:14px;align-items:flex-start}
-#ninjaPanel .workshop-detail h5{font-size:27px;line-height:1.05}
-#ninjaPanel .workshop-level{padding:7px 9px;border-radius:999px;background:#6d492e;color:#fff4df;font-weight:900;font-size:11px;white-space:nowrap}
-#ninjaPanel .workshop-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#ninjaPanel .workshop-detail-grid section{display:grid;gap:8px;padding:12px;border-radius:14px;background:rgba(255,250,242,.76);border:1px solid rgba(72,43,24,.12)}
-#ninjaPanel .workshop-detail-grid h6{font-size:15px}
-#ninjaPanel .workshop-requirements{display:grid;gap:6px;list-style:none;margin:0;padding:0}
-#ninjaPanel .workshop-requirements li{display:flex;justify-content:space-between;gap:10px;padding:7px 9px;border-radius:10px;background:#f2e7d7}
-#ninjaPanel .workshop-requirements li.is-met{background:#e3ecd5;color:#355122}
-#ninjaPanel .workshop-requirements li.is-missing{background:#f2ddd5;color:#7a3028}
-#ninjaPanel .workshop-output span,#ninjaPanel .workshop-output small{color:#66503d;line-height:1.4}
-#ninjaPanel .workshop-craft-controls{display:flex;justify-content:space-between;gap:12px;align-items:end;flex-wrap:wrap}
-#ninjaPanel .workshop-craft-controls label{display:grid;gap:5px;font-weight:900;color:#4f3521}
-#ninjaPanel .workshop-craft-controls input{width:92px;min-height:40px;border-radius:10px;border:1px solid rgba(72,43,24,.24);background:#fffaf2;color:#27180f;padding:8px 10px;font:inherit}
-#ninjaPanel .workshop-crafted-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:8px}
-#ninjaPanel .workshop-crafted-item{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 12px;border-radius:13px;background:#fffaf2;border:1px solid rgba(72,43,24,.12)}
-#ninjaPanel .workshop-crafted-item strong,#ninjaPanel .workshop-crafted-item span,#ninjaPanel .workshop-crafted-item small{display:block}
-#ninjaPanel .workshop-crafted-item span,#ninjaPanel .workshop-crafted-item small{margin-top:3px;color:#6a5441;font-size:12px}
-#ninjaPanel .workshop-connected{padding:6px 8px;border-radius:999px;background:#dce9ca;color:#355122!important;font-weight:900}
-#ninjaPanel .workshop-empty{padding:14px;border-radius:12px;background:rgba(255,250,242,.72);color:#6b5543}
-#ninjaPanel .workshop-confirm-backdrop{position:absolute;inset:0;z-index:50;display:grid;place-items:center;padding:24px;background:rgba(28,16,9,.62)}
-#ninjaPanel .workshop-confirm{width:min(520px,100%);display:grid;gap:12px;padding:20px;border-radius:20px;background:linear-gradient(180deg,#fffaf1,#e4c9a4);border:1px solid rgba(255,255,255,.38);box-shadow:0 30px 60px -24px rgba(0,0,0,.72)}
-#ninjaPanel .workshop-confirm h5{font-size:25px}
-#ninjaPanel .workshop-confirm-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
-@media (max-width:1100px){#ninjaPanel .workshop-layout{grid-template-columns:1fr 1fr}#ninjaPanel .workshop-detail{grid-column:1/-1}}
-@media (max-width:760px){#ninjaPanel .realm-workshop{padding:12px}#ninjaPanel .workshop-layout{grid-template-columns:1fr}#ninjaPanel .workshop-detail{grid-column:auto}#ninjaPanel .workshop-detail-grid{grid-template-columns:1fr}#ninjaPanel .workshop-categories{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Workshop/Cooking interior authority. This file owns only the physical room
+   and its workstations; shared HUD/drawers remain in realm-wood-authority.css. */
+#ninjaPanel #realmWorkshopScreen.realm-workshop-screen{
+  position:absolute!important;
+  inset:var(--realm-banner-height) 0 0!important;
+  z-index:12!important;
+  display:block!important;
+  overflow:auto!important;
+  background:
+    radial-gradient(circle at 50% 14%,rgba(255,219,142,.13),transparent 32%),
+    linear-gradient(180deg,#2a2119 0%,#35261a 55%,#1b120c 56%,#120c08 100%)!important;
+  color:var(--realm-cream)!important;
+}
+#ninjaPanel #realmWorkshopScreen[hidden]{display:none!important}
+
+#ninjaPanel .realm-workshop{min-height:100%!important;color:var(--realm-cream)!important}
+#ninjaPanel .workshop-room-scene{
+  position:relative!important;
+  min-height:100%!important;
+  display:grid!important;
+  grid-template-rows:auto auto minmax(0,1fr)!important;
+  gap:16px!important;
+  padding:18px!important;
+  overflow:hidden!important;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 12.5%,rgba(0,0,0,.08) 12.5% 13%,transparent 13% 25%),
+    linear-gradient(180deg,rgba(255,255,255,.025),transparent 42%),
+    radial-gradient(circle at 22% 48%,rgba(231,152,74,.10),transparent 22%),
+    radial-gradient(circle at 76% 44%,rgba(124,158,94,.08),transparent 24%);
+}
+#ninjaPanel .workshop-room-scene::before{
+  content:""!important;
+  position:absolute!important;
+  left:-5%!important;right:-5%!important;bottom:-18px!important;height:38%!important;
+  background:
+    repeating-linear-gradient(90deg,#2a1c12 0 74px,#1e140d 74px 78px),
+    linear-gradient(180deg,#302014,#17100a)!important;
+  transform:perspective(520px) rotateX(58deg)!important;
+  transform-origin:bottom center!important;
+  box-shadow:inset 0 12px 24px rgba(0,0,0,.34)!important;
+  pointer-events:none!important;
+}
+#ninjaPanel .workshop-room-beam{
+  position:absolute!important;
+  top:0!important;bottom:0!important;
+  width:20px!important;
+  background:linear-gradient(90deg,#21140c,#5a341f 40%,#2b180f)!important;
+  box-shadow:0 0 0 1px rgba(246,213,150,.08),0 8px 18px rgba(0,0,0,.3)!important;
+  pointer-events:none!important;
+}
+#ninjaPanel .workshop-room-beam--left{left:8%!important}
+#ninjaPanel .workshop-room-beam--right{right:8%!important}
+
+#ninjaPanel .workshop-room-header{
+  position:relative!important;
+  z-index:2!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:18px!important;
+  padding:14px 16px!important;
+  border:1px solid rgba(246,213,150,.18)!important;
+  border-radius:14px!important;
+  background:linear-gradient(180deg,rgba(64,38,23,.90),rgba(35,20,13,.86))!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 12px 22px -18px #000!important;
+}
+#ninjaPanel .workshop-room-header h4,
+#ninjaPanel .workshop-room-header h5,
+#ninjaPanel .workshop-detail h5,
+#ninjaPanel .workshop-detail h6,
+#ninjaPanel .workshop-workbench h5{
+  margin:0!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:var(--realm-cream)!important;
+}
+#ninjaPanel .workshop-room-header h4{font-size:clamp(26px,2.3vw,38px)!important;line-height:1!important}
+#ninjaPanel .workshop-room-header p{margin:5px 0 0!important;color:#dcc5a1!important;line-height:1.4!important}
+#ninjaPanel .workshop-eyebrow{
+  display:block!important;
+  margin-bottom:4px!important;
+  color:#e5be78!important;
+  -webkit-text-fill-color:#e5be78!important;
+  font-size:10px!important;
+  font-weight:950!important;
+  letter-spacing:.13em!important;
+  text-transform:uppercase!important;
+}
+#ninjaPanel .workshop-message{
+  position:relative!important;
+  z-index:2!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(255,217,138,.30)!important;
+  border-radius:10px!important;
+  background:rgba(78,49,28,.82)!important;
+  color:#ffe6b3!important;
+  -webkit-text-fill-color:#ffe6b3!important;
+  font-weight:850!important;
+}
+
+#ninjaPanel .workshop-stations{
+  position:relative!important;
+  z-index:2!important;
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;
+  gap:10px!important;
+}
+#ninjaPanel .workshop-station{
+  min-height:116px!important;
+  display:grid!important;
+  grid-template-columns:46px minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:12px!important;
+  border:2px solid #2a180f!important;
+  border-radius:14px!important;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.025) 0 2px,rgba(0,0,0,.035) 2px 6px),
+    linear-gradient(180deg,#684027,#3c2417)!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:var(--realm-cream)!important;
+  box-shadow:0 14px 24px -18px #000,inset 0 1px rgba(255,255,255,.08)!important;
+  cursor:pointer!important;
+  text-align:left!important;
+}
+#ninjaPanel .workshop-station:hover,
+#ninjaPanel .workshop-station:focus-visible,
+#ninjaPanel .workshop-station.is-active{
+  border-color:#d8b36a!important;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.028) 0 2px,rgba(0,0,0,.035) 2px 6px),
+    linear-gradient(180deg,#8a5c35,#4a2c1b)!important;
+  outline:2px solid rgba(255,217,138,.24)!important;
+  outline-offset:1px!important;
+}
+#ninjaPanel .workshop-station__icon{
+  width:46px!important;height:46px!important;
+  display:grid!important;place-items:center!important;
+  border-radius:10px!important;
+  background:linear-gradient(180deg,#9aa4a9,#4a5358)!important;
+  border:1px solid #252a2e!important;
+  color:#fff1d0!important;
+}
+#ninjaPanel .workshop-station__icon .realm-symbol{width:28px!important;height:28px!important}
+#ninjaPanel .workshop-station__copy{display:grid!important;gap:4px!important}
+#ninjaPanel .workshop-station__copy strong{color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important;font-size:15px!important}
+#ninjaPanel .workshop-station__copy small{color:#dcc5a1!important;-webkit-text-fill-color:#dcc5a1!important;font-size:11px!important;line-height:1.25!important}
+
+#ninjaPanel .workshop-workbench{
+  position:relative!important;
+  z-index:2!important;
+  align-self:end!important;
+  display:grid!important;
+  gap:12px!important;
+  padding:14px!important;
+  border:2px solid #24150d!important;
+  border-radius:16px!important;
+  background:
+    linear-gradient(180deg,rgba(46,29,19,.95),rgba(24,15,10,.97))!important;
+  box-shadow:0 18px 34px -22px #000,inset 0 1px rgba(255,255,255,.06)!important;
+}
+#ninjaPanel .workshop-workbench__head{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:16px!important;
+}
+#ninjaPanel .workshop-workbench__head h5{font-size:23px!important}
+#ninjaPanel .workshop-material-rail{
+  display:flex!important;
+  gap:7px!important;
+  justify-content:flex-end!important;
+  flex-wrap:wrap!important;
+}
+#ninjaPanel .workshop-material{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  padding:6px 8px!important;
+  border:1px solid rgba(245,213,151,.18)!important;
+  border-radius:999px!important;
+  background:rgba(255,239,205,.07)!important;
+  color:#dcc5a1!important;
+  -webkit-text-fill-color:#dcc5a1!important;
+  font-size:10px!important;
+}
+#ninjaPanel .workshop-material strong{color:#fff0cf!important;-webkit-text-fill-color:#fff0cf!important}
+#ninjaPanel .workshop-material-empty{color:#a98f6d!important;font-size:11px!important}
+
+#ninjaPanel .workshop-workbench__body{
+  display:grid!important;
+  grid-template-columns:minmax(210px,.78fr) minmax(0,1.6fr)!important;
+  gap:12px!important;
+  align-items:start!important;
+}
+#ninjaPanel .workshop-recipes{display:grid!important;gap:7px!important;max-height:360px!important;overflow:auto!important;padding-right:4px!important}
+#ninjaPanel .workshop-recipe-row{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:8px!important;
+  padding:10px!important;
+  border:1px solid rgba(245,213,151,.16)!important;
+  border-radius:11px!important;
+  background:rgba(255,239,205,.06)!important;
+  color:var(--realm-cream)!important;
+  -webkit-text-fill-color:var(--realm-cream)!important;
+  text-align:left!important;
+  cursor:pointer!important;
+}
+#ninjaPanel .workshop-recipe-row:hover,
+#ninjaPanel .workshop-recipe-row:focus-visible,
+#ninjaPanel .workshop-recipe-row.is-selected{
+  border-color:#d8b36a!important;
+  background:rgba(153,98,56,.34)!important;
+  outline:none!important;
+}
+#ninjaPanel .workshop-recipe-row strong{display:block!important;color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important;font-size:13px!important}
+#ninjaPanel .workshop-recipe-row small{display:block!important;margin-top:3px!important;color:#cdb796!important;-webkit-text-fill-color:#cdb796!important;font-size:10px!important;line-height:1.25!important}
+#ninjaPanel .workshop-recipe-state{
+  flex:0 0 auto!important;
+  padding:5px 7px!important;
+  border-radius:999px!important;
+  font-size:9px!important;
+  font-weight:950!important;
+}
+#ninjaPanel .workshop-recipe-state.is-discovered{background:#3f623f!important;color:#e3f2ce!important;-webkit-text-fill-color:#e3f2ce!important}
+#ninjaPanel .workshop-recipe-state.is-locked{background:#4d4035!important;color:#d1c0aa!important;-webkit-text-fill-color:#d1c0aa!important}
+
+#ninjaPanel .workshop-detail{
+  display:grid!important;
+  gap:12px!important;
+  min-width:0!important;
+  padding:14px!important;
+  border:1px solid rgba(245,213,151,.18)!important;
+  border-radius:13px!important;
+  background:rgba(15,9,6,.38)!important;
+}
+#ninjaPanel .workshop-detail>header{
+  display:flex!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  align-items:flex-start!important;
+}
+#ninjaPanel .workshop-detail h5{font-size:clamp(21px,2vw,29px)!important;line-height:1.05!important}
+#ninjaPanel .workshop-detail p{margin:4px 0 0!important;color:#cdb796!important;line-height:1.38!important}
+#ninjaPanel .workshop-level{
+  flex:0 0 auto!important;
+  padding:6px 8px!important;
+  border-radius:999px!important;
+  background:#795033!important;
+  color:#fff0cf!important;
+  -webkit-text-fill-color:#fff0cf!important;
+  font-size:10px!important;
+  font-weight:950!important;
+}
+#ninjaPanel .workshop-detail-grid{display:grid!important;grid-template-columns:1fr 1fr!important;gap:9px!important}
+#ninjaPanel .workshop-detail-grid section{
+  display:grid!important;gap:7px!important;
+  padding:10px!important;border:1px solid rgba(245,213,151,.12)!important;border-radius:10px!important;
+  background:rgba(255,239,205,.05)!important;
+}
+#ninjaPanel .workshop-detail h6{font-size:13px!important}
+#ninjaPanel .workshop-requirements{display:grid!important;gap:5px!important;list-style:none!important;margin:0!important;padding:0!important}
+#ninjaPanel .workshop-requirements li{
+  display:flex!important;justify-content:space-between!important;gap:8px!important;
+  padding:6px 7px!important;border-radius:8px!important;font-size:11px!important;
+}
+#ninjaPanel .workshop-requirements li.is-met{background:rgba(72,104,66,.46)!important;color:#deefca!important}
+#ninjaPanel .workshop-requirements li.is-missing{background:rgba(117,54,44,.46)!important;color:#f3c2b8!important}
+#ninjaPanel .workshop-output strong{color:#fff0cf!important;-webkit-text-fill-color:#fff0cf!important}
+#ninjaPanel .workshop-output span{color:#cdb796!important;-webkit-text-fill-color:#cdb796!important;font-size:11px!important;line-height:1.35!important}
+
+#ninjaPanel .workshop-craft-controls{
+  display:flex!important;align-items:end!important;justify-content:space-between!important;gap:10px!important;flex-wrap:wrap!important;
+}
+#ninjaPanel .workshop-craft-controls label{display:grid!important;gap:4px!important;color:#dcc5a1!important;font-size:11px!important;font-weight:900!important}
+#ninjaPanel .workshop-craft-controls input{
+  width:88px!important;min-height:38px!important;padding:7px 9px!important;
+  border:1px solid rgba(245,213,151,.24)!important;border-radius:9px!important;
+  background:#1b110b!important;color:#fff0cf!important;font:inherit!important;
+}
+
+#ninjaPanel .workshop-skill-check,
+#ninjaPanel .workshop-skill-result{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:10px 12px!important;
+  padding:12px!important;
+  border:1px solid rgba(255,217,138,.28)!important;
+  border-radius:12px!important;
+  background:rgba(93,57,31,.32)!important;
+}
+#ninjaPanel .workshop-skill-copy{grid-column:1/-1!important;display:grid!important;gap:3px!important}
+#ninjaPanel .workshop-skill-copy strong{color:#ffe7b7!important;-webkit-text-fill-color:#ffe7b7!important;font-size:12px!important}
+#ninjaPanel .workshop-timing-track{
+  position:relative!important;
+  height:24px!important;
+  overflow:hidden!important;
+  border:2px solid #1a100a!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,#5d3425,#c58a48 45%,#7e4a2e)!important;
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.45)!important;
+}
+#ninjaPanel .workshop-timing-target{
+  position:absolute!important;
+  left:calc(var(--target) - 8%)!important;
+  top:2px!important;bottom:2px!important;width:16%!important;
+  border-radius:999px!important;
+  background:rgba(223,240,170,.72)!important;
+  box-shadow:0 0 0 2px rgba(255,242,184,.26)!important;
+}
+#ninjaPanel .workshop-timing-needle{
+  position:absolute!important;
+  left:0!important;
+  top:1px!important;bottom:1px!important;
+  width:5px!important;
+  border-radius:5px!important;
+  background:#fff6d4!important;
+  box-shadow:0 0 8px rgba(255,243,187,.86)!important;
+  animation:workshopTimingSweep 1.8s linear infinite alternate!important;
+}
+@keyframes workshopTimingSweep{
+  from{left:1%}
+  to{left:calc(99% - 5px)}
+}
+#ninjaPanel .workshop-timing-button{min-width:92px!important}
+#ninjaPanel .workshop-skill-result div{display:grid!important;gap:3px!important}
+#ninjaPanel .workshop-skill-result strong{color:#fff0cf!important;-webkit-text-fill-color:#fff0cf!important;font-size:20px!important}
+#ninjaPanel .workshop-skill-result small{color:#cdb796!important;-webkit-text-fill-color:#cdb796!important}
+
+#ninjaPanel .workshop-empty{
+  margin:0!important;padding:12px!important;border-radius:10px!important;
+  background:rgba(255,239,205,.05)!important;color:#cdb796!important;-webkit-text-fill-color:#cdb796!important;
+}
+#ninjaPanel .realm-symbol{
+  display:block!important;width:30px!important;height:30px!important;
+  fill:none!important;stroke:currentColor!important;stroke-width:1.8!important;stroke-linecap:round!important;stroke-linejoin:round!important;
+}
+
+@media (max-width:1050px){
+  #ninjaPanel .workshop-stations{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  #ninjaPanel .workshop-workbench__body{grid-template-columns:1fr!important}
+  #ninjaPanel .workshop-recipes{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-height:none!important}
+}
+@media (max-width:720px){
+  #ninjaPanel .workshop-room-scene{padding:12px!important}
+  #ninjaPanel .workshop-room-header{display:grid!important}
+  #ninjaPanel .workshop-stations{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  #ninjaPanel .workshop-station{min-height:96px!important;grid-template-columns:38px minmax(0,1fr)!important}
+  #ninjaPanel .workshop-station__icon{width:38px!important;height:38px!important}
+  #ninjaPanel .workshop-recipes{grid-template-columns:1fr!important}
+  #ninjaPanel .workshop-workbench__head{grid-template-columns:1fr!important}
+  #ninjaPanel .workshop-material-rail{justify-content:flex-start!important}
+  #ninjaPanel .workshop-detail-grid{grid-template-columns:1fr!important}
+  #ninjaPanel .workshop-skill-check,
+  #ninjaPanel .workshop-skill-result{grid-template-columns:1fr!important}
+  #ninjaPanel .workshop-timing-track{grid-column:1!important}
+}
+@media (prefers-reduced-motion:reduce){
+  #ninjaPanel .workshop-timing-needle{animation:none!important;left:50%!important}
+}
