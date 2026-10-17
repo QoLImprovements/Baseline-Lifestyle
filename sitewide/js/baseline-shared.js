@@ -6154,10 +6154,10 @@ function buildControls(recipeEl){
       function rebuild(){
         menu.replaceChildren();
         [
+          ['bl-auth-toggle','Account'],
           ['blProtectedKey','Protected sections'],
-          ['bl-beats-toggle','Binaural'],
           ['bl-contact-toggle','Contact'],
-          ['bl-auth-toggle','Account']
+          ['bl-beats-toggle','Binaural']
         ].forEach(function(entry){
           const target = document.getElementById(entry[0]);
           if(!target) return;
