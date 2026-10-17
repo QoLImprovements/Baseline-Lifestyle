@@ -18,7 +18,7 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
+} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
 
 const BUILD = 'BLOCK_GRID_CORE_COHERENCE_20261017_3';
 const APP = 'blockgrid';
