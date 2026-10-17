@@ -1535,16 +1535,21 @@ html.bl-pages-dd-ready .bl-topnav{
   z-index:13020 !important;
 }
 
-#bl-beats-toggle,
-#bl-contact-toggle,
-#bl-auth-toggle{
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
-  white-space:nowrap !important;
+/* Desktop-only visibility authority for the original utility controls.
+   On mobile those same controls remain in the DOM as panel owners, but the
+   consolidated arrow menu is the only visible header control. */
+@media (min-width:901px){
+  #bl-beats-toggle,
+  #bl-contact-toggle,
+  #bl-auth-toggle{
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    visibility:visible !important;
+    opacity:1 !important;
+    pointer-events:auto !important;
+    white-space:nowrap !important;
+  }
 }
 
 
