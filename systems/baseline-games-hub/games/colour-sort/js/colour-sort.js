@@ -127,7 +127,7 @@ function startLevel(levelId, { persistChange = true } = {}) {
 }
 
 function selectLevel(levelId) {
-  const level = Math.min(profile.highestUnlocked, clampLevel(levelId));
+  const level = clampLevel(levelId);
   if (level > profile.highestUnlocked) return;
   profile.selectedLevel = level;
   profile.activePuzzle = null;
