@@ -28,19 +28,40 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(library, /showView\('player'\)/);
 });
 
-test('Jigsaws are grouped into collections and include both current artworks', () => {
-  assert.match(registry, /group:'Psychological & Symbolic'/);
+test('Jigsaws are grouped into Symbolic and Animals collections with all four artworks', () => {
+  assert.match(registry, /group:'Symbolic'/);
+  assert.match(registry, /group:'Animals'/);
+  assert.doesNotMatch(registry, /Psychological & Symbolic/);
+
   assert.match(registry, /id:'weight-of-coherence'/);
   assert.match(registry, /title:'The Weight of Coherence'/);
   assert.match(registry, /id:'the-unheard-signal'/);
-  assert.match(registry, /title:'The Unheard Signal'/);
+  assert.match(registry, /title:'Pleading Before the Silent Throne'/);
+
+  assert.match(registry, /id:'black-panther'/);
+  assert.match(registry, /title:'Black Panther'/);
+  assert.match(registry, /black-panther\.webp\?v=BLACK_PANTHER_JIGSAW_20261018_1/);
+  assert.match(registry, /id:'bear'/);
+  assert.match(registry, /title:'Bear'/);
+  assert.match(registry, /bear\.webp\?v=BEAR_JIGSAW_20261018_1/);
+
   assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
-  assert.match(registry, /width:1448/);
-  assert.match(registry, /height:1086/);
-  const art = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.png');
-  assert.equal(art.length, 2600964);
-  assert.equal(art.subarray(1,4).toString('ascii'), 'PNG');
-  assert.equal(crypto.createHash('sha256').update(art).digest('hex'), '5a803c828d9c76af21c0cd73f47014417d9de72eaa85711e6c833814da52fabf');
+  assert.match(registry, /meta:'4 jigsaws available'/);
+
+  const symbolicArt = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.png');
+  assert.equal(symbolicArt.length, 2600964);
+  assert.equal(symbolicArt.subarray(1,4).toString('ascii'), 'PNG');
+  assert.equal(crypto.createHash('sha256').update(symbolicArt).digest('hex'), '5a803c828d9c76af21c0cd73f47014417d9de72eaa85711e6c833814da52fabf');
+
+  for (const path of [
+    'systems/baseline-games-hub/puzzles/black-panther/art/black-panther.webp',
+    'systems/baseline-games-hub/puzzles/bear/art/bear.webp'
+  ]) {
+    const art = fs.readFileSync(path);
+    assert.ok(art.length > 50000);
+    assert.equal(art.subarray(0,4).toString('ascii'), 'RIFF');
+    assert.equal(art.subarray(8,12).toString('ascii'), 'WEBP');
+  }
 });
 
 
@@ -86,10 +107,14 @@ test('reopening the active jigsaw cannot erase already placed pieces', () => {
   assert.match(player, /Guide shown at 50% opacity/);
 });
 
-test('The Unheard Signal has a dedicated server save profile', () => {
+test('symbolic and animal jigsaws have dedicated server save profiles', () => {
   const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
   const api = read('systems/baseline-games-hub/api/games_data.php');
   const saved = read('sitewide/api/saved_data.php');
-  for (const source of [guard, api]) assert.ok(source.includes("'unheardsignal'"));
+  for (const app of ['unheardsignal','pantherjigsaw','bearjigsaw']) {
+    for (const source of [guard, api]) assert.ok(source.includes(`'${app}'`));
+  }
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
+  assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
+  assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
 });
