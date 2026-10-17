@@ -86,7 +86,7 @@ test('Cooking copy no longer describes a generic Workshop panel', () => {
 
 
 test('Realm starts in one coherent Basecamp state before JavaScript settles', () => {
-  assert.match(html,/id="realmSceneFrame"[^>]*class="[^"]*is-basecamp-view[^"]*"[^>]*data-realm-view="basecamp"/);
+  assert.match(html,/class="[^"]*is-basecamp-view[^"]*"[^>]*id="realmSceneFrame"[^>]*data-realm-view="basecamp"/);
   assert.match(html,/id="ninjaScene" hidden aria-hidden="true"/);
   assert.match(html,/id="realmTrainingBar" hidden/);
   assert.match(html,/id="realmBasecampBar"(?![^>]* hidden)/);
