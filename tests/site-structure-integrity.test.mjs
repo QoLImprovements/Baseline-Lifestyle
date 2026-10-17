@@ -333,6 +333,10 @@ test('mobile header keeps branding visible through one consolidated utility menu
 
   assert.ok(sitewideCss.includes('.bl-mobile-actions-menu'));
   assert.ok(sitewideCss.includes('.bl-homebar-right > .bl-mini-btn'));
+  assert.ok(
+    sitewideCss.includes('@media (min-width:901px){\n  #bl-beats-toggle,\n  #bl-contact-toggle,\n  #bl-auth-toggle{'),
+    'late utility visibility authority must be desktop-only so it cannot override the mobile consolidation'
+  );
   assert.ok(headerCss.includes('grid-template-areas:"pages right"!important'), 'mobile system header must be one row');
   assert.ok(headerCss.includes('--homebar-h:58px!important'), 'old two-row 106px mobile header must be retired');
   assert.ok(headerCss.includes('.bl-pages-menu .bl-pages-link'));
