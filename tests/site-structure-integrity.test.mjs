@@ -307,3 +307,32 @@ test('sitewide Contact control opens one themed shared flyout before Account', (
   assert.equal(home.includes('id="bl-contact-toggle"'), false, 'Contact must be owned by shared header generation, not duplicated in homepage markup');
   assert.equal(fs.existsSync(path.join(root, 'contact/index.html')), false, 'Contact must not have a standalone page');
 });
+
+
+test('mobile header keeps branding visible through one consolidated utility menu', () => {
+  const shared = fs.readFileSync(path.join(root, 'sitewide/js/baseline-shared.js'), 'utf8');
+  const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
+  const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
+  const homeCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+  const protectedKeyCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-protected-key-placement.css'), 'utf8');
+
+  assert.ok(shared.includes("id = 'bl-mobile-actions-toggle'"));
+  assert.ok(shared.includes("menu.id = 'bl-mobile-actions-menu'"));
+  assert.ok(shared.includes("['blProtectedKey','Protected sections']"));
+  assert.ok(shared.includes("['bl-beats-toggle','Binaural']"));
+  assert.ok(shared.includes("['bl-contact-toggle','Contact']"));
+  assert.ok(shared.includes("['bl-auth-toggle','Account']"));
+  assert.ok(shared.includes("if(document.contains(target)) target.click()"), 'menu choices must activate the existing panel controls');
+  assert.ok(shared.includes("ensureMobileActionsMenu(rightHome)"));
+  assert.ok(shared.includes("ensureMobileActionsMenu(right)"));
+
+  assert.ok(sitewideCss.includes('.bl-mobile-actions-menu'));
+  assert.ok(sitewideCss.includes('.bl-homebar-right > .bl-mini-btn'));
+  assert.ok(headerCss.includes('grid-template-areas:"pages right"!important'), 'mobile system header must be one row');
+  assert.ok(headerCss.includes('--homebar-h:58px!important'), 'old two-row 106px mobile header must be retired');
+  assert.ok(headerCss.includes('.bl-pages-menu .bl-pages-link'));
+  assert.ok(headerCss.includes('white-space:nowrap!important'), 'system names must remain on one line');
+  assert.ok(homeCss.includes('grid-template-areas:"title controls"'), 'Home must preserve Baseline Lifestyle beside one utility trigger');
+  assert.match(homeCss, /\.system-separator\{\s*display:none;/, 'mobile home cards must hide the desktop hyphen separator');
+  assert.ok(protectedKeyCss.includes('@media (min-width:521px)'), 'protected key first-paint flex must not override the compact mobile grid');
+});
