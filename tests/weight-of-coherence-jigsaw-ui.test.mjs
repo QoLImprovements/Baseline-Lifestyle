@@ -11,6 +11,7 @@ test('Weight of Coherence keeps the dark board and 50% artwork guide', () => {
   assert.match(js, /const BOARD_BASE = '#080D22'/);
   assert.match(js, /const GUIDE_OPACITY = 0\.50/);
   assert.match(js, /ctx\.globalAlpha\s*=\s*GUIDE_OPACITY/);
+  assert.doesNotThrow(() => new Function(js));
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#080D22/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
