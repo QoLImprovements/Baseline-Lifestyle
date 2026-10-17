@@ -114,7 +114,7 @@
 }
 .weight-coherence-workspace:fullscreen .weight-coherence-toolbar{grid-area:toolbar}
 .weight-coherence-workspace:fullscreen .weight-coherence-stage{grid-area:stage;min-width:0;min-height:0;align-items:stretch;overflow:hidden;grid-template-columns:minmax(118px,160px) minmax(0,800px) minmax(118px,160px);justify-content:center}
-.weight-coherence-workspace:fullscreen .weight-coherence-board-shell{min-width:0;min-height:0;align-content:start;overflow:auto}
+.weight-coherence-workspace:fullscreen .weight-coherence-board-shell{min-width:0;min-height:0;height:100%;overflow:hidden;grid-template-rows:minmax(0,1fr) auto;align-content:stretch}
 .weight-coherence-workspace:fullscreen .weight-coherence-sort-column{min-height:0;height:100%;overflow:hidden}
 .weight-coherence-workspace:fullscreen .weight-coherence-sort-shell{min-height:0;overflow:hidden;grid-template-rows:auto minmax(0,1fr)}
 .weight-coherence-workspace:fullscreen .weight-coherence-sort-tray{min-height:0;max-height:none;height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
@@ -124,8 +124,12 @@
 .weight-coherence-workspace:fullscreen .weight-coherence-sort-tray::-webkit-scrollbar-thumb{background:rgba(126,145,255,.78);border-radius:8px}
 .weight-coherence-workspace:fullscreen .weight-coherence-tray-shell{grid-area:tray;min-width:0;min-height:0;overflow:auto;align-content:start}
 .weight-coherence-workspace:fullscreen .weight-coherence-board-wrap{
-  width:min(100%,800px);
+  place-self:center;
+  width:min(100%,var(--weight-coherence-fullscreen-board-width,800px));
+  max-width:800px;
+  height:auto;
   max-height:none;
+  aspect-ratio:1122/1402;
 }
 .weight-coherence-workspace:fullscreen .weight-coherence-tray{grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px}
 
@@ -141,8 +145,17 @@
     grid-template-columns:minmax(0,1fr);
     grid-template-areas:"board" "left" "right";
   }
+  .weight-coherence-workspace:fullscreen .weight-coherence-board-shell{
+    height:auto;
+    overflow:hidden;
+    grid-template-rows:auto auto;
+  }
   .weight-coherence-workspace:fullscreen .weight-coherence-board-wrap{
+    place-self:center;
     width:min(100%,800px);
+    height:auto;
+    max-width:800px;
     max-height:none;
+    aspect-ratio:1122/1402;
   }
 }
