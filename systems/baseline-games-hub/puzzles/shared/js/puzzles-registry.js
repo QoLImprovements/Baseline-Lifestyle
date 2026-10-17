@@ -28,9 +28,9 @@
       group:'Psychological & Symbolic',
       title:'The Unheard Signal',
       app:'unheardsignal',
-      image:'/systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.jpg?v=THE_UNHEARD_SIGNAL_20261017_1',
-      width:1200,
-      height:900,
+      image:'/systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.webp?v=THE_UNHEARD_SIGNAL_20261017_1',
+      width:640,
+      height:480,
       alt:'The Unheard Signal — a man speaks from below while his words strike an invisible barrier before an elevated authority figure.',
       description:'A figure tries to explain himself across an unequal chamber, but his words meet an invisible barrier before they can be received. The scene centres blocked reception, hierarchy and the pressure created when explanation has nowhere to go.'
     })
