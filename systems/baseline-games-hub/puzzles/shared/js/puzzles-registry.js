@@ -42,8 +42,8 @@
       title:'Black Panther',
       app:'pantherjigsaw',
       image:'/systems/baseline-games-hub/puzzles/black-panther/art/black-panther.webp?v=BLACK_PANTHER_JIGSAW_20261018_1',
-      width:1122,
-      height:1402,
+      width:900,
+      height:1125,
       alt:'A black panther standing alert on a rocky outcrop above a misty mountain wilderness at dusk.',
       libraryDescription:'A black panther stands watch above a moonlit mountain wilderness, poised between darkness and the last light of day.',
       description:'The panther surveys the landscape from exposed rock, still and alert against mist, mountains and opposing lights. The image centres watchfulness, controlled strength and solitary presence.'
@@ -54,8 +54,8 @@
       title:'Bear',
       app:'bearjigsaw',
       image:'/systems/baseline-games-hub/puzzles/bear/art/bear.webp?v=BEAR_JIGSAW_20261018_1',
-      width:1122,
-      height:1402,
+      width:900,
+      height:1125,
       alt:'A large brown bear walking through a shallow autumn forest river in warm sunrise light.',
       libraryDescription:'A brown bear moves through an autumn river at sunrise, carrying its weight steadily through water, mist and changing terrain.',
       description:'The bear crosses a shallow forest river in full stride as autumn light enters through the trees. The image centres grounded power, forward movement and adaptation within a changing environment.'
