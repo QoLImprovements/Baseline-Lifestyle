@@ -314,6 +314,7 @@ test('mobile header keeps branding visible through one consolidated utility menu
   const sitewideCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-sitewide.css'), 'utf8');
   const headerCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-header-canonical.css'), 'utf8');
   const homeCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-home.css'), 'utf8');
+  const protectedAccessCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-protected-access.css'), 'utf8');
   const protectedKeyCss = fs.readFileSync(path.join(root, 'sitewide/css/baseline-protected-key-placement.css'), 'utf8');
 
   assert.ok(shared.includes("id = 'bl-mobile-actions-toggle'"));
@@ -322,6 +323,10 @@ test('mobile header keeps branding visible through one consolidated utility menu
   assert.ok(shared.includes("['bl-beats-toggle','Binaural']"));
   assert.ok(shared.includes("['bl-contact-toggle','Contact']"));
   assert.ok(shared.includes("['bl-auth-toggle','Account']"));
+  const accountOrder = shared.indexOf("['bl-auth-toggle','Account']");
+  const protectedOrder = shared.indexOf("['blProtectedKey','Protected sections']");
+  const contactOrder = shared.indexOf("['bl-contact-toggle','Contact']");
+  assert.ok(accountOrder >= 0 && accountOrder < protectedOrder && protectedOrder < contactOrder, 'mobile menu order must start Account, Protected sections, Contact');
   assert.ok(shared.includes("if(document.contains(target)) target.click()"), 'menu choices must activate the existing panel controls');
   assert.ok(shared.includes("ensureMobileActionsMenu(rightHome)"));
   assert.ok(shared.includes("ensureMobileActionsMenu(right)"));
@@ -334,5 +339,7 @@ test('mobile header keeps branding visible through one consolidated utility menu
   assert.ok(headerCss.includes('white-space:nowrap!important'), 'system names must remain on one line');
   assert.ok(homeCss.includes('grid-template-areas:"title controls"'), 'Home must preserve Baseline Lifestyle beside one utility trigger');
   assert.match(homeCss, /\.system-separator\{\s*display:none;/, 'mobile home cards must hide the desktop hyphen separator');
+  assert.ok(protectedAccessCss.includes('html body[data-app="home"] #bl-auth-toggle{\n    display:none!important;'), 'Home Account control must not remain visibly duplicated beside the consolidated menu');
+  assert.ok(headerCss.includes('.bl-homebar-right > .bl-mini-btn{\n    display:none!important;'), 'system-page utility controls must not remain visibly duplicated on mobile');
   assert.ok(protectedKeyCss.includes('@media (min-width:521px)'), 'protected key first-paint flex must not override the compact mobile grid');
 });

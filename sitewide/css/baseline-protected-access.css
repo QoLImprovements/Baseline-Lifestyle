@@ -222,6 +222,11 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card:
   html body[data-app="home"] .bl-top-header > .bl-homebar-right{
     right:auto!important;
   }
+  /* Mobile utilities are represented by the consolidated arrow menu. Keep the
+     underlying Account control available to JavaScript, but not visibly duplicated. */
+  html body[data-app="home"] #bl-auth-toggle{
+    display:none!important;
+  }
 }
 
 @media(max-width:620px){
