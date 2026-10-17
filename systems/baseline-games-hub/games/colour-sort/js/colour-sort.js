@@ -19,9 +19,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
+} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
 
-const BUILD = 'COLOUR_SORT_FLUID_MOTION_20261017_3';
+const BUILD = 'COLOUR_SORT_CORE_COHERENCE_20261017_4';
 const APP = 'coloursort';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -126,8 +126,18 @@ function startLevel(levelId, { persistChange = true } = {}) {
   render();
 }
 
-function ensurePuzzle() {
-  if (!profile.activePuzzle || profile.activePuzzle.level > profile.highestUnlocked) startLevel(profile.selectedLevel);
+function selectLevel(levelId) {
+  const level = clampLevel(levelId);
+  if (level > profile.highestUnlocked) return;
+  profile.selectedLevel = level;
+  profile.activePuzzle = null;
+  selectedBottle = -1;
+  undoStack = [];
+  hint = null;
+  statusMessage = '';
+  persist();
+  render();
+  setTab('game');
 }
 
 function colourMeta(id) {
@@ -170,12 +180,36 @@ function statusHtml() {
   return `<strong>${escapeHtml(statusMessage || 'Select a bottle, then a destination.')}</strong><span class="inline-note">Only the contiguous exposed colour can pour.</span>`;
 }
 
+function renderGameInfo() {
+  const root = document.getElementById('colourSortGameInfo');
+  if (!root || !profile) return;
+  const needed = xpNeededForLevel(profile.level);
+  const pct = Math.min(100, profile.xp / needed * 100);
+  root.innerHTML = `
+    <div class="progress-shell progress-shell--trackcoin">
+      <div class="xp-row">
+        <div>
+          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
+          <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
+        </div>
+      </div>
+      <div class="stat-pills trackcoin-stat-pills">
+        <div class="stat-pill">Puzzles Completed <span>${profile.completedLevels.length} / ${LEVELS.length}</span></div>
+        <div class="stat-pill">Completed Runs <span>${profile.gamesPlayed}</span></div>
+        <div class="stat-pill">Highest Unlocked <span>${profile.highestUnlocked}</span></div>
+        <div class="stat-pill">Recorded Bests <span>${Object.keys(profile.bestMoves).length}</span></div>
+      </div>
+    </div>
+    <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the level.</span></div>`;
+}
+
 function renderGame() {
   const root = document.getElementById('colourSortGameCard');
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>Sort each colour into its own bottle.</p><button class="action primary" data-colour-action="start" type="button">Start Level 1</button></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>Level ${profile.selectedLevel} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button></div>`;
     return;
   }
   const solved = isSolved(active.bottles);
@@ -250,6 +284,7 @@ function setTab(name) {
 }
 
 function render() {
+  renderGameInfo();
   renderGame();
   renderLevels();
   renderProgress();
@@ -728,11 +763,11 @@ function handleClick(event) {
   const bottle = target.closest('[data-colour-bottle]');
   if (bottle) { selectBottle(Number(bottle.dataset.colourBottle)); return; }
   const level = target.closest('[data-colour-level]')?.getAttribute('data-colour-level');
-  if (level) { startLevel(Number(level)); setTab('game'); return; }
+  if (level) { selectLevel(Number(level)); return; }
   const tab = target.closest('[data-colour-tab]')?.getAttribute('data-colour-tab');
   if (tab) { setTab(tab); return; }
   const action = target.closest('[data-colour-action]')?.getAttribute('data-colour-action');
-  if (action === 'start') startLevel(1);
+  if (action === 'start') startLevel(profile.selectedLevel);
   if (action === 'undo') undo();
   if (action === 'hint') showHint();
   if (action === 'restart') startLevel(puzzle()?.level || profile.selectedLevel);
@@ -754,8 +789,8 @@ function panelHtml() {
         <div><h2 id="colourSortTitle" tabindex="-1">Colour Sort</h2><p class="note">Move exposed colour runs between bottles until every filled bottle contains one colour only.</p></div>
         <div class="link-actions"><button class="action secondary" data-close-puzzle-game="colour-sort" type="button">Back To Games Overview</button></div>
       </div>
-      <details class="game-info-details"><summary><span>How To Play</span><span class="inline-note">Valid pours, hints and level progression</span></summary>
-        <div class="summary-box"><strong>Match the exposed colour.</strong><span class="inline-note">Select a source bottle and then an empty bottle or a bottle with the same colour on top. The largest contiguous exposed run pours automatically, up to the destination capacity. Sort every colour to complete the level.</span></div>
+      <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+        <div id="colourSortGameInfo"></div>
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-colour-tab="game" type="button">Game</button>
@@ -776,13 +811,13 @@ const shell = createPuzzleHubShell({
   panelId:'colourSortPanel',
   name:'Colour Sort',
   order:20,
-  art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_FLUID_MOTION_20261017_3',
+  art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
+  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_4',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
   panelHtml,
-  onOpen:() => { ensurePuzzle(); render(); },
+  onOpen:() => { render(); },
   onClose:() => { cleanupBottleDrag(); selectedBottle = -1; hint = null; }
 });
 

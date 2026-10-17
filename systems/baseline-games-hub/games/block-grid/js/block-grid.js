@@ -18,9 +18,9 @@ import {
   loadStoredProfile,
   saveStoredProfile,
   xpNeededForLevel
-} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
+} from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
 
-const BUILD = 'BLOCK_GRID_DEPTH_20261017_2';
+const BUILD = 'BLOCK_GRID_CORE_COHERENCE_20261017_3';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -110,10 +110,6 @@ function startNewGame() {
   boardMotion.newTray = true;
   persist();
   render();
-}
-
-function ensureRun() {
-  if (!profile.activeRun) startNewGame();
 }
 
 function currentMode() {
@@ -225,12 +221,36 @@ function statusHtml() {
   return `<strong>${escapeHtml(selected + (statusMessage || 'Keep space available for the next tray.'))}</strong><span class="inline-note">Complete full rows or columns to clear them.${escapeHtml(combo)}</span>`;
 }
 
+function renderGameInfo() {
+  const root = document.getElementById('blockGridGameInfo');
+  if (!root || !profile) return;
+  const needed = xpNeededForLevel(profile.level);
+  const pct = Math.min(100, profile.xp / needed * 100);
+  root.innerHTML = `
+    <div class="progress-shell progress-shell--trackcoin">
+      <div class="xp-row">
+        <div>
+          <div class="trackcoin-level-title">Level - ${profile.level}</div>
+          <div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div>
+          <div class="trackcoin-xp-meta-row"><span class="inline-note">${profile.xp} / ${needed} XP</span></div>
+        </div>
+      </div>
+      <div class="stat-pills trackcoin-stat-pills">
+        <div class="stat-pill">Best Score <span>${profile.bestScore}</span></div>
+        <div class="stat-pill">Games Started <span>${profile.gamesPlayed}</span></div>
+        <div class="stat-pill">Lines Cleared <span>${profile.totalLines}</span></div>
+        <div class="stat-pill">Pieces Placed <span>${profile.totalPieces}</span></div>
+      </div>
+    </div>
+    <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. The run ends when none of the available pieces can fit.</span></div>`;
+}
+
 function renderGame() {
   const root = document.getElementById('blockGridGameCard');
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>Place shapes on an 8 × 8 board and clear complete rows or columns.</p><button class="action primary" data-block-action="new" type="button">Start New Game</button></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button></div>`;
     return;
   }
   const progress = runLevelProgress(active.lines);
@@ -264,7 +284,7 @@ function renderGame() {
       <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
     </div>
     <div class="game-window-actions">
-      <button class="action ghost" data-block-action="new" type="button">New Game</button>
+      <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">Start New Game</button>
     </div>`;
   resetBoardMotion();
 }
@@ -305,6 +325,7 @@ function setTab(name) {
 }
 
 function render() {
+  renderGameInfo();
   renderGame();
   renderModes();
   renderProgress();
@@ -464,11 +485,10 @@ function placeSelected(row, col) {
 function changeMode(mode) {
   if (!MODES[mode] || profile.selectedMode === mode) return;
   profile.selectedMode = mode;
-  profile.activeRun = createRun();
-  profile.gamesPlayed += 1;
+  profile.activeRun = null;
   selectedPiece = -1;
   previewAnchor = null;
-  statusMessage = `${MODES[mode].name} mode started.`;
+  statusMessage = '';
   persist();
   render();
   setTab('game');
@@ -583,8 +603,8 @@ function panelHtml() {
         <div><h2 id="blockGridTitle" tabindex="-1">Block Grid</h2><p class="note">Place the supplied shapes, clear complete rows or columns, and protect enough open space for the next tray.</p></div>
         <div class="link-actions"><button class="action secondary" data-close-puzzle-game="block-grid" type="button">Back To Games Overview</button></div>
       </div>
-      <details class="game-info-details"><summary><span>How To Play</span><span class="inline-note">Placement, clearing and scoring</span></summary>
-        <div class="summary-box"><strong>Place without rotating.</strong><span class="inline-note">Choose or drag one of the three supplied pieces onto the 8 × 8 board. Complete a full row or column to clear it. Multiple lines and consecutive clears increase the score. The run ends when none of the available pieces can fit.</span></div>
+      <details class="game-info-details" data-game-info="blockgrid"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
+        <div id="blockGridGameInfo"></div>
       </details>
       <div class="game-toggle-row">
         <button class="action ghost game-toggle-btn is-active" data-block-tab="game" type="button">Game</button>
@@ -605,13 +625,13 @@ const shell = createPuzzleHubShell({
   panelId:'blockGridPanel',
   name:'Block Grid',
   order:10,
-  art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_DEPTH_20261017_2',
+  art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
+  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_3',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
-  onOpen:() => { ensureRun(); render(); },
+  onOpen:() => { render(); },
   onClose:() => { destroyDragGhost(); previewAnchor = null; dragState = null; }
 });
 
