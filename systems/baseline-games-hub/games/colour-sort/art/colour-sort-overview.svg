@@ -2,11 +2,11 @@
   <title id="title">Colour Sort overview</title>
   <desc id="desc">An original Baseline-style set of glass bottles holding layered coloured segments.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#080d22"/><stop offset=".52" stop-color="#4656a6"/><stop offset="1" stop-color="#153d44"/></linearGradient>
+    <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#080d22"/><stop offset=".52" stop-color="#4656a6"/><stop offset="1" stop-color="#080d22"/></linearGradient>
     <filter id="shadow"><feDropShadow dx="0" dy="9" stdDeviation="10" flood-color="#000" flood-opacity=".3"/></filter>
   </defs>
   <rect width="640" height="360" rx="28" fill="url(#bg)"/>
-  <circle cx="95" cy="50" r="130" fill="#f4c56c" fill-opacity=".07"/>
+  <circle cx="95" cy="50" r="130" fill="#8ca7ff" fill-opacity=".08"/>
   <g font-family="system-ui,sans-serif" fill="#f2f5ff"><text x="44" y="58" font-size="28" font-weight="800">COLOUR SORT</text><text x="44" y="326" font-size="17" opacity=".75">SEQUENCE · POUR · RESOLVE</text></g>
   <g transform="translate(278 55)" filter="url(#shadow)" stroke="#dfeaff" stroke-width="5" stroke-opacity=".72">
     <g transform="translate(0 0)">
