@@ -6153,22 +6153,32 @@ function buildControls(recipeEl){
 
       function rebuild(){
         menu.replaceChildren();
-        [
-          ['blProtectedKey','Protected sections'],
-          ['bl-beats-toggle','Binaural'],
-          ['bl-contact-toggle','Contact'],
-          ['bl-auth-toggle','Account']
-        ].forEach(function(entry){
-          const target = document.getElementById(entry[0]);
-          if(!target) return;
 
+        const targets = [];
+        const protectedTarget = document.getElementById('blProtectedKey');
+        if(protectedTarget) targets.push({ target:protectedTarget, label:'Protected sections' });
+
+        Array.from(right.children || []).forEach(function(target){
+          if(!target || target === wrap || !target.matches || !target.matches('button, a')) return;
+          let label = String(target.getAttribute('aria-label') || '').trim();
+          if(!label){
+            const labelNode = q('.bl-btn-label', target);
+            label = labelNode ? String(labelNode.textContent || '').trim() : '';
+          }
+          if(!label) label = String(target.textContent || '').trim();
+          if(!label) return;
+          targets.push({ target:target, label:label });
+        });
+
+        targets.forEach(function(entry){
+          const target = entry.target;
           const item = document.createElement('button');
           item.type = 'button';
           item.className = 'bl-mobile-actions-item';
           item.setAttribute('role','menuitem');
           item.innerHTML =
             '<span class="bl-mobile-actions-item-icon" aria-hidden="true">' + targetIcon(target) + '</span>' +
-            '<span class="bl-mobile-actions-item-label">' + entry[1] + '</span>';
+            '<span class="bl-mobile-actions-item-label">' + entry.label + '</span>';
           item.addEventListener('click', function(event){
             event.preventDefault();
             event.stopPropagation();
