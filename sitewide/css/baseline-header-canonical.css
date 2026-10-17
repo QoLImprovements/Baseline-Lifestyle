@@ -585,6 +585,9 @@ html.bl-pages-dd-ready .bl-homebar-inner{
   .bl-pages-dd{
     overflow:visible!important;
   }
+  .bl-homebar-right > .bl-mini-btn{
+    display:none!important;
+  }
   #bl-mobile-actions-toggle{
     width:42px!important;
     min-width:42px!important;
