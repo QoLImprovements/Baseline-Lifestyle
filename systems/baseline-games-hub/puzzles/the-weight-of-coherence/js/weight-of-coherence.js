@@ -118,7 +118,11 @@
   }
 
   function difficultyConfig(value){
-    return DIFFICULTIES[Number(value)] || DIFFICULTIES[100];
+    const config=DIFFICULTIES[Number(value)] || DIFFICULTIES[100];
+    if(BOARD_WIDTH>BOARD_HEIGHT && config.cols!==config.rows){
+      return { pieces:config.pieces, cols:config.rows, rows:config.cols, trayPageSize:config.trayPageSize };
+    }
+    return config;
   }
 
   function mobileLike(){
