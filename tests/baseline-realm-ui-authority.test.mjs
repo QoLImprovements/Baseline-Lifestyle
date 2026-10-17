@@ -12,6 +12,7 @@ const workshopScene = fs.readFileSync('systems/baseline-games-hub/games/baseline
 const workshopUi = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-ui.js','utf8');
 const runtimeUi = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-runtime-ui.js','utf8');
 const inputBindings = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
+const ninjaRuntime = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
 
 test('Games Hub CSS no longer owns Realm presentation', () => {
   assert.doesNotMatch(hubCss,/\.realm-command-banner/);
@@ -81,4 +82,40 @@ test('Workshop is isolated from combat and management hotkeys', () => {
 test('Cooking copy no longer describes a generic Workshop panel', () => {
   assert.doesNotMatch(html,/Food and effects/);
   assert.match(html,/Prepare meals and route support/);
+});
+
+
+test('Realm starts in one coherent Basecamp state before JavaScript settles', () => {
+  assert.match(html,/id="realmSceneFrame"[^>]*class="[^"]*is-basecamp-view[^"]*"[^>]*data-realm-view="basecamp"/);
+  assert.match(html,/id="ninjaScene" hidden aria-hidden="true"/);
+  assert.match(html,/id="realmTrainingBar" hidden/);
+  assert.match(html,/id="realmBasecampBar"(?![^>]* hidden)/);
+  assert.match(html,/id="realmCommandEnemyStatus" hidden aria-hidden="true"/);
+  assert.match(html,/id="realmTrainingHud" hidden aria-hidden="true"/);
+  assert.match(html,/id="realmBasecampScreen" aria-hidden="false"/);
+});
+
+test('one runtime authority controls every internal Realm surface', () => {
+  assert.match(ninjaRuntime,/function setRealmSurfaceState\(element, active\)/);
+  assert.match(ninjaRuntime,/setRealmSurfaceState\(ninjaScene, realmView === 'training'\)/);
+  assert.match(ninjaRuntime,/setRealmSurfaceState\(basecamp, realmView === 'basecamp'\)/);
+  assert.match(ninjaRuntime,/setRealmSurfaceState\(workshop, realmView === 'workshop'\)/);
+  assert.match(ninjaRuntime,/setRealmSurfaceState\(exploration, realmView === 'exploration'\)/);
+  assert.match(ninjaRuntime,/frame\.dataset\.realmView = realmView/);
+  assert.equal((ninjaRuntime.match(/getElementById\('realmBasecampBar'\)/g) || []).length,1);
+  assert.equal((ninjaRuntime.match(/getElementById\('realmWorkshopBar'\)/g) || []).length,1);
+  assert.equal((ninjaRuntime.match(/getElementById\('realmExplorationBar'\)/g) || []).length,1);
+});
+
+test('persistent HUD is one full-width visual banner rather than separate title and coin cards', () => {
+  assert.match(woodCss,/Shared Realm HUD: one continuous full-width banner/);
+  assert.match(woodCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-parchment-face\)!important/);
+  assert.match(woodCss,/\.realm-command-banner__status,[\s\S]*?\.realm-shared-status,[\s\S]*?\.realm-enemy-status\{[\s\S]*?background:transparent!important/);
+  assert.match(woodCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
+  assert.doesNotMatch(woodCss,/width:min\(360px,100%\)!important/);
+});
+
+test('non-training internal views defensively suppress the Ninja scene', () => {
+  assert.match(woodCss,/is-basecamp-view,.is-workshop-view,.is-exploration-view\) > #ninjaScene/);
+  assert.match(woodCss,/display:none!important;[\s\S]*?visibility:hidden!important;[\s\S]*?pointer-events:none!important/);
 });
