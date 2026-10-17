@@ -9,7 +9,7 @@ const BL_GAME_DATA_MAX_DEPTH = 48;
 const BL_GAME_DATA_MAX_ITEMS = 20000;
 
 function bl_game_data_apps(): array {
-  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','blockgrid','coloursort','weightcoherence','dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
+  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','blockgrid','coloursort','weightcoherence','unheardsignal','dartsfocused','meridiangrove','badmintonfocused','hubsettings'];
 }
 
 function bl_game_data_file_apps(): array {
