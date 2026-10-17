@@ -343,7 +343,9 @@ body[data-app="home"] .wrap{
   }
 
   .bl-top-header{
-    column-gap:14px;
+    grid-template-columns:minmax(0,1fr) 44px;
+    grid-template-areas:"title controls";
+    column-gap:12px;
     padding:18px 16px 16px;
   }
 
@@ -386,7 +388,7 @@ body[data-app="home"] .wrap{
   }
 
   .system-separator{
-    font-size:clamp(18px, 5vw, 23px);
+    display:none;
   }
 
   .system-lane > .card p{
