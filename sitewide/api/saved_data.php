@@ -133,6 +133,8 @@ function bl_saved_game_files(): array {
     'colour-sort' => 'colour-sort.json',
     'weightcoherence' => 'weight-of-coherence.json',
     'unheardsignal' => 'the-unheard-signal.json',
+    'pantherjigsaw' => 'black-panther.json',
+    'bearjigsaw' => 'bear.json',
     'weight-of-coherence' => 'weight-of-coherence.json',
     'dartsfocused' => 'darts-focused.json',
     'darts-focused' => 'darts-focused.json',
