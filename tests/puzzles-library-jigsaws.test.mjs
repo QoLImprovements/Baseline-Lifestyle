@@ -32,13 +32,12 @@ test('Jigsaws are grouped into collections and include both current artworks', (
   assert.match(registry, /title:'The Weight of Coherence'/);
   assert.match(registry, /id:'the-unheard-signal'/);
   assert.match(registry, /title:'The Unheard Signal'/);
-  assert.match(registry, /the-unheard-signal\.webp\?v=THE_UNHEARD_SIGNAL_20261017_1/);
-  assert.match(registry, /width:640/);
-  assert.match(registry, /height:480/);
-  const art = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.webp');
-  assert.equal(art.length, 14594);
-  assert.equal(art.subarray(0,4).toString('ascii'), 'RIFF');
-  assert.equal(art.subarray(8,12).toString('ascii'), 'WEBP');
+  assert.match(registry, /the-unheard-signal\.png\?v=THE_UNHEARD_SIGNAL_FULL_20261017_1/);
+  assert.match(registry, /width:1448/);
+  assert.match(registry, /height:1086/);
+  const art = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.png');
+  assert.equal(art.length, 2600964);
+  assert.equal(art.subarray(1,4).toString('ascii'), 'PNG');
 });
 
 test('one jigsaw player switches artwork, dimensions, copy and save authority', () => {
