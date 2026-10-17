@@ -24,9 +24,9 @@ import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM
 import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_WOOD_AUTHORITY_20260802_1';
 import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_DARTS_TACTICAL_REPAIR_20260707_2';
-import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
+import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=REALM_VIEW_INTEGRITY_HUD_20261017_2';
 
-const BUILD = 'REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
+const BUILD = 'REALM_VIEW_INTEGRITY_HUD_20261017_2';
 const STAGE_ONE_READY_BUILD = 'BASELINE_REALM_SHELL_INTERACTION_REPAIR_20260707_2';
 const OPTIONAL_MODULE_URLS = Object.freeze({
   explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,
