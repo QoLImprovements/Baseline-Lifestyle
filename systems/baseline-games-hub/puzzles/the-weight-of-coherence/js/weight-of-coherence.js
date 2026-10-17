@@ -12,8 +12,8 @@
     image:'/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2',
     width:1122,
     height:1402,
-    alt:'The Weight of Coherence — a symbolic figure holding an unfinished structure amid green, red and blue light.',
-    description:'Caught between competing forces, a lone figure carries an unfinished structure forward. Its strength comes from coherence. Different parts are held in balance, given direction and brought into relationship with one another. The weight lies in sustaining that integrity while continuing to build.'
+    alt:'The Weight of Coherence — a symbolic person holding an unfinished structure amid green, red and blue light.',
+    description:'The unfinished structure is not complete, yet it must still be carried forward. Its strength depends on different parts remaining in relationship rather than pulling apart. The weight lies in sustaining that integrity while continuing to build.'
   });
   let activePuzzle = registry?.findJigsaw?.('weight-of-coherence') || FALLBACK_PUZZLE;
   let BOARD_WIDTH = Number(activePuzzle.width) || 1122;

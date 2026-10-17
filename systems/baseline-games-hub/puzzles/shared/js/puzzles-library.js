@@ -47,7 +47,7 @@
           return '<div class="puzzle-library-row-wrap' + (activeJigsaw===item.id?' is-selected':'') + '">' +
             '<button class="puzzle-library-row" data-jigsaw-id="' + escapeHtml(item.id) + '" type="button">' +
               '<img class="puzzle-library-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
-              '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.description) + '</p></div>' +
+              '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
               '<div class="puzzle-library-meta"><strong>50 · 100 · 500 · 1,000 pieces</strong><span class="inline-note">Open jigsaw</span></div>' +
             '</button>' +
           '</div>';
