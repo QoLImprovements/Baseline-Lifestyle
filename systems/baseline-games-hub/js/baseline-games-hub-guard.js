@@ -3,7 +3,7 @@
 
   const BUILD='GAMES_HUB_SERVER_AUTHORITY_20261006_1';
   const DATA_API='/systems/baseline-games-hub/api/games_data.php';
-  const ALL_APPS=Object.freeze(['pairs','detectword','make24','trackcoin','ruleshift','ninja','blockgrid','coloursort','weightcoherence','dartsfocused','meridiangrove','badmintonfocused']);
+  const ALL_APPS=Object.freeze(['pairs','detectword','make24','trackcoin','ruleshift','ninja','blockgrid','coloursort','weightcoherence','unheardsignal','dartsfocused','meridiangrove','badmintonfocused']);
   const pending=Object.create(null);
   const timers=Object.create(null);
   const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
