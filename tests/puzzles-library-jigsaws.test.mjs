@@ -46,6 +46,8 @@ test('one jigsaw player switches artwork, dimensions, copy and save authority', 
   assert.match(player, /activePuzzle=registry\?\.findJigsaw/);
   assert.match(player, /BOARD_WIDTH=Math\.max\(1,Number\(activePuzzle\.width\)/);
   assert.match(player, /BOARD_HEIGHT=Math\.max\(1,Number\(activePuzzle\.height\)/);
+  assert.match(player, /BOARD_WIDTH>BOARD_HEIGHT && config\.cols!==config\.rows/);
+  assert.match(player, /cols:config\.rows, rows:config\.cols/);
   assert.match(player, /APP=String\(activePuzzle\.app/);
   assert.match(player, /baseline:jigsaw-select/);
   assert.match(player, /refs\.introArt\.src=activePuzzle\.image/);
