@@ -54,17 +54,25 @@ test('Weight of Coherence uses the muted Games Hub medium board and a 50% guide'
   assert.doesNotMatch(source, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
 });
-test('current Weight of Coherence puzzle uses the same server save authority', () => {
+test('jigsaws use the Games Hub server save authority with separate puzzle profiles', () => {
   const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const registry = read('systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js');
   const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
   const api = read('systems/baseline-games-hub/api/games_data.php');
   const saved = read('sitewide/api/saved_data.php');
-  assert.match(source, /APP = 'weightcoherence'/);
+
+  assert.match(source, /activePuzzle\.app/);
   assert.match(source, /BaselineGameStorage/);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
-  assert.ok(guard.includes("'weightcoherence'"));
-  assert.ok(api.includes("'weightcoherence'"));
+
+  for (const app of ['weightcoherence','unheardsignal']) {
+    assert.ok(registry.includes(`app:'${app}'`));
+    assert.ok(guard.includes(`'${app}'`));
+    assert.ok(api.includes(`'${app}'`));
+  }
+
   assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
+  assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
 });
 
 
