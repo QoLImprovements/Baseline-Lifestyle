@@ -157,12 +157,14 @@ html body[data-app="home"] .bl-top-header > .bl-homebar-right{
   min-width:max-content!important;
   z-index:7!important;
 }
-html body[data-app="home"] #bl-auth-toggle{
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  min-height:46px!important;
-  margin:0!important;
+@media(min-width:901px){
+  html body[data-app="home"] #bl-auth-toggle{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:46px!important;
+    margin:0!important;
+  }
 }
 
 /* Index Account flyout retains the charcoal banner identity. */
@@ -221,11 +223,6 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card:
   .bl-protected-key{left:12px;width:44px;height:42px}
   html body[data-app="home"] .bl-top-header > .bl-homebar-right{
     right:auto!important;
-  }
-  /* Mobile utilities are represented by the consolidated arrow menu. Keep the
-     underlying Account control available to JavaScript, but not visibly duplicated. */
-  html body[data-app="home"] #bl-auth-toggle{
-    display:none!important;
   }
 }
 
