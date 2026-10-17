@@ -97,10 +97,10 @@
     if(refs.title) refs.title.textContent=activePuzzle.title||'Jigsaw';
     if(refs.description) refs.description.textContent=activePuzzle.description||'';
     refs.board.setAttribute('aria-label',(activePuzzle.title||'Selected artwork')+' jigsaw board');
-    refs.board.width=BOARD_WIDTH;
-    refs.board.height=BOARD_HEIGHT;
-    placedCanvas.width=BOARD_WIDTH;
-    placedCanvas.height=BOARD_HEIGHT;
+    if(refs.board.width!==BOARD_WIDTH) refs.board.width=BOARD_WIDTH;
+    if(refs.board.height!==BOARD_HEIGHT) refs.board.height=BOARD_HEIGHT;
+    if(placedCanvas.width!==BOARD_WIDTH) placedCanvas.width=BOARD_WIDTH;
+    if(placedCanvas.height!==BOARD_HEIGHT) placedCanvas.height=BOARD_HEIGHT;
   }
 
   function configurePuzzle(puzzle, saveCurrent){
@@ -821,7 +821,7 @@
     state.preview=!state.preview;
     syncGuideButton();
     drawBoard();
-    setStatus(state.preview?'Guide shown at 20% opacity. Press G again to return to the puzzle.':'Guide hidden. Continue placing pieces.','');
+    setStatus(state.preview?'Guide shown at 50% opacity. Press G again to return to the puzzle.':'Guide hidden. Continue placing pieces.','');
     saveState();
   }
 
@@ -1027,8 +1027,17 @@
 
   document.addEventListener('baseline:jigsaw-select',function(event){
     const puzzle=event.detail&&event.detail.puzzle;
-    if(puzzle && puzzle.id!==activePuzzle.id) configurePuzzle(puzzle,true);
-    else if(puzzle) syncPuzzlePresentation();
+    if(puzzle && puzzle.id!==activePuzzle.id){
+      configurePuzzle(puzzle,true);
+      return;
+    }
+    if(puzzle){
+      syncPuzzlePresentation();
+      if(imageReady && state){
+        rebuildPlacedCanvas();
+        drawBoard();
+      }
+    }
   });
 
   configurePuzzle(activePuzzle,false);
