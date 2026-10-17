@@ -42,14 +42,17 @@ test('production puzzle modules do not create a competing browser persistence la
 
 
 
-test('Weight of Coherence uses a lighter visible jigsaw board base', () => {
+test('Weight of Coherence keeps the Games Hub board base and uses a 50% guide', () => {
   const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
   const css = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
 
-  assert.match(source, /BOARD_BASE = 'rgba\(130,150,208,\.62\)'/);
+  assert.match(source, /BOARD_BASE = '#080D22'/);
+  assert.match(source, /GUIDE_OPACITY = 0\.50/);
   assert.match(source, /ctx\.fillStyle=BOARD_BASE/);
-  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:rgba\(130,150,208,\.62\)/);
-  assert.doesNotMatch(css, /\.weight-coherence-board-wrap\{[^}]*background:#080D22/);
+  assert.match(source, /ctx\.globalAlpha=GUIDE_OPACITY/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:#080D22/);
+  assert.doesNotMatch(source, /rgba\(130,150,208,\.62\)/);
+  assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
 });
 test('current Weight of Coherence puzzle uses the same server save authority', () => {
   const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
