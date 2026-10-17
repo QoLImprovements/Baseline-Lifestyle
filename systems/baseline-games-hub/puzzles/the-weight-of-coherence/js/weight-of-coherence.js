@@ -20,6 +20,7 @@
     difficultyButtons:Array.from(root.querySelectorAll('[data-jigsaw-difficulty]')),
     start:document.getElementById('weightCoherenceStartBtn'),
     workspace:document.getElementById('weightCoherenceWorkspace'),
+    boardShell:root.querySelector('.weight-coherence-board-shell'),
     board:document.getElementById('weightCoherenceBoard'),
     status:document.getElementById('weightCoherenceStatus'),
     placed:document.getElementById('weightCoherencePlaced'),
@@ -781,12 +782,34 @@
     setStatus('Remaining pieces shuffled.','');
   }
 
+  function syncFullscreenBoardFit(){
+    if(!refs.workspace || !refs.boardShell) return;
+    if(document.fullscreenElement!==refs.workspace || window.innerWidth<=900){
+      refs.workspace.style.removeProperty('--weight-coherence-fullscreen-board-width');
+      return;
+    }
+    const shellRect=refs.boardShell.getBoundingClientRect();
+    const statusHeight=refs.status ? refs.status.getBoundingClientRect().height : 0;
+    const shellStyle=window.getComputedStyle(refs.boardShell);
+    const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
+    const availableHeight=Math.max(0,shellRect.height-statusHeight-gap);
+    const width=Math.floor(Math.min(800,shellRect.width,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
+    if(width>0) refs.workspace.style.setProperty('--weight-coherence-fullscreen-board-width',width+'px');
+  }
+
+  function scheduleFullscreenBoardFit(){
+    window.requestAnimationFrame(function(){
+      window.requestAnimationFrame(syncFullscreenBoardFit);
+    });
+  }
+
   function syncFullscreenButton(){
     if(!refs.fullscreen) return;
     const active=document.fullscreenElement===refs.workspace;
     refs.fullscreen.setAttribute('aria-pressed',String(active));
     refs.fullscreen.setAttribute('aria-label',active?'Exit full screen (F)':'Enter full screen (F)');
     refs.fullscreen.title=active?'Exit full screen · F':'Full screen · F';
+    scheduleFullscreenBoardFit();
   }
 
   function toggleFullscreen(){
@@ -934,6 +957,7 @@
     }
   });
   document.addEventListener('fullscreenchange',syncFullscreenButton);
+  window.addEventListener('resize',scheduleFullscreenBoardFit);
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
   let storageAuthenticated=!!gameStorage()?.isAuthenticated?.();
   document.addEventListener('baseline:game-storage',function(event){
