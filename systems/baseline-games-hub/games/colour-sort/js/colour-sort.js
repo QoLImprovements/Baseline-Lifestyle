@@ -811,7 +811,7 @@ const shell = createPuzzleHubShell({
   panelId:'colourSortPanel',
   name:'Colour Sort',
   order:20,
-  art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_20261016_1',
+  art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
   styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_4',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
