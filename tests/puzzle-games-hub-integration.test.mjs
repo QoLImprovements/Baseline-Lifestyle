@@ -101,3 +101,44 @@ test('puzzle games expose visible gameplay motion and contained Block Grid dragg
   assert.match(blockCss, /blockGridTrayArrival/);
   assert.match(blockCss, /is-line-opportunity/);
 });
+
+
+test('Block Grid and Colour Sort follow the Core Games presentation contract', () => {
+  const support = read('systems/baseline-games-hub/js/puzzle-game-support.mjs');
+  const block = read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
+  const blockCss = read('systems/baseline-games-hub/games/block-grid/css/block-grid.css');
+  const colour = read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
+  const colourCss = read('systems/baseline-games-hub/games/colour-sort/css/colour-sort.css');
+
+  assert.doesNotMatch(support, /Puzzle Games/);
+  assert.match(support, /data\.coreGameExtension = 'true'/);
+  assert.match(support, /if \(testing\) list\.insertBefore\(node, testing\)/);
+
+  assert.match(block, /data-game-info="blockgrid"/);
+  assert.match(block, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
+  assert.match(block, /function renderGameInfo\(\)/);
+  assert.match(block, /onOpen:\(\) => \{ render\(\); \}/);
+  assert.doesNotMatch(block, /function ensureRun\(/);
+  assert.match(block, />Start New Game<\/button>/);
+
+  assert.match(colour, /data-game-info="coloursort"/);
+  assert.match(colour, /<span>Game Info<\/span><span class="inline-note">Level \/ XP \/ stats<\/span>/);
+  assert.match(colour, /function renderGameInfo\(\)/);
+  assert.match(colour, /onOpen:\(\) => \{ render\(\); \}/);
+  assert.doesNotMatch(colour, /function ensurePuzzle\(/);
+  assert.match(colour, />Start New Game<\/button>/);
+  assert.match(colour, /startLevel\(profile\.selectedLevel\)/);
+
+  for (const source of [blockCss, colourCss]) {
+    assert.doesNotMatch(source, /244,197,108/);
+    assert.doesNotMatch(source, /21,61,68/);
+    assert.doesNotMatch(source, /24,143,139/);
+    assert.doesNotMatch(source, /#f4c56c/i);
+  }
+});
+
+test('homepage keeps Badminton Session as one correctly spaced system title', () => {
+  const index = read('index.html');
+  assert.match(index, /<h2>Baseline Badminton Session<\/h2>/);
+  assert.doesNotMatch(index, /Baseline Badminton<br\s*\/?>(?:\s*)Session/);
+});
