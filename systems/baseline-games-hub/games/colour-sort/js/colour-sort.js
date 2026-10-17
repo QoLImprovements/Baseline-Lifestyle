@@ -21,7 +21,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_20261016_1';
 
-const BUILD = 'COLOUR_SORT_DRAG_DEPTH_20261017_2';
+const BUILD = 'COLOUR_SORT_FLUID_MOTION_20261017_3';
 const APP = 'coloursort';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -262,6 +262,17 @@ function clearBottleDragTargets() {
   });
 }
 
+function ghostTransform(x, y, rotation = 0, scale = 1.035) {
+  return `translate3d(${x}px,${y}px,0) translate(-50%,-50%) rotate(${rotation}deg) scale(${scale})`;
+}
+
+function setBottleGhostPosition(ghost, x, y, rotation = 0, scale = 1.035) {
+  if (!ghost) return;
+  ghost.style.transform = ghostTransform(x, y, rotation, scale);
+  ghost.dataset.motionX = String(x);
+  ghost.dataset.motionY = String(y);
+}
+
 function createBottleDragGhost(source) {
   const rect = source.getBoundingClientRect();
   const layer = document.createElement('div');
@@ -275,13 +286,8 @@ function createBottleDragGhost(source) {
   ghostBottle.style.width = rect.width + 'px';
   layer.appendChild(ghostBottle);
   document.body.appendChild(layer);
+  setBottleGhostPosition(layer, rect.left + rect.width / 2, rect.top + rect.height / 2, 0, 1);
   return layer;
-}
-
-function positionBottleDragGhost(ghost, clientX, clientY) {
-  if (!ghost) return;
-  ghost.style.left = clientX + 'px';
-  ghost.style.top = clientY + 'px';
 }
 
 function bottleAtPointer(clientX, clientY) {
@@ -292,6 +298,45 @@ function bottleAtPointer(clientX, clientY) {
   return Number.isInteger(index) ? { element:bottle, index } : null;
 }
 
+function updateBottleDragTarget(state, target, active) {
+  const nextIndex = target?.index ?? -1;
+  const valid = Boolean(target && target.index !== state.from && canPour(active.bottles, state.from, target.index));
+  if (state.target === nextIndex && state.targetValid === valid) return;
+
+  state.targetElement?.classList.remove('is-drag-valid', 'is-drag-invalid');
+  state.target = nextIndex;
+  state.targetValid = valid;
+  state.targetElement = target?.element || null;
+
+  if (!target || target.index === state.from) return;
+  target.element.classList.add(valid ? 'is-drag-valid' : 'is-drag-invalid');
+}
+
+function queueBottleGhostPosition(state, clientX, clientY) {
+  state.pointerX = clientX;
+  state.pointerY = clientY;
+  if (state.raf) return;
+  state.raf = requestAnimationFrame(() => {
+    state.raf = 0;
+    if (!state.ghost?.isConnected) return;
+
+    let x = state.pointerX - state.grabOffsetX;
+    let y = state.pointerY - state.grabOffsetY;
+
+    if (state.targetValid && state.targetElement?.isConnected) {
+      const rect = state.targetElement.getBoundingClientRect();
+      const targetX = rect.left + rect.width / 2;
+      const targetY = rect.top + rect.height * .46;
+      x += (targetX - x) * .09;
+      y += (targetY - y) * .07;
+    }
+
+    state.visualX = x;
+    state.visualY = y;
+    setBottleGhostPosition(state.ghost, x, y);
+  });
+}
+
 function markInvalidBottle(index) {
   window.clearTimeout(invalidTimer);
   invalidBottle = Number.isInteger(index) ? index : -1;
@@ -299,179 +344,278 @@ function markInvalidBottle(index) {
   invalidTimer = window.setTimeout(() => {
     invalidBottle = -1;
     renderGame();
-  }, 360);
+  }, 260);
 }
 
-function cleanupBottleDrag() {
+function releaseDragClasses(state) {
+  state?.targetElement?.classList.remove('is-drag-valid', 'is-drag-invalid');
   clearBottleDragTargets();
-  if (bottleDragState?.ghost?.isConnected) bottleDragState.ghost.remove();
-  bottleDragState = null;
   document.documentElement.classList.remove('is-dragging-colour-sort-bottle');
 }
 
+function cleanupBottleDrag({ removeGhost = true } = {}) {
+  const state = bottleDragState;
+  if (state?.raf) cancelAnimationFrame(state.raf);
+  releaseDragClasses(state);
+  if (removeGhost && state?.ghost?.isConnected) state.ghost.remove();
+  bottleDragState = null;
+}
+
 function handleBottlePointerDown(event) {
-  if (isAnimating || (event.pointerType === 'mouse' && event.button !== 0)) return;
+  if (isAnimating || bottleDragState || (event.pointerType === 'mouse' && event.button !== 0)) return;
   const button = event.target instanceof Element ? event.target.closest('#colourSortGameCard [data-colour-bottle]') : null;
   const active = puzzle();
   if (!button || !active || isSolved(active.bottles)) return;
   const from = Number(button.dataset.colourBottle);
   if (!Number.isInteger(from) || !active.bottles[from]?.length) return;
+
+  const rect = button.getBoundingClientRect();
   bottleDragState = {
     pointerId:event.pointerId,
     from,
+    sourceElement:button,
     startX:event.clientX,
     startY:event.clientY,
+    grabOffsetX:event.clientX - (rect.left + rect.width / 2),
+    grabOffsetY:event.clientY - (rect.top + rect.height / 2),
+    pointerX:event.clientX,
+    pointerY:event.clientY,
+    visualX:rect.left + rect.width / 2,
+    visualY:rect.top + rect.height / 2,
     moved:false,
     ghost:null,
-    target:-1
+    target:-1,
+    targetValid:false,
+    targetElement:null,
+    raf:0
   };
   button.setPointerCapture?.(event.pointerId);
 }
 
 function handleBottlePointerMove(event) {
-  if (!bottleDragState || bottleDragState.pointerId !== event.pointerId) return;
-  if (Math.hypot(event.clientX - bottleDragState.startX, event.clientY - bottleDragState.startY) > 7) bottleDragState.moved = true;
-  if (!bottleDragState.moved) return;
+  const state = bottleDragState;
+  if (!state || state.pointerId !== event.pointerId) return;
+  if (Math.hypot(event.clientX - state.startX, event.clientY - state.startY) > 6) state.moved = true;
+  if (!state.moved) return;
   event.preventDefault();
 
   const active = puzzle();
   if (!active) return;
-  if (!bottleDragState.ghost) {
-    const source = document.querySelector(`#colourSortGameCard [data-colour-bottle="${bottleDragState.from}"]`);
-    if (!source) return;
-    bottleDragState.ghost = createBottleDragGhost(source);
-    source.classList.add('is-drag-origin');
+  if (!state.ghost) {
+    state.ghost = createBottleDragGhost(state.sourceElement);
+    state.sourceElement.classList.add('is-drag-origin');
     selectedBottle = -1;
     hint = null;
     document.documentElement.classList.add('is-dragging-colour-sort-bottle');
   }
 
-  positionBottleDragGhost(bottleDragState.ghost, event.clientX, event.clientY);
-  clearBottleDragTargets();
-  const source = document.querySelector(`#colourSortGameCard [data-colour-bottle="${bottleDragState.from}"]`);
-  source?.classList.add('is-drag-origin');
-
   const target = bottleAtPointer(event.clientX, event.clientY);
-  bottleDragState.target = target?.index ?? -1;
-  if (!target || target.index === bottleDragState.from) return;
-  target.element.classList.add(canPour(active.bottles, bottleDragState.from, target.index) ? 'is-drag-valid' : 'is-drag-invalid');
-}
-
-function handleBottlePointerUp(event) {
-  if (!bottleDragState || bottleDragState.pointerId !== event.pointerId) return;
-  const state = bottleDragState;
-  const target = state.moved ? bottleAtPointer(event.clientX, event.clientY) : null;
-  const active = puzzle();
-  const valid = Boolean(active && target && target.index !== state.from && canPour(active.bottles, state.from, target.index));
-  cleanupBottleDrag();
-
-  if (!state.moved) return;
-  suppressBottleClick = true;
-  if (valid) {
-    void performPour(state.from, target.index);
-    return;
-  }
-  statusMessage = target && target.index !== state.from ? 'That bottle cannot receive this colour.' : 'Drop onto another bottle to pour.';
-  markInvalidBottle(target?.index ?? -1);
-}
-
-function handleBottlePointerCancel() {
-  if (!bottleDragState) return;
-  const moved = bottleDragState.moved;
-  cleanupBottleDrag();
-  if (moved) renderGame();
+  updateBottleDragTarget(state, target, active);
+  queueBottleGhostPosition(state, event.clientX, event.clientY);
 }
 
 function reducedMotionPreferred() {
   return Boolean(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
 }
 
-function createPourStream(board, sourceRect, targetRect, colour, moveX, moveY) {
+async function animateDraggedBottleHome(state) {
+  if (!state?.ghost?.isConnected) return;
+  const source = state.sourceElement;
+  const sourceRect = source?.getBoundingClientRect();
+  if (!sourceRect || reducedMotionPreferred() || typeof state.ghost.animate !== 'function') return;
+
+  if (state.raf) {
+    cancelAnimationFrame(state.raf);
+    state.raf = 0;
+  }
+  const startX = Number.isFinite(state.visualX) ? state.visualX : state.pointerX - state.grabOffsetX;
+  const startY = Number.isFinite(state.visualY) ? state.visualY : state.pointerY - state.grabOffsetY;
+  const homeX = sourceRect.left + sourceRect.width / 2;
+  const homeY = sourceRect.top + sourceRect.height / 2;
+  const animation = state.ghost.animate([
+    { transform:ghostTransform(startX, startY, 0, 1.035) },
+    { transform:ghostTransform(homeX, homeY, 0, 1) }
+  ], { duration:145, easing:'cubic-bezier(.22,.8,.25,1)', fill:'forwards' });
+  try { await animation.finished; } catch (_) {}
+}
+
+async function rejectBottleDrag(state, targetIndex) {
+  await animateDraggedBottleHome(state);
+  if (state.ghost?.isConnected) state.ghost.remove();
+  state.sourceElement?.classList.remove('is-drag-origin');
+  releaseDragClasses(state);
+  if (bottleDragState === state) bottleDragState = null;
+  statusMessage = Number.isInteger(targetIndex) && targetIndex >= 0 && targetIndex !== state.from
+    ? 'That bottle cannot receive this colour.'
+    : 'Drop onto another bottle to pour.';
+  markInvalidBottle(targetIndex);
+}
+
+function handleBottlePointerUp(event) {
+  const state = bottleDragState;
+  if (!state || state.pointerId !== event.pointerId) return;
+  const target = state.moved ? bottleAtPointer(event.clientX, event.clientY) : null;
+  const active = puzzle();
+  const valid = Boolean(active && target && target.index !== state.from && canPour(active.bottles, state.from, target.index));
+
+  if (!state.moved) {
+    cleanupBottleDrag();
+    return;
+  }
+
+  suppressBottleClick = true;
+  if (state.raf) {
+    cancelAnimationFrame(state.raf);
+    state.raf = 0;
+  }
+  if (!Number.isFinite(state.visualX)) state.visualX = event.clientX - state.grabOffsetX;
+  if (!Number.isFinite(state.visualY)) state.visualY = event.clientY - state.grabOffsetY;
+
+  if (valid) {
+    releaseDragClasses(state);
+    bottleDragState = null;
+    void performPour(state.from, target.index, {
+      dragVisual:{
+        ghost:state.ghost,
+        sourceElement:state.sourceElement,
+        startX:state.visualX,
+        startY:state.visualY
+      }
+    });
+    return;
+  }
+
+  void rejectBottleDrag(state, target?.index ?? -1);
+}
+
+function handleBottlePointerCancel() {
+  const state = bottleDragState;
+  if (!state) return;
+  if (!state.moved) {
+    cleanupBottleDrag();
+    return;
+  }
+  suppressBottleClick = true;
+  void rejectBottleDrag(state, -1);
+}
+
+function createPourStream(board, startX, startY, endX, endY, colour) {
   const boardRect = board.getBoundingClientRect();
-  const startX = (sourceRect.left + sourceRect.width / 2 - boardRect.left) + (moveX * 0.7);
-  const startY = (sourceRect.top + 24 - boardRect.top) + (moveY * 0.7) - 26;
-  const endX = targetRect.left + targetRect.width / 2 - boardRect.left;
-  const endY = targetRect.top + 28 - boardRect.top;
   const dx = endX - startX;
   const dy = endY - startY;
   const stream = document.createElement('span');
   stream.className = 'colour-sort-pour-stream';
   stream.dataset.colour = String(colour);
   stream.setAttribute('aria-hidden', 'true');
-  stream.style.left = startX + 'px';
-  stream.style.top = startY + 'px';
-  stream.style.width = Math.max(18, Math.hypot(dx, dy)) + 'px';
-  stream.style.transform = `rotate(${Math.atan2(dy, dx)}rad)`;
+  stream.style.left = (startX - boardRect.left) + 'px';
+  stream.style.top = (startY - boardRect.top) + 'px';
+  stream.style.width = Math.max(14, Math.hypot(dx, dy)) + 'px';
+  stream.style.transform = `rotate(${Math.atan2(dy, dx)}rad) scaleX(.05)`;
   board.appendChild(stream);
   return stream;
 }
 
-async function animatePour(from, to, result) {
-  if (reducedMotionPreferred()) return;
+async function animatePour(from, to, result, { dragVisual = null } = {}) {
   const board = document.querySelector('#colourSortGameCard .colour-sort-board');
   const source = board?.querySelector(`[data-colour-bottle="${from}"]`);
   const target = board?.querySelector(`[data-colour-bottle="${to}"]`);
-  if (!board || !source || !target || typeof source.animate !== 'function') return;
+  if (!board || !source || !target) {
+    dragVisual?.ghost?.remove();
+    return;
+  }
 
   const sourceRect = source.getBoundingClientRect();
   const targetRect = target.getBoundingClientRect();
-  const moveX = targetRect.left - sourceRect.left;
-  const moveY = targetRect.top - sourceRect.top;
-  const direction = moveX >= 0 ? 1 : -1;
-  const travelX = moveX * 0.7;
-  const travelY = (moveY * 0.7) - 26;
-  const stream = createPourStream(board, sourceRect, targetRect, result.colour, moveX, moveY);
 
-  board.classList.add('is-animating-pour');
-  source.classList.remove('is-selected');
+  if (reducedMotionPreferred() || typeof source.animate !== 'function') {
+    dragVisual?.ghost?.remove();
+    source.classList.remove('is-drag-origin');
+    return;
+  }
+
+  const visual = dragVisual?.ghost?.isConnected ? dragVisual.ghost : createBottleDragGhost(source);
+  const startX = dragVisual?.startX ?? (sourceRect.left + sourceRect.width / 2);
+  const startY = dragVisual?.startY ?? (sourceRect.top + sourceRect.height / 2);
+  const sourceX = sourceRect.left + sourceRect.width / 2;
+  const sourceY = sourceRect.top + sourceRect.height / 2;
+  const targetX = targetRect.left + targetRect.width / 2;
+  const side = sourceX <= targetX ? -1 : 1;
+  const angle = side < 0 ? 47 : -47;
+  const visualRect = visual.getBoundingClientRect();
+  const bottleHeight = Math.max(sourceRect.height, visualRect.height || sourceRect.height);
+  const radians = angle * Math.PI / 180;
+  const mouthOffsetX = Math.sin(radians) * bottleHeight * .39;
+  const mouthOffsetY = -Math.cos(radians) * bottleHeight * .39;
+  const mouthX = targetX;
+  const mouthY = targetRect.top + 13;
+  const pourX = mouthX - mouthOffsetX;
+  const pourY = mouthY - mouthOffsetY;
+  const duration = dragVisual ? 455 : 500;
+  const stream = createPourStream(board, mouthX, mouthY, targetX, targetRect.top + 34, result.colour);
+
+  source.classList.remove('is-selected', 'is-drag-origin');
   source.classList.add('is-motion-source');
   target.classList.add('is-motion-target');
+  board.classList.add('is-animating-pour');
 
-  const sourceAnimation = source.animate([
-    { transform:'translateY(-12px) rotate(0deg)', offset:0 },
-    { transform:`translate(${travelX}px,${travelY}px) rotate(0deg)`, offset:.34 },
-    { transform:`translate(${travelX}px,${travelY}px) rotate(${direction * 54}deg)`, offset:.52 },
-    { transform:`translate(${travelX}px,${travelY}px) rotate(${direction * 54}deg)`, offset:.76 },
-    { transform:`translate(${travelX}px,${travelY}px) rotate(0deg)`, offset:.86 },
-    { transform:'translate(0,0) rotate(0deg)', offset:1 }
-  ], { duration:620, easing:'cubic-bezier(.2,.7,.2,1)' });
+  const visualAnimation = visual.animate([
+    { transform:ghostTransform(startX, startY, 0, dragVisual ? 1.035 : 1), offset:0 },
+    { transform:ghostTransform(pourX, pourY, 0, 1.02), offset:.23 },
+    { transform:ghostTransform(pourX, pourY, angle, 1.02), offset:.36 },
+    { transform:ghostTransform(pourX, pourY, angle, 1.02), offset:.64 },
+    { transform:ghostTransform(pourX, pourY, 0, 1.01), offset:.73 },
+    { transform:ghostTransform(sourceX, sourceY, 0, 1), offset:1 }
+  ], { duration, easing:'cubic-bezier(.22,.72,.2,1)', fill:'forwards' });
 
   const targetAnimation = target.animate([
-    { transform:'translateY(0) scale(1)' },
-    { transform:'translateY(-2px) scale(1.03)', offset:.55 },
-    { transform:'translateY(0) scale(1)' }
-  ], { duration:620, easing:'ease-out' });
+    { transform:'translateY(0) scale(1)', offset:0 },
+    { transform:'translateY(-2px) scale(1.025)', offset:.42 },
+    { transform:'translateY(-2px) scale(1.025)', offset:.65 },
+    { transform:'translateY(0) scale(1)', offset:1 }
+  ], { duration, easing:'ease-out' });
 
+  const streamBaseTransform = `rotate(${Math.atan2((targetRect.top + 34) - mouthY, targetX - mouthX)}rad)`;
   const streamAnimation = stream.animate([
-    { opacity:0, transform:stream.style.transform + ' scaleX(.05)', transformOrigin:'0 50%' },
-    { opacity:.95, transform:stream.style.transform + ' scaleX(1)', transformOrigin:'0 50%', offset:.32 },
-    { opacity:.95, transform:stream.style.transform + ' scaleX(1)', transformOrigin:'0 50%', offset:.72 },
-    { opacity:0, transform:stream.style.transform + ' scaleX(.2)', transformOrigin:'0 50%' }
-  ], { duration:620, easing:'ease-in-out' });
+    { opacity:0, transform:streamBaseTransform + ' scaleX(.05)', offset:0 },
+    { opacity:0, transform:streamBaseTransform + ' scaleX(.05)', offset:.32 },
+    { opacity:.96, transform:streamBaseTransform + ' scaleX(1)', offset:.41 },
+    { opacity:.96, transform:streamBaseTransform + ' scaleX(1)', offset:.62 },
+    { opacity:0, transform:streamBaseTransform + ' scaleX(.18)', offset:.7 },
+    { opacity:0, transform:streamBaseTransform + ' scaleX(.05)', offset:1 }
+  ], { duration, easing:'ease-in-out', fill:'forwards' });
 
   try {
-    await Promise.all([sourceAnimation.finished, targetAnimation.finished, streamAnimation.finished]);
+    await Promise.all([visualAnimation.finished, targetAnimation.finished, streamAnimation.finished]);
   } catch (_) {
-    // The game can be closed while an animation is running; the state change still completes safely.
+    // Closing the game can cancel Web Animations; the logical move can still complete.
   } finally {
     stream.remove();
-    source.classList.remove('is-motion-source');
+    visual.remove();
+    source.classList.remove('is-motion-source', 'is-drag-origin');
     target.classList.remove('is-motion-target');
     board.classList.remove('is-animating-pour');
   }
 }
 
-async function performPour(from, to) {
+async function performPour(from, to, { dragVisual = null } = {}) {
   const active = puzzle();
-  if (!active || isAnimating || !canPour(active.bottles, from, to)) return false;
+  if (!active || isAnimating || !canPour(active.bottles, from, to)) {
+    dragVisual?.ghost?.remove();
+    dragVisual?.sourceElement?.classList.remove('is-drag-origin');
+    return false;
+  }
   const result = applyPour(active.bottles, from, to);
-  if (!result) return false;
+  if (!result) {
+    dragVisual?.ghost?.remove();
+    dragVisual?.sourceElement?.classList.remove('is-drag-origin');
+    return false;
+  }
 
   undoStack.push({ bottles:active.bottles.map(bottle => bottle.slice()), moves:active.moves });
   isAnimating = true;
   hint = null;
   selectedBottle = -1;
-  await animatePour(from, to, result);
+  await animatePour(from, to, result, { dragVisual });
 
   active.bottles = result.bottles;
   active.moves += 1;
@@ -633,7 +777,7 @@ const shell = createPuzzleHubShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_20261016_1',
-  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_DRAG_DEPTH_20261017_2',
+  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_FLUID_MOTION_20261017_3',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
