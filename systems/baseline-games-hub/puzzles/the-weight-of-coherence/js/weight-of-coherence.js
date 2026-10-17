@@ -569,8 +569,14 @@
   function renderCompletion(){
     if(!state || !state.completed){ refs.completion.hidden=true; return; }
     refs.completion.hidden=false;
-    refs.completion.innerHTML='<strong>The Weight of Coherence — complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + '</span>';
+    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>The Weight of Coherence — complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + '</span>';
   }
+
+  refs.completion.addEventListener('click',function(event){
+    const closeButton=event.target.closest('.weight-coherence-completion-close');
+    if(!closeButton) return;
+    refs.completion.hidden=true;
+  });
 
   function completePuzzle(){
     if(!state || state.completed) return;
