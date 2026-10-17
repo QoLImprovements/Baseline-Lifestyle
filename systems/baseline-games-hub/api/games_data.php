@@ -13,7 +13,7 @@ function bl_game_data_apps(): array {
 }
 
 function bl_game_data_file_apps(): array {
-  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','blockgrid','coloursort','weightcoherence','dartsfocused','meridiangrove','badmintonfocused'];
+  return ['pairs','make24','detectword','ninja','trackcoin','ruleshift','blockgrid','coloursort','weightcoherence','unheardsignal','dartsfocused','meridiangrove','badmintonfocused'];
 }
 
 function bl_game_data_app(string $value): string {
