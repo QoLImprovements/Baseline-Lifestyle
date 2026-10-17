@@ -11,7 +11,7 @@ body[data-app="games"] .puzzle-library-group{
   align-items:center;
   gap:10px;
   margin:12px 0 0;
-  color:var(--games-ink);
+  color:rgba(242,245,255,.86);
   font-size:13px;
   font-weight:950;
   letter-spacing:.08em;
@@ -21,7 +21,7 @@ body[data-app="games"] .puzzle-library-group::after{
   content:"";
   height:1px;
   flex:1;
-  background:rgba(23,52,56,.24);
+  background:rgba(176,190,255,.22);
 }
 body[data-app="games"] .puzzle-library-row-wrap{
   position:relative;
@@ -39,11 +39,11 @@ body[data-app="games"] .puzzle-library-row{
   min-height:178px;
   width:100%;
   padding:18px;
-  border:1px solid rgba(23,52,56,.38);
+  border:1px solid rgba(176,190,255,.24);
   border-radius:24px;
-  background:linear-gradient(135deg,rgba(244,197,108,.98) 0%,rgba(151,174,207,.92) 55%,rgba(111,136,173,.78) 100%);
-  box-shadow:0 18px 38px -28px rgba(8,35,39,.58),inset 0 1px 0 rgba(255,255,255,.24);
-  color:inherit;
+  background:linear-gradient(145deg,rgba(11,17,48,.96) 0%,rgba(31,41,91,.94) 54%,rgba(42,54,114,.90) 100%);
+  box-shadow:0 18px 38px -28px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.07);
+  color:#F2F5FF;
   font:inherit;
   text-align:left;
   cursor:pointer;
@@ -53,11 +53,11 @@ body[data-app="games"] .puzzle-library-row:hover,
 body[data-app="games"] .puzzle-library-row:focus-visible{
   transform:translateY(-3px);
   filter:brightness(1.035);
-  box-shadow:0 24px 48px -28px rgba(8,35,39,.68),inset 0 1px 0 rgba(255,255,255,.28);
+  box-shadow:0 24px 48px -28px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.10);
   outline:none;
 }
 body[data-app="games"] .puzzle-library-row-wrap.is-selected .puzzle-library-row{
-  box-shadow:0 0 0 2px rgba(242,245,255,.62),0 24px 48px -28px rgba(8,35,39,.68);
+  box-shadow:0 0 0 2px rgba(176,190,255,.58),0 24px 48px -28px rgba(0,0,0,.72);
 }
 body[data-app="games"] .puzzle-library-art{
   grid-column:1;
@@ -65,9 +65,9 @@ body[data-app="games"] .puzzle-library-art{
   width:112px;
   height:112px;
   object-fit:cover;
-  border:1px solid rgba(23,52,56,.34);
+  border:1px solid rgba(224,230,255,.22);
   border-radius:20px;
-  background:#1d2a43;
+  background:#11183b;
   box-shadow:0 14px 28px -18px rgba(8,14,27,.72);
 }
 body[data-app="games"] .puzzle-library-copy{
@@ -77,10 +77,14 @@ body[data-app="games"] .puzzle-library-copy{
 }
 body[data-app="games"] .puzzle-library-copy h3{
   margin:0 0 7px;
+  color:#F2F5FF;
+  -webkit-text-fill-color:#F2F5FF;
   font-size:clamp(21px,1.7vw,28px);
 }
 body[data-app="games"] .puzzle-library-copy p{
   margin:0;
+  color:rgba(242,245,255,.78);
+  -webkit-text-fill-color:rgba(242,245,255,.78);
   line-height:1.5;
 }
 body[data-app="games"] .puzzle-library-meta{
@@ -97,9 +101,10 @@ body[data-app="games"] .puzzle-library-meta .inline-note{
   align-items:center;
   min-height:32px;
   padding:6px 11px;
-  border:1px solid rgba(23,52,56,.22);
+  border:1px solid rgba(176,190,255,.24);
   border-radius:999px;
-  background:rgba(244,197,108,.56);
+  background:rgba(70,86,166,.34);
+  color:rgba(242,245,255,.90);
 }
 body[data-app="games"] .puzzle-library-toolbar{
   display:flex;
