@@ -5,7 +5,7 @@
   const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2';
   const BOARD_WIDTH = 1122;
   const BOARD_HEIGHT = 1402;
-  const BOARD_BASE = '#080D22';
+  const BOARD_BASE = '#2A3672';
   const GUIDE_OPACITY = 0.50;
   const APP = 'weightcoherence';
   const DIFFICULTIES = Object.freeze({
