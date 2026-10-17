@@ -1107,8 +1107,10 @@ body[data-app="fitness"] #profileStatus{
 
 /* --------------------------------------------------------------------------
    Mobile banner controls
-   - Use compact icon buttons for Binaural, Contact and Account on mobile so
-     header utilities do not collide with page titles.
+   - Desktop keeps the existing independent controls.
+   - Mobile presents one down-arrow control; menu choices activate the existing
+     Protected, Binaural, Contact and Account controls so their panels stay the
+     single functional owners.
    -------------------------------------------------------------------------- */
 .bl-btn-icon{
   display:inline-flex;
@@ -1136,30 +1138,119 @@ body[data-app="fitness"] #profileStatus{
   display:inline-block;
 }
 
-@media (max-width: 900px){
-  #bl-beats-toggle,
-  #bl-contact-toggle,
-  #bl-auth-toggle{
-    width: 42px;
-    min-width: 42px;
-    height: 42px;
-    padding: 0 !important;
-    gap: 0 !important;
-    border-radius: 999px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
+.bl-mobile-actions{
+  position:relative;
+  display:none;
+  flex:0 0 auto;
+}
+.bl-mobile-actions-menu{
+  position:absolute;
+  top:calc(100% + 8px);
+  right:0;
+  z-index:18000;
+  width:min(250px, calc(100vw - 20px));
+  padding:8px;
+  border:1px solid var(--banner-pill-border, var(--border, rgba(0,0,0,.25)));
+  border-radius:16px;
+  background:var(--banner-pill-bg, var(--page-bg, #fff));
+  background-image:var(--banner-pill-bg, var(--page-bg, #fff));
+  color:var(--banner-pill-ink, var(--ink, #111));
+  box-shadow:0 14px 34px rgba(0,0,0,.28);
+}
+.bl-mobile-actions-menu[hidden]{
+  display:none !important;
+}
+.bl-mobile-actions-item{
+  appearance:none;
+  width:100%;
+  min-height:46px;
+  margin:0;
+  padding:8px 10px;
+  border:0;
+  border-radius:11px;
+  display:grid;
+  grid-template-columns:32px minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  background:transparent;
+  color:inherit;
+  font:inherit;
+  font-weight:800;
+  line-height:1.2;
+  text-align:left;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.bl-mobile-actions-item:hover,
+.bl-mobile-actions-item:focus-visible{
+  background:rgba(255,255,255,.18);
+  outline:none;
+}
+.bl-mobile-actions-item:focus-visible{
+  box-shadow:inset 0 0 0 2px currentColor;
+}
+.bl-mobile-actions-item-icon{
+  width:32px;
+  height:32px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.bl-mobile-actions-item-icon svg{
+  width:22px;
+  height:22px;
+  display:block;
+  fill:currentColor;
+  stroke:currentColor;
+}
+.bl-mobile-actions-item-icon svg path[fill="none"],
+.bl-mobile-actions-item-icon svg circle{
+  fill:none;
+}
+.bl-mobile-actions-item-label{
+  min-width:0;
+}
+
+@media (max-width:900px){
+  .bl-mobile-actions{
+    display:block;
   }
 
-  #bl-beats-toggle .bl-btn-label,
-  #bl-contact-toggle .bl-btn-label,
-  #bl-auth-toggle .bl-btn-label{
+  #bl-beats-toggle,
+  #bl-contact-toggle,
+  #bl-auth-toggle,
+  .bl-homebar-inner > .bl-protected-key,
+  body[data-app="home"] .bl-top-header > .bl-protected-key{
     display:none !important;
   }
 
   .bl-homebar-right{
-    gap: 8px;
+    gap:0;
+    min-width:42px !important;
+  }
+
+  #bl-mobile-actions-toggle{
+    width:42px !important;
+    min-width:42px !important;
+    height:42px !important;
+    min-height:42px !important;
+    padding:0 !important;
+    gap:0 !important;
+    border-radius:999px !important;
+    display:inline-flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    overflow:hidden !important;
+  }
+
+  #bl-mobile-actions-toggle .bl-btn-label{
+    display:none !important;
+  }
+
+  #bl-mobile-actions-toggle .bl-icon-svg{
+    width:22px;
+    height:22px;
+    fill:none;
   }
 }
 
