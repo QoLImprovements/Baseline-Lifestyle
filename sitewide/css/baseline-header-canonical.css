@@ -552,7 +552,7 @@ html.bl-pages-dd-ready .bl-homebar-inner{
    Final dominant banner button rule:
    Desktop keeps full themed Binaural / Login / Account pill labels.
    Mobile keeps the right-side controls compact so the page dropdown does not crush or overlap. */
-@media (min-width:821px){
+@media (min-width:901px){
   .bl-homebar-right .bl-mini-btn,
   #bl-beats-toggle,
   #bl-auth-toggle{
@@ -579,15 +579,13 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     white-space:nowrap!important;
   }
 }
-@media (max-width:820px){
+@media (max-width:900px){
   .bl-homebar,
   .bl-homebar-inner,
   .bl-pages-dd{
     overflow:visible!important;
   }
-  .bl-homebar-right .bl-mini-btn,
-  #bl-beats-toggle,
-  #bl-auth-toggle{
+  #bl-mobile-actions-toggle{
     width:42px!important;
     min-width:42px!important;
     height:42px!important;
@@ -599,18 +597,12 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     align-items:center!important;
     justify-content:center!important;
   }
-  #bl-beats-toggle .bl-btn-label,
-  #bl-auth-toggle .bl-btn-label{
-    position:absolute!important;
-    width:1px!important;
-    height:1px!important;
-    overflow:hidden!important;
-    clip:rect(0 0 0 0)!important;
-    clip-path:inset(50%)!important;
-    white-space:nowrap!important;
-  }
   .bl-pages-btn{
     max-width:100%!important;
+  }
+  .bl-pages-label,
+  .bl-pages-menu .bl-pages-link{
+    white-space:nowrap!important;
   }
 }
 
@@ -730,19 +722,19 @@ html.bl-pages-dd-ready .bl-homebar-inner{
 .bl-pages-caret{flex:0 0 auto!important;line-height:1!important}
 
 @media (max-width:520px){
-  :root{--homebar-h:106px!important;--homebar-h-min:106px!important}
+  :root{--homebar-h:58px!important;--homebar-h-min:58px!important}
   .bl-homebar{
-    height:calc(106px + env(safe-area-inset-top,0px))!important;
-    min-height:calc(106px + env(safe-area-inset-top,0px))!important;
+    height:calc(58px + env(safe-area-inset-top,0px))!important;
+    min-height:calc(58px + env(safe-area-inset-top,0px))!important;
   }
   .bl-homebar-inner{
-    height:96px!important;
+    height:48px!important;
     display:grid!important;
     grid-template-columns:minmax(0,1fr) 44px!important;
-    grid-template-rows:44px 44px!important;
-    grid-template-areas:"pages key" "right right"!important;
+    grid-template-rows:44px!important;
+    grid-template-areas:"pages right"!important;
     column-gap:7px!important;
-    row-gap:6px!important;
+    row-gap:0!important;
     align-content:center!important;
   }
   .bl-pages-dd{grid-area:pages!important;width:100%!important}
@@ -754,23 +746,15 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     font-size:clamp(12px,3.8vw,15px)!important;
     line-height:1.1!important;
   }
-  .bl-homebar-inner .bl-protected-key{
-    grid-area:key!important;
-    width:44px!important;
-    height:44px!important;
-    min-width:44px!important;
-    min-height:44px!important;
-    place-self:center!important;
-  }
   .bl-homebar-right{
     grid-area:right!important;
-    width:auto!important;
-    min-width:0!important;
+    width:44px!important;
+    min-width:44px!important;
     margin-left:0!important;
     justify-self:end!important;
   }
   .bl-homebar-spacer{display:none!important}
-  .bl-scroll{top:calc(106px + env(safe-area-inset-top,0px))!important}
+  .bl-scroll{top:calc(58px + env(safe-area-inset-top,0px))!important}
   .bl-pages-menu{
     top:calc(100% + 6px)!important;
     width:min(420px,calc(100vw - 12px))!important;
