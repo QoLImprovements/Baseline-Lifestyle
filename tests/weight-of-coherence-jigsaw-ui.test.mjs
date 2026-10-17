@@ -83,3 +83,13 @@ test('fullscreen preserves the normal jigsaw size while narrowing the main tray'
   assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-tray\{[^}]*minmax\(76px,1fr\)[^}]*gap:8px/);
   assert.doesNotMatch(css, /weight-coherence-workspace:fullscreen \.weight-coherence-board-wrap\{[^}]*100vh[^}]*1122\s*\/\s*1402/);
 });
+
+
+test('fullscreen jigsaw fits completely without its own scrollbar', () => {
+  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-shell\{[^}]*overflow:hidden[^}]*grid-template-rows:minmax\(0,1fr\) auto/);
+  assert.match(css, /--weight-coherence-fullscreen-board-width/);
+  assert.match(js, /function syncFullscreenBoardFit\(\)/);
+  assert.match(js, /availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)/);
+  assert.match(js, /Math\.min\(800,shellRect\.width,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
+  assert.doesNotMatch(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-shell\{[^}]*overflow:auto/);
+});
