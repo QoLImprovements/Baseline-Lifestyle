@@ -2,12 +2,23 @@
   'use strict';
 
   const ROOT_ID = 'weightCoherencePuzzle';
-  const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2';
-  const BOARD_WIDTH = 1122;
-  const BOARD_HEIGHT = 1402;
   const BOARD_BASE = '#2A3672';
   const GUIDE_OPACITY = 0.50;
-  const APP = 'weightcoherence';
+  const registry = window.BaselinePuzzlesRegistry;
+  const FALLBACK_PUZZLE = Object.freeze({
+    id:'weight-of-coherence',
+    title:'The Weight of Coherence',
+    app:'weightcoherence',
+    image:'/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2',
+    width:1122,
+    height:1402,
+    alt:'The Weight of Coherence — a symbolic figure holding an unfinished structure amid green, red and blue light.',
+    description:'Caught between competing forces, a lone figure carries an unfinished structure forward. Its strength comes from coherence. Different parts are held in balance, given direction and brought into relationship with one another. The weight lies in sustaining that integrity while continuing to build.'
+  });
+  let activePuzzle = registry?.findJigsaw?.('weight-of-coherence') || FALLBACK_PUZZLE;
+  let BOARD_WIDTH = Number(activePuzzle.width) || 1122;
+  let BOARD_HEIGHT = Number(activePuzzle.height) || 1402;
+  let APP = activePuzzle.app || 'weightcoherence';
   const DIFFICULTIES = Object.freeze({
     50: Object.freeze({ pieces:50, cols:5, rows:10, trayPageSize:20 }),
     100: Object.freeze({ pieces:100, cols:10, rows:10, trayPageSize:24 }),
@@ -21,6 +32,9 @@
   const refs = {
     difficultyButtons:Array.from(root.querySelectorAll('[data-jigsaw-difficulty]')),
     start:document.getElementById('weightCoherenceStartBtn'),
+    introArt:document.getElementById('weightCoherenceArt'),
+    title:document.getElementById('weightCoherenceTitle'),
+    description:document.getElementById('weightCoherenceDescription'),
     workspace:document.getElementById('weightCoherenceWorkspace'),
     boardShell:root.querySelector('.weight-coherence-board-shell'),
     board:document.getElementById('weightCoherenceBoard'),
@@ -52,7 +66,6 @@
   const placedCtx = placedCanvas.getContext('2d');
   const image = new Image();
   image.decoding = 'async';
-  image.src = IMAGE_SRC;
 
   let selectedDifficulty = 100;
   let state = null;
@@ -70,6 +83,39 @@
     drawBoard();
     renderTray();
   });
+
+  function syncPuzzlePresentation(){
+    BOARD_WIDTH=Math.max(1,Number(activePuzzle.width)||1122);
+    BOARD_HEIGHT=Math.max(1,Number(activePuzzle.height)||1402);
+    APP=String(activePuzzle.app||'weightcoherence');
+    root.dataset.jigsawId=String(activePuzzle.id||'');
+    root.style.setProperty('--weight-coherence-aspect',BOARD_WIDTH+' / '+BOARD_HEIGHT);
+    if(refs.introArt){
+      refs.introArt.src=activePuzzle.image;
+      refs.introArt.alt=activePuzzle.alt||activePuzzle.title||'Jigsaw artwork';
+    }
+    if(refs.title) refs.title.textContent=activePuzzle.title||'Jigsaw';
+    if(refs.description) refs.description.textContent=activePuzzle.description||'';
+    refs.board.setAttribute('aria-label',(activePuzzle.title||'Selected artwork')+' jigsaw board');
+    refs.board.width=BOARD_WIDTH;
+    refs.board.height=BOARD_HEIGHT;
+    placedCanvas.width=BOARD_WIDTH;
+    placedCanvas.height=BOARD_HEIGHT;
+  }
+
+  function configurePuzzle(puzzle, saveCurrent){
+    if(!puzzle || !puzzle.image || !puzzle.app) return false;
+    if(saveCurrent && state) saveState();
+    window.clearInterval(timerHandle);
+    activePuzzle=puzzle;
+    imageReady=false;
+    syncPuzzlePresentation();
+    resetToUnstoredState();
+    image.src=activePuzzle.image;
+    if(!restoreState()) renderTray();
+    scheduleFullscreenBoardFit();
+    return true;
+  }
 
   function difficultyConfig(value){
     return DIFFICULTIES[Number(value)] || DIFFICULTIES[100];
@@ -569,7 +615,7 @@
   function renderCompletion(){
     if(!state || !state.completed){ refs.completion.hidden=true; return; }
     refs.completion.hidden=false;
-    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>The Weight of Coherence complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + '</span>';
+    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>' + (activePuzzle.title||'Jigsaw') + ' complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + '</span>';
   }
 
   refs.completion.addEventListener('click',function(event){
@@ -886,7 +932,7 @@
 
   refs.reset.addEventListener('click',function(){
     if(!state){ beginPuzzle(); return; }
-    const restart=window.confirm('Restart The Weight of Coherence at ' + selectedDifficulty + ' pieces? Current progress will be cleared.');
+    const restart=window.confirm('Restart ' + (activePuzzle.title||'this jigsaw') + ' at ' + selectedDifficulty + ' pieces? Current progress will be cleared.');
     if(restart){
       beginPuzzle();
       closeSettings();
@@ -975,13 +1021,13 @@
     if(!restoreState()) resetToUnstoredState();
   });
 
-  refs.board.width=BOARD_WIDTH;
-  refs.board.height=BOARD_HEIGHT;
-  if(refs.reset) refs.reset.disabled=true;
-  syncDifficultyButtons();
-  updateStats();
-  drawBoard();
-  if(!restoreState()) renderTray();
+  document.addEventListener('baseline:jigsaw-select',function(event){
+    const puzzle=event.detail&&event.detail.puzzle;
+    if(puzzle && puzzle.id!==activePuzzle.id) configurePuzzle(puzzle,true);
+    else if(puzzle) syncPuzzlePresentation();
+  });
+
+  configurePuzzle(activePuzzle,false);
 
   try{ document.documentElement.setAttribute('data-weight-of-coherence-jigsaw','1'); }catch(_error){}
 })();
