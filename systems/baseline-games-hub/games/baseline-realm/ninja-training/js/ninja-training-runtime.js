@@ -282,14 +282,8 @@ export function createNinjaTrainingRuntime(dependencies) {
     if(!profile) return;
     const exp = profile.exploration || defaultRealmExplorationState();
     const workshop = profile.workshop || defaultRealmWorkshopState();
-    const basecampBar = document.getElementById('realmBasecampBar');
-    const explorationBar = document.getElementById('realmExplorationBar');
-    const workshopBar = document.getElementById('realmWorkshopBar');
     const explorationMeta = document.getElementById('realmExplorationMeta');
     const explorationLabel = document.getElementById('realmExplorationStageLabel');
-    if(basecampBar) basecampBar.hidden = realmView !== 'basecamp';
-    if(explorationBar) explorationBar.hidden = realmView !== 'exploration';
-    if(workshopBar) workshopBar.hidden = realmView !== 'workshop';
     if(explorationMeta) explorationMeta.textContent = 'Map ' + exp.map + ' · Step ' + exp.step + ' / ' + exp.maxSteps;
     if(explorationLabel) explorationLabel.textContent = exp.event === 'boss' ? 'Boss Route' : 'Exploration Route';
 
@@ -997,10 +991,17 @@ function renderRealmSpiritShop(profile){
   }).join('');
 }
 
+function setRealmSurfaceState(element, active){
+  if(!element) return;
+  element.hidden = !active;
+  element.setAttribute('aria-hidden', String(!active));
+}
+
 function renderRealmChrome(){
   const frame = document.getElementById('realmSceneFrame');
   const drawer = document.getElementById('realmPanelDrawer');
   const menuBtn = document.getElementById('realmMenuBtn');
+  const ninjaScene = document.getElementById('ninjaScene');
   const basecamp = document.getElementById('realmBasecampScreen');
   const trainingHud = document.getElementById('realmTrainingHud');
   const exploration = document.getElementById('realmExplorationScreen');
@@ -1009,6 +1010,7 @@ function renderRealmChrome(){
   const basecampRow = document.getElementById('realmBasecampTabRow');
   const explorationRow = document.getElementById('realmExplorationTabRow');
   if(frame){
+    frame.dataset.realmView = realmView;
     frame.classList.toggle('is-drawer-open', realmDrawerOpen);
     frame.classList.toggle('is-training-view', realmView === 'training');
     frame.classList.toggle('is-basecamp-view', realmView === 'basecamp');
@@ -1020,20 +1022,21 @@ function renderRealmChrome(){
   const explorationBar = document.getElementById('realmExplorationBar');
   const workshopBar = document.getElementById('realmWorkshopBar');
   const enemyStatus = document.getElementById('realmCommandEnemyStatus');
-  if(trainingBar) trainingBar.hidden = realmView !== 'training';
-  if(basecampBar) basecampBar.hidden = realmView !== 'basecamp';
-  if(explorationBar) explorationBar.hidden = realmView !== 'exploration';
-  if(workshopBar) workshopBar.hidden = realmView !== 'workshop';
-  if(enemyStatus) enemyStatus.hidden = realmView !== 'training';
+  setRealmSurfaceState(trainingBar, realmView === 'training');
+  setRealmSurfaceState(basecampBar, realmView === 'basecamp');
+  setRealmSurfaceState(explorationBar, realmView === 'exploration');
+  setRealmSurfaceState(workshopBar, realmView === 'workshop');
+  setRealmSurfaceState(enemyStatus, realmView === 'training');
   if(drawer){
     drawer.hidden = !realmDrawerOpen;
     drawer.setAttribute('aria-hidden', String(!realmDrawerOpen));
   }
   if(menuBtn){ menuBtn.hidden = realmView === 'workshop'; menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen)); }
-  if(basecamp) basecamp.hidden = realmView !== 'basecamp';
-  if(trainingHud) trainingHud.hidden = realmView !== 'training';
-  if(exploration) exploration.hidden = realmView !== 'exploration';
-  if(workshop) workshop.hidden = realmView !== 'workshop';
+  setRealmSurfaceState(ninjaScene, realmView === 'training');
+  setRealmSurfaceState(basecamp, realmView === 'basecamp');
+  setRealmSurfaceState(trainingHud, realmView === 'training');
+  setRealmSurfaceState(exploration, realmView === 'exploration');
+  setRealmSurfaceState(workshop, realmView === 'workshop');
   if(trainingRow) trainingRow.hidden = realmView !== 'training';
   if(basecampRow) basecampRow.hidden = realmView !== 'basecamp';
   if(explorationRow) explorationRow.hidden = realmView !== 'exploration';
