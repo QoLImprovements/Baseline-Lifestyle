@@ -1216,9 +1216,7 @@ body[data-app="fitness"] #profileStatus{
     display:block;
   }
 
-  #bl-beats-toggle,
-  #bl-contact-toggle,
-  #bl-auth-toggle,
+  .bl-homebar-right > .bl-mini-btn,
   .bl-homebar-inner > .bl-protected-key,
   body[data-app="home"] .bl-top-header > .bl-protected-key{
     display:none !important;
