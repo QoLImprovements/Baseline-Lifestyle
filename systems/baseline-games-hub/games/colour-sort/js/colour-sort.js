@@ -126,6 +126,20 @@ function startLevel(levelId, { persistChange = true } = {}) {
   render();
 }
 
+function selectLevel(levelId) {
+  const level = Math.min(profile.highestUnlocked, clampLevel(levelId));
+  if (level > profile.highestUnlocked) return;
+  profile.selectedLevel = level;
+  profile.activePuzzle = null;
+  selectedBottle = -1;
+  undoStack = [];
+  hint = null;
+  statusMessage = '';
+  persist();
+  render();
+  setTab('game');
+}
+
 function colourMeta(id) {
   return COLOURS[id] || { id, name:'Colour', symbol:'?' };
 }
@@ -195,7 +209,7 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>Sort each colour into its own bottle.</p><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>Level ${profile.selectedLevel} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button></div>`;
     return;
   }
   const solved = isSolved(active.bottles);
@@ -749,7 +763,7 @@ function handleClick(event) {
   const bottle = target.closest('[data-colour-bottle]');
   if (bottle) { selectBottle(Number(bottle.dataset.colourBottle)); return; }
   const level = target.closest('[data-colour-level]')?.getAttribute('data-colour-level');
-  if (level) { startLevel(Number(level)); setTab('game'); return; }
+  if (level) { selectLevel(Number(level)); return; }
   const tab = target.closest('[data-colour-tab]')?.getAttribute('data-colour-tab');
   if (tab) { setTab(tab); return; }
   const action = target.closest('[data-colour-action]')?.getAttribute('data-colour-action');
