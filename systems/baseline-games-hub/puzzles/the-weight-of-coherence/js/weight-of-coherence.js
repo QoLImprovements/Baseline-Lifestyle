@@ -5,6 +5,7 @@
   const IMAGE_SRC = '/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2';
   const BOARD_WIDTH = 1122;
   const BOARD_HEIGHT = 1402;
+  const BOARD_BASE = 'rgba(130,150,208,.62)';
   const APP = 'weightcoherence';
   const DIFFICULTIES = Object.freeze({
     50: Object.freeze({ pieces:50, cols:5, rows:10, trayPageSize:20 }),
@@ -204,7 +205,7 @@
 
   function drawBoard(){
     ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
-    ctx.fillStyle='#080D22';
+    ctx.fillStyle=BOARD_BASE;
     ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
 
     if(imageReady && state && state.preview){

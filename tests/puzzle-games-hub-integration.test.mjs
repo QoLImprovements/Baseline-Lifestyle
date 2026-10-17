@@ -40,6 +40,17 @@ test('production puzzle modules do not create a competing browser persistence la
   }
 });
 
+
+
+test('Weight of Coherence uses a lighter visible jigsaw board base', () => {
+  const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const css = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
+
+  assert.match(source, /BOARD_BASE = 'rgba\(130,150,208,\.62\)'/);
+  assert.match(source, /ctx\.fillStyle=BOARD_BASE/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*background:rgba\(130,150,208,\.62\)/);
+  assert.doesNotMatch(css, /\.weight-coherence-board-wrap\{[^}]*background:#080D22/);
+});
 test('current Weight of Coherence puzzle uses the same server save authority', () => {
   const source = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
   const guard = read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
