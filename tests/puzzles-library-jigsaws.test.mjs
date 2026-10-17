@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import test from 'node:test';
 
@@ -38,6 +39,7 @@ test('Jigsaws are grouped into collections and include both current artworks', (
   const art = fs.readFileSync('systems/baseline-games-hub/puzzles/the-unheard-signal/art/the-unheard-signal.png');
   assert.equal(art.length, 2600964);
   assert.equal(art.subarray(1,4).toString('ascii'), 'PNG');
+  assert.equal(crypto.createHash('sha256').update(art).digest('hex'), '5a803c828d9c76af21c0cd73f47014417d9de72eaa85711e6c833814da52fabf');
 });
 
 test('one jigsaw player switches artwork, dimensions, copy and save authority', () => {
