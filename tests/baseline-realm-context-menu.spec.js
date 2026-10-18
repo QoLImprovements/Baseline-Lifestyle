@@ -3,14 +3,12 @@ const { test, expect } = require('@playwright/test');
 const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
 
 async function openRealm(page) {
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
-    const request = route.request();
-    const url = new URL(request.url());
-    const app = url.searchParams.get('app') || 'ninja';
+  await page.route('**/systems/baseline-games-hub/api/games_data.php**', async route => {
+    const profile = { app: 'ninja', level: 1, xp: 0, coins: 0, stage: 1 };
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, app, profile: { app, level: 1, xp: 0, coins: 0, stage: 1 } })
+      body: JSON.stringify({ ok: true, profiles: { ninja: profile }, revisions: { ninja: 1 } })
     });
   });
 
