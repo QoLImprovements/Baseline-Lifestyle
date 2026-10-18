@@ -2720,7 +2720,7 @@ body[data-app="games"] .ruleshift-options-grid{
 body[data-app="games"] .ruleshift-token{
   appearance:none!important;
   border:1px solid transparent!important;
-  border-radius:20px!important;
+  border-radius:16px!important;
   width:100%!important;
   min-height:clamp(98px,10vw,142px)!important;
   padding:10px!important;
@@ -3245,8 +3245,8 @@ body[data-app="games"] .hero .subtitle{
    anchored at the top-right of the same card. */
 body[data-app="games"] #gamesList.games-list{
   display:grid!important;
-  grid-template-columns:repeat(2,minmax(0,1fr))!important;
-  gap:16px!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:12px!important;
   align-items:stretch!important;
 }
 body[data-app="games"] #gamesList .games-list-group{
@@ -3260,20 +3260,20 @@ body[data-app="games"] #gamesList .game-row-wrap{
   isolation:isolate!important;
 }
 body[data-app="games"] #gamesList .game-row-wrap--featured{
-  grid-column:1 / -1!important;
+  grid-column:auto!important;
 }
 body[data-app="games"] #gamesList .game-row{
   display:grid!important;
-  grid-template-columns:112px minmax(0,1fr)!important;
-  grid-template-rows:auto auto!important;
+  grid-template-columns:92px minmax(0,1fr) auto!important;
+  grid-template-rows:auto!important;
   align-items:center!important;
   align-content:center!important;
-  column-gap:18px!important;
-  row-gap:12px!important;
-  min-height:178px!important;
+  column-gap:16px!important;
+  row-gap:0!important;
+  min-height:120px!important;
   width:100%!important;
-  padding:18px 72px 18px 18px!important;
-  border-radius:24px!important;
+  padding:13px 72px 13px 15px!important;
+  border-radius:20px!important;
   background:linear-gradient(135deg,rgba(244,197,108,.98) 0%,rgba(151,174,207,.92) 55%,rgba(111,136,173,.78) 100%)!important;
   border:1px solid rgba(23,52,56,.38)!important;
   box-shadow:0 18px 38px -28px rgba(8,35,39,.58),inset 0 1px 0 rgba(255,255,255,.24)!important;
@@ -3289,9 +3289,9 @@ body[data-app="games"] #gamesList .game-row:focus-visible{
 }
 body[data-app="games"] #gamesList .game-card-art{
   grid-column:1!important;
-  grid-row:1 / 3!important;
-  width:112px!important;
-  height:112px!important;
+  grid-row:1!important;
+  width:92px!important;
+  height:92px!important;
   object-fit:cover!important;
   border-radius:20px!important;
   border:1px solid rgba(23,52,56,.34)!important;
@@ -3303,24 +3303,27 @@ body[data-app="games"] #gamesList .game-row-copy{
   grid-row:1!important;
   min-width:0!important;
   padding-right:4px!important;
+  align-self:center!important;
 }
 body[data-app="games"] #gamesList .game-row-copy h3{
   margin:0 0 7px!important;
-  font-size:clamp(21px,1.7vw,28px)!important;
+  font-size:clamp(20px,1.5vw,25px)!important;
 }
 body[data-app="games"] #gamesList .game-row-copy p{
   margin:0!important;
-  line-height:1.5!important;
+  line-height:1.42!important;
 }
 body[data-app="games"] #gamesList .game-row-meta{
-  grid-column:2!important;
-  grid-row:2!important;
+  grid-column:3!important;
+  grid-row:1!important;
   display:flex!important;
   align-items:center!important;
-  justify-content:flex-start!important;
-  gap:10px!important;
-  justify-items:start!important;
-  text-align:left!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  justify-items:end!important;
+  text-align:right!important;
+  align-self:center!important;
+  flex-wrap:wrap!important;
 }
 body[data-app="games"] #gamesList .game-row-meta strong,
 body[data-app="games"] #gamesList .game-row-meta .inline-note{
@@ -3349,21 +3352,20 @@ body[data-app="games"] #gamesList .game-row-info-button{
   background-image:var(--games-key-gradient)!important;
   box-shadow:0 10px 24px -16px rgba(8,35,39,.72)!important;
 }
-@media (max-width:980px){
-  body[data-app="games"] #gamesList.games-list{grid-template-columns:1fr!important;}
-  body[data-app="games"] #gamesList .game-row-wrap--featured{grid-column:auto!important;}
-}
-@media (max-width:640px){
+@media (max-width:760px){
   body[data-app="games"] #gamesList .game-row{
     grid-template-columns:78px minmax(0,1fr)!important;
-    min-height:148px!important;
+    grid-template-rows:auto auto!important;
+    min-height:112px!important;
     column-gap:13px!important;
-    padding:15px 58px 15px 15px!important;
+    row-gap:7px!important;
+    padding:12px 58px 12px 12px!important;
   }
-  body[data-app="games"] #gamesList .game-card-art{width:78px!important;height:78px!important;border-radius:16px!important;}
+  body[data-app="games"] #gamesList .game-card-art{grid-row:1 / 3!important;width:78px!important;height:78px!important;border-radius:14px!important;}
+  body[data-app="games"] #gamesList .game-row-copy{grid-column:2!important;grid-row:1!important;}
   body[data-app="games"] #gamesList .game-row-copy h3{font-size:20px!important;}
   body[data-app="games"] #gamesList .game-row-copy p{font-size:14px!important;}
-  body[data-app="games"] #gamesList .game-row-meta{flex-wrap:wrap!important;gap:7px!important;}
+  body[data-app="games"] #gamesList .game-row-meta{grid-column:2!important;grid-row:2!important;justify-content:flex-start!important;text-align:left!important;flex-wrap:wrap!important;gap:7px!important;}
   body[data-app="games"] #gamesList .game-row-info-button{top:10px!important;right:10px!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;}
 }
 

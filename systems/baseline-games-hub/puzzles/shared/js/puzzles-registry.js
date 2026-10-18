@@ -52,8 +52,8 @@
       width:900,
       height:1125,
       alt:'A black panther standing alert on a rocky outcrop above a misty mountain wilderness at dusk.',
-      libraryDescription:'A black panther stands watch above a moonlit mountain wilderness, poised between darkness and the last light of day.',
-      description:'The panther surveys the landscape from exposed rock, still and alert against mist, mountains and opposing lights. The image centres watchfulness, controlled strength and solitary presence.'
+      libraryDescription:'A black panther pauses on exposed rock at dusk, using height, stillness and cover to survey a broad territory before moving through the landscape.',
+      description:'From an elevated rocky outcrop, the black panther holds still as daylight fades, scanning the terrain before it moves on. Large solitary cats rely on concealment, acute hearing and careful observation as they travel, hunt and patrol extensive ranges; the dark coat adds camouflage in shadowed forest and low light. The scene captures patience, awareness and controlled movement within a demanding habitat.'
     }),
     Object.freeze({
       id:'bear',
@@ -64,8 +64,8 @@
       width:900,
       height:1125,
       alt:'A large brown bear walking through a shallow autumn forest river in warm sunrise light.',
-      libraryDescription:'A brown bear moves through an autumn river at sunrise, carrying its weight steadily through water, mist and changing terrain.',
-      description:'The bear crosses a shallow forest river in full stride as autumn light enters through the trees. The image centres grounded power, forward movement and adaptation within a changing environment.'
+      libraryDescription:'A brown bear crosses a shallow autumn river, using the waterway as part of a wider route for travel, drinking and opportunistic foraging.',
+      description:'The brown bear moves steadily through a shallow forest river as autumn changes the surrounding habitat. Rivers and streams can act as travel corridors and feeding grounds, concentrating water, scent and seasonal food; the bear continually assesses where energy can be gained as conditions shift toward winter. Its movement through the water reflects the practical, adaptable way bears use the landscape.'
     }),
     Object.freeze({
       id:'fox',
@@ -88,8 +88,8 @@
       width:1536,
       height:1024,
       alt:'An African elephant herd gathered around a shallow watering hole, with adults and calves drinking, wading and interacting.',
-      libraryDescription:'Adults and calves gather around a shallow watering hole, drinking, wading and moving together through the savanna.',
-      description:'The herd spreads naturally around a shallow watering hole as adults and calves drink, wade and interact. The wider scene gives the animals space while showing the social character of elephant family life.'
+      libraryDescription:'Adults and calves gather at a shallow watering hole to drink, cool themselves and remain in close social contact while the herd moves through the savanna.',
+      description:'At the watering hole, adults and calves spread across the bank and shallows, drinking, wading and maintaining contact as a family group. Elephant herds are built around enduring social relationships: calves remain close to experienced females, while adults coordinate movement, protection and access to resources. Water is therefore more than a drink; it is also a place for cooling, play, learning and social interaction.'
     })
   ]);
 
