@@ -34,6 +34,13 @@ test('legacy compatibility CSS cannot resurrect stale Realm authorities', () => 
   assert.doesNotMatch(stabilityCss,/baseline-realm-coherence-authority\.css/);
 });
 
+test('mobile Realm stylesheet loads after desktop Realm presentation', () => {
+  const woodIndex = html.indexOf('realm-wood-authority.css?v=REALM_MOBILE_RESPONSIVE_20261018_1');
+  const mobileIndex = html.indexOf('realm-stage-1-mobile.css?v=REALM_MOBILE_RESPONSIVE_20261018_1');
+  assert.ok(woodIndex >= 0);
+  assert.ok(mobileIndex > woodIndex);
+});
+
 test('mobile Realm composition has one geometry authority', () => {
   assert.match(mobileCss,/One compact row: location, centred Coins, persistent touch controls/);
   assert.match(mobileCss,/grid-template-columns:minmax\(120px,1fr\) auto minmax\(220px,1fr\)!important/);
