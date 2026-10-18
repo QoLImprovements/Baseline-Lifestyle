@@ -339,7 +339,7 @@
       syncUi();
       return;
     }
-    if(unlocked || (ctx && ctx.state === 'running')) startActive();
+    if(settings.enabled) startActive();
     syncUi();
   }
 
@@ -364,11 +364,13 @@
 
   function syncUi(){
     document.querySelectorAll('[data-games-music-toggle]').forEach(function(btn){
-      btn.textContent = settings.enabled ? 'On' : 'Off';
-      btn.setAttribute('aria-pressed', settings.enabled ? 'true' : 'false');
+      var label = settings.enabled ? 'On' : 'Off';
+      var pressed = settings.enabled ? 'true' : 'false';
+      if(btn.textContent !== label) btn.textContent = label;
+      if(btn.getAttribute('aria-pressed') !== pressed) btn.setAttribute('aria-pressed', pressed);
     });
     document.querySelectorAll('[data-games-music-volume]').forEach(function(input){
-      if(document.activeElement !== input) input.value = String(settings.volume);
+      if(document.activeElement !== input && input.value !== String(settings.volume)) input.value = String(settings.volume);
     });
   }
 
