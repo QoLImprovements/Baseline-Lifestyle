@@ -454,11 +454,28 @@
     if(!activeGame || !settings.enabled) return;
     var c=ensureContext();
     if(!c) return;
+
+    // The unlock handler runs on global pointer/keyboard interaction.
+    // Once audio is already running, ordinary game controls must not
+    // restart the scheduler or reset the musical phrase.
+    if(unlocked && c.state === 'running') return;
+
+    function finishUnlock(){
+      unlocked = true;
+      if(!timer) restartScheduler(false);
+      else applyGain();
+    }
+
+    if(c.state === 'running'){
+      finishUnlock();
+      return;
+    }
+
     var p=c.resume();
     if(p && typeof p.then === 'function'){
-      p.then(function(){ unlocked=true; startActive(); }).catch(function(){});
+      p.then(finishUnlock).catch(function(){});
     }else{
-      unlocked=true; startActive();
+      finishUnlock();
     }
   }
 
