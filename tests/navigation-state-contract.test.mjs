@@ -15,6 +15,12 @@ test('all page-like nested views have canonical URL and browser-history ownershi
   const badminton=read('systems/baseline-badminton-session/js/badminton-session-game-plan.js');
   const games=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
   const puzzles=read('systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js');
+  const puzzleSupport=read('systems/baseline-games-hub/js/puzzle-game-support.mjs');
+  const blockGrid=read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
+  const colourSort=read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
+  const dartsShell=read('systems/baseline-games-hub/games/darts-focused/js/darts-focused-shell.js');
+  const badmintonFocused=read('systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js');
+  const gamesLoader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
   const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
 
   assert.match(fitness,/PLAN_ROUTE_RE/);
@@ -40,6 +46,22 @@ test('all page-like nested views have canonical URL and browser-history ownershi
   assert.match(puzzles,/showView\('jigsaws',\{historyMode:'push'\}\)/);
   assert.match(puzzles,/addEventListener\('popstate'/);
 
+  assert.match(puzzleSupport,/function close\(\{ restoreOverview = true, historyMode = 'push' \}/);
+  assert.match(blockGrid,/setTab\(tab, 'push'\)/);
+  assert.match(blockGrid,/blockTabFromLocation\(\)/);
+  assert.match(blockGrid,/history\[method\]\(\{ puzzleGame:'block-grid', view:next \}/);
+  assert.match(colourSort,/setTab\(tab, 'push'\)/);
+  assert.match(colourSort,/colourTabFromLocation\(\)/);
+  assert.match(colourSort,/history\[method\]\(\{ puzzleGame:'colour-sort', view:next \}/);
+
+  assert.match(dartsShell,/DARTS_ROUTE='\/baseline-games-hub\/games-hub\/darts-focused'/);
+  assert.match(dartsShell,/historyMode='push'/);
+  assert.doesNotMatch(dartsShell,/#tab=games&game=darts-focused/);
+  assert.match(badmintonFocused,/BADMINTON_ROUTE='\/baseline-games-hub\/games-hub\/badminton-focused'/);
+  assert.match(badmintonFocused,/historyMode='push'/);
+  assert.doesNotMatch(badmintonFocused,/#tab=games&game=badminton-focused/);
+  assert.match(gamesLoader,/addEventListener\('popstate',syncFocusedRoutes\)/);
+
   assert.match(realm,/ROUTABLE_SCENES/);
   assert.match(realm,/writeRealmSceneRoute/);
   assert.match(realm,/addEventListener\?\.\('popstate'/);
@@ -48,9 +70,10 @@ test('all page-like nested views have canonical URL and browser-history ownershi
   assert.match(shared,/historyMode:'push'/);
 });
 
-test('server routes directly refresh every clean nested Fitness plan URL',()=>{
+test('server routes directly refresh every canonical nested navigation URL',()=>{
   const htaccess=read('.htaccess');
   assert.match(htaccess,/baseline-fitness\/my-plan\/\(completed\|future\)/);
+  assert.match(htaccess,/block-grid\|colour-sort\|darts-focused\|badminton-focused\|baseline-realm/);
 });
 
 test('route restoration uses replace while user navigation uses push',()=>{
