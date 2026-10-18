@@ -1470,7 +1470,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function renderAuthState(){
     if(!refs.authStateNote) return;
     if(authState.authed){
-      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Crossnumber, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
+      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">Registered Games Hub game and puzzle progress saves to ' + escapeHtml(authState.name || 'your account') + ', including Jigsaws and Baseline Realm.</span>';
     }else{
       refs.authStateNote.innerHTML = '<strong>Temporary play is active.</strong><span class="inline-note">You can play while signed out, but progress is not saved. Sign in to save game progress to your account.</span>';
     }
