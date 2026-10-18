@@ -653,7 +653,7 @@
     resetZoom();
     viewOn=false;
     syncViewButton();
-    syncSelectedPieceClasses();
+    syncViewInteractionState();
     state=null;
     selectedPieceId=null;
     dragState=null;
@@ -700,7 +700,7 @@
     selectedPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
-    root.classList.remove('is-viewing-artwork');
+    syncViewInteractionState();
     syncGuideButton();
     refs.completion.hidden=true;
     if(refs.reset) refs.reset.disabled=false;
@@ -819,6 +819,7 @@
     };
     restore();
     window.setTimeout(restore,0);
+    window.setTimeout(restore,60);
     window.requestAnimationFrame(function(){
       restore();
       window.requestAnimationFrame(restore);
@@ -893,6 +894,7 @@
     if(drag.moved){
       suppressTrayClickUntil=Date.now()+250;
       stabilisePieceFocus();
+      if(event && event.cancelable) event.preventDefault();
     }
     if(!event || !drag.moved) return;
 
@@ -1012,9 +1014,9 @@
   }
 
   function resolveZoomTarget(){
+    if(lastZoomTarget && lastZoomTarget.isConnected) return lastZoomTarget;
     const focused=zoomableTargetFromNode(document.activeElement);
     if(focused) return focused;
-    if(lastZoomTarget && lastZoomTarget.isConnected) return lastZoomTarget;
     return refs.boardWrap;
   }
 
@@ -1376,6 +1378,7 @@
   refs.next.addEventListener('click',nextTray);
 
   root.addEventListener('pointerover',rememberZoomTarget,{passive:true});
+  root.addEventListener('pointermove',rememberZoomTarget,{passive:true});
   root.addEventListener('focusin',function(event){
     const target=zoomableTargetFromNode(event.target);
     if(target){
