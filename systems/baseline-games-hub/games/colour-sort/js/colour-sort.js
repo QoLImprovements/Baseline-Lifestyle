@@ -225,6 +225,7 @@ function renderGame() {
         <div class="stat-pill">Best <span>${profile.bestMoves[active.level] || '—'}</span></div>
       </div>
     </div>
+    <div class="game-live-xp" data-live-xp="coloursort"><strong>Level ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
     <div class="colour-sort-progress-head"><div><strong>Level Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
     <div class="colour-sort-progress-meter" aria-label="${sorted} of ${colours} colours sorted"><span style="width:${sortedPercent}%"></span></div>
@@ -264,13 +265,19 @@ function renderProgress() {
   if (!root) return;
   const needed = xpNeededForLevel(profile.level);
   const pct = Math.min(100, profile.xp / needed * 100);
+  const remaining = Math.max(0, needed - profile.xp);
   root.innerHTML = `
-    <div class="progress-shell"><div class="xp-row"><div><strong>Colour Sort Level ${profile.level}</strong><div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div><span class="inline-note">${profile.xp} / ${needed} XP</span></div></div></div>
-    <div class="colour-sort-progress-stats">
-      <div class="trackcoin-stat-card"><strong>${profile.completedLevels.length} / ${LEVELS.length}</strong><span>Puzzles completed</span></div>
-      <div class="trackcoin-stat-card"><strong>${profile.gamesPlayed}</strong><span>Completed runs</span></div>
-      <div class="trackcoin-stat-card"><strong>${profile.highestUnlocked}</strong><span>Highest unlocked</span></div>
-      <div class="trackcoin-stat-card"><strong>${Object.keys(profile.bestMoves).length}</strong><span>Recorded bests</span></div>
+    <section class="coherent-progress-overview">
+      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Colour Sort</span><strong>Level ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Level ${profile.level + 1}</div></div>
+      <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
+      <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
+    </section>
+    <div class="coherent-progress-grid">
+      <div class="coherent-progress-stat"><span>Puzzles completed</span><strong>${profile.completedLevels.length} / ${LEVELS.length}</strong></div>
+      <div class="coherent-progress-stat"><span>Completed runs</span><strong>${profile.gamesPlayed}</strong></div>
+      <div class="coherent-progress-stat"><span>Highest unlocked</span><strong>${profile.highestUnlocked}</strong></div>
+      <div class="coherent-progress-stat"><span>Recorded bests</span><strong>${Object.keys(profile.bestMoves).length}</strong></div>
+      <div class="coherent-progress-stat"><span>Selected level</span><strong>${profile.selectedLevel}</strong></div>
     </div>`;
 }
 
