@@ -5,6 +5,8 @@ import test from 'node:test';
 const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html','utf8');
 const hubCss = fs.readFileSync('systems/baseline-games-hub/css/baseline-games-hub.css','utf8');
 const woodCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
+const mobileCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css','utf8');
+const stabilityCss = fs.readFileSync('systems/baseline-games-hub/css/baseline-realm-stability-fix.css','utf8');
 const basecampCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
 const shellCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-shell.css','utf8');
 const workshopCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css','utf8');
@@ -23,6 +25,23 @@ test('Games Hub CSS no longer owns Realm presentation', () => {
   assert.doesNotMatch(hubCss,/\.ninja-scene/);
   assert.doesNotMatch(hubCss,/\.ninja-hit-flash/);
   assert.doesNotMatch(hubCss,/EDIT_VERSION_20260619_REALM_CABIN_SHURIKEN/);
+});
+
+test('legacy compatibility CSS cannot resurrect stale Realm authorities', () => {
+  assert.match(stabilityCss,/mobile-touch-targets\.css/);
+  assert.doesNotMatch(stabilityCss,/baseline-realm-stability-(?:core|panels|modes)\.css/);
+  assert.doesNotMatch(stabilityCss,/baseline-realm-interface-(?:refinement|final-authority)\.css/);
+  assert.doesNotMatch(stabilityCss,/baseline-realm-coherence-authority\.css/);
+});
+
+test('mobile Realm composition has one geometry authority', () => {
+  assert.match(mobileCss,/One compact row: location, centred Coins, persistent touch controls/);
+  assert.match(mobileCss,/grid-template-columns:minmax\(120px,1fr\) auto minmax\(220px,1fr\)!important/);
+  assert.match(mobileCss,/#realmBasecampScreen\.realm-basecamp-screen\{[\s\S]*?width:100%!important;[\s\S]*?background-size:100% 100%!important/);
+  assert.match(mobileCss,/\.realm-drawer\{[\s\S]*?width:min\(430px,86vw\)!important/);
+  assert.match(mobileCss,/\.realm-hotkey-hint\{[\s\S]*?display:none!important/);
+  assert.doesNotMatch(woodCss,/@media \(max-width:900px\)/);
+  assert.doesNotMatch(woodCss,/@media \(max-width:620px\)/);
 });
 
 test('Basecamp landmarks have one visual owner', () => {
