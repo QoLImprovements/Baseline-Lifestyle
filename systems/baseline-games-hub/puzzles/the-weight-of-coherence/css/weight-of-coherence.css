@@ -94,7 +94,8 @@
 .weight-coherence-piece:disabled{cursor:wait;opacity:.82}
 #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece,
 #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece:active{cursor:zoom-in}
-#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,.48);transition:transform .16s ease,box-shadow .16s ease}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target .weight-coherence-piece-canvas{position:relative;z-index:61;transform:scale(var(--weight-coherence-piece-zoom,2));transform-origin:50% 50%;will-change:transform;transition:transform .16s ease}
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-column,
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-shell,
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-tray,

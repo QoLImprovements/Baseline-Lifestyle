@@ -717,7 +717,6 @@
     updateStats();
     saveState();
     startTimer();
-    try{ refs.board.scrollIntoView({behavior:mobileLike()?'auto':'smooth',block:'center'}); }catch(_error){}
   }
 
   function renderCompletion(){
@@ -805,11 +804,22 @@
     };
   }
 
+  function pageScrollRoot(){
+    const shell=document.querySelector('.bl-scroll');
+    if(shell) return shell;
+    return document.scrollingElement || document.documentElement || document.body || null;
+  }
+
   function pageScrollSnapshot(){
     if(fullscreenActive()) return null;
+    const scrollRoot=pageScrollRoot();
+    const shell=scrollRoot && scrollRoot.classList?.contains('bl-scroll') ? scrollRoot : null;
     return {
-      x:Number(window.scrollX ?? window.pageXOffset) || 0,
-      y:Number(window.scrollY ?? window.pageYOffset) || 0
+      root:scrollRoot,
+      rootX:shell ? Number(shell.scrollLeft)||0 : 0,
+      rootY:shell ? Number(shell.scrollTop)||0 : 0,
+      windowX:Number(window.scrollX ?? window.pageXOffset) || 0,
+      windowY:Number(window.scrollY ?? window.pageYOffset) || 0
     };
   }
 
@@ -817,19 +827,54 @@
     if(!snapshot || fullscreenActive()) return;
     const restore=function(){
       if(fullscreenActive()) return;
+      const scrollRoot=snapshot.root && snapshot.root.isConnected ? snapshot.root : pageScrollRoot();
+      const isShell=!!(scrollRoot && scrollRoot.classList?.contains('bl-scroll'));
+      if(isShell){
+        const currentX=Number(scrollRoot.scrollLeft)||0;
+        const currentY=Number(scrollRoot.scrollTop)||0;
+        if(Math.abs(currentX-snapshot.rootX)>1 || Math.abs(currentY-snapshot.rootY)>1){
+          if(typeof scrollRoot.scrollTo==='function') scrollRoot.scrollTo({left:snapshot.rootX,top:snapshot.rootY,behavior:'auto'});
+          else{
+            scrollRoot.scrollLeft=snapshot.rootX;
+            scrollRoot.scrollTop=snapshot.rootY;
+          }
+        }
+        return;
+      }
       const currentX=Number(window.scrollX ?? window.pageXOffset) || 0;
       const currentY=Number(window.scrollY ?? window.pageYOffset) || 0;
-      if(Math.abs(currentX-snapshot.x)>1 || Math.abs(currentY-snapshot.y)>1){
-        window.scrollTo(snapshot.x,snapshot.y);
+      if(Math.abs(currentX-snapshot.windowX)>1 || Math.abs(currentY-snapshot.windowY)>1){
+        window.scrollTo({left:snapshot.windowX,top:snapshot.windowY,behavior:'auto'});
       }
     };
     restore();
     window.setTimeout(restore,0);
     window.setTimeout(restore,60);
+    window.setTimeout(restore,180);
     window.requestAnimationFrame(function(){
       restore();
       window.requestAnimationFrame(restore);
     });
+  }
+
+  let interactionScrollSnapshot=null;
+
+  function captureInteractionScroll(event){
+    if(fullscreenActive()) return;
+    interactionScrollSnapshot=pageScrollSnapshot();
+    const snapshot=interactionScrollSnapshot;
+    const control=event?.target?.closest?.('button,[role="button"]');
+    if(control && root.contains(control) && typeof control.focus==='function'){
+      try{ control.focus({preventScroll:true}); }catch(_error){}
+    }
+    if(snapshot) restorePageScroll(snapshot);
+  }
+
+  function settleInteractionScroll(){
+    if(!interactionScrollSnapshot || fullscreenActive()) return;
+    const snapshot=interactionScrollSnapshot;
+    interactionScrollSnapshot=null;
+    restorePageScroll(snapshot);
   }
 
   function attemptPlacement(id,clientX,clientY){
@@ -856,7 +901,11 @@
     const centerX=g.x+g.w/2, centerY=g.y+g.h/2;
     const dx=Math.abs(point.x-centerX), dy=Math.abs(point.y-centerY);
     const snapX=Math.max(g.w*0.62,18), snapY=Math.max(g.h*0.62,18);
-    if(dx<=snapX && dy<=snapY){ placePiece(id); return true; }
+    if(dx<=snapX && dy<=snapY){
+      placePiece(id);
+      restorePageScroll(scrollSnapshot);
+      return true;
+    }
     setStatus('That piece belongs elsewhere.','warning');
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
@@ -1042,9 +1091,7 @@
   function clearZoomTargetStyles(target){
     if(!target) return;
     target.classList?.remove('is-zoom-target');
-    target.style?.removeProperty('transform');
-    target.style?.removeProperty('transform-origin');
-    target.style?.removeProperty('will-change');
+    target.style?.removeProperty('--weight-coherence-piece-zoom');
   }
 
   function ensureBoardLens(){
@@ -1129,15 +1176,15 @@
 
   function applyPieceZoom(target,scale){
     if(!target || target===refs.boardWrap) return;
+    const pieceCanvas=target.querySelector?.('.weight-coherence-piece-canvas');
+    if(!pieceCanvas) return;
     const nextScale=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(scale)||PIECE_ZOOM_DEFAULT));
     if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
     zoomTarget=target;
     zoomScale=nextScale;
     zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    zoomTarget.style.transformOrigin='50% 50%';
-    zoomTarget.style.willChange='transform';
-    zoomTarget.style.transform='scale('+zoomScale.toFixed(2)+')';
+    zoomTarget.style.setProperty('--weight-coherence-piece-zoom',zoomScale.toFixed(2));
     root.classList.add('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
     syncZoomControls();
@@ -1464,6 +1511,24 @@
       syncHelpExpanded(true);
     }
   }
+
+  root.addEventListener('pointerdown',captureInteractionScroll,true);
+  root.addEventListener('mousedown',function(){
+    if(!interactionScrollSnapshot) captureInteractionScroll();
+  },true);
+  root.addEventListener('keydown',function(event){
+    if(!event || (event.key!=='Enter' && event.key!==' ')) return;
+    captureInteractionScroll();
+  },true);
+  root.addEventListener('click',function(){
+    settleInteractionScroll();
+  },true);
+  window.addEventListener('pointerup',function(){
+    settleInteractionScroll();
+  },true);
+  window.addEventListener('pointercancel',function(){
+    settleInteractionScroll();
+  },true);
 
   refs.preview.addEventListener('click',toggleGuide);
   if(refs.view) refs.view.addEventListener('click',toggleFullView);

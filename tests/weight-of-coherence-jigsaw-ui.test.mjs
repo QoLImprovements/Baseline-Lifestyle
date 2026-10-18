@@ -17,23 +17,27 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ZOOM_HELP_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ZOOM_HELP_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_SCROLL_PIECE_ZOOM_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SCROLL_PIECE_ZOOM_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
 
-test('successful and failed piece drops keep the non-fullscreen viewport stable', () => {
+test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll root', () => {
   assert.match(html, /id="weightCoherenceBoard"[^>]*tabindex="-1"/);
   assert.match(js, /function stabilisePieceFocus\(\)\{/);
-  assert.match(js, /active\.closest\('\[data-piece-id\]'\)/);
   assert.match(js, /refs\.board\.focus\(\{preventScroll:true\}\)/);
-  assert.match(js, /function renderTray\(\)\{\s*if\(!refs\.tray\) return;\s*stabilisePieceFocus\(\);/);
-  assert.match(js, /if\(drag\.moved\)\{[\s\S]*?stabilisePieceFocus\(\);/);
-  assert.match(js, /function pageScrollSnapshot\(\)\{/);
-  assert.match(js, /function restorePageScroll\(snapshot\)\{/);
+  assert.match(js, /function pageScrollRoot\(\)\{[\s\S]*?document\.querySelector\('\.bl-scroll'\)/);
+  assert.match(js, /function pageScrollSnapshot\(\)\{[\s\S]*?rootY:shell \? Number\(shell\.scrollTop\)\|\|0 : 0/);
+  assert.match(js, /function restorePageScroll\(snapshot\)\{[\s\S]*?scrollRoot\.scrollTo\(\{left:snapshot\.rootX,top:snapshot\.rootY,behavior:'auto'\}\)/);
+  assert.match(js, /function captureInteractionScroll\(event\)\{[\s\S]*?control\.focus\(\{preventScroll:true\}\)[\s\S]*?restorePageScroll\(snapshot\)/);
+  assert.match(js, /root\.addEventListener\('pointerdown',captureInteractionScroll,true\)/);
+  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(\)/);
+  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(\)/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
+  assert.match(js, /if\(dx<=snapX && dy<=snapY\)\{[\s\S]*?placePiece\(id\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return true;/);
   assert.match(js, /setStatus\('That piece belongs elsewhere\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
+  assert.doesNotMatch(js, /refs\.board\.scrollIntoView/);
   assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
 });
 
@@ -71,6 +75,18 @@ test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is
   assert.match(js, /refs\.zoomIn\.addEventListener\('click'[\s\S]*?adjustZoom\(1\)/);
   assert.doesNotMatch(js, /refs\.zoomToggle\.addEventListener/);
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
+});
+
+test('tray zoom uses the same magnification as the board lens but scales only the jigsaw piece canvas', () => {
+  assert.match(js, /let zoomLevel = PIECE_ZOOM_DEFAULT/);
+  assert.match(js, /const sourceWidth=\(diameter\/zoomLevel\)/);
+  assert.match(js, /function applyPieceZoom\(target,scale\)\{[\s\S]*?querySelector\?\.\('\.weight-coherence-piece-canvas'\)[\s\S]*?zoomLevel=nextScale/);
+  assert.match(js, /zoomTarget\.style\.setProperty\('--weight-coherence-piece-zoom',zoomScale\.toFixed\(2\)\)/);
+  assert.doesNotMatch(js, /zoomTarget\.style\.transform='scale\('/);
+  assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target\{position:relative;z-index:60\}/);
+  assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target \.weight-coherence-piece-canvas\{[^}]*transform:scale\(var\(--weight-coherence-piece-zoom,2\)\)/);
+  assert.doesNotMatch(css, /\.weight-coherence-piece\.is-zoom-target\{[^}]*box-shadow/);
+  assert.match(html, /The same magnification is used for the board lens and tray pieces; only the jigsaw piece itself enlarges, not its tray card/);
 });
 
 test('holding Z over the jigsaw opens a circular magnifier lens without scaling the board', () => {
