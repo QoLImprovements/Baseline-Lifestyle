@@ -889,8 +889,8 @@
   function renderCompletion(){
     if(!state || !state.completed){ refs.completion.hidden=true; return; }
     refs.completion.hidden=false;
-    const reward=progression&&progression.lastXpAward?progression.lastXpAward:currentJigsawReward();
-    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>' + (activePuzzle.title||'Jigsaw') + ' complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + ' · +' + reward + ' XP</span>';
+    const reward=progression&&progression.lastXpAward?progression.lastXpAward:0;
+    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>' + (activePuzzle.title||'Jigsaw') + ' complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + (reward?' · +'+reward+' XP':'') + '</span>';
   }
 
   refs.completion.addEventListener('click',function(event){
