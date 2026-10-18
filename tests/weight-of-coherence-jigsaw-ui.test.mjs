@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ORIENTATION_TRAYS_FULLSCREEN_FIT_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ORIENTATION_TRAYS_FULLSCREEN_FIT_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_SINGLE_ORIENTATION_AUTHORITY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SINGLE_ORIENTATION_AUTHORITY_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
@@ -63,11 +63,13 @@ test('fullscreen exposes F as the enter and exit hotkey', () => {
   assert.match(js, /Full screen · F/);
 });
 
-test('sorting trays follow artwork orientation and persist parked pieces', () => {
+test('sorting trays follow one artwork-orientation authority and persist parked pieces', () => {
   assert.equal((html.match(/data-jigsaw-sort-tray="/g) || []).length, 4);
-  assert.match(js, /root\.dataset\.jigsawOrientation=BOARD_WIDTH>BOARD_HEIGHT\?'landscape':'portrait'/);
-  assert.match(css, /data-jigsaw-orientation="portrait"[^\n]*weight-coherence-stage[^\{]*\{grid-template-columns:minmax\(126px,176px\) minmax\(0,800px\) minmax\(126px,176px\);grid-template-areas:"left board right"/);
-  assert.match(css, /data-jigsaw-orientation="landscape"[^\n]*weight-coherence-stage[^\{]*\{grid-template-columns:minmax\(0,800px\);grid-template-areas:"upper" "board" "lower"/);
+  assert.match(js, /const artworkOrientation=BOARD_WIDTH>BOARD_HEIGHT\?'landscape':'portrait'/);
+  assert.match(js, /refs\.workspace\.classList\.toggle\('is-artwork-landscape'/);
+  assert.match(js, /refs\.workspace\.classList\.toggle\('is-artwork-portrait'/);
+  assert.match(css, /weight-coherence-workspace\.is-artwork-portrait \.weight-coherence-stage\{grid-template-columns:minmax\(126px,176px\) minmax\(0,800px\) minmax\(126px,176px\);grid-template-areas:"left board right"/);
+  assert.match(css, /weight-coherence-workspace\.is-artwork-landscape \.weight-coherence-stage\{grid-template-columns:minmax\(0,800px\);grid-template-areas:"upper" "board" "lower"/);
   assert.match(js, /sortBins:\[\[\],\[\],\[\],\[\]\]/);
   assert.match(js, /sortBins:state\.sortBins\.map/);
   assert.match(js, /normalizeSortBins\(parsed\.sortBins,count,placed\)/);
@@ -77,8 +79,10 @@ test('sorting trays follow artwork orientation and persist parked pieces', () =>
 });
 
 
-test('each fullscreen sorting tray owns its own scrollbar', () => {
-  assert.match(css, /weight-coherence-stage[^}]*overflow:hidden[^}]*grid-template-areas:"upper" "board" "lower"/);
+test('each fullscreen sorting tray owns its own scrollbar without a competing generic orientation', () => {
+  assert.doesNotMatch(css, /weight-coherence-workspace:fullscreen \.weight-coherence-stage,[\s\S]{0,400}grid-template-areas:/);
+  assert.match(css, /is-artwork-portrait:fullscreen \.weight-coherence-stage[\s\S]{0,260}grid-template-areas:"left board right"/);
+  assert.match(css, /is-artwork-landscape:fullscreen \.weight-coherence-stage[\s\S]{0,300}grid-template-areas:"upper" "board" "lower"/);
   assert.match(css, /weight-coherence-sort-column[^}]*min-height:0[^}]*overflow:hidden/);
   assert.match(css, /weight-coherence-sort-shell[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
   assert.match(css, /weight-coherence-sort-tray[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
@@ -118,8 +122,8 @@ test('mobile fullscreen uses a stable fixed viewport and requires landscape', ()
   assert.match(css, /is-mobile-fullscreen-portrait[^\{]*\{/);
   assert.match(css, /grid-template-areas:"toolbar" "rotate"/);
   assert.match(css, /is-mobile-fullscreen-landscape[^\{]*\{/);
-  assert.match(css, /data-jigsaw-orientation="portrait"[\s\S]*?grid-template-areas:"left board right"/);
-  assert.match(css, /data-jigsaw-orientation="landscape"[\s\S]*?grid-template-areas:"upper" "board" "lower"/);
+  assert.match(css, /is-artwork-portrait\.is-pseudo-fullscreen\.is-mobile-fullscreen-landscape[\s\S]*?grid-template-areas:"left board right"/);
+  assert.match(css, /is-artwork-landscape\.is-pseudo-fullscreen\.is-mobile-fullscreen-landscape[\s\S]*?grid-template-areas:"upper" "board" "lower"/);
   assert.match(css, /height:100dvh/);
 });
 
