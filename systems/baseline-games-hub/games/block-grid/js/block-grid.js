@@ -266,6 +266,7 @@ function renderGame() {
         <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
     </div>
+    <div class="game-live-xp" data-live-xp="blockgrid"><strong>Level ${profile.level}</strong><div class="game-live-xp__bar"><span style="width:${Math.min(100, profile.xp / xpNeededForLevel(profile.level) * 100)}%"></span></div><span>${profile.xp} / ${xpNeededForLevel(profile.level)} XP</span></div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-run-objective">
       <div><strong>Run Level ${progress.level}</strong><span>${linesToNext} line${linesToNext === 1 ? '' : 's'} to Level ${progress.level + 1}</span></div>
@@ -301,15 +302,19 @@ function renderProgress() {
   if (!root) return;
   const needed = xpNeededForLevel(profile.level);
   const pct = Math.min(100, profile.xp / needed * 100);
+  const remaining = Math.max(0, needed - profile.xp);
   root.innerHTML = `
-    <div class="progress-shell">
-      <div class="xp-row"><div><strong>Block Grid Level ${profile.level}</strong><div class="xp-bar"><div class="xp-fill" style="width:${pct}%"></div></div><span class="inline-note">${profile.xp} / ${needed} XP</span></div></div>
-    </div>
-    <div class="block-grid-progress-stats">
-      <div class="trackcoin-stat-card"><strong>${profile.bestScore}</strong><span>Best score</span></div>
-      <div class="trackcoin-stat-card"><strong>${profile.gamesPlayed}</strong><span>Games started</span></div>
-      <div class="trackcoin-stat-card"><strong>${profile.totalLines}</strong><span>Lines cleared</span></div>
-      <div class="trackcoin-stat-card"><strong>${profile.totalPieces}</strong><span>Pieces placed</span></div>
+    <section class="coherent-progress-overview">
+      <div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Block Grid</span><strong>Level ${profile.level}</strong></div><div class="coherent-progress-next">${remaining} XP to Level ${profile.level + 1}</div></div>
+      <div class="coherent-progress-xp-meta"><span>${profile.xp} / ${needed} XP</span><span>${Math.round(pct)}%</span></div>
+      <div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="${needed}" aria-valuenow="${profile.xp}"><span style="width:${pct}%"></span></div>
+    </section>
+    <div class="coherent-progress-grid">
+      <div class="coherent-progress-stat"><span>Best score</span><strong>${profile.bestScore}</strong></div>
+      <div class="coherent-progress-stat"><span>Games started</span><strong>${profile.gamesPlayed}</strong></div>
+      <div class="coherent-progress-stat"><span>Lines cleared</span><strong>${profile.totalLines}</strong></div>
+      <div class="coherent-progress-stat"><span>Pieces placed</span><strong>${profile.totalPieces}</strong></div>
+      <div class="coherent-progress-stat"><span>Current mode</span><strong>${escapeHtml(currentMode().name)}</strong></div>
     </div>`;
 }
 
