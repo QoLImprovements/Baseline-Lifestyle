@@ -5098,7 +5098,7 @@ function buildControls(recipeEl){
             });
           };
 
-          const syncVariantRoute = ()=>{
+          const syncVariantRoute = (historyMode='replace')=>{
             if(!(recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))) return;
             try{
               const value = selectedVariantValue();
@@ -5109,7 +5109,7 @@ function buildControls(recipeEl){
                 recipeVariant:value,
                 scrollY:getScrollTop()
               };
-              setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+              setNavState(nextState, { replace:historyMode !== 'push', url:urlForNavState(nextState) });
             }catch(_e){}
           };
 
@@ -5120,7 +5120,7 @@ function buildControls(recipeEl){
             if(!btn) return false;
             if(btn.getAttribute('aria-selected') !== 'true') btn.click();
             syncVariantDetailState();
-            if(options.syncRoute) syncVariantRoute();
+            if(options.syncRoute) syncVariantRoute(options.historyMode || 'replace');
             return true;
           };
 
@@ -5128,7 +5128,7 @@ function buildControls(recipeEl){
             btn.addEventListener('click', ()=>{
               window.setTimeout(()=>{
                 syncVariantDetailState();
-                syncVariantRoute();
+                syncVariantRoute('push');
               }, 0);
             });
           });
@@ -5508,9 +5508,8 @@ function buildControls(recipeEl){
         tabs.classList.remove('recipe-view-hidden');
         viewbar.classList.remove('recipe-view-hidden');
 
-        // Recipe subview is route state, not transient DOM state. Replace the
-        // current recipe history entry so refresh and Back/Forward reconstruct
-        // the same Recipe / Details / Guidance / Show All selection.
+        // Recipe subview is route state, not transient DOM state. User clicks
+        // push a history entry; restoration/programmatic sync may replace one.
         if(options && options.syncRoute && recipeEl.id
           && (recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))){
           try{
@@ -5521,7 +5520,7 @@ function buildControls(recipeEl){
               recipeVariant:(typeof recipeEl.__baselineGetRecipeVariant === 'function' ? recipeEl.__baselineGetRecipeVariant() : ''),
               scrollY:getScrollTop()
             };
-            setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+            setNavState(nextState, { replace:options.historyMode !== 'push', url:urlForNavState(nextState) });
           }catch(_e){}
         }
       }
@@ -5530,7 +5529,7 @@ function buildControls(recipeEl){
         button.addEventListener('click', event=>{
           event.preventDefault();
           event.stopPropagation();
-          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true });
+          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true, historyMode:'push' });
         });
       });
 
