@@ -84,3 +84,14 @@ test('canonical Ninja presentation exposes actors and keeps controls interactive
   assert.match(ninjaCss,/z-index:20!important/);
   assert.match(ninjaCss,/prefers-reduced-motion:reduce/);
 });
+
+
+test('Games Hub compatibility loader does not compete with the canonical Realm bootstrap',()=>{
+  assert.match(optional,/Compatibility loader only\. realm-entry\.js is the sole Realm bootstrap/);
+  assert.doesNotMatch(optional,/ninja-training-final-authority\.css|ninja-training-rebuild\.css|data-realm-runtime-authority/);
+  assert.doesNotMatch(optional,/function activateRealm\(|sceneRouter\.navigate\('basecamp',\{initial:true,source:'games-hub'\}\)/);
+  assert.doesNotMatch(optional,/host\.applyOfflineProgress\(\)|host\.startLoop\(\)/);
+  assert.doesNotMatch(optional,/host\.render\(\)|host\.applyOfflineProgress\(\)|host\.startLoop\(\)/);
+  assert.match(realm,/bindRealmInputs\(\{ runtime, inputManager, eventBus, sceneRouter \}\)/);
+  assert.match(realm,/inputManager\.start\(\)/);
+});
