@@ -419,7 +419,7 @@ html[data-realm-reduced-motion="true"] #realmSceneFrame *::after { animation-dur
 #ninjaPanel :is(.realm-context-action,.realm-home-action){
   position:absolute!important;
   top:calc(var(--realm-banner-height) + 14px)!important;
-  z-index:34!important;
+  z-index:60!important;
   display:inline-flex!important;
   align-items:center!important;
   gap:8px!important;
@@ -465,6 +465,15 @@ html[data-realm-reduced-motion="true"] #realmSceneFrame *::after { animation-dur
 /* Focused destination menus. Cross-destination tabs disappear while a
    Basecamp service is open; the existing close control remains. */
 #ninjaPanel .realm-drawer{
+  position:absolute!important;
+  top:var(--realm-banner-height)!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:70!important;
+  width:min(460px,100%)!important;
+  max-width:100%!important;
+  overflow:auto!important;
+  pointer-events:auto!important;
   background:
     repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 3px,rgba(0,0,0,.025) 3px 7px),
     linear-gradient(180deg,#402617 0%,#21130c 100%)!important;
