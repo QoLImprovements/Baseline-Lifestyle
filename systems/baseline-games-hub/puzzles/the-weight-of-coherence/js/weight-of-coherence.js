@@ -461,8 +461,19 @@
     if(pending.length) window.requestAnimationFrame(paintBatch);
   }
 
+  function stabilisePieceFocusBeforeTrayMutation(){
+    const active=document.activeElement;
+    if(!active || !active.closest || !active.closest('[data-piece-id]') || !root.contains(active)) return;
+    try{
+      refs.board.focus({preventScroll:true});
+    }catch(_error){
+      if(typeof active.blur==='function') active.blur();
+    }
+  }
+
   function renderTray(){
     if(!refs.tray) return;
+    stabilisePieceFocusBeforeTrayMutation();
     refs.tray.innerHTML='';
     renderSortTrays();
     if(!state || !state.started){
