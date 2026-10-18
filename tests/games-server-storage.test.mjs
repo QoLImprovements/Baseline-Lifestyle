@@ -155,7 +155,7 @@ test('Baseline Realm play loop runs independently of saving availability',()=>{
 
 test('every current game and jigsaw save app is covered by the server authority contract',()=>{
   const expected=[
-    'pairs','detectword','make24','trackcoin','ruleshift','ninja',
+    'pairs','detectword','make24','trackcoin','ruleshift','crossnumber','ninja',
     'blockgrid','coloursort','dartsfocused','badmintonfocused',
     'weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw','meridiangrove'
   ];
@@ -170,6 +170,13 @@ test('every current game and jigsaw save app is covered by the server authority 
   for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
     assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
   }
+});
+
+test('Crossnumber uses the shared server storage authority and has a saved-data resource',()=>{
+  assert.match(registry,/['"]crossnumber['"]/);
+  assert.match(gamesApi,/['"]crossnumber['"]/);
+  assert.match(savedData,/'crossnumber'\s*=>\s*'crossnumber\.json'/);
+  assert.match(storageUi,/#crossnumberPanel > \.puzzle-library-toolbar/);
 });
 
 test('jigsaws use the shared server storage authority and expose save state in the puzzle player',()=>{
