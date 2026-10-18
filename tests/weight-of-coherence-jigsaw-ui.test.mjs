@@ -15,13 +15,13 @@ test('Weight of Coherence keeps a muted medium board and 50% artwork guide', () 
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_GUIDE_PLACED_PIECES_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_INTRO_COLOUR_COPY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MOBILE_DESKTOP_LAYOUT_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_MOBILE_DESKTOP_LAYOUT_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
-  assert.match(js, /Math\.min\(config\.trayPageSize,\s*12\)/);
-  assert.match(js, /const batchSize=mobileLike\(\)\?2:6/);
+  assert.match(js, /mobileLike\(\)\) return Math\.min\(config\.trayPageSize, 8\)/);
+  assert.match(js, /const batchSize=mobileLike\(\)\?1:6/);
   assert.match(js, /requestAnimationFrame\(paintBatch\)/);
   assert.match(js, /drawArtworkRegion\(c,g,margin\)/);
   assert.match(js, /btn\.disabled=true/);
@@ -61,11 +61,11 @@ test('fullscreen exposes F as the enter and exit hotkey', () => {
   assert.match(js, /Full screen · F/);
 });
 
-test('four manual sorting trays flank the jigsaw and persist parked pieces', () => {
+test('four manual sorting trays sit above and below the desktop jigsaw and persist parked pieces', () => {
   assert.equal((html.match(/data-jigsaw-sort-tray="/g) || []).length, 4);
-  assert.match(html, /weight-coherence-sort-column--left/);
-  assert.match(html, /weight-coherence-sort-column--right/);
-  assert.match(css, /grid-template-areas:"left board right"/);
+  assert.match(html, /aria-label="Upper sorting trays"/);
+  assert.match(html, /aria-label="Lower sorting trays"/);
+  assert.match(css, /grid-template-areas:"upper" "board" "lower"/);
   assert.match(js, /sortBins:\[\[\],\[\],\[\],\[\]\]/);
   assert.match(js, /sortBins:state\.sortBins\.map/);
   assert.match(js, /normalizeSortBins\(parsed\.sortBins,count,placed\)/);
@@ -76,27 +76,48 @@ test('four manual sorting trays flank the jigsaw and persist parked pieces', () 
 
 
 test('each fullscreen sorting tray owns its own scrollbar', () => {
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-stage\{[^}]*overflow:hidden/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-column\{[^}]*min-height:0[^}]*overflow:hidden/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-tray\{[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
+  assert.match(css, /weight-coherence-stage[^}]*overflow:hidden[^}]*grid-template-areas:"upper" "board" "lower"/);
+  assert.match(css, /weight-coherence-sort-column[^}]*min-height:0[^}]*overflow:hidden/);
+  assert.match(css, /weight-coherence-sort-shell[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(css, /weight-coherence-sort-tray[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
   assert.match(css, /scrollbar-gutter:stable/);
 });
 
 
-test('fullscreen preserves the normal jigsaw size while narrowing the main tray', () => {
-  assert.match(css, /\.weight-coherence-workspace:fullscreen\{[\s\S]*?grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-wrap\{[\s\S]*?width:min\(100%,800px\);[\s\S]*?max-height:none/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-tray\{[^}]*minmax\(76px,1fr\)[^}]*gap:8px/);
-  assert.doesNotMatch(css, /weight-coherence-workspace:fullscreen \.weight-coherence-board-wrap\{[^}]*100vh[^}]*1122\s*\/\s*1402/);
+test('desktop fullscreen pages the main tray instead of scrolling it', () => {
+  assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)/);
+  assert.match(css, /weight-coherence-tray-shell[^}]*overflow:hidden/);
+  assert.match(css, /weight-coherence-tray[^}]*repeat\(3,minmax\(0,1fr\)\)/);
+  assert.match(js, /fullscreenActive\(\)\) return Math\.min\(config\.trayPageSize, 12\)/);
+  assert.doesNotMatch(css, /weight-coherence-tray-shell[^}]*overflow:auto/);
 });
 
 
-test('fullscreen jigsaw fits completely without its own scrollbar', () => {
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-shell\{[^}]*overflow:hidden[^}]*grid-template-rows:minmax\(0,1fr\) auto/);
+test('fullscreen jigsaw fits completely without its own board scrollbar', () => {
+  assert.match(css, /weight-coherence-board-shell[^}]*overflow:hidden[^}]*grid-template-rows:minmax\(0,1fr\) auto/);
   assert.match(css, /--weight-coherence-fullscreen-board-width/);
   assert.match(js, /function syncFullscreenBoardFit\(\)/);
   assert.match(js, /availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)/);
   assert.match(js, /Math\.min\(800,shellRect\.width,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
-  assert.doesNotMatch(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-board-shell\{[^}]*overflow:auto/);
+});
+
+test('mobile fullscreen uses a stable fixed viewport fallback instead of jumping the page', () => {
+  assert.match(js, /if\(mobileLike\(\)\)\{\s*setPseudoFullscreen\(true\)/);
+  assert.match(js, /classList\.toggle\('is-pseudo-fullscreen',pseudoFullscreen\)/);
+  assert.match(css, /\.weight-coherence-workspace\.is-pseudo-fullscreen\{position:fixed;inset:0/);
+  assert.match(css, /height:100dvh/);
+});
+
+test('mobile two-finger inspection zoom snaps back to 100 percent', () => {
+  assert.match(js, /const pinchPointers = new Map\(\)/);
+  assert.match(js, /Math\.min\(2\.75,distance\/pinchState\.startDistance\)/);
+  assert.match(js, /refs\.boardWrap\.style\.transform='scale\('\+scale\.toFixed\(3\)\+'\)'/);
+  assert.match(js, /refs\.boardWrap\.style\.transform='scale\(1\)'/);
+  assert.match(css, /is-jigsaw-inspecting/);
+});
+
+test('mobile selection avoids rebuilding every piece canvas', () => {
+  assert.match(js, /function syncSelectedPieceClasses\(\)/);
+  assert.match(js, /if\(!force && key===lastSortRenderKey\)/);
+  assert.match(js, /selectedPieceId=selectedPieceId===id\?null:id;[\s\S]*?syncSelectedPieceClasses\(\)/);
 });

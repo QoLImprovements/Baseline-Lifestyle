@@ -3561,6 +3561,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         }
         if(target === 'puzzles'){
           selectedGame = '';
+          if(window.BaselinePuzzlesLibrary && typeof window.BaselinePuzzlesLibrary.showOverview === 'function'){
+            window.BaselinePuzzlesLibrary.showOverview();
+          }
           activateTab('puzzles', { historyMode:'push' });
           return;
         }

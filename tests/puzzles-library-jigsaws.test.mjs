@@ -9,6 +9,7 @@ const html = read('systems/baseline-games-hub/baseline-games-hub.html');
 const registry = read('systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js');
 const library = read('systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js');
 const player = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+const core = read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 const playerCss = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
 const libraryCss = read('systems/baseline-games-hub/puzzles/shared/css/puzzles-library.css');
 
@@ -26,6 +27,7 @@ test('Puzzles opens as a type library with Jigsaws as a nested selection', () =>
   assert.match(library, /showView\('overview'\)/);
   assert.match(library, /showView\('jigsaws'\)/);
   assert.match(library, /showView\('player'\)/);
+  assert.match(core, /BaselinePuzzlesLibrary\.showOverview\(\)/);
 });
 
 test('Jigsaws are grouped into Symbolic and Animals collections with all four artworks', () => {
@@ -72,6 +74,11 @@ test('Puzzles and Jigsaws use the indigo Games Hub visual language', () => {
   assert.doesNotMatch(libraryCss, /rgba\(244,197,108,.98\)/);
   assert.match(playerCss, /\.weight-coherence-copy h3\{[^}]*color:#F2F5FF/);
   assert.match(playerCss, /\.weight-coherence-copy h3\{[^}]*background:none/);
+});
+
+test('jigsaw library cards do not repeat the universal piece-count choices', () => {
+  assert.doesNotMatch(library, /50 · 100 · 500 · 1,000 pieces/);
+  assert.match(library, /puzzle-library-meta"><span class="inline-note">Open jigsaw/);
 });
 
 test('library blurbs and opened-puzzle descriptions are deliberately distinct', () => {
