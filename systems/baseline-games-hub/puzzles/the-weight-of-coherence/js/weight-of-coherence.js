@@ -870,14 +870,25 @@
 
   let interactionScrollSnapshot=null;
 
-  function isInteractionScrollTarget(event){
+  function isTextSelectionTarget(event){
     const target=event?.target;
     if(!target || typeof target.closest!=='function') return false;
+    const copy=target.closest('.weight-coherence-copy');
+    return !!(copy && root.contains(copy));
+  }
+
+  function isInteractionScrollTarget(event){
+    const target=event?.target;
+    if(!target || typeof target.closest!=='function' || isTextSelectionTarget(event)) return false;
     const interactive=target.closest('button,[role="button"],[data-piece-id],#weightCoherenceBoard,[data-jigsaw-sort-tray]');
     return !!(interactive && root.contains(interactive));
   }
 
   function captureInteractionScroll(event){
+    if(isTextSelectionTarget(event)){
+      interactionScrollSnapshot=null;
+      return;
+    }
     if(fullscreenActive() || !isInteractionScrollTarget(event)) return;
     interactionScrollSnapshot=pageScrollSnapshot();
     const snapshot=interactionScrollSnapshot;
@@ -888,7 +899,11 @@
     if(snapshot) restorePageScroll(snapshot);
   }
 
-  function settleInteractionScroll(){
+  function settleInteractionScroll(event){
+    if(isTextSelectionTarget(event)){
+      interactionScrollSnapshot=null;
+      return;
+    }
     if(!interactionScrollSnapshot || fullscreenActive()) return;
     const snapshot=interactionScrollSnapshot;
     interactionScrollSnapshot=null;
@@ -1619,14 +1634,14 @@
     if(!event || (event.key!=='Enter' && event.key!==' ')) return;
     captureInteractionScroll(event);
   },true);
-  root.addEventListener('click',function(){
-    settleInteractionScroll();
+  root.addEventListener('click',function(event){
+    settleInteractionScroll(event);
   },true);
-  window.addEventListener('pointerup',function(){
-    settleInteractionScroll();
+  window.addEventListener('pointerup',function(event){
+    settleInteractionScroll(event);
   },true);
-  window.addEventListener('pointercancel',function(){
-    settleInteractionScroll();
+  window.addEventListener('pointercancel',function(event){
+    settleInteractionScroll(event);
   },true);
 
   refs.preview.addEventListener('click',toggleGuide);

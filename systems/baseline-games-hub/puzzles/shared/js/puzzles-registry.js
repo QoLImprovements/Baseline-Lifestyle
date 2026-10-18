@@ -76,8 +76,8 @@
       width:1122,
       height:1402,
       alt:'A red fox foraging through a damp meadow at the edge of woodland in soft morning light.',
-      libraryDescription:'A red fox searches through wet grass at a quiet woodland edge, absorbed in the ordinary work of finding food.',
-      description:'The fox moves through damp meadow grass beside the woodland edge, nose close to the ground as it searches for food. The scene presents the animal as part of its everyday environment rather than as a posed wildlife portrait.'
+      libraryDescription:'A red fox works the damp boundary between meadow and woodland, listening, scenting and searching through cover for small prey.',
+      description:'At the edge of woodland and open meadow, the fox moves slowly through dew-wet grass, using its hearing and sense of smell to locate small prey hidden among the vegetation. Its low posture and deliberate search reflect the quiet, opportunistic way red foxes forage along field margins, where cover, open ground and abundant food meet.'
     }),
     Object.freeze({
       id:'elephants',
