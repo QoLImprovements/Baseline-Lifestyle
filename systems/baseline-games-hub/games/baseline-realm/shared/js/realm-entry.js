@@ -403,7 +403,6 @@ const host = Object.freeze({
   setView: (view) => runtime?.setView(view),
   handleDrawer: (action) => runtime?.handleDrawer(action),
   openDrawerTab: (tab) => runtime?.openDrawerTab(tab),
-  handleExploration: (action) => runtime?.handleExploration(action),
   isConfigured: () => configured,
   isRunning: () => Boolean(runtime && stateService)
 });
