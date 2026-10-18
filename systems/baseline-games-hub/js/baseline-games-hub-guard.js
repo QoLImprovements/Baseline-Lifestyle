@@ -7,6 +7,7 @@
   const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','blockgrid','coloursort','weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw','dartsfocused','meridiangrove','badmintonfocused']);
   const pending=Object.create(null);
   const timers=Object.create(null);
+  const writeChains=Object.create(null);
   const state={authenticated:false,canSave:false,ready:false,status:'loading',lastError:'',profiles:{},revisions:{}};
 
   function clone(value){
@@ -86,7 +87,7 @@
     state.profiles[key]=clone(profile)||{};
     return true;
   }
-  function postProfile(app,profile,keepalive){
+  function postProfileNow(app,profile,keepalive){
     const key=String(app||'');
     if(!state.canSave||!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
     const snapshot=clone(profile)||{};
@@ -121,6 +122,16 @@
       return false;
     });
   }
+  function postProfile(app,profile,keepalive){
+    const key=String(app||'');
+    if(!state.canSave||!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
+    const snapshot=clone(profile)||{};
+    const previous=writeChains[key]||Promise.resolve(true);
+    const write=previous.catch(()=>false).then(()=>postProfileNow(key,snapshot,keepalive));
+    const tracked=write.finally(()=>{ if(writeChains[key]===tracked) delete writeChains[key]; });
+    writeChains[key]=tracked;
+    return tracked;
+  }
   function queueProfile(app,profile){
     const key=String(app||'');
     if(!validApp(key)||!profile||typeof profile!=='object')return false;
@@ -140,7 +151,11 @@
     if(!validApp(key)||!profile||typeof profile!=='object')return Promise.resolve(false);
     setTemporaryProfile(key,profile);
     if(!state.canSave)return Promise.resolve(false);
-    if(immediate)return postProfile(key,profile,keepalive);
+    if(immediate){
+      global.clearTimeout(timers[key]);
+      delete pending[key];
+      return postProfile(key,profile,keepalive);
+    }
     queueProfile(key,profile);
     return Promise.resolve(true);
   }
