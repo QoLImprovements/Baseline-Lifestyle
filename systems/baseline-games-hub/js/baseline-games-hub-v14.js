@@ -75,7 +75,7 @@ async function loadRealm(options){
   if(!realmPromise){
     realmPromise=(async()=>{
       const dependencies=await waitCore();
-      const module=await import(opts.retry ? (REALM+'&retry='+Date.now()) : REALM);
+      const module=await import(REALM);
       const host=module.BaselineRealmHost||window.BaselineRealmHost;
       if(!real(host))throw new Error('Canonical Realm host missing');
       if(typeof host.isConfigured==='function'&&!host.isConfigured()) host.configure(dependencies);
