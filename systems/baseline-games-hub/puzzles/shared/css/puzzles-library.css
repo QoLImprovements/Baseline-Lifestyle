@@ -133,3 +133,28 @@ body[data-app="games"] .puzzle-library-toolbar .header-row{margin:0;flex:1}
   body[data-app="games"] .puzzle-library-copy h3{font-size:20px}
   body[data-app="games"] .puzzle-library-copy p{font-size:14px}
 }
+
+body[data-app="games"] .puzzle-library-meta--progress{
+  display:grid;
+  grid-template-columns:auto auto;
+  justify-content:end;
+  align-items:center;
+  gap:6px;
+  max-width:300px;
+}
+body[data-app="games"] .puzzle-library-meta--progress strong{
+  grid-column:1 / -1;
+  justify-self:end;
+}
+body[data-app="games"] .puzzle-library-meta--progress .inline-note{
+  font-size:12px;
+  white-space:nowrap;
+}
+@media(max-width:760px){
+  body[data-app="games"] .puzzle-library-meta--progress{
+    display:flex;
+    max-width:none;
+    justify-content:flex-start;
+  }
+  body[data-app="games"] .puzzle-library-meta--progress strong{justify-self:auto}
+}
