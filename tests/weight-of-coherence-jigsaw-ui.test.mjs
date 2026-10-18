@@ -18,8 +18,18 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
   assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_HOLD_FULL_VIEW_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_PLACEMENT_SCROLL_STABILITY_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
+});
+
+
+test('placing a piece does not let tray DOM replacement pull the page to the top', () => {
+  assert.match(html, /id="weightCoherenceBoard"[^>]*tabindex="-1"/);
+  assert.match(js, /function stabilisePieceFocusBeforeTrayMutation\(\)\{/);
+  assert.match(js, /active\.closest\('\[data-piece-id\]'\)/);
+  assert.match(js, /refs\.board\.focus\(\{preventScroll:true\}\)/);
+  assert.match(js, /function renderTray\(\)\{\s*if\(!refs\.tray\) return;\s*stabilisePieceFocusBeforeTrayMutation\(\);\s*refs\.tray\.innerHTML='';/);
+  assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
 });
 
 test('hold V temporarily shows the full-colour artwork and drops any piece in hand', () => {
