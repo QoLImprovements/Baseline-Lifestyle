@@ -224,7 +224,6 @@ function renderGame() {
         <div class="stat-pill">Moves <span>${active.moves}</span></div>
         <div class="stat-pill">Best <span>${profile.bestMoves[active.level] || '—'}</span></div>
       </div>
-      <button class="action secondary" data-colour-action="fullscreen" type="button">${document.fullscreenElement === root ? 'Exit Full Screen' : 'Full Screen'}</button>
     </div>
     <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
     <div class="colour-sort-progress-head"><div><strong>Level Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
@@ -233,7 +232,7 @@ function renderGame() {
       ${solved ? `<div class="colour-sort-complete-banner" aria-hidden="true"><strong>LEVEL ${active.level} COMPLETE</strong><span>${active.moves} moves</span></div>` : ''}
       ${active.bottles.map(bottleHtml).join('')}
     </div>
-    <div class="game-window-actions">
+    <div class="game-window-actions colour-sort-quiet-actions">
       <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
       <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
       <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
@@ -818,7 +817,12 @@ function panelHtml() {
     <div class="game-shell">
       <div class="game-header">
         <div><h2 id="colourSortTitle" tabindex="-1">Colour Sort</h2><p class="note">Move exposed colour runs between bottles until every filled bottle contains one colour only.</p></div>
-        <div class="link-actions"><button class="action secondary" data-close-puzzle-game="colour-sort" type="button">Back To Games Overview</button></div>
+        <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="colour-sort">
+          <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Sequencing, planning, state tracking, inhibition and multi-step problem solving." type="button" aria-label="What Colour Sort develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
+          <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty bottle or onto the same exposed colour. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span>How to Play</span></button>
+          <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span>Full Screen</span></button>
+          <button class="action secondary game-shell-action" data-close-puzzle-game="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span>Games</span></button>
+        </div>
       </div>
       <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
         <div id="colourSortGameInfo"></div>
