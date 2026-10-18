@@ -12,9 +12,9 @@
     Object.freeze({
       id:'crossnumber',
       name:'Crossnumber',
-      note:'A numerical crossword where arithmetic clues intersect through shared digits.',
-      meta:'Classic grid',
-      preview:'/systems/baseline-games-hub/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_PUZZLE_20261018_1'
+      note:'Place number tiles into interlocking equations so every horizontal and vertical calculation balances.',
+      meta:'Arithmetic placement',
+      preview:'/systems/baseline-games-hub/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_ARITHMETIC_20261018_2'
     })
   ]);
 
