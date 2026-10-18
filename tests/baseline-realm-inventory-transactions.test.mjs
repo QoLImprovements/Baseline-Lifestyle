@@ -4,11 +4,7 @@ import test from 'node:test';
 import { createDefaultRealmSave } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-model.js';
 import { RealmInventoryService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-inventory-service.js';
 import { REALM_MATERIAL_BY_ID } from '../systems/baseline-games-hub/games/baseline-realm/shared/data/realm-materials.js';
-import {
-  REALM_ENEMY_DROPS,
-  REALM_MAP_DROPS,
-  allRealmDropMaterialIds
-} from '../systems/baseline-games-hub/games/baseline-realm/shared/data/realm-drop-tables.js';
+import { MATERIALS as EXPLORATION_MATERIALS } from '../systems/baseline-games-hub/games/baseline-realm/exploration/data/meridian-grove.js';
 import {
   WORKSHOP_CATEGORIES,
   WORKSHOP_RECIPES
@@ -123,13 +119,13 @@ test('duplicate equipment instance identifiers abort the transaction without dup
   assert.equal(harness.getCommits(), commitsBefore);
 });
 
-test('all Workshop recipes and Realm enemy/map drops reference the shared material catalog', () => {
+test('Workshop recipes and live Exploration rewards reference the shared material catalog', () => {
   const recipeMaterialIds = WORKSHOP_RECIPES.flatMap((recipe) => recipe.ingredients.map((ingredient) => ingredient.id));
-  [...recipeMaterialIds, ...allRealmDropMaterialIds()].forEach((materialId) => {
+  const explorationMaterialIds = Object.values(EXPLORATION_MATERIALS).map((material) => material.sharedId).filter(Boolean);
+  [...recipeMaterialIds, ...explorationMaterialIds].forEach((materialId) => {
     assert.ok(REALM_MATERIAL_BY_ID[materialId], `unknown shared material id: ${materialId}`);
   });
-  assert.ok(Object.keys(REALM_ENEMY_DROPS).length > 0);
-  assert.ok(Object.keys(REALM_MAP_DROPS).length > 0);
+  assert.ok(explorationMaterialIds.length > 0);
 });
 
 test('Workshop exposes all required recipe stations', () => {

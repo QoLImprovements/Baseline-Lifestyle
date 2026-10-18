@@ -184,7 +184,6 @@ export class BasecampController {
   render() {
     if (!this.mounted || this.runtime?.getView?.() !== 'basecamp') return;
     const drawer = document.getElementById('realmPanelDrawer');
-    if (drawer?.dataset.basecampService === 'workshop') return;
     if (!drawer?.hidden) this.prepareFocusedMenu();
     if (this.mode === 'merchant') this.renderMerchant();
     else if (this.mode === 'rest') this.renderRest();

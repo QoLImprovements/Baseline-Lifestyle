@@ -609,10 +609,11 @@ export class MeridianGroveGame {
     if (key === 'i') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('inventory'); }
     if (key === 'o') { event.preventDefault(); event.stopImmediatePropagation(); this.openPanel('settings'); }
     if (key === 'escape' && this.modal) { event.preventDefault(); this.closeModal(); }
-    if (key === 'b' && this.state.battle) {
+    if (key === 'b') {
       event.preventDefault();
       event.stopImmediatePropagation();
-      this.returnToBasecampFromBattle();
+      if (this.state.battle) this.returnToBasecampFromBattle();
+      else if (!this.modal) this.leaveExploration(false);
     }
   }
 

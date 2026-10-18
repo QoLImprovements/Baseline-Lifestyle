@@ -4,7 +4,7 @@ Ninja Training uses the current original dense-forest presentation and the estab
 
 ## Sprite-sheet specification
 
-The current art authority is the three repeatable forest layers and six original character/enemy sheets in this module. Dash Cut and throw are one-shot animations; Shuriken projectile: 840 ms.
+The current presentation uses three repeatable forest layers and six original character/enemy sheets in this module. Dash Cut and throw are one-shot animations; Shuriken projectile: 840 ms.
 
 ## Performance controls
 

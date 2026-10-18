@@ -1,8 +1,7 @@
 export const REALM_PRELOAD_GROUPS = Object.freeze({
   shared: Object.freeze([
     { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg' },
-    { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/data/realm-materials.js' },
-    { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/data/realm-drop-tables.js' }
+    { type: 'text', path: '/systems/baseline-games-hub/games/baseline-realm/shared/data/realm-materials.js' }
   ]),
   basecamp: Object.freeze([
     { type: 'image', path: '/systems/baseline-games-hub/games/baseline-realm/basecamp/art/basecamp-settlement.svg' }

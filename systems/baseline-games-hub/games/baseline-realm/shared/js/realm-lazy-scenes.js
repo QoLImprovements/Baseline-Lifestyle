@@ -1,4 +1,4 @@
-export function createRealmLazySceneAuthority({
+export function createRealmLazySceneManager({
   eventBus,
   getRuntime,
   externalSceneIds,
@@ -15,11 +15,11 @@ export function createRealmLazySceneAuthority({
     if(!ids.has(id))return;
     const frame=document.getElementById('realmSceneFrame');
     if(frame){
-      frame.classList.remove('is-training-view','is-basecamp-view','is-exploration-view');
+      frame.classList.remove('is-training-view','is-basecamp-view','is-exploration-view','is-workshop-view');
       frame.classList.add('is-external-realm-view',`is-${id}-view`);
       frame.setAttribute('data-realm-external-view',id);
     }
-    setHidden('#realmBasecampScreen, #realmTrainingHud, #realmExplorationScreen, #ninjaScene, .realm-command-banner, .realm-action-dock',true);
+    setHidden('#realmBasecampScreen, #realmWorkshopScreen, #realmTrainingHud, #realmExplorationScreen, #ninjaScene, .realm-command-banner, .realm-action-dock, .realm-context-action, .realm-home-action, #realmPanelDrawer',true);
     document.documentElement.setAttribute('data-baseline-realm-external-scene',id);
   }
   function restorePersistentSceneView(){
@@ -29,7 +29,7 @@ export function createRealmLazySceneAuthority({
       frame.classList.remove('is-external-realm-view');
       frame.removeAttribute('data-realm-external-view');
     }
-    setHidden('#ninjaScene, .realm-command-banner, .realm-action-dock',false);
+    // Persistent surface visibility is restored only by runtime.setView().
     document.documentElement.removeAttribute('data-baseline-realm-external-scene');
   }
   function restoreExternalSceneView(id){
@@ -40,7 +40,7 @@ export function createRealmLazySceneAuthority({
       frame.removeAttribute('data-realm-external-view');
     }
     // Do not guess which persistent Realm surfaces should be restored here.
-    // The destination scene's runtime.setView() is the sole visibility authority.
+    // The destination scene's runtime.setView() is the sole persistent visibility owner.
     document.documentElement.removeAttribute('data-baseline-realm-external-scene');
   }
   function clearSceneFailure(id){

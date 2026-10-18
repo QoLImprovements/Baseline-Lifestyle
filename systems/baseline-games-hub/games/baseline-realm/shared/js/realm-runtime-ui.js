@@ -1,14 +1,3 @@
-const STYLE_PATH = '/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-integration.css?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
-
-function ensureStyles(root) {
-  if (!root?.head || root.querySelector(`link[href="${STYLE_PATH}"]`)) return;
-  const link = root.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = STYLE_PATH;
-  link.dataset.realmIntegrationStyles = 'true';
-  root.head.append(link);
-}
-
 function humanise(id) {
   return String(id || '')
     .replace(/[-_]+/g, ' ')
@@ -35,7 +24,6 @@ export class RealmRuntimeUi {
   }
 
   mount() {
-    ensureStyles(this.root);
     this.frame = this.root?.getElementById?.('realmSceneFrame');
     if (!this.frame) return false;
 
@@ -240,4 +228,4 @@ export class RealmRuntimeUi {
   }
 }
 
-export const realmRuntimeUiInternals = Object.freeze({ ensureStyles, humanise, STYLE_PATH });
+export const realmRuntimeUiInternals = Object.freeze({ humanise });

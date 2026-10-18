@@ -1,5 +1,5 @@
 /* Basecamp owns its scene artwork and landmark presentation. Shared Realm
-   chrome lives in realm-wood-authority.css. */
+   chrome lives in realm-shell.css. */
 #ninjaPanel #realmBasecampScreen.realm-basecamp-screen{
   position:absolute!important;
   inset:var(--realm-banner-height) 0 0!important;
@@ -124,17 +124,17 @@
 
 /* Functional Basecamp services. */
 #ninjaPanel .basecamp-service{display:grid;gap:14px;color:#fff0cf}
-#ninjaPanel .basecamp-service>header{display:grid;gap:4px;padding:14px;border:1px solid rgba(245,226,188,.24);border-radius:14px;background:rgba(23,14,10,.32)}
+#ninjaPanel .basecamp-service>header{display:grid;gap:4px;padding:14px;border:1px solid rgba(245,213,151,.22);border-radius:14px;background:rgba(19,11,7,.42);box-shadow:none}
 #ninjaPanel .basecamp-service>header span{font-size:10px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:#e4bf7c}
 #ninjaPanel .basecamp-service>header strong{font-size:22px}
 #ninjaPanel .basecamp-service>header small{color:#dbc7a7;line-height:1.4}
 #ninjaPanel .basecamp-service section{display:grid;gap:9px}
 #ninjaPanel .basecamp-service h5{margin:0;color:#ffe5ad;font-size:15px}
 #ninjaPanel .basecamp-item-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-#ninjaPanel .basecamp-item-grid article{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid rgba(245,226,188,.18);border-radius:11px;background:rgba(22,13,9,.3)}
+#ninjaPanel .basecamp-item-grid article{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px;border:1px solid rgba(245,213,151,.22);border-radius:11px;background:rgba(19,11,7,.42);box-shadow:none}
 #ninjaPanel .basecamp-item-grid p{margin:0;color:#cdb895}
 #ninjaPanel .basecamp-trade-list{display:grid;gap:8px}
-#ninjaPanel .basecamp-trade-list article{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px;border:1px solid rgba(245,226,188,.18);border-radius:11px;background:rgba(22,13,9,.3)}
+#ninjaPanel .basecamp-trade-list article{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:10px;border:1px solid rgba(245,213,151,.22);border-radius:11px;background:rgba(19,11,7,.42);box-shadow:none}
 #ninjaPanel .basecamp-trade-list article>div{display:grid;gap:2px}
 #ninjaPanel .basecamp-service button{min-height:36px;padding:7px 10px;border:1px solid rgba(245,226,188,.28);border-radius:9px;background:linear-gradient(180deg,#8d5b37,#4c2d1b);color:#fff0cf;font-weight:850;cursor:pointer}
 #ninjaPanel .basecamp-service button:disabled{opacity:.4;cursor:not-allowed}
@@ -143,3 +143,8 @@
 #ninjaPanel .basecamp-roster button.is-selected{outline:2px solid #e4bf7c;background:linear-gradient(180deg,#a16c40,#5d3822)}
 #ninjaPanel .basecamp-roster span{font-size:11px;color:#dbc7a7}
 @media(max-width:760px){#ninjaPanel .basecamp-item-grid,#ninjaPanel .basecamp-roster{grid-template-columns:1fr}}
+
+/* Basecamp owns the focused service presentation used inside Camp Management. */
+#ninjaPanel .realm-drawer[data-basecamp-service] :is(.realm-tab-row,[role="tablist"] > [data-realm-tab]){display:none!important}
+#ninjaPanel .realm-drawer[data-basecamp-service] .realm-drawer-pane:not([hidden]){padding-top:14px!important}
+

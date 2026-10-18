@@ -1,4 +1,4 @@
-import { BasecampController } from './basecamp-controller.js?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
+import { BasecampController } from './basecamp-controller.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 
 export function createBasecampScene({ runtime, inventoryService, stateService, eventBus }) {
   const controller = new BasecampController({ runtime, inventoryService, stateService, eventBus });

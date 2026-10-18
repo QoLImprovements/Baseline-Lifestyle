@@ -19,10 +19,10 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: 24
           cache: npm
@@ -37,7 +37,7 @@ jobs:
 
       - name: Preserve structure failure output
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: structure-failure-output
           path: structure-test-output.txt
@@ -50,6 +50,9 @@ jobs:
       - name: Install Chromium for browser checks
         if: always()
         run: npx playwright install --with-deps chromium
+
+      - name: Run Baseline Realm browser checks
+        run: npm run test:realm-stage1 && npm run test:realm-integration
 
       - name: Run Badminton Session score authorization browser test
         if: always()
@@ -93,7 +96,7 @@ jobs:
 
       - name: Preserve browser failure report
         if: failure()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v4
         with:
           name: browser-failure-report
           path: |

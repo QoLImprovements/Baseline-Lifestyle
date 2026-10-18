@@ -1,5 +1,5 @@
-/* Workshop/Cooking interior authority. This file owns only the physical room
-   and its workstations; shared HUD/drawers remain in realm-wood-authority.css. */
+/* Workshop/Cooking presentation. This file owns the room and its workstations;
+   shared HUD and drawer chrome remain in realm-shell.css. */
 #ninjaPanel #realmWorkshopScreen.realm-workshop-screen{
   position:absolute!important;
   inset:var(--realm-banner-height) 0 0!important;
