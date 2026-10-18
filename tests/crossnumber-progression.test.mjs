@@ -90,7 +90,7 @@ test('Crossnumber inherits the Games Hub Indigo Circuit palette instead of ownin
     assert.ok(css.includes('var('+token),token);
   });
   ['#fff7d2','#eadb9b','#fbf3d0','#f5f2e8'].forEach(retired=>assert.doesNotMatch(css,new RegExp(retired,'i')));
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_PROGRESSION_/);
+  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI)_/);
 });
 
 test('Crossnumber follows the Games Hub single-panel navigation contract',()=>{
