@@ -354,6 +354,10 @@ function configure(dependencies) {
   configured = true;
   core = isolateCoreDependencies(dependencies);
   dependencies = core;
+  // The Games Hub profile can predate the Realm v3 schema. Normalise that
+  // legacy object before the Ninja runtime reads upgrade/spirit fields so
+  // combat never operates on partial account data.
+  if (activeProfile()) syncProfileRealm(activeProfile(), { mirrorGuest:false });
   runtimeUi.mount();
   bindRealmViewportState();
   runtimeUi.showLoading();
