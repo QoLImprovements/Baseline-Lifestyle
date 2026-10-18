@@ -5,9 +5,11 @@
   const BOARD_BASE = '#2A3672';
   const GUIDE_OPACITY = 0.50;
   const ZOOM_MIN = 1;
-  const ZOOM_MAX = 3;
-  const ZOOM_STEP = 0.25;
-  const ZOOM_DEFAULT = 1.5;
+  const PIECE_ZOOM_DEFAULT = 2;
+  const PIECE_ZOOM_MAX = 10;
+  const BOARD_LENS_DEFAULT = 2;
+  const BOARD_LENS_MAX = 10;
+  const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
   const FALLBACK_PUZZLE = Object.freeze({
     id:'weight-of-coherence',
@@ -92,9 +94,14 @@
   let viewOn = false;
   let zoomScale = ZOOM_MIN;
   let zoomTarget = null;
-  let zoomOrigin = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
+  let boardLens = null;
+  let boardLensActive = false;
+  let boardLensScale = BOARD_LENS_DEFAULT;
+  let zoomKeyHeld = false;
+  let zoomButtonLensHeld = false;
+  let suppressZoomButtonClickUntil = 0;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
   const pinchPointers = new Map();
@@ -1005,12 +1012,25 @@
     return null;
   }
 
+  function pointInsideBoard(clientX,clientY){
+    if(!refs.boardWrap || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
+    const rect=refs.boardWrap.getBoundingClientRect();
+    return clientX>=rect.left && clientX<=rect.right && clientY>=rect.top && clientY<=rect.bottom;
+  }
+
   function rememberZoomTarget(event){
     const target=zoomableTargetFromNode(event&&event.target);
-    if(!target) return;
-    lastZoomTarget=target;
-    if(Number.isFinite(event.clientX) && Number.isFinite(event.clientY)){
+    if(target){
+      lastZoomTarget=target;
+      if(Number.isFinite(event.clientX) && Number.isFinite(event.clientY)){
+        lastZoomPoint={x:event.clientX,y:event.clientY};
+      }
+    }else if(boardLensActive && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY) && pointInsideBoard(event.clientX,event.clientY)){
+      lastZoomTarget=refs.boardWrap;
       lastZoomPoint={x:event.clientX,y:event.clientY};
+    }
+    if(boardLensActive && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)){
+      updateBoardLens(event.clientX,event.clientY);
     }
   }
 
@@ -1029,93 +1049,199 @@
     target.style?.removeProperty('will-change');
   }
 
-  function syncZoomControls(){
-    const active=zoomScale>ZOOM_MIN && !!zoomTarget;
-    const percent=Math.round(zoomScale*100);
-    if(refs.zoomToggle){
-      refs.zoomToggle.setAttribute('aria-pressed',String(active));
-      refs.zoomToggle.setAttribute('aria-label',active?'Reset inspection zoom (Z)':'Zoom inspected board or piece (Z)');
-      refs.zoomToggle.title=active?'Reset zoom from ' + percent + '% · Z':'Zoom board or hovered piece · Z';
-    }
-    if(refs.zoomOut){
-      refs.zoomOut.disabled=!active;
-      refs.zoomOut.title=active?'Decrease zoom from ' + percent + '%':'Zoom is already at 100%';
-    }
-    if(refs.zoomIn){
-      refs.zoomIn.disabled=active && zoomScale>=ZOOM_MAX;
-      refs.zoomIn.title='Increase inspection zoom' + (active?' from ' + percent + '%':'');
-    }
+  function ensureBoardLens(){
+    if(boardLens && boardLens.isConnected) return boardLens;
+    boardLens=document.createElement('canvas');
+    boardLens.className='weight-coherence-board-lens';
+    boardLens.setAttribute('aria-hidden','true');
+    boardLens.hidden=true;
+    refs.workspace.appendChild(boardLens);
+    return boardLens;
   }
 
-  function applyZoom(target,scale){
-    const nextScale=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Number(scale)||ZOOM_MIN));
-    const resolvedTarget=target||resolveZoomTarget();
-    const targetChanged=zoomTarget!==resolvedTarget;
-    if(zoomTarget && targetChanged) clearZoomTargetStyles(zoomTarget);
-    if(nextScale<=ZOOM_MIN){
-      resetZoom();
+  function boardLensPoint(){
+    if(lastZoomTarget===refs.boardWrap && lastZoomPoint && pointInsideBoard(lastZoomPoint.x,lastZoomPoint.y)){
+      return lastZoomPoint;
+    }
+    const rect=refs.boardWrap.getBoundingClientRect();
+    return {x:rect.left+(rect.width/2),y:rect.top+(rect.height/2)};
+  }
+
+  function updateBoardLens(clientX,clientY){
+    if(!boardLensActive || !refs.boardWrap) return;
+    const lens=ensureBoardLens();
+    if(!pointInsideBoard(clientX,clientY)){
+      lens.hidden=true;
       return;
     }
-    zoomTarget=resolvedTarget;
-    if(!zoomTarget) return;
-    if(targetChanged) zoomOrigin=null;
+    lens.hidden=false;
+    const boardRect=refs.boardWrap.getBoundingClientRect();
+    const viewport=viewportSize();
+    const diameter=Math.max(150,Math.min(230,Math.min(viewport.width,viewport.height)*0.26));
+    const dpr=Math.max(1,Math.min(2,Number(window.devicePixelRatio)||1));
+    const pixelSize=Math.max(1,Math.round(diameter*dpr));
+    if(lens.width!==pixelSize) lens.width=pixelSize;
+    if(lens.height!==pixelSize) lens.height=pixelSize;
+    lens.style.width=diameter+'px';
+    lens.style.height=diameter+'px';
+
+    const left=Math.max(6,Math.min(viewport.width-diameter-6,clientX-(diameter/2)));
+    const top=Math.max(6,Math.min(viewport.height-diameter-6,clientY-(diameter/2)));
+    lens.style.left=left+'px';
+    lens.style.top=top+'px';
+
+    const boardX=(clientX-boardRect.left)*(BOARD_WIDTH/Math.max(1,boardRect.width));
+    const boardY=(clientY-boardRect.top)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
+    const sourceWidth=(diameter/boardLensScale)*(BOARD_WIDTH/Math.max(1,boardRect.width));
+    const sourceHeight=(diameter/boardLensScale)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
+    const sourceX=Math.max(0,Math.min(BOARD_WIDTH-sourceWidth,boardX-(sourceWidth/2)));
+    const sourceY=Math.max(0,Math.min(BOARD_HEIGHT-sourceHeight,boardY-(sourceHeight/2)));
+
+    const lensCtx=lens.getContext('2d');
+    lensCtx.setTransform(dpr,0,0,dpr,0,0);
+    lensCtx.clearRect(0,0,diameter,diameter);
+    lensCtx.imageSmoothingEnabled=true;
+    lensCtx.imageSmoothingQuality='high';
+    lensCtx.drawImage(
+      refs.board,
+      sourceX,sourceY,Math.min(sourceWidth,BOARD_WIDTH),Math.min(sourceHeight,BOARD_HEIGHT),
+      0,0,diameter,diameter
+    );
+  }
+
+  function beginBoardLens(){
+    if(!state || !imageReady || !refs.boardWrap) return false;
+    resetPieceZoom();
+    boardLensActive=true;
+    root.classList.add('is-board-lens-active');
+    const point=boardLensPoint();
+    updateBoardLens(point.x,point.y);
+    syncZoomControls();
+    setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
+    return true;
+  }
+
+  function endBoardLens(){
+    if(!boardLensActive) return;
+    boardLensActive=false;
+    root.classList.remove('is-board-lens-active');
+    if(boardLens) boardLens.hidden=true;
+    syncZoomControls();
+  }
+
+  function applyPieceZoom(target,scale){
+    if(!target || target===refs.boardWrap) return;
+    const nextScale=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(scale)||PIECE_ZOOM_DEFAULT));
+    if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
+    zoomTarget=target;
     zoomScale=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    if(zoomTarget===refs.boardWrap){
-      if(!zoomOrigin){
-        const rect=refs.boardWrap.getBoundingClientRect();
-        const point=lastZoomTarget===refs.boardWrap && lastZoomPoint ? lastZoomPoint : {x:rect.left+(rect.width/2),y:rect.top+(rect.height/2)};
-        zoomOrigin={
-          x:Math.max(0,Math.min(100,((point.x-rect.left)/Math.max(1,rect.width))*100)),
-          y:Math.max(0,Math.min(100,((point.y-rect.top)/Math.max(1,rect.height))*100))
-        };
-      }
-      zoomTarget.style.transformOrigin=zoomOrigin.x.toFixed(2)+'% '+zoomOrigin.y.toFixed(2)+'%';
-    }else{
-      zoomOrigin=null;
-      zoomTarget.style.transformOrigin='50% 50%';
-    }
+    zoomTarget.style.transformOrigin='50% 50%';
     zoomTarget.style.willChange='transform';
     zoomTarget.style.transform='scale('+zoomScale.toFixed(2)+')';
-    root.classList.add('is-zoom-active');
-    root.classList.toggle('is-zooming-piece',zoomTarget!==refs.boardWrap);
+    root.classList.add('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
     syncZoomControls();
   }
 
-  function resetZoom(){
+  function resetPieceZoom(){
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
-    zoomOrigin=null;
     zoomScale=ZOOM_MIN;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
     syncZoomControls();
   }
 
-  function toggleZoom(){
-    if(zoomScale>ZOOM_MIN && zoomTarget){
-      resetZoom();
-      setStatus('Zoom reset to 100%.','');
-      return;
+  function resetZoom(){
+    resetPieceZoom();
+    endBoardLens();
+    boardLensScale=BOARD_LENS_DEFAULT;
+    syncZoomControls();
+  }
+
+  function togglePieceZoom(target){
+    const piece=target && target!==refs.boardWrap ? target : null;
+    if(!piece) return false;
+    endBoardLens();
+    if(zoomTarget===piece && zoomScale>ZOOM_MIN){
+      resetPieceZoom();
+      setStatus('Piece zoom reset to 100%.','');
+      return true;
     }
-    applyZoom(resolveZoomTarget(),ZOOM_DEFAULT);
-    setStatus('Inspection zoom ' + Math.round(zoomScale*100) + '%. Use − and + to adjust; press Z to reset.','');
+    applyPieceZoom(piece,PIECE_ZOOM_DEFAULT);
+    setStatus('Piece zoom 200%. Use − and + to increase up to 1000%; press Z again to reset.','');
+    return true;
+  }
+
+  function syncZoomControls(){
+    const pieceActive=zoomScale>ZOOM_MIN && !!zoomTarget;
+    const active=pieceActive || boardLensActive;
+    const scale=boardLensActive ? boardLensScale : zoomScale;
+    const max=boardLensActive ? BOARD_LENS_MAX : PIECE_ZOOM_MAX;
+    const percent=Math.round(scale*100);
+    if(refs.zoomToggle){
+      refs.zoomToggle.setAttribute('aria-pressed',String(active));
+      refs.zoomToggle.setAttribute('aria-label',boardLensActive
+        ? 'Magnifier active while Z is held'
+        : (pieceActive?'Reset piece zoom (Z)':'Zoom hovered piece or hold Z over jigsaw'));
+      refs.zoomToggle.title=boardLensActive
+        ? 'Release Z to close magnifier'
+        : (pieceActive?'Reset piece zoom from '+percent+'% · Z':'Piece: Z to zoom · Jigsaw: hold Z for magnifier');
+    }
+    if(refs.zoomOut){
+      refs.zoomOut.disabled=!active || scale<=ZOOM_MIN;
+      refs.zoomOut.title=active?'Decrease zoom from '+percent+'%':'Activate zoom first';
+    }
+    if(refs.zoomIn){
+      refs.zoomIn.disabled=!active || scale>=max;
+      refs.zoomIn.title=active?'Increase zoom from '+percent+'%':'Activate zoom first';
+    }
   }
 
   function adjustZoom(direction){
     const amount=Number(direction)||0;
-    if(amount<0 && (!zoomTarget || zoomScale<=ZOOM_MIN)) return;
-    const target=zoomTarget&&zoomTarget.isConnected?zoomTarget:resolveZoomTarget();
-    const base=zoomTarget?zoomScale:ZOOM_MIN;
-    const next=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,base+(amount*ZOOM_STEP)));
-    if(next<=ZOOM_MIN){
-      resetZoom();
-      setStatus('Zoom reset to 100%.','');
+    if(!amount) return;
+    if(boardLensActive){
+      boardLensScale=Math.max(BOARD_LENS_DEFAULT,Math.min(BOARD_LENS_MAX,boardLensScale+(amount*ZOOM_STEP)));
+      const point=boardLensPoint();
+      updateBoardLens(point.x,point.y);
+      syncZoomControls();
+      setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held to inspect.','');
       return;
     }
-    applyZoom(target,next);
-    setStatus('Inspection zoom ' + Math.round(zoomScale*100) + '%.','');
+    if(zoomTarget && zoomTarget.isConnected){
+      const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomScale+(amount*ZOOM_STEP)));
+      applyPieceZoom(zoomTarget,next);
+      setStatus('Piece zoom ' + Math.round(zoomScale*100) + '%.','');
+    }
+  }
+
+  function handleZoomButtonClick(event){
+    if(event) event.preventDefault();
+    if(Date.now()<suppressZoomButtonClickUntil) return;
+    const target=resolveZoomTarget();
+    if(target && target!==refs.boardWrap){
+      togglePieceZoom(target);
+      return;
+    }
+    setStatus('Move over the jigsaw and hold Z to use the circular magnifier.','');
+  }
+
+  function beginZoomButtonHold(event){
+    const target=resolveZoomTarget();
+    if(target!==refs.boardWrap) return;
+    event.preventDefault();
+    zoomButtonLensHeld=true;
+    suppressZoomButtonClickUntil=Date.now()+350;
+    try{ refs.zoomToggle.setPointerCapture(event.pointerId); }catch(_error){}
+    beginBoardLens();
+  }
+
+  function endZoomButtonHold(){
+    if(!zoomButtonLensHeld) return;
+    zoomButtonLensHeld=false;
+    endBoardLens();
   }
 
   function shuffleTray(){
@@ -1210,7 +1336,7 @@
 
   function toggleFullscreen(){
     if(!refs.workspace) return;
-    if(zoomScale>ZOOM_MIN) resetZoom();
+    if(zoomScale>ZOOM_MIN || boardLensActive) resetZoom();
     if(pseudoFullscreen){
       setPseudoFullscreen(false);
       return;
@@ -1350,7 +1476,13 @@
 
   refs.preview.addEventListener('click',toggleGuide);
   if(refs.view) refs.view.addEventListener('click',toggleFullView);
-  if(refs.zoomToggle) refs.zoomToggle.addEventListener('click',toggleZoom);
+  if(refs.zoomToggle){
+    refs.zoomToggle.addEventListener('click',handleZoomButtonClick);
+    refs.zoomToggle.addEventListener('pointerdown',beginZoomButtonHold);
+    refs.zoomToggle.addEventListener('pointerup',endZoomButtonHold);
+    refs.zoomToggle.addEventListener('pointercancel',endZoomButtonHold);
+    refs.zoomToggle.addEventListener('lostpointercapture',endZoomButtonHold);
+  }
   if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
   if(refs.zoomIn) refs.zoomIn.addEventListener('click',function(){ adjustZoom(1); });
   refs.shuffle.addEventListener('click',shuffleTray);
@@ -1456,7 +1588,14 @@
     }
     if(key==='z'){
       event.preventDefault();
-      if(!event.repeat) toggleZoom();
+      if(event.repeat) return;
+      const target=resolveZoomTarget();
+      if(target===refs.boardWrap){
+        zoomKeyHeld=true;
+        beginBoardLens();
+      }else{
+        togglePieceZoom(target);
+      }
       return;
     }
     if(key==='s'){
@@ -1477,6 +1616,24 @@
     if(key==='arrowright'){
       event.preventDefault();
       nextTray();
+    }
+  });
+  document.addEventListener('keyup',function(event){
+    if(!event) return;
+    const key=String(event.key||'').toLowerCase();
+    if(key!=='z' || !zoomKeyHeld) return;
+    event.preventDefault();
+    zoomKeyHeld=false;
+    endBoardLens();
+  });
+  window.addEventListener('blur',function(){
+    zoomKeyHeld=false;
+    endBoardLens();
+  });
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden){
+      zoomKeyHeld=false;
+      endBoardLens();
     }
   });
   document.addEventListener('fullscreenchange',function(){
