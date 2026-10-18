@@ -161,6 +161,25 @@ test('Block Grid and Colour Sort follow the Core Games presentation contract', (
   }
 });
 
+test('Block Grid and Colour Sort use the shared Games Hub Auto-Next authority', () => {
+  const core = read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const block = read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
+  const colour = read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
+
+  assert.match(core, /AUTO_NEXT_GAMES = \[[^\]]*'blockgrid'[^\]]*'coloursort'[^\]]*'crossnumber'/);
+  assert.match(core, /window\.BaselineGamesAutoNext/);
+  assert.match(core, /blockGridPanel' \? 'blockgrid'/);
+  assert.match(core, /colourSortPanel' \? 'coloursort'/);
+
+  assert.match(block, /data-auto-next-toggle="\$\{APP\}"/);
+  assert.match(block, /autoNextApi\(\)\?\.schedule\?\.\(APP, startNewGame\)/);
+  assert.match(block, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
+
+  assert.match(colour, /data-auto-next-toggle="\$\{APP\}"/);
+  assert.match(colour, /autoNextApi\(\)\?\.schedule\?\.\(APP, \(\) => startLevel\(nextLevel\)\)/);
+  assert.match(colour, /autoNextApi\(\)\?\.clear\?\.\(APP\)/);
+});
+
 test('homepage keeps Badminton Session as one correctly spaced system title', () => {
   const index = read('index.html');
   assert.match(index, /<h2>Baseline Badminton Session<\/h2>/);

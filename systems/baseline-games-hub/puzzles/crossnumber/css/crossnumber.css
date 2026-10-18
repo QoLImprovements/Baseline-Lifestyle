@@ -90,7 +90,7 @@ body[data-app="games"] .crossnumber-board{
   grid-template-rows:repeat(var(--crossnumber-rows,13),minmax(0,1fr));
   gap:2px;
   width:100%;
-  max-width:680px;
+  max-width:600px;
   min-width:0;
   aspect-ratio:var(--crossnumber-cols,13) / var(--crossnumber-rows,13);
   margin:0 auto;
@@ -125,7 +125,7 @@ body[data-app="games"] .crossnumber-symbol-cell{
   border:1px solid var(--cn-border);
   background:var(--cn-mid);
   color:var(--cn-ink);
-  font-size:clamp(9px,1.5vw,18px);
+  font-size:clamp(14px,1.8vw,26px);
 }
 body[data-app="games"] .crossnumber-symbol-cell.is-constant{
   background:var(--cn-centre);
@@ -137,7 +137,7 @@ body[data-app="games"] .crossnumber-number-cell{
   border:1px solid var(--cn-border-strong);
   background:var(--cn-active);
   color:var(--cn-ink);
-  font-size:clamp(10px,1.75vw,20px);
+  font-size:clamp(16px,2vw,30px);
   cursor:pointer;
   transition:transform .12s ease,border-color .12s ease,background .12s ease;
 }
@@ -226,7 +226,7 @@ body[data-app="games"] .crossnumber-number-tile{
   border-radius:9px;
   background:var(--cn-mid);
   color:var(--cn-ink);
-  font:900 18px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font:900 21px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   cursor:grab;
 }
 body[data-app="games"] .crossnumber-number-tile:hover,
@@ -444,6 +444,6 @@ body[data-app="games"] .crossnumber-realm-card p{
   body[data-app="games"] .crossnumber-tier-list,
   body[data-app="games"] .crossnumber-progress-stats{grid-template-columns:1fr}
   body[data-app="games"] .crossnumber-round-stats > span{font-size:10px}
-  body[data-app="games"] .crossnumber-symbol-cell{font-size:clamp(8px,2.35vw,12px)}
-  body[data-app="games"] .crossnumber-number-cell{font-size:clamp(9px,2.7vw,13px)}
+  body[data-app="games"] .crossnumber-symbol-cell{font-size:clamp(12px,3vw,18px)}
+  body[data-app="games"] .crossnumber-number-cell{font-size:clamp(14px,3.4vw,21px)}
 }

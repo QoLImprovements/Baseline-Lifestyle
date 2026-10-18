@@ -11,8 +11,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
-  const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift'];
-  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900 });
+  const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
+  const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
   const SITEWIDE_START_HOTKEY_LABEL = 'Alt+N';
   const SITEWIDE_AUTONEXT_HOTKEY_LABEL = 'Alt+A';
   const SITEWIDE_KEYBOARD_HOTKEY_LABEL = 'Alt+K';
@@ -653,7 +653,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function scrollGameCardIntoView(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:false }); }
   function focusGameCard(gameId){ focusGameEntry(gameId, { scroll:true, mobileMode:true }); }
   function readAutoNextSettings(){
-    return { pairs:false, detectword:false, make24:false, trackcoin:false, ruleshift:false };
+    return { pairs:false, detectword:false, make24:false, trackcoin:false, ruleshift:false, blockgrid:false, coloursort:false, crossnumber:false };
   }
   function writeAutoNextSettings(){
     return autoNextSettings;
@@ -750,6 +750,17 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       }, 80);
     }, wait);
   }
+  function publishAutoNextApi(){
+    window.BaselineGamesAutoNext = Object.freeze({
+      games:AUTO_NEXT_GAMES.slice(),
+      enabled:autoNextEnabled,
+      toggle:toggleAutoNext,
+      clear:clearAutoNextTimer,
+      schedule:scheduleAutoNext,
+      sync:renderAutoNextControls,
+      label:autoNextButtonLabel
+    });
+  }
   function getGamePanelConfig(gameId){ return GAME_PANEL_MAP[gameId] || null; }
   function normaliseGameId(gameId){
     const value = String(gameId || '').trim().toLowerCase();
@@ -768,6 +779,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         if(fromHash) return fromHash;
       }
     }catch(_error){}
+    const crossnumberPanel = document.getElementById('crossnumberPanel');
+    if(crossnumberPanel && !crossnumberPanel.hidden) return 'crossnumber';
     const activePanel = q('.game-panel.is-active');
     if(activePanel){
       return activePanel.id === 'pairsPanel' ? 'pairs'
@@ -775,6 +788,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         : activePanel.id === 'make24Panel' ? 'make24'
         : activePanel.id === 'trackcoinPanel' ? 'trackcoin'
         : activePanel.id === 'ruleshiftPanel' ? 'ruleshift'
+        : activePanel.id === 'blockGridPanel' ? 'blockgrid'
+        : activePanel.id === 'colourSortPanel' ? 'coloursort'
         : activePanel.id === 'ninjaPanel' ? 'ninja'
         : '';
     }
@@ -790,7 +805,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return false;
   }
   function toggleAutoNextForActiveGame(gameId){
-    const id = normaliseGameId(gameId);
+    const raw = String(gameId || '').trim().toLowerCase();
+    const id = AUTO_NEXT_GAMES.includes(raw) ? raw : normaliseGameId(raw);
     if(!AUTO_NEXT_GAMES.includes(id)) return false;
     toggleAutoNext(id);
     return true;
@@ -4440,6 +4456,7 @@ function toggleGameFullscreen(gameId){
 
   function init(){
     cacheRefs();
+    publishAutoNextApi();
     const coreDependencies = {
       profiles:profiles, refs:refs, q:q, qsa:qsa, clamp:clamp, sum:sum, formatInt:formatInt, formatCompact:formatCompact,
       escapeHtml:escapeHtml, hotkeyActionLabel:hotkeyActionLabel, cleanWinBonusPct:cleanWinBonusPct, xpNeededForLevel:xpNeededForLevel, applyLevelCurve:applyLevelCurve,
