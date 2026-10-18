@@ -917,31 +917,19 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
   }
-  function gamesHubBaseUrl(){
-    if(typeof window === 'undefined') return '';
-    return window.location.pathname + window.location.search;
-  }
-  function gamesHubUrlForHash(hashValue){
-    const hash = String(hashValue || '').replace(/^#/, '');
-    return gamesHubBaseUrl() + (hash ? ('#' + hash) : '');
-  }
-  function replaceGamesHubListEntry(){
-    if(typeof window === 'undefined' || !window.history || typeof window.history.replaceState !== 'function') return;
-    try{
-      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
-    }catch(_error){}
-  }
   function pushGamesHubGameEntry(){
     if(typeof window === 'undefined' || !window.history || !selectedGame) return;
-    if(typeof window.history.replaceState !== 'function' || typeof window.history.pushState !== 'function') return;
-    const gameHash = buildHashState();
-    if(!gameHash || gameHash.indexOf('game=') === -1) return;
-    const currentFullHash = '#' + gameHash;
-    const existing = window.history.state || {};
-    if(String(window.location.hash || '') === currentFullHash && existing && existing.baselineGamesGameEntry && existing.game === selectedGame) return;
+    if(typeof window.history.pushState !== 'function') return;
+    const nextUrl = gamesHubCleanRouteForState();
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    if(currentUrl === nextUrl) return;
     try{
-      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
-      window.history.pushState({ baselineGames:true, baselineGamesGameEntry:true, game:selectedGame, panel:currentPanelIdForGame(selectedGame) || '' }, '', gamesHubUrlForHash(gameHash));
+      window.history.pushState({
+        baselineGames:true,
+        baselineGamesGameEntry:true,
+        game:selectedGame,
+        panel:currentPanelIdForGame(selectedGame) || ''
+      }, '', nextUrl);
     }catch(_error){
       syncHashState('push');
     }
@@ -3845,14 +3833,14 @@ function toggleGameFullscreen(gameId){
       if(select){
         const nextGame = select.getAttribute('data-select-game') || '';
         if(!nextGame) exitMobileGameMode();
-        selectGame(nextGame, { historyMode: nextGame ? 'push' : 'replace' });
+        selectGame(nextGame, { historyMode:'push' });
         if(nextGame) focusGameEntry(nextGame, { scroll:true, mobileMode:true });
         return;
       }
       const exitMobileModeBtn = event.target.closest('[data-exit-mobile-game-mode]');
       if(exitMobileModeBtn){
         exitMobileGameMode();
-        selectGame('', { historyMode:'replace' });
+        selectGame('', { historyMode:'push' });
         window.setTimeout(function(){
           const games = document.getElementById('games');
           const scroller = q('.bl-scroll');
