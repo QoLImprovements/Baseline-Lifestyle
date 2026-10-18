@@ -493,17 +493,21 @@
     var roots = ['pairsGameCard','wordGameCard','make24GameCard','trackCoinGamePanel','ruleShiftGameCard'];
     roots.forEach(function(id){
       var root = document.getElementById(id);
-      if(!root || root.querySelector('[data-games-settings]')) return;
-      var host = root.querySelector('.game-toolbar') || root.querySelector('.game-window-actions') || root;
+      if(!root) return;
+      var panel = root.closest('.game-panel');
+      var host = panel && panel.querySelector('.game-header .link-actions');
+      host = host || root.querySelector('.game-toolbar') || root.querySelector('.game-window-actions') || root;
+      if(host.querySelector('[data-games-settings]')) return;
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'action secondary games-settings-trigger';
+      btn.className = 'action secondary games-settings-trigger game-shell-action game-shell-action--icon game-shell-action--settings';
       btn.setAttribute('data-games-settings','');
       btn.setAttribute('aria-haspopup','dialog');
       btn.setAttribute('aria-controls','gamesMusicSettingsPanel');
       btn.setAttribute('aria-label','Game settings');
       btn.title = 'Game settings';
-      btn.innerHTML = '<span class="games-settings-trigger__icon" aria-hidden="true">⚙</span><span class="games-settings-trigger__label">Settings</span>';
+      btn.style.order = '4';
+      btn.innerHTML = '<span class="games-settings-trigger__icon game-shell-action__icon" aria-hidden="true">⚙</span><span class="games-settings-trigger__label game-shell-action__label">Settings</span>';
       host.appendChild(btn);
     });
   }
