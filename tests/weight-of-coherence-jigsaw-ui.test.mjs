@@ -17,33 +17,61 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_PLACEMENT_SCROLL_STABILITY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ZOOM_VIEW_TOGGLE_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ZOOM_VIEW_TOGGLE_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
 
-test('placing a piece does not let tray DOM replacement pull the page to the top', () => {
+test('successful and failed piece drops keep the non-fullscreen viewport stable', () => {
   assert.match(html, /id="weightCoherenceBoard"[^>]*tabindex="-1"/);
-  assert.match(js, /function stabilisePieceFocusBeforeTrayMutation\(\)\{/);
+  assert.match(js, /function stabilisePieceFocus\(\)\{/);
   assert.match(js, /active\.closest\('\[data-piece-id\]'\)/);
   assert.match(js, /refs\.board\.focus\(\{preventScroll:true\}\)/);
-  assert.match(js, /function renderTray\(\)\{\s*if\(!refs\.tray\) return;\s*stabilisePieceFocusBeforeTrayMutation\(\);\s*refs\.tray\.innerHTML='';/);
+  assert.match(js, /function renderTray\(\)\{\s*if\(!refs\.tray\) return;\s*stabilisePieceFocus\(\);/);
+  assert.match(js, /if\(drag\.moved\)\{[\s\S]*?stabilisePieceFocus\(\);/);
+  assert.match(js, /function pageScrollSnapshot\(\)\{/);
+  assert.match(js, /function restorePageScroll\(snapshot\)\{/);
+  assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
+  assert.match(js, /setStatus\('That piece belongs elsewhere\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
   assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
 });
 
-test('hold V temporarily shows the full-colour artwork and drops any piece in hand', () => {
+test('V toggles a persistent full-colour view and pauses piece interaction without disabling zoom', () => {
   assert.match(html, /id="weightCoherenceViewBtn"[\s\S]*?aria-keyshortcuts="V"[\s\S]*?weight-coherence-hotkey">V<\/kbd>/);
-  assert.match(js, /let viewHeld = false/);
-  assert.match(js, /if\(imageReady && viewHeld\)\{[\s\S]*?ctx\.fillStyle='#FFFFFF'[\s\S]*?ctx\.drawImage\(image,0,0,BOARD_WIDTH,BOARD_HEIGHT\);[\s\S]*?return;/);
-  assert.match(js, /function beginFullView\(\)\{[\s\S]*?const hadDrag=!!dragState;[\s\S]*?cancelDrag\(\);[\s\S]*?selectedPieceId=null;[\s\S]*?viewHeld=true;[\s\S]*?drawBoard\(\);/);
-  assert.match(js, /function endFullView\(\)\{[\s\S]*?viewHeld=false;[\s\S]*?drawBoard\(\);/);
-  assert.match(js, /if\(key==='v'\)\{[\s\S]*?beginFullView\(\)/);
-  assert.match(js, /document\.addEventListener\('keyup'[\s\S]*?key!=='v'[\s\S]*?endFullView\(\)/);
-  assert.match(js, /window\.addEventListener\('blur',endFullView\)/);
-  assert.match(js, /refs\.view\.addEventListener\('pointerdown'[\s\S]*?beginFullView\(\)/);
-  assert.match(js, /refs\.view\.addEventListener\('pointerup',endFullView\)/);
-  assert.doesNotMatch(js, /function beginFullView\(\)[\s\S]{0,500}state\.preview\s*=/);
+  assert.match(html, /aria-label="View full artwork \(V\)"/);
+  assert.match(js, /let viewOn = false/);
+  assert.match(js, /if\(imageReady && viewOn\)\{[\s\S]*?ctx\.fillStyle='#FFFFFF'[\s\S]*?ctx\.drawImage\(image,0,0,BOARD_WIDTH,BOARD_HEIGHT\);[\s\S]*?return;/);
+  assert.match(js, /function toggleFullView\(\)\{[\s\S]*?const next=!viewOn;[\s\S]*?cancelDrag\(\);[\s\S]*?selectedPieceId=null;[\s\S]*?viewOn=next;[\s\S]*?drawBoard\(\);/);
+  assert.match(js, /refs\.view\.addEventListener\('click',toggleFullView\)/);
+  assert.match(js, /if\(key==='v'\)\{[\s\S]*?!event\.repeat\) toggleFullView\(\)/);
+  assert.match(js, /root\.addEventListener\('pointerdown'[\s\S]*?if\(viewOn\)\{[\s\S]*?return;/);
+  assert.match(js, /refs\.board\.addEventListener\('click'[\s\S]*?pinchState \|\| viewOn/);
+  assert.match(js, /button\.setAttribute\('aria-disabled',String\(viewOn\)\)/);
+  assert.doesNotMatch(js, /document\.addEventListener\('keyup'[\s\S]*?endFullView/);
+  assert.doesNotMatch(js, /window\.addEventListener\('blur',endFullView\)/);
+});
+
+
+test('Z provides contextual board or piece inspection zoom with minus and plus controls', () => {
+  assert.match(html, /id="weightCoherenceZoomOutBtn"[\s\S]*?id="weightCoherenceZoomBtn"[\s\S]*?aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomInBtn"[\s\S]*?id="weightCoherencePreviewBtn"/);
+  assert.match(html, /weight-coherence-hotkey">Z<\/kbd>/);
+  assert.match(css, /\.weight-coherence-zoom-actions\{/);
+  assert.match(css, /\.weight-coherence-zoom-step\{/);
+  assert.match(js, /const ZOOM_MIN = 1/);
+  assert.match(js, /const ZOOM_MAX = 3/);
+  assert.match(js, /const ZOOM_STEP = 0\.25/);
+  assert.match(js, /const ZOOM_DEFAULT = 1\.5/);
+  assert.match(js, /function zoomableTargetFromNode\(node\)/);
+  assert.match(js, /closest\?\.\('\[data-piece-id\]'\)/);
+  assert.match(js, /return refs\.boardWrap/);
+  assert.match(js, /function toggleZoom\(\)/);
+  assert.match(js, /function adjustZoom\(direction\)/);
+  assert.match(js, /refs\.zoomOut\.addEventListener\('click'[\s\S]*?adjustZoom\(-1\)/);
+  assert.match(js, /refs\.zoomIn\.addEventListener\('click'[\s\S]*?adjustZoom\(1\)/);
+  assert.match(js, /if\(key==='z'\)\{[\s\S]*?toggleZoom\(\)/);
+  assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
+  assert.match(css, /#weightCoherencePuzzle\.is-zoom-active \.weight-coherence-board-wrap\.is-zoom-target/);
 });
 
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
