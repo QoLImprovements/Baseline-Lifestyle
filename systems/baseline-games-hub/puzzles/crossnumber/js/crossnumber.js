@@ -4,254 +4,450 @@
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
 
-  const PUZZLE=Object.freeze({
-    id:'classic-01',
-    pattern:['..#..','.....','#...#','.....','..#..'],
-    solution:['28#76','45183','#926#','58104','72#61'],
-    clues:Object.freeze({
-      across:Object.freeze({
-        1:'Four multiplied by seven.',
-        3:'Nineteen multiplied by four.',
-        5:'Forty-five thousand plus one hundred and eighty-three.',
-        7:'One thousand minus seventy-four.',
-        8:'Fifty-eight thousand plus one hundred and four.',
-        10:'Eight multiplied by nine.',
-        11:'Sixty plus one.'
-      }),
-      down:Object.freeze({
-        1:'Six multiplied by four.',
-        2:'Eighty-five thousand nine hundred and eighty-two.',
-        3:'Seventy-eight thousand six hundred and six.',
-        4:'Seven multiplied by nine.',
-        6:'Eleven squared.',
-        8:'Fifty-seven.',
-        9:'Forty-one.'
-      })
+  const NODES=Object.freeze([
+    {id:'a',r:0,c:0},{id:'b',r:0,c:4},{id:'c',r:4,c:0},{id:'e',r:4,c:4},
+    {id:'f',r:4,c:8},{id:'j',r:8,c:4},{id:'i',r:8,c:8},{id:'k',r:8,c:12},
+    {id:'l',r:12,c:8},{id:'m',r:12,c:12}
+  ]);
+
+  const PUZZLES=Object.freeze([
+    Object.freeze({
+      id:'linked-01',
+      values:Object.freeze({a:6,b:24,c:9,e:18,f:25,j:12,i:20,k:30,l:24,m:12}),
+      edges:Object.freeze([
+        ['a','b','×',4],['a','c','+',3],['c','e','×',2],['b','e','−',6],
+        ['e','f','+',7],['e','j','−',6],['j','i','+',8],['f','i','−',5],
+        ['i','k','+',10],['i','l','+',4],['l','m','÷',2],['k','m','−',18]
+      ])
+    }),
+    Object.freeze({
+      id:'linked-02',
+      values:Object.freeze({a:7,b:35,c:11,e:33,f:42,j:25,i:32,k:45,l:37,m:31}),
+      edges:Object.freeze([
+        ['a','b','×',5],['a','c','+',4],['c','e','×',3],['b','e','−',2],
+        ['e','f','+',9],['e','j','−',8],['j','i','+',7],['f','i','−',10],
+        ['i','k','+',13],['i','l','+',5],['l','m','−',6],['k','m','−',14]
+      ])
+    }),
+    Object.freeze({
+      id:'linked-03',
+      values:Object.freeze({a:8,b:48,c:13,e:39,f:50,j:27,i:34,k:48,l:42,m:24}),
+      edges:Object.freeze([
+        ['a','b','×',6],['a','c','+',5],['c','e','×',3],['b','e','−',9],
+        ['e','f','+',11],['e','j','−',12],['j','i','+',7],['f','i','−',16],
+        ['i','k','+',14],['i','l','+',8],['l','m','−',18],['k','m','÷',2]
+      ])
     })
+  ]);
+
+  const DIFFICULTIES=Object.freeze({
+    easy:Object.freeze({label:'Easy',locked:['a','e','i','m'],bonus:0}),
+    medium:Object.freeze({label:'Medium',locked:['e','i'],bonus:1200}),
+    hard:Object.freeze({label:'Hard',locked:[],bonus:2400})
   });
 
   const refs={
-    grid:root.querySelector('[data-crossnumber-grid]'),
-    across:root.querySelector('[data-crossnumber-clues="across"]'),
-    down:root.querySelector('[data-crossnumber-clues="down"]'),
-    progress:root.querySelector('[data-crossnumber-progress]'),
-    filled:root.querySelector('[data-crossnumber-filled]'),
+    board:root.querySelector('[data-crossnumber-board]'),
+    bank:root.querySelector('[data-crossnumber-bank]'),
+    bankCount:root.querySelector('[data-crossnumber-bank-count]'),
+    mistakes:root.querySelector('[data-crossnumber-mistakes]'),
     timer:root.querySelector('[data-crossnumber-timer]'),
-    hints:root.querySelector('[data-crossnumber-hints]'),
+    score:root.querySelector('[data-crossnumber-score]'),
+    difficulty:root.querySelector('[data-crossnumber-difficulty-label]'),
     status:root.querySelector('[data-crossnumber-status]'),
     complete:root.querySelector('[data-crossnumber-complete]'),
-    completeTime:root.querySelector('[data-crossnumber-complete-time]')
+    completeTime:root.querySelector('[data-crossnumber-complete-time]'),
+    completeScore:root.querySelector('[data-crossnumber-complete-score]')
   };
-  if(!refs.grid||!refs.across||!refs.down) return;
+  if(!refs.board||!refs.bank) return;
 
-  const STORAGE_KEY='baseline.crossnumber.classic01';
-  let cells=[];
-  let entries=[];
-  let currentEntry=null;
-  let currentCell=null;
+  const STORAGE_KEY='baseline.crossnumber.arithmetic-placement.v1';
+  let puzzleIndex=0;
+  let difficulty='medium';
+  let assignments=Object.create(null);
+  let selectedTile='';
   let seconds=0;
-  let hintsUsed=0;
-  let timerId=0;
+  let mistakes=0;
+  let hints=0;
   let completed=false;
+  let timerId=0;
+  let undoStack=[];
+  let tileOrder=[];
+  let dragTile='';
 
-  function cellKey(r,c){ return r+':'+c; }
+  function currentPuzzle(){ return PUZZLES[puzzleIndex]||PUZZLES[0]; }
+  function nodeById(id){ return NODES.find(function(node){ return node.id===id; })||null; }
+  function key(r,c){ return r+':'+c; }
 
-  function buildEntries(){
-    const rows=PUZZLE.pattern.length;
-    const cols=PUZZLE.pattern[0].length;
-    const numbers=new Map();
-    let nextNumber=0;
-    entries=[];
+  function fixedNodes(){
+    return new Set((DIFFICULTIES[difficulty]||DIFFICULTIES.medium).locked);
+  }
 
-    for(let r=0;r<rows;r++){
-      for(let c=0;c<cols;c++){
-        if(PUZZLE.pattern[r][c]==='#') continue;
-        const startsAcross=(c===0||PUZZLE.pattern[r][c-1]==='#') && c+1<cols && PUZZLE.pattern[r][c+1]!=='#';
-        const startsDown=(r===0||PUZZLE.pattern[r-1][c]==='#') && r+1<rows && PUZZLE.pattern[r+1][c]!=='#';
-        if(startsAcross||startsDown){
-          nextNumber++;
-          numbers.set(cellKey(r,c),nextNumber);
+  function tileDefinitions(){
+    const locked=fixedNodes();
+    return NODES.filter(function(node){return !locked.has(node.id);}).map(function(node,index){
+      return {id:'tile-'+node.id+'-'+index,value:currentPuzzle().values[node.id]};
+    });
+  }
+
+  function tileValue(tileId){
+    const tile=tileDefinitions().find(function(item){return item.id===tileId;});
+    return tile?tile.value:null;
+  }
+
+  function assignedValue(nodeId){
+    if(fixedNodes().has(nodeId)) return currentPuzzle().values[nodeId];
+    const tileId=assignments[nodeId];
+    return tileId?tileValue(tileId):null;
+  }
+
+  function operatorResult(left,operator,right){
+    if(operator==='+') return left+right;
+    if(operator==='−') return left-right;
+    if(operator==='×') return left*right;
+    if(operator==='÷') return right!==0?left/right:NaN;
+    return NaN;
+  }
+
+  function edgeCorrect(edge){
+    const left=assignedValue(edge[0]);
+    const right=assignedValue(edge[1]);
+    if(left===null||right===null) return null;
+    return operatorResult(left,edge[2],edge[3])===right;
+  }
+
+  function edgesForNode(nodeId){
+    return currentPuzzle().edges.filter(function(edge){return edge[0]===nodeId||edge[1]===nodeId;});
+  }
+
+  function buildBoard(){
+    const map=new Map();
+    const puzzle=currentPuzzle();
+    const locked=fixedNodes();
+
+    NODES.forEach(function(node){
+      map.set(key(node.r,node.c),{type:'value',node:node});
+    });
+
+    puzzle.edges.forEach(function(edge){
+      const from=nodeById(edge[0]);
+      const to=nodeById(edge[1]);
+      if(!from||!to) return;
+      const dr=Math.sign(to.r-from.r);
+      const dc=Math.sign(to.c-from.c);
+      map.set(key(from.r+dr,from.c+dc),{type:'operator',text:edge[2]});
+      map.set(key(from.r+dr*2,from.c+dc*2),{type:'constant',text:String(edge[3])});
+      map.set(key(from.r+dr*3,from.c+dc*3),{type:'equals',text:'='});
+    });
+
+    refs.board.innerHTML='';
+    for(let r=0;r<13;r++){
+      for(let c=0;c<13;c++){
+        const item=map.get(key(r,c));
+        if(!item){
+          const spacer=document.createElement('div');
+          spacer.className='crossnumber-space';
+          spacer.setAttribute('aria-hidden','true');
+          refs.board.appendChild(spacer);
+          continue;
         }
-        if(startsAcross){
-          const coords=[];
-          let cc=c;
-          while(cc<cols&&PUZZLE.pattern[r][cc]!=='#'){ coords.push([r,cc]); cc++; }
-          entries.push({number:numbers.get(cellKey(r,c)),direction:'across',cells:coords});
+        if(item.type==='value'){
+          const button=document.createElement('button');
+          const node=item.node;
+          const isLocked=locked.has(node.id);
+          button.type='button';
+          button.className='crossnumber-number-cell'+(isLocked?' is-fixed':'');
+          button.dataset.node=node.id;
+          if(!isLocked) button.dataset.dropzone='true';
+          button.setAttribute('aria-label',(isLocked?'Fixed number ':'Empty number position ')+(r+1)+','+(c+1));
+          const value=assignedValue(node.id);
+          button.textContent=value===null?'':String(value);
+          if(assignments[node.id]) button.dataset.tile=assignments[node.id];
+          refs.board.appendChild(button);
+          continue;
         }
-        if(startsDown){
-          const coords=[];
-          let rr=r;
-          while(rr<rows&&PUZZLE.pattern[rr][c]!=='#'){ coords.push([rr,c]); rr++; }
-          entries.push({number:numbers.get(cellKey(r,c)),direction:'down',cells:coords});
-        }
+        const cell=document.createElement('div');
+        cell.className='crossnumber-symbol-cell is-'+item.type;
+        cell.textContent=item.text;
+        refs.board.appendChild(cell);
       }
     }
-    return numbers;
+    refreshEquationStates();
   }
 
-  function buildGrid(){
-    const numbers=buildEntries();
-    refs.grid.innerHTML='';
-    cells=[];
-    PUZZLE.pattern.forEach(function(row,r){
-      row.split('').forEach(function(mark,c){
-        if(mark==='#'){
-          const block=document.createElement('div');
-          block.className='crossnumber-block';
-          block.setAttribute('aria-hidden','true');
-          refs.grid.appendChild(block);
-          return;
-        }
-        const wrap=document.createElement('label');
-        wrap.className='crossnumber-cell';
-        const input=document.createElement('input');
-        input.type='text';
-        input.inputMode='numeric';
-        input.pattern='[0-9]*';
-        input.maxLength=1;
-        input.autocomplete='off';
-        input.spellcheck=false;
-        input.dataset.row=String(r);
-        input.dataset.col=String(c);
-        input.setAttribute('aria-label','Crossnumber cell row '+(r+1)+', column '+(c+1));
-        const number=numbers.get(cellKey(r,c));
-        if(number){
-          const tag=document.createElement('span');
-          tag.className='crossnumber-cell-number';
-          tag.textContent=String(number);
-          wrap.appendChild(tag);
-        }
-        wrap.appendChild(input);
-        refs.grid.appendChild(wrap);
-        cells.push(input);
-      });
+  function availableTiles(){
+    const used=new Set(Object.keys(assignments).map(function(nodeId){return assignments[nodeId];}).filter(Boolean));
+    const all=tileDefinitions();
+    const lookup=new Map(all.map(function(tile){return [tile.id,tile];}));
+    const ordered=(tileOrder.length?tileOrder:all.map(function(tile){return tile.id;}))
+      .map(function(id){return lookup.get(id);}).filter(Boolean);
+    return ordered.filter(function(tile){return !used.has(tile.id);});
+  }
+
+  function renderBank(){
+    const tiles=availableTiles();
+    refs.bank.innerHTML='';
+    tiles.forEach(function(tile){
+      const button=document.createElement('button');
+      button.type='button';
+      button.className='crossnumber-number-tile'+(selectedTile===tile.id?' is-selected':'');
+      button.dataset.tileId=tile.id;
+      button.draggable=true;
+      button.textContent=String(tile.value);
+      button.setAttribute('aria-label','Number tile '+tile.value);
+      refs.bank.appendChild(button);
     });
+    if(refs.bankCount) refs.bankCount.textContent=tiles.length+' remaining';
   }
 
-  function buildClues(){
-    ['across','down'].forEach(function(direction){
-      const target=refs[direction];
-      target.innerHTML='';
-      entries.filter(function(entry){return entry.direction===direction;}).forEach(function(entry){
-        const button=document.createElement('button');
-        button.className='crossnumber-clue';
-        button.type='button';
-        button.dataset.entry=direction+':'+entry.number;
-        button.innerHTML='<span class="crossnumber-clue-number">'+entry.number+'</span><span class="crossnumber-clue-copy">'+
-          escapeHtml(PUZZLE.clues[direction][entry.number]||'Solve this entry.')+'</span>';
-        target.appendChild(button);
-      });
+  function snapshot(){
+    undoStack.push({
+      assignments:Object.assign({},assignments),
+      selectedTile:selectedTile,
+      mistakes:mistakes,
+      hints:hints
     });
+    if(undoStack.length>40) undoStack.shift();
   }
 
-  function escapeHtml(value){
-    return String(value).replace(/[&<>"']/g,function(ch){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
-    });
+  function restoreSnapshot(state){
+    if(!state) return;
+    assignments=Object.assign(Object.create(null),state.assignments||{});
+    selectedTile=state.selectedTile||'';
+    mistakes=Number(state.mistakes)||0;
+    hints=Number(state.hints)||0;
+    completed=false;
+    if(refs.complete) refs.complete.setAttribute('aria-hidden','true');
+    buildBoard();
+    renderBank();
+    updateHud();
+    save();
   }
 
-  function findCell(r,c){
-    return cells.find(function(input){return Number(input.dataset.row)===r&&Number(input.dataset.col)===c;})||null;
-  }
+  function placeTile(nodeId,tileId,options){
+    options=options||{};
+    if(!nodeId||!tileId||fixedNodes().has(nodeId)) return;
+    if(!tileDefinitions().some(function(tile){return tile.id===tileId;})) return;
+    if(!options.noSnapshot) snapshot();
 
-  function entriesForCell(input){
-    if(!input) return [];
-    const r=Number(input.dataset.row),c=Number(input.dataset.col);
-    return entries.filter(function(entry){
-      return entry.cells.some(function(pair){return pair[0]===r&&pair[1]===c;});
-    });
-  }
-
-  function chooseEntry(input,preferredDirection){
-    const candidates=entriesForCell(input);
-    if(!candidates.length) return null;
-    if(preferredDirection){
-      const preferred=candidates.find(function(entry){return entry.direction===preferredDirection;});
-      if(preferred) return preferred;
+    const sourceNode=Object.keys(assignments).find(function(id){return assignments[id]===tileId;})||'';
+    const displaced=assignments[nodeId]||'';
+    if(sourceNode&&sourceNode!==nodeId) delete assignments[sourceNode];
+    if(displaced&&displaced!==tileId){
+      if(sourceNode&&sourceNode!==nodeId) assignments[sourceNode]=displaced;
     }
-    if(currentEntry&&candidates.includes(currentEntry)) return currentEntry;
-    return candidates[0];
-  }
+    assignments[nodeId]=tileId;
+    selectedTile='';
+    buildBoard();
+    renderBank();
 
-  function setActive(input,entry){
-    currentCell=input||currentCell;
-    currentEntry=entry||chooseEntry(currentCell);
-    cells.forEach(function(cell){cell.classList.remove('is-active','is-related');});
-    root.querySelectorAll('.crossnumber-clue').forEach(function(clue){clue.classList.remove('is-active');});
-    if(!currentCell||!currentEntry) return;
-    currentEntry.cells.forEach(function(pair){
-      const cell=findCell(pair[0],pair[1]);
-      if(cell) cell.classList.add('is-related');
-    });
-    currentCell.classList.add('is-active');
-    const clue=root.querySelector('[data-entry="'+currentEntry.direction+':'+currentEntry.number+'"]');
-    if(clue){
-      clue.classList.add('is-active');
-      clue.scrollIntoView({block:'nearest'});
-    }
-    showDirection(currentEntry.direction);
-  }
-
-  function moveWithinEntry(step){
-    if(!currentEntry||!currentCell) return;
-    const r=Number(currentCell.dataset.row),c=Number(currentCell.dataset.col);
-    const index=currentEntry.cells.findIndex(function(pair){return pair[0]===r&&pair[1]===c;});
-    const next=currentEntry.cells[index+step];
-    if(next){
-      const input=findCell(next[0],next[1]);
-      if(input){ input.focus(); setActive(input,currentEntry); }
-    }
-  }
-
-  function moveSpatial(dr,dc){
-    if(!currentCell) return;
-    let r=Number(currentCell.dataset.row)+dr;
-    let c=Number(currentCell.dataset.col)+dc;
-    while(r>=0&&c>=0&&r<PUZZLE.pattern.length&&c<PUZZLE.pattern[0].length){
-      const next=findCell(r,c);
-      if(next){
-        next.focus();
-        setActive(next,chooseEntry(next,dr!==0?'down':'across'));
-        return;
+    if(!options.silent){
+      const completedEdges=edgesForNode(nodeId).map(edgeCorrect).filter(function(value){return value!==null;});
+      if(completedEdges.some(function(value){return value===false;})){
+        mistakes++;
+        flashWrong(nodeId);
+        setStatus('That placement breaks an equation. You can move the tile again or undo it.');
+      }else if(completedEdges.length){
+        setStatus('Equation fits. Keep linking the remaining numbers.');
+      }else{
+        setStatus('Tile placed.');
       }
-      r+=dr;c+=dc;
     }
+    updateHud();
+    checkComplete();
+    save();
   }
 
-  function solutionAt(input){
-    return PUZZLE.solution[Number(input.dataset.row)][Number(input.dataset.col)];
+  function removeTile(nodeId){
+    if(!assignments[nodeId]) return;
+    snapshot();
+    delete assignments[nodeId];
+    selectedTile='';
+    buildBoard();
+    renderBank();
+    updateHud();
+    setStatus('Tile returned to the bank.');
+    save();
   }
 
-  function updateProgress(){
-    const filled=cells.filter(function(cell){return /^[0-9]$/.test(cell.value);}).length;
-    refs.filled.textContent=filled+'/'+cells.length;
-    refs.progress.style.width=((filled/cells.length)*100).toFixed(1)+'%';
-    const allCorrect=filled===cells.length&&cells.every(function(cell){return cell.value===solutionAt(cell);});
-    if(allCorrect&&!completed) finish();
+  function flashWrong(nodeId){
+    const cell=refs.board.querySelector('[data-node="'+nodeId+'"]');
+    if(!cell) return;
+    cell.classList.add('is-wrong');
+    window.setTimeout(function(){cell.classList.remove('is-wrong');},650);
+  }
+
+  function refreshEquationStates(){
+    const puzzle=currentPuzzle();
+    NODES.forEach(function(node){
+      const cell=refs.board.querySelector('[data-node="'+node.id+'"]');
+      if(!cell) return;
+      cell.classList.remove('is-correct','has-conflict');
+      const states=edgesForNode(node.id).map(edgeCorrect);
+      if(states.some(function(value){return value===false;})) cell.classList.add('has-conflict');
+      else if(states.length&&states.every(function(value){return value===true;})) cell.classList.add('is-correct');
+    });
+  }
+
+  function computeScore(){
+    const diff=DIFFICULTIES[difficulty]||DIFFICULTIES.medium;
+    return Math.max(0,10000+diff.bonus-(seconds*4)-(mistakes*220)-(hints*450));
+  }
+
+  function updateHud(){
+    if(refs.mistakes) refs.mistakes.textContent=String(mistakes);
+    if(refs.timer) refs.timer.textContent=formatTime(seconds);
+    if(refs.score) refs.score.textContent=String(computeScore());
+    if(refs.difficulty) refs.difficulty.textContent=(DIFFICULTIES[difficulty]||DIFFICULTIES.medium).label;
   }
 
   function formatTime(value){
-    const m=Math.floor(value/60);
-    const s=value%60;
-    return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const mins=Math.floor(value/60);
+    const secs=value%60;
+    return String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
   }
 
   function startTimer(){
     if(timerId||completed) return;
     timerId=window.setInterval(function(){
       seconds++;
-      refs.timer.textContent=formatTime(seconds);
+      updateHud();
       if(seconds%5===0) save();
     },1000);
+  }
+
+  function setStatus(message){
+    if(refs.status) refs.status.textContent=message;
+  }
+
+  function allSolved(){
+    const locked=fixedNodes();
+    const movable=NODES.filter(function(node){return !locked.has(node.id);});
+    if(movable.some(function(node){return !assignments[node.id];})) return false;
+    return currentPuzzle().edges.every(function(edge){return edgeCorrect(edge)===true;});
+  }
+
+  function checkComplete(){
+    refreshEquationStates();
+    if(!allSolved()) return;
+    completed=true;
+    if(timerId){clearInterval(timerId);timerId=0;}
+    if(refs.complete){
+      refs.complete.setAttribute('aria-hidden','false');
+      if(refs.completeTime) refs.completeTime.textContent=formatTime(seconds);
+      if(refs.completeScore) refs.completeScore.textContent=String(computeScore());
+    }
+    setStatus('Every equation balances. Crossnumber complete.');
+    save();
+  }
+
+  function hint(){
+    if(completed) return;
+    const wrongOrBlank=NODES.filter(function(node){
+      if(fixedNodes().has(node.id)) return false;
+      const value=assignedValue(node.id);
+      return value!==currentPuzzle().values[node.id];
+    });
+    const target=wrongOrBlank[0];
+    if(!target){checkComplete();return;}
+    snapshot();
+
+    const needed=currentPuzzle().values[target.id];
+    let correctTile=tileDefinitions().find(function(tile){
+      if(tile.value!==needed) return false;
+      return !Object.values(assignments).includes(tile.id);
+    });
+
+    if(!correctTile){
+      const sourceNode=Object.keys(assignments).find(function(nodeId){
+        const tileId=assignments[nodeId];
+        return nodeId!==target.id&&tileValue(tileId)===needed&&assignedValue(nodeId)!==currentPuzzle().values[nodeId];
+      });
+      if(sourceNode){
+        correctTile=tileDefinitions().find(function(tile){return tile.id===assignments[sourceNode];});
+        delete assignments[sourceNode];
+      }
+    }
+
+    if(!correctTile) return;
+    const displaced=assignments[target.id];
+    if(displaced) delete assignments[target.id];
+    assignments[target.id]=correctTile.id;
+    hints++;
+    selectedTile='';
+    buildBoard();
+    renderBank();
+    updateHud();
+    setStatus('Hint placed one correct number.');
+    checkComplete();
+    save();
+  }
+
+  function undo(){
+    const state=undoStack.pop();
+    if(!state){setStatus('Nothing to undo.');return;}
+    restoreSnapshot(state);
+    setStatus('Last move undone.');
+  }
+
+  function sortBank(){
+    const tiles=tileDefinitions().slice().sort(function(a,b){return a.value-b.value||a.id.localeCompare(b.id);});
+    tileOrder=tiles.map(function(tile){return tile.id;});
+    renderBank();
+    save();
+  }
+
+  function shuffleBank(){
+    const ids=tileDefinitions().map(function(tile){return tile.id;});
+    for(let i=ids.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const tmp=ids[i];ids[i]=ids[j];ids[j]=tmp;
+    }
+    tileOrder=ids;
+  }
+
+  function newPuzzle(options){
+    options=options||{};
+    if(options.advance) puzzleIndex=(puzzleIndex+1)%PUZZLES.length;
+    assignments=Object.create(null);
+    selectedTile='';
+    seconds=0;
+    mistakes=0;
+    hints=0;
+    completed=false;
+    undoStack=[];
+    shuffleBank();
+    if(refs.complete) refs.complete.setAttribute('aria-hidden','true');
+    buildBoard();
+    renderBank();
+    updateHud();
+    setStatus('Place the number tiles so every horizontal and vertical equation is true.');
+    startTimer();
+    save();
+  }
+
+  function setDifficulty(next){
+    if(!DIFFICULTIES[next]||next===difficulty) return;
+    difficulty=next;
+    root.querySelectorAll('[data-crossnumber-difficulty]').forEach(function(button){
+      const active=button.dataset.crossnumberDifficulty===difficulty;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-pressed',active?'true':'false');
+    });
+    newPuzzle({advance:false});
   }
 
   function save(){
     try{
       localStorage.setItem(STORAGE_KEY,JSON.stringify({
-        values:cells.map(function(cell){return cell.value||'';}),
+        puzzleIndex:puzzleIndex,
+        difficulty:difficulty,
+        assignments:assignments,
         seconds:seconds,
-        hintsUsed:hintsUsed,
-        completed:completed
+        mistakes:mistakes,
+        hints:hints,
+        completed:completed,
+        tileOrder:tileOrder
       }));
     }catch(_error){}
   }
@@ -259,163 +455,103 @@
   function restore(){
     try{
       const data=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
-      if(!data||!Array.isArray(data.values)) return;
-      cells.forEach(function(cell,index){cell.value=/^[0-9]$/.test(data.values[index]||'')?data.values[index]:'';});
+      if(!data) return false;
+      puzzleIndex=Math.max(0,Math.min(PUZZLES.length-1,Number(data.puzzleIndex)||0));
+      difficulty=DIFFICULTIES[data.difficulty]?data.difficulty:'medium';
+      assignments=Object.assign(Object.create(null),data.assignments||{});
       seconds=Math.max(0,Number(data.seconds)||0);
-      hintsUsed=Math.max(0,Number(data.hintsUsed)||0);
-      completed=Boolean(data.completed)&&cells.every(function(cell){return cell.value===solutionAt(cell);});
-      refs.timer.textContent=formatTime(seconds);
-      refs.hints.textContent=String(hintsUsed);
-      if(completed){
-        refs.complete.setAttribute('aria-hidden','false');
-        refs.completeTime.textContent=formatTime(seconds);
-      }
-    }catch(_error){}
+      mistakes=Math.max(0,Number(data.mistakes)||0);
+      hints=Math.max(0,Number(data.hints)||0);
+      completed=Boolean(data.completed);
+      tileOrder=Array.isArray(data.tileOrder)?data.tileOrder.slice():[];
+      return true;
+    }catch(_error){return false;}
   }
 
-  function clearFeedback(){
-    cells.forEach(function(cell){cell.classList.remove('is-wrong','is-correct');});
-  }
+  refs.bank.addEventListener('click',function(event){
+    const tile=event.target.closest('[data-tile-id]');
+    if(!tile) return;
+    selectedTile=selectedTile===tile.dataset.tileId?'':tile.dataset.tileId;
+    renderBank();
+    if(selectedTile) setStatus('Number '+tileValue(selectedTile)+' selected. Choose an empty equation cell.');
+  });
 
-  function check(){
-    clearFeedback();
-    let wrong=0,correct=0;
-    cells.forEach(function(cell){
-      if(!cell.value) return;
-      if(cell.value===solutionAt(cell)){cell.classList.add('is-correct');correct++;}
-      else{cell.classList.add('is-wrong');wrong++;}
-    });
-    refs.status.innerHTML=wrong?'<strong>'+wrong+' incorrect.</strong> Correct entries are lightly marked.':'<strong>No errors found.</strong> Keep going.';
-    window.setTimeout(clearFeedback,1400);
-    updateProgress();
-  }
+  refs.bank.addEventListener('dragstart',function(event){
+    const tile=event.target.closest('[data-tile-id]');
+    if(!tile) return;
+    dragTile=tile.dataset.tileId;
+    event.dataTransfer.effectAllowed='move';
+    try{event.dataTransfer.setData('text/plain',dragTile);}catch(_error){}
+  });
 
-  function hint(){
-    const pool=(currentEntry?currentEntry.cells.map(function(pair){return findCell(pair[0],pair[1]);}):cells)
-      .filter(function(cell){return cell&&cell.value!==solutionAt(cell);});
-    const target=pool[0]||cells.find(function(cell){return cell.value!==solutionAt(cell);});
-    if(!target) return;
-    target.value=solutionAt(target);
-    target.classList.add('is-correct');
-    hintsUsed++;
-    refs.hints.textContent=String(hintsUsed);
-    refs.status.innerHTML='<strong>Hint used.</strong> One digit has been revealed.';
-    target.focus();
-    setActive(target,chooseEntry(target,currentEntry&&currentEntry.direction));
-    window.setTimeout(function(){target.classList.remove('is-correct');},1000);
-    updateProgress();
-    save();
-  }
+  refs.board.addEventListener('dragover',function(event){
+    if(event.target.closest('[data-dropzone="true"]')) event.preventDefault();
+  });
 
-  function reset(){
-    cells.forEach(function(cell){cell.value='';cell.classList.remove('is-correct','is-wrong');});
-    seconds=0;
-    hintsUsed=0;
-    completed=false;
-    refs.timer.textContent='00:00';
-    refs.hints.textContent='0';
-    refs.complete.setAttribute('aria-hidden','true');
-    refs.status.innerHTML='<strong>Fresh grid.</strong> Select a clue or cell to begin.';
-    try{localStorage.removeItem(STORAGE_KEY);}catch(_error){}
-    updateProgress();
-    const first=cells[0];
-    if(first){first.focus();setActive(first,chooseEntry(first,'across'));}
+  refs.board.addEventListener('drop',function(event){
+    const cell=event.target.closest('[data-dropzone="true"]');
+    if(!cell) return;
+    event.preventDefault();
+    const tileId=dragTile||event.dataTransfer.getData('text/plain');
+    dragTile='';
+    if(tileId) placeTile(cell.dataset.node,tileId);
+  });
+
+  refs.board.addEventListener('click',function(event){
+    const cell=event.target.closest('[data-node]');
+    if(!cell||cell.classList.contains('is-fixed')) return;
+    const nodeId=cell.dataset.node;
     startTimer();
-  }
-
-  function finish(){
-    completed=true;
-    if(timerId){clearInterval(timerId);timerId=0;}
-    refs.complete.setAttribute('aria-hidden','false');
-    refs.completeTime.textContent=formatTime(seconds);
-    refs.status.innerHTML='<strong>Grid complete.</strong> Every crossing agrees.';
-    save();
-  }
-
-  function showDirection(direction){
-    root.querySelectorAll('[data-crossnumber-tab]').forEach(function(btn){
-      btn.setAttribute('aria-selected',btn.dataset.crossnumberTab===direction?'true':'false');
-    });
-    refs.across.hidden=direction!=='across';
-    refs.down.hidden=direction!=='down';
-  }
-
-  refs.grid.addEventListener('focusin',function(event){
-    const input=event.target.closest('input');
-    if(!input) return;
-    startTimer();
-    setActive(input,chooseEntry(input));
-  });
-
-  refs.grid.addEventListener('click',function(event){
-    const input=event.target.closest('input');
-    if(!input) return;
-    const candidates=entriesForCell(input);
-    if(currentCell===input&&candidates.length>1&&currentEntry){
-      const alternate=candidates.find(function(entry){return entry!==currentEntry;});
-      if(alternate) setActive(input,alternate);
-    }
-  });
-
-  refs.grid.addEventListener('input',function(event){
-    const input=event.target.closest('input');
-    if(!input) return;
-    input.value=(input.value.match(/[0-9]/g)||[]).slice(-1).join('');
-    input.classList.remove('is-wrong','is-correct');
-    if(input.value) moveWithinEntry(1);
-    updateProgress();
-    save();
-  });
-
-  refs.grid.addEventListener('keydown',function(event){
-    const input=event.target.closest('input');
-    if(!input) return;
-    if(event.key==='Backspace'&&!input.value){event.preventDefault();moveWithinEntry(-1);if(currentCell)currentCell.value='';updateProgress();save();return;}
-    if(event.key==='ArrowLeft'){event.preventDefault();moveSpatial(0,-1);}
-    if(event.key==='ArrowRight'){event.preventDefault();moveSpatial(0,1);}
-    if(event.key==='ArrowUp'){event.preventDefault();moveSpatial(-1,0);}
-    if(event.key==='ArrowDown'){event.preventDefault();moveSpatial(1,0);}
-    if(event.key===' '||event.key==='Enter'){
-      const candidates=entriesForCell(input);
-      if(candidates.length>1){event.preventDefault();const alternate=candidates.find(function(entry){return entry!==currentEntry;});if(alternate)setActive(input,alternate);}
+    if(selectedTile){placeTile(nodeId,selectedTile);return;}
+    if(assignments[nodeId]){
+      selectedTile=assignments[nodeId];
+      delete assignments[nodeId];
+      buildBoard();
+      renderBank();
+      updateHud();
+      setStatus('Tile picked up. Choose another equation cell.');
+      save();
+    }else{
+      setStatus('Select a number tile from the bank first.');
     }
   });
 
   root.addEventListener('click',function(event){
-    const clue=event.target.closest('[data-entry]');
-    if(clue){
-      const parts=clue.dataset.entry.split(':');
-      const entry=entries.find(function(item){return item.direction===parts[0]&&String(item.number)===parts[1];});
-      if(entry){
-        const pair=entry.cells[0];
-        const first=findCell(pair[0],pair[1]);
-        if(first){first.focus();setActive(first,entry);}
-      }
-      return;
-    }
-    const tab=event.target.closest('[data-crossnumber-tab]');
-    if(tab){showDirection(tab.dataset.crossnumberTab);return;}
+    const difficultyButton=event.target.closest('[data-crossnumber-difficulty]');
+    if(difficultyButton){setDifficulty(difficultyButton.dataset.crossnumberDifficulty);return;}
     const action=event.target.closest('[data-crossnumber-action]');
     if(!action) return;
     const name=action.dataset.crossnumberAction;
-    if(name==='check') check();
     if(name==='hint') hint();
-    if(name==='reset') reset();
+    if(name==='undo') undo();
+    if(name==='sort') sortBank();
+    if(name==='new') newPuzzle({advance:true});
   });
 
   document.addEventListener('baseline:crossnumber-open',function(){
-    const first=currentCell||cells[0];
-    if(first) setActive(first,chooseEntry(first,currentEntry&&currentEntry.direction));
+    startTimer();
   });
 
-  buildGrid();
-  buildClues();
-  restore();
-  updateProgress();
-  showDirection('across');
-  const first=cells.find(function(cell){return cell.value;})||cells[0];
-  if(first) setActive(first,chooseEntry(first,'across'));
-  if(!completed) startTimer();
-
+  const hadSave=restore();
+  root.querySelectorAll('[data-crossnumber-difficulty]').forEach(function(button){
+    const active=button.dataset.crossnumberDifficulty===difficulty;
+    button.classList.toggle('is-active',active);
+    button.setAttribute('aria-pressed',active?'true':'false');
+  });
+  if(!tileOrder.length) shuffleBank();
+  buildBoard();
+  renderBank();
+  updateHud();
+  if(completed&&allSolved()){
+    if(refs.complete){
+      refs.complete.setAttribute('aria-hidden','false');
+      if(refs.completeTime) refs.completeTime.textContent=formatTime(seconds);
+      if(refs.completeScore) refs.completeScore.textContent=String(computeScore());
+    }
+  }else{
+    completed=false;
+    if(hadSave) setStatus('Your Crossnumber has been restored.');
+    startTimer();
+  }
   window.addEventListener('pagehide',save);
 })();
