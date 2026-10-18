@@ -1,37 +1,18 @@
 const BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 const LEGACY_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
-const REALM='/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v='+BUILD;
+const REALM_BUILD='REALM_SINGLE_BOOTSTRAP_20261018_1';
+const REALM='/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
 const BADMINTON='/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2';
 const BADMINTON_CSS='/systems/baseline-games-hub/games/badminton-focused/css/badminton-focused.css?v=BADMINTON_FOCUSED_REFINED_20260707_2';
-const REALM_CSS='/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css?v='+BUILD;
 
 let realmPromise=null;
 let dartsPromise=null;
 let badmintonPromise=null;
-let lastSummary=0;
 let dartsObserver=null;
-let realmAttempt=0;
-let activatedRealmHost=null;
 
 document.documentElement.dataset.baselineGamesHubLoader=BUILD;
-
-function canSave(){
-  const storage=window.BaselineGameStorage;
-  return Boolean(storage&&typeof storage.canSave==='function'&&storage.canSave());
-}
-
-function addRealmCss(){
-  const old=document.querySelector('link[href*="ninja-training-rebuild.css"]');
-  if(old)old.dataset.ninjaTrainingRebuild='static';
-  if(document.querySelector('[data-realm-runtime-authority]'))return;
-  const link=document.createElement('link');
-  link.rel='stylesheet';
-  link.href=REALM_CSS;
-  link.dataset.realmRuntimeAuthority=BUILD;
-  document.head.appendChild(link);
-}
 
 function ready(){
   return Boolean(window.BASELINE_GAMES_HUB_CORE_READY&&window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES);
@@ -57,20 +38,6 @@ function waitCore(){
   });
 }
 
-function stable(base){
-  if(base.__realmStableBuild===BUILD)return base;
-  const copy=Object.assign({},base,{__realmStableBuild:BUILD});
-  copy.renderGamesList=function(){};
-  copy.syncHashState=function(){};
-  copy.renderHubSummary=function(){
-    const now=Date.now();
-    if(now-lastSummary<5000)return;
-    lastSummary=now;
-    try{base.renderHubSummary();}catch(_error){}
-  };
-  return copy;
-}
-
 function real(host){
   return Boolean(host&&!host.__gamesHubGuard&&typeof host.configure==='function'&&typeof host.render==='function');
 }
@@ -83,7 +50,7 @@ function clearRealmFailure(){
 
 function showRealmFailure(error){
   document.documentElement.removeAttribute('data-baseline-realm-loading');
-  document.documentElement.dataset.baselineRealmUnavailable=BUILD;
+  document.documentElement.dataset.baselineRealmUnavailable=REALM_BUILD;
   const shell=document.querySelector('#ninjaPanel .realm-shell-card')||document.getElementById('ninjaPanel');
   if(!shell||document.getElementById('baselineRealmLoaderFailure'))return;
   const panel=document.createElement('section');
@@ -95,83 +62,28 @@ function showRealmFailure(error){
   console.error('[Baseline Games Hub] Realm load failed.',error);
 }
 
-function ensureActorElements(){
-  const runner=document.getElementById('ninjaRunnerWrap');
-  const enemy=document.getElementById('ninjaEnemyWrap');
-  if(runner&&!runner.querySelector('.ninja-runtime-sprite--runner')){
-    const sprite=document.createElement('span');
-    sprite.className='ninja-runtime-sprite ninja-runtime-sprite--runner';
-    sprite.setAttribute('aria-hidden','true');
-    runner.appendChild(sprite);
-  }
-  if(enemy&&!enemy.querySelector('.ninja-runtime-sprite--enemy')){
-    const sprite=document.createElement('span');
-    sprite.className='ninja-runtime-sprite ninja-runtime-sprite--enemy';
-    sprite.setAttribute('aria-hidden','true');
-    enemy.appendChild(sprite);
-  }
-  if(enemy&&!enemy.dataset.enemyKind)enemy.dataset.enemyKind='scout';
-}
-
-async function activateRealm(host){
-  const base=await waitCore();
-  window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES=stable(base);
-
-  if(!host.getStateService())host.configure(window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES);
-  ensureActorElements();
-
-  if(activatedRealmHost!==host){
-    host.applyOfflineProgress();host.render();
-    activatedRealmHost=host;
-  }else{
-    host.render();
-  }
-
-  try{
-    // Basecamp is the canonical Realm entry point. Individual Realm
-    // destinations are entered only after an explicit player choice.
-    await host.sceneRouter.navigate('basecamp',{initial:true,source:'games-hub'});
-  }catch(error){
-    console.error('[Baseline Games Hub] Basecamp scene navigation failed.',error);
-  }
-
-  ensureActorElements();
-  host.render();
-  host.startLoop();
-
-  Promise.resolve(typeof host.whenAssetsReady==='function'?host.whenAssetsReady():null)
-    .then(()=>{ensureActorElements();host.render();})
-    .catch(error=>console.warn('[Baseline Games Hub] Realm artwork preload was incomplete.',error));
-
-  clearRealmFailure();
-  delete window.BASELINE_REALM_LOAD_ERROR;
-  document.documentElement.dataset.baselineRealmRuntimeActive=BUILD;
-  document.documentElement.dataset.baselineRealmProgress='active';
-  document.documentElement.dataset.baselineRealmSaving=canSave()?'account':'temporary';
-  return host;
-}
-
+/* Compatibility loader only. realm-entry.js is the sole Realm bootstrap,
+   scene-navigation and presentation authority. This wrapper merely waits for
+   the canonical host so Games Hub callers can keep using BaselineRealmLoader. */
 async function loadRealm(options){
   const opts=options||{};
   if(opts.retry){
     realmPromise=null;
-    activatedRealmHost=null;
-    realmAttempt+=1;
     clearRealmFailure();
   }
-
-  addRealmCss();
-  document.documentElement.dataset.baselineRealmLoading=BUILD;
-
+  document.documentElement.dataset.baselineRealmLoading=REALM_BUILD;
   if(!realmPromise){
     realmPromise=(async()=>{
-      const existing=window.BaselineRealmHost;
-      if(real(existing))return activateRealm(existing);
-      await waitCore();
-      const module=await import(realmAttempt ? (REALM+'&attempt='+realmAttempt) : REALM);
+      const dependencies=await waitCore();
+      const module=await import(opts.retry ? (REALM+'&retry='+Date.now()) : REALM);
       const host=module.BaselineRealmHost||window.BaselineRealmHost;
-      if(!real(host))throw new Error('Real Realm host missing');
-      return activateRealm(host);
+      if(!real(host))throw new Error('Canonical Realm host missing');
+      if(typeof host.isConfigured==='function'&&!host.isConfigured()) host.configure(dependencies);
+      if(typeof host.isConfigured==='function'&&!host.isConfigured()) throw new Error('Canonical Realm host did not configure');
+      clearRealmFailure();
+      delete window.BASELINE_REALM_LOAD_ERROR;
+      document.documentElement.dataset.baselineRealmRuntimeActive=host.build||REALM_BUILD;
+      return host;
     })().catch(error=>{
       realmPromise=null;
       window.BASELINE_REALM_LOAD_ERROR=error;
@@ -435,7 +347,6 @@ function openRealmFromRoute(){
 }
 
 function init(){
-  addRealmCss();
   waitCore().then(async()=>{
     watchDarts();
     try{
