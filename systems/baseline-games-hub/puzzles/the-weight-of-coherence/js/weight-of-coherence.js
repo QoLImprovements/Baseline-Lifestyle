@@ -19,7 +19,20 @@
     alt:'The Weight of Coherence — a symbolic person holding an unfinished structure amid green, red and blue light.',
     description:'The unfinished structure is not complete, yet it must still be carried forward. Its strength depends on different parts remaining in relationship rather than pulling apart. The weight lies in sustaining that integrity while continuing to build.'
   });
-  let activePuzzle = registry?.findJigsaw?.('weight-of-coherence') || FALLBACK_PUZZLE;
+  function initialPuzzleFromRoute(){
+    if(!registry) return null;
+    try{
+      const libraryId=String(window.BaselinePuzzlesLibrary?.getJigsaw?.()||'').trim();
+      const params=new URLSearchParams(window.location.search||'');
+      const routeId=String(params.get('jigsaw')||'').trim();
+      const id=libraryId||routeId;
+      return id ? (registry.findJigsaw?.(id)||null) : null;
+    }catch(_error){
+      return null;
+    }
+  }
+
+  let activePuzzle = initialPuzzleFromRoute() || registry?.findJigsaw?.('weight-of-coherence') || FALLBACK_PUZZLE;
   let BOARD_WIDTH = Number(activePuzzle.width) || 1122;
   let BOARD_HEIGHT = Number(activePuzzle.height) || 1402;
   let APP = activePuzzle.app || 'weightcoherence';

@@ -18,6 +18,7 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   const badminton=read('systems/baseline-badminton-session/js/badminton-session-game-plan.js');
   const games=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
   const puzzles=read('systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js');
+  const jigsawEngine=read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
   const puzzleSupport=read('systems/baseline-games-hub/js/puzzle-game-support.mjs');
   const blockGrid=read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
   const colourSort=read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
@@ -60,6 +61,9 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   assert.match(puzzles,/params\.get\('jigsaw'\)/);
   assert.match(puzzles,/getJigsaw:function\(\)/);
   assert.match(puzzles,/addEventListener\('popstate'/);
+  assert.match(jigsawEngine,/function initialPuzzleFromRoute/);
+  assert.match(jigsawEngine,/params\.get\('jigsaw'\)/);
+  assert.match(jigsawEngine,/BaselinePuzzlesLibrary/);
 
   assert.match(puzzleSupport,/historyMode = 'push'/);
   assert.match(blockGrid,/blockTabFromLocation/);
