@@ -8,6 +8,13 @@
       note:'Image-based piece puzzles arranged into collections, with selectable piece counts and saved progress.',
       meta:'4 jigsaws available',
       preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
+    }),
+    Object.freeze({
+      id:'crossnumber',
+      name:'Crossnumber',
+      note:'A numerical crossword where arithmetic clues intersect through shared digits.',
+      meta:'Classic grid',
+      preview:'/systems/baseline-games-hub/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_PUZZLE_20261018_1'
     })
   ]);
 
