@@ -21,6 +21,10 @@ const inputBindingsSource = fs.readFileSync(
   new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js', import.meta.url),
   'utf8'
 );
+const realmEntrySource = fs.readFileSync(
+  new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js', import.meta.url),
+  'utf8'
+);
 
 function createStorage() {
   const values = new Map();
@@ -181,4 +185,12 @@ test('audio, reduced motion and performance budgets expose deterministic shared 
   tick = 50;
   assert.equal(monitor.measureInteraction('test', 0).passed, true);
   assert.equal(monitor.report().passed, true);
+});
+
+
+test('legacy Ninja profile is normalised before the combat runtime is created', () => {
+  const normaliseIndex = realmEntrySource.indexOf("syncProfileRealm(activeProfile(), { mirrorGuest:false })");
+  const runtimeIndex = realmEntrySource.indexOf('runtime = createNinjaTrainingRuntime({');
+  assert.ok(normaliseIndex >= 0, 'Realm entry must normalise the Games Hub Ninja profile');
+  assert.ok(runtimeIndex > normaliseIndex, 'profile normalisation must happen before Ninja runtime creation');
 });
