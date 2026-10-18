@@ -18,22 +18,25 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
   assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ZOOM_HELP_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ZOOM_HELP_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SCROLL_ROOT_STABILITY_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
 
-test('successful and failed piece drops keep the non-fullscreen viewport stable', () => {
+test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll root', () => {
   assert.match(html, /id="weightCoherenceBoard"[^>]*tabindex="-1"/);
   assert.match(js, /function stabilisePieceFocus\(\)\{/);
-  assert.match(js, /active\.closest\('\[data-piece-id\]'\)/);
   assert.match(js, /refs\.board\.focus\(\{preventScroll:true\}\)/);
-  assert.match(js, /function renderTray\(\)\{\s*if\(!refs\.tray\) return;\s*stabilisePieceFocus\(\);/);
-  assert.match(js, /if\(drag\.moved\)\{[\s\S]*?stabilisePieceFocus\(\);/);
-  assert.match(js, /function pageScrollSnapshot\(\)\{/);
-  assert.match(js, /function restorePageScroll\(snapshot\)\{/);
+  assert.match(js, /function pageScrollRoot\(\)\{[\s\S]*?document\.querySelector\('\.bl-scroll'\)/);
+  assert.match(js, /function pageScrollSnapshot\(\)\{[\s\S]*?rootY:shell \? Number\(shell\.scrollTop\)\|\|0 : 0/);
+  assert.match(js, /function restorePageScroll\(snapshot\)\{[\s\S]*?scrollRoot\.scrollTo\(\{left:snapshot\.rootX,top:snapshot\.rootY,behavior:'auto'\}\)/);
+  assert.match(js, /function captureInteractionScroll\(event\)\{[\s\S]*?control\.focus\(\{preventScroll:true\}\)[\s\S]*?restorePageScroll\(snapshot\)/);
+  assert.match(js, /root\.addEventListener\('pointerdown',captureInteractionScroll,true\)/);
+  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(\)/);
+  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(\)/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
   assert.match(js, /setStatus\('That piece belongs elsewhere\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
+  assert.doesNotMatch(js, /refs\.board\.scrollIntoView/);
   assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
 });
 
