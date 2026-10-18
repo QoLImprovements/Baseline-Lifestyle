@@ -48,12 +48,12 @@
       group:'Symbolic',
       title:'Tears Without Witness',
       app:'tearswithoutwitness',
-      image:'/systems/baseline-games-hub/puzzles/tears-without-witness/art/tears-without-witness.webp?v=TEARS_WITHOUT_WITNESS_20261018_1',
-      width:1122,
-      height:1402,
-      alt:'A weathered stone figure crouches in grief as streams of water fall from its face and body while people pass without turning toward it.',
-      libraryDescription:'Grief pours visibly from a fractured figure while the surrounding world continues past, capturing the isolation of pain that is present, exposed and still unacknowledged.',
-      description:'The figure is not hiding its suffering: water runs from its face and broken body in full view, yet the people around it continue onward without stopping or turning back. The stone surface suggests the hardening that can follow prolonged hurt, while the flowing water shows that feeling has not disappeared beneath that protection. The work centres the experience of pain being expressed but not recognised — tears that are seen in the world, yet receive no witness, understanding or response.'
+      image:'/systems/baseline-games-hub/puzzles/tears-without-witness/art/tears-without-witness.png?v=TEARS_WITHOUT_WITNESS_CORRECT_ART_20261018_1',
+      width:1536,
+      height:1024,
+      alt:'A weathered stone figure crouches defensively as water pours from its face and body while the stone behind it fractures under violent external force.',
+      libraryDescription:'A fractured figure curls inward beneath overwhelming external pressure while water continues to pour from it, symbolising pain that is visible yet remains unrecognised.',
+      description:'The figure folds inward and shields itself while the stone around and behind it is broken apart by forces pressing in from outside. Water continues to stream from the face and body, making the grief unmistakably present even as the figure hardens and braces against further impact. The work centres pain that has been expressed but not meaningfully recognised: suffering remains visible, yet without acknowledgement, understanding or protection.'
     }),
     Object.freeze({
       id:'black-panther',
