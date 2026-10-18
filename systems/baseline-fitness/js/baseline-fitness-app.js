@@ -1102,7 +1102,7 @@
 
   function bindUi() {
     document.addEventListener('baseline:fitness-saved-data-updated',()=>{bodyProfileMemory=global.BASELINE_FITNESS_SAVED_DATA?.getProfile?.()||{};activeWorkoutMemory=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.()||null;fillBodyProfile();renderCurrentWorkout();});
-    $('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView, 'push')));
+    $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView, 'push')));
     $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
     $('#bodyProfileForm')?.addEventListener('submit',(event)=>{event.preventDefault();const profile=profileFromForm();bodyProfileMemory=profile;global.BASELINE_FITNESS_SAVED_DATA?.saveProfile?.(profile);renderBodyCalculations(profile);renderBodySummary();if($('#bodyProfileStatus'))$('#bodyProfileStatus').textContent='Body profile save queued.';});
