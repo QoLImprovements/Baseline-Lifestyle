@@ -7,7 +7,7 @@
       name:'Jigsaws',
       note:'Image-based piece puzzles arranged into collections, with selectable piece counts and saved progress.',
       meta:'4 jigsaws available',
-      preview:'/systems/baseline-games-hub/puzzles/the-weight-of-coherence/art/the-weight-of-coherence.png?v=WEIGHT_OF_COHERENCE_FULL_20261016_2'
+      preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
     })
   ]);
 
