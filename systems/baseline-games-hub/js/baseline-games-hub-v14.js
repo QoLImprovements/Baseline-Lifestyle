@@ -276,7 +276,7 @@ async function loadBadminton(options){
 }
 async function openBadminton(options){
   const api=await loadBadminton(options);
-  return api.open();
+  return api.open(options||{});
 }
 
 function clearDartsFailure(){ document.getElementById('dartsFocusedLoaderFailure')?.remove(); }
@@ -318,7 +318,7 @@ async function loadDarts(options){
 }
 async function openDarts(options){
   const api=await loadDarts(options);
-  const panel=api.open();
+  const panel=api.open(options||{});
   window.setTimeout(()=>{
     if(!document.getElementById('dartsFocusedPanel')?.classList.contains('is-active')) showDartsFailure(new Error('Darts Focused panel did not activate'));
   },80);
@@ -385,9 +385,19 @@ function wantsDarts(){
   return params.get('game')==='darts-focused'||hash==='darts-focused';
 }
 
+function focusedOverviewRoute(){
+  return /^\/baseline-games-hub\/games-hub(?:\/games-list)?\/?$/i.test(String(location.pathname||''));
+}
+
 function openDartsFromRoute(){
-  if(!wantsDarts())return Promise.resolve(null);
-  return openDarts().catch(error=>{console.error(error);return null;});
+  if(!wantsDarts()){
+    if(window.DartsFocusedGames&&document.getElementById('dartsFocusedPanel')?.classList.contains('is-active')){
+      window.DartsFocusedGames.close({restoreOverview:focusedOverviewRoute(),historyMode:'none'});
+    }
+    return Promise.resolve(null);
+  }
+  const clean=/\/darts-focused\/?$/i.test(String(location.pathname||''))&&!location.hash;
+  return openDarts({historyMode:clean?'none':'replace'}).catch(error=>{console.error(error);return null;});
 }
 
 
@@ -398,8 +408,14 @@ function wantsBadminton(){
   return params.get('game')==='badminton-focused'||hash==='badminton-focused';
 }
 function openBadmintonFromRoute(){
-  if(!wantsBadminton())return Promise.resolve(null);
-  return openBadminton().catch(error=>{console.error(error);return null;});
+  if(!wantsBadminton()){
+    if(window.BadmintonFocusedGames&&document.getElementById('badmintonFocusedPanel')?.classList.contains('is-active')){
+      window.BadmintonFocusedGames.close({restoreOverview:focusedOverviewRoute(),historyMode:'none'});
+    }
+    return Promise.resolve(null);
+  }
+  const clean=/\/badminton-focused\/?$/i.test(String(location.pathname||''))&&!location.hash;
+  return openBadminton({historyMode:clean?'none':'replace'}).catch(error=>{console.error(error);return null;});
 }
 
 function wantsRealm(){
@@ -437,7 +453,13 @@ function init(){
   });
 }
 
-window.addEventListener('hashchange',()=>{openDartsFromRoute();openBadmintonFromRoute();openRealmFromRoute();});
+function syncFocusedRoutes(){
+  openDartsFromRoute();
+  openBadmintonFromRoute();
+  openRealmFromRoute();
+}
+window.addEventListener('hashchange',syncFocusedRoutes);
+window.addEventListener('popstate',syncFocusedRoutes);
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
 else init();
 
