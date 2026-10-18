@@ -768,6 +768,7 @@
   function movePieceToSortBin(id,binIndex){
     if(!state || state.completed || state.placed.has(id)) return;
     const index=Math.max(0,Math.min(3,Number(binIndex)||0));
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     removePieceFromSortBins(id);
     state.sortBins[index].push(id);
     selectedPieceId=null;
@@ -778,6 +779,7 @@
 
   function movePieceToMainTray(id){
     if(!state || state.completed || state.placed.has(id)) return;
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     const removed=removePieceFromSortBins(id);
     if(!removed) return;
     state.order=[id].concat(state.order.filter(function(value){ return value!==id; }));
@@ -790,6 +792,7 @@
 
   function placePiece(id){
     if(!state || state.completed || state.placed.has(id)) return;
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     removePieceFromSortBins(id);
     state.placed.add(id);
     drawPieceToBoard(placedCtx,id);
@@ -913,7 +916,10 @@
       restorePageScroll(scrollSnapshot);
       return true;
     }
-    setStatus('That piece belongs elsewhere.','warning');
+    returnHighlightPieceId=id;
+    selectedPieceId=null;
+    syncSelectedPieceClasses();
+    setStatus('That piece belongs elsewhere. Its tray piece is highlighted so you can find it again.','warning');
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
     root.classList.add('is-wrong-drop');
@@ -989,6 +995,7 @@
     const dx=event.clientX-dragState.startX, dy=event.clientY-dragState.startY;
     if(!dragState.moved && Math.hypot(dx,dy)>5){
       dragState.moved=true;
+      interactionScrollSnapshot=null;
       dragState.ghost=makeDragGhost(dragState.button,event);
     }
     if(dragState.ghost) moveDragGhost(dragState.ghost,event.clientX,event.clientY);
@@ -1601,6 +1608,10 @@
     }
     const id=Number(button.dataset.pieceId);
     if(!Number.isInteger(id)) return;
+    if(returnHighlightPieceId===id){
+      returnHighlightPieceId=null;
+      syncSelectedPieceClasses();
+    }
     dragState={ id:id, button:button, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
     window.addEventListener('pointermove',onDragMove,true);
     window.addEventListener('pointerup',endDrag,true);
