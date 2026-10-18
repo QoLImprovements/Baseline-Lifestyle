@@ -55,48 +55,101 @@
     }).join('');
   }
 
-  function showView(view){
-    activeView=view;
-    refs.overview.hidden=view!=='overview';
-    refs.jigsaws.hidden=view!=='jigsaws';
-    refs.player.hidden=view!=='player';
+  function routeStateFromLocation(){
+    if(!/^\/baseline-games-hub\/games-hub\/puzzles\/?$/i.test(String(location.pathname || ''))) return { view:'overview',jigsaw:'' };
+    try{
+      const params=new URLSearchParams(location.search || '');
+      const jigsaw=String(params.get('jigsaw') || '').trim();
+      if(jigsaw && registry.findJigsaw(jigsaw)) return { view:'player',jigsaw:jigsaw };
+      if(String(params.get('puzzle') || '') === 'jigsaws') return { view:'jigsaws',jigsaw:'' };
+    }catch(_error){}
+    return { view:'overview',jigsaw:'' };
   }
 
-  function openJigsaw(id){
+  function routeUrl(view,jigsaw){
+    const params=new URLSearchParams();
+    if(view==='player' && jigsaw) params.set('jigsaw',jigsaw);
+    else if(view==='jigsaws') params.set('puzzle','jigsaws');
+    const query=params.toString();
+    return '/baseline-games-hub/games-hub/puzzles' + (query ? ('?' + query) : '');
+  }
+
+  function writeRoute(view,jigsaw,historyMode){
+    if(!historyMode || !/^\/baseline-games-hub\/games-hub\/puzzles\/?$/i.test(String(location.pathname || ''))) return;
+    try{
+      const nextUrl=routeUrl(view,jigsaw);
+      const currentUrl=location.pathname+location.search;
+      if(nextUrl===currentUrl) return;
+      const state={ baselinePuzzles:true,view:view,jigsaw:jigsaw || '' };
+      if(historyMode==='push') history.pushState(state,'',nextUrl);
+      else history.replaceState(state,'',nextUrl);
+    }catch(_error){}
+  }
+
+  function showView(view,options){
+    const opts=options || {};
+    activeView=['overview','jigsaws','player'].includes(view)?view:'overview';
+    refs.overview.hidden=activeView!=='overview';
+    refs.jigsaws.hidden=activeView!=='jigsaws';
+    refs.player.hidden=activeView!=='player';
+    writeRoute(activeView,activeJigsaw,opts.historyMode || '');
+  }
+
+  function openJigsaw(id,options){
+    const opts=options || {};
     const puzzle=registry.findJigsaw(id);
     if(!puzzle) return;
     activeJigsaw=puzzle.id;
     renderJigsaws();
     document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
-    showView('player');
-    try{ refs.player.scrollIntoView({behavior:window.innerWidth<=760?'auto':'smooth',block:'start'}); }catch(_error){}
+    showView('player',{historyMode:opts.historyMode || ''});
+    if(opts.scroll !== false){
+      try{ refs.player.scrollIntoView({behavior:window.innerWidth<=760?'auto':'smooth',block:'start'}); }catch(_error){}
+    }
+  }
+
+  function restoreRoute(){
+    const route=routeStateFromLocation();
+    if(route.view==='player' && route.jigsaw){
+      openJigsaw(route.jigsaw,{historyMode:'',scroll:false});
+      return;
+    }
+    activeJigsaw='';
+    renderJigsaws();
+    showView(route.view,{historyMode:''});
   }
 
   document.addEventListener('click',function(event){
     const typeButton=event.target.closest('[data-puzzle-type]');
     if(typeButton){
-      if(typeButton.getAttribute('data-puzzle-type')==='jigsaws') showView('jigsaws');
+      if(typeButton.getAttribute('data-puzzle-type')==='jigsaws') showView('jigsaws',{historyMode:'push'});
       return;
     }
     const jigsawButton=event.target.closest('[data-jigsaw-id]');
     if(jigsawButton){
-      openJigsaw(jigsawButton.getAttribute('data-jigsaw-id'));
+      openJigsaw(jigsawButton.getAttribute('data-jigsaw-id'),{historyMode:'push'});
       return;
     }
     const back=event.target.closest('[data-puzzles-back]');
     if(back){
-      showView(back.getAttribute('data-puzzles-back')==='overview'?'overview':'jigsaws');
+      activeJigsaw='';
+      showView(back.getAttribute('data-puzzles-back')==='overview'?'overview':'jigsaws',{historyMode:'push'});
     }
   });
 
   renderTypes();
   renderJigsaws();
-  showView('overview');
+  restoreRoute();
+  window.addEventListener('popstate',function(){
+    if(/^\/baseline-games-hub\/games-hub\/puzzles\/?$/i.test(String(location.pathname || ''))) restoreRoute();
+  });
 
   window.BaselinePuzzlesLibrary=Object.freeze({
     openJigsaw:openJigsaw,
-    showOverview:function(){ showView('overview'); },
-    showJigsaws:function(){ showView('jigsaws'); },
-    getView:function(){ return activeView; }
+    showOverview:function(){ activeJigsaw=''; showView('overview'); },
+    showJigsaws:function(){ activeJigsaw=''; showView('jigsaws'); },
+    getView:function(){ return activeView; },
+    getJigsaw:function(){ return activeJigsaw; },
+    restoreRoute:restoreRoute
   });
 })();
