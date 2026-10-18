@@ -75,6 +75,8 @@ test('canonical clean route families can be requested directly for browser refre
     '/baseline-badminton-session/session-history',
     '/baseline-fitness/system',
     '/baseline-fitness/my-plan',
+    '/baseline-fitness/my-plan/completed',
+    '/baseline-fitness/my-plan/future',
     '/baseline-fitness/my-body',
     '/baseline-fitness/my-body/profile',
     '/baseline-fitness/my-body/services',
