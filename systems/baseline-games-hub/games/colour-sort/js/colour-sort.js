@@ -224,7 +224,6 @@ function renderGame() {
         <div class="stat-pill">Moves <span>${active.moves}</span></div>
         <div class="stat-pill">Best <span>${profile.bestMoves[active.level] || '—'}</span></div>
       </div>
-      <button class="action secondary" data-colour-action="fullscreen" type="button">${document.fullscreenElement === root ? 'Exit Full Screen' : 'Full Screen'}</button>
     </div>
     <div class="summary-box round-status-card" aria-live="polite">${statusHtml()}</div>
     <div class="colour-sort-progress-head"><div><strong>Level Progress</strong><span>Drag a bottle onto a valid destination, or tap source then destination.</span></div><strong>${sorted} / ${colours}</strong></div>
@@ -233,7 +232,7 @@ function renderGame() {
       ${solved ? `<div class="colour-sort-complete-banner" aria-hidden="true"><strong>LEVEL ${active.level} COMPLETE</strong><span>${active.moves} moves</span></div>` : ''}
       ${active.bottles.map(bottleHtml).join('')}
     </div>
-    <div class="game-window-actions">
+    <div class="game-window-actions colour-sort-quiet-actions">
       <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
       <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
       <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
@@ -358,7 +357,23 @@ function createBottleDragGhost(source) {
 
 function bottleAtPointer(clientX, clientY) {
   const element = document.elementFromPoint(clientX, clientY);
-  const bottle = element instanceof Element ? element.closest('#colourSortGameCard [data-colour-bottle]') : null;
+  let bottle = element instanceof Element ? element.closest('#colourSortGameCard [data-colour-bottle]') : null;
+
+  // Fingers obscure the exact drop point. On coarse pointers, accept a nearby
+  // bottle when the release lands just outside its visual glass.
+  if (!bottle && window.matchMedia?.('(pointer:coarse)').matches) {
+    let best = null;
+    let bestDistance = Infinity;
+    document.querySelectorAll('#colourSortGameCard [data-colour-bottle]').forEach(candidate => {
+      const rect = candidate.getBoundingClientRect();
+      const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
+      const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
+      const distance = Math.hypot(dx, dy);
+      if (distance < bestDistance) { best = candidate; bestDistance = distance; }
+    });
+    if (bestDistance <= 34) bottle = best;
+  }
+
   if (!bottle) return null;
   const index = Number(bottle.dataset.colourBottle);
   return Number.isInteger(index) ? { element:bottle, index } : null;
@@ -818,7 +833,12 @@ function panelHtml() {
     <div class="game-shell">
       <div class="game-header">
         <div><h2 id="colourSortTitle" tabindex="-1">Colour Sort</h2><p class="note">Move exposed colour runs between bottles until every filled bottle contains one colour only.</p></div>
-        <div class="link-actions"><button class="action secondary" data-close-puzzle-game="colour-sort" type="button">Back To Games Overview</button></div>
+        <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="colour-sort">
+          <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Sequencing, planning, state tracking, inhibition and multi-step problem solving." type="button" aria-label="What Colour Sort develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
+          <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty bottle or onto the same exposed colour. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
+          <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
+          <button class="action secondary game-shell-action" data-close-puzzle-game="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
+        </div>
       </div>
       <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
         <div id="colourSortGameInfo"></div>
@@ -843,7 +863,7 @@ const shell = createPuzzleHubShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_4',
+  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
