@@ -275,11 +275,42 @@ function renderProgress() {
     </div>`;
 }
 
-function setTab(name) {
-  document.querySelectorAll('[data-colour-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.colourTab === name));
+const COLOUR_TABS = Object.freeze(['game','levels','progress']);
+
+function colourTabFromLocation() {
+  if (!/^\/baseline-games-hub\/games-hub\/colour-sort\/?$/i.test(String(location.pathname || ''))) return 'game';
+  try {
+    const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
+    return COLOUR_TABS.includes(requested) ? requested : 'game';
+  } catch (_) { return 'game'; }
+}
+
+function colourTabUrl(name) {
+  const next = COLOUR_TABS.includes(name) ? name : 'game';
+  const url = new URL(location.href);
+  url.pathname = '/baseline-games-hub/games-hub/colour-sort';
+  if (next === 'game') url.searchParams.delete('view');
+  else url.searchParams.set('view', next);
+  url.hash = '';
+  return url.pathname + url.search;
+}
+
+function setTab(name, historyMode = 'none') {
+  const next = COLOUR_TABS.includes(name) ? name : 'game';
+  document.querySelectorAll('[data-colour-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.colourTab === next));
   for (const id of ['Game','Levels','Progress']) {
     const card = document.getElementById(`colourSort${id}Card`);
-    if (card) card.hidden = id.toLowerCase() !== name;
+    if (card) card.hidden = id.toLowerCase() !== next;
+  }
+  if (historyMode !== 'none' && /^\/baseline-games-hub\/games-hub\/colour-sort\/?$/i.test(String(location.pathname || ''))) {
+    try {
+      const nextUrl = colourTabUrl(next);
+      const currentUrl = location.pathname + location.search + location.hash;
+      if (currentUrl !== nextUrl) {
+        const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
+        history[method]({ puzzleGame:'colour-sort', view:next }, '', nextUrl);
+      }
+    } catch (_) {}
   }
 }
 
@@ -765,7 +796,7 @@ function handleClick(event) {
   const level = target.closest('[data-colour-level]')?.getAttribute('data-colour-level');
   if (level) { selectLevel(Number(level)); return; }
   const tab = target.closest('[data-colour-tab]')?.getAttribute('data-colour-tab');
-  if (tab) { setTab(tab); return; }
+  if (tab) { setTab(tab, 'push'); return; }
   const action = target.closest('[data-colour-action]')?.getAttribute('data-colour-action');
   if (action === 'start') startLevel(profile.selectedLevel);
   if (action === 'undo') undo();
@@ -817,7 +848,7 @@ const shell = createPuzzleHubShell({
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
   panelHtml,
-  onOpen:() => { render(); },
+  onOpen:() => { render(); setTab(colourTabFromLocation(), 'none'); },
   onClose:() => { cleanupBottleDrag(); selectedBottle = -1; hint = null; }
 });
 
