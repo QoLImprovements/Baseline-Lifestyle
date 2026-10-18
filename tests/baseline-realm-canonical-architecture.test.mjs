@@ -91,7 +91,7 @@ test('Games Hub compatibility loader does not compete with the canonical Realm b
   assert.doesNotMatch(optional,/ninja-training-final-authority\.css|ninja-training-rebuild\.css|data-realm-runtime-authority/);
   assert.doesNotMatch(optional,/function activateRealm\(|sceneRouter\.navigate\('basecamp',\{initial:true,source:'games-hub'\}\)/);
   assert.doesNotMatch(optional,/host\.applyOfflineProgress\(\)|host\.startLoop\(\)/);
-  assert.match(realm,/Realm runtime lifecycle belongs here/);
-  assert.match(realm,/runtime\?\.applyOfflineProgress\?\.\(\)/);
-  assert.match(realm,/runtime\?\.startLoop\?\.\(\)/);
+  assert.doesNotMatch(optional,/host\.render\(\)|host\.applyOfflineProgress\(\)|host\.startLoop\(\)/);
+  assert.match(realm,/bindRealmInputs\(\{ runtime, inputManager, eventBus, sceneRouter \}\)/);
+  assert.match(realm,/inputManager\.start\(\)/);
 });
