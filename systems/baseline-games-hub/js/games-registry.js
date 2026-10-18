@@ -19,6 +19,7 @@
     'unheardsignal',
     'pantherjigsaw',
     'bearjigsaw',
+    'crossnumber',
     'meridiangrove'
   ]);
 
