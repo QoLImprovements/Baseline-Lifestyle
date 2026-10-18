@@ -85,6 +85,7 @@
   let state = null;
   let timerHandle = 0;
   let selectedPieceId = null;
+  let returnHighlightPieceId = null;
   let dragState = null;
   let suppressTrayClickUntil = 0;
   let imageReady = false;
@@ -417,7 +418,9 @@
 
   function syncSelectedPieceClasses(){
     root.querySelectorAll('[data-piece-id]').forEach(function(button){
-      button.classList.toggle('is-selected',Number(button.dataset.pieceId)===selectedPieceId);
+      const id=Number(button.dataset.pieceId);
+      button.classList.toggle('is-selected',id===selectedPieceId);
+      button.classList.toggle('is-return-highlight',id===returnHighlightPieceId);
       button.setAttribute('aria-disabled',String(viewOn));
     });
   }
@@ -454,6 +457,7 @@
         btn.disabled=true;
         btn.setAttribute('aria-busy','true');
         if(selectedPieceId===id) btn.classList.add('is-selected');
+        if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
         btn.setAttribute('aria-disabled',String(viewOn));
         const placeholder=document.createElement('span');
         placeholder.className='weight-coherence-piece-placeholder';
@@ -532,6 +536,7 @@
       btn.disabled=true;
       btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
+      if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
       btn.setAttribute('aria-disabled',String(viewOn));
       const placeholder=document.createElement('span');
       placeholder.className='weight-coherence-piece-placeholder';
@@ -662,6 +667,7 @@
     syncViewInteractionState();
     state=null;
     selectedPieceId=null;
+    returnHighlightPieceId=null;
     dragState=null;
     selectedDifficulty=100;
     refs.workspace.hidden=true;
@@ -704,6 +710,7 @@
       startedAt:Date.now()
     };
     selectedPieceId=null;
+    returnHighlightPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
     syncViewInteractionState();
