@@ -316,11 +316,42 @@ function renderProgress() {
     </div>`;
 }
 
-function setTab(name) {
-  document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === name));
+const BLOCK_TABS = Object.freeze(['game','modes','progress']);
+
+function blockTabFromLocation() {
+  if (!/^\/baseline-games-hub\/games-hub\/block-grid\/?$/i.test(String(location.pathname || ''))) return 'game';
+  try {
+    const requested = String(new URLSearchParams(location.search || '').get('view') || '').toLowerCase();
+    return BLOCK_TABS.includes(requested) ? requested : 'game';
+  } catch (_) { return 'game'; }
+}
+
+function blockTabUrl(name) {
+  const next = BLOCK_TABS.includes(name) ? name : 'game';
+  const url = new URL(location.href);
+  url.pathname = '/baseline-games-hub/games-hub/block-grid';
+  if (next === 'game') url.searchParams.delete('view');
+  else url.searchParams.set('view', next);
+  url.hash = '';
+  return url.pathname + url.search;
+}
+
+function setTab(name, historyMode = 'none') {
+  const next = BLOCK_TABS.includes(name) ? name : 'game';
+  document.querySelectorAll('[data-block-tab]').forEach(button => button.classList.toggle('is-active', button.dataset.blockTab === next));
   for (const id of ['Game','Modes','Progress']) {
     const card = document.getElementById(`blockGrid${id}Card`);
-    if (card) card.hidden = id.toLowerCase() !== name;
+    if (card) card.hidden = id.toLowerCase() !== next;
+  }
+  if (historyMode !== 'none' && /^\/baseline-games-hub\/games-hub\/block-grid\/?$/i.test(String(location.pathname || ''))) {
+    try {
+      const nextUrl = blockTabUrl(next);
+      const currentUrl = location.pathname + location.search + location.hash;
+      if (currentUrl !== nextUrl) {
+        const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
+        history[method]({ puzzleGame:'block-grid', view:next }, '', nextUrl);
+      }
+    } catch (_) {}
   }
 }
 
@@ -525,7 +556,7 @@ function handleClick(event) {
   const mode = target.closest('[data-block-mode]')?.getAttribute('data-block-mode');
   if (mode) changeMode(mode);
   const tab = target.closest('[data-block-tab]')?.getAttribute('data-block-tab');
-  if (tab) setTab(tab);
+  if (tab) setTab(tab, 'push');
 }
 
 function handlePointerDown(event) {
@@ -631,7 +662,7 @@ const shell = createPuzzleHubShell({
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
-  onOpen:() => { render(); },
+  onOpen:() => { render(); setTab(blockTabFromLocation(), 'none'); },
   onClose:() => { destroyDragGhost(); previewAnchor = null; dragState = null; }
 });
 
