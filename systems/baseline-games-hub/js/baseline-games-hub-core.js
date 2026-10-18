@@ -3767,10 +3767,36 @@ function toggleGameFullscreen(gameId){
       const howBtn = actions.querySelector('[data-game-howto-modal="' + id + '"]');
       const fullBtn = actions.querySelector('[data-game-fullscreen="' + id + '"]');
       const backBtn = actions.querySelector('[data-select-game=""]');
+
+      if(id !== 'ninja'){
+        actions.classList.add('game-shell-actions');
+        actions.setAttribute('data-nonrealm-game-toolbar', id);
+        if(infoBtn){
+          infoBtn.classList.add('game-shell-action','game-shell-action--icon','game-shell-action--info');
+          infoBtn.setAttribute('aria-label','Brain benefit');
+          infoBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">i</span>';
+        }
+        if(howBtn){
+          howBtn.classList.add('game-shell-action','game-shell-action--how');
+          howBtn.setAttribute('aria-label','How to play');
+          howBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span>';
+        }
+        if(fullBtn){
+          fullBtn.classList.add('game-shell-action','game-shell-action--full');
+          fullBtn.setAttribute('aria-label','Full screen');
+          fullBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span>';
+        }
+        if(backBtn){
+          backBtn.classList.add('game-shell-action','game-shell-action--back');
+          backBtn.setAttribute('aria-label','Back to Games Overview');
+          backBtn.innerHTML = '<span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span>';
+        }
+      }
+
       if(infoBtn) infoBtn.style.order = '1';
       if(howBtn) howBtn.style.order = '2';
       if(fullBtn) fullBtn.style.order = '3';
-      if(backBtn) backBtn.style.order = '4';
+      if(backBtn) backBtn.style.order = '5';
 
       const gameRoot = gameCardElement(id) || panel.querySelector('[data-game-play-root="' + id + '"]');
       const windowActions = gameRoot ? gameRoot.querySelector('.game-window-actions') : null;
