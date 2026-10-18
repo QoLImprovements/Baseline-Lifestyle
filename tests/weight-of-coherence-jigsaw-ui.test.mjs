@@ -18,9 +18,24 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
   assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_HOLD_FULL_VIEW_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
+
+test('hold V temporarily shows the full-colour artwork and drops any piece in hand', () => {
+  assert.match(html, /id="weightCoherenceViewBtn"[\s\S]*?aria-keyshortcuts="V"[\s\S]*?weight-coherence-hotkey">V<\/kbd>/);
+  assert.match(js, /let viewHeld = false/);
+  assert.match(js, /if\(imageReady && viewHeld\)\{[\s\S]*?ctx\.fillStyle='#FFFFFF'[\s\S]*?ctx\.drawImage\(image,0,0,BOARD_WIDTH,BOARD_HEIGHT\);[\s\S]*?return;/);
+  assert.match(js, /function beginFullView\(\)\{[\s\S]*?const hadDrag=!!dragState;[\s\S]*?cancelDrag\(\);[\s\S]*?selectedPieceId=null;[\s\S]*?viewHeld=true;[\s\S]*?drawBoard\(\);/);
+  assert.match(js, /function endFullView\(\)\{[\s\S]*?viewHeld=false;[\s\S]*?drawBoard\(\);/);
+  assert.match(js, /if\(key==='v'\)\{[\s\S]*?beginFullView\(\)/);
+  assert.match(js, /document\.addEventListener\('keyup'[\s\S]*?key!=='v'[\s\S]*?endFullView\(\)/);
+  assert.match(js, /window\.addEventListener\('blur',endFullView\)/);
+  assert.match(js, /refs\.view\.addEventListener\('pointerdown'[\s\S]*?beginFullView\(\)/);
+  assert.match(js, /refs\.view\.addEventListener\('pointerup',endFullView\)/);
+  assert.doesNotMatch(js, /function beginFullView\(\)[\s\S]{0,500}state\.preview\s*=/);
+});
+
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
   assert.match(js, /mobileLike\(\)\) return Math\.min\(config\.trayPageSize, 8\)/);
   assert.match(js, /const batchSize=mobileLike\(\)\?1:6/);
