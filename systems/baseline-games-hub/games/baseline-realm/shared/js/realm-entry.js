@@ -56,6 +56,67 @@ let assetsReady = Promise.resolve({ total: 0, loaded: 0, failed: 0, errors: [] }
 let rosterReady = Promise.resolve([]);
 let explorationRosterIds = [];
 let configured = false;
+const ROUTABLE_SCENES = Object.freeze(['basecamp','ninja-training','exploration','workshop','calorie-escape','tactical-operations']);
+let restoringSceneFromHistory = false;
+let realmSceneHistoryBound = false;
+
+function realmGameRouteActive() {
+  return /^\/baseline-games-hub\/games-hub\/baseline-realm\/?$/i.test(String(globalThis.location?.pathname || ''));
+}
+
+function realmSceneFromLocation() {
+  if (!realmGameRouteActive()) return 'basecamp';
+  try {
+    const requested = String(new URLSearchParams(globalThis.location.search || '').get('scene') || '').trim();
+    return ROUTABLE_SCENES.includes(requested) ? requested : 'basecamp';
+  } catch (_error) {
+    return 'basecamp';
+  }
+}
+
+function realmSceneUrl(sceneId) {
+  const scene = ROUTABLE_SCENES.includes(sceneId) ? sceneId : 'basecamp';
+  const url = new URL(globalThis.location.href);
+  if (scene === 'basecamp') url.searchParams.delete('scene');
+  else url.searchParams.set('scene', scene);
+  url.hash = '';
+  return url.pathname + url.search;
+}
+
+function writeRealmSceneRoute(sceneId, mode = 'push') {
+  if (!realmGameRouteActive()) return;
+  try {
+    const nextUrl = realmSceneUrl(sceneId);
+    const currentUrl = globalThis.location.pathname + globalThis.location.search;
+    if (nextUrl === currentUrl) return;
+    const state = { ...(globalThis.history.state || {}), baselineRealmScene:sceneId };
+    if (mode === 'replace') globalThis.history.replaceState(state, '', nextUrl);
+    else globalThis.history.pushState(state, '', nextUrl);
+  } catch (_error) {}
+}
+
+function bindRealmSceneHistory() {
+  if (realmSceneHistoryBound) return;
+  realmSceneHistoryBound = true;
+  eventBus.on('realm:scene:entered', (event) => {
+    if (restoringSceneFromHistory || !realmGameRouteActive()) return;
+    const detail = event?.detail || {};
+    const sceneId = String(detail.to || sceneRouter.getCurrentSceneId() || 'basecamp');
+    const mode = detail.payload?.initial || detail.payload?.historyMode === 'replace' ? 'replace' : 'push';
+    writeRealmSceneRoute(sceneId, mode);
+  });
+  globalThis.addEventListener?.('popstate', () => {
+    if (!realmGameRouteActive()) return;
+    const destination = realmSceneFromLocation();
+    if (destination === sceneRouter.getCurrentSceneId()) return;
+    restoringSceneFromHistory = true;
+    sceneRouter.navigate(destination, { historyRestore:true }).catch((error) => {
+      console.error('[Baseline Realm] Browser history scene restore failed.', error);
+    }).finally(() => {
+      restoringSceneFromHistory = false;
+    });
+  });
+}
 
 function activeProfile() {
   return core?.profiles?.ninja || null;
@@ -333,8 +394,13 @@ function configure(dependencies) {
     setSettings: (reducedMotion) => updateSettings((settings) => { settings.accessibility.reducedMotion = reducedMotion; }, { type: 'accessibility-settings' })
   });
   registerScenes();
-  sceneRouter.navigate('basecamp', { initial: true }).catch((error) => {
-    console.error('[Baseline Realm] Initial Basecamp navigation failed.', error);
+  bindRealmSceneHistory();
+  const initialScene = realmSceneFromLocation();
+  sceneRouter.navigate(initialScene, { initial: true, historyMode:'replace' }).catch((error) => {
+    console.error('[Baseline Realm] Initial scene navigation failed.', error);
+    if (initialScene !== 'basecamp') {
+      sceneRouter.navigate('basecamp', { recovery:true, historyMode:'replace' }).catch(() => {});
+    }
   });
   bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter });
   inputManager.registerControllerProvider(gamepadProvider);
