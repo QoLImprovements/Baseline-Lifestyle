@@ -796,10 +796,45 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function gamesHubBaseRoute(){ return '/baseline-games-hub/games-hub'; }
   function gamesHubCleanRouteForState(){
     const base = gamesHubBaseRoute();
-    if(currentTab === 'puzzles') return base + '/puzzles';
-    if(currentTab !== 'games') return base;
-    if(!selectedGame) return base + '/games-list';
-    return base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
+    let route = base;
+    const params = new URLSearchParams();
+    let currentParams = null;
+    try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
+
+    const externalPuzzle = String(document.documentElement.getAttribute('data-puzzle-game-open') || '').trim();
+    const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
+    const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
+
+    if(currentTab === 'puzzles'){
+      route = base + '/puzzles';
+      const jigsaw = String(currentParams.get('jigsaw') || '').trim();
+      const puzzle = String(currentParams.get('puzzle') || '').trim();
+      if(jigsaw) params.set('jigsaw', jigsaw);
+      else if(puzzle === 'jigsaws') params.set('puzzle', 'jigsaws');
+    }else if(currentTab === 'games'){
+      if(externalPuzzle){
+        route = base + '/' + externalPuzzle;
+        const view = String(currentParams.get('view') || '').trim();
+        if(view) params.set('view', view);
+      }else if(dartsFocusedOpen){
+        route = base + '/darts-focused';
+      }else if(badmintonFocusedOpen){
+        route = base + '/badminton-focused';
+      }else if(!selectedGame) route = base + '/games-list';
+      else{
+        route = base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
+        const config = getGamePanelConfig(selectedGame);
+        const panelId = currentPanelIdForGame(selectedGame);
+        if(config && panelId && panelId !== config.defaultPanel) params.set('panel', panelId);
+        if(selectedGame === 'ninja'){
+          const scene = String(currentParams.get('scene') || '').trim();
+          if(['ninja-training','exploration','workshop','calorie-escape','tactical-operations'].includes(scene)) params.set('scene', scene);
+        }
+      }
+    }
+
+    const query = params.toString();
+    return query ? (route + '?' + query) : route;
   }
   function gamesHubStateFromCleanPath(){
     try{
@@ -815,7 +850,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       if(rest === 'puzzles') return { tab:'puzzles', game:'', panel:'' };
       if(rest === 'games-list') return { tab:'games', game:'', panel:'' };
       const game = normaliseGameId(rest.split('/')[0]);
-      return game ? { tab:'games', game:game, panel:normalisePanelId(game, '') } : { tab:'games', game:'', panel:'' };
+      let requestedPanel = '';
+      try{ requestedPanel = new URLSearchParams(window.location.search || '').get('panel') || ''; }catch(_error){}
+      return game ? { tab:'games', game:game, panel:normalisePanelId(game, requestedPanel) } : { tab:'games', game:'', panel:'' };
     }catch(_error){ return null; }
   }
   function legacyGamesHubStateFromHash(){
@@ -880,31 +917,19 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(window.location.hash) syncHashState('replace');
     safeRenderAll();
   }
-  function gamesHubBaseUrl(){
-    if(typeof window === 'undefined') return '';
-    return window.location.pathname + window.location.search;
-  }
-  function gamesHubUrlForHash(hashValue){
-    const hash = String(hashValue || '').replace(/^#/, '');
-    return gamesHubBaseUrl() + (hash ? ('#' + hash) : '');
-  }
-  function replaceGamesHubListEntry(){
-    if(typeof window === 'undefined' || !window.history || typeof window.history.replaceState !== 'function') return;
-    try{
-      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
-    }catch(_error){}
-  }
   function pushGamesHubGameEntry(){
     if(typeof window === 'undefined' || !window.history || !selectedGame) return;
-    if(typeof window.history.replaceState !== 'function' || typeof window.history.pushState !== 'function') return;
-    const gameHash = buildHashState();
-    if(!gameHash || gameHash.indexOf('game=') === -1) return;
-    const currentFullHash = '#' + gameHash;
-    const existing = window.history.state || {};
-    if(String(window.location.hash || '') === currentFullHash && existing && existing.baselineGamesGameEntry && existing.game === selectedGame) return;
+    if(typeof window.history.pushState !== 'function') return;
+    const nextUrl = gamesHubCleanRouteForState();
+    const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+    if(currentUrl === nextUrl) return;
     try{
-      window.history.replaceState({ baselineGames:true, baselineGamesHubEntry:true }, '', gamesHubUrlForHash('tab=games'));
-      window.history.pushState({ baselineGames:true, baselineGamesGameEntry:true, game:selectedGame, panel:currentPanelIdForGame(selectedGame) || '' }, '', gamesHubUrlForHash(gameHash));
+      window.history.pushState({
+        baselineGames:true,
+        baselineGamesGameEntry:true,
+        game:selectedGame,
+        panel:currentPanelIdForGame(selectedGame) || ''
+      }, '', nextUrl);
     }catch(_error){
       syncHashState('push');
     }
@@ -1529,41 +1554,41 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
   }
 
-  function setPairsPanel(panelId){
+  function setPairsPanel(panelId, historyMode){
     pairsOpenPanel = normalisePanelId('pairs', panelId || 'pairsGameCard');
     setExclusivePanel(pairsOpenPanel, ['pairsGameCard','pairsSkillCard','pairsTierCard','pairsProgressCard'], 'data-pairs-panel', { id:'pairsSkillCard', ready: profiles.pairs && profiles.pairs.skillPoints > 0 });
-    syncHashState();
+    syncHashState(historyMode);
   }
 
-  function setWordPanel(panelId){
+  function setWordPanel(panelId, historyMode){
     wordOpenPanel = normalisePanelId('detectword', panelId || 'wordGameCard');
     setExclusivePanel(wordOpenPanel, ['wordGameCard','wordSkillCard','wordTierCard','wordProgressCard'], 'data-word-panel', { id:'wordSkillCard', ready: profiles.detectword && profiles.detectword.skillPoints > 0 });
-    syncHashState();
+    syncHashState(historyMode);
   }
 
-  function setMake24Panel(panelId){
+  function setMake24Panel(panelId, historyMode){
     make24OpenPanel = normalisePanelId('make24', panelId || 'make24GameCard');
     setExclusivePanel(make24OpenPanel, ['make24GameCard','make24SkillCard','make24TierCard','make24ProgressCard'], 'data-make24-panel', { id:'make24SkillCard', ready: profiles.make24 && profiles.make24.skillPoints > 0 });
-    syncHashState();
+    syncHashState(historyMode);
   }
 
-  function setTrackCoinPanel(panelId){
+  function setTrackCoinPanel(panelId, historyMode){
     trackCoinOpenPanel = normalisePanelId('trackcoin', panelId || 'trackCoinGamePanel');
     setExclusivePanel(trackCoinOpenPanel, ['trackCoinGamePanel','trackCoinSkillPanel','trackCoinTierPanel','trackCoinProgressPanel'], 'data-trackcoin-panel', { id:'trackCoinSkillPanel', ready: profiles.trackcoin && profiles.trackcoin.skillPoints > 0 });
-    syncHashState();
+    syncHashState(historyMode);
   }
 
 
-  function setRuleShiftPanel(panelId){
+  function setRuleShiftPanel(panelId, historyMode){
     ruleShiftOpenPanel = normalisePanelId('ruleshift', panelId || 'ruleShiftGameCard');
     setExclusivePanel(ruleShiftOpenPanel, ['ruleShiftGameCard','ruleShiftSkillCard','ruleShiftTierCard','ruleShiftProgressCard'], 'data-ruleshift-panel', { id:'ruleShiftSkillCard', ready: profiles.ruleshift && profiles.ruleshift.skillPoints > 0 });
-    syncHashState();
+    syncHashState(historyMode);
   }
 
-  function setNinjaPanel(panelId){
+  function setNinjaPanel(panelId, historyMode){
     ninjaOpenPanel = normalisePanelId('ninja', panelId || 'ninjaGameCard');
     setExclusivePanel(ninjaOpenPanel, ['ninjaGameCard','ninjaUpgradesCard','ninjaBonusesCard','ninjaPrestigeCard'], 'data-ninja-panel');
-    syncHashState();
+    syncHashState(historyMode);
   }
 
   function renderHubSummary(){
@@ -3808,14 +3833,14 @@ function toggleGameFullscreen(gameId){
       if(select){
         const nextGame = select.getAttribute('data-select-game') || '';
         if(!nextGame) exitMobileGameMode();
-        selectGame(nextGame, { historyMode: nextGame ? 'push' : 'replace' });
+        selectGame(nextGame, { historyMode:'push' });
         if(nextGame) focusGameEntry(nextGame, { scroll:true, mobileMode:true });
         return;
       }
       const exitMobileModeBtn = event.target.closest('[data-exit-mobile-game-mode]');
       if(exitMobileModeBtn){
         exitMobileGameMode();
-        selectGame('', { historyMode:'replace' });
+        selectGame('', { historyMode:'push' });
         window.setTimeout(function(){
           const games = document.getElementById('games');
           const scroller = q('.bl-scroll');
@@ -3855,17 +3880,17 @@ function toggleGameFullscreen(gameId){
         return;
       }
       const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
-      const pairPanelBtn = event.target.closest('[data-pairs-panel]'); if(pairPanelBtn){ setPairsPanel(pairPanelBtn.getAttribute('data-pairs-panel')); return; }
+      const pairPanelBtn = event.target.closest('[data-pairs-panel]'); if(pairPanelBtn){ setPairsPanel(pairPanelBtn.getAttribute('data-pairs-panel'), 'push'); return; }
       const wordSkill = event.target.closest('[data-word-skill]'); if(wordSkill){ spendWordSkill(wordSkill.getAttribute('data-word-skill')); return; }
-      const wordPanelBtn = event.target.closest('[data-word-panel]'); if(wordPanelBtn){ setWordPanel(wordPanelBtn.getAttribute('data-word-panel')); return; }
+      const wordPanelBtn = event.target.closest('[data-word-panel]'); if(wordPanelBtn){ setWordPanel(wordPanelBtn.getAttribute('data-word-panel'), 'push'); return; }
       const make24Skill = event.target.closest('[data-make24-skill]'); if(make24Skill){ spendMake24Skill(make24Skill.getAttribute('data-make24-skill')); return; }
-      const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel')); return; }
+      const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel'), 'push'); return; }
       const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
-      const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel')); return; }
+      const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel'), 'push'); return; }
       const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
       const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
-      const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel')); return; }
-      const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel')); return; }
+      const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
+      const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
       const panelToggle = event.target.closest('[data-toggle-panel]'); if(panelToggle){ const id = panelToggle.getAttribute('data-toggle-panel'); const target = document.getElementById(id); if(target){ const hidden = !!target.hidden; target.hidden = !hidden; panelToggle.setAttribute('aria-expanded', String(hidden)); } return; }
       const make24BoardHintBtn = event.target.closest('#make24BoardHintBtn'); if(make24BoardHintBtn){ useMake24Hint(); return; }
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
@@ -3935,15 +3960,15 @@ function toggleGameFullscreen(gameId){
     });
     if(refs.newPairsBoardBtn){ refs.newPairsBoardBtn.textContent = startButtonLabel(); refs.newPairsBoardBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); }); }
     if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
-    if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard'); });
+    if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn){ refs.newWordRoundBtn.textContent = startButtonLabel(); refs.newWordRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); }); }
     if(refs.newTrackCoinRoundBtn){ refs.newTrackCoinRoundBtn.textContent = startButtonLabel(); refs.newTrackCoinRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); }); }
     if(refs.newRuleShiftBtn){ refs.newRuleShiftBtn.textContent = startButtonLabel(); refs.newRuleShiftBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); }); }
-    if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard'); });
+    if(refs.wordSkillAlertBtn) refs.wordSkillAlertBtn.addEventListener('click', function(){ if(profiles.detectword.skillPoints > 0) setWordPanel('wordSkillCard', 'push'); });
     if(refs.newMake24Btn){ refs.newMake24Btn.textContent = startButtonLabel(); refs.newMake24Btn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); }); }
     if(refs.make24HintBtn){ refs.make24HintBtn.textContent = hotkeyActionLabel('Use Guide', 'H'); refs.make24HintBtn.addEventListener('click', useMake24Hint); }
     if(refs.make24RerollBtn){ refs.make24RerollBtn.textContent = hotkeyActionLabel('Reroll', 'J'); refs.make24RerollBtn.addEventListener('click', rerollMake24Puzzle); }
-    if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard'); });
+    if(refs.make24SkillAlertBtn) refs.make24SkillAlertBtn.addEventListener('click', function(){ if(profiles.make24.skillPoints > 0) setMake24Panel('make24SkillCard', 'push'); });
     if(refs.gamesSummaryWrap) refs.gamesSummaryWrap.addEventListener('toggle', function(event){ const details = event.target.closest('details[data-summary]'); if(!details) return; const id = details.getAttribute('data-summary'); if(details.open) openSummaryIds.add(id); else openSummaryIds.delete(id); }, true);
   }
   function markCoreReady(coreDependencies){
