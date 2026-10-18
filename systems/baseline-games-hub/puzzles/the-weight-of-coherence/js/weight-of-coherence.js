@@ -55,6 +55,8 @@
     zoomOut:document.getElementById('weightCoherenceZoomOutBtn'),
     zoomToggle:document.getElementById('weightCoherenceZoomBtn'),
     zoomIn:document.getElementById('weightCoherenceZoomInBtn'),
+    help:document.getElementById('weightCoherenceHelpBtn'),
+    helpDialog:document.getElementById('weightCoherenceHelpDialog'),
     preview:document.getElementById('weightCoherencePreviewBtn'),
     view:document.getElementById('weightCoherenceViewBtn'),
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
@@ -92,16 +94,14 @@
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
   let viewOn = false;
+  let zoomLevel = PIECE_ZOOM_DEFAULT;
   let zoomScale = ZOOM_MIN;
   let zoomTarget = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
   let boardLens = null;
   let boardLensActive = false;
-  let boardLensScale = BOARD_LENS_DEFAULT;
   let zoomKeyHeld = false;
-  let zoomButtonLensHeld = false;
-  let suppressZoomButtonClickUntil = 0;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
   const pinchPointers = new Map();
@@ -1092,8 +1092,8 @@
 
     const boardX=(clientX-boardRect.left)*(BOARD_WIDTH/Math.max(1,boardRect.width));
     const boardY=(clientY-boardRect.top)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
-    const sourceWidth=(diameter/boardLensScale)*(BOARD_WIDTH/Math.max(1,boardRect.width));
-    const sourceHeight=(diameter/boardLensScale)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
+    const sourceWidth=(diameter/zoomLevel)*(BOARD_WIDTH/Math.max(1,boardRect.width));
+    const sourceHeight=(diameter/zoomLevel)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
     const sourceX=Math.max(0,Math.min(BOARD_WIDTH-sourceWidth,boardX-(sourceWidth/2)));
     const sourceY=Math.max(0,Math.min(BOARD_HEIGHT-sourceHeight,boardY-(sourceHeight/2)));
 
@@ -1117,7 +1117,7 @@
     const point=boardLensPoint();
     updateBoardLens(point.x,point.y);
     syncZoomControls();
-    setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
+    setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
     return true;
   }
 
@@ -1135,6 +1135,7 @@
     if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
     zoomTarget=target;
     zoomScale=nextScale;
+    zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
     zoomTarget.style.transformOrigin='50% 50%';
     zoomTarget.style.willChange='transform';
@@ -1156,7 +1157,6 @@
   function resetZoom(){
     resetPieceZoom();
     endBoardLens();
-    boardLensScale=BOARD_LENS_DEFAULT;
     syncZoomControls();
   }
 
@@ -1169,79 +1169,55 @@
       setStatus('Piece zoom reset to 100%.','');
       return true;
     }
-    applyPieceZoom(piece,PIECE_ZOOM_DEFAULT);
-    setStatus('Piece zoom 200%. Use − and + to increase up to 1000%; press Z again to reset.','');
+    applyPieceZoom(piece,zoomLevel);
+    setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%. Use − and + to adjust up to 1000%; press Z again to reset.','');
     return true;
   }
 
   function syncZoomControls(){
     const pieceActive=zoomScale>ZOOM_MIN && !!zoomTarget;
     const active=pieceActive || boardLensActive;
-    const scale=boardLensActive ? boardLensScale : zoomScale;
-    const max=boardLensActive ? BOARD_LENS_MAX : PIECE_ZOOM_MAX;
-    const percent=Math.round(scale*100);
+    const percent=Math.round(zoomLevel*100);
     if(refs.zoomToggle){
-      refs.zoomToggle.setAttribute('aria-pressed',String(active));
-      refs.zoomToggle.setAttribute('aria-label',boardLensActive
-        ? 'Magnifier active while Z is held'
-        : (pieceActive?'Reset piece zoom (Z)':'Zoom hovered piece or hold Z over jigsaw'));
-      refs.zoomToggle.title=boardLensActive
-        ? 'Release Z to close magnifier'
-        : (pieceActive?'Reset piece zoom from '+percent+'% · Z':'Piece: Z to zoom · Jigsaw: hold Z for magnifier');
+      refs.zoomToggle.dataset.active=String(active);
+      refs.zoomToggle.setAttribute('aria-label','Zoom hotkey Z. Current magnification ' + percent + ' percent.');
+      refs.zoomToggle.title='Z zoom · current magnification ' + percent + '%';
     }
     if(refs.zoomOut){
-      refs.zoomOut.disabled=!active || scale<=ZOOM_MIN;
-      refs.zoomOut.title=active?'Decrease zoom from '+percent+'%':'Activate zoom first';
+      refs.zoomOut.disabled=false;
+      refs.zoomOut.setAttribute('aria-label','Decrease inspection zoom from ' + percent + '%');
+      refs.zoomOut.title='Decrease inspection zoom from ' + percent + '%';
     }
     if(refs.zoomIn){
-      refs.zoomIn.disabled=!active || scale>=max;
-      refs.zoomIn.title=active?'Increase zoom from '+percent+'%':'Activate zoom first';
+      refs.zoomIn.disabled=false;
+      refs.zoomIn.setAttribute('aria-label','Increase inspection zoom from ' + percent + '%');
+      refs.zoomIn.title='Increase inspection zoom from ' + percent + '%';
     }
   }
 
   function adjustZoom(direction){
     const amount=Number(direction)||0;
     if(!amount) return;
+    const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomLevel+(amount*ZOOM_STEP)));
+    if(next===zoomLevel){
+      setStatus(zoomLevel<=PIECE_ZOOM_DEFAULT
+        ? 'Zoom is already at the 200% minimum.'
+        : 'Zoom is already at the 1000% maximum.','');
+      syncZoomControls();
+      return;
+    }
+    zoomLevel=next;
     if(boardLensActive){
-      boardLensScale=Math.max(BOARD_LENS_DEFAULT,Math.min(BOARD_LENS_MAX,boardLensScale+(amount*ZOOM_STEP)));
       const point=boardLensPoint();
       updateBoardLens(point.x,point.y);
-      syncZoomControls();
-      setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held to inspect.','');
-      return;
+      setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held to inspect.','');
+    }else if(zoomTarget && zoomTarget.isConnected){
+      applyPieceZoom(zoomTarget,zoomLevel);
+      setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%.','');
+    }else{
+      setStatus('Zoom level set to ' + Math.round(zoomLevel*100) + '%. Hover a piece and press Z, or hold Z over the jigsaw.','');
     }
-    if(zoomTarget && zoomTarget.isConnected){
-      const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomScale+(amount*ZOOM_STEP)));
-      applyPieceZoom(zoomTarget,next);
-      setStatus('Piece zoom ' + Math.round(zoomScale*100) + '%.','');
-    }
-  }
-
-  function handleZoomButtonClick(event){
-    if(event) event.preventDefault();
-    if(Date.now()<suppressZoomButtonClickUntil) return;
-    const target=resolveZoomTarget();
-    if(target && target!==refs.boardWrap){
-      togglePieceZoom(target);
-      return;
-    }
-    setStatus('Move over the jigsaw and hold Z to use the circular magnifier.','');
-  }
-
-  function beginZoomButtonHold(event){
-    const target=resolveZoomTarget();
-    if(target!==refs.boardWrap) return;
-    event.preventDefault();
-    zoomButtonLensHeld=true;
-    suppressZoomButtonClickUntil=Date.now()+350;
-    try{ refs.zoomToggle.setPointerCapture(event.pointerId); }catch(_error){}
-    beginBoardLens();
-  }
-
-  function endZoomButtonHold(){
-    if(!zoomButtonLensHeld) return;
-    zoomButtonLensHeld=false;
-    endBoardLens();
+    syncZoomControls();
   }
 
   function shuffleTray(){
@@ -1474,17 +1450,27 @@
     syncSettingsExpanded(false);
   }
 
+  function syncHelpExpanded(open){
+    if(refs.help) refs.help.setAttribute('aria-expanded',String(!!open));
+  }
+
+  function openHelp(){
+    if(!refs.helpDialog) return;
+    try{
+      if(typeof refs.helpDialog.showModal==='function' && !refs.helpDialog.open) refs.helpDialog.showModal();
+      else refs.helpDialog.setAttribute('open','');
+      syncHelpExpanded(true);
+    }catch(_error){
+      refs.helpDialog.setAttribute('open','');
+      syncHelpExpanded(true);
+    }
+  }
+
   refs.preview.addEventListener('click',toggleGuide);
   if(refs.view) refs.view.addEventListener('click',toggleFullView);
-  if(refs.zoomToggle){
-    refs.zoomToggle.addEventListener('click',handleZoomButtonClick);
-    refs.zoomToggle.addEventListener('pointerdown',beginZoomButtonHold);
-    refs.zoomToggle.addEventListener('pointerup',endZoomButtonHold);
-    refs.zoomToggle.addEventListener('pointercancel',endZoomButtonHold);
-    refs.zoomToggle.addEventListener('lostpointercapture',endZoomButtonHold);
-  }
   if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
   if(refs.zoomIn) refs.zoomIn.addEventListener('click',function(){ adjustZoom(1); });
+  if(refs.help) refs.help.addEventListener('click',openHelp);
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
   if(refs.setupSettings) refs.setupSettings.addEventListener('click',openSettings);
@@ -1492,6 +1478,10 @@
   if(refs.settingsDialog){
     refs.settingsDialog.addEventListener('close',function(){ syncSettingsExpanded(false); });
     refs.settingsDialog.addEventListener('cancel',function(){ syncSettingsExpanded(false); });
+  }
+  if(refs.helpDialog){
+    refs.helpDialog.addEventListener('close',function(){ syncHelpExpanded(false); });
+    refs.helpDialog.addEventListener('cancel',function(){ syncHelpExpanded(false); });
   }
 
   refs.reset.addEventListener('click',function(){
