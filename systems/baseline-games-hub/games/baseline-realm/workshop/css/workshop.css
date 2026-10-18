@@ -319,12 +319,19 @@
   border-radius:5px!important;
   background:#fff6d4!important;
   box-shadow:0 0 8px rgba(255,243,187,.86)!important;
-  animation:workshopTimingSweep 1.8s linear infinite alternate!important;
 }
-@keyframes workshopTimingSweep{
-  from{left:1%}
-  to{left:calc(99% - 5px)}
-}
+#ninjaPanel .workshop-skill-check--forge .workshop-timing-needle{animation:workshopTimingForge 1.55s cubic-bezier(.35,.05,.65,.95) infinite alternate!important}
+#ninjaPanel .workshop-skill-check--align .workshop-timing-needle{animation:workshopTimingAlign 2.25s ease-in-out infinite alternate!important}
+#ninjaPanel .workshop-skill-check--stitch .workshop-timing-needle{animation:workshopTimingStitch .92s linear infinite alternate!important}
+#ninjaPanel .workshop-skill-check--reaction .workshop-timing-needle{animation:workshopTimingReaction 1.7s cubic-bezier(.2,.7,.8,.3) infinite alternate!important}
+#ninjaPanel .workshop-skill-check--heat .workshop-timing-needle{animation:workshopTimingHeat 2.7s ease-in-out infinite alternate!important}
+#ninjaPanel .workshop-skill-check--fit .workshop-timing-needle{animation:workshopTimingFit 1.45s steps(9,end) infinite alternate!important}
+@keyframes workshopTimingForge{from{left:1%}to{left:calc(99% - 5px)}}
+@keyframes workshopTimingAlign{0%{left:8%}42%{left:82%}58%{left:70%}100%{left:16%}}
+@keyframes workshopTimingStitch{from{left:3%}to{left:calc(97% - 5px)}}
+@keyframes workshopTimingReaction{0%{left:12%}35%{left:76%}60%{left:28%}100%{left:88%}}
+@keyframes workshopTimingHeat{0%{left:18%}50%{left:calc(82% - 5px)}100%{left:18%}}
+@keyframes workshopTimingFit{from{left:5%}to{left:calc(95% - 5px)}}
 #ninjaPanel .workshop-timing-button{min-width:92px!important}
 #ninjaPanel .workshop-skill-result div{display:grid!important;gap:3px!important}
 #ninjaPanel .workshop-skill-result strong{color:#fff0cf!important;-webkit-text-fill-color:#fff0cf!important;font-size:20px!important}

@@ -68,12 +68,19 @@ test('Workshop and Cooking enter real room scenes rather than the management dra
   assert.match(workshopUi,/scope === 'cooking'/);
 });
 
-test('Workshop crafting retains its active skill interaction',()=>{
+test('Workshop stations retain distinct active skill interactions',()=>{
   assert.match(workshopUi,/data-workshop-start/);
   assert.match(workshopUi,/data-workshop-hit/);
   assert.match(workshopUi,/workshop-timing-needle/);
+  assert.match(workshopUi,/CHALLENGE_PROFILES/);
+  for(const station of ['blacksmith','armourer','tailoring','alchemy','cooking','tools']) assert.match(workshopUi,new RegExp(station));
+  for(const motion of ['forge','align','stitch','reaction','heat','fit']) {
+    assert.match(workshopUi,new RegExp("motion: '" + motion + "'"));
+    assert.match(workshopCss,new RegExp('workshopTiming' + motion[0].toUpperCase() + motion.slice(1)));
+  }
+  assert.match(workshopUi,/targets: \[36, 64, 48\]/);
+  assert.match(workshopUi,/combinedChallengeQuality/);
   for(const grade of ['Exceptional','Excellent','Fine','Standard']) assert.match(workshopUi,new RegExp(grade));
-  assert.match(workshopCss,/@keyframes workshopTimingSweep/);
 });
 
 test('Realm starts in one coherent Basecamp state before JavaScript settles',()=>{
