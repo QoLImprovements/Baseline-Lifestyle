@@ -35,7 +35,6 @@ These Markdown rules are a human reference point, not live runtime config.
 
 <link href="/systems/baseline-games-hub/css/baseline-realm-stability-fix.css?v=REALM_MOBILE_RESPONSIVE_20261018_1" rel="stylesheet"/>
 <link href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-shell.css?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1" rel="stylesheet"/>
-<link href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css?v=REALM_MOBILE_RESPONSIVE_20261018_1" rel="stylesheet"/>
 <link data-current-realm-style="realm-basecamp-current" href="/systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1" rel="stylesheet"/>
 <link data-current-realm-style="realm-exploration-current" href="/systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_NO_LEGACY_ART_COMPLETE_20260628" rel="stylesheet"/>
 <link data-current-realm-style="ninja-training-current" href="/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css?v=REALM_NO_LEGACY_ART_COMPLETE_20260628" rel="stylesheet"/>
@@ -51,6 +50,8 @@ These Markdown rules are a human reference point, not live runtime config.
 <!-- Baseline Realm is a world inside the Indigo Games Hub. Its cabin/wood UI
      deliberately loads last so shell alignment rules cannot repaint Realm. -->
 <link href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css?v=REALM_MOBILE_RESPONSIVE_20261018_1" rel="stylesheet" data-realm-wood-authority="true"/>
+<!-- Mobile authority loads last so phone/tablet geometry cannot be repainted by desktop Realm CSS. -->
+<link href="/systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css?v=REALM_MOBILE_RESPONSIVE_20261018_1" rel="stylesheet"/>
 </head>
 <body data-app="games" data-page="baseline-games-hub">
 <div class="bl-homebar" role="navigation" aria-label="BaselineLifestyle">
