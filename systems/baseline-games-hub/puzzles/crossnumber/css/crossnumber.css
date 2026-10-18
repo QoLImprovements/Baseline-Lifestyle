@@ -1,0 +1,326 @@
+/* Crossnumber — isolated puzzle presentation. */
+body[data-app="games"] .crossnumber-shell{
+  --cn-ink:#f6f8ff;
+  --cn-muted:rgba(236,241,255,.72);
+  --cn-line:rgba(187,199,255,.22);
+  --cn-panel:rgba(11,17,48,.88);
+  --cn-cell:#f5f2e8;
+  --cn-cell-ink:#151a2b;
+  --cn-cell-active:#fff4bf;
+  --cn-cell-related:#e4ebff;
+  --cn-accent:#9fb4ff;
+  --cn-good:#b9f2cf;
+  --cn-bad:#ffc7cb;
+  display:grid;
+  gap:18px;
+}
+body[data-app="games"] .crossnumber-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:16px;
+  align-items:end;
+  padding:20px;
+  border:1px solid var(--cn-line);
+  border-radius:26px;
+  background:
+    radial-gradient(circle at 82% 18%,rgba(133,157,255,.20),transparent 34%),
+    linear-gradient(145deg,rgba(14,20,55,.98),rgba(36,49,108,.92));
+  box-shadow:0 24px 52px -36px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.08);
+}
+body[data-app="games"] .crossnumber-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:8px;
+  color:#cbd5ff;
+  font-size:12px;
+  font-weight:950;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+body[data-app="games"] .crossnumber-kicker::before{
+  content:"";
+  width:8px;
+  height:8px;
+  border-radius:2px;
+  background:#c7d2ff;
+  box-shadow:12px 0 0 rgba(199,210,255,.50),0 12px 0 rgba(199,210,255,.50);
+}
+body[data-app="games"] .crossnumber-hero h3{
+  margin:0;
+  color:var(--cn-ink);
+  -webkit-text-fill-color:var(--cn-ink);
+  font-size:clamp(28px,4vw,46px);
+  letter-spacing:-.035em;
+}
+body[data-app="games"] .crossnumber-hero p{
+  max-width:720px;
+  margin:8px 0 0;
+  color:var(--cn-muted);
+  -webkit-text-fill-color:var(--cn-muted);
+  line-height:1.55;
+}
+body[data-app="games"] .crossnumber-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(74px,1fr));
+  gap:9px;
+}
+body[data-app="games"] .crossnumber-stat{
+  min-width:82px;
+  padding:11px 12px;
+  border:1px solid var(--cn-line);
+  border-radius:16px;
+  background:rgba(9,14,38,.54);
+  text-align:center;
+}
+body[data-app="games"] .crossnumber-stat span{
+  display:block;
+  color:rgba(236,241,255,.60);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+body[data-app="games"] .crossnumber-stat strong{
+  display:block;
+  margin-top:3px;
+  color:var(--cn-ink);
+  font-size:18px;
+}
+body[data-app="games"] .crossnumber-progress{
+  position:relative;
+  height:8px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+}
+body[data-app="games"] .crossnumber-progress > span{
+  display:block;
+  width:0;
+  height:100%;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#91a7ff,#d8e0ff);
+  transition:width .2s ease;
+}
+body[data-app="games"] .crossnumber-layout{
+  display:grid;
+  grid-template-columns:minmax(320px,520px) minmax(0,1fr);
+  gap:20px;
+  align-items:start;
+}
+body[data-app="games"] .crossnumber-board-card,
+body[data-app="games"] .crossnumber-clues-card{
+  border:1px solid var(--cn-line);
+  border-radius:24px;
+  background:linear-gradient(155deg,rgba(8,13,38,.96),rgba(24,33,77,.90));
+  box-shadow:0 20px 44px -34px rgba(0,0,0,.68),inset 0 1px 0 rgba(255,255,255,.055);
+}
+body[data-app="games"] .crossnumber-board-card{padding:18px}
+body[data-app="games"] .crossnumber-grid-wrap{
+  width:min(100%,520px);
+  margin:0 auto;
+  padding:10px;
+  border:1px solid rgba(255,255,255,.11);
+  border-radius:20px;
+  background:#080d21;
+  box-shadow:0 18px 40px -24px rgba(0,0,0,.85);
+}
+body[data-app="games"] .crossnumber-grid{
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  aspect-ratio:1;
+  border:2px solid #0d1328;
+  background:#0d1328;
+  gap:2px;
+  touch-action:manipulation;
+}
+body[data-app="games"] .crossnumber-cell,
+body[data-app="games"] .crossnumber-block{
+  position:relative;
+  min-width:0;
+  min-height:0;
+}
+body[data-app="games"] .crossnumber-block{
+  background:
+    linear-gradient(135deg,rgba(121,142,227,.14),transparent 44%),
+    #111833;
+}
+body[data-app="games"] .crossnumber-cell input{
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
+  border:0;
+  border-radius:0;
+  outline:0;
+  background:var(--cn-cell);
+  color:var(--cn-cell-ink);
+  font:800 clamp(24px,5.6vw,44px)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  text-align:center;
+  caret-color:transparent;
+  transition:background .12s ease,box-shadow .12s ease,transform .12s ease;
+}
+body[data-app="games"] .crossnumber-cell input.is-related{background:var(--cn-cell-related)}
+body[data-app="games"] .crossnumber-cell input.is-active{
+  position:relative;
+  z-index:2;
+  background:var(--cn-cell-active);
+  box-shadow:inset 0 0 0 3px #273766;
+}
+body[data-app="games"] .crossnumber-cell input.is-wrong{
+  background:var(--cn-bad);
+  animation:crossnumber-shake .22s ease;
+}
+body[data-app="games"] .crossnumber-cell input.is-correct{background:var(--cn-good)}
+body[data-app="games"] .crossnumber-cell-number{
+  position:absolute;
+  z-index:3;
+  top:4px;
+  left:5px;
+  pointer-events:none;
+  color:#28304f;
+  font-size:clamp(9px,1.5vw,12px);
+  font-weight:900;
+}
+@keyframes crossnumber-shake{
+  0%,100%{transform:translateX(0)}
+  35%{transform:translateX(-3px)}
+  70%{transform:translateX(3px)}
+}
+body[data-app="games"] .crossnumber-board-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+body[data-app="games"] .crossnumber-status{
+  color:var(--cn-muted);
+  font-size:14px;
+  line-height:1.45;
+}
+body[data-app="games"] .crossnumber-status strong{color:var(--cn-ink)}
+body[data-app="games"] .crossnumber-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+body[data-app="games"] .crossnumber-clues-card{
+  overflow:hidden;
+}
+body[data-app="games"] .crossnumber-clue-tabs{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border-bottom:1px solid var(--cn-line);
+}
+body[data-app="games"] .crossnumber-clue-tab{
+  min-height:46px;
+  border:0;
+  background:transparent;
+  color:rgba(238,243,255,.66);
+  font:900 13px/1 inherit;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+}
+body[data-app="games"] .crossnumber-clue-tab[aria-selected="true"]{
+  background:rgba(112,133,222,.17);
+  color:#fff;
+  box-shadow:inset 0 -2px 0 #bac8ff;
+}
+body[data-app="games"] .crossnumber-clue-panel{
+  max-height:520px;
+  overflow:auto;
+  padding:12px;
+}
+body[data-app="games"] .crossnumber-clue-list{
+  display:grid;
+  gap:8px;
+}
+body[data-app="games"] .crossnumber-clue{
+  display:grid;
+  grid-template-columns:36px minmax(0,1fr);
+  gap:10px;
+  width:100%;
+  padding:11px 12px;
+  border:1px solid transparent;
+  border-radius:15px;
+  background:rgba(255,255,255,.035);
+  color:var(--cn-ink);
+  text-align:left;
+  cursor:pointer;
+  font:inherit;
+}
+body[data-app="games"] .crossnumber-clue:hover,
+body[data-app="games"] .crossnumber-clue:focus-visible{
+  border-color:var(--cn-line);
+  background:rgba(142,159,232,.10);
+  outline:none;
+}
+body[data-app="games"] .crossnumber-clue.is-active{
+  border-color:rgba(185,199,255,.42);
+  background:rgba(122,143,230,.18);
+}
+body[data-app="games"] .crossnumber-clue-number{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:11px;
+  background:rgba(176,190,255,.14);
+  color:#dbe2ff;
+  font-weight:950;
+}
+body[data-app="games"] .crossnumber-clue-copy{
+  align-self:center;
+  color:rgba(244,247,255,.90);
+  line-height:1.35;
+}
+body[data-app="games"] .crossnumber-help{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  color:rgba(236,241,255,.58);
+  font-size:12px;
+}
+body[data-app="games"] .crossnumber-key{
+  min-width:25px;
+  padding:4px 7px;
+  border:1px solid rgba(255,255,255,.17);
+  border-bottom-width:2px;
+  border-radius:7px;
+  background:rgba(255,255,255,.07);
+  color:#eef2ff;
+  text-align:center;
+  font:800 11px/1 ui-monospace,monospace;
+}
+body[data-app="games"] .crossnumber-complete{
+  display:none;
+  padding:16px;
+  border:1px solid rgba(185,242,207,.28);
+  border-radius:18px;
+  background:linear-gradient(135deg,rgba(42,95,72,.32),rgba(37,47,99,.46));
+  color:#eafff1;
+}
+body[data-app="games"] .crossnumber-complete[aria-hidden="false"]{display:block}
+body[data-app="games"] .crossnumber-complete strong{
+  display:block;
+  margin-bottom:4px;
+  font-size:18px;
+}
+@media (max-width:900px){
+  body[data-app="games"] .crossnumber-layout{grid-template-columns:1fr}
+  body[data-app="games"] .crossnumber-clue-panel{max-height:none}
+}
+@media (max-width:640px){
+  body[data-app="games"] .crossnumber-hero{grid-template-columns:1fr;padding:16px}
+  body[data-app="games"] .crossnumber-summary{grid-template-columns:repeat(3,1fr)}
+  body[data-app="games"] .crossnumber-stat{min-width:0;padding:9px 7px}
+  body[data-app="games"] .crossnumber-board-card{padding:12px}
+  body[data-app="games"] .crossnumber-grid-wrap{padding:7px;border-radius:15px}
+  body[data-app="games"] .crossnumber-cell input{font-size:clamp(24px,11vw,38px)}
+  body[data-app="games"] .crossnumber-board-footer{align-items:flex-start}
+  body[data-app="games"] .crossnumber-actions{width:100%}
+  body[data-app="games"] .crossnumber-actions .action{flex:1}
+}
