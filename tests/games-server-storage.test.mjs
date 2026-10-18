@@ -22,6 +22,9 @@ const explorationIntegrity=read('systems/baseline-games-hub/games/baseline-realm
 const ninja=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
 const dartsStorage=read('systems/baseline-games-hub/games/darts-focused/js/darts-focused-storage.js');
 const badmintonProfile=read('systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-profile.js');
+const registry=read('systems/baseline-games-hub/js/games-registry.js');
+const puzzlesRegistry=read('systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js');
+const jigsaw=read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
 
 function runGuard({status=401,payload={ok:false,error:'signed_out'}}={}){
   class FakeXHR{
@@ -130,7 +133,7 @@ test('Baseline Realm signed-out state is memory-only and signed-in state uses ac
 });
 
 test('storage presentation accurately describes server saving and temporary unsigned play',()=>{
-  assert.match(storageUi,/Game progress is stored on the server/);
+  assert.match(storageUi,/Game and puzzle progress is stored on the server/);
   assert.match(storageUi,/Temporary play is active/);
   assert.match(storageUi,/Progress from this temporary session is not saved/);
   assert.doesNotMatch(storageUi,/browser save|Import/);
@@ -148,4 +151,38 @@ test('Baseline Realm play loop runs independently of saving availability',()=>{
   assert.match(loader,/host\.applyOfflineProgress\(\);host\.render\(\)/);
   assert.match(loader,/host\.startLoop\(\)/);
   assert.doesNotMatch(loader,/if\s*\(\s*(?:progressAllowed|canSave\(\))\s*\)\s*host\.(?:applyOfflineProgress|startLoop)/);
+});
+
+test('every current game and jigsaw save app is covered by the server authority contract',()=>{
+  const expected=[
+    'pairs','detectword','make24','trackcoin','ruleshift','ninja',
+    'blockgrid','coloursort','dartsfocused','badmintonfocused',
+    'weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw','meridiangrove'
+  ];
+  expected.forEach(app=>{
+    assert.ok(gamesApi.includes("'"+app+"'"),app+' must be accepted by games_data.php');
+    assert.match(savedData,new RegExp("'"+app+"'\\\\s*=>"),app+' must have a server-side saved-data file');
+  });
+  assert.match(registry,/profileApp:'dartsfocused'/);
+  assert.match(registry,/profileApp:'badmintonfocused'/);
+  assert.match(registry,/persistentApps:storageApps/);
+  assert.match(guard,/BASELINE_GAMES_HUB_GAME_REGISTRY\\?\\.persistentApps\\?\\.\\(\\)/);
+  for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
+    assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
+  }
+});
+
+test('jigsaws use the shared server storage authority and expose save state in the puzzle player',()=>{
+  assert.match(jigsaw,/BaselineGameStorage/);
+  assert.match(jigsaw,/setTemporaryProfile\\?\\.\\(APP,payload\\)/);
+  assert.match(jigsaw,/saveProfile\\?\\.\\(APP,payload/);
+  assert.match(storageUi,/#jigsawPlayerCard > \\.puzzle-library-toolbar/);
+  assert.match(storageUi,/Progress is saved server-side to your Baseline Lifestyle account/);
+});
+
+test('per-app server writes are serialised and immediate saves replace stale queued writes',()=>{
+  assert.match(guard,/const writeChains=Object\\.create\\(null\\)/);
+  assert.match(guard,/const previous=writeChains\\[key\\]\\|\\|Promise\\.resolve\\(true\\)/);
+  assert.match(guard,/previous\\.catch\\(\\(\\)=>false\\)\\.then\\(\\(\\)=>postProfileNow\\(key,snapshot,keepalive\\)\\)/);
+  assert.match(guard,/global\\.clearTimeout\\(timers\\[key\\]\\);\\s*delete pending\\[key\\];\\s*return postProfile\\(key,profile,keepalive\\)/);
 });
