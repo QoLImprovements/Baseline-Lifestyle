@@ -134,9 +134,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const RULESHIFT_TIERS = [
     { id:'starter', name:'Starter', unlockLevel:1, optionCount:6, rounds:8, timeLimitMs:5000, xpReward:18, bankReward:9, penalty:1, sizes:['large'], rules:['colour','shape'] },
     { id:'switch', name:'Switching', unlockLevel:4, optionCount:8, rounds:10, timeLimitMs:5000, xpReward:26, bankReward:13, penalty:2, sizes:['large'], rules:['colour','shape','colourShape'] },
-    { id:'opposite', name:'Combinations', unlockLevel:9, optionCount:10, rounds:12, timeLimitMs:5000, xpReward:40, bankReward:21, penalty:3, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size'] },
-    { id:'mixed', name:'Mixed Rules', unlockLevel:16, optionCount:12, rounds:14, timeLimitMs:5000, xpReward:56, bankReward:30, penalty:4, sizes:['large','small'], rules:['colour','shape','size','colourShape','colourSize','shapeSize'] },
-    { id:'pressure', name:'Pressure', unlockLevel:26, optionCount:12, rounds:16, timeLimitMs:5000, xpReward:76, bankReward:44, penalty:5, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','colour','shape'] }
+    { id:'opposite', name:'Combinations', unlockLevel:9, optionCount:10, rounds:12, timeLimitMs:5000, xpReward:40, bankReward:21, penalty:3, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','notColour','notShape'] },
+    { id:'mixed', name:'Mixed Rules', unlockLevel:16, optionCount:12, rounds:14, timeLimitMs:5000, xpReward:56, bankReward:30, penalty:4, sizes:['large','small'], rules:['colour','shape','size','colourShape','colourSize','shapeSize','notColour','notShape'] },
+    { id:'pressure', name:'Pressure', unlockLevel:26, optionCount:12, rounds:16, timeLimitMs:5000, xpReward:76, bankReward:44, penalty:5, sizes:['large','small'], rules:['colourShape','colourSize','shapeSize','size','colour','shape','notColour','notShape'] }
   ];
   const RULESHIFT_SKILLS = [
     { id:'focus', name:'Focus', max:5, unlockLevel:1, description:'Gain +8% XP reward per completed run.' },
@@ -1539,7 +1539,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(selectedGame === 'detectword') setWordPanel(normalisePanelId('detectword', wordOpenPanel));
     if(selectedGame === 'make24') setMake24Panel(normalisePanelId('make24', make24OpenPanel));
     if(selectedGame === 'trackcoin') setTrackCoinPanel(normalisePanelId('trackcoin', trackCoinOpenPanel));
-    if(selectedGame === 'ruleshift') setRuleShiftPanel(normalisePanelId('ruleshift', ruleShiftOpenPanel));
+    if(selectedGame === 'ruleshift'){
+      setRuleShiftPanel(normalisePanelId('ruleshift', ruleShiftOpenPanel));
+      if(ruleShiftState && !ruleShiftState.finished){
+        if(Number.isFinite(ruleShiftState.pausedRemainingMs)) resumeRuleShiftTimer();
+        else if(!ruleShiftTimer) startRuleShiftTimer();
+      }
+    }
     if(selectedGame === 'ninja'){ setNinjaPanel(normalisePanelId('ninja', ninjaOpenPanel)); requestBaselineRealmLoad(); }
     if(selectedGame || currentTab === 'games') activateTab('games', { sync:false });
     renderGamesList();
@@ -2566,6 +2572,145 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return true;
   }
 
+  function savedTrackCoinRoundSnapshot(){
+    if(!trackCoinState||!profiles.trackcoin) return null;
+    return {
+      tierId:currentTrackCoinTier().id,
+      coinCupId:String(trackCoinState.coinCupId||''),
+      pickedCupId:String(trackCoinState.pickedCupId||''),
+      sequence:(trackCoinState.sequence||[]).map(function(step){
+        return {duration:Number(step.duration||0),pattern:String(step.pattern||'cross'),order:Array.isArray(step.order)?step.order.slice():[]};
+      }),
+      cups:(trackCoinState.cups||[]).map(function(cup){return {id:cup.id,left:Number(cup.left),top:Number(cup.top),tilt:Number(cup.tilt||0)};}),
+      baseTop:Number(trackCoinState.baseTop||68),
+      totalDuration:Number(trackCoinState.totalDuration||0),
+      speedPercent:Number(trackCoinState.speedPercent||TRACKCOIN_BASE_SPEED_PERCENT),
+      speedMultiplier:Number(trackCoinState.speedMultiplier||1),
+      movementSpeedMultiplier:Number(trackCoinState.movementSpeedMultiplier||1),
+      targetDuration:Number(trackCoinState.targetDuration||0),
+      resolved:Boolean(trackCoinState.resolved),
+      lastResult:String(trackCoinState.lastResult||''),
+      message:String(trackCoinState.message||'').slice(0,320)
+    };
+  }
+  function persistTrackCoinRound(){
+    if(!profiles.trackcoin) return;
+    profiles.trackcoin.activeRound=savedTrackCoinRoundSnapshot();
+    scheduleSave('trackcoin');
+  }
+  function restoreSavedTrackCoinRound(){
+    const saved=profiles.trackcoin&&profiles.trackcoin.activeRound;
+    if(!saved||typeof saved!=='object') return false;
+    const tier=TRACKCOIN_TIERS.find(function(item){return item.id===saved.tierId;});
+    if(!tier||profiles.trackcoin.level<tier.unlockLevel) return false;
+    const count=tier.containers;
+    const positions=trackCoinCupPositions(count);
+    const ids=Array.from({length:count},function(_value,index){return 'cup'+index;});
+    const validSequence=Array.isArray(saved.sequence)&&saved.sequence.length?saved.sequence.map(function(step){
+      const order=Array.isArray(step&&step.order)&&step.order.length===count?step.order.map(String):[];
+      return {duration:Math.max(80,Number(step&&step.duration||500)),pattern:String(step&&step.pattern||'cross'),order:order};
+    }):[];
+    if(!validSequence.length||!ids.includes(String(saved.coinCupId||''))) return false;
+
+    // Repair older snapshots that did not store destination orders.
+    let simulatedIds=ids.slice();
+    validSequence.forEach(function(step){
+      if(step.order.length!==count||step.order.some(function(id){return !ids.includes(id);})){
+        step.order=trackCoinGenerateOrder(simulatedIds.map(function(id){return {id:id};}));
+      }
+      simulatedIds=step.order.slice();
+    });
+
+    profiles.trackcoin.selectedTier=tier.id;
+    profiles.trackcoin.currentTier=tier.id;
+    const resolved=Boolean(saved.resolved);
+    let cups=ids.map(function(id,index){return {id:id,left:positions[index],top:Number(saved.baseTop||68),tilt:0};});
+    if(resolved&&Array.isArray(saved.cups)&&saved.cups.length===count){
+      const byId=Object.fromEntries(saved.cups.map(function(cup){return [String(cup.id||''),cup];}));
+      cups=cups.map(function(cup){
+        const source=byId[cup.id];
+        return source?{id:cup.id,left:Number(source.left),top:Number(source.top),tilt:Number(source.tilt||0)}:cup;
+      });
+    }
+    trackCoinState={
+      roundToken:++trackCoinRoundToken,
+      tierId:tier.id,
+      phase:resolved?'review':'show',
+      cups:cups,
+      coinCupId:String(saved.coinCupId),
+      pickedCupId:String(saved.pickedCupId||''),
+      sequence:validSequence,
+      pickLocked:true,
+      resolved:resolved,
+      lastResult:String(saved.lastResult||''),
+      revealAll:resolved,
+      restoredWaiting:!resolved,
+      reviewActive:false,
+      baseTop:Number(saved.baseTop||68),
+      totalDuration:Number(saved.totalDuration||0),
+      speedPercent:Number(saved.speedPercent||TRACKCOIN_BASE_SPEED_PERCENT),
+      speedMultiplier:Number(saved.speedMultiplier||1),
+      movementSpeedMultiplier:Number(saved.movementSpeedMultiplier||1),
+      targetDuration:Number(saved.targetDuration||0),
+      message:resolved?'Round restored. The original result is shown.':'Round restored. Lock onto the visible coin, then resume the same saved shuffle.'
+    };
+    return true;
+  }
+
+  function savedRuleShiftRoundSnapshot(){
+    if(!ruleShiftState||!profiles.ruleshift) return null;
+    return {
+      tierId:currentRuleShiftTier().id,
+      round:Number(ruleShiftState.round||0),
+      maxRounds:Number(ruleShiftState.maxRounds||0),
+      roundBank:Number(ruleShiftState.roundBank||0),
+      mistakes:Number(ruleShiftState.mistakes||0),
+      hadFailure:Boolean(ruleShiftState.hadFailure),
+      currentRule:ruleShiftState.currentRule?Object.assign({},ruleShiftState.currentRule):null,
+      options:Array.isArray(ruleShiftState.options)?ruleShiftState.options.map(function(option){return Object.assign({},option);}):[],
+      finished:Boolean(ruleShiftState.finished),
+      failed:Boolean(ruleShiftState.failed),
+      lastMessage:String(ruleShiftState.lastMessage||'').slice(0,320),
+      lastWasRuleChange:Boolean(ruleShiftState.lastWasRuleChange),
+      remainingMs:ruleShiftState.finished?0:ruleShiftRemainingMs()
+    };
+  }
+  function persistRuleShiftRound(){
+    if(!profiles.ruleshift) return;
+    profiles.ruleshift.activeRound=savedRuleShiftRoundSnapshot();
+    scheduleSave('ruleshift');
+  }
+  function restoreSavedRuleShiftRound(){
+    const saved=profiles.ruleshift&&profiles.ruleshift.activeRound;
+    if(!saved||typeof saved!=='object') return false;
+    const tier=RULESHIFT_TIERS.find(function(item){return item.id===saved.tierId;});
+    const validTypes=['colour','shape','size','notColour','notShape','colourShape','colourSize','shapeSize'];
+    const rule=saved.currentRule&&typeof saved.currentRule==='object'?Object.assign({},saved.currentRule):null;
+    const options=Array.isArray(saved.options)?saved.options.filter(function(option){
+      return option&&RULESHIFT_COLOURS.some(function(item){return item.id===option.colour;})&&RULESHIFT_SHAPES.some(function(item){return item.id===option.shape;})&&RULESHIFT_SIZES.some(function(item){return item.id===option.size;});
+    }).map(function(option){return Object.assign({},option);}):[];
+    if(!tier||profiles.ruleshift.level<tier.unlockLevel||!rule||!validTypes.includes(rule.type)||!options.length) return false;
+    profiles.ruleshift.selectedTier=tier.id;
+    const finished=Boolean(saved.finished);
+    ruleShiftState={
+      round:Math.max(1,Math.round(Number(saved.round||1))),
+      maxRounds:Math.max(1,Math.round(Number(saved.maxRounds||tier.rounds))),
+      roundBank:Number(saved.roundBank||0),
+      mistakes:Math.max(0,Math.round(Number(saved.mistakes||0))),
+      hadFailure:Boolean(saved.hadFailure),
+      currentRule:rule,
+      options:options,
+      finished:finished,
+      failed:Boolean(saved.failed),
+      lastMessage:String(saved.lastMessage||'Run restored. Re-read the active rule before choosing.').slice(0,320),
+      lastWasRuleChange:Boolean(saved.lastWasRuleChange),
+      deadlineAt:0,
+      pausedRemainingMs:finished?null:clamp(Number(saved.remainingMs||ruleShiftTimeLimitMs(tier)),1000,ruleShiftTimeLimitMs(tier)),
+      resolvingTimeout:false
+    };
+    return true;
+  }
+
   function savedWordRoundSnapshot(){
     if(!wordState || !profiles.detectword) return null;
     const tier = WORD_TIERS.find(item => item.id === wordState.tierId) || currentWordTier();
@@ -2918,8 +3063,21 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const minimumTierSteps = Math.max(TRACKCOIN_MIN_MOVES, (tier.minSwaps || 1) + count);
     const stepsCount = Math.max(minimumTierSteps, Math.ceil(targetDuration / speedStepDuration));
     const stepDuration = Math.max(1, Math.round(targetDuration / stepsCount));
-    const patterns = ['cross','rise','drop','diagonal','orbit','zigzag','sweep','spiral'];
+    const tierIndex=Math.max(0,TRACKCOIN_TIERS.findIndex(function(item){return item.id===tier.id;}));
+    const simplePatterns=['cross','rise','drop','diagonal'];
+    const intermediatePatterns=simplePatterns.concat(['zigzag','sweep']);
+    const advancedPatterns=intermediatePatterns.concat(['orbit','spiral']);
+    const patterns=tierIndex<=1?simplePatterns:(tierIndex<=3?intermediatePatterns:advancedPatterns);
     const sequence = Array.from({ length:stepsCount }, () => ({ duration:stepDuration, pattern:patterns[Math.floor(Math.random() * patterns.length)] }));
+
+    // Store each destination order up-front so replay and restored rounds use
+    // the exact same route rather than generating a different shuffle.
+    let simulatedIds=cups.map(function(cup){return cup.id;});
+    sequence.forEach(function(step){
+      const proxy=simulatedIds.map(function(id){return {id:id};});
+      step.order=trackCoinGenerateOrder(proxy);
+      simulatedIds=step.order.slice();
+    });
     const totalDuration = stepDuration * stepsCount;
     return {
       tierId:tier.id, phase:'show', cups, coinCupId, sequence, pickLocked:true, resolved:false,
@@ -3004,7 +3162,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     function frame(now){
       if(!trackCoinState || trackCoinState.roundToken !== roundToken || trackCoinState.phase !== 'hide') return;
       const raw = clamp((now - startAt) / step.duration, 0, 1);
-      const eased = 0.5 - (0.5 * Math.cos(Math.PI * raw));
+      const eased = raw < 0.5 ? 16 * Math.pow(raw, 5) : 1 - (Math.pow(-2 * raw + 2, 5) / 2);
       cups.forEach((cup, idx) => {
         const s = starts[idx];
         const t = targets[idx];
@@ -3044,16 +3202,19 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(startWindowMs >= 3000){
       trackCoinState.message = 'Auto-next started. You have a 3 second start window: lock onto the visible coin before the cup drops. ' + trackCoinSpeedStatusText(profile) + '.';
     }
+    persistTrackCoinRound();
     renderTrackCoin();
     trackCoinShuffleTimer = window.setTimeout(function(){
       if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
       trackCoinState.phase = 'cover';
       trackCoinState.message = 'The coin is covered. Hold the starting position, then follow the full shuffle. ' + trackCoinSpeedStatusText(profile) + '.';
+      persistTrackCoinRound();
       renderTrackCoin();
       trackCoinShuffleTimer = window.setTimeout(function(){
         if(!trackCoinState || trackCoinState.roundToken !== roundToken) return;
         trackCoinState.phase = 'hide';
         trackCoinState.message = 'Shuffle started. Follow every cup movement. ' + trackCoinSpeedStatusText(profile) + '.';
+        persistTrackCoinRound();
         renderTrackCoin();
         runTrackCoinShuffle(0, roundToken);
       }, 700);
@@ -3069,6 +3230,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       trackCoinState.phase = 'pick';
       trackCoinState.pickLocked = false;
       trackCoinState.message = 'Select the cup holding the coin.';
+      persistTrackCoinRound();
       renderTrackCoin();
       return;
     }
@@ -3136,10 +3298,32 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     trackCoinState.message = correct
       ? 'Correct. The coin was under the cup you chose. Cup speed rises from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins' + (reward.bonusPct ? ' · streak bonus +' + reward.bonusPct + '%' : '') + (reward.cleanPct ? ' · clean bonus +' + reward.cleanPct + '%' : '') + (reward.levelUps ? ' · +' + reward.levelUps + ' level' + (reward.levelUps > 1 ? 's' : '') : '') + '.'
       : 'Missed. The coin has been revealed under the correct cup. Cup speed falls from ' + reward.roundSpeed + '% to ' + reward.nextSpeed + '%. Streak bonus reset. +' + reward.xpGain + ' XP · +' + reward.coinGain + ' coins.';
+    persistTrackCoinRound();
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('trackcoin', function(){ startTrackCoinRound({ startWindowMs:3000 }); }, AUTO_NEXT_DELAYS.trackcoin);
   }
+  function resumeRestoredTrackCoinRound(){
+    if(!trackCoinState||!trackCoinState.restoredWaiting||trackCoinState.resolved) return;
+    clearAutoNextTimer('trackcoin');
+    cancelTrackCoinAnimation();
+    const roundToken=++trackCoinRoundToken;
+    trackCoinState.roundToken=roundToken;
+    trackCoinState.restoredWaiting=false;
+    trackCoinState.phase='cover';
+    trackCoinState.message='The coin is covered. Resume tracking the saved route.';
+    persistTrackCoinRound();
+    renderTrackCoin();
+    trackCoinShuffleTimer=window.setTimeout(function(){
+      if(!trackCoinState||trackCoinState.roundToken!==roundToken)return;
+      trackCoinState.phase='hide';
+      trackCoinState.message='Saved shuffle resumed. Follow every cup movement.';
+      persistTrackCoinRound();
+      renderTrackCoin();
+      runTrackCoinShuffle(0,roundToken);
+    },650);
+  }
+
   function replayTrackCoinShuffle(){
     if(!trackCoinState || !trackCoinState.resolved || trackCoinState.reviewActive) return;
     clearAutoNextTimer('trackcoin');
@@ -3343,6 +3527,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     else if(type === 'size'){ label = 'Choose a ' + size.name + ' object.'; brief = 'Size'; }
     else if(type === 'colourSize'){ label = 'Choose a ' + size.name + ' ' + colour.name + ' object.'; brief = 'Colour + size'; }
     else if(type === 'shapeSize'){ label = 'Choose a ' + size.name + ' ' + shape.name + '.'; brief = 'Shape + size'; }
+    else if(type === 'notColour'){ label = 'Avoid ' + colour.name + '.'; brief = 'Exclude colour'; }
+    else if(type === 'notShape'){ label = 'Avoid ' + shape.name + 's.'; brief = 'Exclude shape'; }
     else{ label = 'Choose ' + colour.name + '.'; brief = 'Colour'; type = 'colour'; }
 
     return { type:type, colour:colour.id, shape:shape.id, size:size.id, label:label, brief:brief };
@@ -3398,6 +3584,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!ruleShiftState || ruleShiftState.finished || Number.isFinite(ruleShiftState.pausedRemainingMs)) return;
     ruleShiftState.pausedRemainingMs = ruleShiftRemainingMs();
     clearRuleShiftTimer();
+    persistRuleShiftRound();
     syncRuleShiftTimer();
   }
   function resumeRuleShiftTimer(){
@@ -3444,128 +3631,38 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
 
   function buildRuleShiftOptions(tier, rule){
-    const count = clamp(Number(tier && tier.optionCount) || 8, 6, 12);
-    const colourIds = RULESHIFT_COLOURS.map(function(item){ return item.id; });
-    const shapeIds = RULESHIFT_SHAPES.map(function(item){ return item.id; });
-    const allSizeIds = RULESHIFT_SIZES.map(function(item){ return item.id; });
-    const configuredSizeIds = Array.isArray(tier && tier.sizes) ? tier.sizes : [];
-    const sizeIds = configuredSizeIds.length ? allSizeIds.filter(function(id){ return configuredSizeIds.includes(id); }) : allSizeIds.slice();
-    if(!sizeIds.length) sizeIds.push(allSizeIds[0] || 'large');
-    const fallbackColour = colourIds[0] || 'red';
-    const fallbackShape = shapeIds[0] || 'circle';
-    const fallbackSize = sizeIds[0] || 'small';
+    const count=clamp(Number(tier&&tier.optionCount)||8,6,12);
+    const colourIds=RULESHIFT_COLOURS.map(function(item){return item.id;});
+    const shapeIds=RULESHIFT_SHAPES.map(function(item){return item.id;});
+    const configured=Array.isArray(tier&&tier.sizes)?tier.sizes:[];
+    const sizeIds=RULESHIFT_SIZES.map(function(item){return item.id;}).filter(function(id){return !configured.length||configured.includes(id);});
+    if(!sizeIds.length) sizeIds.push('large');
 
-    const targetColour = colourIds.includes(rule.colour) ? rule.colour : fallbackColour;
-    const targetShape = shapeIds.includes(rule.shape) ? rule.shape : fallbackShape;
-    const targetSize = sizeIds.includes(rule.size) ? rule.size : fallbackSize;
-    const otherSize = sizeIds.find(function(id){ return id !== targetSize; }) || fallbackSize;
-
-    const selected = [];
-    const usedIds = new Set();
-
-    function optionId(option){
-      return option.colour + '-' + option.shape + '-' + option.size;
-    }
-
-    function addOption(colour, shape, size){
-      const option = {
-        colour: colourIds.includes(colour) ? colour : fallbackColour,
-        shape: shapeIds.includes(shape) ? shape : fallbackShape,
-        size: sizeIds.includes(size) ? size : fallbackSize
-      };
-      option.id = optionId(option);
-      if(usedIds.has(option.id)) return false;
-      usedIds.add(option.id);
-      selected.push(option);
-      return true;
-    }
-
-    function addNonMatching(colour, shape, size){
-      const option = {
-        colour: colourIds.includes(colour) ? colour : fallbackColour,
-        shape: shapeIds.includes(shape) ? shape : fallbackShape,
-        size: sizeIds.includes(size) ? size : fallbackSize
-      };
-      if(ruleShiftMatches(rule, option)) return false;
-      return addOption(option.colour, option.shape, option.size);
-    }
-
-    function fillFromPool(pool){
-      shuffle(pool).forEach(function(option){
-        if(selected.length >= count) return;
-        addNonMatching(option.colour, option.shape, option.size);
-      });
-    }
-
-    function fillFromPoolLimit(pool, limit){
-      let added = 0;
-      shuffle(pool).forEach(function(option){
-        if(selected.length >= count || added >= limit) return;
-        if(addNonMatching(option.colour, option.shape, option.size)) added += 1;
-      });
-    }
-
-    addOption(targetColour, targetShape, targetSize);
-
-    if(rule.type === 'size'){
-      // Size enters only in harder tiers. Exactly one option matches the requested size.
-      const sizeDistractors = [];
-      colourIds.forEach(function(colour){
-        shapeIds.forEach(function(shape){
-          sizeDistractors.push({ colour:colour, shape:shape, size:otherSize });
-        });
-      });
-      fillFromPool(sizeDistractors);
-    }else if(rule.type === 'colourShape'){
-      // Compound colour + shape prompts must not be solvable by colour alone or shape alone.
-      // Keep exactly one true target, then add distractors that share each descriptor separately.
-      fillFromPoolLimit(shapeIds.filter(function(id){ return id !== targetShape; }).map(function(shape, index){
-        return { colour:targetColour, shape:shape, size:(index % 2 === 0) ? targetSize : otherSize };
-      }), 3);
-      fillFromPoolLimit(colourIds.filter(function(id){ return id !== targetColour; }).map(function(colour, index){
-        return { colour:colour, shape:targetShape, size:(index % 2 === 0) ? otherSize : targetSize };
-      }), 3);
-    }else if(rule.type === 'colourSize'){
-      // Colour + size prompts need colour-only and size-only distractors.
-      fillFromPool(sizeIds.filter(function(id){ return id !== targetSize; }).map(function(size){
-        return { colour:targetColour, shape:shapeIds.find(function(id){ return id !== targetShape; }) || targetShape, size:size };
-      }));
-      fillFromPool(colourIds.filter(function(id){ return id !== targetColour; }).map(function(colour, index){
-        return { colour:colour, shape:shapeIds[index % shapeIds.length] || targetShape, size:targetSize };
-      }));
-    }else if(rule.type === 'shapeSize'){
-      // Shape + size prompts need shape-only and size-only distractors.
-      fillFromPool(sizeIds.filter(function(id){ return id !== targetSize; }).map(function(size){
-        return { colour:colourIds.find(function(id){ return id !== targetColour; }) || targetColour, shape:targetShape, size:size };
-      }));
-      fillFromPool(shapeIds.filter(function(id){ return id !== targetShape; }).map(function(shape, index){
-        return { colour:colourIds[index % colourIds.length] || targetColour, shape:shape, size:targetSize };
-      }));
-    }else{
-      // Single-descriptor prompts keep the clean spread: all 8 colours and all 8 shapes once.
-      // That keeps single prompts simple while the compound prompts above deliberately break uniqueness.
-      const remainingColours = shuffle(colourIds.filter(function(id){ return id !== targetColour; }));
-      const remainingShapes = shuffle(shapeIds.filter(function(id){ return id !== targetShape; }));
-      for(let index = 0; index < count - 1; index += 1){
-        addOption(
-          remainingColours[index] || fallbackColour,
-          remainingShapes[index] || fallbackShape,
-          (index % 2 === 0) ? otherSize : targetSize
-        );
-      }
-    }
-
-    const allOptions = [];
+    const pool=[];
     colourIds.forEach(function(colour){
       shapeIds.forEach(function(shape){
         sizeIds.forEach(function(size){
-          allOptions.push({ colour:colour, shape:shape, size:size });
+          pool.push({id:colour+'-'+shape+'-'+size,colour:colour,shape:shape,size:size});
         });
       });
     });
-    fillFromPool(allOptions);
 
-    return shuffle(selected.slice(0, count));
+    const matching=shuffle(pool.filter(function(option){return ruleShiftMatches(rule,option);}));
+    const nonMatching=shuffle(pool.filter(function(option){return !ruleShiftMatches(rule,option);}));
+    if(!matching.length) return shuffle(pool).slice(0,count);
+
+    // Keep the cognitive task unambiguous: exactly one selectable answer is valid.
+    const target=matching[0];
+    const distractors=nonMatching.slice(0,Math.max(0,count-1));
+
+    // Prefer distractors that share at least one visible descriptor with the target.
+    distractors.sort(function(a,b){
+      const score=function(option){
+        return Number(option.colour===target.colour)+Number(option.shape===target.shape)+Number(option.size===target.size);
+      };
+      return score(b)-score(a);
+    });
+    return shuffle([target].concat(distractors)).slice(0,count);
   }
   function startRuleShiftRound(){
     clearAutoNextTimer('ruleshift');
@@ -3588,7 +3685,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       resolvingTimeout:false
     };
     advanceRuleShiftRound(true);
-    scheduleSave('ruleshift');
+    persistRuleShiftRound();
     renderAll();
     startRuleShiftTimer();
   }
@@ -3623,7 +3720,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     ruleShiftState.finished = true;
     ruleShiftState.roundBank = 0;
     ruleShiftState.lastMessage = message || 'Run failed — no reward awarded.';
-    scheduleSave('ruleshift');
+    persistRuleShiftRound();
     renderAll();
   }
 
@@ -3643,7 +3740,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     profile.cleanWinStreak = nextClean;
     ruleShiftState.finished = true;
     ruleShiftState.lastMessage = 'Run complete. +' + bankGain + ' Bank and +' + xpGain + ' XP' + cleanBonusRewardText(nextClean) + (leveled ? ' · Level up +' + leveled : '') + '.';
-    scheduleSave('ruleshift');
+    persistRuleShiftRound();
     resolveNinjaBonuses();
     renderAll();
     scheduleAutoNext('ruleshift', startRuleShiftRound, AUTO_NEXT_DELAYS.ruleshift);
@@ -3666,7 +3763,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         completeRuleShiftRun();
       }else{
         advanceRuleShiftRound(false);
-        scheduleSave('ruleshift');
+        persistRuleShiftRound();
         renderAll();
         startRuleShiftTimer();
       }
@@ -4196,7 +4293,8 @@ function toggleGameFullscreen(gameId){
       const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
       const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
       const trackCoinStart = event.target.closest('[data-action="start-trackcoin"], #newTrackCoinRoundBtn'); if(trackCoinStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startTrackCoinRound(); focusGamePlaySurface('trackcoin', { scroll:false, mobileMode:true }); return; }
-      const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
+      const trackCoinResume = event.target.closest('[data-action="resume-trackcoin"]'); if(trackCoinResume){ if(event){ event.preventDefault(); event.stopPropagation(); } resumeRestoredTrackCoinRound(); return; }
+            const trackCoinReplay = event.target.closest('[data-action="replay-trackcoin"], #replayTrackCoinShuffleBtn'); if(trackCoinReplay){ if(event){ event.preventDefault(); event.stopPropagation(); } replayTrackCoinShuffle(); return; }
       const trackCoinCup = event.target.closest('[data-trackcoin-pick]'); if(trackCoinCup){ chooseTrackCoinCup(trackCoinCup.getAttribute('data-trackcoin-pick')); return; }
       const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
