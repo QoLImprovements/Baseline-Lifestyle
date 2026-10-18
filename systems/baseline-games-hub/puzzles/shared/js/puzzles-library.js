@@ -19,7 +19,7 @@
   function routeState(){
     try{
       const params=new URLSearchParams(window.location.search||'');
-      const view=String(params.get('puzzle-view')||'').toLowerCase();
+      const view=String(params.get('puzzle')||'').toLowerCase();
       const jigsaw=String(params.get('jigsaw')||'');
       if(jigsaw&&registry.findJigsaw(jigsaw)) return {view:'player',jigsaw:jigsaw};
       if(view==='jigsaws') return {view:'jigsaws',jigsaw:''};
@@ -30,11 +30,11 @@
   function writeRoute(view,jigsaw,mode){
     try{
       const url=new URL(window.location.href);
-      url.searchParams.delete('puzzle-view');
+      url.searchParams.delete('puzzle');
       url.searchParams.delete('jigsaw');
-      if(view==='jigsaws') url.searchParams.set('puzzle-view','jigsaws');
+      if(view==='jigsaws') url.searchParams.set('puzzle','jigsaws');
       if(view==='player'&&jigsaw){
-        url.searchParams.set('puzzle-view','jigsaws');
+        url.searchParams.set('puzzle','jigsaws');
         url.searchParams.set('jigsaw',jigsaw);
       }
       const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
@@ -143,6 +143,7 @@
     openJigsaw:openJigsaw,
     showOverview:function(){ showView('overview','push'); },
     showJigsaws:function(){ showView('jigsaws','push'); },
-    getView:function(){ return activeView; }
+    getView:function(){ return activeView; },
+    getJigsaw:function(){ return activeJigsaw; }
   });
 })();
