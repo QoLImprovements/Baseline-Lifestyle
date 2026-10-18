@@ -16,6 +16,33 @@
   let activeView='overview';
   let activeJigsaw='';
 
+  function routeState(){
+    try{
+      const params=new URLSearchParams(window.location.search||'');
+      const view=String(params.get('puzzle-view')||'').toLowerCase();
+      const jigsaw=String(params.get('jigsaw')||'');
+      if(jigsaw&&registry.findJigsaw(jigsaw)) return {view:'player',jigsaw:jigsaw};
+      if(view==='jigsaws') return {view:'jigsaws',jigsaw:''};
+    }catch(_error){}
+    return {view:'overview',jigsaw:''};
+  }
+
+  function writeRoute(view,jigsaw,mode){
+    try{
+      const url=new URL(window.location.href);
+      url.searchParams.delete('puzzle-view');
+      url.searchParams.delete('jigsaw');
+      if(view==='jigsaws') url.searchParams.set('puzzle-view','jigsaws');
+      if(view==='player'&&jigsaw){
+        url.searchParams.set('puzzle-view','jigsaws');
+        url.searchParams.set('jigsaw',jigsaw);
+      }
+      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      if(mode==='replace') window.history.replaceState({baselinePuzzles:true,view:view,jigsaw:jigsaw||''},'',next);
+      else window.history.pushState({baselinePuzzles:true,view:view,jigsaw:jigsaw||''},'',next);
+    }catch(_error){}
+  }
+
   function escapeHtml(value){
     return String(value??'').replace(/[&<>"']/g,function(ch){
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
@@ -55,11 +82,12 @@
     }).join('');
   }
 
-  function showView(view){
+  function showView(view,historyMode){
     activeView=view;
     refs.overview.hidden=view!=='overview';
     refs.jigsaws.hidden=view!=='jigsaws';
     refs.player.hidden=view!=='player';
+    if(historyMode) writeRoute(view,activeJigsaw,historyMode);
   }
 
   function openJigsaw(id){
@@ -68,14 +96,14 @@
     activeJigsaw=puzzle.id;
     renderJigsaws();
     document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
-    showView('player');
+    showView('player','push');
     try{ refs.player.scrollIntoView({behavior:window.innerWidth<=760?'auto':'smooth',block:'start'}); }catch(_error){}
   }
 
   document.addEventListener('click',function(event){
     const typeButton=event.target.closest('[data-puzzle-type]');
     if(typeButton){
-      if(typeButton.getAttribute('data-puzzle-type')==='jigsaws') showView('jigsaws');
+      if(typeButton.getAttribute('data-puzzle-type')==='jigsaws') showView('jigsaws','push');
       return;
     }
     const jigsawButton=event.target.closest('[data-jigsaw-id]');
@@ -85,18 +113,36 @@
     }
     const back=event.target.closest('[data-puzzles-back]');
     if(back){
-      showView(back.getAttribute('data-puzzles-back')==='overview'?'overview':'jigsaws');
+      showView(back.getAttribute('data-puzzles-back')==='overview'?'overview':'jigsaws','push');
     }
   });
 
   renderTypes();
   renderJigsaws();
-  showView('overview');
+  const initial=routeState();
+  activeJigsaw=initial.jigsaw||'';
+  if(initial.view==='player'&&activeJigsaw){
+    const puzzle=registry.findJigsaw(activeJigsaw);
+    if(puzzle) document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
+  }
+  showView(initial.view);
+  writeRoute(initial.view,activeJigsaw,'replace');
+
+  window.addEventListener('popstate',function(){
+    const next=routeState();
+    activeJigsaw=next.jigsaw||'';
+    if(next.view==='player'&&activeJigsaw){
+      const puzzle=registry.findJigsaw(activeJigsaw);
+      if(puzzle) document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
+    }
+    renderJigsaws();
+    showView(next.view);
+  });
 
   window.BaselinePuzzlesLibrary=Object.freeze({
     openJigsaw:openJigsaw,
-    showOverview:function(){ showView('overview'); },
-    showJigsaws:function(){ showView('jigsaws'); },
+    showOverview:function(){ showView('overview','push'); },
+    showJigsaws:function(){ showView('jigsaws','push'); },
     getView:function(){ return activeView; }
   });
 })();
