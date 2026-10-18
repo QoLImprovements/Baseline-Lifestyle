@@ -14,6 +14,8 @@ const runtimeUi=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm
 const lazyScenes=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js','utf8');
 const inputBindings=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
 const ninjaRuntime=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
+const hubLoader=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js','utf8');
+const realmEntry=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js','utf8');
 
 test('Games Hub CSS does not own Realm presentation',()=>{
   assert.doesNotMatch(hubCss,/\.realm-command-banner|\.realm-location-button|\.realm-drawer|\.realm-top-strip|#ninjaPanel #realmSceneFrame|\.ninja-scene|\.ninja-hit-flash/);
@@ -118,4 +120,17 @@ test('Basecamp landmarks stay contained and persistent captions remain readable'
 test('Basecamp service drawer and Workshop room sit above the active scene',()=>{
   assert.match(shellCss,/\.realm-drawer\{[\s\S]*?position:absolute!important[\s\S]*?z-index:70!important/);
   assert.match(workshopCss,/#realmWorkshopScreen\.realm-workshop-screen\{[\s\S]*?z-index:20!important/);
+});
+
+
+test('Realm loader reuses the one canonical module and waits for its initial scene',()=>{
+  assert.match(html,/realm-entry\.js\?v=REALM_SINGLE_RUNTIME_20261019_1/);
+  assert.match(html,/baseline-games-hub\.js\?v=REALM_SINGLE_RUNTIME_20261019_1/);
+  assert.match(hubLoader,/const REALM_BUILD='REALM_SINGLE_RUNTIME_20261019_1'/);
+  assert.match(hubLoader,/const existing=window\.BaselineRealmHost;[\s\S]*?if\(real\(existing\)\) return existing;/);
+  assert.match(hubLoader,/whenSceneReady/);
+  assert.doesNotMatch(hubLoader,/ninja-training-final-authority\.css|REALM_CSS/);
+  assert.match(realmEntry,/let sceneReady = Promise\.resolve\(null\)/);
+  assert.match(realmEntry,/sceneReady = sceneRouter\.navigate\(initialScene/);
+  assert.match(realmEntry,/whenSceneReady: \(\) => sceneReady/);
 });

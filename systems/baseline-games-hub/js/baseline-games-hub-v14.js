@@ -1,6 +1,6 @@
 const BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 const LEGACY_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
-const REALM_BUILD='REALM_SINGLE_BOOTSTRAP_20261018_1';
+const REALM_BUILD='REALM_SINGLE_RUNTIME_20261019_1';
 const REALM='/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
@@ -65,6 +65,14 @@ function showRealmFailure(error){
 /* Compatibility loader only. realm-entry.js is the sole Realm bootstrap,
    scene-navigation and presentation authority. This wrapper merely waits for
    the canonical host so Games Hub callers can keep using BaselineRealmLoader. */
+async function resolveRealmHost(){
+  const existing=window.BaselineRealmHost;
+  if(real(existing)) return existing;
+  const module=await import(REALM);
+  const host=module.BaselineRealmHost||window.BaselineRealmHost;
+  if(!real(host)) throw new Error('Canonical Realm host missing');
+  return host;
+}
 async function loadRealm(options){
   const opts=options||{};
   if(opts.retry){
@@ -75,11 +83,10 @@ async function loadRealm(options){
   if(!realmPromise){
     realmPromise=(async()=>{
       const dependencies=await waitCore();
-      const module=await import(REALM);
-      const host=module.BaselineRealmHost||window.BaselineRealmHost;
-      if(!real(host))throw new Error('Canonical Realm host missing');
+      const host=await resolveRealmHost();
       if(typeof host.isConfigured==='function'&&!host.isConfigured()) host.configure(dependencies);
       if(typeof host.isConfigured==='function'&&!host.isConfigured()) throw new Error('Canonical Realm host did not configure');
+      if(typeof host.whenSceneReady==='function') await host.whenSceneReady();
       clearRealmFailure();
       delete window.BASELINE_REALM_LOAD_ERROR;
       document.documentElement.dataset.baselineRealmRuntimeActive=host.build||REALM_BUILD;
