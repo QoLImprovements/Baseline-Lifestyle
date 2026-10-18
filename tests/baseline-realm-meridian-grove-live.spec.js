@@ -1,20 +1,33 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
-const SAVE_KEY = 'baseline.realm.exploration.jrpg.v1';
-
 async function mockProfiles(page) {
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
+  const profiles = {
+    ninja: { app: 'ninja', level: 1, xp: 0, coins: 0, stage: 1, enemyHp: 50, upgrades: {}, spiritShop: {} }
+  };
+  const revisions = { ninja: 1 };
+  await page.route('**/systems/baseline-games-hub/api/games_data.php**', async route => {
     const request = route.request();
-    const url = new URL(request.url());
-    const app = url.searchParams.get('app') || 'ninja';
-    const profile = app === 'ninja'
-      ? { app: 'ninja', level: 1, xp: 0, coins: 0, stage: 1, enemyHp: 50, upgrades: {}, spiritShop: {} }
-      : { app, level: 1, xp: 0, bank: 0, coins: 0, skillPoints: 1, skills: {} };
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, app, profile }) });
+    if (request.method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, profiles, revisions })
+      });
+      return;
+    }
+    let body = {};
+    try { body = request.postDataJSON(); } catch (_) {}
+    const app = body.app || 'ninja';
+    if (body.profile && typeof body.profile === 'object') profiles[app] = body.profile;
+    revisions[app] = Number(revisions[app] || 0) + 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, app, profile: profiles[app] || {}, revision: revisions[app] })
+    });
   });
 }
-
 async function openRealm(page) {
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.sceneRouter));
@@ -45,7 +58,7 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
   await mockProfiles(page);
   await openRealm(page);
 
-  await page.evaluate(async ({ saveKey }) => {
+  await page.evaluate(async () => {
     const engine = await import('/systems/baseline-games-hub/games/baseline-realm/exploration/js/jrpg-engine.js');
     const state = engine.createInitialState(67890);
     engine.startBattle(state, ['galesprout'], 'random');
@@ -54,8 +67,8 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
     state.battle.activeActorIndex = 0;
     state.settings.battleMode = 'active';
     state.battle.enemies[0].atb = 99;
-    localStorage.setItem(saveKey, JSON.stringify(state));
-  }, { saveKey: SAVE_KEY });
+    globalThis.BaselineGameStorage.setTemporaryProfile('meridiangrove', state);
+  });
 
   await page.locator('#realmCampExplorationBtn').click();
 

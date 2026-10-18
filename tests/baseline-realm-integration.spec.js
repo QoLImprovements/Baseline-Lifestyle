@@ -35,35 +35,30 @@ function profileFor(app) {
 
 async function mockProfiles(page) {
   const profiles = { ninja: ninjaProfile() };
+  const revisions = { ninja: 1 };
   await page.route('**/systems/baseline-games-hub/api/games_data.php**', async (route) => {
     const request = route.request();
     if (request.method() === 'GET') {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, profiles }) });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, profiles, revisions })
+      });
       return;
     }
     let body = {};
     try { body = request.postDataJSON(); } catch (_) {}
-    if (body.action === 'migrate_missing') Object.entries(body.profiles || {}).forEach(([app, profile]) => { if (!profiles[app]) profiles[app] = profile; });
-    if (body.action === 'save' && body.app && body.profile) profiles[body.app] = body.profile;
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, app: body.app || '', profile: body.app ? profiles[body.app] : null, profiles }) });
-  });
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async (route) => {
-    const request = route.request();
-    const url = new URL(request.url());
-    let app = url.searchParams.get('app') || 'pairs';
-    if (!profiles[app]) profiles[app] = profileFor(app);
-    if (request.method() === 'POST') {
-      try {
-        const body = request.postDataJSON();
-        app = body.app || app;
-        profiles[app] = body.profile || profiles[app] || profileFor(app);
-      } catch (_) {}
-    }
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, app, profile: profiles[app] }) });
+    const app = body.app || '';
+    if (app && body.profile && typeof body.profile === 'object') profiles[app] = body.profile;
+    if (app) revisions[app] = Number(revisions[app] || 0) + 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, app, profile: app ? profiles[app] : null, revision: app ? revisions[app] : 0 })
+    });
   });
   return profiles;
 }
-
 async function openRealm(page, { mobile = false } = {}) {
   const profiles = await mockProfiles(page);
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
@@ -223,10 +218,15 @@ test('fullscreen, audio controls and reduced-motion state are wired', async ({ b
   const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, reducedMotion: 'reduce' });
   const page = await context.newPage();
   await openRealm(page);
-  await expect(page.locator('#realmAudioControls')).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('data-realm-reduced-motion', 'true');
+  await page.locator('#realmSettingsBtn').click();
+  await expect(page.locator('#realmSettingsPanel')).toBeVisible();
+  await expect(page.locator('[data-realm-audio-mute]')).toBeVisible();
+  await expect(page.locator('[data-realm-audio-volume]')).toBeVisible();
   await page.locator('[data-realm-audio-mute]').click();
   await expect(page.locator('[data-realm-audio-mute]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-realm-settings-close]').click();
+  await expect(page.locator('#realmSettingsPanel')).toBeHidden();
 
   const supported = await page.evaluate(() => document.fullscreenEnabled);
   if (supported) {

@@ -1,8 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
 const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
-const GUEST_PROFILE_KEY = '__bl_games_guest_profiles_v1__';
-
 function profileFor(app) {
   if (app === 'ninja') {
     return {
@@ -19,31 +17,30 @@ function profileFor(app) {
 }
 
 async function mockProfiles(page) {
-  const savedNinja = profileFor('ninja');
-  await page.addInitScript(({ key, profile }) => {
-    localStorage.setItem(key, JSON.stringify({ ninja: profile }));
-  }, { key: GUEST_PROFILE_KEY, profile: savedNinja });
-
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
+  const profiles = { ninja: profileFor('ninja') };
+  const revisions = { ninja: 1 };
+  await page.route('**/systems/baseline-games-hub/api/games_data.php**', async route => {
     const request = route.request();
-    const url = new URL(request.url());
-    let app = url.searchParams.get('app') || 'pairs';
-    let profile = profileFor(app);
-    if (request.method() === 'POST') {
-      try {
-        const body = request.postDataJSON();
-        app = body.app || app;
-        profile = body.profile || profileFor(app);
-      } catch (_) {}
+    if (request.method() === 'GET') {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: true, profiles, revisions })
+      });
+      return;
     }
+    let body = {};
+    try { body = request.postDataJSON(); } catch (_) {}
+    const app = body.app || 'ninja';
+    if (body.profile && typeof body.profile === 'object') profiles[app] = body.profile;
+    revisions[app] = Number(revisions[app] || 0) + 1;
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ ok: true, app, profile })
+      body: JSON.stringify({ ok: true, app, profile: profiles[app] || profileFor(app), revision: revisions[app] })
     });
   });
 }
-
 async function openRealm(page, { mobile = false } = {}) {
   await mockProfiles(page);
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
@@ -132,7 +129,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   await expect(page.locator('#ninjaPanel .realm-page-header')).toHaveCount(0);
   await expect(page.locator('#ninjaLevelValue')).toHaveText('12');
   await expect(page.locator('#ninjaStageValue')).toHaveText('37');
-  await expect(page.locator('#ninjaCoinsValue')).toHaveText('678');
+  await expect(page.locator('#realmCoinsValue')).toHaveText('678');
   await expect(page.locator('#ninjaSpiritValue')).toHaveText('9');
 
   const dashHref = await page.locator('#ninjaManualStrikeBtn use').getAttribute('href');
