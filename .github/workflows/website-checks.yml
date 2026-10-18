@@ -81,6 +81,7 @@ jobs:
             tests/routine-system-browser.spec.js \
             tests/skincare-recipe-runtime.spec.js \
             tests/stability-release-smoke.spec.js \
+            tests/navigation-state-browser.spec.js \
             --reporter=line
 
       - name: Run Phase 3 migration and cutover PHP verification
