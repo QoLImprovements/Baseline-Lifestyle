@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MAGNIFIER_LENS_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_MAGNIFIER_LENS_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ZOOM_HELP_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ZOOM_HELP_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -53,31 +53,31 @@ test('V toggles a persistent full-colour view and pauses piece interaction witho
 });
 
 
-test('piece zoom starts at 200 percent and can increase to 1000 percent', () => {
-  assert.match(html, /id="weightCoherenceZoomOutBtn"[\s\S]*?id="weightCoherenceZoomBtn"[\s\S]*?aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomInBtn"[\s\S]*?id="weightCoherencePreviewBtn"/);
+test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is not clickable', () => {
+  assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<span[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
   assert.match(html, /weight-coherence-hotkey">Z<\/kbd>/);
-  assert.match(css, /\.weight-coherence-zoom-actions\{/);
-  assert.match(css, /\.weight-coherence-zoom-step\{/);
-  assert.match(js, /const ZOOM_MIN = 1/);
+  assert.doesNotMatch(html, /<button[^>]*id="weightCoherenceZoomBtn"/);
+  assert.match(css, /\.weight-coherence-zoom-indicator\{[^}]*pointer-events:none/);
   assert.match(js, /const PIECE_ZOOM_DEFAULT = 2/);
   assert.match(js, /const PIECE_ZOOM_MAX = 10/);
   assert.match(js, /const ZOOM_STEP = 1/);
-  assert.match(js, /function applyPieceZoom\(target,scale\)/);
-  assert.match(js, /Math\.max\(PIECE_ZOOM_DEFAULT,Math\.min\(PIECE_ZOOM_MAX/);
-  assert.match(js, /applyPieceZoom\(piece,PIECE_ZOOM_DEFAULT\)/);
-  assert.match(js, /Piece zoom 200%\.[\s\S]*?1000%/);
-  assert.match(js, /function adjustZoom\(direction\)/);
+  assert.match(js, /let zoomLevel = PIECE_ZOOM_DEFAULT/);
+  assert.match(js, /function adjustZoom\(direction\)\{[\s\S]*?Math\.max\(PIECE_ZOOM_DEFAULT,Math\.min\(PIECE_ZOOM_MAX,zoomLevel\+\(amount\*ZOOM_STEP\)\)\)/);
+  assert.match(js, /zoomLevel=next/);
+  assert.match(js, /applyPieceZoom\(piece,zoomLevel\)/);
+  assert.match(js, /refs\.zoomOut\.disabled=false/);
+  assert.match(js, /refs\.zoomIn\.disabled=false/);
   assert.match(js, /refs\.zoomOut\.addEventListener\('click'[\s\S]*?adjustZoom\(-1\)/);
   assert.match(js, /refs\.zoomIn\.addEventListener\('click'[\s\S]*?adjustZoom\(1\)/);
+  assert.doesNotMatch(js, /refs\.zoomToggle\.addEventListener/);
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
 });
 
 test('holding Z over the jigsaw opens a circular magnifier lens without scaling the board', () => {
-  assert.match(js, /const BOARD_LENS_DEFAULT = 2/);
-  assert.match(js, /const BOARD_LENS_MAX = 10/);
   assert.match(js, /function ensureBoardLens\(\)/);
   assert.match(js, /boardLens\.className='weight-coherence-board-lens'/);
   assert.match(js, /function updateBoardLens\(clientX,clientY\)/);
+  assert.match(js, /const sourceWidth=\(diameter\/zoomLevel\)/);
   assert.match(js, /lensCtx\.drawImage\([\s\S]*?refs\.board/);
   assert.match(js, /function beginBoardLens\(\)/);
   assert.match(js, /function endBoardLens\(\)/);
@@ -87,6 +87,30 @@ test('holding Z over the jigsaw opens a circular magnifier lens without scaling 
   assert.match(css, /\.weight-coherence-board-lens\{[^}]*position:fixed[^}]*border:2px solid #050505[^}]*border-radius:50%[^}]*pointer-events:none/);
   assert.doesNotMatch(css, /\.weight-coherence-board-wrap\.is-zoom-target/);
   assert.doesNotMatch(js, /zoomTarget\.style\.transformOrigin=.*refs\.boardWrap/);
+});
+
+
+test('Zoom remains available on the board and tray pieces while View is enabled', () => {
+  assert.match(js, /function zoomableTargetFromNode\(node\)\{[\s\S]*?closest\?\.\('\[data-piece-id\]'\)[\s\S]*?return refs\.boardWrap/);
+  assert.match(js, /root\.addEventListener\('pointerover',rememberZoomTarget/);
+  assert.match(js, /root\.addEventListener\('pointermove',rememberZoomTarget/);
+  assert.match(js, /if\(key==='z'\)\{[\s\S]*?const target=resolveZoomTarget\(\)[\s\S]*?togglePieceZoom\(target\)/);
+  assert.doesNotMatch(js, /if\(key==='z'\)[\s\S]{0,300}viewOn/);
+  assert.match(js, /if\(imageReady && viewOn\)[\s\S]*?ctx\.drawImage\(image,0,0,BOARD_WIDTH,BOARD_HEIGHT\)/);
+  assert.match(html, /Zoom works on the board and tray pieces while View is enabled/);
+});
+
+test('jigsaw information button opens an in-workspace how-to and hotkey dialog', () => {
+  assert.match(html, /id="weightCoherenceHelpBtn"[^>]*aria-controls="weightCoherenceHelpDialog"/);
+  assert.match(html, /id="weightCoherenceHelpDialog"[\s\S]*?How to play & hotkeys/);
+  assert.match(html, /<kbd>Z<\/kbd>[\s\S]*?<kbd>− \/ \+<\/kbd>[\s\S]*?<kbd>V<\/kbd>[\s\S]*?<kbd>G<\/kbd>[\s\S]*?<kbd>S<\/kbd>[\s\S]*?<kbd>F<\/kbd>[\s\S]*?<kbd>← \/ →<\/kbd>/);
+  assert.match(js, /help:document\.getElementById\('weightCoherenceHelpBtn'\)/);
+  assert.match(js, /helpDialog:document\.getElementById\('weightCoherenceHelpDialog'\)/);
+  assert.match(js, /function openHelp\(\)/);
+  assert.match(js, /refs\.help\.addEventListener\('click',openHelp\)/);
+  assert.match(js, /const dialogOpen=!!\(refs\.settingsDialog\?\.open \|\| refs\.helpDialog\?\.open\)/);
+  assert.match(css, /\.weight-coherence-help-dialog\{/);
+  assert.match(css, /\.weight-coherence-help-row\{/);
 });
 
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
