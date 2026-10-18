@@ -3083,7 +3083,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const tierIndex=Math.max(0,TRACKCOIN_TIERS.findIndex(function(item){return item.id===tier.id;}));
     const simplePatterns=['cross','rise','drop','diagonal'];
     const intermediatePatterns=simplePatterns.concat(['zigzag','sweep']);
-    const advancedPatterns=intermediatePatterns.concat(['orbit','spiral']);
+    const advancedPatterns=intermediatePatterns.concat(['orbit','spiral','feint']);
     const patterns=tierIndex<=1?simplePatterns:(tierIndex<=3?intermediatePatterns:advancedPatterns);
     const sequence = Array.from({ length:stepsCount }, () => ({ duration:stepDuration, pattern:patterns[Math.floor(Math.random() * patterns.length)] }));
 
@@ -3124,6 +3124,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(pattern === 'zigzag') return baseTop - 28 + ((slotIndex % 2 === 0 ? -1 : 1) * 28);
     if(pattern === 'sweep') return baseTop - 10 + (direction * 34) - (Math.abs(centered) * 5);
     if(pattern === 'spiral') return baseTop - 36 + Math.sin((slotIndex + 1) * 1.8) * 40;
+    if(pattern === 'feint') return baseTop - 14 + ((slotIndex % 2 === 0 ? -1 : 1) * 34);
     return baseTop - 30 + ((slotIndex % 2 === 0 ? -1 : 1) * 16);
   }
   function trackCoinFinalTop(pattern, baseTop, slotIndex){
@@ -3171,7 +3172,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
         left: positions[destIndex],
         top: trackCoinFinalTop(step.pattern, trackCoinState.baseTop, destIndex),
         tilt: (destIndex % 2 === 0 ? -1 : 1) * (step.pattern === 'cross' ? 3 : 2),
-        curveLeft: ((cup.left + destLeft) / 2) + (step.pattern === 'orbit' ? (direction * 14 * Math.sin((currentIndex + 1) * 1.4)) : step.pattern === 'sweep' ? (direction * 20) : step.pattern === 'spiral' ? (direction * 16) : direction * 12),
+        curveLeft: ((cup.left + destLeft) / 2) + (step.pattern === 'orbit' ? (direction * 14 * Math.sin((currentIndex + 1) * 1.4)) : step.pattern === 'sweep' ? (direction * 20) : step.pattern === 'spiral' ? (direction * 16) : step.pattern === 'feint' ? (-direction * 28) : direction * 12),
         curveTop: trackCoinMidTop(step.pattern, trackCoinState.baseTop, destIndex, cups.length, direction)
       };
     });
@@ -3526,10 +3527,17 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const rules = tier.rules && tier.rules.length ? tier.rules : ['colour','shape'];
     let type = rules[Math.floor(Math.random() * rules.length)];
     if(previousRule && rules.length > 1){
-      let guard = 0;
-      while(type === previousRule.type && guard < 8){
-        type = rules[Math.floor(Math.random() * rules.length)];
-        guard += 1;
+      const tierId=String(tier&&tier.id||'');
+      const delayedSwitchChance=tierId==='pressure'?0.28:(tierId==='mixed'?0.20:0);
+      const repeatFamily=Math.random()<delayedSwitchChance && rules.includes(previousRule.type);
+      if(repeatFamily){
+        type=previousRule.type;
+      }else{
+        let guard = 0;
+        while(type === previousRule.type && guard < 8){
+          type = rules[Math.floor(Math.random() * rules.length)];
+          guard += 1;
+        }
       }
     }
 
