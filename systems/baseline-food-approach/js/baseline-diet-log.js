@@ -103,6 +103,42 @@
       };
     
       let refs = null;
+
+      function readRouteState(){
+        try{
+          const params=new URLSearchParams(window.location.search||"");
+          const view=String(params.get("view")||"").toLowerCase();
+          const date=String(params.get("date")||"");
+          return {
+            view:["food","recipes","breakdown","health"].includes(view)?view:"food",
+            date:/^\d{4}-\d{2}-\d{2}$/.test(date)?date:todayISO()
+          };
+        }catch(_e){ return {view:"food",date:todayISO()}; }
+      }
+
+      function writeRouteState(mode){
+        try{
+          const url=new URL(window.location.href);
+          url.searchParams.delete("view");
+          url.searchParams.delete("date");
+          if(state.activeView!=="food") url.searchParams.set("view",state.activeView);
+          if(state.date!==todayISO()) url.searchParams.set("date",state.date);
+          const next=url.pathname+(url.searchParams.toString()?"?"+url.searchParams.toString():"")+url.hash;
+          const data={baselineDietLog:true,view:state.activeView,date:state.date};
+          if(mode==="replace") window.history.replaceState(data,"",next);
+          else window.history.pushState(data,"",next);
+        }catch(_e){}
+      }
+
+      function restoreRouteState(){
+        const route=readRouteState();
+        state.activeView=route.view;
+        state.date=route.date;
+        state.noteDraft=getNote(state.date);
+        resetForm();
+        renderAll();
+      }
+
       let filteredFoodsCache = { key:"", foods: FOOD_LIBRARY.slice() };
       let searchRenderTimer = null;
     
@@ -685,13 +721,14 @@
           state.date = event.target.value || todayISO();
           state.noteDraft = getNote(state.date);
           resetForm();
+          writeRouteState("push");
           renderAll();
         });
     
-        refs.viewBtnFood.addEventListener("click", function(){ state.activeView = "food"; syncFeatureView(); });
-        refs.viewBtnRecipes.addEventListener("click", function(){ state.activeView = "recipes"; syncFeatureView(); renderRecipesView(); });
-        refs.viewBtnBreakdown.addEventListener("click", function(){ state.activeView = "breakdown"; syncFeatureView(); renderEntries(); renderTotals(); });
-        refs.viewBtnHealth.addEventListener("click", function(){ state.activeView = "health"; syncFeatureView(); renderHealth(); });
+        refs.viewBtnFood.addEventListener("click", function(){ state.activeView = "food"; writeRouteState("push"); syncFeatureView(); });
+        refs.viewBtnRecipes.addEventListener("click", function(){ state.activeView = "recipes"; writeRouteState("push"); syncFeatureView(); renderRecipesView(); });
+        refs.viewBtnBreakdown.addEventListener("click", function(){ state.activeView = "breakdown"; writeRouteState("push"); syncFeatureView(); renderEntries(); renderTotals(); });
+        refs.viewBtnHealth.addEventListener("click", function(){ state.activeView = "health"; writeRouteState("push"); syncFeatureView(); renderHealth(); });
     
         refs.searchInput.addEventListener("input", function(event){
           state.search = event.target.value || "";
@@ -1115,9 +1152,14 @@
       function init(){
         const host = document.getElementById("dietLogApp");
         if(!host) return;
+        const initialRoute=readRouteState();
+        state.activeView=initialRoute.view;
+        state.date=initialRoute.date;
         state.noteDraft = getNote(state.date);
         if(!bindAppMarkup(host)) return;
         renderAll();
+        writeRouteState("replace");
+        window.addEventListener("popstate",restoreRouteState);
 
         document.addEventListener("baseline:food-data", function(event){
           const detail = event && event.detail ? event.detail : {};

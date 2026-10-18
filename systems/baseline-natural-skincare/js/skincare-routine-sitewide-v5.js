@@ -336,7 +336,10 @@
     state.groups=state.groups.filter((group) => group.id!==id);Object.keys(state.assignments).forEach((itemId) => { if (state.assignments[itemId]===id) delete state.assignments[itemId]; });state.pendingRemoveGroupId='';state.openGroupSettings.delete(id);scheduleGroupSave();schedulePatch();
   }
   function assignItem(itemId,groupId) { if (groupId && groupById(groupId)) state.assignments[itemId]=groupId;else delete state.assignments[itemId];scheduleGroupSave();schedulePatch(); }
-  function moveCalendar(direction) { const amount=direction==='next'?1:-1;const anchor=new Date(state.calendarAnchor);if (state.calendarView==='week') anchor.setDate(anchor.getDate()+(amount*7));else anchor.setMonth(anchor.getMonth()+amount,1);state.calendarAnchor=anchor;schedulePatch(); }
+  function readCalendarRoute() { try { const params=new URLSearchParams(global.location.search||'');const view=params.get('calendar-view');const anchor=params.get('calendar-anchor');return { view:view==='week'?'week':'month',anchor:/^\d{4}-\d{2}-\d{2}$/.test(anchor||'')?UI.localDate(anchor):null }; } catch (_error) { return { view:'month',anchor:null }; } }
+  function writeCalendarRoute(mode='replace') { try { const url=new URL(global.location.href);url.searchParams.delete('calendar-view');url.searchParams.delete('calendar-anchor');if (state.calendarView!=='month') url.searchParams.set('calendar-view',state.calendarView);const anchorIso=UI.isoDate(state.calendarAnchor);const defaultIso=UI.isoDate(new Date());if (anchorIso!==defaultIso) url.searchParams.set('calendar-anchor',anchorIso);const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;const payload=Object.assign({},global.history.state||{},{skincareCalendar:true,calendarView:state.calendarView,calendarAnchor:anchorIso});if(mode==='push') global.history.pushState(payload,'',next);else global.history.replaceState(payload,'',next); } catch (_error) {} }
+  function applyCalendarRoute() { const route=readCalendarRoute();state.calendarView=route.view;if(route.anchor) state.calendarAnchor=route.anchor; }
+  function moveCalendar(direction) { const amount=direction==='next'?1:-1;const anchor=new Date(state.calendarAnchor);if (state.calendarView==='week') anchor.setDate(anchor.getDate()+(amount*7));else anchor.setMonth(anchor.getMonth()+amount,1);state.calendarAnchor=anchor;writeCalendarRoute('push');schedulePatch(); }
   function selectDate(date) { const clamped=UI.clampLogDate(date);const parsed=UI.parseIsoDate(clamped);if (!parsed || UI.isFutureDate(date)) return;state.calendarAnchor=parsed;const input=$('#routineLogDate');if (input) { input.value=clamped;input.dispatchEvent(new Event('change',{ bubbles:true })); }schedulePatch(); }
 
   function bindEvents() {
@@ -350,7 +353,7 @@
       const removeRequest=event.target.closest('[data-group-remove-request]');if (removeRequest) { state.pendingRemoveGroupId=removeRequest.dataset.groupRemoveRequest;schedulePatch();return; }
       const removeConfirm=event.target.closest('[data-group-remove-confirm]');if (removeConfirm) { removeGroup(removeConfirm.dataset.groupRemoveConfirm);return; }
       if (event.target.closest('[data-group-remove-cancel]')) { state.pendingRemoveGroupId='';schedulePatch();return; }
-      const view=event.target.closest('[data-skincare-calendar-view]');if (view) { state.calendarView=view.dataset.skincareCalendarView==='week'?'week':'month';state.calendarAnchor=UI.localDate($('#routineLogDate')?.value || new Date());schedulePatch();return; }
+      const view=event.target.closest('[data-skincare-calendar-view]');if (view) { state.calendarView=view.dataset.skincareCalendarView==='week'?'week':'month';state.calendarAnchor=UI.localDate($('#routineLogDate')?.value || new Date());writeCalendarRoute('push');schedulePatch();return; }
       const move=event.target.closest('[data-skincare-calendar-move]');if (move) { moveCalendar(move.dataset.skincareCalendarMove);return; }
       if (event.target.closest('[data-skincare-calendar-today]')) { selectDate(UI.isoDate(new Date()));return; }
       const date=event.target.closest('[data-calendar-date]');if (date && date.closest('.routine-calendar-card')) selectDate(date.dataset.calendarDate);
@@ -384,9 +387,12 @@
 
   function boot() {
     const root=$('#routine');if (!root) return;
+    applyCalendarRoute();
     bindEvents();
     state.observer=UI.observe(root,renderCanonical);
     renderCanonical();
+    writeCalendarRoute('replace');
+    global.addEventListener('popstate',()=>{ applyCalendarRoute();schedulePatch(); });
     global.addEventListener('pagehide',() => state.observer?.disconnect(),{ once:true });
   }
   if (document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot,{ once:true });else boot();

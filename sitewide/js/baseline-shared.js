@@ -305,6 +305,9 @@
       if(/^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(path)){
         return { kind:'tab', tabId:'my-body', raw:path };
       }
+      if(/^\/baseline-fitness\/my-plan(?:\/(?:completed|future))?$/.test(path)){
+        return { kind:'tab', tabId:'my-plan', raw:path };
+      }
       if(/^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(path)){
         return { kind:'tab', tabId:'routine', raw:path };
       }
@@ -5095,7 +5098,7 @@ function buildControls(recipeEl){
             });
           };
 
-          const syncVariantRoute = ()=>{
+          const syncVariantRoute = (historyMode='replace')=>{
             if(!(recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))) return;
             try{
               const value = selectedVariantValue();
@@ -5106,7 +5109,7 @@ function buildControls(recipeEl){
                 recipeVariant:value,
                 scrollY:getScrollTop()
               };
-              setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+              setNavState(nextState, { replace:historyMode !== 'push', url:urlForNavState(nextState) });
             }catch(_e){}
           };
 
@@ -5117,7 +5120,7 @@ function buildControls(recipeEl){
             if(!btn) return false;
             if(btn.getAttribute('aria-selected') !== 'true') btn.click();
             syncVariantDetailState();
-            if(options.syncRoute) syncVariantRoute();
+            if(options.syncRoute) syncVariantRoute(options.historyMode || 'replace');
             return true;
           };
 
@@ -5125,7 +5128,7 @@ function buildControls(recipeEl){
             btn.addEventListener('click', ()=>{
               window.setTimeout(()=>{
                 syncVariantDetailState();
-                syncVariantRoute();
+                syncVariantRoute('push');
               }, 0);
             });
           });
@@ -5505,9 +5508,8 @@ function buildControls(recipeEl){
         tabs.classList.remove('recipe-view-hidden');
         viewbar.classList.remove('recipe-view-hidden');
 
-        // Recipe subview is route state, not transient DOM state. Replace the
-        // current recipe history entry so refresh and Back/Forward reconstruct
-        // the same Recipe / Details / Guidance / Show All selection.
+        // Recipe subview is route state, not transient DOM state. User clicks
+        // push a history entry; restoration/programmatic sync may replace one.
         if(options && options.syncRoute && recipeEl.id
           && (recipeEl.classList.contains('active') || recipeEl.classList.contains('is-open'))){
           try{
@@ -5518,7 +5520,7 @@ function buildControls(recipeEl){
               recipeVariant:(typeof recipeEl.__baselineGetRecipeVariant === 'function' ? recipeEl.__baselineGetRecipeVariant() : ''),
               scrollY:getScrollTop()
             };
-            setNavState(nextState, { replace:true, url:urlForNavState(nextState) });
+            setNavState(nextState, { replace:options.historyMode !== 'push', url:urlForNavState(nextState) });
           }catch(_e){}
         }
       }
@@ -5527,7 +5529,7 @@ function buildControls(recipeEl){
         button.addEventListener('click', event=>{
           event.preventDefault();
           event.stopPropagation();
-          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true });
+          setView(button.dataset.recipeSubtab || 'standard', { syncRoute:true, historyMode:'push' });
         });
       });
 
@@ -8169,9 +8171,20 @@ function setupRecipeFavourites(){
         }else{
           const nextState = { kind: 'tab', tabId: tabId };
           const rawCleanRoute = String(initialView.raw || '').toLowerCase().replace(/\/+$/,'');
+          let ownedSubviewQuery = false;
+          try{
+            const routeParams = new URLSearchParams(location.search || '');
+            ownedSubviewQuery =
+              (routePageFile === 'baseline-massage.html' && (routeParams.has('planner-mode') || routeParams.has('library-category'))) ||
+              (routePageFile === 'baseline-food-approach.html' && (routeParams.has('view') || routeParams.has('date'))) ||
+              (routePageFile === 'baseline-badminton-session.html' && routeParams.has('gameplan-view')) ||
+              (routePageFile === 'baseline-psychology.html' && routeParams.has('psych-view'));
+          }catch(_e){}
           const preserveNestedRoutinePath =
+            ownedSubviewQuery ||
             /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(rawCleanRoute) ||
             /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(rawCleanRoute) ||
+            /^\/baseline-fitness\/my-plan(?:\/(?:completed|future))?$/.test(rawCleanRoute) ||
             /^\/baseline-natural-skincare\/my-routine(?:\/(?:log|summary|plan|public))?$/.test(rawCleanRoute);
           const nextUrl = preserveNestedRoutinePath
             ? String(location.pathname || '') + String(location.search || '') + String(location.hash || '')

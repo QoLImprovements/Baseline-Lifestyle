@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  const BUILD = 'BASELINE_FITNESS_EXACT_VIEW_REFRESH_20260925_1';
+  const BUILD = 'BASELINE_FITNESS_NAVIGATION_STATE_20261018_1';
   const API = '/systems/baseline-fitness/api';
   const TABS = Object.freeze(['system', 'my-plan', 'my-body', 'library', 'achievements']);
   const ALIASES = Object.freeze({ 'exercise-library': 'library', 'workout-routine': 'my-plan' });
@@ -10,6 +10,8 @@
   const ROUTE_RE = /^\/baseline-fitness\/(system|my-plan|my-body|library|exercise-library|workout-routine|achievements)\/?$/i;
   const BODY_ROUTE_RE = /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?\/?$/i;
   const BODY_VIEWS = Object.freeze(['overall', 'profile', 'services']);
+  const PLAN_VIEWS = Object.freeze(['current', 'completed', 'future']);
+  const PLAN_ROUTE_RE = /^\/baseline-fitness\/my-plan(?:\/(?:completed|future))?\/?$/i;
   const ROUTINE_ROUTE_RE = /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?\/?$/i;
   const PAGE_SIZE = 12;
   const REQUEST_TIMEOUT_MS = 12000;
@@ -330,6 +332,9 @@
     if (BODY_ROUTE_RE.test(path)) {
       return { raw:'my-body', target:'my-body', alias:false, routine:false, body:true };
     }
+    if (PLAN_ROUTE_RE.test(path)) {
+      return { raw:'my-plan', target:'my-plan', alias:false, routine:false, plan:true };
+    }
     const match = path.match(ROUTE_RE);
     const raw = match ? String(match[1] || '').toLowerCase() : 'system';
     const target = ALIASES[raw] || raw;
@@ -338,6 +343,15 @@
   function routePath(target) {
     const canonical = TABS.includes(target) ? target : 'system';
     return `${ROUTE_BASE}/${canonical}`;
+  }
+  function planViewFromPath() {
+    const path = String(location.pathname || '').replace(/\/+$/, '');
+    const match = path.match(/^\/baseline-fitness\/my-plan\/(completed|future)$/i);
+    return match ? String(match[1]).toLowerCase() : 'current';
+  }
+  function planRoutePath(view) {
+    const next = PLAN_VIEWS.includes(view) ? view : 'current';
+    return next === 'current' ? `${ROUTE_BASE}/my-plan` : `${ROUTE_BASE}/my-plan/${next}`;
   }
   function bodyViewFromPath() {
     const path = String(location.pathname || '').replace(/\/+$/, '');
@@ -369,6 +383,7 @@
     });
     $$('.section[id]').forEach((section) => section.classList.toggle('active', section.id === target));
     const route = routeState();
+    if (target === 'my-plan' && historyMode === 'push' && route.target !== 'my-plan') renderPlanSubtab('current', 'none');
     try {
       if (historyMode === 'push' && (route.target !== target || route.raw !== target)) history.pushState({ fitnessTab: target }, '', routePath(target));
       if (historyMode === 'replace' && (route.target !== target || route.raw !== target)) history.replaceState({ fitnessTab: target }, '', routePath(target));
@@ -620,8 +635,8 @@
       target.append(more);
     }
   }
-  function renderPlanSubtab(view = activePlanSubtab) {
-    activePlanSubtab = ['current', 'completed', 'future'].includes(view) ? view : 'current';
+  function renderPlanSubtab(view = activePlanSubtab, historyMode = 'none') {
+    activePlanSubtab = PLAN_VIEWS.includes(view) ? view : 'current';
     $$('.my-plan-subtab').forEach((button) => {
       const active = button.dataset.planView === activePlanSubtab;
       button.classList.toggle('active', active);
@@ -631,6 +646,12 @@
     if ($('#completedWorkoutOut')) $('#completedWorkoutOut').hidden = activePlanSubtab !== 'completed';
     if ($('#futureWorkoutOut')) $('#futureWorkoutOut').hidden = activePlanSubtab !== 'future';
     if ($('#myPlanStatus')) $('#myPlanStatus').hidden = activePlanSubtab !== 'current';
+    if (historyMode === 'push') {
+      try {
+        const nextPath = planRoutePath(activePlanSubtab);
+        if (String(location.pathname || '').replace(/\/+$/, '') !== nextPath) history.pushState({ fitnessTab:'my-plan', planView:activePlanSubtab }, '', nextPath);
+      } catch (_error) {}
+    }
     if (!current.planJson) return;
     if (activePlanSubtab === 'current') renderCurrentWorkout();
     if (activePlanSubtab === 'completed') {
@@ -1081,7 +1102,7 @@
 
   function bindUi() {
     document.addEventListener('baseline:fitness-saved-data-updated',()=>{bodyProfileMemory=global.BASELINE_FITNESS_SAVED_DATA?.getProfile?.()||{};activeWorkoutMemory=global.BASELINE_FITNESS_SAVED_DATA?.getActiveWorkout?.()||null;fillBodyProfile();renderCurrentWorkout();});
-    $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView)));
+    $$('.my-plan-subtab').forEach((button) => button.addEventListener('click', () => renderPlanSubtab(button.dataset.planView, 'push')));
     $$('.my-body-subtab').forEach((button) => button.addEventListener('click', () => setBodySubtab(button.dataset.bodyView, 'push')));
     $('#bodyProfileForm')?.addEventListener('input', () => renderBodyCalculations(profileFromForm()));
     $('#bodyProfileForm')?.addEventListener('submit',(event)=>{event.preventDefault();const profile=profileFromForm();bodyProfileMemory=profile;global.BASELINE_FITNESS_SAVED_DATA?.saveProfile?.(profile);renderBodyCalculations(profile);renderBodySummary();if($('#bodyProfileStatus'))$('#bodyProfileStatus').textContent='Body profile save queued.';});
@@ -1113,14 +1134,16 @@
     global.addEventListener('popstate', () => {
       const route = routeState();
       activateTopTab(route.target, 'none');
+      if (route.target === 'my-plan') renderPlanSubtab(planViewFromPath(), 'none');
       if (route.target === 'my-body') setBodySubtab(bodyViewFromPath(), 'none');
     });
     $$('select').forEach(normaliseNativeSelect);
     resetGenerator();
     bindUi();
     bindAuthOnce();
-    renderLibrary(); renderAchievements(); fillBodyProfile(); renderPlanSubtab('current');
+    renderLibrary(); renderAchievements(); fillBodyProfile();
     const route = routeState();
+    renderPlanSubtab(route.target === 'my-plan' ? planViewFromPath() : 'current', 'none');
     setBodySubtab(route.target === 'my-body' ? bodyViewFromPath() : 'overall', 'none');
     activateTopTab(route.target, route.alias ? 'replace' : 'none');
   }

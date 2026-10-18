@@ -90,14 +90,18 @@
   function isTopLevelPlanEntry(pathname=global.location?.pathname || '') {
     return /^\/baseline-fitness\/(?:my-plan|workout-routine)\/?$/i.test(String(pathname || ''));
   }
-  function writeRoute({ allowEnter=false }={}) {
+  function writeRoute({ allowEnter=false,historyMode='replace' }={}) {
     try {
       const url=new URL(global.location.href);
       if (!ownsNestedRoutinePath(url.pathname) && !(allowEnter && isTopLevelPlanEntry(url.pathname))) return;
       url.pathname=cleanPath();
       ['routine-view','routine-plan','routine-filter','routine-date','new-plan'].forEach((key)=>url.searchParams.delete(key));
       url.hash='';
-      global.history.replaceState(global.history.state,'',url.pathname+url.search);
+      const nextUrl=url.pathname+url.search;
+      const currentUrl=global.location.pathname+global.location.search;
+      if (nextUrl===currentUrl) return;
+      if (historyMode==='push') global.history.pushState(global.history.state,'',nextUrl);
+      else global.history.replaceState(global.history.state,'',nextUrl);
     } catch (_error) {}
   }
 
@@ -258,7 +262,7 @@
     if (child) { child.hidden=false;child.classList.add('active'); }
     const card=planPanel.querySelector(`details[data-fitness-plan-card="${next}"]`);
     if (card) card.open=true;
-    if (remember) writeRoute({ allowEnter:true });
+    if (remember) writeRoute({ allowEnter:true,historyMode:'push' });
   }
   function activateTopView(view,remember=true) {
     const next=TOP_VIEWS.includes(view)?view:'log';
@@ -275,7 +279,7 @@
     if (next==='summary') global.BASELINE_fitnessRoutineSummary?.render?.();
     if (next==='public') { loadPublicProfiles();loadVisibility(); }
     if (next==='log') global.BASELINE_fitnessRoutine?.render?.();
-    if (remember) writeRoute({ allowEnter:true });
+    if (remember) writeRoute({ allowEnter:true,historyMode:'push' });
     try { document.dispatchEvent(new CustomEvent('baseline:fitness-routine-view-changed',{ detail:{ view:next,planView:activePlanView } })); } catch (_error) {}
   }
   function restoreRoute() {

@@ -778,6 +778,27 @@ These Markdown rules are a human reference point, not live runtime config.
     return qsa('[data-area-time]').find(el => el.getAttribute('data-area-time') === name) || null;
   }
 
+  const MASSAGE_LIBRARY_KEYS = {
+    'Massage Techniques':'techniques',
+    'Types Of Massage':'types',
+    'Body Areas':'body-areas',
+    'Massage Feelings / Themes':'feelings-themes'
+  };
+  const MASSAGE_LIBRARY_FROM_KEY = Object.fromEntries(Object.entries(MASSAGE_LIBRARY_KEYS).map(([label,key])=>[key,label]));
+  let suppressMassageHistory = false;
+
+  function writeMassageRoute(key,value,mode='push'){
+    if(suppressMassageHistory) return;
+    try{
+      const url=new URL(location.href);
+      url.searchParams.delete(key);
+      if(value) url.searchParams.set(key,value);
+      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      const payload=Object.assign({},history.state||{},{baselineMassage:true});
+      if(mode==='replace') history.replaceState(payload,'',next); else history.pushState(payload,'',next);
+    }catch(_e){}
+  }
+
   function bindLibrary(){
     const tabs = qs('#massageLibraryTabs');
     const grid = qs('#massageLibraryGrid');
@@ -813,6 +834,7 @@ These Markdown rules are a human reference point, not live runtime config.
       const tab = e.target.closest('[data-library-category]');
       if(!tab) return;
       const category = tab.dataset.libraryCategory;
+      writeMassageRoute('library-category',MASSAGE_LIBRARY_KEYS[category]||'techniques','push');
       qsa('[data-library-category]', tabs).forEach(btn => btn.setAttribute('aria-selected', btn === tab ? 'true' : 'false'));
       if(controls) controls.hidden = category !== 'Massage Techniques';
       if(typeControls) typeControls.hidden = category !== 'Types Of Massage';
@@ -1105,10 +1127,17 @@ These Markdown rules are a human reference point, not live runtime config.
     return valueOf(selectId) === 'Custom preference' ? (valueOf(customId) || 'Custom preference not yet described') : valueOf(selectId);
   }
 
+  function activatePlannerMode(mode,historyMode){
+    const allowed=['provider','focused','advanced'];
+    const next=allowed.includes(mode)?mode:'provider';
+    qsa('[data-planner-mode]').forEach(other => other.setAttribute('aria-selected', other.dataset.plannerMode === next ? 'true' : 'false'));
+    qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === next));
+    if(historyMode) writeMassageRoute('planner-mode',next==='provider'?'':next,historyMode);
+  }
+
   function bindPlannerModes(){
     qsa('[data-planner-mode]').forEach(btn => btn.addEventListener('click', () => {
-      qsa('[data-planner-mode]').forEach(other => other.setAttribute('aria-selected', other === btn ? 'true' : 'false'));
-      qsa('[data-planner-panel]').forEach(panel => panel.classList.toggle('active', panel.dataset.plannerPanel === btn.dataset.plannerMode));
+      activatePlannerMode(btn.dataset.plannerMode,'push');
     }));
     qsa('[data-style-select]').forEach(el => { el.addEventListener('change', () => { updateThemeForStyle(el); updatePlanner(); }); });
     qsa('[data-custom-select]').forEach(el => { el.addEventListener('change', () => updateCustomPreference(el)); updateCustomPreference(el); });
@@ -1205,10 +1234,27 @@ These Markdown rules are a human reference point, not live runtime config.
   function escapeHtml(str){
     return String(str || '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   }
+  function restoreMassageNestedRoute(){
+    try{
+      const params=new URLSearchParams(location.search||'');
+      const category=MASSAGE_LIBRARY_FROM_KEY[params.get('library-category')||'']||'Massage Techniques';
+      const tab=qsa('#massageLibraryTabs [data-library-category]').find(btn=>btn.dataset.libraryCategory===category);
+      suppressMassageHistory=true;
+      if(tab){
+        qsa('#massageLibraryTabs [data-library-category]').forEach(btn=>btn.setAttribute('aria-selected',btn===tab?'true':'false'));
+        tab.click();
+      }
+      activatePlannerMode(params.get('planner-mode')||'provider');
+      suppressMassageHistory=false;
+    }catch(_e){}
+  }
+
   bindLibrary();
   bindPlannerModes();
   bindPlanner();
   sortAllDropdowns();
+  restoreMassageNestedRoute();
+  window.addEventListener('popstate',restoreMassageNestedRoute);
 })();
 
 </script>

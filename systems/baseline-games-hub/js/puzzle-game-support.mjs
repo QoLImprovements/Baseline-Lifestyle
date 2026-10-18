@@ -143,8 +143,12 @@ export function createPuzzleHubShell(config) {
     document.getElementById('gamesOverviewCard')?.setAttribute('aria-hidden', 'true');
     if (historyMode !== 'none') {
       try {
-        const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
-        history[method]({ puzzleGame:config.id }, '', `/baseline-games-hub/games-hub/${config.id}`);
+        const nextUrl = `/baseline-games-hub/games-hub/${config.id}`;
+        const currentUrl = location.pathname + location.search + location.hash;
+        if (currentUrl !== nextUrl) {
+          const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
+          history[method]({ puzzleGame:config.id }, '', nextUrl);
+        }
       } catch (_) {}
     }
     document.documentElement.setAttribute('data-puzzle-game-open', config.id);
@@ -153,7 +157,7 @@ export function createPuzzleHubShell(config) {
     return panel;
   }
 
-  function close({ restoreOverview = true, historyMode = 'replace' } = {}) {
+  function close({ restoreOverview = true, historyMode = 'push' } = {}) {
     const panel = document.getElementById(config.panelId);
     panel?.classList.remove('is-active');
     if (panel) {
@@ -168,7 +172,14 @@ export function createPuzzleHubShell(config) {
       document.getElementById('games')?.classList.remove('has-active-game');
       document.getElementById('gamesOverviewCard')?.removeAttribute('aria-hidden');
       if (historyMode !== 'none') {
-        try { history.replaceState({ baselineGames:true }, '', '/baseline-games-hub/games-hub/games-list'); } catch (_) {}
+        try {
+          const nextUrl = '/baseline-games-hub/games-hub/games-list';
+          const currentUrl = location.pathname + location.search + location.hash;
+          if (currentUrl !== nextUrl) {
+            const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
+            history[method]({ baselineGames:true }, '', nextUrl);
+          }
+        } catch (_) {}
       }
       document.querySelector(`[data-open-puzzle-game="${config.id}"]`)?.focus?.({ preventScroll:true });
     }
