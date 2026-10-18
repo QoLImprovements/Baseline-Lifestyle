@@ -9,9 +9,10 @@
     types:document.getElementById('puzzlesList'),
     jigsaws:document.getElementById('jigsawsPanel'),
     jigsawsList:document.getElementById('jigsawsList'),
+    crossnumber:document.getElementById('crossnumberPanel'),
     player:document.getElementById('jigsawPlayerCard')
   };
-  if(!refs.overview||!refs.types||!refs.jigsaws||!refs.jigsawsList||!refs.player) return;
+  if(!refs.overview||!refs.types||!refs.jigsaws||!refs.jigsawsList||!refs.crossnumber||!refs.player) return;
 
   let activeView='overview';
   let activeJigsaw='';
@@ -86,7 +87,11 @@
     activeView=view;
     refs.overview.hidden=view!=='overview';
     refs.jigsaws.hidden=view!=='jigsaws';
+    refs.crossnumber.hidden=view!=='crossnumber';
     refs.player.hidden=view!=='player';
+    if(view==='crossnumber'){
+      document.dispatchEvent(new CustomEvent('baseline:crossnumber-open'));
+    }
     if(historyMode) writeRoute(view,activeJigsaw,historyMode);
   }
 
