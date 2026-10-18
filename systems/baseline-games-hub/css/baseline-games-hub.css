@@ -3409,10 +3409,12 @@ body[data-app="games"] #gamesList .game-row-info-button.bl-info-button[aria-expa
 /* Save-state icon, tooltip polish, and Baseline Realm banner fit — 2026-07-10 */
 .game-save-status,.realm-save-status{display:inline-grid;place-items:center;flex:0 0 auto;width:56px;height:56px;padding:0;border:1px solid rgba(23,52,56,.28);border-radius:50%;background:linear-gradient(180deg,var(--games-page-light,#f4c56c),var(--games-page-soft,#e99455) 52%,var(--games-page-mid,#cc694b));box-shadow:0 8px 18px -12px rgba(23,52,56,.7);cursor:help}
 .game-save-status svg,.realm-save-status svg{width:30px;height:30px;overflow:visible}
-.game-save-icon__disc-shell{fill:currentColor;stroke:rgba(13,19,31,.42);stroke-width:.85;stroke-linejoin:round}
-.game-save-icon__disc-shutter{fill:rgba(244,248,255,.94);stroke:rgba(13,19,31,.20);stroke-width:.5;stroke-linejoin:round}
-.game-save-icon__disc-label{fill:rgba(233,240,251,.96);stroke:rgba(13,19,31,.18);stroke-width:.45;stroke-linejoin:round}
-.game-save-icon__cross{fill:none;stroke:#b51f2e;stroke-width:2.1;stroke-linecap:round}
+.game-save-icon__disc-shell{fill:#6f86e8!important;stroke:#111c43!important;stroke-width:1.15;stroke-linejoin:round}
+.game-save-icon__disc-shutter{fill:#eef2ff!important;stroke:#111c43!important;stroke-width:.75;stroke-linejoin:round}
+.game-save-icon__disc-label{fill:#f8faff!important;stroke:#111c43!important;stroke-width:.75;stroke-linejoin:round}
+.game-save-icon__hub{fill:#26396f!important;stroke:#111c43!important;stroke-width:.45}
+.game-save-icon__notch{fill:none;stroke:#111c43!important;stroke-width:1.05;stroke-linecap:round;stroke-linejoin:round}
+.game-save-icon__cross{fill:none;stroke:#c82738!important;stroke-width:2.15;stroke-linecap:round}
 .game-save-status.is-saving,.realm-save-status.is-saving{color:#173438}
 .game-save-status.is-unsaved,.realm-save-status.is-unsaved{color:#173438;box-shadow:0 0 0 2px rgba(181,31,46,.10),0 8px 18px -12px rgba(23,52,56,.7)}
 .game-panel .link-actions .game-save-status{order:0}.game-panel .link-actions .bl-info-button{order:1}

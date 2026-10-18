@@ -7,8 +7,9 @@
   var CORE_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
   var ctx = null;
   var master = null;
-  var compressor = null;
   var normalizedOutput = null;
+  var compressor = null;
+  var finalOutput = null;
   var activeGame = '';
   var timer = 0;
   var nextBarTime = 0;
@@ -53,20 +54,28 @@
     ctx = new AudioContextCtor();
 
     master = ctx.createGain();
-    compressor = ctx.createDynamicsCompressor();
     normalizedOutput = ctx.createGain();
+    compressor = ctx.createDynamicsCompressor();
+    finalOutput = ctx.createGain();
 
     master.gain.value = 0;
-    compressor.threshold.value = -24;
-    compressor.knee.value = 18;
-    compressor.ratio.value = 5;
-    compressor.attack.value = 0.004;
-    compressor.release.value = 0.24;
-    normalizedOutput.gain.value = 2.35;
 
-    master.connect(compressor);
-    compressor.connect(normalizedOutput);
-    normalizedOutput.connect(ctx.destination);
+    // The synth voices are intentionally low-level. Apply make-up gain before
+    // the final limiter so 100% represents a normal, useful listening level.
+    normalizedOutput.gain.value = 8.0;
+
+    compressor.threshold.value = -7;
+    compressor.knee.value = 4;
+    compressor.ratio.value = 18;
+    compressor.attack.value = 0.003;
+    compressor.release.value = 0.20;
+
+    finalOutput.gain.value = 0.92;
+
+    master.connect(normalizedOutput);
+    normalizedOutput.connect(compressor);
+    compressor.connect(finalOutput);
+    finalOutput.connect(ctx.destination);
 
     applyGain();
     return ctx;
@@ -319,15 +328,24 @@
     var track = TRACKS[activeGame];
     var barDur = 4 * 60 / track.bpm;
 
-    // Schedule well ahead using Web Audio's own clock. Background browser tabs
-    // may throttle JavaScript timers, but already-scheduled audio continues.
-    while(nextBarTime < ctx.currentTime + 12){
+    // A background tab can throttle timers heavily. If scheduling has fallen
+    // behind, advance the composition instead of firing missed bars at once.
+    if(nextBarTime < ctx.currentTime - 0.05){
+      var missedBars = Math.floor((ctx.currentTime - nextBarTime) / barDur) + 1;
+      barIndex = (barIndex + missedBars) % track.bars;
+      nextBarTime += missedBars * barDur;
+    }
+    if(nextBarTime < ctx.currentTime + 0.04) nextBarTime = ctx.currentTime + 0.04;
+
+    // Keep more than a minute of music queued on the Web Audio clock. This
+    // remains continuous through normal background-tab timer throttling.
+    while(nextBarTime < ctx.currentTime + 75){
       scheduleBar(track, barIndex, nextBarTime);
       nextBarTime += barDur;
       barIndex += 1;
       if(barIndex >= track.bars) barIndex = 0;
     }
-    timer = window.setTimeout(scheduler, 1800);
+    timer = window.setTimeout(scheduler, 5000);
   }
 
   function startActive(){
@@ -350,6 +368,38 @@
     nextBarTime = ctx.currentTime + 0.08;
     applyGain();
     scheduler();
+  }
+
+  function recoverPlayback(){
+    if(!settings.enabled || !activeGame || !TRACKS[activeGame]) return;
+    var c = ensureContext();
+    if(!c) return;
+
+    function recoverRunning(){
+      unlocked = true;
+      applyGain();
+      // Healthy playback should be left completely alone.
+      if(timer && nextBarTime > c.currentTime + 0.25) return;
+
+      var track = TRACKS[activeGame];
+      var barDur = 4 * 60 / track.bpm;
+      if(nextBarTime && nextBarTime < c.currentTime){
+        var missedBars = Math.floor((c.currentTime - nextBarTime) / barDur) + 1;
+        barIndex = (barIndex + missedBars) % track.bars;
+      }
+      nextBarTime = c.currentTime + 0.08;
+      if(timer){ clearTimeout(timer); timer = 0; }
+      scheduler();
+    }
+
+    if(c.state === 'running'){
+      recoverRunning();
+      return;
+    }
+
+    var resumed = c.resume();
+    if(resumed && typeof resumed.then === 'function') resumed.then(recoverRunning).catch(function(){});
+    else recoverRunning();
   }
 
   function selectGame(gameId){
@@ -433,7 +483,7 @@
         '<header><div><small>Baseline Games</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
           '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the three-minute game theme.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
-          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Normalized game-music level.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.70" aria-label="Game music volume"></label>' +
+          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Game music level. 100% is the full normalized mix.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.70" aria-label="Game music volume"></label>' +
         '</div>' +
       '</section>';
     document.body.appendChild(panel);
@@ -478,31 +528,10 @@
 
   function unlock(){
     if(!activeGame || !settings.enabled) return;
-    var c=ensureContext();
+    var c = ensureContext();
     if(!c) return;
-
-    // The unlock handler runs on global pointer/keyboard interaction.
-    // Once audio is already running, ordinary game controls must not
-    // restart the scheduler or reset the musical phrase.
-    if(unlocked && c.state === 'running') return;
-
-    function finishUnlock(){
-      unlocked = true;
-      if(!timer) restartScheduler(false);
-      else applyGain();
-    }
-
-    if(c.state === 'running'){
-      finishUnlock();
-      return;
-    }
-
-    var p=c.resume();
-    if(p && typeof p.then === 'function'){
-      p.then(finishUnlock).catch(function(){});
-    }else{
-      finishUnlock();
-    }
+    if(unlocked && c.state === 'running' && timer && nextBarTime > c.currentTime + 0.25) return;
+    recoverPlayback();
   }
 
   document.addEventListener('click', function(event){
@@ -528,6 +557,12 @@
 
   document.addEventListener('pointerdown', unlock, { passive:true });
   document.addEventListener('keydown', function(){ if(!unlocked) unlock(); }, { passive:true });
+
+  window.addEventListener('focus', recoverPlayback, { passive:true });
+  window.addEventListener('pageshow', recoverPlayback, { passive:true });
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) recoverPlayback();
+  }, { passive:true });
 
   function init(){
     ensureStyles();
