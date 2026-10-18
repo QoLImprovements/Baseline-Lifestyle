@@ -378,3 +378,25 @@
   #ruleshiftPanel .ruleshift-rule-card.is-rule-change,
   #trackcoinPanel .trackcoin-cup{transition:none!important;animation:none!important}
 }
+
+/* Canonical autosave/status control matches the compact toolbar. */
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-save-status{
+  width:42px!important;height:42px!important;min-width:42px!important;border-radius:14px!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-save-status svg{
+  width:24px!important;height:24px!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-shell-action__icon{
+  display:inline-grid;place-items:center;min-width:18px;font-size:18px;font-weight:900;line-height:1;
+}
+#pairsPanel .memory-card.is-matched{opacity:.48;transform:scale(.96);filter:saturate(.62) brightness(1.08)}
+#pairsPanel .memory-card.is-matched:hover{transform:scale(.96)}
+@media(max-width:820px){
+  :is(#blockGridPanel,#colourSortPanel) .game-shell-action{
+    flex:0 0 42px!important;width:42px!important;min-width:42px!important;padding:0!important;
+  }
+  :is(#blockGridPanel,#colourSortPanel) .game-shell-action__label{
+    position:absolute!important;width:1px!important;height:1px!important;overflow:hidden!important;
+    clip:rect(0 0 0 0)!important;white-space:nowrap!important;
+  }
+}
