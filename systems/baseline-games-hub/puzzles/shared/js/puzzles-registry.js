@@ -6,7 +6,7 @@
       id:'jigsaws',
       name:'Jigsaws',
       note:'Image-based piece puzzles arranged into collections, with selectable piece counts and saved progress.',
-      meta:'6 jigsaws available',
+      meta:'7 jigsaws available',
       preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
     }),
     Object.freeze({
@@ -42,6 +42,18 @@
       alt:'Pleading Before the Silent Throne — a man speaks from below while his words strike an invisible barrier before an elevated authority.',
       libraryDescription:'Words cross an unequal chamber but never arrive. Authority is present, yet genuine receptivity remains out of reach.',
       description:'A man speaks upward across an unequal chamber while his explanation breaks against a barrier he cannot cross. The work centres blocked reception, hierarchy and the pressure created when communication is allowed in form but denied in effect.'
+    }),
+    Object.freeze({
+      id:'tears-without-witness',
+      group:'Symbolic',
+      title:'Tears Without Witness',
+      app:'tearswithoutwitness',
+      image:'/systems/baseline-games-hub/puzzles/tears-without-witness/art/tears-without-witness.webp?v=TEARS_WITHOUT_WITNESS_20261018_1',
+      width:1122,
+      height:1402,
+      alt:'A weathered stone figure crouches in grief as streams of water fall from its face and body while people pass without turning toward it.',
+      libraryDescription:'Grief pours visibly from a fractured figure while the surrounding world continues past, capturing the isolation of pain that is present, exposed and still unacknowledged.',
+      description:'The figure is not hiding its suffering: water runs from its face and broken body in full view, yet the people around it continue onward without stopping or turning back. The stone surface suggests the hardening that can follow prolonged hurt, while the flowing water shows that feeling has not disappeared beneath that protection. The work centres the experience of pain being expressed but not recognised — tears that are seen in the world, yet receive no witness, understanding or response.'
     }),
     Object.freeze({
       id:'black-panther',
