@@ -2593,6 +2593,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(!trackCoinState||!profiles.trackcoin) return null;
     return {
       tierId:currentTrackCoinTier().id,
+      phase:String(trackCoinState.phase||'show'),
       coinCupId:String(trackCoinState.coinCupId||''),
       pickedCupId:String(trackCoinState.pickedCupId||''),
       sequence:(trackCoinState.sequence||[]).map(function(step){
@@ -2641,27 +2642,30 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     profiles.trackcoin.selectedTier=tier.id;
     profiles.trackcoin.currentTier=tier.id;
     const resolved=Boolean(saved.resolved);
+    const savedPhase=String(saved.phase||'show');
+    const pickReady=!resolved&&savedPhase==='pick';
     let cups=ids.map(function(id,index){return {id:id,left:positions[index],top:Number(saved.baseTop||68),tilt:0};});
-    if(resolved&&Array.isArray(saved.cups)&&saved.cups.length===count){
+    if((resolved||pickReady)&&Array.isArray(saved.cups)&&saved.cups.length===count){
       const byId=Object.fromEntries(saved.cups.map(function(cup){return [String(cup.id||''),cup];}));
       cups=cups.map(function(cup){
         const source=byId[cup.id];
         return source?{id:cup.id,left:Number(source.left),top:Number(source.top),tilt:Number(source.tilt||0)}:cup;
       });
+      cups.sort(function(a,b){return Number(a.left)-Number(b.left);});
     }
     trackCoinState={
       roundToken:++trackCoinRoundToken,
       tierId:tier.id,
-      phase:resolved?'review':'show',
+      phase:resolved?'review':(pickReady?'pick':'show'),
       cups:cups,
       coinCupId:String(saved.coinCupId),
       pickedCupId:String(saved.pickedCupId||''),
       sequence:validSequence,
-      pickLocked:true,
+      pickLocked:!pickReady,
       resolved:resolved,
       lastResult:String(saved.lastResult||''),
       revealAll:resolved,
-      restoredWaiting:!resolved,
+      restoredWaiting:!resolved&&!pickReady,
       reviewActive:false,
       baseTop:Number(saved.baseTop||68),
       totalDuration:Number(saved.totalDuration||0),
@@ -2669,7 +2673,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       speedMultiplier:Number(saved.speedMultiplier||1),
       movementSpeedMultiplier:Number(saved.movementSpeedMultiplier||1),
       targetDuration:Number(saved.targetDuration||0),
-      message:resolved?'Round restored. The original result is shown.':'Round restored. Lock onto the visible coin, then resume the same saved shuffle.'
+      message:resolved?'Round restored. The original result is shown.':(pickReady?'Shuffle restored. Choose the cup holding the coin.':'Round restored. Lock onto the visible coin, then resume the same saved shuffle.')
     };
     return true;
   }
@@ -2820,9 +2824,9 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const tier = currentWordTier();
     const guess = String(input.value || '').trim().toLowerCase();
     wordState.draftGuess = String(input.value || '');
-    if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
-    if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
-    if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(guess.length !== tier.letters){ wordState.lastMessage = 'Enter a ' + tier.letters + '-letter word.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(!/^[a-z]+$/.test(guess)){ wordState.lastMessage = 'Use letters only.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
+    if(wordState.guesses.some(entry => entry.word === guess)){ wordState.lastMessage = 'That guess was already used in this round.'; persistWordRound(); renderWordBoard(); focusGameInput('wordGuessInput'); return; }
     const evaluation = evaluateWordGuess(guess, wordState.secret);
     wordState.guesses.push({ word:guess, evaluation });
     wordState.draftGuess = '';
