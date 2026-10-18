@@ -88,7 +88,20 @@ export function createDartsShell({
     return panel;
   }
 
-  function openPanel(){
+  const DARTS_ROUTE='/baseline-games-hub/games-hub/darts-focused';
+  const GAMES_OVERVIEW_ROUTE='/baseline-games-hub/games-hub/games-list';
+
+  function writeFocusedRoute(nextUrl,historyMode,state){
+    if(historyMode==='none') return;
+    try{
+      const currentUrl=location.pathname+location.search+location.hash;
+      if(currentUrl===nextUrl) return;
+      const method=historyMode==='replace'?'replaceState':'pushState';
+      history[method](state||{},'',nextUrl);
+    }catch(_error){}
+  }
+
+  function openPanel({historyMode='push'}={}){
     const panel=ensurePanel();
     const gamesSection=byId('games');
     if(!panel||!gamesSection)throw new Error('Darts Focused panel could not be mounted.');
@@ -106,13 +119,13 @@ export function createDartsShell({
     byId('gamesOverviewCard')?.setAttribute('aria-hidden','true');
     renderSelectedGame();
     renderProgressSummary();
-    try{history.replaceState({dartsFocused:true},'','#tab=games&game=darts-focused');}catch(_error){}
+    writeFocusedRoute(DARTS_ROUTE,historyMode,{dartsFocused:true});
     byId('dartsFocusedTitle')?.focus({preventScroll:true});
     document.documentElement.setAttribute('data-darts-focused-open',build);
     return panel;
   }
 
-  function closePanel({restoreOverview=true}={}){
+  function closePanel({restoreOverview=true,historyMode='push'}={}){
     clearGameTimers();
     clearAutoTimer();
     const closing=byId('dartsFocusedPanel');
@@ -126,7 +139,7 @@ export function createDartsShell({
     if(restoreOverview){
       byId('games')?.classList.remove('has-active-game');
       byId('gamesOverviewCard')?.removeAttribute('aria-hidden');
-      try{history.replaceState({},'','#tab=games');}catch(_error){}
+      writeFocusedRoute(GAMES_OVERVIEW_ROUTE,historyMode,{baselineGames:true});
       document.querySelector('[data-open-darts-focused]')?.focus({preventScroll:true});
     }
   }
