@@ -100,8 +100,7 @@
   let lastZoomPoint = null;
   let boardLens = null;
   let boardLensActive = false;
-  let pieceLens = null;
-  let pieceLensPoint = null;
+  let pieceOverlay = null;
   let zoomKeyHeld = false;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
@@ -1095,10 +1094,6 @@
     if(boardLensActive && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)){
       updateBoardLens(event.clientX,event.clientY);
     }
-    if(zoomTarget && zoomScale>ZOOM_MIN && target===zoomTarget && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)){
-      pieceLensPoint={x:event.clientX,y:event.clientY};
-      updatePieceLens(zoomTarget,event.clientX,event.clientY);
-    }
   }
 
   function resolveZoomTarget(){
@@ -1123,78 +1118,82 @@
     return boardLens;
   }
 
-  function ensurePieceLens(){
-    if(pieceLens && pieceLens.isConnected) return pieceLens;
-    pieceLens=document.createElement('canvas');
-    pieceLens.className='weight-coherence-piece-lens';
-    pieceLens.setAttribute('aria-hidden','true');
-    pieceLens.hidden=true;
-    refs.workspace.appendChild(pieceLens);
-    return pieceLens;
+  function ensurePieceOverlay(){
+    if(pieceOverlay && pieceOverlay.isConnected) return pieceOverlay;
+    pieceOverlay=document.createElement('canvas');
+    pieceOverlay.className='weight-coherence-piece-overlay';
+    pieceOverlay.setAttribute('aria-hidden','true');
+    pieceOverlay.hidden=true;
+    refs.workspace.appendChild(pieceOverlay);
+    return pieceOverlay;
   }
 
-  function pointInsidePieceCanvas(target,clientX,clientY){
-    const source=target?.querySelector?.('.weight-coherence-piece-canvas');
-    if(!source || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
-    const rect=source.getBoundingClientRect();
-    return clientX>=rect.left && clientX<=rect.right && clientY>=rect.top && clientY<=rect.bottom;
-  }
-
-  function currentPieceLensPoint(target){
-    if(pieceLensPoint && pointInsidePieceCanvas(target,pieceLensPoint.x,pieceLensPoint.y)) return pieceLensPoint;
-    const source=target?.querySelector?.('.weight-coherence-piece-canvas');
-    if(!source) return null;
-    const rect=source.getBoundingClientRect();
-    return {x:rect.left+(rect.width/2),y:rect.top+(rect.height/2)};
-  }
-
-  function positionPieceLens(lens,sourceRect,diameter,clientX,clientY){
+  function positionPieceOverlay(overlay,sourceRect,width,height){
     const viewport=viewportSize();
-    const gap=18;
-    let left;
-    if(viewport.width-sourceRect.right>=diameter+gap) left=sourceRect.right+gap;
-    else if(sourceRect.left>=diameter+gap) left=sourceRect.left-diameter-gap;
-    else left=Math.max(6,Math.min(viewport.width-diameter-6,clientX-(diameter/2)));
-    const top=Math.max(6,Math.min(viewport.height-diameter-6,clientY-(diameter/2)));
-    lens.style.left=left+'px';
-    lens.style.top=top+'px';
+    const margin=10;
+    const sourceCenterX=sourceRect.left+(sourceRect.width/2);
+    const sourceCenterY=sourceRect.top+(sourceRect.height/2);
+    const maxLeft=Math.max(margin,viewport.width-width-margin);
+    const maxTop=Math.max(margin,viewport.height-height-margin);
+    const left=Math.max(margin,Math.min(maxLeft,sourceCenterX-(width/2)));
+    const top=Math.max(margin,Math.min(maxTop,sourceCenterY-(height/2)));
+    overlay.style.left=left+'px';
+    overlay.style.top=top+'px';
   }
 
-  function updatePieceLens(target,clientX,clientY){
-    if(!target || target!==zoomTarget || zoomScale<=ZOOM_MIN) return;
+  function updatePieceOverlay(target){
+    if(!target || target!==zoomTarget || zoomScale<=ZOOM_MIN || !state || !imageReady) return;
     const source=target.querySelector?.('.weight-coherence-piece-canvas');
-    if(!source) return;
+    const id=Number(target.dataset.pieceId);
+    if(!source || !Number.isInteger(id)) return;
     const sourceRect=source.getBoundingClientRect();
     if(sourceRect.width<=0 || sourceRect.height<=0) return;
-    const lens=ensurePieceLens();
+
     const viewport=viewportSize();
-    const diameter=Math.max(170,Math.min(250,Math.min(viewport.width,viewport.height)*0.28));
+    const edgeMargin=20;
+    const requestedWidth=sourceRect.width*zoomScale;
+    const requestedHeight=sourceRect.height*zoomScale;
+    const fitScale=Math.min(
+      1,
+      Math.max(0.1,(viewport.width-edgeMargin)/Math.max(1,requestedWidth)),
+      Math.max(0.1,(viewport.height-edgeMargin)/Math.max(1,requestedHeight))
+    );
+    const displayWidth=Math.max(sourceRect.width,requestedWidth*fitScale);
+    const displayHeight=Math.max(sourceRect.height,requestedHeight*fitScale);
+    const overlay=ensurePieceOverlay();
     const dpr=Math.max(1,Math.min(2,Number(window.devicePixelRatio)||1));
-    const pixelSize=Math.max(1,Math.round(diameter*dpr));
-    if(lens.width!==pixelSize) lens.width=pixelSize;
-    if(lens.height!==pixelSize) lens.height=pixelSize;
-    lens.style.width=diameter+'px';
-    lens.style.height=diameter+'px';
-    positionPieceLens(lens,sourceRect,diameter,clientX,clientY);
+    overlay.width=Math.max(1,Math.round(displayWidth*dpr));
+    overlay.height=Math.max(1,Math.round(displayHeight*dpr));
+    overlay.style.width=displayWidth+'px';
+    overlay.style.height=displayHeight+'px';
+    positionPieceOverlay(overlay,sourceRect,displayWidth,displayHeight);
 
-    const focusX=Math.max(sourceRect.left,Math.min(sourceRect.right,clientX));
-    const focusY=Math.max(sourceRect.top,Math.min(sourceRect.bottom,clientY));
-    const relX=(focusX-sourceRect.left)/Math.max(1,sourceRect.width);
-    const relY=(focusY-sourceRect.top)/Math.max(1,sourceRect.height);
-    const drawWidth=sourceRect.width*zoomScale;
-    const drawHeight=sourceRect.height*zoomScale;
-    const drawX=(diameter/2)-(relX*drawWidth);
-    const drawY=(diameter/2)-(relY*drawHeight);
+    const config=difficultyConfig(state.difficulty);
+    const g=pieceGeometry(id,config);
+    const pieceMargin=g.tab+2;
+    const logicalWidth=g.w+(pieceMargin*2);
+    const renderScale=overlay.width/Math.max(1,logicalWidth);
+    const overlayCtx=overlay.getContext('2d');
+    overlayCtx.setTransform(1,0,0,1,0,0);
+    overlayCtx.clearRect(0,0,overlay.width,overlay.height);
 
-    const lensCtx=lens.getContext('2d');
-    lensCtx.setTransform(dpr,0,0,dpr,0,0);
-    lensCtx.clearRect(0,0,diameter,diameter);
-    lensCtx.fillStyle='#080D22';
-    lensCtx.fillRect(0,0,diameter,diameter);
-    lensCtx.imageSmoothingEnabled=true;
-    lensCtx.imageSmoothingQuality='high';
-    lensCtx.drawImage(source,0,0,source.width,source.height,drawX,drawY,drawWidth,drawHeight);
-    lens.hidden=false;
+    overlayCtx.save();
+    overlayCtx.scale(renderScale,renderScale);
+    overlayCtx.translate(pieceMargin,pieceMargin);
+    tracePiecePath(overlayCtx,g);
+    overlayCtx.clip();
+    drawArtworkRegion(overlayCtx,g,pieceMargin);
+    overlayCtx.restore();
+
+    overlayCtx.save();
+    overlayCtx.scale(renderScale,renderScale);
+    overlayCtx.translate(pieceMargin,pieceMargin);
+    tracePiecePath(overlayCtx,g);
+    overlayCtx.strokeStyle='rgba(242,245,255,.86)';
+    overlayCtx.lineWidth=Math.max(0.8,1.2/renderScale);
+    overlayCtx.stroke();
+    overlayCtx.restore();
+    overlay.hidden=false;
   }
 
   function boardLensPoint(){
@@ -1278,11 +1277,7 @@
     zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
     root.classList.add('is-zoom-active');
-    const point=currentPieceLensPoint(target);
-    if(point){
-      pieceLensPoint=point;
-      updatePieceLens(target,point.x,point.y);
-    }
+    updatePieceOverlay(target);
     syncZoomControls();
   }
 
@@ -1290,8 +1285,7 @@
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
     zoomScale=ZOOM_MIN;
-    pieceLensPoint=null;
-    if(pieceLens) pieceLens.hidden=true;
+    if(pieceOverlay) pieceOverlay.hidden=true;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
     syncZoomControls();
@@ -1312,12 +1306,8 @@
       setStatus('Piece zoom reset to 100%.','');
       return true;
     }
-    const point=lastZoomTarget===piece && lastZoomPoint && pointInsidePieceCanvas(piece,lastZoomPoint.x,lastZoomPoint.y)
-      ? lastZoomPoint
-      : currentPieceLensPoint(piece);
-    pieceLensPoint=point;
     applyPieceZoom(piece,zoomLevel);
-    setStatus('Piece magnifier ' + Math.round(zoomLevel*100) + '%. The tray piece stays fixed; move over it to inspect details, use − and + to adjust, or press Z again to close.','');
+    setStatus('Whole-piece zoom ' + Math.round(zoomLevel*100) + '%. The entire jigsaw piece is shown above the workspace; use − and + to adjust, or press Z again to close.','');
     return true;
   }
 
@@ -1360,7 +1350,7 @@
       setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held to inspect.','');
     }else if(zoomTarget && zoomTarget.isConnected){
       applyPieceZoom(zoomTarget,zoomLevel);
-      setStatus('Piece magnifier ' + Math.round(zoomLevel*100) + '%. The source piece remains fixed in its tray.','');
+      setStatus('Whole-piece zoom ' + Math.round(zoomLevel*100) + '%. The tray card remains fixed.','');
     }else{
       setStatus('Zoom level set to ' + Math.round(zoomLevel*100) + '%. Hover a piece and press Z, or hold Z over the jigsaw.','');
     }
