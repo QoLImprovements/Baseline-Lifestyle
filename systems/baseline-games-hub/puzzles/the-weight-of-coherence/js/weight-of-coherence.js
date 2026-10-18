@@ -1091,9 +1091,7 @@
   function clearZoomTargetStyles(target){
     if(!target) return;
     target.classList?.remove('is-zoom-target');
-    target.style?.removeProperty('transform');
-    target.style?.removeProperty('transform-origin');
-    target.style?.removeProperty('will-change');
+    target.style?.removeProperty('--weight-coherence-piece-zoom');
   }
 
   function ensureBoardLens(){
@@ -1178,15 +1176,15 @@
 
   function applyPieceZoom(target,scale){
     if(!target || target===refs.boardWrap) return;
+    const pieceCanvas=target.querySelector?.('.weight-coherence-piece-canvas');
+    if(!pieceCanvas) return;
     const nextScale=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(scale)||PIECE_ZOOM_DEFAULT));
     if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
     zoomTarget=target;
     zoomScale=nextScale;
     zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    zoomTarget.style.transformOrigin='50% 50%';
-    zoomTarget.style.willChange='transform';
-    zoomTarget.style.transform='scale('+zoomScale.toFixed(2)+')';
+    zoomTarget.style.setProperty('--weight-coherence-piece-zoom',zoomScale.toFixed(2));
     root.classList.add('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
     syncZoomControls();
