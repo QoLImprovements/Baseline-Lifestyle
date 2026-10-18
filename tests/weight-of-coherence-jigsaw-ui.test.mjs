@@ -6,17 +6,19 @@ const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html
 const css = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
 const js = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
 
-test('Weight of Coherence keeps a muted medium board and 50% artwork guide', () => {
+test('Weight of Coherence keeps a muted board normally and uses white behind the 50% guide', () => {
   assert.match(js, /the-weight-of-coherence\.png\?v=WEIGHT_OF_COHERENCE_FULL_20261016_2/);
   assert.match(js, /const BOARD_BASE = '#2A3672'/);
   assert.match(js, /const GUIDE_OPACITY = 0\.50/);
+  assert.match(js, /ctx\.fillStyle=guideOn\?'#FFFFFF':BOARD_BASE/);
   assert.match(js, /ctx\.globalAlpha\s*=\s*GUIDE_OPACITY/);
+  assert.match(js, /guideOn\?'rgba\(8,13,34,\.18\)':'rgba\(214,223,255,\.10\)'/);
   assert.doesNotThrow(() => new Function(js));
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_MOBILE_DESKTOP_LAYOUT_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_MOBILE_DESKTOP_LAYOUT_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_ORIENTATION_TRAYS_FULLSCREEN_FIT_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_ORIENTATION_TRAYS_FULLSCREEN_FIT_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
@@ -61,11 +63,11 @@ test('fullscreen exposes F as the enter and exit hotkey', () => {
   assert.match(js, /Full screen · F/);
 });
 
-test('four manual sorting trays sit above and below the desktop jigsaw and persist parked pieces', () => {
+test('sorting trays follow artwork orientation and persist parked pieces', () => {
   assert.equal((html.match(/data-jigsaw-sort-tray="/g) || []).length, 4);
-  assert.match(html, /aria-label="Upper sorting trays"/);
-  assert.match(html, /aria-label="Lower sorting trays"/);
-  assert.match(css, /grid-template-areas:"upper" "board" "lower"/);
+  assert.match(js, /root\.dataset\.jigsawOrientation=BOARD_WIDTH>BOARD_HEIGHT\?'landscape':'portrait'/);
+  assert.match(css, /data-jigsaw-orientation="portrait"[^\n]*weight-coherence-stage[^\{]*\{grid-template-columns:minmax\(126px,176px\) minmax\(0,800px\) minmax\(126px,176px\);grid-template-areas:"left board right"/);
+  assert.match(css, /data-jigsaw-orientation="landscape"[^\n]*weight-coherence-stage[^\{]*\{grid-template-columns:minmax\(0,800px\);grid-template-areas:"upper" "board" "lower"/);
   assert.match(js, /sortBins:\[\[\],\[\],\[\],\[\]\]/);
   assert.match(js, /sortBins:state\.sortBins\.map/);
   assert.match(js, /normalizeSortBins\(parsed\.sortBins,count,placed\)/);
@@ -84,11 +86,12 @@ test('each fullscreen sorting tray owns its own scrollbar', () => {
 });
 
 
-test('desktop fullscreen pages the main tray instead of scrolling it', () => {
+test('desktop fullscreen fills the main tray with a measured page and no scrollbar', () => {
   assert.match(css, /grid-template-columns:minmax\(0,1fr\) minmax\(250px,320px\)/);
-  assert.match(css, /weight-coherence-tray-shell[^}]*overflow:hidden/);
-  assert.match(css, /weight-coherence-tray[^}]*repeat\(3,minmax\(0,1fr\)\)/);
-  assert.match(js, /fullscreenActive\(\)\) return Math\.min\(config\.trayPageSize, 12\)/);
+  assert.match(css, /weight-coherence-tray-shell[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(css, /weight-coherence-tray[^}]*repeat\(3,minmax\(0,1fr\)\)[^}]*grid-auto-rows:minmax\(64px,1fr\)/);
+  assert.match(js, /function desktopFullscreenTrayCapacity\(config\)/);
+  assert.match(js, /rows\*columns/);
   assert.doesNotMatch(css, /weight-coherence-tray-shell[^}]*overflow:auto/);
 });
 
@@ -98,13 +101,25 @@ test('fullscreen jigsaw fits completely without its own board scrollbar', () => 
   assert.match(css, /--weight-coherence-fullscreen-board-width/);
   assert.match(js, /function syncFullscreenBoardFit\(\)/);
   assert.match(js, /availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)/);
-  assert.match(js, /Math\.min\(800,shellRect\.width,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
+  assert.match(js, /availableHeight=Math\.max\(0,shellRect\.height-statusHeight-gap-6\)/);
+  assert.match(js, /availableWidth=Math\.max\(0,shellRect\.width-6\)/);
+  assert.match(js, /Math\.min\(800,availableWidth,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
+  assert.match(js, /fullscreenLayoutTimer=window\.setTimeout\(settleFullscreenLayout,180\)/);
 });
 
-test('mobile fullscreen uses a stable fixed viewport fallback instead of jumping the page', () => {
+test('mobile fullscreen uses a stable fixed viewport and requires landscape', () => {
   assert.match(js, /if\(mobileLike\(\)\)\{\s*setPseudoFullscreen\(true\)/);
   assert.match(js, /classList\.toggle\('is-pseudo-fullscreen',pseudoFullscreen\)/);
+  assert.match(js, /function syncMobileFullscreenOrientation\(\)/);
+  assert.match(js, /is-mobile-fullscreen-landscape/);
+  assert.match(js, /is-mobile-fullscreen-portrait/);
+  assert.match(html, /id="weightCoherenceRotateNotice"/);
   assert.match(css, /\.weight-coherence-workspace\.is-pseudo-fullscreen\{position:fixed;inset:0/);
+  assert.match(css, /is-mobile-fullscreen-portrait[^\{]*\{/);
+  assert.match(css, /grid-template-areas:"toolbar" "rotate"/);
+  assert.match(css, /is-mobile-fullscreen-landscape[^\{]*\{/);
+  assert.match(css, /data-jigsaw-orientation="portrait"[\s\S]*?grid-template-areas:"left board right"/);
+  assert.match(css, /data-jigsaw-orientation="landscape"[\s\S]*?grid-template-areas:"upper" "board" "lower"/);
   assert.match(css, /height:100dvh/);
 });
 
