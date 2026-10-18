@@ -82,6 +82,36 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
 
   const categoryExists = (id) => WORKSHOP_CATEGORIES.some((entry) => entry.id === id);
 
+  function readWorkshopRoute() {
+    try {
+      const params = new URLSearchParams(globalThis.location?.search || '');
+      return {
+        category: String(params.get('workshop-category') || ''),
+        recipe: String(params.get('workshop-recipe') || '')
+      };
+    } catch (_error) {
+      return { category:'', recipe:'' };
+    }
+  }
+
+  function writeWorkshopRoute(mode = 'replace') {
+    try {
+      const url = new URL(globalThis.location.href);
+      url.searchParams.delete('workshop-category');
+      url.searchParams.delete('workshop-recipe');
+      if (category && category !== 'blacksmith') url.searchParams.set('workshop-category', category);
+      if (selectedRecipeId) url.searchParams.set('workshop-recipe', selectedRecipeId);
+      const next = url.pathname + (url.searchParams.toString() ? '?' + url.searchParams.toString() : '') + url.hash;
+      const payload = Object.assign({}, globalThis.history.state || {}, {
+        realmWorkshop:true,
+        workshopCategory:category,
+        workshopRecipe:selectedRecipeId || ''
+      });
+      if (mode === 'push') globalThis.history.pushState(payload, '', next);
+      else globalThis.history.replaceState(payload, '', next);
+    } catch (_error) {}
+  }
+
   function availableCategories() {
     return scope === 'cooking'
       ? WORKSHOP_CATEGORIES.filter((entry) => entry.id === 'cooking')
@@ -268,6 +298,7 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
     if (target.dataset.workshopCategory) {
       category = target.dataset.workshopCategory;
       selectedRecipeId = '';
+      writeWorkshopRoute('push');
       quantity = 1;
       challenge = null;
       message = '';
@@ -277,6 +308,7 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
     if (target.dataset.workshopRecipe) {
       selectedRecipeId = target.dataset.workshopRecipe;
       challenge = null;
+      writeWorkshopRoute('push');
       render();
       return;
     }
@@ -326,16 +358,31 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
     const allowed = scope === 'cooking'
       ? ['cooking']
       : availableCategories().map((entry) => entry.id);
-    category = allowed.includes(requestedCategory) ? requestedCategory : allowed[0] || 'blacksmith';
+    const route = readWorkshopRoute();
+    const requested = allowed.includes(route.category) ? route.category : requestedCategory;
+    category = allowed.includes(requested) ? requested : allowed[0] || 'blacksmith';
     selectedRecipeId = '';
+    if (route.recipe && workshopService.recipesByCategory(category).some((recipe) => recipe.id === route.recipe)) selectedRecipeId = route.recipe;
     quantity = 1;
     challenge = null;
     message = '';
     if (connectScreen()) {
       screen.hidden = false;
       render();
+      writeWorkshopRoute('replace');
     }
   }
+
+  function restoreWorkshopRoute(){
+    if (!mounted) return;
+    const route = readWorkshopRoute();
+    const allowed = scope === 'cooking' ? ['cooking'] : availableCategories().map((entry) => entry.id);
+    category = allowed.includes(route.category) ? route.category : (allowed.includes(category) ? category : allowed[0] || 'blacksmith');
+    selectedRecipeId = route.recipe && workshopService.recipesByCategory(category).some((recipe) => recipe.id === route.recipe) ? route.recipe : '';
+    challenge = null;
+    render();
+  }
+  globalThis.addEventListener?.('popstate', restoreWorkshopRoute);
 
   function leave() {
     mounted = false;
