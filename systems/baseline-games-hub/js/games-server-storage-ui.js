@@ -112,10 +112,10 @@ function refreshActiveSaveTooltip(){
 function placeSaveIcon(container,state,{realm=false,position='afterbegin'}={}){
   if(!container) return;
   const expectedState=state.canSave?'saving':'unsaved';
-  const icon=container.querySelector(':scope > [data-save-status-icon]');
+  const icon=container.querySelector('[data-save-status-icon]');
   if(!icon) container.insertAdjacentHTML(position,saveIconMarkup(state,realm));
   else if(icon.dataset.saveState!==expectedState) icon.outerHTML=saveIconMarkup(state,realm);
-  const current=container.querySelector(':scope > [data-save-status-icon]');
+  const current=container.querySelector('[data-save-status-icon]');
   if(current) current.dataset.saveState=expectedState;
 }
 function placeSaveIcons(){
