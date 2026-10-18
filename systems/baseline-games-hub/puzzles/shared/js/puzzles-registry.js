@@ -12,9 +12,9 @@
     Object.freeze({
       id:'crossnumber',
       name:'Crossnumber',
-      note:'Place number tiles into interlocking equations so every horizontal and vertical calculation balances.',
-      meta:'Arithmetic placement',
-      preview:'/systems/baseline-games-hub/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_ARITHMETIC_20261018_2'
+      note:'Procedurally generated interlocking arithmetic layouts with tiers, XP, skills, Bank rewards and Baseline Realm progression.',
+      meta:'Many generated layouts',
+      preview:'/systems/baseline-games-hub/puzzles/shared/art/crossnumber.svg?v=CROSSNUMBER_PROGRESSION_20261018_1'
     })
   ]);
 
