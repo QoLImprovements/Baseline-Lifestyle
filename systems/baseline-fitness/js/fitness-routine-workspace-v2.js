@@ -851,12 +851,47 @@
     scheduleSave();
   }
 
+  function readCalendarRoute(){
+    try{
+      const params=new URLSearchParams(global.location.search||'');
+      const view=params.get('calendar-view');
+      const anchor=params.get('calendar-anchor');
+      return {
+        view:CALENDAR_VIEWS.includes(view)?view:'month',
+        anchor:/^\d{4}-\d{2}-\d{2}$/.test(anchor||'')?localDate(anchor):null
+      };
+    }catch(_error){ return {view:'month',anchor:null}; }
+  }
+
+  function writeCalendarRoute(mode='replace'){
+    try{
+      const url=new URL(global.location.href);
+      url.searchParams.delete('calendar-view');
+      url.searchParams.delete('calendar-anchor');
+      if(state.calendarView!=='month') url.searchParams.set('calendar-view',state.calendarView);
+      const anchorIso=isoDate(state.calendarAnchor);
+      const defaultAnchor=isoDate(firstOfMonth(new Date()));
+      if(anchorIso!==defaultAnchor) url.searchParams.set('calendar-anchor',anchorIso);
+      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      const payload=Object.assign({},global.history.state||{},{fitnessCalendar:true,calendarView:state.calendarView,calendarAnchor:anchorIso});
+      if(mode==='push') global.history.pushState(payload,'',next);
+      else global.history.replaceState(payload,'',next);
+    }catch(_error){}
+  }
+
+  function applyCalendarRoute(){
+    const route=readCalendarRoute();
+    state.calendarView=route.view;
+    if(route.anchor) state.calendarAnchor=route.anchor;
+  }
+
   function moveCalendar(direction) {
     const amount = direction === 'next' ? 1 : -1;
     const anchor = localDate(state.calendarAnchor);
     if (state.calendarView === 'week') anchor.setDate(anchor.getDate() + (7 * amount));
     else anchor.setMonth(anchor.getMonth() + amount, 1);
     state.calendarAnchor = anchor;
+    writeCalendarRoute('push');
     renderCalendar();
   }
 
@@ -928,6 +963,7 @@
       if (calendarView) {
         state.calendarView = CALENDAR_VIEWS.includes(calendarView.dataset.calendarView) ? calendarView.dataset.calendarView : 'month';
         state.calendarAnchor = localDate(state.selectedDate);
+        writeCalendarRoute('push');
         renderCalendar();
         return;
       }
@@ -1145,6 +1181,7 @@
   }
 
   function boot() {
+    applyCalendarRoute();
     makeWorkspace();
     bindEvents();
     document.addEventListener('baseline:fitness-plans-updated', () => { renderLog(); renderCalendar(); });
