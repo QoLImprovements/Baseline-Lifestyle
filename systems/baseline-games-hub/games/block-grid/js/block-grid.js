@@ -20,7 +20,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
 
-const BUILD = 'BLOCK_GRID_CORE_COHERENCE_20261017_3';
+const BUILD = 'BLOCK_GRID_AUTO_NEXT_COHERENCE_20261018_1';
 const APP = 'blockgrid';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -90,6 +90,15 @@ function run() {
   return profile?.activeRun || null;
 }
 
+function autoNextApi() {
+  const api = globalThis.BaselineGamesAutoNext;
+  return api && typeof api.enabled === 'function' ? api : null;
+}
+
+function syncAutoNextControl() {
+  try { autoNextApi()?.sync?.(); } catch (_) {}
+}
+
 function createRun() {
   const board = emptyBoard();
   return { board, tray:createTray(board, profile.selectedMode), score:0, combo:0, lines:0, pieces:0, gameOver:false };
@@ -102,6 +111,7 @@ function persist() {
 }
 
 function startNewGame() {
+  try { autoNextApi()?.clear?.(APP); } catch (_) {}
   profile.activeRun = createRun();
   profile.gamesPlayed += 1;
   selectedPiece = -1;
@@ -250,7 +260,8 @@ function renderGame() {
   if (!root) return;
   const active = run();
   if (!active) {
-    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button></div>`;
+    root.innerHTML = `<div class="block-grid-empty"><p>${escapeHtml(currentMode().name)} selected. Press Start New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-block-action="new" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    syncAutoNextControl();
     return;
   }
   const progress = runLevelProgress(active.lines);
@@ -282,8 +293,10 @@ function renderGame() {
     </div>
     <div class="game-window-actions">
       <button class="action ghost start-new-game-toggle" data-block-action="new" type="button">Start New Game</button>
+      <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
     </div>`;
   resetBoardMotion();
+  syncAutoNextControl();
 }
 
 function renderModes() {
@@ -509,6 +522,9 @@ function placeSelected(row, col) {
       : `${shapeById(pieceId)?.cells.length || 0} cells placed for ${awardedScore} points.`;
   persist();
   render();
+  if (active.gameOver) {
+    try { autoNextApi()?.schedule?.(APP, startNewGame); } catch (_) {}
+  }
   return true;
 }
 
