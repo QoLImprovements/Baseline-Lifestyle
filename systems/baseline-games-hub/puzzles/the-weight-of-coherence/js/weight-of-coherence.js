@@ -870,8 +870,15 @@
 
   let interactionScrollSnapshot=null;
 
+  function isInteractionScrollTarget(event){
+    const target=event?.target;
+    if(!target || typeof target.closest!=='function') return false;
+    const interactive=target.closest('button,[role="button"],[data-piece-id],#weightCoherenceBoard,[data-jigsaw-sort-tray]');
+    return !!(interactive && root.contains(interactive));
+  }
+
   function captureInteractionScroll(event){
-    if(fullscreenActive()) return;
+    if(fullscreenActive() || !isInteractionScrollTarget(event)) return;
     interactionScrollSnapshot=pageScrollSnapshot();
     const snapshot=interactionScrollSnapshot;
     const control=event?.target?.closest?.('button,[role="button"]');
@@ -1605,12 +1612,12 @@
   }
 
   root.addEventListener('pointerdown',captureInteractionScroll,true);
-  root.addEventListener('mousedown',function(){
-    if(!interactionScrollSnapshot) captureInteractionScroll();
+  root.addEventListener('mousedown',function(event){
+    if(!interactionScrollSnapshot) captureInteractionScroll(event);
   },true);
   root.addEventListener('keydown',function(event){
     if(!event || (event.key!=='Enter' && event.key!==' ')) return;
-    captureInteractionScroll();
+    captureInteractionScroll(event);
   },true);
   root.addEventListener('click',function(){
     settleInteractionScroll();
