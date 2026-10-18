@@ -35,15 +35,15 @@ test('legacy compatibility CSS cannot resurrect stale Realm authorities', () => 
 });
 
 test('mobile Realm stylesheet loads after desktop Realm presentation', () => {
-  const woodIndex = html.indexOf('realm-wood-authority.css?v=REALM_MOBILE_RESPONSIVE_20261018_1');
-  const mobileIndex = html.indexOf('realm-stage-1-mobile.css?v=REALM_MOBILE_RESPONSIVE_20261018_1');
+  const woodIndex = html.indexOf('realm-wood-authority.css?v=REALM_RECOVERED_SPEC_20261018_1');
+  const mobileIndex = html.indexOf('realm-stage-1-mobile.css?v=REALM_RECOVERED_SPEC_20261018_1');
   assert.ok(woodIndex >= 0);
   assert.ok(mobileIndex > woodIndex);
 });
 
 test('mobile Realm composition has one geometry authority', () => {
   assert.match(mobileCss,/One compact row: location, centred Coins, persistent touch controls/);
-  assert.match(mobileCss,/grid-template-columns:minmax\(120px,1fr\) auto minmax\(220px,1fr\)!important/);
+  assert.match(mobileCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
   assert.match(mobileCss,/#realmBasecampScreen\.realm-basecamp-screen\{[\s\S]*?width:100%!important;[\s\S]*?background-size:100% 100%!important/);
   assert.match(mobileCss,/\.realm-drawer\{[\s\S]*?width:min\(430px,86vw\)!important/);
   assert.match(mobileCss,/\.realm-hotkey-hint\{[\s\S]*?display:none!important/);
@@ -58,14 +58,23 @@ test('Basecamp landmarks have one visual owner', () => {
   assert.doesNotMatch(woodCss,/Basecamp landmarks keep their rounded hit area/);
 });
 
-test('persistent Realm HUD excludes contextual management', () => {
+test('Basecamp is home: B only returns home and the return control is contextual', () => {
+  assert.match(inputBindings,/realm:input:realm-basecamp'[\s\S]*?navigate\('basecamp'\)/);
+  assert.doesNotMatch(inputBindings,/realm:input:realm-basecamp'[^\n]*ninja-training/);
+  assert.match(ninjaRuntime,/basecampBtn\.hidden = atBasecamp/);
+  assert.match(ninjaRuntime,/basecampBtn\.setAttribute\('aria-hidden', String\(atBasecamp\)\)/);
+});
+
+test('persistent Realm HUD excludes contextual navigation and management', () => {
   const nav = html.match(/<nav class="realm-utility"[\s\S]*?<\/nav>/)?.[0] || '';
   assert.match(nav,/id="realmInventoryBtn"/);
   assert.match(nav,/id="realmSettingsBtn"/);
   assert.match(nav,/id="realmFullscreenBtn"/);
+  assert.doesNotMatch(nav,/id="realmBasecampBtn"/);
   assert.doesNotMatch(nav,/id="realmMenuBtn"/);
+  assert.match(html,/class="realm-home-action"[^>]*id="realmBasecampBtn"[^>]* hidden aria-hidden="true"/);
   assert.match(html,/class="realm-context-action"[^>]*id="realmMenuBtn"/);
-  assert.match(woodCss,/Management is contextual, not part of the persistent HUD/);
+  assert.match(woodCss,/Navigation and management actions are contextual, not persistent HUD controls/);
 });
 
 test('Coins, Inventory and Settings each have one persistent authority', () => {

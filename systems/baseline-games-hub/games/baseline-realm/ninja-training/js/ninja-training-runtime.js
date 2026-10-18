@@ -1001,6 +1001,7 @@ function renderRealmChrome(){
   const frame = document.getElementById('realmSceneFrame');
   const drawer = document.getElementById('realmPanelDrawer');
   const menuBtn = document.getElementById('realmMenuBtn');
+  const basecampBtn = document.getElementById('realmBasecampBtn');
   const ninjaScene = document.getElementById('ninjaScene');
   const basecamp = document.getElementById('realmBasecampScreen');
   const trainingHud = document.getElementById('realmTrainingHud');
@@ -1032,6 +1033,11 @@ function renderRealmChrome(){
     drawer.setAttribute('aria-hidden', String(!realmDrawerOpen));
   }
   if(menuBtn){ menuBtn.hidden = realmView === 'workshop'; menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen)); }
+  if(basecampBtn){
+    const atBasecamp = realmView === 'basecamp';
+    basecampBtn.hidden = atBasecamp;
+    basecampBtn.setAttribute('aria-hidden', String(atBasecamp));
+  }
   setRealmSurfaceState(ninjaScene, realmView === 'training');
   setRealmSurfaceState(basecamp, realmView === 'basecamp');
   setRealmSurfaceState(trainingHud, realmView === 'training');

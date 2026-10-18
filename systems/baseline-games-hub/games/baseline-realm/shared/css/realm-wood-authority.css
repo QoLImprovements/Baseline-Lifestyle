@@ -291,11 +291,10 @@
   justify-self:end!important;
 }
 
-/* Management is contextual, not part of the persistent HUD. */
-#ninjaPanel .realm-context-action{
+/* Navigation and management actions are contextual, not persistent HUD controls. */
+#ninjaPanel :is(.realm-context-action,.realm-home-action){
   position:absolute!important;
   top:calc(var(--realm-banner-height) + 14px)!important;
-  right:18px!important;
   z-index:34!important;
   display:inline-flex!important;
   align-items:center!important;
@@ -311,11 +310,13 @@
   font-weight:900!important;
   cursor:pointer!important;
 }
-#ninjaPanel .realm-context-action[hidden]{display:none!important}
-#ninjaPanel .realm-context-action .realm-fab__icon{
+#ninjaPanel .realm-context-action{right:18px!important}
+#ninjaPanel .realm-home-action{left:18px!important}
+#ninjaPanel :is(.realm-context-action,.realm-home-action)[hidden]{display:none!important}
+#ninjaPanel :is(.realm-context-action,.realm-home-action) .realm-fab__icon{
   width:28px!important;height:28px!important;flex:0 0 28px!important;
 }
-#ninjaPanel .realm-context-action .realm-fab__label{font-size:11px!important;white-space:nowrap!important}
+#ninjaPanel :is(.realm-context-action,.realm-home-action) .realm-fab__label{font-size:11px!important;white-space:nowrap!important}
 #ninjaPanel #realmSceneFrame.is-drawer-open .realm-context-action{opacity:.35!important}
 
 #ninjaPanel :is(.realm-mini-action,.realm-close-btn,.realm-tab-btn),
