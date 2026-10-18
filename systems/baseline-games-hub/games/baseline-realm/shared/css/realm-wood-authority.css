@@ -633,39 +633,12 @@
 #ninjaPanel #ninjaShurikenBtn:disabled::after{content:none!important;display:none!important}
 #ninjaPanel #ninjaShurikenBtn:disabled :is(.realm-combat-btn__copy,.realm-combat-btn__icon){position:relative!important;z-index:2!important;color:#ede4d5!important;-webkit-text-fill-color:#ede4d5!important}
 
+/* Mobile Realm geometry/HUD composition is owned exclusively by
+   realm-stage-1-mobile.css. Keep only destination-specific desktop/tablet
+   adaptation here so two authorities cannot compete on phones. */
 @media (max-width:1120px){
-  #ninjaPanel .realm-command-banner{gap:10px!important;padding:10px 12px!important}
   #ninjaPanel .tactical-layout{grid-template-columns:1fr!important}
   #ninjaPanel .tactical-grid{transform:scale(.72)!important;margin-bottom:-165px!important}
-}
-@media (max-width:900px){
-  #ninjaPanel{--realm-banner-height:188px}
-  #ninjaPanel .realm-command-banner{
-    grid-template-columns:minmax(0,1fr) auto!important;
-    grid-template-rows:auto auto auto!important;
-    gap:8px!important;
-    padding:10px!important;
-  }
-  #ninjaPanel .realm-command-banner__status{grid-column:1!important;grid-row:1!important}
-  #ninjaPanel .realm-shared-status{grid-column:2!important;grid-row:1!important;min-width:108px!important}
-  #ninjaPanel .realm-command-banner .realm-enemy-status{grid-column:1/-1!important;grid-row:2!important;border-left:0!important;border-top:1px solid rgba(93,58,30,.18)!important}
-  #ninjaPanel .realm-command-banner .realm-utility{grid-column:1/-1!important;grid-row:3!important;justify-self:stretch!important;justify-content:flex-end!important;border-top:1px solid rgba(93,58,30,.18)!important;padding-top:8px!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-workshop-view,.is-exploration-view) .realm-command-banner{
-    grid-template-columns:minmax(0,1fr) auto!important;
-    grid-template-rows:auto auto!important;
-  }
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-workshop-view,.is-exploration-view) .realm-command-banner__status{grid-column:1!important;grid-row:1!important;width:auto!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-workshop-view,.is-exploration-view) .realm-shared-status{grid-column:2!important;grid-row:1!important}
-  #ninjaPanel #realmSceneFrame:is(.is-basecamp-view,.is-workshop-view,.is-exploration-view) .realm-command-banner .realm-utility{grid-column:1/-1!important;grid-row:2!important;border-top:1px solid rgba(93,58,30,.18)!important;padding-top:8px!important}
-  #ninjaPanel .realm-fab{flex:0 1 84px!important;min-width:68px!important;width:auto!important}
-  #ninjaPanel .realm-context-action{top:calc(var(--realm-banner-height) + 10px)!important;right:12px!important}
-}
-@media (max-width:620px){
-  #ninjaPanel{--realm-banner-height:214px}
-  #ninjaPanel .realm-command-banner .realm-utility{justify-content:stretch!important}
-  #ninjaPanel .realm-fab{flex:1 1 0!important;min-width:0!important}
-  #ninjaPanel .realm-fab__label{font-size:9px!important}
-  #ninjaPanel .realm-inventory-grid{grid-template-columns:1fr!important}
 }
 @media (prefers-reduced-motion:reduce){
   #ninjaPanel :is(.ninja-forest-layer,.ninja-scene__layer,.ninja-scene__enemy.is-entering){animation:none!important;will-change:auto!important}
