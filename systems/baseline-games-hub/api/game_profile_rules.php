@@ -9,6 +9,7 @@ function bl_profile_aliases(string $app): array {
     'ninja'=>['ninja','baselineninja'],
     'trackcoin'=>['trackcoin'],
     'ruleshift'=>['ruleshift'],
+    'crossnumber'=>['crossnumber'],
   ][$app] ?? [];
 }
 
@@ -46,6 +47,11 @@ function bl_default_game_profile(string $app): array {
       'app'=>'ruleshift','bank'=>0,'xp'=>0,'level'=>1,'skillPoints'=>1,'gamesPlayed'=>0,'correctAnswers'=>0,
       'wrongAnswers'=>0,'currentStreak'=>0,'bestStreak'=>0,'cleanWinStreak'=>0,'selectedTier'=>'starter',
       'skills'=>['focus'=>0,'banker'=>0,'recovery'=>0,'adapt'=>0],
+    ],
+    'crossnumber'=>[
+      'app'=>'crossnumber','bank'=>0,'xp'=>0,'level'=>1,'skillPoints'=>1,'puzzlesSolved'=>0,'gamesPlayed'=>0,
+      'currentStreak'=>0,'bestStreak'=>0,'cleanWinStreak'=>0,'roundCounter'=>0,'bestScore'=>0,'selectedTier'=>'starter',
+      'skills'=>['insight'=>0,'flow'=>0,'banker'=>0,'precision'=>0,'structure'=>0],'activeRound'=>null,
     ],
   ];
   return $defaults[$app] ?? ['app'=>$app];
@@ -135,6 +141,25 @@ function bl_normalise_game_profile(string $app, array $profile): array {
     $tiers = ['starter','switch','opposite','mixed','pressure'];
     $unlock = ['starter'=>1,'switch'=>4,'opposite'=>9,'mixed'=>16,'pressure'=>26];
     $merged['selectedTier'] = bl_game_allowed_tier(trim((string)($merged['selectedTier'] ?? 'starter')), $tiers, $unlock, $merged['level']);
+    return $merged;
+  }
+
+  if($app === 'crossnumber'){
+    foreach(['bank','xp','skillPoints','puzzlesSolved','gamesPlayed','currentStreak','bestStreak','cleanWinStreak','roundCounter','bestScore'] as $key){
+      $merged[$key] = bl_round_nonneg($merged[$key] ?? 0);
+    }
+    $merged['level'] = max(1, (int)round((float)($merged['level'] ?? 1)));
+    $skills = is_array($merged['skills'] ?? null) ? $merged['skills'] : [];
+    $merged['skills'] = bl_clamp_skill_set(
+      $base['skills'], $skills,
+      ['insight'=>4,'flow'=>5,'banker'=>5,'precision'=>4,'structure'=>4],
+      ['insight'=>6,'flow'=>1,'banker'=>1,'precision'=>1,'structure'=>12],
+      $merged['level'], $merged['skillPoints']
+    );
+    $tiers = ['starter','field','forge','circuit','citadel','masterwork'];
+    $unlock = ['starter'=>1,'field'=>4,'forge'=>9,'circuit'=>16,'citadel'=>26,'masterwork'=>40];
+    $merged['selectedTier'] = bl_game_allowed_tier(trim((string)($merged['selectedTier'] ?? 'starter')), $tiers, $unlock, $merged['level']);
+    $merged['activeRound'] = is_array($merged['activeRound'] ?? null) ? $merged['activeRound'] : null;
     return $merged;
   }
 
