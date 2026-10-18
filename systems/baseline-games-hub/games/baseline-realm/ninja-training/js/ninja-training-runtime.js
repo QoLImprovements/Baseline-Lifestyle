@@ -189,6 +189,35 @@ export function createNinjaTrainingRuntime(dependencies) {
     }catch(_error){ return null; }
   }
 
+  function readCrossnumberProfile(){
+    try{
+      if(globalThis.BaselineCrossnumber && typeof globalThis.BaselineCrossnumber.getProfile === 'function'){
+        return globalThis.BaselineCrossnumber.getProfile();
+      }
+      return globalThis.BaselineGameStorage?.getProfile?.('crossnumber') || null;
+    }catch(_error){ return null; }
+  }
+
+  function crossnumberRealmContribution(){
+    try{
+      if(globalThis.BaselineCrossnumber && typeof globalThis.BaselineCrossnumber.getRealmContribution === 'function'){
+        return globalThis.BaselineCrossnumber.getRealmContribution();
+      }
+    }catch(_error){}
+    const profile=readCrossnumberProfile() || {};
+    const level=Math.max(1,Math.round(Number(profile.level||1)));
+    const skills=profile.skills&&typeof profile.skills==='object'?profile.skills:{};
+    const structure=Math.max(0,Math.round(Number(skills.structure||0)));
+    const boss=Math.min(.08,Math.min(.045,Math.max(0,level-1)*.0015)+(level>=10?.02:0)+(structure*.004));
+    const clues=Math.min(.08,Math.min(.04,Math.max(0,level-1)*.0012)+(level>=5?.02:0)+(structure*.004));
+    const costReduction=Math.min(.06,Math.min(.03,Math.max(0,level-1)*.0008)+(level>=20?.02:0)+(structure*.0025));
+    const traits=[];
+    if(level>=5) traits.push('Crossnumber: Constraint Reading');
+    if(level>=10) traits.push('Crossnumber: Linked Planning');
+    if(level>=20) traits.push('Crossnumber: Resource Arithmetic');
+    return {level:level,bossDamageMult:1+boss,clueDropChance:clues,upgradeCostMult:1-costReduction,unlockedTraits:traits};
+  }
+
   function badmintonRealmContribution(){
     try{
       if(globalThis.BadmintonFocusedGames && typeof globalThis.BadmintonFocusedGames.getRealmContribution === 'function'){
@@ -260,7 +289,8 @@ export function createNinjaTrainingRuntime(dependencies) {
     const r = profiles.ruleshift;
     const darts = dartsRealmContribution();
     const badminton = badmintonRealmContribution();
-    const totalLevels = p.level + m.level + w.level + t.level + r.level + Math.max(1, Number(darts.level || 1)) + Math.max(1, Number(badminton.level || 1));
+    const crossnumber = crossnumberRealmContribution();
+    const totalLevels = p.level + m.level + w.level + t.level + r.level + Math.max(1, Number(darts.level || 1)) + Math.max(1, Number(badminton.level || 1)) + Math.max(1, Number(crossnumber.level || 1));
     const bonus = {
       attackMult:1,
       critChance:0.02,
@@ -275,6 +305,7 @@ export function createNinjaTrainingRuntime(dependencies) {
       shurikenDamageMult:1,
       dartsLevel:Math.max(1, Number(darts.level || 1)),
       badmintonLevel:Math.max(1, Number(badminton.level || 1)),
+      crossnumberLevel:Math.max(1, Number(crossnumber.level || 1)),
       unlockedTraits:[]
     };
 
@@ -318,6 +349,11 @@ export function createNinjaTrainingRuntime(dependencies) {
     if((r.skills.focus || 0) >= 2){ bonus.passiveEfficiencyMult += 0.03; }
     if((r.skills.adapt || 0) >= 2){ bonus.attackMult += 0.03; }
     if(r.bestStreak >= 15){ bonus.critChance += 0.03; }
+
+    bonus.bossDamageMult *= Number(crossnumber.bossDamageMult || 1);
+    bonus.clueDropChance += Number(crossnumber.clueDropChance || 0);
+    bonus.upgradeCostMult *= Number(crossnumber.upgradeCostMult || 1);
+    (crossnumber.unlockedTraits || []).forEach(function(trait){ bonus.unlockedTraits.push(trait); });
 
     bonus.attackMult *= Number(darts.attackMult || 1);
     bonus.critChance += Number(darts.critChance || 0);
@@ -928,6 +964,16 @@ function showNinjaOfflineToast(message){
   if(typeof document !== 'undefined' && !document.documentElement.hasAttribute('data-realm-darts-link-bound')){
     document.documentElement.setAttribute('data-realm-darts-link-bound','true');
     document.addEventListener('baseline:darts-progress', function(){
+      if(!profiles.ninja) return;
+      resolveNinjaBonuses();
+      renderNinja();
+      scheduleSave('ninja');
+    });
+  }
+
+  if(typeof document !== 'undefined' && !document.documentElement.hasAttribute('data-realm-crossnumber-link-bound')){
+    document.documentElement.setAttribute('data-realm-crossnumber-link-bound','true');
+    document.addEventListener('baseline:crossnumber-progress', function(){
       if(!profiles.ninja) return;
       resolveNinjaBonuses();
       renderNinja();
