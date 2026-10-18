@@ -66,20 +66,50 @@
     function refs(){ return getRefs() || {}; }
 
 
-  function activateGamePlanSubtab(target){
-    const normalized = String(target || 'plan');
+  const GAMEPLAN_SUBVIEWS = ['plan','attendance','finished'];
+
+  function gamePlanSubtabFromLocation(){
+    if(!/^\/baseline-badminton-session\/game-plan\/?$/i.test(String(location.pathname || ''))) return 'plan';
+    try{
+      const requested = new URLSearchParams(location.search || '').get('gameplan-view') || '';
+      return GAMEPLAN_SUBVIEWS.includes(requested) ? requested : 'plan';
+    }catch(_e){ return 'plan'; }
+  }
+
+  function gamePlanSubviewUrl(view){
+    const next = GAMEPLAN_SUBVIEWS.includes(view) ? view : 'plan';
+    const url = new URL(location.href);
+    url.pathname = '/baseline-badminton-session/game-plan';
+    if(next === 'plan') url.searchParams.delete('gameplan-view');
+    else url.searchParams.set('gameplan-view', next);
+    url.hash = '';
+    return url.pathname + url.search;
+  }
+
+  function activateGamePlanSubtab(target, historyMode){
+    const normalized = GAMEPLAN_SUBVIEWS.includes(String(target || '')) ? String(target) : 'plan';
     document.querySelectorAll('.gameplan-subtab').forEach(function(tab){
       tab.setAttribute('aria-selected', String(tab.getAttribute('data-gameplan-tab') === normalized));
     });
     document.querySelectorAll('[data-gameplan-panel]').forEach(function(panel){
       panel.classList.toggle('active', panel.getAttribute('data-gameplan-panel') === normalized);
     });
+    if(historyMode && /^\/baseline-badminton-session\/game-plan\/?$/i.test(String(location.pathname || ''))){
+      try{
+        const nextUrl = gamePlanSubviewUrl(normalized);
+        const currentUrl = location.pathname + location.search;
+        if(nextUrl !== currentUrl){
+          if(historyMode === 'push') history.pushState({ baselineBadmintonGamePlanView:normalized }, '', nextUrl);
+          else history.replaceState({ baselineBadmintonGamePlanView:normalized }, '', nextUrl);
+        }
+      }catch(_e){}
+    }
   }
 
   function wireGamePlanSubtabs(){
     document.querySelectorAll('.gameplan-subtab').forEach(function(button){
       button.addEventListener('click', function(){
-        activateGamePlanSubtab(button.getAttribute('data-gameplan-tab'));
+        activateGamePlanSubtab(button.getAttribute('data-gameplan-tab'), 'push');
       });
     });
     document.querySelectorAll('.tab[data-target="gameplan"]').forEach(function(button){
@@ -87,6 +117,14 @@
         activateGamePlanSubtab('plan');
       });
     });
+    if(!window.__BASELINE_BADMINTON_GAMEPLAN_HISTORY_BOUND__){
+      window.__BASELINE_BADMINTON_GAMEPLAN_HISTORY_BOUND__ = true;
+      window.addEventListener('popstate', function(){
+        if(/^\/baseline-badminton-session\/game-plan\/?$/i.test(String(location.pathname || ''))){
+          activateGamePlanSubtab(gamePlanSubtabFromLocation());
+        }
+      });
+    }
   }
 
     function bindPlanActions(){
@@ -256,6 +294,10 @@
 
 
   function syncGamePlanSubtabVisibility(){
+    if(/^\/baseline-badminton-session\/game-plan\/?$/i.test(String(location.pathname || ''))){
+      activateGamePlanSubtab(gamePlanSubtabFromLocation());
+      return;
+    }
     const active = document.querySelector('.gameplan-subtab[aria-selected="true"]');
     activateGamePlanSubtab(active ? active.getAttribute('data-gameplan-tab') : 'plan');
   }
