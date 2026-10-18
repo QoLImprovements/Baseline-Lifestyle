@@ -88,7 +88,7 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
       if (runtime.getView() === 'exploration') runtime.handleExploration('resolve');
       else if (runtime.getView() === 'training') runtime.strike();
     })),
-    eventBus.on('realm:input:realm-basecamp', standardOnly(() => navigate(sceneRouter.getCurrentSceneId() === 'basecamp' ? 'ninja-training' : 'basecamp'))),
+    eventBus.on('realm:input:realm-basecamp', standardOnly(() => navigate('basecamp'))),
     eventBus.on('realm:input:realm-training', standardOnly(() => navigate('training'))),
     eventBus.on('realm:input:realm-exploration', standardOnly(() => {
       if (jrpgActive() || runtime.getView() === 'workshop') return;

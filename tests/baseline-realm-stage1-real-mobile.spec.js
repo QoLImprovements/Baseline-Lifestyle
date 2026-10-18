@@ -135,6 +135,8 @@ test('real phone rotation produces one full-viewport landscape stage and returns
       coins: rect('.realm-shared-status'),
       utility: rect('.realm-command-banner .realm-utility'),
       management: rect('.realm-context-action'),
+      basecampReturnHidden: document.getElementById('realmBasecampBtn')?.hidden === true,
+      utilityButtonCount: document.querySelectorAll('.realm-command-banner .realm-utility .realm-fab').length,
       drawerHidden: document.getElementById('realmPanelDrawer')?.hidden === true,
       hotkeyDisplay: hotkey ? getComputedStyle(hotkey).display : null,
       basecampBackgroundSize: getComputedStyle(document.getElementById('realmBasecampScreen')).backgroundSize
@@ -149,9 +151,12 @@ test('real phone rotation produces one full-viewport landscape stage and returns
   expect(Math.abs(mobileLayout.basecamp.width - 844)).toBeLessThan(2);
   expect(Math.abs(mobileLayout.basecamp.y - 76)).toBeLessThan(2);
   expect(mobileLayout.status.right).toBeLessThanOrEqual(mobileLayout.coins.x + 1);
+  expect(Math.abs((mobileLayout.coins.x + mobileLayout.coins.width / 2) - (mobileLayout.banner.x + mobileLayout.banner.width / 2))).toBeLessThan(1.5);
   expect(mobileLayout.coins.right).toBeLessThanOrEqual(mobileLayout.utility.x + 1);
   expect(mobileLayout.utility.right).toBeLessThanOrEqual(844.5);
   expect(mobileLayout.management.right).toBeLessThanOrEqual(844.5);
+  expect(mobileLayout.basecampReturnHidden).toBeTruthy();
+  expect(mobileLayout.utilityButtonCount).toBe(3);
   expect(mobileLayout.drawerHidden).toBeTruthy();
   expect(mobileLayout.hotkeyDisplay).toBe('none');
   expect(mobileLayout.basecampBackgroundSize).toContain('100% 100%');
