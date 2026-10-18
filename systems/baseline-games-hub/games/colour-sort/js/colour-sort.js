@@ -21,7 +21,7 @@ import {
   xpNeededForLevel
 } from '../../../js/puzzle-game-support.mjs?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1';
 
-const BUILD = 'COLOUR_SORT_CORE_COHERENCE_20261017_4';
+const BUILD = 'COLOUR_SORT_AUTO_NEXT_COHERENCE_20261018_1';
 const APP = 'coloursort';
 const DEFAULT_PROFILE = Object.freeze({
   app:APP,
@@ -108,12 +108,22 @@ function puzzle() {
   return profile?.activePuzzle || null;
 }
 
+function autoNextApi() {
+  const api = globalThis.BaselineGamesAutoNext;
+  return api && typeof api.enabled === 'function' ? api : null;
+}
+
+function syncAutoNextControl() {
+  try { autoNextApi()?.sync?.(); } catch (_) {}
+}
+
 function persist() {
   saveStoredProfile(APP, profile);
   shell.refreshOverview();
 }
 
 function startLevel(levelId, { persistChange = true } = {}) {
+  try { autoNextApi()?.clear?.(APP); } catch (_) {}
   const level = Math.min(profile.highestUnlocked, clampLevel(levelId));
   profile.selectedLevel = level;
   profile.activePuzzle = { level, bottles:initialBottles(level), moves:0, settled:false };
@@ -209,7 +219,8 @@ function renderGame() {
   if (!root) return;
   const active = puzzle();
   if (!active) {
-    root.innerHTML = `<div class="colour-sort-empty"><p>Level ${profile.selectedLevel} selected. Press Start New Game when ready.</p><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button></div>`;
+    root.innerHTML = `<div class="colour-sort-empty"><p>Level ${profile.selectedLevel} selected. Press Start New Game when ready.</p><div class="game-window-actions"><button class="action primary start-new-game-toggle" data-colour-action="start" type="button">Start New Game</button><button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button></div></div>`;
+    syncAutoNextControl();
     return;
   }
   const solved = isSolved(active.bottles);
@@ -236,9 +247,11 @@ function renderGame() {
       <button class="action ghost" data-colour-action="undo" type="button" ${!undoStack.length || solved || isAnimating ? 'disabled' : ''}>Undo</button>
       <button class="action ghost" data-colour-action="hint" type="button" ${solved || isAnimating ? 'disabled' : ''}>Hint</button>
       <button class="action ghost" data-colour-action="restart" type="button" ${isAnimating ? 'disabled' : ''}>Restart</button>
+      <button class="action ghost auto-next-toggle" data-auto-next-toggle="${APP}" type="button" aria-pressed="false">Auto-Next Game: Off</button>
       ${solved && active.level < LEVELS.length ? `<button class="action primary" data-colour-action="next" type="button">Next Level</button>` : ''}
     </div>`;
   levelEntranceMotion = false;
+  syncAutoNextControl();
 }
 
 function levelButton(level) {
@@ -725,6 +738,8 @@ function settleSolvedPuzzle() {
   const colourCount = levelColours(levelById(active.level)).length;
   awardXp(profile, firstCompletion ? 34 + colourCount * 8 + Math.max(0, 30 - active.moves) : 10 + colourCount);
   undoStack = [];
+  const nextLevel = active.level < LEVELS.length ? Math.min(profile.highestUnlocked, active.level + 1) : active.level;
+  try { autoNextApi()?.schedule?.(APP, () => startLevel(nextLevel)); } catch (_) {}
 }
 
 function selectBottle(index) {
