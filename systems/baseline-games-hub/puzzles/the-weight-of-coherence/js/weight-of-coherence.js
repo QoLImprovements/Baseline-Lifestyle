@@ -47,6 +47,7 @@
     timer:document.getElementById('weightCoherenceTimer'),
     difficultyLabel:document.getElementById('weightCoherenceDifficultyLabel'),
     preview:document.getElementById('weightCoherencePreviewBtn'),
+    view:document.getElementById('weightCoherenceViewBtn'),
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
     fullscreen:document.getElementById('weightCoherenceFullscreenBtn'),
     reset:document.getElementById('weightCoherenceResetBtn'),
@@ -81,6 +82,7 @@
   let trayRenderToken = 0;
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
+  let viewHeld = false;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
   const pinchPointers = new Map();
@@ -291,6 +293,14 @@
 
   function drawBoard(){
     ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
+
+    if(imageReady && viewHeld){
+      ctx.fillStyle='#FFFFFF';
+      ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
+      ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
+      return;
+    }
+
     const guideOn=!!(state && state.preview);
     ctx.fillStyle=guideOn?'#FFFFFF':BOARD_BASE;
     ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
@@ -879,6 +889,31 @@
     saveState();
   }
 
+  function syncViewButton(){
+    if(!refs.view) return;
+    refs.view.setAttribute('aria-pressed',String(viewHeld));
+    refs.view.title=viewHeld?'Release to return to puzzle · V':'Hold to view full artwork · V';
+  }
+
+  function beginFullView(){
+    if(!state || !imageReady || viewHeld) return;
+    const hadDrag=!!dragState;
+    cancelDrag();
+    selectedPieceId=null;
+    syncSelectedPieceClasses();
+    if(hadDrag) suppressTrayClickUntil=Date.now()+350;
+    viewHeld=true;
+    syncViewButton();
+    drawBoard();
+  }
+
+  function endFullView(){
+    if(!viewHeld) return;
+    viewHeld=false;
+    syncViewButton();
+    drawBoard();
+  }
+
   function shuffleTray(){
     if(!state || state.completed) return;
     const remaining=unplacedIds();
@@ -1109,6 +1144,17 @@
   }
 
   refs.preview.addEventListener('click',toggleGuide);
+  if(refs.view){
+    refs.view.addEventListener('pointerdown',function(event){
+      event.preventDefault();
+      try{ refs.view.setPointerCapture(event.pointerId); }catch(_error){}
+      beginFullView();
+    });
+    refs.view.addEventListener('pointerup',endFullView);
+    refs.view.addEventListener('pointercancel',endFullView);
+    refs.view.addEventListener('lostpointercapture',endFullView);
+    refs.view.addEventListener('click',function(event){ event.preventDefault(); });
+  }
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
   if(refs.setupSettings) refs.setupSettings.addEventListener('click',openSettings);
@@ -1186,6 +1232,11 @@
       toggleGuide();
       return;
     }
+    if(key==='v'){
+      event.preventDefault();
+      beginFullView();
+      return;
+    }
     if(key==='s'){
       event.preventDefault();
       shuffleTray();
@@ -1205,6 +1256,17 @@
       event.preventDefault();
       nextTray();
     }
+  });
+  document.addEventListener('keyup',function(event){
+    if(!event) return;
+    const key=String(event.key||'').toLowerCase();
+    if(key!=='v' || !viewHeld) return;
+    event.preventDefault();
+    endFullView();
+  });
+  window.addEventListener('blur',endFullView);
+  document.addEventListener('visibilitychange',function(){
+    if(document.hidden) endFullView();
   });
   document.addEventListener('fullscreenchange',function(){
     syncMobileFullscreenOrientation();
