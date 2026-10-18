@@ -123,6 +123,7 @@ function placeSaveIcons(){
   document.getElementById('gamesServerLoginNotice')?.remove();
   document.querySelectorAll('.game-panel .link-actions').forEach(actions=>placeSaveIcon(actions,state));
   placeSaveIcon(document.querySelector('#jigsawPlayerCard > .puzzle-library-toolbar'),state,{position:'beforeend'});
+  placeSaveIcon(document.querySelector('#crossnumberPanel > .puzzle-library-toolbar'),state,{position:'beforeend'});
   placeSaveIcon(document.querySelector('#realmTrainingBar .realm-route-meta'),state,{realm:true,position:'beforeend'});
   refreshActiveSaveTooltip();
 }
