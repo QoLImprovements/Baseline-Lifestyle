@@ -1507,6 +1507,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const opts = options || {};
     const previousGame = selectedGame;
     selectedGame = normaliseGameId(gameId);
+    if(window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame(selectedGame);
     if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
       resetGameRoundToIdle(selectedGame);
     }
