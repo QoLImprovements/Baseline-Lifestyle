@@ -161,12 +161,12 @@ test('every current game and jigsaw save app is covered by the server authority 
   ];
   expected.forEach(app=>{
     assert.ok(gamesApi.includes("'"+app+"'"),app+' must be accepted by games_data.php');
-    assert.match(savedData,new RegExp("'"+app+"'\\\\s*=>"),app+' must have a server-side saved-data file');
+    assert.match(savedData,new RegExp("'"+app+"'\\s*=>"),app+' must have a server-side saved-data file');
   });
   assert.match(registry,/profileApp:'dartsfocused'/);
   assert.match(registry,/profileApp:'badmintonfocused'/);
   assert.match(registry,/persistentApps:storageApps/);
-  assert.match(guard,/BASELINE_GAMES_HUB_GAME_REGISTRY\\?\\.persistentApps\\?\\.\\(\\)/);
+  assert.match(guard,/BASELINE_GAMES_HUB_GAME_REGISTRY\?\.persistentApps\?\.\(\)/);
   for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
     assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
   }
@@ -174,15 +174,15 @@ test('every current game and jigsaw save app is covered by the server authority 
 
 test('jigsaws use the shared server storage authority and expose save state in the puzzle player',()=>{
   assert.match(jigsaw,/BaselineGameStorage/);
-  assert.match(jigsaw,/setTemporaryProfile\\?\\.\\(APP,payload\\)/);
-  assert.match(jigsaw,/saveProfile\\?\\.\\(APP,payload/);
-  assert.match(storageUi,/#jigsawPlayerCard > \\.puzzle-library-toolbar/);
+  assert.match(jigsaw,/setTemporaryProfile\?\.\(APP,payload\)/);
+  assert.match(jigsaw,/saveProfile\?\.\(APP,payload/);
+  assert.match(storageUi,/#jigsawPlayerCard > \.puzzle-library-toolbar/);
   assert.match(storageUi,/Progress is saved server-side to your Baseline Lifestyle account/);
 });
 
 test('per-app server writes are serialised and immediate saves replace stale queued writes',()=>{
-  assert.match(guard,/const writeChains=Object\\.create\\(null\\)/);
-  assert.match(guard,/const previous=writeChains\\[key\\]\\|\\|Promise\\.resolve\\(true\\)/);
-  assert.match(guard,/previous\\.catch\\(\\(\\)=>false\\)\\.then\\(\\(\\)=>postProfileNow\\(key,snapshot,keepalive\\)\\)/);
-  assert.match(guard,/global\\.clearTimeout\\(timers\\[key\\]\\);\\s*delete pending\\[key\\];\\s*return postProfile\\(key,profile,keepalive\\)/);
+  assert.match(guard,/const writeChains=Object\.create\(null\)/);
+  assert.match(guard,/const previous=writeChains\[key\]\|\|Promise\.resolve\(true\)/);
+  assert.match(guard,/previous\.catch\(\(\)=>false\)\.then\(\(\)=>postProfileNow\(key,snapshot,keepalive\)\)/);
+  assert.match(guard,/global\.clearTimeout\(timers\[key\]\);\s*delete pending\[key\];\s*return postProfile\(key,profile,keepalive\)/);
 });
