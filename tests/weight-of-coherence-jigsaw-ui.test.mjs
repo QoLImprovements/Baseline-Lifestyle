@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_SINGLE_ORIENTATION_AUTHORITY_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SINGLE_ORIENTATION_AUTHORITY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FULL_WIDTH_WORKSPACE_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 test('jigsaw mobile startup uses bounded, deferred tray rendering', () => {
@@ -68,14 +68,29 @@ test('sorting trays follow one artwork-orientation authority and persist parked 
   assert.match(js, /const artworkOrientation=BOARD_WIDTH>BOARD_HEIGHT\?'landscape':'portrait'/);
   assert.match(js, /refs\.workspace\.classList\.toggle\('is-artwork-landscape'/);
   assert.match(js, /refs\.workspace\.classList\.toggle\('is-artwork-portrait'/);
-  assert.match(css, /weight-coherence-workspace\.is-artwork-portrait \.weight-coherence-stage\{grid-template-columns:minmax\(126px,176px\) minmax\(0,800px\) minmax\(126px,176px\);grid-template-areas:"left board right"/);
-  assert.match(css, /weight-coherence-workspace\.is-artwork-landscape \.weight-coherence-stage\{grid-template-columns:minmax\(0,800px\);grid-template-areas:"upper" "board" "lower"/);
+  assert.match(css, /weight-coherence-workspace\.is-artwork-portrait \.weight-coherence-stage\{grid-template-columns:minmax\(0,1fr\) minmax\(0,3\.6fr\) minmax\(0,1fr\);grid-template-areas:"left board right"/);
+  assert.match(css, /weight-coherence-workspace\.is-artwork-landscape \.weight-coherence-stage\{grid-template-columns:minmax\(0,1fr\);grid-template-areas:"upper" "board" "lower"/);
   assert.match(js, /sortBins:\[\[\],\[\],\[\],\[\]\]/);
   assert.match(js, /sortBins:state\.sortBins\.map/);
   assert.match(js, /normalizeSortBins\(parsed\.sortBins,count,placed\)/);
   assert.match(js, /movePieceToSortBin\(drag\.id,Number\(sortTarget\.dataset\.jigsawSortTray\)\)/);
   assert.match(js, /movePieceToMainTray\(drag\.id\)/);
   assert.match(js, /removePieceFromSortBins\(id\);[\s\S]*?state\.placed\.add\(id\)/);
+});
+
+
+test('desktop jigsaw workspace uses proportional full width and fills its tray panels', () => {
+  assert.match(css, /\.weight-coherence-workspace\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
+  assert.match(css, /\.weight-coherence-stage\{[^}]*justify-content:stretch[^}]*width:100%[^}]*min-width:0[^}]*max-width:100%/);
+  assert.match(css, /is-artwork-portrait \.weight-coherence-stage\{grid-template-columns:minmax\(0,1fr\) minmax\(0,3\.6fr\) minmax\(0,1fr\)/);
+  assert.match(css, /is-artwork-landscape \.weight-coherence-stage\{grid-template-columns:minmax\(0,1fr\)/);
+  assert.match(css, /is-artwork-landscape \.weight-coherence-sort-column\{[^}]*width:100%/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*width:100%[^}]*max-width:none/);
+  assert.doesNotMatch(css, /minmax\(126px,176px\)|minmax\(118px,160px\)|minmax\(0,800px\)|width:min\(100%,800px\)|max-width:800px/);
+  assert.match(css, /\.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)[^}]*align-self:stretch[^}]*width:100%/);
+  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:minmax\(68px,1fr\)[^}]*align-content:stretch[^}]*align-self:stretch[^}]*width:100%[^}]*max-height:none/);
+  assert.match(css, /\.weight-coherence-tray-shell\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
+  assert.match(css, /\.weight-coherence-tray\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
 });
 
 
@@ -107,7 +122,8 @@ test('fullscreen jigsaw fits completely without its own board scrollbar', () => 
   assert.match(js, /availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)/);
   assert.match(js, /availableHeight=Math\.max\(0,shellRect\.height-statusHeight-gap-6\)/);
   assert.match(js, /availableWidth=Math\.max\(0,shellRect\.width-6\)/);
-  assert.match(js, /Math\.min\(800,availableWidth,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
+  assert.match(js, /Math\.min\(availableWidth,availableHeight\*\(BOARD_WIDTH\/BOARD_HEIGHT\)\)/);
+  assert.doesNotMatch(js, /Math\.min\(800,availableWidth/);
   assert.match(js, /fullscreenLayoutTimer=window\.setTimeout\(settleFullscreenLayout,180\)/);
 });
 

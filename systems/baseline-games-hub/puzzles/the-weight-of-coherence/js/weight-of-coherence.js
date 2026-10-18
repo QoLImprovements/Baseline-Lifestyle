@@ -933,7 +933,7 @@
     const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
     const availableHeight=Math.max(0,shellRect.height-statusHeight-gap-6);
     const availableWidth=Math.max(0,shellRect.width-6);
-    const width=Math.floor(Math.min(800,availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
+    const width=Math.floor(Math.min(availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
     if(width>0) refs.workspace.style.setProperty('--weight-coherence-fullscreen-board-width',width+'px');
   }
 
