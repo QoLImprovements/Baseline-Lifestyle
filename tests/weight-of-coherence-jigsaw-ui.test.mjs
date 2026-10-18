@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_VIEW_SORT_TRAYS_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SCROLL_PIECE_ZOOM_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_WRONG_DROP_STAY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_WRONG_DROP_STAY_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -39,6 +39,17 @@ test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll
   assert.match(js, /setStatus\('That piece belongs elsewhere\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
   assert.doesNotMatch(js, /refs\.board\.scrollIntoView/);
   assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
+});
+
+test('rejected drag drops stay at the board and highlight the returned tray piece', () => {
+  assert.match(js, /let returnHighlightPieceId = null/);
+  assert.match(js, /if\(!dragState\.moved && Math\.hypot\(dx,dy\)>5\)\{[\s\S]*?dragState\.moved=true;[\s\S]*?interactionScrollSnapshot=null;/);
+  assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
+  assert.match(js, /returnHighlightPieceId=id;[\s\S]*?selectedPieceId=null;[\s\S]*?syncSelectedPieceClasses\(\);[\s\S]*?Its tray piece is highlighted/);
+  assert.match(js, /root\.classList\.add\('is-wrong-drop'\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
+  assert.match(js, /button\.classList\.toggle\('is-return-highlight',id===returnHighlightPieceId\)/);
+  assert.match(js, /if\(returnHighlightPieceId===id\)\{[\s\S]*?returnHighlightPieceId=null;[\s\S]*?syncSelectedPieceClasses\(\)/);
+  assert.match(css, /\.weight-coherence-piece\.is-return-highlight \.weight-coherence-piece-canvas\{[^}]*drop-shadow\(0 0 8px rgba\(126,145,255,\.98\)\)/);
 });
 
 test('V toggles a persistent full-colour view and pauses piece interaction without disabling zoom', () => {
