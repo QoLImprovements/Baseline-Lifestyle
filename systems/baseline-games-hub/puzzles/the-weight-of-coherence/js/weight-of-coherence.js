@@ -100,6 +100,8 @@
   let lastZoomPoint = null;
   let boardLens = null;
   let boardLensActive = false;
+  let pieceLens = null;
+  let pieceLensPoint = null;
   let zoomKeyHeld = false;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
@@ -1093,6 +1095,10 @@
     if(boardLensActive && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)){
       updateBoardLens(event.clientX,event.clientY);
     }
+    if(zoomTarget && zoomScale>ZOOM_MIN && target===zoomTarget && Number.isFinite(event?.clientX) && Number.isFinite(event?.clientY)){
+      pieceLensPoint={x:event.clientX,y:event.clientY};
+      updatePieceLens(zoomTarget,event.clientX,event.clientY);
+    }
   }
 
   function resolveZoomTarget(){
@@ -1105,7 +1111,6 @@
   function clearZoomTargetStyles(target){
     if(!target) return;
     target.classList?.remove('is-zoom-target');
-    target.style?.removeProperty('--weight-coherence-piece-zoom');
   }
 
   function ensureBoardLens(){
@@ -1116,6 +1121,80 @@
     boardLens.hidden=true;
     refs.workspace.appendChild(boardLens);
     return boardLens;
+  }
+
+  function ensurePieceLens(){
+    if(pieceLens && pieceLens.isConnected) return pieceLens;
+    pieceLens=document.createElement('canvas');
+    pieceLens.className='weight-coherence-piece-lens';
+    pieceLens.setAttribute('aria-hidden','true');
+    pieceLens.hidden=true;
+    refs.workspace.appendChild(pieceLens);
+    return pieceLens;
+  }
+
+  function pointInsidePieceCanvas(target,clientX,clientY){
+    const source=target?.querySelector?.('.weight-coherence-piece-canvas');
+    if(!source || !Number.isFinite(clientX) || !Number.isFinite(clientY)) return false;
+    const rect=source.getBoundingClientRect();
+    return clientX>=rect.left && clientX<=rect.right && clientY>=rect.top && clientY<=rect.bottom;
+  }
+
+  function currentPieceLensPoint(target){
+    if(pieceLensPoint && pointInsidePieceCanvas(target,pieceLensPoint.x,pieceLensPoint.y)) return pieceLensPoint;
+    const source=target?.querySelector?.('.weight-coherence-piece-canvas');
+    if(!source) return null;
+    const rect=source.getBoundingClientRect();
+    return {x:rect.left+(rect.width/2),y:rect.top+(rect.height/2)};
+  }
+
+  function positionPieceLens(lens,sourceRect,diameter,clientX,clientY){
+    const viewport=viewportSize();
+    const gap=18;
+    let left;
+    if(viewport.width-sourceRect.right>=diameter+gap) left=sourceRect.right+gap;
+    else if(sourceRect.left>=diameter+gap) left=sourceRect.left-diameter-gap;
+    else left=Math.max(6,Math.min(viewport.width-diameter-6,clientX-(diameter/2)));
+    const top=Math.max(6,Math.min(viewport.height-diameter-6,clientY-(diameter/2)));
+    lens.style.left=left+'px';
+    lens.style.top=top+'px';
+  }
+
+  function updatePieceLens(target,clientX,clientY){
+    if(!target || target!==zoomTarget || zoomScale<=ZOOM_MIN) return;
+    const source=target.querySelector?.('.weight-coherence-piece-canvas');
+    if(!source) return;
+    const sourceRect=source.getBoundingClientRect();
+    if(sourceRect.width<=0 || sourceRect.height<=0) return;
+    const lens=ensurePieceLens();
+    const viewport=viewportSize();
+    const diameter=Math.max(170,Math.min(250,Math.min(viewport.width,viewport.height)*0.28));
+    const dpr=Math.max(1,Math.min(2,Number(window.devicePixelRatio)||1));
+    const pixelSize=Math.max(1,Math.round(diameter*dpr));
+    if(lens.width!==pixelSize) lens.width=pixelSize;
+    if(lens.height!==pixelSize) lens.height=pixelSize;
+    lens.style.width=diameter+'px';
+    lens.style.height=diameter+'px';
+    positionPieceLens(lens,sourceRect,diameter,clientX,clientY);
+
+    const focusX=Math.max(sourceRect.left,Math.min(sourceRect.right,clientX));
+    const focusY=Math.max(sourceRect.top,Math.min(sourceRect.bottom,clientY));
+    const relX=(focusX-sourceRect.left)/Math.max(1,sourceRect.width);
+    const relY=(focusY-sourceRect.top)/Math.max(1,sourceRect.height);
+    const drawWidth=sourceRect.width*zoomScale;
+    const drawHeight=sourceRect.height*zoomScale;
+    const drawX=(diameter/2)-(relX*drawWidth);
+    const drawY=(diameter/2)-(relY*drawHeight);
+
+    const lensCtx=lens.getContext('2d');
+    lensCtx.setTransform(dpr,0,0,dpr,0,0);
+    lensCtx.clearRect(0,0,diameter,diameter);
+    lensCtx.fillStyle='#080D22';
+    lensCtx.fillRect(0,0,diameter,diameter);
+    lensCtx.imageSmoothingEnabled=true;
+    lensCtx.imageSmoothingQuality='high';
+    lensCtx.drawImage(source,0,0,source.width,source.height,drawX,drawY,drawWidth,drawHeight);
+    lens.hidden=false;
   }
 
   function boardLensPoint(){
@@ -1198,9 +1277,12 @@
     zoomScale=nextScale;
     zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    zoomTarget.style.setProperty('--weight-coherence-piece-zoom',zoomScale.toFixed(2));
-    root.classList.add('is-zoom-active','is-zooming-piece');
-    if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
+    root.classList.add('is-zoom-active');
+    const point=currentPieceLensPoint(target);
+    if(point){
+      pieceLensPoint=point;
+      updatePieceLens(target,point.x,point.y);
+    }
     syncZoomControls();
   }
 
@@ -1208,6 +1290,8 @@
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
     zoomScale=ZOOM_MIN;
+    pieceLensPoint=null;
+    if(pieceLens) pieceLens.hidden=true;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
     syncZoomControls();
@@ -1228,8 +1312,12 @@
       setStatus('Piece zoom reset to 100%.','');
       return true;
     }
+    const point=lastZoomTarget===piece && lastZoomPoint && pointInsidePieceCanvas(piece,lastZoomPoint.x,lastZoomPoint.y)
+      ? lastZoomPoint
+      : currentPieceLensPoint(piece);
+    pieceLensPoint=point;
     applyPieceZoom(piece,zoomLevel);
-    setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%. Use − and + to adjust up to 1000%; press Z again to reset.','');
+    setStatus('Piece magnifier ' + Math.round(zoomLevel*100) + '%. The tray piece stays fixed; move over it to inspect details, use − and + to adjust, or press Z again to close.','');
     return true;
   }
 
@@ -1272,7 +1360,7 @@
       setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held to inspect.','');
     }else if(zoomTarget && zoomTarget.isConnected){
       applyPieceZoom(zoomTarget,zoomLevel);
-      setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%.','');
+      setStatus('Piece magnifier ' + Math.round(zoomLevel*100) + '%. The source piece remains fixed in its tray.','');
     }else{
       setStatus('Zoom level set to ' + Math.round(zoomLevel*100) + '%. Hover a piece and press Z, or hold Z over the jigsaw.','');
     }
