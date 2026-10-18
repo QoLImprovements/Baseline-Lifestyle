@@ -260,14 +260,11 @@ function renderGame() {
   root.innerHTML = `
     <div class="block-grid-active-header">
       <div class="stat-pills">
-        <div class="stat-pill">Mode <span>${escapeHtml(currentMode().name)}</span></div>
         <div class="stat-pill">Score <span>${active.score}</span></div>
         <div class="stat-pill">Lines <span>${active.lines}</span></div>
-        <div class="stat-pill">Run Level <span>${progress.level}</span></div>
         <div class="stat-pill">Combo <span>${active.combo ? `×${active.combo}` : '—'}</span></div>
         <div class="stat-pill">Open Space <span>${openPercent}%</span></div>
       </div>
-      <button class="action secondary" data-block-action="fullscreen" type="button">${document.fullscreenElement === root ? 'Exit Full Screen' : 'Full Screen'}</button>
     </div>
     <div class="summary-box round-status-card" id="blockGridStatus" aria-live="polite">${statusHtml()}</div>
     <div class="block-grid-run-objective">
@@ -280,7 +277,7 @@ function renderGame() {
       ${boardFeedbackHtml()}
     </div>
     <div class="block-grid-tray-wrap">
-      <div class="block-grid-tray-heading"><strong>Available Pieces</strong><span>Drag a shape onto the board</span></div>
+      <div class="block-grid-tray-heading"><strong>Available Pieces · ${escapeHtml(currentMode().name)}</strong><span>Drag a shape, or tap it then tap a board cell</span></div>
       <div class="block-grid-tray${boardMotion.newTray ? ' is-new-tray' : ''}" aria-label="Available pieces">${trayHtml()}</div>
     </div>
     <div class="game-window-actions">
@@ -391,7 +388,9 @@ function boardAnchorFromPointer(clientX, clientY) {
   const piece = active && selectedPiece >= 0 ? shapeById(active.tray[selectedPiece]) : null;
   if (!active || !board || !piece) return null;
   const boardRect = board.getBoundingClientRect();
-  if (clientX < boardRect.left || clientX > boardRect.right || clientY < boardRect.top || clientY > boardRect.bottom) return null;
+  const coarse = Boolean(window.matchMedia?.('(pointer:coarse)').matches);
+  const tolerance = coarse ? 26 : 10;
+  if (clientX < boardRect.left - tolerance || clientX > boardRect.right + tolerance || clientY < boardRect.top - tolerance || clientY > boardRect.bottom + tolerance) return null;
 
   const cells = [...board.querySelectorAll('[data-block-cell]')];
   if (!cells.length) return null;
@@ -632,7 +631,12 @@ function panelHtml() {
     <div class="game-shell">
       <div class="game-header">
         <div><h2 id="blockGridTitle" tabindex="-1">Block Grid</h2><p class="note">Place the supplied shapes, clear complete rows or columns, and protect enough open space for the next tray.</p></div>
-        <div class="link-actions"><button class="action secondary" data-close-puzzle-game="block-grid" type="button">Back To Games Overview</button></div>
+        <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="block-grid">
+          <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Spatial planning, visual organisation, prospective reasoning and flexible space management." type="button" aria-label="What Block Grid develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
+          <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Choose one of the three supplied pieces and place it on the 8 × 8 board. Complete an entire row or column to clear it. The run ends when none of the available pieces can fit. Dragging and tap-then-place are both supported." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
+          <button class="action secondary game-shell-action" data-block-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
+          <button class="action secondary game-shell-action" data-close-puzzle-game="block-grid" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
+        </div>
       </div>
       <details class="game-info-details" data-game-info="blockgrid"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
         <div id="blockGridGameInfo"></div>
@@ -657,7 +661,7 @@ const shell = createPuzzleHubShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_3',
+  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
