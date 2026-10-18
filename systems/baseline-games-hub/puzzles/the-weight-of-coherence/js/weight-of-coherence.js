@@ -92,6 +92,7 @@
   let viewOn = false;
   let zoomScale = ZOOM_MIN;
   let zoomTarget = null;
+  let zoomOrigin = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
   let pseudoFullscreen = false;
@@ -1048,21 +1049,30 @@
 
   function applyZoom(target,scale){
     const nextScale=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Number(scale)||ZOOM_MIN));
-    if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
+    const resolvedTarget=target||resolveZoomTarget();
+    const targetChanged=zoomTarget!==resolvedTarget;
+    if(zoomTarget && targetChanged) clearZoomTargetStyles(zoomTarget);
     if(nextScale<=ZOOM_MIN){
       resetZoom();
       return;
     }
-    zoomTarget=target||resolveZoomTarget();
+    zoomTarget=resolvedTarget;
     if(!zoomTarget) return;
+    if(targetChanged) zoomOrigin=null;
     zoomScale=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    if(zoomTarget===refs.boardWrap && lastZoomTarget===refs.boardWrap && lastZoomPoint){
-      const rect=refs.boardWrap.getBoundingClientRect();
-      const x=Math.max(0,Math.min(100,((lastZoomPoint.x-rect.left)/Math.max(1,rect.width))*100));
-      const y=Math.max(0,Math.min(100,((lastZoomPoint.y-rect.top)/Math.max(1,rect.height))*100));
-      zoomTarget.style.transformOrigin=x.toFixed(2)+'% '+y.toFixed(2)+'%';
+    if(zoomTarget===refs.boardWrap){
+      if(!zoomOrigin){
+        const rect=refs.boardWrap.getBoundingClientRect();
+        const point=lastZoomTarget===refs.boardWrap && lastZoomPoint ? lastZoomPoint : {x:rect.left+(rect.width/2),y:rect.top+(rect.height/2)};
+        zoomOrigin={
+          x:Math.max(0,Math.min(100,((point.x-rect.left)/Math.max(1,rect.width))*100)),
+          y:Math.max(0,Math.min(100,((point.y-rect.top)/Math.max(1,rect.height))*100))
+        };
+      }
+      zoomTarget.style.transformOrigin=zoomOrigin.x.toFixed(2)+'% '+zoomOrigin.y.toFixed(2)+'%';
     }else{
+      zoomOrigin=null;
       zoomTarget.style.transformOrigin='50% 50%';
     }
     zoomTarget.style.willChange='transform';
@@ -1076,6 +1086,7 @@
   function resetZoom(){
     clearZoomTargetStyles(zoomTarget);
     zoomTarget=null;
+    zoomOrigin=null;
     zoomScale=ZOOM_MIN;
     root.classList.remove('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
