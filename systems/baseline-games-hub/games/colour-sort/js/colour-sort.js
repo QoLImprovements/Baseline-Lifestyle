@@ -847,7 +847,7 @@ const shell = createPuzzleHubShell({
   name:'Colour Sort',
   order:20,
   art:'/systems/baseline-games-hub/games/colour-sort/art/colour-sort-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_4',
+  styleUrl:'/systems/baseline-games-hub/games/colour-sort/css/colour-sort.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
   note:'Pour matching exposed colours between bottles until every filled bottle contains a single colour.',
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
