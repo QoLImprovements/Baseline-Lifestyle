@@ -1413,7 +1413,8 @@
 
   function puzzleHotkeysActive(){
     const section=root.closest('.section');
-    return !!state && !refs.workspace.hidden && (!section || section.classList.contains('active'));
+    const dialogOpen=!!(refs.settingsDialog?.open || refs.helpDialog?.open);
+    return !!state && !refs.workspace.hidden && !dialogOpen && (!section || section.classList.contains('active'));
   }
 
   function editableTarget(target){
