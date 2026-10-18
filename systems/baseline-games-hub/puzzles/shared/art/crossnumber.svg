@@ -1,26 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-labelledby="title desc">
-<title id="title">Crossnumber</title><desc id="desc">A polished numerical crossword grid.</desc>
-<defs>
-  <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#11183b"/><stop offset="1" stop-color="#34458f"/></linearGradient>
-  <linearGradient id="cell" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fffdf4"/><stop offset="1" stop-color="#e9edf9"/></linearGradient>
-</defs>
+<title id="title">Crossnumber</title><desc id="desc">Interlocking arithmetic equations with number tiles.</desc>
+<defs><linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#11183b"/><stop offset="1" stop-color="#354791"/></linearGradient><linearGradient id="n" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#fff7d2"/><stop offset="1" stop-color="#eadb9b"/></linearGradient></defs>
 <rect width="240" height="240" rx="34" fill="url(#bg)"/>
-<circle cx="190" cy="46" r="54" fill="#8298ff" opacity=".14"/>
-<g transform="translate(38 38)">
-  <rect width="164" height="164" rx="18" fill="#090e22" opacity=".92"/>
-  <g fill="url(#cell)" stroke="#1a2346" stroke-width="3">
-    <rect x="8" y="8" width="46" height="46"/><rect x="55" y="8" width="46" height="46"/>
-    <rect x="102" y="8" width="46" height="46"/><rect x="149" y="8" width="7" height="46" opacity="0"/>
-    <rect x="8" y="55" width="46" height="46"/><rect x="55" y="55" width="46" height="46"/><rect x="102" y="55" width="46" height="46"/>
-    <rect x="55" y="102" width="46" height="46"/><rect x="102" y="102" width="46" height="46"/>
-  </g>
-  <g fill="#1b2447">
-    <rect x="102" y="8" width="46" height="46" opacity=".12"/>
-    <rect x="8" y="102" width="46" height="46"/>
-  </g>
-  <g font-family="ui-monospace,monospace" font-weight="800" text-anchor="middle" fill="#1d2540" font-size="30">
-    <text x="31" y="42">2</text><text x="78" y="42">8</text><text x="125" y="89">9</text>
-    <text x="31" y="89">4</text><text x="78" y="89">5</text><text x="78" y="136">2</text><text x="125" y="136">6</text>
+<circle cx="190" cy="46" r="58" fill="#8aa0ff" opacity=".14"/>
+<g transform="translate(30 40)" stroke="#0d1535" stroke-width="3">
+  <g fill="url(#n)"><rect x="0" y="0" width="34" height="34" rx="6"/><rect x="72" y="0" width="34" height="34" rx="6"/><rect x="144" y="0" width="34" height="34" rx="6"/><rect x="72" y="72" width="34" height="34" rx="6"/><rect x="144" y="72" width="34" height="34" rx="6"/><rect x="144" y="144" width="34" height="34" rx="6"/></g>
+  <g fill="#263671"><rect x="36" y="0" width="34" height="34" rx="6"/><rect x="108" y="0" width="34" height="34" rx="6"/><rect x="72" y="36" width="34" height="34" rx="6"/><rect x="72" y="108" width="34" height="34" rx="6"/><rect x="108" y="72" width="34" height="34" rx="6"/><rect x="144" y="108" width="34" height="34" rx="6"/></g>
+  <g font-family="ui-monospace,monospace" font-weight="900" text-anchor="middle" dominant-baseline="middle">
+    <g fill="#1c2440" font-size="20"><text x="17" y="18">6</text><text x="89" y="18">4</text><text x="161" y="18">24</text><text x="89" y="90">18</text><text x="161" y="90">25</text><text x="161" y="162">20</text></g>
+    <g fill="#eef2ff" font-size="21"><text x="53" y="18">×</text><text x="125" y="18">=</text><text x="89" y="54">−</text><text x="89" y="126">=</text><text x="125" y="90">+</text><text x="161" y="126">−</text></g>
   </g>
 </g>
 </svg>
