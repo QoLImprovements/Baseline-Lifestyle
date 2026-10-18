@@ -659,7 +659,7 @@ const shell = createPuzzleHubShell({
   name:'Block Grid',
   order:10,
   art:'/systems/baseline-games-hub/games/block-grid/art/block-grid-overview.svg?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_1',
-  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_3',
+  styleUrl:'/systems/baseline-games-hub/games/block-grid/css/block-grid.css?v=NONREALM_GAME_REFINEMENT_20261018_1',
   note:'Place geometric pieces on an 8 × 8 board, clear complete lines, and manage the space left for each new tray.',
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
