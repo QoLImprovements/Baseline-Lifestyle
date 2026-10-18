@@ -3790,6 +3790,9 @@ function toggleGameFullscreen(gameId){
   document.addEventListener('baseline:crossnumber-progress', function(){
     try{ renderHubSummary(); }catch(_error){}
   });
+  document.addEventListener('baseline:game-storage', function(){
+    try{ renderHubSummary(); }catch(_error){}
+  });
 
   function cacheRefs(){
     [
