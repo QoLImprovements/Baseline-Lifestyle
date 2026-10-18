@@ -98,13 +98,10 @@
 #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece:active{cursor:zoom-in}
 html[data-app="games"] body[data-app="games"] #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece[aria-disabled="true"]{opacity:1!important;filter:none!important;cursor:zoom-in!important}
 html[data-app="games"] body[data-app="games"] #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece[aria-disabled="true"] .weight-coherence-piece-canvas{opacity:1!important;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))!important}
-#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60}
-#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target .weight-coherence-piece-canvas{position:relative;z-index:61;transform:scale(var(--weight-coherence-piece-zoom,2));transform-origin:50% 50%;will-change:transform;transition:transform .16s ease}
-#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-column,
-#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-shell,
-#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-tray,
-#weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray-shell,
-#weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray{overflow:visible!important}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:2}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target .weight-coherence-piece-canvas{filter:drop-shadow(0 0 2px rgba(255,255,255,.86)) drop-shadow(0 0 6px rgba(126,145,255,.72)) drop-shadow(0 5px 5px rgba(0,0,0,.28))}
+.weight-coherence-piece-lens{box-sizing:border-box;position:fixed;z-index:2147483601;display:block;border:2px solid #050505;border-radius:50%;background:#080D22;box-shadow:0 10px 28px rgba(0,0,0,.34);pointer-events:none;user-select:none}
+.weight-coherence-piece-lens[hidden]{display:none}
 .weight-coherence-piece.is-selected{border-color:rgba(225,232,255,.88);background:rgba(80,97,183,.46);box-shadow:0 0 0 2px rgba(126,145,255,.25) inset}
 .weight-coherence-piece.is-return-highlight .weight-coherence-piece-canvas{filter:drop-shadow(0 0 2px rgba(255,255,255,.98)) drop-shadow(0 0 8px rgba(126,145,255,.98)) drop-shadow(0 5px 5px rgba(0,0,0,.28))!important}
 .weight-coherence-piece-canvas{display:block;max-width:84px;max-height:84px;width:auto;height:auto;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))}
