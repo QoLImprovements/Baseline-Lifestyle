@@ -8172,7 +8172,16 @@ function setupRecipeFavourites(){
         }else{
           const nextState = { kind: 'tab', tabId: tabId };
           const rawCleanRoute = String(initialView.raw || '').toLowerCase().replace(/\/+$/,'');
+          let ownedSubviewQuery = false;
+          try{
+            const routeParams = new URLSearchParams(location.search || '');
+            ownedSubviewQuery =
+              (routePageFile === 'baseline-massage.html' && routeParams.has('planner-mode')) ||
+              (routePageFile === 'baseline-badminton-session.html' && routeParams.has('gameplan-view')) ||
+              (routePageFile === 'baseline-psychology.html' && routeParams.has('psych-view'));
+          }catch(_e){}
           const preserveNestedRoutinePath =
+            ownedSubviewQuery ||
             /^\/baseline-fitness\/my-routine(?:\/(?:log|summary|public|plan(?:\/(?:calisthenics|cardio|other|sports))?))?$/.test(rawCleanRoute) ||
             /^\/baseline-fitness\/my-body(?:\/(?:profile|services))?$/.test(rawCleanRoute) ||
             /^\/baseline-fitness\/my-plan(?:\/(?:completed|future))?$/.test(rawCleanRoute) ||
