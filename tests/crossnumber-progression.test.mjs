@@ -16,6 +16,7 @@ const registry=read('systems/baseline-games-hub/js/games-registry.js');
 const gamesData=read('systems/baseline-games-hub/api/games_data.php');
 const savedData=read('sitewide/api/saved_data.php');
 const realmRuntime=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
+const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 
 function loadGenerator(){
   const cut=crossnumber.indexOf("  refs.bank.addEventListener('click'");
@@ -90,7 +91,7 @@ test('Crossnumber inherits the Games Hub Indigo Circuit palette instead of ownin
     assert.ok(css.includes('var('+token),token);
   });
   ['#fff7d2','#eadb9b','#fbf3d0','#f5f2e8'].forEach(retired=>assert.doesNotMatch(css,new RegExp(retired,'i')));
-  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI)_/);
+  assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_(?:PROGRESSION|COHERENT_UI|SCALE_AUTONEXT)_/);
 });
 
 test('Crossnumber follows the Games Hub single-panel navigation contract',()=>{
@@ -112,8 +113,19 @@ test('Crossnumber keeps the puzzle and answer bank playable without page-level o
   assert.match(html,/class="crossnumber-bank-panel"/);
   assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(190px,230px\)/);
   assert.match(css,/@media \(max-width:820px\)[\s\S]*?crossnumber-play-layout\{grid-template-columns:1fr\}/);
-  assert.match(css,/crossnumber-board\{[\s\S]*?max-width:680px;[\s\S]*?min-width:0;/);
+  assert.match(css,/crossnumber-board\{[\s\S]*?max-width:600px;[\s\S]*?min-width:0;/);
   assert.doesNotMatch(css,/crossnumber-board\{[\s\S]*?min-width:5[0-9]{2}px/);
+});
+
+test('Crossnumber uses shared Auto-Next and keeps larger type inside the tighter cells',()=>{
+  assert.match(html,/data-auto-next-toggle="crossnumber"/);
+  assert.match(core,/AUTO_NEXT_GAMES = \[[^\]]*'crossnumber'/);
+  assert.match(core,/window\.BaselineGamesAutoNext/);
+  assert.match(crossnumber,/autoNextApi\(\)/);
+  assert.match(crossnumber,/schedule\?\.\(APP,function\(\)\{createNewRound/);
+  assert.match(css,/crossnumber-symbol-cell\{[\s\S]*?font-size:clamp\(14px,1\.8vw,26px\)/);
+  assert.match(css,/crossnumber-number-cell\{[\s\S]*?font-size:clamp\(16px,2vw,30px\)/);
+  assert.match(css,/crossnumber-number-tile\{[\s\S]*?font:900 21px\/1/);
 });
 
 test('Crossnumber profile participates in shared account persistence',()=>{
