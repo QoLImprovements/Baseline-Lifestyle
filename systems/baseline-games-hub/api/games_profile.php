@@ -14,7 +14,7 @@ if($app === '' && $method === 'POST'){
   $payload = [];
 }
 if($app === '') $app = 'pairs';
-if(!in_array($app, ['pairs','make24','detectword','ninja','trackcoin','ruleshift'], true)) bl_json(['ok'=>false,'error'=>'bad_app'], 400);
+if(!in_array($app, ['pairs','make24','detectword','ninja','trackcoin','ruleshift','crossnumber'], true)) bl_json(['ok'=>false,'error'=>'bad_app'], 400);
 
 function bl_load_profile_row(PDO $db, int $uid, string $app): ?array {
   $aliases = bl_profile_aliases($app);
