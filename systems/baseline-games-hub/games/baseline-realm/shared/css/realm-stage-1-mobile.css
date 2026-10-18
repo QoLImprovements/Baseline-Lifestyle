@@ -415,7 +415,7 @@
   ),
   body.bl-mobile-game-mode[data-mobile-game="ninja"] #realmBasecampScreen.realm-basecamp-screen,
   body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-training-hud{
-    inset-top:68px!important;
+    top:68px!important;
   }
 
   body.bl-mobile-game-mode[data-mobile-game="ninja"] .realm-drawer{
