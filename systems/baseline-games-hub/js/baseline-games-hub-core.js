@@ -801,6 +801,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     let currentParams = null;
     try{ currentParams = new URLSearchParams(window.location.search || ''); }catch(_error){ currentParams = new URLSearchParams(); }
 
+    const externalPuzzle = String(document.documentElement.getAttribute('data-puzzle-game-open') || '').trim();
+    const dartsFocusedOpen = document.documentElement.hasAttribute('data-darts-focused-open');
+    const badmintonFocusedOpen = document.documentElement.hasAttribute('data-badminton-focused-open');
+
     if(currentTab === 'puzzles'){
       route = base + '/puzzles';
       const jigsaw = String(currentParams.get('jigsaw') || '').trim();
@@ -808,7 +812,15 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       if(jigsaw) params.set('jigsaw', jigsaw);
       else if(puzzle === 'jigsaws') params.set('puzzle', 'jigsaws');
     }else if(currentTab === 'games'){
-      if(!selectedGame) route = base + '/games-list';
+      if(externalPuzzle){
+        route = base + '/' + externalPuzzle;
+        const view = String(currentParams.get('view') || '').trim();
+        if(view) params.set('view', view);
+      }else if(dartsFocusedOpen){
+        route = base + '/darts-focused';
+      }else if(badmintonFocusedOpen){
+        route = base + '/badminton-focused';
+      }else if(!selectedGame) route = base + '/games-list';
       else{
         route = base + '/' + (GAME_ID_TO_ROUTE_SLUG[selectedGame] || selectedGame);
         const config = getGamePanelConfig(selectedGame);
