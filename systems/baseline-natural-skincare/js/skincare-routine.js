@@ -81,14 +81,18 @@
   function cleanViewPath(view) {
     return `${ROUTE_BASE}/${VIEWS.includes(view)?view:'log'}`;
   }
-  function writeViewRoute(view) {
+  function writeViewRoute(view,mode='replace') {
     const next=VIEWS.includes(view)?view:'log';
     try {
       const url=new URL(global.location.href);
       url.pathname=cleanViewPath(next);
       ['routine-view','routine-plan','routine-filter','routine-date'].forEach((key)=>url.searchParams.delete(key));
       url.hash='';
-      global.history.replaceState(global.history.state,'',url.pathname+url.search);
+      const nextUrl=url.pathname+url.search;
+      const currentUrl=global.location.pathname+global.location.search;
+      if (nextUrl===currentUrl) return;
+      if (mode==='push') global.history.pushState(global.history.state,'',nextUrl);
+      else global.history.replaceState(global.history.state,'',nextUrl);
     } catch (_error) {}
   }
   function selectOuterRoutine() {
@@ -197,7 +201,7 @@
       if (next==='plan') renderPlan();
       if (next==='public') renderPublicProfiles();
     }
-    if (remember) writeViewRoute(next);
+    if (remember) writeViewRoute(next,'push');
   }
   function restoreRoute() {
     if (!locationTargetsRoutine()) return;
@@ -308,7 +312,8 @@
   function enterRoutineFromOuterTab() {
     state.activeView=routeViewFromLocation();
     selectOuterRoutine();
-    activateView(state.activeView,true);
+    activateView(state.activeView,false);
+    writeViewRoute(state.activeView,'replace');
   }
   function bindEvents() {
     const root=$('#routine');if (!root || root.dataset.routineBound==='1') return;root.dataset.routineBound='1';
