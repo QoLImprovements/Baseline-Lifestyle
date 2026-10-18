@@ -35,6 +35,7 @@ test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll
   assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(\)/);
   assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(\)/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
+  assert.match(js, /if\(dx<=snapX && dy<=snapY\)\{[\s\S]*?placePiece\(id\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return true;/);
   assert.match(js, /setStatus\('That piece belongs elsewhere\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
   assert.doesNotMatch(js, /refs\.board\.scrollIntoView/);
   assert.doesNotMatch(js, /function placePiece\(id\)[\s\S]{0,500}scrollIntoView/);
