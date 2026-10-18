@@ -1,4 +1,4 @@
-const BUILD='GAMES_SERVER_STORAGE_UI_20260913_1';
+const BUILD='GAMES_SERVER_STORAGE_UI_20261018_1';
 // 2026-07-10: refined save-state icon, custom caption tooltip, and lighter shared popup styling.
 
 function storageState(){
@@ -15,15 +15,15 @@ function storageState(){
 function accountCard(){return document.getElementById('authStateNote')?.closest('.card')||null;}
 function accountCopy(state){
   if(state.canSave)return{
-    html:'<strong>Account save is active.</strong><span class="inline-note">Game progress is stored on the server and linked to your Baseline Lifestyle login.</span>',
-    description:'Your game data follows your Baseline Lifestyle account and is loaded from the server.'
+    html:'<strong>Account save is active.</strong><span class="inline-note">Game and puzzle progress is stored on the server and linked to your Baseline Lifestyle login.</span>',
+    description:'Your game and puzzle data follows your Baseline Lifestyle account and is loaded from the server.'
   };
   if(state.status==='signed-out')return{
-    html:'<strong>Temporary play is active.</strong><span class="inline-note">All games remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
+    html:'<strong>Temporary play is active.</strong><span class="inline-note">Games and puzzles remain playable. Sign in to save progress to your Baseline Lifestyle account.</span>',
     description:'You can play without signing in. Progress from this temporary session is not saved or written to account data.'
   };
   return{
-    html:'<strong>Temporary play is active; saving is unavailable.</strong><span class="inline-note">All games remain playable while the save service is unavailable.</span>',
+    html:'<strong>Temporary play is active; saving is unavailable.</strong><span class="inline-note">Games and puzzles remain playable while the save service is unavailable.</span>',
     description:'Temporary progress is kept only for this page session and does not overwrite account data.'
   };
 }
@@ -35,9 +35,9 @@ function enforceAccountCopy(){
   if(description&&description.textContent!==expected.description)description.textContent=expected.description;
 }
 function saveStatusLabel(state){
-  return state.canSave
-    ? 'Game data will be saved to your account.'
-    : 'Sign in to save your game data. Progress from this session will otherwise be lost.';
+  if(state.canSave) return 'Progress is saved server-side to your Baseline Lifestyle account.';
+  if(state.status==='signed-out') return 'Sign in to save progress to your Baseline Lifestyle account.';
+  return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
 function saveIconSvg(saved){
   const cross=saved?'':'<path class="game-save-icon__cross" d="M7 7l10 10M17 7L7 17"/>';
@@ -109,25 +109,21 @@ function refreshActiveSaveTooltip(){
   tip.textContent=activeSaveTooltipTarget.getAttribute('data-save-tooltip')||activeSaveTooltipTarget.getAttribute('aria-label')||'';
   positionSaveTooltip(activeSaveTooltipTarget, tip);
 }
+function placeSaveIcon(container,state,{realm=false,position='afterbegin'}={}){
+  if(!container) return;
+  const expectedState=state.canSave?'saving':'unsaved';
+  const icon=container.querySelector('[data-save-status-icon]');
+  if(!icon) container.insertAdjacentHTML(position,saveIconMarkup(state,realm));
+  else if(icon.dataset.saveState!==expectedState) icon.outerHTML=saveIconMarkup(state,realm);
+  const current=container.querySelector('[data-save-status-icon]');
+  if(current) current.dataset.saveState=expectedState;
+}
 function placeSaveIcons(){
   const state=storageState();
-  const expectedState=state.canSave?'saving':'unsaved';
   document.getElementById('gamesServerLoginNotice')?.remove();
-  document.querySelectorAll('.game-panel .link-actions').forEach(actions=>{
-    const icon=actions.querySelector('[data-save-status-icon]');
-    if(!icon)actions.insertAdjacentHTML('afterbegin',saveIconMarkup(state,false));
-    else if(icon.dataset.saveState!==expectedState)icon.outerHTML=saveIconMarkup(state,false);
-    const current=actions.querySelector('[data-save-status-icon]');
-    if(current)current.dataset.saveState=expectedState;
-  });
-  const route=document.querySelector('#realmTrainingBar .realm-route-meta');
-  if(route){
-    const icon=route.querySelector('[data-save-status-icon]');
-    if(!icon)route.insertAdjacentHTML('beforeend',saveIconMarkup(state,true));
-    else if(icon.dataset.saveState!==expectedState)icon.outerHTML=saveIconMarkup(state,true);
-    const current=route.querySelector('[data-save-status-icon]');
-    if(current)current.dataset.saveState=expectedState;
-  }
+  document.querySelectorAll('.game-panel .link-actions').forEach(actions=>placeSaveIcon(actions,state));
+  placeSaveIcon(document.querySelector('#jigsawPlayerCard > .puzzle-library-toolbar'),state,{position:'beforeend'});
+  placeSaveIcon(document.querySelector('#realmTrainingBar .realm-route-meta'),state,{realm:true,position:'beforeend'});
   refreshActiveSaveTooltip();
 }
 function showSaveNotice(){document.getElementById('gamesServerLoginNotice')?.remove();placeSaveIcons();}
@@ -172,7 +168,8 @@ function install(){
   update();
   installSaveTooltipEvents();
   document.addEventListener('baseline:game-storage',update);
-  new MutationObserver(()=>placeSaveIcons()).observe(document.getElementById('games')||document.body,{childList:true,subtree:true});
+  const observer=new MutationObserver(()=>placeSaveIcons());
+  [document.getElementById('games'),document.getElementById('puzzles')].filter(Boolean).forEach(root=>observer.observe(root,{childList:true,subtree:true}));
   document.documentElement.setAttribute('data-games-server-storage-ui',BUILD);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();

@@ -10,9 +10,22 @@
     Object.freeze({ id:'block-grid', runtimeId:'block-grid', route:'block-grid', profileApp:'blockgrid', core:false, group:'puzzle', name:'Block Grid' }),
     Object.freeze({ id:'colour-sort', runtimeId:'colour-sort', route:'colour-sort', profileApp:'coloursort', core:false, group:'puzzle', name:'Colour Sort' }),
     Object.freeze({ id:'baseline-realm', runtimeId:'ninja', route:'baseline-realm', profileApp:'ninja', core:true, group:'realm', name:'Baseline Realm', legacyIds:Object.freeze(['ninja']) }),
-    Object.freeze({ id:'darts-focused', runtimeId:'darts-focused', route:'darts-focused', profileApp:null, core:false, group:'focused', name:'Darts Focused' }),
-    Object.freeze({ id:'badminton-focused', runtimeId:'badminton-focused', route:'badminton-focused', profileApp:null, core:false, group:'focused', name:'Badminton Focused' })
+    Object.freeze({ id:'darts-focused', runtimeId:'darts-focused', route:'darts-focused', profileApp:'dartsfocused', core:false, group:'focused', name:'Darts Focused' }),
+    Object.freeze({ id:'badminton-focused', runtimeId:'badminton-focused', route:'badminton-focused', profileApp:'badmintonfocused', core:false, group:'focused', name:'Badminton Focused' })
   ]);
+
+  const persistenceOnlyApps = Object.freeze([
+    'weightcoherence',
+    'unheardsignal',
+    'pantherjigsaw',
+    'bearjigsaw',
+    'meridiangrove'
+  ]);
+
+  const persistentApps = Object.freeze([
+    ...games.map(function(game){ return game.profileApp; }).filter(Boolean),
+    ...persistenceOnlyApps
+  ].filter(function(app,index,list){ return list.indexOf(app)===index; }));
 
   const byCanonical = Object.create(null);
   const byRuntime = Object.create(null);
@@ -49,6 +62,14 @@
     return games.filter(function(game){ return game.core; });
   }
 
+  function storageApps(){
+    return persistentApps.slice();
+  }
+
+  function isPersistentApp(value){
+    return persistentApps.includes(String(value || '').trim());
+  }
+
   const api = Object.freeze({
     version:1,
     games:games,
@@ -56,7 +77,9 @@
     canonicalId:canonicalId,
     runtimeId:runtimeId,
     route:route,
-    coreGames:coreGames
+    coreGames:coreGames,
+    persistentApps:storageApps,
+    isPersistentApp:isPersistentApp
   });
 
   window.BASELINE_GAMES_HUB_GAME_REGISTRY = api;
