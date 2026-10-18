@@ -4,7 +4,7 @@
   const BUILD='GAMES_HUB_SERVER_AUTHORITY_20261018_1';
   const DATA_API='/systems/baseline-games-hub/api/games_data.php';
   const registryApps=global.BASELINE_GAMES_HUB_GAME_REGISTRY?.persistentApps?.() || [];
-  const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','blockgrid','coloursort','weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw','dartsfocused','meridiangrove','badmintonfocused']);
+  const ALL_APPS=Object.freeze(registryApps.length ? registryApps.slice() : ['pairs','detectword','make24','trackcoin','ruleshift','ninja','blockgrid','coloursort','weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw','dartsfocused','meridiangrove','badmintonfocused']);
   const pending=Object.create(null);
   const timers=Object.create(null);
   const writeChains=Object.create(null);
