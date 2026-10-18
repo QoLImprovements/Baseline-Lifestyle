@@ -3,7 +3,7 @@
 #ninjaPanel #realmWorkshopScreen.realm-workshop-screen{
   position:absolute!important;
   inset:var(--realm-banner-height) 0 0!important;
-  z-index:12!important;
+  z-index:20!important;
   display:block!important;
   overflow:auto!important;
   background:
