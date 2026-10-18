@@ -2,7 +2,7 @@
   'use strict';
 
   const APP='crossnumber';
-  const BUILD='CROSSNUMBER_PROGRESSION_20261018_1';
+  const BUILD='CROSSNUMBER_COHERENT_UI_20261018_1';
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
   const panel=root.closest('#crossnumberPanel');
@@ -58,6 +58,16 @@
     completeReward:root.querySelector('[data-crossnumber-complete-reward]')
   };
   if(!refs.board||!refs.bank) return;
+
+  const panelButtons=Array.from(root.querySelectorAll?.('button[data-crossnumber-panel]')||[]);
+  const panelViews=Array.from(root.querySelectorAll?.('.crossnumber-panel-stack > [id]')||[]);
+  const PANEL_ROUTES=Object.freeze({
+    game:'crossnumberGamePanel',
+    skills:'crossnumberSkillPanel',
+    tiers:'crossnumberTierPanel',
+    progress:'crossnumberProgressPanel'
+  });
+  let activePanel='crossnumberGamePanel';
 
   let profile=normaliseProfile(readStoredProfile()||DEFAULT_PROFILE);
   let round=null;
@@ -654,6 +664,7 @@
     profile.selectedTier=tier.id;
     saveProfile();
     createNewRound({tierId:tier.id});
+    setCrossnumberPanel(PANEL_ROUTES.game,'push');
   }
 
   function sortBank(){
@@ -662,12 +673,47 @@
     renderBank();saveProfile();
   }
 
+  function panelFromLocation(){
+    try{
+      const key=String(new URLSearchParams(window.location.search||'').get('crosspanel')||'game').toLowerCase();
+      return PANEL_ROUTES[key]||PANEL_ROUTES.game;
+    }catch(_error){return PANEL_ROUTES.game;}
+  }
+  function panelRouteKey(targetId){
+    return Object.keys(PANEL_ROUTES).find(function(key){return PANEL_ROUTES[key]===targetId;})||'game';
+  }
+  function writePanelRoute(targetId,mode){
+    if(!mode||mode==='none') return;
+    try{
+      const url=new URL(window.location.href);
+      const key=panelRouteKey(targetId);
+      if(key==='game') url.searchParams.delete('crosspanel');
+      else url.searchParams.set('crosspanel',key);
+      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      const method=mode==='replace'?'replaceState':'pushState';
+      window.history[method]({baselineCrossnumber:true,panel:key},'',next);
+    }catch(_error){}
+  }
+  function setCrossnumberPanel(targetId,historyMode){
+    const valid=panelViews.some(function(view){return view.id===targetId;})?targetId:PANEL_ROUTES.game;
+    activePanel=valid;
+    panelViews.forEach(function(view){view.hidden=view.id!==valid;});
+    panelButtons.forEach(function(button){
+      const selected=button.dataset.crossnumberPanel===valid;
+      button.classList.toggle('is-active',selected);
+      button.setAttribute('aria-expanded',selected?'true':'false');
+    });
+    writePanelRoute(valid,historyMode);
+    if(valid===PANEL_ROUTES.game) startTimer();
+    else stopTimer();
+  }
+
   function formatTime(value){
     const mins=Math.floor(Math.max(0,value)/60),secs=Math.max(0,value)%60;
     return String(mins).padStart(2,'0')+':'+String(secs).padStart(2,'0');
   }
   function startTimer(){
-    if(timerId||!round||(panel&&panel.hidden)) return;
+    if(timerId||!round||(panel&&panel.hidden)||activePanel!==PANEL_ROUTES.game) return;
     timerId=window.setInterval(function(){
       if(panel&&panel.hidden) return;
       if(!round) return;
@@ -763,7 +809,7 @@
     profile=normaliseProfile(profile);
     const tier=tierDefinition(round?.tierId||profile.selectedTier);
     const needed=xpNeededForLevel(profile.level);
-    if(refs.level) refs.level.textContent='Level '+profile.level;
+    if(refs.level) refs.level.textContent='Level - '+profile.level;
     if(refs.tier) refs.tier.textContent=tier.name;
     if(refs.bankValue) refs.bankValue.textContent=String(profile.bank);
     if(refs.cleanStreak) refs.cleanStreak.textContent=String(profile.cleanWinStreak);
@@ -835,6 +881,8 @@
   });
 
   root.addEventListener('click',function(event){
+    const panelButton=event.target.closest('button[data-crossnumber-panel]');
+    if(panelButton){setCrossnumberPanel(panelButton.dataset.crossnumberPanel,'push');return;}
     const tierButton=event.target.closest('[data-crossnumber-tier]');
     if(tierButton){selectTier(tierButton.dataset.crossnumberTier);return;}
     const skillButton=event.target.closest('[data-crossnumber-skill]');
@@ -849,8 +897,13 @@
   });
 
   document.addEventListener('baseline:crossnumber-open',function(){
+    setCrossnumberPanel(panelFromLocation(),'none');
     if(!round) createNewRound({tierId:profile.selectedTier});
     else startTimer();
+  });
+  window.addEventListener('popstate',function(){
+    if(panel&&panel.hidden) return;
+    setCrossnumberPanel(panelFromLocation(),'none');
   });
   document.addEventListener('baseline:game-storage',function(){
     if(storageReloaded) return;
@@ -873,6 +926,7 @@
   round=restoreRound(profile.activeRound);
   layout=round?generateLayout(round.seed,round.tierId):null;
   renderAll();
+  setCrossnumberPanel(panelFromLocation(),'none');
   if(hadSavedRound&&round) setStatus('Your saved Crossnumber layout has been restored.');
   else if(panel&&!panel.hidden&&!round) createNewRound({tierId:profile.selectedTier});
   else setStatus('Open Crossnumber to generate a new layout.');
