@@ -54,6 +54,7 @@ let audioService = null;
 let accessibilityService = null;
 let assetsReady = Promise.resolve({ total: 0, loaded: 0, failed: 0, errors: [] });
 let rosterReady = Promise.resolve([]);
+let sceneReady = Promise.resolve(null);
 let explorationRosterIds = [];
 let configured = false;
 const ROUTABLE_SCENES = Object.freeze(['basecamp','ninja-training','exploration','workshop','calorie-escape','tactical-operations']);
@@ -400,11 +401,12 @@ function configure(dependencies) {
   registerScenes();
   bindRealmSceneHistory();
   const initialScene = realmSceneFromLocation();
-  sceneRouter.navigate(initialScene, { initial: true, historyMode:'replace' }).catch((error) => {
+  sceneReady = sceneRouter.navigate(initialScene, { initial: true, historyMode:'replace' }).catch((error) => {
     console.error('[Baseline Realm] Initial scene navigation failed.', error);
     if (initialScene !== 'basecamp') {
-      sceneRouter.navigate('basecamp', { recovery:true, historyMode:'replace' }).catch(() => {});
+      return sceneRouter.navigate('basecamp', { recovery:true, historyMode:'replace' });
     }
+    throw error;
   });
   bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter });
   inputManager.registerControllerProvider(gamepadProvider);
@@ -459,6 +461,7 @@ const host = Object.freeze({
   getAccessibilityService: () => accessibilityService,
   whenAssetsReady: () => assetsReady,
   whenRosterReady: () => rosterReady,
+  whenSceneReady: () => sceneReady,
   performanceReport: () => performanceMonitor.report(),
   resolveInventoryEffects: (moduleId) => workshopService?.resolveEffects(moduleId) || {},
   resolveBonuses: () => runtime?.resolveBonuses() || {},
