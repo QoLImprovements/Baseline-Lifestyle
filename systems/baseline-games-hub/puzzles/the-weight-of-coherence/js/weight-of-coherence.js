@@ -859,9 +859,15 @@
 
   let interactionScrollSnapshot=null;
 
-  function captureInteractionScroll(){
+  function captureInteractionScroll(event){
     if(fullscreenActive()) return;
     interactionScrollSnapshot=pageScrollSnapshot();
+    const snapshot=interactionScrollSnapshot;
+    const control=event?.target?.closest?.('button,[role="button"]');
+    if(control && root.contains(control) && typeof control.focus==='function'){
+      try{ control.focus({preventScroll:true}); }catch(_error){}
+    }
+    if(snapshot) restorePageScroll(snapshot);
   }
 
   function settleInteractionScroll(){
