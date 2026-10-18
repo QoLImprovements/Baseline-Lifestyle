@@ -2353,6 +2353,19 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(opens>closes) return 'Close the remaining bracket' + (opens-closes===1?'':'s') + ', then submit.';
     return 'Expression ready to submit.';
   }
+  function syncMake24BuilderUi(){
+    if(!make24State) return;
+    const usage=make24ExpressionNumberUsage(make24State.draftExpression||'');
+    qsa('[data-make24-number-key]',refs.make24Board||document).forEach(function(button){
+      const key=button.getAttribute('data-make24-number-key')||'';
+      const occurrence=Math.max(0,Number(button.getAttribute('data-make24-number-occurrence')||0));
+      const used=occurrence<(usage[key]||0);
+      button.classList.toggle('is-used',used);
+      button.disabled=used||Boolean(make24State.completed);
+    });
+    const note=q('.make-number-builder-note',refs.make24Board||document);
+    if(note) note.textContent=make24BuilderStatus();
+  }
   function appendMake24BuilderToken(token){
     if(!make24State||make24State.completed) return;
     let raw=String(make24State.draftExpression||'').trim();
@@ -2422,7 +2435,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const index=occurrence[key]||0;
       occurrence[key]=index+1;
       const used=index<(usage[key]||0);
-      return '<button class="number-chip' + (used?' is-used':'') + '" data-make24-token="' + escapeHtml(String(num)) + '" type="button"' + (used||closed?' disabled':'') + ' aria-label="Use number ' + escapeHtml(String(num)) + '">' + escapeHtml(String(num)) + '</button>';
+      return '<button class="number-chip' + (used?' is-used':'') + '" data-make24-token="' + escapeHtml(String(num)) + '" data-make24-number-key="' + escapeHtml(key) + '" data-make24-number-occurrence="' + index + '" type="button"' + (used||closed?' disabled':'') + ' aria-label="Use number ' + escapeHtml(String(num)) + '">' + escapeHtml(String(num)) + '</button>';
     }).join('');
     const builder = closed ? '' :
       '<form id="make24ExpressionForm" class="stack make-number-composer">' +
@@ -4264,21 +4277,21 @@ function toggleGameFullscreen(gameId){
       const pairTier = event.target.closest('[data-pairs-tier]');
       if(pairTier){
         const tier = PAIRS_TIERS.find(item => item.id === pairTier.getAttribute('data-pairs-tier'));
-        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('pairs'); renderAll(); }
+        if(tier && profiles.pairs.level >= tier.unlockLevel){ profiles.pairs.selectedTier = tier.id; profiles.pairs.activeRound = null; pairsBoardState = null; pairsIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('pairs'); renderAll(); }
         return;
       }
       const wordTier = event.target.closest('[data-word-tier]');
       if(wordTier){
         const tier = WORD_TIERS.find(item => item.id === wordTier.getAttribute('data-word-tier'));
-        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
+        if(tier && profiles.detectword.level >= tier.unlockLevel){ profiles.detectword.selectedTier = tier.id; profiles.detectword.activeRound = null; wordState = null; wordIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('detectword'); renderAll(); }
         return;
       }
       const make24Tier = event.target.closest('[data-make24-tier]');
       const trackCoinTier = event.target.closest('[data-trackcoin-tier]');
-      if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
+      if(trackCoinTier){ const tier = TRACKCOIN_TIERS.find(item => item.id === trackCoinTier.getAttribute('data-trackcoin-tier')); if(tier && profiles.trackcoin.level >= tier.unlockLevel){ profiles.trackcoin.selectedTier = tier.id; profiles.trackcoin.currentTier = tier.id; profiles.trackcoin.activeRound = null; cancelTrackCoinAnimation(); trackCoinState = null; scheduleSave('trackcoin'); renderAll(); } return; }
       if(make24Tier){
         const tier = MAKE24_TIERS.find(item => item.id === make24Tier.getAttribute('data-make24-tier'));
-        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
+        if(tier && profiles.make24.level >= tier.unlockLevel){ profiles.make24.selectedTier = tier.id; profiles.make24.activeRound = null; make24State = null; make24IdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('make24'); renderAll(); }
         return;
       }
       const pairSkill = event.target.closest('[data-pairs-skill]'); if(pairSkill){ spendPairsSkill(pairSkill.getAttribute('data-pairs-skill')); return; }
@@ -4289,7 +4302,7 @@ function toggleGameFullscreen(gameId){
       const make24PanelBtn = event.target.closest('[data-make24-panel]'); if(make24PanelBtn){ setMake24Panel(make24PanelBtn.getAttribute('data-make24-panel'), 'push'); return; }
       const trackCoinSkill = event.target.closest('[data-trackcoin-skill]'); if(trackCoinSkill){ spendTrackCoinSkill(trackCoinSkill.getAttribute('data-trackcoin-skill')); return; }
       const trackCoinPanelBtn = event.target.closest('[data-trackcoin-panel]'); if(trackCoinPanelBtn){ setTrackCoinPanel(trackCoinPanelBtn.getAttribute('data-trackcoin-panel'), 'push'); return; }
-      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
+      const ruleShiftTier = event.target.closest('[data-ruleshift-tier]'); if(ruleShiftTier){ const tier = RULESHIFT_TIERS.find(item => item.id === ruleShiftTier.getAttribute('data-ruleshift-tier')); if(tier && profiles.ruleshift.level >= tier.unlockLevel){ profiles.ruleshift.selectedTier = tier.id; profiles.ruleshift.activeRound = null; clearRuleShiftTimer(); ruleShiftState = null; ruleShiftIdleMessage = tier.name + ' selected. Press Start New Game when ready.'; scheduleSave('ruleshift'); renderAll(); } return; }
       const ruleShiftSkill = event.target.closest('[data-ruleshift-skill]'); if(ruleShiftSkill){ spendRuleShiftSkill(ruleShiftSkill.getAttribute('data-ruleshift-skill')); return; }
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
@@ -4315,7 +4328,7 @@ function toggleGameFullscreen(gameId){
       const target = event.target;
       if(!target || !target.id) return;
       if(target.id === 'wordGuessInput' && wordState){ wordState.draftGuess = String(target.value || ''); persistWordRound(); }
-      if(target.id === 'make24ExpressionInput' && make24State){ make24State.draftExpression = String(target.value || ''); persistMake24Round(); }
+      if(target.id === 'make24ExpressionInput' && make24State){ make24State.draftExpression = String(target.value || ''); persistMake24Round(); syncMake24BuilderUi(); }
     });
     document.addEventListener('keydown', function(event){
       const input = event.target;
