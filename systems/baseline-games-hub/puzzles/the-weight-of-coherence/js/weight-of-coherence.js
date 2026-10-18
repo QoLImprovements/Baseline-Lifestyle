@@ -7,8 +7,6 @@
   const ZOOM_MIN = 1;
   const PIECE_ZOOM_DEFAULT = 2;
   const PIECE_ZOOM_MAX = 10;
-  const BOARD_LENS_DEFAULT = 2;
-  const BOARD_LENS_MAX = 10;
   const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
   const FALLBACK_PUZZLE = Object.freeze({
