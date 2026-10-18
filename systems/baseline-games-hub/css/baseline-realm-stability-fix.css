@@ -1,8 +1,5 @@
+/* Compatibility entry point retained for older cached HTML.
+   Baseline Realm presentation is owned by the Realm CSS bundle itself.
+   Do not re-import removed legacy Realm authority files here: stale deployment
+   copies can otherwise re-enter the cascade and compete with current layout. */
 @import url("./mobile-touch-targets.css?v=GAMES_MOBILE_TOUCH_20260703_1");
-@import url("./baseline-realm-stability-core.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./baseline-realm-stability-panels.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./baseline-realm-stability-modes.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./baseline-realm-interface-refinement.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./baseline-realm-interface-final-authority.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./baseline-realm-coherence-authority.css?v=EDIT_VERSION_20260619_REALM_COHERENCE_PASS_2");
-@import url("./games-page-refresh.css?v=GAMES_PAGE_MIRRORED_THEME_20260730_2");
