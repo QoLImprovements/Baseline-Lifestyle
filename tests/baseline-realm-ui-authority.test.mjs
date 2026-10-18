@@ -63,6 +63,11 @@ test('runtime UI does not inject a competing stylesheet',()=>{
 
 test('Workshop and Cooking enter real room scenes rather than the management drawer',()=>{
   assert.match(html,/id="realmWorkshopScreen"/);
+  assert.match(html,/id="realmCampWorkshopBtn"[^>]*data-realm-view="workshop"[^>]*data-workshop-category="blacksmith"/);
+  assert.match(html,/id="realmCampCookingBtn"[^>]*data-realm-view="workshop"[^>]*data-workshop-category="cooking"/);
+  assert.doesNotMatch(html,/data-realm-open-tab="workshop"/);
+  assert.match(inputBindings,/realm:input:realm-view'[\s\S]*?category[\s\S]*?navigate\(detail\.view/);
+  assert.doesNotMatch(inputBindings,/detail\.tab === 'workshop'/);
   assert.match(workshopScene,/setView\('workshop'\)/);
   assert.doesNotMatch(workshopScene,/openDrawerTab/);
   assert.match(workshopUi,/getElementById\('realmWorkshopScreen'\)/);
@@ -124,13 +129,20 @@ test('Basecamp service drawer and Workshop room sit above the active scene',()=>
 
 
 test('Realm loader reuses the one canonical module and waits for its initial scene',()=>{
-  assert.match(html,/realm-entry\.js\?v=REALM_SINGLE_RUNTIME_20261019_1/);
-  assert.match(html,/baseline-games-hub\.js\?v=REALM_SINGLE_RUNTIME_20261019_1/);
-  assert.match(hubLoader,/const REALM_BUILD='REALM_SINGLE_RUNTIME_20261019_1'/);
+  assert.match(html,/realm-entry\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
+  assert.match(html,/baseline-games-hub\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
+  assert.match(hubLoader,/const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1'/);
   assert.match(hubLoader,/const existing=window\.BaselineRealmHost;[\s\S]*?if\(real\(existing\)\) return existing;/);
   assert.match(hubLoader,/whenSceneReady/);
   assert.doesNotMatch(hubLoader,/ninja-training-final-authority\.css|REALM_CSS/);
   assert.match(realmEntry,/let sceneReady = Promise\.resolve\(null\)/);
   assert.match(realmEntry,/sceneReady = sceneRouter\.navigate\(initialScene/);
   assert.match(realmEntry,/whenSceneReady: \(\) => sceneReady/);
+});
+
+
+test('management-tab controls no longer double as Workshop scene navigation',()=>{
+  assert.doesNotMatch(hubLoader,/if\(tab==='workshop'\)/);
+  assert.match(hubLoader,/if\(control\.hasAttribute\('data-realm-view'\)\)[\s\S]*?data-workshop-category[\s\S]*?sceneRouter\.navigate\(scene,category\?\{category\}:undefined\)/);
+  assert.match(realmEntry,/realm-input-bindings\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
 });
