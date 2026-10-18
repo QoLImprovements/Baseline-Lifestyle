@@ -5,8 +5,8 @@
     Object.freeze({
       id:'jigsaws',
       name:'Jigsaws',
-      note:'Image-based piece puzzles arranged into collections, with selectable piece counts and saved progress.',
-      meta:'7 jigsaws available',
+      note:'Image-based piece puzzles with selectable difficulty, saved state and experience earned for completed jigsaws.',
+      meta:'7 jigsaws · completion XP',
       preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
     }),
     Object.freeze({
