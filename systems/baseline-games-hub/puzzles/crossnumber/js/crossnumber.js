@@ -9,7 +9,7 @@
 
   const TIERS=Object.freeze([
     Object.freeze({id:'starter',name:'Starter',unlockLevel:1,rows:3,cols:3,nodes:7,operators:['+','−'],fixed:3,minValue:2,maxValue:32,maxConstant:9,maxFactor:3,xpReward:18,bankReward:8,penalty:1}),
-    Object.freeze({id:'field',name:'Field',unlockLevel:4,rows:3,cols:4,nodes:9,operators:['+','−','×'],fixed:3,minValue:2,maxValue:48,maxConstant:12,maxFactor:4,xpReward:26,bankReward:12,penalty:2}),
+    Object.freeze({id:'field',name:'Field',unlockLevel:4,rows:3,cols:4,nodes:9,operators:['+','−'],fixed:3,minValue:2,maxValue:48,maxConstant:12,maxFactor:4,xpReward:26,bankReward:12,penalty:2}),
     Object.freeze({id:'forge',name:'Forge',unlockLevel:9,rows:4,cols:4,nodes:11,operators:['+','−','×','÷'],fixed:2,minValue:2,maxValue:64,maxConstant:16,maxFactor:5,xpReward:38,bankReward:18,penalty:3}),
     Object.freeze({id:'circuit',name:'Circuit',unlockLevel:16,rows:4,cols:5,nodes:13,operators:['+','−','×','÷'],fixed:2,minValue:2,maxValue:84,maxConstant:20,maxFactor:6,xpReward:54,bankReward:27,penalty:4}),
     Object.freeze({id:'citadel',name:'Citadel',unlockLevel:26,rows:5,cols:5,nodes:15,operators:['+','−','×','÷'],fixed:1,minValue:2,maxValue:108,maxConstant:24,maxFactor:7,xpReward:74,bankReward:39,penalty:5}),
@@ -559,6 +559,7 @@
       window.setTimeout(function(){cell.classList.remove('is-wrong');},650);
     }
     setStatus('That placement breaks a completed equation.'+(penalty?' −'+penalty+' Bank.':' Precision prevented the Bank penalty.'));
+    saveProfile({progress:true});
   }
 
   function refreshEquationStates(){
