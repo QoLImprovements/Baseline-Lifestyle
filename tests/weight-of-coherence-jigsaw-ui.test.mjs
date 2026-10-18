@@ -212,7 +212,7 @@ test('desktop jigsaw workspace uses proportional full width and fills its tray p
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*width:100%[^}]*max-width:none/);
   assert.doesNotMatch(css, /minmax\(126px,176px\)|minmax\(118px,160px\)|minmax\(0,800px\)|width:min\(100%,800px\)|max-width:800px/);
   assert.match(css, /\.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)[^}]*align-self:stretch[^}]*width:100%/);
-  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:minmax\(68px,1fr\)[^}]*align-content:stretch[^}]*align-self:stretch[^}]*width:100%[^}]*max-height:none/);
+  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:68px[^}]*align-content:start[^}]*align-self:stretch[^}]*width:100%[^}]*max-height:none/);
   assert.match(css, /\.weight-coherence-tray-shell\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
   assert.match(css, /\.weight-coherence-tray\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
 });
