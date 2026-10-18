@@ -79,6 +79,10 @@ function realmSceneUrl(sceneId) {
   const url = new URL(globalThis.location.href);
   if (scene === 'basecamp') url.searchParams.delete('scene');
   else url.searchParams.set('scene', scene);
+  if (scene !== 'workshop') {
+    url.searchParams.delete('workshop-category');
+    url.searchParams.delete('workshop-recipe');
+  }
   url.hash = '';
   return url.pathname + url.search;
 }
