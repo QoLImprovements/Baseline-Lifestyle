@@ -901,7 +901,11 @@
     const centerX=g.x+g.w/2, centerY=g.y+g.h/2;
     const dx=Math.abs(point.x-centerX), dy=Math.abs(point.y-centerY);
     const snapX=Math.max(g.w*0.62,18), snapY=Math.max(g.h*0.62,18);
-    if(dx<=snapX && dy<=snapY){ placePiece(id); return true; }
+    if(dx<=snapX && dy<=snapY){
+      placePiece(id);
+      restorePageScroll(scrollSnapshot);
+      return true;
+    }
     setStatus('That piece belongs elsewhere.','warning');
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
