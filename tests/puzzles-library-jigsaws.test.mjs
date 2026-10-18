@@ -125,3 +125,8 @@ test('symbolic and animal jigsaws have dedicated server save profiles', () => {
   assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
   assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
 });
+
+test('Jigsaws type uses a neutral jigsaw icon rather than choosing one puzzle artwork', () => {
+  assert.match(registry, /preview:'\/systems\/baseline-games-hub\/puzzles\/shared\/art\/jigsaws\.svg\?v=JIGSAWS_ICON_20261018_1'/);
+  assert.doesNotMatch(registry, /id:'jigsaws'[\s\S]{0,300}preview:'\/systems\/baseline-games-hub\/puzzles\/the-weight-of-coherence\/art\//);
+});

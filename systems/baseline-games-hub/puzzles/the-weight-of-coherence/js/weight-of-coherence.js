@@ -36,8 +36,10 @@
     title:document.getElementById('weightCoherenceTitle'),
     description:document.getElementById('weightCoherenceDescription'),
     workspace:document.getElementById('weightCoherenceWorkspace'),
+    rotateNotice:document.getElementById('weightCoherenceRotateNotice'),
     boardShell:root.querySelector('.weight-coherence-board-shell'),
     boardWrap:root.querySelector('.weight-coherence-board-wrap'),
+    trayShell:root.querySelector('.weight-coherence-tray-shell'),
     playerCard:root.closest('.puzzle-library-card'),
     board:document.getElementById('weightCoherenceBoard'),
     status:document.getElementById('weightCoherenceStatus'),
@@ -84,6 +86,7 @@
   const pinchPointers = new Map();
   let pinchState = null;
   let pinchResetTimer = 0;
+  let fullscreenLayoutTimer = 0;
 
   image.addEventListener('load', function(){
     imageReady = true;
@@ -97,6 +100,7 @@
     BOARD_HEIGHT=Math.max(1,Number(activePuzzle.height)||1402);
     APP=String(activePuzzle.app||'weightcoherence');
     root.dataset.jigsawId=String(activePuzzle.id||'');
+    root.dataset.jigsawOrientation=BOARD_WIDTH>BOARD_HEIGHT?'landscape':'portrait';
     root.style.setProperty('--weight-coherence-aspect',BOARD_WIDTH+' / '+BOARD_HEIGHT);
     if(refs.introArt){
       refs.introArt.src=activePuzzle.image;
@@ -141,9 +145,27 @@
     }
   }
 
+  function desktopFullscreenTrayCapacity(config){
+    if(!refs.trayShell || !refs.tray || mobileLike() || !fullscreenActive()) return config.trayPageSize;
+    const shellRect=refs.trayShell.getBoundingClientRect();
+    const head=refs.trayMeta?.closest?.('.weight-coherence-tray-head');
+    const headHeight=head ? head.getBoundingClientRect().height : 0;
+    const shellStyle=window.getComputedStyle(refs.trayShell);
+    const paddingTop=parseFloat(shellStyle.paddingTop||'0')||0;
+    const paddingBottom=parseFloat(shellStyle.paddingBottom||'0')||0;
+    const gap=parseFloat(shellStyle.rowGap||shellStyle.gap||'0')||0;
+    const available=Math.max(0,shellRect.height-paddingTop-paddingBottom-headHeight-gap);
+    if(available<120) return Math.min(config.trayPageSize,18);
+    const columns=3;
+    const rowHeight=72;
+    const rowGap=8;
+    const rows=Math.max(1,Math.floor((available+rowGap)/(rowHeight+rowGap)));
+    return Math.max(columns,Math.min(config.trayPageSize,rows*columns));
+  }
+
   function trayPageSize(config){
     if(mobileLike()) return Math.min(config.trayPageSize, 8);
-    if(fullscreenActive()) return Math.min(config.trayPageSize, 12);
+    if(fullscreenActive()) return desktopFullscreenTrayCapacity(config);
     return config.trayPageSize;
   }
 
@@ -266,10 +288,11 @@
 
   function drawBoard(){
     ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
-    ctx.fillStyle=BOARD_BASE;
+    const guideOn=!!(state && state.preview);
+    ctx.fillStyle=guideOn?'#FFFFFF':BOARD_BASE;
     ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
 
-    if(imageReady && state && state.preview){
+    if(imageReady && guideOn){
       ctx.save();
       ctx.globalAlpha=GUIDE_OPACITY;
       ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
@@ -279,7 +302,7 @@
     if(state){
       const config=difficultyConfig(state.difficulty);
       ctx.save();
-      ctx.strokeStyle='rgba(214,223,255,.10)';
+      ctx.strokeStyle=guideOn?'rgba(8,13,34,.18)':'rgba(214,223,255,.10)';
       ctx.lineWidth=0.65;
       const cw=BOARD_WIDTH/config.cols, ch=BOARD_HEIGHT/config.rows;
       for(let c=1;c<config.cols;c++){ ctx.beginPath(); ctx.moveTo(c*cw,0); ctx.lineTo(c*cw,BOARD_HEIGHT); ctx.stroke(); }
@@ -872,9 +895,32 @@
     return !!(pseudoFullscreen || document.fullscreenElement===refs.workspace);
   }
 
+  function viewportSize(){
+    const viewport=window.visualViewport;
+    return {
+      width:Math.max(1,Number(viewport&&viewport.width)||window.innerWidth||1),
+      height:Math.max(1,Number(viewport&&viewport.height)||window.innerHeight||1)
+    };
+  }
+
+  function mobileLandscape(){
+    const size=viewportSize();
+    return size.width>size.height;
+  }
+
+  function syncMobileFullscreenOrientation(){
+    if(!refs.workspace) return;
+    const mobilePseudo=!!(pseudoFullscreen && mobileLike());
+    const landscape=mobilePseudo && mobileLandscape();
+    const portrait=mobilePseudo && !landscape;
+    refs.workspace.classList.toggle('is-mobile-fullscreen-landscape',landscape);
+    refs.workspace.classList.toggle('is-mobile-fullscreen-portrait',portrait);
+    if(refs.rotateNotice) refs.rotateNotice.hidden=!portrait;
+  }
+
   function syncFullscreenBoardFit(){
     if(!refs.workspace || !refs.boardShell) return;
-    if(!fullscreenActive() || window.innerWidth<=900){
+    if(!fullscreenActive()){
       refs.workspace.style.removeProperty('--weight-coherence-fullscreen-board-width');
       return;
     }
@@ -882,15 +928,23 @@
     const statusHeight=refs.status ? refs.status.getBoundingClientRect().height : 0;
     const shellStyle=window.getComputedStyle(refs.boardShell);
     const gap=parseFloat(shellStyle.rowGap || shellStyle.gap || '0') || 0;
-    const availableHeight=Math.max(0,shellRect.height-statusHeight-gap);
-    const width=Math.floor(Math.min(800,shellRect.width,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
+    const availableHeight=Math.max(0,shellRect.height-statusHeight-gap-6);
+    const availableWidth=Math.max(0,shellRect.width-6);
+    const width=Math.floor(Math.min(800,availableWidth,availableHeight*(BOARD_WIDTH/BOARD_HEIGHT)));
     if(width>0) refs.workspace.style.setProperty('--weight-coherence-fullscreen-board-width',width+'px');
+  }
+
+  function settleFullscreenLayout(){
+    syncFullscreenBoardFit();
+    if(fullscreenActive()) renderTray();
   }
 
   function scheduleFullscreenBoardFit(){
     window.requestAnimationFrame(function(){
-      window.requestAnimationFrame(syncFullscreenBoardFit);
+      window.requestAnimationFrame(settleFullscreenLayout);
     });
+    window.clearTimeout(fullscreenLayoutTimer);
+    fullscreenLayoutTimer=window.setTimeout(settleFullscreenLayout,180);
   }
 
   function setPseudoFullscreen(active){
@@ -898,6 +952,7 @@
     refs.workspace.classList.toggle('is-pseudo-fullscreen',pseudoFullscreen);
     document.documentElement.classList.toggle('weight-coherence-pseudo-fullscreen',pseudoFullscreen);
     document.body.classList.toggle('weight-coherence-pseudo-fullscreen',pseudoFullscreen);
+    syncMobileFullscreenOrientation();
     renderTray();
     syncFullscreenButton();
   }
@@ -927,8 +982,8 @@
     }
     if(refs.workspace.requestFullscreen){
       refs.workspace.requestFullscreen().then(function(){
-        renderTray();
         syncFullscreenButton();
+        scheduleFullscreenBoardFit();
       }).catch(function(){
         setPseudoFullscreen(true);
         setStatus('Browser full screen was unavailable, so the puzzle opened in a full-viewport mode.','');
@@ -1149,10 +1204,24 @@
     }
   });
   document.addEventListener('fullscreenchange',function(){
-    renderTray();
+    syncMobileFullscreenOrientation();
     syncFullscreenButton();
+    scheduleFullscreenBoardFit();
   });
-  window.addEventListener('resize',scheduleFullscreenBoardFit);
+  window.addEventListener('resize',function(){
+    syncMobileFullscreenOrientation();
+    scheduleFullscreenBoardFit();
+  });
+  window.addEventListener('orientationchange',function(){
+    syncMobileFullscreenOrientation();
+    scheduleFullscreenBoardFit();
+  });
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',function(){
+      syncMobileFullscreenOrientation();
+      scheduleFullscreenBoardFit();
+    },{passive:true});
+  }
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
   let storageAuthenticated=!!gameStorage()?.isAuthenticated?.();
   document.addEventListener('baseline:game-storage',function(event){
