@@ -218,6 +218,15 @@ export function createNinjaTrainingRuntime(dependencies) {
     return {level:level,bossDamageMult:1+boss,clueDropChance:clues,upgradeCostMult:1-costReduction,unlockedTraits:traits};
   }
 
+  function jigsawRealmContribution(){
+    try{
+      if(globalThis.BaselineJigsawProgress && typeof globalThis.BaselineJigsawProgress.getRealmContribution === 'function'){
+        return globalThis.BaselineJigsawProgress.getRealmContribution();
+      }
+    }catch(_error){}
+    return { passiveEfficiencyMult:1, passivePct:0, completions:0, unlockedTraits:[] };
+  }
+
   function badmintonRealmContribution(){
     try{
       if(globalThis.BadmintonFocusedGames && typeof globalThis.BadmintonFocusedGames.getRealmContribution === 'function'){
@@ -290,6 +299,7 @@ export function createNinjaTrainingRuntime(dependencies) {
     const darts = dartsRealmContribution();
     const badminton = badmintonRealmContribution();
     const crossnumber = crossnumberRealmContribution();
+    const jigsaws = jigsawRealmContribution();
     const totalLevels = p.level + m.level + w.level + t.level + r.level + Math.max(1, Number(darts.level || 1)) + Math.max(1, Number(badminton.level || 1)) + Math.max(1, Number(crossnumber.level || 1));
     const bonus = {
       attackMult:1,
@@ -306,6 +316,7 @@ export function createNinjaTrainingRuntime(dependencies) {
       dartsLevel:Math.max(1, Number(darts.level || 1)),
       badmintonLevel:Math.max(1, Number(badminton.level || 1)),
       crossnumberLevel:Math.max(1, Number(crossnumber.level || 1)),
+      jigsawPassivePct:Math.max(0, Number(jigsaws.passivePct || 0)),
       unlockedTraits:[]
     };
 
@@ -354,6 +365,11 @@ export function createNinjaTrainingRuntime(dependencies) {
     bonus.clueDropChance += Number(crossnumber.clueDropChance || 0);
     bonus.upgradeCostMult *= Number(crossnumber.upgradeCostMult || 1);
     (crossnumber.unlockedTraits || []).forEach(function(trait){ bonus.unlockedTraits.push(trait); });
+
+    // Jigsaws contribute only passive Realm efficiency. They do not add
+    // Jigsaw-specific skills, attack bonuses, tiers or currencies.
+    bonus.passiveEfficiencyMult *= Number(jigsaws.passiveEfficiencyMult || 1);
+    (jigsaws.unlockedTraits || []).forEach(function(trait){ bonus.unlockedTraits.push(trait); });
 
     bonus.attackMult *= Number(darts.attackMult || 1);
     bonus.critChance += Number(darts.critChance || 0);
@@ -974,6 +990,16 @@ function showNinjaOfflineToast(message){
   if(typeof document !== 'undefined' && !document.documentElement.hasAttribute('data-realm-crossnumber-link-bound')){
     document.documentElement.setAttribute('data-realm-crossnumber-link-bound','true');
     document.addEventListener('baseline:crossnumber-progress', function(){
+      if(!profiles.ninja) return;
+      resolveNinjaBonuses();
+      renderNinja();
+      scheduleSave('ninja');
+    });
+  }
+
+  if(typeof document !== 'undefined' && !document.documentElement.hasAttribute('data-realm-jigsaw-link-bound')){
+    document.documentElement.setAttribute('data-realm-jigsaw-link-bound','true');
+    document.addEventListener('baseline:jigsaw-progress', function(){
       if(!profiles.ninja) return;
       resolveNinjaBonuses();
       renderNinja();

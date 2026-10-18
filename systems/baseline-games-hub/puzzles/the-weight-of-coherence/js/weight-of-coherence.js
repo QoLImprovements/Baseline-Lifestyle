@@ -42,6 +42,10 @@
     500: Object.freeze({ pieces:500, cols:20, rows:25, trayPageSize:30 }),
     1000: Object.freeze({ pieces:1000, cols:25, rows:40, trayPageSize:32 })
   });
+  const JIGSAW_XP_REWARDS = Object.freeze({ 50:30, 100:55, 500:180, 1000:320 });
+  const JIGSAW_PROFILE_APPS = Object.freeze([
+    'weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw'
+  ]);
 
   const root = document.getElementById(ROOT_ID);
   if(!root) return;
@@ -96,6 +100,7 @@
 
   let selectedDifficulty = 100;
   let state = null;
+  let progression = null;
   let timerHandle = 0;
   let selectedPieceId = null;
   let returnHighlightPieceId = null;
@@ -129,6 +134,157 @@
     renderTray();
   });
 
+  function jigsawXpNeeded(level){
+    const value=Math.max(1,Math.round(Number(level)||1));
+    return 60+((value-1)*35)+((value-1)*(value-1)*4);
+  }
+
+  function defaultJigsawProgress(){
+    return {
+      level:1,
+      xp:0,
+      totalXpEarned:0,
+      completions:0,
+      totalPiecesCompleted:0,
+      bestTimes:{},
+      realmPassivePct:0,
+      lastXpAward:0
+    };
+  }
+
+  function normaliseJigsawProgress(value){
+    const source=value&&typeof value==='object'?value:{};
+    const bestTimes=source.bestTimes&&typeof source.bestTimes==='object'?source.bestTimes:{};
+    const out=defaultJigsawProgress();
+    out.level=Math.max(1,Math.round(Number(source.level)||1));
+    out.xp=Math.max(0,Math.round(Number(source.xp)||0));
+    out.totalXpEarned=Math.max(0,Math.round(Number(source.totalXpEarned)||0));
+    out.completions=Math.max(0,Math.round(Number(source.completions)||0));
+    out.totalPiecesCompleted=Math.max(0,Math.round(Number(source.totalPiecesCompleted)||0));
+    out.bestTimes={};
+    Object.keys(bestTimes).forEach(function(key){
+      const seconds=Math.max(0,Math.round(Number(bestTimes[key])||0));
+      if(seconds) out.bestTimes[String(key)]=seconds;
+    });
+    out.lastXpAward=Math.max(0,Math.round(Number(source.lastXpAward)||0));
+    out.realmPassivePct=jigsawRealmPassivePct(out);
+    return out;
+  }
+
+  function jigsawRealmPassivePct(progress){
+    const p=progress||defaultJigsawProgress();
+    const raw=(Math.max(0,Number(p.level||1)-1)*0.18)+(Math.min(40,Math.max(0,Number(p.completions||0)))*0.04);
+    return Math.min(5,Math.round(raw*10)/10);
+  }
+
+  function currentJigsawReward(){
+    const difficulty=state?state.difficulty:selectedDifficulty;
+    return Math.max(1,Number(JIGSAW_XP_REWARDS[difficulty]||30));
+  }
+
+  function loadJigsawProgress(){
+    const stored=gameStorage()?.getProfile?.(APP);
+    progression=normaliseJigsawProgress(stored&&stored.progression ? stored.progression : stored);
+    return progression;
+  }
+
+  function awardJigsawXp(amount){
+    if(!progression) progression=defaultJigsawProgress();
+    let gain=Math.max(0,Math.round(Number(amount)||0));
+    progression.totalXpEarned+=gain;
+    progression.xp+=gain;
+    let levels=0;
+    while(progression.xp>=jigsawXpNeeded(progression.level)){
+      progression.xp-=jigsawXpNeeded(progression.level);
+      progression.level+=1;
+      levels+=1;
+    }
+    progression.realmPassivePct=jigsawRealmPassivePct(progression);
+    progression.lastXpAward=gain;
+    return levels;
+  }
+
+  function jigsawRealmContribution(){
+    const storage=gameStorage();
+    let combinedScore=0;
+    let totalCompletions=0;
+    let highestLevel=1;
+    JIGSAW_PROFILE_APPS.forEach(function(app){
+      let source=null;
+      try{ source=storage?.getProfile?.(app); }catch(_error){}
+      const activeSource=app===APP&&progression?progression:(source&&source.progression?source.progression:source);
+      const p=normaliseJigsawProgress(activeSource);
+      highestLevel=Math.max(highestLevel,p.level);
+      totalCompletions+=p.completions;
+      combinedScore+=(Math.max(0,p.level-1)*0.08)+(Math.min(20,p.completions)*0.02);
+    });
+    const pct=Math.min(5,Math.round(combinedScore*10)/10);
+    const traits=[];
+    if(totalCompletions>=10) traits.push('Jigsaws: Patient Assembly');
+    if(totalCompletions>=30) traits.push('Jigsaws: Sustained Reconstruction');
+    return {
+      level:highestLevel,
+      completions:totalCompletions,
+      passiveEfficiencyMult:1+(pct/100),
+      passivePct:pct,
+      unlockedTraits:traits
+    };
+  }
+
+  function notifyJigsawProgress(){
+    const detail={
+      app:APP,
+      puzzleId:String(activePuzzle&&activePuzzle.id||''),
+      profile:progression?JSON.parse(JSON.stringify(progression)):defaultJigsawProgress(),
+      contribution:jigsawRealmContribution()
+    };
+    try{document.dispatchEvent(new CustomEvent('baseline:jigsaw-progress',{detail:detail}));}catch(_error){}
+    try{globalThis.BaselineRealmHost?.resolveBonuses?.();}catch(_error){}
+  }
+
+  function ensureJigsawProgressCard(){
+    let card=document.getElementById('weightCoherenceProgress');
+    if(card) return card;
+    card=document.createElement('section');
+    card.id='weightCoherenceProgress';
+    card.className='jigsaw-progress-card';
+    const intro=root.querySelector('.weight-coherence-intro');
+    if(intro) intro.insertAdjacentElement('afterend',card);
+    else root.prepend(card);
+    return card;
+  }
+
+  function renderJigsawProgress(){
+    if(!progression) progression=defaultJigsawProgress();
+    progression.realmPassivePct=jigsawRealmPassivePct(progression);
+    const needed=jigsawXpNeeded(progression.level);
+    const pct=Math.min(100,(progression.xp/Math.max(1,needed))*100);
+    const remaining=Math.max(0,needed-progression.xp);
+    const difficulty=state?state.difficulty:selectedDifficulty;
+    const best=progression.bestTimes[String(difficulty)];
+    const card=ensureJigsawProgressCard();
+    card.innerHTML=
+      '<section class="coherent-progress-overview">' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Jigsaw Experience</span><strong>Level '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(progression.level+1)+'</div></div>' +
+        '<div class="coherent-progress-xp-meta"><span>'+progression.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
+        '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'"><span style="width:'+pct+'%"></span></div>' +
+      '</section>' +
+      '<div class="coherent-progress-grid">' +
+        '<div class="coherent-progress-stat"><span>Completed jigsaws</span><strong>'+progression.completions+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Total pieces completed</span><strong>'+progression.totalPiecesCompleted.toLocaleString('en-GB')+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>'+difficulty.toLocaleString('en-GB')+'-piece completion XP</span><strong>+'+currentJigsawReward()+' XP</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Best '+difficulty.toLocaleString('en-GB')+'-piece time</span><strong>'+(best?formatTime(best):'—')+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Combined Jigsaw Realm passive</span><strong>+'+jigsawRealmContribution().passivePct.toFixed(1)+'%</strong></div>' +
+      '</div>' +
+      '<p class="jigsaw-progress-note">Jigsaws progress through completion XP only. Piece count changes difficulty; it does not unlock a tier or a Jigsaw skill tree.</p>';
+  }
+
+  globalThis.BaselineJigsawProgress=Object.freeze({
+    getProfile:function(){return progression?JSON.parse(JSON.stringify(progression)):defaultJigsawProgress();},
+    getRealmContribution:function(){return jigsawRealmContribution();},
+    getActiveApp:function(){return APP;}
+  });
+
   function syncPuzzlePresentation(){
     BOARD_WIDTH=Math.max(1,Number(activePuzzle.width)||1122);
     BOARD_HEIGHT=Math.max(1,Number(activePuzzle.height)||1402);
@@ -159,9 +315,12 @@
     activePuzzle=puzzle;
     imageReady=false;
     syncPuzzlePresentation();
+    loadJigsawProgress();
     resetToUnstoredState();
     image.src=activePuzzle.image;
     if(!restoreState()) renderTray();
+    renderJigsawProgress();
+    notifyJigsawProgress();
     scheduleFullscreenBoardFit();
     return true;
   }
@@ -608,7 +767,7 @@
   function serialiseState(){
     if(!state) return null;
     return {
-      version:2,
+      version:3,
       difficulty:state.difficulty,
       placed:Array.from(state.placed),
       order:state.order.slice(),
@@ -618,6 +777,7 @@
       started:state.started,
       completed:state.completed,
       elapsed:elapsedSeconds(),
+      progression:progression?JSON.parse(JSON.stringify(progression)):defaultJigsawProgress(),
       savedAt:Date.now()
     };
   }
@@ -640,6 +800,7 @@
     try{
       const parsed=gameStorage()?.getProfile?.(APP);
       if(!parsed||typeof parsed!=='object') return false;
+      progression=normaliseJigsawProgress(parsed.progression||parsed);
       const config=difficultyConfig(parsed.difficulty);
       const count=config.pieces;
       const placed=new Set((Array.isArray(parsed.placed)?parsed.placed:[]).map(Number).filter(function(id){ return Number.isInteger(id)&&id>=0&&id<count; }));
@@ -669,6 +830,8 @@
       drawBoard();
       renderTray();
       updateStats();
+      renderJigsawProgress();
+      notifyJigsawProgress();
       startTimer();
       return true;
     }catch(_error){ return false; }
@@ -695,6 +858,7 @@
     drawBoard();
     renderTray();
     setStatus('Choose a piece count and start the puzzle.','');
+    renderJigsawProgress();
   }
 
   function syncDifficultyButtons(){
@@ -736,6 +900,7 @@
     drawBoard();
     renderTray();
     updateStats();
+    renderJigsawProgress();
     saveState();
     startTimer();
   }
@@ -743,7 +908,8 @@
   function renderCompletion(){
     if(!state || !state.completed){ refs.completion.hidden=true; return; }
     refs.completion.hidden=false;
-    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>' + (activePuzzle.title||'Jigsaw') + ' complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + '</span>';
+    const reward=progression&&progression.lastXpAward?progression.lastXpAward:0;
+    refs.completion.innerHTML='<button type="button" class="weight-coherence-completion-close" aria-label="Close completion message">&times;</button><strong>' + (activePuzzle.title||'Jigsaw') + ' complete</strong><span>' + state.difficulty.toLocaleString('en-GB') + ' pieces · ' + formatTime(state.elapsed) + (reward?' · +'+reward+' XP':'') + '</span>';
   }
 
   refs.completion.addEventListener('click',function(event){
@@ -759,11 +925,23 @@
     state.completed=true;
     selectedPieceId=null;
     window.clearInterval(timerHandle);
-    setStatus('Completed. Every piece is in place.','success');
+
+    if(!progression) progression=defaultJigsawProgress();
+    const reward=currentJigsawReward();
+    progression.completions+=1;
+    progression.totalPiecesCompleted+=state.difficulty;
+    const bestKey=String(state.difficulty);
+    const priorBest=Math.max(0,Number(progression.bestTimes[bestKey]||0));
+    if(!priorBest||state.elapsed<priorBest) progression.bestTimes[bestKey]=Math.max(1,Math.round(state.elapsed));
+    const levels=awardJigsawXp(reward);
+
+    setStatus('Completed. Every piece is in place. +'+reward+' XP'+(levels?' · Level up +'+levels:'')+'.','success');
     renderCompletion();
     renderTray();
     updateStats();
+    renderJigsawProgress();
     saveState();
+    notifyJigsawProgress();
   }
 
   function removePieceFromSortBins(id){

@@ -65,7 +65,7 @@ test('jigsaws use the Games Hub server save authority with separate puzzle profi
   assert.match(source, /BaselineGameStorage/);
   assert.doesNotMatch(source, /\b(?:localStorage|sessionStorage|indexedDB)\b/);
 
-  for (const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']) {
+  for (const app of ['weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw']) {
     assert.ok(registry.includes(`app:'${app}'`));
     assert.ok(guard.includes(`'${app}'`));
     assert.ok(api.includes(`'${app}'`));
@@ -73,8 +73,11 @@ test('jigsaws use the Games Hub server save authority with separate puzzle profi
 
   assert.match(saved, /'weightcoherence'\s*=>\s*'weight-of-coherence\.json'/);
   assert.match(saved, /'unheardsignal'\s*=>\s*'the-unheard-signal\.json'/);
+  assert.match(saved, /'tearswithoutwitness'\s*=>\s*'tears-without-witness\.json'/);
   assert.match(saved, /'pantherjigsaw'\s*=>\s*'black-panther\.json'/);
   assert.match(saved, /'bearjigsaw'\s*=>\s*'bear\.json'/);
+  assert.match(saved, /'foxjigsaw'\s*=>\s*'fox\.json'/);
+  assert.match(saved, /'elephantsjigsaw'\s*=>\s*'elephants\.json'/);
 });
 
 
@@ -184,4 +187,38 @@ test('homepage keeps Badminton Session as one correctly spaced system title', ()
   const index = read('index.html');
   assert.match(index, /<h2>Baseline Badminton Session<\/h2>/);
   assert.doesNotMatch(index, /Baseline Badminton<br\s*\/?>(?:\s*)Session/);
+});
+
+
+test('non-Realm coherence fixes protect the reported gameplay failures', () => {
+  const core = read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const css = read('systems/baseline-games-hub/css/non-realm-game-refinement.css');
+
+  assert.match(core, /if\(selectedGame === 'detectword'\) desktopKeypadOpenGame = ''/);
+  assert.match(core, /function coherentProgressHtml/);
+  assert.match(core, /function renderCompactGameXp/);
+
+  assert.match(css, /#pairsPanel \.memory-card-front\{[\s\S]*?opacity:0!important;[\s\S]*?visibility:hidden!important/);
+  assert.match(css, /#pairsPanel \.memory-card\.is-open \.memory-card-front,[\s\S]*?opacity:1!important/);
+  assert.match(css, /ruleshift-colour--green \.ruleshift-shape\{background:#7f9846!important\}/);
+  assert.match(css, /ruleshift-colour--teal \.ruleshift-shape\{background:#249aa8!important\}/);
+  assert.match(css, /#ruleshiftPanel \.ruleshift-options-grid\{[\s\S]*?justify-content:center!important/);
+  assert.match(css, /#detectwordPanel \.game-play-root\.desktop-keypad-open #wordBoard[\s\S]*?grid-template-columns:1fr!important/);
+});
+
+test('Jigsaws use completion XP with no Jigsaw tier or skill tree and only a Realm passive contribution', () => {
+  const jigsaw = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const realm = read('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
+
+  assert.match(jigsaw, /JIGSAW_XP_REWARDS/);
+  assert.match(jigsaw, /awardJigsawXp/);
+  assert.doesNotMatch(jigsaw, /JIGSAW_TIERS/);
+  assert.doesNotMatch(jigsaw, /JIGSAW_SKILLS/);
+  assert.match(jigsaw, /BaselineJigsawProgress/);
+  assert.match(jigsaw, /passiveEfficiencyMult/);
+
+  assert.match(realm, /function jigsawRealmContribution/);
+  assert.match(realm, /bonus\.passiveEfficiencyMult \*= Number\(jigsaws\.passiveEfficiencyMult \|\| 1\)/);
+  assert.doesNotMatch(realm, /jigsaws\.attackMult|jigsaws\.critChance|jigsaws\.bossDamageMult/);
+  assert.match(realm, /baseline:jigsaw-progress/);
 });

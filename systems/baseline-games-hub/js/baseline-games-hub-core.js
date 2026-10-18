@@ -1004,6 +1004,43 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function xpNeededForLevel(level){
     return 60 + ((level - 1) * 35) + ((level - 1) * (level - 1) * 4);
   }
+  function progressionSnapshot(profile){
+    const level=Math.max(1,Math.round(Number(profile&&profile.level||1)));
+    const xp=Math.max(0,Math.round(Number(profile&&profile.xp||0)));
+    const needed=xpNeededForLevel(level);
+    const pct=clamp((xp/Math.max(1,needed))*100,0,100);
+    return {level:level,xp:xp,needed:needed,pct:pct,remaining:Math.max(0,needed-xp)};
+  }
+
+  function coherentProgressHtml(profile,title,stats){
+    const p=progressionSnapshot(profile);
+    const statHtml=(stats||[]).map(function(item){
+      return '<div class="coherent-progress-stat"><span>' + escapeHtml(item[0]) + '</span><strong>' + escapeHtml(item[1]) + '</strong></div>';
+    }).join('');
+    return '<section class="coherent-progress-overview">' +
+      '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">' + escapeHtml(title||'Progress') + '</span><strong>Level ' + p.level + '</strong></div><div class="coherent-progress-next">' + p.remaining + ' XP to Level ' + (p.level+1) + '</div></div>' +
+      '<div class="coherent-progress-xp-meta"><span>' + p.xp + ' / ' + p.needed + ' XP</span><span>' + Math.round(p.pct) + '%</span></div>' +
+      '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '" aria-label="' + escapeHtml(title||'Game') + ' experience"><span style="width:' + p.pct + '%"></span></div>' +
+    '</section>' +
+    '<div class="coherent-progress-grid">' + statHtml + '</div>';
+  }
+
+  function renderCompactGameXp(gameId,profile){
+    const root=q('[data-game-play-root="' + gameId + '"]');
+    if(!root||!profile) return;
+    const p=progressionSnapshot(profile);
+    let node=root.querySelector('[data-live-xp="' + gameId + '"]');
+    if(!node){
+      node=document.createElement('div');
+      node.className='game-live-xp';
+      node.setAttribute('data-live-xp',gameId);
+      const toolbar=root.querySelector('.game-toolbar');
+      if(toolbar&&toolbar.nextSibling) root.insertBefore(node,toolbar.nextSibling);
+      else if(toolbar) toolbar.insertAdjacentElement('afterend',node);
+      else root.prepend(node);
+    }
+    node.innerHTML='<strong>Level ' + p.level + '</strong><div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="' + p.needed + '" aria-valuenow="' + p.xp + '"><span style="width:' + p.pct + '%"></span></div><span>' + p.xp + ' / ' + p.needed + ' XP</span>';
+  }
   function getAuth(){
     try{
       const storage=serverStorageAuthority();
@@ -1433,7 +1470,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function renderAuthState(){
     if(!refs.authStateNote) return;
     if(authState.authed){
-      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Crossnumber, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
+      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">Registered Games Hub game and puzzle progress saves to ' + escapeHtml(authState.name || 'your account') + ', including Jigsaws and Baseline Realm.</span>';
     }else{
       refs.authStateNote.innerHTML = '<strong>Temporary play is active.</strong><span class="inline-note">You can play while signed out, but progress is not saved. Sign in to save game progress to your account.</span>';
     }
@@ -1535,8 +1572,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const previousGame = selectedGame;
     selectedGame = normaliseGameId(gameId);
     if(window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame(selectedGame);
-    if(!isMobileGameViewport()){
-      if(selectedGame === 'detectword') desktopKeypadOpenGame = 'detectword';
+    if(!isMobileGameViewport() && selectedGame !== previousGame){
+      if(selectedGame === 'detectword') desktopKeypadOpenGame = '';
       else if(desktopKeypadOpenGame === 'detectword') desktopKeypadOpenGame = '';
     }
     if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
@@ -1842,15 +1879,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.pairsCleanStreakValue) refs.pairsCleanStreakValue.textContent = String(profile.cleanWinStreak);
     if(refs.pairsCleanBonusValue) refs.pairsCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
     if(refs.pairsStats){
-      refs.pairsStats.innerHTML = [
-        ['Best streak', profile.bestStreak],
-        ['Current streak', profile.currentStreak],
-        ['Clean streak', profile.cleanWinStreak],
-        ['Bank from Pairs', profile.bank],
-        ['Current tier', currentPairsTier().name],
-        ['Unlocked tiers', PAIRS_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + PAIRS_TIERS.length]
-      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+      refs.pairsStats.innerHTML = coherentProgressHtml(profile,'Pairs',[
+        ['Boards cleared',profile.boardsCleared],
+        ['Games started',profile.gamesPlayed],
+        ['Best streak',profile.bestStreak],
+        ['Current streak',profile.currentStreak],
+        ['Clean streak',profile.cleanWinStreak],
+        ['Bank earned',profile.bank],
+        ['Current tier',currentPairsTier().name],
+        ['Unlocked tiers',PAIRS_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + PAIRS_TIERS.length]
+      ]);
     }
+    renderCompactGameXp('pairs',profile);
     const ready = profile.skillPoints > 0;
     if(refs.pairsSkillAlertBtn){ refs.pairsSkillAlertBtn.disabled = !ready; refs.pairsSkillAlertBtn.classList.toggle('is-ready', ready); }
     setPairsPanel(pairsOpenPanel || 'pairsGameCard');
@@ -2310,15 +2350,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.make24CleanStreakValue) refs.make24CleanStreakValue.textContent = String(profile.cleanWinStreak);
     if(refs.make24CleanBonusValue) refs.make24CleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
     if(refs.make24Stats){
-      refs.make24Stats.innerHTML = [
-        ['Clean streak', profile.cleanWinStreak],
-        ['Bank from Make The Number', profile.bank],
-        ['Current tier', currentMake24Tier().name],
-        ['Unlocked tiers', MAKE24_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + MAKE24_TIERS.length],
-        ['Guide level', profile.skills.clarity],
-        ['Reserve level', profile.skills.reserve]
-      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+      refs.make24Stats.innerHTML = coherentProgressHtml(profile,'Make The Number',[
+        ['Puzzles solved',profile.puzzlesSolved],
+        ['Runs started',profile.gamesPlayed],
+        ['Clean streak',profile.cleanWinStreak],
+        ['Bank earned',profile.bank],
+        ['Current tier',currentMake24Tier().name],
+        ['Unlocked tiers',MAKE24_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + MAKE24_TIERS.length],
+        ['Guide level',profile.skills.clarity],
+        ['Reserve level',profile.skills.reserve]
+      ]);
     }
+    renderCompactGameXp('make24',profile);
     const ready = profile.skillPoints > 0;
     if(refs.make24SkillAlertBtn){ refs.make24SkillAlertBtn.disabled = !ready; refs.make24SkillAlertBtn.classList.toggle('is-ready', ready); }
     setMake24Panel(make24OpenPanel || 'make24GameCard');
@@ -2908,15 +2951,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.wordCleanStreakValue) refs.wordCleanStreakValue.textContent = String(profile.cleanWinStreak);
     if(refs.wordCleanBonusValue) refs.wordCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
     if(refs.wordStats){
-      refs.wordStats.innerHTML = [
-        ['Best streak', profile.bestStreak],
-        ['Clean streak', profile.cleanWinStreak],
-        ['Bank from Detect The Word', profile.bank],
-        ['Current tier', currentWordTier().name],
-        ['Unlocked tiers', WORD_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + WORD_TIERS.length],
-        ['Focus level', profile.skills.focus]
-      ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+      refs.wordStats.innerHTML = coherentProgressHtml(profile,'Detect The Word',[
+        ['Words solved',profile.wordsSolved],
+        ['Best streak',profile.bestStreak],
+        ['Current streak',profile.currentStreak],
+        ['Clean streak',profile.cleanWinStreak],
+        ['Bank earned',profile.bank],
+        ['Current tier',currentWordTier().name],
+        ['Unlocked tiers',WORD_TIERS.filter(t => profile.level >= t.unlockLevel).length + ' / ' + WORD_TIERS.length],
+        ['Focus level',profile.skills.focus]
+      ]);
     }
+    renderCompactGameXp('detectword',profile);
     const ready = profile.skillPoints > 0;
     if(refs.wordSkillAlertBtn){ refs.wordSkillAlertBtn.disabled = !ready; refs.wordSkillAlertBtn.classList.toggle('is-ready', ready); }
     setWordPanel(wordOpenPanel || 'wordGameCard');
@@ -3457,16 +3503,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     renderTrackCoinTierList();
     renderTrackCoinSkillTree();
     const accuracyPct = Math.round(trackCoinAccuracy(profile) * 100);
-    refs.trackCoinStats.innerHTML = [
-      ['Best streak', profile.bestStreak],
-      ['Total correct', profile.totalCorrect],
-      ['Rounds played', profile.totalRounds],
-      ['Accuracy', accuracyPct + '%'],
-      ['Cup speed', trackCoinCurrentSpeedPercent(profile) + '%'],
-      ['Best cup speed', trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%'],
-      ['Total XP earned', profile.totalXpEarned],
-      ['Total coins earned', profile.totalCoinsEarned]
-    ].map(item => '<div class="trackcoin-stat-card"><strong>' + item[0] + '</strong><span class="inline-note">' + item[1] + '</span></div>').join('');
+    refs.trackCoinStats.innerHTML = coherentProgressHtml(profile,'Track the Coin',[
+      ['Best streak',profile.bestStreak],
+      ['Current streak',profile.currentStreak],
+      ['Total correct',profile.totalCorrect],
+      ['Rounds played',profile.totalRounds],
+      ['Accuracy',accuracyPct + '%'],
+      ['Cup speed',trackCoinCurrentSpeedPercent(profile) + '%'],
+      ['Best cup speed',trackCoinNormaliseSpeedPercent(profile.bestTrackCoinSpeedPercent || TRACKCOIN_BASE_SPEED_PERCENT) + '%'],
+      ['Total XP earned',profile.totalXpEarned],
+      ['Total coins earned',profile.totalCoinsEarned]
+    ]);
+    renderCompactGameXp('trackcoin',profile);
     refs.trackCoinRpgState.textContent = trackCoinRpgUnlocked(profile)
       ? 'Pace unlock threshold reached for RPG integration.'
       : 'Reach level 10, maintain high accuracy, or push a major streak to unlock Pace Control.';
@@ -3848,6 +3896,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     if(refs.ruleShiftBestStreakValue) refs.ruleShiftBestStreakValue.textContent = profile.bestStreak;
     if(refs.ruleShiftCleanStreakValue) refs.ruleShiftCleanStreakValue.textContent = profile.cleanWinStreak;
     if(refs.ruleShiftCleanBonusValue) refs.ruleShiftCleanBonusValue.textContent = '+' + cleanWinBonusPct(profile.cleanWinStreak) + '%';
+    renderCompactGameXp('ruleshift',profile);
   }
   function renderRuleShiftTierList(){
     if(!refs.ruleShiftTierSelectList) return;
@@ -3913,7 +3962,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const profile = profiles.ruleshift;
     const total = profile.correctAnswers + profile.wrongAnswers;
     const accuracy = total ? Math.round((profile.correctAnswers / total) * 100) : 0;
-    refs.ruleShiftStats.innerHTML = '<div class="trackcoin-stat-card"><strong>Runs played</strong><span>' + profile.gamesPlayed + '</span></div><div class="trackcoin-stat-card"><strong>Correct choices</strong><span>' + profile.correctAnswers + '</span></div><div class="trackcoin-stat-card"><strong>Wrong choices</strong><span>' + profile.wrongAnswers + '</span></div><div class="trackcoin-stat-card"><strong>Accuracy</strong><span>' + accuracy + '%</span></div><div class="trackcoin-stat-card"><strong>Best streak</strong><span>' + profile.bestStreak + '</span></div><div class="trackcoin-stat-card"><strong>Clean streak</strong><span>' + profile.cleanWinStreak + '</span></div>';
+    refs.ruleShiftStats.innerHTML = coherentProgressHtml(profile,'Rule Shift',[
+      ['Runs played',profile.gamesPlayed],
+      ['Correct choices',profile.correctAnswers],
+      ['Wrong choices',profile.wrongAnswers],
+      ['Accuracy',accuracy + '%'],
+      ['Best streak',profile.bestStreak],
+      ['Current streak',profile.currentStreak],
+      ['Clean streak',profile.cleanWinStreak],
+      ['Bank earned',profile.bank],
+      ['Current tier',currentRuleShiftTier().name]
+    ]);
+    renderCompactGameXp('ruleshift',profile);
   }
   function renderRuleShift(){
     if(!profiles.ruleshift) return;

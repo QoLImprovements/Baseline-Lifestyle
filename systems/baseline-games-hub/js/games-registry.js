@@ -17,8 +17,11 @@
   const persistenceOnlyApps = Object.freeze([
     'weightcoherence',
     'unheardsignal',
+    'tearswithoutwitness',
     'pantherjigsaw',
     'bearjigsaw',
+    'foxjigsaw',
+    'elephantsjigsaw',
     'crossnumber',
     'meridiangrove'
   ]);

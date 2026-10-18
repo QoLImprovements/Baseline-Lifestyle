@@ -23,7 +23,7 @@ import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM
 import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=CROSSNUMBER_REALM_LINK_20261018_2';
+import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=JIGSAW_PASSIVE_LINK_20261018_1';
 
 const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 const STAGE_ONE_READY_BUILD = BUILD;
