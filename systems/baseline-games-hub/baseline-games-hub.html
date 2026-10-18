@@ -38,7 +38,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/sitewide/css/baseline-ui-fixes.css?v=BASELINE_PROTECTED_ACCESS_20260801_3" rel="stylesheet" data-baseline-ui-fixes="true"/>
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
 <link href="/systems/baseline-games-hub/puzzles/shared/css/puzzles-library.css?v=SINGLE_COLUMN_JIGSAW_CARDS_20261018_1" rel="stylesheet"/>
-<link href="/systems/baseline-games-hub/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_ARITHMETIC_20261018_2" rel="stylesheet"/>
+<link href="/systems/baseline-games-hub/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_PROGRESSION_20261018_4" rel="stylesheet"/>
 <link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_TEXT_SELECTION_20261018_2" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm canonical presentation. Shared shell first, destination owners next, mobile geometry last. -->
@@ -149,31 +149,57 @@ These Markdown rules are a human reference point, not live runtime config.
             <div>
               <span class="crossnumber-kicker">Interlocking equations</span>
               <h3 id="crossnumberTitle">Crossnumber</h3>
-              <p>Fit the available number tiles into the open cells. Every connected equation must be mathematically true, and shared cells belong to both directions.</p>
+              <p>Fit number tiles into a changing network of equations. Every new puzzle is generated from a fresh layout seed, so the structure, crossings and arithmetic relationships keep changing.</p>
             </div>
-            <div class="crossnumber-summary" aria-label="Crossnumber status">
-              <div class="crossnumber-stat"><span>Difficulty</span><strong data-crossnumber-difficulty-label>Medium</strong></div>
-              <div class="crossnumber-stat"><span>Mistakes</span><strong data-crossnumber-mistakes>0</strong></div>
-              <div class="crossnumber-stat"><span>Time</span><strong data-crossnumber-timer>00:00</strong></div>
-              <div class="crossnumber-stat"><span>Score</span><strong data-crossnumber-score>10000</strong></div>
+            <div class="crossnumber-summary" aria-label="Crossnumber progression">
+              <div class="crossnumber-stat"><span>Level</span><strong data-crossnumber-level>Level 1</strong></div>
+              <div class="crossnumber-stat"><span>Tier</span><strong data-crossnumber-tier-label>Starter</strong></div>
+              <div class="crossnumber-stat"><span>Bank</span><strong data-crossnumber-bank-value>0</strong></div>
+              <div class="crossnumber-stat"><span>Clean Streak</span><strong data-crossnumber-clean-streak>0</strong></div>
             </div>
           </header>
 
-          <div class="crossnumber-controls">
-            <div class="crossnumber-difficulty" role="group" aria-label="Crossnumber difficulty">
-              <button class="action ghost" type="button" data-crossnumber-difficulty="easy" aria-pressed="false">Easy</button>
-              <button class="action ghost is-active" type="button" data-crossnumber-difficulty="medium" aria-pressed="true">Medium</button>
-              <button class="action ghost" type="button" data-crossnumber-difficulty="hard" aria-pressed="false">Hard</button>
+          <section class="crossnumber-progression-strip" aria-label="Crossnumber level progress">
+            <div class="crossnumber-level-row">
+              <div>
+                <strong>Crossnumber Progress</strong>
+                <span data-crossnumber-xp-meta>0 / 60 XP</span>
+              </div>
+              <div class="crossnumber-level-meta">
+                <span>Skill Points <strong data-crossnumber-skill-points>1</strong></span>
+                <span>Clean Bonus <strong data-crossnumber-clean-bonus>+0%</strong></span>
+              </div>
             </div>
-            <div class="crossnumber-actions" aria-label="Crossnumber controls">
-              <button class="action ghost" type="button" data-crossnumber-action="sort">Sort</button>
-              <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
-              <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
-              <button class="action" type="button" data-crossnumber-action="new">New Puzzle</button>
+            <div class="crossnumber-xp-track" aria-hidden="true"><span data-crossnumber-xp-fill></span></div>
+          </section>
+
+          <section class="crossnumber-tier-panel" aria-labelledby="crossnumberTierHeading">
+            <div class="crossnumber-section-head">
+              <div>
+                <h4 id="crossnumberTierHeading">Tiers</h4>
+                <p>Higher tiers unlock larger equation networks, more operators, fewer starting anchors and stronger rewards.</p>
+              </div>
             </div>
-          </div>
+            <div class="crossnumber-tier-list" data-crossnumber-tiers></div>
+          </section>
 
           <section class="crossnumber-game-panel" aria-label="Crossnumber board">
+            <div class="crossnumber-round-toolbar">
+              <div class="crossnumber-round-stats">
+                <span>Layout <strong data-crossnumber-seed>—</strong></span>
+                <span>Mistakes <strong data-crossnumber-mistakes>0</strong></span>
+                <span>Hints <strong data-crossnumber-hints>1 / 1</strong></span>
+                <span>Time <strong data-crossnumber-timer>00:00</strong></span>
+                <span>Score <strong data-crossnumber-score>0</strong></span>
+              </div>
+              <div class="crossnumber-actions" aria-label="Crossnumber controls">
+                <button class="action ghost" type="button" data-crossnumber-action="sort">Sort Tiles</button>
+                <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
+                <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
+                <button class="action" type="button" data-crossnumber-action="new">New Layout</button>
+              </div>
+            </div>
+
             <div class="crossnumber-board-scroll">
               <div class="crossnumber-board" data-crossnumber-board></div>
             </div>
@@ -187,14 +213,47 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
 
             <div class="crossnumber-status-row">
-              <div class="crossnumber-status" data-crossnumber-status>Place the number tiles so every horizontal and vertical equation is true.</div>
-              <div class="crossnumber-help">Click a tile then a cell, or drag a tile onto the board. Click a placed tile to pick it up again.</div>
+              <div class="crossnumber-status" data-crossnumber-status>Place the number tiles so every equation balances.</div>
+              <div class="crossnumber-help">Click a tile then a cell, or drag it onto the board. Shared number cells connect equations in both directions.</div>
             </div>
 
             <div class="crossnumber-complete" data-crossnumber-complete aria-hidden="true" role="status">
               <strong>Crossnumber complete.</strong>
-              Every equation balances. Time: <span data-crossnumber-complete-time>00:00</span> · Score: <span data-crossnumber-complete-score>0</span>.
+              <span>Time <b data-crossnumber-complete-time>00:00</b> · Score <b data-crossnumber-complete-score>0</b></span>
+              <span data-crossnumber-complete-reward></span>
             </div>
+          </section>
+
+          <div class="crossnumber-progression-grid">
+            <section class="crossnumber-tier-panel" aria-labelledby="crossnumberSkillsHeading">
+              <div class="crossnumber-section-head">
+                <div>
+                  <h4 id="crossnumberSkillsHeading">Skills</h4>
+                  <p>Each level grants one skill point. Skills improve puzzle support, rewards and linked reasoning.</p>
+                </div>
+              </div>
+              <div class="crossnumber-skill-grid" data-crossnumber-skills></div>
+            </section>
+
+            <section class="crossnumber-tier-panel" aria-labelledby="crossnumberRealmHeading">
+              <div class="crossnumber-section-head">
+                <div>
+                  <h4 id="crossnumberRealmHeading">Baseline Realm Link</h4>
+                  <p>Crossnumber develops constraint reasoning and numerical planning that feeds a bounded Realm bonus profile.</p>
+                </div>
+              </div>
+              <div class="crossnumber-realm-card" data-crossnumber-realm></div>
+            </section>
+          </div>
+
+          <section class="crossnumber-tier-panel" aria-labelledby="crossnumberStatsHeading">
+            <div class="crossnumber-section-head">
+              <div>
+                <h4 id="crossnumberStatsHeading">Progress</h4>
+                <p>Long-term Crossnumber progression is saved with the Games Hub profile.</p>
+              </div>
+            </div>
+            <div class="crossnumber-progress-stats" data-crossnumber-stats></div>
           </section>
         </article>
       </section>
@@ -801,19 +860,19 @@ These Markdown rules are a human reference point, not live runtime config.
 </div>
 <script src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
 <script src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script><script src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script><script src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_READY_20261005_1"></script><script src="/sitewide/js/baseline-shared.js?v=ACCOUNT_HEADER_STABILITY_20261005_1&amp;hotfix=CONTACT_PANEL_HEADER_RESTORE_20261016_1&amp;contactcopy=CONTACT_COPY_20261016_1&amp;mobileheader=MOBILE_HEADER_SINGLE_AUTHORITY_20261017_1"></script>
-<script src="/systems/baseline-games-hub/js/games-registry.js?v=SERVER_SAVE_COVERAGE_20261018_1"></script>
+<script src="/systems/baseline-games-hub/js/games-registry.js?v=CROSSNUMBER_PROGRESSION_20261018_4"></script>
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-guard.js?v=SERVER_SAVE_COVERAGE_20261018_1"></script>
-<script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=PUZZLES_ROUTE_OVERVIEW_20261018_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js?v=TEARS_WITHOUT_WITNESS_CORRECT_ART_20261018_1"></script>
+<script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=CROSSNUMBER_PROGRESSION_20261018_4"></script>
+<script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js?v=CROSSNUMBER_PROGRESSION_20261018_4"></script>
 <script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js?v=JIGSAW_MOBILE_DESKTOP_LAYOUT_20261018_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/crossnumber/js/crossnumber.js?v=CROSSNUMBER_ARITHMETIC_20261018_2"></script>
+<script src="/systems/baseline-games-hub/puzzles/crossnumber/js/crossnumber.js?v=CROSSNUMBER_PROGRESSION_20261018_4"></script>
 <script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_TEXT_SELECTION_20261018_2"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/block-grid/js/block-grid.js?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_3"></script>
 <script type="module" src="/systems/baseline-games-hub/games/colour-sort/js/colour-sort.js?v=PUZZLE_GAMES_CORE_COHERENCE_20261017_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4"></script>
 <script type="module" src="/systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js?v=BADMINTON_FOCUSED_REFINED_20260707_2"></script>
-<script type="module" src="/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v=REALM_BASECAMP_FUNCTIONAL_20261018_2"></script>
-<script type="module" src="/systems/baseline-games-hub/js/baseline-games-hub.js?v=SERVER_SAVE_COVERAGE_20261018_1"></script>
+<script type="module" src="/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v=CROSSNUMBER_REALM_LINK_20261018_4"></script>
+<script type="module" src="/systems/baseline-games-hub/js/baseline-games-hub.js?v=CROSSNUMBER_PROGRESSION_20261018_4"></script>
 </body>
 </html>
