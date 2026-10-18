@@ -161,3 +161,68 @@ test('Baseline Realm exact scene survives refresh Back and Forward',async({page}
   await page.goForward();
   await expect.poll(()=>page.evaluate(()=>globalThis.BaselineRealmHost.sceneRouter.getCurrentSceneId())).toBe('workshop');
 });
+
+
+test('Block Grid subviews survive refresh Back and Forward',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/block-grid',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid));
+  await expect(page.locator('#blockGridPanel')).toHaveClass(/is-active/);
+  await page.locator('[data-block-tab="modes"]').click();
+  await expect(page).toHaveURL(/[?&]view=modes/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineBlockGrid));
+  await expect(page.locator('#blockGridModesCard')).toBeVisible();
+  await page.locator('[data-block-tab="progress"]').click();
+  await expect(page).toHaveURL(/[?&]view=progress/);
+  await page.goBack();
+  await expect(page.locator('#blockGridModesCard')).toBeVisible();
+  await page.goForward();
+  await expect(page.locator('#blockGridProgressCard')).toBeVisible();
+});
+
+test('Colour Sort subviews survive refresh Back and Forward',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/colour-sort',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort));
+  await expect(page.locator('#colourSortPanel')).toHaveClass(/is-active/);
+  await page.locator('[data-colour-tab="levels"]').click();
+  await expect(page).toHaveURL(/[?&]view=levels/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselineColourSort));
+  await expect(page.locator('#colourSortLevelsCard')).toBeVisible();
+  await page.locator('[data-colour-tab="progress"]').click();
+  await expect(page).toHaveURL(/[?&]view=progress/);
+  await page.goBack();
+  await expect(page.locator('#colourSortLevelsCard')).toBeVisible();
+  await page.goForward();
+  await expect(page.locator('#colourSortProgressCard')).toBeVisible();
+});
+
+test('Darts Focused clean route survives refresh and explicit close is reversible with Back',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/darts-focused',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.DartsFocusedGames)&&document.getElementById('dartsFocusedPanel')?.classList.contains('is-active'));
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/darts-focused$/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.getElementById('dartsFocusedPanel')?.classList.contains('is-active'));
+  await page.locator('[data-close-darts-focused]').first().click();
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/games-list$/);
+  await page.goBack();
+  await page.waitForFunction(()=>document.getElementById('dartsFocusedPanel')?.classList.contains('is-active'));
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/darts-focused$/);
+});
+
+test('Badminton Focused clean route survives refresh and explicit close is reversible with Back',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/badminton-focused',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BadmintonFocusedGames)&&document.getElementById('badmintonFocusedPanel')?.classList.contains('is-active'));
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/badminton-focused$/);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>document.getElementById('badmintonFocusedPanel')?.classList.contains('is-active'));
+  await page.locator('[data-close-badminton-focused]').first().click();
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/games-list$/);
+  await page.goBack();
+  await page.waitForFunction(()=>document.getElementById('badmintonFocusedPanel')?.classList.contains('is-active'));
+  await expect(page).toHaveURL(/\/baseline-games-hub\/games-hub\/badminton-focused$/);
+});
