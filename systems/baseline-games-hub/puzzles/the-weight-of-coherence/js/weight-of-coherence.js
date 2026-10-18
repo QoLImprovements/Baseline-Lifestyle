@@ -7,8 +7,6 @@
   const ZOOM_MIN = 1;
   const PIECE_ZOOM_DEFAULT = 2;
   const PIECE_ZOOM_MAX = 10;
-  const BOARD_LENS_DEFAULT = 2;
-  const BOARD_LENS_MAX = 10;
   const ZOOM_STEP = 1;
   const registry = window.BaselinePuzzlesRegistry;
   const FALLBACK_PUZZLE = Object.freeze({
@@ -55,6 +53,8 @@
     zoomOut:document.getElementById('weightCoherenceZoomOutBtn'),
     zoomToggle:document.getElementById('weightCoherenceZoomBtn'),
     zoomIn:document.getElementById('weightCoherenceZoomInBtn'),
+    help:document.getElementById('weightCoherenceHelpBtn'),
+    helpDialog:document.getElementById('weightCoherenceHelpDialog'),
     preview:document.getElementById('weightCoherencePreviewBtn'),
     view:document.getElementById('weightCoherenceViewBtn'),
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
@@ -92,16 +92,14 @@
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
   let viewOn = false;
+  let zoomLevel = PIECE_ZOOM_DEFAULT;
   let zoomScale = ZOOM_MIN;
   let zoomTarget = null;
   let lastZoomTarget = null;
   let lastZoomPoint = null;
   let boardLens = null;
   let boardLensActive = false;
-  let boardLensScale = BOARD_LENS_DEFAULT;
   let zoomKeyHeld = false;
-  let zoomButtonLensHeld = false;
-  let suppressZoomButtonClickUntil = 0;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
   const pinchPointers = new Map();
@@ -719,7 +717,6 @@
     updateStats();
     saveState();
     startTimer();
-    try{ refs.board.scrollIntoView({behavior:mobileLike()?'auto':'smooth',block:'center'}); }catch(_error){}
   }
 
   function renderCompletion(){
@@ -807,11 +804,22 @@
     };
   }
 
+  function pageScrollRoot(){
+    const shell=document.querySelector('.bl-scroll');
+    if(shell) return shell;
+    return document.scrollingElement || document.documentElement || document.body || null;
+  }
+
   function pageScrollSnapshot(){
     if(fullscreenActive()) return null;
+    const scrollRoot=pageScrollRoot();
+    const shell=scrollRoot && scrollRoot.classList?.contains('bl-scroll') ? scrollRoot : null;
     return {
-      x:Number(window.scrollX ?? window.pageXOffset) || 0,
-      y:Number(window.scrollY ?? window.pageYOffset) || 0
+      root:scrollRoot,
+      rootX:shell ? Number(shell.scrollLeft)||0 : 0,
+      rootY:shell ? Number(shell.scrollTop)||0 : 0,
+      windowX:Number(window.scrollX ?? window.pageXOffset) || 0,
+      windowY:Number(window.scrollY ?? window.pageYOffset) || 0
     };
   }
 
@@ -819,19 +827,54 @@
     if(!snapshot || fullscreenActive()) return;
     const restore=function(){
       if(fullscreenActive()) return;
+      const scrollRoot=snapshot.root && snapshot.root.isConnected ? snapshot.root : pageScrollRoot();
+      const isShell=!!(scrollRoot && scrollRoot.classList?.contains('bl-scroll'));
+      if(isShell){
+        const currentX=Number(scrollRoot.scrollLeft)||0;
+        const currentY=Number(scrollRoot.scrollTop)||0;
+        if(Math.abs(currentX-snapshot.rootX)>1 || Math.abs(currentY-snapshot.rootY)>1){
+          if(typeof scrollRoot.scrollTo==='function') scrollRoot.scrollTo({left:snapshot.rootX,top:snapshot.rootY,behavior:'auto'});
+          else{
+            scrollRoot.scrollLeft=snapshot.rootX;
+            scrollRoot.scrollTop=snapshot.rootY;
+          }
+        }
+        return;
+      }
       const currentX=Number(window.scrollX ?? window.pageXOffset) || 0;
       const currentY=Number(window.scrollY ?? window.pageYOffset) || 0;
-      if(Math.abs(currentX-snapshot.x)>1 || Math.abs(currentY-snapshot.y)>1){
-        window.scrollTo(snapshot.x,snapshot.y);
+      if(Math.abs(currentX-snapshot.windowX)>1 || Math.abs(currentY-snapshot.windowY)>1){
+        window.scrollTo({left:snapshot.windowX,top:snapshot.windowY,behavior:'auto'});
       }
     };
     restore();
     window.setTimeout(restore,0);
     window.setTimeout(restore,60);
+    window.setTimeout(restore,180);
     window.requestAnimationFrame(function(){
       restore();
       window.requestAnimationFrame(restore);
     });
+  }
+
+  let interactionScrollSnapshot=null;
+
+  function captureInteractionScroll(event){
+    if(fullscreenActive()) return;
+    interactionScrollSnapshot=pageScrollSnapshot();
+    const snapshot=interactionScrollSnapshot;
+    const control=event?.target?.closest?.('button,[role="button"]');
+    if(control && root.contains(control) && typeof control.focus==='function'){
+      try{ control.focus({preventScroll:true}); }catch(_error){}
+    }
+    if(snapshot) restorePageScroll(snapshot);
+  }
+
+  function settleInteractionScroll(){
+    if(!interactionScrollSnapshot || fullscreenActive()) return;
+    const snapshot=interactionScrollSnapshot;
+    interactionScrollSnapshot=null;
+    restorePageScroll(snapshot);
   }
 
   function attemptPlacement(id,clientX,clientY){
@@ -858,7 +901,11 @@
     const centerX=g.x+g.w/2, centerY=g.y+g.h/2;
     const dx=Math.abs(point.x-centerX), dy=Math.abs(point.y-centerY);
     const snapX=Math.max(g.w*0.62,18), snapY=Math.max(g.h*0.62,18);
-    if(dx<=snapX && dy<=snapY){ placePiece(id); return true; }
+    if(dx<=snapX && dy<=snapY){
+      placePiece(id);
+      restorePageScroll(scrollSnapshot);
+      return true;
+    }
     setStatus('That piece belongs elsewhere.','warning');
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
@@ -1044,9 +1091,7 @@
   function clearZoomTargetStyles(target){
     if(!target) return;
     target.classList?.remove('is-zoom-target');
-    target.style?.removeProperty('transform');
-    target.style?.removeProperty('transform-origin');
-    target.style?.removeProperty('will-change');
+    target.style?.removeProperty('--weight-coherence-piece-zoom');
   }
 
   function ensureBoardLens(){
@@ -1092,8 +1137,8 @@
 
     const boardX=(clientX-boardRect.left)*(BOARD_WIDTH/Math.max(1,boardRect.width));
     const boardY=(clientY-boardRect.top)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
-    const sourceWidth=(diameter/boardLensScale)*(BOARD_WIDTH/Math.max(1,boardRect.width));
-    const sourceHeight=(diameter/boardLensScale)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
+    const sourceWidth=(diameter/zoomLevel)*(BOARD_WIDTH/Math.max(1,boardRect.width));
+    const sourceHeight=(diameter/zoomLevel)*(BOARD_HEIGHT/Math.max(1,boardRect.height));
     const sourceX=Math.max(0,Math.min(BOARD_WIDTH-sourceWidth,boardX-(sourceWidth/2)));
     const sourceY=Math.max(0,Math.min(BOARD_HEIGHT-sourceHeight,boardY-(sourceHeight/2)));
 
@@ -1117,7 +1162,7 @@
     const point=boardLensPoint();
     updateBoardLens(point.x,point.y);
     syncZoomControls();
-    setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
+    setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held and move over the jigsaw; use − and + to adjust.','');
     return true;
   }
 
@@ -1131,14 +1176,15 @@
 
   function applyPieceZoom(target,scale){
     if(!target || target===refs.boardWrap) return;
+    const pieceCanvas=target.querySelector?.('.weight-coherence-piece-canvas');
+    if(!pieceCanvas) return;
     const nextScale=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,Number(scale)||PIECE_ZOOM_DEFAULT));
     if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
     zoomTarget=target;
     zoomScale=nextScale;
+    zoomLevel=nextScale;
     zoomTarget.classList.add('is-zoom-target');
-    zoomTarget.style.transformOrigin='50% 50%';
-    zoomTarget.style.willChange='transform';
-    zoomTarget.style.transform='scale('+zoomScale.toFixed(2)+')';
+    zoomTarget.style.setProperty('--weight-coherence-piece-zoom',zoomScale.toFixed(2));
     root.classList.add('is-zoom-active','is-zooming-piece');
     if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
     syncZoomControls();
@@ -1156,7 +1202,6 @@
   function resetZoom(){
     resetPieceZoom();
     endBoardLens();
-    boardLensScale=BOARD_LENS_DEFAULT;
     syncZoomControls();
   }
 
@@ -1169,79 +1214,55 @@
       setStatus('Piece zoom reset to 100%.','');
       return true;
     }
-    applyPieceZoom(piece,PIECE_ZOOM_DEFAULT);
-    setStatus('Piece zoom 200%. Use − and + to increase up to 1000%; press Z again to reset.','');
+    applyPieceZoom(piece,zoomLevel);
+    setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%. Use − and + to adjust up to 1000%; press Z again to reset.','');
     return true;
   }
 
   function syncZoomControls(){
     const pieceActive=zoomScale>ZOOM_MIN && !!zoomTarget;
     const active=pieceActive || boardLensActive;
-    const scale=boardLensActive ? boardLensScale : zoomScale;
-    const max=boardLensActive ? BOARD_LENS_MAX : PIECE_ZOOM_MAX;
-    const percent=Math.round(scale*100);
+    const percent=Math.round(zoomLevel*100);
     if(refs.zoomToggle){
-      refs.zoomToggle.setAttribute('aria-pressed',String(active));
-      refs.zoomToggle.setAttribute('aria-label',boardLensActive
-        ? 'Magnifier active while Z is held'
-        : (pieceActive?'Reset piece zoom (Z)':'Zoom hovered piece or hold Z over jigsaw'));
-      refs.zoomToggle.title=boardLensActive
-        ? 'Release Z to close magnifier'
-        : (pieceActive?'Reset piece zoom from '+percent+'% · Z':'Piece: Z to zoom · Jigsaw: hold Z for magnifier');
+      refs.zoomToggle.dataset.active=String(active);
+      refs.zoomToggle.setAttribute('aria-label','Zoom hotkey Z. Current magnification ' + percent + ' percent.');
+      refs.zoomToggle.title='Z zoom · current magnification ' + percent + '%';
     }
     if(refs.zoomOut){
-      refs.zoomOut.disabled=!active || scale<=ZOOM_MIN;
-      refs.zoomOut.title=active?'Decrease zoom from '+percent+'%':'Activate zoom first';
+      refs.zoomOut.disabled=false;
+      refs.zoomOut.setAttribute('aria-label','Decrease inspection zoom from ' + percent + '%');
+      refs.zoomOut.title='Decrease inspection zoom from ' + percent + '%';
     }
     if(refs.zoomIn){
-      refs.zoomIn.disabled=!active || scale>=max;
-      refs.zoomIn.title=active?'Increase zoom from '+percent+'%':'Activate zoom first';
+      refs.zoomIn.disabled=false;
+      refs.zoomIn.setAttribute('aria-label','Increase inspection zoom from ' + percent + '%');
+      refs.zoomIn.title='Increase inspection zoom from ' + percent + '%';
     }
   }
 
   function adjustZoom(direction){
     const amount=Number(direction)||0;
     if(!amount) return;
+    const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomLevel+(amount*ZOOM_STEP)));
+    if(next===zoomLevel){
+      setStatus(zoomLevel<=PIECE_ZOOM_DEFAULT
+        ? 'Zoom is already at the 200% minimum.'
+        : 'Zoom is already at the 1000% maximum.','');
+      syncZoomControls();
+      return;
+    }
+    zoomLevel=next;
     if(boardLensActive){
-      boardLensScale=Math.max(BOARD_LENS_DEFAULT,Math.min(BOARD_LENS_MAX,boardLensScale+(amount*ZOOM_STEP)));
       const point=boardLensPoint();
       updateBoardLens(point.x,point.y);
-      syncZoomControls();
-      setStatus('Magnifier ' + Math.round(boardLensScale*100) + '%. Keep Z held to inspect.','');
-      return;
+      setStatus('Magnifier ' + Math.round(zoomLevel*100) + '%. Keep Z held to inspect.','');
+    }else if(zoomTarget && zoomTarget.isConnected){
+      applyPieceZoom(zoomTarget,zoomLevel);
+      setStatus('Piece zoom ' + Math.round(zoomLevel*100) + '%.','');
+    }else{
+      setStatus('Zoom level set to ' + Math.round(zoomLevel*100) + '%. Hover a piece and press Z, or hold Z over the jigsaw.','');
     }
-    if(zoomTarget && zoomTarget.isConnected){
-      const next=Math.max(PIECE_ZOOM_DEFAULT,Math.min(PIECE_ZOOM_MAX,zoomScale+(amount*ZOOM_STEP)));
-      applyPieceZoom(zoomTarget,next);
-      setStatus('Piece zoom ' + Math.round(zoomScale*100) + '%.','');
-    }
-  }
-
-  function handleZoomButtonClick(event){
-    if(event) event.preventDefault();
-    if(Date.now()<suppressZoomButtonClickUntil) return;
-    const target=resolveZoomTarget();
-    if(target && target!==refs.boardWrap){
-      togglePieceZoom(target);
-      return;
-    }
-    setStatus('Move over the jigsaw and hold Z to use the circular magnifier.','');
-  }
-
-  function beginZoomButtonHold(event){
-    const target=resolveZoomTarget();
-    if(target!==refs.boardWrap) return;
-    event.preventDefault();
-    zoomButtonLensHeld=true;
-    suppressZoomButtonClickUntil=Date.now()+350;
-    try{ refs.zoomToggle.setPointerCapture(event.pointerId); }catch(_error){}
-    beginBoardLens();
-  }
-
-  function endZoomButtonHold(){
-    if(!zoomButtonLensHeld) return;
-    zoomButtonLensHeld=false;
-    endBoardLens();
+    syncZoomControls();
   }
 
   function shuffleTray(){
@@ -1437,7 +1458,8 @@
 
   function puzzleHotkeysActive(){
     const section=root.closest('.section');
-    return !!state && !refs.workspace.hidden && (!section || section.classList.contains('active'));
+    const dialogOpen=!!(refs.settingsDialog?.open || refs.helpDialog?.open);
+    return !!state && !refs.workspace.hidden && !dialogOpen && (!section || section.classList.contains('active'));
   }
 
   function editableTarget(target){
@@ -1474,17 +1496,45 @@
     syncSettingsExpanded(false);
   }
 
+  function syncHelpExpanded(open){
+    if(refs.help) refs.help.setAttribute('aria-expanded',String(!!open));
+  }
+
+  function openHelp(){
+    if(!refs.helpDialog) return;
+    try{
+      if(typeof refs.helpDialog.showModal==='function' && !refs.helpDialog.open) refs.helpDialog.showModal();
+      else refs.helpDialog.setAttribute('open','');
+      syncHelpExpanded(true);
+    }catch(_error){
+      refs.helpDialog.setAttribute('open','');
+      syncHelpExpanded(true);
+    }
+  }
+
+  root.addEventListener('pointerdown',captureInteractionScroll,true);
+  root.addEventListener('mousedown',function(){
+    if(!interactionScrollSnapshot) captureInteractionScroll();
+  },true);
+  root.addEventListener('keydown',function(event){
+    if(!event || (event.key!=='Enter' && event.key!==' ')) return;
+    captureInteractionScroll();
+  },true);
+  root.addEventListener('click',function(){
+    settleInteractionScroll();
+  },true);
+  window.addEventListener('pointerup',function(){
+    settleInteractionScroll();
+  },true);
+  window.addEventListener('pointercancel',function(){
+    settleInteractionScroll();
+  },true);
+
   refs.preview.addEventListener('click',toggleGuide);
   if(refs.view) refs.view.addEventListener('click',toggleFullView);
-  if(refs.zoomToggle){
-    refs.zoomToggle.addEventListener('click',handleZoomButtonClick);
-    refs.zoomToggle.addEventListener('pointerdown',beginZoomButtonHold);
-    refs.zoomToggle.addEventListener('pointerup',endZoomButtonHold);
-    refs.zoomToggle.addEventListener('pointercancel',endZoomButtonHold);
-    refs.zoomToggle.addEventListener('lostpointercapture',endZoomButtonHold);
-  }
   if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
   if(refs.zoomIn) refs.zoomIn.addEventListener('click',function(){ adjustZoom(1); });
+  if(refs.help) refs.help.addEventListener('click',openHelp);
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
   if(refs.setupSettings) refs.setupSettings.addEventListener('click',openSettings);
@@ -1492,6 +1542,10 @@
   if(refs.settingsDialog){
     refs.settingsDialog.addEventListener('close',function(){ syncSettingsExpanded(false); });
     refs.settingsDialog.addEventListener('cancel',function(){ syncSettingsExpanded(false); });
+  }
+  if(refs.helpDialog){
+    refs.helpDialog.addEventListener('close',function(){ syncHelpExpanded(false); });
+    refs.helpDialog.addEventListener('cancel',function(){ syncHelpExpanded(false); });
   }
 
   refs.reset.addEventListener('click',function(){
