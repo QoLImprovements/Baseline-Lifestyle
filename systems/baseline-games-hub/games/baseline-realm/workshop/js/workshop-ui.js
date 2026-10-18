@@ -4,8 +4,8 @@ import {
   WORKSHOP_ITEM_BY_ID
 } from '../data/workshop-catalog.js';
 
-const ICONS = '/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_CANONICAL_COMPLETE_20261018_1';
-const STYLES = '/systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css?v=REALM_CANONICAL_COMPLETE_20261018_1';
+const ICONS = '/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
+const STYLES = '/systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
 
 const CATEGORY_ICONS = Object.freeze({
   blacksmith: 'workshop',

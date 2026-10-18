@@ -106,3 +106,16 @@ test('persistent HUD is one full-width visual banner',()=>{
   assert.match(shellCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-parchment-face\)!important/);
   assert.match(shellCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
 });
+
+
+test('Basecamp landmarks stay contained and persistent captions remain readable',()=>{
+  assert.match(basecampCss,/center center\/94% 94% no-repeat/);
+  assert.match(basecampCss,/\.realm-location-caption\{[\s\S]*?opacity:1!important/);
+  assert.match(basecampCss,/data-basecamp-landmark="exploration"\]\{left:88\.7%/);
+  assert.match(basecampCss,/data-basecamp-landmark="calorie-escape"\]\{left:10\.2%/);
+});
+
+test('Basecamp service drawer and Workshop room sit above the active scene',()=>{
+  assert.match(shellCss,/\.realm-drawer\{[\s\S]*?position:absolute!important[\s\S]*?z-index:70!important/);
+  assert.match(workshopCss,/#realmWorkshopScreen\.realm-workshop-screen\{[\s\S]*?z-index:20!important/);
+});
