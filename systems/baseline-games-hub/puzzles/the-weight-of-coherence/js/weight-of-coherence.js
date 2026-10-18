@@ -4,6 +4,10 @@
   const ROOT_ID = 'weightCoherencePuzzle';
   const BOARD_BASE = '#2A3672';
   const GUIDE_OPACITY = 0.50;
+  const ZOOM_MIN = 1;
+  const ZOOM_MAX = 3;
+  const ZOOM_STEP = 0.25;
+  const ZOOM_DEFAULT = 1.5;
   const registry = window.BaselinePuzzlesRegistry;
   const FALLBACK_PUZZLE = Object.freeze({
     id:'weight-of-coherence',
@@ -46,6 +50,9 @@
     placed:document.getElementById('weightCoherencePlaced'),
     timer:document.getElementById('weightCoherenceTimer'),
     difficultyLabel:document.getElementById('weightCoherenceDifficultyLabel'),
+    zoomOut:document.getElementById('weightCoherenceZoomOutBtn'),
+    zoomToggle:document.getElementById('weightCoherenceZoomBtn'),
+    zoomIn:document.getElementById('weightCoherenceZoomInBtn'),
     preview:document.getElementById('weightCoherencePreviewBtn'),
     view:document.getElementById('weightCoherenceViewBtn'),
     shuffle:document.getElementById('weightCoherenceShuffleBtn'),
@@ -82,7 +89,11 @@
   let trayRenderToken = 0;
   let sortRenderToken = 0;
   let lastSortRenderKey = '';
-  let viewHeld = false;
+  let viewOn = false;
+  let zoomScale = ZOOM_MIN;
+  let zoomTarget = null;
+  let lastZoomTarget = null;
+  let lastZoomPoint = null;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
   const pinchPointers = new Map();
@@ -294,7 +305,7 @@
   function drawBoard(){
     ctx.clearRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
 
-    if(imageReady && viewHeld){
+    if(imageReady && viewOn){
       ctx.fillStyle='#FFFFFF';
       ctx.fillRect(0,0,BOARD_WIDTH,BOARD_HEIGHT);
       ctx.drawImage(image,0,0,BOARD_WIDTH,BOARD_HEIGHT);
@@ -401,6 +412,7 @@
   function syncSelectedPieceClasses(){
     root.querySelectorAll('[data-piece-id]').forEach(function(button){
       button.classList.toggle('is-selected',Number(button.dataset.pieceId)===selectedPieceId);
+      button.setAttribute('aria-disabled',String(viewOn));
     });
   }
 
@@ -436,6 +448,7 @@
         btn.disabled=true;
         btn.setAttribute('aria-busy','true');
         if(selectedPieceId===id) btn.classList.add('is-selected');
+        btn.setAttribute('aria-disabled',String(viewOn));
         const placeholder=document.createElement('span');
         placeholder.className='weight-coherence-piece-placeholder';
         placeholder.setAttribute('aria-hidden','true');
@@ -461,7 +474,7 @@
     if(pending.length) window.requestAnimationFrame(paintBatch);
   }
 
-  function stabilisePieceFocusBeforeTrayMutation(){
+  function stabilisePieceFocus(){
     const active=document.activeElement;
     if(!active || !active.closest || !active.closest('[data-piece-id]') || !root.contains(active)) return;
     try{
@@ -473,7 +486,8 @@
 
   function renderTray(){
     if(!refs.tray) return;
-    stabilisePieceFocusBeforeTrayMutation();
+    stabilisePieceFocus();
+    if(zoomTarget && zoomTarget!==refs.boardWrap) resetZoom();
     refs.tray.innerHTML='';
     renderSortTrays();
     if(!state || !state.started){
@@ -512,6 +526,7 @@
       btn.disabled=true;
       btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
+      btn.setAttribute('aria-disabled',String(viewOn));
       const placeholder=document.createElement('span');
       placeholder.className='weight-coherence-piece-placeholder';
       placeholder.setAttribute('aria-hidden','true');
@@ -635,6 +650,10 @@
   }
 
   function resetToUnstoredState(){
+    resetZoom();
+    viewOn=false;
+    syncViewButton();
+    syncSelectedPieceClasses();
     state=null;
     selectedPieceId=null;
     dragState=null;
@@ -662,6 +681,9 @@
   }
 
   function beginPuzzle(){
+    resetZoom();
+    viewOn=false;
+    syncViewButton();
     const config=difficultyConfig(selectedDifficulty);
     state={
       difficulty:config.pieces,
@@ -678,6 +700,7 @@
     selectedPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
+    root.classList.remove('is-viewing-artwork');
     syncGuideButton();
     refs.completion.hidden=true;
     if(refs.reset) refs.reset.disabled=false;
@@ -776,14 +799,51 @@
     };
   }
 
+  function pageScrollSnapshot(){
+    if(fullscreenActive()) return null;
+    return {
+      x:Number(window.scrollX ?? window.pageXOffset) || 0,
+      y:Number(window.scrollY ?? window.pageYOffset) || 0
+    };
+  }
+
+  function restorePageScroll(snapshot){
+    if(!snapshot || fullscreenActive()) return;
+    const restore=function(){
+      if(fullscreenActive()) return;
+      const currentX=Number(window.scrollX ?? window.pageXOffset) || 0;
+      const currentY=Number(window.scrollY ?? window.pageYOffset) || 0;
+      if(Math.abs(currentX-snapshot.x)>1 || Math.abs(currentY-snapshot.y)>1){
+        window.scrollTo(snapshot.x,snapshot.y);
+      }
+    };
+    restore();
+    window.setTimeout(restore,0);
+    window.requestAnimationFrame(function(){
+      restore();
+      window.requestAnimationFrame(restore);
+    });
+  }
+
   function attemptPlacement(id,clientX,clientY){
     if(!state || !Number.isInteger(id)) return false;
+    const scrollSnapshot=pageScrollSnapshot();
+    if(viewOn){
+      setStatus('View is on. Press V to return to the puzzle before placing pieces.','warning');
+      restorePageScroll(scrollSnapshot);
+      return false;
+    }
     if(state.preview){
       setStatus('Hide the guide [G] before placing a piece.','warning');
+      restorePageScroll(scrollSnapshot);
       return false;
     }
     const point=boardPointFromClient(clientX,clientY);
-    if(!point){ setStatus('Move the piece onto the puzzle board.','warning'); return false; }
+    if(!point){
+      setStatus('Move the piece onto the puzzle board.','warning');
+      restorePageScroll(scrollSnapshot);
+      return false;
+    }
     const config=difficultyConfig(state.difficulty);
     const g=pieceGeometry(id,config);
     const centerX=g.x+g.w/2, centerY=g.y+g.h/2;
@@ -794,6 +854,7 @@
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
     root.classList.add('is-wrong-drop');
+    restorePageScroll(scrollSnapshot);
     return false;
   }
 
@@ -829,7 +890,10 @@
     window.removeEventListener('pointerup',endDrag,true);
     window.removeEventListener('pointercancel',cancelDrag,true);
     if(drag.ghost && drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
-    if(drag.moved) suppressTrayClickUntil=Date.now()+250;
+    if(drag.moved){
+      suppressTrayClickUntil=Date.now()+250;
+      stabilisePieceFocus();
+    }
     if(!event || !drag.moved) return;
 
     const target=document.elementFromPoint(event.clientX,event.clientY);
@@ -902,27 +966,143 @@
 
   function syncViewButton(){
     if(!refs.view) return;
-    refs.view.setAttribute('aria-pressed',String(viewHeld));
-    refs.view.title=viewHeld?'Release to return to puzzle · V':'Hold to view full artwork · V';
+    refs.view.setAttribute('aria-pressed',String(viewOn));
+    refs.view.setAttribute('aria-label',viewOn?'Disable full artwork view (V)':'View full artwork (V)');
+    refs.view.title=viewOn?'Disable full artwork view · V':'View full artwork · V';
   }
 
-  function beginFullView(){
-    if(!state || !imageReady || viewHeld) return;
-    const hadDrag=!!dragState;
-    cancelDrag();
-    selectedPieceId=null;
+  function syncViewInteractionState(){
+    root.classList.toggle('is-viewing-artwork',viewOn);
     syncSelectedPieceClasses();
-    if(hadDrag) suppressTrayClickUntil=Date.now()+350;
-    viewHeld=true;
-    syncViewButton();
-    drawBoard();
   }
 
-  function endFullView(){
-    if(!viewHeld) return;
-    viewHeld=false;
+  function toggleFullView(){
+    if(!state || !imageReady) return;
+    const next=!viewOn;
+    if(next){
+      const hadDrag=!!dragState;
+      cancelDrag();
+      selectedPieceId=null;
+      if(hadDrag) suppressTrayClickUntil=Date.now()+350;
+    }
+    viewOn=next;
     syncViewButton();
+    syncViewInteractionState();
     drawBoard();
+    setStatus(viewOn
+      ? 'View on: full-colour artwork shown. Piece movement is paused; zoom remains available. Press V to return.'
+      : 'View off. Continue placing pieces.','');
+  }
+
+  function zoomableTargetFromNode(node){
+    if(!node) return null;
+    const piece=node.closest?.('[data-piece-id]');
+    if(piece && root.contains(piece)) return piece;
+    if(node===refs.board || refs.boardWrap?.contains?.(node)) return refs.boardWrap;
+    return null;
+  }
+
+  function rememberZoomTarget(event){
+    const target=zoomableTargetFromNode(event&&event.target);
+    if(!target) return;
+    lastZoomTarget=target;
+    if(Number.isFinite(event.clientX) && Number.isFinite(event.clientY)){
+      lastZoomPoint={x:event.clientX,y:event.clientY};
+    }
+  }
+
+  function resolveZoomTarget(){
+    const focused=zoomableTargetFromNode(document.activeElement);
+    if(focused) return focused;
+    if(lastZoomTarget && lastZoomTarget.isConnected) return lastZoomTarget;
+    return refs.boardWrap;
+  }
+
+  function clearZoomTargetStyles(target){
+    if(!target) return;
+    target.classList?.remove('is-zoom-target');
+    target.style?.removeProperty('transform');
+    target.style?.removeProperty('transform-origin');
+    target.style?.removeProperty('will-change');
+  }
+
+  function syncZoomControls(){
+    const active=zoomScale>ZOOM_MIN && !!zoomTarget;
+    const percent=Math.round(zoomScale*100);
+    if(refs.zoomToggle){
+      refs.zoomToggle.setAttribute('aria-pressed',String(active));
+      refs.zoomToggle.setAttribute('aria-label',active?'Reset inspection zoom (Z)':'Zoom inspected board or piece (Z)');
+      refs.zoomToggle.title=active?'Reset zoom from ' + percent + '% · Z':'Zoom board or hovered piece · Z';
+    }
+    if(refs.zoomOut){
+      refs.zoomOut.disabled=!active;
+      refs.zoomOut.title=active?'Decrease zoom from ' + percent + '%':'Zoom is already at 100%';
+    }
+    if(refs.zoomIn){
+      refs.zoomIn.disabled=active && zoomScale>=ZOOM_MAX;
+      refs.zoomIn.title='Increase inspection zoom' + (active?' from ' + percent + '%':'');
+    }
+  }
+
+  function applyZoom(target,scale){
+    const nextScale=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,Number(scale)||ZOOM_MIN));
+    if(zoomTarget && zoomTarget!==target) clearZoomTargetStyles(zoomTarget);
+    if(nextScale<=ZOOM_MIN){
+      resetZoom();
+      return;
+    }
+    zoomTarget=target||resolveZoomTarget();
+    if(!zoomTarget) return;
+    zoomScale=nextScale;
+    zoomTarget.classList.add('is-zoom-target');
+    if(zoomTarget===refs.boardWrap && lastZoomTarget===refs.boardWrap && lastZoomPoint){
+      const rect=refs.boardWrap.getBoundingClientRect();
+      const x=Math.max(0,Math.min(100,((lastZoomPoint.x-rect.left)/Math.max(1,rect.width))*100));
+      const y=Math.max(0,Math.min(100,((lastZoomPoint.y-rect.top)/Math.max(1,rect.height))*100));
+      zoomTarget.style.transformOrigin=x.toFixed(2)+'% '+y.toFixed(2)+'%';
+    }else{
+      zoomTarget.style.transformOrigin='50% 50%';
+    }
+    zoomTarget.style.willChange='transform';
+    zoomTarget.style.transform='scale('+zoomScale.toFixed(2)+')';
+    root.classList.add('is-zoom-active');
+    root.classList.toggle('is-zooming-piece',zoomTarget!==refs.boardWrap);
+    if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-zooming');
+    syncZoomControls();
+  }
+
+  function resetZoom(){
+    clearZoomTargetStyles(zoomTarget);
+    zoomTarget=null;
+    zoomScale=ZOOM_MIN;
+    root.classList.remove('is-zoom-active','is-zooming-piece');
+    if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-zooming');
+    syncZoomControls();
+  }
+
+  function toggleZoom(){
+    if(zoomScale>ZOOM_MIN && zoomTarget){
+      resetZoom();
+      setStatus('Zoom reset to 100%.','');
+      return;
+    }
+    applyZoom(resolveZoomTarget(),ZOOM_DEFAULT);
+    setStatus('Inspection zoom ' + Math.round(zoomScale*100) + '%. Use − and + to adjust; press Z to reset.','');
+  }
+
+  function adjustZoom(direction){
+    const amount=Number(direction)||0;
+    if(amount<0 && (!zoomTarget || zoomScale<=ZOOM_MIN)) return;
+    const target=zoomTarget&&zoomTarget.isConnected?zoomTarget:resolveZoomTarget();
+    const base=zoomTarget?zoomScale:ZOOM_MIN;
+    const next=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,base+(amount*ZOOM_STEP)));
+    if(next<=ZOOM_MIN){
+      resetZoom();
+      setStatus('Zoom reset to 100%.','');
+      return;
+    }
+    applyZoom(target,next);
+    setStatus('Inspection zoom ' + Math.round(zoomScale*100) + '%.','');
   }
 
   function shuffleTray(){
@@ -1017,6 +1197,7 @@
 
   function toggleFullscreen(){
     if(!refs.workspace) return;
+    if(zoomScale>ZOOM_MIN) resetZoom();
     if(pseudoFullscreen){
       setPseudoFullscreen(false);
       return;
@@ -1155,17 +1336,10 @@
   }
 
   refs.preview.addEventListener('click',toggleGuide);
-  if(refs.view){
-    refs.view.addEventListener('pointerdown',function(event){
-      event.preventDefault();
-      try{ refs.view.setPointerCapture(event.pointerId); }catch(_error){}
-      beginFullView();
-    });
-    refs.view.addEventListener('pointerup',endFullView);
-    refs.view.addEventListener('pointercancel',endFullView);
-    refs.view.addEventListener('lostpointercapture',endFullView);
-    refs.view.addEventListener('click',function(event){ event.preventDefault(); });
-  }
+  if(refs.view) refs.view.addEventListener('click',toggleFullView);
+  if(refs.zoomToggle) refs.zoomToggle.addEventListener('click',toggleZoom);
+  if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
+  if(refs.zoomIn) refs.zoomIn.addEventListener('click',function(){ adjustZoom(1); });
   refs.shuffle.addEventListener('click',shuffleTray);
   if(refs.fullscreen) refs.fullscreen.addEventListener('click',toggleFullscreen);
   if(refs.setupSettings) refs.setupSettings.addEventListener('click',openSettings);
@@ -1201,9 +1375,23 @@
   refs.prev.addEventListener('click',previousTray);
   refs.next.addEventListener('click',nextTray);
 
+  root.addEventListener('pointerover',rememberZoomTarget,{passive:true});
+  root.addEventListener('focusin',function(event){
+    const target=zoomableTargetFromNode(event.target);
+    if(target){
+      lastZoomTarget=target;
+      lastZoomPoint=null;
+    }
+  });
+
   root.addEventListener('pointerdown',function(event){
     const button=event.target.closest?.('[data-piece-id]');
     if(!button || button.disabled || !state || state.completed) return;
+    if(viewOn){
+      event.preventDefault();
+      setStatus('View is on. Press V to return before moving pieces; zoom remains available.','');
+      return;
+    }
     const id=Number(button.dataset.pieceId);
     if(!Number.isInteger(id)) return;
     dragState={ id:id, button:button, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
@@ -1215,6 +1403,10 @@
   root.addEventListener('click',function(event){
     const button=event.target.closest?.('[data-piece-id]');
     if(!button || button.disabled || !state || state.completed) return;
+    if(viewOn){
+      event.preventDefault();
+      return;
+    }
     if(Date.now()<suppressTrayClickUntil) return;
     const id=Number(button.dataset.pieceId);
     selectedPieceId=selectedPieceId===id?null:id;
@@ -1223,7 +1415,7 @@
   });
 
   refs.board.addEventListener('click',function(event){
-    if(Date.now()<suppressBoardClickUntil || pinchState) return;
+    if(Date.now()<suppressBoardClickUntil || pinchState || viewOn) return;
     if(selectedPieceId===null || !state || state.completed) return;
     attemptPlacement(selectedPieceId,event.clientX,event.clientY);
   });
@@ -1245,7 +1437,12 @@
     }
     if(key==='v'){
       event.preventDefault();
-      beginFullView();
+      if(!event.repeat) toggleFullView();
+      return;
+    }
+    if(key==='z'){
+      event.preventDefault();
+      if(!event.repeat) toggleZoom();
       return;
     }
     if(key==='s'){
@@ -1267,17 +1464,6 @@
       event.preventDefault();
       nextTray();
     }
-  });
-  document.addEventListener('keyup',function(event){
-    if(!event) return;
-    const key=String(event.key||'').toLowerCase();
-    if(key!=='v' || !viewHeld) return;
-    event.preventDefault();
-    endFullView();
-  });
-  window.addEventListener('blur',endFullView);
-  document.addEventListener('visibilitychange',function(){
-    if(document.hidden) endFullView();
   });
   document.addEventListener('fullscreenchange',function(){
     syncMobileFullscreenOrientation();
