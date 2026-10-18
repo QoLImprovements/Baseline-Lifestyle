@@ -212,7 +212,8 @@
     JIGSAW_PROFILE_APPS.forEach(function(app){
       let source=null;
       try{ source=storage?.getProfile?.(app); }catch(_error){}
-      const p=normaliseJigsawProgress(source&&source.progression?source.progression:(app===APP?progression:source));
+      const activeSource=app===APP&&progression?progression:(source&&source.progression?source.progression:source);
+      const p=normaliseJigsawProgress(activeSource);
       highestLevel=Math.max(highestLevel,p.level);
       totalCompletions+=p.completions;
       combinedScore+=(Math.max(0,p.level-1)*0.08)+(Math.min(20,p.completions)*0.02);
