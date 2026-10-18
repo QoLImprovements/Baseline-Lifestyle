@@ -409,6 +409,16 @@ function configure(dependencies) {
   bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter });
   inputManager.registerControllerProvider(gamepadProvider);
   inputManager.start();
+  // Realm runtime lifecycle belongs here, alongside its scene/input ownership.
+  // Wait for the Games Hub's initial profile hydration when available so
+  // offline progress and the first render use the settled profile exactly once.
+  Promise.resolve(globalThis.BASELINE_GAMES_HUB_INITIAL_RENDER_READY)
+    .catch((error) => console.warn('[Baseline Realm] Initial profile hydration was incomplete.', error))
+    .then(() => {
+      runtime?.applyOfflineProgress?.();
+      runtime?.render?.();
+      runtime?.startLoop?.();
+    });
   runtimeUi.bindAudio(audioService);
   audioService.scan();
   audioService.apply();
