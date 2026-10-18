@@ -52,6 +52,20 @@
     });
   }
 
+  function jigsawProgress(item){
+    try{
+      const stored=window.BaselineGameStorage?.getProfile?.(item.app);
+      const source=stored&&stored.progression&&typeof stored.progression==='object'?stored.progression:(stored||{});
+      const level=Math.max(1,Math.round(Number(source.level)||1));
+      const xp=Math.max(0,Math.round(Number(source.xp)||0));
+      const completions=Math.max(0,Math.round(Number(source.completions)||0));
+      const needed=60+((level-1)*35)+((level-1)*(level-1)*4);
+      return {level:level,xp:xp,needed:needed,completions:completions};
+    }catch(_error){
+      return {level:1,xp:0,needed:60,completions:0};
+    }
+  }
+
   function renderTypes(){
     refs.types.innerHTML=registry.types.map(function(type){
       return '<div class="puzzle-library-row-wrap">' +
@@ -74,11 +88,12 @@
     refs.jigsawsList.innerHTML=groups.map(function(group){
       return '<div class="puzzle-library-group">' + escapeHtml(group.name) + '</div>' +
         group.items.map(function(item){
+          const progress=jigsawProgress(item);
           return '<div class="puzzle-library-row-wrap' + (activeJigsaw===item.id?' is-selected':'') + '">' +
             '<button class="puzzle-library-row" data-jigsaw-id="' + escapeHtml(item.id) + '" type="button">' +
               '<img class="puzzle-library-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
               '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
-              '<div class="puzzle-library-meta"><span class="inline-note">Open jigsaw</span></div>' +
+              '<div class="puzzle-library-meta puzzle-library-meta--progress"><strong>Level ' + progress.level + '</strong><span class="inline-note">' + progress.xp + ' / ' + progress.needed + ' XP</span><span class="inline-note">' + progress.completions + ' completed</span></div>' +
             '</button>' +
           '</div>';
         }).join('');
@@ -123,6 +138,9 @@
       showView(back.getAttribute('data-puzzles-back')==='overview'?'overview':'jigsaws','push');
     }
   });
+
+  document.addEventListener('baseline:jigsaw-progress',function(){ renderJigsaws(); });
+  document.addEventListener('baseline:game-storage',function(){ renderJigsaws(); });
 
   renderTypes();
   renderJigsaws();
