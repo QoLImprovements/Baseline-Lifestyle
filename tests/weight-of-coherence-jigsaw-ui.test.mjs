@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FLOATING_PIECE_LENS_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FLOATING_PIECE_LENS_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -104,21 +104,20 @@ test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
 });
 
-test('tray piece zoom uses a bounded floating inspector and never scales the source tray piece in place', () => {
+test('tray piece Z zoom shows the entire irregular piece above the workspace without scaling its card', () => {
   assert.match(js, /let zoomLevel = PIECE_ZOOM_DEFAULT/);
-  assert.match(js, /let pieceLens = null/);
-  assert.match(js, /function ensurePieceLens\(\)\{[\s\S]*?pieceLens\.className='weight-coherence-piece-lens'/);
-  assert.match(js, /function updatePieceLens\(target,clientX,clientY\)\{[\s\S]*?const diameter=Math\.max\(170,Math\.min\(250,/);
-  assert.match(js, /const drawWidth=sourceRect\.width\*zoomScale/);
-  assert.match(js, /const drawHeight=sourceRect\.height\*zoomScale/);
-  assert.match(js, /lensCtx\.drawImage\(source,0,0,source\.width,source\.height,drawX,drawY,drawWidth,drawHeight\)/);
-  assert.match(js, /function applyPieceZoom\(target,scale\)\{[\s\S]*?zoomTarget=target;[\s\S]*?zoomScale=nextScale;[\s\S]*?updatePieceLens\(target,point\.x,point\.y\)/);
+  assert.match(js, /let pieceOverlay = null/);
+  assert.match(js, /function ensurePieceOverlay\(\)\{[\s\S]*?pieceOverlay\.className='weight-coherence-piece-overlay'/);
+  assert.match(js, /function updatePieceOverlay\(target\)\{[\s\S]*?requestedWidth=sourceRect\.width\*zoomScale[\s\S]*?requestedHeight=sourceRect\.height\*zoomScale/);
+  assert.match(js, /const fitScale=Math\.min\([\s\S]*?viewport\.width-edgeMargin[\s\S]*?viewport\.height-edgeMargin/);
+  assert.match(js, /tracePiecePath\(overlayCtx,g\)[\s\S]*?overlayCtx\.clip\(\)[\s\S]*?drawArtworkRegion\(overlayCtx,g,pieceMargin\)/);
+  assert.match(js, /function applyPieceZoom\(target,scale\)\{[\s\S]*?zoomTarget=target;[\s\S]*?zoomScale=nextScale;[\s\S]*?updatePieceOverlay\(target\)/);
+  assert.doesNotMatch(js, /weight-coherence-piece-lens|ensurePieceLens|updatePieceLens/);
   assert.doesNotMatch(js, /--weight-coherence-piece-zoom/);
   assert.doesNotMatch(css, /weight-coherence-piece\.is-zoom-target[^}]*transform:scale/);
-  assert.doesNotMatch(css, /weight-coherence-piece\.is-zoom-target \.weight-coherence-piece-canvas\{[^}]*transform:scale/);
-  assert.match(css, /\.weight-coherence-piece-lens\{[^}]*position:fixed[^}]*border:2px solid #050505[^}]*border-radius:50%[^}]*pointer-events:none/);
-  assert.match(html, /floating inspection lens; the source piece stays fixed in the tray/);
-  assert.match(html, /without resizing the tray, tray card, or source piece/);
+  assert.match(css, /\.weight-coherence-piece-overlay\{[^}]*position:fixed[^}]*z-index:2147483601[^}]*border:0[^}]*background:transparent[^}]*pointer-events:none/);
+  assert.match(html, /enlarge the entire jigsaw piece above the workspace while its tray card stays fixed/);
+  assert.match(html, /enlarges the complete irregular piece without enlarging its tray card/);
 });
 
 test('holding Z over the jigsaw opens a circular magnifier lens without scaling the board', () => {
