@@ -9,9 +9,10 @@
     types:document.getElementById('puzzlesList'),
     jigsaws:document.getElementById('jigsawsPanel'),
     jigsawsList:document.getElementById('jigsawsList'),
+    crossnumber:document.getElementById('crossnumberPanel'),
     player:document.getElementById('jigsawPlayerCard')
   };
-  if(!refs.overview||!refs.types||!refs.jigsaws||!refs.jigsawsList||!refs.player) return;
+  if(!refs.overview||!refs.types||!refs.jigsaws||!refs.jigsawsList||!refs.crossnumber||!refs.player) return;
 
   let activeView='overview';
   let activeJigsaw='';
@@ -23,6 +24,7 @@
       const jigsaw=String(params.get('jigsaw')||'');
       if(jigsaw&&registry.findJigsaw(jigsaw)) return {view:'player',jigsaw:jigsaw};
       if(view==='jigsaws') return {view:'jigsaws',jigsaw:''};
+      if(view==='crossnumber') return {view:'crossnumber',jigsaw:''};
     }catch(_error){}
     return {view:'overview',jigsaw:''};
   }
@@ -33,6 +35,7 @@
       url.searchParams.delete('puzzle');
       url.searchParams.delete('jigsaw');
       if(view==='jigsaws') url.searchParams.set('puzzle','jigsaws');
+      if(view==='crossnumber') url.searchParams.set('puzzle','crossnumber');
       if(view==='player'&&jigsaw){
         url.searchParams.set('puzzle','jigsaws');
         url.searchParams.set('jigsaw',jigsaw);
@@ -86,7 +89,9 @@
     activeView=view;
     refs.overview.hidden=view!=='overview';
     refs.jigsaws.hidden=view!=='jigsaws';
+    refs.crossnumber.hidden=view!=='crossnumber';
     refs.player.hidden=view!=='player';
+    if(view==='crossnumber') document.dispatchEvent(new CustomEvent('baseline:crossnumber-open'));
     if(historyMode) writeRoute(view,activeJigsaw,historyMode);
   }
 
@@ -103,7 +108,9 @@
   document.addEventListener('click',function(event){
     const typeButton=event.target.closest('[data-puzzle-type]');
     if(typeButton){
-      if(typeButton.getAttribute('data-puzzle-type')==='jigsaws') showView('jigsaws','push');
+      const type=typeButton.getAttribute('data-puzzle-type');
+      if(type==='jigsaws') showView('jigsaws','push');
+      if(type==='crossnumber') showView('crossnumber','push');
       return;
     }
     const jigsawButton=event.target.closest('[data-jigsaw-id]');
@@ -143,6 +150,7 @@
     openJigsaw:openJigsaw,
     showOverview:function(){ showView('overview','push'); },
     showJigsaws:function(){ showView('jigsaws','push'); },
+    showCrossnumber:function(){ showView('crossnumber','push'); },
     getView:function(){ return activeView; },
     getJigsaw:function(){ return activeJigsaw; }
   });
