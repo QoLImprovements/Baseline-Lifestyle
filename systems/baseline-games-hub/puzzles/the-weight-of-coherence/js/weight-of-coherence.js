@@ -37,6 +37,8 @@
     description:document.getElementById('weightCoherenceDescription'),
     workspace:document.getElementById('weightCoherenceWorkspace'),
     boardShell:root.querySelector('.weight-coherence-board-shell'),
+    boardWrap:root.querySelector('.weight-coherence-board-wrap'),
+    playerCard:root.closest('.puzzle-library-card'),
     board:document.getElementById('weightCoherenceBoard'),
     status:document.getElementById('weightCoherenceStatus'),
     placed:document.getElementById('weightCoherencePlaced'),
@@ -76,6 +78,12 @@
   let imageReady = false;
   let trayRenderToken = 0;
   let sortRenderToken = 0;
+  let lastSortRenderKey = '';
+  let pseudoFullscreen = false;
+  let suppressBoardClickUntil = 0;
+  const pinchPointers = new Map();
+  let pinchState = null;
+  let pinchResetTimer = 0;
 
   image.addEventListener('load', function(){
     imageReady = true;
@@ -134,7 +142,9 @@
   }
 
   function trayPageSize(config){
-    return mobileLike() ? Math.min(config.trayPageSize, 12) : config.trayPageSize;
+    if(mobileLike()) return Math.min(config.trayPageSize, 8);
+    if(fullscreenActive()) return Math.min(config.trayPageSize, 12);
+    return config.trayPageSize;
   }
 
   function formatTime(totalSeconds){
@@ -286,7 +296,8 @@
     const g=pieceGeometry(id,config);
     const margin=g.tab+2;
     const baseMax=Math.max(g.w+margin*2,g.h+margin*2);
-    const scale=Math.max(0.65,Math.min(3.2,86/baseMax));
+    const targetMax=mobileLike()?72:86;
+    const scale=Math.max(0.65,Math.min(3.2,targetMax/baseMax));
     const canvas=document.createElement('canvas');
     canvas.width=Math.max(24,Math.ceil((g.w+margin*2)*scale));
     canvas.height=Math.max(24,Math.ceil((g.h+margin*2)*scale));
@@ -351,8 +362,25 @@
     return state.order.filter(function(id){ return !state.placed.has(id) && !parked.has(id); });
   }
 
-  function renderSortTrays(){
+  function syncSelectedPieceClasses(){
+    root.querySelectorAll('[data-piece-id]').forEach(function(button){
+      button.classList.toggle('is-selected',Number(button.dataset.pieceId)===selectedPieceId);
+    });
+  }
+
+  function sortRenderKey(){
+    if(!state || !state.started || !imageReady) return 'empty:' + String(!!state) + ':' + String(imageReady);
+    return String(activePuzzle.id||'') + ':' + state.difficulty + ':' + state.sortBins.map(function(bin){ return bin.join(','); }).join('|');
+  }
+
+  function renderSortTrays(force){
     if(!refs.sortTrays.length) return;
+    const key=sortRenderKey();
+    if(!force && key===lastSortRenderKey){
+      syncSelectedPieceClasses();
+      return;
+    }
+    lastSortRenderKey=key;
     const token=++sortRenderToken;
     const pending=[];
     refs.sortTrays.forEach(function(tray,index){
@@ -381,7 +409,7 @@
       });
     });
     let index=0;
-    const batchSize=mobileLike()?2:6;
+    const batchSize=mobileLike()?1:6;
     const paintBatch=function(){
       if(token!==sortRenderToken) return;
       const stop=Math.min(pending.length,index+batchSize);
@@ -446,7 +474,7 @@
     });
 
     let index=0;
-    const batchSize=mobileLike()?2:6;
+    const batchSize=mobileLike()?1:6;
     const paintBatch=function(){
       if(token!==trayRenderToken) return;
       const stop=Math.min(pending.length,index+batchSize);
@@ -613,7 +641,7 @@
     updateStats();
     saveState();
     startTimer();
-    try{ refs.board.scrollIntoView({behavior:'smooth',block:'center'}); }catch(_error){}
+    try{ refs.board.scrollIntoView({behavior:mobileLike()?'auto':'smooth',block:'center'}); }catch(_error){}
   }
 
   function renderCompletion(){
@@ -735,7 +763,7 @@
     const fullscreenHost=document.fullscreenElement;
     const ghostHost=fullscreenHost && (fullscreenHost===refs.workspace || fullscreenHost.contains(refs.workspace))
       ? fullscreenHost
-      : document.body;
+      : (pseudoFullscreen ? refs.workspace : document.body);
     ghostHost.appendChild(ghost);
     moveDragGhost(ghost,event.clientX,event.clientY);
     return ghost;
@@ -840,9 +868,13 @@
     setStatus('Remaining pieces shuffled.','');
   }
 
+  function fullscreenActive(){
+    return !!(pseudoFullscreen || document.fullscreenElement===refs.workspace);
+  }
+
   function syncFullscreenBoardFit(){
     if(!refs.workspace || !refs.boardShell) return;
-    if(document.fullscreenElement!==refs.workspace || window.innerWidth<=900){
+    if(!fullscreenActive() || window.innerWidth<=900){
       refs.workspace.style.removeProperty('--weight-coherence-fullscreen-board-width');
       return;
     }
@@ -861,9 +893,18 @@
     });
   }
 
+  function setPseudoFullscreen(active){
+    pseudoFullscreen=!!active;
+    refs.workspace.classList.toggle('is-pseudo-fullscreen',pseudoFullscreen);
+    document.documentElement.classList.toggle('weight-coherence-pseudo-fullscreen',pseudoFullscreen);
+    document.body.classList.toggle('weight-coherence-pseudo-fullscreen',pseudoFullscreen);
+    renderTray();
+    syncFullscreenButton();
+  }
+
   function syncFullscreenButton(){
     if(!refs.fullscreen) return;
-    const active=document.fullscreenElement===refs.workspace;
+    const active=fullscreenActive();
     refs.fullscreen.setAttribute('aria-pressed',String(active));
     refs.fullscreen.setAttribute('aria-label',active?'Exit full screen (F)':'Enter full screen (F)');
     refs.fullscreen.title=active?'Exit full screen · F':'Full screen · F';
@@ -872,17 +913,102 @@
 
   function toggleFullscreen(){
     if(!refs.workspace) return;
+    if(pseudoFullscreen){
+      setPseudoFullscreen(false);
+      return;
+    }
     if(document.fullscreenElement===refs.workspace){
       if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
       return;
     }
+    if(mobileLike()){
+      setPseudoFullscreen(true);
+      return;
+    }
     if(refs.workspace.requestFullscreen){
-      refs.workspace.requestFullscreen().then(syncFullscreenButton).catch(function(){
-        setStatus('Full screen is not available in this browser context.','warning');
+      refs.workspace.requestFullscreen().then(function(){
+        renderTray();
+        syncFullscreenButton();
+      }).catch(function(){
+        setPseudoFullscreen(true);
+        setStatus('Browser full screen was unavailable, so the puzzle opened in a full-viewport mode.','');
       });
       return;
     }
-    setStatus('Full screen is not available in this browser context.','warning');
+    setPseudoFullscreen(true);
+  }
+
+  function pinchDistance(points){
+    return Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y);
+  }
+
+  function pinchMidpoint(points){
+    return {x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2};
+  }
+
+  function beginInspectionPinch(){
+    if(!refs.boardWrap || pinchPointers.size<2 || !mobileLike()) return;
+    const points=Array.from(pinchPointers.values()).slice(0,2);
+    const distance=pinchDistance(points);
+    if(distance<8) return;
+    cancelDrag();
+    window.clearTimeout(pinchResetTimer);
+    const rect=refs.boardWrap.getBoundingClientRect();
+    pinchState={startDistance:distance,rect:rect};
+    root.classList.add('is-inspecting');
+    if(refs.playerCard) refs.playerCard.classList.add('is-jigsaw-inspecting');
+    suppressBoardClickUntil=Date.now()+400;
+  }
+
+  function updateInspectionPinch(event){
+    if(!pinchState || pinchPointers.size<2 || !refs.boardWrap) return;
+    const points=Array.from(pinchPointers.values()).slice(0,2);
+    const distance=pinchDistance(points);
+    const midpoint=pinchMidpoint(points);
+    const scale=Math.max(1,Math.min(2.75,distance/pinchState.startDistance));
+    const rect=pinchState.rect;
+    const originX=Math.max(0,Math.min(100,((midpoint.x-rect.left)/Math.max(1,rect.width))*100));
+    const originY=Math.max(0,Math.min(100,((midpoint.y-rect.top)/Math.max(1,rect.height))*100));
+    refs.boardWrap.style.transformOrigin=originX+'% '+originY+'%';
+    refs.boardWrap.style.transform='scale('+scale.toFixed(3)+')';
+    if(event && event.cancelable) event.preventDefault();
+  }
+
+  function resetInspectionZoom(){
+    if(!pinchState || !refs.boardWrap) return;
+    pinchState=null;
+    suppressBoardClickUntil=Date.now()+350;
+    refs.boardWrap.style.transition='transform .18s ease';
+    refs.boardWrap.style.transform='scale(1)';
+    window.clearTimeout(pinchResetTimer);
+    pinchResetTimer=window.setTimeout(function(){
+      root.classList.remove('is-inspecting');
+      if(refs.playerCard) refs.playerCard.classList.remove('is-jigsaw-inspecting');
+      refs.boardWrap.style.removeProperty('transition');
+      refs.boardWrap.style.removeProperty('transform');
+      refs.boardWrap.style.removeProperty('transform-origin');
+    },190);
+  }
+
+  function onPinchPointerDown(event){
+    if(!mobileLike() || event.pointerType!=='touch' || !refs.boardWrap || !refs.boardWrap.contains(event.target)) return;
+    pinchPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pinchPointers.size===2) beginInspectionPinch();
+  }
+
+  function onPinchPointerMove(event){
+    if(!pinchPointers.has(event.pointerId)) return;
+    pinchPointers.set(event.pointerId,{x:event.clientX,y:event.clientY});
+    if(pinchPointers.size>=2){
+      if(!pinchState) beginInspectionPinch();
+      updateInspectionPinch(event);
+    }
+  }
+
+  function onPinchPointerEnd(event){
+    if(!pinchPointers.has(event.pointerId)) return;
+    pinchPointers.delete(event.pointerId);
+    if(pinchState && pinchPointers.size<2) resetInspectionZoom();
   }
 
   function puzzleHotkeysActive(){
@@ -978,13 +1104,21 @@
     const id=Number(button.dataset.pieceId);
     selectedPieceId=selectedPieceId===id?null:id;
     setStatus(selectedPieceId===null?'Piece selection cleared.':'Piece ' + (id+1) + ' selected. Click its position on the board.','');
-    renderTray();
+    syncSelectedPieceClasses();
   });
 
   refs.board.addEventListener('click',function(event){
+    if(Date.now()<suppressBoardClickUntil || pinchState) return;
     if(selectedPieceId===null || !state || state.completed) return;
     attemptPlacement(selectedPieceId,event.clientX,event.clientY);
   });
+
+  if(refs.boardWrap){
+    refs.boardWrap.addEventListener('pointerdown',onPinchPointerDown,{passive:true});
+    window.addEventListener('pointermove',onPinchPointerMove,{passive:false});
+    window.addEventListener('pointerup',onPinchPointerEnd,true);
+    window.addEventListener('pointercancel',onPinchPointerEnd,true);
+  }
 
   document.addEventListener('keydown',function(event){
     if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || editableTarget(event.target) || !puzzleHotkeysActive()) return;
@@ -1014,7 +1148,10 @@
       nextTray();
     }
   });
-  document.addEventListener('fullscreenchange',syncFullscreenButton);
+  document.addEventListener('fullscreenchange',function(){
+    renderTray();
+    syncFullscreenButton();
+  });
   window.addEventListener('resize',scheduleFullscreenBoardFit);
   document.addEventListener('visibilitychange',function(){ if(document.hidden) saveState(); });
   let storageAuthenticated=!!gameStorage()?.isAuthenticated?.();
