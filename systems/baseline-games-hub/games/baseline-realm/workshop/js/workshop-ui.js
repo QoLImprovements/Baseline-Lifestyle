@@ -16,13 +16,43 @@ const CATEGORY_ICONS = Object.freeze({
   tools: 'tools'
 });
 
-const CHALLENGE_COPY = Object.freeze({
-  blacksmith: { verb: 'Strike', cue: 'Hit the timing window while the metal is ready.' },
-  armourer: { verb: 'Set', cue: 'Set the plate when the alignment enters the marked zone.' },
-  tailoring: { verb: 'Stitch', cue: 'Commit the stitch while the guide passes through the target.' },
-  alchemy: { verb: 'Stabilise', cue: 'Stabilise the mixture inside the safe reaction range.' },
-  cooking: { verb: 'Serve', cue: 'Finish the dish while the heat is in the ideal range.' },
-  tools: { verb: 'Fit', cue: 'Lock the component into place inside the target window.' }
+const CHALLENGE_PROFILES = Object.freeze({
+  blacksmith: {
+    verb: 'Strike',
+    cue: 'Strike once while the heated metal passes through the forging window.',
+    motion: 'forge',
+    targets: [44]
+  },
+  armourer: {
+    verb: 'Set',
+    cue: 'Set both plate alignments cleanly before the fitting is accepted.',
+    motion: 'align',
+    targets: [58, 42]
+  },
+  tailoring: {
+    verb: 'Stitch',
+    cue: 'Land three stitches as the guide changes position across the seam.',
+    motion: 'stitch',
+    targets: [36, 64, 48]
+  },
+  alchemy: {
+    verb: 'Stabilise',
+    cue: 'Stabilise both reaction swings before the mixture leaves its safe range.',
+    motion: 'reaction',
+    targets: [62, 38]
+  },
+  cooking: {
+    verb: 'Serve',
+    cue: 'Serve once while the heat settles inside the ideal finishing range.',
+    motion: 'heat',
+    targets: [52]
+  },
+  tools: {
+    verb: 'Fit',
+    cue: 'Fit both components as the stepped gauge reaches each locking point.',
+    motion: 'fit',
+    targets: [47, 67]
+  }
 });
 
 function escapeHtml(value) {
@@ -55,9 +85,13 @@ function stationName(id) {
   return categoryById(id)?.name || 'Workshop';
 }
 
-function challengeTarget(category) {
-  const positions = { blacksmith: 44, armourer: 58, tailoring: 36, alchemy: 62, cooking: 52, tools: 47 };
-  return positions[category] || 50;
+function challengeProfile(category) {
+  return CHALLENGE_PROFILES[category] || CHALLENGE_PROFILES.blacksmith;
+}
+
+function challengeTarget(category, index = 0) {
+  const targets = challengeProfile(category).targets;
+  return targets[Math.min(Math.max(0, index), targets.length - 1)] || 50;
 }
 
 function challengeQuality(distance, targetWidth, trackWidth) {
@@ -65,6 +99,15 @@ function challengeQuality(distance, targetWidth, trackWidth) {
   if (distance <= halfTarget) return { label: 'Exceptional', score: 4 };
   if (distance <= halfTarget + trackWidth * 0.045) return { label: 'Excellent', score: 3 };
   if (distance <= halfTarget + trackWidth * 0.105) return { label: 'Fine', score: 2 };
+  return { label: 'Standard', score: 1 };
+}
+
+function combinedChallengeQuality(results) {
+  const scores = results.map((entry) => Number(entry?.score || 1));
+  const average = scores.reduce((total, score) => total + score, 0) / Math.max(1, scores.length);
+  if (average >= 3.75) return { label: 'Exceptional', score: 4 };
+  if (average >= 2.75) return { label: 'Excellent', score: 3 };
+  if (average >= 1.75) return { label: 'Fine', score: 2 };
   return { label: 'Standard', score: 1 };
 }
 
@@ -178,20 +221,22 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
 
   function challengeMarkup(recipe) {
     if (!challenge || challenge.recipeId !== recipe?.id) return '';
-    const copy = CHALLENGE_COPY[category] || CHALLENGE_COPY.blacksmith;
+    const profile = challengeProfile(category);
+    const completedChecks = challenge.hitResults?.length || 0;
+    const totalChecks = profile.targets.length;
     if (challenge.result) {
       return '<section class="workshop-skill-result" aria-live="polite">'
-        + '<div><span class="workshop-eyebrow">' + escapeHtml(copy.verb) + ' timing</span><strong>' + escapeHtml(challenge.result.label) + '</strong><small>The craft can now be completed.</small></div>'
+        + '<div><span class="workshop-eyebrow">' + escapeHtml(profile.verb) + ' timing</span><strong>' + escapeHtml(challenge.result.label) + '</strong><small>The craft can now be completed.</small></div>'
         + '<button class="action" data-workshop-confirm type="button">Complete Craft</button>'
         + '</section>';
     }
-    return '<section class="workshop-skill-check" aria-label="' + escapeHtml(stationName(category)) + ' timing challenge">'
-      + '<div class="workshop-skill-copy"><span class="workshop-eyebrow">Active skill</span><strong>' + escapeHtml(copy.cue) + '</strong></div>'
+    return '<section class="workshop-skill-check workshop-skill-check--' + escapeHtml(profile.motion) + '" data-workshop-motion="' + escapeHtml(profile.motion) + '" aria-label="' + escapeHtml(stationName(category)) + ' timing challenge">'
+      + '<div class="workshop-skill-copy"><span class="workshop-eyebrow">Active skill · check ' + (completedChecks + 1) + ' / ' + totalChecks + '</span><strong>' + escapeHtml(profile.cue) + '</strong></div>'
       + '<div class="workshop-timing-track" data-workshop-timing-track>'
       + '<span class="workshop-timing-target" data-workshop-timing-target style="--target:' + challenge.target + '%"></span>'
       + '<span class="workshop-timing-needle" data-workshop-timing-needle></span>'
       + '</div>'
-      + '<button class="action workshop-timing-button" data-workshop-hit type="button">' + escapeHtml(copy.verb) + '</button>'
+      + '<button class="action workshop-timing-button" data-workshop-hit type="button">' + escapeHtml(profile.verb) + '</button>'
       + '</section>';
   }
 
@@ -254,8 +299,10 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
       render();
       return;
     }
-    challenge = { recipeId, quantity, target: challengeTarget(category), result: null };
+    challenge = { recipeId, quantity, target: challengeTarget(category, 0), hitResults: [], result: null };
     if (globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      const profile = challengeProfile(category);
+      challenge.hitResults = profile.targets.map(() => ({ label: 'Standard', score: 1 }));
       challenge.result = { label: 'Standard', score: 1 };
     }
     render();
@@ -273,7 +320,16 @@ export function createWorkshopController({ runtime, workshopService, eventBus } 
     const needleRect = needle.getBoundingClientRect();
     const targetCenter = targetRect.left + targetRect.width / 2;
     const needleCenter = needleRect.left + needleRect.width / 2;
-    challenge.result = challengeQuality(Math.abs(targetCenter - needleCenter), targetRect.width, trackRect.width);
+    const hit = challengeQuality(Math.abs(targetCenter - needleCenter), targetRect.width, trackRect.width);
+    challenge.hitResults.push(hit);
+    const profile = challengeProfile(category);
+    if (challenge.hitResults.length < profile.targets.length) {
+      challenge.target = challengeTarget(category, challenge.hitResults.length);
+      render();
+      queueMicrotask(() => screen?.querySelector('[data-workshop-hit]')?.focus?.());
+      return;
+    }
+    challenge.result = combinedChallengeQuality(challenge.hitResults);
     render();
     queueMicrotask(() => screen?.querySelector('[data-workshop-confirm]')?.focus?.());
   }
