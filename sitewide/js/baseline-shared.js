@@ -8175,7 +8175,8 @@ function setupRecipeFavourites(){
           try{
             const routeParams = new URLSearchParams(location.search || '');
             ownedSubviewQuery =
-              (routePageFile === 'baseline-massage.html' && routeParams.has('planner-mode')) ||
+              (routePageFile === 'baseline-massage.html' && (routeParams.has('planner-mode') || routeParams.has('library-category'))) ||
+              (routePageFile === 'baseline-food-approach.html' && (routeParams.has('view') || routeParams.has('date'))) ||
               (routePageFile === 'baseline-badminton-session.html' && routeParams.has('gameplan-view')) ||
               (routePageFile === 'baseline-psychology.html' && routeParams.has('psych-view'));
           }catch(_e){}
