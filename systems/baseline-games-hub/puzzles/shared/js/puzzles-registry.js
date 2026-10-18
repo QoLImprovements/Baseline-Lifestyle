@@ -6,7 +6,7 @@
       id:'jigsaws',
       name:'Jigsaws',
       note:'Image-based piece puzzles with selectable difficulty, saved state and experience earned for completed jigsaws.',
-      meta:'7 jigsaws · completion XP',
+      meta:'8 jigsaws · completion XP',
       preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
     }),
     Object.freeze({
@@ -54,6 +54,18 @@
       alt:'A weathered stone figure crouches defensively as water pours from its face and body while the stone behind it fractures under violent external force.',
       libraryDescription:'A fractured figure curls inward beneath overwhelming external pressure while water continues to pour from it, symbolising pain that is visible yet remains unrecognised.',
       description:'The figure folds inward and shields itself while the stone around and behind it is broken apart by forces pressing in from outside. Water continues to stream from the face and body, making the grief unmistakably present even as the figure hardens and braces against further impact. The work centres pain that has been expressed but not meaningfully recognised: suffering remains visible, yet without acknowledgement, understanding or protection.'
+    }),
+    Object.freeze({
+      id:'moved-along',
+      group:'Symbolic',
+      title:'Moved Along',
+      app:'movedalong',
+      image:'/systems/baseline-games-hub/puzzles/moved-along/art/moved-along.webp?v=MOVED_ALONG_SYMBOLISM_20261019_1',
+      width:1122,
+      height:1402,
+      alt:'Two police officers move a homeless man on from a shallow rain-sheltered doorway, one gathering his belongings while sinister clown-like reflections appear in a nearby police van.',
+      libraryDescription:'Help is offered inside a process whose immediate outcome is displacement: belongings are gathered, direction is given, and a man is moved from the little shelter he has.',
+      description:'Two officers may be acting within a role intended to offer help, yet the practical message is unmistakable: the man’s bedding and belongings are being gathered while he is directed away from the shallow doorway sheltering him from the rain. The distorted reflections in the police van separate personal intention from systemic effect. They symbolise how institutions can inherit procedures, repeat them as normal and communicate something harsher than the people carrying them out may recognise. The work centres the tension between assistance and displacement when following a system takes priority over listening to the person in front of it.'
     }),
     Object.freeze({
       id:'black-panther',
