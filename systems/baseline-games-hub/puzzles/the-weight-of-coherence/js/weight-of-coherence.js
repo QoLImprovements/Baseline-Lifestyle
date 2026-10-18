@@ -43,6 +43,9 @@
     1000: Object.freeze({ pieces:1000, cols:25, rows:40, trayPageSize:32 })
   });
   const JIGSAW_XP_REWARDS = Object.freeze({ 50:30, 100:55, 500:180, 1000:320 });
+  const JIGSAW_PROFILE_APPS = Object.freeze([
+    'weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw'
+  ]);
 
   const root = document.getElementById(ROOT_ID);
   if(!root) return;
@@ -202,13 +205,28 @@
   }
 
   function jigsawRealmContribution(){
-    const p=progression||defaultJigsawProgress();
-    const pct=Math.max(0,Number(p.realmPassivePct)||0);
+    const storage=gameStorage();
+    let combinedScore=0;
+    let totalCompletions=0;
+    let highestLevel=1;
+    JIGSAW_PROFILE_APPS.forEach(function(app){
+      let source=null;
+      try{ source=storage?.getProfile?.(app); }catch(_error){}
+      const p=normaliseJigsawProgress(source&&source.progression?source.progression:(app===APP?progression:source));
+      highestLevel=Math.max(highestLevel,p.level);
+      totalCompletions+=p.completions;
+      combinedScore+=(Math.max(0,p.level-1)*0.08)+(Math.min(20,p.completions)*0.02);
+    });
+    const pct=Math.min(5,Math.round(combinedScore*10)/10);
+    const traits=[];
+    if(totalCompletions>=10) traits.push('Jigsaws: Patient Assembly');
+    if(totalCompletions>=30) traits.push('Jigsaws: Sustained Reconstruction');
     return {
-      level:Math.max(1,Number(p.level)||1),
+      level:highestLevel,
+      completions:totalCompletions,
       passiveEfficiencyMult:1+(pct/100),
       passivePct:pct,
-      unlockedTraits:p.level>=10?['Jigsaw: Patient Assembly']:p.level>=5?['Jigsaw: Visual Assembly']:[]
+      unlockedTraits:traits
     };
   }
 
@@ -255,7 +273,7 @@
         '<div class="coherent-progress-stat"><span>Total pieces completed</span><strong>'+progression.totalPiecesCompleted.toLocaleString('en-GB')+'</strong></div>' +
         '<div class="coherent-progress-stat"><span>'+difficulty.toLocaleString('en-GB')+'-piece completion XP</span><strong>+'+currentJigsawReward()+' XP</strong></div>' +
         '<div class="coherent-progress-stat"><span>Best '+difficulty.toLocaleString('en-GB')+'-piece time</span><strong>'+(best?formatTime(best):'—')+'</strong></div>' +
-        '<div class="coherent-progress-stat"><span>Baseline Realm passive</span><strong>+'+progression.realmPassivePct.toFixed(1)+'%</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Combined Jigsaw Realm passive</span><strong>+'+jigsawRealmContribution().passivePct.toFixed(1)+'%</strong></div>' +
       '</div>' +
       '<p class="jigsaw-progress-note">Jigsaws progress through completion XP only. Piece count changes difficulty; it does not unlock a tier or a Jigsaw skill tree.</p>';
   }
