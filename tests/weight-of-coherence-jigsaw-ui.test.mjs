@@ -17,7 +17,7 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_SCROLL_PIECE_ZOOM_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_VIEW_SORT_TRAYS_20261018_1/);
   assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_SCROLL_PIECE_ZOOM_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
@@ -56,6 +56,22 @@ test('V toggles a persistent full-colour view and pauses piece interaction witho
   assert.doesNotMatch(js, /window\.addEventListener\('blur',endFullView\)/);
 });
 
+
+test('View keeps tray pieces at full colour while movement remains paused', () => {
+  assert.match(js, /button\.setAttribute\('aria-disabled',String\(viewOn\)\)/);
+  assert.match(js, /root\.addEventListener\('pointerdown'[\s\S]*?if\(viewOn\)\{[\s\S]*?return;/);
+  assert.match(css, /#weightCoherencePuzzle\.is-viewing-artwork \.weight-coherence-piece\[aria-disabled="true"\]\{opacity:1!important;filter:none!important;cursor:zoom-in!important\}/);
+  assert.match(css, /#weightCoherencePuzzle\.is-viewing-artwork \.weight-coherence-piece\[aria-disabled="true"\] \.weight-coherence-piece-canvas\{opacity:1!important;filter:drop-shadow/);
+});
+
+test('sorting trays use full width, top-fill fixed rows, and no blue piece cards', () => {
+  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-template-columns:repeat\(auto-fill,minmax\(64px,1fr\)\)[^}]*grid-auto-rows:68px[^}]*align-content:start[^}]*width:100%[^}]*padding:4px 0 0[^}]*border:0[^}]*background:transparent/);
+  assert.match(css, /\.weight-coherence-sort-tray \.weight-coherence-piece\{[^}]*min-height:68px[^}]*height:68px[^}]*border:0[^}]*background:transparent[^}]*box-shadow:none/);
+  assert.match(css, /\.weight-coherence-sort-tray \.weight-coherence-piece:hover,[\s\S]*?\.weight-coherence-sort-tray \.weight-coherence-piece\.is-selected\{[^}]*border:0[^}]*background:transparent[^}]*box-shadow:none/);
+  assert.match(css, /\.weight-coherence-sort-tray \.weight-coherence-piece-canvas\{[^}]*max-width:58px[^}]*max-height:58px[^}]*width:auto[^}]*height:auto/);
+  assert.doesNotMatch(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:minmax\(68px,1fr\)/);
+  assert.doesNotMatch(css, /\.weight-coherence-sort-tray\{[^}]*align-content:stretch/);
+});
 
 test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is not clickable', () => {
   assert.match(html, /id="weightCoherenceZoomOutBtn"(?![^>]*disabled)[\s\S]*?<span[^>]*id="weightCoherenceZoomBtn"[^>]*aria-keyshortcuts="Z"[\s\S]*?id="weightCoherenceZoomInBtn"(?![^>]*disabled)[\s\S]*?id="weightCoherencePreviewBtn"/);
@@ -196,7 +212,7 @@ test('desktop jigsaw workspace uses proportional full width and fills its tray p
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*width:100%[^}]*max-width:none/);
   assert.doesNotMatch(css, /minmax\(126px,176px\)|minmax\(118px,160px\)|minmax\(0,800px\)|width:min\(100%,800px\)|max-width:800px/);
   assert.match(css, /\.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)[^}]*align-self:stretch[^}]*width:100%/);
-  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:minmax\(68px,1fr\)[^}]*align-content:stretch[^}]*align-self:stretch[^}]*width:100%[^}]*max-height:none/);
+  assert.match(css, /\.weight-coherence-sort-tray\{[^}]*grid-auto-rows:68px[^}]*align-content:start[^}]*align-self:stretch[^}]*width:100%[^}]*max-height:none/);
   assert.match(css, /\.weight-coherence-tray-shell\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
   assert.match(css, /\.weight-coherence-tray\{[^}]*width:100%[^}]*min-width:0[^}]*max-width:none/);
 });
