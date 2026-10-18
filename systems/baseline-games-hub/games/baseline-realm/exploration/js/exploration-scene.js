@@ -1,20 +1,6 @@
-import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=REALM_WOOD_AUTHORITY_20260802_1';
+import { mountMeridianGrove } from './exploration-jrpg-state-integrity.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 
-const STYLE_ID = 'baseline-realm-exploration-jrpg-style';
-const STYLE_URL = '/systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css?v=REALM_WOOD_AUTHORITY_20260802_1';
-const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
-
-function ensureStylesheet() {
-  let link = document.getElementById(STYLE_ID) || document.querySelector('link[data-current-realm-style="realm-exploration-current"]');
-  if (!link) {
-    link = document.createElement('link');
-    link.id = STYLE_ID;
-    link.rel = 'stylesheet';
-    document.head.append(link);
-  }
-  if (!link.id) link.id = STYLE_ID;
-  if (link.getAttribute('href') !== STYLE_URL) link.href = STYLE_URL;
-}
+const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 
 export function createExplorationScene({ runtime }) {
   let game = null;
@@ -22,7 +8,6 @@ export function createExplorationScene({ runtime }) {
     id: 'exploration',
     async enter({ router }) {
       runtime?.setView('exploration');
-      ensureStylesheet();
       const root = document.getElementById('realmExplorationScreen');
       if (!root) throw new Error('The Baseline Realm exploration screen is unavailable.');
       game?.destroy();

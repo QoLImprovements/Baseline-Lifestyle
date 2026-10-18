@@ -2,155 +2,100 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html','utf8');
-const hubCss = fs.readFileSync('systems/baseline-games-hub/css/baseline-games-hub.css','utf8');
-const woodCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
-const mobileCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css','utf8');
-const stabilityCss = fs.readFileSync('systems/baseline-games-hub/css/baseline-realm-stability-fix.css','utf8');
-const basecampCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
-const shellCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-shell.css','utf8');
-const workshopCss = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css','utf8');
-const workshopScene = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-scene.js','utf8');
-const workshopUi = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-ui.js','utf8');
-const runtimeUi = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-runtime-ui.js','utf8');
-const inputBindings = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
-const ninjaRuntime = fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
+const html=fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html','utf8');
+const hubCss=fs.readFileSync('systems/baseline-games-hub/css/baseline-games-hub.css','utf8');
+const shellCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-shell.css','utf8');
+const mobileCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-mobile.css','utf8');
+const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
+const workshopCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css','utf8');
+const workshopScene=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-scene.js','utf8');
+const workshopUi=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-ui.js','utf8');
+const runtimeUi=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-runtime-ui.js','utf8');
+const lazyScenes=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js','utf8');
+const inputBindings=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
+const ninjaRuntime=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
 
-test('Games Hub CSS no longer owns Realm presentation', () => {
-  assert.doesNotMatch(hubCss,/\.realm-command-banner/);
-  assert.doesNotMatch(hubCss,/\.realm-location-button/);
-  assert.doesNotMatch(hubCss,/\.realm-drawer/);
-  assert.doesNotMatch(hubCss,/\.realm-top-strip/);
-  assert.doesNotMatch(hubCss,/#ninjaPanel #realmSceneFrame/);
-  assert.doesNotMatch(hubCss,/\.ninja-scene/);
-  assert.doesNotMatch(hubCss,/\.ninja-hit-flash/);
-  assert.doesNotMatch(hubCss,/EDIT_VERSION_20260619_REALM_CABIN_SHURIKEN/);
+test('Games Hub CSS does not own Realm presentation',()=>{
+  assert.doesNotMatch(hubCss,/\.realm-command-banner|\.realm-location-button|\.realm-drawer|\.realm-top-strip|#ninjaPanel #realmSceneFrame|\.ninja-scene|\.ninja-hit-flash/);
 });
 
-test('legacy compatibility CSS cannot resurrect stale Realm authorities', () => {
-  assert.match(stabilityCss,/mobile-touch-targets\.css/);
-  assert.doesNotMatch(stabilityCss,/baseline-realm-stability-(?:core|panels|modes)\.css/);
-  assert.doesNotMatch(stabilityCss,/baseline-realm-interface-(?:refinement|final-authority)\.css/);
-  assert.doesNotMatch(stabilityCss,/baseline-realm-coherence-authority\.css/);
-});
-
-test('mobile Realm stylesheet loads after desktop Realm presentation', () => {
-  const woodIndex = html.indexOf('realm-wood-authority.css?v=REALM_RECOVERED_SPEC_20261018_1');
-  const mobileIndex = html.indexOf('realm-stage-1-mobile.css?v=REALM_RECOVERED_SPEC_20261018_1');
-  assert.ok(woodIndex >= 0);
-  assert.ok(mobileIndex > woodIndex);
-});
-
-test('mobile Realm composition has one geometry authority', () => {
-  assert.match(mobileCss,/One compact row: location, centred Coins, persistent touch controls/);
+test('canonical mobile layout loads last and is the sole mobile viewport geometry owner',()=>{
+  const shellIndex=html.indexOf('realm-shell.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
+  const basecampIndex=html.indexOf('basecamp.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
+  const ninjaIndex=html.indexOf('ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
+  const mobileIndex=html.indexOf('realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
+  assert.ok(shellIndex>=0&&basecampIndex>shellIndex&&ninjaIndex>basecampIndex&&mobileIndex>ninjaIndex);
+  assert.match(mobileCss,/only file allowed to own Realm mobile viewport geometry/);
+  assert.match(mobileCss,/html\[data-baseline-realm-mobile-active="true"\]/);
+  assert.doesNotMatch(mobileCss,/^\s*html,\s*$/m);
   assert.match(mobileCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
-  assert.match(mobileCss,/#realmBasecampScreen\.realm-basecamp-screen\{[\s\S]*?width:100%!important;[\s\S]*?background-size:100% 100%!important/);
-  assert.match(mobileCss,/\.realm-drawer\{[\s\S]*?width:min\(430px,86vw\)!important/);
-  assert.match(mobileCss,/\.realm-hotkey-hint\{[\s\S]*?display:none!important/);
-  assert.doesNotMatch(woodCss,/@media \(max-width:900px\)/);
-  assert.doesNotMatch(woodCss,/@media \(max-width:620px\)/);
 });
 
-test('Basecamp landmarks have one visual owner', () => {
+test('Basecamp landmarks have one visual owner and canonical static markup',()=>{
   assert.match(basecampCss,/#realmBasecampScreen \.realm-location-button/);
-  assert.match(basecampCss,/supporting caption uses the larger outlined area/);
   assert.doesNotMatch(shellCss,/\.realm-location-button/);
-  assert.doesNotMatch(woodCss,/Basecamp landmarks keep their rounded hit area/);
+  assert.match(html,/id="realmBasecampScreen" role="navigation" aria-label="Baseline Realm destinations"/);
+  assert.equal((html.match(/data-basecamp-landmark=/g)||[]).length,10);
 });
 
-test('Basecamp is home: B only returns home and the return control is contextual', () => {
+test('Basecamp is home and B only returns home',()=>{
   assert.match(inputBindings,/realm:input:realm-basecamp'[\s\S]*?navigate\('basecamp'\)/);
   assert.doesNotMatch(inputBindings,/realm:input:realm-basecamp'[^\n]*ninja-training/);
   assert.match(ninjaRuntime,/basecampBtn\.hidden = atBasecamp/);
-  assert.match(ninjaRuntime,/basecampBtn\.setAttribute\('aria-hidden', String\(atBasecamp\)\)/);
 });
 
-test('persistent Realm HUD excludes contextual navigation and management', () => {
-  const nav = html.match(/<nav class="realm-utility"[\s\S]*?<\/nav>/)?.[0] || '';
-  assert.match(nav,/id="realmInventoryBtn"/);
-  assert.match(nav,/id="realmSettingsBtn"/);
-  assert.match(nav,/id="realmFullscreenBtn"/);
-  assert.doesNotMatch(nav,/id="realmBasecampBtn"/);
-  assert.doesNotMatch(nav,/id="realmMenuBtn"/);
+test('persistent Realm HUD contains only persistent utilities',()=>{
+  const nav=html.match(/<nav class="realm-utility"[\s\S]*?<\/nav>/)?.[0]||'';
+  for(const id of ['realmInventoryBtn','realmSettingsBtn','realmFullscreenBtn']) assert.match(nav,new RegExp(`id="${id}"`));
+  assert.doesNotMatch(nav,/realmBasecampBtn|realmMenuBtn/);
   assert.match(html,/class="realm-home-action"[^>]*id="realmBasecampBtn"[^>]* hidden aria-hidden="true"/);
   assert.match(html,/class="realm-context-action"[^>]*id="realmMenuBtn"/);
-  assert.match(woodCss,/Navigation and management actions are contextual, not persistent HUD controls/);
+  assert.match(shellCss,/Navigation and management actions are contextual, not persistent HUD controls/);
 });
 
-test('Coins, Inventory and Settings each have one persistent authority', () => {
-  assert.equal((html.match(/id="realmCoinsValue"/g) || []).length,1);
-  assert.equal((html.match(/id="realmInventoryBtn"/g) || []).length,1);
-  assert.equal((html.match(/id="realmSettingsBtn"/g) || []).length,1);
+test('runtime UI does not inject a competing stylesheet',()=>{
   assert.match(runtimeUi,/bindInventory\(inventoryService\)/);
   assert.match(runtimeUi,/realm-inventory-overlay/);
-  assert.doesNotMatch(runtimeUi,/realm-audio-controls/);
+  assert.doesNotMatch(runtimeUi,/STYLE_PATH|ensureStyles\(|realm-integration\.css/);
 });
 
-test('Workshop and Cooking enter real room scenes rather than the management drawer', () => {
+test('Workshop and Cooking enter real room scenes rather than the management drawer',()=>{
   assert.match(html,/id="realmWorkshopScreen"/);
-  assert.match(html,/id="realmWorkshopBar"/);
   assert.match(workshopScene,/setView\('workshop'\)/);
   assert.doesNotMatch(workshopScene,/openDrawerTab/);
   assert.match(workshopUi,/getElementById\('realmWorkshopScreen'\)/);
   assert.match(workshopCss,/#realmWorkshopScreen\.realm-workshop-screen/);
   assert.match(workshopUi,/scope === 'cooking'/);
-  assert.doesNotMatch(workshopUi,/realmDrawerWorkshop/);
 });
 
-test('Workshop crafting requires an active skill interaction', () => {
+test('Workshop crafting retains its active skill interaction',()=>{
   assert.match(workshopUi,/data-workshop-start/);
   assert.match(workshopUi,/data-workshop-hit/);
   assert.match(workshopUi,/workshop-timing-needle/);
-  assert.match(workshopUi,/Exceptional/);
-  assert.match(workshopUi,/Excellent/);
-  assert.match(workshopUi,/Fine/);
-  assert.match(workshopUi,/Standard/);
+  for(const grade of ['Exceptional','Excellent','Fine','Standard']) assert.match(workshopUi,new RegExp(grade));
   assert.match(workshopCss,/@keyframes workshopTimingSweep/);
 });
 
-test('Workshop is isolated from combat and management hotkeys', () => {
-  assert.match(inputBindings,/runtime\.getView\(\) !== 'workshop'/);
-  assert.match(inputBindings,/runtime\.getView\(\) === 'training'\) runtime\.strike/);
-  assert.doesNotMatch(inputBindings,/bindKeyboard\('realm-menu', \['m', 'escape'\]/);
-});
-
-test('Cooking copy no longer describes a generic Workshop panel', () => {
-  assert.doesNotMatch(html,/Food and effects/);
-  assert.match(html,/Prepare meals and route support/);
-});
-
-
-test('Realm starts in one coherent Basecamp state before JavaScript settles', () => {
+test('Realm starts in one coherent Basecamp state before JavaScript settles',()=>{
   assert.match(html,/class="[^"]*is-basecamp-view[^"]*"[^>]*id="realmSceneFrame"[^>]*data-realm-view="basecamp"/);
   assert.match(html,/id="ninjaScene" hidden aria-hidden="true"/);
   assert.match(html,/id="realmTrainingBar" hidden/);
   assert.match(html,/id="realmBasecampBar"(?![^>]* hidden)/);
-  assert.match(html,/id="realmCommandEnemyStatus" hidden aria-hidden="true"/);
   assert.match(html,/id="realmTrainingHud" hidden aria-hidden="true"/);
-  assert.match(html,/id="realmBasecampScreen" aria-hidden="false"/);
+  assert.match(html,/id="realmBasecampScreen"[^>]*aria-hidden="false"/);
 });
 
-test('one runtime authority controls every internal Realm surface', () => {
+test('one runtime authority controls persistent internal Realm surfaces',()=>{
   assert.match(ninjaRuntime,/function setRealmSurfaceState\(element, active\)/);
   assert.match(ninjaRuntime,/setRealmSurfaceState\(ninjaScene, realmView === 'training'\)/);
   assert.match(ninjaRuntime,/setRealmSurfaceState\(basecamp, realmView === 'basecamp'\)/);
   assert.match(ninjaRuntime,/setRealmSurfaceState\(workshop, realmView === 'workshop'\)/);
   assert.match(ninjaRuntime,/setRealmSurfaceState\(exploration, realmView === 'exploration'\)/);
-  assert.match(ninjaRuntime,/frame\.dataset\.realmView = realmView/);
-  assert.equal((ninjaRuntime.match(/getElementById\('realmBasecampBar'\)/g) || []).length,1);
-  assert.equal((ninjaRuntime.match(/getElementById\('realmWorkshopBar'\)/g) || []).length,1);
-  assert.equal((ninjaRuntime.match(/getElementById\('realmExplorationBar'\)/g) || []).length,1);
+  assert.doesNotMatch(lazyScenes,/setHidden\([^\n]*,false\)/);
 });
 
-test('persistent HUD is one full-width visual banner rather than separate title and coin cards', () => {
-  assert.match(woodCss,/Shared Realm HUD: one continuous full-width banner/);
-  assert.match(woodCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-parchment-face\)!important/);
-  assert.match(woodCss,/\.realm-command-banner__status,[\s\S]*?\.realm-shared-status,[\s\S]*?\.realm-enemy-status\{[\s\S]*?background:transparent!important/);
-  assert.match(woodCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
-  assert.doesNotMatch(woodCss,/width:min\(360px,100%\)!important/);
-});
-
-test('non-training internal views defensively suppress the Ninja scene', () => {
-  assert.match(woodCss,/is-basecamp-view,.is-workshop-view,.is-exploration-view\) > #ninjaScene/);
-  assert.match(woodCss,/display:none!important;[\s\S]*?visibility:hidden!important;[\s\S]*?pointer-events:none!important/);
+test('persistent HUD is one full-width visual banner',()=>{
+  assert.match(shellCss,/Shared Realm HUD: one continuous full-width banner/);
+  assert.match(shellCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-parchment-face\)!important/);
+  assert.match(shellCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
 });

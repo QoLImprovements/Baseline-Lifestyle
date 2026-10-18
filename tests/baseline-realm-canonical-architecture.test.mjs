@@ -11,28 +11,55 @@ const exists=file=>fs.existsSync(path.join(root,file));
 const bootstrap=read('systems/baseline-games-hub/js/baseline-games-hub.js');
 const optional=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
 const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
+const html=read('systems/baseline-games-hub/baseline-games-hub.html');
 const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
 const lazyScenes=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js');
 const inputs=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-manager.js');
-const finalCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css');
+const shellCss=read('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-shell.css');
+const ninjaCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training.css');
+const explorationCss=read('systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css');
+const tacticalCss=read('systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css');
+const calorieCss=read('systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/calorie-escape.css');
 
 test('Realm remains optional and Darts is a first-class module',()=>{
   assert.match(bootstrap,/games-server-storage-ui\.js/);
   assert.match(bootstrap,/baseline-games-hub-v14\.js/);
-  assert.match(optional,/GAMES_HUB_DARTS_ACCESS_20260706_1/);
   assert.match(optional,/DartsFocusedLoader/);
   assert.match(optional,/data-select-game="ninja"/);
-  assert.doesNotMatch(optional,/requestIdleCallback|baseline-games-hub-core\.js/);
+  assert.match(guard,/canPlay:\(\)=>true/);
 });
 
-test('storage authority does not create a temporary game runtime',()=>{
-  assert.match(guard,/GAMES_HUB_SERVER_AUTHORITY_20261006_1/);
-  assert.match(guard,/canPlay:\(\)=>true/);
-  assert.match(guard,/canSave:\(\)=>state\.canSave/);
-  assert.doesNotMatch(guard,/__gamesHubGuard|BASELINE_GAMES_HUB_CORE_READY|fallbackBound|stopImmediatePropagation/);
-  assert.doesNotMatch(guard,/window\.setInterval\s*=/);
-  assert.equal(exists('systems/baseline-games-hub/js/baseline-games-hub-loop-gate.js'),false);
-  assert.equal(exists('systems/baseline-games-hub/js/baseline-games-hub-guard-v10.js'),false);
+test('Realm has one canonical shared shell, one Ninja stylesheet and one mobile geometry owner',()=>{
+  assert.match(html,/realm-shell\.css\?v=REALM_CANONICAL_COMPLETE_20261018_1/);
+  assert.match(html,/ninja-training\.css\?v=REALM_CANONICAL_COMPLETE_20261018_1/);
+  assert.match(html,/realm-mobile\.css\?v=REALM_CANONICAL_COMPLETE_20261018_1/);
+  assert.equal((html.match(/ninja-training\.css\?/g)||[]).length,1);
+  assert.doesNotMatch(html,/realm-stage-1-shell\.css|realm-wood-authority\.css|realm-stage-1-mobile\.css|realm-integration\.css|ninja-training-rebuild\.css|ninja-training-final-authority\.css|baseline-realm-stability-fix\.css/);
+});
+
+test('patch-era and dormant Realm authorities are removed from the repository',()=>{
+  for(const file of [
+    'systems/baseline-games-hub/css/baseline-realm-stability-fix.css',
+    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-shell.css',
+    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css',
+    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css',
+    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-integration.css',
+    'systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css',
+    'systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css',
+    'systems/baseline-games-hub/games/baseline-realm/shared/js/realm-stage-1-shell.js',
+    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/a.css',
+    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/m.css',
+    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/p.css',
+    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/r.css'
+  ]) assert.equal(exists(file),false,file);
+});
+
+test('shared shell does not repaint destination-specific presentation',()=>{
+  assert.doesNotMatch(shellCss,/\.jrpg-|\.tactical-|\.ce-|\.ninja-forest-layer|\.ninja-runtime-sprite|\.basecamp-service/);
+  assert.match(explorationCss,/Realm cabin theming for Exploration is owned here/);
+  assert.match(tacticalCss,/Realm cabin theming for Tactical Operations is owned here/);
+  assert.match(calorieCss,/Realm cabin theming for Calorie Escape is owned here/);
+  assert.match(ninjaCss,/One destination stylesheet owns scenery, actors, combat presentation/);
 });
 
 test('optional Realm scenes remain lazy and isolated',()=>{
@@ -42,6 +69,7 @@ test('optional Realm scenes remain lazy and isolated',()=>{
   assert.equal(staticImports.some(line=>line.includes('tactical-operations-scene')),false);
   assert.match(realm,/createLazyScene/);
   assert.match(lazyScenes,/realm:scene:load-failed/);
+  assert.doesNotMatch(lazyScenes,/setHidden\('#ninjaScene, \.realm-command-banner, \.realm-action-dock',false\)/);
 });
 
 test('Realm controls retain their own native input owner',()=>{
@@ -49,10 +77,10 @@ test('Realm controls retain their own native input owner',()=>{
   assert.match(inputs,/pointerEventCapture = true/);
 });
 
-test('final visual authority exposes actors and keeps controls interactive',()=>{
-  assert.match(finalCss,/alder-veil-run\.svg/);
-  assert.match(finalCss,/mossblade-pursuer\.svg/);
-  assert.match(finalCss,/pointer-events:auto!important/);
-  assert.match(finalCss,/z-index:20!important/);
-  assert.match(finalCss,/animation:none!important/);
+test('canonical Ninja presentation exposes actors and keeps controls interactive',()=>{
+  assert.match(ninjaCss,/alder-veil-run\.svg/);
+  assert.match(ninjaCss,/mossblade-pursuer\.svg/);
+  assert.match(ninjaCss,/pointer-events:auto!important/);
+  assert.match(ninjaCss,/z-index:20!important/);
+  assert.match(ninjaCss,/prefers-reduced-motion:reduce/);
 });

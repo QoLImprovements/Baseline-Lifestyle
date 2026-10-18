@@ -1,3 +1,127 @@
+/* Baseline Realm canonical shared shell.
+   Owns only the Realm frame, shared HUD, drawers, overlays, loading UI and
+   orientation gate. Destination presentation belongs to each destination. */
+#ninjaPanel #realmSceneFrame { position: relative; }
+#ninjaPanel .realm-loading-screen { position:absolute; inset:0; z-index:1000; display:grid; place-items:center; padding:20px; background:rgba(24,20,17,.82); backdrop-filter:blur(8px); color:#fff8ec; }
+#ninjaPanel .realm-loading-screen[hidden] { display:none !important; }
+#ninjaPanel .realm-loading-card { width:min(440px,92%); display:grid; gap:12px; padding:22px; border-radius:22px; background:rgba(54,39,28,.96); border:1px solid rgba(255,244,222,.25); box-shadow:0 22px 60px rgba(0,0,0,.4); text-align:center; }
+#ninjaPanel .realm-loading-card strong { font-size:clamp(22px,4vw,34px); }
+#ninjaPanel .realm-loading-card progress { width:100%; height:14px; accent-color:#d69a50; }
+html[data-realm-reduced-motion="true"] #realmSceneFrame *,
+html[data-realm-reduced-motion="true"] #realmSceneFrame *::before,
+html[data-realm-reduced-motion="true"] #realmSceneFrame *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important; }
+@media (prefers-reduced-motion: reduce) { #ninjaPanel .realm-loading-screen { backdrop-filter:none; } }
+
+
+/* Shared desktop stage geometry.
+   Mobile orientation and viewport geometry live only in realm-mobile.css. */
+
+#ninjaPanel .realm-shell-card,
+#ninjaPanel .realm-shell,
+#ninjaPanel .realm-game-mount,
+#ninjaPanel .realm-window{
+  width:100%!important;
+  max-width:none!important;
+}
+
+/* Desktop is a genuine 16:9 game stage. */
+@media (min-width:1025px){
+  #ninjaPanel #realmSceneFrame:not(:fullscreen):not(:-webkit-full-screen){
+    width:100%!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none!important;
+    aspect-ratio:16 / 9!important;
+  }
+}
+
+#ninjaPanel #realmSceneFrame:fullscreen,
+#ninjaPanel #realmSceneFrame:-webkit-full-screen{
+  width:100vw!important;
+  height:100dvh!important;
+  min-width:100vw!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+  max-height:100dvh!important;
+  aspect-ratio:auto!important;
+}
+
+/* Basecamp landmark presentation is owned only by basecamp.css. Shared icon
+   geometry remains here for non-Basecamp controls. */
+#ninjaPanel .realm-fab__icon svg,
+#ninjaPanel .realm-combat-btn__icon svg,
+#ninjaPanel .realm-orientation-gate svg{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  fill:none!important;
+  stroke:currentColor!important;
+  stroke-width:1.8!important;
+  stroke-linecap:round!important;
+  stroke-linejoin:round!important;
+}
+
+#ninjaPanel .realm-combat-btn__icon svg{
+  width:24px!important;
+  height:24px!important;
+}
+
+
+/* Gate appearance only. Mobile authority decides when it exists onscreen. */
+#ninjaPanel .realm-orientation-gate{
+  display:none;
+  position:absolute;
+  inset:0;
+  z-index:2147483647;
+  place-items:center;
+  padding:24px;
+  background:
+    radial-gradient(circle at 50% 35%,rgba(105,139,79,.30),transparent 35%),
+    linear-gradient(180deg,#182c1e,#26170f);
+  color:#fff0cf;
+  text-align:center;
+}
+#ninjaPanel .realm-orientation-gate__panel{
+  width:min(360px,92vw);
+  display:grid;
+  justify-items:center;
+  gap:12px;
+  padding:22px 20px;
+  border:2px solid #2a170e;
+  border-radius:18px;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.022) 0 2px,rgba(0,0,0,.04) 2px 6px),
+    linear-gradient(180deg,#75482b,#3a2114);
+  box-shadow:0 24px 54px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.16);
+}
+#ninjaPanel .realm-orientation-gate__icon{
+  width:72px;
+  height:72px;
+  color:#f2cf91;
+  animation:realmRotatePrompt 1.8s ease-in-out infinite;
+}
+#ninjaPanel .realm-orientation-gate strong{
+  color:#fff0cf!important;
+  -webkit-text-fill-color:#fff0cf!important;
+  font-size:24px;
+  line-height:1.1;
+}
+#ninjaPanel .realm-orientation-gate span{
+  color:#dfc59d!important;
+  -webkit-text-fill-color:#dfc59d!important;
+  font-size:14px;
+  line-height:1.4;
+}
+@keyframes realmRotatePrompt{
+  0%,100%{transform:rotate(0deg)}
+  50%{transform:rotate(90deg)}
+}
+
+@media (prefers-reduced-motion:reduce){
+  #ninjaPanel .realm-orientation-gate__icon{animation:none!important;}
+}
+
+
 /* Baseline Realm wood/cabin authority.
    G01 Indigo Circuit owns the Games Hub around the Realm; everything below
    owns the playable Realm world and its destination menus. */
@@ -320,7 +444,7 @@
 #ninjaPanel #realmSceneFrame.is-drawer-open .realm-context-action{opacity:.35!important}
 
 #ninjaPanel :is(.realm-mini-action,.realm-close-btn,.realm-tab-btn),
-#ninjaPanel :is(.basecamp-service,.jrpg-game) button{
+#ninjaPanel .realm-drawer button{
   border:1px solid rgba(246,213,150,.44)!important;
   background:var(--realm-wood-face)!important;
   background-image:var(--realm-wood-face)!important;
@@ -330,7 +454,7 @@
   opacity:1;
 }
 #ninjaPanel :is(.realm-mini-action,.realm-close-btn,.realm-tab-btn):is(:hover,:focus-visible,.is-active,[aria-selected="true"]),
-#ninjaPanel :is(.basecamp-service,.jrpg-game) button:is(:hover,:focus-visible,.is-active,.is-selected){
+#ninjaPanel .realm-drawer button:is(:hover,:focus-visible,.is-active,.is-selected){
   border-color:var(--realm-focus)!important;
   background:linear-gradient(180deg,#9a673d,#5a341f)!important;
   background-image:linear-gradient(180deg,#9a673d,#5a341f)!important;
@@ -356,8 +480,6 @@
 }
 #ninjaPanel .realm-drawer :is(h2,h3,h4,h5,strong){color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
 #ninjaPanel .realm-drawer :is(p,small,span,label){color:#dcc5a1;-webkit-text-fill-color:#dcc5a1}
-#ninjaPanel .realm-drawer[data-basecamp-service] :is(.realm-tab-row,[role="tablist"] > [data-realm-tab]){display:none!important}
-#ninjaPanel .realm-drawer[data-basecamp-service] .realm-drawer-pane:not([hidden]){padding-top:14px!important}
 #ninjaPanel .realm-drawer :is(.realm-manage-card,.realm-stat-chip,.trackcoin-stat-card,.summary-box,.upgrade-item,.realm-spirit-card){
   background:rgba(20,12,8,.52)!important;
   background-image:none!important;
@@ -370,15 +492,6 @@
   color:#dcc5a1!important;
   -webkit-text-fill-color:#dcc5a1!important;
 }
-#ninjaPanel .basecamp-service>header,
-#ninjaPanel .basecamp-item-grid article,
-#ninjaPanel .basecamp-trade-list article{
-  background:rgba(19,11,7,.42)!important;
-  background-image:none!important;
-  border-color:rgba(245,213,151,.22)!important;
-  box-shadow:none!important;
-}
-
 /* One centred Settings menu owns persistent Realm configuration. */
 #ninjaPanel .realm-settings-overlay{
   position:absolute!important;
@@ -503,145 +616,8 @@
 #ninjaPanel .realm-inventory-item strong{color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
 #ninjaPanel .realm-inventory-empty{margin:0!important;color:#dcc5a1!important;-webkit-text-fill-color:#dcc5a1!important}
 
-/* Exploration inherits the cabin interface but retains the forest map as
-   gameplay content. All commands stay pointer-visible and keyboard-focusable. */
-#ninjaPanel .jrpg-game{background:#0c1914!important;color:var(--realm-cream)!important}
-#ninjaPanel .jrpg-topbar,
-#ninjaPanel .jrpg-battle-head,
-#ninjaPanel .jrpg-modal>header{
-  background:var(--realm-wood-face)!important;
-  background-image:var(--realm-wood-face)!important;
-  border-color:rgba(244,208,141,.25)!important;
-}
-#ninjaPanel :is(.jrpg-map-card,.jrpg-side-hud>section,.jrpg-party-mini,.jrpg-enemy-card,.jrpg-battle-party-card,.jrpg-battle-console,.jrpg-modal,.jrpg-story-panel,.jrpg-manage-card,.jrpg-resource-ribbon span,.jrpg-stat-grid span,.jrpg-equipment-grid label,.jrpg-inventory-summary span,.jrpg-inventory-columns section,.jrpg-inventory-discipline,.jrpg-settings-note){
-  background:linear-gradient(180deg,rgba(48,37,27,.96),rgba(21,15,11,.96))!important;
-  background-image:linear-gradient(180deg,rgba(48,37,27,.96),rgba(21,15,11,.96))!important;
-  border-color:rgba(242,211,153,.24)!important;
-  color:var(--realm-cream)!important;
-  -webkit-text-fill-color:currentColor!important;
-  box-shadow:none!important;
-}
-#ninjaPanel .jrpg-command-grid button{min-height:42px!important;pointer-events:auto!important;opacity:1!important}
-#ninjaPanel .jrpg-game :is(.jrpg-party-mini span,.jrpg-party-mini small,.jrpg-battle-party-card span,.jrpg-battle-party-card small,.jrpg-enemy-card small,.jrpg-battle-log ol,.jrpg-command-title span,.jrpg-skill-list span,.jrpg-target-list span,.jrpg-route-card ol,.jrpg-section-head span){
-  font-size:max(10px,0.68rem)!important;
-  line-height:1.3!important;
-  text-shadow:none!important;
-}
-#ninjaPanel .jrpg-meter>b{
-  font-size:max(9px,0.62rem)!important;
-  text-shadow:none!important;
-}
-#ninjaPanel .jrpg-game :is(button,strong,h1,h2,h3,h4,h5,h6,p,span,small,label){
-  -webkit-font-smoothing:antialiased;
-  text-rendering:optimizeLegibility;
-}
-#ninjaPanel .jrpg-top-actions [data-jrpg-action="abandon"]{border-color:#d39a89!important;color:#ffe7df!important;-webkit-text-fill-color:#ffe7df!important}
 
-/* Calorie Escape and Tactical Operations are full Realm destinations. Their
-   game-specific scenery remains, while menus use the same cabin language. */
-#ninjaPanel .ce-header,
-#ninjaPanel .tactical-header{
-  border-radius:6px!important;
-  border:1px solid rgba(91,51,28,.46)!important;
-  background:var(--realm-parchment-face)!important;
-  background-image:var(--realm-parchment-face)!important;
-  color:var(--realm-ink)!important;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.32),0 8px 18px -14px #000!important;
-}
-#ninjaPanel .ce-header :is(h2,p,span),
-#ninjaPanel .tactical-header :is(h3,p,span){color:var(--realm-ink)!important;-webkit-text-fill-color:var(--realm-ink)!important}
-#ninjaPanel :is(.ce-panel,.ce-progress-card,.ce-start-dock,.ce-zone-card,.ce-level-card,.ce-ability-card,.ce-result-card,.tactical-card,.tactical-log,.tactical-input-note){
-  border-color:rgba(242,210,150,.25)!important;
-  background:linear-gradient(180deg,rgba(54,36,24,.96),rgba(26,17,12,.96))!important;
-  background-image:linear-gradient(180deg,rgba(54,36,24,.96),rgba(26,17,12,.96))!important;
-  color:var(--realm-cream)!important;
-  box-shadow:none!important;
-}
-#ninjaPanel :is(.ce-panel,.ce-progress-card,.ce-start-dock,.ce-zone-card,.ce-level-card,.ce-ability-card,.ce-result-card,.tactical-card,.tactical-log,.tactical-input-note) :is(h3,h4,strong,b){color:var(--realm-cream)!important;-webkit-text-fill-color:var(--realm-cream)!important}
-#ninjaPanel :is(.ce-panel,.ce-progress-card,.ce-start-dock,.ce-zone-card,.ce-level-card,.ce-ability-card,.ce-result-card,.tactical-card,.tactical-log,.tactical-input-note) :is(p,span,small){color:#dac29e!important;-webkit-text-fill-color:#dac29e!important}
-#ninjaPanel .tactical-shell{min-height:100%!important;padding:14px!important;gap:11px!important}
-#ninjaPanel .tactical-layout{grid-template-columns:minmax(560px,1fr) minmax(280px,360px)!important;gap:12px!important}
-#ninjaPanel .tactical-board-wrap{min-height:520px!important;border-radius:12px!important;background:rgba(18,28,21,.66)!important}
-#ninjaPanel .tactical-grid{transform:translateX(0) scale(.82)!important;transform-origin:top center!important;margin:0 auto -92px!important}
-#ninjaPanel .tactical-campaign{border-radius:10px!important;background:rgba(29,17,11,.82)!important}
-
-/* Realm-owned scroll regions use timber, not the Hub's Indigo scrollbar. */
-#ninjaPanel :is(.realm-drawer-pane,.jrpg-route-card,.jrpg-modal-body,.tactical-operations-screen,.tactical-panel,.ce-body){
-  scrollbar-color:var(--realm-wood-500) var(--realm-wood-950)!important;
-}
-#ninjaPanel :is(.realm-drawer-pane,.jrpg-route-card,.jrpg-modal-body,.tactical-operations-screen,.tactical-panel,.ce-body)::-webkit-scrollbar-track{background:var(--realm-wood-950)!important}
-#ninjaPanel :is(.realm-drawer-pane,.jrpg-route-card,.jrpg-modal-body,.tactical-operations-screen,.tactical-panel,.ce-body)::-webkit-scrollbar-thumb{background:var(--realm-wood-500)!important;border-color:var(--realm-wood-950)!important}
-
-/* Running presentation: loop three parallax forest layers and make the enemy
-   visibly enter from the right. Sprite art gets a crisp lit edge and grounded
-   shadow without recolouring the characters. */
-#ninjaPanel .ninja-forest-layer,
-#ninjaPanel .ninja-scene__layer{
-  background-repeat:repeat-x!important;
-  background-size:auto 100%!important;
-  background-position:0 bottom!important;
-  will-change:background-position!important;
-}
-#ninjaPanel .ninja-forest-layer--distant,
-#ninjaPanel .ninja-scene__layer--a{animation:ninjaRealmWoodDistant 72s linear infinite!important}
-#ninjaPanel .ninja-forest-layer--middle,
-#ninjaPanel .ninja-scene__layer--b{animation:ninjaRealmWoodMiddle 38s linear infinite!important}
-#ninjaPanel .ninja-forest-layer--foreground{animation:ninjaRealmWoodForeground 18s linear infinite!important}
-@keyframes ninjaRealmWoodDistant{to{background-position:-2048px bottom}}
-@keyframes ninjaRealmWoodMiddle{to{background-position:-2048px bottom}}
-@keyframes ninjaRealmWoodForeground{to{background-position:-2048px bottom}}
-#ninjaPanel .ninja-runtime-sprite{
-  image-rendering:auto!important;
-  filter:drop-shadow(0 14px 9px rgba(0,0,0,.58)) drop-shadow(0 0 2px rgba(220,239,211,.32))!important;
-}
-/* This file is the final Realm visual authority. Keep action sheet selection
-   here as well as in Ninja's module stylesheet so later Realm styling can
-   never collapse Dash Cut or Shuriken back to the running sheet. */
-#ninjaPanel .ninja-scene__runner.is-dash-cut .ninja-runtime-sprite--runner,
-#ninjaPanel .ninja-scene__runner.is-idle-attacking .ninja-runtime-sprite--runner{
-  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-dash.svg')!important;
-  background-size:800% 100%!important;
-}
-#ninjaPanel .ninja-scene__runner.is-throwing .ninja-runtime-sprite--runner{
-  background-image:url('/systems/baseline-games-hub/games/baseline-realm/ninja-training/assets/alder-veil-throw.svg')!important;
-  background-size:600% 100%!important;
-}
-#ninjaPanel .ninja-scene__enemy.is-entering{animation:ninjaRealmEnemyEntry 1.25s cubic-bezier(.16,.72,.2,1) both!important}
-@keyframes ninjaRealmEnemyEntry{from{transform:translateX(58vw);opacity:.25}to{transform:translateX(0);opacity:1}}
-
-/* Shuriken remains legible while disabled. A grey mask recedes left-to-right
-   as --cooldown-progress advances from 0% to 100%. */
-#ninjaPanel #ninjaShurikenBtn:disabled{
-  opacity:1!important;
-  filter:none!important;
-  color:#d7cec0!important;
-  -webkit-text-fill-color:#d7cec0!important;
-  cursor:not-allowed!important;
-  overflow:hidden!important;
-}
-#ninjaPanel #ninjaShurikenBtn:disabled::before{
-  content:""!important;
-  position:absolute!important;
-  inset:0 0 0 var(--cooldown-progress,0%)!important;
-  z-index:1!important;
-  display:block!important;
-  border-radius:inherit!important;
-  background:rgba(78,75,71,.72)!important;
-  opacity:1!important;
-  transition:left .08s linear!important;
-  pointer-events:none!important;
-}
-#ninjaPanel #ninjaShurikenBtn:disabled::after{content:none!important;display:none!important}
-#ninjaPanel #ninjaShurikenBtn:disabled :is(.realm-combat-btn__copy,.realm-combat-btn__icon){position:relative!important;z-index:2!important;color:#ede4d5!important;-webkit-text-fill-color:#ede4d5!important}
-
-/* Mobile Realm geometry/HUD composition is owned exclusively by
-   realm-stage-1-mobile.css. Keep only destination-specific desktop/tablet
-   adaptation here so two authorities cannot compete on phones. */
-@media (max-width:1120px){
-  #ninjaPanel .tactical-layout{grid-template-columns:1fr!important}
-  #ninjaPanel .tactical-grid{transform:scale(.72)!important;margin-bottom:-165px!important}
-}
-@media (prefers-reduced-motion:reduce){
-  #ninjaPanel :is(.ninja-forest-layer,.ninja-scene__layer,.ninja-scene__enemy.is-entering){animation:none!important;will-change:auto!important}
-  #ninjaPanel #realmBasecampScreen .realm-location-caption{transition:none!important}
-}
+/* Shared drawer scrolling only. Destination scroll regions are styled locally. */
+#ninjaPanel .realm-drawer-pane{scrollbar-color:var(--realm-wood-500) var(--realm-wood-950)!important}
+#ninjaPanel .realm-drawer-pane::-webkit-scrollbar-track{background:var(--realm-wood-950)!important}
+#ninjaPanel .realm-drawer-pane::-webkit-scrollbar-thumb{background:var(--realm-wood-500)!important;border-color:var(--realm-wood-950)!important}

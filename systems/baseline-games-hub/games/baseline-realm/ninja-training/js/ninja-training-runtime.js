@@ -1,5 +1,5 @@
 // Baseline Realm Ninja Training progression runtime.
-// Presentation is owned by ninja-training-scene.js and ninja-training-rebuild.css.
+// Presentation is owned by ninja-training-scene.js and ninja-training.css.
 
 export function createNinjaTrainingRuntime(dependencies) {
   const { profiles, refs, q, qsa, clamp, sum, formatInt, formatCompact, escapeHtml, hotkeyActionLabel, cleanWinBonusPct, xpNeededForLevel, applyLevelCurve, scheduleSave, renderAll, renderHubSummary, renderGamesList, syncHashState, isMobileGameViewport, profileOrDefault } = dependencies;
@@ -81,7 +81,7 @@ export function createNinjaTrainingRuntime(dependencies) {
     return {
       app:'ninja', coins:0, xp:0, level:1, stage:1, enemyHp:0, highestStage:1, totalKills:0, currentStreak:0, bestStreak:0, cleanWinStreak:0, bossesDefeated:0, totalCoinsEarned:0,
       prestigeCount:0, spirit:0, upgrades:{ blade:0, drills:0, treasury:0, meditation:0, breaker:0 }, spiritShop:{ focus:0, fortune:0, vigor:0, ember:0, tents:0, mark:0 },
-      workshop: defaultRealmWorkshopState(), exploration: defaultRealmExplorationState(),
+      workshop: defaultRealmWorkshopState(),
       lastSeenAt:0, bonusCache:{}, offlineSummary:'', prestigeEarnedTotal:0
     };
   }
@@ -107,75 +107,13 @@ export function createNinjaTrainingRuntime(dependencies) {
     };
   }
 
-  function defaultRealmExplorationState(){
-    return { map:1, step:0, maxSteps:6, event:'idle', enemyHp:0, enemyMaxHp:0, enemyName:'', routeLog:'Step forward from Basecamp to begin the route.', loot:0, relics:0, mapsCleared:0, merchantVisits:0, chestsFound:0 };
-  }
-
-  function normaliseRealmExplorationState(data){
-    const base = defaultRealmExplorationState();
-    const merged = Object.assign({}, base, data || {});
-    merged.map = Math.max(1, Math.round(Number(merged.map || 1)));
-    merged.step = Math.max(0, Math.round(Number(merged.step || 0)));
-    merged.maxSteps = Math.max(4, Math.round(Number(merged.maxSteps || 6)));
-    merged.event = ['idle','encounter','boss','chest','merchant','rest'].includes(merged.event) ? merged.event : 'idle';
-    merged.enemyHp = Math.max(0, Math.round(Number(merged.enemyHp || 0)));
-    merged.enemyMaxHp = Math.max(0, Math.round(Number(merged.enemyMaxHp || 0)));
-    merged.enemyName = String(merged.enemyName || '');
-    merged.routeLog = String(merged.routeLog || base.routeLog);
-    merged.loot = Math.max(0, Math.round(Number(merged.loot || 0)));
-    merged.relics = Math.max(0, Math.round(Number(merged.relics || 0)));
-    merged.mapsCleared = Math.max(0, Math.round(Number(merged.mapsCleared || 0)));
-    merged.merchantVisits = Math.max(0, Math.round(Number(merged.merchantVisits || 0)));
-    merged.chestsFound = Math.max(0, Math.round(Number(merged.chestsFound || 0)));
-    return merged;
-  }
-
   function realmDrawerTabsForView(view){
     if(view === 'basecamp') return ['settlement','workshop','stores','expeditions'];
-    if(view === 'exploration') return ['route','party','loot','merchant'];
-    if(view === 'workshop') return [];
+    if(view === 'workshop' || view === 'exploration') return [];
     return ['upgrades','spirit','skills','bonuses','rebirth','stats'];
   }
 
   function defaultRealmDrawerTabForView(view){ return realmDrawerTabsForView(view)[0] || 'settlement'; }
-
-  function realmExplorationEventTitle(exp){
-    if(exp.event === 'boss') return exp.enemyName || 'Route Boss';
-    if(exp.event === 'encounter') return exp.enemyName || 'Field Encounter';
-    if(exp.event === 'chest') return 'Treasure Chest';
-    if(exp.event === 'merchant') return 'Travelling Merchant';
-    if(exp.event === 'rest') return 'Quiet Camp';
-    return 'Border Trail';
-  }
-
-  function realmExplorationEventText(profile){
-    const exp = profile.exploration;
-    if(exp.event === 'boss') return 'Boss route active. Defeat ' + (exp.enemyName || 'the boss') + ' to clear Map ' + exp.map + '.';
-    if(exp.event === 'encounter') return 'Random encounter active. Use Resolve Encounter to fight through the route.';
-    if(exp.event === 'chest') return 'A chest blocks the path. Claim it before moving deeper into the map.';
-    if(exp.event === 'merchant') return 'A travelling merchant has appeared on the route.';
-    if(exp.event === 'rest') return 'A quiet camp point offers a light supply stop.';
-    return 'Step forward to scout the route and trigger encounters.';
-  }
-
-  function buildRealmEncounter(profile, boss){
-    const exp = profile.exploration;
-    const pool = boss ? ['Gate Warden','Beast King','Ruin Colossus','Forest Tyrant'] : ['Forest Scout','Rogue Swordsman','Bog Wisp','Masked Marauder','Ruins Stalker'];
-    const name = pool[(exp.map + exp.step + (boss ? 2 : 0)) % pool.length];
-    const maxHp = Math.max(45, Math.round((profile.level * 18) + (exp.map * 26) + (boss ? 150 : 38)));
-    exp.event = boss ? 'boss' : 'encounter';
-    exp.enemyName = name;
-    exp.enemyMaxHp = maxHp;
-    exp.enemyHp = maxHp;
-    exp.routeLog = (boss ? 'Boss node reached: ' : 'Encounter found: ') + name + '.';
-  }
-
-  function openRealmDrawerForView(tab){
-    if(realmView === 'training' && !realmDrawerTabsForView('training').includes(tab)) setRealmView('basecamp');
-    realmDrawerTab = tab;
-    realmDrawerOpen = true;
-    renderNinja();
-  }
 
   function buyRealmWorkshopUpgrade(id){
     const profile = profiles.ninja;
@@ -191,110 +129,18 @@ export function createNinjaTrainingRuntime(dependencies) {
     renderNinja();
   }
 
-  function advanceRealmExploration(){
-    const profile = profiles.ninja;
-    const exp = profile.exploration;
-    if(['encounter','boss','chest','merchant','rest'].includes(exp.event) && (exp.event === 'encounter' || exp.event === 'boss' || exp.event === 'chest' || exp.event === 'merchant')) return;
-    exp.event = 'idle';
-    exp.enemyName = '';
-    exp.enemyHp = 0;
-    exp.enemyMaxHp = 0;
-    exp.step += 1;
-    if(exp.step >= exp.maxSteps){
-      buildRealmEncounter(profile, true);
-    }else{
-      const roll = Math.random();
-      if(roll < 0.5){
-        buildRealmEncounter(profile, false);
-      }else if(roll < 0.68){
-        exp.event = 'chest';
-        exp.routeLog = 'Treasure chest spotted on step ' + exp.step + '.';
-      }else if(roll < 0.84){
-        exp.event = 'merchant';
-        exp.routeLog = 'A travelling merchant appears on the road.';
-      }else{
-        exp.event = 'rest';
-        exp.routeLog = 'A quiet stretch lets the party gather breath.';
-      }
-    }
-    scheduleSave('ninja');
-    renderNinja();
-  }
-
-  function resolveRealmEncounter(){
-    const profile = profiles.ninja;
-    const exp = profile.exploration;
-    const workshop = profile.workshop || defaultRealmWorkshopState();
-    if(exp.event === 'encounter' || exp.event === 'boss'){
-      const damage = Math.max(18, Math.round(ninjaBaseDps(profile) * 1.45 + (workshop.crafting * 4) + (workshop.alchemy * 3)));
-      exp.enemyHp = Math.max(0, exp.enemyHp - damage);
-      if(exp.enemyHp <= 0){
-        const rewardCoins = Math.round((exp.event === 'boss' ? 220 : 72) + (exp.map * 24));
-        const rewardXp = Math.round((exp.event === 'boss' ? 58 : 20) + (exp.map * 6));
-        profile.coins += rewardCoins;
-        profile.totalCoinsEarned += rewardCoins;
-        profile.xp += rewardXp;
-        applyLevelCurve(profile);
-        if(exp.event === 'boss'){
-          exp.mapsCleared += 1;
-          exp.relics += 1;
-          profile.spirit += 1;
-          exp.map += 1;
-          exp.step = 0;
-          exp.routeLog = exp.enemyName + ' defeated. Map cleared and the next route has opened.';
-        }else{
-          exp.routeLog = exp.enemyName + ' defeated. +' + rewardCoins + ' Coins · +' + rewardXp + ' XP.';
-        }
-        exp.event = 'idle';
-        exp.enemyName = '';
-        exp.enemyHp = 0;
-        exp.enemyMaxHp = 0;
-      }else{
-        exp.routeLog = exp.enemyName + ' takes ' + damage + ' damage. ' + exp.enemyHp + ' HP remain.';
-      }
-    }else if(exp.event === 'chest'){
-      const reward = 80 + (exp.map * 20);
-      profile.coins += reward;
-      profile.totalCoinsEarned += reward;
-      exp.loot += 1;
-      exp.chestsFound += 1;
-      exp.routeLog = 'Chest opened. +' + reward + ' Coins and 1 route loot gained.';
-      exp.event = 'idle';
-    }else if(exp.event === 'merchant'){
-      exp.merchantVisits += 1;
-      if(profile.coins >= 90){
-        profile.coins -= 90;
-        exp.loot += 2;
-        exp.routeLog = 'Merchant trade complete. -90 Coins for 2 route loot.';
-      }else{
-        exp.routeLog = 'Merchant visited, but more coins are needed to trade.';
-      }
-      exp.event = 'idle';
-    }else if(exp.event === 'rest'){
-      exp.routeLog = 'Supplies refreshed at camp. The route is clear for the next step.';
-      exp.event = 'idle';
-    }
-    scheduleSave('ninja');
-    renderNinja();
-  }
-
   function renderRealmAuxiliary(profile){
     if(!profile) return;
-    const exp = profile.exploration || defaultRealmExplorationState();
     const workshop = profile.workshop || defaultRealmWorkshopState();
-    const explorationMeta = document.getElementById('realmExplorationMeta');
-    const explorationLabel = document.getElementById('realmExplorationStageLabel');
-    if(explorationMeta) explorationMeta.textContent = 'Map ' + exp.map + ' · Step ' + exp.step + ' / ' + exp.maxSteps;
-    if(explorationLabel) explorationLabel.textContent = exp.event === 'boss' ? 'Boss Route' : 'Exploration Route';
 
     const settlement = document.getElementById('realmDrawerSettlement');
     if(settlement){
       settlement.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Basecamp layout</strong><span class="inline-note">Ninja Training sits outside camp as a route exit. Workshop, Merchant Post, Storehouse, Campfire, and the Exploration Gate remain inside the camp scene.</span></article>'
-        + '<article class="realm-manage-card"><strong>Realm economy</strong><span class="inline-note">Ninja coins fuel workshop growth. Exploration generates route loot and relics. Spirit continues to connect Baseline Realm with the linked game hub systems.</span></article>'
-        + '<div class="realm-badge-row"><span class="realm-badge">Route loot ' + exp.loot + '</span><span class="realm-badge">Relics ' + exp.relics + '</span><span class="realm-badge">Maps cleared ' + exp.mapsCleared + '</span></div>'
+        + '<article class="realm-manage-card"><strong>Basecamp</strong><span class="inline-note">Basecamp is the Realm hub. Enter buildings and routes from the illustrated camp rather than from this management panel.</span></article>'
+        + '<article class="realm-manage-card"><strong>Shared systems</strong><span class="inline-note">Coins, inventory, party state, crafted items and connected rewards are shared across Realm destinations.</span></article>'
         + '</div>';
     }
+
     const workshopPane = document.getElementById('realmDrawerWorkshop');
     if(workshopPane){
       const stations = [
@@ -308,112 +154,21 @@ export function createNinjaTrainingRuntime(dependencies) {
         return '<article class="realm-manage-card"><div class="realm-workshop-row"><div><strong>' + name + '</strong><div class="inline-note">' + note + '</div></div><span class="realm-badge">Level ' + level + '</span></div><div class="realm-workshop-row"><span class="inline-note">Upgrade cost: ' + formatInt(cost) + ' Coins</span><button class="action' + (canBuy ? '' : ' secondary') + '" data-realm-workshop-upgrade="' + id + '" type="button"' + (canBuy ? '' : ' disabled') + '>Upgrade</button></div></article>';
       }).join('');
     }
+
     const storesPane = document.getElementById('realmDrawerStores');
     if(storesPane){
       storesPane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Merchant Post</strong><span class="inline-note">Merchants exchange shared Coins for materials and buy eligible supplies back into the same Realm wallet.</span></article>'
-        + '<article class="realm-manage-card"><strong>Currency exchange</strong><span class="inline-note">Coins and Spirit are shared across Realm modules. Merchant transactions use the same checked wallet and inventory services as crafting and rewards.</span></article>'
+        + '<article class="realm-manage-card"><strong>Merchant Post</strong><span class="inline-note">Buy and sell supplies through the Merchant Post in Basecamp. Transactions use the shared Realm wallet and inventory.</span></article>'
         + '</div>';
     }
+
     const expeditions = document.getElementById('realmDrawerExpeditions');
     if(expeditions){
       expeditions.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Exploration branch</strong><span class="inline-note">Maps, random encounters, merchant visits, treasure chests, and boss nodes are now connected to the Exploration Gate.</span></article>'
-        + '<article class="realm-manage-card"><strong>Current route</strong><span class="inline-note">Map ' + exp.map + ' · Step ' + exp.step + ' / ' + exp.maxSteps + ' · ' + escapeHtml(exp.routeLog) + '</span></article>'
+        + '<article class="realm-manage-card"><strong>Exploration</strong><span class="inline-note">Meridian Grove owns route movement, encounters, rewards and route progress. Enter it through the Exploration destination in Basecamp.</span></article>'
+        + '<article class="realm-manage-card"><strong>Operations</strong><span class="inline-note">Calorie Escape and Tactical Operations are separate Realm destinations with their own game state and controls.</span></article>'
         + '</div>';
     }
-
-    const routePane = document.getElementById('realmDrawerRoute');
-    if(routePane){
-      routePane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Route status</strong><span class="inline-note">Map ' + exp.map + ' · Step ' + exp.step + ' / ' + exp.maxSteps + ' · ' + escapeHtml(exp.routeLog) + '</span></article>'
-        + '<article class="realm-manage-card"><strong>Encounter flow</strong><span class="inline-note">Advance the route, resolve encounters, find chests, meet merchants, and clear the boss node to move to the next map.</span></article>'
-        + '</div>';
-    }
-    const partyPane = document.getElementById('realmDrawerParty');
-    if(partyPane){
-      partyPane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Lead character</strong><span class="inline-note">Realm Level ' + profile.level + ' · Ninja Training stage ' + profile.stage + ' · Workshop support ' + (workshop.crafting + workshop.alchemy) + '.</span></article>'
-        + '<article class="realm-manage-card"><strong>Party readiness</strong><span class="inline-note">The shared roster, active party, reserve party, learned abilities, and equipped Realm items are managed from Party Preparation in Basecamp.</span></article>'
-        + '</div>';
-    }
-    const lootPane = document.getElementById('realmDrawerLoot');
-    if(lootPane){
-      lootPane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Route inventory</strong><span class="inline-note">Route loot ' + exp.loot + ' · Relics ' + exp.relics + ' · Chests found ' + exp.chestsFound + '.</span></article>'
-        + '<article class="realm-manage-card"><strong>Shared use</strong><span class="inline-note">These materials feed Workshop weapons, armour, cooking, tailoring, alchemy, tools, and connected module effects.</span></article>'
-        + '</div>';
-    }
-    const merchantPane = document.getElementById('realmDrawerMerchant');
-    if(merchantPane){
-      merchantPane.innerHTML = '<div class="realm-manage-grid">'
-        + '<article class="realm-manage-card"><strong>Merchant log</strong><span class="inline-note">Merchant visits ' + exp.merchantVisits + '.</span></article>'
-        + '<article class="realm-manage-card"><strong>Route trading</strong><span class="inline-note">When a merchant appears, Resolve Encounter trades 90 Coins for 2 route loot. This provides an immediate link between Ninja Training gains and exploration development.</span></article>'
-        + '</div>';
-    }
-
-    const screen = document.getElementById('realmExplorationScreen');
-    if(screen) screen.hidden = realmView !== 'exploration';
-    const title = document.getElementById('realmExplorationEncounterTitle');
-    const status = document.getElementById('realmExplorationEncounterStatus');
-    if(title) title.textContent = realmExplorationEventTitle(exp);
-    if(status) status.textContent = realmExplorationEventText(profile) + ' ' + exp.routeLog;
-    const enemyBox = document.getElementById('realmExplorationEnemyBox');
-    const enemyName = document.getElementById('realmExplorationEnemyName');
-    const enemyFill = document.getElementById('realmExplorationHpFill');
-    const enemyText = document.getElementById('realmExplorationHpText');
-    const enemyVisible = exp.event === 'encounter' || exp.event === 'boss';
-    if(enemyBox) enemyBox.hidden = !enemyVisible;
-    if(enemyName) enemyName.textContent = exp.enemyName || 'Encounter';
-    if(enemyFill) enemyFill.style.width = (enemyVisible && exp.enemyMaxHp ? Math.max(0, Math.min(100, (exp.enemyHp / exp.enemyMaxHp) * 100)) : 0) + '%';
-    if(enemyText) enemyText.textContent = enemyVisible ? formatInt(exp.enemyHp) + ' / ' + formatInt(exp.enemyMaxHp) : '0 / 0';
-    const progressFill = document.getElementById('realmExplorationProgressFill');
-    if(progressFill) progressFill.style.width = Math.max(0, Math.min(100, (exp.step / exp.maxSteps) * 100)) + '%';
-    [1,2,3,4,5,6].forEach(function(index){
-      const node = document.getElementById('realmExploreNode' + index);
-      if(!node) return;
-      const targetStep = index;
-      node.classList.toggle('is-cleared', exp.step >= targetStep && !(index === 6 && (exp.event === 'boss')));
-      node.classList.toggle('is-current', (index === 6 ? (exp.step >= exp.maxSteps) : exp.step === targetStep));
-    });
-    const advanceBtn = document.getElementById('realmExplorationAdvanceBtn');
-    const resolveBtn = document.getElementById('realmExplorationResolveBtn');
-    const blocking = ['encounter','boss','chest','merchant'].includes(exp.event);
-    if(advanceBtn) advanceBtn.disabled = blocking;
-    if(resolveBtn){
-      resolveBtn.disabled = !(['encounter','boss','chest','merchant','rest'].includes(exp.event));
-      resolveBtn.textContent = exp.event === 'chest' ? hotkeyActionLabel('Open Chest', 'D') : exp.event === 'merchant' ? hotkeyActionLabel('Trade with Merchant', 'D') : exp.event === 'rest' ? hotkeyActionLabel('Continue', 'D') : hotkeyActionLabel('Resolve Encounter', 'D');
-    }
-  }
-
-  function normaliseNinjaProfile(data){
-    const base = defaultNinjaProfile();
-    const merged = Object.assign({}, base, data || {});
-    merged.coins = Math.max(0, Math.round(Number(merged.coins || 0)));
-    merged.xp = Math.max(0, Math.round(Number(merged.xp || 0)));
-    merged.level = Math.max(1, Math.round(Number(merged.level || 1)));
-    merged.stage = Math.max(1, Math.round(Number(merged.stage || 1)));
-    merged.enemyHp = Math.max(0, Number(merged.enemyHp || 0));
-    merged.highestStage = Math.max(merged.stage, Math.round(Number(merged.highestStage || merged.stage || 1)));
-    merged.totalKills = Math.max(0, Math.round(Number(merged.totalKills || 0)));
-    merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
-    merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
-    merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
-    merged.bossesDefeated = Math.max(0, Math.round(Number(merged.bossesDefeated || 0)));
-    merged.totalCoinsEarned = Math.max(0, Math.round(Number(merged.totalCoinsEarned || 0)));
-    merged.prestigeCount = Math.max(0, Math.round(Number(merged.prestigeCount || 0)));
-    merged.spirit = Math.max(0, Math.round(Number(merged.spirit || 0)));
-    merged.prestigeEarnedTotal = Math.max(0, Math.round(Number(merged.prestigeEarnedTotal || 0)));
-    merged.lastSeenAt = Math.max(0, Math.round(Number(merged.lastSeenAt || 0)));
-    merged.offlineSummary = String(merged.offlineSummary || '');
-    merged.bonusCache = Object.assign({}, merged.bonusCache || {});
-    merged.spiritShop = normaliseSpiritShop(merged.spiritShop);
-    merged.upgrades = Object.assign({}, base.upgrades, merged.upgrades || {});
-    merged.workshop = normaliseRealmWorkshopState(merged.workshop);
-    merged.exploration = normaliseRealmExplorationState(merged.exploration);
-    NINJA_UPGRADES.forEach(up => { merged.upgrades[up.id] = Math.max(0, Math.round(Number(merged.upgrades[up.id] || 0))); });
-    if(merged.enemyHp <= 0) merged.enemyHp = ninjaEnemyMaxHp(merged.stage);
-    return merged;
   }
 
   function readDartsProfile(){
@@ -637,7 +392,6 @@ export function createNinjaTrainingRuntime(dependencies) {
 
   function ninjaSpiritOfflineMultiplier(profile){ return 1 + (ninjaSpiritShopLevel(profile, 'vigor') * 0.10) + (ninjaSpiritShopLevel(profile, 'ember') * 0.05); }
 
-  function ninjaSpiritBossMultiplier(profile){ return 1 + (ninjaSpiritShopLevel(profile, 'mark') * 0.07); }
 
   function ninjaSpiritCampMultiplier(profile){ return 1 + (ninjaSpiritShopLevel(profile, 'tents') * 0.06); }
 
@@ -971,7 +725,7 @@ function setRealmDrawerTab(tab){
 }
 
 function toggleRealmDrawer(forceState){
-  if(realmView === 'workshop') return;
+  if(realmView === 'workshop' || realmView === 'exploration') return;
   realmDrawerOpen = typeof forceState === 'boolean' ? forceState : !realmDrawerOpen;
   if(!realmDrawerOpen) document.getElementById('realmPanelDrawer')?.removeAttribute('data-basecamp-service');
   if(realmDrawerOpen && !realmDrawerTabsForView(realmView).includes(realmDrawerTab)) realmDrawerTab = defaultRealmDrawerTabForView(realmView);
@@ -1009,7 +763,6 @@ function renderRealmChrome(){
   const workshop = document.getElementById('realmWorkshopScreen');
   const trainingRow = document.getElementById('realmTrainingTabRow');
   const basecampRow = document.getElementById('realmBasecampTabRow');
-  const explorationRow = document.getElementById('realmExplorationTabRow');
   if(frame){
     frame.dataset.realmView = realmView;
     frame.classList.toggle('is-drawer-open', realmDrawerOpen);
@@ -1032,7 +785,7 @@ function renderRealmChrome(){
     drawer.hidden = !realmDrawerOpen;
     drawer.setAttribute('aria-hidden', String(!realmDrawerOpen));
   }
-  if(menuBtn){ menuBtn.hidden = realmView === 'workshop'; menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen)); }
+  if(menuBtn){ menuBtn.hidden = realmView === 'workshop' || realmView === 'exploration'; menuBtn.setAttribute('aria-pressed', String(realmDrawerOpen)); }
   if(basecampBtn){
     const atBasecamp = realmView === 'basecamp';
     basecampBtn.hidden = atBasecamp;
@@ -1045,25 +798,23 @@ function renderRealmChrome(){
   setRealmSurfaceState(workshop, realmView === 'workshop');
   if(trainingRow) trainingRow.hidden = realmView !== 'training';
   if(basecampRow) basecampRow.hidden = realmView !== 'basecamp';
-  if(explorationRow) explorationRow.hidden = realmView !== 'exploration';
   const trainingOnlyTabs = ['upgrades','spirit','skills','bonuses','rebirth','stats'];
   qsa('#realmTrainingTabRow [data-realm-tab]').forEach(function(btn){
     btn.hidden = !trainingOnlyTabs.includes(btn.getAttribute('data-realm-tab') || '');
   });
   const title = document.getElementById('realmDrawerTitle');
   const note = document.getElementById('realmDrawerNote');
-  if(title) title.textContent = realmView === 'training' ? 'Ninja Training Management' : realmView === 'basecamp' ? 'Basecamp Management' : realmView === 'exploration' ? 'Exploration Management' : 'Management';
+  if(title) title.textContent = realmView === 'training' ? 'Ninja Training Management' : 'Basecamp Management';
   if(note){ note.textContent = ''; note.hidden = true; }
   const paneMap = {
     upgrades:'realmDrawerUpgrades', spirit:'realmDrawerSpirit', skills:'realmDrawerSkills', bonuses:'realmDrawerBonuses', rebirth:'realmDrawerRebirth', stats:'realmDrawerStats',
-    settlement:'realmDrawerSettlement', workshop:'realmDrawerWorkshop', stores:'realmDrawerStores', expeditions:'realmDrawerExpeditions',
-    route:'realmDrawerRoute', party:'realmDrawerParty', loot:'realmDrawerLoot', merchant:'realmDrawerMerchant'
+    settlement:'realmDrawerSettlement', workshop:'realmDrawerWorkshop', stores:'realmDrawerStores', expeditions:'realmDrawerExpeditions'
   };
   Object.keys(paneMap).forEach(function(key){ const pane=document.getElementById(paneMap[key]); if(pane) pane.hidden = !(realmDrawerOpen && realmDrawerTab === key); });
   qsa('[data-realm-tab]').forEach(function(btn){ btn.classList.toggle('is-active', btn.getAttribute('data-realm-tab') === realmDrawerTab); });
   qsa('[data-realm-view]').forEach(function(btn){ btn.setAttribute('aria-pressed', String(btn.getAttribute('data-realm-view') === realmView)); });
   const label = document.querySelector('#realmMenuBtn .realm-fab__label');
-  if(label) label.textContent = realmView === 'training' ? 'Training Management [M]' : realmView === 'basecamp' ? 'Camp Management [M]' : realmView === 'exploration' ? 'Exploration Management [M]' : 'Management [M]';
+  if(label) label.textContent = realmView === 'training' ? 'Training Management [M]' : 'Camp Management [M]';
   renderRealmAuxiliary(profiles.ninja || defaultNinjaProfile());
 }
 
@@ -1168,10 +919,6 @@ function showNinjaOfflineToast(message){
     else if(action==='close') toggleRealmDrawer(false);
     else setRealmDrawerTab(action);
   }
-  function handleExploration(action){
-    if(action==='advance') advanceRealmExploration();
-    else if(action==='resolve') resolveRealmEncounter();
-  }
   function buyUpgradeByHotkey(key){
     if(realmView!=='training') return;
     const id=Object.keys(NINJA_UPGRADE_HOTKEYS).find(function(upgradeId){ return NINJA_UPGRADE_HOTKEYS[upgradeId]===String(key||''); });
@@ -1193,7 +940,7 @@ function showNinjaOfflineToast(message){
     render:renderNinja, renderSummary:renderNinjaSummary, syncFullscreenControls:syncRealmFullscreenControls,
     toggleFullscreen:toggleRealmFullscreen, setView:setRealmView, openDrawerTab:setRealmDrawerTab, getView:function(){return realmView;},
     cycleBuyMode:cycleNinjaBuyMode, buyUpgrade:buyNinjaUpgrade, buySpiritUpgrade:buyNinjaSpiritUpgrade,
-    buyWorkshopUpgrade:buyRealmWorkshopUpgrade, handleExploration:handleExploration, handleDrawer:handleDrawer,
+    buyWorkshopUpgrade:buyRealmWorkshopUpgrade, handleDrawer:handleDrawer,
     strike:strike, shuriken:performNinjaShurikenVolley, prestige:performNinjaPrestige, buyUpgradeByHotkey:buyUpgradeByHotkey
   });
 }

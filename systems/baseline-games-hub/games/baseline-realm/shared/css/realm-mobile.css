@@ -1,8 +1,7 @@
-/* Baseline Realm mobile authority.
-   Portrait is intentionally gate-only. Landscape owns the complete Realm
-   viewport and must not inherit desktop/tablet reflow rules from other files. */
+/* Baseline Realm mobile layout.
+   This is the only file allowed to own Realm mobile viewport geometry. */
 @media (max-width:1024px), (pointer:coarse){
-  html,
+  html[data-baseline-realm-mobile-active="true"],
   body.bl-mobile-game-mode[data-mobile-game="ninja"]{
     width:100%!important;
     height:100%!important;

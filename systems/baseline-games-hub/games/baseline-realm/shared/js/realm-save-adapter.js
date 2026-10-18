@@ -8,6 +8,9 @@ import {
 } from './realm-model.js';
 
 const { clone, plainObject } = realmModelInternals;
+// This module is the single sanctioned compatibility boundary for pre-Realm
+// Ninja saves. Legacy fields are migrated/persisted here, never executed as
+// parallel gameplay systems.
 const LEGACY_APP = 'ninja';
 const LEGACY_REALM_STORAGE_KEY = '__bl_games_guest_profiles_v1__';
 const V2_REALM_STORAGE_KEY = '__bl_baseline_realm_v2__';

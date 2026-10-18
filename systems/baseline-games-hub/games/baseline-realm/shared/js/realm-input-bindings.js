@@ -4,8 +4,9 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
     document.documentElement.getAttribute('data-baseline-realm-external-scene')
     || ['calorie-escape','tactical-operations'].includes(sceneRouter.getCurrentSceneId())
   );
-  const standardActive = () => active() && !externalSceneActive();
+  const persistentActive = () => active() && !externalSceneActive();
   const jrpgActive = () => runtime.getView() === 'exploration' && !!document.getElementById('realmSceneFrame')?.classList.contains('is-exploration-jrpg');
+  const standardActive = () => persistentActive() && !jrpgActive();
   const payload = (event) => event.detail?.payload || {};
   const navigate = (view) => {
     const scene = view === 'training' ? 'ninja-training' : view;
@@ -34,7 +35,6 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
       category: element.dataset.workshopCategory || ''
     })
   });
-  inputManager.bindPointer('realm-explore', '[data-realm-explore-action]', { payload: (element) => ({ action: element.dataset.realmExploreAction || '' }) });
   inputManager.bindPointer('realm-workshop-upgrade', '[data-realm-workshop-upgrade]', { payload: (element) => ({ id: element.dataset.realmWorkshopUpgrade || '' }) });
   inputManager.bindPointer('ninja-strike', '#ninjaManualStrikeBtn');
   inputManager.bindPointer('ninja-shuriken', '#ninjaShurikenBtn');
@@ -47,7 +47,7 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   inputManager.bindKeyboard('realm-exploration', 'e', { when: standardActive });
   inputManager.bindKeyboard('realm-menu', 'm', { when: standardActive });
   inputManager.bindKeyboard('realm-shuriken', 's', { when: standardActive });
-  inputManager.bindKeyboard('realm-fullscreen', 'f', { when: standardActive });
+  inputManager.bindKeyboard('realm-fullscreen', 'f', { when: persistentActive });
   inputManager.bindKeyboard('realm-audio-mute', 'v', { when: standardActive });
   inputManager.bindKeyboard('realm-direction', ['arrowleft', 'arrowright', 'arrowup', 'arrowdown'], {
     when: standardActive,
@@ -72,28 +72,23 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
       if (detail.tab === 'workshop') sceneRouter.navigate('workshop', { category: detail.category || 'blacksmith' });
       else { navigate('basecamp'); runtime.openDrawerTab(detail.tab || 'settlement'); }
     }),
-    eventBus.on('realm:input:realm-explore', (event) => runtime.handleExploration(payload(event).action)),
     eventBus.on('realm:input:realm-workshop-upgrade', (event) => runtime.buyWorkshopUpgrade(payload(event).id)),
     eventBus.on('realm:input:ninja-strike', () => runtime.strike()),
     eventBus.on('realm:input:ninja-shuriken', () => runtime.shuriken()),
     eventBus.on('realm:input:ninja-prestige', () => runtime.prestige()),
-    eventBus.on('realm:input:realm-fullscreen', standardOnly(() => runtime.toggleFullscreen())),
+    eventBus.on('realm:input:realm-fullscreen', (event) => { if (persistentActive()) runtime.toggleFullscreen(); }),
     eventBus.on('realm:input:realm-direction', standardOnly((event) => moveFocus(payload(event).axisState))),
     eventBus.on('realm:input:realm-primary', standardOnly(() => {
       if (document.activeElement?.matches?.('#realmSceneFrame button, #realmSceneFrame [href], #realmSceneFrame input')) {
         document.activeElement.click();
         return;
       }
-      if (jrpgActive()) return;
-      if (runtime.getView() === 'exploration') runtime.handleExploration('resolve');
-      else if (runtime.getView() === 'training') runtime.strike();
+      if (runtime.getView() === 'training') runtime.strike();
     })),
     eventBus.on('realm:input:realm-basecamp', standardOnly(() => navigate('basecamp'))),
     eventBus.on('realm:input:realm-training', standardOnly(() => navigate('training'))),
     eventBus.on('realm:input:realm-exploration', standardOnly(() => {
-      if (jrpgActive() || runtime.getView() === 'workshop') return;
       if (runtime.getView() === 'basecamp') navigate('exploration');
-      else runtime.handleExploration('advance');
     })),
     eventBus.on('realm:input:realm-menu', standardOnly(() => {
       if (!jrpgActive() && runtime.getView() !== 'workshop') runtime.handleDrawer('toggle');

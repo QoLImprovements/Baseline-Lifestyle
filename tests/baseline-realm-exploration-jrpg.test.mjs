@@ -68,7 +68,7 @@ test('battle runtime keeps command DOM stable between ATB ticks and always expos
   assert.match(ui, /data-battle-basecamp/);
   assert.match(ui, /returnButton\.disabled = false/);
   assert.match(ui, /if \(this\.state\.battle\) \{\s*this\.returnToBasecampFromBattle\(\);/);
-  assert.match(ui, /key === 'b' && this\.state\.battle/);
+  assert.match(ui, /if \(key === 'b'\)[\s\S]*?if \(this\.state\.battle\) this\.returnToBasecampFromBattle\(\);[\s\S]*?else if \(!this\.modal\) this\.leaveExploration\(false\)/);
   assert.match(ui, /returnToBasecampFromBattle\(\)/);
   assert.match(ui, /finishBattle\(this\.state\)/);
 });

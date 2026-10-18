@@ -154,6 +154,9 @@ export function normaliseWorkshopState(value) {
   };
 }
 
+// Compatibility schema only: older Realm saves stored the retired Advance/Resolve
+// Exploration loop here. Meridian Grove owns all live Exploration gameplay now;
+// keep these fields solely so existing saves can be normalised without data loss.
 export function createDefaultExplorationState() {
   return {
     map: 1,

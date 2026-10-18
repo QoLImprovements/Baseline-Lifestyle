@@ -1,4 +1,4 @@
-import { createWorkshopController } from './workshop-ui.js?v=REALM_AUTHORITY_WORKSHOP_ROOM_20261017_1';
+import { createWorkshopController } from './workshop-ui.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 
 export function createWorkshopScene({ runtime, workshopService, eventBus }) {
   const controller = createWorkshopController({ runtime, workshopService, eventBus });

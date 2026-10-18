@@ -1,20 +1,10 @@
-const BUILD = 'REALM_WOOD_AUTHORITY_20260802_1';
-const STYLESHEET = '/systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css?v=' + BUILD;
+const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
 
 const ENEMY_PRESENTATION = Object.freeze({
   scout: Object.freeze({ name: 'Mossblade Pursuer', route: 'Cedar-Root Passage' }),
   raider: Object.freeze({ name: 'Gloam-Rope Raider', route: 'Lantern-Moss Run' }),
   boss: Object.freeze({ name: 'Hollow-Crown Warden', route: 'Warden’s Deepwood' })
 });
-
-function ensureStylesheet() {
-  if (document.querySelector('link[data-ninja-training-rebuild],link[data-current-realm-style="ninja-training-current"],link[href*="/ninja-training/css/ninja-training-rebuild.css"]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = STYLESHEET;
-  link.dataset.ninjaTrainingRebuild = BUILD;
-  document.head.appendChild(link);
-}
 
 function createSynthAudio() {
   let context = null;
@@ -107,7 +97,6 @@ function parseStage(text) {
 }
 
 function mountNinjaPresentation() {
-  ensureStylesheet();
   const scene = document.getElementById('ninjaScene');
   const frame = document.getElementById('realmSceneFrame');
   const runner = document.getElementById('ninjaRunnerWrap');
@@ -134,11 +123,9 @@ function mountNinjaPresentation() {
     enemy.appendChild(sprite);
   }
   if (!enemy.dataset.enemyKind) enemy.dataset.enemyKind = 'scout';
-  if (scene.dataset.ninjaTrainingRebuild === BUILD) return Object.freeze({ resume() {}, pause() {} });
+  if (scene.dataset.realmNinjaPresentation === BUILD) return Object.freeze({ resume() {}, pause() {} });
 
-  scene.dataset.ninjaTrainingRebuild = BUILD;
-  frame.dataset.ninjaTrainingRebuild = BUILD;
-  document.documentElement.dataset.ninjaTrainingRebuild = BUILD;
+  scene.dataset.realmNinjaPresentation = BUILD;
 
   function ensureRuntimeSprite(host, className) {
     let sprite = host.querySelector('.ninja-runtime-sprite');
