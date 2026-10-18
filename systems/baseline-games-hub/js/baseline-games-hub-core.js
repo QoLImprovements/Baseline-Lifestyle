@@ -1831,12 +1831,18 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function renderPairsTierList(){
     const profile = profiles.pairs;
-    refs.pairsTierSelectList.innerHTML = PAIRS_TIERS.map(tier => {
+    const tiersHtml = PAIRS_TIERS.map(tier => {
       const locked = profile.level < tier.unlockLevel;
       const active = profile.selectedTier === tier.id;
       const detail = locked ? ('Unlock ' + tier.unlockLevel) : ('+' + tier.bankReward + ' Bank / +' + tier.xpReward + ' XP');
       return '<button class="tier-btn' + (active ? ' active' : '') + '" data-pairs-tier="' + tier.id + '" type="button"' + (locked ? ' disabled' : '') + '><span>' + tier.name + ' · ' + tier.pairs + ' pairs</span><span>' + detail + '</span></button>';
     }).join('');
+    const themesHtml = PAIRS_CARD_THEMES.map(function(theme){
+      const locked = profile.level < theme.unlockLevel;
+      const active = profile.cardTheme === theme.id;
+      return '<button class="action ghost' + (active ? ' is-active' : '') + '" data-pairs-theme="' + theme.id + '" type="button"' + (locked ? ' disabled' : '') + ' aria-pressed="' + active + '">' + escapeHtml(theme.name) + (locked ? ' · L' + theme.unlockLevel : '') + '</button>';
+    }).join('');
+    refs.pairsTierSelectList.innerHTML = tiersHtml + '<div class="pairs-theme-picker" aria-label="Pairs card-back theme">' + themesHtml + '</div>';
   }
   function renderPairsSkillTree(){
     const profile = profiles.pairs;
@@ -1852,7 +1858,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
   function renderPairsBoard(){
     const tier = currentPairsTier();
-    if(refs.pairsBoard) refs.pairsBoard.classList.toggle('is-pairs-idle', !pairsBoardState);
+    if(refs.pairsBoard){
+      refs.pairsBoard.classList.toggle('is-pairs-idle', !pairsBoardState);
+      refs.pairsBoard.setAttribute('data-pairs-theme', profiles.pairs.cardTheme || 'woodland');
+    }
     refs.pairsTierNameValue.textContent = tier.name;
     if(!pairsBoardState){
       refs.pairsMovesValue.textContent = '0';
@@ -1861,17 +1870,21 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       refs.pairsHintBtn.disabled = true;
       refs.pairsHintBtn.textContent = 'Use Hint';
       refs.pairsBoard.style.gridTemplateColumns = '1fr';
-      refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is idle.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span><span class="inline-note">Use the Start New Game control at the bottom-right of the game window.</span></div>';
+      refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
       refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No board is active yet.</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
       return;
     }
     refs.pairsMovesValue.textContent = String(pairsBoardState.moves);
     refs.pairsMatchedValue.textContent = String(pairsBoardState.matchedPairs) + ' / ' + tier.pairs;
     refs.pairsRoundBankValue.textContent = String(pairsBoardState.roundBank);
-    refs.pairsHintBtn.disabled = pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || !!pairsBoardState.hintBusy;
+    refs.pairsHintBtn.disabled = pairsBoardState.completed || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || !!pairsBoardState.hintBusy;
     refs.pairsHintBtn.textContent = 'Use Hint (' + pairsBoardState.hintsLeft + ')';
     refs.pairsBoard.style.gridTemplateColumns = 'repeat(' + (isMobileGameViewport() ? Math.min(4, tier.cols) : tier.cols) + ', minmax(0, 1fr))';
-    refs.pairsBoard.innerHTML = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button"' + ((card.matched || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back">?</span><span class="memory-card-face memory-card-front">' + card.face + '</span></button>').join('');
+    const cardsHtml = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button"' + ((card.matched || pairsBoardState.completed || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back"></span><span class="memory-card-face memory-card-front">' + card.face + '</span></button>').join('');
+    const resultHtml = pairsBoardState.completed
+      ? '<div class="pairs-result-card"><strong>Board cleared</strong><div class="inline-note">' + pairsBoardState.moves + ' moves · ' + tier.pairs + ' pairs · round Bank ' + pairsBoardState.roundBank + '</div></div>'
+      : '';
+    refs.pairsBoard.innerHTML = cardsHtml + resultHtml;
     refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
   }
   function renderPairsSummary(){
@@ -2168,6 +2181,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     raw = raw.replace(/[×xX]/g, '*').replace(/[÷]/g, '/');
     if(!/^[\d\s()+\-*/]+$/.test(raw)){
       make24State.lastMessage = 'Only whole shown numbers, brackets, and + - × ÷ are allowed.';
+      persistMake24Round();
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
@@ -2175,6 +2189,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const usedNumbers = (raw.match(/\d+/g) || []).map(Number);
     if(usedNumbers.length !== 4 || !sameNumberMultiset(usedNumbers, make24State.numbers)){
       make24State.lastMessage = 'Use each shown number exactly once. Concatenation is not allowed.';
+      persistMake24Round();
       renderMake24Board();
       focusGameInput('make24ExpressionInput');
       return;
@@ -2303,6 +2318,73 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }).join('');
     refs.make24SkillSummary.innerHTML = '<strong>Skill upgrades</strong><span class="inline-note">Clarity ' + profile.skills.clarity + ' guide use(s) · Flow +' + (profile.skills.flow * 8) + '% XP · Banker +' + (profile.skills.banker * 10) + '% Bank · Reserve ' + profile.skills.reserve + ' reroll(s) · Precision -' + profile.skills.precision + ' repeat loss</span>';
   }
+  function make24ExpressionNumberUsage(expression){
+    const usage=Object.create(null);
+    (String(expression||'').match(/\d+/g)||[]).forEach(function(raw){
+      const key=String(Number(raw));
+      usage[key]=(usage[key]||0)+1;
+    });
+    return usage;
+  }
+  function make24AvailableNumberCount(number){
+    if(!make24State) return 0;
+    return (make24State.numbers||[]).filter(function(value){return Number(value)===Number(number);}).length;
+  }
+  function make24BuilderStatus(){
+    if(!make24State) return '';
+    const raw=String(make24State.draftExpression||'').trim();
+    if(!raw) return 'Choose a number to begin.';
+    const opens=(raw.match(/\(/g)||[]).length;
+    const closes=(raw.match(/\)/g)||[]).length;
+    const last=raw.slice(-1);
+    const used=(raw.match(/\d+/g)||[]).length;
+    if(/[+\-*/(]$/.test(last)) return 'Choose a number' + (last==='(' ? ' inside the bracket.' : '.');
+    if(used<4) return 'Add an operator, then use the remaining number' + (4-used===1?'':'s') + '.';
+    if(opens>closes) return 'Close the remaining bracket' + (opens-closes===1?'':'s') + ', then submit.';
+    return 'Expression ready to submit.';
+  }
+  function appendMake24BuilderToken(token){
+    if(!make24State||make24State.completed) return;
+    let raw=String(make24State.draftExpression||'').trim();
+    const value=String(token||'');
+    const isNumber=/^\d+$/.test(value);
+    const isOperator=/^[+\-*/]$/.test(value);
+    const last=raw.slice(-1);
+    if(isNumber){
+      const usage=make24ExpressionNumberUsage(raw);
+      const key=String(Number(value));
+      if((usage[key]||0)>=make24AvailableNumberCount(value)) return;
+      if(raw && (/\d$/.test(last)||last===')')) return;
+      raw+=value;
+    }else if(value==='('){
+      if(raw && (/\d$/.test(last)||last===')')) return;
+      raw+='(';
+    }else if(value===')'){
+      const opens=(raw.match(/\(/g)||[]).length;
+      const closes=(raw.match(/\)/g)||[]).length;
+      if(opens<=closes||(!/\d$/.test(last)&&last!==')')) return;
+      raw+=')';
+    }else if(isOperator){
+      if(!raw||(!/\d$/.test(last)&&last!==')')) return;
+      raw+=value;
+    }else return;
+    make24State.draftExpression=raw;
+    persistMake24Round();
+    renderMake24Board();
+  }
+  function editMake24Builder(action){
+    if(!make24State||make24State.completed) return;
+    let raw=String(make24State.draftExpression||'').trimEnd();
+    if(action==='clear') raw='';
+    else if(action==='undo'){
+      if(/\d$/.test(raw)) raw=raw.replace(/\d+$/,'');
+      else raw=raw.slice(0,-1);
+    }
+    make24State.draftExpression=raw;
+    persistMake24Round();
+    renderMake24Board();
+  }
+
   function renderMake24Board(){
     const tier = currentMake24Tier();
     refs.make24TierNameValue.textContent = tier.name;
@@ -2312,7 +2394,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       refs.make24RoundBankValue.textContent = '0';
       if(refs.make24HintBtn) refs.make24HintBtn.disabled = true;
       if(refs.make24RerollBtn) refs.make24RerollBtn.disabled = true;
-      refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is idle.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
+      refs.make24Board.innerHTML = '<div class="empty-box"><strong>Make The Number is ready.</strong><span class="inline-note">' + escapeHtml(make24IdleMessage) + '</span></div>';
       refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No puzzle is active yet.</span>';
       return;
     }
@@ -2322,11 +2404,31 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const make24RerollsLeft = make24State.rerollsLeft || 0;
     if(refs.make24HintBtn){ refs.make24HintBtn.disabled = make24HintsLeft <= 0; refs.make24HintBtn.textContent = countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft); }
     if(refs.make24RerollBtn){ refs.make24RerollBtn.disabled = make24RerollsLeft <= 0; refs.make24RerollBtn.textContent = countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft); }
-    const make24Closed = !!make24State.completed;
-    refs.make24Board.innerHTML = '<div class="formula-box"><div class="clue-bar">Target: ' + (make24State.target || 24) + '</div><div class="numbers-strip">' + make24State.numbers.map(num => '<div class="number-chip">' + num + '</div>').join('') + '</div>' + (make24Closed ? '' : '<form id="make24ExpressionForm" class="stack"><div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Use Guide', 'H', make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft <= 0 ? ' disabled' : '') + '>' + countedHotkeyActionLabel('Reroll', 'J', make24RerollsLeft) + '</button></div><div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" value="' + escapeHtml(make24State.draftExpression || '') + '" placeholder="Example: (8+4)×2" /></div>' + mobileSubmitButtonHtml() + '</form>') + (make24State.revealSolution ? '<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>' : '') + '</div>';
-    refs.make24ExpressionInput = document.getElementById('make24ExpressionInput');
-    refs.make24RoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
-    if(refs.make24ExpressionInput && !make24State.completed) focusGameInput('make24ExpressionInput');
+    const closed = !!make24State.completed;
+    const usage=make24ExpressionNumberUsage(make24State.draftExpression||'');
+    const occurrence=Object.create(null);
+    const numberButtons=(make24State.numbers||[]).map(function(num){
+      const key=String(Number(num));
+      const index=occurrence[key]||0;
+      occurrence[key]=index+1;
+      const used=index<(usage[key]||0);
+      return '<button class="number-chip' + (used?' is-used':'') + '" data-make24-token="' + escapeHtml(String(num)) + '" type="button"' + (used||closed?' disabled':'') + ' aria-label="Use number ' + escapeHtml(String(num)) + '">' + escapeHtml(String(num)) + '</button>';
+    }).join('');
+    const builder = closed ? '' :
+      '<form id="make24ExpressionForm" class="stack make-number-composer">' +
+        '<div class="game-input-skill-row"><button class="action ghost" id="make24BoardHintBtn" type="button"' + (make24HintsLeft<=0?' disabled':'') + '>' + countedHotkeyActionLabel('Use Guide','H',make24HintsLeft) + '</button><button class="action ghost" id="make24BoardRerollBtn" type="button"' + (make24RerollsLeft<=0?' disabled':'') + '>' + countedHotkeyActionLabel('Reroll','J',make24RerollsLeft) + '</button></div>' +
+        '<div class="make-target-action-row"><input id="make24ExpressionInput" class="text-input" autocomplete="off" value="' + escapeHtml(make24State.draftExpression||'') + '" placeholder="Build or type an expression" aria-label="Number expression" /></div>' +
+        '<div class="make-number-operators" aria-label="Expression controls">' +
+          ['+','-','*','/','(',')'].map(function(token){ const label=token==='*'?'×':token==='/'?'÷':token; return '<button class="action ghost" data-make24-token="' + token + '" type="button" aria-label="Add ' + escapeHtml(label) + '">' + escapeHtml(label) + '</button>'; }).join('') +
+        '</div>' +
+        '<div class="make-number-builder-note" aria-live="polite">' + escapeHtml(make24BuilderStatus()) + '</div>' +
+        '<div class="make-number-edit-row"><button class="action ghost" data-make24-edit="undo" type="button">Undo</button><button class="action ghost" data-make24-edit="clear" type="button">Clear</button><button class="action primary submit-game-toggle" type="submit">Submit</button></div>' +
+      '</form>';
+    refs.make24Board.innerHTML = '<div class="formula-box"><div class="make-number-target"><span>Target</span><strong>' + escapeHtml(String(make24State.target||24)) + '</strong></div><div class="numbers-strip">' + numberButtons + '</div>' + builder + (make24State.revealSolution?'<div class="solution-box">' + escapeHtml(make24State.revealSolution) + '</div>':'') + '</div>';
+    refs.make24ExpressionInput=document.getElementById('make24ExpressionInput');
+    refs.make24RoundSummary.innerHTML='<strong>Round Status</strong><span class="inline-note">' + escapeHtml(make24State.lastMessage) + '</span>';
+    injectMobileGameControls('make24');
+    syncMobileInputMode('make24');
   }
   function renderMake24Summary(){
     const profile = profiles.make24;
@@ -4046,6 +4148,12 @@ function toggleGameFullscreen(gameId){
         if(idx > 0) handleMobileGameKey(raw.slice(0, idx), raw.slice(idx + 1));
         return;
       }
+      const pairTheme = event.target.closest('[data-pairs-theme]');
+      if(pairTheme){
+        const theme=PAIRS_CARD_THEMES.find(function(item){return item.id===pairTheme.getAttribute('data-pairs-theme');});
+        if(theme&&profiles.pairs.level>=theme.unlockLevel){ profiles.pairs.cardTheme=theme.id; scheduleSave('pairs'); renderAll(); }
+        return;
+      }
       const pairTier = event.target.closest('[data-pairs-tier]');
       if(pairTier){
         const tier = PAIRS_TIERS.find(item => item.id === pairTier.getAttribute('data-pairs-tier'));
@@ -4079,7 +4187,11 @@ function toggleGameFullscreen(gameId){
       const ruleShiftPanelBtn = event.target.closest('[data-ruleshift-panel]'); if(ruleShiftPanelBtn){ setRuleShiftPanel(ruleShiftPanelBtn.getAttribute('data-ruleshift-panel'), 'push'); return; }
       const ninjaPanelBtn = event.target.closest('[data-ninja-panel]'); if(ninjaPanelBtn){ setNinjaPanel(ninjaPanelBtn.getAttribute('data-ninja-panel'), 'push'); return; }
       const panelToggle = event.target.closest('[data-toggle-panel]'); if(panelToggle){ const id = panelToggle.getAttribute('data-toggle-panel'); const target = document.getElementById(id); if(target){ const hidden = !!target.hidden; target.hidden = !hidden; panelToggle.setAttribute('aria-expanded', String(hidden)); } return; }
-      const make24BoardHintBtn = event.target.closest('#make24BoardHintBtn'); if(make24BoardHintBtn){ useMake24Hint(); return; }
+      const make24TokenBtn=event.target.closest('[data-make24-token]');
+      if(make24TokenBtn){ appendMake24BuilderToken(make24TokenBtn.getAttribute('data-make24-token')||''); return; }
+      const make24EditBtn=event.target.closest('[data-make24-edit]');
+      if(make24EditBtn){ editMake24Builder(make24EditBtn.getAttribute('data-make24-edit')||''); return; }
+            const make24BoardHintBtn = event.target.closest('#make24BoardHintBtn'); if(make24BoardHintBtn){ useMake24Hint(); return; }
       const make24BoardRerollBtn = event.target.closest('#make24BoardRerollBtn'); if(make24BoardRerollBtn){ rerollMake24Puzzle(); return; }
       const pairStart = event.target.closest('[data-action="start-pairs"], #newPairsBoardBtn'); if(pairStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); return; }
       const wordStart = event.target.closest('[data-action="start-word"], #newWordRoundBtn'); if(wordStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); return; }
@@ -4094,8 +4206,8 @@ function toggleGameFullscreen(gameId){
     document.addEventListener('input', function(event){
       const target = event.target;
       if(!target || !target.id) return;
-      if(target.id === 'wordGuessInput' && wordState) wordState.draftGuess = String(target.value || '');
-      if(target.id === 'make24ExpressionInput' && make24State) make24State.draftExpression = String(target.value || '');
+      if(target.id === 'wordGuessInput' && wordState){ wordState.draftGuess = String(target.value || ''); persistWordRound(); }
+      if(target.id === 'make24ExpressionInput' && make24State){ make24State.draftExpression = String(target.value || ''); persistMake24Round(); }
     });
     document.addEventListener('keydown', function(event){
       const input = event.target;
