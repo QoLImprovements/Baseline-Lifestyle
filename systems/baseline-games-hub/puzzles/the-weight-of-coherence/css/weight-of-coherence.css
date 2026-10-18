@@ -20,7 +20,9 @@
 .weight-coherence-hotkey{position:absolute;right:2px;bottom:1px;display:grid;place-items:center;min-width:14px;height:14px;padding:0 2px;border:0;border-radius:4px;background:rgba(8,13,34,.78);color:rgba(242,245,255,.82);font:600 9px/1 system-ui,sans-serif;pointer-events:none}
 .weight-coherence-zoom-actions{display:inline-flex;align-items:center;gap:4px;padding-right:4px;margin-right:1px;border-right:1px solid rgba(176,190,255,.18)}
 .weight-coherence-zoom-step{display:grid;place-items:center;flex:0 0 auto;width:34px;min-width:34px;height:44px;min-height:44px;padding:0;border-radius:11px;font:700 1.25rem/1 system-ui,sans-serif}
-.weight-coherence-zoom-step:disabled{opacity:.42;cursor:default}
+.weight-coherence-zoom-indicator{cursor:default;pointer-events:none;user-select:none}
+.weight-coherence-zoom-indicator[data-active="true"]{border-color:rgba(206,215,255,.82);box-shadow:0 0 0 2px rgba(126,145,255,.20) inset}
+.weight-coherence-info-glyph{display:grid;place-items:center;width:22px;height:22px;border:1.6px solid currentColor;border-radius:50%;font:700 15px/1 Georgia,serif}
 
 .weight-coherence-settings-dialog{box-sizing:border-box;width:min(92vw,540px);max-height:min(86vh,720px);padding:0;border:1px solid rgba(206,215,255,.3);border-radius:18px;color:#F2F5FF;background:#0b1230;box-shadow:0 24px 70px rgba(0,0,0,.58);overflow:auto}
 .weight-coherence-settings-dialog::backdrop{background:rgba(3,6,18,.72);backdrop-filter:blur(3px)}
@@ -31,6 +33,15 @@
 .weight-coherence-settings-section{display:grid;gap:10px;padding:14px;border:1px solid rgba(176,190,255,.17);border-radius:14px;background:rgba(8,13,34,.46)}
 .weight-coherence-settings-actions{display:flex;justify-content:flex-end}
 .weight-coherence-settings-actions .action{min-width:150px}
+.weight-coherence-help-dialog{width:min(94vw,680px)}
+.weight-coherence-help-section{display:grid;gap:7px;padding:13px 14px;border:1px solid rgba(176,190,255,.17);border-radius:14px;background:rgba(8,13,34,.42)}
+.weight-coherence-help-section p{margin:0;color:rgba(242,245,255,.78);line-height:1.5}
+.weight-coherence-help-grid{display:grid;gap:8px}
+.weight-coherence-help-row{display:grid;grid-template-columns:minmax(62px,78px) minmax(0,1fr);gap:12px;align-items:start;padding:11px 12px;border:1px solid rgba(176,190,255,.14);border-radius:12px;background:rgba(17,24,59,.34)}
+.weight-coherence-help-row>kbd{display:inline-grid;place-items:center;min-height:28px;padding:5px 8px;border:1px solid rgba(206,215,255,.28);border-radius:8px;background:rgba(8,13,34,.72);color:#F2F5FF;font:700 .78rem/1 system-ui,sans-serif;white-space:nowrap}
+.weight-coherence-help-row>div{display:grid;gap:3px;min-width:0}
+.weight-coherence-help-row strong{font-size:.88rem}
+.weight-coherence-help-row span{color:rgba(242,245,255,.74);font-size:.8rem;line-height:1.42}
 
 .weight-coherence-workspace{box-sizing:border-box;display:grid;gap:14px;width:100%;min-width:0;max-width:none}
 .weight-coherence-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid rgba(176,190,255,.18);border-radius:14px;background:rgba(8,13,34,.48)}
@@ -49,10 +60,12 @@
 .weight-coherence-workspace.is-artwork-landscape .weight-coherence-sort-column--right{grid-area:lower}
 .weight-coherence-sort-shell{box-sizing:border-box;display:grid;grid-template-rows:auto minmax(0,1fr);gap:7px;align-self:stretch;width:100%;min-width:0;min-height:0;padding:9px;border:1px solid rgba(176,190,255,.18);border-radius:14px;background:rgba(8,13,34,.48)}
 .weight-coherence-sort-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:.82rem;font-weight:700;color:rgba(242,245,255,.86)}
-.weight-coherence-sort-tray{box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));grid-auto-rows:minmax(68px,1fr);gap:6px;align-content:stretch;align-items:stretch;align-self:stretch;width:100%;min-width:0;min-height:112px;max-height:none;padding:5px;border:1px dashed rgba(176,190,255,.2);border-radius:10px;background:rgba(17,24,59,.34);overflow:auto}
-.weight-coherence-sort-tray:empty::before{content:"Drop pieces here";grid-column:1/-1;align-self:center;justify-self:center;padding:14px 6px;text-align:center;color:rgba(242,245,255,.42);font-size:.72rem;line-height:1.25}
-.weight-coherence-sort-tray .weight-coherence-piece{min-height:68px;padding:3px}
-.weight-coherence-sort-tray .weight-coherence-piece-canvas{max-width:58px;max-height:58px}
+.weight-coherence-sort-tray{box-sizing:border-box;display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));grid-auto-rows:68px;gap:6px;align-content:start;align-items:center;align-self:stretch;width:100%;min-width:0;min-height:112px;max-height:none;padding:4px 0 0;border:0;border-radius:0;background:transparent;overflow:auto}
+.weight-coherence-sort-tray:empty::before{content:"Drop pieces here";grid-column:1/-1;align-self:start;justify-self:center;padding:14px 6px;text-align:center;color:rgba(242,245,255,.42);font-size:.72rem;line-height:1.25}
+.weight-coherence-sort-tray .weight-coherence-piece{min-height:68px;height:68px;padding:3px;border:0;background:transparent;box-shadow:none}
+.weight-coherence-sort-tray .weight-coherence-piece:hover,
+.weight-coherence-sort-tray .weight-coherence-piece.is-selected{border:0;background:transparent;box-shadow:none}
+.weight-coherence-sort-tray .weight-coherence-piece-canvas{max-width:58px;max-height:58px;width:auto;height:auto}
 .weight-coherence-sort-tray .weight-coherence-piece-placeholder{width:44px;height:44px}
 .weight-coherence-board-wrap{box-sizing:border-box;position:relative;width:100%;max-width:none;aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);border-radius:14px;overflow:hidden;border:1px solid rgba(206,215,255,.28);background:#2A3672;box-shadow:0 18px 42px rgba(0,0,0,.30);transform-origin:50% 50%;transition:transform .18s ease}
 #puzzles .puzzle-library-card.is-jigsaw-inspecting,
@@ -83,7 +96,10 @@
 .weight-coherence-piece:disabled{cursor:wait;opacity:.82}
 #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece,
 #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece:active{cursor:zoom-in}
-#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,.48);transition:transform .16s ease,box-shadow .16s ease}
+html[data-app="games"] body[data-app="games"] #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece[aria-disabled="true"]{opacity:1!important;filter:none!important;cursor:zoom-in!important}
+html[data-app="games"] body[data-app="games"] #weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece[aria-disabled="true"] .weight-coherence-piece-canvas{opacity:1!important;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))!important}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target .weight-coherence-piece-canvas{position:relative;z-index:61;transform:scale(var(--weight-coherence-piece-zoom,2));transform-origin:50% 50%;will-change:transform;transition:transform .16s ease}
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-column,
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-shell,
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-tray,
@@ -110,12 +126,14 @@
   .weight-coherence-workspace:not(:fullscreen):not(.is-pseudo-fullscreen) .weight-coherence-sort-column{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;width:100%}
   .weight-coherence-workspace:not(:fullscreen):not(.is-pseudo-fullscreen) .weight-coherence-sort-column--left{grid-area:upper}
   .weight-coherence-workspace:not(:fullscreen):not(.is-pseudo-fullscreen) .weight-coherence-sort-column--right{grid-area:lower}
-  .weight-coherence-sort-tray{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:220px}
+  .weight-coherence-sort-tray{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));grid-auto-rows:68px;align-content:start;max-height:220px}
   .weight-coherence-tray{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px}
   .weight-coherence-piece{min-height:80px}
 }
 
 @media(max-width:420px){
+  .weight-coherence-help-row{grid-template-columns:minmax(0,1fr);gap:7px}
+  .weight-coherence-help-row>kbd{justify-self:start}
   .weight-coherence-difficulty-row{grid-template-columns:repeat(2,minmax(0,1fr))}
   .weight-coherence-settings-card{padding:14px}
   .weight-coherence-settings-actions .action{width:100%}
