@@ -541,6 +541,7 @@
       }else setStatus('Tile placed.');
     }
     renderRoundHud();
+    renderProgression();
     checkComplete();
     saveProfile();
   }
@@ -857,14 +858,16 @@
     selectedTile='';
     undoStack=[];
     renderAll();
+    try{document.dispatchEvent(new CustomEvent('baseline:crossnumber-progress',{detail:{profile:clone(profile),contribution:getRealmContribution(profile)}}));}catch(_error){}
     startTimer();
   });
 
+  const hadSavedRound=Boolean(profile.activeRound);
   profile=normaliseProfile(profile);
   round=restoreRound(profile.activeRound);
   layout=round?generateLayout(round.seed,round.tierId):null;
   renderAll();
-  setStatus(round&&profile.activeRound?'Your saved Crossnumber layout has been restored.':'Place the number tiles so every equation balances.');
+  setStatus(hadSavedRound&&round?'Your saved Crossnumber layout has been restored.':'Place the number tiles so every equation balances.');
   startTimer();
 
   globalThis.BaselineCrossnumber=Object.freeze({
@@ -875,5 +878,6 @@
     skills:SKILLS
   });
   document.documentElement.setAttribute('data-crossnumber-build',BUILD);
+  try{document.dispatchEvent(new CustomEvent('baseline:crossnumber-progress',{detail:{profile:clone(profile),contribution:getRealmContribution(profile)}}));}catch(_error){}
   window.addEventListener('pagehide',function(){saveProfile();});
 })();
