@@ -85,6 +85,7 @@
   let state = null;
   let timerHandle = 0;
   let selectedPieceId = null;
+  let returnHighlightPieceId = null;
   let dragState = null;
   let suppressTrayClickUntil = 0;
   let imageReady = false;
@@ -417,7 +418,9 @@
 
   function syncSelectedPieceClasses(){
     root.querySelectorAll('[data-piece-id]').forEach(function(button){
-      button.classList.toggle('is-selected',Number(button.dataset.pieceId)===selectedPieceId);
+      const id=Number(button.dataset.pieceId);
+      button.classList.toggle('is-selected',id===selectedPieceId);
+      button.classList.toggle('is-return-highlight',id===returnHighlightPieceId);
       button.setAttribute('aria-disabled',String(viewOn));
     });
   }
@@ -454,6 +457,7 @@
         btn.disabled=true;
         btn.setAttribute('aria-busy','true');
         if(selectedPieceId===id) btn.classList.add('is-selected');
+        if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
         btn.setAttribute('aria-disabled',String(viewOn));
         const placeholder=document.createElement('span');
         placeholder.className='weight-coherence-piece-placeholder';
@@ -532,6 +536,7 @@
       btn.disabled=true;
       btn.setAttribute('aria-busy','true');
       if(selectedPieceId===id) btn.classList.add('is-selected');
+      if(returnHighlightPieceId===id) btn.classList.add('is-return-highlight');
       btn.setAttribute('aria-disabled',String(viewOn));
       const placeholder=document.createElement('span');
       placeholder.className='weight-coherence-piece-placeholder';
@@ -662,6 +667,7 @@
     syncViewInteractionState();
     state=null;
     selectedPieceId=null;
+    returnHighlightPieceId=null;
     dragState=null;
     selectedDifficulty=100;
     refs.workspace.hidden=true;
@@ -704,6 +710,7 @@
       startedAt:Date.now()
     };
     selectedPieceId=null;
+    returnHighlightPieceId=null;
     refs.workspace.hidden=false;
     refs.preview.setAttribute('aria-pressed','false');
     syncViewInteractionState();
@@ -761,6 +768,7 @@
   function movePieceToSortBin(id,binIndex){
     if(!state || state.completed || state.placed.has(id)) return;
     const index=Math.max(0,Math.min(3,Number(binIndex)||0));
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     removePieceFromSortBins(id);
     state.sortBins[index].push(id);
     selectedPieceId=null;
@@ -771,6 +779,7 @@
 
   function movePieceToMainTray(id){
     if(!state || state.completed || state.placed.has(id)) return;
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     const removed=removePieceFromSortBins(id);
     if(!removed) return;
     state.order=[id].concat(state.order.filter(function(value){ return value!==id; }));
@@ -783,6 +792,7 @@
 
   function placePiece(id){
     if(!state || state.completed || state.placed.has(id)) return;
+    if(returnHighlightPieceId===id) returnHighlightPieceId=null;
     removePieceFromSortBins(id);
     state.placed.add(id);
     drawPieceToBoard(placedCtx,id);
@@ -906,7 +916,10 @@
       restorePageScroll(scrollSnapshot);
       return true;
     }
-    setStatus('That piece belongs elsewhere.','warning');
+    returnHighlightPieceId=id;
+    selectedPieceId=null;
+    syncSelectedPieceClasses();
+    setStatus('That piece belongs elsewhere. Its tray piece is highlighted so you can find it again.','warning');
     root.classList.remove('is-wrong-drop');
     void root.offsetWidth;
     root.classList.add('is-wrong-drop');
@@ -982,6 +995,7 @@
     const dx=event.clientX-dragState.startX, dy=event.clientY-dragState.startY;
     if(!dragState.moved && Math.hypot(dx,dy)>5){
       dragState.moved=true;
+      interactionScrollSnapshot=null;
       dragState.ghost=makeDragGhost(dragState.button,event);
     }
     if(dragState.ghost) moveDragGhost(dragState.ghost,event.clientX,event.clientY);
@@ -1594,6 +1608,10 @@
     }
     const id=Number(button.dataset.pieceId);
     if(!Number.isInteger(id)) return;
+    if(returnHighlightPieceId===id){
+      returnHighlightPieceId=null;
+      syncSelectedPieceClasses();
+    }
     dragState={ id:id, button:button, startX:event.clientX, startY:event.clientY, moved:false, ghost:null };
     window.addEventListener('pointermove',onDragMove,true);
     window.addEventListener('pointerup',endDrag,true);

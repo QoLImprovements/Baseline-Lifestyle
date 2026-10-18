@@ -106,6 +106,7 @@ html[data-app="games"] body[data-app="games"] #weightCoherencePuzzle.is-viewing-
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray-shell,
 #weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray{overflow:visible!important}
 .weight-coherence-piece.is-selected{border-color:rgba(225,232,255,.88);background:rgba(80,97,183,.46);box-shadow:0 0 0 2px rgba(126,145,255,.25) inset}
+.weight-coherence-piece.is-return-highlight .weight-coherence-piece-canvas{filter:drop-shadow(0 0 2px rgba(255,255,255,.98)) drop-shadow(0 0 8px rgba(126,145,255,.98)) drop-shadow(0 5px 5px rgba(0,0,0,.28))!important}
 .weight-coherence-piece-canvas{display:block;max-width:84px;max-height:84px;width:auto;height:auto;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))}
 .weight-coherence-piece-placeholder{display:block;width:56px;height:56px;border-radius:12px;background:rgba(176,190,255,.07)}
 .weight-coherence-drag-ghost{position:fixed;z-index:99999;pointer-events:none;transform:translate(-50%,-50%) scale(1.06);filter:drop-shadow(0 12px 12px rgba(0,0,0,.46));opacity:.97}
