@@ -2,10 +2,13 @@
   'use strict';
 
   var STORAGE_KEY = 'baseline.games.music.v1';
-  var DEFAULTS = { enabled:true, volume:0.22 };
+  var MIX_VERSION = 2;
+  var DEFAULTS = { enabled:true, volume:0.70 };
   var CORE_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
   var ctx = null;
   var master = null;
+  var compressor = null;
+  var normalizedOutput = null;
   var activeGame = '';
   var timer = 0;
   var nextBarTime = 0;
@@ -21,12 +24,17 @@
   function readSettings(){
     try{
       var parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null') || {};
+      var storedVolume = parsed.volume;
+      var migratedLegacyDefault = parsed.mixVersion !== MIX_VERSION && (
+        storedVolume == null || Math.abs(Number(storedVolume) - 0.22) < 0.001
+      );
       return {
         enabled: parsed.enabled !== false,
-        volume: clamp(parsed.volume == null ? DEFAULTS.volume : parsed.volume, 0, 0.6)
+        volume: clamp(migratedLegacyDefault ? DEFAULTS.volume : storedVolume, 0, 1),
+        mixVersion: MIX_VERSION
       };
     }catch(_error){
-      return { enabled:DEFAULTS.enabled, volume:DEFAULTS.volume };
+      return { enabled:DEFAULTS.enabled, volume:DEFAULTS.volume, mixVersion:MIX_VERSION };
     }
   }
 
@@ -43,9 +51,23 @@
     var AudioContextCtor = window.AudioContext || window.webkitAudioContext;
     if(!AudioContextCtor) return null;
     ctx = new AudioContextCtor();
+
     master = ctx.createGain();
+    compressor = ctx.createDynamicsCompressor();
+    normalizedOutput = ctx.createGain();
+
     master.gain.value = 0;
-    master.connect(ctx.destination);
+    compressor.threshold.value = -24;
+    compressor.knee.value = 18;
+    compressor.ratio.value = 5;
+    compressor.attack.value = 0.004;
+    compressor.release.value = 0.24;
+    normalizedOutput.gain.value = 2.35;
+
+    master.connect(compressor);
+    compressor.connect(normalizedOutput);
+    normalizedOutput.connect(ctx.destination);
+
     applyGain();
     return ctx;
   }
@@ -296,13 +318,16 @@
     if(!ctx || !settings.enabled || !activeGame || !TRACKS[activeGame]) return;
     var track = TRACKS[activeGame];
     var barDur = 4 * 60 / track.bpm;
-    while(nextBarTime < ctx.currentTime + 0.55){
+
+    // Schedule well ahead using Web Audio's own clock. Background browser tabs
+    // may throttle JavaScript timers, but already-scheduled audio continues.
+    while(nextBarTime < ctx.currentTime + 12){
       scheduleBar(track, barIndex, nextBarTime);
       nextBarTime += barDur;
       barIndex += 1;
       if(barIndex >= track.bars) barIndex = 0;
     }
-    timer = window.setTimeout(scheduler, 120);
+    timer = window.setTimeout(scheduler, 1800);
   }
 
   function startActive(){
@@ -356,7 +381,8 @@
   }
 
   function setVolume(value){
-    settings.volume = clamp(value,0,0.6);
+    settings.volume = clamp(value,0,1);
+    settings.mixVersion = MIX_VERSION;
     writeSettings();
     applyGain();
     syncUi();
@@ -407,7 +433,7 @@
         '<header><div><small>Baseline Games</small><h3 id="gamesMusicSettingsTitle">Settings</h3></div><button class="games-music-settings-close" type="button" data-games-settings-close aria-label="Close settings">×</button></header>' +
         '<div class="games-music-settings-list">' +
           '<section class="games-music-setting-row"><div><strong>Music</strong><small>Play the three-minute game theme.</small></div><button class="action ghost" type="button" data-games-music-toggle aria-pressed="true">On</button></section>' +
-          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Keep background music below gameplay.</small></span><input data-games-music-volume type="range" min="0" max="0.6" step="0.02" value="0.22" aria-label="Game music volume"></label>' +
+          '<label class="games-music-setting-row games-music-setting-row--slider"><span><strong>Music volume</strong><small>Normalized game-music level.</small></span><input data-games-music-volume type="range" min="0" max="1" step="0.05" value="0.70" aria-label="Game music volume"></label>' +
         '</div>' +
       '</section>';
     document.body.appendChild(panel);
@@ -502,15 +528,6 @@
 
   document.addEventListener('pointerdown', unlock, { passive:true });
   document.addEventListener('keydown', function(){ if(!unlocked) unlock(); }, { passive:true });
-
-  document.addEventListener('visibilitychange', function(){
-    if(document.hidden){
-      if(timer){ clearTimeout(timer); timer=0; }
-      stopLiveNodes();
-    }else if(settings.enabled && activeGame){
-      startActive();
-    }
-  });
 
   function init(){
     ensureStyles();
