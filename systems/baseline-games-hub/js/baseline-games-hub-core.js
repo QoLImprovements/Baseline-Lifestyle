@@ -1519,6 +1519,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const previousGame = selectedGame;
     selectedGame = normaliseGameId(gameId);
     if(window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame(selectedGame);
+    if(!isMobileGameViewport()){
+      if(selectedGame === 'detectword') desktopKeypadOpenGame = 'detectword';
+      else if(desktopKeypadOpenGame === 'detectword') desktopKeypadOpenGame = '';
+    }
     if(selectedGame && selectedGame !== previousGame && opts.resetRound !== false){
       resetGameRoundToIdle(selectedGame);
     }
@@ -3464,7 +3468,12 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       const cupClass = 'trackcoin-cup' + ((((trackCoinState.phase === 'show' || trackCoinState.revealAll) && cup.id === trackCoinState.coinCupId) ? ' is-lifted' : '')) + (selectable ? ' is-selectable' : '') + (isCorrect ? ' is-correct' : '') + (isPicked ? ' is-picked' : '') + (trackCoinState.revealAll && cup.id !== trackCoinState.coinCupId ? ' is-wrong' : '');
       return '<button class="' + cupClass + '" data-trackcoin-pick="' + idx + '" data-trackcoin-cup-id="' + escapeHtml(cup.id) + '" type="button" aria-label="Track coin choice ' + (idx + 1) + '" style="left:' + cup.left + '%;top:' + cup.top + 'px;--cup-speed:' + tierSpeed + 'ms;--cup-tilt:' + cup.tilt + 'deg"' + (selectable ? '' : ' disabled') + '></button>';
     }).join('');
-    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + ' · streak bonus ' + streakBonus + '% · clean bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span></div><div class="trackcoin-lane" data-cups="' + tier.containers + '">' + coinHtml + positions + '</div></div>';
+    const phaseClass=' is-phase-' + escapeHtml(trackCoinState.phase || 'show');
+    const resumeHtml=trackCoinState.restoredWaiting
+      ? '<div class="trackcoin-resume-card"><strong>Saved round ready</strong><span class="inline-note">The same coin and exact saved shuffle are waiting.</span><button class="action primary" data-action="resume-trackcoin" type="button">Resume Shuffle</button></div>'
+      : '';
+    const pickPrompt=trackCoinState.phase==='pick'&&!trackCoinState.resolved ? '<div class="trackcoin-pick-prompt">Choose the cup</div>' : '';
+    refs.trackCoinBoard.innerHTML = '<div id="trackCoinScene" class="trackcoin-scene' + phaseClass + (trackCoinState.phase === 'hide' ? ' is-busy' : '') + (trackCoinState.resolved ? ' is-resolved' : '') + '">' + roundStatusHtml + '<div class="trackcoin-status"><strong>' + escapeHtml(tier.name) + '</strong><span class="inline-note">Containers ' + tier.containers + ' · ' + escapeHtml(trackCoinSpeedStatusText(profile)) + ' · streak bonus ' + streakBonus + '% · clean bonus +' + cleanWinBonusPct(profile.cleanWinStreak) + '%</span></div>' + resumeHtml + '<div class="trackcoin-lane" data-cups="' + tier.containers + '">' + pickPrompt + coinHtml + positions + '</div></div>';
     ensureGamePlayContract();
   }
   function renderTrackCoinSummary(){
@@ -3707,6 +3716,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }else{
       ruleShiftState.lastMessage = ruleShiftState.lastWasRuleChange ? 'Correct. Rule changed — check it before choosing.' : 'Correct. Same rule family — keep focus.';
     }
+    persistRuleShiftRound();
   }
   function failRuleShiftRun(message){
     if(!ruleShiftState || ruleShiftState.finished) return;
@@ -3846,10 +3856,10 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const timePct = clamp((remaining / Math.max(1, ruleShiftTimeLimitMs(tier))) * 100, 0, 100);
     const cards = (ruleShiftState.options || []).map(function(option){
       const label = ruleShiftName(RULESHIFT_COLOURS, option.colour) + ' ' + ruleShiftName(RULESHIFT_SIZES, option.size) + ' ' + ruleShiftName(RULESHIFT_SHAPES, option.shape);
-      return '<button class="ruleshift-token ruleshift-colour--' + escapeHtml(option.colour) + ' ruleshift-size--' + escapeHtml(option.size) + '" data-ruleshift-pick="' + escapeHtml(option.id) + '" type="button" aria-label="' + escapeHtml(label) + '"><span class="ruleshift-shape ruleshift-shape--' + escapeHtml(option.shape) + '"></span></button>';
+      return '<button class="ruleshift-token ruleshift-colour--' + escapeHtml(option.colour) + ' ruleshift-size--' + escapeHtml(option.size) + '" data-ruleshift-pick="' + escapeHtml(option.id) + '" type="button" aria-label="' + escapeHtml(label) + '"><span class="ruleshift-shape ruleshift-shape--' + escapeHtml(option.shape) + '"></span><span class="ruleshift-token-caption" aria-hidden="true">' + escapeHtml(label) + '</span></button>';
     }).join('');
     refs.ruleShiftBoard.innerHTML =
-      '<div class="ruleshift-rule-card">' +
+      '<div class="ruleshift-rule-card' + (ruleShiftState.lastWasRuleChange ? ' is-rule-change' : '') + '" data-rule-type="' + escapeHtml(rule.type) + '">' +
         '<div class="ruleshift-rule-head"><span class="ruleshift-rule-kicker">' + escapeHtml(rule.brief) + '</span><span class="ruleshift-round-count">Round ' + ruleShiftState.round + ' of ' + ruleShiftState.maxRounds + '</span></div>' +
         '<strong>' + escapeHtml(rule.label) + '</strong>' +
         '<div class="ruleshift-timer" aria-label="Rule Shift timer"><span>Time</span><strong id="ruleShiftTimerValue">' + ruleShiftTimerText(remaining) + '</strong><div class="ruleshift-timer-bar"><div class="ruleshift-timer-fill" id="ruleShiftTimerFill" style="width:' + timePct + '%"></div></div></div>' +
