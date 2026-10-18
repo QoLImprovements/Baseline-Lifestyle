@@ -6,7 +6,7 @@
       id:'jigsaws',
       name:'Jigsaws',
       note:'Image-based piece puzzles arranged into collections, with selectable piece counts and saved progress.',
-      meta:'4 jigsaws available',
+      meta:'6 jigsaws available',
       preview:'/systems/baseline-games-hub/puzzles/shared/art/jigsaws.svg?v=JIGSAWS_ICON_20261018_1'
     })
   ]);
@@ -59,6 +59,30 @@
       alt:'A large brown bear walking through a shallow autumn forest river in warm sunrise light.',
       libraryDescription:'A brown bear moves through an autumn river at sunrise, carrying its weight steadily through water, mist and changing terrain.',
       description:'The bear crosses a shallow forest river in full stride as autumn light enters through the trees. The image centres grounded power, forward movement and adaptation within a changing environment.'
+    }),
+    Object.freeze({
+      id:'fox',
+      group:'Animals',
+      title:'Fox',
+      app:'foxjigsaw',
+      image:'/systems/baseline-games-hub/puzzles/fox/art/fox.webp?v=FOX_JIGSAW_20261018_1',
+      width:1122,
+      height:1402,
+      alt:'A red fox foraging through a damp meadow at the edge of woodland in soft morning light.',
+      libraryDescription:'A red fox searches through wet grass at a quiet woodland edge, absorbed in the ordinary work of finding food.',
+      description:'The fox moves through damp meadow grass beside the woodland edge, nose close to the ground as it searches for food. The scene presents the animal as part of its everyday environment rather than as a posed wildlife portrait.'
+    }),
+    Object.freeze({
+      id:'elephants',
+      group:'Animals',
+      title:'Elephants',
+      app:'elephantsjigsaw',
+      image:'/systems/baseline-games-hub/puzzles/elephants/art/elephants.webp?v=ELEPHANTS_JIGSAW_20261018_1',
+      width:1536,
+      height:1024,
+      alt:'An African elephant herd gathered around a shallow watering hole, with adults and calves drinking, wading and interacting.',
+      libraryDescription:'Adults and calves gather around a shallow watering hole, drinking, wading and moving together through the savanna.',
+      description:'The herd spreads naturally around a shallow watering hole as adults and calves drink, wade and interact. The wider scene gives the animals space while showing the social character of elephant family life.'
     })
   ]);
 
