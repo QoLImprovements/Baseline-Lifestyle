@@ -402,3 +402,378 @@
 }
 
 :is(#blockGridPanel,#colourSortPanel) .game-info-details{display:none!important}
+
+
+/* ==========================================================================
+   2026-10-18 coherence correction authority
+   These rules intentionally override older Games Hub component experiments.
+   Baseline Realm is not targeted here.
+   ========================================================================== */
+
+/* --- Canonical non-Realm header actions: never let labels overflow icon slots. --- */
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header{
+  grid-template-columns:minmax(0,1fr) auto!important;
+  column-gap:18px!important;
+  row-gap:10px!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .game-shell-actions,
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .link-actions{
+  min-width:0!important;
+  max-width:100%!important;
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:7px!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .game-shell-action{
+  flex:0 0 auto!important;
+  min-width:42px!important;
+  overflow:hidden!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .game-shell-action--icon{
+  width:42px!important;
+  max-width:42px!important;
+  padding:0!important;
+}
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .game-shell-action--icon .game-shell-action__label,
+:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel) .game-header .games-settings-trigger.game-shell-action--icon .games-settings-trigger__label{
+  position:absolute!important;
+  width:1px!important;
+  height:1px!important;
+  overflow:hidden!important;
+  clip:rect(0 0 0 0)!important;
+  clip-path:inset(50%)!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1180px){
+  :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header{
+    grid-template-columns:1fr!important;
+  }
+  :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .game-shell-actions,
+  :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel,#blockGridPanel,#colourSortPanel) .game-header .link-actions{
+    justify-content:flex-start!important;
+  }
+}
+
+/* --- Live XP: compact enough to watch while playing. --- */
+:is(#pairsGameCard,#wordGameCard,#make24GameCard,#trackCoinGamePanel,#ruleShiftGameCard) .game-live-xp{
+  display:grid!important;
+  grid-template-columns:auto minmax(120px,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  width:100%!important;
+  padding:8px 11px!important;
+  border:1px solid rgba(115,139,215,.28)!important;
+  border-radius:13px!important;
+  background:rgba(10,20,58,.18)!important;
+  color:var(--games-ink)!important;
+  font-size:12px!important;
+}
+.game-live-xp>strong{white-space:nowrap;font-size:12px!important}
+.game-live-xp>span:last-child{white-space:nowrap;color:var(--games-muted)!important}
+.game-live-xp__bar{
+  height:8px!important;
+  border-radius:999px!important;
+  overflow:hidden!important;
+  background:rgba(5,12,35,.62)!important;
+  border:1px solid rgba(126,147,219,.24)!important;
+}
+.game-live-xp__bar>span{
+  display:block!important;
+  height:100%!important;
+  border-radius:inherit!important;
+  background:linear-gradient(90deg,#5d78d4,#8ca4f0)!important;
+}
+
+/* --- Detailed progress tabs: explicit hierarchy and label/value separation. --- */
+.game-progress-stats,
+#trackCoinStats,
+#ruleShiftStats{
+  display:grid!important;
+  gap:16px!important;
+}
+.coherent-progress-overview{
+  display:grid!important;
+  gap:11px!important;
+  padding:18px!important;
+  border-radius:17px!important;
+  border:1px solid rgba(115,139,215,.28)!important;
+  background:rgba(10,20,58,.18)!important;
+}
+.coherent-progress-heading{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  flex-wrap:wrap!important;
+}
+.coherent-progress-heading>div:first-child{display:grid!important;gap:3px!important}
+.coherent-progress-heading strong{font-size:clamp(21px,2.2vw,30px)!important;line-height:1.1!important}
+.coherent-progress-kicker{
+  color:var(--games-muted)!important;
+  text-transform:uppercase!important;
+  letter-spacing:.09em!important;
+  font-size:11px!important;
+  font-weight:900!important;
+}
+.coherent-progress-next{
+  color:var(--games-muted)!important;
+  font-size:13px!important;
+  font-weight:750!important;
+}
+.coherent-progress-xp-meta{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:12px!important;
+  color:var(--games-muted)!important;
+  font-size:13px!important;
+}
+.coherent-progress-bar{
+  height:15px!important;
+  overflow:hidden!important;
+  border-radius:999px!important;
+  background:#0b1434!important;
+  border:1px solid rgba(115,139,215,.28)!important;
+}
+.coherent-progress-bar>span{
+  display:block!important;
+  height:100%!important;
+  border-radius:inherit!important;
+  background:linear-gradient(90deg,#5571ce 0%,#7891e6 58%,#a1b4ff 100%)!important;
+}
+.coherent-progress-grid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
+  gap:10px!important;
+}
+.coherent-progress-stat{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  align-items:center!important;
+  gap:16px!important;
+  min-height:58px!important;
+  padding:12px 14px!important;
+  border-radius:13px!important;
+  border:1px solid rgba(115,139,215,.23)!important;
+  background:rgba(10,20,58,.14)!important;
+}
+.coherent-progress-stat>span{
+  min-width:0!important;
+  color:var(--games-muted)!important;
+  font-size:13px!important;
+  line-height:1.25!important;
+}
+.coherent-progress-stat>strong{
+  justify-self:end!important;
+  text-align:right!important;
+  font-size:15px!important;
+  color:var(--games-ink)!important;
+  white-space:normal!important;
+}
+
+/* --- Detect The Word: keypad closed by JS; when opened it follows the puzzle vertically. --- */
+@media(min-width:821px){
+  body[data-app="games"] #detectwordPanel .game-play-root.desktop-keypad-open #wordBoard,
+  body[data-app="games"] #detectwordPanel .game-play-root.keypad-open #wordBoard,
+  body[data-app="games"] #detectwordPanel .game-play-root.desktop-keypad-open:fullscreen #wordBoard,
+  body[data-app="games"] #detectwordPanel .game-play-root.keypad-open:fullscreen #wordBoard{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+    align-items:start!important;
+  }
+  body[data-app="games"] #detectwordPanel #wordBoard>.word-box{
+    grid-column:1!important;
+    grid-row:auto!important;
+    width:min(100%,720px)!important;
+    justify-self:center!important;
+    align-self:start!important;
+  }
+  body[data-app="games"] #detectwordPanel #wordBoard>.mobile-word-keypad[aria-hidden="false"],
+  body[data-app="games"] #detectwordPanel .desktop-keypad-open #wordBoard>.mobile-word-keypad{
+    display:grid!important;
+    grid-column:1!important;
+    grid-row:auto!important;
+    position:relative!important;
+    top:auto!important;
+    width:min(100%,720px)!important;
+    max-height:none!important;
+    overflow:visible!important;
+    justify-self:center!important;
+    grid-template-columns:repeat(10,minmax(0,1fr))!important;
+    grid-auto-rows:minmax(48px,auto)!important;
+    gap:7px!important;
+    padding:10px!important;
+  }
+}
+
+/* --- Pairs: correctness first. Hidden cards must actually be hidden. --- */
+#pairsPanel #pairsBoard{
+  align-items:stretch!important;
+}
+#pairsPanel .memory-card{
+  aspect-ratio:1.45 / 1!important;
+  min-height:0!important;
+  border-radius:15px!important;
+  overflow:hidden!important;
+  background:#23335f!important;
+  border:1px solid rgba(115,139,215,.32)!important;
+  box-shadow:0 9px 18px -14px rgba(0,0,0,.68)!important;
+  transform:none!important;
+}
+#pairsPanel .memory-card-face{
+  position:absolute!important;
+  inset:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:14px!important;
+  backface-visibility:visible!important;
+  transform:none!important;
+  transition:opacity .18s ease,visibility .18s ease,filter .18s ease!important;
+}
+#pairsPanel .memory-card-back{
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:2!important;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(204,176,111,.15) 0 9%,transparent 10% 100%),
+    linear-gradient(145deg,#304277 0%,#1e2d59 60%,#17234a 100%)!important;
+  color:#d5bb7c!important;
+}
+#pairsPanel .memory-card-back::after{
+  content:"◆"!important;
+  font-size:clamp(22px,2.5vw,38px)!important;
+  color:#cdb57b!important;
+  text-shadow:none!important;
+}
+#pairsPanel .memory-card-front{
+  opacity:0!important;
+  visibility:hidden!important;
+  z-index:1!important;
+  padding:12px 16px!important;
+  font-size:clamp(28px,3.3vw,48px)!important;
+  line-height:1!important;
+  overflow:hidden!important;
+  background:linear-gradient(145deg,#ae8a70 0%,#9a7565 58%,#80645f 100%)!important;
+  color:#1f294d!important;
+  text-shadow:none!important;
+}
+#pairsPanel .memory-card.is-open .memory-card-back,
+#pairsPanel .memory-card.is-matched .memory-card-back{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+#pairsPanel .memory-card.is-open .memory-card-front,
+#pairsPanel .memory-card.is-matched .memory-card-front{
+  opacity:1!important;
+  visibility:visible!important;
+  z-index:3!important;
+}
+#pairsPanel .memory-card.is-matched{
+  opacity:.68!important;
+  filter:saturate(.75) brightness(.98)!important;
+  transform:scale(.975)!important;
+}
+#pairsPanel #pairsBoard[data-pairs-theme="archive"] .memory-card-back{
+  background:linear-gradient(145deg,#514238,#342f34 58%,#25273b 100%)!important;
+}
+#pairsPanel #pairsBoard[data-pairs-theme="night"] .memory-card-back{
+  background:radial-gradient(circle at 30% 22%,rgba(231,222,190,.12) 0 2px,transparent 3px),linear-gradient(145deg,#202a53,#111a38)!important;
+}
+
+/* --- Rule Shift: stronger categorical colours and centered option groups. --- */
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--red .ruleshift-shape{background:#c65b5d!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--blue .ruleshift-shape{background:#5074d8!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--green .ruleshift-shape{background:#7f9846!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--yellow .ruleshift-shape{background:#d3aa3d!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--purple .ruleshift-shape{background:#8d67c7!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--orange .ruleshift-shape{background:#db853b!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--teal .ruleshift-shape{background:#249aa8!important}
+body[data-app="games"] #ruleshiftPanel .ruleshift-colour--pink .ruleshift-shape{background:#c45f92!important}
+
+body[data-app="games"] #ruleshiftPanel .ruleshift-options-grid{
+  display:grid!important;
+  grid-template-columns:repeat(auto-fit,minmax(132px,160px))!important;
+  justify-content:center!important;
+  justify-items:stretch!important;
+  align-items:stretch!important;
+  gap:12px!important;
+  width:100%!important;
+  margin-inline:auto!important;
+}
+body[data-app="games"] #ruleshiftPanel .ruleshift-token{
+  width:100%!important;
+  min-width:0!important;
+  max-width:160px!important;
+  min-height:112px!important;
+  justify-self:center!important;
+}
+body[data-app="games"] #ruleshiftPanel .ruleshift-token-caption{
+  display:block!important;
+  visibility:visible!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  overflow:visible!important;
+  font-size:10px!important;
+  line-height:1.1!important;
+}
+
+/* Keep phone boards compact while still centering incomplete rows. */
+@media(max-width:820px){
+  body[data-app="games"] #ruleshiftPanel .ruleshift-options-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    justify-content:center!important;
+    gap:8px!important;
+  }
+  body[data-app="games"] #ruleshiftPanel .ruleshift-token{
+    max-width:none!important;
+    min-height:92px!important;
+  }
+  body[data-app="games"] #ruleshiftPanel .ruleshift-token-caption{
+    font-size:9px!important;
+  }
+  .coherent-progress-grid{grid-template-columns:1fr!important}
+  .game-live-xp{grid-template-columns:auto minmax(80px,1fr)!important}
+  .game-live-xp>span:last-child{grid-column:1/-1!important}
+}
+
+
+/* Independent non-Realm modules share the same compact live XP language. */
+:is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp{
+  display:grid!important;
+  grid-template-columns:auto minmax(120px,1fr) auto!important;
+  align-items:center!important;
+  gap:10px!important;
+  width:100%!important;
+  padding:8px 11px!important;
+  margin:8px 0!important;
+  border:1px solid rgba(115,139,215,.28)!important;
+  border-radius:13px!important;
+  background:rgba(10,20,58,.18)!important;
+  color:var(--games-ink)!important;
+  font-size:12px!important;
+}
+:is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp>strong{white-space:nowrap;font-size:12px!important}
+:is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp>span:last-child{white-space:nowrap;color:var(--games-muted)!important}
+:is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp__bar{
+  height:8px!important;border-radius:999px!important;overflow:hidden!important;
+  background:rgba(5,12,35,.62)!important;border:1px solid rgba(126,147,219,.24)!important;
+}
+:is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp__bar>span{
+  display:block!important;height:100%!important;border-radius:inherit!important;
+  background:linear-gradient(90deg,#5d78d4,#8ca4f0)!important;
+}
+@media(max-width:820px){
+  :is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp{
+    grid-template-columns:auto minmax(80px,1fr)!important;
+  }
+  :is(#blockGridGameCard,#colourSortGameCard,#crossnumberGamePanel) .game-live-xp>span:last-child{
+    grid-column:1/-1!important;
+  }
+}
