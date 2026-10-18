@@ -785,8 +785,10 @@ These Markdown rules are a human reference point, not live runtime config.
     'Massage Feelings / Themes':'feelings-themes'
   };
   const MASSAGE_LIBRARY_FROM_KEY = Object.fromEntries(Object.entries(MASSAGE_LIBRARY_KEYS).map(([label,key])=>[key,label]));
+  let suppressMassageHistory = false;
 
   function writeMassageRoute(key,value,mode='push'){
+    if(suppressMassageHistory) return;
     try{
       const url=new URL(location.href);
       url.searchParams.delete(key);
@@ -1237,12 +1239,13 @@ These Markdown rules are a human reference point, not live runtime config.
       const params=new URLSearchParams(location.search||'');
       const category=MASSAGE_LIBRARY_FROM_KEY[params.get('library-category')||'']||'Massage Techniques';
       const tab=qsa('#massageLibraryTabs [data-library-category]').find(btn=>btn.dataset.libraryCategory===category);
+      suppressMassageHistory=true;
       if(tab){
         qsa('#massageLibraryTabs [data-library-category]').forEach(btn=>btn.setAttribute('aria-selected',btn===tab?'true':'false'));
         tab.click();
-        writeMassageRoute('library-category',MASSAGE_LIBRARY_KEYS[category]==='techniques'?'':MASSAGE_LIBRARY_KEYS[category],'replace');
       }
       activatePlannerMode(params.get('planner-mode')||'provider');
+      suppressMassageHistory=false;
     }catch(_e){}
   }
 
