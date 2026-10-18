@@ -17,8 +17,8 @@ test('Weight of Coherence keeps a muted board normally and uses white behind the
   assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_WRONG_DROP_STAY_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_WRONG_DROP_STAY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FLOATING_PIECE_LENS_20261018_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FLOATING_PIECE_LENS_20261018_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -104,16 +104,21 @@ test('zoom level is always adjustable from 200 to 1000 percent and the Z icon is
   assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target/);
 });
 
-test('tray zoom uses the same magnification as the board lens but scales only the jigsaw piece canvas', () => {
+test('tray piece zoom uses a bounded floating inspector and never scales the source tray piece in place', () => {
   assert.match(js, /let zoomLevel = PIECE_ZOOM_DEFAULT/);
-  assert.match(js, /const sourceWidth=\(diameter\/zoomLevel\)/);
-  assert.match(js, /function applyPieceZoom\(target,scale\)\{[\s\S]*?querySelector\?\.\('\.weight-coherence-piece-canvas'\)[\s\S]*?zoomLevel=nextScale/);
-  assert.match(js, /zoomTarget\.style\.setProperty\('--weight-coherence-piece-zoom',zoomScale\.toFixed\(2\)\)/);
-  assert.doesNotMatch(js, /zoomTarget\.style\.transform='scale\('/);
-  assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target\{position:relative;z-index:60\}/);
-  assert.match(css, /#weightCoherencePuzzle \.weight-coherence-piece\.is-zoom-target \.weight-coherence-piece-canvas\{[^}]*transform:scale\(var\(--weight-coherence-piece-zoom,2\)\)/);
-  assert.doesNotMatch(css, /\.weight-coherence-piece\.is-zoom-target\{[^}]*box-shadow/);
-  assert.match(html, /The same magnification is used for the board lens and tray pieces; only the jigsaw piece itself enlarges, not its tray card/);
+  assert.match(js, /let pieceLens = null/);
+  assert.match(js, /function ensurePieceLens\(\)\{[\s\S]*?pieceLens\.className='weight-coherence-piece-lens'/);
+  assert.match(js, /function updatePieceLens\(target,clientX,clientY\)\{[\s\S]*?const diameter=Math\.max\(170,Math\.min\(250,/);
+  assert.match(js, /const drawWidth=sourceRect\.width\*zoomScale/);
+  assert.match(js, /const drawHeight=sourceRect\.height\*zoomScale/);
+  assert.match(js, /lensCtx\.drawImage\(source,0,0,source\.width,source\.height,drawX,drawY,drawWidth,drawHeight\)/);
+  assert.match(js, /function applyPieceZoom\(target,scale\)\{[\s\S]*?zoomTarget=target;[\s\S]*?zoomScale=nextScale;[\s\S]*?updatePieceLens\(target,point\.x,point\.y\)/);
+  assert.doesNotMatch(js, /--weight-coherence-piece-zoom/);
+  assert.doesNotMatch(css, /weight-coherence-piece\.is-zoom-target[^}]*transform:scale/);
+  assert.doesNotMatch(css, /weight-coherence-piece\.is-zoom-target \.weight-coherence-piece-canvas\{[^}]*transform:scale/);
+  assert.match(css, /\.weight-coherence-piece-lens\{[^}]*position:fixed[^}]*border:2px solid #050505[^}]*border-radius:50%[^}]*pointer-events:none/);
+  assert.match(html, /floating inspection lens; the source piece stays fixed in the tray/);
+  assert.match(html, /without resizing the tray, tray card, or source piece/);
 });
 
 test('holding Z over the jigsaw opens a circular magnifier lens without scaling the board', () => {
