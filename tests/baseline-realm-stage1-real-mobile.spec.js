@@ -119,6 +119,42 @@ test('real phone rotation produces one full-viewport landscape stage and returns
   await expect(page.locator('.realm-command-banner')).toBeVisible();
   await expect(page.locator('#realmBasecampScreen')).toBeVisible();
   await expect(page.locator('.realm-action-dock')).toBeHidden();
+
+  const mobileLayout = await page.evaluate(() => {
+    const rect = (selector) => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const box = node.getBoundingClientRect();
+      return { x: box.x, y: box.y, width: box.width, height: box.height, right: box.right, bottom: box.bottom };
+    };
+    const hotkey = document.querySelector('.realm-hotkey-hint');
+    return {
+      banner: rect('.realm-command-banner'),
+      basecamp: rect('#realmBasecampScreen'),
+      status: rect('.realm-command-banner__status'),
+      coins: rect('.realm-shared-status'),
+      utility: rect('.realm-command-banner .realm-utility'),
+      management: rect('.realm-context-action'),
+      drawerHidden: document.getElementById('realmPanelDrawer')?.hidden === true,
+      hotkeyDisplay: hotkey ? getComputedStyle(hotkey).display : null,
+      basecampBackgroundSize: getComputedStyle(document.getElementById('realmBasecampScreen')).backgroundSize
+    };
+  });
+  expect(mobileLayout.banner).not.toBeNull();
+  expect(Math.abs(mobileLayout.banner.x)).toBeLessThan(1);
+  expect(Math.abs(mobileLayout.banner.width - 844)).toBeLessThan(2);
+  expect(Math.abs(mobileLayout.banner.height - 76)).toBeLessThan(2);
+  expect(mobileLayout.basecamp).not.toBeNull();
+  expect(Math.abs(mobileLayout.basecamp.x)).toBeLessThan(1);
+  expect(Math.abs(mobileLayout.basecamp.width - 844)).toBeLessThan(2);
+  expect(Math.abs(mobileLayout.basecamp.y - 76)).toBeLessThan(2);
+  expect(mobileLayout.status.right).toBeLessThanOrEqual(mobileLayout.coins.x + 1);
+  expect(mobileLayout.coins.right).toBeLessThanOrEqual(mobileLayout.utility.x + 1);
+  expect(mobileLayout.utility.right).toBeLessThanOrEqual(844.5);
+  expect(mobileLayout.management.right).toBeLessThanOrEqual(844.5);
+  expect(mobileLayout.drawerHidden).toBeTruthy();
+  expect(mobileLayout.hotkeyDisplay).toBe('none');
+  expect(mobileLayout.basecampBackgroundSize).toContain('100% 100%');
   await expect(page.locator('[data-basecamp-landmark="ninja-training"]')).toBeVisible();
   await expect(page.locator('[data-basecamp-landmark="exploration"]')).toBeVisible();
   await expect(page.locator('#realmExploreBtn')).toHaveCount(0);
