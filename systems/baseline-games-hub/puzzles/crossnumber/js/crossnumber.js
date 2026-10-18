@@ -589,9 +589,10 @@
     if(round.assignments[target.id]) delete round.assignments[target.id];
     round.assignments[target.id]=correctTile;
     round.hintsUsed+=1;
+    const remainingHints=Math.max(0,hintsAllowed()-round.hintsUsed);
     selectedTile='';
     buildBoard();renderBank();renderRoundHud();checkComplete();saveProfile();
-    setStatus('Hint placed one correct number. '+(hintsAllowed()-round.hintsUsed)+' hint'+(hintsAllowed()-round.hintsUsed===1?'':'s')+' remaining.');
+    if(round) setStatus('Hint placed one correct number. '+remainingHints+' hint'+(remainingHints===1?'':'s')+' remaining.');
   }
 
   function allSolved(){
@@ -785,7 +786,14 @@
       if(round) layout=generateLayout(round.seed,round.tierId);
     }
     if(!round){
-      createNewRound({tierId:profile.selectedTier});
+      layout=null;
+      refs.board.innerHTML='<div class="crossnumber-empty-board">Open Crossnumber or choose New Layout to generate a puzzle.</div>';
+      refs.board.style.removeProperty('--crossnumber-cols');
+      refs.board.style.removeProperty('--crossnumber-rows');
+      refs.bank.innerHTML='';
+      if(refs.bankCount) refs.bankCount.textContent='0 remaining';
+      renderRoundHud();
+      renderProgression();
       return;
     }
     if(!layout||layout.seed!==round.seed||layout.tierId!==round.tierId) layout=generateLayout(round.seed,round.tierId);
@@ -846,7 +854,10 @@
     if(name==='new') createNewRound({tierId:profile.selectedTier});
   });
 
-  document.addEventListener('baseline:crossnumber-open',function(){startTimer();});
+  document.addEventListener('baseline:crossnumber-open',function(){
+    if(!round) createNewRound({tierId:profile.selectedTier});
+    else startTimer();
+  });
   document.addEventListener('baseline:game-storage',function(){
     if(storageReloaded) return;
     const stored=storageAuthority()?.getProfile?.(APP);
@@ -868,7 +879,9 @@
   round=restoreRound(profile.activeRound);
   layout=round?generateLayout(round.seed,round.tierId):null;
   renderAll();
-  setStatus(hadSavedRound&&round?'Your saved Crossnumber layout has been restored.':'Place the number tiles so every equation balances.');
+  if(hadSavedRound&&round) setStatus('Your saved Crossnumber layout has been restored.');
+  else if(panel&&!panel.hidden&&!round) createNewRound({tierId:profile.selectedTier});
+  else setStatus('Open Crossnumber to generate a new layout.');
   startTimer();
 
   globalThis.BaselineCrossnumber=Object.freeze({
