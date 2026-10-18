@@ -1391,15 +1391,22 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       return serverStorageAuthority()?.getProfile?.('badmintonfocused') || null;
     }catch(_error){ return null; }
   }
+  function crossnumberProfile(){
+    try{
+      if(window.BaselineCrossnumber && typeof window.BaselineCrossnumber.getProfile === 'function') return window.BaselineCrossnumber.getProfile();
+      return serverStorageAuthority()?.getProfile?.('crossnumber') || null;
+    }catch(_error){ return null; }
+  }
   function totalBank(){
     const darts = dartsFocusedProfile();
     const badminton = badmintonFocusedProfile();
-    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0));
+    const crossnumber = crossnumberProfile();
+    return (profiles.pairs ? profiles.pairs.bank : 0) + (profiles.make24 ? profiles.make24.bank : 0) + (profiles.detectword ? profiles.detectword.bank : 0) + (profiles.trackcoin ? profiles.trackcoin.coins : 0) + (profiles.ruleshift ? profiles.ruleshift.bank : 0) + Math.max(0, Number(darts && darts.bank || 0)) + Math.max(0, Number(badminton && badminton.bank || 0)) + Math.max(0, Number(crossnumber && crossnumber.bank || 0));
   }
   function renderAuthState(){
     if(!refs.authStateNote) return;
     if(authState.authed){
-      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
+      refs.authStateNote.innerHTML = '<strong>Account save is active.</strong><span class="inline-note">All Games Hub profiles save to ' + escapeHtml(authState.name || 'your account') + ': Pairs, Detect The Word, Make The Number, Track the Coin, Rule Shift, Crossnumber, Darts Focused, Badminton Focused, and Baseline Realm.</span>';
     }else{
       refs.authStateNote.innerHTML = '<strong>Temporary play is active.</strong><span class="inline-note">You can play while signed out, but progress is not saved. Sign in to save game progress to your account.</span>';
     }
@@ -1591,11 +1598,28 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     syncHashState(historyMode);
   }
 
+  function renderCrossnumberSummary(){
+    const profile = crossnumberProfile();
+    if(!profile) return '';
+    const tierId = String(profile.selectedTier || 'starter');
+    const tiers = (window.BaselineCrossnumber && Array.isArray(window.BaselineCrossnumber.tiers)) ? window.BaselineCrossnumber.tiers : [];
+    const tier = tiers.find(function(item){ return item.id === tierId; });
+    const tierName = tier ? tier.name : tierId.charAt(0).toUpperCase() + tierId.slice(1);
+    const skills = profile.skills || {};
+    const needed = xpNeededForLevel(Math.max(1, Number(profile.level || 1)));
+    return '<details class="game-summary-details" data-summary="crossnumber"><summary><span>Crossnumber</span><span class="inline-note">Level ' + Math.max(1,Number(profile.level||1)) + '</span></summary><div class="game-summary-body">'
+      + '<div class="game-summary-row"><span>Tier: ' + escapeHtml(tierName) + '</span><span>Puzzles solved: ' + Math.max(0,Number(profile.puzzlesSolved||0)) + '</span></div>'
+      + '<div class="game-summary-row"><span>XP: ' + Math.max(0,Number(profile.xp||0)) + ' / ' + needed + '</span><span>Bank: ' + Math.max(0,Number(profile.bank||0)) + '</span></div>'
+      + '<div class="game-summary-row"><span>Best streak: ' + Math.max(0,Number(profile.bestStreak||0)) + '</span><span>Clean streak: ' + Math.max(0,Number(profile.cleanWinStreak||0)) + '</span></div>'
+      + '<div class="game-summary-row game-summary-row--stack"><span>Skills</span><span>Insight ' + (skills.insight||0) + ' · Flow ' + (skills.flow||0) + ' · Banker ' + (skills.banker||0) + ' · Precision ' + (skills.precision||0) + ' · Structure ' + (skills.structure||0) + '</span><span>Unspent skill points: ' + Math.max(0,Number(profile.skillPoints||0)) + '</span></div>'
+      + '</div></details>';
+  }
+
   function renderHubSummary(){
     const existing = refs.gamesSummaryWrap ? Array.from(refs.gamesSummaryWrap.querySelectorAll('details[open][data-summary]')).map(function(el){ return el.getAttribute('data-summary'); }) : [];
     openSummaryIds.clear(); existing.forEach(function(id){ openSummaryIds.add(id); });
-    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Pairs, Detect The Word, Make The Number, Track the Coin, and Rule Shift feed Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
-    refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderNinjaSummary()].join('');
+    refs.bankSummary.innerHTML = '<strong>Bank</strong><span class="bank-value">' + formatInt(totalBank()) + '</span><span class="inline-note">Core games, Crossnumber, Darts Focused and Badminton Focused feed the shared Games Hub Bank/coins. Baseline Realm uses its own connected campaign coin economy.</span>';
+    refs.gamesSummaryWrap.innerHTML = [renderDetectWordSummary(), renderMake24Summary(), renderPairsSummary(), renderTrackCoinSummary(), renderRuleShiftSummary(), renderCrossnumberSummary(), renderNinjaSummary()].join('');
     Array.from(refs.gamesSummaryWrap.querySelectorAll('details[data-summary]')).forEach(function(el){ el.open = openSummaryIds.has(el.getAttribute('data-summary')); });
   }
 
@@ -3762,6 +3786,13 @@ function toggleGameFullscreen(gameId){
     });
     syncDesktopKeypadState();
   }
+
+  document.addEventListener('baseline:crossnumber-progress', function(){
+    try{ renderHubSummary(); }catch(_error){}
+  });
+  document.addEventListener('baseline:game-storage', function(){
+    try{ renderHubSummary(); }catch(_error){}
+  });
 
   function cacheRefs(){
     [
