@@ -42,7 +42,7 @@
     500: Object.freeze({ pieces:500, cols:20, rows:25, trayPageSize:30 }),
     1000: Object.freeze({ pieces:1000, cols:25, rows:40, trayPageSize:32 })
   });
-  const JIGSAW_XP_REWARDS = Object.freeze({ 50:30, 100:55, 500:180, 1000:320 });
+  const JIGSAW_XP_REWARDS = Object.freeze({ 50:30, 100:70, 500:400, 1000:900 });
   const JIGSAW_PROFILE_APPS = Object.freeze([
     'weightcoherence','unheardsignal','tearswithoutwitness','pantherjigsaw','bearjigsaw','foxjigsaw','elephantsjigsaw'
   ]);
