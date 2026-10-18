@@ -48,7 +48,7 @@
             '<button class="puzzle-library-row" data-jigsaw-id="' + escapeHtml(item.id) + '" type="button">' +
               '<img class="puzzle-library-art" src="' + escapeHtml(item.image) + '" alt=""/>' +
               '<div class="puzzle-library-copy"><h3>' + escapeHtml(item.title) + '</h3><p>' + escapeHtml(item.libraryDescription||item.description) + '</p></div>' +
-              '<div class="puzzle-library-meta"><strong>50 · 100 · 500 · 1,000 pieces</strong><span class="inline-note">Open jigsaw</span></div>' +
+              '<div class="puzzle-library-meta"><span class="inline-note">Open jigsaw</span></div>' +
             '</button>' +
           '</div>';
         }).join('');
@@ -69,7 +69,7 @@
     renderJigsaws();
     document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
     showView('player');
-    try{ refs.player.scrollIntoView({behavior:'smooth',block:'start'}); }catch(_error){}
+    try{ refs.player.scrollIntoView({behavior:window.innerWidth<=760?'auto':'smooth',block:'start'}); }catch(_error){}
   }
 
   document.addEventListener('click',function(event){
