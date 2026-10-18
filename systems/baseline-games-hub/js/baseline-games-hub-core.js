@@ -26,6 +26,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const TRACKCOIN_SHUFFLE_MAX_MS = 8000;
 
   const PAIRS_FACES = ['🍂','🪵','🌰','🦉','🍁','🪨','🌾','🧺','🪶','🍄','🌿','🏹','🥾','🕯️','🪙','📜','🧭','🐚','🛡️','⚒️','🪁','🪻','🌙','⭐'];
+  const PAIRS_CARD_THEMES = Object.freeze([
+    { id:'woodland', name:'Woodland', unlockLevel:1 },
+    { id:'archive', name:'Archive', unlockLevel:8 },
+    { id:'night', name:'Night', unlockLevel:18 }
+  ]);
   const PAIRS_TIERS = [
     { id:'starter', name:'Starter', unlockLevel:1, cols:4, pairs:6, xpReward:22, bankReward:10, penalty:1 },
     { id:'field', name:'Field', unlockLevel:4, cols:4, pairs:8, xpReward:30, bankReward:14, penalty:2 },
@@ -1018,13 +1023,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function defaultPairsProfile(){
     return {
       app:'pairs', bank:0, xp:0, level:1, skillPoints:1, boardsCleared:0, gamesPlayed:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
-      skills:{ insight:0, flow:0, banker:0, recall:0, tempo:0 }, selectedTier:'starter'
+      skills:{ insight:0, flow:0, banker:0, recall:0, tempo:0 }, selectedTier:'starter', cardTheme:'woodland', activeRound:null
     };
   }
   function defaultMake24Profile(){
     return {
       app:'make24', bank:0, xp:0, level:1, skillPoints:1, puzzlesSolved:0, gamesPlayed:0, cleanWinStreak:0, roundSeedCounter:0,
-      skills:{ clarity:0, flow:0, banker:0, reserve:0, precision:0 }, selectedTier:'starter'
+      skills:{ clarity:0, flow:0, banker:0, reserve:0, precision:0 }, selectedTier:'starter', activeRound:null
     };
   }
   function defaultWordProfile(){
@@ -1038,7 +1043,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return {
       app:'ruleshift', bank:0, xp:0, level:1, skillPoints:1,
       gamesPlayed:0, correctAnswers:0, wrongAnswers:0, currentStreak:0, bestStreak:0, cleanWinStreak:0,
-      selectedTier:'starter', skills:{ focus:0, banker:0, recovery:0, adapt:0 }
+      selectedTier:'starter', skills:{ focus:0, banker:0, recovery:0, adapt:0 }, activeRound:null
     };
   }
 
@@ -1049,7 +1054,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       bestStreak:0, currentStreak:0, totalCorrect:0, totalRounds:0, totalXpEarned:0, totalCoinsEarned:0, cleanWinStreak:0,
       trackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT, bestTrackCoinSpeedPercent:TRACKCOIN_BASE_SPEED_PERCENT,
       bestAccuracy:0, perfectMiniSet:0, totalMiniSetsCleared:0, skillPoints:1,
-      skills:{ read:0, banker:0, flow:0, discipline:0, steal:0 }
+      skills:{ read:0, banker:0, flow:0, discipline:0, steal:0 }, activeRound:null
     };
   }
 
@@ -1118,6 +1123,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     merged.currentStreak = Math.max(0, Math.round(Number(merged.currentStreak || 0)));
     merged.bestStreak = Math.max(0, Math.round(Number(merged.bestStreak || 0)));
     merged.cleanWinStreak = Math.max(0, Math.round(Number(merged.cleanWinStreak || 0)));
+    const availablePairThemes = PAIRS_CARD_THEMES.filter(theme => merged.level >= theme.unlockLevel);
+    if(!availablePairThemes.some(theme => theme.id === merged.cardTheme)) merged.cardTheme = availablePairThemes[0]?.id || 'woodland';
     merged.skills = Object.assign({}, base.skills, merged.skills || {});
     refundLockedSkills(merged, PAIRS_SKILLS);
     applyLevelCurve(merged);
@@ -1311,7 +1318,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   async function hydrateProfiles(){
     authState = getAuth();
     await Promise.allSettled(GAME_APPS.map(loadProfile));
+    pairsBoardState = null;
+    make24State = null;
     wordState = null;
+    trackCoinState = null;
+    ruleShiftState = null;
     restoreSavedCoreRounds();
     resolveNinjaBonuses();
     applyOfflineNinjaProgress();
@@ -1663,7 +1674,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       cards: buildPairsDeck(tier), selected: [], matchedPairs:0, moves:0, roundBank:0, flipLock:false,
       hintsLeft: profiles.pairs.skills.insight || 0, hadFailure:false, hintBusy:false, lastMessage:'Board opened. Match all pairs.'
     };
-    scheduleSave('pairs');
+    persistPairsRound();
     applyPairsTempoPreview();
     renderAll();
   }
@@ -1699,7 +1710,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     const levels = levelUpFromGain(profile, rewards.xp);
     pairsBoardState.lastMessage = 'Board cleared. +' + rewards.bank + ' Bank · +' + rewards.xp + ' XP' + (rewards.cleanPct ? ' · clean bonus +' + rewards.cleanPct + '%' : '') + (rewards.streakPct ? ' · streak bonus +' + rewards.streakPct + '%' : '') + (levels ? ' · +' + levels + ' level' + (levels > 1 ? 's' : '') : '') + '.';
     pairsBoardState.roundBank += rewards.bank;
-    scheduleSave('pairs');
+    pairsBoardState.completed = true;
+    persistPairsRound();
     renderAll();
     scheduleAutoNext('pairs', startPairsBoard);
   }
@@ -1722,7 +1734,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }else{
       pairsBoardState.lastMessage = 'Learning miss. Both cards were first selections, so clean status is preserved. Streak reset.';
     }
-    scheduleSave('pairs');
+    persistPairsRound();
     window.setTimeout(function(){
       if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       selectedCards.forEach(card => { card.open = false; });
@@ -1739,6 +1751,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     card.selections = Number(card.selections || 0) + 1;
     card.open = true;
     pairsBoardState.selected.push(card);
+    persistPairsRound();
     renderPairsBoard();
     if(pairsBoardState.selected.length < 2) return;
     pairsBoardState.moves += 1;
@@ -1750,6 +1763,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       pairsBoardState.matchedPairs += 1;
       pairsBoardState.lastMessage = 'Pair matched cleanly.';
       if(pairsBoardState.matchedPairs >= currentPairsTier().pairs){ completePairsBoard(); return; }
+      persistPairsRound();
       renderAll();
       return;
     }
@@ -1766,11 +1780,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     pairsBoardState.hintBusy = true;
     card.open = true;
     pairsBoardState.lastMessage = 'Hint used. One unmatched card was flashed briefly.';
+    persistPairsRound();
     renderAll();
     window.setTimeout(function(){
       if(!pairsBoardState || pairsBoardState.roundToken !== roundToken) return;
       if(!card.matched && !pairsBoardState.selected.includes(card)) card.open = false;
       pairsBoardState.hintBusy = false;
+      persistPairsRound();
       renderPairsBoard();
       refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">' + escapeHtml(pairsBoardState.lastMessage) + '</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
     }, 860 + ((profiles.pairs.skills.insight || 0) * 120));
@@ -2126,7 +2142,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       hintsUsed:0,
       completed:false
     };
-    scheduleSave('make24');
+    persistMake24Round();
     renderAll();
   }
   function countNumbers(list){
@@ -2180,7 +2196,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       make24State.revealSolution = '';
       make24State.draftExpression = '';
       make24State.completed = true;
-      scheduleSave('make24');
+      persistMake24Round();
       resolveNinjaBonuses();
       renderAll();
       scheduleAutoNext('make24', startMake24Puzzle);
@@ -2197,7 +2213,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }else{
       make24State.lastMessage = 'Not ' + (make24State.target || 24) + ' yet. No Bank deduction on the first miss.';
     }
-    scheduleSave('make24');
+    persistMake24Round();
     renderAll();
     focusGameInput('make24ExpressionInput');
   }
@@ -2208,6 +2224,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.hintsUsed = hintIndex + 1;
     make24State.revealSolution = make24HintFromSolution(make24State.solutions[0] || '', hintIndex);
     make24State.lastMessage = 'Guide used. You received a light tactical prompt only.';
+    persistMake24Round();
     renderMake24Board();
   }
   function rerollMake24Puzzle(){
@@ -2225,7 +2242,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     make24State.hintsUsed = 0;
     make24State.mistakes = 0;
     make24State.lastMessage = 'Numbers rerolled. Make ' + puzzle.target + ' with the new set.';
-    scheduleSave('make24');
+    persistMake24Round();
     renderAll();
   }
   function spendMake24Skill(skillId){
@@ -2339,6 +2356,114 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     wordRecentByLength[length] = recent.slice(0, memory);
     return chosen;
   }
+  function savedPairsRoundSnapshot(){
+    if(!pairsBoardState || !profiles.pairs) return null;
+    return {
+      tierId:currentPairsTier().id,
+      cards:(pairsBoardState.cards || []).map(function(card){
+        return { id:card.id, face:card.face, matched:Boolean(card.matched), selections:Math.max(0,Number(card.selections||0)) };
+      }),
+      matchedPairs:Math.max(0,Number(pairsBoardState.matchedPairs||0)),
+      moves:Math.max(0,Number(pairsBoardState.moves||0)),
+      roundBank:Number(pairsBoardState.roundBank||0),
+      hintsLeft:Math.max(0,Number(pairsBoardState.hintsLeft||0)),
+      hadFailure:Boolean(pairsBoardState.hadFailure),
+      completed:Boolean(pairsBoardState.completed),
+      lastMessage:String(pairsBoardState.lastMessage||'').slice(0,260)
+    };
+  }
+  function persistPairsRound(){
+    if(!profiles.pairs) return;
+    profiles.pairs.activeRound = savedPairsRoundSnapshot();
+    scheduleSave('pairs');
+  }
+  function restoreSavedPairsRound(){
+    const saved = profiles.pairs && profiles.pairs.activeRound;
+    if(!saved || typeof saved !== 'object') return false;
+    const tier = PAIRS_TIERS.find(function(item){ return item.id === saved.tierId; });
+    if(!tier || profiles.pairs.level < tier.unlockLevel) return false;
+    const cards = Array.isArray(saved.cards) ? saved.cards.slice(0,tier.pairs*2).map(function(card,index){
+      const face=String(card&&card.face||'');
+      if(!PAIRS_FACES.includes(face)) return null;
+      return {
+        id:String(card&&card.id||('restored-'+index)),
+        face:face,
+        open:Boolean(card&&card.matched),
+        matched:Boolean(card&&card.matched),
+        wasKnown:false,
+        selections:Math.max(0,Math.round(Number(card&&card.selections||0)))
+      };
+    }).filter(Boolean) : [];
+    if(cards.length !== tier.pairs*2) return false;
+    profiles.pairs.selectedTier=tier.id;
+    pairsBoardState={
+      roundToken:++pairsRoundToken,
+      cards:cards,
+      selected:[],
+      matchedPairs:Math.max(0,Math.min(tier.pairs,Math.round(Number(saved.matchedPairs||0)))),
+      moves:Math.max(0,Math.round(Number(saved.moves||0))),
+      roundBank:Number(saved.roundBank||0),
+      flipLock:false,
+      hintsLeft:Math.max(0,Math.round(Number(saved.hintsLeft||0))),
+      hadFailure:Boolean(saved.hadFailure),
+      hintBusy:false,
+      completed:Boolean(saved.completed),
+      lastMessage:String(saved.lastMessage||'Board restored. Continue matching pairs.').slice(0,260)
+    };
+    return true;
+  }
+
+  function savedMake24RoundSnapshot(){
+    if(!make24State || !profiles.make24) return null;
+    return {
+      tierId:currentMake24Tier().id,
+      seed:Number(make24State.seed||0),
+      target:Number(make24State.target||24),
+      numbers:(make24State.numbers||[]).map(Number).slice(0,4),
+      hintsLeft:Math.max(0,Number(make24State.hintsLeft||0)),
+      rerollsLeft:Math.max(0,Number(make24State.rerollsLeft||0)),
+      mistakes:Math.max(0,Number(make24State.mistakes||0)),
+      hadFailure:Boolean(make24State.hadFailure),
+      roundBank:Number(make24State.roundBank||0),
+      draftExpression:String(make24State.draftExpression||'').slice(0,120),
+      lastMessage:String(make24State.lastMessage||'').slice(0,260),
+      revealSolution:String(make24State.revealSolution||'').slice(0,260),
+      hintsUsed:Math.max(0,Number(make24State.hintsUsed||0)),
+      completed:Boolean(make24State.completed)
+    };
+  }
+  function persistMake24Round(){
+    if(!profiles.make24) return;
+    profiles.make24.activeRound=savedMake24RoundSnapshot();
+    scheduleSave('make24');
+  }
+  function restoreSavedMake24Round(){
+    const saved=profiles.make24&&profiles.make24.activeRound;
+    if(!saved||typeof saved!=='object') return false;
+    const tier=MAKE24_TIERS.find(function(item){return item.id===saved.tierId;});
+    const numbers=Array.isArray(saved.numbers)?saved.numbers.map(Number).filter(Number.isFinite).slice(0,4):[];
+    const target=Number(saved.target||24);
+    if(!tier||profiles.make24.level<tier.unlockLevel||numbers.length!==4||!Number.isFinite(target)) return false;
+    profiles.make24.selectedTier=tier.id;
+    make24State={
+      seed:Number(saved.seed||0),
+      target:target,
+      numbers:numbers,
+      solutions:allMakeNumberSolutions(numbers,target),
+      hintsLeft:Math.max(0,Math.round(Number(saved.hintsLeft||0))),
+      rerollsLeft:Math.max(0,Math.round(Number(saved.rerollsLeft||0))),
+      mistakes:Math.max(0,Math.round(Number(saved.mistakes||0))),
+      hadFailure:Boolean(saved.hadFailure),
+      roundBank:Number(saved.roundBank||0),
+      draftExpression:String(saved.draftExpression||'').slice(0,120),
+      lastMessage:String(saved.lastMessage||'Puzzle restored. Continue building the expression.').slice(0,260),
+      revealSolution:String(saved.revealSolution||'').slice(0,260),
+      hintsUsed:Math.max(0,Math.round(Number(saved.hintsUsed||0))),
+      completed:Boolean(saved.completed)
+    };
+    return true;
+  }
+
   function savedWordRoundSnapshot(){
     if(!wordState || !profiles.detectword) return null;
     const tier = WORD_TIERS.find(item => item.id === wordState.tierId) || currentWordTier();
@@ -2378,7 +2503,11 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     return true;
   }
   function restoreSavedCoreRounds(){
+    if(!pairsBoardState) restoreSavedPairsRound();
+    if(!make24State) restoreSavedMake24Round();
     if(!wordState) restoreSavedWordRound();
+    if(!trackCoinState) restoreSavedTrackCoinRound();
+    if(!ruleShiftState) restoreSavedRuleShiftRound();
   }
 
   function startWordRound(){
