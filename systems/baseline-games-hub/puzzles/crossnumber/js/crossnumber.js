@@ -3,6 +3,7 @@
 
   const root=document.getElementById('crossnumberGame');
   if(!root) return;
+  const panel=root.closest('#crossnumberPanel');
 
   const NODES=Object.freeze([
     {id:'a',r:0,c:0},{id:'b',r:0,c:4},{id:'c',r:4,c:0},{id:'e',r:4,c:4},
@@ -308,8 +309,9 @@
   }
 
   function startTimer(){
-    if(timerId||completed) return;
+    if(timerId||completed||(panel&&panel.hidden)) return;
     timerId=window.setInterval(function(){
+      if(panel&&panel.hidden) return;
       seconds++;
       updateHud();
       if(seconds%5===0) save();
@@ -504,6 +506,7 @@
     startTimer();
     if(selectedTile){placeTile(nodeId,selectedTile);return;}
     if(assignments[nodeId]){
+      snapshot();
       selectedTile=assignments[nodeId];
       delete assignments[nodeId];
       buildBoard();
