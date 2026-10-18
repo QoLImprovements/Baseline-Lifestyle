@@ -40,8 +40,15 @@ function saveStatusLabel(state){
   return 'Server saving is currently unavailable. Progress from this page session is temporary.';
 }
 function saveIconSvg(saved){
-  const cross=saved?'':'<path class="game-save-icon__cross" d="M7 7l10 10M17 7L7 17"/>';
-  return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="game-save-icon__disc-shell" d="M5 3.5h11l3.5 3.5V20.5H4.5V3.5H5z"/><path class="game-save-icon__disc-shutter" d="M8 4.9h6.8v5.2H8z"/><path class="game-save-icon__disc-label" d="M8 14.4h8.2v4.2H8z"/>'+cross+'</svg>';
+  const cross=saved?'':'<path class="game-save-icon__cross" d="M6.8 6.8l10.4 10.4M17.2 6.8L6.8 17.2"/>';
+  return '<svg class="game-save-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+    '<path class="game-save-icon__disc-shell" d="M5 3.5h11.2l2.8 2.8v14.2H5z"/>' +
+    '<path class="game-save-icon__disc-shutter" d="M7.8 4.8h7.6v5.4H7.8z"/>' +
+    '<path class="game-save-icon__disc-label" d="M7.7 13.2h8.6v6H7.7z"/>' +
+    '<circle class="game-save-icon__hub" cx="12" cy="16.25" r="1.45"/>' +
+    '<path class="game-save-icon__notch" d="M16.2 3.5v3.1H19"/>' +
+    cross +
+  '</svg>';
 }
 function saveIconMarkup(state, realm=false){
   const saved=Boolean(state.canSave);
