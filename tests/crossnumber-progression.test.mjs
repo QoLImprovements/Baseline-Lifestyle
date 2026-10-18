@@ -93,6 +93,29 @@ test('Crossnumber inherits the Games Hub Indigo Circuit palette instead of ownin
   assert.match(html,/crossnumber\.css\?v=CROSSNUMBER_PROGRESSION_/);
 });
 
+test('Crossnumber follows the Games Hub single-panel navigation contract',()=>{
+  assert.match(html,/data-game-info="crossnumber"/);
+  ['crossnumberGamePanel','crossnumberSkillPanel','crossnumberTierPanel','crossnumberProgressPanel'].forEach(id=>{
+    assert.match(html,new RegExp('data-crossnumber-panel="'+id+'"'));
+    assert.match(html,new RegExp('id="'+id+'"'));
+  });
+  assert.doesNotMatch(html,/class="crossnumber-hero"/);
+  assert.doesNotMatch(html,/class="crossnumber-progression-strip"/);
+  assert.match(crossnumber,/setCrossnumberPanel/);
+  assert.match(crossnumber,/crosspanel/);
+  assert.match(crossnumber,/panelFromLocation/);
+});
+
+test('Crossnumber keeps the puzzle and answer bank playable without page-level overflow',()=>{
+  assert.match(html,/class="crossnumber-play-layout"/);
+  assert.match(html,/class="crossnumber-board-column"/);
+  assert.match(html,/class="crossnumber-bank-panel"/);
+  assert.match(css,/grid-template-columns:minmax\(0,1fr\) minmax\(190px,230px\)/);
+  assert.match(css,/@media \(max-width:820px\)[\s\S]*?crossnumber-play-layout\{grid-template-columns:1fr\}/);
+  assert.match(css,/crossnumber-board\{[\s\S]*?max-width:680px;[\s\S]*?min-width:0;/);
+  assert.doesNotMatch(css,/crossnumber-board\{[\s\S]*?min-width:5[0-9]{2}px/);
+});
+
 test('Crossnumber profile participates in shared account persistence',()=>{
   assert.match(registry,/['"]crossnumber['"]/);
   assert.match(gamesData,/['"]crossnumber['"]/);
