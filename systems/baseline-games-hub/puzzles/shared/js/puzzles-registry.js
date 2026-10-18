@@ -48,7 +48,7 @@
       group:'Symbolic',
       title:'Tears Without Witness',
       app:'tearswithoutwitness',
-      image:'/systems/baseline-games-hub/puzzles/tears-without-witness/art/tears-without-witness.png?v=TEARS_WITHOUT_WITNESS_CORRECT_ART_20261018_1',
+      image:'/systems/baseline-games-hub/puzzles/tears-without-witness/art/tears-without-witness.webp?v=TEARS_WITHOUT_WITNESS_CORRECT_ART_20261018_2',
       width:1536,
       height:1024,
       alt:'A weathered stone figure crouches defensively as water pours from its face and body while the stone behind it fractures under violent external force.',

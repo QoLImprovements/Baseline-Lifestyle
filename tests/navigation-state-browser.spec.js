@@ -63,26 +63,61 @@ test('Massage planner mode survives refresh and history',async({page})=>{
   await expect(page.locator('[data-planner-mode="focused"]')).toHaveAttribute('aria-selected','true');
 });
 
-test('Puzzles exact selected jigsaw survives refresh Back and Forward',async({page})=>{
+test('Puzzles exact non-default jigsaw survives refresh Back and Forward',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-games-hub/games-hub/puzzles',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
   await page.locator('[data-puzzle-type="jigsaws"]').click();
   await expect(page).toHaveURL(/[?&]puzzle=jigsaws/);
-  const first=page.locator('[data-jigsaw-id]').first();
-  const id=await first.getAttribute('data-jigsaw-id');
-  await first.click();
+  const id='tears-without-witness';
+  await page.locator('[data-jigsaw-id="'+id+'"]').click();
   expect(new URL(page.url()).searchParams.get('jigsaw')).toBe(id);
+  await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
+  await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
-  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('player');
-  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getJigsaw())).toBe(id);
+  await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('player');
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
+  await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
+  await expect(page.locator('#weightCoherenceTitle')).toHaveText('Tears Without Witness');
   await page.goBack();
-  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('jigsaws');
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
   await page.goForward();
-  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getJigsaw())).toBe(id);
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getJigsaw())).toBe(id);
+  await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',id);
 });
 
+test('every registered jigsaw restores its rendered selection after a real refresh',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/puzzles',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesRegistry?.jigsaws?.length));
+  const jigsaws=await page.evaluate(()=>globalThis.BaselinePuzzlesRegistry.jigsaws.map(item=>({id:item.id,title:item.title})));
+  for(const item of jigsaws){
+    await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=jigsaws&jigsaw='+encodeURIComponent(item.id),{waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
+    await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',item.id);
+    await expect(page.locator('#weightCoherenceTitle')).toHaveText(item.title);
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>document.documentElement.hasAttribute('data-weight-of-coherence-jigsaw'));
+    await expect(page.locator('#weightCoherencePuzzle')).toHaveAttribute('data-jigsaw-id',item.id);
+    await expect(page.locator('#weightCoherenceTitle')).toHaveText(item.title);
+  }
+});
+
+test('Puzzles Jigsaws and Crossnumber views survive refresh',async({page})=>{
+  await stubGames(page);
+  await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=jigsaws',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('jigsaws');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('jigsaws');
+
+  await page.goto('/baseline-games-hub/games-hub/puzzles?puzzle=crossnumber',{waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>Boolean(globalThis.BaselinePuzzlesLibrary));
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary.getView())).toBe('crossnumber');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await expect.poll(()=>page.evaluate(()=>globalThis.BaselinePuzzlesLibrary?.getView())).toBe('crossnumber');
+});
 test('Fitness routine Week Month calendar state survives refresh',async({page})=>{
   await page.goto('/baseline-fitness/my-routine/log',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>Boolean(document.querySelector('[data-calendar-view="week"]')));
