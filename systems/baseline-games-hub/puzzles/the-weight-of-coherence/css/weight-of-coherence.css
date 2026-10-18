@@ -18,6 +18,9 @@
 .weight-coherence-icon-action{position:relative;display:inline-grid;place-items:center;flex:0 0 auto;width:44px;min-width:44px;height:44px;min-height:44px;padding:9px;border-radius:12px}
 .weight-coherence-icon-action svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 .weight-coherence-hotkey{position:absolute;right:2px;bottom:1px;display:grid;place-items:center;min-width:14px;height:14px;padding:0 2px;border:0;border-radius:4px;background:rgba(8,13,34,.78);color:rgba(242,245,255,.82);font:600 9px/1 system-ui,sans-serif;pointer-events:none}
+.weight-coherence-zoom-actions{display:inline-flex;align-items:center;gap:4px;padding-right:4px;margin-right:1px;border-right:1px solid rgba(176,190,255,.18)}
+.weight-coherence-zoom-step{display:grid;place-items:center;flex:0 0 auto;width:34px;min-width:34px;height:44px;min-height:44px;padding:0;border-radius:11px;font:700 1.25rem/1 system-ui,sans-serif}
+.weight-coherence-zoom-step:disabled{opacity:.42;cursor:default}
 
 .weight-coherence-settings-dialog{box-sizing:border-box;width:min(92vw,540px);max-height:min(86vh,720px);padding:0;border:1px solid rgba(206,215,255,.3);border-radius:18px;color:#F2F5FF;background:#0b1230;box-shadow:0 24px 70px rgba(0,0,0,.58);overflow:auto}
 .weight-coherence-settings-dialog::backdrop{background:rgba(3,6,18,.72);backdrop-filter:blur(3px)}
@@ -52,9 +55,13 @@
 .weight-coherence-sort-tray .weight-coherence-piece-canvas{max-width:58px;max-height:58px}
 .weight-coherence-sort-tray .weight-coherence-piece-placeholder{width:44px;height:44px}
 .weight-coherence-board-wrap{box-sizing:border-box;position:relative;width:100%;max-width:none;aspect-ratio:var(--weight-coherence-aspect,1122 / 1402);border-radius:14px;overflow:hidden;border:1px solid rgba(206,215,255,.28);background:#2A3672;box-shadow:0 18px 42px rgba(0,0,0,.30);transform-origin:50% 50%;transition:transform .18s ease}
-#puzzles .puzzle-library-card.is-jigsaw-inspecting{overflow:visible}
-#weightCoherencePuzzle.is-inspecting .weight-coherence-board-shell{position:relative;z-index:20;overflow:visible!important}
+#puzzles .puzzle-library-card.is-jigsaw-inspecting,
+#puzzles .puzzle-library-card.is-jigsaw-zooming{overflow:visible}
+#weightCoherencePuzzle.is-inspecting .weight-coherence-board-shell,
+#weightCoherencePuzzle.is-zoom-active .weight-coherence-board-shell{position:relative;z-index:20;overflow:visible!important}
 #weightCoherencePuzzle.is-inspecting .weight-coherence-board-wrap{z-index:21;transition:none;will-change:transform}
+#weightCoherencePuzzle.is-zoom-active .weight-coherence-stage{overflow:visible!important}
+#weightCoherencePuzzle.is-zoom-active .weight-coherence-board-wrap.is-zoom-target{z-index:21;transition:transform .16s ease;will-change:transform}
 #weightCoherenceBoard{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
 .weight-coherence-completion{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;display:grid;gap:6px;min-width:min(78%,420px);padding:20px 22px;text-align:center;border:1px solid rgba(225,232,255,.36);border-radius:16px;background:rgba(8,13,34,.90);box-shadow:0 18px 50px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
 .weight-coherence-completion[hidden]{display:none}
@@ -75,6 +82,14 @@
 .weight-coherence-piece:hover{border-color:rgba(200,210,255,.42);background:rgba(56,69,137,.40);transform:translateY(-1px)}
 .weight-coherence-piece:active{cursor:grabbing}
 .weight-coherence-piece:disabled{cursor:wait;opacity:.82}
+#weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece,
+#weightCoherencePuzzle.is-viewing-artwork .weight-coherence-piece:active{cursor:zoom-in}
+#weightCoherencePuzzle .weight-coherence-piece.is-zoom-target{position:relative;z-index:60;box-shadow:0 18px 40px rgba(0,0,0,.48);transition:transform .16s ease,box-shadow .16s ease}
+#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-column,
+#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-shell,
+#weightCoherencePuzzle.is-zooming-piece .weight-coherence-sort-tray,
+#weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray-shell,
+#weightCoherencePuzzle.is-zooming-piece .weight-coherence-tray{overflow:visible!important}
 .weight-coherence-piece.is-selected{border-color:rgba(225,232,255,.88);background:rgba(80,97,183,.46);box-shadow:0 0 0 2px rgba(126,145,255,.25) inset}
 .weight-coherence-piece-canvas{display:block;max-width:84px;max-height:84px;width:auto;height:auto;filter:drop-shadow(0 5px 5px rgba(0,0,0,.28))}
 .weight-coherence-piece-placeholder{display:block;width:56px;height:56px;border-radius:12px;background:rgba(176,190,255,.07)}
