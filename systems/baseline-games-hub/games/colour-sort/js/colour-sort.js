@@ -357,7 +357,23 @@ function createBottleDragGhost(source) {
 
 function bottleAtPointer(clientX, clientY) {
   const element = document.elementFromPoint(clientX, clientY);
-  const bottle = element instanceof Element ? element.closest('#colourSortGameCard [data-colour-bottle]') : null;
+  let bottle = element instanceof Element ? element.closest('#colourSortGameCard [data-colour-bottle]') : null;
+
+  // Fingers obscure the exact drop point. On coarse pointers, accept a nearby
+  // bottle when the release lands just outside its visual glass.
+  if (!bottle && window.matchMedia?.('(pointer:coarse)').matches) {
+    let best = null;
+    let bestDistance = Infinity;
+    document.querySelectorAll('#colourSortGameCard [data-colour-bottle]').forEach(candidate => {
+      const rect = candidate.getBoundingClientRect();
+      const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
+      const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
+      const distance = Math.hypot(dx, dy);
+      if (distance < bestDistance) { best = candidate; bestDistance = distance; }
+    });
+    if (bestDistance <= 34) bottle = best;
+  }
+
   if (!bottle) return null;
   const index = Number(bottle.dataset.colourBottle);
   return Number.isInteger(index) ? { element:bottle, index } : null;
@@ -819,9 +835,9 @@ function panelHtml() {
         <div><h2 id="colourSortTitle" tabindex="-1">Colour Sort</h2><p class="note">Move exposed colour runs between bottles until every filled bottle contains one colour only.</p></div>
         <div class="link-actions game-shell-actions" data-nonrealm-game-toolbar="colour-sort">
           <button class="action secondary game-shell-action game-shell-action--icon" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Sequencing, planning, state tracking, inhibition and multi-step problem solving." type="button" aria-label="What Colour Sort develops"><span class="game-shell-action__icon" aria-hidden="true">i</span></button>
-          <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty bottle or onto the same exposed colour. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span>How to Play</span></button>
-          <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span>Full Screen</span></button>
-          <button class="action secondary game-shell-action" data-close-puzzle-game="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span>Games</span></button>
+          <button class="action secondary game-shell-action" data-bl-info-button data-bl-info-title="How To Play" data-bl-info-text="Move the exposed run of one colour into an empty bottle or onto the same exposed colour. Sort every filled bottle into a single colour. Drag bottles or tap a source and then a destination. Undo, Hint and Restart stay available below the board." type="button"><span class="game-shell-action__icon" aria-hidden="true">?</span><span class="game-shell-action__label">How to Play</span></button>
+          <button class="action secondary game-shell-action" data-colour-action="fullscreen" type="button"><span class="game-shell-action__icon" aria-hidden="true">⛶</span><span class="game-shell-action__label">Full Screen</span></button>
+          <button class="action secondary game-shell-action" data-close-puzzle-game="colour-sort" type="button"><span class="game-shell-action__icon" aria-hidden="true">←</span><span class="game-shell-action__label">Games</span></button>
         </div>
       </div>
       <details class="game-info-details" data-game-info="coloursort"><summary><span>Game Info</span><span class="inline-note">Level / XP / stats</span></summary>
