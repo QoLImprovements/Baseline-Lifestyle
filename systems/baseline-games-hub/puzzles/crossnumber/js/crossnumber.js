@@ -801,15 +801,30 @@
 
   function renderStats(){
     if(!refs.stats) return;
+    const needed=xpNeededForLevel(profile.level);
+    const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
+    const remaining=Math.max(0,needed-profile.xp);
     const next=TIERS.find(function(tier){return profile.level<tier.unlockLevel;});
-    refs.stats.innerHTML=[
+    const stats=[
       ['Puzzles solved',profile.puzzlesSolved],
       ['Runs started',profile.gamesPlayed],
       ['Best streak',profile.bestStreak],
+      ['Current streak',profile.currentStreak],
       ['Clean streak',profile.cleanWinStreak],
       ['Best score',profile.bestScore],
+      ['Bank earned',profile.bank],
+      ['Current tier',tierDefinition(profile.selectedTier).name],
       ['Next tier',next?(next.name+' · L'+next.unlockLevel):'All unlocked']
-    ].map(function(item){return '<div class="crossnumber-progress-stat"><span>'+escapeHtml(item[0])+'</span><strong>'+escapeHtml(item[1])+'</strong></div>';}).join('');
+    ];
+    refs.stats.innerHTML=
+      '<section class="coherent-progress-overview">' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Crossnumber</span><strong>Level '+profile.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(profile.level+1)+'</div></div>' +
+        '<div class="coherent-progress-xp-meta"><span>'+profile.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
+        '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+profile.xp+'"><span style="width:'+pct+'%"></span></div>' +
+      '</section>' +
+      '<div class="coherent-progress-grid">' +
+        stats.map(function(item){return '<div class="coherent-progress-stat"><span>'+escapeHtml(item[0])+'</span><strong>'+escapeHtml(item[1])+'</strong></div>';}).join('') +
+      '</div>';
   }
 
   function renderProgression(){
@@ -824,6 +839,21 @@
     if(refs.xpMeta) refs.xpMeta.textContent=profile.xp+' / '+needed+' XP';
     if(refs.xpFill) refs.xpFill.style.width=clamp((profile.xp/needed)*100,0,100)+'%';
     if(refs.skillPoints) refs.skillPoints.textContent=String(profile.skillPoints);
+    const gamePanel=document.getElementById('crossnumberGamePanel');
+    if(gamePanel){
+      let live=gamePanel.querySelector('[data-live-xp="crossnumber"]');
+      if(!live){
+        live=document.createElement('div');
+        live.className='game-live-xp';
+        live.setAttribute('data-live-xp','crossnumber');
+        const toolbar=gamePanel.querySelector('.crossnumber-round-toolbar');
+        if(toolbar) toolbar.insertAdjacentElement('afterend',live);
+        else gamePanel.prepend(live);
+      }
+      const pct=clamp((profile.xp/Math.max(1,needed))*100,0,100);
+      live.innerHTML='<strong>Level '+profile.level+'</strong><div class="game-live-xp__bar"><span style="width:'+pct+'%"></span></div><span>'+profile.xp+' / '+needed+' XP</span>';
+    }
+
     renderTiers();renderSkills();renderRealmContribution();renderStats();
     try{autoNextApi()?.sync?.();}catch(_error){}
   }
