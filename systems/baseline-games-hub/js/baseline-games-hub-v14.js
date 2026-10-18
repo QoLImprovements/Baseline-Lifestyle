@@ -1,6 +1,6 @@
 const BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 const LEGACY_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
-const REALM_BUILD='REALM_SINGLE_RUNTIME_20261019_1';
+const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
 const REALM='/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
@@ -261,13 +261,15 @@ async function handleRealmFallbackControl(control){
   if(control.hasAttribute('data-realm-explore-action')){host.handleExploration?.(control.getAttribute('data-realm-explore-action')||'advance');return;}
   if(control.hasAttribute('data-realm-open-tab')){
     const tab=control.getAttribute('data-realm-open-tab')||'settlement';
-    if(tab==='workshop')await host.sceneRouter.navigate('workshop',{category:control.getAttribute('data-workshop-category')||'blacksmith'});
-    else{await host.sceneRouter.navigate('basecamp');host.openDrawerTab?.(tab);}
+    await host.sceneRouter.navigate('basecamp');
+    host.openDrawerTab?.(tab);
     return;
   }
   if(control.hasAttribute('data-realm-view')){
     const view=control.getAttribute('data-realm-view')||'training';
-    await host.sceneRouter.navigate(view==='training'?'ninja-training':view);
+    const scene=view==='training'?'ninja-training':view;
+    const category=control.getAttribute('data-workshop-category')||'';
+    await host.sceneRouter.navigate(scene,category?{category}:undefined);
   }
 }
 

@@ -8,9 +8,9 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   const jrpgActive = () => runtime.getView() === 'exploration' && !!document.getElementById('realmSceneFrame')?.classList.contains('is-exploration-jrpg');
   const standardActive = () => persistentActive() && !jrpgActive();
   const payload = (event) => event.detail?.payload || {};
-  const navigate = (view) => {
+  const navigate = (view, scenePayload = {}) => {
     const scene = view === 'training' ? 'ninja-training' : view;
-    if (sceneRouter.has(scene)) sceneRouter.navigate(scene).catch((error) => console.error('Realm scene navigation failed.', error));
+    if (sceneRouter.has(scene)) sceneRouter.navigate(scene, scenePayload).catch((error) => console.error('Realm scene navigation failed.', error));
   };
   const moveFocus = (axisState = '') => {
     const frame = document.getElementById('realmSceneFrame');
@@ -26,7 +26,12 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
   inputManager.bindPointer('ninja-buy-mode', '[data-ninja-buy-mode]', { payload: (element) => ({ id: element.dataset.ninjaBuyMode || '' }) });
   inputManager.bindPointer('ninja-upgrade', '[data-ninja-upgrade]', { payload: (element) => ({ id: element.dataset.ninjaUpgrade || '' }) });
   inputManager.bindPointer('ninja-spirit-upgrade', '[data-ninja-spirit-upgrade]', { payload: (element) => ({ id: element.dataset.ninjaSpiritUpgrade || '' }) });
-  inputManager.bindPointer('realm-view', '[data-realm-view]', { payload: (element) => ({ view: element.dataset.realmView || 'training' }) });
+  inputManager.bindPointer('realm-view', '[data-realm-view]', {
+    payload: (element) => ({
+      view: element.dataset.realmView || 'training',
+      category: element.dataset.workshopCategory || ''
+    })
+  });
   inputManager.bindPointer('realm-drawer', '[data-realm-drawer]', { payload: (element) => ({ action: element.dataset.realmDrawer || '' }) });
   inputManager.bindPointer('realm-tab', '[data-realm-tab]', { payload: (element) => ({ tab: element.dataset.realmTab || '' }) });
   inputManager.bindPointer('realm-open-tab', '[data-realm-open-tab]', {
@@ -64,13 +69,16 @@ export function bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter }
     eventBus.on('realm:input:ninja-buy-mode', (event) => runtime.cycleBuyMode(payload(event).id)),
     eventBus.on('realm:input:ninja-upgrade', (event) => runtime.buyUpgrade(payload(event).id)),
     eventBus.on('realm:input:ninja-spirit-upgrade', (event) => runtime.buySpiritUpgrade(payload(event).id)),
-    eventBus.on('realm:input:realm-view', (event) => navigate(payload(event).view)),
+    eventBus.on('realm:input:realm-view', (event) => {
+      const detail = payload(event);
+      navigate(detail.view, detail.category ? { category:detail.category } : {});
+    }),
     eventBus.on('realm:input:realm-drawer', (event) => runtime.handleDrawer(payload(event).action)),
     eventBus.on('realm:input:realm-tab', (event) => runtime.openDrawerTab(payload(event).tab)),
     eventBus.on('realm:input:realm-open-tab', (event) => {
       const detail = payload(event);
-      if (detail.tab === 'workshop') sceneRouter.navigate('workshop', { category: detail.category || 'blacksmith' });
-      else { navigate('basecamp'); runtime.openDrawerTab(detail.tab || 'settlement'); }
+      navigate('basecamp');
+      runtime.openDrawerTab(detail.tab || 'settlement');
     }),
     eventBus.on('realm:input:realm-workshop-upgrade', (event) => runtime.buyWorkshopUpgrade(payload(event).id)),
     eventBus.on('realm:input:ninja-strike', () => runtime.strike()),
