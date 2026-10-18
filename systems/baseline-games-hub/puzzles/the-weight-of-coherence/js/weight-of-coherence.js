@@ -100,7 +100,10 @@
     BOARD_HEIGHT=Math.max(1,Number(activePuzzle.height)||1402);
     APP=String(activePuzzle.app||'weightcoherence');
     root.dataset.jigsawId=String(activePuzzle.id||'');
-    root.dataset.jigsawOrientation=BOARD_WIDTH>BOARD_HEIGHT?'landscape':'portrait';
+    const artworkOrientation=BOARD_WIDTH>BOARD_HEIGHT?'landscape':'portrait';
+    root.dataset.jigsawOrientation=artworkOrientation;
+    refs.workspace.classList.toggle('is-artwork-landscape',artworkOrientation==='landscape');
+    refs.workspace.classList.toggle('is-artwork-portrait',artworkOrientation==='portrait');
     root.style.setProperty('--weight-coherence-aspect',BOARD_WIDTH+' / '+BOARD_HEIGHT);
     if(refs.introArt){
       refs.introArt.src=activePuzzle.image;
