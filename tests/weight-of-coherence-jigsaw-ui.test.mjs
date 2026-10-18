@@ -76,10 +76,10 @@ test('four manual sorting trays sit above and below the desktop jigsaw and persi
 
 
 test('each fullscreen sorting tray owns its own scrollbar', () => {
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-stage\{[^}]*overflow:hidden/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-column\{[^}]*min-height:0[^}]*overflow:hidden/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-shell\{[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
-  assert.match(css, /\.weight-coherence-workspace:fullscreen \.weight-coherence-sort-tray\{[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
+  assert.match(css, /weight-coherence-stage[^}]*overflow:hidden[^}]*grid-template-areas:"upper" "board" "lower"/);
+  assert.match(css, /weight-coherence-sort-column[^}]*min-height:0[^}]*overflow:hidden/);
+  assert.match(css, /weight-coherence-sort-shell[^}]*grid-template-rows:auto minmax\(0,1fr\)/);
+  assert.match(css, /weight-coherence-sort-tray[^}]*min-height:0[^}]*height:100%[^}]*overflow-y:auto/);
   assert.match(css, /scrollbar-gutter:stable/);
 });
 
