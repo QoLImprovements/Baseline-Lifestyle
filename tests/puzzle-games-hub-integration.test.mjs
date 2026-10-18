@@ -222,3 +222,15 @@ test('Jigsaws use completion XP with no Jigsaw tier or skill tree and only a Rea
   assert.doesNotMatch(realm, /jigsaws\.attackMult|jigsaws\.critChance|jigsaws\.bossDamageMult/);
   assert.match(realm, /baseline:jigsaw-progress/);
 });
+
+
+test('Jigsaw completion XP increases per piece as difficulty rises', () => {
+  const jigsaw = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  assert.match(jigsaw, /JIGSAW_XP_REWARDS = Object\.freeze\(\{ 50:30, 100:70, 500:400, 1000:900 \}\)/);
+
+  const rewards = [[50,30],[100,70],[500,400],[1000,900]];
+  const perPiece = rewards.map(([pieces,xp]) => xp / pieces);
+  for (let index = 1; index < perPiece.length; index += 1) {
+    assert.ok(perPiece[index] > perPiece[index - 1], `XP per piece must rise from ${rewards[index - 1][0]} to ${rewards[index][0]} pieces`);
+  }
+});
