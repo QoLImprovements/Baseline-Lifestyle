@@ -138,7 +138,7 @@ These Markdown rules are a human reference point, not live runtime config.
           <div class="header-row">
             <div>
               <h2>Crossnumber</h2>
-              <p class="note">Solve arithmetic clues across and down. Shared digits make every answer part of the next.</p>
+              <p class="note">Place number tiles into interlocking arithmetic equations so every horizontal and vertical calculation balances.</p>
             </div>
           </div>
           <button class="action secondary" data-puzzles-back="overview" type="button">Back To Puzzles</button>
@@ -147,56 +147,55 @@ These Markdown rules are a human reference point, not live runtime config.
         <article class="crossnumber-shell" id="crossnumberGame" aria-labelledby="crossnumberTitle">
           <header class="crossnumber-hero">
             <div>
-              <span class="crossnumber-kicker">Numerical crossword</span>
+              <span class="crossnumber-kicker">Interlocking equations</span>
               <h3 id="crossnumberTitle">Crossnumber</h3>
-              <p>Each clue resolves to a number. Enter the digits into the grid; crossings must agree in both directions.</p>
+              <p>Fit the available number tiles into the open cells. Every connected equation must be mathematically true, and shared cells belong to both directions.</p>
             </div>
             <div class="crossnumber-summary" aria-label="Crossnumber status">
-              <div class="crossnumber-stat"><span>Filled</span><strong data-crossnumber-filled>0/0</strong></div>
+              <div class="crossnumber-stat"><span>Difficulty</span><strong data-crossnumber-difficulty-label>Medium</strong></div>
+              <div class="crossnumber-stat"><span>Mistakes</span><strong data-crossnumber-mistakes>0</strong></div>
               <div class="crossnumber-stat"><span>Time</span><strong data-crossnumber-timer>00:00</strong></div>
-              <div class="crossnumber-stat"><span>Hints</span><strong data-crossnumber-hints>0</strong></div>
+              <div class="crossnumber-stat"><span>Score</span><strong data-crossnumber-score>10000</strong></div>
             </div>
           </header>
 
-          <div class="crossnumber-progress" aria-hidden="true"><span data-crossnumber-progress></span></div>
-
-          <div class="crossnumber-layout">
-            <section class="crossnumber-board-card" aria-label="Crossnumber grid">
-              <div class="crossnumber-grid-wrap">
-                <div class="crossnumber-grid" data-crossnumber-grid></div>
-              </div>
-              <div class="crossnumber-board-footer">
-                <div class="crossnumber-status" data-crossnumber-status><strong>Ready.</strong> Select a clue or cell to begin.</div>
-                <div class="crossnumber-actions" aria-label="Crossnumber controls">
-                  <button class="action ghost" type="button" data-crossnumber-action="hint">Hint</button>
-                  <button class="action secondary" type="button" data-crossnumber-action="check">Check</button>
-                  <button class="action ghost" type="button" data-crossnumber-action="reset">New Grid</button>
-                </div>
-              </div>
-            </section>
-
-            <section class="crossnumber-clues-card" aria-label="Crossnumber clues">
-              <div class="crossnumber-clue-tabs" role="tablist" aria-label="Clue direction">
-                <button class="crossnumber-clue-tab" type="button" role="tab" aria-selected="true" data-crossnumber-tab="across">Across</button>
-                <button class="crossnumber-clue-tab" type="button" role="tab" aria-selected="false" data-crossnumber-tab="down">Down</button>
-              </div>
-              <div class="crossnumber-clue-panel">
-                <div class="crossnumber-clue-list" data-crossnumber-clues="across"></div>
-                <div class="crossnumber-clue-list" data-crossnumber-clues="down" hidden></div>
-              </div>
-            </section>
+          <div class="crossnumber-controls">
+            <div class="crossnumber-difficulty" role="group" aria-label="Crossnumber difficulty">
+              <button class="action ghost" type="button" data-crossnumber-difficulty="easy" aria-pressed="false">Easy</button>
+              <button class="action ghost is-active" type="button" data-crossnumber-difficulty="medium" aria-pressed="true">Medium</button>
+              <button class="action ghost" type="button" data-crossnumber-difficulty="hard" aria-pressed="false">Hard</button>
+            </div>
+            <div class="crossnumber-actions" aria-label="Crossnumber controls">
+              <button class="action ghost" type="button" data-crossnumber-action="sort">Sort</button>
+              <button class="action ghost" type="button" data-crossnumber-action="undo">Undo</button>
+              <button class="action secondary" type="button" data-crossnumber-action="hint">Hint</button>
+              <button class="action" type="button" data-crossnumber-action="new">New Puzzle</button>
+            </div>
           </div>
 
-          <div class="crossnumber-help" aria-label="Keyboard help">
-            <span class="crossnumber-key">0–9</span><span>enter digits</span>
-            <span class="crossnumber-key">↑↓←→</span><span>move</span>
-            <span class="crossnumber-key">Enter</span><span>switch direction at a crossing</span>
-          </div>
+          <section class="crossnumber-game-panel" aria-label="Crossnumber board">
+            <div class="crossnumber-board-scroll">
+              <div class="crossnumber-board" data-crossnumber-board></div>
+            </div>
 
-          <div class="crossnumber-complete" data-crossnumber-complete aria-hidden="true" role="status">
-            <strong>Crossnumber complete.</strong>
-            Every crossing agrees. Completed in <span data-crossnumber-complete-time>00:00</span>.
-          </div>
+            <div class="crossnumber-bank-panel">
+              <div class="crossnumber-bank-head">
+                <strong>Number Tiles</strong>
+                <span data-crossnumber-bank-count>0 remaining</span>
+              </div>
+              <div class="crossnumber-bank" data-crossnumber-bank aria-label="Available number tiles"></div>
+            </div>
+
+            <div class="crossnumber-status-row">
+              <div class="crossnumber-status" data-crossnumber-status>Place the number tiles so every horizontal and vertical equation is true.</div>
+              <div class="crossnumber-help">Click a tile then a cell, or drag a tile onto the board. Click a placed tile to pick it up again.</div>
+            </div>
+
+            <div class="crossnumber-complete" data-crossnumber-complete aria-hidden="true" role="status">
+              <strong>Crossnumber complete.</strong>
+              Every equation balances. Time: <span data-crossnumber-complete-time>00:00</span> · Score: <span data-crossnumber-complete-score>0</span>.
+            </div>
+          </section>
         </article>
       </section>
 
