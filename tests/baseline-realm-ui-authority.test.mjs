@@ -127,6 +127,12 @@ test('Exploration reference chrome has one shared visual authority',()=>{
   assert.doesNotMatch(tacticalCss,/background:var\(--realm-parchment-face\)/);
   assert.doesNotMatch(calorieCss,/background:var\(--realm-parchment-face\)/);
   assert.doesNotMatch(tacticalCss,/^\.is-tactical-operations \{/m);
+  for(const selector of ['workshop-room-header','workshop-workbench','workshop-detail']){
+    const block=workshopCss.match(new RegExp('\\.'+selector+'\\{[^}]*\\}'))?.[0]||'';
+    assert.ok(block, selector+' block is present');
+    assert.doesNotMatch(block,/background\s*:/);
+    assert.doesNotMatch(block,/box-shadow\s*:/);
+  }
 });
 
 
