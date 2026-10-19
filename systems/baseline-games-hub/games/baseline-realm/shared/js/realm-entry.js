@@ -21,7 +21,7 @@ import {
 } from './realm-save-adapter.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
+import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_EXPLORATION_CHROME_20261019_1';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=JIGSAW_PASSIVE_LINK_20261018_1';
 
