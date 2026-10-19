@@ -60,7 +60,7 @@
       group:'Symbolic',
       title:'Moved Along',
       app:'movedalong',
-      image:'/systems/baseline-games-hub/puzzles/moved-along/art/moved-along.webp?v=MOVED_ALONG_SYMBOLISM_20261019_1',
+      image:'/systems/baseline-games-hub/puzzles/moved-along/art/moved-along.webp?v=MOVED_ALONG_SOCIAL_REALISM_20261019_2',
       width:1122,
       height:1402,
       alt:'Two police officers move a homeless man on from a shallow rain-sheltered doorway, one gathering his belongings while sinister clown-like reflections appear in a nearby police van.',
