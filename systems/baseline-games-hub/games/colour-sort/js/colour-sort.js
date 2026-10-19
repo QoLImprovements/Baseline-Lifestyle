@@ -890,8 +890,8 @@ const shell = createPuzzleHubShell({
   benefit:'Sequencing, planning, state tracking, inhibition and multi-step problem solving.',
   progressText:() => profile ? `Level ${profile.level} · ${profile.completedLevels.length}/${LEVELS.length} puzzles` : 'Ready',
   panelHtml,
-  onOpen:() => { render(); setTab(colourTabFromLocation(), 'none'); },
-  onClose:() => { cleanupBottleDrag(); selectedBottle = -1; hint = null; }
+  onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('colour-sort'); render(); setTab(colourTabFromLocation(), 'none'); },
+  onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); cleanupBottleDrag(); selectedBottle = -1; hint = null; }
 });
 
 function init() {

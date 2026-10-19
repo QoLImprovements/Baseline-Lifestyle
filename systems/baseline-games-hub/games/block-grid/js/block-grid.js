@@ -687,8 +687,8 @@ const shell = createPuzzleHubShell({
   benefit:'Spatial planning, visual organisation, prospective reasoning and flexible space management.',
   progressText:() => profile ? `Level ${profile.level} · Best ${profile.bestScore}` : 'Ready',
   panelHtml,
-  onOpen:() => { render(); setTab(blockTabFromLocation(), 'none'); },
-  onClose:() => { destroyDragGhost(); previewAnchor = null; dragState = null; }
+  onOpen:() => { globalThis.BaselineGamesMusic?.selectGame?.('block-grid'); render(); setTab(blockTabFromLocation(), 'none'); },
+  onClose:() => { globalThis.BaselineGamesMusic?.selectGame?.(''); destroyDragGhost(); previewAnchor = null; dragState = null; }
 });
 
 function init() {

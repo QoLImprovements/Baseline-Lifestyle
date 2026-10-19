@@ -4,7 +4,7 @@
   var STORAGE_KEY = 'baseline.games.music.v1';
   var MIX_VERSION = 2;
   var DEFAULTS = { enabled:true, volume:0.70 };
-  var CORE_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','ninja'];
+  var MUSIC_GAMES = ['pairs','detectword','make24','trackcoin','ruleshift','block-grid','colour-sort','jigsaw','crossnumber','ninja'];
   var ctx = null;
   var master = null;
   var normalizedOutput = null;
@@ -258,6 +258,54 @@
         {bars:8, prog:[[48,55,60],[51,58,63],[48,55,60]], motif:[72,70,67], density:4, style:'quiet'}
       ]
     },
+    'block-grid':{
+      bpm:108, bars:81,
+      sections:[
+        {bars:8, prog:[[48,55,60,64],[50,57,62,65]], motif:[67,72,74,76,72,79,76,74], density:8, style:'quiet'},
+        {bars:14,prog:[[48,55,60,64],[52,59,64,67],[45,52,57,60],[50,57,62,65]], motif:[67,72,76,72,69,74,77,74], density:8, style:'drive'},
+        {bars:14,prog:[[53,60,65,69],[50,57,62,65],[55,62,67,71],[48,55,60,64]], motif:[69,72,77,74,71,76,79,76], density:8, style:'full'},
+        {bars:10,prog:[[45,52,57,60],[47,54,59,62],[48,55,60,64]], motif:[64,67,69,72,67,64], density:6, style:'quiet'},
+        {bars:14,prog:[[52,59,64,67],[53,60,65,69],[50,57,62,65],[55,62,67,71]], motif:[71,76,79,76,72,77,81,77], density:8, style:'lift'},
+        {bars:13,prog:[[48,55,60,64],[50,57,62,65],[52,59,64,67],[47,54,59,62]], motif:[67,72,74,79,76,72,69,74], density:8, style:'drive'},
+        {bars:8, prog:[[48,55,60,64],[45,52,57,60],[48,55,60,64]], motif:[72,69,67,64], density:4, style:'quiet'}
+      ]
+    },
+    'colour-sort':{
+      bpm:100, bars:75,
+      sections:[
+        {bars:8, prog:[[50,57,62,66],[47,54,59,62]], motif:[69,74,78,81,78,74,71,74], density:8, style:'quiet'},
+        {bars:13,prog:[[50,57,62,66],[54,61,66,69],[47,54,59,62],[52,59,64,67]], motif:[69,74,78,81,76,81,78,74], density:8, style:'warm'},
+        {bars:13,prog:[[55,62,67,71],[52,59,64,67],[57,64,69,73],[50,57,62,66]], motif:[71,74,79,83,81,78,76,74], density:8, style:'full'},
+        {bars:9, prog:[[47,54,59,62],[50,57,62,66],[52,59,64,67]], motif:[66,69,71,74,71,69], density:6, style:'quiet'},
+        {bars:13,prog:[[54,61,66,69],[57,64,69,73],[52,59,64,67],[55,62,67,71]], motif:[74,78,81,85,81,78,76,81], density:8, style:'lift'},
+        {bars:12,prog:[[50,57,62,66],[52,59,64,67],[47,54,59,62],[55,62,67,71]], motif:[69,74,76,81,78,74,71,76], density:8, style:'warm'},
+        {bars:7, prog:[[50,57,62,66],[47,54,59,62],[50,57,62,66]], motif:[74,71,69,66], density:4, style:'quiet'}
+      ]
+    },
+    jigsaw:{
+      bpm:88, bars:66,
+      sections:[
+        {bars:8, prog:[[55,62,67,71],[52,59,64,67]], motif:[74,79,76,71], density:4, style:'quiet'},
+        {bars:11,prog:[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]], motif:[74,79,76,83,79,76], density:6, style:'warm'},
+        {bars:11,prog:[[57,64,69,72],[53,60,65,69],[55,62,67,71],[50,57,62,66]], motif:[76,81,79,84,81,79], density:6, style:'full'},
+        {bars:8, prog:[[48,55,60,64],[50,57,62,66],[52,59,64,67]], motif:[72,74,71,69], density:4, style:'quiet'},
+        {bars:11,prog:[[53,60,65,69],[55,62,67,71],[57,64,69,72],[52,59,64,67]], motif:[77,81,84,81,79,76], density:6, style:'lift'},
+        {bars:10,prog:[[55,62,67,71],[52,59,64,67],[48,55,60,64],[50,57,62,66]], motif:[74,76,79,83,79,76], density:6, style:'warm'},
+        {bars:7, prog:[[55,62,67,71],[52,59,64,67],[55,62,67,71]], motif:[79,76,74,71], density:4, style:'quiet'}
+      ]
+    },
+    crossnumber:{
+      bpm:112, bars:84,
+      sections:[
+        {bars:8, prog:[[48,55,60,64],[51,58,63,67]], motif:[72,75,67,70,74,79,70,75], density:8, style:'quiet'},
+        {bars:15,prog:[[48,55,60,64],[51,58,63,67],[53,60,65,69],[46,53,58,62]], motif:[72,75,79,70,74,77,69,74], density:8, style:'drive'},
+        {bars:15,prog:[[50,57,62,65],[53,60,65,69],[55,62,67,70],[48,55,60,64]], motif:[74,77,81,72,76,79,71,76], density:8, style:'full'},
+        {bars:10,prog:[[45,52,57,60],[48,55,60,64],[50,57,62,65]], motif:[69,72,75,71,74], density:5, style:'quiet'},
+        {bars:15,prog:[[53,60,65,69],[55,62,67,70],[51,58,63,67],[48,55,60,64]], motif:[77,81,84,75,79,82,74,79], density:8, style:'lift'},
+        {bars:13,prog:[[48,55,60,64],[50,57,62,65],[46,53,58,62],[51,58,63,67]], motif:[72,75,79,74,70,77,81,75], density:8, style:'drive'},
+        {bars:8, prog:[[48,55,60,64],[51,58,63,67],[48,55,60,64]], motif:[75,72,70,67], density:4, style:'quiet'}
+      ]
+    },
     ninja:{
       bpm:96, bars:72,
       sections:[
@@ -294,14 +342,22 @@
     var chordNotes = sec.prog[info.local % sec.prog.length];
     var full = sec.style === 'full' || sec.style === 'drive' || sec.style === 'lift';
     var quiet = sec.style === 'quiet';
+    var isJigsaw = activeGame === 'jigsaw';
+    var isColourSort = activeGame === 'colour-sort';
+    var isBlockGrid = activeGame === 'block-grid';
+    var isCrossnumber = activeGame === 'crossnumber';
 
     chordNotes.forEach(function(n, idx){
-      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, quiet ? 0.017 : 0.022, (idx - 1) * 0.28);
+      var padLevel = quiet ? 0.017 : 0.022;
+      if(isJigsaw) padLevel *= 0.92;
+      if(isColourSort) padLevel *= 0.96;
+      makeVoice('pad', n, start + idx * 0.012, beat * 3.92, padLevel, (idx - 1) * 0.28);
     });
 
     if(sec.style !== 'quiet'){
-      makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, 0.016, 0);
-      makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, 0.013, 0);
+      var bassLevel = isJigsaw ? 0.010 : (isColourSort ? 0.013 : (isBlockGrid ? 0.017 : 0.016));
+      makeVoice('bass', chordNotes[0] - 12, start, beat * 1.8, bassLevel, 0);
+      makeVoice('bass', chordNotes[0] - 12, start + beat * 2, beat * 1.75, bassLevel * 0.82, 0);
     }
 
     var steps = sec.density;
@@ -309,14 +365,49 @@
     for(var k=0;k<steps;k++){
       var pitch = sec.motif[(bar * steps + k) % sec.motif.length];
       if(sec.style === 'lift' && (k === 2 || k === Math.max(3, steps-2))) pitch += 12;
-      var kind = activeGame === 'detectword' ? 'mallet' : (activeGame === 'trackcoin' ? 'lead' : (k % 3 === 0 ? 'mallet' : 'lead'));
-      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), quiet ? 0.014 : 0.019, k % 2 ? 0.26 : -0.26);
+
+      var kind;
+      if(activeGame === 'detectword' || isCrossnumber) kind = k % 4 === 3 ? 'lead' : 'mallet';
+      else if(activeGame === 'trackcoin' || isBlockGrid) kind = k % 3 === 0 ? 'mallet' : 'lead';
+      else if(isColourSort) kind = k % 2 === 0 ? 'mallet' : 'lead';
+      else if(isJigsaw) kind = k % 3 === 0 ? 'mallet' : 'lead';
+      else kind = k % 3 === 0 ? 'mallet' : 'lead';
+
+      var voiceLevel = quiet ? 0.014 : 0.019;
+      if(isJigsaw) voiceLevel *= 0.78;
+      if(isColourSort) voiceLevel *= 0.90;
+      makeVoice(kind, pitch, start + k * stepDur + tinyHuman(bar,k), Math.min(stepDur * 0.76, beat * 0.44), voiceLevel, k % 2 ? 0.26 : -0.26);
+    }
+
+    if(isJigsaw){
+      if(!quiet && bar % 2 === 0) kick(start, 0.009);
+      return;
+    }
+
+    if(isColourSort){
+      if(full){
+        kick(start, 0.016);
+        if(sec.style === 'lift') kick(start + beat * 2, 0.011);
+        for(var c=0;c<4;c++) tick(start + (c + 0.5) * beat + tinyHuman(bar,c), 0.0032);
+      }else if(sec.style === 'warm' && bar % 2 === 0){
+        kick(start, 0.010);
+      }
+      return;
+    }
+
+    if(isCrossnumber){
+      if(full){
+        kick(start, sec.style === 'drive' ? 0.024 : 0.019);
+        kick(start + beat * 2, 0.014);
+      }
+      for(var x=0;x<4;x++) tick(start + x * beat + tinyHuman(bar,x), quiet ? 0.0022 : 0.0036);
+      return;
     }
 
     if(full){
-      kick(start, sec.style === 'drive' ? 0.035 : 0.027);
-      kick(start + beat * 2, 0.021);
-      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), 0.0045);
+      kick(start, sec.style === 'drive' ? (isBlockGrid ? 0.039 : 0.035) : 0.027);
+      kick(start + beat * 2, isBlockGrid ? 0.024 : 0.021);
+      for(var q=0;q<4;q++) tick(start + (q + 0.5) * beat + tinyHuman(bar,q), isBlockGrid ? 0.0052 : 0.0045);
     }else if(sec.style === 'warm' && bar % 2 === 0){
       kick(start, 0.018);
     }
@@ -403,7 +494,7 @@
   }
 
   function selectGame(gameId){
-    var id = CORE_GAMES.indexOf(gameId) >= 0 ? gameId : '';
+    var id = MUSIC_GAMES.indexOf(gameId) >= 0 ? gameId : '';
     if(id === activeGame) return;
     activeGame = id;
     barIndex = 0;
