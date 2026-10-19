@@ -102,8 +102,17 @@
     }).join('');
   }
 
+  function syncMusicForView(view){
+    const music=window.BaselineGamesMusic;
+    if(!music||typeof music.selectGame!=='function') return;
+    if(view==='player') music.selectGame('jigsaw');
+    else if(view==='crossnumber') music.selectGame('crossnumber');
+    else music.selectGame('');
+  }
+
   function showView(view,historyMode){
     activeView=view;
+    syncMusicForView(view);
     refs.overview.hidden=view!=='overview';
     refs.jigsaws.hidden=view!=='jigsaws';
     refs.crossnumber.hidden=view!=='crossnumber';
