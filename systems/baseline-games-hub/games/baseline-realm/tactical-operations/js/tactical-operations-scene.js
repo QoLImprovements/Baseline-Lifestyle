@@ -5,7 +5,7 @@ import {
 } from './tactical-operations-engine.mjs?v=TACTICAL_OPERATIONS_CAMPAIGN_COMPLETE_20260628';
 
 const STYLE_ID='baseline-realm-tactical-operations-style';
-const STYLE_URL='/systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css?v=REALM_CANONICAL_COMPLETE_20261018_1';
+const STYLE_URL='/systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css?v=REALM_EXPLORATION_CHROME_20261019_1';
 let temporarySave=null;
 const clone=(value)=>{try{return value&&typeof value==='object'?JSON.parse(JSON.stringify(value)):null;}catch{return null;}};
 
