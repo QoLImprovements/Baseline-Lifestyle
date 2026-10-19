@@ -5,7 +5,7 @@ import {
 } from '../data/workshop-catalog.js';
 
 const ICONS = '/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
-const STYLES = '/systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
+const STYLES = '/systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css?v=REALM_EXPLORATION_CHROME_20261019_1';
 
 const CATEGORY_ICONS = Object.freeze({
   blacksmith: 'workshop',

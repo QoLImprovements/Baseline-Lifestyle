@@ -5,7 +5,7 @@ import { RealmAudioService } from './realm-audio-service.js?v=REALM_CANONICAL_CO
 import { RealmEventBus } from './realm-event-bus.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmGamepadProvider } from './realm-gamepad-provider.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmInputManager } from './realm-input-manager.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
+import { bindRealmInputs } from './realm-input-bindings.js?v=REALM_EXPLORATION_CHROME_20261019_1';
 import { RealmInventoryService } from './realm-inventory-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmPerformanceMonitor } from './realm-performance.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { RealmRuntimeUi } from './realm-runtime-ui.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
@@ -21,11 +21,11 @@ import {
 } from './realm-save-adapter.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createBasecampScene } from '../../basecamp/js/basecamp-scene.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createNinjaTrainingScene } from '../../ninja-training/js/ninja-training-scene.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
-import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_BASECAMP_FUNCTIONAL_20261018_2';
+import { createWorkshopScene } from '../../workshop/js/workshop-scene.js?v=REALM_EXPLORATION_CHROME_20261019_1';
 import { RealmWorkshopService } from '../../workshop/js/workshop-service.js?v=REALM_CANONICAL_COMPLETE_20261018_1';
 import { createNinjaTrainingRuntime } from '../../ninja-training/js/ninja-training-runtime.js?v=JIGSAW_PASSIVE_LINK_20261018_1';
 
-const BUILD = 'REALM_CANONICAL_COMPLETE_20261018_1';
+const BUILD = 'REALM_EXPLORATION_CHROME_20261019_1';
 const STAGE_ONE_READY_BUILD = BUILD;
 const OPTIONAL_MODULE_URLS = Object.freeze({
   explorationScene: `../../exploration/js/exploration-scene.js?v=${BUILD}`,

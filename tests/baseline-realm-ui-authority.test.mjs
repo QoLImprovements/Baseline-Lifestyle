@@ -16,16 +16,19 @@ const inputBindings=fs.readFileSync('systems/baseline-games-hub/games/baseline-r
 const ninjaRuntime=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
 const hubLoader=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js','utf8');
 const realmEntry=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js','utf8');
+const explorationCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css','utf8');
+const tacticalCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css','utf8');
+const calorieCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/calorie-escape.css','utf8');
 
 test('Games Hub CSS does not own Realm presentation',()=>{
   assert.doesNotMatch(hubCss,/\.realm-command-banner|\.realm-location-button|\.realm-drawer|\.realm-top-strip|#ninjaPanel #realmSceneFrame|\.ninja-scene|\.ninja-hit-flash/);
 });
 
 test('canonical mobile layout loads last and is the sole mobile viewport geometry owner',()=>{
-  const shellIndex=html.indexOf('realm-shell.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
-  const basecampIndex=html.indexOf('basecamp.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
-  const ninjaIndex=html.indexOf('ninja-training.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
-  const mobileIndex=html.indexOf('realm-mobile.css?v=REALM_CANONICAL_COMPLETE_20261018_1');
+  const shellIndex=html.indexOf('/shared/css/realm-shell.css?');
+  const basecampIndex=html.indexOf('/basecamp/css/basecamp.css?');
+  const ninjaIndex=html.indexOf('/ninja-training/css/ninja-training.css?');
+  const mobileIndex=html.indexOf('/shared/css/realm-mobile.css?');
   assert.ok(shellIndex>=0&&basecampIndex>shellIndex&&ninjaIndex>basecampIndex&&mobileIndex>ninjaIndex);
   assert.match(mobileCss,/only file allowed to own Realm mobile viewport geometry/);
   assert.match(mobileCss,/html\[data-baseline-realm-mobile-active="true"\]/);
@@ -46,13 +49,13 @@ test('Basecamp is home and B only returns home',()=>{
   assert.match(ninjaRuntime,/basecampBtn\.hidden = atBasecamp/);
 });
 
-test('persistent Realm HUD contains only persistent utilities',()=>{
+test('Realm banner keeps persistent and contextual actions in one compact row',()=>{
   const nav=html.match(/<nav class="realm-utility"[\s\S]*?<\/nav>/)?.[0]||'';
-  for(const id of ['realmInventoryBtn','realmSettingsBtn','realmFullscreenBtn']) assert.match(nav,new RegExp(`id="${id}"`));
-  assert.doesNotMatch(nav,/realmBasecampBtn|realmMenuBtn/);
-  assert.match(html,/class="realm-home-action"[^>]*id="realmBasecampBtn"[^>]* hidden aria-hidden="true"/);
-  assert.match(html,/class="realm-context-action"[^>]*id="realmMenuBtn"/);
-  assert.match(shellCss,/Navigation and management actions are contextual, not persistent HUD controls/);
+  for(const id of ['realmInventoryBtn','realmSettingsBtn','realmFullscreenBtn','realmBasecampBtn','realmMenuBtn']) assert.match(nav,new RegExp(`id="${id}"`));
+  assert.match(nav,/class="realm-fab realm-home-action"[^>]*id="realmBasecampBtn"[^>]* hidden aria-hidden="true"/);
+  assert.match(nav,/class="realm-fab realm-context-action"[^>]*id="realmMenuBtn"/);
+  assert.match(shellCss,/Contextual navigation\/management now lives inside the banner's action row/);
+  assert.match(shellCss,/\.realm-command-banner \.realm-fab__icon\{display:none!important\}/);
 });
 
 test('runtime UI does not inject a competing stylesheet',()=>{
@@ -108,10 +111,28 @@ test('one runtime authority controls persistent internal Realm surfaces',()=>{
   assert.doesNotMatch(lazyScenes,/setHidden\([^\n]*,false\)/);
 });
 
-test('persistent HUD is one full-width visual banner',()=>{
-  assert.match(shellCss,/Shared Realm HUD: one continuous full-width banner/);
-  assert.match(shellCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-parchment-face\)!important/);
-  assert.match(shellCss,/grid-template-columns:minmax\(0,1fr\) auto minmax\(0,1fr\)!important/);
+test('persistent HUD uses the Exploration wood banner composition',()=>{
+  assert.match(shellCss,/Shared Realm HUD\. Exploration's Stage banner is the composition reference/);
+  assert.match(shellCss,/\.realm-command-banner\{[\s\S]*?background:var\(--realm-wood-face\)!important/);
+  assert.doesNotMatch(shellCss,/\.realm-command-banner\{[^}]*background:var\(--realm-parchment-face\)/);
+  assert.match(shellCss,/grid-template-columns:minmax\(220px,1fr\) auto auto!important/);
+  assert.match(shellCss,/\.realm-fab\{[\s\S]*?min-height:38px!important[\s\S]*?display:inline-flex!important/);
+});
+
+test('Exploration reference chrome has one shared visual authority',()=>{
+  assert.match(shellCss,/Exploration reference treatment, owned by the shared Realm shell/);
+  assert.match(shellCss,/:is\(\.ce-header,\.tactical-header\)/);
+  assert.match(shellCss,/\.ce-progress-card,\.ce-panel,\.ce-start-dock/);
+  assert.doesNotMatch(explorationCss,/Realm cabin theming for Exploration is owned here/);
+  assert.doesNotMatch(tacticalCss,/background:var\(--realm-parchment-face\)/);
+  assert.doesNotMatch(calorieCss,/background:var\(--realm-parchment-face\)/);
+  assert.doesNotMatch(tacticalCss,/^\.is-tactical-operations \{/m);
+  for(const selector of ['workshop-room-header','workshop-workbench','workshop-detail']){
+    const block=workshopCss.match(new RegExp('\\.'+selector+'\\{[^}]*\\}'))?.[0]||'';
+    assert.ok(block, selector+' block is present');
+    assert.doesNotMatch(block,/background\s*:/);
+    assert.doesNotMatch(block,/box-shadow\s*:/);
+  }
 });
 
 
@@ -129,9 +150,9 @@ test('Basecamp service drawer and Workshop room sit above the active scene',()=>
 
 
 test('Realm loader reuses the one canonical module and waits for its initial scene',()=>{
-  assert.match(html,/realm-entry\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
-  assert.match(html,/baseline-games-hub\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
-  assert.match(hubLoader,/const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1'/);
+  assert.match(html,/realm-entry\.js\?v=REALM_EXPLORATION_CHROME_20261019_1/);
+  assert.match(html,/baseline-games-hub\.js\?v=REALM_EXPLORATION_CHROME_20261019_1/);
+  assert.match(hubLoader,/const REALM_BUILD='REALM_EXPLORATION_CHROME_20261019_1'/);
   assert.match(hubLoader,/const existing=window\.BaselineRealmHost;[\s\S]*?if\(real\(existing\)\) return existing;/);
   assert.match(hubLoader,/whenSceneReady/);
   assert.doesNotMatch(hubLoader,/ninja-training-final-authority\.css|REALM_CSS/);
@@ -144,5 +165,5 @@ test('Realm loader reuses the one canonical module and waits for its initial sce
 test('management-tab controls no longer double as Workshop scene navigation',()=>{
   assert.doesNotMatch(hubLoader,/if\(tab==='workshop'\)/);
   assert.match(hubLoader,/if\(control\.hasAttribute\('data-realm-view'\)\)[\s\S]*?data-workshop-category[\s\S]*?sceneRouter\.navigate\(scene,category\?\{category\}:undefined\)/);
-  assert.match(realmEntry,/realm-input-bindings\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
+  assert.match(realmEntry,/realm-input-bindings\.js\?v=REALM_EXPLORATION_CHROME_20261019_1/);
 });
