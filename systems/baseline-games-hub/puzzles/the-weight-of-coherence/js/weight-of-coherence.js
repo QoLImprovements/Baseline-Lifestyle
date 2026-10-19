@@ -50,6 +50,12 @@
   const root = document.getElementById(ROOT_ID);
   if(!root) return;
 
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>"']/g,function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+
   const refs = {
     difficultyButtons:Array.from(root.querySelectorAll('[data-jigsaw-difficulty]')),
     start:document.getElementById('weightCoherenceStartBtn'),
@@ -2130,12 +2136,15 @@
 
   document.addEventListener('baseline:jigsaw-select',function(event){
     const puzzle=event.detail&&event.detail.puzzle;
+    const openPanel=event.detail&&event.detail.openPanel;
+    if(openPanel==='game') setJigsawPanel('game',false);
     if(puzzle && puzzle.id!==activePuzzle.id){
       configurePuzzle(puzzle,true);
       return;
     }
     if(puzzle){
       syncPuzzlePresentation();
+      renderJigsawProgress();
       if(imageReady && state){
         rebuildPlacedCanvas();
         drawBoard();
