@@ -234,3 +234,26 @@ test('Jigsaw completion XP increases per piece as difficulty rises', () => {
     assert.ok(perPiece[index] > perPiece[index - 1], `XP per piece must rise from ${rewards[index - 1][0]} to ${rewards[index][0]} pieces`);
   }
 });
+
+
+test('Jigsaw uses fixed Game and Progress panels without dynamic top-of-page progress injection', () => {
+  const html = read('systems/baseline-games-hub/baseline-games-hub.html');
+  const jigsaw = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const css = read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css');
+
+  assert.match(html, /id="weightCoherenceTabRow"/);
+  assert.match(html, /data-jigsaw-panel="game"/);
+  assert.match(html, /data-jigsaw-panel="progress"/);
+  assert.match(html, /id="weightCoherenceLiveXp"/);
+  assert.match(html, /id="weightCoherenceProgressPanel" hidden/);
+
+  assert.doesNotMatch(jigsaw, /function ensureJigsawProgressCard/);
+  assert.match(jigsaw, /function setJigsawPanel/);
+  assert.match(jigsaw, /event\.preventDefault\(\);[\s\S]*?pageScrollSnapshot\(\)[\s\S]*?restorePageScroll\(snapshot\)/);
+  assert.match(jigsaw, /<details class="jigsaw-completed-details">/);
+  assert.doesNotMatch(jigsaw, /<details class="jigsaw-completed-details" open/);
+  assert.match(jigsaw, /count>1\?'<strong>'\+count\+'<\/strong>':''/);
+
+  assert.match(css, /\.jigsaw-live-xp[\s\S]*?pointer-events:none/);
+  assert.match(css, /is-progress-panel>\.weight-coherence-workspace[\s\S]*?display:none!important/);
+});

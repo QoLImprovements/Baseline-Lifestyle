@@ -34,9 +34,11 @@
       const url=new URL(window.location.href);
       url.searchParams.delete('puzzle');
       url.searchParams.delete('jigsaw');
+      if(view!=='player') url.searchParams.delete('jigsaw-panel');
       if(view==='jigsaws') url.searchParams.set('puzzle','jigsaws');
       if(view==='crossnumber') url.searchParams.set('puzzle','crossnumber');
       if(view==='player'&&jigsaw){
+        if(mode==='push') url.searchParams.delete('jigsaw-panel');
         url.searchParams.set('puzzle','jigsaws');
         url.searchParams.set('jigsaw',jigsaw);
       }
@@ -115,7 +117,7 @@
     if(!puzzle) return;
     activeJigsaw=puzzle.id;
     renderJigsaws();
-    document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
+    document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle,openPanel:'game'}}));
     showView('player','push');
     try{ refs.player.scrollIntoView({behavior:window.innerWidth<=760?'auto':'smooth',block:'start'}); }catch(_error){}
   }

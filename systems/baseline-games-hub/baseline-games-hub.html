@@ -39,7 +39,7 @@ These Markdown rules are a human reference point, not live runtime config.
 <link href="/systems/baseline-games-hub/css/games-hub-theme.css?v=G01_INDIGO_CIRCUIT_20260801_3" rel="stylesheet" data-games-hub-theme="true"/>
 <link href="/systems/baseline-games-hub/puzzles/shared/css/puzzles-library.css?v=NONREALM_COHERENCE_20261018_1" rel="stylesheet"/>
 <link href="/systems/baseline-games-hub/puzzles/crossnumber/css/crossnumber.css?v=CROSSNUMBER_SCALE_AUTONEXT_20261018_1" rel="stylesheet"/>
-<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=NONREALM_COHERENCE_20261018_1" rel="stylesheet"/>
+<link href="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css?v=JIGSAW_PROGRESS_TABS_20261019_1" rel="stylesheet"/>
 <link href="/sitewide/css/baseline-gradient-alignment.css?v=BASELINE_GRADIENT_ALIGNMENT_20260801_1" rel="stylesheet" data-baseline-gradient-alignment="true"/>
 <!-- Baseline Realm canonical presentation. Shared shell first, destination owners next, mobile geometry last. -->
 <link href="/systems/baseline-games-hub/css/mobile-touch-targets.css?v=REALM_CANONICAL_COMPLETE_20261018_1" rel="stylesheet" data-games-mobile-touch="true"/>
@@ -266,6 +266,23 @@ These Markdown rules are a human reference point, not live runtime config.
               <p id="weightCoherenceDescription">The unfinished structure is not complete, yet it must still be carried forward. Its strength depends on different parts remaining in relationship rather than pulling apart. The weight lies in sustaining that integrity while continuing to build.</p>
             </div>
           </div>
+
+          <div class="game-toggle-row trackcoin-tab-row jigsaw-tab-row" id="weightCoherenceTabRow" aria-label="Jigsaw panels">
+            <button class="action ghost game-toggle-btn is-active" data-jigsaw-panel="game" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-jigsaw-panel="progress" aria-expanded="false" type="button">Progress</button>
+          </div>
+
+          <div class="game-live-xp jigsaw-live-xp" id="weightCoherenceLiveXp" data-live-xp="jigsaw" aria-label="Current Jigsaw experience"></div>
+
+          <section class="card game-card jigsaw-progress-panel" id="weightCoherenceProgressPanel" hidden aria-label="Jigsaw progress">
+            <div class="game-toolbar">
+              <div>
+                <h3>Jigsaw Progress</h3>
+                <p class="note">Experience, completions and the passive Baseline Realm contribution. Jigsaws have no tier or skill tree.</p>
+              </div>
+            </div>
+            <div id="weightCoherenceProgress"></div>
+          </section>
 
           <div class="weight-coherence-launch-row">
             <div class="weight-coherence-launch-copy">
@@ -855,9 +872,9 @@ These Markdown rules are a human reference point, not live runtime config.
 <script src="/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=NONREALM_COHERENCE_20261018_1"></script>
 <script src="/systems/baseline-games-hub/js/games-music.js?v=NONREALM_GAME_REFINEMENT_20261018_2"></script>
 <script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js?v=MOVED_ALONG_SYMBOLISM_20261019_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js?v=NONREALM_COHERENCE_20261018_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js?v=JIGSAW_PROGRESS_TABS_20261019_1"></script>
 <script src="/systems/baseline-games-hub/puzzles/crossnumber/js/crossnumber.js?v=NONREALM_COHERENCE_20261018_1"></script>
-<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_XP_SCALE_20261019_1"></script>
+<script src="/systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js?v=JIGSAW_PROGRESS_TABS_20261019_1"></script>
 <!-- Preload independently owned game modules. Each remains isolated, so one optional game cannot disable the Hub or another game. -->
 <script type="module" src="/systems/baseline-games-hub/games/block-grid/js/block-grid.js?v=NONREALM_COHERENCE_20261018_1"></script>
 <script type="module" src="/systems/baseline-games-hub/games/colour-sort/js/colour-sort.js?v=NONREALM_COHERENCE_20261018_1"></script>

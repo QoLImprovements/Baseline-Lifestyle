@@ -50,6 +50,12 @@
   const root = document.getElementById(ROOT_ID);
   if(!root) return;
 
+  function escapeHtml(value){
+    return String(value??'').replace(/[&<>"']/g,function(ch){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+    });
+  }
+
   const refs = {
     difficultyButtons:Array.from(root.querySelectorAll('[data-jigsaw-difficulty]')),
     start:document.getElementById('weightCoherenceStartBtn'),
@@ -87,7 +93,12 @@
     trayMeta:document.getElementById('weightCoherenceTrayMeta'),
     prev:document.getElementById('weightCoherencePrevBtn'),
     next:document.getElementById('weightCoherenceNextBtn'),
-    completion:document.getElementById('weightCoherenceCompletion')
+    completion:document.getElementById('weightCoherenceCompletion'),
+    tabRow:document.getElementById('weightCoherenceTabRow'),
+    tabButtons:Array.from(root.querySelectorAll('[data-jigsaw-panel]')),
+    liveXp:document.getElementById('weightCoherenceLiveXp'),
+    progressPanel:document.getElementById('weightCoherenceProgressPanel'),
+    progress:document.getElementById('weightCoherenceProgress')
   };
 
   const ctx = refs.board.getContext('2d');
@@ -122,6 +133,12 @@
   let zoomKeyHeld = false;
   let pseudoFullscreen = false;
   let suppressBoardClickUntil = 0;
+  let activeJigsawPanel = (function(){
+    try{
+      const params=new URLSearchParams(window.location.search||'');
+      return params.get('jigsaw-panel')==='progress' ? 'progress' : 'game';
+    }catch(_error){ return 'game'; }
+  })();
   const pinchPointers = new Map();
   let pinchState = null;
   let pinchResetTimer = 0;
@@ -242,41 +259,111 @@
     try{globalThis.BaselineRealmHost?.resolveBonuses?.();}catch(_error){}
   }
 
-  function ensureJigsawProgressCard(){
-    let card=document.getElementById('weightCoherenceProgress');
-    if(card) return card;
-    card=document.createElement('section');
-    card.id='weightCoherenceProgress';
-    card.className='jigsaw-progress-card';
-    const intro=root.querySelector('.weight-coherence-intro');
-    if(intro) intro.insertAdjacentElement('afterend',card);
-    else root.prepend(card);
-    return card;
+  function allJigsawProgress(){
+    const storage=gameStorage();
+    const items=(registry?.jigsaws||[]).map(function(item){
+      let source=null;
+      try{ source=storage?.getProfile?.(item.app); }catch(_error){}
+      const current=item.app===APP&&progression ? progression : (source&&source.progression?source.progression:source);
+      const profile=normaliseJigsawProgress(current);
+      return {
+        id:String(item.id||''),
+        app:String(item.app||''),
+        title:String(item.title||'Jigsaw'),
+        profile:profile
+      };
+    });
+    return {
+      items:items,
+      completed:items.filter(function(item){return item.profile.completions>0;}),
+      totalCompletions:items.reduce(function(sum,item){return sum+item.profile.completions;},0),
+      totalXpEarned:items.reduce(function(sum,item){return sum+item.profile.totalXpEarned;},0),
+      totalPiecesCompleted:items.reduce(function(sum,item){return sum+item.profile.totalPiecesCompleted;},0)
+    };
+  }
+
+  function renderJigsawLiveXp(){
+    if(!refs.liveXp) return;
+    if(!progression) progression=defaultJigsawProgress();
+    const needed=jigsawXpNeeded(progression.level);
+    const pct=Math.min(100,(progression.xp/Math.max(1,needed))*100);
+    refs.liveXp.innerHTML=
+      '<strong>Level '+progression.level+'</strong>' +
+      '<div class="game-live-xp__bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'" aria-label="'+escapeHtml(activePuzzle.title||'Jigsaw')+' experience"><span style="width:'+pct+'%"></span></div>' +
+      '<span>'+progression.xp+' / '+needed+' XP</span>';
   }
 
   function renderJigsawProgress(){
+    if(!refs.progress) return;
     if(!progression) progression=defaultJigsawProgress();
     progression.realmPassivePct=jigsawRealmPassivePct(progression);
+
     const needed=jigsawXpNeeded(progression.level);
     const pct=Math.min(100,(progression.xp/Math.max(1,needed))*100);
     const remaining=Math.max(0,needed-progression.xp);
     const difficulty=state?state.difficulty:selectedDifficulty;
     const best=progression.bestTimes[String(difficulty)];
-    const card=ensureJigsawProgressCard();
-    card.innerHTML=
+    const aggregate=allJigsawProgress();
+    const completedHtml=aggregate.completed.length
+      ? aggregate.completed.map(function(item){
+          const count=item.profile.completions;
+          return '<div class="jigsaw-completed-row"><span class="jigsaw-completed-tick" aria-hidden="true">✓</span><span>'+escapeHtml(item.title)+'</span>'+(count>1?'<strong>'+count+'</strong>':'')+'</div>';
+        }).join('')
+      : '<div class="jigsaw-completed-empty">No Jigsaw has been completed yet.</div>';
+
+    refs.progress.innerHTML=
       '<section class="coherent-progress-overview">' +
-        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">Jigsaw Experience</span><strong>Level '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(progression.level+1)+'</div></div>' +
+        '<div class="coherent-progress-heading"><div><span class="coherent-progress-kicker">'+escapeHtml(activePuzzle.title||'Jigsaw')+'</span><strong>Level '+progression.level+'</strong></div><div class="coherent-progress-next">'+remaining+' XP to Level '+(progression.level+1)+'</div></div>' +
         '<div class="coherent-progress-xp-meta"><span>'+progression.xp+' / '+needed+' XP</span><span>'+Math.round(pct)+'%</span></div>' +
         '<div class="coherent-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="'+needed+'" aria-valuenow="'+progression.xp+'"><span style="width:'+pct+'%"></span></div>' +
       '</section>' +
       '<div class="coherent-progress-grid">' +
-        '<div class="coherent-progress-stat"><span>Completed jigsaws</span><strong>'+progression.completions+'</strong></div>' +
-        '<div class="coherent-progress-stat"><span>Total pieces completed</span><strong>'+progression.totalPiecesCompleted.toLocaleString('en-GB')+'</strong></div>' +
-        '<div class="coherent-progress-stat"><span>'+difficulty.toLocaleString('en-GB')+'-piece completion XP</span><strong>+'+currentJigsawReward()+' XP</strong></div>' +
+        '<div class="coherent-progress-stat"><span>This artwork completed</span><strong>'+progression.completions+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Total Jigsaw completions</span><strong>'+aggregate.totalCompletions+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Total Jigsaw XP earned</span><strong>'+aggregate.totalXpEarned.toLocaleString('en-GB')+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>Total pieces completed</span><strong>'+aggregate.totalPiecesCompleted.toLocaleString('en-GB')+'</strong></div>' +
+        '<div class="coherent-progress-stat"><span>'+difficulty.toLocaleString('en-GB')+'-piece completion reward</span><strong>+'+currentJigsawReward()+' XP</strong></div>' +
         '<div class="coherent-progress-stat"><span>Best '+difficulty.toLocaleString('en-GB')+'-piece time</span><strong>'+(best?formatTime(best):'—')+'</strong></div>' +
         '<div class="coherent-progress-stat"><span>Combined Jigsaw Realm passive</span><strong>+'+jigsawRealmContribution().passivePct.toFixed(1)+'%</strong></div>' +
       '</div>' +
+      '<details class="jigsaw-completed-details">' +
+        '<summary><span>Completed Jigsaws</span><span class="jigsaw-completed-summary-count">'+aggregate.completed.length+' / '+aggregate.items.length+'</span></summary>' +
+        '<div class="jigsaw-completed-list">'+completedHtml+'</div>' +
+      '</details>' +
       '<p class="jigsaw-progress-note">Jigsaws progress through completion XP only. Piece count changes difficulty; it does not unlock a tier or a Jigsaw skill tree.</p>';
+
+    renderJigsawLiveXp();
+  }
+
+  function writeJigsawPanelRoute(){
+    try{
+      const url=new URL(window.location.href);
+      if(activeJigsawPanel==='progress') url.searchParams.set('jigsaw-panel','progress');
+      else url.searchParams.delete('jigsaw-panel');
+      const next=url.pathname+(url.searchParams.toString()?'?'+url.searchParams.toString():'')+url.hash;
+      window.history.replaceState(Object.assign({},window.history.state||{},{jigsawPanel:activeJigsawPanel}),'',next);
+    }catch(_error){}
+  }
+
+  function setJigsawPanel(panel,writeRoute){
+    const next=panel==='progress'?'progress':'game';
+    activeJigsawPanel=next;
+    root.classList.toggle('is-progress-panel',next==='progress');
+    if(refs.progressPanel) refs.progressPanel.hidden=next!=='progress';
+    if(refs.liveXp) refs.liveXp.hidden=next!=='game';
+    refs.tabButtons.forEach(function(button){
+      const active=button.getAttribute('data-jigsaw-panel')===next;
+      button.classList.toggle('is-active',active);
+      button.setAttribute('aria-expanded',String(active));
+    });
+    if(next==='progress'){
+      closeSettings();
+      if(refs.helpDialog?.open) refs.helpDialog.close();
+      renderJigsawProgress();
+    }else{
+      renderJigsawLiveXp();
+    }
+    if(writeRoute) writeJigsawPanelRoute();
   }
 
   globalThis.BaselineJigsawProgress=Object.freeze({
@@ -308,6 +395,8 @@
     if(placedCanvas.height!==BOARD_HEIGHT) placedCanvas.height=BOARD_HEIGHT;
   }
 
+  setJigsawPanel(activeJigsawPanel,false);
+
   function configurePuzzle(puzzle, saveCurrent){
     if(!puzzle || !puzzle.image || !puzzle.app) return false;
     if(saveCurrent && state) saveState();
@@ -320,6 +409,7 @@
     image.src=activePuzzle.image;
     if(!restoreState()) renderTray();
     renderJigsawProgress();
+    setJigsawPanel(activeJigsawPanel,false);
     notifyJigsawProgress();
     scheduleFullscreenBoardFit();
     return true;
@@ -1221,6 +1311,7 @@
       selectedDifficulty=Number(button.dataset.jigsawDifficulty)||100;
       syncDifficultyButtons();
       updateStats();
+      renderJigsawProgress();
     });
   });
 
@@ -1835,6 +1926,15 @@
     settleInteractionScroll(event);
   },true);
 
+  refs.tabButtons.forEach(function(button){
+    button.addEventListener('click',function(event){
+      event.preventDefault();
+      const snapshot=pageScrollSnapshot();
+      setJigsawPanel(button.getAttribute('data-jigsaw-panel'),true);
+      if(snapshot) restorePageScroll(snapshot);
+    });
+  });
+
   refs.preview.addEventListener('click',toggleGuide);
   if(refs.view) refs.view.addEventListener('click',toggleFullView);
   if(refs.zoomOut) refs.zoomOut.addEventListener('click',function(){ adjustZoom(-1); });
@@ -1936,6 +2036,13 @@
     window.addEventListener('pointercancel',onPinchPointerEnd,true);
   }
 
+  window.addEventListener('popstate',function(){
+    try{
+      const params=new URLSearchParams(window.location.search||'');
+      setJigsawPanel(params.get('jigsaw-panel')==='progress'?'progress':'game',false);
+    }catch(_error){}
+  });
+
   document.addEventListener('keydown',function(event){
     if(!event || event.defaultPrevented || event.ctrlKey || event.metaKey || event.altKey || editableTarget(event.target) || !puzzleHotkeysActive()) return;
     const key=String(event.key||'').toLowerCase();
@@ -2029,12 +2136,15 @@
 
   document.addEventListener('baseline:jigsaw-select',function(event){
     const puzzle=event.detail&&event.detail.puzzle;
+    const openPanel=event.detail&&event.detail.openPanel;
+    if(openPanel==='game') setJigsawPanel('game',false);
     if(puzzle && puzzle.id!==activePuzzle.id){
       configurePuzzle(puzzle,true);
       return;
     }
     if(puzzle){
       syncPuzzlePresentation();
+      renderJigsawProgress();
       if(imageReady && state){
         rebuildPlacedCanvas();
         drawBoard();
