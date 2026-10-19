@@ -257,3 +257,22 @@ test('Jigsaw uses fixed Game and Progress panels without dynamic top-of-page pro
   assert.match(css, /\.jigsaw-live-xp[\s\S]*?pointer-events:none/);
   assert.match(css, /is-progress-panel>\.weight-coherence-workspace[\s\S]*?display:none!important/);
 });
+
+
+test('Pairs uses one card visibility model and tier-aware board sizing', () => {
+  const core = read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const css = read('systems/baseline-games-hub/css/non-realm-game-refinement.css');
+
+  assert.match(core, /function pairsBoardLayout/);
+  assert.match(core, /function applyPairsBoardLayout/);
+  assert.match(core, /refs\.pairsBoard\.addEventListener\('click'/);
+  assert.doesNotMatch(core, /const pairCard = event\.target\.closest\('\[data-card\]'\)/);
+
+  assert.equal((css.match(/Pairs: one authoritative flip model/g) || []).length, 1);
+  assert.doesNotMatch(css, /Pairs — tactile cards/);
+  assert.doesNotMatch(css, /Pairs: correctness first/);
+  assert.match(css, /--pairs-board-max/);
+  assert.match(css, /--pairs-cols-desktop/);
+  assert.match(css, /\.memory-card-front[\s\S]*?opacity:0!important[\s\S]*?visibility:hidden!important/);
+  assert.match(css, /\.memory-card\.is-open \.memory-card-front[\s\S]*?opacity:1!important[\s\S]*?visibility:visible!important/);
+});
