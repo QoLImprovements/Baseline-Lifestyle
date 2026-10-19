@@ -1727,6 +1727,31 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     });
     return shuffle(deck);
   }
+
+  function pairsBoardLayout(tier){
+    const desktopCols=Math.max(2,Math.min(6,Math.round(Number(tier&&tier.cols)||4)));
+    const mobileCols=Math.min(4,desktopCols);
+    const phoneCols=Math.min(3,desktopCols);
+    const pairCount=Math.max(1,Math.round(Number(tier&&tier.pairs)||6));
+    const cardMax=pairCount<=6?150:pairCount<=8?140:pairCount<=10?128:pairCount<=12?118:pairCount<=15?108:100;
+    const gap=10;
+    return {
+      desktopCols:desktopCols,
+      mobileCols:mobileCols,
+      phoneCols:phoneCols,
+      boardMax:(desktopCols*cardMax)+((desktopCols-1)*gap)
+    };
+  }
+
+  function applyPairsBoardLayout(tier){
+    if(!refs.pairsBoard) return;
+    const layout=pairsBoardLayout(tier);
+    refs.pairsBoard.style.removeProperty('grid-template-columns');
+    refs.pairsBoard.style.setProperty('--pairs-cols-desktop',String(layout.desktopCols));
+    refs.pairsBoard.style.setProperty('--pairs-cols-mobile',String(layout.mobileCols));
+    refs.pairsBoard.style.setProperty('--pairs-cols-phone',String(layout.phoneCols));
+    refs.pairsBoard.style.setProperty('--pairs-board-max',layout.boardMax+'px');
+  }
   function startPairsBoard(){
     clearAutoNextTimer('pairs');
     const tier = currentPairsTier();
@@ -1935,7 +1960,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       refs.pairsRoundBankValue.textContent = '0';
       refs.pairsHintBtn.disabled = true;
       refs.pairsHintBtn.textContent = 'Use Hint';
-      refs.pairsBoard.style.gridTemplateColumns = '1fr';
+      applyPairsBoardLayout(tier);
       refs.pairsBoard.innerHTML = '<div class="empty-box"><strong>Pairs is ready.</strong><span class="inline-note">' + escapeHtml(pairsIdleMessage) + '</span></div>';
       refs.pairsRoundSummary.innerHTML = '<strong>Round Status</strong><span class="inline-note">No board is active yet.</span><span class="inline-note">Current streak bonus +' + trackCoinStreakBonusPct(profiles.pairs.currentStreak) + '% · clean bonus +' + cleanWinBonusPct(profiles.pairs.cleanWinStreak) + '%.</span>';
       return;
@@ -1945,8 +1970,8 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     refs.pairsRoundBankValue.textContent = String(pairsBoardState.roundBank);
     refs.pairsHintBtn.disabled = pairsBoardState.completed || pairsBoardState.hintsLeft <= 0 || pairsBoardState.flipLock || !!pairsBoardState.hintBusy;
     refs.pairsHintBtn.textContent = 'Use Hint (' + pairsBoardState.hintsLeft + ')';
-    refs.pairsBoard.style.gridTemplateColumns = 'repeat(' + (isMobileGameViewport() ? Math.min(4, tier.cols) : tier.cols) + ', minmax(0, 1fr))';
-    const cardsHtml = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button"' + ((card.matched || pairsBoardState.completed || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back"></span><span class="memory-card-face memory-card-front">' + card.face + '</span></button>').join('');
+    applyPairsBoardLayout(tier);
+    const cardsHtml = pairsBoardState.cards.map(card => '<button class="memory-card' + ((card.open || card.matched) ? ' is-open' : '') + (card.matched ? ' is-matched' : '') + '" data-card="' + card.id + '" type="button" aria-pressed="' + String(Boolean(card.open || card.matched)) + '"' + ((card.matched || pairsBoardState.completed || pairsBoardState.flipLock || card.open) ? ' disabled' : '') + '><span class="memory-card-face memory-card-back" aria-hidden="' + String(Boolean(card.open || card.matched)) + '"></span><span class="memory-card-face memory-card-front" aria-hidden="' + String(!card.open && !card.matched) + '">' + card.face + '</span></button>').join('');
     const resultHtml = pairsBoardState.completed
       ? '<div class="pairs-result-card"><strong>Board cleared</strong><div class="inline-note">' + pairsBoardState.moves + ' moves · ' + tier.pairs + ' pairs · round Bank ' + pairsBoardState.roundBank + '</div></div>'
       : '';
@@ -4410,7 +4435,7 @@ function toggleGameFullscreen(gameId){
       const ruleShiftStart = event.target.closest('[data-action="start-ruleshift"], #newRuleShiftBtn'); if(ruleShiftStart){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startRuleShiftRound(); focusGamePlaySurface('ruleshift', { scroll:false, mobileMode:true }); return; }
       const ruleShiftPick = event.target.closest('[data-ruleshift-pick]'); if(ruleShiftPick){ chooseRuleShiftOption(ruleShiftPick.getAttribute('data-ruleshift-pick')); return; }
       const make24Start = event.target.closest('[data-action="start-make24"], #newMake24Btn'); if(make24Start){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startMake24Puzzle(); focusGamePlaySurface('make24', { scroll:false, mobileMode:true }); return; }
-      const pairCard = event.target.closest('[data-card]'); if(pairCard){ handlePairsCardFlip(pairCard.getAttribute('data-card')); return; }
+
     });
     document.addEventListener('input', function(event){
       const target = event.target;
@@ -4467,6 +4492,15 @@ function toggleGameFullscreen(gameId){
       if(wordForm){ submitWordGuess(event); return; }
     });
     if(refs.newPairsBoardBtn){ refs.newPairsBoardBtn.textContent = startButtonLabel(); refs.newPairsBoardBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startPairsBoard(); focusGamePlaySurface('pairs', { scroll:false, mobileMode:true }); }); }
+    if(refs.pairsBoard){
+      refs.pairsBoard.addEventListener('click',function(event){
+        const pairCard=event.target.closest('button.memory-card[data-card]');
+        if(!pairCard || !refs.pairsBoard.contains(pairCard)) return;
+        event.preventDefault();
+        event.stopPropagation();
+        handlePairsCardFlip(pairCard.getAttribute('data-card'));
+      });
+    }
     if(refs.pairsHintBtn){ refs.pairsHintBtn.textContent = hotkeyActionLabel('Use Hint', 'H'); refs.pairsHintBtn.addEventListener('click', usePairsHint); }
     if(refs.pairsSkillAlertBtn) refs.pairsSkillAlertBtn.addEventListener('click', function(){ if(profiles.pairs.skillPoints > 0) setPairsPanel('pairsSkillCard', 'push'); });
     if(refs.newWordRoundBtn){ refs.newWordRoundBtn.textContent = startButtonLabel(); refs.newWordRoundBtn.addEventListener('click', function(event){ if(event){ event.preventDefault(); event.stopPropagation(); if(typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation(); } startWordRound(); focusGamePlaySurface('detectword', { scroll:false, mobileMode:true }); }); }
