@@ -1,6 +1,6 @@
 const BUILD='GAMES_HUB_BADMINTON_INITIAL_20260707_1';
 const LEGACY_BUILD='GAMES_HUB_DARTS_ACCESS_20260706_1';
-const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1';
+const REALM_BUILD='REALM_EXPLORATION_CHROME_20261019_1';
 const REALM='/systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js?v='+REALM_BUILD;
 const DARTS='/systems/baseline-games-hub/games/darts-focused/js/darts-focused.js?v=DARTS_REBUILD_20260707_4';
 const DARTS_CSS='/systems/baseline-games-hub/games/darts-focused/css/darts-focused.css?v=DARTS_REBUILD_20260707_4';
