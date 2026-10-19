@@ -52,7 +52,6 @@
     const renderFinishedGames = options.renderFinishedGames;
     const prepareSpecialFourPlayerIndexForManualGenerate = options.prepareSpecialFourPlayerIndexForManualGenerate;
     const buildCurrentCourtSet = options.buildCurrentCourtSet;
-    const commitHardshipChoice = options.commitHardshipChoice;
     const getShotRestrictionText = options.getShotRestrictionText;
     const getPlayer = options.getPlayer;
     const abortServerLoad = options.abortServerLoad;

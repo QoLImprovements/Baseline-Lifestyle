@@ -351,7 +351,6 @@
     renderFinishedGames:function(){ return renderFinishedGames(); },
     prepareSpecialFourPlayerIndexForManualGenerate:function(players, format){ return prepareSpecialFourPlayerIndexForManualGenerate(players, format); },
     buildCurrentCourtSet:function(players, format, usedSet, maxCourts){ return buildCurrentCourtSet(players, format, usedSet, maxCourts); },
-    commitHardshipChoice:function(){ return commitHardshipChoice.apply(null, arguments); },
     getShotRestrictionText:function(stage, restrictions){ return getShotRestrictionText(stage, restrictions); },
     getPlayer:function(id){ return getPlayer(id); },
     abortServerLoad:function(){

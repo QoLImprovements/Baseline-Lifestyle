@@ -38,14 +38,15 @@
         try{
           callback(records,instance);
         }finally{
-          if(disconnected||!target) return;
-          const resume=()=>{
-            resumeHandle=0;
-            if(disconnected||!target) return;
-            try{ nativeObserve(target,options); }catch(_error){}
-          };
-          if(typeof global.requestAnimationFrame==='function') resumeHandle=global.requestAnimationFrame(resume);
-          else resumeHandle=global.setTimeout(resume,0);
+          if(!disconnected&&target){
+            const resume=()=>{
+              resumeHandle=0;
+              if(disconnected||!target) return;
+              try{ nativeObserve(target,options); }catch(_error){}
+            };
+            if(typeof global.requestAnimationFrame==='function') resumeHandle=global.requestAnimationFrame(resume);
+            else resumeHandle=global.setTimeout(resume,0);
+          }
         }
       });
 
