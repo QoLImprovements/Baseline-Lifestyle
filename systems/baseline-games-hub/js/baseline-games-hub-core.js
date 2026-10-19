@@ -2261,6 +2261,68 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     for(const [key, value] of mapA){ if(mapB.get(key) !== value) return false; }
     return true;
   }
+  function evaluateMake24Expression(raw){
+    const source = String(raw || '');
+    let index = 0;
+
+    function skipWhitespace(){
+      while(index < source.length && /\s/.test(source[index])) index += 1;
+    }
+
+    function parseExpression(){
+      let value = parseTerm();
+      while(true){
+        skipWhitespace();
+        const operator = source[index];
+        if(operator !== '+' && operator !== '-') break;
+        index += 1;
+        const right = parseTerm();
+        value = operator === '+' ? value + right : value - right;
+      }
+      return value;
+    }
+
+    function parseTerm(){
+      let value = parseFactor();
+      while(true){
+        skipWhitespace();
+        const operator = source[index];
+        if(operator !== '*' && operator !== '/') break;
+        index += 1;
+        const right = parseFactor();
+        value = operator === '*' ? value * right : value / right;
+      }
+      return value;
+    }
+
+    function parseFactor(){
+      skipWhitespace();
+      const token = source[index];
+      if(token === '+' || token === '-'){
+        index += 1;
+        const value = parseFactor();
+        return token === '-' ? -value : value;
+      }
+      if(token === '('){
+        index += 1;
+        const value = parseExpression();
+        skipWhitespace();
+        if(source[index] !== ')') throw new Error('Missing closing bracket');
+        index += 1;
+        return value;
+      }
+      const start = index;
+      while(index < source.length && /\d/.test(source[index])) index += 1;
+      if(start === index) throw new Error('Expected number');
+      return Number(source.slice(start, index));
+    }
+
+    const value = parseExpression();
+    skipWhitespace();
+    if(index !== source.length) throw new Error('Unexpected token');
+    return value;
+  }
+
   function submitMake24Expression(event){
     event.preventDefault();
     if(!make24State || make24State.completed) return;
@@ -2286,7 +2348,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
       return;
     }
     let value = NaN;
-    try{ value = Function('"use strict"; return (' + raw + ');')(); }catch(_e){ value = NaN; }
+    try{ value = evaluateMake24Expression(raw); }catch(_e){ value = NaN; }
     if(Number.isFinite(value) && Math.abs(value - (make24State.target || 24)) < 1e-6){
       const tier = currentMake24Tier();
       const nextClean = make24State && !make24State.hadFailure ? profiles.make24.cleanWinStreak + 1 : 0;
