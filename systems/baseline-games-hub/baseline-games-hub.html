@@ -267,6 +267,23 @@ These Markdown rules are a human reference point, not live runtime config.
             </div>
           </div>
 
+          <div class="game-toggle-row trackcoin-tab-row jigsaw-tab-row" id="weightCoherenceTabRow" aria-label="Jigsaw panels">
+            <button class="action ghost game-toggle-btn is-active" data-jigsaw-panel="game" aria-expanded="true" type="button">Game</button>
+            <button class="action ghost game-toggle-btn" data-jigsaw-panel="progress" aria-expanded="false" type="button">Progress</button>
+          </div>
+
+          <div class="game-live-xp jigsaw-live-xp" id="weightCoherenceLiveXp" data-live-xp="jigsaw" aria-label="Current Jigsaw experience"></div>
+
+          <section class="card game-card jigsaw-progress-panel" id="weightCoherenceProgressPanel" hidden aria-label="Jigsaw progress">
+            <div class="game-toolbar">
+              <div>
+                <h3>Jigsaw Progress</h3>
+                <p class="note">Experience, completions and the passive Baseline Realm contribution. Jigsaws have no tier or skill tree.</p>
+              </div>
+            </div>
+            <div id="weightCoherenceProgress"></div>
+          </section>
+
           <div class="weight-coherence-launch-row">
             <div class="weight-coherence-launch-copy">
               <strong id="weightCoherenceSelectionLabel">100 pieces selected</strong>
