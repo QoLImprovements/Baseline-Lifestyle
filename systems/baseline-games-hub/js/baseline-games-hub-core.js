@@ -4054,6 +4054,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function activateTab(target, options){
     const opts = options || {};
     currentTab = target === 'puzzles' ? 'puzzles' : (target === 'games' ? 'games' : 'hub');
+    if(currentTab === 'hub' && window.BaselineGamesMusic && typeof window.BaselineGamesMusic.selectGame === 'function') window.BaselineGamesMusic.selectGame('');
     qsa('.tab').forEach(tab => tab.setAttribute('aria-selected', String(tab.getAttribute('data-target') === currentTab)));
     qsa('.section').forEach(section => section.classList.toggle('active', section.id === currentTab));
     if(opts.sync !== false) syncHashState(opts.historyMode);
