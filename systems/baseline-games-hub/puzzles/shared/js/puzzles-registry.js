@@ -60,9 +60,9 @@
       group:'Symbolic',
       title:'Moved Along',
       app:'movedalong',
-      image:'/systems/baseline-games-hub/puzzles/moved-along/art/moved-along.webp?v=MOVED_ALONG_IMPASTO_FINAL_20261019_1',
-      width:600,
-      height:800,
+      image:'/systems/baseline-games-hub/puzzles/moved-along/art/moved-along.webp?v=MOVED_ALONG_CORRECTED_HAND_20261019_1',
+      width:1117,
+      height:1408,
       alt:'Two police officers move a homeless man on from a shallow rain-sheltered doorway, one gathering his belongings while sinister clown-like reflections appear in a nearby police van.',
       libraryDescription:'Help is offered inside a process whose immediate outcome is displacement: belongings are gathered, direction is given, and a man is moved from the little shelter he has.',
       description:'Two officers may be acting within a role intended to offer help, yet the practical message is unmistakable: the man’s bedding and belongings are being gathered while he is directed away from the shallow doorway sheltering him from the rain. The distorted reflections in the police van separate personal intention from systemic effect. They symbolise how institutions can inherit procedures, repeat them as normal and communicate something harsher than the people carrying them out may recognise. The work centres the tension between assistance and displacement when following a system takes priority over listening to the person in front of it.'
