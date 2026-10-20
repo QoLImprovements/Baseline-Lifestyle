@@ -1,3 +1,354 @@
+/* Consolidated Charity Shop presentation authority.
+   The former complete-theme layer is intentionally preserved first so the
+   cascade order remains identical; the later cashing/artwork rules continue
+   to override it exactly as before. */
+
+/* Charity Shop single-gradient authority — 2026-07-30
+   One mirrored Air Ambulance palette across the banner, header and all pages.
+   Content uses calm solid reading surfaces rather than a competing second gradient. */
+
+html[data-app="charity-shop"],
+body[data-app="charity-shop"]{
+  --charity-gradient:linear-gradient(90deg,
+    #941b22 0%,
+    #c9252d 12%,
+    #eb3f2f 25%,
+    #f28c20 38%,
+    #f5cf24 47%,
+    #fff0a0 50%,
+    #f5cf24 53%,
+    #f28c20 62%,
+    #eb3f2f 75%,
+    #c9252d 88%,
+    #941b22 100%
+  );
+  --charity-ink:#17364d;
+  --charity-muted:#40586a;
+  --charity-red:#941b22;
+  --charity-red-mid:#c9252d;
+  --charity-gold:#f5cf24;
+  --charity-cream:#fff9df;
+  --charity-panel:rgba(255,249,223,.94);
+  --charity-panel-strong:rgba(255,249,223,.98);
+  --charity-border:rgba(148,27,34,.42);
+  --charity-border-soft:rgba(148,27,34,.26);
+  --charity-shadow:0 14px 30px rgba(80,12,19,.16);
+  color:var(--charity-ink)!important;
+  background:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+  background-attachment:fixed!important;
+}
+
+html[data-app="charity-shop"],
+body[data-app="charity-shop"],
+body[data-app="charity-shop"] .charity-scroll,
+body[data-app="charity-shop"] .bl-scroll{
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+  background-attachment:fixed!important;
+}
+
+/* The header and both navigation levels use the exact same gradient authority. */
+html body[data-app="charity-shop"] .charity-homebar,
+html body[data-app="charity-shop"] .charity-header,
+html body[data-app="charity-shop"] .charity-hero,
+html body[data-app="charity-shop"] .charity-main-tabs,
+html body[data-app="charity-shop"] .charity-subtabs,
+html body[data-app="charity-shop"] .bl-homebar,
+html body[data-app="charity-shop"] .hero{
+  background:var(--charity-gradient)!important;
+  background-image:var(--charity-gradient)!important;
+  background-size:100% 100%!important;
+}
+
+/* Remove the previous nested frame-on-frame treatment. */
+html body[data-app="charity-shop"] .charity-wrap{
+  position:relative!important;
+  width:min(1500px,calc(100% - 32px))!important;
+  margin:16px auto 42px!important;
+  padding:16px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-section{
+  width:100%!important;
+  min-width:0!important;
+  padding:16px!important;
+  border:1px solid rgba(112,20,29,.38)!important;
+  border-radius:22px!important;
+  background:rgba(255,249,223,.28)!important;
+  background-image:none!important;
+  box-shadow:0 16px 34px rgba(80,12,19,.18)!important;
+  overflow:visible!important;
+}
+
+html body[data-app="charity-shop"] .charity-subpanel,
+html body[data-app="charity-shop"] .charity-subpanel.active{
+  min-width:0!important;
+  padding:0!important;
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+
+html body[data-app="charity-shop"] .charity-grid,
+html body[data-app="charity-shop"] .charity-card-grid{
+  display:grid!important;
+  gap:18px!important;
+  align-items:start!important;
+  min-width:0!important;
+}
+
+/* One calm, solid reading surface. No competing card gradient. */
+html body[data-app="charity-shop"] .charity-card,
+html body[data-app="charity-shop"] article.charity-card,
+html body[data-app="charity-shop"] .charity-step-card,
+html body[data-app="charity-shop"] .charity-table-card,
+html body[data-app="charity-shop"] .charity-cashup-heading,
+html body[data-app="charity-shop"] .charity-cash-table-card,
+html body[data-app="charity-shop"] .charity-cash-totals,
+html body[data-app="charity-shop"] .charity-float-maker,
+html body[data-app="charity-shop"] .charity-cheque-summary{
+  min-width:0!important;
+  height:auto!important;
+  padding:20px!important;
+  border:1px solid var(--charity-border)!important;
+  border-radius:18px!important;
+  background:var(--charity-panel)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  box-shadow:var(--charity-shadow)!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+
+html body[data-app="charity-shop"] .charity-card--danger,
+html body[data-app="charity-shop"] .charity-card--success{
+  border-color:var(--charity-border)!important;
+  box-shadow:var(--charity-shadow)!important;
+}
+
+/* Step cards stay in normal document flow, eliminating title/artwork overlap. */
+html body[data-app="charity-shop"] #operations-hanging article.charity-step-card,
+html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
+  position:relative!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-rows:auto!important;
+  align-content:start!important;
+  align-items:start!important;
+  gap:12px!important;
+  min-height:0!important;
+  height:auto!important;
+  overflow:hidden!important;
+}
+
+html body[data-app="charity-shop"] .charity-step-number,
+html body[data-app="charity-shop"] .charity-step-number--green,
+html body[data-app="charity-shop"] .charity-step-number--teal{
+  display:inline-grid!important;
+  place-items:center!important;
+  justify-self:start!important;
+  width:38px!important;
+  height:38px!important;
+  margin:0 0 2px!important;
+  border:2px solid var(--charity-gold)!important;
+  border-radius:50%!important;
+  background:var(--charity-red-mid)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 6px 14px rgba(80,12,19,.24)!important;
+}
+
+html body[data-app="charity-shop"] p,
+html body[data-app="charity-shop"] li,
+html body[data-app="charity-shop"] .note,
+html body[data-app="charity-shop"] .charity-card p,
+html body[data-app="charity-shop"] .charity-card li{
+  color:var(--charity-muted)!important;
+  -webkit-text-fill-color:var(--charity-muted)!important;
+}
+
+/* Actual A4 illustration crops remain inside their cards and cannot overlap text. */
+html body[data-app="charity-shop"] .charity-step-artwork{
+  position:relative!important;
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin:4px auto 0!important;
+  overflow:hidden!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:14px!important;
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  box-shadow:0 8px 18px rgba(80,12,19,.10)!important;
+  isolation:isolate!important;
+}
+
+html body[data-app="charity-shop"] .charity-rule,
+html body[data-app="charity-shop"] .charity-warning,
+html body[data-app="charity-shop"] .charity-equation{
+  position:static!important;
+  inset:auto!important;
+  float:none!important;
+  clear:both!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:4px 0 0!important;
+  padding:12px 14px!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:12px!important;
+  background:#fff0a0!important;
+  background-image:none!important;
+  color:#6f1820!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+
+/* Internal navigation is strong; its controls are simple and readable. */
+html body[data-app="charity-shop"] .charity-main-tabs,
+html body[data-app="charity-shop"] .charity-subtabs{
+  position:relative!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+  padding:10px!important;
+  border:1px solid rgba(112,20,29,.52)!important;
+  border-radius:16px!important;
+  overflow:visible!important;
+  box-shadow:0 10px 22px rgba(80,12,19,.16)!important;
+}
+
+html body[data-app="charity-shop"] .charity-subtabs::before{
+  content:none!important;
+  display:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-tab,
+html body[data-app="charity-shop"] .charity-subtab{
+  position:relative!important;
+  z-index:1!important;
+  min-height:38px!important;
+  padding:8px 14px!important;
+  border:1px solid rgba(148,27,34,.30)!important;
+  border-radius:999px!important;
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+  box-shadow:none!important;
+}
+
+html body[data-app="charity-shop"] .charity-main-tab[aria-selected="true"],
+html body[data-app="charity-shop"] .charity-subtab[aria-selected="true"],
+html body[data-app="charity-shop"] .charity-main-tab.active,
+html body[data-app="charity-shop"] .charity-subtab.active{
+  border-color:var(--charity-gold)!important;
+  background:var(--charity-red)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+  box-shadow:0 5px 12px rgba(80,12,19,.24)!important;
+}
+
+/* Tables and cashing-up controls use solid surfaces from the same palette. */
+html body[data-app="charity-shop"] .charity-table-scroll,
+html body[data-app="charity-shop"] .charity-cash-table-wrap,
+html body[data-app="charity-shop"] .charity-float-table-wrap{
+  width:100%!important;
+  overflow:auto!important;
+  border:1px solid var(--charity-border-soft)!important;
+  border-radius:14px!important;
+  background:var(--charity-panel-strong)!important;
+  background-image:none!important;
+}
+
+html body[data-app="charity-shop"] table{
+  width:100%!important;
+  background:transparent!important;
+  background-image:none!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+}
+
+html body[data-app="charity-shop"] thead th{
+  background:var(--charity-red)!important;
+  background-image:none!important;
+  color:#fff!important;
+  -webkit-text-fill-color:#fff!important;
+}
+
+html body[data-app="charity-shop"] tbody th,
+html body[data-app="charity-shop"] tbody td{
+  background:rgba(255,249,223,.96)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+}
+
+html body[data-app="charity-shop"] tbody tr:nth-child(even) th,
+html body[data-app="charity-shop"] tbody tr:nth-child(even) td{
+  background:#fff0c2!important;
+}
+
+html body[data-app="charity-shop"] input,
+html body[data-app="charity-shop"] select,
+html body[data-app="charity-shop"] textarea,
+html body[data-app="charity-shop"] .charity-cash-count{
+  background:var(--charity-cream)!important;
+  background-image:none!important;
+  color:var(--charity-ink)!important;
+  -webkit-text-fill-color:var(--charity-ink)!important;
+  border-color:var(--charity-border)!important;
+}
+
+/* The injected full-sheet duplicates are deliberately suppressed. */
+html body[data-app="charity-shop"] .charity-artwork-card,
+html body[data-app="charity-shop"] .charity-artwork-pair[data-charity-sheet-artwork]{
+  display:none!important;
+}
+
+@media(max-width:900px){
+  html body[data-app="charity-shop"] .charity-wrap{
+    width:calc(100% - 16px)!important;
+    margin-top:8px!important;
+    padding:8px!important;
+  }
+  html body[data-app="charity-shop"] .charity-main-section{
+    padding:10px!important;
+    border-radius:16px!important;
+  }
+  html body[data-app="charity-shop"] .charity-card,
+  html body[data-app="charity-shop"] article.charity-card,
+  html body[data-app="charity-shop"] .charity-step-card{
+    padding:16px!important;
+  }
+}
+
+@media(max-width:620px){
+  html body[data-app="charity-shop"] .charity-main-tabs,
+  html body[data-app="charity-shop"] .charity-subtabs{
+    gap:7px!important;
+    padding:8px!important;
+  }
+  html body[data-app="charity-shop"] .charity-main-tab,
+  html body[data-app="charity-shop"] .charity-subtab{
+    padding:8px 11px!important;
+    font-size:14px!important;
+  }
+}
+
+/* ---- Former cashing-and-artwork layer: later authority begins here. ---- */
+
 /* Charity Shop final visual authority — 2026-07-30
    One viewport-aligned mirrored gradient, one content grid and one reading-surface system.
    This stylesheet loads last so older experimental layers cannot fragment the page. */
