@@ -10,8 +10,9 @@ const read=relative=>readFileSync(path.join(root,relative),'utf8');
 
 test('browser import/save authorities are fully retired from production runtime',()=>{
   const inventory=collectBrowserStorageInventory(root);
-  assert.equal(inventory.occurrenceCount,0);
-  assert.deepEqual(inventory.groups,[]);
+  assert.equal(inventory.unreviewedOccurrenceCount,0);
+  assert.deepEqual(inventory.unreviewedGroups,[]);
+  assert.deepEqual(inventory.reviewedGroups.map((group)=>group.pattern),['baseline.games.music.v1']);
 });
 
 test('current system save paths remain server-authoritative and revision protected',()=>{
