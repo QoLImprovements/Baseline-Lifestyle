@@ -44,12 +44,6 @@ body[data-app="charity-shop"] .bl-scroll{
   background-attachment:fixed!important;
 }
 
-body[data-app="charity-shop"]::before,
-body[data-app="charity-shop"]::after{
-  content:none!important;
-  display:none!important;
-}
-
 /* The header and both navigation levels use the exact same gradient authority. */
 html body[data-app="charity-shop"] .charity-homebar,
 html body[data-app="charity-shop"] .charity-header,
@@ -136,15 +130,6 @@ html body[data-app="charity-shop"] .charity-card--success{
   box-shadow:var(--charity-shadow)!important;
 }
 
-html body[data-app="charity-shop"] .charity-card::before,
-html body[data-app="charity-shop"] .charity-card::after,
-html body[data-app="charity-shop"] .charity-step-card::before,
-html body[data-app="charity-shop"] .charity-step-card::after{
-  content:none!important;
-  display:none!important;
-  background:none!important;
-}
-
 /* Step cards stay in normal document flow, eliminating title/artwork overlap. */
 html body[data-app="charity-shop"] #operations-hanging article.charity-step-card,
 html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
@@ -158,20 +143,6 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
   min-height:0!important;
   height:auto!important;
   overflow:hidden!important;
-}
-
-html body[data-app="charity-shop"] #operations-hanging article.charity-step-card > *,
-html body[data-app="charity-shop"] #operations-cubing article.charity-step-card > *{
-  position:static!important;
-  inset:auto!important;
-  float:none!important;
-  clear:both!important;
-  width:auto!important;
-  max-width:100%!important;
-  margin-left:0!important;
-  margin-right:0!important;
-  transform:none!important;
-  z-index:auto!important;
 }
 
 html body[data-app="charity-shop"] .charity-step-number,
@@ -190,16 +161,6 @@ html body[data-app="charity-shop"] .charity-step-number--teal{
   color:#fff!important;
   -webkit-text-fill-color:#fff!important;
   box-shadow:0 6px 14px rgba(80,12,19,.24)!important;
-}
-
-html body[data-app="charity-shop"] h1,
-html body[data-app="charity-shop"] h2,
-html body[data-app="charity-shop"] h3,
-html body[data-app="charity-shop"] h4,
-html body[data-app="charity-shop"] .charity-card h2,
-html body[data-app="charity-shop"] .charity-card h3{
-  color:var(--charity-ink)!important;
-  -webkit-text-fill-color:var(--charity-ink)!important;
 }
 
 html body[data-app="charity-shop"] p,
@@ -226,21 +187,6 @@ html body[data-app="charity-shop"] .charity-step-artwork{
   background-image:none!important;
   box-shadow:0 8px 18px rgba(80,12,19,.10)!important;
   isolation:isolate!important;
-}
-
-html body[data-app="charity-shop"] .charity-step-artwork img{
-  position:absolute!important;
-  left:var(--art-left)!important;
-  top:var(--art-top)!important;
-  display:block!important;
-  width:var(--art-width)!important;
-  height:auto!important;
-  max-width:none!important;
-  margin:0!important;
-  border:0!important;
-  border-radius:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
 }
 
 html body[data-app="charity-shop"] .charity-rule,
