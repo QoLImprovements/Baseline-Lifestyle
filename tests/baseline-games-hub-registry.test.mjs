@@ -51,6 +51,20 @@ test('Games Hub registry exposes canonical identities with legacy compatibility 
     Array.from(core, game => game.runtimeId),
     ['pairs','detectword','make24','trackcoin','ruleshift','ninja']
   );
+
+  const overview = registry.overviewGames();
+  assert.deepEqual(
+    Array.from(overview, game => game.runtimeId),
+    ['detectword','make24','pairs','ruleshift','trackcoin','darts-focused','badminton-focused','ninja']
+  );
+  for (const game of overview) {
+    assert.equal(typeof game.overview.group, 'string');
+    assert.match(game.overview.art, /G01_INDIGO_CIRCUIT_20260801_1/);
+    assert.ok(game.overview.note.length > 20);
+    assert.ok(game.overview.brainBenefit.length > 20);
+  }
+  assert.equal(registry.resolve('darts-focused').overview.group, 'Testing');
+  assert.equal(registry.resolve('baseline-realm').overview.featured, true);
 });
 
 test('Games Hub core and Realm coordinate readiness through an explicit event', () => {
@@ -111,4 +125,17 @@ test('Games Hub core is the sole focused-game overview click controller', () => 
   const pointerBlock = loader.slice(pointerStart, pointerEnd);
   assert.match(pointerBlock, /loadDarts\(\)/);
   assert.match(pointerBlock, /loadBadminton\(\)/);
+});
+
+
+test('Games Hub core consumes overview metadata rather than redeclaring it', () => {
+  const core = fs.readFileSync(corePath, 'utf8');
+  const start = core.indexOf('function gameMeta()');
+  const end = core.indexOf('function renderGamesList()', start);
+  const meta = core.slice(start, end);
+
+  assert.match(core, /GAME_REGISTRY\.overviewGames/);
+  assert.match(meta, /REGISTERED_OVERVIEW_GAMES\.map/);
+  assert.doesNotMatch(meta, /overview-art\/|realistic-dartboard\.svg|badminton-focused-overview\.svg/);
+  assert.doesNotMatch(meta, /Wordle-style feedback|Experimental Basecamp\/RPG|10 distinct games played entirely on the website/);
 });
