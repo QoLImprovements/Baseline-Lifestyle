@@ -110,7 +110,7 @@ jobs:
 
       - name: Run Games Hub unit tests
         if: always()
-        run: npm run test:games-hub
+        run: npm run test:games-hub-unit
 
       - name: Run Badminton Games Hub browser smoke
         if: always()
