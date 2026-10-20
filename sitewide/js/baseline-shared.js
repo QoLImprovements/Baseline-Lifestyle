@@ -361,58 +361,6 @@
     return BASELINE_CLEAN_PAGE_LINKS[targetFile] || href;
   }
 
-  function normalizeSiteHref(href){
-    const raw = String(href || '').trim();
-    if(!raw) return '';
-    const lower = raw.toLowerCase();
-    if(lower === '.' || lower === './' || lower === '/' || lower === '/index.html' || lower === 'index.html' || lower === './index.html' || lower === 'home.html' || lower === './home.html' || lower === '/home' || lower === 'home') return '/home/1';
-    return cleanRouteForPageHref(raw, '');
-  }
-
-  function navigateToSiteHref(href){
-    navigateSiteHref(href);
-  }
-
-  function siteTargetFile(hrefRaw){
-    try{
-      return (String(hrefRaw || '').trim().split('#')[0].split('?')[0].split('/').pop() || '').toLowerCase();
-    }catch(_e){
-      return '';
-    }
-  }
-
-  function resolvedSiteHref(hrefRaw){
-    const href = normalizeSiteHref(hrefRaw);
-    if(!href) return '';
-
-    const targetFile = siteTargetFile(href);
-    const isHome = (!targetFile || targetFile === 'index.html' || targetFile === 'home.html');
-
-    try{
-      return isHome
-        ? resolveIndexHrefForWindow(getTopWindowForSiteNavigation())
-        : new URL(href, document.baseURI || window.location.href).href;
-    }catch(_e){
-      return isHome ? 'index.html' : href;
-    }
-  }
-
-  function navigateSiteHref(hrefRaw){
-    const href = normalizeSiteHref(hrefRaw);
-    if(!href) return;
-
-    const targetFile = siteTargetFile(href);
-    const isHome = (!targetFile || targetFile === 'index.html' || targetFile === 'home.html');
-    if(isHome){
-      navigateHomeForGood();
-      return;
-    }
-
-    const resolved = resolvedSiteHref(href);
-    try{ emitSiteNavigationStart(resolved); }catch(_e){}
-    try{ window.location.assign(resolved); }
-    catch(_e){ try{ window.location.href = resolved; }catch(__e){} }
-  }
 
 
   // BASELINE-NATIVE-NAV-STABILITY: if the page is restored from bfcache,
