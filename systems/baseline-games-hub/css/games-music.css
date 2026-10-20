@@ -1,0 +1,105 @@
+/* Games Hub music/settings UI.
+   Canonical presentation owner for the settings trigger and music settings dialog.
+   Loaded last in the Games Hub head to preserve the former runtime-injected cascade order. */
+
+.games-settings-trigger{
+  margin-left:auto;
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  min-height:42px;
+}
+.games-settings-trigger__icon{
+  font-size:1.05rem;
+  line-height:1;
+}
+.games-music-settings-overlay{
+  position:fixed;
+  inset:0;
+  z-index:12000;
+  display:grid;
+  place-items:center;
+  padding:16px;
+  background:rgba(3,7,22,.72);
+  backdrop-filter:blur(8px);
+}
+.games-music-settings-overlay[hidden]{
+  display:none;
+}
+.games-music-settings-dialog{
+  width:min(440px,calc(100vw - 24px));
+  max-height:calc(100dvh - 24px);
+  overflow:auto;
+  border:1px solid rgba(178,190,255,.28);
+  border-radius:18px;
+  background:#101737;
+  color:#f4f6ff;
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+}
+.games-music-settings-dialog header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding:18px 18px 12px;
+}
+.games-music-settings-dialog h3{
+  margin:.1rem 0 0;
+}
+.games-music-settings-list{
+  display:grid;
+  gap:1px;
+  padding:0 14px 16px;
+}
+.games-music-setting-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  padding:15px 4px;
+  border-top:1px solid rgba(178,190,255,.14);
+}
+.games-music-setting-row small{
+  display:block;
+  margin-top:3px;
+  opacity:.72;
+}
+.games-music-setting-row button{
+  min-width:72px;
+}
+.games-music-setting-row--slider input{
+  width:min(180px,42vw);
+}
+.games-music-settings-close{
+  width:42px;
+  height:42px;
+  border-radius:999px;
+  border:1px solid rgba(178,190,255,.24);
+  background:transparent;
+  color:inherit;
+  font-size:1.4rem;
+}
+
+@media(max-width:820px){
+  .games-settings-trigger{
+    min-width:44px;
+    width:44px;
+    height:44px;
+    padding:0;
+    justify-content:center;
+  }
+  .games-settings-trigger__label{
+    position:absolute;
+    width:1px;
+    height:1px;
+    overflow:hidden;
+    clip:rect(0 0 0 0);
+    white-space:nowrap;
+  }
+  .games-music-settings-dialog{
+    border-radius:16px;
+  }
+  .games-music-setting-row{
+    min-height:58px;
+  }
+}

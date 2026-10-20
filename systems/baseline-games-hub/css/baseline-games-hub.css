@@ -1953,19 +1953,6 @@ body[data-app="games"] .mobile-word-keypad .mobile-game-key--letter{
   }
 }
 
-/* 20260605_header_tabs_spacing
-   Games Hub must not compress the canonical header tab breathing room.
-   This restores the sitewide 12px bottom spacing from baseline-header-canonical.css
-   while leaving non-header game controls alone. */
-body[data-app="games"] .hero > .tabs{
-  margin-top:10px!important;
-  padding-bottom:12px!important;
-  border-bottom:1px solid var(--border,rgba(0,0,0,.10))!important;
-}
-body[data-app="games"] .hero.compact > .tabs{
-  padding-bottom:8px!important;
-}
-
 /* 20260605_spacing_trackcoin_mobile
    Header and Track The Coin coherence fixes.
    - The header tab row keeps canonical internal breathing room AND the page body starts lower after the tabs.

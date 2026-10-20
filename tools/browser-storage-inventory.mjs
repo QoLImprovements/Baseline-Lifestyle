@@ -23,6 +23,15 @@ const EXCLUDED_DIRECTORIES = new Set([
   "docs",
 ]);
 
+const REVIEWED_DEVICE_PREFERENCES = Object.freeze({
+  "systems/baseline-games-hub/js/games-music.js": new Set(["baseline.games.music.v1"]),
+});
+
+function isReviewedDevicePreference(relativePath, owner, resolvedPattern) {
+  const allowed = REVIEWED_DEVICE_PREFERENCES[relativePath];
+  return owner === "localStorage" && Boolean(allowed && resolvedPattern && allowed.has(resolvedPattern));
+}
+
 function lineNumber(source, offset) {
   return source.slice(0, offset).split("\n").length;
 }
@@ -148,6 +157,7 @@ function scanFile(root, relativePath) {
     for (const match of source.matchAll(regex)) {
       const operation = match[1];
       const expression = match[2].trim();
+      const resolvedPattern = resolveExpression(expression, constants);
       occurrences.push({
         file: relativePath,
         line: lineNumber(source, match.index || 0),
@@ -155,7 +165,8 @@ function scanFile(root, relativePath) {
         operation,
         access: classify(operation, owner),
         expression,
-        resolvedPattern: resolveExpression(expression, constants),
+        resolvedPattern,
+        reviewedDevicePreference: isReviewedDevicePreference(relativePath, owner, resolvedPattern),
       });
     }
   }
@@ -176,10 +187,12 @@ export function collectBrowserStorageInventory(root = DEFAULT_ROOT) {
     const group = groups.get(key) || {
       pattern: key,
       resolved: Boolean(occurrence.resolvedPattern),
+      reviewedDevicePreference: true,
       accesses: new Set(),
       owners: new Set(),
       occurrences: [],
     };
+    group.reviewedDevicePreference = group.reviewedDevicePreference && occurrence.reviewedDevicePreference;
     group.accesses.add(occurrence.access);
     group.owners.add(occurrence.owner);
     group.occurrences.push({
@@ -191,20 +204,30 @@ export function collectBrowserStorageInventory(root = DEFAULT_ROOT) {
     groups.set(key, group);
   }
 
+  const normalizedGroups = [...groups.values()]
+    .map((group) => ({
+      pattern: group.pattern,
+      resolved: group.resolved,
+      reviewedDevicePreference: Boolean(group.reviewedDevicePreference),
+      accesses: [...group.accesses].sort(),
+      owners: [...group.owners].sort(),
+      occurrences: group.occurrences,
+    }))
+    .sort((left, right) => left.pattern.localeCompare(right.pattern));
+
+  const reviewedDeviceOccurrences = occurrences.filter((item) => item.reviewedDevicePreference);
+  const unreviewedOccurrences = occurrences.filter((item) => !item.reviewedDevicePreference);
+
   return {
-    formatVersion: 1,
+    formatVersion: 2,
     productionPaths: [...PRODUCTION_PATHS],
     scannedFiles: files.length,
     occurrenceCount: occurrences.length,
-    groups: [...groups.values()]
-      .map((group) => ({
-        pattern: group.pattern,
-        resolved: group.resolved,
-        accesses: [...group.accesses].sort(),
-        owners: [...group.owners].sort(),
-        occurrences: group.occurrences,
-      }))
-      .sort((left, right) => left.pattern.localeCompare(right.pattern)),
+    reviewedDeviceOccurrenceCount: reviewedDeviceOccurrences.length,
+    unreviewedOccurrenceCount: unreviewedOccurrences.length,
+    groups: normalizedGroups,
+    reviewedGroups: normalizedGroups.filter((group) => group.reviewedDevicePreference),
+    unreviewedGroups: normalizedGroups.filter((group) => !group.reviewedDevicePreference),
   };
 }
 
