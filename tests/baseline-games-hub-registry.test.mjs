@@ -75,6 +75,8 @@ test('Games Hub core and Realm coordinate readiness through an explicit event', 
   assert.match(core, /baseline:games-hub:core-ready/);
   assert.match(loader, /addEventListener\('baseline:games-hub:core-ready'/);
   assert.match(realmEntry, /addEventListener\?\.\('baseline:games-hub:core-ready'/);
+  assert.match(realmEntry, /BASELINE_GAMES_HUB_CORE_READY !== true/);
+  assert.doesNotMatch(core, /BaselineRealmHost\.configure\(coreDependencies\)/);
 
   const waitCoreStart = loader.indexOf('function waitCore()');
   const waitCoreEnd = loader.indexOf('\nfunction stable(', waitCoreStart);
@@ -138,4 +140,30 @@ test('Games Hub core consumes overview metadata rather than redeclaring it', () 
   assert.match(meta, /REGISTERED_OVERVIEW_GAMES\.map/);
   assert.doesNotMatch(meta, /overview-art\/|realistic-dartboard\.svg|badminton-focused-overview\.svg/);
   assert.doesNotMatch(meta, /Wordle-style feedback|Experimental Basecamp\/RPG|10 distinct games played entirely on the website/);
+});
+
+
+test('Realm runtime startup is canonical and once-only after hydrated core readiness', () => {
+  const core = fs.readFileSync(corePath, 'utf8');
+  const realmEntry = fs.readFileSync(realmEntryPath, 'utf8');
+
+  const helperStart = realmEntry.indexOf('function startRealmRuntimeOnce()');
+  const helperEnd = realmEntry.indexOf('\nfunction configure(', helperStart);
+  const helper = realmEntry.slice(helperStart, helperEnd);
+  assert.ok(helperStart >= 0 && helperEnd > helperStart);
+  assert.match(helper, /if \(runtimeStarted\) return true/);
+  assert.match(helper, /runtime\.applyOfflineProgress\(\)/);
+  assert.match(helper, /runtime\.render\(\)/);
+  assert.match(helper, /runtime\.startLoop\(\)/);
+
+  const hydrateStart = core.indexOf('async function hydrateProfiles()');
+  const hydrateEnd = core.indexOf('\n  async function loadAllProfiles()', hydrateStart);
+  const hydrate = core.slice(hydrateStart, hydrateEnd);
+  assert.doesNotMatch(hydrate, /applyOfflineNinjaProgress|startNinjaLoop/);
+
+  const stableStart = core.indexOf('async function initialiseStableHub');
+  const stableEnd = core.indexOf('\n  function init()', stableStart);
+  const stable = core.slice(stableStart, stableEnd);
+  assert.doesNotMatch(stable, /startNinjaLoop/);
+  assert.match(stable, /markCoreReady\(coreDependencies\)/);
 });
