@@ -11,6 +11,7 @@ const files = {
   theme:'systems/baseline-games-hub/css/games-hub-theme.css',
   hub:'systems/baseline-games-hub/baseline-games-hub.html',
   core:'systems/baseline-games-hub/js/baseline-games-hub-core.js',
+  registry:'systems/baseline-games-hub/js/games-registry.js',
   home:'sitewide/css/baseline-home.css',
   themes:'sitewide/css/baseline-themes.css',
   sitewide:'sitewide/css/baseline-sitewide.css',
@@ -126,8 +127,8 @@ test('Digital Code remains universal and cannot inherit a system theme',async()=
 });
 
 test('all eight Games overview images are versioned and carry G01 artwork',async()=>{
-  const core = await read(files.core);
-  assert.equal((core.match(/G01_INDIGO_CIRCUIT_20260801_1/g) || []).length,8);
+  const registry = await read(files.registry);
+  assert.equal((registry.match(/G01_INDIGO_CIRCUIT_20260801_1/g) || []).length,8);
   const art = [
     'systems/baseline-games-hub/games/overview-art/detect-the-word.svg',
     'systems/baseline-games-hub/games/overview-art/make-the-number.svg',
