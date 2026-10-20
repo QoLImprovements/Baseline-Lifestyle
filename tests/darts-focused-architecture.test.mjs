@@ -21,6 +21,7 @@ const decisionActionSource=fs.readFileSync(new URL('../systems/baseline-games-hu
 const stateSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-state.js',import.meta.url),'utf8');
 const shellSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-shell.js',import.meta.url),'utf8');
 const uiSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js',import.meta.url),'utf8');
+const eventsSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-events.js',import.meta.url),'utf8');
 
 test('Darts content authority exposes the canonical ten games and three tiers',()=>{
   assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
@@ -165,6 +166,12 @@ test('Darts controller delegates DOM event routing to event authority',()=>{
   assert.match(runtime,/from '\.\/darts-focused-events\.js'/);
   assert.match(runtime,/createDartsEventHandlers\(/);
   assert.doesNotMatch(runtime,/function handleClick|function handleChange|function handleKeydown/);
+});
+
+test('Darts event authority does not intercept the Games Hub overview opener',()=>{
+  assert.doesNotMatch(eventsSource,/data-open-darts-focused/);
+  assert.doesNotMatch(eventsSource,/openPanel,/);
+  assert.match(eventsSource,/data-close-darts-focused/);
 });
 
 
