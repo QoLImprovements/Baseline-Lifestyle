@@ -10,7 +10,6 @@ const BADMINTON_CSS='/systems/baseline-games-hub/games/badminton-focused/css/bad
 let realmPromise=null;
 let dartsPromise=null;
 let badmintonPromise=null;
-let dartsObserver=null;
 
 document.documentElement.dataset.baselineGamesHubLoader=BUILD;
 
@@ -110,42 +109,6 @@ function addDartsCss(){
   document.head.appendChild(link);
 }
 
-function dartsMarkup(){
-  return '<div class="games-list-group darts-task-group" data-darts-entry><span>Darts Focused Games</span></div>'+
-    '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused" data-darts-entry>'+
-      '<button class="game-row darts-overview-row" data-open-darts-focused type="button">'+
-        '<img class="game-card-art darts-overview-art" src="/systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg" alt="">'+
-        '<div class="game-row-copy"><h3>Darts Focused</h3><p>10 distinct website games with selectable tiers for calculation, attention, board knowledge, working memory and decision control.</p></div>'+
-        '<div class="game-row-meta"><strong>10 games</strong><span class="inline-note">Open games</span></div>'+
-      '</button>'+
-      '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Darts-specific calculation, selective attention, visual memory, pressure control, strategic flexibility and recovery after mistakes." type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>'+
-    '</div>';
-}
-
-function addDarts(){
-  addDartsCss();
-  const list=document.getElementById('gamesList');
-  if(!list||list.querySelector('[data-open-darts-focused]'))return;
-  const testingHeading=[...list.querySelectorAll('.games-list-group')].find(node=>node.textContent.trim()==='Testing');
-  if(testingHeading)testingHeading.insertAdjacentHTML('afterend',dartsMarkup().replace('<div class="games-list-group darts-task-group" data-darts-entry><span>Darts Focused Games</span></div>',''));
-  else list.insertAdjacentHTML('beforeend',dartsMarkup());
-}
-
-function watchDarts(){
-  addDarts();
-  addBadminton();
-  const list=document.getElementById('gamesList');
-  if(!list||dartsObserver)return;
-  let queued=false;
-  dartsObserver=new MutationObserver(()=>{
-    if(queued)return;
-    queued=true;
-    requestAnimationFrame(()=>{queued=false;addDarts();addBadminton();});
-  });
-  dartsObserver.observe(list,{childList:true});
-}
-
-
 function addBadmintonCss(){
   if(document.querySelector('link[data-badminton-focused-style]'))return;
   const link=document.createElement('link');
@@ -154,32 +117,12 @@ function addBadmintonCss(){
   link.dataset.badmintonFocusedStyle=BUILD;
   document.head.appendChild(link);
 }
-function badmintonProfile(){
-  try{
-    if(window.BadmintonFocusedGames&&typeof window.BadmintonFocusedGames.getProfile==='function')return window.BadmintonFocusedGames.getProfile();
-    return window.BaselineGameStorage?.getProfile?.('badmintonfocused') || null;
-  }catch(_error){return null;}
-}
-function badmintonMarkup(){
-  const profile=badmintonProfile();
-  const level=Math.max(1,Number(profile&&profile.level||1));
-  return '<div class="games-list-group badminton-task-group" data-badminton-entry><span>Badminton Focused Games</span></div>'+
-    '<div class="game-row-wrap game-row-wrap--featured badminton-focused-overview-row" data-game-card="badminton-focused" data-badminton-entry>'+
-      '<button class="game-row badminton-overview-row" data-open-badminton-focused type="button">'+
-        '<img class="game-card-art badminton-overview-art" src="/systems/baseline-games-hub/games/badminton-focused/art/badminton-focused-overview.svg" alt="">'+
-        '<div class="game-row-copy"><h3>Badminton Focused</h3><p>15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.</p></div>'+
-        '<div class="game-row-meta"><strong>Level '+level+' · 15 games</strong><span class="inline-note">Open games</span></div>'+
-      '</button>'+
-      '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure." type="button" aria-label="What Badminton Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>'+
-    '</div>';
-}
-function addBadminton(){
+
+/* Overview rows are owned by baseline-games-hub-core.js.
+   This compatibility loader only ensures focused-game styles and runtimes exist. */
+function ensureFocusedGameStyles(){
+  addDartsCss();
   addBadmintonCss();
-  const list=document.getElementById('gamesList');
-  if(!list||list.querySelector('[data-open-badminton-focused]'))return;
-  const testingHeading=[...list.querySelectorAll('.games-list-group')].find(node=>node.textContent.trim()==='Testing');
-  if(testingHeading)testingHeading.insertAdjacentHTML('afterend',badmintonMarkup().replace('<div class="games-list-group badminton-task-group" data-badminton-entry><span>Badminton Focused Games</span></div>',''));
-  else list.insertAdjacentHTML('beforeend',badmintonMarkup());
 }
 async function loadBadminton(options){
   const opts=options||{};
@@ -357,7 +300,7 @@ function openRealmFromRoute(){
 
 function init(){
   waitCore().then(async()=>{
-    watchDarts();
+    ensureFocusedGameStyles();
     try{
       await Promise.resolve(window.BASELINE_GAMES_HUB_INITIAL_RENDER_READY);
     }catch(error){
