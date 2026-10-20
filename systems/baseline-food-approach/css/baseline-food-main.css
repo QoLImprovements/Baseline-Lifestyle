@@ -1,7 +1,7 @@
 /* Baseline Food Approach main-page additions. */
 
 :root{ --homebar-h: 56px; } /* fallback */
-  /* System chooser (match Baseline Natural Skincare menu style) */
+  /* System chooser (match the shared system-menu style) */
   .bl-system-wrap{ position: relative; display:flex; align-items:center; }
   .bl-system-toggle{
     all: unset;
