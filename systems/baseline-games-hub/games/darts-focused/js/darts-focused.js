@@ -53,8 +53,6 @@ const STYLE_URL = `/systems/baseline-games-hub/games/darts-focused/css/darts-foc
 const ui = {
   selected:'checkout-pressure',
   states:{},
-  listObserver:null,
-  overviewSyncQueued:false,
   lastScenario:{},
   lastDecisionQuestion:{},
   fullscreen:false
@@ -152,8 +150,6 @@ const {
   ensureStylesheet,
   openHowToPlay,
   closeInfo,
-  ensureOverviewEntry,
-  queueOverviewSync,
   ensurePanel,
   openPanel,
   closePanel,
@@ -167,9 +163,7 @@ const {
   renderSelectedGame,
   renderProgressSummary,
   clearGameTimers,
-  clearAutoTimer,
-  onOverviewSyncQueued:(value)=>{ui.overviewSyncQueued=value;},
-  isOverviewSyncQueued:()=>ui.overviewSyncQueued
+  clearAutoTimer
 });
 
 function refreshSelectors() {
@@ -378,14 +372,8 @@ const {
   sequenceClick
 });
 
-function installObserver() {
-  const list = byId('gamesList');
-  if (!list || ui.listObserver) return;
-  ui.listObserver = new MutationObserver(queueOverviewSync);
-  ui.listObserver.observe(list,{childList:true});
-}
 function init() {
-  ensureStylesheet(); ensurePanel(); ensureOverviewEntry(); installObserver();
+  ensureStylesheet(); ensurePanel();
   document.addEventListener('click',handleClick,true);
   document.addEventListener('visibilitychange',syncDartsVisibility);
   document.addEventListener('change',handleChange,true);
