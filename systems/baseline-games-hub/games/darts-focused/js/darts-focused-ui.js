@@ -19,14 +19,6 @@ export function nextButton(selectedId,label = 'Next round') {
   return `<button class="action primary" data-darts-new-round="${escapeHtml(selectedId)}" type="button">${escapeHtml(label)}</button>`;
 }
 
-export function overviewEntryHtml() {
-  return '<div class="games-list-group darts-task-group" data-darts-entry><span>Darts Focused Games</span></div>' +
-    '<div class="game-row-wrap darts-focused-overview-row" data-darts-entry>' +
-      `<button class="game-row darts-overview-row" data-open-darts-focused type="button"><img class="darts-overview-art" src="${DARTS_ART_URL}" alt="Realistic dartboard"><div><h3>Darts Focused</h3><p>10 distinct website games with tiers for calculation, attention, board knowledge, memory and decision control.</p></div><div class="game-row-meta"><strong>10 games</strong><span class="inline-note">Open games</span></div></button>` +
-      '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Darts calculation, selective attention, visual memory, pressure control, board geography, routine stability and recovery after mistakes." type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-    '</div>';
-}
-
 export function gameSelectorHtml(game,{selectedId,progressText}={}) {
   const selected = game.id === selectedId;
   return '<div class="darts-selector-wrap">' +
