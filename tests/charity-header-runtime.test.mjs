@@ -19,7 +19,7 @@ test('Cash To Bank final label and amount are explicitly white with a fresh cach
   assert.match(cashCss, /CHARITY-CASH-TO-BANK-WHITE-20260803/);
   assert.match(cashCss, /\.charity-total-line--final span/);
   assert.match(cashCss, /-webkit-text-fill-color:#fff!important/);
-  assert.match(html, /charity-shop-cashing-and-artwork\.css\?v=CHARITY_CASHING_20260803_2/);
+  assert.match(html, /charity-shop-cashing-and-artwork\.css\?v=CHARITY_CSS_CONSOLIDATED_20261020_1/);
   assert.match(html, /CHARITY-CASH-TO-BANK-INLINE-AUTHORITY-20260803/);
   assert.match(html, /#operations-cashing \.charity-total-line--final > span/);
   assert.match(html, /#charityCashToBank/);
