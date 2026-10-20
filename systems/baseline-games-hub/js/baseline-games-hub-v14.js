@@ -231,13 +231,7 @@ document.addEventListener('click',event=>{
     return;
   }
   const realm=event.target.closest&&event.target.closest('[data-select-game="ninja"]');
-  const open=event.target.closest&&event.target.closest('[data-open-darts-focused]');
-  const openBad=event.target.closest&&event.target.closest('[data-open-badminton-focused]');
   if(realm)loadRealm().catch(error=>console.error(error));
-  if(openBad){event.preventDefault();openBadminton().catch(error=>console.error(error));return;}
-  if(!open)return;
-  event.preventDefault();
-  openDarts().catch(error=>console.error(error));
 },true);
 
 window.addEventListener('baseline:realm:load',()=>loadRealm().catch(()=>{}));
