@@ -8,9 +8,9 @@ const optional=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub
 const storageUi=fs.readFileSync('systems/baseline-games-hub/js/games-server-storage-ui.js','utf8');
 const core=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js','utf8');
 const guard=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-guard.js','utf8');
-const realmAuthority=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css','utf8');
-const realmRebuild=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css','utf8');
-const realmWood=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css','utf8');
+const realmEntry=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js','utf8');
+const realmShell=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-shell.css','utf8');
+const ninjaCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training.css','utf8');
 const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
 const hubTheme=fs.readFileSync('systems/baseline-games-hub/css/games-hub-theme.css','utf8');
 const rootHtaccess=fs.readFileSync('.htaccess','utf8');
@@ -44,7 +44,7 @@ test('module entry loads non-blocking storage messaging before optional loaders'
   assert.doesNotMatch(storageUi,/blockLockedGameHotkeys|BROWSE_HOTKEYS|stopImmediatePropagation/);
 });
 
-test('optional loader keeps normal navigation authoritative and Realm playable',()=>{
+test('optional loader keeps normal navigation authoritative while canonical Realm entry owns startup',()=>{
   assert.match(optional,/GAMES_HUB_DARTS_ACCESS_20260706_1/);
   assert.match(optional,/DartsFocusedLoader/);
   assert.match(optional,/data-open-darts-focused/);
@@ -52,9 +52,10 @@ test('optional loader keeps normal navigation authoritative and Realm playable',
   assert.match(optional,/renderGamesList=function\(\)\{\}/);
   assert.match(optional,/sceneRouter\.navigate\('basecamp'/);
   assert.doesNotMatch(optional,/sceneRouter\.navigate\('ninja-training'\)/);
-  assert.match(optional,/host\.applyOfflineProgress\(\);host\.render\(\)/);
-  assert.match(optional,/host\.startLoop\(\)/);
-  assert.match(optional,/baselineRealmSaving=canSave\(\)\?'account':'temporary'/);
+  assert.doesNotMatch(optional,/host\.(?:applyOfflineProgress|render|startLoop)\(/);
+  assert.match(realmEntry,/function startRealmRuntimeOnce\(\)/);
+  assert.match(realmEntry,/runtime\.applyOfflineProgress\(\);[\s\S]*?runtime\.render\(\);[\s\S]*?runtime\.startLoop\(\);/);
+  assert.match(realmEntry,/BASELINE_GAMES_HUB_CORE_READY !== true/);
 });
 
 test('storage authority owns persistence only and never game controls',()=>{
@@ -89,9 +90,9 @@ test('Basecamp exposes every registered Realm destination through positioned lan
   assert.ok((html.match(/class="realm-location-caption"/g)||[]).length>=10);
 });
 
-test('Realm root is not transformed by inherited Games Hub card hover effects',()=>{
-  assert.match(realmWood,/#ninjaPanel,\s*#ninjaPanel:hover,\s*#ninjaPanel:focus-within\{[\s\S]*?transform:none!important/);
-  assert.match(realmWood,/#ninjaPanel #realmSceneFrame\{[\s\S]*?text-rendering:optimizeLegibility/);
+test('Realm shell is not transformed by inherited Games Hub card hover effects',()=>{
+  assert.match(realmShell,/#ninjaPanel,\s*#ninjaPanel:hover,\s*#ninjaPanel:focus-within\{[\s\S]*?transform:none!important/);
+  assert.match(realmShell,/#ninjaPanel #realmSceneFrame\{[\s\S]*?text-rendering:optimizeLegibility/);
 });
 
 test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
@@ -101,16 +102,16 @@ test('Games Hub Indigo theme does not paint Baseline Realm internals',()=>{
   assert.doesNotMatch(hubTheme,/\.realm-mini-action|\.realm-close-btn|\.realm-tab-btn/);
 });
 
-test('final Realm visual authority preserves visible Ninja action sprite sheets',()=>{
-  assert.match(realmWood,/is-dash-cut \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-dash\.svg/);
-  assert.match(realmWood,/is-throwing \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-throw\.svg/);
+test('canonical Ninja stylesheet preserves visible action sprite sheets',()=>{
+  assert.match(ninjaCss,/is-dash-cut \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-dash\.svg/);
+  assert.match(ninjaCss,/is-throwing \.ninja-runtime-sprite--runner[\s\S]*?alder-veil-throw\.svg/);
 });
 
-test('final Realm authority guarantees characters and controls',()=>{
-  assert.match(realmAuthority,/alder-veil-run\.svg/);
-  assert.match(realmAuthority,/mossblade-pursuer\.svg/);
-  assert.match(realmAuthority,/pointer-events:auto!important/);
-  assert.match(realmRebuild,/animation-play-state:paused!important/);
+test('canonical Ninja stylesheet guarantees characters and controls',()=>{
+  assert.match(ninjaCss,/alder-veil-run\.svg/);
+  assert.match(ninjaCss,/mossblade-pursuer\.svg/);
+  assert.match(ninjaCss,/pointer-events:auto!important/);
+  assert.match(ninjaCss,/animation-play-state:paused!important/);
 });
 
 test('JavaScript and CSS use the central revalidation policy',()=>{
