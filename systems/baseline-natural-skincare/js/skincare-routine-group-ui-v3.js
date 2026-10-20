@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — group-first plan controls and structured summaries. */
+/* Baseline Personal Care — group-first plan controls and structured summaries. */
 (function (global) {
   'use strict';
 
