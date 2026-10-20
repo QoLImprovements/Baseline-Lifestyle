@@ -2,7 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../../../sitewide/api/config.php';
 
-/** Baseline Natural Skincare account-owned routine schema. */
+/** Baseline Personal Care account-owned routine schema. */
 function bl_skincare_ensure_schema(PDO $db): void {
   bl_apply_schema_migration($db, 'skincare', 1, static function(PDO $db): void {
     $db->exec('CREATE TABLE IF NOT EXISTS skincare_routines (
