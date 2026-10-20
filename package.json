@@ -27,7 +27,8 @@
     "test:saved-data-php": "php tests/private-environment-contract.php && php tests/http-contract.php && php tests/session-contract.php && php tests/authentication-contract.php && php tests/mail-contract.php && php tests/account-recovery-contract.php && php tests/database-contract.php && php tests/saved-data-contract.php && php tests/resource-authority-contract.php && npm run test:migration-exporter",
     "test:badminton-session": "node --test tests/badminton-sitout-types.test.mjs tests/badminton-pair-id-model.test.mjs tests/badminton-architecture-phase2.test.mjs tests/badminton-rollover-regression.test.mjs tests/badminton-hardship-ui-persistence.test.mjs tests/badminton-persistent-hardships.test.mjs tests/badminton-attendance-generation.test.mjs tests/badminton-session-core.test.mjs",
     "audit:authority": "node tools/single-authority-audit.mjs",
-    "audit:authority:strict": "node tools/single-authority-audit.mjs --strict"
+    "audit:authority:strict": "node tools/single-authority-audit.mjs --strict",
+    "test:focused-games": "node --test tests/darts-focused-engine.test.mjs tests/darts-focused-architecture.test.mjs tests/darts-focused-timing.test.mjs tests/darts-focused-storage.test.mjs tests/darts-focused-decision.test.mjs tests/darts-focused-renderers.test.mjs tests/darts-focused-progress.test.mjs tests/darts-focused-actions.test.mjs tests/darts-focused-decision-actions.test.mjs tests/darts-focused-state.test.mjs tests/darts-focused-rounds.test.mjs tests/focused-games-session-stability.test.mjs tests/badminton-focused-structure.test.mjs tests/badminton-focused-timing.test.mjs tests/badminton-focused-timer-manager.test.mjs tests/badminton-focused-profile.test.mjs tests/badminton-focused-ui.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.61.1"
