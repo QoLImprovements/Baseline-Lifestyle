@@ -18,7 +18,9 @@ const files = {
   shared:'sitewide/js/baseline-shared.js',
   protectedCss:'sitewide/css/baseline-protected-access.css',
   protectedJs:'sitewide/js/baseline-protected-access.js',
-  hubCss:'systems/baseline-games-hub/css/baseline-games-hub.css'
+  hubCss:'systems/baseline-games-hub/css/baseline-games-hub.css',
+  musicCss:'systems/baseline-games-hub/css/games-music.css',
+  musicJs:'systems/baseline-games-hub/js/games-music.js'
 };
 
 const g01 = Object.freeze({
@@ -147,4 +149,16 @@ test('normal text passes WCAG AA at every mirror-gradient stop',()=>{
   );
   assert.ok(contrast(g01.ink,g01.card) >= 4.5);
   assert.ok(contrast(g01.deep,g01.focus) >= 4.5);
+});
+
+
+test('Games music settings presentation is statically owned by its stylesheet',async()=>{
+  const [hub,musicCss,musicJs] = await Promise.all([
+    read(files.hub),read(files.musicCss),read(files.musicJs)
+  ]);
+  assert.match(hub,/games-music\.css\?v=GAMES_MUSIC_STATIC_STYLES_20261020_1/);
+  assert.match(musicCss,/\.games-settings-trigger\{/);
+  assert.match(musicCss,/\.games-music-settings-dialog\{/);
+  assert.doesNotMatch(musicJs,/createElement\s*\(\s*['"]style['"]\s*\)/);
+  assert.doesNotMatch(musicJs,/ensureStyles\s*\(/);
 });
