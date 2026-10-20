@@ -130,7 +130,7 @@ test('recipe subview is encoded by the shared router and Skincare restores its D
   assert.match(shared, /options && options\.syncRoute/);
   assert.match(shared, /recipeView:next/);
   assert.match(shared, /recipeVariant:/);
-  assert.match(shared, /setNavState\(nextState, \{ replace:true, url:urlForNavState\(nextState\) \}\)/);
+  assert.match(shared, /setNavState\(nextState, \{ replace:historyMode !== 'push', url:urlForNavState\(nextState\) \}\)/);
   assert.match(shared, /card\.__baselineSetRecipeVariant/);
   assert.match(shared, /card\.__baselineSetRecipeView\(normalizeRecipeSubView\(state\.recipeView \|\| 'standard'\)/);
   assert.doesNotMatch(recipeUx, /recipeViewFromLocation|restoreRecipeViewFromLocation|syncRecipeViewUrl/);
