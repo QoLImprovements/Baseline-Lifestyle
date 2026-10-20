@@ -9,7 +9,6 @@ export function createDartsEventHandlers({
   renderSelectedGame,
   openHowToPlay,
   closeInfo,
-  openPanel,
   closePanel,
   changeTier,
   toggleAutoNext,
@@ -45,12 +44,6 @@ export function createDartsEventHandlers({
       return;
     }
     if(target.closest('[data-close-games-modal]')){closeInfo();return;}
-    if(target.closest('[data-open-darts-focused]')){
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      openPanel();
-      return;
-    }
     if(target.closest('[data-close-darts-focused]')){
       event.preventDefault();
       event.stopImmediatePropagation();
