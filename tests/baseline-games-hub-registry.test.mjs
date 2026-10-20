@@ -89,3 +89,26 @@ test('focused-game overview rows have one DOM renderer authority', () => {
   assert.doesNotMatch(loader, /insertAdjacentHTML/);
   assert.match(loader, /function ensureFocusedGameStyles\(\)/);
 });
+
+
+test('Games Hub core is the sole focused-game overview click controller', () => {
+  const core = fs.readFileSync(corePath, 'utf8');
+  const loader = fs.readFileSync(loaderPath, 'utf8');
+
+  assert.match(core, /event\.target\.closest\('\[data-open-darts-focused\]'\)/);
+  assert.match(core, /requestDartsFocusedOpen\(\)/);
+  assert.match(core, /event\.target\.closest\('\[data-open-badminton-focused\]'\)/);
+  assert.match(core, /requestBadmintonFocusedOpen\(\)/);
+
+  const clickStart = loader.indexOf("document.addEventListener('click',event=>{");
+  const clickEnd = loader.indexOf("\n\nwindow.addEventListener('baseline:realm:load'", clickStart);
+  const clickBlock = loader.slice(clickStart, clickEnd);
+  assert.ok(clickStart >= 0 && clickEnd > clickStart);
+  assert.doesNotMatch(clickBlock, /data-open-darts-focused|data-open-badminton-focused/);
+
+  const pointerStart = loader.indexOf("document.addEventListener('pointerdown',event=>{");
+  const pointerEnd = loader.indexOf("\n\nasync function handleRealmFallbackControl", pointerStart);
+  const pointerBlock = loader.slice(pointerStart, pointerEnd);
+  assert.match(pointerBlock, /loadDarts\(\)/);
+  assert.match(pointerBlock, /loadBadminton\(\)/);
+});
