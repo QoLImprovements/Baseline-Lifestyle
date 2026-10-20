@@ -30,10 +30,6 @@ export function iconSvg(id){
   return `<svg viewBox="0 0 62 62" aria-hidden="true">${map[id]||map['shot-choice']}</svg>`;
 }
 
-export function overviewHtml(){
-  return '<div class="games-list-group badminton-task-group" data-badminton-entry><span>Badminton Focused Games</span></div><div class="game-row-wrap game-row-wrap--featured badminton-focused-overview-row" data-game-card="badminton-focused" data-badminton-entry><button class="game-row badminton-overview-row" data-open-badminton-focused type="button"><img class="game-card-art badminton-overview-art" src="'+BADMINTON_ART_URL+'" alt=""><div class="game-row-copy"><h3>Badminton Focused</h3><p>15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.</p></div><div class="game-row-meta"><strong>15 games</strong><span class="inline-note">Open games</span></div></button><button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure." type="button" aria-label="What Badminton Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button></div>';
-}
-
 export function selectorHtml(game,{selectedId,progressText}={}){
   const selected=game.id===selectedId;
   return `<div class="badminton-selector-wrap"><button class="badminton-game-selector${selected?' is-selected':''}" data-badminton-game="${game.id}" type="button" aria-selected="${selected}" role="tab"><span class="badminton-selector-icon">${iconSvg(game.id)}</span><span>${escapeHtml(game.name)}</span><small>${escapeHtml(progressText||'Ready')}</small></button><button class="badminton-selector-info bl-info-button" data-bl-info-button data-bl-info-title="${escapeHtml(game.name)}" data-bl-info-text="${escapeHtml(game.intention)}" type="button" aria-label="What ${escapeHtml(game.name)} develops" aria-expanded="false"><span aria-hidden="true">i</span></button></div>`;
