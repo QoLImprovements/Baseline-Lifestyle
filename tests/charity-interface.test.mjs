@@ -86,3 +86,22 @@ test('Charity Shop retired coherence CSS stays absent and loaded theme layers av
   const duplicates=simpleRules(complete).filter(rule=>later.has(rule));
   assert.deepEqual(duplicates,[]);
 });
+
+
+test('obsolete Charity coherence runtime stays retired while canonical routing preserves legacy Homeware URLs',async()=>{
+  const [page,source] = await Promise.all([
+    read('systems/charity-shop/charity-shop.php'),
+    read('systems/charity-shop/js/charity-shop.js')
+  ]);
+
+  await assert.rejects(
+    read('systems/charity-shop/js/charity-shop-coherence.js'),
+    error => error && error.code === 'ENOENT'
+  );
+
+  assert.doesNotMatch(page,/charity-shop-coherence\.js/);
+  assert.match(source,/const legacyHomeware = mainValue === 'homeware'/);
+  assert.match(source,/const main = legacyHomeware \? 'sizes'/);
+  assert.match(source,/const legacySubtab = legacyHomeware \|\| subValue === 'sorting'/);
+  assert.match(source,/'duvet-sizes':\['sizes','duvet'\]/);
+});
