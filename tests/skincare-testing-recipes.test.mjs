@@ -438,6 +438,27 @@ test('Recipes and My Routine remain separate section siblings', () => {
   assert.equal((recipesBlock.match(/<\/section>/g) || []).length, 1, 'Recipes must contain one matching section close');
 });
 
+test('Skincare document and Recipes block keep balanced div structure', () => {
+  const withoutExecutableBodies = html
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+    .replace(/<style\b[\s\S]*?<\/style>/gi, '');
+  assert.equal(
+    (withoutExecutableBodies.match(/<div\b/gi) || []).length,
+    (withoutExecutableBodies.match(/<\/div\s*>/gi) || []).length,
+    'Skincare document must not leave div containers open'
+  );
+
+  const recipesStart = withoutExecutableBodies.indexOf('<section class="section" id="recipes">');
+  const ingredientsStart = withoutExecutableBodies.indexOf('<section class="section" id="ingredients">');
+  const recipesBlock = withoutExecutableBodies.slice(recipesStart, ingredientsStart);
+  assert.equal(
+    (recipesBlock.match(/<div\b/gi) || []).length,
+    (recipesBlock.match(/<\/div\s*>/gi) || []).length,
+    'Recipes must close its layout containers before Ingredient Library'
+  );
+});
+
 test('Natural Skincare navigation keeps public clean URLs in the canonical shared router', () => {
   assert.match(shared, /'baseline-natural-skincare\.html': \{ base:'\/baseline-natural-skincare', defaultTab:'system'/);
   assert.match(shared, /'baseline-natural-skincare\.html':'\/baseline-natural-skincare\/system'/);
