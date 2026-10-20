@@ -57,6 +57,7 @@ let rosterReady = Promise.resolve([]);
 let sceneReady = Promise.resolve(null);
 let explorationRosterIds = [];
 let configured = false;
+let runtimeStarted = false;
 const ROUTABLE_SCENES = Object.freeze(['basecamp','ninja-training','exploration','workshop','calorie-escape','tactical-operations']);
 let restoringSceneFromHistory = false;
 let realmSceneHistoryBound = false;
@@ -349,6 +350,17 @@ function isolateCoreDependencies(dependencies) {
   return isolated;
 }
 
+function startRealmRuntimeOnce() {
+  if (runtimeStarted) return true;
+  if (!runtime) return false;
+  runtime.applyOfflineProgress();
+  runtime.render();
+  runtime.startLoop();
+  runtimeStarted = true;
+  eventBus.emit('realm:runtime:started', { build: BUILD });
+  return true;
+}
+
 function configure(dependencies) {
   if (configured) return assetsReady;
   configured = true;
@@ -411,6 +423,9 @@ function configure(dependencies) {
       return sceneRouter.navigate('basecamp', { recovery:true, historyMode:'replace' });
     }
     throw error;
+  }).then((scene) => {
+    if (!startRealmRuntimeOnce()) throw new Error('Canonical Realm runtime did not start');
+    return scene;
   });
   bindRealmInputs({ runtime, inputManager, eventBus, sceneRouter });
   inputManager.registerControllerProvider(gamepadProvider);
@@ -488,7 +503,7 @@ globalThis.BaselineRealmHost = host;
 
 function configureFromAvailableCore() {
   const dependencies = globalThis.BASELINE_GAMES_HUB_CORE_DEPENDENCIES;
-  if (!dependencies || configured) return false;
+  if (globalThis.BASELINE_GAMES_HUB_CORE_READY !== true || !dependencies || configured) return false;
   try {
     configure(dependencies);
     globalThis.dispatchEvent?.(new CustomEvent('baseline:realm:host-ready', { detail:{ build:BUILD } }));
