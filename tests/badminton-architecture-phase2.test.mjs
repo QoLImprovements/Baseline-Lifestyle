@@ -332,7 +332,7 @@ test("Badminton login options expose PeterBW as the username and collapse modera
 });
 
 test("entering the top-level Game Plan tab returns to the primary Game Plan subtab", () => {
-  assert.match(gamePlanSource, /function activateGamePlanSubtab\(target\)/);
+  assert.match(gamePlanSource, /function activateGamePlanSubtab\(target, historyMode\)/);
   assert.match(gamePlanSource, /\.tab\[data-target="gameplan"\]/);
   assert.match(gamePlanSource, /activateGamePlanSubtab\('plan'\)/);
 });
