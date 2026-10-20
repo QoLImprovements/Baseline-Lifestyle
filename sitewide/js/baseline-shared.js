@@ -361,12 +361,6 @@
     return BASELINE_CLEAN_PAGE_LINKS[targetFile] || href;
   }
 
-  function navigatePageHref(hrefRaw){
-    const href = String(hrefRaw || '').trim();
-    if(!href) return;
-    navigateSiteHref(href);
-  }
-
   function normalizeSiteHref(href){
     const raw = String(href || '').trim();
     if(!raw) return '';
@@ -1611,12 +1605,6 @@ function parseViewStateHash(hash){
 
   function normalisePageHref(hrefRaw, labelText){
     return cleanRouteForPageHref(hrefRaw, labelText);
-  }
-
-  function navigatePageHref(hrefRaw, labelText){
-    const href = normalisePageHref(hrefRaw, labelText);
-    if(!href) return;
-    navigateSiteHref(href);
   }
 
   // ---------------------------
