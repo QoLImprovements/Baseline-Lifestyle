@@ -43,14 +43,6 @@
   width:42px!important;
   padding:0!important;
 }
-:is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel) .game-shell-action__icon{
-  display:inline-grid;
-  place-items:center;
-  min-width:18px;
-  font-size:18px;
-  font-weight:900;
-  line-height:1;
-}
 :is(#pairsPanel,#detectwordPanel,#make24Panel,#trackcoinPanel,#ruleshiftPanel) .game-info-details{
   display:none!important;
 }
