@@ -56,33 +56,33 @@ test('protected access requires a host-supplied PIN and keeps no repository fall
 });
 
 
-test('Charity Shop retired coherence CSS stays absent and loaded theme layers avoid exact duplicate rules',async()=>{
-  const [page,complete,cashing] = await Promise.all([
+test('Charity Shop presentation layers remain consolidated under one pre-colour authority',async()=>{
+  const [page,cashing] = await Promise.all([
     read('systems/charity-shop/charity-shop.php'),
-    read('systems/charity-shop/css/charity-shop-complete-theme.css'),
     read('systems/charity-shop/css/charity-shop-cashing-and-artwork.css')
   ]);
 
-  assert.doesNotMatch(page,/charity-shop-coherence\.css/);
-  await assert.rejects(
-    read('systems/charity-shop/css/charity-shop-coherence.css'),
-    error => error && error.code === 'ENOENT'
-  );
+  for(const retired of [
+    'systems/charity-shop/css/charity-shop-coherence.css',
+    'systems/charity-shop/css/charity-shop-complete-theme.css'
+  ]){
+    await assert.rejects(
+      read(retired),
+      error => error && error.code === 'ENOENT',
+      retired
+    );
+  }
 
-  const simpleRules = source => {
-    const rules=[];
-    const re=/([^{}]+)\{([^{}]*)\}/g;
-    let match;
-    while((match=re.exec(source))){
-      const selector=match[1].replace(/\/\*[\s\S]*?\*\//g,'').trim().replace(/\s+/g,' ');
-      if(!selector || selector.startsWith('@') || /^(?:from|to|\d+%)$/.test(selector)) continue;
-      const declarations=match[2].trim().replace(/\s+/g,' ');
-      rules.push(selector+'\n'+declarations);
-    }
-    return rules;
-  };
+  assert.doesNotMatch(page,/charity-shop-coherence\.css|charity-shop-complete-theme\.css/);
+  assert.equal((page.match(/charity-shop-cashing-and-artwork\.css/g)||[]).length,1);
+  assert.match(page,/charity-shop-cashing-and-artwork\.css\?v=CHARITY_CSS_CONSOLIDATED_20261020_1/);
 
-  const later=new Set(simpleRules(cashing));
-  const duplicates=simpleRules(complete).filter(rule=>later.has(rule));
-  assert.deepEqual(duplicates,[]);
+  const mergedStart=cashing.indexOf('Charity Shop single-gradient authority');
+  const laterStart=cashing.indexOf('Former cashing-and-artwork layer: later authority begins here.');
+  assert.ok(mergedStart>=0 && laterStart>mergedStart,'former complete-theme rules must remain before later cashing/artwork rules');
+
+  const cashingLink=page.indexOf('charity-shop-cashing-and-artwork.css');
+  const finalLink=page.indexOf('charity-shop-final-coherence.css');
+  assert.ok(cashingLink>=0 && finalLink>cashingLink,'final colour authority must remain later in the cascade');
 });
+
