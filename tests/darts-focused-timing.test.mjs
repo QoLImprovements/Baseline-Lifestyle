@@ -1,7 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 
 import { createDartsTimerManager } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js';
+
+const dartsTimingSource=fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js','utf8');
+const sharedTimingSource=fs.readFileSync('systems/baseline-games-hub/js/focused-game-timing.js','utf8');
 
 function harness({auto=true}={}){
   let gameId='checkout-pressure';
@@ -98,4 +102,13 @@ test('Darts Auto-Next does not schedule when disabled',()=>{
   const h=harness({auto:false});
   assert.equal(h.manager.scheduleAuto(()=>{},900),null);
   assert.equal(h.scheduled.size,0);
+});
+
+
+test('Darts timing lifecycle is owned by the shared focused-game timer manager',()=>{
+  assert.match(dartsTimingSource,/createFocusedGameTimerManager/);
+  assert.doesNotMatch(dartsTimingSource,/function arm\(|function pause\(|function resume\(|let sessionToken/);
+  assert.match(sharedTimingSource,/function arm\(timer\)/);
+  assert.match(sharedTimingSource,/function handleVisibilityChange\(\)/);
+  assert.match(sharedTimingSource,/cancelAutoWhenDisabled/);
 });

@@ -6,16 +6,21 @@ const dartsPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/
 const dartsTimingPath = new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js', import.meta.url);
 const badmintonPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js', import.meta.url);
 const badmintonTimingPath = new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js', import.meta.url);
+const sharedTimingPath = new URL('../systems/baseline-games-hub/js/focused-game-timing.js', import.meta.url);
 const darts = fs.readFileSync(dartsPath,'utf8');
 const dartsTiming = fs.readFileSync(dartsTimingPath,'utf8');
 const badminton = fs.readFileSync(badmintonPath,'utf8');
 const badmintonTiming = fs.readFileSync(badmintonTimingPath,'utf8');
+const sharedTiming = fs.readFileSync(sharedTimingPath,'utf8');
 
 test('Darts delayed callbacks are scoped to the active selected game session', () => {
   assert.match(darts,/createDartsTimerManager/);
-  assert.match(dartsTiming,/let sessionToken=0/);
-  assert.match(dartsTiming,/sessionToken\+=1/);
-  assert.match(dartsTiming,/timer\.token!==sessionToken\|\|timer\.gameId!==getGameId\(\)/);
+  assert.match(dartsTiming,/createFocusedGameTimerManager/);
+  assert.match(sharedTiming,/let sessionToken=0/);
+  assert.match(sharedTiming,/sessionToken\+=1/);
+  assert.match(sharedTiming,/token:sessionToken/);
+  assert.match(sharedTiming,/gameId:getGameId\(\)/);
+  assert.match(sharedTiming,/timer\.token!==sessionToken\|\|timer\.gameId!==getGameId\(\)/);
 });
 
 test('Badminton remembers the selected sub-game across reloads', () => {
@@ -26,9 +31,12 @@ test('Badminton remembers the selected sub-game across reloads', () => {
 
 test('Badminton delayed and auto-next callbacks cannot cross selected-game sessions', () => {
   assert.match(badminton,/createBadmintonTimerManager/);
-  assert.match(badmintonTiming,/let sessionToken=0/);
-  assert.match(badmintonTiming,/sessionToken\+=1/);
-  assert.match(badmintonTiming,/timer\.token!==sessionToken\|\|timer\.gameId!==getGameId\(\)/);
+  assert.match(badmintonTiming,/createFocusedGameTimerManager/);
+  assert.match(sharedTiming,/let sessionToken=0/);
+  assert.match(sharedTiming,/sessionToken\+=1/);
+  assert.match(sharedTiming,/token:sessionToken/);
+  assert.match(sharedTiming,/gameId:getGameId\(\)/);
+  assert.match(sharedTiming,/timer\.token!==sessionToken\|\|timer\.gameId!==getGameId\(\)/);
 });
 
 

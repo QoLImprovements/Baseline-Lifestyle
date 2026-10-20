@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
 const timerAuthority=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js',import.meta.url),'utf8');
+const sharedTimerAuthority=fs.readFileSync(new URL('../systems/baseline-games-hub/js/focused-game-timing.js',import.meta.url),'utf8');
 
 function runtimeSection(startName,endName){
   const start=runtime.indexOf('function '+startName);
@@ -22,13 +23,17 @@ test('Badminton runtime delegates delayed work to the timing authority',()=>{
   assert.doesNotMatch(runtime,/function cancelManagedTimer|function armManagedTimer|ui\.timers|ui\.autoTimer|ui\.sessionToken/);
 });
 
-test('Badminton timing authority preserves remaining delay across hidden time',()=>{
-  assert.match(timerAuthority,/timer\.remaining=remaining\(timer\)/);
-  assert.match(timerAuthority,/getVisibilityState\(\)==='hidden'/);
-  assert.match(timerAuthority,/timers\.forEach\(pause\)/);
-  assert.match(timerAuthority,/timers\.forEach\(resume\)/);
-  assert.match(timerAuthority,/pause\(autoTimer\)/);
-  assert.match(timerAuthority,/resume\(autoTimer\)/);
+test('Badminton timing adapter delegates visibility-aware lifecycle to the shared authority',()=>{
+  assert.match(timerAuthority,/createFocusedGameTimerManager/);
+  assert.match(timerAuthority,/clear:timing\.clearAll/);
+  assert.match(timerAuthority,/later:timing\.scheduleGame/);
+  assert.doesNotMatch(timerAuthority,/function arm\(|function pause\(|function resume\(|let sessionToken/);
+  assert.match(sharedTimerAuthority,/timer\.remaining=remaining\(timer\)/);
+  assert.match(sharedTimerAuthority,/getVisibilityState\(\)==='hidden'/);
+  assert.match(sharedTimerAuthority,/gameTimers\.forEach\(pause\)/);
+  assert.match(sharedTimerAuthority,/gameTimers\.forEach\(resume\)/);
+  assert.match(sharedTimerAuthority,/pause\(autoTimer\)/);
+  assert.match(sharedTimerAuthority,/resume\(autoTimer\)/);
 });
 
 test('Badminton hidden time is excluded from contact-response timing paths',()=>{
