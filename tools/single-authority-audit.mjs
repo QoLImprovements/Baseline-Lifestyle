@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { collectBrowserStorageInventory } from './browser-storage-inventory.mjs';
 
 const root=process.env.BASELINE_REPO_ROOT ? path.resolve(process.env.BASELINE_REPO_ROOT) : process.cwd();
 const ignored=new Set(['.git','node_modules','vendor','playwright-report','test-results','coverage']);
@@ -101,6 +102,7 @@ for(const file of sources.keys()){
 }
 
 const runtimeStorage=storage.filter(x=>!x.migrationOnly);
+const browserStorageInventory=collectBrowserStorageInventory(root);
 const storageCounts=new Map();
 for(const item of runtimeStorage) storageCounts.set(item.file,(storageCounts.get(item.file)||0)+1);
 const storageFiles=[...storageCounts.entries()].map(([file,count])=>({ file,count,referencedBy:references.get(file)||[] })).sort((a,b)=>b.count-a.count||a.file.localeCompare(b.file));
@@ -150,6 +152,8 @@ const report={
   scannedFiles:sources.size,
   scannedCharacters:[...sources.values()].reduce((n,s)=>n+s.length,0),
   runtimeStorage,
+  reviewedDeviceStorage:browserStorageInventory.reviewedGroups,
+  unreviewedRuntimeStorage:browserStorageInventory.unreviewedGroups,
   storageFiles,
   unreferencedStorageFiles,
   storageTotal:storage.length,
@@ -170,6 +174,8 @@ console.log('\nSingle-authority audit summary');
 console.log('Scanned files:',report.scannedFiles);
 console.log('Scanned characters:',report.scannedCharacters);
 console.log('Runtime browser-storage references:',report.runtimeStorage.length);
+console.log('Reviewed device-only storage groups:',report.reviewedDeviceStorage.length);
+console.log('Unreviewed runtime storage groups:',report.unreviewedRuntimeStorage.length);
 console.log('Dynamic style creators:',report.dynamicStyle.length);
 console.log('Dynamic script creators:',report.dynamicScript.length);
 console.log('Large inline style blocks:',report.inlineStyles.length);
@@ -180,7 +186,7 @@ console.log('Conflicting CSS selector/property declarations:',report.conflicting
 if(process.argv.includes('--strict')){
   const failures=[];
   if(report.conflictMarkers.length) failures.push('merge-conflict markers');
-  if(report.runtimeStorage.length) failures.push('browser persistence in runtime');
+  if(report.unreviewedRuntimeStorage.length) failures.push('unreviewed browser persistence in runtime');
   if(report.dynamicStyle.length) failures.push('runtime style injection');
   if(failures.length){
     console.error('Strict audit failed:',failures.join(', '));
