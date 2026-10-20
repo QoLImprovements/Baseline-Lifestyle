@@ -19,6 +19,8 @@ const files = {
   protectedCss:'sitewide/css/baseline-protected-access.css',
   protectedJs:'sitewide/js/baseline-protected-access.js',
   hubCss:'systems/baseline-games-hub/css/baseline-games-hub.css',
+  realmBasecampCss:'systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css',
+  realmNinjaCss:'systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training.css',
   musicCss:'systems/baseline-games-hub/css/games-music.css',
   musicJs:'systems/baseline-games-hub/js/games-music.js'
 };
@@ -67,14 +69,16 @@ test('sitewide Games fallbacks, homepage card and first paint use G01',async()=>
 });
 
 test('dropdown, tabs, banner controls, Account, Binaural and Realm controls are covered by their canonical owners',async()=>{
-  const [theme,hubCss] = await Promise.all([read(files.theme),read(files.hubCss)]);
+  const [theme,realmBasecampCss,realmNinjaCss] = await Promise.all([
+    read(files.theme),read(files.realmBasecampCss),read(files.realmNinjaCss)
+  ]);
   [
     '.bl-pages-btn','.bl-pages-menu','.bl-pages-link','#bl-auth-flyout .card',
     '#bl-beats-flyout .card','.bl-flyout .bl-select-menu [role="option"]',
     '.tab','.action'
   ].forEach(selector => assert.ok(theme.includes(selector),selector));
-  assert.ok(hubCss.includes('#ninjaPanel .realm-location-button'));
-  assert.ok(hubCss.includes('#ninjaPanel .realm-combat-btn'));
+  assert.ok(realmBasecampCss.includes('#ninjaPanel #realmBasecampScreen .realm-location-button'));
+  assert.ok(realmNinjaCss.includes('#ninjaPanel .realm-combat-btn'));
 });
 
 test('remaining Hub summaries, Darts panels and core game surfaces use G01',async()=>{
