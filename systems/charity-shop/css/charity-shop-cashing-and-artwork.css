@@ -987,11 +987,3 @@ html body[data-app="charity-shop"] .charity-artwork-card{
   }
 }
 
-
-/* CHARITY-CASH-TO-BANK-WHITE-20260803: the final Cash To Bank label and amount remain white. */
-html body[data-app="charity-shop"] .charity-total-line--final,
-html body[data-app="charity-shop"] .charity-total-line--final span,
-html body[data-app="charity-shop"] .charity-total-line--final output{
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-}
