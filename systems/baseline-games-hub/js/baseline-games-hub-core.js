@@ -10,6 +10,7 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const API_PATH = '/systems/baseline-games-hub/api/games_profile.php';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
+  const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
   const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
@@ -1479,30 +1480,47 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   function profileOrDefault(app){
     return profiles[app] || defaultProfileForApp(app);
   }
+  function overviewProgress(game){
+    const id=String(game && game.runtimeId || '');
+    if(id==='darts-focused'){
+      const darts=dartsFocusedProfile();
+      return 'Level ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games';
+    }
+    if(id==='badminton-focused'){
+      const badminton=badmintonFocusedProfile();
+      return 'Level ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games';
+    }
+    const profile=profileOrDefault(game && game.profileApp || id);
+    if(id==='detectword') return 'Level ' + profile.level + ' · ' + profile.wordsSolved + ' solved';
+    if(id==='make24') return 'Level ' + profile.level + ' · ' + profile.puzzlesSolved + ' solved';
+    if(id==='pairs') return 'Level ' + profile.level + ' · ' + profile.boardsCleared + ' cleared';
+    if(id==='ruleshift') return 'Level ' + profile.level + ' · Best streak ' + profile.bestStreak;
+    if(id==='trackcoin') return 'Level ' + profile.level + ' · Best streak ' + profile.bestStreak;
+    if(id==='ninja') return 'Level ' + profile.level + ' · Stage ' + profile.stage;
+    return 'Ready';
+  }
   function gameMeta(){
-    const ninja = profileOrDefault('ninja');
-    const detectword = profileOrDefault('detectword');
-    const make24 = profileOrDefault('make24');
-    const pairs = profileOrDefault('pairs');
-    const trackcoin = profileOrDefault('trackcoin');
-    const ruleshift = profileOrDefault('ruleshift');
-    return [
-      { id:'detectword', group:'Core Games', name:'Detect The Word', art:'/systems/baseline-games-hub/games/overview-art/detect-the-word.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Wordle-style feedback, 3–7 letter tiers, and button or in-game letter keypad submission.', brainBenefit:'Language deduction, spelling, pattern narrowing, and verbal working memory.', progress:()=> 'Level ' + detectword.level + ' · ' + detectword.wordsSolved + ' solved' },
-      { id:'make24', group:'Core Games', name:'Make The Number', art:'/systems/baseline-games-hub/games/overview-art/make-the-number.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Variable target-number puzzles with tiered number sets, hints, rerolls, and in-game number/operator keypad input.', brainBenefit:'Number flexibility, working memory, multi-step problem solving, and planning.', progress:()=> 'Level ' + make24.level + ' · ' + make24.puzzlesSolved + ' solved' },
-      { id:'pairs', group:'Core Games', name:'Pairs', art:'/systems/baseline-games-hub/games/overview-art/pairs.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Memory matching with tiered boards, skill gating, and account-bound Bank rewards.', brainBenefit:'Visual memory, pattern recall, short-term memory, and calm concentration.', progress:()=> 'Level ' + pairs.level + ' · ' + pairs.boardsCleared + ' cleared' },
-      { id:'ruleshift', group:'Core Games', name:'Rule Shift', art:'/systems/baseline-games-hub/games/overview-art/rule-shift.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Timed rule-switching challenge for flexible attention, impulse control, and deliberate choices.', brainBenefit:'Mental flexibility, impulse control, working memory, and attention switching.', progress:()=> 'Level ' + ruleshift.level + ' · Best streak ' + ruleshift.bestStreak },
-      { id:'trackcoin', group:'Core Games', name:'Track the Coin', art:'/systems/baseline-games-hub/games/overview-art/track-the-coin.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Working-memory shuffle tracking with tiers, streak bonuses, and pace progression.', brainBenefit:'Visual tracking, sustained attention, working memory, and focus under movement.', progress:()=> 'Level ' + trackcoin.level + ' · Best streak ' + trackcoin.bestStreak },
-      { id:'darts-focused', group:'Testing', name:'Darts Focused', art:'/systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'10 distinct games played entirely on the website, each with selectable tiers, experience and mastery linked to Baseline Realm.', brainBenefit:'Darts-specific calculation, selective attention, visual memory, pressure control, strategic flexibility and recovery after mistakes.', progress:()=> { const darts=dartsFocusedProfile(); return 'Level ' + Math.max(1,Number(darts && darts.level || 1)) + ' · 10 games'; }, externalModule:'darts-focused' },
-      { id:'badminton-focused', group:'Testing', name:'Badminton Focused', art:'/systems/baseline-games-hub/games/badminton-focused/art/badminton-focused-overview.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'15 website-based perceptual, attention and decision-training games grounded in the mental demands of real badminton.', brainBenefit:'Shuttle tracking, anticipation, reaction control, tactical judgement, court awareness, recovery and performance under pressure.', progress:()=> { const badminton=badmintonFocusedProfile(); return 'Level ' + Math.max(1,Number(badminton && badminton.level || 1)) + ' · 15 games'; }, externalModule:'badminton-focused' },
-      { id:'ninja', group:'Testing', name:'Baseline Realm', art:'/systems/baseline-games-hub/games/overview-art/baseline-realm.svg?v=G01_INDIGO_CIRCUIT_20260801_1', note:'Experimental Basecamp/RPG layer with Ninja Training, exploration, and settlement systems.', brainBenefit:'Long-term planning, reward tracking, routine engagement, and strategic progression.', progress:()=> 'Level ' + ninja.level + ' · Stage ' + ninja.stage }
-    ];
+    return REGISTERED_OVERVIEW_GAMES.map(function(game){
+      const overview=game.overview || {};
+      return {
+        id:game.runtimeId,
+        group:overview.group || 'Games',
+        name:game.name,
+        art:overview.art || '',
+        note:overview.note || '',
+        brainBenefit:overview.brainBenefit || '',
+        featured:Boolean(overview.featured),
+        externalModule:game.group === 'focused' ? game.runtimeId : '',
+        progress:function(){ return overviewProgress(game); }
+      };
+    });
   }
   function renderGamesList(){
     let currentGroup = '';
     refs.gamesList.innerHTML = gameMeta().map(meta => {
       const group = meta.group || 'Games';
       const heading = group !== currentGroup ? (currentGroup = group, '<div class="games-list-group" role="presentation"><span>' + escapeHtml(group) + '</span></div>') : '';
-      const featured = meta.id === 'darts-focused' || meta.id === 'ninja';
+      const featured = !!meta.featured;
       if(meta.externalModule === 'darts-focused'){
         return heading + '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused">' +
           '<button class="game-row darts-overview-row" data-open-darts-focused type="button">' +
