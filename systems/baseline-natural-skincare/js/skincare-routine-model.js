@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — My Routine data model. */
+/* Baseline Personal Care — My Routine data model. */
 (function (global) {
   'use strict';
 

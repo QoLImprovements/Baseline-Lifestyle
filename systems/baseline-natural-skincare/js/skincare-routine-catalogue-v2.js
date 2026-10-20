@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — comprehensive self-care catalogue and routine fields. */
+/* Baseline Personal Care — comprehensive self-care catalogue and routine fields. */
 (function (global) {
   'use strict';
 

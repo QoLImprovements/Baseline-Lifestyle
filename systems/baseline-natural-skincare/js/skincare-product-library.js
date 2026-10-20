@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — maintainable UK product and recipe picker. */
+/* Baseline Personal Care — maintainable UK product and recipe picker. */
 (function (global) {
   'use strict';
   if (global.BASELINE_SKINCARE_PRODUCT_LIBRARY) return;

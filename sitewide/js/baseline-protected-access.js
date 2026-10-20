@@ -35,7 +35,7 @@
       '    <a class="bl-pages-link" role="menuitem" href="/home/1">Home</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-food-approach/system">Baseline Food Approach</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-massage/system">Baseline Massage</a>',
-      '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Natural Skincare</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Personal Care</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>',

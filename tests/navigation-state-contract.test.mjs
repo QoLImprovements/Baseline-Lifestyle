@@ -89,6 +89,17 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   assert.match(shared,/syncVariantRoute\('push'\)/);
 });
 
+test('sitewide cross-page navigation is native and has no duplicate custom redirect stack',()=>{
+  const shared=read('sitewide/js/baseline-shared.js');
+  assert.equal((shared.match(/function normalisePageHref\(/g)||[]).length,1);
+  assert.doesNotMatch(shared,/function navigatePageHref\(/);
+  assert.doesNotMatch(shared,/function navigateToSiteHref\(/);
+  assert.doesNotMatch(shared,/function navigateSiteHref\(/);
+  assert.doesNotMatch(shared,/function resolvedSiteHref\(/);
+  assert.doesNotMatch(shared,/function siteTargetFile\(/);
+  assert.match(shared,/Let the browser perform normal cross-page navigation/);
+});
+
 test('server routes directly refresh canonical nested paths',()=>{
   const htaccess=read('.htaccess');
   assert.match(htaccess,/baseline-fitness\/my-plan\/\(completed\|future\)/);

@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — canonical My Routine group/calendar adapter v5.
+/* Baseline Personal Care — canonical My Routine group/calendar adapter v5.
 
    OWNERSHIP CONTRACT
    ------------------

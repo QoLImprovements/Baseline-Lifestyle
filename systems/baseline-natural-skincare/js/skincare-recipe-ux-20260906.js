@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — static-first recipe interaction binding 2026-10-02. */
+/* Baseline Personal Care — static-first recipe interaction binding 2026-10-02. */
 (function (global) {
   'use strict';
   if (!global.document || global.__BASELINE_SKINCARE_RECIPE_UX_20260906__) return;

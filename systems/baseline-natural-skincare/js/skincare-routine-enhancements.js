@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — canonical My Routine bootstrap v35.
+/* Baseline Personal Care — canonical My Routine bootstrap v35.
 
    OWNERSHIP / BOOT CONTRACT
    -------------------------

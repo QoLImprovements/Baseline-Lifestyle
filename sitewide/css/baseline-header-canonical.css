@@ -628,8 +628,8 @@ html.bl-pages-dd-ready .bl-homebar-inner{
 }
 
 /* 20260607_exact_wording_banner_fit
-   Keep the exact page title wording inside the banner pill.
-   Do NOT shorten "Baseline Natural Skincare"; fix the pill geometry instead. */
+   Keep the full current page title wording inside the banner pill.
+   Fit the canonical page label by adjusting pill geometry rather than abbreviating it. */
 .bl-pages-dd{
   flex:1 1 auto!important;
   min-width:0!important;
