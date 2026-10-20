@@ -99,3 +99,8 @@ test('Badminton controller delegates generic markup to the UI authority',()=>{
   assert.doesNotMatch(runtime,/function choiceButtons|function feedbackHtml|function nextButton/);
   assert.doesNotMatch(runtime,/const ART_URL=/);
 });
+
+
+test('Badminton leaves Games Hub overview-row rendering to the core authority',()=>{
+  assert.doesNotMatch(runtime,/overviewHtml|ensureOverviewEntry|installObserver|MutationObserver|listObserver|overviewSyncQueued/);
+});

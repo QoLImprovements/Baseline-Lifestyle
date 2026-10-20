@@ -28,19 +28,20 @@ const boardSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focu
 const coreSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js', 'utf8');
 const entrySource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub.js', 'utf8');
 
-test('Darts Focused keeps one named entry with ten distinct website games', () => {
+test('Darts Focused keeps one Hub entry with ten distinct website games', () => {
   assert.equal(GAME_IDS.length, 10);
   assert.deepEqual(GAMES.map((game) => game.id), GAME_IDS);
   for (const id of GAME_IDS) assert.match(contentSource, new RegExp(`id:'${id}'`));
+  assert.match(coreSource, /id:'darts-focused', group:'Testing'/);
+  assert.match(coreSource, /10 distinct games played entirely on the website/);
   assert.match(uiMarkupSource, /Darts Focused/);
-  assert.match(uiMarkupSource, /10 distinct website games/);
   assert.doesNotMatch(uiSource, /throw three physical darts|physically throw at each|record the actual landing/i);
 });
 
-test('overview and panel use the realistic dartboard artwork', () => {
-  assert.match(loaderSource, /realistic-dartboard\.svg/);
-  assert.match(loaderSource, /10 distinct website games/);
+test('core-owned overview and Darts panel use the realistic dartboard artwork', () => {
+  assert.match(coreSource, /games\/darts-focused\/art\/realistic-dartboard\.svg/);
   assert.match(uiMarkupSource, /realistic-dartboard\.svg/);
+  assert.doesNotMatch(loaderSource, /realistic-dartboard\.svg|10 distinct website games/);
   assert.match(boardSource, /traditional numbered dartboard/i);
   for (const number of [20,1,18,4,13,6,10,15,2,17,3,19,7,16,8,11,14,9,12,5]) {
     assert.match(boardSource, new RegExp(`>${number}<\\/text>`));

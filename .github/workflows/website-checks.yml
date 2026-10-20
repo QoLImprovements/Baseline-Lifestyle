@@ -52,6 +52,8 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run Baseline Realm browser checks
+        id: realm_checks
+        continue-on-error: true
         run: npm run test:realm-stage1 && npm run test:realm-integration
 
       - name: Run Badminton Session score authorization browser test
@@ -107,12 +109,19 @@ jobs:
           retention-days: 7
 
       - name: Run Games Hub unit tests
-        run: npm run test:games-hub
+        if: always()
+        run: npm run test:games-hub-unit
+
+      - name: Run focused games unit tests
+        if: always()
+        run: npm run test:focused-games
 
       - name: Run Badminton Games Hub browser smoke
+        if: always()
         run: npx playwright test tests/badminton-focused-browser.spec.js --reporter=line
 
       - name: Run Darts Games Hub browser smoke
+        if: always()
         run: npx playwright test tests/darts-focused-browser.spec.js --reporter=line
 
       - name: Lint PHP endpoints
@@ -126,3 +135,9 @@ jobs:
 
       - name: Exercise saved-data atomic-write contract
         run: npm run test:saved-data-php
+
+      - name: Preserve Realm failure status
+        if: ${{ always() && steps.realm_checks.outcome == 'failure' }}
+        run: |
+          echo "::error::Baseline Realm browser checks failed earlier in this job."
+          exit 1

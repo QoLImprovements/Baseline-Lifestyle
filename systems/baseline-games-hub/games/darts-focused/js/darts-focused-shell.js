@@ -1,4 +1,4 @@
-import { escapeHtml, overviewEntryHtml, panelHtml as buildPanelHtml } from './darts-focused-ui.js';
+import { escapeHtml, panelHtml as buildPanelHtml } from './darts-focused-ui.js';
 
 export function createDartsShell({
   build,
@@ -9,9 +9,7 @@ export function createDartsShell({
   renderSelectedGame,
   renderProgressSummary,
   clearGameTimers,
-  clearAutoTimer,
-  onOverviewSyncQueued=()=>{},
-  isOverviewSyncQueued=()=>false
+  clearAutoTimer
 }){
   const byId=(id)=>document.getElementById(id);
 
@@ -55,22 +53,6 @@ export function createDartsShell({
     document.body.classList.remove('games-modal-open');
   }
 
-  function ensureOverviewEntry(){
-    const list=byId('gamesList');
-    if(!list||list.querySelector('[data-open-darts-focused]'))return;
-    const testingHeading=[...list.querySelectorAll('.games-list-group')].find((node)=>node.textContent.trim()==='Testing');
-    if(testingHeading)testingHeading.insertAdjacentHTML('beforebegin',overviewEntryHtml());
-    else list.insertAdjacentHTML('beforeend',overviewEntryHtml());
-  }
-
-  function queueOverviewSync(){
-    if(isOverviewSyncQueued())return;
-    onOverviewSyncQueued(true);
-    requestAnimationFrame(()=>{
-      onOverviewSyncQueued(false);
-      ensureOverviewEntry();
-    });
-  }
 
   function panelHtml(){
     return buildPanelHtml({games,selectedId:getSelected(),progressLabel});
@@ -156,8 +138,6 @@ export function createDartsShell({
     ensureExistingModal,
     openHowToPlay,
     closeInfo,
-    ensureOverviewEntry,
-    queueOverviewSync,
     ensurePanel,
     openPanel,
     closePanel,

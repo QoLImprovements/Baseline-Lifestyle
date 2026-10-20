@@ -19,6 +19,8 @@ const rendererSource=fs.readFileSync(new URL('../systems/baseline-games-hub/game
 const actionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-actions.js',import.meta.url),'utf8');
 const decisionActionSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision-actions.js',import.meta.url),'utf8');
 const stateSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-state.js',import.meta.url),'utf8');
+const shellSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-shell.js',import.meta.url),'utf8');
+const uiSource=fs.readFileSync(new URL('../systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js',import.meta.url),'utf8');
 
 test('Darts content authority exposes the canonical ten games and three tiers',()=>{
   assert.deepEqual(GAMES.map(game=>game.id),GAME_IDS);
@@ -173,7 +175,9 @@ test('Darts public API retains Realm contribution access after modularisation',(
 });
 
 
-test('Darts coordinator wires ensurePanel from shell authority',()=>{
-  assert.match(runtime,/ensureOverviewEntry,[\s\S]*queueOverviewSync,[\s\S]*ensurePanel,[\s\S]*openPanel/);
-  assert.match(runtime,/ensureStylesheet\(\); ensurePanel\(\); ensureOverviewEntry\(\); installObserver\(\);/);
+test('Darts leaves Games Hub overview-row rendering to the core authority',()=>{
+  assert.match(runtime,/ensureStylesheet\(\); ensurePanel\(\);/);
+  assert.doesNotMatch(runtime,/ensureOverviewEntry|queueOverviewSync|installObserver|MutationObserver/);
+  assert.doesNotMatch(shellSource,/overviewEntryHtml|ensureOverviewEntry|queueOverviewSync|data-darts-entry/);
+  assert.doesNotMatch(uiSource,/overviewEntryHtml|data-darts-entry/);
 });
