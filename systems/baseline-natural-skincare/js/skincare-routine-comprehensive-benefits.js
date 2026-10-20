@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — action-specific comprehensive routine benefits. */
+/* Baseline Personal Care — action-specific comprehensive routine benefits. */
 (function (root, factory) {
   'use strict';
   const base = root && root.BASELINE_SKINCARE_ROUTINE_MODEL
