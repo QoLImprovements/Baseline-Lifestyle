@@ -1,4 +1,4 @@
-/* Baseline Natural Skincare — canonical My Routine data/workspace owner v3.
+/* Baseline Personal Care — canonical My Routine data/workspace owner v3.
 
    OWNERSHIP CONTRACT
    ------------------
