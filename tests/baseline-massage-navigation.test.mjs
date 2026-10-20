@@ -35,8 +35,10 @@ test('all three Massage planner modes are present and click-bound', () => {
     assert.match(html, new RegExp(`data-planner-mode="${mode}"`));
     assert.match(html, new RegExp(`data-planner-panel="${mode}"`));
   }
+  assert.match(html, /function activatePlannerMode\(mode,historyMode\)/);
   assert.match(html, /qsa\('\[data-planner-mode\]'\)\.forEach\(btn => btn\.addEventListener\('click'/);
-  assert.match(html, /panel\.classList\.toggle\('active', panel\.dataset\.plannerPanel === btn\.dataset\.plannerMode\)/);
+  assert.match(html, /activatePlannerMode\(btn\.dataset\.plannerMode,'push'\)/);
+  assert.match(html, /panel\.classList\.toggle\('active', panel\.dataset\.plannerPanel === next\)/);
 });
 
 test('custom pressure and pace fields remain conditional with provider-led defaults', () => {
@@ -56,7 +58,10 @@ test('clean Massage routes agree across server and the canonical shared router',
   assert.match(shared, /baseline-massage[^\n]+system[^\n]+library[^\n]+planner/);
   assert.doesNotMatch(shared, /baseline-massage[^\n]+types:'types'/);
   assert.doesNotMatch(html, /baseline-tabs\.js/);
-  assert.doesNotMatch(html, /history\.(?:pushState|replaceState)/);
+  assert.match(html, /function writeMassageRoute\(key,value,mode='push'\)/);
+  assert.match(html, /history\.replaceState\(payload,'',next\)/);
+  assert.match(html, /history\.pushState\(payload,'',next\)/);
+  assert.match(html, /addEventListener\('popstate',restoreMassageNestedRoute\)/);
   assert.doesNotMatch(html, /^(?:<<<<<<<|=======|>>>>>>>)/m);
 });
 
