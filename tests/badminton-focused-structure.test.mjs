@@ -104,3 +104,11 @@ test('Badminton controller delegates generic markup to the UI authority',()=>{
 test('Badminton leaves Games Hub overview-row rendering to the core authority',()=>{
   assert.doesNotMatch(runtime,/overviewHtml|ensureOverviewEntry|installObserver|MutationObserver|listObserver|overviewSyncQueued/);
 });
+
+
+test('Badminton controller does not intercept the Games Hub overview opener',()=>{
+  const clickHandler=runtime.slice(runtime.indexOf('function handleClick'),runtime.indexOf('function handleKey'));
+  assert.doesNotMatch(clickHandler,/data-open-badminton-focused/);
+  assert.match(clickHandler,/data-close-badminton-focused/);
+  assert.match(runtime,/document\.querySelector\('\[data-open-badminton-focused\]'\)\?\.focus/);
+});

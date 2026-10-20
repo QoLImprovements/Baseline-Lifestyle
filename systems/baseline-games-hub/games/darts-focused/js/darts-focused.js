@@ -347,7 +347,6 @@ const {
   renderSelectedGame,
   openHowToPlay,
   closeInfo,
-  openPanel,
   closePanel,
   changeTier,
   toggleAutoNext,
