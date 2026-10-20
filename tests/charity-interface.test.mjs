@@ -54,3 +54,35 @@ test('protected access requires a host-supplied PIN and keeps no repository fall
   assert.match(endpoint,/protected_access_not_configured/);
   assert.doesNotMatch(endpoint,/BL_CHARITY_SHOP_PIN',\s*'\d+'/);
 });
+
+
+test('Charity Shop retired coherence CSS stays absent and loaded theme layers avoid exact duplicate rules',async()=>{
+  const [page,complete,cashing] = await Promise.all([
+    read('systems/charity-shop/charity-shop.php'),
+    read('systems/charity-shop/css/charity-shop-complete-theme.css'),
+    read('systems/charity-shop/css/charity-shop-cashing-and-artwork.css')
+  ]);
+
+  assert.doesNotMatch(page,/charity-shop-coherence\.css/);
+  await assert.rejects(
+    read('systems/charity-shop/css/charity-shop-coherence.css'),
+    error => error && error.code === 'ENOENT'
+  );
+
+  const simpleRules = source => {
+    const rules=[];
+    const re=/([^{}]+)\{([^{}]*)\}/g;
+    let match;
+    while((match=re.exec(source))){
+      const selector=match[1].replace(/\/\*[\s\S]*?\*\//g,'').trim().replace(/\s+/g,' ');
+      if(!selector || selector.startsWith('@') || /^(?:from|to|\d+%)$/.test(selector)) continue;
+      const declarations=match[2].trim().replace(/\s+/g,' ');
+      rules.push(selector+'\n'+declarations);
+    }
+    return rules;
+  };
+
+  const later=new Set(simpleRules(cashing));
+  const duplicates=simpleRules(complete).filter(rule=>later.has(rule));
+  assert.deepEqual(duplicates,[]);
+});
