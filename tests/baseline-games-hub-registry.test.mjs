@@ -71,3 +71,21 @@ test('Games Hub core and Realm coordinate readiness through an explicit event', 
   const configureTail = realmEntry.slice(configureStart);
   assert.doesNotMatch(configureTail, /setInterval\?\.\(/);
 });
+
+
+test('focused-game overview rows have one DOM renderer authority', () => {
+  const core = fs.readFileSync(corePath, 'utf8');
+  const loader = fs.readFileSync(loaderPath, 'utf8');
+
+  assert.match(core, /function renderGamesList\(\)/);
+  assert.match(core, /data-open-darts-focused/);
+  assert.match(core, /data-open-badminton-focused/);
+
+  assert.doesNotMatch(loader, /function dartsMarkup\(\)/);
+  assert.doesNotMatch(loader, /function badmintonMarkup\(\)/);
+  assert.doesNotMatch(loader, /function addDarts\(\)/);
+  assert.doesNotMatch(loader, /function addBadminton\(\)/);
+  assert.doesNotMatch(loader, /MutationObserver/);
+  assert.doesNotMatch(loader, /insertAdjacentHTML/);
+  assert.match(loader, /function ensureFocusedGameStyles\(\)/);
+});
