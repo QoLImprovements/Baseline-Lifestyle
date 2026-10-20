@@ -109,12 +109,15 @@ jobs:
           retention-days: 7
 
       - name: Run Games Hub unit tests
+        if: always()
         run: npm run test:games-hub
 
       - name: Run Badminton Games Hub browser smoke
+        if: always()
         run: npx playwright test tests/badminton-focused-browser.spec.js --reporter=line
 
       - name: Run Darts Games Hub browser smoke
+        if: always()
         run: npx playwright test tests/darts-focused-browser.spec.js --reporter=line
 
       - name: Lint PHP endpoints
