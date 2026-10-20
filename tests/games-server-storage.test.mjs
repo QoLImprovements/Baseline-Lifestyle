@@ -12,6 +12,7 @@ const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
 const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
 const storageUi=read('systems/baseline-games-hub/js/games-server-storage-ui.js');
 const loader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
+const realmEntry=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
 const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
 const html=read('systems/baseline-games-hub/baseline-games-hub.html');
 const gamesApi=read('systems/baseline-games-hub/api/games_data.php');
@@ -147,10 +148,12 @@ test('storage layer does not become a second controller for game interactions',(
   assert.doesNotMatch(guard,/stopImmediatePropagation|installStorageGate|fallbackBound/);
 });
 
-test('Baseline Realm play loop runs independently of saving availability',()=>{
-  assert.match(loader,/host\.applyOfflineProgress\(\);host\.render\(\)/);
-  assert.match(loader,/host\.startLoop\(\)/);
-  assert.doesNotMatch(loader,/if\s*\(\s*(?:progressAllowed|canSave\(\))\s*\)\s*host\.(?:applyOfflineProgress|startLoop)/);
+test('Baseline Realm canonical entry starts play independently of saving availability',()=>{
+  assert.match(realmEntry,/function startRealmRuntimeOnce\(\)/);
+  assert.match(realmEntry,/runtime\.applyOfflineProgress\(\);[\s\S]*?runtime\.render\(\);[\s\S]*?runtime\.startLoop\(\);/);
+  assert.match(realmEntry,/if \(runtimeStarted\) return true/);
+  assert.doesNotMatch(realmEntry,/if\s*\(\s*(?:progressAllowed|canSave\(\))\s*\)[\s\S]*?(?:applyOfflineProgress|startLoop)/);
+  assert.doesNotMatch(loader,/host\.(?:applyOfflineProgress|render|startLoop)\(/);
 });
 
 test('every current game and jigsaw save app is covered by the server authority contract',()=>{

@@ -1378,8 +1378,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     trackCoinState = null;
     ruleShiftState = null;
     restoreSavedCoreRounds();
-    resolveNinjaBonuses();
-    applyOfflineNinjaProgress();
   }
   async function loadAllProfiles(){
     await hydrateProfiles();
@@ -3082,8 +3080,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   }
 
   function resolveNinjaBonuses(){ const method = realmHostMethod('resolveBonuses'); return method ? method() : {}; }
-  function applyOfflineNinjaProgress(){ const method = realmHostMethod('applyOfflineProgress'); return method ? method() : undefined; }
-  function startNinjaLoop(){ const method = realmHostMethod('startLoop'); return method ? method() : undefined; }
 
 
   function toggleRealmFullscreen(){ const method = realmHostMethod('toggleFullscreen'); return method ? method() : undefined; }
@@ -4549,7 +4545,6 @@ function toggleGameFullscreen(gameId){
       ensureGamesHubBackEntry();
       renderAuthState();
       safeRenderAll();
-      startNinjaLoop();
       bindAuthStateChanges();
     }catch(error){
       stable=false;
@@ -4577,10 +4572,6 @@ function toggleGameFullscreen(gameId){
       syncHashState:syncHashState, isMobileGameViewport:isMobileGameViewport, profileOrDefault:profileOrDefault
     };
     window.BASELINE_GAMES_HUB_CORE_DEPENDENCIES = coreDependencies;
-    if(window.BaselineRealmHost && typeof window.BaselineRealmHost.configure === 'function'){
-      try{ window.BaselineRealmHost.configure(coreDependencies); }
-      catch(error){ console.error('[Baseline Games Hub] Realm configuration failed; Hub controls remain active.', error); }
-    }
     ensureGamePlayContract();
     setupGamePlayContractObserver();
     ensureGameFullscreenButtons();

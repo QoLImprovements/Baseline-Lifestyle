@@ -94,4 +94,7 @@ test('Games Hub compatibility loader does not compete with the canonical Realm b
   assert.doesNotMatch(optional,/host\.render\(\)|host\.applyOfflineProgress\(\)|host\.startLoop\(\)/);
   assert.match(realm,/bindRealmInputs\(\{ runtime, inputManager, eventBus, sceneRouter \}\)/);
   assert.match(realm,/inputManager\.start\(\)/);
+  assert.match(realm,/function startRealmRuntimeOnce\(\)/);
+  assert.match(realm,/runtime\.applyOfflineProgress\(\);[\s\S]*?runtime\.render\(\);[\s\S]*?runtime\.startLoop\(\);/);
+  assert.match(realm,/BASELINE_GAMES_HUB_CORE_READY !== true/);
 });
