@@ -76,11 +76,17 @@ test('Charity Shop presentation layers remain consolidated under one pre-colour 
 
   assert.doesNotMatch(page,/charity-shop-coherence\.css|charity-shop-complete-theme\.css/);
   assert.equal((page.match(/charity-shop-cashing-and-artwork\.css/g)||[]).length,1);
-  assert.match(page,/charity-shop-cashing-and-artwork\.css\?v=CHARITY_CSS_CONSOLIDATED_20261020_1/);
+  assert.match(page,/charity-shop-cashing-and-artwork\.css\?v=CHARITY_CSS_SHADOW_CLEANUP_20261021_1/);
 
   const mergedStart=cashing.indexOf('Charity Shop single-gradient authority');
   const laterStart=cashing.indexOf('Former cashing-and-artwork layer: later authority begins here.');
-  assert.ok(mergedStart>=0 && laterStart>mergedStart,'former complete-theme rules must remain before later cashing/artwork rules');
+  assert.ok(mergedStart>=0 && laterStart>mergedStart,'contributing former complete-theme rules must remain before later cashing/artwork rules');
+
+  const retainedLegacyLayer=cashing.slice(mergedStart,laterStart);
+  assert.doesNotMatch(retainedLegacyLayer,/body\[data-app="charity-shop"\] \.charity-scroll,[\s\S]*?background-size:100% 100%!important;/);
+  assert.doesNotMatch(retainedLegacyLayer,/\.charity-grid,[\s\S]*?\.charity-card-grid\{[\s\S]*?gap:18px!important;/);
+  assert.doesNotMatch(retainedLegacyLayer,/\.charity-step-number--teal\{[\s\S]*?margin:0 0 2px!important;/);
+  assert.doesNotMatch(retainedLegacyLayer,/\.charity-step-artwork\{[\s\S]*?box-shadow:0 8px 18px rgba\(80,12,19,\.10\)!important;/);
 
   const cashingLink=page.indexOf('charity-shop-cashing-and-artwork.css');
   const finalLink=page.indexOf('charity-shop-final-coherence.css');
