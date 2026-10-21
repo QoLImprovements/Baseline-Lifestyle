@@ -1,7 +1,6 @@
 /* Consolidated Charity Shop presentation authority.
-   The former complete-theme layer is intentionally preserved first so the
-   cascade order remains identical; the later cashing/artwork rules continue
-   to override it exactly as before. */
+   The former complete-theme layer is retained only where it still contributes
+   to the final result; rules fully superseded later in this file are removed. */
 
 /* Charity Shop single-gradient authority — 2026-07-30
    One mirrored Air Ambulance palette across the banner, header and all pages.
@@ -39,15 +38,7 @@ body[data-app="charity-shop"]{
   background-attachment:fixed!important;
 }
 
-html[data-app="charity-shop"],
-body[data-app="charity-shop"],
-body[data-app="charity-shop"] .charity-scroll,
-body[data-app="charity-shop"] .bl-scroll{
-  background:var(--charity-gradient)!important;
-  background-image:var(--charity-gradient)!important;
-  background-size:100% 100%!important;
-  background-attachment:fixed!important;
-}
+
 
 /* The header and both navigation levels use the exact same gradient authority. */
 html body[data-app="charity-shop"] .charity-homebar,
@@ -98,36 +89,10 @@ html body[data-app="charity-shop"] .charity-subpanel.active{
   overflow:visible!important;
 }
 
-html body[data-app="charity-shop"] .charity-grid,
-html body[data-app="charity-shop"] .charity-card-grid{
-  display:grid!important;
-  gap:18px!important;
-  align-items:start!important;
-  min-width:0!important;
-}
+
 
 /* One calm, solid reading surface. No competing card gradient. */
-html body[data-app="charity-shop"] .charity-card,
-html body[data-app="charity-shop"] article.charity-card,
-html body[data-app="charity-shop"] .charity-step-card,
-html body[data-app="charity-shop"] .charity-table-card,
-html body[data-app="charity-shop"] .charity-cashup-heading,
-html body[data-app="charity-shop"] .charity-cash-table-card,
-html body[data-app="charity-shop"] .charity-cash-totals,
-html body[data-app="charity-shop"] .charity-float-maker,
-html body[data-app="charity-shop"] .charity-cheque-summary{
-  min-width:0!important;
-  height:auto!important;
-  padding:20px!important;
-  border:1px solid var(--charity-border)!important;
-  border-radius:18px!important;
-  background:var(--charity-panel)!important;
-  background-image:none!important;
-  color:var(--charity-ink)!important;
-  box-shadow:var(--charity-shadow)!important;
-  overflow:hidden!important;
-  isolation:isolate!important;
-}
+
 
 html body[data-app="charity-shop"] .charity-card--danger,
 html body[data-app="charity-shop"] .charity-card--success{
@@ -150,23 +115,7 @@ html body[data-app="charity-shop"] #operations-cubing article.charity-step-card{
   overflow:hidden!important;
 }
 
-html body[data-app="charity-shop"] .charity-step-number,
-html body[data-app="charity-shop"] .charity-step-number--green,
-html body[data-app="charity-shop"] .charity-step-number--teal{
-  display:inline-grid!important;
-  place-items:center!important;
-  justify-self:start!important;
-  width:38px!important;
-  height:38px!important;
-  margin:0 0 2px!important;
-  border:2px solid var(--charity-gold)!important;
-  border-radius:50%!important;
-  background:var(--charity-red-mid)!important;
-  background-image:none!important;
-  color:#fff!important;
-  -webkit-text-fill-color:#fff!important;
-  box-shadow:0 6px 14px rgba(80,12,19,.24)!important;
-}
+
 
 html body[data-app="charity-shop"] p,
 html body[data-app="charity-shop"] li,
@@ -178,21 +127,7 @@ html body[data-app="charity-shop"] .charity-card li{
 }
 
 /* Actual A4 illustration crops remain inside their cards and cannot overlap text. */
-html body[data-app="charity-shop"] .charity-step-artwork{
-  position:relative!important;
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  margin:4px auto 0!important;
-  overflow:hidden!important;
-  border:1px solid var(--charity-border-soft)!important;
-  border-radius:14px!important;
-  background:var(--charity-cream)!important;
-  background-image:none!important;
-  box-shadow:0 8px 18px rgba(80,12,19,.10)!important;
-  isolation:isolate!important;
-}
+
 
 html body[data-app="charity-shop"] .charity-rule,
 html body[data-app="charity-shop"] .charity-warning,
@@ -340,11 +275,7 @@ html body[data-app="charity-shop"] .charity-artwork-pair[data-charity-sheet-artw
     gap:7px!important;
     padding:8px!important;
   }
-  html body[data-app="charity-shop"] .charity-main-tab,
-  html body[data-app="charity-shop"] .charity-subtab{
-    padding:8px 11px!important;
-    font-size:14px!important;
-  }
+  
 }
 
 /* ---- Former cashing-and-artwork layer: later authority begins here. ---- */
