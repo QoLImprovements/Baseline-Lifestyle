@@ -109,12 +109,6 @@ body{
   --homebar-right-width: 0px;
 }
 
-/* When site navigation is collapsed into a dropdown, keep the banner on one
-   clean row: Pages dropdown left, Beats/Account right. */
-html.bl-pages-dd-ready .bl-homebar-inner{
-  flex-wrap: nowrap;
-}
-
 /* --------------------------
    Top navigation (sitewide)
    Visible links: Home + 3 systems
@@ -150,11 +144,6 @@ html.bl-pages-dd-ready .bl-topnav{ display:none !important; }
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
-}
-.bl-pages-btn{
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 .bl-pages-menu{
   position: absolute;
@@ -472,12 +461,6 @@ html:not(.bl-pages-dd-ready) .bl-topnav{
 html.bl-pages-dd-ready .bl-homebar-inner{
   flex-wrap:nowrap!important;
 }
-.bl-pages-dd{
-  flex:1 1 auto!important;
-  min-width:0!important;
-  max-width:100%!important;
-  overflow:hidden!important;
-}
 .bl-mini-btn{
   min-height:38px!important;
   height:38px!important;
@@ -487,14 +470,6 @@ html.bl-pages-dd-ready .bl-homebar-inner{
   padding:0 12px!important;
   line-height:1!important;
   box-sizing:border-box!important;
-}
-.bl-pages-btn{
-  justify-content:flex-start!important;
-  max-width:100%!important;
-  min-width:0!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
 }
 .bl-homebar-right{
   flex:0 0 auto!important;
@@ -516,10 +491,6 @@ html.bl-pages-dd-ready .bl-homebar-inner{
     width:calc(100% - 8px)!important;
     gap:6px!important;
   }
-  .bl-pages-btn{
-    padding-left:10px!important;
-    padding-right:10px!important;
-  }
   .bl-pages-menu{
     left:0!important;
     width:min(380px, calc(100vw - 12px))!important;
@@ -540,11 +511,6 @@ html.bl-pages-dd-ready .bl-homebar-inner{
 }
 .bl-pages-menu{
   z-index:15000!important;
-}
-.bl-pages-btn{
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
 }
 
 
@@ -630,12 +596,6 @@ html.bl-pages-dd-ready .bl-homebar-inner{
 /* 20260607_exact_wording_banner_fit
    Keep the full current page title wording inside the banner pill.
    Fit the canonical page label by adjusting pill geometry rather than abbreviating it. */
-.bl-pages-dd{
-  flex:1 1 auto!important;
-  min-width:0!important;
-  max-width:100%!important;
-  overflow:visible!important;
-}
 .bl-pages-btn{
   width:100%!important;
   min-width:0!important;
