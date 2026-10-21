@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
+const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_PROGRESSION_AUTHORITY_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
@@ -11,6 +11,13 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
   const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
+  const PROGRESSION_RULES = window.BASELINE_GAMES_HUB_PROGRESSION || null;
+  if(!PROGRESSION_RULES) throw new Error('games_progression_authority_missing');
+  const xpNeededForLevel = PROGRESSION_RULES.xpNeededForLevel;
+  const progressionSnapshot = PROGRESSION_RULES.progressionSnapshot;
+  const applyLevelCurve = PROGRESSION_RULES.applyLevelCurve;
+  const refundLockedSkills = PROGRESSION_RULES.refundLockedSkills;
+  const reconcileSkillPoints = PROGRESSION_RULES.reconcileSkillPoints;
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
   const AUTO_NEXT_DELAYS = Object.freeze({ pairs:900, detectword:900, make24:900, trackcoin:6500, ruleshift:900, blockgrid:1200, coloursort:1200, crossnumber:1200 });
@@ -1002,17 +1009,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
     }
     return copy;
   }
-  function xpNeededForLevel(level){
-    return 60 + ((level - 1) * 35) + ((level - 1) * (level - 1) * 4);
-  }
-  function progressionSnapshot(profile){
-    const level=Math.max(1,Math.round(Number(profile&&profile.level||1)));
-    const xp=Math.max(0,Math.round(Number(profile&&profile.xp||0)));
-    const needed=xpNeededForLevel(level);
-    const pct=clamp((xp/Math.max(1,needed))*100,0,100);
-    return {level:level,xp:xp,needed:needed,pct:pct,remaining:Math.max(0,needed-xp)};
-  }
-
   function coherentProgressHtml(profile,title,stats){
     const p=progressionSnapshot(profile);
     const statHtml=(stats||[]).map(function(item){
@@ -1128,36 +1124,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
 
 
 
-  function applyLevelCurve(profile){
-    let leveled = 0;
-    while(profile.xp >= xpNeededForLevel(profile.level)){
-      profile.xp -= xpNeededForLevel(profile.level);
-      profile.level += 1;
-      profile.skillPoints += 1;
-      leveled += 1;
-    }
-    return leveled;
-  }
-  function refundLockedSkills(profile, defs){
-    let refund = 0;
-    defs.forEach(def => {
-      const current = clamp(Math.round(Number(profile.skills[def.id] || 0)), 0, def.max);
-      const allowed = profile.level >= def.unlockLevel ? current : 0;
-      if(current > allowed) refund += (current - allowed);
-      profile.skills[def.id] = allowed;
-    });
-    profile.skillPoints = Math.max(0, Math.round(Number(profile.skillPoints || 0)) + refund);
-  }
-  function spentSkillPoints(profile, defs){
-    return defs.reduce((total, def) => total + Math.max(0, Math.round(Number(profile.skills[def.id] || 0))), 0);
-  }
-  function earnedSkillPoints(profile){
-    return Math.max(1, Math.round(Number(profile.level || 1)));
-  }
-  function reconcileSkillPoints(profile, defs){
-    const spent = spentSkillPoints(profile, defs);
-    profile.skillPoints = Math.max(0, earnedSkillPoints(profile) - spent);
-  }
   function reconcileAllSkillProfiles(){
     if(profiles.pairs) reconcileSkillPoints(profiles.pairs, PAIRS_SKILLS);
     if(profiles.make24) reconcileSkillPoints(profiles.make24, MAKE24_SKILLS);
