@@ -5,42 +5,28 @@ import vm from 'node:vm';
 
 const configPath=new URL('../systems/baseline-games-hub/js/games-core-config.js',import.meta.url);
 const progressionPath=new URL('../systems/baseline-games-hub/js/games-progression.js',import.meta.url);
+const detectWordEnginePath=new URL('../systems/baseline-games-hub/js/detect-word-engine.js',import.meta.url);
 const profileRulesPath=new URL('../systems/baseline-games-hub/js/games-profile-rules.js',import.meta.url);
 const corePath=new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url);
 const htmlPath=new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url);
-
-function evaluateWordGuess(guess,secret){
-  const result=Array.from({length:guess.length},(_,idx)=>({letter:guess[idx],state:'absent'}));
-  const secretPool=secret.split('');
-  guess.split('').forEach((char,idx)=>{
-    if(secret[idx]===char){
-      result[idx].state='correct';
-      secretPool[idx]=null;
-    }
-  });
-  guess.split('').forEach((char,idx)=>{
-    if(result[idx].state==='correct')return;
-    const poolIndex=secretPool.indexOf(char);
-    if(poolIndex>=0){
-      result[idx].state='present';
-      secretPool[poolIndex]=null;
-    }
-  });
-  return result;
-}
 
 function loadRules(){
   const sandbox={window:{}};
   vm.runInNewContext(fs.readFileSync(configPath,'utf8'),sandbox,{filename:'games-core-config.js'});
   vm.runInNewContext(fs.readFileSync(progressionPath,'utf8'),sandbox,{filename:'games-progression.js'});
+  vm.runInNewContext(fs.readFileSync(detectWordEnginePath,'utf8'),sandbox,{filename:'detect-word-engine.js'});
   vm.runInNewContext(fs.readFileSync(profileRulesPath,'utf8'),sandbox,{filename:'games-profile-rules.js'});
   const factory=sandbox.window.BASELINE_GAMES_HUB_PROFILE_RULES;
+  const detectWordEngine=sandbox.window.BASELINE_DETECT_WORD_ENGINE.create({
+    wordBank:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG.WORD_BANK,
+    random:()=>0
+  });
   return {
     factory,
     rules:factory.create({
       config:sandbox.window.BASELINE_GAMES_HUB_CORE_CONFIG,
       progression:sandbox.window.BASELINE_GAMES_HUB_PROGRESSION,
-      evaluateWordGuess,
+      evaluateWordGuess:detectWordEngine.evaluateWordGuess,
       normaliseTrackCoinSpeedPercent:value=>Math.max(100,Math.round(Number(value||100))),
       trackCoinBaseSpeedPercent:100
     })
