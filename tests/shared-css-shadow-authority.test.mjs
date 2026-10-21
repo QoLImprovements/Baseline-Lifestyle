@@ -47,7 +47,12 @@ function ruleBlocks(source){
             if(colon<0)continue;
             const property=part.slice(0,colon).trim();
             const value=part.slice(colon+1).trim().replace(/\s+/g,' ');
-            if(property&&!property.includes('{'))declarations[property]=value;
+            if(property&&!property.includes('{')){
+              declarations[property]={
+                value,
+                important:/!important\s*$/i.test(value)
+              };
+            }
           }
           blocks.push({selector,context:node.context,line:node.line,declarations});
         }
@@ -75,7 +80,15 @@ function fullyShadowedBlocks(source){
       if(index===blocks.length-1)return;
       const properties=Object.keys(block.declarations);
       const later=blocks.slice(index+1);
-      if(properties.length&&properties.every(property=>later.some(candidate=>Object.prototype.hasOwnProperty.call(candidate.declarations,property)))){
+      const isShadowed=property=>{
+        const current=block.declarations[property];
+        return later.some(candidate=>{
+          if(!Object.prototype.hasOwnProperty.call(candidate.declarations,property))return false;
+          const replacement=candidate.declarations[property];
+          return !current.important||replacement.important;
+        });
+      };
+      if(properties.length&&properties.every(isShadowed)){
         shadowed.push({
           selector:block.selector,
           context:block.context||'(top level)',
