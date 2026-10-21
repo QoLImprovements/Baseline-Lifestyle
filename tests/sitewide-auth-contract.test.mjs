@@ -94,13 +94,14 @@ test('Fitness parser-loads focused API, store and auth clients before shared run
   assert.doesNotMatch(html, /baseline-auth-failsafe\.js/);
 });
 
-test('shared form interactions handle auth submission without a shadow auth failsafe', () => {
-  const interactions = read('sitewide/js/baseline-form-interactions.js');
+test('shared account forms own submission without shadow repair layers', () => {
   const shared = read('sitewide/js/baseline-shared.js');
   assert.equal(fs.existsSync(path.join(root, 'sitewide/js/baseline-auth-failsafe.js')), false);
-  assert.match(interactions, /#bl-auth-flyout \.bl-auth-form:not\(\[hidden\]\) input/);
-  assert.match(interactions, /event\.key === 'Enter'/);
-  assert.match(interactions, /submitVisibleAuthForm/);
+  assert.equal(fs.existsSync(path.join(root, 'sitewide/js/baseline-form-interactions.js')), false);
+  assert.match(shared, /loginForm\.addEventListener\('submit'/);
+  assert.match(shared, /signupForm\.addEventListener\('submit'/);
+  assert.match(shared, /recoverForm\.addEventListener\('submit'/);
+  assert.match(shared, /resetForm\.addEventListener\('submit'/);
   assert.match(shared, /const authClient = window\.BASELINE_auth/);
   assert.doesNotMatch(shared, /bl-auth-failsafe-form|baseline-auth-failsafe/);
 });
