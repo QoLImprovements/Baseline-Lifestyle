@@ -867,10 +867,8 @@ body[data-app="skin"] .bl-flyout .bl-select-menu{
   font-weight: 700 !important;
 }
 
-#bl-auth-flyout #bl-favs-food-select,
-#bl-auth-flyout #bl-favs-skin-select,
-#bl-auth-flyout #bl-favs-food-select + .bl-select-btn,
-#bl-auth-flyout #bl-favs-skin-select + .bl-select-btn,
+#bl-auth-flyout #bl-favorites-select,
+#bl-auth-flyout #bl-favorites-select + .bl-select-btn,
 #bl-auth-flyout .bl-auth-fieldgroup .bl-select{
   width: 100% !important;
   max-width: 100% !important;

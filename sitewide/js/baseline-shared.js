@@ -6515,13 +6515,8 @@ function setupAuthFlyout(){
 
             <div id="bl-fav-links" class="bl-auth-links-stack">
               <div class="bl-auth-fieldgroup">
-                <label for="bl-favs-food-select">Baseline Food Favorites</label>
-                <select id="bl-favs-food-select" aria-label="Baseline Food Favorites"></select>
-              </div>
-
-              <div class="bl-auth-fieldgroup">
-                <label for="bl-favs-skin-select">Baseline Personal Care Favorites</label>
-                <select id="bl-favs-skin-select" aria-label="Baseline Personal Care Favorites"></select>
+                <label for="bl-favorites-select">Favorites</label>
+                <select id="bl-favorites-select" aria-label="Favorites"></select>
               </div>
 
               <div class="bl-auth-fieldgroup bl-auth-fitness-link-wrap">
@@ -7075,9 +7070,8 @@ function setupAuthFlyout(){
     maybeHandleResetFromUrl();
     handleAuthStatusFromUrl();
 
-    // Favourites dropdowns (Food + Skincare)
-    const favFoodSel = q('#bl-favs-food-select', fly);
-    const favSkinSel = q('#bl-favs-skin-select', fly);
+    // One Account Favorites control, grouped by owning application.
+    const favSel = q('#bl-favorites-select', fly);
 
     function recipeTitle(appKey,id){
       const recipeId=String(id || '');
@@ -7106,33 +7100,53 @@ function setupAuthFlyout(){
       return ids.map(String);
     }
 
-    function fillSelect(sel, ids, appKey){
-      if(!sel) return;
-      const esc = (x)=>String(x||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-      const opts = ['<option value="">Choose…</option>'];
-      ids.forEach(id=>{
-        const label = recipeTitle(appKey,id);
-        opts.push('<option value="' + esc(id) + '">' + esc(label) + '</option>');
+    function setFavoritesPlaceholder(label,disabled){
+      if(!favSel) return;
+      const option=document.createElement('option');
+      option.value='';
+      option.textContent=label;
+      favSel.replaceChildren(option);
+      favSel.disabled=Boolean(disabled);
+    }
+
+    function fillFavoritesSelect(foodIds,skinIds){
+      if(!favSel) return;
+      const groups=[
+        {label:'Food',prefix:'food',appKey:'food',ids:foodIds},
+        {label:'Personal Care',prefix:'skincare',appKey:'skincare',ids:skinIds}
+      ];
+      const available=groups.reduce((total,group)=>total+group.ids.length,0);
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.textContent=available?'Choose a favorite…':'No favorites saved';
+      favSel.replaceChildren(placeholder);
+      groups.forEach(groupRecord=>{
+        if(!groupRecord.ids.length) return;
+        const optgroup=document.createElement('optgroup');
+        optgroup.label=groupRecord.label;
+        groupRecord.ids.forEach(id=>{
+          const option=document.createElement('option');
+          option.value=groupRecord.prefix + ':' + id;
+          option.textContent=recipeTitle(groupRecord.appKey,id);
+          optgroup.appendChild(option);
+        });
+        favSel.appendChild(optgroup);
       });
-      sel.innerHTML = opts.join('');
+      favSel.disabled=!available;
     }
 
     async function refreshFavDropdowns(){
-      if(!favFoodSel && !favSkinSel) return;
+      if(!favSel) return;
       if(!authState.authed){
-        if(favFoodSel){ favFoodSel.innerHTML = '<option value="">—</option>'; favFoodSel.disabled = true; }
-        if(favSkinSel){ favSkinSel.innerHTML = '<option value="">—</option>'; favSkinSel.disabled = true; }
+        setFavoritesPlaceholder('—',true);
         return;
       }
-      if(favFoodSel) favFoodSel.disabled = false;
-      if(favSkinSel) favSkinSel.disabled = false;
+      setFavoritesPlaceholder('Loading favorites…',true);
       try{
         const [foodIds, skinIds] = await Promise.all([loadFavIds('food'), loadFavIds('skincare')]);
-        fillSelect(favFoodSel, foodIds, 'food');
-        fillSelect(favSkinSel, skinIds, 'skincare');
+        fillFavoritesSelect(foodIds,skinIds);
       }catch(_e){
-        if(favFoodSel) favFoodSel.innerHTML = '<option value="">Could not load favourites</option>';
-        if(favSkinSel) favSkinSel.innerHTML = '<option value="">Could not load favourites</option>';
+        setFavoritesPlaceholder('Could not load favorites',true);
       }
     }
 
@@ -7156,28 +7170,23 @@ function setupAuthFlyout(){
       window.location.href = href;
     }
 
-    if(favFoodSel && !favFoodSel.__bl_bound){
-      favFoodSel.__bl_bound = true;
-      favFoodSel.addEventListener('change', ()=>{
-        const rid = String(favFoodSel.value||'');
-        openFav('food', rid);
-        favFoodSel.value = '';
-      });
-    }
-
-    if(favSkinSel && !favSkinSel.__bl_bound){
-      favSkinSel.__bl_bound = true;
-      favSkinSel.addEventListener('change', ()=>{
-        const rid = String(favSkinSel.value||'');
-        openFav('skincare', rid);
-        favSkinSel.value = '';
+    if(favSel && !favSel.__bl_bound){
+      favSel.__bl_bound = true;
+      favSel.addEventListener('change', ()=>{
+        const value=String(favSel.value||'');
+        const divider=value.indexOf(':');
+        if(divider>0){
+          const appKey=value.slice(0,divider);
+          const recipeId=value.slice(divider+1);
+          if((appKey==='food'||appKey==='skincare')&&recipeId) openFav(appKey,recipeId);
+        }
+        favSel.value='';
       });
     }
 
     onAuthChange(refreshFavDropdowns);
     document.addEventListener('baseline:favs-changed', refreshFavDropdowns);
     refreshFavDropdowns();
-
 
     // Expose a helper for other features (e.g., favourites) to prompt login.
     try{ window.BASELINE_openAuth = open; }catch(_e){}
