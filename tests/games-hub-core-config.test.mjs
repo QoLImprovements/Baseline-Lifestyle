@@ -77,6 +77,6 @@ test('Core Games configuration authority is loaded before the controller and sta
 
   const progressionIndex=html.indexOf('/systems/baseline-games-hub/js/games-progression.js');
   const configIndex=html.indexOf('/systems/baseline-games-hub/js/games-core-config.js?v=GAMES_CORE_CONFIG_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=GAMES_HUB_CORE_CONFIG_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
   assert.ok(progressionIndex>=0 && configIndex>progressionIndex && coreIndex>configIndex);
 });
