@@ -74,3 +74,21 @@ test("voice documentation preserves the isolated prototype boundary", () => {
   assert.match(documentation, /confirm_number/);
   assert.match(documentation, /alternative constrained or offline recogniser/i);
 });
+
+test("retired voice-access runtime stays absent from production", () => {
+  const retired = path.join(root, "sitewide/js/baseline-voice-access.js");
+  assert.equal(fs.existsSync(retired), false);
+
+  const productionOwners = [
+    "systems/baseline-fitness/baseline-fitness.html",
+    "sitewide/js/baseline-shared.js",
+    "sitewide/js/baseline-voice.js",
+    "systems/baseline-fitness/js/baseline-fitness-app.js",
+    "systems/baseline-fitness/js/baseline-fitness-voice.js",
+  ];
+
+  for (const relative of productionOwners) {
+    const source = read(relative);
+    assert.doesNotMatch(source, /baseline-voice-access|BASELINE_fitnessPersistentRecognition|__BASELINE_VOICE_ACCESS__/);
+  }
+});
