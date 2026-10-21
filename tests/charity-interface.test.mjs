@@ -56,6 +56,23 @@ test('protected access requires a host-supplied PIN and keeps no repository fall
 });
 
 
+test('retired Charity coherence runtime stays absent',async()=>{
+  const page = await read('systems/charity-shop/charity-shop.php');
+  const runtime = await read('systems/charity-shop/js/charity-shop.js');
+
+  await assert.rejects(
+    read('systems/charity-shop/js/charity-shop-coherence.js'),
+    error => error && error.code === 'ENOENT'
+  );
+
+  assert.doesNotMatch(page,/charity-shop-coherence\.js/);
+  assert.match(runtime,/const legacyRoutes = Object\.freeze\(/);
+  assert.match(runtime,/'duvet-sizes':\['sizes','duvet'\]/);
+  assert.match(runtime,/const legacyHomeware = mainValue === 'homeware'/);
+  assert.match(runtime,/const legacySubtab = legacyHomeware \|\| subValue === 'sorting'/);
+  assert.doesNotMatch(runtime,/charity-shop-coherence\.css/);
+});
+
 test('Charity Shop presentation layers remain consolidated under one pre-colour authority',async()=>{
   const [page,cashing,finalCoherence] = await Promise.all([
     read('systems/charity-shop/charity-shop.php'),
