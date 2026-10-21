@@ -27,7 +27,7 @@ if($accessUntil <= time()){
   <meta name="theme-color" content="#6f1218">
   <style>html[data-app="charity-shop"],body[data-app="charity-shop"]{margin:0;min-height:100%;color:#0c2232;background:linear-gradient(90deg,#6f1218 0%,#861920 12%,#9f2426 25%,#b43724 38%,#c44f1f 50%,#b43724 62%,#9f2426 75%,#861920 88%,#6f1218 100%);}</style>
   <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">
-  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=20260602_1347dropdownportalopaque">
+  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth">
@@ -598,9 +598,9 @@ if($accessUntil <= time()){
   </div>
 
   <script defer src="/sitewide/js/baseline-protected-access.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
-  <script defer src="/sitewide/js/baseline-api.js?v=SAVED_DATA_REVISION_CLIENT_20260823_1"></script>
+  <script defer src="/sitewide/js/baseline-api.js?v=SITEWIDE_API_JS_20261021_1"></script>
   <script defer src="/sitewide/js/baseline-store.js?v=SITEWIDE_STORE_BOUNDARY_20260802_1"></script>
-  <script defer src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_CLIENT_20260802_1"></script>
+  <script defer src="/sitewide/js/baseline-auth.js?v=SITEWIDE_AUTH_JS_20261021_1"></script>
   <script defer src="/sitewide/js/baseline-shared.js?v=SITEWIDE_SHARED_JS_20261021_1"></script>
   <script defer src="/systems/charity-shop/js/charity-float.js?v=CHARITY_FLOAT_20260801_1"></script>
   <script defer src="/systems/charity-shop/js/charity-shop.js?v=CHARITY_FLOAT_COPY_20260801_2"></script>
