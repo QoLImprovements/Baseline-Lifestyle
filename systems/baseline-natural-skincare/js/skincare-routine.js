@@ -238,6 +238,16 @@
     const select=$('#routineActionSelect');const search=$('#routineActionSearch');if (!select || !search) return;select.value=value;const action=MODEL.actionById(value);search.value=action?.title || (value==='custom'?'Custom action':'');setActionPickerOpen(false);
   }
 
+  function actionPickerOptions() {
+    return Array.from(document.querySelectorAll('#routineActionMenu .routine-action-option'));
+  }
+  function focusActionPickerOption(index) {
+    const options=actionPickerOptions();
+    if (!options.length) return;
+    const next=Math.max(0,Math.min(options.length-1,index));
+    options[next]?.focus();
+  }
+
   function itemEditor(item,index) {
     const frequency=MODEL.normaliseFrequency(item.frequency);const daysHidden=frequency.mode!=='days'?' hidden':'';const weeklyHidden=frequency.mode!=='weekly'?' hidden':'';const selection=String(item.productSelection || '');const customProductHidden=selection==='custom'?'':' hidden';
     const shaving=MODEL.SHAVING_ACTION_IDS.includes(item.actionId)?`<label class="routine-field"><span>Shaving method</span><select data-id="${esc(item.id)}" data-field="shavingMethod">${optionHtml(MODEL.SHAVING_METHOD_OPTIONS,item.shavingMethod)}</select></label>`:'';
@@ -341,8 +351,54 @@
       if (event.target.id==='routineVisibility') { state.visibility=event.target.value==='public'?'public':'private';scheduleSave(); }
     });
     root.addEventListener('keydown',(event)=>{
-      if (event.target.id==='routineActionSearch' && event.key==='ArrowDown') { setActionPickerOpen(true);$('#routineActionMenu .routine-action-option')?.focus(); }
-      if (event.key==='Escape' && !$('#routineActionMenu')?.hidden) { setActionPickerOpen(false);$('#routineActionSearch')?.focus(); }
+      const search=event.target.closest?.('#routineActionSearch');
+      const option=event.target.closest?.('[data-routine-action-option]');
+      const menu=$('#routineActionMenu');
+      if (search) {
+        if (event.key==='ArrowDown' || event.key==='ArrowUp') {
+          event.preventDefault();
+          setActionPickerOpen(true);
+          const options=actionPickerOptions();
+          focusActionPickerOption(event.key==='ArrowUp'?options.length-1:0);
+          return;
+        }
+        if ((event.key==='Home' || event.key==='End') && menu && !menu.hidden) {
+          event.preventDefault();
+          const options=actionPickerOptions();
+          focusActionPickerOption(event.key==='End'?options.length-1:0);
+          return;
+        }
+        if (event.key==='Escape' && menu && !menu.hidden) {
+          event.preventDefault();
+          setActionPickerOpen(false);
+          return;
+        }
+      }
+      if (option) {
+        const options=actionPickerOptions();
+        const index=options.indexOf(option);
+        if (event.key==='ArrowDown' || event.key==='ArrowUp') {
+          event.preventDefault();
+          const delta=event.key==='ArrowDown'?1:-1;
+          focusActionPickerOption((index+delta+options.length)%options.length);
+          return;
+        }
+        if (event.key==='Home' || event.key==='End') {
+          event.preventDefault();
+          focusActionPickerOption(event.key==='End'?options.length-1:0);
+          return;
+        }
+        if (event.key==='Enter') {
+          event.preventDefault();
+          option.click();
+          return;
+        }
+        if (event.key==='Escape') {
+          event.preventDefault();
+          setActionPickerOpen(false);
+          $('#routineActionSearch')?.focus();
+        }
+      }
     });
     document.addEventListener('baseline:skincare-resource-revision',(event)=>{ const revision=Number(event.detail?.revision);if (Number.isFinite(revision) && revision>=0) state.revision=revision; });
     document.addEventListener('click',(event)=>{
