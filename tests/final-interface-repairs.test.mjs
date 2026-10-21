@@ -9,6 +9,7 @@ const modules=[
 ];
 const shared=read('sitewide/js/baseline-shared.js');
 const gamesCore=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+const detectWordEngine=read('systems/baseline-games-hub/js/detect-word-engine.js');
 const favoritesStart=shared.indexOf('// One Account Favorites control');
 const favoritesEnd=shared.indexOf('// Expose a helper for other features',favoritesStart);
 const favorites=shared.slice(favoritesStart,favoritesEnd);
@@ -33,9 +34,11 @@ test('Account exposes one live Favorites dropdown with Food and Personal Care ca
   assert.equal(existsSync(new URL('../sitewide/js/baseline-unified-favorites-v1.js',import.meta.url)),false);
 });
 
-test('Detect The Word semantic result states are owned by Games Hub core',() => {
-  assert.match(gamesCore,/result\[idx\]\.state = 'correct'/);
-  assert.match(gamesCore,/result\[idx\]\.state = 'present'/);
-  assert.match(gamesCore,/secretPool\[poolIndex\] = null/);
+test('Detect The Word semantic result states are owned by its engine authority',() => {
+  assert.match(detectWordEngine,/result\[idx\]\.state='correct'/);
+  assert.match(detectWordEngine,/result\[idx\]\.state='present'/);
+  assert.match(detectWordEngine,/secretPool\[poolIndex\]=null/);
+  assert.match(gamesCore,/DETECT_WORD_ENGINE_FACTORY\.create\(\{wordBank:WORD_BANK\}\)/);
+  assert.doesNotMatch(gamesCore,/function evaluateWordGuess\(/);
   assert.doesNotMatch(gamesCore,/baseline-detect-word-feedback-v1/);
 });
