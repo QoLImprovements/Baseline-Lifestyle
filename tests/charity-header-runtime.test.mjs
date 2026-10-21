@@ -12,7 +12,7 @@ test('Charity loads account and Binaural dependencies before the shared runtime'
   const shared = html.indexOf('/sitewide/js/baseline-shared.js');
   assert.ok(api >= 0 && store >= 0 && auth >= 0 && shared >= 0);
   assert.ok(api < store && store < auth && auth < shared);
-  assert.match(html, /baseline-shared\.js\?v=SAVED_DATA_REVISION_CLIENT_20260823_1/);
+  assert.match(html, /baseline-shared\.js\?v=SITEWIDE_SHARED_JS_20261021_1/);
 });
 
 test('Cash To Bank final label and amount are owned by the final Charity colour stylesheet', () => {
