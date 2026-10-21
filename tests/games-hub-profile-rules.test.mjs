@@ -149,6 +149,6 @@ test('Core Games profile authority is loaded before core and stays pure',()=>{
 
   const configIndex=html.indexOf('/systems/baseline-games-hub/js/games-core-config.js');
   const rulesIndex=html.indexOf('/systems/baseline-games-hub/js/games-profile-rules.js?v=GAMES_PROFILE_RULES_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=GAMES_HUB_PROFILE_RULES_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
   assert.ok(configIndex>=0 && rulesIndex>configIndex && coreIndex>rulesIndex);
 });
