@@ -43,7 +43,7 @@ test('Charity Shop dropdown supports keyboard navigation and cannot be clipped',
   assert.match(styles,/\.bl-homebar-inner\{[\s\S]*?overflow:visible!important;/);
   assert.match(styles,/\.bl-pages-menu:not\(\[hidden\]\)\{[\s\S]*?pointer-events:auto!important;[\s\S]*?overflow-y:auto!important;/);
   assert.match(styles,/\.bl-pages-menu \.bl-pages-link\{[\s\S]*?min-height:44px!important;/);
-  assert.match(page,/BASELINE_PROTECTED_ACCESS_20260801_3/);
+  assert.match(page,/baseline-protected-access\.css\?v=PROTECTED_ACCESS_CSS_20261021_1/);
   assert.match(page,/CHARITY_DROPDOWN_ACCESS_20260801_2/);
   assert.match(page,/CHARITY_FLOAT_COPY_20260801_2/);
 });

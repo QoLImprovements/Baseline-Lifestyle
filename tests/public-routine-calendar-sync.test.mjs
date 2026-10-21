@@ -58,7 +58,7 @@ test('Public Fitness saved-data plans preserve every completed session date for 
 });
 
 test('Fitness entry points cache-bust the synchronized Public Routine viewer',()=>{
-  assert.match(html,/baseline-public-routine-viewonly-v4\.js\?v=BASELINE_FITNESS_WEEKLY_RANGES_20260821_1/);
+  assert.match(html,/baseline-public-routine-viewonly-v4\.js\?v=SITEWIDE_PUBLIC_ROUTINE_VIEWONLY_JS_20261021_1/);
   assert.doesNotMatch(html,/fitness-routine-workspace\.js/);
   assert.match(html,/fitness-routine-workspace-v2\.js/);
 });
