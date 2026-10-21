@@ -90,7 +90,7 @@ test('Pairs gives every physical card one clean selection before a repeat can br
 
 
 test('Detect The Word and Make The Number preserve unfinished input across rerenders', () => {
-  const wordStart = functionBody('startWordRound', 'evaluateWordGuess');
+  const wordStart = functionBody('startWordRound', 'submitWordGuess');
   const wordRender = functionBody('renderWordBoard', 'renderDetectWordSummary');
   const wordSubmit = functionBody('submitWordGuess', 'spendWordSkill');
   const makeStart = functionBody('startMake24Puzzle', 'countNumbers');
