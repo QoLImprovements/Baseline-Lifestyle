@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
+const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_CORE_JS_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
@@ -10,7 +10,8 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
   const API_PATH = '/systems/baseline-games-hub/api/games_profile.php';
   const GAME_REGISTRY = window.BASELINE_GAMES_HUB_GAME_REGISTRY || null;
   const REGISTERED_CORE_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.coreGames === 'function' ? GAME_REGISTRY.coreGames() : [];
-  const REGISTERED_OVERVIEW_GAMES = GAME_REGISTRY && typeof GAME_REGISTRY.overviewGames === 'function' ? GAME_REGISTRY.overviewGames() : [];
+  const OVERVIEW_VIEW = window.BASELINE_GAMES_HUB_OVERVIEW_VIEW || null;
+  if(!OVERVIEW_VIEW) throw new Error('games_overview_authority_missing');
   const PROGRESSION_RULES = window.BASELINE_GAMES_HUB_PROGRESSION || null;
   if(!PROGRESSION_RULES) throw new Error('games_progression_authority_missing');
   const xpNeededForLevel = PROGRESSION_RULES.xpNeededForLevel;
@@ -1223,57 +1224,12 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
     if(id==='ninja') return 'Level ' + profile.level + ' · Stage ' + profile.stage;
     return 'Ready';
   }
-  function gameMeta(){
-    return REGISTERED_OVERVIEW_GAMES.map(function(game){
-      const overview=game.overview || {};
-      return {
-        id:game.runtimeId,
-        group:overview.group || 'Games',
-        name:game.name,
-        art:overview.art || '',
-        note:overview.note || '',
-        brainBenefit:overview.brainBenefit || '',
-        featured:Boolean(overview.featured),
-        externalModule:game.group === 'focused' ? game.runtimeId : '',
-        progress:function(){ return overviewProgress(game); }
-      };
-    });
-  }
   function renderGamesList(){
-    let currentGroup = '';
-    refs.gamesList.innerHTML = gameMeta().map(meta => {
-      const group = meta.group || 'Games';
-      const heading = group !== currentGroup ? (currentGroup = group, '<div class="games-list-group" role="presentation"><span>' + escapeHtml(group) + '</span></div>') : '';
-      const featured = !!meta.featured;
-      if(meta.externalModule === 'darts-focused'){
-        return heading + '<div class="game-row-wrap game-row-wrap--featured darts-focused-overview-row" data-game-card="darts-focused">' +
-          '<button class="game-row darts-overview-row" data-open-darts-focused type="button">' +
-            '<img class="game-card-art darts-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
-            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
-          '</button>' +
-          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Darts Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-        '</div>';
-      }
-      if(meta.externalModule === 'badminton-focused'){
-        return heading + '<div class="game-row-wrap game-row-wrap--featured badminton-focused-overview-row" data-game-card="badminton-focused">' +
-          '<button class="game-row badminton-overview-row" data-open-badminton-focused type="button">' +
-            '<img class="game-card-art badminton-overview-art" src="' + escapeHtml(meta.art) + '" alt="">' +
-            '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-            '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open games</span></div>' +
-          '</button>' +
-          '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What Badminton Focused develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-        '</div>';
-      }
-      return heading + '<div class="game-row-wrap' + (featured ? ' game-row-wrap--featured' : '') + (selectedGame === meta.id ? ' is-selected' : '') + '" data-game-card="' + meta.id + '">' +
-        '<button class="game-row" data-select-game="' + meta.id + '" type="button">' +
-          '<img class="game-card-art" src="' + escapeHtml(meta.art || '') + '" alt="">' +
-          '<div class="game-row-copy"><h3>' + escapeHtml(meta.name) + '</h3><p>' + escapeHtml(meta.note) + '</p></div>' +
-          '<div class="game-row-meta"><strong>' + escapeHtml(meta.progress()) + '</strong><span class="inline-note">Open game</span></div>' +
-        '</button>' +
-        '<button class="game-row-info-button bl-info-button" data-bl-info-button data-bl-info-title="What this develops" data-bl-info-text="' + escapeHtml(meta.brainBenefit || '') + '" type="button" aria-label="What ' + escapeHtml(meta.name) + ' develops" aria-expanded="false"><span aria-hidden="true">i</span></button>' +
-      '</div>';
-    }).join('');
+    if(!refs.gamesList) return;
+    refs.gamesList.innerHTML = OVERVIEW_VIEW.render({
+      selectedGame:selectedGame,
+      progressFor:overviewProgress
+    });
   }
   function requestDartsFocusedOpen(attempt){
     const tries = Number(attempt || 0);
