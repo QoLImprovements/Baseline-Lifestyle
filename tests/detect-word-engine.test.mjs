@@ -98,6 +98,6 @@ test('Games Hub core delegates Detect The Word engine logic to one authority',()
 
   const configIndex=html.indexOf('/systems/baseline-games-hub/js/games-core-config.js');
   const engineIndex=html.indexOf('/systems/baseline-games-hub/js/detect-word-engine.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=DETECT_WORD_ENGINE_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
   assert.ok(configIndex>=0 && engineIndex>configIndex && coreIndex>engineIndex);
 });

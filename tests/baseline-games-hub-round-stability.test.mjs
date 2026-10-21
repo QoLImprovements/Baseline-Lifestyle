@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 const corePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
 const core = fs.readFileSync(corePath, 'utf8');
+const ruleShiftEngine = fs.readFileSync(new URL('../systems/baseline-games-hub/js/rule-shift-engine.js', import.meta.url), 'utf8');
 
 function functionBody(name, nextName) {
   const start = core.indexOf('function ' + name + '(');
@@ -111,12 +112,12 @@ test('Detect The Word and Make The Number preserve unfinished input across reren
 
 
 test('Rule Shift failure feedback identifies which rule dimensions matched', () => {
-  const feedback = functionBody('ruleShiftMismatchFeedback', 'ruleShiftTimeLimitMs');
   const choose = functionBody('chooseRuleShiftOption', 'spendRuleShiftSkill');
 
-  assert.match(feedback,/Colour ' \+ \(colourMatch \? 'matched' : 'did not match'\)/);
-  assert.match(feedback,/shape ' \+ \(shapeMatch \? 'matched' : 'did not match'\)/);
-  assert.match(feedback,/size ' \+ \(sizeMatch \? 'matched' : 'did not match'\)/);
+  assert.match(ruleShiftEngine,/Colour ' \+ \(colourMatch\?'matched':'did not match'\)/);
+  assert.match(ruleShiftEngine,/shape ' \+ \(shapeMatch\?'matched':'did not match'\)/);
+  assert.match(ruleShiftEngine,/size ' \+ \(sizeMatch\?'matched':'did not match'\)/);
+  assert.match(core,/const ruleShiftMismatchFeedback = RULE_SHIFT_ENGINE\.mismatchFeedback/);
   assert.match(choose,/const mismatchFeedback = ruleShiftMismatchFeedback/);
   assert.match(choose,/Incorrect choice\. ' \+ mismatchFeedback/);
 });
