@@ -404,7 +404,7 @@ test('primary entrypoints use one cache key per shared static asset', () => {
     for (const [asset, version] of expected) {
       if (!source.includes(asset)) continue;
       const escaped = asset.replaceAll('/', '\\/').replaceAll('.', '\\.');
-      const match = source.match(new RegExp(escaped + '(?:\\?[^"\\']*)?'));
+      const match = source.match(new RegExp(escaped + "(?:\\?[^\"']*)?"));
       assert.ok(match, entry + ': missing ' + asset);
       assert.equal(
         match[0].replaceAll('&amp;','&'),
