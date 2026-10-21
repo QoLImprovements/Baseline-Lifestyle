@@ -5,6 +5,8 @@ import vm from 'node:vm';
 
 const registryPath = new URL('../systems/baseline-games-hub/js/games-registry.js', import.meta.url);
 const corePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
+const overviewPath = new URL('../systems/baseline-games-hub/js/games-overview.js', import.meta.url);
+const hubPath = new URL('../systems/baseline-games-hub/baseline-games-hub.html', import.meta.url);
 const loaderPath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-v14.js', import.meta.url);
 const realmEntryPath = new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js', import.meta.url);
 
@@ -19,7 +21,7 @@ function loadRegistry() {
     }
   };
   vm.runInNewContext(fs.readFileSync(registryPath, 'utf8'), sandbox, { filename:'games-registry.js' });
-  return { registry:sandbox.window.BASELINE_GAMES_HUB_GAME_REGISTRY, attributes };
+  return { registry:sandbox.window.BASELINE_GAMES_HUB_GAME_REGISTRY, attributes, sandbox };
 }
 
 test('Games Hub registry exposes canonical identities with legacy compatibility aliases', () => {
@@ -87,14 +89,17 @@ test('Games Hub core and Realm coordinate readiness through an explicit event', 
 });
 
 
-test('focused-game overview rows have one DOM renderer authority', () => {
+test('focused-game overview rows have one dedicated DOM renderer authority', () => {
   const core = fs.readFileSync(corePath, 'utf8');
+  const overview = fs.readFileSync(overviewPath, 'utf8');
   const loader = fs.readFileSync(loaderPath, 'utf8');
 
   assert.match(core, /function renderGamesList\(\)/);
-  assert.match(core, /data-open-darts-focused/);
-  assert.match(core, /data-open-badminton-focused/);
+  assert.match(core, /OVERVIEW_VIEW\.render\(/);
+  assert.doesNotMatch(core, /function gameMeta\(\)|games-list-group" role="presentation"/);
 
+  assert.match(overview, /function focusedRow\(meta\)/);
+  assert.match(overview, /data-open-' \+ escapeHtml\(meta\.externalModule\)/);
   assert.doesNotMatch(loader, /function dartsMarkup\(\)/);
   assert.doesNotMatch(loader, /function badmintonMarkup\(\)/);
   assert.doesNotMatch(loader, /function addDarts\(\)/);
@@ -128,14 +133,40 @@ test('Games Hub core is the sole focused-game overview click controller', () => 
 });
 
 
-test('Games Hub core consumes overview metadata rather than redeclaring it', () => {
+test('Games overview view consumes registry metadata rather than redeclaring it', () => {
   const core = fs.readFileSync(corePath, 'utf8');
-  const start = core.indexOf('function gameMeta()');
-  const end = core.indexOf('function renderGamesList()', start);
-  const meta = core.slice(start, end);
+  const overview = fs.readFileSync(overviewPath, 'utf8');
 
-  assert.match(core, /GAME_REGISTRY\.overviewGames/);
-  assert.match(meta, /REGISTERED_OVERVIEW_GAMES\.map/);
-  assert.doesNotMatch(meta, /overview-art\/|realistic-dartboard\.svg|badminton-focused-overview\.svg/);
-  assert.doesNotMatch(meta, /Wordle-style feedback|Experimental Basecamp\/RPG|10 distinct games played entirely on the website/);
+  assert.match(core, /const OVERVIEW_VIEW = window\.BASELINE_GAMES_HUB_OVERVIEW_VIEW \|\| null/);
+  assert.doesNotMatch(core, /REGISTERED_OVERVIEW_GAMES|function gameMeta\(\)/);
+  assert.match(overview, /GAME_REGISTRY\.overviewGames\(\)/);
+  assert.doesNotMatch(overview, /overview-art\/|realistic-dartboard\.svg|badminton-focused-overview\.svg/);
+  assert.doesNotMatch(overview, /Wordle-style feedback|Experimental Basecamp\/RPG|10 distinct games played entirely on the website/);
+});
+
+
+test('Games overview authority renders registry entries and loads before core', () => {
+  const { sandbox } = loadRegistry();
+  vm.runInNewContext(fs.readFileSync(overviewPath, 'utf8'), sandbox, { filename:'games-overview.js' });
+  const view = sandbox.window.BASELINE_GAMES_HUB_OVERVIEW_VIEW;
+  assert.ok(view);
+  assert.equal(view.version, 1);
+
+  const html = view.render({
+    selectedGame:'pairs',
+    progressFor(game){ return 'Progress ' + game.runtimeId; }
+  });
+  assert.match(html,/data-open-darts-focused/);
+  assert.match(html,/data-open-badminton-focused/);
+  assert.match(html,/data-game-card="pairs"[^>]*class|game-row-wrap is-selected|game-row-wrap game-row-wrap--featured is-selected/);
+  assert.match(html,/Progress darts-focused/);
+  assert.match(html,/Progress badminton-focused/);
+  assert.match(html,/Core Games/);
+  assert.match(html,/Testing/);
+
+  const hub = fs.readFileSync(hubPath, 'utf8');
+  const registryIndex = hub.indexOf('/systems/baseline-games-hub/js/games-registry.js');
+  const overviewIndex = hub.indexOf('/systems/baseline-games-hub/js/games-overview.js?v=GAMES_OVERVIEW_JS_20261021_1');
+  const coreIndex = hub.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=GAMES_HUB_CORE_JS_20261021_1');
+  assert.ok(registryIndex >= 0 && overviewIndex > registryIndex && coreIndex > overviewIndex);
 });
