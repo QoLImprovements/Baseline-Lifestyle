@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_PROGRESSION_AUTHORITY_20261021_1';
+const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_CORE_CONFIG_AUTHORITY_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
