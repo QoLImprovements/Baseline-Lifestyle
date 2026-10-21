@@ -392,12 +392,18 @@ test('primary entrypoints use one cache key per shared static asset', () => {
     'systems/charity-shop/charity-shop.php'
   ];
   const expected = new Map([
+    ['/sitewide/css/baseline-themes.css','SITEWIDE_THEMES_CSS_20261021_1'],
     ['/sitewide/css/baseline-sitewide.css','SITEWIDE_SHARED_CSS_20261021_1'],
     ['/sitewide/css/baseline-header-canonical.css','SITEWIDE_HEADER_CSS_20261021_1'],
     ['/sitewide/css/baseline-protected-access.css','PROTECTED_ACCESS_CSS_20261021_1'],
     ['/sitewide/css/baseline-protected-key-placement.css','PROTECTED_KEY_CSS_20261021_1'],
     ['/sitewide/css/baseline-ui-fixes.css','SITEWIDE_UI_FIXES_20261021_1'],
-    ['/sitewide/js/baseline-shared.js','SITEWIDE_SHARED_JS_20261021_1']
+    ['/sitewide/js/baseline-api.js','SITEWIDE_API_JS_20261021_1'],
+    ['/sitewide/js/baseline-auth.js','SITEWIDE_AUTH_JS_20261021_1'],
+    ['/sitewide/js/baseline-shared.js','SITEWIDE_SHARED_JS_20261021_1'],
+    ['/sitewide/js/baseline-public-routine-viewonly-v4.js','SITEWIDE_PUBLIC_ROUTINE_VIEWONLY_JS_20261021_1'],
+    ['/sitewide/js/baseline-routine-coherence-v12.js','SITEWIDE_ROUTINE_COHERENCE_JS_20261021_1'],
+    ['/sitewide/js/baseline-ingredient-profiles.js','SITEWIDE_INGREDIENT_PROFILES_JS_20261021_1']
   ]);
 
   for (const entry of entries) {
