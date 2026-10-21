@@ -11,6 +11,7 @@ import {
 
 const hubHtml=fs.readFileSync(new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url),'utf8');
 const core=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url),'utf8');
+const makeNumberEngine=fs.readFileSync(new URL('../systems/baseline-games-hub/js/make-number-engine.js',import.meta.url),'utf8');
 const realmEntry=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js',import.meta.url),'utf8');
 const lazyScenes=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js',import.meta.url),'utf8');
 const calorieGame=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-game.js',import.meta.url),'utf8');
@@ -25,14 +26,13 @@ test('Detect The Word persists and restores an unresolved active round',()=>{
 });
 
 test('Make The Number generation is explicitly seedable and generated-bank fill is deterministic',()=>{
-  const bankStart=core.indexOf('function buildMakeNumberPuzzleBank(');
-  const puzzleStart=core.indexOf('function buildMake24Puzzle(',bankStart);
-  const bankSource=core.slice(bankStart,puzzleStart);
-  assert.match(core,/function makeNumberSeededRandom\(/);
-  assert.match(core,/function seededShuffle\(/);
+  assert.match(makeNumberEngine,/function makeNumberSeededRandom\(/);
+  assert.match(makeNumberEngine,/function seededShuffle\(/);
+  assert.match(makeNumberEngine,/function buildMakeNumberPuzzleBank\(/);
+  assert.doesNotMatch(makeNumberEngine,/Math\.random/);
   assert.match(core,/roundSeedCounter/);
-  assert.doesNotMatch(bankSource,/Math\.random/);
   assert.match(core,/const seed = nextMake24Seed\(tier\)/);
+  assert.match(core,/MAKE_NUMBER_ENGINE\.buildMake24Puzzle\(tier,seed,make24State\)/);
 });
 
 test('Realm entry delegates lazy external-scene lifecycle and recovery',()=>{
