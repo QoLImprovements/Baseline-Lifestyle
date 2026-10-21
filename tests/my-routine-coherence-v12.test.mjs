@@ -86,7 +86,7 @@ test('static My Routine owners load in a first-paint-safe order instead of a lat
 test('retired repair layers and duplicate controllers remain physically absent',()=>{
   [
     'sitewide/js/baseline-routine-authority-v7.js','sitewide/js/baseline-routine-experience-v9.js','sitewide/js/baseline-routine-experience-v10.js',
-    'sitewide/js/baseline-routine-coherence-v4.js','sitewide/js/baseline-routine-coherence-events-v4.js','sitewide/js/baseline-routine-live-authority-v1.js',
+    'sitewide/js/baseline-routine-coherence-v4.js','sitewide/js/baseline-routine-coherence-events-v1.js','sitewide/js/baseline-routine-coherence-events-v4.js','sitewide/js/baseline-routine-live-authority-v1.js',
     'sitewide/js/baseline-skincare-routine-state-bridge-v1.js','sitewide/js/baseline-fitness-routine-summary-bridge-v1.js','sitewide/js/baseline-public-routine-groups-v1.js',
     'systems/baseline-natural-skincare/js/skincare-routine-sitewide-v4.js','systems/baseline-fitness/js/fitness-routine-sitewide-v3.js',
     'systems/baseline-fitness/js/fitness-theme-guard-v1.js','systems/baseline-fitness/js/fitness-routine-coherence-v1.js','systems/baseline-fitness/js/fitness-routine-groups-v1.js',
