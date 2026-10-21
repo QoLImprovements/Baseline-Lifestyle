@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const root=resolve(import.meta.dirname,'..');
@@ -27,6 +27,15 @@ test('Skincare identifies My Routine before body paint and hydrates from the ser
   for(const source of [html,routine,sitewide,loader]) assert.doesNotMatch(source,/localStorage|sessionStorage|indexedDB/);
   assert.match(routine,/expectedRevision:state\.revision/);
   assert.match(sitewide,/expectedRevision:state\.revision/);
+});
+
+test('retired Skincare group UI patch runtime stays absent',() => {
+  const retired=resolve(root,'systems/baseline-natural-skincare/js/skincare-routine-group-ui-v3.js');
+  assert.equal(existsSync(retired),false);
+  assert.doesNotMatch(html,/skincare-routine-group-ui-v3\.js/);
+  assert.doesNotMatch(loader,/skincare-routine-group-ui-v3|__BASELINE_SKINCARE_GROUP_UI_V3__/);
+  assert.doesNotMatch(routine,/skincare-routine-group-ui-v3|__BASELINE_SKINCARE_GROUP_UI_V3__/);
+  assert.doesNotMatch(sitewide,/skincare-routine-group-ui-v3|__BASELINE_SKINCARE_GROUP_UI_V3__/);
 });
 
 test('My Routine static workspace shell is authored exactly once in HTML',() => {
