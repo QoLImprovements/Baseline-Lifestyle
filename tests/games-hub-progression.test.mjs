@@ -78,6 +78,12 @@ test('Games Hub core delegates pure progression rules to one loaded authority',(
 
   const registryIndex=html.indexOf('/systems/baseline-games-hub/js/games-registry.js');
   const progressionIndex=html.indexOf('/systems/baseline-games-hub/js/games-progression.js?v=GAMES_PROGRESSION_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=GAMES_HUB_PROGRESSION_AUTHORITY_20261021_1');
   assert.ok(registryIndex>=0 && progressionIndex>registryIndex && coreIndex>progressionIndex);
+});
+
+test('Games Hub progression authority stays pure and persistence-agnostic',()=>{
+  const source=fs.readFileSync(progressionPath,'utf8');
+  assert.doesNotMatch(source,/document\.|fetch\(|XMLHttpRequest|localStorage|sessionStorage|indexedDB|BaselineGameStorage/);
+  assert.doesNotMatch(source,/addEventListener|createElement|innerHTML|classList/);
 });
