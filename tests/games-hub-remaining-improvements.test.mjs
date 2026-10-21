@@ -12,13 +12,14 @@ import {
 const hubHtml=fs.readFileSync(new URL('../systems/baseline-games-hub/baseline-games-hub.html',import.meta.url),'utf8');
 const core=fs.readFileSync(new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js',import.meta.url),'utf8');
 const makeNumberEngine=fs.readFileSync(new URL('../systems/baseline-games-hub/js/make-number-engine.js',import.meta.url),'utf8');
+const profileRules=fs.readFileSync(new URL('../systems/baseline-games-hub/js/games-profile-rules.js',import.meta.url),'utf8');
 const realmEntry=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js',import.meta.url),'utf8');
 const lazyScenes=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js',import.meta.url),'utf8');
 const calorieGame=fs.readFileSync(new URL('../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-game.js',import.meta.url),'utf8');
 const calorieDir=new URL('../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/',import.meta.url);
 
 test('Detect The Word persists and restores an unresolved active round',()=>{
-  assert.match(core,/activeRound:null/);
+  assert.match(profileRules,/activeRound:null/);
   assert.match(core,/function persistWordRound\(/);
   assert.match(core,/function restoreSavedWordRound\(/);
   assert.match(core,/restoreSavedCoreRounds\(\)/);
