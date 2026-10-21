@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
+const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_PROGRESSION_AUTHORITY_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
@@ -17,8 +17,6 @@ const BASELINE_GAMES_HUB_BUILD = 'GAMES_HUB_DARTS_REALM_REPAIR_20260707_2';
   const progressionSnapshot = PROGRESSION_RULES.progressionSnapshot;
   const applyLevelCurve = PROGRESSION_RULES.applyLevelCurve;
   const refundLockedSkills = PROGRESSION_RULES.refundLockedSkills;
-  const spentSkillPoints = PROGRESSION_RULES.spentSkillPoints;
-  const earnedSkillPoints = PROGRESSION_RULES.earnedSkillPoints;
   const reconcileSkillPoints = PROGRESSION_RULES.reconcileSkillPoints;
   const GAME_APPS = REGISTERED_CORE_GAMES.length ? REGISTERED_CORE_GAMES.map(function(game){ return game.profileApp; }).filter(Boolean) : ['detectword', 'make24', 'ninja', 'pairs', 'trackcoin', 'ruleshift'];
   const AUTO_NEXT_GAMES = ['pairs', 'detectword', 'make24', 'trackcoin', 'ruleshift', 'blockgrid', 'coloursort', 'crossnumber'];
