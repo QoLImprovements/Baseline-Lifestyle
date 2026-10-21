@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
+const BASELINE_GAMES_HUB_BUILD = 'RULE_SHIFT_ENGINE_AUTHORITY_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
@@ -58,6 +58,19 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   const RULESHIFT_SIZES = CORE_GAME_CONFIG.RULESHIFT_SIZES;
   const RULESHIFT_TIERS = CORE_GAME_CONFIG.RULESHIFT_TIERS;
   const RULESHIFT_SKILLS = CORE_GAME_CONFIG.RULESHIFT_SKILLS;
+  const RULE_SHIFT_ENGINE_FACTORY = window.BASELINE_RULE_SHIFT_ENGINE || null;
+  if(!RULE_SHIFT_ENGINE_FACTORY || typeof RULE_SHIFT_ENGINE_FACTORY.create !== 'function') throw new Error('rule_shift_engine_authority_missing');
+  const RULE_SHIFT_ENGINE = RULE_SHIFT_ENGINE_FACTORY.create({
+    colours:RULESHIFT_COLOURS,
+    shapes:RULESHIFT_SHAPES,
+    sizes:RULESHIFT_SIZES
+  });
+  const ruleShiftName = RULE_SHIFT_ENGINE.name;
+  const buildRuleShiftRule = RULE_SHIFT_ENGINE.buildRule;
+  const ruleShiftMatches = RULE_SHIFT_ENGINE.matches;
+  const ruleShiftMismatchFeedback = RULE_SHIFT_ENGINE.mismatchFeedback;
+  const ruleShiftTimeLimitMs = RULE_SHIFT_ENGINE.timeLimitMs;
+  const buildRuleShiftOptions = RULE_SHIFT_ENGINE.buildOptions;
 
   const refs = {};
   const guestProfiles = Object.create(null);
@@ -3101,96 +3114,6 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     const profile = profiles.ruleshift || defaultRuleShiftProfile();
     return RULESHIFT_TIERS.find(t => profile.level < t.unlockLevel) || null;
   }
-  function ruleShiftName(list, id){
-    const found = list.find(function(item){ return item.id === id; });
-    return found ? found.name : String(id || '');
-  }
-  function ruleShiftAllOptions(){
-    const options = [];
-    RULESHIFT_COLOURS.forEach(function(colour){
-      RULESHIFT_SHAPES.forEach(function(shape){
-        RULESHIFT_SIZES.forEach(function(size){
-          options.push({ id: colour.id + '-' + shape.id + '-' + size.id, colour: colour.id, shape: shape.id, size: size.id });
-        });
-      });
-    });
-    return options;
-  }
-  function buildRuleShiftRule(tier, previousRule){
-    const rules = tier.rules && tier.rules.length ? tier.rules : ['colour','shape'];
-    let type = rules[Math.floor(Math.random() * rules.length)];
-    if(previousRule && rules.length > 1){
-      const tierId=String(tier&&tier.id||'');
-      const delayedSwitchChance=tierId==='pressure'?0.28:(tierId==='mixed'?0.20:0);
-      const repeatFamily=Math.random()<delayedSwitchChance && rules.includes(previousRule.type);
-      if(repeatFamily){
-        type=previousRule.type;
-      }else{
-        let guard = 0;
-        while(type === previousRule.type && guard < 8){
-          type = rules[Math.floor(Math.random() * rules.length)];
-          guard += 1;
-        }
-      }
-    }
-
-    const colour = RULESHIFT_COLOURS[Math.floor(Math.random() * RULESHIFT_COLOURS.length)];
-    const shape = RULESHIFT_SHAPES[Math.floor(Math.random() * RULESHIFT_SHAPES.length)];
-    const configuredSizeIds = Array.isArray(tier && tier.sizes) ? tier.sizes : [];
-    const availableSizes = RULESHIFT_SIZES.filter(function(item){ return !configuredSizeIds.length || configuredSizeIds.includes(item.id); });
-    const sizePool = availableSizes.length ? availableSizes : RULESHIFT_SIZES;
-    const size = sizePool[Math.floor(Math.random() * sizePool.length)];
-
-    let label = '';
-    let brief = '';
-
-    if(type === 'colour'){ label = 'Choose ' + colour.name + '.'; brief = 'Colour'; }
-    else if(type === 'shape'){ label = 'Choose a ' + shape.name + '.'; brief = 'Shape'; }
-    else if(type === 'colourShape'){ label = 'Choose the ' + colour.name + ' ' + shape.name + '.'; brief = 'Colour + shape'; }
-    else if(type === 'size'){ label = 'Choose a ' + size.name + ' object.'; brief = 'Size'; }
-    else if(type === 'colourSize'){ label = 'Choose a ' + size.name + ' ' + colour.name + ' object.'; brief = 'Colour + size'; }
-    else if(type === 'shapeSize'){ label = 'Choose a ' + size.name + ' ' + shape.name + '.'; brief = 'Shape + size'; }
-    else if(type === 'notColour'){ label = 'Avoid ' + colour.name + '.'; brief = 'Exclude colour'; }
-    else if(type === 'notShape'){ label = 'Avoid ' + shape.name + 's.'; brief = 'Exclude shape'; }
-    else{ label = 'Choose ' + colour.name + '.'; brief = 'Colour'; type = 'colour'; }
-
-    return { type:type, colour:colour.id, shape:shape.id, size:size.id, label:label, brief:brief };
-  }
-  function ruleShiftMatches(rule, option){
-    if(!rule || !option) return false;
-    if(rule.type === 'colour') return option.colour === rule.colour;
-    if(rule.type === 'shape') return option.shape === rule.shape;
-    if(rule.type === 'size') return option.size === rule.size;
-    if(rule.type === 'notColour') return option.colour !== rule.colour;
-    if(rule.type === 'notShape') return option.shape !== rule.shape;
-    if(rule.type === 'colourShape') return option.colour === rule.colour && option.shape === rule.shape;
-    if(rule.type === 'colourSize') return option.colour === rule.colour && option.size === rule.size;
-    if(rule.type === 'shapeSize') return option.shape === rule.shape && option.size === rule.size;
-    return false;
-  }
-
-  function ruleShiftMismatchFeedback(rule, option){
-    if(!rule || !option) return 'The selected card did not satisfy the active rule.';
-    const colourMatch = option.colour === rule.colour;
-    const shapeMatch = option.shape === rule.shape;
-    const sizeMatch = option.size === rule.size;
-    const colourName = ruleShiftName(RULESHIFT_COLOURS, option.colour);
-    const shapeName = ruleShiftName(RULESHIFT_SHAPES, option.shape);
-    const sizeName = ruleShiftName(RULESHIFT_SIZES, option.size);
-    if(rule.type === 'colour') return colourMatch ? 'Colour matched.' : 'Colour did not match: you chose ' + colourName + '.';
-    if(rule.type === 'shape') return shapeMatch ? 'Shape matched.' : 'Shape did not match: you chose ' + shapeName + '.';
-    if(rule.type === 'size') return sizeMatch ? 'Size matched.' : 'Size did not match: you chose ' + sizeName + '.';
-    if(rule.type === 'notColour') return !colourMatch ? 'Colour correctly avoided the excluded colour.' : 'The selected colour was the one the rule excluded.';
-    if(rule.type === 'notShape') return !shapeMatch ? 'Shape correctly avoided the excluded shape.' : 'The selected shape was the one the rule excluded.';
-    if(rule.type === 'colourShape') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; shape ' + (shapeMatch ? 'matched' : 'did not match') + '.';
-    if(rule.type === 'colourSize') return 'Colour ' + (colourMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
-    if(rule.type === 'shapeSize') return 'Shape ' + (shapeMatch ? 'matched' : 'did not match') + '; size ' + (sizeMatch ? 'matched' : 'did not match') + '.';
-    return 'The selected card did not satisfy the active rule.';
-  }
-
-  function ruleShiftTimeLimitMs(tier){
-    return Math.max(3000, Number(tier && tier.timeLimitMs) || 5000);
-  }
   function clearRuleShiftTimer(){
     if(ruleShiftTimer){
       window.clearInterval(ruleShiftTimer);
@@ -3253,40 +3176,6 @@ const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
     ruleShiftState.resolvingTimeout = false;
   }
 
-  function buildRuleShiftOptions(tier, rule){
-    const count=clamp(Number(tier&&tier.optionCount)||8,6,12);
-    const colourIds=RULESHIFT_COLOURS.map(function(item){return item.id;});
-    const shapeIds=RULESHIFT_SHAPES.map(function(item){return item.id;});
-    const configured=Array.isArray(tier&&tier.sizes)?tier.sizes:[];
-    const sizeIds=RULESHIFT_SIZES.map(function(item){return item.id;}).filter(function(id){return !configured.length||configured.includes(id);});
-    if(!sizeIds.length) sizeIds.push('large');
-
-    const pool=[];
-    colourIds.forEach(function(colour){
-      shapeIds.forEach(function(shape){
-        sizeIds.forEach(function(size){
-          pool.push({id:colour+'-'+shape+'-'+size,colour:colour,shape:shape,size:size});
-        });
-      });
-    });
-
-    const matching=shuffle(pool.filter(function(option){return ruleShiftMatches(rule,option);}));
-    const nonMatching=shuffle(pool.filter(function(option){return !ruleShiftMatches(rule,option);}));
-    if(!matching.length) return shuffle(pool).slice(0,count);
-
-    // Keep the cognitive task unambiguous: exactly one selectable answer is valid.
-    const target=matching[0];
-    const distractors=nonMatching.slice(0,Math.max(0,count-1));
-
-    // Prefer distractors that share at least one visible descriptor with the target.
-    distractors.sort(function(a,b){
-      const score=function(option){
-        return Number(option.colour===target.colour)+Number(option.shape===target.shape)+Number(option.size===target.size);
-      };
-      return score(b)-score(a);
-    });
-    return shuffle([target].concat(distractors)).slice(0,count);
-  }
   function startRuleShiftRound(){
     clearAutoNextTimer('ruleshift');
     clearRuleShiftTimer();
