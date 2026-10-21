@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
+const BASELINE_GAMES_HUB_BUILD = 'DETECT_WORD_ENGINE_AUTHORITY_20261021_1';
   try{
     window.BASELINE_GAMES_HUB_BUILD = BASELINE_GAMES_HUB_BUILD;
     document.documentElement.setAttribute('data-baseline-games-hub-js', BASELINE_GAMES_HUB_BUILD);
@@ -44,6 +44,12 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
   const WORD_TIERS = CORE_GAME_CONFIG.WORD_TIERS;
   const WORD_SKILLS = CORE_GAME_CONFIG.WORD_SKILLS;
   const WORD_BANK = CORE_GAME_CONFIG.WORD_BANK;
+  const DETECT_WORD_ENGINE_FACTORY = window.BASELINE_DETECT_WORD_ENGINE || null;
+  if(!DETECT_WORD_ENGINE_FACTORY || typeof DETECT_WORD_ENGINE_FACTORY.create !== 'function') throw new Error('detect_word_engine_authority_missing');
+  const DETECT_WORD_ENGINE = DETECT_WORD_ENGINE_FACTORY.create({wordBank:WORD_BANK});
+  const chooseRandomWord = DETECT_WORD_ENGINE.chooseRandomWord;
+  const evaluateWordGuess = DETECT_WORD_ENGINE.evaluateWordGuess;
+  const computeWordRewardMultiplier = DETECT_WORD_ENGINE.computeWordRewardMultiplier;
   const TRACKCOIN_TIERS = CORE_GAME_CONFIG.TRACKCOIN_TIERS;
   const TRACKCOIN_STREAK_BONUS = CORE_GAME_CONFIG.TRACKCOIN_STREAK_BONUS;
   const TRACKCOIN_SKILLS = CORE_GAME_CONFIG.TRACKCOIN_SKILLS;
@@ -91,7 +97,6 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
   let make24OpenPanel = 'make24GameCard';
   let ninjaOpenPanel = 'ninjaGameCard';
   const openSummaryIds = new Set();
-  const wordRecentByLength = Object.create(null);
   let suspendHashSync = false;
   let autoNextSettings = readAutoNextSettings();
   const autoNextTimers = Object.create(null);
@@ -363,18 +368,7 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
     }
   }
   function wordLetterKnowledge(){
-    const rank = { absent:1, present:2, correct:3 };
-    const knowledge = Object.create(null);
-    if(!wordState || !Array.isArray(wordState.guesses)) return knowledge;
-    wordState.guesses.forEach(function(guess){
-      (guess.evaluation || []).forEach(function(entry){
-        const letter = String(entry.letter || '').toLowerCase();
-        if(!letter) return;
-        const state = rank[entry.state] ? entry.state : 'absent';
-        if(!knowledge[letter] || rank[state] > rank[knowledge[letter]]) knowledge[letter] = state;
-      });
-    });
-    return knowledge;
+    return DETECT_WORD_ENGINE.letterKnowledge(wordState && Array.isArray(wordState.guesses) ? wordState.guesses : []);
   }
   function syncWordKeypadKnowledge(){
     const knowledge = wordLetterKnowledge();
@@ -2091,20 +2085,6 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
     return WORD_TIERS.find(t => t.id === profiles.detectword.selectedTier) || WORD_TIERS[0];
   }
   function nextWordTierToUnlock(){ return WORD_TIERS.find(t => profiles.detectword.level < t.unlockLevel) || null; }
-  function chooseRandomWord(length){
-    const bank = (WORD_BANK[length] || WORD_BANK[5]).filter(word => String(word).length === length);
-    const recent = wordRecentByLength[length] || [];
-    let pool = bank.filter(word => !recent.includes(word));
-    if(!pool.length){
-      recent.length = 0;
-      pool = bank.slice();
-    }
-    const chosen = pool[Math.floor(Math.random() * pool.length)] || bank[0] || 'word';
-    recent.unshift(chosen);
-    const memory = Math.min(28, Math.max(8, Math.floor(bank.length * 0.45)));
-    wordRecentByLength[length] = recent.slice(0, memory);
-    return chosen;
-  }
   function savedPairsRoundSnapshot(){
     if(!pairsBoardState || !profiles.pairs) return null;
     return {
@@ -2419,26 +2399,6 @@ const BASELINE_GAMES_HUB_BUILD = 'MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1';
     };
     persistWordRound();
     renderAll();
-  }
-  function evaluateWordGuess(guess, secret){
-    const result = Array.from({ length: guess.length }, (_, idx) => ({ letter:guess[idx], state:'absent' }));
-    const secretPool = secret.split('');
-    guess.split('').forEach((char, idx) => {
-      if(secret[idx] === char){
-        result[idx].state = 'correct';
-        secretPool[idx] = null;
-      }
-    });
-    guess.split('').forEach((char, idx) => {
-      if(result[idx].state === 'correct') return;
-      const poolIndex = secretPool.indexOf(char);
-      if(poolIndex >= 0){ result[idx].state = 'present'; secretPool[poolIndex] = null; }
-    });
-    return result;
-  }
-  function computeWordRewardMultiplier(profile){
-    const streakFactor = 1 + ((profile.skills.focus || 0) * Math.min(profile.currentStreak, 5) * 0.04);
-    return streakFactor;
   }
   function submitWordGuess(event){
     event.preventDefault();
