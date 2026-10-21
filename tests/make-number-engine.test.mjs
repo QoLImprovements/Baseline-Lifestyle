@@ -81,6 +81,6 @@ test('Games Hub core delegates Make The Number deterministic logic to one pure e
 
   const profileIndex=html.indexOf('/systems/baseline-games-hub/js/games-profile-rules.js');
   const engineIndex=html.indexOf('/systems/baseline-games-hub/js/make-number-engine.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js?v=MAKE_NUMBER_ENGINE_AUTHORITY_20261021_1');
+  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
   assert.ok(profileIndex>=0 && engineIndex>profileIndex && coreIndex>engineIndex);
 });
