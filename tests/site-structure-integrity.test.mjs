@@ -377,3 +377,40 @@ test('mobile header keeps branding visible through one consolidated utility menu
   assert.ok(headerCss.includes('.bl-homebar-right > .bl-mini-btn{\n    display:none!important;'), 'system-page utility controls must not remain visibly duplicated on mobile');
   assert.ok(protectedKeyCss.includes('@media (min-width:521px)'), 'protected key first-paint flex must not override the compact mobile grid');
 });
+
+
+test('primary entrypoints use one cache key per shared static asset', () => {
+  const entries = [
+    'index.html',
+    'systems/baseline-food-approach/baseline-food-approach.html',
+    'systems/baseline-massage/baseline-massage.html',
+    'systems/baseline-natural-skincare/baseline-natural-skincare.html',
+    'systems/baseline-psychology/baseline-psychology.html',
+    'systems/baseline-fitness/baseline-fitness.html',
+    'systems/baseline-badminton-session/baseline-badminton-session.html',
+    'systems/baseline-games-hub/baseline-games-hub.html'
+  ];
+  const expected = new Map([
+    ['/sitewide/css/baseline-sitewide.css','SITEWIDE_SHARED_CSS_20261021_1'],
+    ['/sitewide/css/baseline-header-canonical.css','SITEWIDE_HEADER_CSS_20261021_1'],
+    ['/sitewide/css/baseline-protected-access.css','PROTECTED_ACCESS_CSS_20261021_1'],
+    ['/sitewide/css/baseline-protected-key-placement.css','PROTECTED_KEY_CSS_20261021_1'],
+    ['/sitewide/css/baseline-ui-fixes.css','SITEWIDE_UI_FIXES_20261021_1'],
+    ['/sitewide/js/baseline-shared.js','SITEWIDE_SHARED_JS_20261021_1']
+  ]);
+
+  for (const entry of entries) {
+    const source = fs.readFileSync(path.join(root, entry), 'utf8');
+    for (const [asset, version] of expected) {
+      if (!source.includes(asset)) continue;
+      const escaped = asset.replaceAll('/', '\\/').replaceAll('.', '\\.');
+      const match = source.match(new RegExp(escaped + "(?:\\?[^\"']*)?"));
+      assert.ok(match, entry + ': missing ' + asset);
+      assert.equal(
+        match[0].replaceAll('&amp;','&'),
+        asset + '?v=' + version,
+        entry + ': inconsistent cache key for ' + asset
+      );
+    }
+  }
+});
