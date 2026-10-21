@@ -57,9 +57,10 @@ test('protected access requires a host-supplied PIN and keeps no repository fall
 
 
 test('Charity Shop presentation layers remain consolidated under one pre-colour authority',async()=>{
-  const [page,cashing] = await Promise.all([
+  const [page,cashing,finalCoherence] = await Promise.all([
     read('systems/charity-shop/charity-shop.php'),
-    read('systems/charity-shop/css/charity-shop-cashing-and-artwork.css')
+    read('systems/charity-shop/css/charity-shop-cashing-and-artwork.css'),
+    read('systems/charity-shop/css/charity-shop-final-coherence.css')
   ]);
 
   for(const retired of [
@@ -84,5 +85,9 @@ test('Charity Shop presentation layers remain consolidated under one pre-colour 
   const cashingLink=page.indexOf('charity-shop-cashing-and-artwork.css');
   const finalLink=page.indexOf('charity-shop-final-coherence.css');
   assert.ok(cashingLink>=0 && finalLink>cashingLink,'final colour authority must remain later in the cascade');
+
+  assert.doesNotMatch(page,/charityCashToBankWhiteAuthority|CHARITY-CASH-TO-BANK-INLINE-AUTHORITY/);
+  assert.doesNotMatch(cashing,/CHARITY-CASH-TO-BANK-WHITE-20260803/);
+  assert.match(finalCoherence,/\.charity-total-line--final > span,[\s\S]*\.charity-total-line--final > output[\s\S]*color:#fff!important;[\s\S]*-webkit-text-fill-color:#fff!important;/);
 });
 
