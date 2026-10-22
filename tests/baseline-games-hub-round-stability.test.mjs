@@ -4,6 +4,7 @@ import fs from 'node:fs';
 
 const corePath = new URL('../systems/baseline-games-hub/js/baseline-games-hub-core.js', import.meta.url);
 const core = fs.readFileSync(corePath, 'utf8');
+const pairsEngine = fs.readFileSync(new URL('../systems/baseline-games-hub/js/pairs-engine.js', import.meta.url), 'utf8');
 
 function functionBody(name, nextName) {
   const start = core.indexOf('function ' + name + '(');
@@ -77,7 +78,8 @@ test('Pairs gives every physical card one clean selection before a repeat can br
   const flip = functionBody('handlePairsCardFlip', 'usePairsHint');
   const mismatch = functionBody('handlePairsMismatch', 'handlePairsCardFlip');
 
-  assert.match(deck, /selections:0/);
+  assert.match(deck, /PAIRS_ENGINE\.buildDeck/);
+  assert.match(pairsEngine, /selections:0/);
   assert.match(flip, /card\.wasKnown = Number\(card\.selections \|\| 0\) >= 1/);
   assert.match(flip, /card\.selections = Number\(card\.selections \|\| 0\) \+ 1/);
   assert.doesNotMatch(flip, /faceSeen/);
