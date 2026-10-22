@@ -2,23 +2,23 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const html = fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html', 'utf8');
-const css = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
-const js = fs.readFileSync('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
+const html = fs.readFileSync('systems/baseline-recreation/baseline-recreation.html', 'utf8');
+const css = fs.readFileSync('systems/baseline-recreation/puzzles/the-weight-of-coherence/css/weight-of-coherence.css', 'utf8');
+const js = fs.readFileSync('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js', 'utf8');
 
 test('Weight of Coherence keeps a muted board normally and uses white behind the 50% guide', () => {
   assert.match(js, /the-weight-of-coherence\.png\?v=WEIGHT_OF_COHERENCE_FULL_20261016_2/);
-  assert.match(js, /const BOARD_BASE = '#2A3672'/);
+  assert.match(js, /const BOARD_BASE = recreationCssValue\('--recreation-panel','#6E2C44'\)/);
   assert.match(js, /const GUIDE_OPACITY = 0\.50/);
   assert.match(js, /ctx\.fillStyle=guideOn\?'#FFFFFF':BOARD_BASE/);
   assert.match(js, /ctx\.globalAlpha\s*=\s*GUIDE_OPACITY/);
-  assert.match(js, /guideOn\?'rgba\(8,13,34,\.18\)':'rgba\(214,223,255,\.10\)'/);
+  assert.match(js, /guideOn\?recreationRgba\('--recreation-burgundy-rgb','58,16,34',\.18\):recreationRgba\('--recreation-ink-rgb','255,244,239',\.10\)/);
   assert.doesNotThrow(() => new Function(js));
-  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(206,215,255,\.28\)[^}]*background:#2A3672/);
+  assert.match(css, /\.weight-coherence-board-wrap\{[^}]*border:1px solid rgba\(var\(--recreation-copper-light-rgb\),\.28\)[^}]*background:var\(--recreation-panel\)/);
   assert.doesNotMatch(js, /rgba\(130,150,208,\.62\)/);
   assert.doesNotMatch(css, /rgba\(130,150,208,\.62\)/);
-  assert.match(html, /weight-of-coherence\.css\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
-  assert.match(html, /weight-of-coherence\.js\?v=JIGSAW_FULL_PIECE_OVERLAY_20261018_1/);
+  assert.match(html, /weight-of-coherence\.css\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
+  assert.match(html, /weight-of-coherence\.js\?v=RECREATION_JIGSAW_PALETTE_20261022_1/);
   assert.doesNotMatch(js, /undimmed, full-quality reference view/);
 });
 
@@ -32,8 +32,8 @@ test('all non-fullscreen jigsaw interactions preserve the actual Baseline scroll
   assert.match(js, /function restorePageScroll\(snapshot\)\{[\s\S]*?scrollRoot\.scrollTo\(\{left:snapshot\.rootX,top:snapshot\.rootY,behavior:'auto'\}\)/);
   assert.match(js, /function captureInteractionScroll\(event\)\{[\s\S]*?control\.focus\(\{preventScroll:true\}\)[\s\S]*?restorePageScroll\(snapshot\)/);
   assert.match(js, /root\.addEventListener\('pointerdown',captureInteractionScroll,true\)/);
-  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(\)/);
-  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(\)/);
+  assert.match(js, /root\.addEventListener\('click'[\s\S]*?settleInteractionScroll\(event\)/);
+  assert.match(js, /window\.addEventListener\('pointerup'[\s\S]*?settleInteractionScroll\(event\)/);
   assert.match(js, /function attemptPlacement\(id,clientX,clientY\)\{[\s\S]*?const scrollSnapshot=pageScrollSnapshot\(\)/);
   assert.match(js, /if\(dx<=snapX && dy<=snapY\)\{[\s\S]*?placePiece\(id\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return true;/);
   assert.match(js, /setStatus\('That piece belongs elsewhere\. Its tray piece is highlighted so you can find it again\.'[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
@@ -49,7 +49,7 @@ test('rejected drag drops stay at the board and highlight the returned tray piec
   assert.match(js, /root\.classList\.add\('is-wrong-drop'\);[\s\S]*?restorePageScroll\(scrollSnapshot\);[\s\S]*?return false;/);
   assert.match(js, /button\.classList\.toggle\('is-return-highlight',id===returnHighlightPieceId\)/);
   assert.match(js, /if\(returnHighlightPieceId===id\)\{[\s\S]*?returnHighlightPieceId=null;[\s\S]*?syncSelectedPieceClasses\(\)/);
-  assert.match(css, /\.weight-coherence-piece\.is-return-highlight \.weight-coherence-piece-canvas\{[^}]*drop-shadow\(0 0 8px rgba\(126,145,255,\.98\)\)/);
+  assert.match(css, /\.weight-coherence-piece\.is-return-highlight \.weight-coherence-piece-canvas\{[^}]*drop-shadow\(0 0 8px rgba\(var\(--recreation-copper-light-rgb\),\.98\)\)/);
 });
 
 test('V toggles a persistent full-colour view and pauses piece interaction without disabling zoom', () => {

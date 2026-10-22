@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createDefaultRealmSave } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-model.js';
-import { RealmInventoryService } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-inventory-service.js';
-import { REALM_MATERIAL_BY_ID } from '../systems/baseline-games-hub/games/baseline-realm/shared/data/realm-materials.js';
-import { MATERIALS as EXPLORATION_MATERIALS } from '../systems/baseline-games-hub/games/baseline-realm/exploration/data/meridian-grove.js';
+import { createDefaultRealmSave } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-model.js';
+import { RealmInventoryService } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-inventory-service.js';
+import { REALM_MATERIAL_BY_ID } from '../systems/baseline-recreation/games/baseline-realm/shared/data/realm-materials.js';
+import { MATERIALS as EXPLORATION_MATERIALS } from '../systems/baseline-recreation/games/baseline-realm/exploration/data/meridian-grove.js';
 import {
   WORKSHOP_CATEGORIES,
   WORKSHOP_RECIPES
-} from '../systems/baseline-games-hub/games/baseline-realm/workshop/data/workshop-catalog.js';
-import { RealmWorkshopService } from '../systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-service.js';
+} from '../systems/baseline-recreation/games/baseline-realm/workshop/data/workshop-catalog.js';
+import { RealmWorkshopService } from '../systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-service.js';
 
 function createHarness({ equipmentId = (id, index) => `${id}#test-${index}`, now = () => 1000 } = {}) {
   let state = createDefaultRealmSave();

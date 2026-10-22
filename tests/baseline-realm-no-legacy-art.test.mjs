@@ -5,7 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const hub = path.join(root, 'systems/baseline-games-hub');
+const hub = path.join(root, 'systems/baseline-recreation');
 const realm = path.join(hub, 'games/baseline-realm');
 const textExtensions = new Set(['.html', '.css', '.js', '.mjs', '.md', '.json', '.php']);
 
@@ -26,7 +26,7 @@ test('removed Realm art and runtime authorities stay absent', () => {
   assert.equal(fs.existsSync(path.join(realm, 'ninja-training/js/ninja-training-runtime.js')), true);
 });
 
-test('all active Games Hub sources contain no removed Realm art references', () => {
+test('all active Recreation sources contain no removed Realm art references', () => {
   const forbidden = [
     '/game-art/',
     'ninja-bg-loop',
@@ -73,7 +73,7 @@ test('current Realm art authorities exist in their owning modules', () => {
 });
 
 test('completed modules are exposed as complete rather than previews', async () => {
-  const calorieEscape = await import('../systems/baseline-games-hub/games/baseline-realm/calorie-escape/data/calorie-escape-data.js');
+  const calorieEscape = await import('../systems/baseline-recreation/games/baseline-realm/calorie-escape/data/calorie-escape-data.js');
   assert.deepEqual(calorieEscape.ZONES.map((zone) => zone.status), ['playable', 'playable', 'playable', 'playable']);
   assert.equal(calorieEscape.LEVELS.length, 12);
 

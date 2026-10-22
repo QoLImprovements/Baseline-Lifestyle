@@ -41,7 +41,7 @@ The suite must finish and pass. It covers:
 4. authenticated Binaural preset save/load behavior;
 5. the Charity Shop digital-code gate through a mocked protected API response, without committing a production code;
 6. Fitness plan generation, API save and API reload;
-7. Games Hub account progress restoration and playable game opening;
+7. Recreation account progress restoration and playable game opening;
 8. Badminton shared-state loading and persistence across a page reload;
 9. uncaught browser runtime errors during the primary-route pass.
 
@@ -55,7 +55,7 @@ A stable tag may be created only when every item below is recorded as passed.
 |---|---|---|
 | Pull-request checks | All required GitHub Actions jobs green for the exact release commit | Pending |
 | Finite smoke suite | `npm run test:stability-smoke` passes | Pending |
-| Live read-only smoke | Home/navigation, login/logout, Charity Shop, favourites, Binaural, Fitness, Games Hub and Badminton checked on the deployed `main` build | Pending |
+| Live read-only smoke | Home/navigation, login/logout, Charity Shop, favourites, Binaural, Fitness, Recreation and Badminton checked on the deployed `main` build | Pending |
 | Production error review | Deployment and PHP logs contain no new release-caused error pattern; report is redacted | Pending |
 | Git deployment boundary | hPanel still shows `QoLImprovements/Baseline-Lifestyle` and branch `main` | Pending |
 | Failed-check protection | A failed required workflow cannot be treated as an approved release | Pending confirmation |

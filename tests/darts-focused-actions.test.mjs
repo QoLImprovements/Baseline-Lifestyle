@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDartsDrillActions } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-actions.js';
+import { createDartsDrillActions } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-actions.js';
 
 function harness(){
   const states={};

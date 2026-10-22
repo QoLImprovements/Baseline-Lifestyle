@@ -2,22 +2,22 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 
-const html=fs.readFileSync('systems/baseline-games-hub/baseline-games-hub.html','utf8');
-const hubCss=fs.readFileSync('systems/baseline-games-hub/css/baseline-games-hub.css','utf8');
-const shellCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-shell.css','utf8');
-const mobileCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-mobile.css','utf8');
-const basecampCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/basecamp/css/basecamp.css','utf8');
-const workshopCss=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/css/workshop.css','utf8');
-const workshopScene=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-scene.js','utf8');
-const workshopUi=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-ui.js','utf8');
-const runtimeUi=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-runtime-ui.js','utf8');
-const lazyScenes=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js','utf8');
-const inputBindings=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
-const ninjaRuntime=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
-const hubLoader=fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js','utf8');
-const realmEntry=fs.readFileSync('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js','utf8');
+const html=fs.readFileSync('systems/baseline-recreation/baseline-recreation.html','utf8');
+const hubCss=fs.readFileSync('systems/baseline-recreation/css/baseline-recreation.css','utf8');
+const shellCss=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/css/realm-shell.css','utf8');
+const mobileCss=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/css/realm-mobile.css','utf8');
+const basecampCss=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/basecamp/css/basecamp.css','utf8');
+const workshopCss=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/workshop/css/workshop.css','utf8');
+const workshopScene=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-scene.js','utf8');
+const workshopUi=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-ui.js','utf8');
+const runtimeUi=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/js/realm-runtime-ui.js','utf8');
+const lazyScenes=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/js/realm-lazy-scenes.js','utf8');
+const inputBindings=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/js/realm-input-bindings.js','utf8');
+const ninjaRuntime=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/ninja-training/js/ninja-training-runtime.js','utf8');
+const hubLoader=fs.readFileSync('systems/baseline-recreation/js/baseline-recreation-loader.js','utf8');
+const realmEntry=fs.readFileSync('systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js','utf8');
 
-test('Games Hub CSS does not own Realm presentation',()=>{
+test('Recreation CSS does not own Realm presentation',()=>{
   assert.doesNotMatch(hubCss,/\.realm-command-banner|\.realm-location-button|\.realm-drawer|\.realm-top-strip|#ninjaPanel #realmSceneFrame|\.ninja-scene|\.ninja-hit-flash/);
 });
 
@@ -130,7 +130,7 @@ test('Basecamp service drawer and Workshop room sit above the active scene',()=>
 
 test('Realm loader reuses the one canonical module and waits for its initial scene',()=>{
   assert.match(html,/realm-entry\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
-  assert.match(html,/baseline-games-hub\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
+  assert.match(html,/baseline-recreation\.js\?v=REALM_DIRECT_WORKSHOP_ROUTE_20261019_1/);
   assert.match(hubLoader,/const REALM_BUILD='REALM_DIRECT_WORKSHOP_ROUTE_20261019_1'/);
   assert.match(hubLoader,/const existing=window\.BaselineRealmHost;[\s\S]*?if\(real\(existing\)\) return existing;/);
   assert.match(hubLoader,/whenSceneReady/);

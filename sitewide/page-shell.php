@@ -14,7 +14,8 @@ $pages = [
     'skincare' => __DIR__ . '/../systems/baseline-natural-skincare/baseline-natural-skincare.html',
     'fitness' => __DIR__ . '/../systems/baseline-fitness/baseline-fitness.html',
     'badminton' => __DIR__ . '/../systems/baseline-badminton-session/baseline-badminton-session.html',
-    'games' => __DIR__ . '/../systems/baseline-games-hub/baseline-games-hub.html',
+    'recreation' => __DIR__ . '/../systems/baseline-recreation/baseline-recreation.html',
+    'games' => __DIR__ . '/../systems/baseline-recreation/baseline-recreation.html', // legacy shell key only
 ];
 
 $page = isset($_GET['page']) ? strtolower(trim((string) $_GET['page'])) : '';

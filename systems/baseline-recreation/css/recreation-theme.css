@@ -1,0 +1,736 @@
+/* Baseline Recreation — Burgundy–Rose–Copper palette authority.
+   This file changes colour only. Existing geometry, typography, spacing,
+   component ownership and game mechanics remain authoritative elsewhere. */
+html[data-app="recreation"],
+body[data-app="recreation"]{
+  /* Canonical hue values live in sitewide/css/baseline-themes.css. */
+  --games-teal-deep:var(--recreation-burgundy);
+  --games-teal:var(--recreation-rose);
+  --games-teal-soft:var(--recreation-copper);
+  --games-orange-deep:var(--recreation-panel);
+  --games-orange:var(--recreation-copper-deep);
+  --games-gold:var(--recreation-copper-light);
+  --games-ink:var(--recreation-ink);
+  --games-cream:var(--recreation-ink);
+  --games-muted:var(--recreation-muted);
+  --games-page-gradient:var(--recreation-mirror);
+  --games-key-gradient:var(--recreation-mirror);
+  --games-card-gradient:var(--recreation-card);
+  --games-panel-gradient:var(--recreation-card);
+  --games-page-deep:var(--recreation-burgundy);
+  --games-page-mid:var(--recreation-rose);
+  --games-page-soft:var(--recreation-copper);
+  --games-page-light:var(--recreation-copper-light);
+  --games-accent:var(--recreation-copper-light);
+  --games-card:var(--recreation-card);
+  --games-card-strong:var(--recreation-card);
+  --games-panel:var(--recreation-panel);
+  --games-control:var(--recreation-mirror);
+  --games-control-active:var(--recreation-copper-deep);
+  --games-play-deep:var(--recreation-burgundy);
+  --games-surface-1:var(--recreation-card);
+  --games-surface-2:var(--recreation-panel);
+  --games-surface-3:var(--recreation-card);
+  --games-surface-soft:rgba(var(--recreation-copper-deep-rgb),.22);
+  --games-border:rgba(var(--recreation-copper-light-rgb),.38);
+  --games-border-strong:rgba(var(--recreation-copper-light-rgb),.72);
+  --bl-flyout-bg-image:var(--recreation-mirror);
+  --bl-flyout-bg-color:var(--recreation-rose);
+  --bl-flyout-control-bg-image:var(--recreation-mirror);
+  --bl-flyout-control-bg-color:var(--recreation-rose);
+  --bl-flyout-field-bg:var(--recreation-card);
+  --bl-flyout-field-ink:var(--recreation-ink);
+  --bl-flyout-field-placeholder:var(--recreation-placeholder);
+  --bl-flyout-ink:var(--recreation-ink);
+  --bl-surface-card-solid:var(--recreation-card);
+  --bl-surface-recipe-card-solid:var(--recreation-card);
+  --bl-surface-panel-solid:var(--recreation-panel);
+  --bl-surface-control-solid:var(--recreation-rose);
+  --bl-surface-input-solid:var(--recreation-card);
+  --bl-surface-active-solid:var(--recreation-copper-deep);
+  --bl-surface-ink:var(--recreation-ink);
+  --bl-slider-track-solid:var(--recreation-copper-deep);
+  --bl-slider-thumb-solid:var(--recreation-copper-light);
+  --bl-slider-border-solid:var(--recreation-ink);
+  --bl-dropdown-panel-solid:var(--recreation-panel);
+  --bl-dropdown-control-solid:var(--recreation-rose);
+  --bl-dropdown-active-solid:var(--recreation-copper-deep);
+  --bl-dropdown-ink:var(--recreation-ink);
+  color:var(--recreation-ink)!important;
+  background:var(--recreation-mirror)!important;
+  background-color:var(--recreation-burgundy)!important;
+  color-scheme:dark;
+}
+
+/* The page, banner and tab rail each receive the same true mirrored gradient. */
+html[data-app="recreation"],
+html[data-app="recreation"] body[data-app="recreation"],
+html[data-app="recreation"] body[data-app="recreation"] .bl-scroll,
+html[data-app="recreation"] body[data-app="recreation"] .bl-homebar,
+html[data-app="recreation"] body[data-app="recreation"] .hero,
+html[data-app="recreation"] body[data-app="recreation"] .tabs{
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-burgundy)!important;
+  background-size:100% 100%!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"]::before,
+html[data-app="recreation"] body[data-app="recreation"]::after{
+  content:none!important;
+  display:none!important;
+}
+
+/* Reading cards stay one flat colour. No per-card decorative gradients. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .card,.game-card,.game-shell,.game-panel,.game-row,.summary-box,.bank-box,
+  .games-list-group,.game-summary-item,.game-stat-card,.trackcoin-stat-card,
+  .progress-shell,.skill-item,.empty-box,.game-info-details,
+  .game-summary-details,.game-summary-body,.formula-box,.word-box,.solution-box,
+  .clue-bar,.upgrade-item,.bonus-item,
+  .word-board-shell,.make24-board-shell,.pairs-board-shell,.rule-shift-shell,.track-coin-shell,
+  .darts-focused-shell,.darts-game-card,.darts-tier-panel,.darts-category-card,
+  .badminton-focused-panel .badminton-game-card,.badminton-tier-panel,
+  .badminton-situation,.badminton-feedback,.badminton-progress-box,
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .card,.game-card,.game-row,.summary-box,.games-list-group,.game-summary-item,
+  .darts-focused-shell,.badminton-focused-panel
+) :is(h1,h2,h3,h4,h5,h6,p,li,strong,label,span){
+  color:inherit!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .note,.inline-note,.game-row p,.game-row-meta,.game-summary-item p,
+  .darts-muted,.badminton-focused-panel p
+){
+  color:var(--recreation-muted)!important;
+  -webkit-text-fill-color:var(--recreation-muted)!important;
+}
+
+/* Every interface button is an individual mirrored-gradient control. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .tab,.mobile-game-key,.action,.compact-action,.secondary,.ghost,.auto-next-toggle,
+  .game-row-info-button,.bl-info-button,.game-info-button,.tier-button,.tier-btn,
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert,
+  .darts-game-selector,.darts-tier-button,.darts-choice,.darts-routine-list button,
+  .darts-category-card,.darts-selector-info,
+  .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
+  .badminton-selector-info
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  text-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .tab,.mobile-game-key,.action,.compact-action,.secondary,.ghost,.auto-next-toggle,
+  .game-row-info-button,.bl-info-button,.game-info-button,.tier-button,.tier-btn,
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert,
+  .darts-game-selector,.darts-tier-button,.darts-choice,.darts-category-card,.darts-selector-info,
+  .badminton-game-selector,.badminton-tier-button,.badminton-choice,.badminton-zone-grid button,
+  .badminton-selector-info
+):is(:hover,:active,[aria-pressed="true"],[aria-selected="true"],.is-active,.is-selected){
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(button,input,select,textarea):disabled,
+html[data-app="recreation"] body[data-app="recreation"] [aria-disabled="true"]{
+  opacity:.58!important;
+  filter:saturate(.55)!important;
+  cursor:not-allowed!important;
+}
+
+/* Keyboard users receive a two-colour focus ring that remains visible against
+   every point in the mirror gradient and the flat card surface. */
+html[data-app="recreation"] body[data-app="recreation"] :is(button,a,input,select,textarea,[tabindex]):not(.bl-protected-access-overlay *):focus-visible{
+  outline:3px solid var(--recreation-ink)!important;
+  outline-offset:3px!important;
+  box-shadow:0 0 0 6px var(--recreation-copper-light)!important;
+}
+
+/* Inputs and compact status surfaces remain dark and readable. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  input:not([type="range"]),select,textarea,.text-input,.game-input,.status,.badge,
+  .pill,.chip,.game-save-status,.games-save-tooltip,[role="tooltip"]
+):not(.bl-protected-access-overlay *){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border-strong)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  caret-color:var(--recreation-copper-light)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(input,textarea):not(.bl-protected-access-overlay *)::placeholder{
+  color:var(--recreation-placeholder)!important;
+  -webkit-text-fill-color:var(--recreation-placeholder)!important;
+  opacity:1!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.error,.is-error,[data-state="error"]){
+  background:#4C2540!important;
+  background-image:none!important;
+  border-color:#E49AB8!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.loading,.empty,.empty-state,[data-state="loading"],[data-state="empty"]){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+  color:var(--recreation-muted)!important;
+}
+
+/* Banner controls, page dropdown, Account, Voice and Binaural all use the
+   mirrored gradient as complete, independent components. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .bl-pages-btn,.bl-protected-key,#bl-beats-toggle,#bl-voice-toggle,#bl-auth-toggle
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .bl-pages-menu,.bl-pages-link,#bl-auth-flyout .card,#bl-beats-flyout .card,
+  #bl-voice-flyout .card,.bl-flyout,#bl-auth-flyout button,#bl-beats-flyout button,
+  #bl-voice-flyout button,.bl-flyout .bl-select-btn,.bl-flyout .bl-select-menu,
+  .bl-flyout .bl-select-menu [role="option"]
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  background-size:100% 100%!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  #bl-auth-flyout .bl-auth-input-shell,#bl-auth-flyout input,
+  #bl-beats-flyout input:not([type="range"]),#bl-beats-flyout select,
+  #bl-voice-flyout input:not([type="range"])
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.bl-btn-icon,.bl-btn-label,#blProtectedKey svg){
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  stroke:currentColor!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill,
+html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:hover,
+html[data-app="recreation"] body[data-app="recreation"] #bl-auth-flyout input:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  box-shadow:0 0 0 1000px var(--recreation-card) inset!important;
+  -webkit-box-shadow:0 0 0 1000px var(--recreation-card) inset!important;
+}
+
+/* Games overview: one flat card colour, G01 artwork, gradient metadata pills. */
+html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-row{
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.42)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-row-meta :is(strong,.inline-note){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-card-art{
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.52)!important;
+}
+
+/* Modal chrome follows G01; game worlds and semantic gameplay feedback keep
+   their functional artwork and status colours. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .modal-overlay,.game-modal-overlay,.popover-overlay,.dialog-overlay
+){
+  background:rgba(4,7,22,.88)!important;
+  background-image:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .modal,.game-modal,.popover,[role="dialog"]
+):not(.bl-protected-access-dialog){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .darts-memory-veil,.darts-memory-arena,.darts-pressure-track span,
+  .darts-routine-list li,.badminton-freeze-scene,.badminton-contact-panel,
+  .badminton-contact-light,.badminton-pattern-strip,.badminton-pressure-track span,
+  .badminton-xp-block,.badminton-roadmap span,.badminton-scene-caption,
+  .badminton-tactical-scene
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(#dartsGameCard,#badmintonGameCard):fullscreen{
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+}
+
+/* G01 completion authority.
+   The Hub's canonical and independently-loaded game styles pre-date G01.
+   These selectors cover their remaining UI surfaces without changing layout,
+   typography, game logic, or realistic/semantic artwork. */
+
+/* Information bars, progress summaries and idle/status panels are interface
+   cards. Their bodies are flat; their clickable summary rows are controls. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .progress-shell,.round-status-card,.empty-box,.skill-item,
+  .game-info-details,.game-summary-details,.game-summary-body,
+  .formula-box,.word-box,.solution-box,.clue-bar,.upgrade-item,.bonus-item
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  text-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .game-info-details summary,.game-summary-details summary,.stat-pill,.skill-alert
+):is(:hover,:focus-visible,[aria-expanded="true"],.is-active,.is-ready){
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .game-info-details,.game-summary-details
+)[open] summary{
+  border-bottom-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+}
+
+/* Experience and neutral progress indicators use the same cool palette. */
+html[data-app="recreation"] body[data-app="recreation"] :is(.xp-bar,.meter,.darts-pressure-bar,.badminton-timer-bar){
+  background:var(--recreation-burgundy)!important;
+  background-image:none!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.42)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .xp-fill,.meter-fill,.darts-pressure-bar>span,.badminton-timer-bar>span
+){
+  background:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+  background-image:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] progress{accent-color:var(--recreation-copper-light)!important}
+
+/* Darts: instructional and calculation chrome is G01. The realistic board's
+   red/green scoring segments remain sport-owned content. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .darts-scenario-header,.darts-situation-card,.darts-scenario-facts span,
+  .darts-coaching-note,.darts-calculation-note,.darts-visual-intro,
+  .darts-stage-copy,.darts-memory-veil,.darts-memory-arena,
+  .darts-routine-list li,.darts-sequence-readout,.darts-series-progress,
+  .darts-fact-list label,.darts-confidence-control,.darts-calibration-result,
+  .darts-comparison div,.darts-xp-block,.darts-tier-panel
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
+  .darts-routine-list button,.darts-selector-info
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .darts-choice,.darts-game-selector,.darts-tier-button,.darts-category-card,
+  .darts-routine-list button,.darts-selector-info
+):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .darts-board-frame,.darts-visual-intro__art,.darts-visual-intro__art--memory
+){
+  background:radial-gradient(circle at 50% 45%,rgba(var(--recreation-copper-light-rgb),.32),var(--recreation-card) 66%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 45%,rgba(var(--recreation-copper-light-rgb),.32),var(--recreation-card) 66%,var(--recreation-burgundy) 100%)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-memory-veil::after{
+  background:linear-gradient(90deg,transparent 0%,rgba(var(--recreation-copper-deep-rgb),.34) 50%,rgba(var(--recreation-burgundy-rgb),.30) 100%)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-category-icon,
+html[data-app="recreation"] body[data-app="recreation"] .darts-game-selector::before{
+  background:var(--recreation-copper-deep)!important;
+  background-color:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-simulated-mark{
+  fill:var(--recreation-copper-light)!important;
+  stroke:var(--recreation-burgundy)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-board-zone.is-highlight{
+  filter:brightness(1.55) drop-shadow(0 0 9px var(--recreation-copper-light))!important;
+  stroke:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-sequence-dots>span{
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .darts-sequence-dots>span.is-current{
+  background:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+
+/* Badminton: menus, coaching panels and scene backplates use G01. Court,
+   player and shuttle illustrations keep their functional visual meaning. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .badminton-situation,.badminton-progress-box,.badminton-tier-panel,
+  .badminton-pattern-strip,.badminton-xp-block,.badminton-roadmap span,
+  .badminton-scene-caption
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .badminton-choice,.badminton-game-selector,.badminton-tier-button,
+  .badminton-zone-grid button,.badminton-selector-info
+){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  background-color:var(--recreation-rose)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .badminton-choice,.badminton-game-selector,.badminton-tier-button,
+  .badminton-zone-grid button,.badminton-selector-info
+):is(:hover,:focus-visible,.is-selected,.is-active,[aria-expanded="true"]){
+  background:var(--recreation-mirror-active)!important;
+  background-image:var(--recreation-mirror-active)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .badminton-court-shell,.badminton-freeze-scene,.badminton-contact-panel,
+  .badminton-tactical-scene
+){
+  background:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.30),var(--recreation-card) 68%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.30),var(--recreation-card) 68%,var(--recreation-burgundy) 100%)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.46)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .badminton-pattern-strip span,.badminton-scene-caption span,.badminton-contact-light
+){
+  background:var(--recreation-copper-deep)!important;
+  background-image:none!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .badminton-contact-light.is-contact{
+  background:var(--recreation-copper-light)!important;
+  color:var(--recreation-burgundy)!important;
+  box-shadow:0 0 0 11px rgba(var(--recreation-copper-light-rgb),.22)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .badminton-court-zone.is-highlight{
+  fill:var(--recreation-copper-light)!important;
+  filter:drop-shadow(0 0 9px rgba(var(--recreation-copper-light-rgb),.88))!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .badminton-distractor{
+  background:rgba(var(--recreation-copper-light-rgb),.34)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+
+/* The site's cards are flat reading surfaces. Remove the inherited glossy
+   pseudo-layer, offset shadow and hover lift that made Games cards appear to
+   have a second coloured card behind them. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .game-summary-body,.progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+){
+  box-shadow:none!important;
+  filter:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+)::before,
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .card,.game-card,.game-row,.game-panel,.summary-box,.round-status-card,
+  .empty-box,.skill-item,.trackcoin-stat-card,.game-summary-details,
+  .progress-shell,.darts-game-card,.darts-tier-panel,
+  .badminton-game-card,.badminton-tier-panel
+)::after{
+  content:none!important;
+  display:none!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] #gamesList .game-row:is(:hover,:focus-visible,.is-selected){
+  transform:none!important;
+  box-shadow:none!important;
+  filter:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .tab,.action,.compact-action,.secondary,.ghost,.game-toggle-btn,
+  .mobile-game-key,.game-row-info-button,.game-info-button,.bl-info-button,
+  .tier-btn,.darts-choice,.darts-tier-button,.darts-game-selector,
+  .badminton-choice,.badminton-tier-button,.badminton-game-selector
+){box-shadow:none!important}
+
+/* Pairs must never dim the content merely because a resolved card is disabled.
+   Both card faces and their symbols are fully opaque, unfiltered and use a
+   high-contrast G01 foreground in every interaction state. */
+html[data-app="recreation"] body[data-app="recreation"] .memory-card,
+html[data-app="recreation"] body[data-app="recreation"] .memory-card[disabled]{
+  background:var(--recreation-burgundy)!important;
+  background-image:none!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  opacity:1!important;
+  filter:none!important;
+  box-shadow:none!important;
+  mix-blend-mode:normal!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card-face,
+html[data-app="recreation"] body[data-app="recreation"] .memory-card-face *{
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  filter:none!important;
+  visibility:visible!important;
+  mix-blend-mode:normal!important;
+  text-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card-back{
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  opacity:1!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card-front{
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  opacity:0!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card:is(.is-open,.is-matched) .memory-card-back{
+  opacity:0!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card:is(.is-open,.is-matched) .memory-card-front{
+  opacity:1!important;
+  transform:scale(1)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .memory-card.is-matched{
+  outline:3px solid var(--recreation-copper-light)!important;
+  outline-offset:2px!important;
+}
+
+/* Core game boards use G01 chrome too. Gameplay states and Rule Shift's named
+   colour discrimination remain semantic content, but their enclosing panels,
+   timers, controls and neutral pieces no longer expose the retired palette. */
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .trackcoin-scene,.trackcoin-game-status,.trackcoin-idle-cue,.trackcoin-idle-card,
+  .trackcoin-status,.trackcoin-lane,.ruleshift-idle-card,.ruleshift-complete-card,
+  .ruleshift-rule-card,.ruleshift-choice-card,.mobile-game-keypad,
+  .mobile-word-keypad,.mobile-make24-keypad
+){
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  background-color:var(--recreation-card)!important;
+  border-color:var(--games-border)!important;
+  color:var(--recreation-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .trackcoin-lane{
+  background:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.28),var(--recreation-card) 62%,var(--recreation-burgundy) 100%)!important;
+  background-image:radial-gradient(circle at 50% 42%,rgba(var(--recreation-copper-light-rgb),.28),var(--recreation-card) 62%,var(--recreation-burgundy) 100%)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .trackcoin-cup{
+  background:linear-gradient(180deg,var(--recreation-copper) 0%,var(--recreation-rose) 55%,var(--recreation-burgundy) 100%)!important;
+  background-image:linear-gradient(180deg,var(--recreation-copper) 0%,var(--recreation-rose) 55%,var(--recreation-burgundy) 100%)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .trackcoin-cup::before{
+  background:linear-gradient(180deg,var(--recreation-copper-deep) 0%,var(--recreation-rose) 100%)!important;
+  background-image:linear-gradient(180deg,var(--recreation-copper-deep) 0%,var(--recreation-rose) 100%)!important;
+  border-color:var(--recreation-copper-light)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .trackcoin-item-token{
+  background:radial-gradient(circle at 35% 28%,var(--recreation-ink) 0%,var(--recreation-copper-light) 36%,var(--recreation-copper-deep) 68%,var(--recreation-rose) 100%)!important;
+  background-image:radial-gradient(circle at 35% 28%,var(--recreation-ink) 0%,var(--recreation-copper-light) 36%,var(--recreation-copper-deep) 68%,var(--recreation-rose) 100%)!important;
+  border-color:var(--recreation-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.number-chip,.ruleshift-token){
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  border-color:var(--recreation-copper-light)!important;
+  color:var(--recreation-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .ruleshift-timer-bar{
+  background:var(--recreation-burgundy)!important;
+  background-image:none!important;
+  border-color:var(--games-border)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .ruleshift-timer-fill{
+  background:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+  background-image:linear-gradient(90deg,var(--recreation-copper-deep) 0%,var(--recreation-copper-light) 50%,var(--recreation-copper-deep) 100%)!important;
+}
+
+/* Correct/incorrect feedback remains semantic, but uses cool accessible tones
+   instead of the retired warm Games palette. */
+html[data-app="recreation"] body[data-app="recreation"] :is(.darts-feedback,.badminton-feedback).is-correct{
+  background:#173E39!important;
+  background-image:none!important;
+  border-color:#72C7AF!important;
+  color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.darts-feedback,.badminton-feedback).is-wrong{
+  background:#4C2540!important;
+  background-image:none!important;
+  border-color:#E49AB8!important;
+  color:var(--recreation-ink)!important;
+}
+
+/* Force both the page scroller and independently scrolling game lists to use
+   Burgundy–Rose–Copper instead of the legacy orange thumb. */
+html[data-app="recreation"],
+html[data-app="recreation"] body[data-app="recreation"],
+html[data-app="recreation"] body[data-app="recreation"] :is(
+  .bl-scroll,.darts-game-selectors,.badminton-game-selectors
+){
+  scrollbar-color:var(--recreation-copper-deep) var(--recreation-burgundy)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-track{
+  background:var(--recreation-burgundy)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-thumb{
+  background:var(--recreation-copper-deep)!important;
+  border-color:var(--recreation-burgundy)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] ::-webkit-scrollbar-thumb:hover{
+  background:var(--recreation-copper-light)!important;
+}
+@media (max-width:520px){
+  html[data-app="recreation"] body[data-app="recreation"] :is(
+    .card,.game-card,.game-row,.summary-box
+  ){border-radius:16px!important}
+  html[data-app="recreation"] body[data-app="recreation"] .game-row{
+    min-width:0!important;
+    overflow-wrap:anywhere!important;
+  }
+  html[data-app="recreation"] body[data-app="recreation"] :is(
+    .game-row-info-button,.bl-info-button,.game-info-button
+  ){
+    min-width:44px!important;
+    width:44px!important;
+    min-height:44px!important;
+    height:44px!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  html[data-app="recreation"] body[data-app="recreation"] *,
+  html[data-app="recreation"] body[data-app="recreation"] *::before,
+  html[data-app="recreation"] body[data-app="recreation"] *::after{
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+  }
+}
+
+/* Detect The Word belongs to Indigo Circuit too. Blank tiles and the feedback
+   key must not inherit the retired cream/orange Games palette. Semantic states
+   remain distinct through cool green, circuit blue and deep indigo. */
+html[data-app="recreation"] body[data-app="recreation"] .letter-cell{
+  background:var(--recreation-card)!important;
+  background-image:none!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.48)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  box-shadow:none!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.correct,.word-feedback-dot--correct){
+  background:#2F665D!important;
+  background-image:none!important;
+  border-color:#72C7AF!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.present,.word-feedback-dot--present){
+  background:var(--recreation-copper-deep)!important;
+  background-image:none!important;
+  border-color:#A9BCFF!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] :is(.letter-cell.absent,.word-feedback-dot--absent){
+  background:var(--recreation-rose)!important;
+  background-image:none!important;
+  border-color:#657BD0!important;
+  color:#DCE4FF!important;
+  -webkit-text-fill-color:#DCE4FF!important;
+}
+html[data-app="recreation"] body[data-app="recreation"] .word-feedback-legend span{
+  background:var(--recreation-mirror)!important;
+  background-image:var(--recreation-mirror)!important;
+  border-color:rgba(var(--recreation-copper-light-rgb),.62)!important;
+  color:var(--recreation-ink)!important;
+  -webkit-text-fill-color:var(--recreation-ink)!important;
+  box-shadow:none!important;
+}

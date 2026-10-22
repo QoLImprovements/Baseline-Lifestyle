@@ -29,7 +29,7 @@ test('account-scoped browser writers submit and remember revisions',()=>{
 test('Saved Data mutation endpoints require a submitted revision',()=>{
   const endpoints=[
     'sitewide/api/favourites.php','sitewide/api/binaural.php','sitewide/api/voice_settings.php',
-    'systems/baseline-games-hub/api/games_data.php','systems/baseline-games-hub/api/games_profile.php',
+    'systems/baseline-recreation/api/games_data.php','systems/baseline-recreation/api/games_profile.php',
     'systems/baseline-badminton-session/api/badminton_session.php',
     'systems/baseline-fitness/api/save_plan.php','systems/baseline-fitness/api/plan_update.php',
     'systems/baseline-fitness/api/delete_plan.php','systems/baseline-fitness/api/update_session.php',
@@ -92,7 +92,7 @@ test('shared Badminton exposes load/save failures and blocks unsafe follow-up wr
 
 test('full-document shared saves refuse stale conflict retries',()=>{
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
-  const games=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
+  const games=read('systems/baseline-recreation/js/baseline-recreation-guard.js');
   assert.match(badminton,/serverSaveConflict=true/);
   assert.match(badminton,/serverSaveBlocked=true/);
   assert.doesNotMatch(badminton,/CONFLICT_BACKUP_KEY|localStorage|sessionStorage/);

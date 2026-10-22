@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" role="img" aria-label="Two badminton players reading a shuttle trajectory across a marked court">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#3A1022"/>
+      <stop offset="1" stop-color="#93492F"/>
+    </linearGradient>
+    <linearGradient id="court" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#8B3F5B"/>
+      <stop offset="1" stop-color="#A85D3B"/>
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#C77B52" stop-opacity=".8"/>
+      <stop offset="1" stop-color="#C77B52" stop-opacity="0"/>
+    </radialGradient>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#FFF4EF"/>
+    </marker>
+  </defs>
+  <rect width="320" height="240" rx="28" fill="url(#bg)"/>
+  <circle cx="251" cy="45" r="58" fill="url(#glow)"/>
+  <path d="M24 42h272v160H24z" fill="url(#court)" stroke="#FFF4EF" stroke-width="4"/>
+  <path d="M160 42v160M91 42v160M229 42v160M24 80h272M24 164h272M24 123h272" stroke="#FFF4EF" stroke-width="2.5" opacity=".96"/>
+  <path d="M160 39v166" stroke="#C77B52" stroke-width="6"/>
+  <path d="M160 62v120" stroke="#3A1022" stroke-width="2" stroke-dasharray="5 4"/>
+
+  <g transform="translate(72 132)">
+    <circle cy="-34" r="13" fill="#efc39b"/>
+    <path d="M-17-22Q0-31 18-20L13 23Q0 33-15 22Z" fill="#C77B52" stroke="#3A1022" stroke-width="2"/>
+    <path d="M-8 22L-24 58M8 23l20 34M-12-12L-39 6M14-10l31-37" stroke="#3A1022" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <g transform="translate(44 -48) rotate(8)">
+      <path d="M0 0l23-29" stroke="#FFF4EF" stroke-width="5"/>
+      <ellipse cx="28" cy="-36" rx="11" ry="17" fill="none" stroke="#FFF4EF" stroke-width="5"/>
+      <path d="M20-47l16 20M17-37l22 1" stroke="#FFF4EF" stroke-width="1.5"/>
+    </g>
+  </g>
+
+  <g transform="translate(247 103) scale(-.9 .9)">
+    <circle cy="-34" r="13" fill="#a96f50"/>
+    <path d="M-17-22Q0-31 18-20L13 23Q0 33-15 22Z" fill="#93492F" stroke="#3A1022" stroke-width="2"/>
+    <path d="M-8 22L-24 58M8 23l20 34M-12-12L-39 6M14-10l31-37" stroke="#3A1022" stroke-width="10" stroke-linecap="round" fill="none"/>
+    <g transform="translate(44 -48) rotate(-12)">
+      <path d="M0 0l23-29" stroke="#FFF4EF" stroke-width="5"/>
+      <ellipse cx="28" cy="-36" rx="11" ry="17" fill="none" stroke="#FFF4EF" stroke-width="5"/>
+    </g>
+  </g>
+
+  <g transform="translate(185 82) rotate(18)">
+    <ellipse rx="6" ry="7" fill="#C77B52" stroke="#FFF4EF" stroke-width="2"/>
+    <path d="M-4-5L-14-24M0-6V-27M4-5L14-24M-15-24Q0-33 15-24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <path d="M182 88Q153 112 125 135" fill="none" stroke="#FFF4EF" stroke-width="3.5" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+  <path d="M247 146Q224 174 195 183" fill="none" stroke="#C77B52" stroke-width="4" stroke-dasharray="7 5" marker-end="url(#arrow)"/>
+
+  <rect x="38" y="204" width="244" height="24" rx="12" fill="#5A2038" opacity=".94"/>
+  <path d="M55 216h62M128 216h64M203 216h61" stroke="#C77B52" stroke-width="4" stroke-linecap="round"/>
+</svg>

@@ -8,22 +8,22 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=file=>fs.readFileSync(path.join(root,file),'utf8');
 const exists=file=>fs.existsSync(path.join(root,file));
 
-const bootstrap=read('systems/baseline-games-hub/js/baseline-games-hub.js');
-const optional=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
-const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
-const html=read('systems/baseline-games-hub/baseline-games-hub.html');
-const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
-const lazyScenes=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-lazy-scenes.js');
-const inputs=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-input-manager.js');
-const shellCss=read('systems/baseline-games-hub/games/baseline-realm/shared/css/realm-shell.css');
-const ninjaCss=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training.css');
-const explorationCss=read('systems/baseline-games-hub/games/baseline-realm/exploration/css/exploration-jrpg.css');
-const tacticalCss=read('systems/baseline-games-hub/games/baseline-realm/tactical-operations/css/tactical-operations.css');
-const calorieCss=read('systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/calorie-escape.css');
+const bootstrap=read('systems/baseline-recreation/js/baseline-recreation.js');
+const optional=read('systems/baseline-recreation/js/baseline-recreation-loader.js');
+const guard=read('systems/baseline-recreation/js/baseline-recreation-guard.js');
+const html=read('systems/baseline-recreation/baseline-recreation.html');
+const realm=read('systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js');
+const lazyScenes=read('systems/baseline-recreation/games/baseline-realm/shared/js/realm-lazy-scenes.js');
+const inputs=read('systems/baseline-recreation/games/baseline-realm/shared/js/realm-input-manager.js');
+const shellCss=read('systems/baseline-recreation/games/baseline-realm/shared/css/realm-shell.css');
+const ninjaCss=read('systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training.css');
+const explorationCss=read('systems/baseline-recreation/games/baseline-realm/exploration/css/exploration-jrpg.css');
+const tacticalCss=read('systems/baseline-recreation/games/baseline-realm/tactical-operations/css/tactical-operations.css');
+const calorieCss=read('systems/baseline-recreation/games/baseline-realm/calorie-escape/css/calorie-escape.css');
 
 test('Realm remains optional and Darts is a first-class module',()=>{
   assert.match(bootstrap,/games-server-storage-ui\.js/);
-  assert.match(bootstrap,/baseline-games-hub-v14\.js/);
+  assert.match(bootstrap,/baseline-recreation-v14\.js/);
   assert.match(optional,/DartsFocusedLoader/);
   assert.match(optional,/data-select-game="ninja"/);
   assert.match(guard,/canPlay:\(\)=>true/);
@@ -39,18 +39,18 @@ test('Realm has one canonical shared shell, one Ninja stylesheet and one mobile 
 
 test('patch-era and dormant Realm authorities are removed from the repository',()=>{
   for(const file of [
-    'systems/baseline-games-hub/css/baseline-realm-stability-fix.css',
-    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-shell.css',
-    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-wood-authority.css',
-    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-stage-1-mobile.css',
-    'systems/baseline-games-hub/games/baseline-realm/shared/css/realm-integration.css',
-    'systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css',
-    'systems/baseline-games-hub/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css',
-    'systems/baseline-games-hub/games/baseline-realm/shared/js/realm-stage-1-shell.js',
-    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/a.css',
-    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/m.css',
-    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/p.css',
-    'systems/baseline-games-hub/games/baseline-realm/calorie-escape/css/r.css'
+    'systems/baseline-recreation/css/baseline-realm-stability-fix.css',
+    'systems/baseline-recreation/games/baseline-realm/shared/css/realm-stage-1-shell.css',
+    'systems/baseline-recreation/games/baseline-realm/shared/css/realm-wood-authority.css',
+    'systems/baseline-recreation/games/baseline-realm/shared/css/realm-stage-1-mobile.css',
+    'systems/baseline-recreation/games/baseline-realm/shared/css/realm-integration.css',
+    'systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training-rebuild.css',
+    'systems/baseline-recreation/games/baseline-realm/ninja-training/css/ninja-training-final-authority.css',
+    'systems/baseline-recreation/games/baseline-realm/shared/js/realm-stage-1-shell.js',
+    'systems/baseline-recreation/games/baseline-realm/calorie-escape/css/a.css',
+    'systems/baseline-recreation/games/baseline-realm/calorie-escape/css/m.css',
+    'systems/baseline-recreation/games/baseline-realm/calorie-escape/css/p.css',
+    'systems/baseline-recreation/games/baseline-realm/calorie-escape/css/r.css'
   ]) assert.equal(exists(file),false,file);
 });
 
@@ -86,7 +86,7 @@ test('canonical Ninja presentation exposes actors and keeps controls interactive
 });
 
 
-test('Games Hub compatibility loader does not compete with the canonical Realm bootstrap',()=>{
+test('Recreation compatibility loader does not compete with the canonical Realm bootstrap',()=>{
   assert.match(optional,/Compatibility loader only\. realm-entry\.js is the sole Realm bootstrap/);
   assert.doesNotMatch(optional,/ninja-training-final-authority\.css|ninja-training-rebuild\.css|data-realm-runtime-authority/);
   assert.doesNotMatch(optional,/function activateRealm\(|sceneRouter\.navigate\('basecamp',\{initial:true,source:'games-hub'\}\)/);

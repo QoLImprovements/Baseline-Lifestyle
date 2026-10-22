@@ -6,11 +6,11 @@ import {fileURLToPath} from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=relativePath=>readFile(path.join(root,relativePath),'utf8');
-const realm='systems/baseline-games-hub/games/baseline-realm';
+const realm='systems/baseline-recreation/games/baseline-realm';
 
-test('the Games Hub yields to the canonical Realm presentation block',async()=>{
-  const hub=await read('systems/baseline-games-hub/baseline-games-hub.html');
-  const themeIndex=hub.indexOf('data-games-hub-theme="true"');
+test('the Recreation yields to the canonical Realm presentation block',async()=>{
+  const hub=await read('systems/baseline-recreation/baseline-recreation.html');
+  const themeIndex=hub.indexOf('data-recreation-theme="true"');
   const alignmentIndex=hub.indexOf('data-baseline-gradient-alignment="true"');
   const shellIndex=hub.indexOf('data-realm-shell="true"');
   const mobileIndex=hub.indexOf('data-realm-mobile="true"');
@@ -20,7 +20,7 @@ test('the Games Hub yields to the canonical Realm presentation block',async()=>{
 
 test('Basecamp is static canonical markup rather than runtime reconstruction',async()=>{
   const [hub,entry,runtime,basecamp,shell]=await Promise.all([
-    read('systems/baseline-games-hub/baseline-games-hub.html'),
+    read('systems/baseline-recreation/baseline-recreation.html'),
     read(`${realm}/shared/js/realm-entry.js`),
     read(`${realm}/ninja-training/js/ninja-training-runtime.js`),
     read(`${realm}/basecamp/css/basecamp.css`),

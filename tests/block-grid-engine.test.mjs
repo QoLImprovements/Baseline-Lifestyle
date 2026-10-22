@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   emptyBoard, canPlace, resolvePlacement, createTray, shapeById, SHAPES, boundsForShape,
   legalPlacements, validBoard, runLevel
-} from '../systems/baseline-games-hub/games/block-grid/js/block-grid-engine.mjs';
+} from '../systems/baseline-recreation/games/block-grid/js/block-grid-engine.mjs';
 
 test('block grid places pieces without mutating the source board', () => {
   const board = emptyBoard();

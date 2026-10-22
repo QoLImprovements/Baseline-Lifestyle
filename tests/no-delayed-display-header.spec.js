@@ -12,7 +12,7 @@ test('primary header controls are visible before external JavaScript runs', asyn
     '/baseline-natural-skincare/system',
     '/baseline-fitness/system',
     '/baseline-badminton-session/system',
-    '/baseline-games-hub/games-hub',
+    '/baseline-recreation/system',
     '/baseline-massage/system'
   ]) {
     const response = await page.goto(pathname, { waitUntil:'load' });

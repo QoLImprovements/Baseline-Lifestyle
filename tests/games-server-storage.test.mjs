@@ -9,22 +9,22 @@ const here=path.dirname(fileURLToPath(import.meta.url));
 const root=process.env.BASELINE_REPO_ROOT?path.resolve(process.env.BASELINE_REPO_ROOT):path.resolve(here,'..');
 const read=relative=>fs.readFileSync(path.join(root,relative),'utf8');
 
-const guard=read('systems/baseline-games-hub/js/baseline-games-hub-guard.js');
-const storageUi=read('systems/baseline-games-hub/js/games-server-storage-ui.js');
-const loader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
-const core=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
-const html=read('systems/baseline-games-hub/baseline-games-hub.html');
-const gamesApi=read('systems/baseline-games-hub/api/games_data.php');
+const guard=read('systems/baseline-recreation/js/baseline-recreation-guard.js');
+const storageUi=read('systems/baseline-recreation/js/games-server-storage-ui.js');
+const loader=read('systems/baseline-recreation/js/baseline-recreation-loader.js');
+const core=read('systems/baseline-recreation/js/baseline-recreation-core.js');
+const html=read('systems/baseline-recreation/baseline-recreation.html');
+const gamesApi=read('systems/baseline-recreation/api/games_data.php');
 const savedData=read('sitewide/api/saved_data.php');
-const tactical=read('systems/baseline-games-hub/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js');
-const exploration=read('systems/baseline-games-hub/games/baseline-realm/exploration/js/exploration-jrpg.js');
-const explorationIntegrity=read('systems/baseline-games-hub/games/baseline-realm/exploration/js/exploration-jrpg-state-integrity.js');
-const ninja=read('systems/baseline-games-hub/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
-const dartsStorage=read('systems/baseline-games-hub/games/darts-focused/js/darts-focused-storage.js');
-const badmintonProfile=read('systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-profile.js');
-const registry=read('systems/baseline-games-hub/js/games-registry.js');
-const puzzlesRegistry=read('systems/baseline-games-hub/puzzles/shared/js/puzzles-registry.js');
-const jigsaw=read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+const tactical=read('systems/baseline-recreation/games/baseline-realm/tactical-operations/js/tactical-operations-scene.js');
+const exploration=read('systems/baseline-recreation/games/baseline-realm/exploration/js/exploration-jrpg.js');
+const explorationIntegrity=read('systems/baseline-recreation/games/baseline-realm/exploration/js/exploration-jrpg-state-integrity.js');
+const ninja=read('systems/baseline-recreation/games/baseline-realm/ninja-training/js/ninja-training-runtime.js');
+const dartsStorage=read('systems/baseline-recreation/games/darts-focused/js/darts-focused-storage.js');
+const badmintonProfile=read('systems/baseline-recreation/games/badminton-focused/js/badminton-focused-profile.js');
+const registry=read('systems/baseline-recreation/js/games-registry.js');
+const puzzlesRegistry=read('systems/baseline-recreation/puzzles/shared/js/puzzles-registry.js');
+const jigsaw=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
 
 function runGuard({status=401,payload={ok:false,error:'signed_out'}}={}){
   class FakeXHR{
@@ -54,18 +54,18 @@ function runGuard({status=401,payload={ok:false,error:'signed_out'}}={}){
     console
   };
   context.window=context;
-  vm.runInNewContext(guard,context,{filename:'baseline-games-hub-guard.js'});
+  vm.runInNewContext(guard,context,{filename:'baseline-recreation-guard.js'});
   return{context,listeners,attributes};
 }
 
-test('storage authority is loaded before the normal Games Hub runtimes',()=>{
-  const guardIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-guard.js');
-  const coreIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub-core.js');
-  const modulesIndex=html.indexOf('/systems/baseline-games-hub/js/baseline-games-hub.js');
+test('storage authority is loaded before the normal Recreation runtimes',()=>{
+  const guardIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-guard.js');
+  const coreIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation-core.js');
+  const modulesIndex=html.indexOf('/systems/baseline-recreation/js/baseline-recreation.js');
   assert.ok(guardIndex>-1&&coreIndex>guardIndex&&modulesIndex>coreIndex);
 });
 
-test('Games Hub production runtime has no browser persistence authority',()=>{
+test('Recreation production runtime has no browser persistence authority',()=>{
   for(const [name,source] of [
     ['guard',guard],['core',core],['tactical',tactical],['exploration',exploration],
     ['exploration integrity',explorationIntegrity],['ninja',ninja],
@@ -166,7 +166,7 @@ test('every current game and jigsaw save app is covered by the server authority 
   assert.match(registry,/profileApp:'dartsfocused'/);
   assert.match(registry,/profileApp:'badmintonfocused'/);
   assert.match(registry,/persistentApps:storageApps/);
-  assert.match(guard,/BASELINE_GAMES_HUB_GAME_REGISTRY\?\.persistentApps\?\.\(\)/);
+  assert.match(guard,/BASELINE_GAMES_REGISTRY\?\.persistentApps\?\.\(\)/);
   for(const app of ['weightcoherence','unheardsignal','pantherjigsaw','bearjigsaw']){
     assert.ok(puzzlesRegistry.includes("app:'"+app+"'"));
   }

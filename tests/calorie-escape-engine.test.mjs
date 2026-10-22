@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { LEVELS, OBSTACLE_TYPES, ZONES } from '../systems/baseline-games-hub/games/baseline-realm/calorie-escape/data/calorie-escape-data.js';
+import { LEVELS, OBSTACLE_TYPES, ZONES } from '../systems/baseline-recreation/games/baseline-realm/calorie-escape/data/calorie-escape-data.js';
 import {
   completeRun,
   createDefaultCalorieEscapeState,
   createRunSnapshot,
   failRun
-} from '../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-engine.js';
+} from '../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-engine.js';
 
 test('Calorie Escape defines four playable zones and complete obstacle vocabulary',()=>{
  assert.equal(ZONES.length,4);

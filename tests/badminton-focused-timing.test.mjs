@@ -2,9 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-const runtime=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
-const timerAuthority=fs.readFileSync(new URL('../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-timing.js',import.meta.url),'utf8');
-const sharedTimerAuthority=fs.readFileSync(new URL('../systems/baseline-games-hub/js/focused-game-timing.js',import.meta.url),'utf8');
+const runtime=fs.readFileSync(new URL('../systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js',import.meta.url),'utf8');
+const timerAuthority=fs.readFileSync(new URL('../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-timing.js',import.meta.url),'utf8');
+const sharedTimerAuthority=fs.readFileSync(new URL('../systems/baseline-recreation/js/focused-game-timing.js',import.meta.url),'utf8');
 
 function runtimeSection(startName,endName){
   const start=runtime.indexOf('function '+startName);

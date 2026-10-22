@@ -16,17 +16,17 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   const skincareRoutine=read('systems/baseline-natural-skincare/js/skincare-routine.js');
   const skincareWorkspace=read('systems/baseline-natural-skincare/js/skincare-routine-sitewide-v5.js');
   const badminton=read('systems/baseline-badminton-session/js/badminton-session-game-plan.js');
-  const games=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
-  const puzzles=read('systems/baseline-games-hub/puzzles/shared/js/puzzles-library.js');
-  const jigsawEngine=read('systems/baseline-games-hub/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
-  const puzzleSupport=read('systems/baseline-games-hub/js/puzzle-game-support.mjs');
-  const blockGrid=read('systems/baseline-games-hub/games/block-grid/js/block-grid.js');
-  const colourSort=read('systems/baseline-games-hub/games/colour-sort/js/colour-sort.js');
-  const darts=read('systems/baseline-games-hub/games/darts-focused/js/darts-focused-shell.js');
-  const badmintonFocused=read('systems/baseline-games-hub/games/badminton-focused/js/badminton-focused.js');
-  const gamesLoader=read('systems/baseline-games-hub/js/baseline-games-hub-v14.js');
-  const realm=read('systems/baseline-games-hub/games/baseline-realm/shared/js/realm-entry.js');
-  const workshop=read('systems/baseline-games-hub/games/baseline-realm/workshop/js/workshop-ui.js');
+  const games=read('systems/baseline-recreation/js/baseline-recreation-core.js');
+  const puzzles=read('systems/baseline-recreation/puzzles/shared/js/puzzles-library.js');
+  const jigsawEngine=read('systems/baseline-recreation/puzzles/the-weight-of-coherence/js/weight-of-coherence.js');
+  const gameExtensionSupport=read('systems/baseline-recreation/js/game-extension-support.mjs');
+  const blockGrid=read('systems/baseline-recreation/games/block-grid/js/block-grid.js');
+  const colourSort=read('systems/baseline-recreation/games/colour-sort/js/colour-sort.js');
+  const darts=read('systems/baseline-recreation/games/darts-focused/js/darts-focused-shell.js');
+  const badmintonFocused=read('systems/baseline-recreation/games/badminton-focused/js/badminton-focused.js');
+  const gamesLoader=read('systems/baseline-recreation/js/baseline-recreation-loader.js');
+  const realm=read('systems/baseline-recreation/games/baseline-realm/shared/js/realm-entry.js');
+  const workshop=read('systems/baseline-recreation/games/baseline-realm/workshop/js/workshop-ui.js');
   const psychology=read('systems/baseline-psychology/js/baseline-psychology.js');
 
   assert.match(diet,/URLSearchParams\(window\.location\.search/);
@@ -65,14 +65,15 @@ test('page-like nested navigation is URL-owned and refresh-restorable',()=>{
   assert.match(jigsawEngine,/params\.get\('jigsaw'\)/);
   assert.match(jigsawEngine,/BaselinePuzzlesLibrary/);
 
-  assert.match(puzzleSupport,/historyMode = 'push'/);
+  assert.match(gameExtensionSupport,/historyMode = 'push'/);
+  assert.match(gameExtensionSupport,/`\/baseline-recreation\/games\/\$\{config\.id\}`/);
   assert.match(blockGrid,/blockTabFromLocation/);
   assert.match(blockGrid,/setTab\(tab, 'push'\)/);
   assert.match(colourSort,/colourTabFromLocation/);
   assert.match(colourSort,/setTab\(tab, 'push'\)/);
 
-  assert.match(darts,/DARTS_ROUTE='\/baseline-games-hub\/games-hub\/darts-focused'/);
-  assert.match(badmintonFocused,/BADMINTON_ROUTE='\/baseline-games-hub\/games-hub\/badminton-focused'/);
+  assert.match(darts,/DARTS_ROUTE='\/baseline-recreation\/games\/darts-focused'/);
+  assert.match(badmintonFocused,/BADMINTON_ROUTE='\/baseline-recreation\/games\/badminton-focused'/);
   assert.match(gamesLoader,/addEventListener\('popstate',syncFocusedRoutes\)/);
 
   assert.match(realm,/ROUTABLE_SCENES/);

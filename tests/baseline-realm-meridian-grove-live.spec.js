@@ -1,10 +1,10 @@
 const { test, expect } = require('@playwright/test');
 
-const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
+const PATH = '/systems/baseline-recreation/baseline-recreation.html';
 const SAVE_KEY = 'baseline.realm.exploration.jrpg.v1';
 
 async function mockProfiles(page) {
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async route => {
     const request = route.request();
     const url = new URL(request.url());
     const app = url.searchParams.get('app') || 'ninja';
@@ -18,7 +18,7 @@ async function mockProfiles(page) {
 async function openRealm(page) {
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.sceneRouter));
-  await page.waitForFunction(() => globalThis.BASELINE_GAMES_HUB_CORE_READY === true);
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await page.locator('[data-select-game="ninja"]:visible').first().click();
   await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.getStateService?.()));
@@ -46,7 +46,7 @@ test('Meridian Grove resumes an ATB battle with all six commands', async ({ page
   await openRealm(page);
 
   await page.evaluate(async ({ saveKey }) => {
-    const engine = await import('/systems/baseline-games-hub/games/baseline-realm/exploration/js/jrpg-engine.js');
+    const engine = await import('/systems/baseline-recreation/games/baseline-realm/exploration/js/jrpg-engine.js');
     const state = engine.createInitialState(67890);
     engine.startBattle(state, ['galesprout'], 'random');
     state.flags.introSeen = true;

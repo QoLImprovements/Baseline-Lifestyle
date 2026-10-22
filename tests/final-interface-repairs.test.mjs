@@ -5,11 +5,11 @@ import { spawnSync } from 'node:child_process';
 
 const read=path => readFileSync(new URL(`../${path}`,import.meta.url),'utf8');
 const modules=[
-  'systems/baseline-games-hub/js/baseline-games-hub-core.js'
+  'systems/baseline-recreation/js/baseline-recreation-core.js'
 ];
 const shared=read('sitewide/js/baseline-shared.js');
-const gamesCore=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
-const detectWordEngine=read('systems/baseline-games-hub/js/detect-word-engine.js');
+const gamesCore=read('systems/baseline-recreation/js/baseline-recreation-core.js');
+const detectWordEngine=read('systems/baseline-recreation/js/detect-word-engine.js');
 const favoritesStart=shared.indexOf('// One Account Favorites control');
 const favoritesEnd=shared.indexOf('// Expose a helper for other features',favoritesStart);
 const favorites=shared.slice(favoritesStart,favoritesEnd);

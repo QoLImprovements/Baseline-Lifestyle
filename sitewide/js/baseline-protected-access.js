@@ -38,7 +38,7 @@
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Personal Care</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>',
       '    <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>',
-      '    <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>',
+      '    <a class="bl-pages-link" role="menuitem" href="/baseline-recreation/system">Baseline Recreation</a>',
       '  </div>',
       '</div>'
     ].join('');

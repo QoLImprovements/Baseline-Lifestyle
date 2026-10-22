@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { GAMES } from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-config.js';
+import { GAMES } from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-config.js';
 import {
   BADMINTON_STORAGE_KEY,
   defaultBadmintonProfile,
@@ -10,7 +10,7 @@ import {
   persistBadmintonProfile,
   recordBadmintonResult,
   buildBadmintonRealmContribution
-} from '../systems/baseline-games-hub/games/badminton-focused/js/badminton-focused-profile.js';
+} from '../systems/baseline-recreation/games/badminton-focused/js/badminton-focused-profile.js';
 
 function memoryStorage(initial={}){
   const data=new Map(Object.entries(initial));

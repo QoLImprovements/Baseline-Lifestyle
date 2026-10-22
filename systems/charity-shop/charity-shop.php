@@ -27,7 +27,7 @@ if($accessUntil <= time()){
   <meta name="theme-color" content="#6f1218">
   <style>html[data-app="charity-shop"],body[data-app="charity-shop"]{margin:0;min-height:100%;color:#0c2232;background:linear-gradient(90deg,#6f1218 0%,#861920 12%,#9f2426 25%,#b43724 38%,#c44f1f 50%,#b43724 62%,#9f2426 75%,#861920 88%,#6f1218 100%);}</style>
   <link rel="canonical" href="https://baselinelifestyle.org/baseline-charity-shop/guidance">
-  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261021_1">
+  <link rel="stylesheet" href="/sitewide/css/baseline-themes.css?v=SITEWIDE_THEMES_CSS_20261022_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-sitewide.css?v=SITEWIDE_SHARED_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-header-canonical.css?v=SITEWIDE_HEADER_CSS_20261021_1">
   <link rel="stylesheet" href="/sitewide/css/baseline-pattern.css?v=20260527gradienttruth">
@@ -50,7 +50,7 @@ if($accessUntil <= time()){
           <a class="bl-pages-link" role="menuitem" href="/baseline-natural-skincare/system">Baseline Personal Care</a>
           <a class="bl-pages-link" role="menuitem" href="/baseline-fitness/system">Baseline Fitness</a>
           <a class="bl-pages-link" role="menuitem" href="/baseline-badminton-session/system">Baseline Badminton Session</a>
-          <a class="bl-pages-link" role="menuitem" href="/baseline-games-hub/games-hub">Baseline Games Hub</a>
+          <a class="bl-pages-link" role="menuitem" href="/baseline-recreation/system">Baseline Recreation</a>
         </div>
       </div>
       <button id="blProtectedKey" class="bl-protected-key" type="button" aria-haspopup="dialog" aria-controls="blProtectedAccessOverlay" aria-expanded="false" aria-label="Open protected sections" title="Protected sections"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="8" cy="12" r="4.2"></circle><path d="M12.2 12H22M18 12v3M15 12v2"></path></svg></button>

@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const PATH = '/baseline-games-hub/games-hub';
+const PATH = '/baseline-recreation/system';
 
 function ninjaProfile() {
   return {
@@ -35,7 +35,7 @@ function profileFor(app) {
 
 async function mockProfiles(page) {
   const profiles = { ninja: ninjaProfile() };
-  await page.route('**/systems/baseline-games-hub/api/games_data.php**', async (route) => {
+  await page.route('**/systems/baseline-recreation/api/games_data.php**', async (route) => {
     const request = route.request();
     if (request.method() === 'GET') {
       await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, profiles }) });
@@ -47,7 +47,7 @@ async function mockProfiles(page) {
     if (body.action === 'save' && body.app && body.profile) profiles[body.app] = body.profile;
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, app: body.app || '', profile: body.app ? profiles[body.app] : null, profiles }) });
   });
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async (route) => {
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async (route) => {
     const request = route.request();
     const url = new URL(request.url());
     let app = url.searchParams.get('app') || 'pairs';
@@ -209,7 +209,7 @@ test('authenticated save/load, shared wallet, crafting, battle and inventory tra
   await expect.poll(() => serverProfiles.ninja?.realm?.party?.characters?.sera?.equipment?.weapon?.id).toBe(integration.instanceId);
 
   await page.goto(PATH, { waitUntil: 'domcontentloaded' });
-  await page.waitForFunction(() => globalThis.BASELINE_GAMES_HUB_CORE_READY === true);
+  await page.waitForFunction(() => globalThis.BASELINE_RECREATION_CORE_READY === true);
   await page.getByRole('button', { name: 'Games', exact: true }).click();
   await page.locator('[data-select-game="ninja"]:visible').first().click();
   await page.waitForFunction(() => Boolean(globalThis.BaselineRealmHost?.getStateService?.()));

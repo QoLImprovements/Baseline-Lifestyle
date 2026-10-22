@@ -20,7 +20,7 @@ test('current system save paths remain server-authoritative and revision protect
   const fitness=read('systems/baseline-fitness/js/fitness-saved-data-bridge.js');
   const fitnessRoutine=read('systems/baseline-fitness/js/fitness-routine-workspace-v2.js');
   const skincare=read('systems/baseline-natural-skincare/js/skincare-routine.js');
-  const games=read('systems/baseline-games-hub/js/baseline-games-hub-core.js');
+  const games=read('systems/baseline-recreation/js/baseline-recreation-core.js');
   const badmintonTransport=read('systems/baseline-badminton-session/js/badminton-session-server.js');
   const badminton=read('systems/baseline-badminton-session/js/baseline-badminton-session.js');
   const massage=read('systems/baseline-massage/js/baseline-massage-persistence.js');

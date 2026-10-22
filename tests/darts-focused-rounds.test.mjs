@@ -10,8 +10,8 @@ import {
   sequenceDelayForTier,
   buildTargetSequence,
   createGeographyPrompt
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-rounds.js';
-import { CHECKOUT_SCENARIOS } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-rounds.js';
+import { CHECKOUT_SCENARIOS } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-content.js';
 
 test('Darts round pools respect tier ceilings',()=>{
   const tier1=poolForTier(CHECKOUT_SCENARIOS,1);

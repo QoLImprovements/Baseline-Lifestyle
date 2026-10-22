@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDefaultDartsProfile } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
+import { createDefaultDartsProfile } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-engine.mjs';
 import {
   decisionCategoryMeta,
   decisionSeriesSizeForTier,
@@ -9,7 +9,7 @@ import {
   decisionAccuracyForProfile,
   paceSecondsForTier,
   renderDecisionTrainingView
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-decision.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-decision.js';
 
 test('Decision Training tier helpers preserve current series sizes and pace windows',()=>{
   assert.equal(decisionSeriesSizeForTier(1),6);

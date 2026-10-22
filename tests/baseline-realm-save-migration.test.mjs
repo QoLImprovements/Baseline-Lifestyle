@@ -7,8 +7,8 @@ import {
   normaliseLegacyNinjaProfile,
   RealmSaveAdapter,
   realmSaveKeys
-} from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-save-adapter.js';
-import { REALM_SAVE_VERSION } from '../systems/baseline-games-hub/games/baseline-realm/shared/js/realm-model.js';
+} from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-save-adapter.js';
+import { REALM_SAVE_VERSION } from '../systems/baseline-recreation/games/baseline-realm/shared/js/realm-model.js';
 
 const legacyProfile = {
   app: 'ninja',

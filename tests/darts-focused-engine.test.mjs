@@ -16,18 +16,18 @@ import {
   scoreTarget,
   validateRoute,
   validateRouteText
-} from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-engine.mjs';
-import { GAMES } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js';
+} from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-engine.mjs';
+import { GAMES } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-content.js';
 
-const uiSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused.js', 'utf8');
-const contentSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-content.js', 'utf8');
-const uiMarkupSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-ui.js', 'utf8');
-const storageSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-storage.js', 'utf8');
-const loaderSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-v14.js', 'utf8');
-const boardSource = fs.readFileSync('systems/baseline-games-hub/games/darts-focused/art/realistic-dartboard.svg', 'utf8');
-const coreSource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub-core.js', 'utf8');
-const registrySource = fs.readFileSync('systems/baseline-games-hub/js/games-registry.js', 'utf8');
-const entrySource = fs.readFileSync('systems/baseline-games-hub/js/baseline-games-hub.js', 'utf8');
+const uiSource = fs.readFileSync('systems/baseline-recreation/games/darts-focused/js/darts-focused.js', 'utf8');
+const contentSource = fs.readFileSync('systems/baseline-recreation/games/darts-focused/js/darts-focused-content.js', 'utf8');
+const uiMarkupSource = fs.readFileSync('systems/baseline-recreation/games/darts-focused/js/darts-focused-ui.js', 'utf8');
+const storageSource = fs.readFileSync('systems/baseline-recreation/games/darts-focused/js/darts-focused-storage.js', 'utf8');
+const loaderSource = fs.readFileSync('systems/baseline-recreation/js/baseline-recreation-loader.js', 'utf8');
+const boardSource = fs.readFileSync('systems/baseline-recreation/games/darts-focused/art/realistic-dartboard.svg', 'utf8');
+const coreSource = fs.readFileSync('systems/baseline-recreation/js/baseline-recreation-core.js', 'utf8');
+const registrySource = fs.readFileSync('systems/baseline-recreation/js/games-registry.js', 'utf8');
+const entrySource = fs.readFileSync('systems/baseline-recreation/js/baseline-recreation.js', 'utf8');
 
 test('Darts Focused keeps one Hub entry with ten distinct website games', () => {
   assert.equal(GAME_IDS.length, 10);

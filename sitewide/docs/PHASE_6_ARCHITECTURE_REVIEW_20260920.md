@@ -107,7 +107,7 @@ Reviewed browser clients handle conflicts by one or more of:
 
 The architecture explicitly rejects the unsafe pattern of fetching a fresh revision and automatically resubmitting stale content.
 
-The revision state is server-resource-specific; game resources maintain per-game revisions rather than a single Games Hub revision.
+The revision state is server-resource-specific; game resources maintain per-game revisions rather than a single Recreation revision.
 
 ## 6. Partial-resource writes
 

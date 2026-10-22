@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { completeRun, createDefaultCalorieEscapeState } from '../systems/baseline-games-hub/games/baseline-realm/calorie-escape/js/calorie-escape-engine.js';
+import { completeRun, createDefaultCalorieEscapeState } from '../systems/baseline-recreation/games/baseline-realm/calorie-escape/js/calorie-escape-engine.js';
 
 test('Calorie Escape completion reduces Caloric Experience', () => {
   const state = createDefaultCalorieEscapeState();

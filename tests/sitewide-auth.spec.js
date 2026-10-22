@@ -7,7 +7,7 @@ const routes = [
   ['/baseline-natural-skincare/system', 'Skincare'],
   ['/baseline-fitness/system', 'Fitness'],
   ['/baseline-badminton-session/system', 'Badminton'],
-  ['/baseline-games-hub/games-hub', 'Games Hub']
+  ['/baseline-recreation/system', 'Recreation']
 ];
 
 async function installMockAuthApi(page, requestedPaths) {

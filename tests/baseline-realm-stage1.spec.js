@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-const PATH = '/systems/baseline-games-hub/baseline-games-hub.html';
+const PATH = '/systems/baseline-recreation/baseline-recreation.html';
 const GUEST_PROFILE_KEY = '__bl_games_guest_profiles_v1__';
 
 function profileFor(app) {
@@ -24,7 +24,7 @@ async function mockProfiles(page) {
     localStorage.setItem(key, JSON.stringify({ ninja: profile }));
   }, { key: GUEST_PROFILE_KEY, profile: savedNinja });
 
-  await page.route('**/systems/baseline-games-hub/api/games_profile.php**', async route => {
+  await page.route('**/systems/baseline-recreation/api/games_profile.php**', async route => {
     const request = route.request();
     const url = new URL(request.url());
     let app = url.searchParams.get('app') || 'pairs';
@@ -141,7 +141,7 @@ test('Stage 1 navigation, artwork, SVG controls, cooldown and seeded progress re
   expect(dashHref).toContain('#icon-dash-cut');
   expect(shurikenHref).toContain('#icon-shuriken');
   const sprite = await page.evaluate(async () => {
-    const response = await fetch('/systems/baseline-games-hub/games/baseline-realm/shared/icons/realm-icons.svg');
+    const response = await fetch('/systems/baseline-recreation/games/baseline-realm/shared/icons/realm-icons.svg');
     return { ok: response.ok, text: await response.text() };
   });
   expect(sprite.ok).toBeTruthy();

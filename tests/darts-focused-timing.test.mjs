@@ -2,10 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
-import { createDartsTimerManager } from '../systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js';
+import { createDartsTimerManager } from '../systems/baseline-recreation/games/darts-focused/js/darts-focused-timing.js';
 
-const dartsTimingSource=fs.readFileSync('systems/baseline-games-hub/games/darts-focused/js/darts-focused-timing.js','utf8');
-const sharedTimingSource=fs.readFileSync('systems/baseline-games-hub/js/focused-game-timing.js','utf8');
+const dartsTimingSource=fs.readFileSync('systems/baseline-recreation/games/darts-focused/js/darts-focused-timing.js','utf8');
+const sharedTimingSource=fs.readFileSync('systems/baseline-recreation/js/focused-game-timing.js','utf8');
 
 function harness({auto=true}={}){
   let gameId='checkout-pressure';

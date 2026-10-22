@@ -1,0 +1,28 @@
+# Baseline Recreation module and cache rules.
+<IfModule mod_mime.c>
+  AddType text/javascript .js .mjs
+</IfModule>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^baseline-recreation\.html$ /sitewide/page-shell.php?page=recreation [L,QSA]
+  RewriteCond %{HTTP_COOKIE} !baseline_recreation_epoch=20261022_1 [NC]
+  RewriteRule ^ - [E=baseline_recreation_cache_upgrade:1]
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|mjs|css)$">
+    Header always unset ETag
+    Header always set Cache-Control "public, max-age=0, must-revalidate"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </FilesMatch>
+  <Files "baseline-recreation.html">
+    Header always unset ETag
+    Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+    Header always set Pragma "no-cache"
+    Header always set Expires "0"
+    Header always set X-LiteSpeed-Cache-Control "no-cache"
+  </Files>
+  Header always set Clear-Site-Data "\"cache\"" env=baseline_recreation_cache_upgrade
+  Header always add Set-Cookie "baseline_recreation_epoch=20261022_1; Path=/; Max-Age=31536000; SameSite=Lax" env=baseline_recreation_cache_upgrade
+</IfModule>
