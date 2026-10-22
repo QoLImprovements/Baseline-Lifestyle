@@ -105,7 +105,7 @@ test('Detect The Word and Make The Number preserve unfinished input across reren
   assert.match(wordSubmit, /wordState\.draftGuess = ''/);
 
   assert.match(makeStart, /draftExpression:''/);
-  assert.match(makeRender, /value="' \+ escapeHtml\(make24State\.draftExpression \|\| ''\)/);
+  assert.match(makeRender, /value="' \+ escapeHtml\(make24State\.draftExpression\s*\|\|\s*''\)/);
   assert.match(makeSubmit, /make24State\.draftExpression = String\(input\.value \|\| ''\)/);
   assert.match(core, /target\.id === 'make24ExpressionInput' && make24State/);
   assert.match(core, /target\.id === 'wordGuessInput' && wordState/);
