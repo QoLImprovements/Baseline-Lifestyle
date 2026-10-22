@@ -58,6 +58,23 @@ test('Recreation palette is Burgundy Rose Copper with one hue authority',()=>{
   }
 });
 
+test('Recreation overview artwork contains no retired Indigo Circuit palette',()=>{
+  const assets=[
+    'systems/baseline-recreation/games/overview-art/pairs.svg',
+    'systems/baseline-recreation/games/overview-art/detect-the-word.svg',
+    'systems/baseline-recreation/games/overview-art/make-the-number.svg',
+    'systems/baseline-recreation/games/overview-art/track-the-coin.svg',
+    'systems/baseline-recreation/games/overview-art/rule-shift.svg',
+    'systems/baseline-recreation/games/overview-art/baseline-realm.svg',
+    'systems/baseline-recreation/games/darts-focused/art/realistic-dartboard.svg',
+    'systems/baseline-recreation/games/badminton-focused/art/badminton-focused-overview.svg'
+  ];
+  const retired=/#080D22|#1E2759|#4656A6|#526BC2|#8CA7FF|#1A244D|#2A3672|#F2F5FF|#D5DEF7|#AFC0ED/i;
+  for(const asset of assets) assert.doesNotMatch(get(asset),retired,asset);
+  const registry=get('systems/baseline-recreation/js/games-registry.js');
+  assert.doesNotMatch(registry,/G01_INDIGO_CIRCUIT/);
+  assert.match(registry,/RECREATION_BURGUNDY_ROSE_COPPER_20261022_1/);
+});
 test('top-level identifiers are Recreation while genuine game authorities stay Games',()=>{
   const core=get('systems/baseline-recreation/js/baseline-recreation-core.js');
   const registry=get('systems/baseline-recreation/js/games-registry.js');
