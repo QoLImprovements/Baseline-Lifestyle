@@ -143,7 +143,7 @@ export function createGameExtensionShell(config) {
     document.getElementById('gamesOverviewCard')?.setAttribute('aria-hidden', 'true');
     if (historyMode !== 'none') {
       try {
-        const nextUrl = `/baseline-recreation/system/${config.id}`;
+        const nextUrl = `/baseline-recreation/games/${config.id}`;
         const currentUrl = location.pathname + location.search + location.hash;
         if (currentUrl !== nextUrl) {
           const method = historyMode === 'replace' ? 'replaceState' : 'pushState';
