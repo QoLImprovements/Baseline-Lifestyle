@@ -61,7 +61,7 @@ test('Recreation registry exposes canonical identities with legacy compatibility
   );
   for (const game of overview) {
     assert.equal(typeof game.overview.group, 'string');
-    assert.match(game.overview.art, /G01_INDIGO_CIRCUIT_20260801_1/);
+    assert.match(game.overview.art, /RECREATION_BURGUNDY_ROSE_COPPER_20261022_1/);
     assert.ok(game.overview.note.length > 20);
     assert.ok(game.overview.brainBenefit.length > 20);
   }
@@ -82,7 +82,7 @@ test('Recreation help modal has one presentation authority loaded before core', 
   assert.match(modal.contentFor('ninja').how, /Ninja Training/);
 
   assert.match(core, /GAMES_HELP_MODAL = window\.BaselineGamesHelpModal/);
-  assert.match(core, /games_hub_modal_authority_missing/);
+  assert.match(core, /games_help_modal_authority_missing/);
   assert.doesNotMatch(core, /GAME_HELP_CONTENT|function gameHelpContent|function ensureGamesHubModal|function openGamesHubModal|function closeGamesHubModal/);
 
   const modalIndex = page.indexOf('/systems/baseline-recreation/js/games-help-modal.js');
