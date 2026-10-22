@@ -163,12 +163,21 @@ test('Recreation inner panels survive refresh',async({page})=>{
   await expect(page.locator('#pairsSkillCard')).toBeVisible();
 });
 
-test('Concept detail route survives refresh and the Concepts tab returns to the library',async({page})=>{
+test('Concept detail route survives refresh, compares Stroop conditions and returns to the Concepts library',async({page})=>{
   await stubGames(page);
   await page.goto('/baseline-recreation/concepts/stroop-effect',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);
   await expect(page.locator('[data-target="concepts"]')).toHaveAttribute('aria-selected','true');
   await expect(page.locator('#conceptStroopEffect')).toBeVisible();
+
+  const art=page.locator('[data-stroop-comparison-art]');
+  await expect(page.locator('[data-stroop-mode="incongruent"]')).toHaveAttribute('aria-pressed','true');
+  await expect(art).toHaveAttribute('src',/stroop-effect\.webp/);
+
+  await page.locator('[data-stroop-mode="congruent"]').click();
+  await expect(page.locator('[data-stroop-mode="congruent"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('[data-stroop-mode="incongruent"]')).toHaveAttribute('aria-pressed','false');
+  await expect(art).toHaveAttribute('src',/stroop-effect-congruent\.webp/);
 
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>globalThis.BASELINE_RECREATION_CORE_READY===true);

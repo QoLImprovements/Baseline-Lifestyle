@@ -5,6 +5,12 @@
   'use strict';
 
   const BASE='/baseline-recreation/concepts';
+  const ALIASES=Object.freeze({
+    'stoop-effect':'stroop-effect',
+    'the-stoop-effect':'stroop-effect',
+    'the-stroop-effect':'stroop-effect'
+  });
+
   const REGISTRY=Object.freeze({
     'stroop-effect':Object.freeze({
       slug:'stroop-effect',
@@ -13,6 +19,11 @@
       detailId:'conceptStroopEffect'
     })
   });
+
+  function canonicalSlug(slug){
+    const raw=String(slug||'').toLowerCase();
+    return ALIASES[raw]||raw;
+  }
 
   function pathSlug(){
     const path=String(window.location.pathname||'').toLowerCase().replace(/\/+$/,'');
@@ -76,7 +87,9 @@
 
   function openConcept(slug,options){
     const opts=options||{};
-    const concept=REGISTRY[String(slug||'').toLowerCase()];
+    const rawSlug=String(slug||'').toLowerCase();
+    const resolvedSlug=canonicalSlug(rawSlug);
+    const concept=REGISTRY[resolvedSlug];
     if(!concept){ showOverview({historyMode:opts.historyMode||'replace'}); return false; }
     hideAllDetails();
     setOverviewVisible(false);
@@ -85,6 +98,7 @@
     detail.hidden=false;
     document.documentElement.setAttribute('data-concept-open',concept.slug);
     if(opts.historyMode) writeRoute(concept.slug,opts.historyMode);
+    else if(rawSlug!==resolvedSlug) writeRoute(concept.slug,'replace');
     if(opts.focus) focusHeading(detail);
     return true;
   }
@@ -118,7 +132,7 @@
     showOverview:showOverview,
     openConcept:openConcept,
     restoreRoute:restoreRoute,
-    getConcept:function(slug){ return REGISTRY[String(slug||'').toLowerCase()]||null; }
+    getConcept:function(slug){ return REGISTRY[canonicalSlug(slug)]||null; }
   });
 
   bind();
