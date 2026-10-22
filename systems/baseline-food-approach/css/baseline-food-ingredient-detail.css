@@ -1,6 +1,6 @@
-/* Focused Food ingredient record pages. */
+/* Comprehensive Food ingredient record pages and hydrated library cards. */
 body[data-app="food"] .food-ingredient-shell{
-  width:min(980px, calc(100% - 48px));
+  width:min(1120px, calc(100% - 48px));
   margin:0 auto;
   padding:32px 0 56px;
 }
@@ -23,20 +23,77 @@ body[data-app="food"] .food-ingredient-actions a{
   font-weight:850;
   text-decoration:none;
 }
-body[data-app="food"] .food-ingredient-actions a:hover{
-  background:var(--food-tab-hover);
-}
+body[data-app="food"] .food-ingredient-actions a:hover{background:var(--food-tab-hover);}
 body[data-app="food"] .food-ingredient-record h1{
-  margin:0 0 var(--space-2);
+  margin:0 0 10px;
   font-family:var(--font-soft);
-  font-size:clamp(32px, 4vw, 48px);
+  font-size:clamp(32px,4vw,48px);
+  line-height:1.08;
 }
-body[data-app="food"] .food-ingredient-record .meta-line{
-  font-weight:760;
+body[data-app="food"] #ingredients .food-ingredient-record>h3{
+  margin:0 0 10px;
+  font-family:var(--font-soft);
+  font-size:clamp(25px,2.5vw,34px);
+  line-height:1.12;
 }
-@media (max-width:720px){
+body[data-app="food"] .ingredient-type-line{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:baseline;
+  gap:8px;
+  margin:0 0 14px;
+  color:var(--muted);
+}
+body[data-app="food"] .ingredient-field-label{
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:4px 9px;
+  border:1px solid var(--food-tab-border);
+  border-radius:999px;
+  background:var(--food-surface-control);
+  color:var(--ink);
+  font-weight:850;
+}
+body[data-app="food"] .ingredient-summary{
+  max-width:78ch;
+  margin:0;
+  font-size:1.06em;
+  line-height:1.58;
+}
+body[data-app="food"] .ingredient-detail-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+  margin-top:22px;
+}
+body[data-app="food"] .ingredient-detail-section{
+  min-width:0;
+  padding:16px 18px;
+  border:1px solid rgba(200,100,50,.20);
+  border-radius:18px;
+  background:var(--food-surface-subtle);
+  box-shadow:0 14px 28px -28px rgba(35,23,19,.34);
+}
+body[data-app="food"] .ingredient-detail-section h2{
+  margin:0 0 10px;
+  font-family:var(--font-soft);
+  font-size:20px;
+  line-height:1.2;
+}
+body[data-app="food"] .ingredient-detail-section ul{
+  margin:0 0 0 20px;
+  padding:0;
+}
+body[data-app="food"] .ingredient-detail-section li{
+  margin:7px 0;
+  line-height:1.48;
+}
+@media (max-width:760px){
   body[data-app="food"] .food-ingredient-shell{
-    width:min(100% - 28px, 980px);
+    width:min(100% - 28px,1120px);
     padding:22px 0 42px;
   }
+  body[data-app="food"] .ingredient-detail-grid{grid-template-columns:1fr;}
+  body[data-app="food"] .ingredient-detail-section{padding:14px 15px;}
 }
