@@ -1,14 +1,14 @@
 /* Crossnumber — coherent Recreation panels and compact playable board. */
 body[data-app="recreation"] .crossnumber-shell{
-  --cn-deep:var(--g01-deep,#080D22);
-  --cn-mid:var(--g01-mid,#1E2759);
-  --cn-centre:var(--g01-centre,#4656A6);
-  --cn-active:var(--g01-active,#526BC2);
-  --cn-focus:var(--g01-focus,#8CA7FF);
-  --cn-card:var(--g01-card,#1A244D);
-  --cn-ink:var(--g01-ink,#F2F5FF);
-  --cn-muted:var(--g01-muted,#D5DEF7);
-  --cn-placeholder:var(--g01-placeholder,#AFC0ED);
+  --cn-deep:var(--recreation-burgundy);
+  --cn-mid:var(--recreation-rose);
+  --cn-centre:var(--recreation-copper);
+  --cn-active:var(--recreation-copper-deep);
+  --cn-focus:var(--recreation-copper-light);
+  --cn-card:var(--recreation-card);
+  --cn-ink:var(--recreation-ink);
+  --cn-muted:var(--recreation-muted);
+  --cn-placeholder:var(--recreation-placeholder);
   --cn-border:var(--games-border,rgba(140,167,255,.38));
   --cn-border-strong:var(--games-border-strong,rgba(140,167,255,.72));
   display:grid;
@@ -170,7 +170,7 @@ body[data-app="recreation"] .crossnumber-number-cell.is-fixed::before{
   background:var(--cn-focus);
 }
 body[data-app="recreation"] .crossnumber-number-cell.is-correct{
-  box-shadow:inset 0 0 0 2px rgba(242,245,255,.22);
+  box-shadow:inset 0 0 0 2px rgba(var(--recreation-ink-rgb),.22);
 }
 body[data-app="recreation"] .crossnumber-number-cell.has-conflict{
   border-color:var(--cn-focus);
