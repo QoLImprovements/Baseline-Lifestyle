@@ -17,6 +17,13 @@
   let activeView='overview';
   let activeJigsaw='';
 
+  function ownsPuzzleRoute(){
+    try{
+      const path=String(window.location.pathname||'').replace(/\/+$/,'');
+      return path==='/baseline-recreation/puzzles' || path.indexOf('/baseline-recreation/puzzles/')===0;
+    }catch(_error){ return false; }
+  }
+
   function routeState(){
     try{
       const path=String(window.location.pathname||'').replace(/\/+$/,'');
@@ -174,7 +181,9 @@
     if(puzzle) document.dispatchEvent(new CustomEvent('baseline:jigsaw-select',{detail:{puzzle:puzzle}}));
   }
   showView(initial.view);
-  writeRoute(initial.view,activeJigsaw,'replace');
+  // This module owns only /baseline-recreation/puzzles URLs. It must never
+  // rewrite Games, Concepts or System during shared-shell startup/refresh.
+  if(ownsPuzzleRoute()) writeRoute(initial.view,activeJigsaw,'replace');
 
   window.addEventListener('popstate',function(){
     const next=routeState();
